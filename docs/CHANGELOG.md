@@ -26,6 +26,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - .claude/rules/checks.md - rules-choose-the-stocks cites the decision that narrows the one it cited
+Authorised by: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and no model judges a stock
+Was:
+> `rules-choose-the-stocks`: ... and to pass a clean one (see: Rules choose the stocks, and a language model writes only the reports); and from 16.3 ...
+Now:
+> ... and to pass a clean one (see: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and no model judges a stock); and from 16.3 ...
+Why: the decision the row cited moved to Previously decided when phase 20's ruling narrowed it, and a citation of a superseded decision is what `no-superseded-citation` refuses; what the check asserts is unchanged until 20.4 amends it.
+
+### 2026-10-18 - BUILD_PLAN.md - phase 20 planned, the decision the plan cited repointed, and the list tabled for phase 21 no longer holding phase 20 unplanned
+Authorised by: Phase 20 is built after phase 17's sign-off with the sign-offs of phases 18 and 19 after 20.4, spending no money and retiring nothing on a result
+Was:
+> Phase 14's what the phase is for: ... no model's judgment chooses, filters or orders a pick, and models write the reports (see: Rules choose the stocks, and a language model writes only the reports).
+> Phase 18's what the phase is for: ... provider calls are stated before each run and held under 5,000 a day (see: Rules choose the stocks, and a language model writes only the reports).
+> Phase 19's: Rules choose the stocks, code owns every number, and no paid or model call is made in development (see: Rules choose the stocks, and a language model writes only the reports).
+> Tabled for phase 21: On the operator's rulings of 2026-10-16 no checkpoint is added and phase 20 is not planned until the sign-offs of phases 16 to 19 are done and the monthly run of 2026-11-07 has run and its proposals are read. An idea raised meanwhile is written here as one line, with no checkpoint text.
+Now:
+> each of the three: (see: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and no model judges a stock).
+> Tabled for phase 21: On the operator's rulings of 2026-10-16 an idea raised before the monthly run of 2026-11-07 has run and its proposals are read is written here as one line, with no checkpoint text. The operator's ruling of 2026-10-18 narrowed those rulings to plan and build phase 20 meanwhile, in the order its own section states (see: Phase 20 is built after phase 17's sign-off with the sign-offs of phases 18 and 19 after 20.4, spending no money and retiring nothing on a result).
+> Added without replacing anything: phase 20's section, its checkpoints 20.0 to 20.10 with their done conditions and the claims it predicts.
+Why: the operator ruled phase 20 planned now and built after phase 17's sign-off, narrowing the pause of 2026-10-16, and the decision the three phases cited was superseded by the one that narrows it.
+
+### 2026-10-18 - ARCHITECTURE.html - section 1's boundary narrowed to a pinned local model's readings, and section 20's row for phase 20
+Authorised by: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and no model judges a stock
+Was:
+> What it is not: The universe is a published index membership, not a filtered set, and tonight's list is chosen on the chart and the plan alone, with no model in the decision.
+> Rules choose the stocks, and a language model writes only the reports. Every stock a list draws, and the order it draws them in, comes from rules over stored prices, filings, counts and dates, and no language model's output decides, filters, ranks or orders a pick, a family, a variant, a gate or a record. A language model writes the research reports, and labels the news for the reader and for the reports alone. The reason is the test the picks are held to: a rule can be replayed over the stored history as each night stood and scored, and gives the same answer when it is run again, where a language model's judgment can be neither replayed as it stood nor reproduced. A statistical model fitted by code to the ledger passes that test, so it is a rule, and it orders a list only as a rule's registered setting the operator approved (see: Rules choose the stocks, and a language model writes only the reports) (see: A fitted statistical model is a rule)
+Now:
+> ... tonight's list is chosen on the chart and the plan alone, with no model's judgment in the decision.
+> Rules choose the stocks, and no model judges a stock. Every stock a list draws, and the order it draws them in, comes from rules over stored prices, filings, counts and dates, and over the stored readings a pinned local model gave of a member's results release with its names and dates removed. No other model's output decides, filters, ranks or orders a pick, a family, a variant, a gate or a record: a language model writes the research reports, and labels the news for the reader and for the reports alone. ... A local model's reading passes it only pinned, its model's file, its runtime and its prompt fixed and checked on every run at temperature zero with a fixed seed, so it reads a document the same way again; it answers closed questions alone, each a word code turns into a reading, and is asked for no number, no date and no estimate. A language model's judgment can be neither replayed as it stood nor reproduced. ... (see: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and no model judges a stock) (see: A fitted statistical model is a rule)
+> Added without replacing anything: section 20's row for phase 20.
+Why: the operator ruled with phase 20's brief that section 1's boundary be amended to match the narrowed decision, and section 20 carries one row for every phase the plan holds.
+
 ### 2026-10-18 - .claude/rules/checks.md - fixture-expectations states a heavyweights night run again keeping the book of a rule it keeps none for
 Corrects: the heavyweight book undid every registered rule's night, deleting what each bought that night and opening again what each sold, before keeping the books of the rules the code carries at their versions, so a night run again over a rule registered at a version the code no longer carries lost that rule's buys of the night and reopened its sales; found correcting phase 17's first sign-off review on 2026-10-18 as F4's sibling, no stored holding touched, and added on the operator's ruling of that day.
 Was:
