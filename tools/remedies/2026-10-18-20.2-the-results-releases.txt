@@ -1,0 +1,8 @@
+# The remedy of 20.2, the members' results releases, as its PROGRESS entry prints it: the migration creating the
+# release documents' and release days' stores, then every ledger filer's results releases fetched back by hand from
+# the SEC, from the one before the filer's first session in the ledger through its last, stopping at 07:00 New York
+# time at the latest and going on from where it stopped when run again. Requests of the SEC alone, free and keyless,
+# at ten a second under the archive's contact; no provider request, no model call and no paid call. Run after the merge
+# and before the late slot, when no night is running.
+migrate
+releases --history --from 2019-01-02 --until 07:00

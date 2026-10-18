@@ -3389,6 +3389,31 @@ internal static class Scope
             Verdict.Pass,
             "one line naming the two slots where no run is stored, and ten runs of twelve newest first by the order they were written, each column read back off the rendered page against the detail the run's own writer wrote, a twice-read saying how many of the releases it compared it read alike, a row whose detail cannot be read drawn by its outcome alone and a row under another stage drawn by none, over a constructed store",
             ByReadSurface),
+        // 20.2, the release fetch: its catalogue and matrix rows, its two stores, section 17's row and section 18's row.
+        [CheckReach.Key(CatalogueTable, "Release fetch")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership, the companies, the pulled companies, the setups, the release documents and the release days it reads, the release documents, the release days and the run log it writes and the filings archive among its feeds, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Release fetch")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Release documents")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Release days")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Release fetch's settings")] = new Scoped(
+            Verdict.Pass,
+            "the days an early slot reads worked by hand from none read and from the newest read, a late slot reading the current feed back to the start of the slot before it and asking for the next page only while a page reaches no further back, and a filer's further page of submissions read where it reaches twelve months before its first session and not a day past; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The SEC refuses or does not answer a release fetch")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store an archive refusing a day's index ends the slot's fetch with nothing more stored and the day left to read again, the local run's row saying the fetch was refused and why, and a day the archive has not posted read by the next slot",
+            ByExpectations),
         // 17.3, the Ledger page: its six parts and its summary's store.
         [CheckReach.Key(StoresTable, "Ledger summaries")] = new Scoped(
             Verdict.Pass,

@@ -296,6 +296,13 @@ public class PinnedConstants
             new("Local reading's settings", "20261018", Core.Releases.ReadingSettings.Seed, "ReadingSettings.Seed"),
             new("Local reading's settings", "256", Core.Releases.ReadingSettings.AnswerTokens, "ReadingSettings.AnswerTokens"),
             new("Local reading's settings", "1", Core.Releases.ReadingSettings.AskedAgain, "ReadingSettings.AskedAgain"),
+            // The release fetch's settings, 20.2.
+            new("Release fetch's settings", "10", Worker.Local.ReleaseFetch.DaysASlot, "ReleaseFetch.DaysASlot"),
+            new("Release fetch's settings", "7", Worker.Local.ReleaseFetch.FirstLookBack, "ReleaseFetch.FirstLookBack"),
+            new("Release fetch's settings", "10", Worker.Local.ReleaseFetch.CurrentPages, "ReleaseFetch.CurrentPages"),
+            new("Release fetch's settings", "100", Core.Releases.ResultsReleases.CurrentPageSize, "ResultsReleases.CurrentPageSize"),
+            new("Release fetch's settings", "10", Worker.Local.ReleaseFetch.RequestsASecond, "ReleaseFetch.RequestsASecond"),
+            new("Release fetch's settings", "12", Worker.Local.ReleaseFetch.MonthsBefore, "ReleaseFetch.MonthsBefore"),
             new("Live quotes a day", "500", Core.Quotes.QuoteLimits.DailyCap, "QuoteLimits.DailyCap"),
             new("Quote interval", "5", Core.Quotes.QuoteLimits.IntervalMinutes, "QuoteLimits.IntervalMinutes"),
             new("Report windows", "8", Core.Report.QuarterLines.GrowthQuarters, "QuarterLines.GrowthQuarters"),

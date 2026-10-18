@@ -2829,3 +2829,78 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 20.1's 
 Carried:    the slots' first runs, read off the Run page and recorded in 20.2's entry; the sign-offs of phases 18 and
             19, owed to fresh sessions after 20.4; the two items phase 17's sign-off carried, corrected after 20.4;
             (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.
+
+### 20.2 - the members' results releases, found and kept   2026-10-18
+
+Queue:      done, phase 17's sign-off, phase 20's planning and 20.1 with its remedy, PRs 486 to 489; in progress, this
+            checkpoint; next, its remedy from main with the history fetched by hand, then 20.3 and 20.4, the two items
+            phase 17's sign-off carried, and the sign-offs of phases 18 and 19 by fresh sessions.
+Built:      on the operator's ruling of 2026-10-18 (see: A member's results release is the EX-99 exhibit of its 8-K
+            carrying item 2.02, stored compressed with the instant the SEC accepted it). The SEC's answers captured
+            before their readers were written: the current 8-K feed, Keysight's further page of submissions, and an
+            8-K's index page at each of New York's offsets. In the core the readers of the current feed, a filer's
+            submissions and their further page and an 8-K page's accepted instant through the session zone; a
+            release's text compressed beside the hash of its bytes and its length; the instant an `--until` names; the
+            archive feed's further documents; and a recorded feed over the fixture's captures. Migration 99's
+            `release_document` and `release_day`. The worker's release fetch: the early slot over the archive's daily
+            index from the day after the newest it read, the late slot over the current feed back to the start of the
+            late slot before it, and `releases --history --from` with `--until`, pausing for the night's window and a
+            slot; each local run slot fetches before it checks the pin, its row counting the releases stored and the
+            SEC's requests, a refusal coming to `fetch refused`. The whole replay runs the early slot over the
+            fixture's week. The corpus as 20.2 lists it, CLAUDE.md's ninth carve-out among it, and the remedy file.
+Found:      a late slot reading back to the start of its own day in New York alone would miss a release accepted after
+            the late slot before it and before midnight, which the availability rule makes readable that night, so it
+            reads back to the start of the slot before; the 8 of an 8-K in section 17's value cell reads as a figure,
+            so the row names the SEC's current filings feed; and the slots read the pulled companies' filers beside the
+            history, which the check holding the pulled tables to their stated readers refused, so the slots read the
+            night's own companies alone and the history, by hand, joins that check's list with its reason.
+Amended:    20.2 amends its own done condition: a refused answer is counted refused on the run's row until 20.3 stores
+            readings, where it said stored refused, and the late slot is held to reading back to the slot before;
+            BUILD_PLAN and the changelog say the same.
+Tests:      9 new, 2443 in all: the current feed, the submissions, the further page and an 8-K's page read as captured
+            with the accepted instant at both offsets; the text compressed and read back to its hash; the early slot
+            storing a member's release and asking nothing for an announcement carrying no 2.02, a filer that is no
+            member or a report, its days worked by hand and a day not posted read by the next slot; the late slot
+            reading back to the slot before and the next morning's early slot asking nothing for what it stored; the
+            further page at its twelve months' edge; the history stopping at its until and going on; `--until` across
+            the change of 2026-11-01; the replay's week; and a slot's row with the SEC's refusal. Nightly-cost holds a
+            night constructing the local run or the release fetch. Derived expectation `release-fetch.json`, the
+            fixture's week read by hand.
+Claims:     1355, six more than 1349 and the plan's about 5: the catalogue's and the matrix's Release fetch, section
+            16's Release documents and Release days, section 17's Release fetch's settings and section 18's The SEC
+            refuses or does not answer a release fetch, named beside phase 19's pair as rows after its report, each
+            passing.
+Pins:       none moved: no source a rule's version, a candidate evaluator, the hooks or the learned score pins changes.
+Remedy:     `tools/remedies/2026-10-18-20.2-the-results-releases.txt`, from main after the merge and before the late
+            slot: the migration to 99, then `releases --history --from 2019-01-02 --until 07:00`. Requests of the SEC
+            alone, no provider request, no model call and no paid call. The count stored per index and year, the
+            requests, the time and the store's growth are owed to its record entry.
+Mutated:    the rule, stated before the runs: one mutation a property 20.2 adds whose failure would keep a release
+            wrongly, miss one or ask the SEC for one it should not, the smallest edit to shipped source, each run
+            filtered to the release tests or the checks named with its red predicted, made in this checkout and
+            reverted from the file's own text, the tree's diff the same after the sweep as before. M1 the early slot
+            reading a filer that is no member: red at the early slot and the replay. M2 an announcement carrying no
+            2.02 read as results: red at the early slot and the replay. M3 a page's accepted instant read as UTC: red
+            at the readers and the early slot. M4 the late slot reading back to its own day's start alone: red at the
+            late slot. M5 the late slot reading on past a page reaching before its start: red at the late slot. M6 the
+            history not stopping at its until inside a filer: red at the history. M7 a further page read within eleven
+            months: red at the further page's edge. M8 the release before the first session left out: red at the
+            history and the further page. M9 the hash taken over the compressed bytes: red at the compression and the
+            early slot. M10 a Saturday read as a day of the index: red at the early slot and the replay. M11 the newest
+            day not posted recorded as none posted: red at the early slot and the replay. M12 a refused fetch come to
+            finished: red at the slot's row. M13 the release fetch declaring no feed: red at nightly-cost's
+            construction test and at component-access. M14 a page that is no Atom feed read as listing nothing: red at
+            the readers. M15 a release the late slot stored asked for again by the next early slot: red at the late
+            slot's morning after. M16 a slot reading the pulled companies' filers: red at the early slot. M17 the
+            history reading the night's own companies alone: red at the further page. Each red as predicted. Not mutated: the history's pause for the night's window and a
+            slot, the wait to write while the night holds its lock, and a slot refused without the archive's contact.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2443 of 2443 tests ran with none failed,
+            migrations 0 to 99 with none pending, schema version 99, against `data-ci` and never `data`; the phase
+            report 60 tables, 1355 claims, 1355 passing, none out of scope and none unexamined, 1366 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    20.2's remedy from main and its record; the slots' first runs, which 20.1's record carried here and which
+            fall after this entry, the early slot of 12:05Z in 20.2's remedy record and the late slot of 21:40Z, the
+            first to fetch, in 20.3's entry; the sign-offs of phases 18 and 19, owed to fresh sessions after 20.4; the
+            two items phase 17's sign-off carried, corrected after 20.4; (G1), SCHEMA's `family_trade` sentence, owed
+            by the next edit of that section.

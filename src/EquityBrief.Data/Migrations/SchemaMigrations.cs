@@ -719,7 +719,43 @@ public static class SchemaMigrations
         new Migration(96, "create insider_trade and insider_read, and add setup's insider readings", AddInsiderTrades),
         new Migration(97, "create sec_ticker, and add company.cik_source", AddSecTickers),
         new Migration(98, "create reading_pin", CreateReadingPins),
+        new Migration(99, "create release_document and release_day", CreateReleases),
     ];
+
+    // From 20.2: each member's results release a row a filing, its text compressed beside the hash and length a reading
+    // checks it by, and each day of the archive's index and each day's current filings the local run's slots read. Both
+    // created empty, nothing copied and nothing dropped.
+    // see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it
+    const string CreateReleases = @"
+        CREATE TABLE release_document (
+            accession    TEXT    PRIMARY KEY,
+            cik          TEXT    NOT NULL,
+            form         TEXT    NOT NULL,
+            filed        TEXT    NOT NULL,
+            accepted_at  TEXT    NOT NULL,
+            exhibit      TEXT    NOT NULL,
+            url          TEXT    NOT NULL,
+            text_gzip    BLOB    NOT NULL,
+            text_sha256  TEXT    NOT NULL,
+            text_length  INTEGER NOT NULL,
+            run_id       TEXT    NOT NULL
+        ) STRICT;
+
+        CREATE INDEX release_document_by_cik ON release_document (cik, accepted_at);
+
+        CREATE TABLE release_day (
+            day            TEXT    NOT NULL,
+            source         TEXT    NOT NULL,
+            posted         INTEGER NOT NULL,
+            requests       INTEGER NOT NULL,
+            announcements  INTEGER NOT NULL,
+            results        INTEGER NOT NULL,
+            stored         INTEGER NOT NULL,
+            read_at        TEXT    NOT NULL,
+            run_id         TEXT    NOT NULL,
+            PRIMARY KEY (day, source)
+        ) STRICT;
+    ";
 
     // From 20.1: the reading versions the local run reads under, a row a version written by hand, each pinning the
     // model, its file by its path under LM Studio's models folder and the file's hash, size and modified instant, the

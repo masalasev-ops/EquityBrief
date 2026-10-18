@@ -90,6 +90,8 @@ public enum Store
     InsiderRead,
     SecTicker,
     ReadingPin,
+    ReleaseDocument,
+    ReleaseDay,
     LedgerSummary,
     LedgerReading,
     LoopRun,

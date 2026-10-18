@@ -377,9 +377,10 @@ public partial class ArchitectureConformance
         // catalogue and matrix rows, their two stores, section 17's row, section 18's and 15.9's region, and 1340 from the
         // 17.3 correction of 2026-10-16, the SEC tickers step's catalogue and matrix rows and its store, and 1349 from
         // 20.1, the local run's catalogue and matrix rows, the reading pins' store, section 17's row, section 18's four and
-        // the Run page's local model region.
+        // the Run page's local model region, and 1355 from 20.2, the release fetch's catalogue and matrix rows, its two
+        // stores, section 17's row and section 18's.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1349),
+            (789, 853, 6, 4, 855, 876, 1355),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

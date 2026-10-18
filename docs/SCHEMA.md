@@ -116,6 +116,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `insider_read` | InsiderTrades | none | none |
 | `sec_ticker` | SecTickers | none | none |
 | `reading_pin` | LocalRun | none | none |
+| `release_document` | ReleaseFetch | none | none |
+| `release_day` | ReleaseFetch | ReleaseFetch | none |
 | `taken_trade` | ReadApi | ReadApi, TakenFollower | ReadApi |
 | `taken_record` | TakenFollower | none | TakenFollower |
 | `dividend_reading` | QuarterFetcher | none | none |
@@ -1993,6 +1995,46 @@ Primary key: `id`.
 
 Insert only, by the local run's pin by hand and never by the night or a slot; the newest row is the pin every run compares before it reads, and a run whose model, file or instruction differs from it refuses, as does an answer from a model or runtime it does not name (see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin).
 
+### release_document
+Grain: one row per member's results release, from 20.2, the EX-99 exhibit of an 8-K or 8-K/A carrying item 2.02.
+
+| Column | Type | Notes |
+|---|---|---|
+| `accession` | TEXT | the filing's accession number |
+| `cik` | TEXT | the filer's CIK padded to ten digits |
+| `form` | TEXT | `8-K` or `8-K/A` |
+| `filed` | TEXT | the day the SEC dated the filing, `YYYY-MM-DD` |
+| `accepted_at` | TEXT | UTC instant the SEC accepted the filing, to the second |
+| `exhibit` | TEXT | the exhibit's file name on the filing's index page |
+| `url` | TEXT | the exhibit's own address on the archive |
+| `text_gzip` | BLOB | the exhibit's text as the archive's reader makes it, gzip-compressed |
+| `text_sha256` | TEXT | the SHA-256 of the text's UTF-8 bytes, lower-case hex |
+| `text_length` | INTEGER | the text's length in characters |
+| `run_id` | TEXT | the run that stored it, a slot's or the history's |
+
+Primary key: `accession`. Index `release_document_by_cik` on (`cik`, `accepted_at`), the order a reader takes a filer's releases in.
+
+Insert only, by the release fetch in the local run's slots and its history by hand and never by the night; a release is stored once and never asked for again, and a reading reads its text back to the hash it was stored with (see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it).
+
+### release_day
+Grain: one row per day and source the release fetch read, from 20.2.
+
+| Column | Type | Notes |
+|---|---|---|
+| `day` | TEXT | the day read, `YYYY-MM-DD`: a day of the archive's daily index, or the New York day of a late slot's read of the current filings feed |
+| `source` | TEXT | `daily index` or `current filings` |
+| `posted` | INTEGER | 1 where the archive posted the day's index or the feed answered, 0 where it did not |
+| `requests` | INTEGER | the SEC's documents asked for the day |
+| `announcements` | INTEGER | the members' 8-Ks and 8-K/As it listed |
+| `results` | INTEGER | those carrying item 2.02 |
+| `stored` | INTEGER | the releases it stored |
+| `read_at` | TEXT | UTC instant: the day read, or for the current feed the instant its late slot started |
+| `run_id` | TEXT | the run that read it |
+
+Primary key: `day`, `source`.
+
+Insert and update by the release fetch alone, a day's row written again where it is read again; the early slot reads on from the newest day of the index it read, and the late slot reads the current feed back to the newest instant a late slot started (see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it).
+
 ### taken_trade
 Grain: one row per trade the operator took from a pick's card.
 
@@ -2675,7 +2717,9 @@ Primary key: `run_id`, `stage`.
 
 **The store's copy writes two rows of its own, one as it starts and one as it ends, and names its folder relative to the data root.** From the operator's ruling of 2026-10-02 the copy the night starts after its labeller writes under `backup-` and its instant. As it starts, before it waits for anything, it writes a row with the stage `store-backup-started`, its start at both ends and the outcome `started`, its `detail` JSON saying whether it waits for the labeller; a start with no ending row of its run is a copy ended before it finished. As it ends it writes a row with the stage `store-backup`: `ok` where a copy was made, opened and read, its `detail` JSON carrying the copy's name, the folder relative to the data root with forward separators, or its name alone where it lies on a volume no relative path reaches, its bytes, the newest session and the bars it read back, the copies kept, those removed, any kept copy that did not open and read, the copies the newest ending row before it kept that were gone from the folder when it began, removed by no copy, and what it waited for; `failed` where it made none or the new copy did not open and read, with why. The copies the ending rows name, made or refused, are the store's own, and the only ones a copy counts or removes (see: A store's copy counts and removes only the copies its own rows name, and a test or a rehearsal names a copies' folder of its own). The night's own step writes one row under the night's run with the stage `backup`, saying the copy was started or why it was not (see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends).
 
-**The local run writes one row a run under a run of its own.** From 20.1 each run of the local run, a slot, a pin written by hand or the stored releases read twice, writes one row under `local-run-` with its start, its kind and a short tag, with the stage `local-run`, once any lock it waits on is let go: `model_calls` the local model's calls the run made, no network request and a `spend` of `0`, and `detail` JSON naming its kind, its outcome and why, the documents it fetched and read, its refused answers by cause, its median and slowest seconds a call, the pin it read by its id, model, the start of its file's hash, its runtime and its prompt's version, how it checked the model's file and in how many seconds where it hashed it whole, and for the twice-read how many releases it compared and how many were answered alike. It carries no path of any file, and the Run page draws the newest ten (see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin).
+**The local run writes one row a run under a run of its own.** From 20.1 each run of the local run, a slot, a pin written by hand or the stored releases read twice, writes one row under `local-run-` with its start, its kind and a short tag, with the stage `local-run`, once any lock it waits on is let go: `model_calls` the local model's calls the run made, `network_requests` the SEC's documents a slot's release fetch asked for, from 20.2, and none for a run that fetches nothing, `rows_written` the releases the fetch stored with the rows the run wrote, and a `spend` of `0`, and `detail` JSON naming its kind, its outcome and why, the releases it fetched and the SEC's requests for them, the documents it read, its refused answers by cause, its median and slowest seconds a call, the pin it read by its id, model, the start of its file's hash, its runtime and its prompt's version, how it checked the model's file and in how many seconds where it hashed it whole, and for the twice-read how many releases it compared and how many were answered alike. A slot whose fetch the SEC refused comes to `fetch refused` with the refusal as why. It carries no path of any file, and the Run page draws the newest ten (see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin).
+
+**The release history writes one row a run.** From 20.2 each run of `releases --history` writes one row under `release-history-` with its start, with the stage `release-history`, once any lock it waits on is let go: `rows_written` the releases it stored, `network_requests` the SEC's documents it asked for, no model call and a `spend` of `0`; its `outcome` `ok`, `stopped` where it stopped at the instant it was given, or `refused` where the SEC refused it; and `detail` JSON naming the ledger filers its span holds and those it read whole, the releases inside their spans and those it stored, the requests, why it stopped and the filers the archive holds no submissions for (see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it).
 
 **A drain that stops on an error writes one row of its own.** From the 9.2 correction of 2026-10-03 an error escaping the drain's put-back or its queue is written by `RequestDrain` under `drain-` and the instant the drain started, with the stage `drain` and the outcome `failed`, `started_at` the drain's start and `ended_at` the instant it stopped, nothing counted, nothing spent and `detail` the error's type and words with no path a machine roots. The queue page reads the newest such row while no row of a pass's run starts after it, and the run page's checklist names each such row on the night it fell on (see: A drain that stops on an error writes a row of its own, and the queue page states it until a pass starts after it).
 

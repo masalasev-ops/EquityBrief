@@ -1,0 +1,15 @@
+{
+ "stage": "release-fetch",
+ "derivation": "derived",
+ "derivedFrom": "the fixture's four captured daily indexes, 2026-09-01 to 2026-09-04, read by hand for the 8-K and 8-K/A lines of the four members' filers, read off their captured fundamentals: Apple 0000320193, Keysight 0001601046, Microsoft 0000789019 and Netflix 0001065280. Two lines: Apple's 8-K/A of 2026-09-01, 0001140361-26-035325, whose captured page states item 5.02 alone, and Microsoft's 8-K of 2026-09-02, 0001193125-26-380280, whose captured page states items 7.01 and 9.01. Neither carries item 2.02, so no exhibit is asked and no release stored. The slot read at the night's clock, 2026-09-08 in New York, reads the weekdays from the week before through the day before its own, 2026-09-01 to 2026-09-07; 2026-09-07 was Labor Day, the archive posted no index and none is captured, and as the newest day wanted it is read as not yet posted, so the slot stops there and records no row for it. A day read costs one request for its index and one for each member announcement's page, seven requests in all with the unposted day's.",
+ "tables": ["release_day"],
+ "source": "daily index",
+ "days": [
+  {"day": "2026-09-01", "posted": 1, "requests": 2, "announcements": 1, "results": 0, "stored": 0},
+  {"day": "2026-09-02", "posted": 1, "requests": 2, "announcements": 1, "results": 0, "stored": 0},
+  {"day": "2026-09-03", "posted": 1, "requests": 1, "announcements": 0, "results": 0, "stored": 0},
+  {"day": "2026-09-04", "posted": 1, "requests": 1, "announcements": 0, "results": 0, "stored": 0}
+ ],
+ "unread": "2026-09-07",
+ "documents": 7
+}

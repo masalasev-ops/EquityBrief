@@ -56,6 +56,13 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "Reading pins"),
     ];
 
+    // 20.2's two: the members' results releases and the days the fetch read for them.
+    internal static string[] ReleaseStoreRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Release documents"),
+        CheckReach.Key(Scope.StoresTable, "Release days"),
+    ];
+
     internal static CheckReach Reach => new(
         "schema-columns",
         ["docs/SCHEMA.md"],
@@ -158,6 +165,9 @@ public class SchemaColumns
 
             // 20.1, the reading pins.
             .. ReadingPinStoreRows,
+
+            // 20.2, the results releases and their days.
+            .. ReleaseStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

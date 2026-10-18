@@ -66,6 +66,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Local run"),
     ];
 
+    // 20.2's one: the release fetch.
+    internal static string[] ReleaseFetchRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Release fetch"),
+        CheckReach.Key(Scope.MatrixTable, "Release fetch"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -91,6 +98,9 @@ public partial class ComponentAccess
 
             // 20.1, the local run.
             .. LocalRunRows,
+
+            // 20.2, the release fetch.
+            .. ReleaseFetchRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

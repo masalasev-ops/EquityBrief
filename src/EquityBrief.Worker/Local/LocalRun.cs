@@ -31,7 +31,8 @@ public sealed record LocalRunOutcome(
     string? FileCheck,
     double? HashSeconds,
     int Compared = 0,
-    int Identical = 0);
+    int Identical = 0,
+    int Requests = 0);
 
 // The model's file as the local run reads it off the disk: its path under LM Studio's models folder, which is what the
 // pin and the run's row hold, its size and its last-modified instant.
@@ -153,7 +154,8 @@ public sealed class LocalRun(
     IClock clock,
     string databaseFile,
     string dataRoot,
-    Func<TimeSpan, CancellationToken, Task>? pause = null) : IComponent
+    Func<TimeSpan, CancellationToken, Task>? pause = null,
+    ReleaseFetch? fetch = null) : IComponent
 {
     public static ComponentAccess Access => new(
         Stores:
@@ -181,6 +183,7 @@ public sealed class LocalRun(
     public const string NotSet = "not set";
     public const string LimitReached = "limit reached";
     public const string LockHeld = "lock held";
+    public const string FetchRefused = "fetch refused";
 
     // How long a run waits between looks at a held lock.
     public static TimeSpan Poll { get; } = TimeSpan.FromSeconds(30);
@@ -223,7 +226,7 @@ public sealed class LocalRun(
 
     const string AppendRun = @"
         INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail)
-        VALUES ($run_id, $stage, $started_at, $ended_at, $outcome, $rows_written, $model_calls, 0, '0', $detail);
+        VALUES ($run_id, $stage, $started_at, $ended_at, $outcome, $rows_written, $model_calls, $network_requests, '0', $detail);
     ";
 
     // A run's id: the stage, the instant it started, its kind and six hex characters of its own, so two runs started in
@@ -234,8 +237,8 @@ public sealed class LocalRun(
     // The run this instance is running, set as each form starts.
     string runId = string.Empty;
 
-    // A slot: the newest pin checked before anything is read, and from 20.2 the releases filed since the last day read
-    // fetched and from 20.3 read. A slot asks nothing past its own last instant.
+    // A slot: from 20.2 the releases its members filed since the last day read fetched and stored, then the newest pin
+    // checked before anything is read, and from 20.3 the releases read. A slot asks nothing past its own last instant.
     public async Task<LocalRunOutcome> SlotAsync(string slot, TextWriter output, CancellationToken cancellation = default)
     {
         var started = clock.UtcNow;
@@ -251,20 +254,32 @@ public sealed class LocalRun(
             return await EndAsync(started, kind, Ended(kind, LockHeld, "another local process held the local model's lock to the slot's last instant"), limit, output, cancellation);
         }
 
+        var fetched = fetch is null ? null : await fetch.SlotAsync(slot, runId, limit, cancellation);
+        var (stored, requests) = (fetched?.Stored ?? 0, fetched?.Documents ?? 0);
         var ready = await ReadyAsync(started, cancellation);
 
         if (ready.Refusal is { } refused)
         {
-            return await EndAsync(started, kind, refused with { Kind = kind }, limit, output, cancellation);
+            return await EndAsync(started, kind, refused with { Kind = kind, Fetched = stored, Requests = requests }, limit, output, cancellation);
         }
 
-        return await EndAsync(
-            started,
-            kind,
-            new LocalRunOutcome(kind, NothingToRead, "no stored release is waiting for a reading under the pin", 0, 0, NoRefusals, null, null, ready.Pin, ready.Check, ready.HashSeconds),
-            limit,
-            output,
-            cancellation);
+        var outcome = fetched is null
+            ? new LocalRunOutcome(kind, NothingToRead, "no stored release is waiting for a reading under the pin", 0, 0, NoRefusals, null, null, ready.Pin, ready.Check, ready.HashSeconds)
+            : new LocalRunOutcome(
+                kind,
+                fetched.Refusal is null ? Finished : FetchRefused,
+                fetched.Refusal ?? fetched.Stopped,
+                stored,
+                0,
+                NoRefusals,
+                null,
+                null,
+                ready.Pin,
+                ready.Check,
+                ready.HashSeconds,
+                Requests: requests);
+
+        return await EndAsync(started, kind, outcome, limit, output, cancellation);
     }
 
     // A new reading version: the model's file hashed whole, the runtime read off a probe's answer and the
@@ -608,8 +623,9 @@ public sealed class LocalRun(
         command.Parameters.AddWithValue("$started_at", Instant(started));
         command.Parameters.AddWithValue("$ended_at", Instant(clock.UtcNow));
         command.Parameters.AddWithValue("$outcome", ended.Outcome);
-        command.Parameters.AddWithValue("$rows_written", rowsWritten);
+        command.Parameters.AddWithValue("$rows_written", rowsWritten + ended.Fetched);
         command.Parameters.AddWithValue("$model_calls", feed.Requests);
+        command.Parameters.AddWithValue("$network_requests", ended.Requests);
         command.Parameters.AddWithValue("$detail", Detail(ended));
 
         await command.ExecuteNonQueryAsync(cancellation);
@@ -633,6 +649,7 @@ public sealed class LocalRun(
             outcome = outcome.Outcome,
             why = outcome.Why,
             fetched = outcome.Fetched,
+            requests = outcome.Requests,
             read = outcome.Read,
             refused = outcome.Refused,
             medianSeconds = outcome.MedianSeconds,

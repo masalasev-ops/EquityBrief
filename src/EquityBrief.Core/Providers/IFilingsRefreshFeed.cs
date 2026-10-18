@@ -39,3 +39,26 @@ public interface IInsiderDataSetFeed
 
     Task<byte[]?> QuarterAsync(string path, CancellationToken cancellation = default);
 }
+
+// What the local run's release fetch asks the archive for, from 20.2: a page of the current filings feed of 8-Ks, a
+// day's index, one filing's own index page, the exhibit it names, and a filer's submissions with a further page of
+// them. Free, keyless and from the SEC, at its pace and under its contact as every archive request is; a document the
+// archive does not hold is answered with none, and a refusal throws.
+// see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it
+public interface IReleaseArchiveFeed
+{
+    // The documents asked for, each one request.
+    int Documents { get; }
+
+    Task<string?> CurrentAsync(int start, CancellationToken cancellation = default);
+
+    Task<string?> DailyIndexAsync(DateOnly day, CancellationToken cancellation = default);
+
+    Task<string?> FilingPageAsync(string cik, string accession, CancellationToken cancellation = default);
+
+    Task<string?> ExhibitAsync(string cik, string accession, string file, CancellationToken cancellation = default);
+
+    Task<string?> SubmissionsAsync(string cik, CancellationToken cancellation = default);
+
+    Task<string?> SubmissionsPageAsync(string name, CancellationToken cancellation = default);
+}

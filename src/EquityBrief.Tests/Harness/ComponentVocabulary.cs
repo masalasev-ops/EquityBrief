@@ -67,7 +67,8 @@ internal static class ComponentVocabulary
     // for the name page as it works out the chart's averages. From 19.10 the forward returns column holds each stored
     // trade's fill at the next session's open beside the trades, each a record of what became of one. From 20.1 the
     // research and theme column holds the reading pins beside the sections a model wrote, each the version a local
-    // model's readings are read under.
+    // model's readings are read under. From 20.2 the sources column holds the members' results releases and the days the
+    // release fetch read for them beside the source documents, each a document the SEC filed and kept as its text.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
@@ -81,7 +82,7 @@ internal static class ComponentVocabulary
         ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk, DataStore.Company, DataStore.EstimateReading, DataStore.DividendReading, DataStore.EstimateTrend, DataStore.DividendEvent, DataStore.FiledFact, DataStore.FiledFactPull, DataStore.FilingDay, DataStore.InsiderTrade, DataStore.InsiderRead, DataStore.SecTicker]),
         ("News", [DataStore.NewsPulse, DataStore.NewsArticle, DataStore.NewsLabel]),
         ("Research and theme", [DataStore.ResearchSection, DataStore.ThemeSection, DataStore.ReadingPin]),
-        ("Sources", [DataStore.SourceDocument]),
+        ("Sources", [DataStore.SourceDocument, DataStore.ReleaseDocument, DataStore.ReleaseDay]),
         ("Candidate register", [DataStore.CandidateRegister]),
         ("Rule versions", [DataStore.RuleVersion]),
         ("Version scores and blocks", [DataStore.VersionScore, DataStore.VersionBlock]),
@@ -259,6 +260,8 @@ internal static class ComponentVocabulary
         ["insider reads"] = DataStore.InsiderRead,
         ["SEC tickers"] = DataStore.SecTicker,
         ["reading pins"] = DataStore.ReadingPin,
+        ["release documents"] = DataStore.ReleaseDocument,
+        ["release days"] = DataStore.ReleaseDay,
         ["estimate readings"] = DataStore.EstimateReading,
         ["fundamental readings"] = DataStore.FundamentalReading,
         ["member readings"] = DataStore.MemberReading,
