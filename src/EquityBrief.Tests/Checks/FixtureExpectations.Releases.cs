@@ -126,16 +126,18 @@ public partial class FixtureExpectations
         var feed = RecordedReleaseArchiveFeed.Of(
             days: new Dictionary<DateOnly, string> { [new DateOnly(2026, 8, 18)] = day },
             pages: new Dictionary<string, string> { [KeysAugust] = Captured("filing-types-KEYS-8k.htm"), [MicrosoftSeptember] = Captured("filing-page-" + MicrosoftSeptember + ".htm") },
-            exhibits: new Dictionary<string, string> { [KeysAugust] = Captured("release-KEYS.htm") });
+            exhibits: new Dictionary<string, string> { [KeysAugust] = Captured("release-KEYS.htm") },
+            submissions: new Dictionary<string, string> { [KeysCik] = Captured("filings-KEYS.json") });
         var clock = FixedClock.At(Utc(2026, 8, 19, 12, 5, 0), SessionZones.UnitedStates);
 
         var outcome = await new ReleaseFetch(feed, clock, store.DatabaseFile, store.Root, NoWait).SlotAsync(LocalSlots.Early, "early-constructed", Utc(2026, 8, 19, 21, 30, 0));
 
-        // The day's index, Keysight's page and its exhibit, and Microsoft's page, whose items carry no 2.02, so its exhibit
-        // is never asked; the 10-Q is no announcement, GoPro no member and the member OLD no filer the night's companies
-        // name, so none of them is asked for.
-        Assert.Equal(["2026-08-18", KeysAugust, KeysAugust + "/" + KeysExhibit, MicrosoftSeptember], feed.Asked);
-        Assert.Equal((1, 2, 1, 1, 4, (string?)null), (outcome.Days, outcome.Announcements, outcome.Results, outcome.Stored, outcome.Documents, outcome.Refusal));
+        // The day's index, Keysight's page, its exhibit and from 20.3 its submissions for its names, and Microsoft's page,
+        // whose items carry no 2.02, so its exhibit is never asked; the 10-Q is no announcement, GoPro no member and the
+        // member OLD no filer the night's companies name, so none of them is asked for.
+        Assert.Equal(["2026-08-18", KeysAugust, KeysAugust + "/" + KeysExhibit, KeysCik, MicrosoftSeptember], feed.Asked);
+        Assert.Equal((1, 2, 1, 1, 5, (string?)null), (outcome.Days, outcome.Announcements, outcome.Results, outcome.Stored, outcome.Documents, outcome.Refusal));
+        Assert.Equal([$"{KeysCik}|[\"Keysight Technologies, Inc.\"]|[\"KEYS\"]|early-constructed"], Query(store, "SELECT cik, names, tickers, run_id FROM release_filer;"));
 
         // The release as kept: its instant from the page's 16:09:53 in New York, its exhibit, its address and its text,
         // compressed, back to the hash of the archive's reader's text.
@@ -146,8 +148,8 @@ public partial class FixtureExpectations
             Query(store, "SELECT accession, cik, form, filed, accepted_at, exhibit, url, text_sha256, text_length, run_id FROM release_document;"));
         Assert.Equal(text, ResultsReleases.Decompressed(Blob(store, "SELECT text_gzip FROM release_document;")));
 
-        // The day's row: posted, four requests, two members' announcements, one carrying results, one stored.
-        Assert.Equal(["2026-08-18|1|4|2|1|1"], Query(store, "SELECT day, posted, requests, announcements, results, stored FROM release_day WHERE day = '2026-08-18';"));
+        // The day's row: posted, five requests, two members' announcements, one carrying results, one stored.
+        Assert.Equal(["2026-08-18|1|5|2|1|1"], Query(store, "SELECT day, posted, requests, announcements, results, stored FROM release_day WHERE day = '2026-08-18';"));
 
         // The next day's slot reads 2026-08-19 alone, which the archive has not posted yet, and asks nothing else.
         var next = RecordedReleaseArchiveFeed.Of();
@@ -176,22 +178,24 @@ public partial class FixtureExpectations
         var feed = RecordedReleaseArchiveFeed.Of(
             current: [Captured("current-8k-2026-10-16.atom")],
             pages: new Dictionary<string, string> { ["0001500435-26-000064"] = Captured("filing-types-KEYS-8k.htm"), ["0001539497-26-002705"] = Captured("filing-types-KEYS-8k.htm") },
-            exhibits: new Dictionary<string, string> { ["0001500435-26-000064"] = Captured("release-KEYS.htm"), ["0001539497-26-002705"] = Captured("release-KEYS.htm") });
+            exhibits: new Dictionary<string, string> { ["0001500435-26-000064"] = Captured("release-KEYS.htm"), ["0001539497-26-002705"] = Captured("release-KEYS.htm") },
+            submissions: LateFilers);
         var clock = FixedClock.At(Utc(2026, 10, 16, 21, 40, 0), SessionZones.UnitedStates);
 
         var outcome = await new ReleaseFetch(feed, clock, store.DatabaseFile, store.Root, NoWait).SlotAsync(LocalSlots.Late, "late-constructed", Utc(2026, 10, 16, 22, 50, 0));
 
         Assert.Equal(
-            ["0", "0001500435-26-000064", "0001500435-26-000064/" + KeysExhibit, "0001539497-26-002705", "0001539497-26-002705/" + KeysExhibit, "100"],
+            ["0", "0001500435-26-000064", "0001500435-26-000064/" + KeysExhibit, "0001500435", "0001539497-26-002705", "0001539497-26-002705/" + KeysExhibit, "0001512228", "100"],
             feed.Asked);
         Assert.Equal((1, 5, 2, 2), (outcome.Pages, outcome.Announcements, outcome.Results, outcome.Stored));
+        Assert.Equal(["0001500435|[\"GoPro, Inc.\"]", "0001512228|[\"NioCorp Developments Ltd.\"]"], Query(store, "SELECT cik, names FROM release_filer ORDER BY cik;"));
 
         // Each kept under the instant the feed stated, with its offset taken off, and the day's row under the instant the
         // slot started.
         Assert.Equal(
             ["0001500435-26-000064|2026-10-16T21:30:16Z", "0001539497-26-002705|2026-10-16T21:15:39Z"],
             Query(store, "SELECT accession, accepted_at FROM release_document ORDER BY accepted_at DESC;"));
-        Assert.Equal(["2026-10-16|current filings|1|6|5|2|2|2026-10-16T21:40:00Z"], Query(store, "SELECT day, source, posted, requests, announcements, results, stored, read_at FROM release_day;"));
+        Assert.Equal(["2026-10-16|current filings|1|8|5|2|2|2026-10-16T21:40:00Z"], Query(store, "SELECT day, source, posted, requests, announcements, results, stored, read_at FROM release_day;"));
 
         // The next morning's early slot, reading 2026-10-16's index alone, finds GoPro's results the late slot stored and
         // asks nothing past the index: counted among the day's results, stored by none.
@@ -216,10 +220,11 @@ public partial class FixtureExpectations
         var since = RecordedReleaseArchiveFeed.Of(
             current: [Captured("current-8k-2026-10-16.atom")],
             pages: new Dictionary<string, string> { ["0001500435-26-000064"] = Captured("filing-types-KEYS-8k.htm"), ["0001539497-26-002705"] = Captured("filing-types-KEYS-8k.htm") },
-            exhibits: new Dictionary<string, string> { ["0001500435-26-000064"] = Captured("release-KEYS.htm"), ["0001539497-26-002705"] = Captured("release-KEYS.htm") });
+            exhibits: new Dictionary<string, string> { ["0001500435-26-000064"] = Captured("release-KEYS.htm"), ["0001539497-26-002705"] = Captured("release-KEYS.htm") },
+            submissions: LateFilers);
         var read = await new ReleaseFetch(since, clock, again.DatabaseFile, again.Root, NoWait).SlotAsync(LocalSlots.Late, "late-again", Utc(2026, 10, 16, 22, 50, 0));
 
-        Assert.Equal(["0", "0001500435-26-000064", "0001500435-26-000064/" + KeysExhibit, "0001539497-26-002705", "0001539497-26-002705/" + KeysExhibit], since.Asked);
+        Assert.Equal(["0", "0001500435-26-000064", "0001500435-26-000064/" + KeysExhibit, "0001500435", "0001539497-26-002705", "0001539497-26-002705/" + KeysExhibit, "0001512228"], since.Asked);
         Assert.Equal((1, 2, 2, 2), (read.Pages, read.Announcements, read.Results, read.Stored));
     }
 
@@ -366,16 +371,20 @@ public partial class FixtureExpectations
         var feed = RecordedReleaseArchiveFeed.Of(
             days: new Dictionary<DateOnly, string> { [new DateOnly(2026, 8, 18)] = DayIndex("1601046|KEYSIGHT TECHNOLOGIES, INC.|8-K|20260818|edgar/data/1601046/" + KeysAugust + ".txt") },
             pages: new Dictionary<string, string> { [KeysAugust] = Captured("filing-types-KEYS-8k.htm") },
-            exhibits: new Dictionary<string, string> { [KeysAugust] = Captured("release-KEYS.htm") });
-        var untouched = AnsweringRuntime(loaded: true, chat: _ => throw new InvalidOperationException("no reading is asked"));
+            exhibits: new Dictionary<string, string> { [KeysAugust] = Captured("release-KEYS.htm") },
+            submissions: new Dictionary<string, string> { [KeysCik] = Captured("filings-KEYS.json") });
+        var answering = AnsweringRuntime(loaded: true, chat: _ => Runtime("local-reading-KEYS-anonymised.json"));
 
-        var slot = await new LocalRun(ReadingFeedOver(untouched, settings), settings, clock, store.DatabaseFile, store.Root, NoWait, new ReleaseFetch(feed, clock, store.DatabaseFile, store.Root, NoWait))
+        var slot = await new LocalRun(ReadingFeedOver(answering, settings), settings, clock, store.DatabaseFile, store.Root, NoWait, new ReleaseFetch(feed, clock, store.DatabaseFile, store.Root, NoWait))
             .SlotAsync(LocalSlots.Early, TextWriter.Null);
 
-        // Finished, one release stored from three requests, and the pin checked after the fetch, no reading asked.
-        Assert.Equal((LocalRun.Finished, 1, 3), (slot.Outcome, slot.Fetched, slot.Requests));
-        Assert.DoesNotContain(untouched.Asked, asked => asked.Contains("/chat/completions", StringComparison.Ordinal));
-        Assert.Equal(["finished|1|3"], Query(store, $"SELECT outcome, rows_written, network_requests FROM run_log WHERE stage = '{LocalRun.Stage}' AND json_extract(detail, '$.kind') = '{LocalRun.EarlySlot}';"));
+        // Finished: one release stored from four requests, its filer's submissions among them, the pin checked after the
+        // fetch, and from 20.3 the release read, its row counting the release and its reading.
+        Assert.Equal((LocalRun.Finished, 1, 4, 1), (slot.Outcome, slot.Fetched, slot.Requests, slot.Read));
+        Assert.Single(answering.Asked, asked => asked.Contains("/chat/completions", StringComparison.Ordinal));
+        Assert.Equal(["finished|2|4"], Query(store, $"SELECT outcome, rows_written, network_requests FROM run_log WHERE stage = '{LocalRun.Stage}' AND json_extract(detail, '$.kind') = '{LocalRun.EarlySlot}';"));
+
+        var untouched = AnsweringRuntime(loaded: true, chat: _ => throw new InvalidOperationException("no reading is asked"));
 
         // An archive refusing the next day's index: the slot's row says the fetch was refused and why, storing nothing more.
         var thursday = FixedClock.At(Utc(2026, 8, 20, 12, 5, 0), SessionZones.UnitedStates);
@@ -387,6 +396,14 @@ public partial class FixtureExpectations
     }
 
     // ---- the release fetch's own helpers ----
+
+    // GoPro's and NioCorp's submissions as the late slot's names read them, constructed: each filer's name and ticker
+    // alone, as the SEC's submissions state them.
+    static readonly Dictionary<string, string> LateFilers = new(StringComparer.Ordinal)
+    {
+        ["0001500435"] = """{"cik":"1500435","name":"GoPro, Inc.","tickers":["GPRO"]}""",
+        ["0001512228"] = """{"cik":"1512228","name":"NioCorp Developments Ltd.","tickers":["NB"]}""",
+    };
 
     // A migrated store whose members are Keysight and Microsoft and any others named, each with its filer.
     static TemporaryStore ReleaseStore(params (string Ticker, string Cik)[] others)

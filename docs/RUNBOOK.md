@@ -1077,6 +1077,29 @@ dotnet run --project src/EquityBrief.Worker -- releases --history --from 2019-01
 
 It reads each ledger filer's submissions from the day `--from` names, with a further page where its filings reach the twelve months before the filer's first session in the ledger, and stores every release from the newest before that session through its last session, at ten a second under the archive's contact. 20.0 measured about 38,400 releases over 1,977 filers, about 79,000 requests and 2.2 hours at that pace, and about 0.39 GB of store growth. `--until` takes your own time in New York as `HH:mm` and stops cleanly at the first instant it comes round, printing that instant in UTC; a run stopped there, or on a refusal, goes on from where it stopped when it is run again, since a release stored once is never asked for again and a filer's submissions are read again whole. It pauses while the night holds its lock or would reach its window, and while a slot holds the local model's lock, and writes one row on the run log under `release-history` with the releases it stored, its requests and why it stopped. It calls no model and asks nothing of the provider, so it needs neither LM Studio nor the GPU, and it is refused without the archive's contact.
 
+**Reading the releases.** From 20.3 a slot, after its fetch and its pin's check, reads the releases the SEC accepted in the seven days before its day that no reading under the newest pin holds, newest first, each with its names and dates removed, and keeps each one's four words, or the cause it was refused for, in `release_reading` (see: A release is read with every name and date in it replaced by a neutral word, and product names kept). The anonymiser's version is part of the instruction's, so once 20.3 merges the newest pin no longer matches and every slot refuses naming the prompt until a new pin is written; the slots go on fetching meanwhile. After the merge, each from main's clean copy outside the night, in this order:
+
+```
+tools/migrate.ps1
+dotnet run --project src/EquityBrief.Worker -- releases --names
+dotnet run --project src/EquityBrief.Worker -- releases --reference --out data/release-reference
+tools/localrun.ps1 --pin
+dotnet run --project src/EquityBrief.Worker -- releases --read --history --until 07:00
+```
+
+`--names` reads each stored release's filer's names, now and before, and its tickers off its submissions, one request a filer at the archive's pace, writing `release_filer` and one row under `release-names`; `--again` reads every filer again. `--reference` writes the reference set's 100 releases into the folder named, each as `<accession>.txt` in the text the model reads, with `sample.txt` listing them, calling no model and writing no row; the build session labels them from those files and commits the labels as `fixtures/release-reference-2026/labels.json` with their manifest before `--pin` is run, so no reading of a reference release can come before its label. The history read takes every stored release no reading under the newest pin holds, oldest first; it keeps clear of each slot from three minutes before it until the slot's row is written or half an hour has passed, and of the night's window, stops cleanly at `--until`, your own time in New York, goes on from where it stopped when run again, and marks the pin's history complete once no stored release is left unread, which 20.4's variant waits for. It needs LM Studio running and holding the model, and loads it where it is not loaded. 20.0 measured 3.48 seconds a release, so the history's 38,400 releases take about 37 hours of the GPU; run from after the night's copy, about 21:30 in New York, to `--until 07:00`, a weeknight gives about nine and a half hours, about four nights, and a weekend day the hours between its slots.
+
+Then the three probes, each over 200 releases drawn at the seed, and the accuracy report, which writes nothing:
+
+```
+dotnet run --project src/EquityBrief.Worker -- releases --probe twice
+dotnet run --project src/EquityBrief.Worker -- releases --probe reidentify
+dotnet run --project src/EquityBrief.Worker -- releases --probe distract
+dotnet run --project src/EquityBrief.Worker -- releases --accuracy --labels fixtures/release-reference-2026/labels.json
+```
+
+`twice` reads each release twice and `distract` once with its names removed and once with them in, about 25 minutes each, and `reidentify` asks which company issued each text, about ten; each keeps its answers in `release_probe` and goes on from the releases it has not probed. `--accuracy` prints each answer's agreement with every reference before the model's cutoff and after it, the probes' shares and each index's tone variant shares, and is what the record entry after the history read states.
+
 The local profile carries three settings for it, under the worker's `LocalModel` profiles: `ModelFile`, the model's file by its path under LM Studio's models folder; `ModelsFolder`, empty for `.lmstudio/models` under the machine's own home folder; and `KnowledgeCutoff`, the model's cutoff from its maker's card as a date, 2025-01-31 for Gemma 4, which every figure split before and after the cutoff reads.
 
 **Scheduling it.** Every day at 12:05 and 21:40 UTC, each start boundary pinned in UTC as the night's is, its output kept in `data/localrun.log`, two tasks since each slot is a form of its own:

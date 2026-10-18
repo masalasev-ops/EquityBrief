@@ -1919,38 +1919,29 @@ static async Task<int> LocalRunVerb(string[] args)
     return outcome.Outcome is LocalRun.Finished or LocalRun.NothingToRead or LocalRun.PinUnchanged ? 0 : 1;
 }
 
-// The results releases' history by hand, from 20.2: every ledger filer's releases from the one before its first session
-// in the ledger from the day named through its last, those not yet stored, stopping cleanly at '--until', a time in New
-// York, and going on from where an earlier run stopped. Requests of the SEC alone, at its pace under its contact.
+// The results releases by hand. From 20.2 '--history --from <yyyy-MM-dd>': every ledger filer's releases from the one
+// before its first session in the ledger from the day named through its last, those not yet stored, stopping cleanly at
+// '--until', a time in New York, and going on from where an earlier run stopped, requests of the SEC alone at its pace
+// under its contact. From 20.3 '--names', with '--again', each filer's names from its submissions; '--read --history'
+// with '--until', every release no reading under the newest pin holds, oldest first; '--probe <kind>', one probe over
+// its sample; '--reference --out <folder>', the reference set's releases written out as the model reads them; and
+// '--accuracy', with '--labels <file>', every accuracy figure printed and nothing written.
 // see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it
+// see: A release is read with every name and date in it replaced by a neutral word, and product names kept
 static async Task<int> ReleasesVerb(string[] args)
 {
     var configuration = Configuration();
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
     IClock clock = SystemClock.ForUnitedStatesSessions();
 
-    if (!args.Contains("--history", StringComparer.Ordinal)
-        || Argument(args, "--from") is not { } fromText
-        || !DateOnly.TryParseExact(fromText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var from))
+    var forms = new[] { "--history", "--names", "--probe", "--reference", "--accuracy" }.Count(form => args.Contains(form, StringComparer.Ordinal));
+    var reading = args.Contains("--read", StringComparer.Ordinal);
+
+    if (forms != 1 || reading && !args.Contains("--history", StringComparer.Ordinal))
     {
-        Console.Error.WriteLine("releases: name '--history --from <yyyy-MM-dd>', with '--until <HH:mm>' in New York's time where the run should stop.");
+        Console.Error.WriteLine("releases: name one form, '--history --from <yyyy-MM-dd>', '--names', '--read --history', '--probe <kind>', '--reference --out <folder>' or '--accuracy', '--until <HH:mm>' in New York's time stopping a history.");
 
         return 1;
-    }
-
-    DateTimeOffset? until = null;
-
-    if (Argument(args, "--until") is { } untilText)
-    {
-        if (!TimeOnly.TryParseExact(untilText, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var local))
-        {
-            Console.Error.WriteLine($"releases: '--until {untilText}' is no time written as HH:mm.");
-
-            return 1;
-        }
-
-        until = ResultsReleases.UntilNext(local, clock.UtcNow, clock.SessionZone);
-        Console.WriteLine(FormattableString.Invariant($"releases: stopping at {local:HH:mm} New York time, {until:yyyy-MM-ddTHH:mm:ssZ}"));
     }
 
     if (!File.Exists(store.DatabaseFile))
@@ -1958,6 +1949,72 @@ static async Task<int> ReleasesVerb(string[] args)
         Console.Error.WriteLine($"releases: no store at '{store.DatabaseFile}'.");
 
         return 1;
+    }
+
+    if (args.Contains("--accuracy", StringComparer.Ordinal))
+    {
+        ReferenceSet? reference = null;
+
+        if (Argument(args, "--labels") is { } labels)
+        {
+            reference = ReleaseLabels.Read(File.ReadAllText(labels));
+        }
+
+        Console.WriteLine(await new ReleaseAccuracy(clock, store.DatabaseFile).ReportAsync(reference));
+
+        return 0;
+    }
+
+    if (reading || args.Contains("--probe", StringComparer.Ordinal) || args.Contains("--reference", StringComparer.Ordinal))
+    {
+        LocalModelSettings settings;
+
+        try
+        {
+            settings = LocalLane.Settings(configuration);
+        }
+        catch (InvalidOperationException refused)
+        {
+            Console.Error.WriteLine("releases: " + refused.Message);
+
+            return 1;
+        }
+
+        var local = new LocalRun(LmStudioReadingFeed.Live(settings), settings, clock, store.DatabaseFile, store.DataRoot);
+
+        if (args.Contains("--reference", StringComparer.Ordinal))
+        {
+            if (Argument(args, "--out") is not { } folder || settings.KnowledgeCutoff is not { } cutoff)
+            {
+                Console.Error.WriteLine("releases: '--reference' names its folder with '--out <folder>' and reads the cutoff the local profile names.");
+
+                return 1;
+            }
+
+            var sample = await local.ReferenceAsync(folder, cutoff);
+
+            Console.WriteLine($"releases: {sample.Count} reference release(s) written to {folder}");
+
+            return 0;
+        }
+
+        LocalRunOutcome read;
+
+        if (reading)
+        {
+            if (Until(args, clock) is not (true, var stop))
+            {
+                return 1;
+            }
+
+            read = await local.ReadHistoryAsync(stop, Console.Out);
+        }
+        else
+        {
+            read = await local.ProbeAsync(Argument(args, "--probe") ?? string.Empty, Console.Out);
+        }
+
+        return read.Outcome is LocalRun.Finished or LocalRun.LimitReached ? 0 : 1;
     }
 
     var contact = configuration[ArchiveAgent.ContactName];
@@ -1969,11 +2026,55 @@ static async Task<int> ReleasesVerb(string[] args)
         return 1;
     }
 
-    var fetch = new ReleaseFetch(SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(contact)), clock, store.DatabaseFile, store.DataRoot);
+    var feed = new ReleaseFetch(SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(contact)), clock, store.DatabaseFile, store.DataRoot);
+
+    if (args.Contains("--names", StringComparer.Ordinal))
+    {
+        var named = await feed.NamesAsync(args.Contains("--again", StringComparer.Ordinal), FormattableString.Invariant($"release-names-{clock.UtcNow:yyyyMMddTHHmmss.fffffffZ}"), Console.Out);
+
+        return named.Refusal is null ? 0 : 1;
+    }
+
+    if (Argument(args, "--from") is not { } fromText
+        || !DateOnly.TryParseExact(fromText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var from))
+    {
+        Console.Error.WriteLine("releases: name '--history --from <yyyy-MM-dd>', with '--until <HH:mm>' in New York's time where the run should stop.");
+
+        return 1;
+    }
+
+    if (Until(args, clock) is not (true, var until))
+    {
+        return 1;
+    }
+
     var runId = FormattableString.Invariant($"release-history-{clock.UtcNow:yyyyMMddTHHmmss.fffffffZ}");
-    var outcome = await fetch.HistoryAsync(from, until, runId, Console.Out);
+    var outcome = await feed.HistoryAsync(from, until, runId, Console.Out);
 
     return outcome.Refusal is null ? 0 : 1;
+}
+
+// A history's '--until <HH:mm>', the operator's time in New York, as the first instant it comes round, printed with its
+// instant in UTC; none where it is not given, and refused where it is no time.
+static (bool Read, DateTimeOffset? Until) Until(string[] args, IClock clock)
+{
+    if (Argument(args, "--until") is not { } untilText)
+    {
+        return (true, null);
+    }
+
+    if (!TimeOnly.TryParseExact(untilText, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var local))
+    {
+        Console.Error.WriteLine($"releases: '--until {untilText}' is no time written as HH:mm.");
+
+        return (false, null);
+    }
+
+    var until = ResultsReleases.UntilNext(local, clock.UtcNow, clock.SessionZone);
+
+    Console.WriteLine(FormattableString.Invariant($"releases: stopping at {local:HH:mm} New York time, {until:yyyy-MM-ddTHH:mm:ssZ}"));
+
+    return (true, until);
 }
 
 static async Task<int> LabelNews(string[] args)

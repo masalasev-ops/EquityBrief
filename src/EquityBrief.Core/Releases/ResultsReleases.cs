@@ -136,6 +136,32 @@ public static class ResultsReleases
         return (cik, Rows(recent, cik), pages);
     }
 
+    // A filer's names and tickers as its submissions state them, from 20.3: its name now and each it filed under before,
+    // newest first, and its tickers, which the anonymiser reads.
+    public static (string Cik, IReadOnlyList<string> Names, IReadOnlyList<string> Tickers) FilerOf(string json)
+    {
+        using var document = JsonDocument.Parse(json);
+
+        var root = document.RootElement;
+        var names = new List<string>();
+
+        if (Text(root, "name") is { Length: > 0 } name)
+        {
+            names.Add(name);
+        }
+
+        if (root.TryGetProperty("formerNames", out var former) && former.ValueKind == JsonValueKind.Array)
+        {
+            names.AddRange(former.EnumerateArray().Select(entry => Text(entry, "name")).OfType<string>().Where(entry => entry.Length > 0));
+        }
+
+        var tickers = root.TryGetProperty("tickers", out var listed) && listed.ValueKind == JsonValueKind.Array
+            ? listed.EnumerateArray().Where(ticker => ticker.ValueKind == JsonValueKind.String).Select(ticker => ticker.GetString()!).Where(ticker => ticker.Length > 0).ToList()
+            : [];
+
+        return (SecEdgarArchive.CikOf(json), [.. names.Distinct(StringComparer.OrdinalIgnoreCase)], [.. tickers.Distinct(StringComparer.Ordinal)]);
+    }
+
     // The results announcements one further page of a filer's submissions lists, its arrays at its top.
     public static IReadOnlyList<ReleaseFiling> FromSubmissionsPage(string json, string cik)
     {

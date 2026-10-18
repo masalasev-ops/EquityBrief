@@ -26,6 +26,61 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - ARCHITECTURE.html - the release reading: the local run's and the release fetch's rows, the reading pins' store, what management said, the local reading's settings and an answer refused
+Authorised by: A release is read with every name and date in it replaced by a neutral word, and product names kept
+Was:
+> Section 4, What management said: What management now expects against what the release before expected, ..., a quotation appearing word for word in the release it cites | Model, from the newest results release and the release before it, which a pass fetches from the SEC's archive free and hands this region alone (see: ...) | paid, on demand | with the research record
+> 15.9, What management said: after the latest quarter: the guidance paragraph above what is working and what is not, ...; dated as written (see: What management said is written from the newest and the previous results releases, and a quotation in any section appears word for word in a document it cites)
+> The catalogue's Local run reads: reading pins, source documents, run log, local model; writes: reading pins, run log; its description ending "... and writes one run log row a run, every call on its run and never on a night's (see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin)"
+> The matrix's Local run: R W under Research and theme, R under Sources, R W under Run log, every other cell blank
+> The catalogue's Release fetch reads: membership, companies, pulled companies, setups, release documents, release days, filings archive; writes: release documents, release days, run log; its description ending "... and the history writes one row of its own (see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it)"
+> Reading pins: forever, append-only, written by the local run's pin by hand, the newest the pin every local run compares before it reads (see: ...)
+> Local reading's settings: temperature 0, the seed 20261018 and an answer's budget of 256 tokens, one request at a time, an answer that cannot be read asked 1 more time (see: ...) | a reading read again over the history must answer as it answered the first time, so nothing the runtime is free to vary is left to it, and four words in one object need far fewer tokens than the budget
+> An answer the local run cannot read, or one the runtime refuses: ... and the run goes on to the next document (see: The release reading asks four closed questions written before any release is read, and code turns each answer into a reading)
+Now:
+> Section 4's row adds beneath the section the newest results release's four answers as the local model read it, alone where no section is written, from the release readings read with names and dates removed, free on the local model and refreshed with each slot's reading; 15.9's row adds them beneath the written section, each word with its reading, the day in New York the SEC accepted the release and the line naming the model and the version, alone where no section is written and none where no answer is held.
+> The Local run reads also release documents, release filers, release readings, release probes, companies, pulled companies, SEC tickers, insider trades, setups and membership, and writes release readings and release probes, its description adding the slots' and the history's reading, the probes and the reference set; its matrix row R under Membership, Pulled history, Forward returns and Fundamentals as well. The Release fetch reads and writes release filers, its description adding the filers' names.
+> Reading pins: forever, written by the local run's pin by hand and from 20.3 the instant its history read completed written once by that read, ...
+> Local reading's settings adds a slot's 7 days and the late slot's start at 21:40 UTC, with their reason.
+> The refused answer's row adds that from 20.3 a release's reading so refused is stored refused under the version.
+> Added without replacing anything: section 12.3's paragraph on the reading, the anonymiser and the probes; the Release accuracy's catalogue and matrix rows; the stores Release filers, Release readings and Release probes; section 17's Release reading's samples; and section 18's row for a stored text that is not its hash.
+Why: 20.3 builds the anonymiser, the release reading, its probes and its accuracy report, and draws a stock's newest release's answers on its page.
+
+### 2026-10-18 - SCHEMA.md - the history read writes the pin's completion, and the releases' filers, readings and probes
+Authorised by: A release is read with every name and date in it replaced by a neutral word, and product names kept
+Was:
+> | `reading_pin` | LocalRun | none | none |
+> Insert only, by the local run's pin by hand and never by the night or a slot; the newest row is the pin every run compares before it reads, ... (see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin).
+> ... and for the twice-read how many releases it compared and how many were answered alike. A slot whose fetch the SEC refused comes to `fetch refused` with the refusal as why. It carries no path of any file, and the Run page draws the newest ten (see: ...).
+Now:
+> | `reading_pin` | LocalRun | LocalRun | none |
+> Insert by the local run's pin by hand and never by the night or a slot; ... From 20.3 update by the local run's history read alone, which writes `history_completed_at` once, where it is null, as it finds no stored release left unread under the version.
+> ... It carries no path of any file, and the Run page draws the newest ten (see: ...). From 20.3 a slot's row counts the releases it read and refused among the documents read, ...; the history read writes one under the kind `history read`, ...; and each probe writes one under the kind `probe` and its name, ...
+> Added without replacing anything: the tables `release_filer`, `release_reading` and `release_probe` with their ownership rows, and the paragraph on the release names' own row.
+Why: 20.3's history read marks its pin complete, which makes the local run the pin's updater as well as its writer, and its readings and probes are stores of their own.
+
+### 2026-10-18 - BUILD_PLAN.md - 20.3's text as built: the filers' names, the samples' day, a stored text not its hash and the window's calendar
+Corrects: 20.3's text named no command reading the filers' names, drew its samples over a store the slots grow, said nothing of a stored text that is not its hash, and placed a print's window by a closure table that does not reach the history's years, found building 20.3
+Was:
+> `releases --read --history` with its `--until`, resumable, reads every release the history fetch stored and marks the pin's history read complete once every release in its span is read or refused; `releases --probe` runs the twice, re-identification and distraction samples; and `releases --accuracy` states ...
+> The reference set's 100 releases are labelled by the build session from the text the model reads and committed with their manifest before the model reads them. After the merge the history is read from main's clean copy, ...
+> Writes section 4's and 15.9's part, the anonymiser's and the reading's catalogue and matrix rows, section 17's samples and the late slot's constant, the schema, the runbook's commands, the decision naming the anonymiser, the roster's rows and the guide.
+Now:
+> `releases --read --history` ... read or refused, and a slot reads the releases accepted in the week before its own day; `releases --names` reads each stored release's filer's names, now and before, and its tickers off its submissions, one request a filer, as a slot does for a filer's first release; `releases --probe` runs the twice, re-identification and distraction samples, each drawn at the seed from the releases the SEC accepted before 2026-10-18, ...; a stored text that is not its hash is refused unread; a print's window opens at the session before its report date, placed by the exchange's closure table over its years and over the years before it by the sessions the ledger read, a print neither places left out and counted; and `releases --accuracy` states ...
+> The reference set's 100 releases are labelled ... before the model reads them: written out by `releases --reference` after the merge, once `releases --names` has named every filer, and their labels committed before the new pin is written, since every slot refuses on the old pin's prompt until it is. ...
+> Writes section 4's and 15.9's part, section 12.3's account, the reading's and the accuracy report's catalogue and matrix rows, the stores of the filers, the readings and the probes, section 17's samples and the late slot's constant, section 18's row for a stored text that is not its hash, the schema, the runbook's commands, the remedy files, the decision naming the anonymiser, the roster's rows and the guide.
+Why: the closure table covers 2025 to 2027 and the history's prints reach 2019, a sample drawn over a growing store is not one sample, and the anonymiser needs every filer's names before the reference set can be written in the text the model reads.
+
+### 2026-10-18 - .claude/rules/checks.md - fixture-expectations and read-surface reach the release reading
+Authorised by: A release is read with every name and date in it replaced by a neutral word, and product names kept
+Was:
+> fixture-expectations: ... and a slot's row through the local run counting the releases it stored and the SEC's requests and saying where the SEC refused
+> read-surface: ... a row whose detail cannot be read drawn by its outcome alone and a row under another stage drawn by none
+Now:
+> fixture-expectations adds: and from 20.3 the fixture's results release read with its names and dates removed as worked by hand, ... and the accuracy report naming a reading written before its label
+> read-surface adds: and from 20.3 a stock's page drawing its newest results release's four answers under what management said, ... a release accepted at the late slot's start on the night and one read under an older version alone drawing none
+Why: the two checks hold 20.3's anonymiser, reading, probes, accuracy report and the name page's answers, and the roster states what each check asserts.
+
 ### 2026-10-18 - ARCHITECTURE.html - 15.7's close to a buy point rows open a stock's chart page
 Corrects: 15.7 still had a stock one gate short link to its page and a name close to a buy point open to its page, which 19.11 moved to the stock's chart page, found by the operator's review of the corpus
 Was:

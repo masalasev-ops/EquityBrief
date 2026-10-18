@@ -3355,7 +3355,7 @@ internal static class Scope
         // region.
         [CheckReach.Key(CatalogueTable, "Local run")] = new Scoped(
             Verdict.Pass,
-            "the class declares the reading pins, the source documents and the run log it reads, the reading pins and the run log it writes and the local model among its feeds, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            "the class declares the reading pins, the source documents and the run log it reads and from 20.3 the release documents, the release filers, the release readings, the release probes, the companies, the pulled companies, the SEC tickers, the insider trades, the setups and the membership, the reading pins, the release readings, the release probes and the run log it writes and the local model among its feeds, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Local run")] = new Scoped(
             Verdict.Pass,
@@ -3367,7 +3367,7 @@ internal static class Scope
             ByMigration),
         [CheckReach.Key(LimitsTable, "Local reading's settings")] = new Scoped(
             Verdict.Pass,
-            "the request a reading sends read off its body at temperature 0, the seed, the answer's budget and reasoning off, the pin written with them over a constructed store, and an answer that cannot be read asked once more and then read; the figures read off the document against the constants",
+            "the request a reading sends read off its body at temperature 0, the seed, the answer's budget and reasoning off, the pin written with them over a constructed store, and an answer that cannot be read asked once more and then read; and from 20.3 over constructed stores a slot reading the releases accepted from the start of the seventh day before its own, newest first, one accepted a second before that left to the history read, and a release a second either side of the late slot's start read on the night it was accepted before and from the next session's otherwise; the figures read off the document against the constants",
             ByExpectations),
         [CheckReach.Key(FailureTable, "LM Studio is not running when a local run starts")] = new Scoped(
             Verdict.Pass,
@@ -3392,7 +3392,7 @@ internal static class Scope
         // 20.2, the release fetch: its catalogue and matrix rows, its two stores, section 17's row and section 18's row.
         [CheckReach.Key(CatalogueTable, "Release fetch")] = new Scoped(
             Verdict.Pass,
-            "the class declares the membership, the companies, the pulled companies, the setups, the release documents and the release days it reads, the release documents, the release days and the run log it writes and the filings archive among its feeds, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            "the class declares the membership, the companies, the pulled companies, the setups, the release documents, the release days and from 20.3 the release filers it reads, the release documents, the release days, the release filers and the run log it writes and the filings archive among its feeds, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Release fetch")] = new Scoped(
             Verdict.Pass,
@@ -3413,6 +3413,36 @@ internal static class Scope
         [CheckReach.Key(FailureTable, "The SEC refuses or does not answer a release fetch")] = new Scoped(
             Verdict.Pass,
             "over a constructed store an archive refusing a day's index ends the slot's fetch with nothing more stored and the day left to read again, the local run's row saying the fetch was refused and why, and a day the archive has not posted read by the next slot",
+            ByExpectations),
+        // 20.3, the release reading: the accuracy report's catalogue and matrix rows, the three stores, section 17's row
+        // and section 18's row.
+        [CheckReach.Key(CatalogueTable, "Release accuracy")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the reading pins, the release readings, the release documents, the release probes, the companies, the pulled companies, the earnings reactions, the pulled surprises, the facts, the setups and the setup nights it reads and nothing it writes, with no feed, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Release accuracy")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Release filers")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Release readings")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Release probes")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Release reading's samples")] = new Scoped(
+            Verdict.Pass,
+            "a hundred shared among 500, 400 and 600 members by the largest remainder worked by hand, a sample drawn two an index on each side of the cutoff, the same at the seed and another at another seed, and the probes and the reference set over a constructed store drawing every release accepted before the samples' day and none accepted on it; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A stored release's text does not read back to its hash")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store a release whose stored text is not its hash is stored refused with the cause and asked nothing, while the release beside it is read",
             ByExpectations),
         // 17.3, the Ledger page: its six parts and its summary's store.
         [CheckReach.Key(StoresTable, "Ledger summaries")] = new Scoped(
@@ -3998,7 +4028,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "What management said")] = new Scoped(
             Verdict.Pass,
-            "the guidance is drawn above what is working beside what is not, each the section's own sentences in their order, and prose not opening on the three words in order is drawn as written; on the fixture's page given every written region the region stands after the latest quarter in section 4's order dated as written, and a page whose pass wrote none draws none",
+            "the guidance is drawn above what is working beside what is not, each the section's own sentences in their order, and prose not opening on the three words in order is drawn as written; on the fixture's page given every written region the region stands after the latest quarter in section 4's order dated as written, and a page whose pass wrote none draws none; and from 20.3, read back off the researched fixture's pages over constructed readings, the newest release the night may read under the newest version drawn beneath the written section with each answer's reading and the line naming the model and the version, one accepted at the late slot's start on the night not drawn, a name no pass wrote for drawing the answers alone after the latest quarter dated by the day in New York the SEC accepted the release, and a name read under an older version alone drawing none",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Segments")] = new Scoped(
             Verdict.Pass,

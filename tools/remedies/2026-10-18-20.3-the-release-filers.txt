@@ -1,0 +1,8 @@
+# The remedy of 20.3, its first half, as its PROGRESS entry prints it: the migration creating the stores of the releases'
+# filers, their readings and the probes' answers, then every stored release's filer named off its submissions, its names
+# now and before and its tickers, which the anonymiser replaces. Requests of the SEC alone, free and keyless, one a
+# filer at ten a second under the archive's contact; no provider request, no model call and no paid call. Run after the
+# merge and the history fetch, outside the night. The reference set is then written out by hand with
+# 'releases --reference --out <folder>', labelled and its labels committed before the second half is run.
+migrate
+releases --names

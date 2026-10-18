@@ -1547,6 +1547,13 @@
       "trimmedTo": "nothing. The whole answer, one object of the four keys each holding one listed word, 5,988 prompt tokens and 42 completion tokens; the same request asked again at once was answered with the same content."
     },
     {
+      "file": "local-reading-KEYS-anonymised.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio 0.4.25 serving google/gemma-4-26b-a4b-qat, its native chat answer",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions with the release reading's instruction and, as the user's message, the text of the fixture's release-KEYS.htm as the archive's reader makes it text, 22,996 characters, with its names and dates removed by the anonymiser of 20.3 for the filer named Keysight Technologies, Inc. with the ticker KEYS and no insider, 22,634 characters, temperature 0, seed 20261018, max_tokens 256, stream false and reasoning_effort none, against the model loaded at a context of 50,176 tokens",
+      "fetchedAt": "2026-10-18T12:41:19Z",
+      "trimmedTo": "nothing. The whole answer, one object of the four keys each holding one listed word, 5,755 prompt tokens and 42 completion tokens; the same request asked again at once was answered with the same content."
+    },
+    {
       "file": "local-reading-past-context-refused.json",
       "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio 0.4.25 serving google/gemma-4-26b-a4b-qat, its native chat answer",
       "query": "POST http://127.0.0.1:1234/api/v0/chat/completions with the release reading's instruction and the KEYS release's text repeated eleven times, 252,417 characters, past the 50,176 tokens the model is loaded at",

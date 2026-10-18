@@ -75,8 +75,10 @@ public class StoreNeverDeleted
         // WiderUniverseRunner each write a run's report and its figures into the run folder they made for them under the
         // sweep's folder, and IndexSweepRunner into the run folder it claimed there; FamilySweepRunner, HeavyweightSweepRunner
         // and IndexSweepRunner write the answer a search states beside them, as SweepRunner writes its own through `Of`.
-        // MonthlyRun writes its month's report into the month's folder under the loop's folder of the data root, a run
-        // again writing it over the one before. NightLock writes and removes the night's lock file.
+        // From 20.3 the local run writes the reference set's releases as the model reads them, a file each named by its
+        // accession, and their list into a folder the operator names. MonthlyRun writes its month's report into the
+        // month's folder under the loop's folder of the data root, a run again writing it over the one before. NightLock
+        // writes and removes the night's lock file.
         // SweepPointInTime removes the scratch stores it built under the machine's temporary folder, which
         // hold nothing of the operator's. SweepRunner writes and replaces its own run folder's files, and
         // removes its own saved candidates where the history moved under them. StoreBackup, in the copies'
@@ -105,6 +107,8 @@ public class StoreNeverDeleted
                 "IndexSweepRunner.cs: File.WriteAllText(Path.Combine(folder, FiguresFile))",
                 "IndexSweepRunner.cs: File.WriteAllText(Path.Combine(folder, SweepAnswer.File))",
                 "IndexSweepRunner.cs: File.WriteAllText(report)",
+                "LocalRun.Probes.cs: File.WriteAllLinesAsync(Path.Combine(folder, \"sample.txt\"))",
+                "LocalRun.Probes.cs: File.WriteAllTextAsync(Path.Combine(folder, accession + \".txt\"))",
                 "MonthlyRun.cs: File.WriteAllText(report)",
                 "NightLock.cs: File.Delete(holder)",
                 "NightLock.cs: File.WriteAllText(holder)",

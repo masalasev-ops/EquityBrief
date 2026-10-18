@@ -720,7 +720,53 @@ public static class SchemaMigrations
         new Migration(97, "create sec_ticker, and add company.cik_source", AddSecTickers),
         new Migration(98, "create reading_pin", CreateReadingPins),
         new Migration(99, "create release_document and release_day", CreateReleases),
+        new Migration(100, "create release_filer, release_reading and release_probe", CreateReleaseReadings),
     ];
+
+    // From 20.3: each filer's names and tickers as the SEC's submissions state them, which the anonymiser reads; each
+    // release's reading under a reading version, its four words or the cause it was refused for; and the probes' answers
+    // over their samples. Each created empty, nothing copied and nothing dropped.
+    // see: A release is read with every name and date in it replaced by a neutral word, and product names kept
+    const string CreateReleaseReadings = @"
+        CREATE TABLE release_filer (
+            cik      TEXT NOT NULL PRIMARY KEY,
+            names    TEXT NOT NULL,
+            tickers  TEXT NOT NULL,
+            read_at  TEXT NOT NULL,
+            run_id   TEXT NOT NULL
+        ) STRICT;
+
+        CREATE TABLE release_reading (
+            accession      TEXT    NOT NULL,
+            pin            INTEGER NOT NULL,
+            outcome        TEXT    NOT NULL,
+            cause          TEXT,
+            results        TEXT,
+            outlook        TEXT,
+            tone           TEXT,
+            demand         TEXT,
+            seconds        REAL,
+            prompt_tokens  INTEGER,
+            read_at        TEXT    NOT NULL,
+            run_id         TEXT    NOT NULL,
+            PRIMARY KEY (accession, pin)
+        ) STRICT;
+
+        CREATE TABLE release_probe (
+            kind       TEXT    NOT NULL,
+            accession  TEXT    NOT NULL,
+            pin        INTEGER NOT NULL,
+            outcome    TEXT    NOT NULL,
+            cause      TEXT,
+            answer     TEXT,
+            against    TEXT,
+            matched    INTEGER,
+            seconds    REAL,
+            read_at    TEXT    NOT NULL,
+            run_id     TEXT    NOT NULL,
+            PRIMARY KEY (kind, accession, pin)
+        ) STRICT;
+    ";
 
     // From 20.2: each member's results release a row a filing, its text compressed beside the hash and length a reading
     // checks it by, and each day of the archive's index and each day's current filings the local run's slots read. Both

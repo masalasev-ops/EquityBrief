@@ -2933,3 +2933,100 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over main's 
             ArchitectureConformance with the guide's tests, PinnedConstants, ChangelogReconciles,
             DoneConditionProducible and FigureFits.
 Carried:    as the 20.2 entry above records.
+
+### 20.3 - the anonymiser, the release reading, its probes and its accuracy report   2026-10-18
+
+Queue:      done, phase 17's sign-off, phase 20's planning, 20.1 with its remedy and 20.2, PRs 486 to 490; in
+            progress, the operator's guide and the two corrections above, PR 491, which this checkpoint stands on, and
+            this checkpoint, with 20.2's history fetch from main still running; next, 20.2's record once the fetch ends,
+            this checkpoint's remedy and its record, 20.4, the two items phase 17's sign-off carried, and the sign-offs
+            of phases 18 and 19 by fresh sessions.
+Built:      on the operator's rulings of 2026-10-18 (see: A release is read with every name and date in it replaced by
+            a neutral word, and product names kept). In the core the anonymiser, its common words, its pin as its
+            version and its version joining the instruction's; the samples, drawn at the seed by index in proportion
+            to members from the releases accepted before 2026-10-18; the probes' kinds and whether an answer names the
+            filer; the agreement, the outlook guided figures show and the tone variant's shares; a filer's names off its
+            submissions; and a calendar placing a print's session before its report date by the closure table over its
+            years and the ledger's sessions before them. Migration 100's `release_filer`, `release_reading` and
+            `release_probe`. The reader of the readings in the data project, calling the core's availability rule. The
+            worker's local run reading a slot's week newest first and `releases --read --history` with `--until`,
+            pausing for each slot and the night's window and marking its pin complete once nothing is left unread, a
+            text that is not its hash refused unread; `releases --names`; `--probe twice|reidentify|distract`;
+            `--reference --out`; and `releases --accuracy` with `--labels`, writing nothing. The name page draws the
+            newest release's four answers under what management said, alone where no section is written. The corpus as
+            20.3 lists it, and the two remedy files.
+Found:      the closure table covers 2025 to 2027 while the history's prints reach 2019, so a print's window over the
+            history reads the ledger's sessions before the table's years, a print neither places counted apart; a
+            sample drawn over a store the slots grow is no one sample, so every sample draws from the releases accepted
+            before the samples' day; the reading's writes sat in the local run's partial files, which the write checks
+            name as components of their own, so the statements stand in the class's own file; the reader of a print's
+            release and the name page's wrote the late slot's comparison in their SQL, which M14 showed, so both now ask
+            the core's rule; the SEC writes Domino's as DOMINOS, whose s is its own, so "Domino’s stores" reads
+            "[company] stores"; 15.9's row listed its parts with commas, which reads as an enumeration a verdict a part,
+            so the parts stand between semicolons as the row's others do; and "from 20.3" in section 17's value cell
+            reads as a figure, so the cell carries none.
+Amended:    20.3's text in BUILD_PLAN, and not its done condition: the filers' names, the samples' day, a text that is
+            not its hash, the window's calendar and the order of the labels and the new pin; the changelog says the same.
+Tests:      15 new, 2458 in all: the fixture's release anonymised as worked by hand and read through the history read
+            into its recorded answer's four words; a filer named with a common word and an insider whose surname is an
+            ordinary word, in lower case, at a sentence's start and inside one, with "Q3" and "September 30" read as
+            dates; the anonymiser's version the pin of its source and part of the prompt's; the print's release a second
+            either side of the late slot's start and across a weekend; the calendar at the table's first day; the
+            agreement, the probes' and the tone shares by hand; the shares by the largest remainder and the draw at its
+            seed; the history read pausing for a slot, stopping at its until with its pin left open and keeping a
+            refused answer refused; a slot's week newest first; a pin whose model file changed refusing the history
+            read; a text that is not its hash; the filers' names; the probes and the reference set over a constructed
+            store; the accuracy report naming a reading written before its label; and the name page's answers under
+            what management said. Derived expectation `release-reading.json`, the fixture's release read by hand.
+Claims:     1362, seven more than 1355 and the plan's about 8: the catalogue's and the matrix's Release accuracy, section
+            16's Release filers, Release readings and Release probes, section 17's Release reading's samples and section
+            18's A stored release's text does not read back to its hash, named beside phase 19's pair as rows after its
+            report, each passing.
+Pins:       none moved: no source a rule's version, a candidate evaluator, the hooks or the learned score pins changes.
+Remedy:     after the merge and once the history fetch has ended, `tools/remedies/2026-10-18-20.3-the-release-filers.txt`
+            from main: the migration to 100 and `releases --names`; then by hand `releases --reference --out` and the
+            reference set labelled by the build session and committed with its manifest; then
+            `tools/remedies/2026-10-18-20.3-the-history-read.txt`: `local-run --pin` and `releases --read --history
+            --until 07:00`, run again each night until the pin's history completes. Until the new pin every slot refuses
+            on the prompt and goes on fetching. The local model and the SEC alone, no provider request and no paid call.
+Mutated:    the rule, stated before the runs: one mutation a property 20.3 adds whose failure would let a name or a
+            date through to the model, keep a reading wrongly, read a release on a night it is not readable, or draw a
+            reading a page should not, the smallest edit to shipped source, each run filtered to 20.3's tests with
+            20.1's and 20.2's local run tests, 36 in all, its red predicted, made in this checkout and reverted with the
+            editor. An edit to the anonymiser's source also reddens its version test, which is counted and is no kill.
+            M1 a single word replaced where it opens a sentence: red at the fixture's release and the common-word
+            filer. M2 a name's first word replaced though a common word: red at the common-word filer. M3 a single word
+            replaced in lower case: red at the common-word filer. M4 the dateline's place read before the dates: red at
+            the fixture's release. M5 a legal word's short and long forms read apart: red at the common-word filer, and
+            not at the probes as predicted, which work their expected texts through the anonymiser itself. M6 the
+            prompt's version without the anonymiser's: red at the version test and 20.1's questions. M7 a refused
+            reading kept as read: red at the history read and the text not its hash. M8 the hash not checked: red at
+            the text not its hash. M9 a slot reading six days: red at the slot's week. M10 a slot oldest first: red at
+            the slot's week. M11 the history marked complete by a stopped read: red at the history read. M12 no pause
+            for a slot: red at the history read. M13 the history read on past a refusing pin: red at the changed file.
+            M14 a release at the late slot's start read that night: red at first at 20.1's rule alone, not at the print
+            as predicted, the two readers writing the comparison in SQL; with the readers asking the core's rule, red at
+            the rule, the print and the name page. M15 the window from the report date: red at the print. M16 the
+            calendar without the ledger's sessions: red at the calendar and the accuracy report. M17 a surprise of
+            nothing agreeing with better: red at the arithmetic. M18 none given failing the tone variant: red at the
+            arithmetic. M19 no reading counted before its label: red at the accuracy report. M20 a ticker not naming the
+            filer: red at the arithmetic and the probes. M21 the distraction read without the names in: red at the
+            probes. M22 a release of the samples' day drawn: red at the probes. M23 the shares' remainder not given out:
+            red at the samples. M24 `--again` naming only the unnamed: red at the names. M25 a filer's former names
+            dropped: red at the names. M26 the page's reading under any version: red at the page. M27 the accepted day
+            in UTC: red at the page. M28 no region where no section is written: red at the page. M29 the reference set
+            written with its names in: red at the probes. Each red as predicted but M5 at the probes and M14's first
+            run. Not mutated: the contact, address and file name patterns, the people's earlier words, the outlook the
+            guided figures show over a store, the read's `--until` as written, and the page's filer padded to ten digits.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2458 of 2458 tests ran with none failed,
+            migrations 0 to 100 with none pending, schema version 100, against `data-ci` and never `data`; the phase
+            report 60 tables, 1362 claims, 1362 passing, none out of scope and none unexamined, 1373 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    20.2's history fetch, still running from main, and its record; the late slot's first fetch at 21:40Z, in
+            the record written after it; this checkpoint's remedy, the reference set's labels with the billing that
+            applied, and the history read, its record stating each answer's agreement before and after the cutoff, the
+            tone variant's distinctness, the three probes, the local model's hours and the releases keeping a trace of
+            the filer's first word or tickers and where, all before 20.4's remedy; the sign-offs of phases 18 and 19,
+            owed to fresh sessions after 20.4; the two items phase 17's sign-off carried, corrected after 20.4; (G1),
+            SCHEMA's `family_trade` sentence, owed by the next edit of that section.

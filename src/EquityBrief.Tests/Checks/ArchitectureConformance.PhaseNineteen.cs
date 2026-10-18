@@ -152,8 +152,9 @@ public partial class ArchitectureConformance
     // region outside the claims; and the 17.3 correction of 2026-10-16's three, the SEC tickers step's catalogue and
     // matrix rows and its store; and 20.1's nine, the local run's catalogue and matrix rows, the reading pins' store,
     // section 17's row, section 18's four and the Run page's local model region, and 20.2's six, the release fetch's
-    // catalogue and matrix rows, its two stores, section 17's row and section 18's, which phase 20's own pair counts once
-    // its report is written.
+    // catalogue and matrix rows, its two stores, section 17's row and section 18's, and 20.3's seven, the accuracy
+    // report's catalogue and matrix rows, the three stores of the releases' filers, readings and probes, section 17's row
+    // and section 18's, which phase 20's own pair counts once its report is written.
     internal static string[] AfterPhaseNineteen =>
     [
         .. FixtureExpectations.TradeFillRows,
@@ -174,6 +175,9 @@ public partial class ArchitectureConformance
         .. ComponentAccess.ReleaseFetchRows,
         .. SchemaColumns.ReleaseStoreRows,
         .. FixtureExpectations.ReleaseFetchClaims,
+        .. ComponentAccess.ReleaseAccuracyRows,
+        .. SchemaColumns.ReleaseReadingStoreRows,
+        .. FixtureExpectations.ReleaseReadingClaims,
     ];
 
     internal static string[] TakenOutAfterPhaseNineteen => [];

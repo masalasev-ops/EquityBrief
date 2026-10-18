@@ -55,12 +55,14 @@ public sealed class ReleaseFetch(
             new StoreTouch(Store.Setup, Touch.Read),
             new StoreTouch(Store.ReleaseDocument, Touch.Read | Touch.Insert),
             new StoreTouch(Store.ReleaseDay, Touch.Read | Touch.Insert | Touch.Update),
+            new StoreTouch(Store.ReleaseFiler, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: [Feed.FilingsArchive]);
 
-    // The history's own row on the run log.
+    // The history's own row on the run log, and from 20.3 the filers' names' own.
     public const string HistoryStage = "release-history";
+    public const string NamesStage = "release-names";
 
     // The two sources a day is read from.
     public const string DailyIndexSource = "daily index";
@@ -131,6 +133,21 @@ public sealed class ReleaseFetch(
         VALUES ($run_id, $stage, $started_at, $ended_at, $outcome, $rows_written, 0, $network_requests, '0', $detail);
     ";
 
+    // A filer's names and tickers as its newest submissions read states them, from 20.3.
+    const string StoreFiler = @"
+        INSERT INTO release_filer (cik, names, tickers, read_at, run_id)
+        VALUES ($cik, $names, $tickers, $read_at, $run_id)
+        ON CONFLICT (cik) DO UPDATE SET
+            names = excluded.names, tickers = excluded.tickers, read_at = excluded.read_at, run_id = excluded.run_id;
+    ";
+
+    // The filers holding a stored release, those whose names no read has kept first.
+    const string FilersToName = @"
+        SELECT DISTINCT d.cik FROM release_document d
+        WHERE $again = 1 OR NOT EXISTS (SELECT 1 FROM release_filer f WHERE f.cik = d.cik)
+        ORDER BY d.cik;
+    ";
+
     // A slot's fetch, asking nothing after the instant given: the early slot reads the archive's index, the late slot
     // the current filings of its own day.
     public async Task<ReleaseFetchOutcome> SlotAsync(string slot, string runId, DateTimeOffset asksNothingAfter, CancellationToken cancellation = default)
@@ -141,10 +158,11 @@ public sealed class ReleaseFetch(
 
         var filers = await MemberFilersAsync(connection, today, cancellation);
         var stored = await StoredAsync(connection, cancellation);
+        var named = new HashSet<string>(StringComparer.Ordinal);
 
         return slot == LocalSlots.Late
-            ? await CurrentAsync(connection, filers, stored, today, runId, asksNothingAfter, cancellation)
-            : await DaysAsync(connection, filers, stored, today, runId, asksNothingAfter, cancellation);
+            ? await CurrentAsync(connection, filers, stored, named, today, runId, asksNothingAfter, cancellation)
+            : await DaysAsync(connection, filers, stored, named, today, runId, asksNothingAfter, cancellation);
     }
 
     // The weekdays an early slot reads: from the day after the newest it read, or the week before its own day where it
@@ -170,6 +188,7 @@ public sealed class ReleaseFetch(
         SqliteConnection connection,
         IReadOnlySet<string> filers,
         HashSet<string> stored,
+        HashSet<string> named,
         DateOnly today,
         string runId,
         DateTimeOffset asksNothingAfter,
@@ -245,6 +264,7 @@ public sealed class ReleaseFetch(
                     {
                         stored.Add(filing.Accession);
                         dayStored++;
+                        await NameOnceAsync(connection, filing.Cik, named, runId, cancellation);
                     }
                 }
 
@@ -268,6 +288,7 @@ public sealed class ReleaseFetch(
         SqliteConnection connection,
         IReadOnlySet<string> filers,
         HashSet<string> stored,
+        HashSet<string> named,
         DateOnly today,
         string runId,
         DateTimeOffset asksNothingAfter,
@@ -326,6 +347,7 @@ public sealed class ReleaseFetch(
                     {
                         stored.Add(filing.Accession);
                         saved++;
+                        await NameOnceAsync(connection, filing.Cik, named, runId, cancellation);
                     }
                 }
 
@@ -389,6 +411,11 @@ public sealed class ReleaseFetch(
                     unread.Add(cik);
 
                     continue;
+                }
+
+                await using (var connection = await OpenAsync(cancellation))
+                {
+                    await StoreFilerAsync(connection, submissions, runId, cancellation);
                 }
 
                 var (_, recent, further) = ResultsReleases.FromSubmissions(submissions);
@@ -456,6 +483,109 @@ public sealed class ReleaseFetch(
             + (refusal is { } refused2 ? "; stopped by the archive: " + refused2 : string.Empty));
 
         return outcome;
+    }
+
+    // From 20.3 the names of every filer holding a stored release that no read has kept them for, or of every one with
+    // `again`, from its submissions a request a filer, pausing as the history pauses and named on a row of its own.
+    public async Task<(int Filers, int Named, int Requests, string? Refusal)> NamesAsync(bool again, string runId, TextWriter output, CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+        var ciks = new List<string>();
+
+        await using (var connection = await OpenAsync(cancellation))
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = FilersToName;
+            command.Parameters.AddWithValue("$again", again ? 1 : 0);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                ciks.Add(reader.GetString(0));
+            }
+        }
+
+        var before = feed.Documents;
+        var named = 0;
+        string? refusal = null;
+
+        try
+        {
+            foreach (var cik in ciks)
+            {
+                await PauseAsync(output, cancellation);
+
+                if (await AskAsync(token => feed.SubmissionsAsync(cik, token), cancellation) is { } submissions)
+                {
+                    await using var connection = await OpenAsync(cancellation);
+
+                    await StoreFilerAsync(connection, submissions, runId, cancellation);
+                    named++;
+                }
+            }
+        }
+        catch (Exception refused) when (refused is ProviderRefusal or FormatException)
+        {
+            refusal = refused.Message;
+        }
+
+        var requests = feed.Documents - before;
+
+        await using (var connection = await OpenAsync(cancellation))
+        {
+            await WaitToWriteAsync(output, cancellation);
+
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = AppendRun;
+            command.Parameters.AddWithValue("$run_id", runId);
+            command.Parameters.AddWithValue("$stage", NamesStage);
+            command.Parameters.AddWithValue("$started_at", Instant(startedAt));
+            command.Parameters.AddWithValue("$ended_at", Instant(clock.UtcNow));
+            command.Parameters.AddWithValue("$outcome", refusal is null ? "ok" : "refused");
+            command.Parameters.AddWithValue("$rows_written", named);
+            command.Parameters.AddWithValue("$network_requests", requests);
+            command.Parameters.AddWithValue("$detail", JsonSerializer.Serialize(new { filers = ciks.Count, named, requests, refusal }));
+
+            await command.ExecuteNonQueryAsync(cancellation);
+        }
+
+        await output.WriteLineAsync(FormattableString.Invariant($"releases: {named} of {ciks.Count} filer(s) named from {requests} request(s)") + (refusal is { } why ? "; stopped by the archive: " + why : string.Empty));
+
+        return (ciks.Count, named, requests, refusal);
+    }
+
+    // A filer's names read from its submissions once a slot, where the slot stored a release of its.
+    async Task NameOnceAsync(SqliteConnection connection, string cik, HashSet<string> named, string runId, CancellationToken cancellation)
+    {
+        if (!named.Add(cik))
+        {
+            return;
+        }
+
+        if (await AskAsync(token => feed.SubmissionsAsync(cik, token), cancellation) is { } submissions)
+        {
+            await StoreFilerAsync(connection, submissions, runId, cancellation);
+        }
+    }
+
+    async Task StoreFilerAsync(SqliteConnection connection, string submissions, string runId, CancellationToken cancellation)
+    {
+        var (cik, names, tickers) = ResultsReleases.FilerOf(submissions);
+
+        await WaitToWriteAsync(TextWriter.Null, cancellation);
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = StoreFiler;
+        command.Parameters.AddWithValue("$cik", cik);
+        command.Parameters.AddWithValue("$names", JsonSerializer.Serialize(names));
+        command.Parameters.AddWithValue("$tickers", JsonSerializer.Serialize(tickers));
+        command.Parameters.AddWithValue("$read_at", Instant(clock.UtcNow));
+        command.Parameters.AddWithValue("$run_id", runId);
+
+        await command.ExecuteNonQueryAsync(cancellation);
     }
 
     // The further pages of a filer's submissions the history reads: those whose filings reach the months before its

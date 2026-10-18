@@ -115,9 +115,12 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `insider_trade` | InsiderTrades | none | none |
 | `insider_read` | InsiderTrades | none | none |
 | `sec_ticker` | SecTickers | none | none |
-| `reading_pin` | LocalRun | none | none |
+| `reading_pin` | LocalRun | LocalRun | none |
 | `release_document` | ReleaseFetch | none | none |
 | `release_day` | ReleaseFetch | ReleaseFetch | none |
+| `release_filer` | ReleaseFetch | ReleaseFetch | none |
+| `release_reading` | LocalRun | none | none |
+| `release_probe` | LocalRun | none | none |
 | `taken_trade` | ReadApi | ReadApi, TakenFollower | ReadApi |
 | `taken_record` | TakenFollower | none | TakenFollower |
 | `dividend_reading` | QuarterFetcher | none | none |
@@ -1993,7 +1996,7 @@ Grain: one row per reading version the local run reads under, from 20.1, written
 
 Primary key: `id`.
 
-Insert only, by the local run's pin by hand and never by the night or a slot; the newest row is the pin every run compares before it reads, and a run whose model, file or instruction differs from it refuses, as does an answer from a model or runtime it does not name (see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin).
+Insert by the local run's pin by hand and never by the night or a slot; the newest row is the pin every run compares before it reads, and a run whose model, file or instruction differs from it refuses, as does an answer from a model or runtime it does not name (see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin). From 20.3 update by the local run's history read alone, which writes `history_completed_at` once, where it is null, as it finds no stored release left unread under the version.
 
 ### release_document
 Grain: one row per member's results release, from 20.2, the EX-99 exhibit of an 8-K or 8-K/A carrying item 2.02.
@@ -2034,6 +2037,64 @@ Grain: one row per day and source the release fetch read, from 20.2.
 Primary key: `day`, `source`.
 
 Insert and update by the release fetch alone, a day's row written again where it is read again; the early slot reads on from the newest day of the index it read, and the late slot reads the current feed back to the newest instant a late slot started (see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it).
+
+### release_filer
+Grain: one row per filer of a stored results release, from 20.3.
+
+| Column | Type | Notes |
+|---|---|---|
+| `cik` | TEXT | the filer's CIK padded to ten digits |
+| `names` | TEXT | a JSON list of the names the filer files under, its name now first and then each it filed under before, as its submissions state them |
+| `tickers` | TEXT | a JSON list of the tickers its submissions state for it |
+| `read_at` | TEXT | UTC instant of the read |
+| `run_id` | TEXT | the run that read it |
+
+Primary key: `cik`.
+
+Insert and update by the release fetch alone: a slot names a filer once as it stores the filer's first release, the history as it reads the filer's submissions, and `releases --names` every filer of a stored release no read has named, or every filer with `--again`, a filer's row written again where its names are read again; the local run reads it for the names the anonymiser replaces (see: A release is read with every name and date in it replaced by a neutral word, and product names kept).
+
+### release_reading
+Grain: one row per results release and reading version, from 20.3.
+
+| Column | Type | Notes |
+|---|---|---|
+| `accession` | TEXT | the release's accession, as `release_document` holds it |
+| `pin` | INTEGER | the reading version it was read under, `reading_pin`'s `id` |
+| `outcome` | TEXT | `read` or `refused` |
+| `cause` | TEXT | why it was refused, one of the causes an answer is refused for or that its stored text is not its hash, null where read |
+| `results` | TEXT | the word the model answered, null where refused |
+| `outlook` | TEXT | the word the model answered, null where refused |
+| `tone` | TEXT | the word the model answered, null where refused |
+| `demand` | TEXT | the word the model answered, null where refused |
+| `seconds` | REAL | the time the reading took, its second ask included, null where nothing was asked |
+| `prompt_tokens` | INTEGER | the prompt's tokens as the runtime counted them, null where it stated none |
+| `read_at` | TEXT | UTC instant |
+| `run_id` | TEXT | the run that read it, a slot's or the history read's |
+
+Primary key: `accession`, `pin`.
+
+Insert only, by the local run's slots and its history read by hand and never by the night; a release is read once under a version, a refused one kept refused with its cause and read again only under a new version, and code turns each word into a reading where a reader reads it (see: The release reading asks four closed questions written before any release is read, and code turns each answer into a reading). The name page reads a stock's newest release a night may read under the newest version (see: A release reading is readable from the first night whose late slot starts after the release was accepted), and the accuracy report reads every row under it.
+
+### release_probe
+Grain: one row per probe, release and reading version, from 20.3.
+
+| Column | Type | Notes |
+|---|---|---|
+| `kind` | TEXT | `twice`, `reidentify` or `distract` |
+| `accession` | TEXT | the release probed |
+| `pin` | INTEGER | the reading version it was probed under |
+| `outcome` | TEXT | `read`, or `refused` where the runtime refused to name a company for `reidentify` |
+| `cause` | TEXT | why an answer was refused, the second reading's cause before the first's, null where none was |
+| `answer` | TEXT | the probe's answer: the second reading's four words for `twice`, the reading with the names in for `distract`, each null where it was refused, and the company the model named, at most 200 characters, for `reidentify` |
+| `against` | TEXT | what the answer is set against: the first reading's four words, the reading with the names removed, or the filer's name now |
+| `matched` | INTEGER | 1 where the two agree, two readings agreeing where their four words do or both were refused for one cause, and for `reidentify` where the answer names the filer; 0 where they do not; null where no company was named |
+| `seconds` | REAL | the time the probe's asks took |
+| `read_at` | TEXT | UTC instant |
+| `run_id` | TEXT | the probe's run |
+
+Primary key: `kind`, `accession`, `pin`.
+
+Insert only, by the local run's probes by hand and never by the night or a slot, each over the sample drawn at the seed from the releases accepted before the samples' day, a probe going on from the releases it has not probed; the accuracy report reads it (see: A release is read with every name and date in it replaced by a neutral word, and product names kept).
 
 ### taken_trade
 Grain: one row per trade the operator took from a pick's card.
@@ -2717,7 +2778,9 @@ Primary key: `run_id`, `stage`.
 
 **The store's copy writes two rows of its own, one as it starts and one as it ends, and names its folder relative to the data root.** From the operator's ruling of 2026-10-02 the copy the night starts after its labeller writes under `backup-` and its instant. As it starts, before it waits for anything, it writes a row with the stage `store-backup-started`, its start at both ends and the outcome `started`, its `detail` JSON saying whether it waits for the labeller; a start with no ending row of its run is a copy ended before it finished. As it ends it writes a row with the stage `store-backup`: `ok` where a copy was made, opened and read, its `detail` JSON carrying the copy's name, the folder relative to the data root with forward separators, or its name alone where it lies on a volume no relative path reaches, its bytes, the newest session and the bars it read back, the copies kept, those removed, any kept copy that did not open and read, the copies the newest ending row before it kept that were gone from the folder when it began, removed by no copy, and what it waited for; `failed` where it made none or the new copy did not open and read, with why. The copies the ending rows name, made or refused, are the store's own, and the only ones a copy counts or removes (see: A store's copy counts and removes only the copies its own rows name, and a test or a rehearsal names a copies' folder of its own). The night's own step writes one row under the night's run with the stage `backup`, saying the copy was started or why it was not (see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends).
 
-**The local run writes one row a run under a run of its own.** From 20.1 each run of the local run, a slot, a pin written by hand or the stored releases read twice, writes one row under `local-run-` with its start, its kind and a short tag, with the stage `local-run`, once any lock it waits on is let go: `model_calls` the local model's calls the run made, `network_requests` the SEC's documents a slot's release fetch asked for, from 20.2, and none for a run that fetches nothing, `rows_written` the releases the fetch stored with the rows the run wrote, and a `spend` of `0`, and `detail` JSON naming its kind, its outcome and why, the releases it fetched and the SEC's requests for them, the documents it read, its refused answers by cause, its median and slowest seconds a call, the pin it read by its id, model, the start of its file's hash, its runtime and its prompt's version, how it checked the model's file and in how many seconds where it hashed it whole, and for the twice-read how many releases it compared and how many were answered alike. A slot whose fetch the SEC refused comes to `fetch refused` with the refusal as why. It carries no path of any file, and the Run page draws the newest ten (see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin).
+**The local run writes one row a run under a run of its own.** From 20.1 each run of the local run, a slot, a pin written by hand or the stored releases read twice, writes one row under `local-run-` with its start, its kind and a short tag, with the stage `local-run`, once any lock it waits on is let go: `model_calls` the local model's calls the run made, `network_requests` the SEC's documents a slot's release fetch asked for, from 20.2, and none for a run that fetches nothing, `rows_written` the releases the fetch stored with the rows the run wrote, and a `spend` of `0`, and `detail` JSON naming its kind, its outcome and why, the releases it fetched and the SEC's requests for them, the documents it read, its refused answers by cause, its median and slowest seconds a call, the pin it read by its id, model, the start of its file's hash, its runtime and its prompt's version, how it checked the model's file and in how many seconds where it hashed it whole, and for the twice-read how many releases it compared and how many were answered alike. A slot whose fetch the SEC refused comes to `fetch refused` with the refusal as why. It carries no path of any file, and the Run page draws the newest ten (see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin). From 20.3 a slot's row counts the releases it read and refused among the documents read, its `rows_written` the readings it kept beside the releases stored; the history read writes one under the kind `history read`, coming to `limit reached` where it stopped at the instant it was given and naming as why that every stored release is read or refused where it marked its pin's history complete; and each probe writes one under the kind `probe` and its name, how many of the sample's releases it compared and how many agreed in place of the twice-read's (see: A release is read with every name and date in it replaced by a neutral word, and product names kept).
+
+**The release names write one row a run.** From 20.3 each run of `releases --names`, writing a filer's names and tickers off its submissions, writes one row under `release-names-` with its start, with the stage `release-names`: `rows_written` the filers it named, `network_requests` the SEC's documents it asked for, no model call and a `spend` of `0`; its `outcome` `ok`, or `refused` where the SEC refused it; and `detail` JSON naming the filers it was to name, those it named, its requests and the refusal where there was one (see: A release is read with every name and date in it replaced by a neutral word, and product names kept).
 
 **The release history writes one row a run.** From 20.2 each run of `releases --history` writes one row under `release-history-` with its start, with the stage `release-history`, once any lock it waits on is let go: `rows_written` the releases it stored, `network_requests` the SEC's documents it asked for, no model call and a `spend` of `0`; its `outcome` `ok`, `stopped` where it stopped at the instant it was given, or `refused` where the SEC refused it; and `detail` JSON naming the ledger filers its span holds and those it read whole, the releases inside their spans and those it stored, the requests, why it stopped and the filers the archive holds no submissions for (see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it).
 
