@@ -51,13 +51,15 @@ public partial class FixtureExpectations
         store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('ZZZZ', '2026-10-01T00:00:00Z', NULL);");
         store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('GONE', '2026-10-01T00:00:00Z', NULL);");
         store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('SOON', '2026-10-01T00:00:00Z', NULL);");
+        store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('EDGE', '2026-10-01T00:00:00Z', NULL);");
 
-        // The members on the session the clock falls on, 2026-10-16: AAPL and BNY in the S&P 500 and ZZZZ in the S&P 600.
-        // GONE's span leaves the S&P 500 on that session and SOON's joins the S&P 400 on a later one, so neither is a
-        // member whatever its company row holds.
+        // The members on the session the clock falls on, 2026-10-16: AAPL and BNY in the S&P 500, ZZZZ in the S&P 600 and
+        // EDGE in the S&P 400, its span joining on that session. GONE's span leaves the S&P 500 on that session and
+        // SOON's joins the S&P 400 on a later one, so neither is a member whatever its company row holds.
         store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', 'AAPL', '1982-11-30', NULL, '2026-10-16T22:00:00Z');");
         store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', 'BNY', NULL, NULL, '2026-10-16T22:00:00Z');");
         store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('SML', 'ZZZZ', '2026-10-05', NULL, '2026-10-16T22:00:00Z');");
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('MID', 'EDGE', '2026-10-16', NULL, '2026-10-16T22:00:00Z');");
         store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', 'GONE', '2022-02-17', '2026-10-16', '2026-10-16T22:00:00Z');");
         store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('MID', 'SOON', '2026-10-19', NULL, '2026-10-16T22:00:00Z');");
 
@@ -65,17 +67,17 @@ public partial class FixtureExpectations
         var feed = new RecordedSecTickersFeed(TickersCapture());
         var outcome = await new SecTickers(clock, store.DatabaseFile).ReadAsync(feed, TextWriter.Null, "sec-tickers-constructed");
 
-        // Every line kept under the run, and of the two members the provider files no CIK for, BNY named and ZZZZ not;
-        // GONE and SOON, holding none and named by no line of the file, counted among neither.
-        Assert.Equal((7, 2, null as string), (outcome.Tickers, outcome.Unmatched, outcome.Refusal));
-        Assert.Equal(["ZZZZ"], outcome.NotListed);
+        // Every line kept under the run, and of the three members the provider files no CIK for, BNY named and EDGE and
+        // ZZZZ not; GONE and SOON, holding none and named by no line of the file, counted among none of them.
+        Assert.Equal((7, 3, null as string), (outcome.Tickers, outcome.Unmatched, outcome.Refusal));
+        Assert.Equal(["EDGE", "ZZZZ"], outcome.NotListed);
         Assert.Equal(7L, Scalar(store, "SELECT COUNT(*) FROM sec_ticker WHERE run_id = 'sec-tickers-constructed';"));
         Assert.Equal("0001390777", Text(store, "SELECT cik FROM sec_ticker WHERE ticker = 'BNY';"));
         Assert.Equal(1, feed.Documents);
 
         var row = Text(store, "SELECT outcome || '|' || network_requests || '|' || detail FROM run_log WHERE run_id = 'sec-tickers-constructed' AND stage = 'sec-tickers';");
 
-        Assert.StartsWith("ok|1|7 ticker(s) the SEC's file lists, kept under this run; 1 of the 2 member(s) the provider files no CIK for named by it; not named: ZZZZ", row, StringComparison.Ordinal);
+        Assert.StartsWith("ok|1|7 ticker(s) the SEC's file lists, kept under this run; 1 of the 3 member(s) the provider files no CIK for named by it; not named: EDGE, ZZZZ", row, StringComparison.Ordinal);
 
         // A file the archive holds none of stores nothing and says so on its row.
         var none = await new SecTickers(clock, store.DatabaseFile).ReadAsync(new RecordedSecTickersFeed(null), TextWriter.Null, "sec-tickers-none");

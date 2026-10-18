@@ -130,7 +130,7 @@ Corrects: the SEC tickers step counted every ticker whose newest company row hel
 Was:
 > `fixture-expectations`: ... a labeller's limit ending exactly as a peak window opens ending there and not after the window |
 Now:
-> Added without replacing anything: the step's members the tickers the three indices hold on its session, a former member and a ticker joining on a later session, each holding no filer, counted among none.
+> Added without replacing anything: the step's members the tickers the three indices hold on its session, a ticker joining on that session among them, a former member and a ticker joining on a later session, each holding no filer, counted among none.
 Why: a roster row names what its check asserts.
 
 ### 2026-10-18 - RUNBOOK.md - the SEC tickers step counts the members of the three indices on its session
