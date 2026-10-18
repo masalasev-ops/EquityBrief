@@ -81,8 +81,9 @@ public partial class ReadSurface
         var model = RsiTree();
 
         // Worked by hand: AAA at an RSI of 40 scores 1 and BBB at 60 scores 2, so the trees put BBB first where the
-        // filter ranked AAA first.
+        // filter ranked AAA first; a member exactly at the split's 50 is at or under it and scores the left leaf's 1.
         Assert.Equal((1.0, 2.0), (model.Score(Readings(40))!.Value, model.Score(Readings(60))!.Value));
+        Assert.Equal(1.0, model.Score(Readings(50))!.Value);
         Assert.Equal(["BBB|1", "AAA|2"], await PullbackPicksUnder(model.Key, stored: true));
 
         // A key no stored model carries scores no member, so the pullback lists none.

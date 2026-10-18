@@ -26,6 +26,15 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - .claude/rules/checks.md - fixture-expectations and read-surface state a reading exactly on a tree's threshold
+Corrects: no test read a member whose reading sits exactly on a tree's split threshold, so the walk's comparison made strict reddened only the two tests that hash its source, while 17.15's done condition that the core's walk equals the package's scores rests on the walk's at or under to the left; found by phase 17's first sign-off review on 2026-10-18 as its m16.
+Was:
+> `fixture-expectations`: ... twenty-five read off the draws at its seed, a whole count over 2^24 near that tail and not it |
+> `read-surface`: ... and an exit dated on its fill's own session recorded |
+Now:
+> Added without replacing anything, to `fixture-expectations`: a reading exactly on a threshold the package fitted scored by the package and by the core's walk of the stored tree at the same leaf, the one at or under it, and the next figure past it at the other; and to `read-surface`: a member exactly at the constructed tree's split scored at the leaf at or under it.
+Why: a roster row names what its check asserts.
+
 ### 2026-10-18 - .claude/rules/checks.md - fixture-expectations states the gate at its enumerated limit
 Corrects: no test read the tester's gate at the 24 blocks section 17 pins, so its comparison made strict left every test over the loop, the ledger and the score green; found by phase 17's first sign-off review on 2026-10-18 as its m1.
 Was:
