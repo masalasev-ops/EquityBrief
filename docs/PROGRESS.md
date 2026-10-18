@@ -3107,3 +3107,56 @@ Carried:    20.2's history fetch and its record; the late slot's first fetch; 20
             and the history read with its record before this checkpoint's second remedy; this checkpoint's two remedies;
             the sign-offs of phases 18 and 19, owed to fresh sessions from now; the two items phase 17's sign-off
             carried; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.
+
+### 20.3 - correction: the anonymiser reads a filer's name across its joins, points and state, a ticker wherever it stands, and no product as a person   2026-10-18
+
+Queue:      done, phases 0 to 19 built and 20.0 to 20.4 merged, PRs 486 to 494, with 20.2's history fetched, 20.3's
+            filers named and 20.4's first remedy run; in progress, this correction, found writing out 20.3's reference
+            set; next, the reference set written out again and labelled, the new pin and the history read, 20.2's
+            record, the two items phase 17's sign-off carried, and the sign-offs of phases 18 and 19 by fresh sessions.
+Found:      reading the reference set's first two releases before labelling them, then a read-only scan of all 100
+            counting each word of the filer's names that is no legal, common or ordinary word and each ticker: the
+            filer's own name or ticker left in 61 of them, 410 times. 250 stand where a sentence opens on the filer's
+            one-word name or its first word, which the operator's rule of 2026-10-18 keeps (see: A release is read with
+            every name and date in it replaced by a neutral word, and product names kept). The rest were faults against
+            that decision: U.S. Bancorp whole, 52 times, filed as `US BANCORP \DE\` with a state between backslashes and
+            written with points; a name filed with spaces or an ampersand and written with a hyphen or without it,
+            Brown-Forman, Patterson-UTI, Rent-A-Center and Marsh McLennan; a state filed bare after a legal word, RENT A
+            CENTER INC DE; a ticker opening a sentence, AIG, BGC and MARA, the decision's exception being a name's first
+            word or a surname; a class's ticker filed with a hyphen and written with a point or nothing, BF.B and BFB;
+            "Exhibit 99.1 Marsh" read as the date 1 Mar; and Abiomed's Impella read as a person from "Automated Impella
+            Controller", a title's word with no comma before it, where product names stay.
+Built:      the anonymiser takes a state off between slashes or backslashes and bare after a legal word; reads a name's
+            words joined by spaces, a hyphen or an ampersand it may write or leave out, and a word of up to three
+            capitals with points or none; replaces a ticker wherever it stands, and a class's ticker with a point, a
+            slash, a space or nothing for its hyphen; takes no article for a name's second word; reads a run beside a
+            title's word as a name only with a comma or an article between; and reads a month's short name only where it
+            ends its word. Its version moves from ff6d3fbf541f to 68989a532c29, and the instruction's with it; no
+            reading was written under 20.3's, and the fixture's release reads as before. The architecture's and 20.3's
+            account of the sentence-start rule name a name's first word or a surname, as the decision does; the
+            roster's row and the changelog.
+Measured:   the reference set written through the corrected anonymiser into a folder of its own and scanned the same
+            way: the filer's own name or ticker in 48 of the 100, 181 times, each where a sentence opens on the filer's
+            one-word name or its first word; every word left inside a sentence is one the scan counts that is not the
+            name in its place, as Office in Regional Office Properties.
+Tests:      1 new, 2468 in all: each fault worked by hand from the reference set's own releases.
+Claims:     1364, as before.
+Mutated:    the rule, stated before the runs: one mutation a fault the correction mends, the smallest edit to the
+            anonymiser undoing that fix alone, each run filtered to the anonymiser's 5 tests with its red predicted at
+            the new test, made in this checkout and reverted with the editor; each also reddens the version test, which
+            is counted and is no kill. M1 a state between backslashes kept. M2 a state bare after a legal word kept. M3
+            no hyphen joining a name. M4 the ampersand required where filed. M5 points read at one letter alone. M6 a
+            ticker skipped where it opens a sentence. M7 a class's ticker read only as filed. M8 a run running into a
+            title's word read as a name. M9 an article read as a name's second word. M10 a month read inside a longer
+            word. Each red at the new test as predicted, and at no other but the version test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2468 of 2468 tests ran with none failed,
+            migrations 0 to 100 with none pending, schema version 100, against `data-ci` and never `data`; the phase
+            report 60 tables, 1364 claims, 1364 passing, none out of scope and none unexamined, 1375 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the sentence-start rule's leak above, put to the operator with these figures; the reference set written out
+            again from main after the merge, labelled and committed before the new pin, then the history read and its
+            record; 20.2's record; 20.4's first remedy run, seven of the S&P 500's rules restarting where its replay
+            read an input a later night changed, put to the operator, and its second remedy after the history read; the
+            sign-offs of phases 18 and 19, owed to fresh sessions; the two items phase 17's sign-off carried; (G1),
+            SCHEMA's `family_trade` sentence, owed by the next edit of that section.

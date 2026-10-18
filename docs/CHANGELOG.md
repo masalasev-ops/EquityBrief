@@ -26,6 +26,30 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - ARCHITECTURE.html - the sentence-start rule names a name's first word or a surname, and a ticker goes wherever it stands
+Corrects: the anonymiser skipped a ticker where it opened a sentence, which the decision's exception, a name's first word or a surname, does not reach; found reading 20.3's reference set before labelling it, with AIG, BGC and MARA left whole.
+Was:
+> The date and quarter patterns run first, and every single-word replacement keeps its case and skips a sentence's first word, so a common word that is not the name stays.
+Now:
+> The date and quarter patterns run first, and a name's first word or a surname replaced on its own keeps its case and skips a sentence's first word, so a common word that is not the name stays, while a ticker goes wherever it stands.
+Why: the decision keeps a sentence's first word for a name's first word or a surname alone, and no sentence opens on a ticker as an ordinary word.
+
+### 2026-10-18 - BUILD_PLAN.md - 20.3's sentence-start rule names a name's first word or a surname
+Corrects: the same fault, in 20.3's text.
+Was:
+> ... the date and quarter patterns run first, and every single-word replacement is case-sensitive and skips a sentence's first word. Product names stay. ...
+Now:
+> ... the date and quarter patterns run first, and a name's first word or a surname replaced on its own is case-sensitive and skips a sentence's first word, a ticker going wherever it stands. Product names stay. ...
+Why: the same.
+
+### 2026-10-18 - .claude/rules/checks.md - fixture-expectations states the anonymiser's correction
+Corrects: the anonymiser's faults against its decision, found in 20.3's reference set before any release was read.
+Was:
+> fixture-expectations: ... the card's chips naming the condition and the per-rule step keeping the variant not testable in the operator's words |
+Now:
+> fixture-expectations: ... the per-rule step keeping the variant not testable in the operator's words; and from the 20.3 correction of 2026-10-18 a filer's name read across a hyphen, an ampersand written or left out, points and a state the SEC writes between backslashes or bare after a legal word, a ticker where it opens a sentence and a class's ticker written with a point or nothing, no article read as a name's second word, no product's name running into a title's word read as a person and no month's short name read inside a longer word |
+Why: each roster row says what its check asserts, and the correction's test extends fixture-expectations'.
+
 ### 2026-10-18 - ARCHITECTURE.html - the drift's tone variant: five components read the release readings, the matrix's column named for them, 15.7's card row, section 17's window row and section 14's step
 Authorised by: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
 Was:
