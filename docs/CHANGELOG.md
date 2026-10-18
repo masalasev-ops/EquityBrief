@@ -26,6 +26,36 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - .claude/rules/checks.md - fixture-expectations states a heavyweights night run again keeping the book of a rule it keeps none for
+Corrects: the heavyweight book undid every registered rule's night, deleting what each bought that night and opening again what each sold, before keeping the books of the rules the code carries at their versions, so a night run again over a rule registered at a version the code no longer carries lost that rule's buys of the night and reopened its sales; found correcting phase 17's first sign-off review on 2026-10-18 as F4's sibling, no stored holding touched, and added on the operator's ruling of that day.
+Was:
+> `fixture-expectations`: ... and a night whose index's inputs could not be read keeping no trade and leaving them as they stood |
+Now:
+> Added without replacing anything: a heavyweights night run again over a rule registered at a version the code no longer carries, named as the failure it is, keeping that rule's buys of the night and its reading as stored and leaving its sale of the night unopened, its close, reason, result and size cut's return as stored, while every other book's night is written again as it was.
+Why: a roster row names what its check asserts.
+
+### 2026-10-18 - SCHEMA.md - a heavyweights night run again keeps the book of a rule it keeps none for
+Corrects: as the entry above.
+Was:
+> heavyweight_rule_night: ... A night run again replaces its own session's rows for every rule and touches no other. ...
+> heavyweight_rule_holding: ... A night run again deletes what each rule bought that night, opens again what each ended that night, and writes the night again. ...
+Now:
+> ... A night run again replaces its own session's rows for every rule whose book it keeps that night and touches no other, from the 14.6 correction of 2026-10-18 a rule it keeps none for, registered at a version the code no longer carries, keeping its rows of the night. ...
+> ... A night run again deletes what each rule bought that night, opens again what each ended that night, and writes the night again, from the 14.6 correction of 2026-10-18 for each rule whose book it keeps that night alone: a rule it keeps none for, registered at a version the code no longer carries, keeps its buys of the night and its sales unopened as a run of the night stored them. ...
+Why: a book the night does not keep has no night to write again, and what its registration's own version bought and sold is its record.
+
+### 2026-10-18 - ARCHITECTURE.html - a heavyweights night run again keeps the book of a rule it keeps none for
+Corrects: as the entries above.
+Was:
+> component catalogue, Heavyweight book: ... replaces what it wrote for the night where the night is run again and reads nothing for a session earlier than one it has read, ...
+> stores, Heavyweight rule nights, retention: ... a night run again replacing its own session's rows and no other's (see: ...
+> stores, Heavyweight rule holdings, retention: ... a night run again deletes what each rule bought that night and opens again what each sold that night (see: ...
+Now:
+> ... replaces what it wrote for the night where the night is run again, from the 14.6 correction of 2026-10-18 a registered rule's only where it keeps that rule's book that night, so a rule it names as a failure keeps its buys of the night and its sales unopened, and reads nothing for a session earlier than one it has read, ...
+> ... a night run again replacing its own session's rows and no other's, from the 14.6 correction of 2026-10-18 for a rule whose book it keeps that night alone (see: ...
+> ... a night run again deletes what each rule bought that night and opens again what each sold that night, from the 14.6 correction of 2026-10-18 for a rule whose book it keeps that night alone (see: ...
+Why: as the entry above.
+
 ### 2026-10-18 - .claude/rules/checks.md - fixture-expectations states an index night run again keeping the trades of a rule it keeps no list for
 Corrects: the index families deleted every registered rule's trade of the night before keeping the lists of the rules they read, so a night run again over a rule registered at a version the code no longer carries, or at a setting its grid refuses, lost its stored trades of that night, and a night whose index's inputs could not be read lost every rule's; found correcting phase 17's first sign-off review on 2026-10-18 as F4's sibling, no stored trade lost, and added on the operator's ruling of that day.
 Was:

@@ -51,7 +51,9 @@ public sealed record HeavyweightRuleOutcome(
 //
 // It runs in the swing filter's step after the family recorder, reads what the night and the quarters step stored,
 // makes no request and calls no model, and no market check closes it. A night run again replaces what it wrote for
-// that night, and a night before one it has read is read for nothing.
+// that night, a registered rule's only where it keeps that rule's book that night, so a rule it keeps none for, as one
+// registered at a version the code no longer carries, keeps its buys of the night and its sales unopened; and a night
+// before one it has read is read for nothing.
 // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
 // see: A heavyweight is bought where it leads its sector above nothing and passes the trend gate, and sold where the rule would not buy it
 // see: A heavyweight leaving the index is sold at its last session's close as a member
@@ -163,10 +165,11 @@ public sealed class HeavyweightBook : IComponent
 
     const string OpenRule = "SELECT ticker, entered_on, sector, company, entry_close, growth, cut, through FROM heavyweight_rule_holding WHERE candidate = $candidate AND ended_on IS NULL ORDER BY ticker;";
 
+    // One rule's night run again, undone for a rule whose book the night keeps.
     const string ClearTheRulesNight = @"
-        DELETE FROM heavyweight_rule_night WHERE session_date = $night;
-        DELETE FROM heavyweight_rule_holding WHERE entered_on = $night;
-        UPDATE heavyweight_rule_holding SET ended_on = NULL, exit_close = NULL, reason = NULL, result = NULL, cut_return = NULL WHERE ended_on = $night;
+        DELETE FROM heavyweight_rule_night WHERE candidate = $candidate AND session_date = $night;
+        DELETE FROM heavyweight_rule_holding WHERE candidate = $candidate AND entered_on = $night;
+        UPDATE heavyweight_rule_holding SET ended_on = NULL, exit_close = NULL, reason = NULL, result = NULL, cut_return = NULL WHERE candidate = $candidate AND ended_on = $night;
     ";
 
     const string InsertRuleRead = @"
@@ -255,7 +258,6 @@ public sealed class HeavyweightBook : IComponent
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
         await ExecuteAsync(connection, transaction, ClearTheNight, [("$night", Stamp(night))], cancellation);
-        await ExecuteAsync(connection, transaction, ClearTheRulesNight, [("$night", Stamp(night))], cancellation);
 
         var members = (await ColumnAsync(connection, MembersOn, [("$index", indexCode), ("$session", Stamp(night))], cancellation, transaction)).ToHashSet(StringComparer.Ordinal);
         var bars = await BarsAsync(connection, transaction, cancellation);
@@ -420,7 +422,8 @@ public sealed class HeavyweightBook : IComponent
 
         foreach (var rule in rules ?? [])
         {
-            // A rule the code carries no evaluator for at the version it stands at is kept by no book, and fails the stage.
+            // A rule the code carries no evaluator for at the version it stands at is kept by no book, and fails the stage;
+            // what a run of the night stored for it stands.
             if (CandidateEvaluators.Find(rule.Evaluator) is not BookEvaluator evaluator || evaluator.Version != rule.EvaluatorVersion)
             {
                 var fault = CandidateEvaluators.Find(rule.Evaluator) is null
@@ -432,6 +435,8 @@ public sealed class HeavyweightBook : IComponent
 
                 continue;
             }
+
+            await ExecuteAsync(connection, transaction, ClearTheRulesNight, [("$candidate", rule.Candidate), ("$night", Stamp(night))], cancellation);
 
             var (kept, _, ruleRows) = await KeepAsync(new Ledger(rule.Candidate, evaluator.SettingsOf(CandidateEvaluator.Read(rule.Parameters))));
 
