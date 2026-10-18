@@ -3124,21 +3124,28 @@ Found:      reading the reference set's first two releases before labelling them
             Brown-Forman, Patterson-UTI, Rent-A-Center and Marsh McLennan; a state filed bare after a legal word, RENT A
             CENTER INC DE; a ticker opening a sentence, AIG, BGC and MARA, the decision's exception being a name's first
             word or a surname; a class's ticker filed with a hyphen and written with a point or nothing, BF.B and BFB;
-            "Exhibit 99.1 Marsh" read as the date 1 Mar; and Abiomed's Impella read as a person from "Automated Impella
-            Controller", a title's word with no comma before it, where product names stay.
+            "Exhibit 99.1 Marsh" read as the date 1 Mar; Abiomed's Impella read as a person from "Automated Impella
+            Controller", a title's word with no comma before it, where product names stay; and the dateline's town,
+            which the decision replaces, left in at least 48 of the 100, wherever a wire's name, a dash, a bracket, a
+            semicolon, a point or spaces stood between it and its date, or it came after its date, as "LITTLE ROCK,
+            Ark.--(BUSINESS WIRE)--", "CAMP HILL, PA (" and "[date], LOUISVILLE, Ky. –".
 Built:      the anonymiser takes a state off between slashes or backslashes and bare after a legal word; reads a name's
             words joined by spaces, a hyphen or an ampersand it may write or leave out, and a word of up to three
             capitals with points or none; replaces a ticker wherever it stands, and a class's ticker with a point, a
             slash, a space or nothing for its hyphen; takes no article for a name's second word; reads a run beside a
-            title's word as a name only with a comma or an article between; and reads a month's short name only where it
-            ends its word. Its version moves from ff6d3fbf541f to 68989a532c29, and the instruction's with it; no
-            reading was written under 20.3's, and the fixture's release reads as before. The architecture's and 20.3's
+            title's word as a name only with a comma or an article between; reads a month's short name only where it
+            ends its word; and replaces the first dateline a release writes, a town in capitals with its state or
+            country or none, or one in mixed case with its state or country, before its date with a wire's name, a
+            dash, a bracket, a semicolon, a point or spaces between, or after it, a word of a heading or a table in
+            capitals being no town. Its version moves from ff6d3fbf541f to ef9867cce471, and the instruction's with it;
+            no reading was written under 20.3's, and the fixture's release reads as before. The architecture's and 20.3's
             account of the sentence-start rule name a name's first word or a surname, as the decision does; the
             roster's row and the changelog.
 Measured:   the reference set written through the corrected anonymiser into a folder of its own and scanned the same
             way: the filer's own name or ticker in 48 of the 100, 181 times, each where a sentence opens on the filer's
             one-word name or its first word; every word left inside a sentence is one the scan counts that is not the
-            name in its place, as Office in Regional Office Properties.
+            name in its place, as Office in Regional Office Properties. A dateline's town is left in 1, Baltimore,
+            written in mixed case with no state, and 2 open on no dateline.
 Tests:      1 new, 2468 in all: each fault worked by hand from the reference set's own releases.
 Claims:     1364, as before.
 Mutated:    the rule, stated before the runs: one mutation a fault the correction mends, the smallest edit to the
@@ -3148,7 +3155,9 @@ Mutated:    the rule, stated before the runs: one mutation a fault the correctio
             no hyphen joining a name. M4 the ampersand required where filed. M5 points read at one letter alone. M6 a
             ticker skipped where it opens a sentence. M7 a class's ticker read only as filed. M8 a run running into a
             title's word read as a name. M9 an article read as a name's second word. M10 a month read inside a longer
-            word. Each red at the new test as predicted, and at no other but the version test.
+            word. M11 no wire's name read between a place and its date. M12 no bracket read before a date. M13 no town
+            in mixed case read. M14 no place read after its date. M15 a heading's capitals read as a town. M16 no point
+            read after a state. Each red at the new test as predicted, and at no other but the version test.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
             stated before the run: all six steps, 0 warnings, 0 errors, 2468 of 2468 tests ran with none failed,
             migrations 0 to 100 with none pending, schema version 100, against `data-ci` and never `data`; the phase

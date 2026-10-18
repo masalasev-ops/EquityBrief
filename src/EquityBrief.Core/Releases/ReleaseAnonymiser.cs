@@ -23,7 +23,7 @@ public static class ReleaseAnonymiser
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "68989a532c29";
+    public const string Version = "ef9867cce471";
 
     public const string Company = "[company]";
     public const string Ticker = "[ticker]";
@@ -209,8 +209,76 @@ public static class ReleaseAnonymiser
         @"(?<=^|[\s>|])(?:[A-Z][A-Za-z.'\-]*)(?:\s+[A-Z][A-Za-z.'\-]*){0,3}(?:,\s+[A-Z][A-Za-z.]{1,15})?(?=,\s+\[date\])",
         RegexOptions.CultureInvariant);
 
-    static string Dateline(string text) =>
-        DatelinePlace.Replace(text, match => match.Value.StartsWith('[') ? match.Value : Place);
+    // A dateline's place before its date with a wire's name, a dash, a bracket, a semicolon or spaces between, as
+    // "LITTLE ROCK, Ark.--(BUSINESS WIRE)-- [date]", "CAMP HILL, PA ([date])" or "Danvers, Mass. — [date]", or after its
+    // date, as "[date], LOUISVILLE, Ky. –": a town in capitals, with its state or country or none, or a town in mixed
+    // case with its state or country, the first a release writes alone, since a dateline opens a release once; a word of
+    // a heading or a table written in capitals is no town.
+    static readonly string[] DatelineStates =
+    [
+        "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DC", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA",
+        "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR",
+        "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
+        "Ala.", "Ariz.", "Ark.", "Calif.", "Colo.", "Conn.", "Del.", "D.C.", "Fla.", "Ga.", "Ill.", "Ind.", "Kan.", "Kans.",
+        "Ky.", "La.", "Md.", "Mass.", "Mich.", "Minn.", "Miss.", "Mo.", "Mont.", "Neb.", "Nev.", "N.H.", "N.J.", "N.M.",
+        "N.Y.", "N.C.", "N.D.", "Okla.", "Ore.", "Pa.", "R.I.", "S.C.", "S.D.", "Tenn.", "Tex.", "Vt.", "Va.", "Wash.",
+        "W.Va.", "Wis.", "Wyo.",
+        "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida",
+        "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine",
+        "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+        "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma",
+        "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah",
+        "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming",
+        "United Kingdom", "England", "Ireland", "Canada", "Bermuda", "Israel", "Netherlands", "Switzerland", "Luxembourg",
+        "Germany", "France", "Japan", "Singapore", "Australia",
+    ];
+
+    static readonly string[] NotPlaces =
+    [
+        "FOR", "IMMEDIATE", "RELEASE", "PRESS", "NEWS", "DATED", "DATE", "ENDED", "ENDING", "QUARTER", "QUARTERS", "YEAR",
+        "YEARS", "MONTH", "MONTHS", "WEEK", "WEEKS", "PERIOD", "PERIODS", "AS", "OF", "AT", "ON", "BY", "THROUGH", "FROM",
+        "TO", "AND", "THE", "RESULTS", "REPORTS", "REPORT", "REPORTED", "FISCAL", "GUIDANCE", "EARNINGS", "DIVIDEND",
+        "PAYABLE", "EXHIBIT", "DOCUMENT", "CONTACT", "CONTACTS", "UPDATE", "UPDATES", "OUTLOOK", "FULL", "HALF",
+        "BALANCE", "BALANCES", "TOTAL", "INVESTOR", "INVESTORS", "MEDIA", "EFFECTIVE", "ISSUED", "RECORD", "SINCE",
+        "UNTIL", "BEFORE", "AFTER", "BEGINNING", "END", "STATEMENT", "STATEMENTS", "ANNOUNCES", "ANNOUNCED", "DECLARES",
+        "DECLARED", "PAGE", "TABLE", "NOTE", "NOTES", "UNAUDITED", "AUDITED", "THREE", "SIX", "NINE", "TWELVE",
+    ];
+
+    // A state or a country as written, in capitals as well where it is more than its code, with a point after or none.
+    static readonly string DatelineState = "(?:" + string.Join("|", DatelineStates.Concat(DatelineStates.Where(state => state.Length > 3).Select(state => state.ToUpperInvariant())).Distinct(StringComparer.Ordinal).OrderByDescending(state => state.Length).Select(Regex.Escape)) + @")\.?(?![\p{L}])";
+
+    const string Wire = @"(?:BUSINESS\s+WIRE|Business\s+Wire|GLOBE\s+NEWSWIRE|Globe\s*Newswire|GlobeNewswire|PR\s*NEWSWIRE|PR\s*Newswire|PRNewswire|ACCESS\s*WIRE|ACCESSWIRE|ACCESS\s+Newswire|Marketwired|MARKETWIRED)";
+
+    const string ToTheDate = @"(?=\s*[,;.:]{0,2}\s*(?:[-–—]{1,2}\s*)?(?:\(?\s*" + Wire + @"\s*\)?\s*[,;.:]?\s*(?:[-–—]{1,2}\s*)?)?\(?\s*\[date\])";
+
+    static readonly string CapitalsWord = @"(?!(?:" + string.Join("|", NotPlaces) + @")(?![\p{L}]))[A-Z][A-Z'’\-]*\.?(?![\p{Ll}])";
+
+    static readonly Regex CapitalsDateline = new(
+        @"(?<![\p{L}\p{N}\]])" + CapitalsWord + @"(?:\s+" + CapitalsWord + @"){0,3}(?:\s*,\s*" + DatelineState + ")?" + ToTheDate,
+        RegexOptions.CultureInvariant);
+
+    static readonly Regex TownDateline = new(
+        @"(?<![\p{L}\p{N}\]])[A-Z][a-z]+(?:[\s\-][A-Z][a-z]+){0,2}\s*,\s*" + DatelineState + ToTheDate,
+        RegexOptions.CultureInvariant);
+
+    static readonly Regex DateThenPlace = new(
+        @"(?<=\[date\]\s*,\s*)" + CapitalsWord + @"(?:\s+" + CapitalsWord + @"){0,3}\s*,\s*" + DatelineState + @"(?=\s*[-–—(])",
+        RegexOptions.CultureInvariant);
+
+    static string Dateline(string text)
+    {
+        var read = text;
+        var first = new[] { CapitalsDateline.Match(read), TownDateline.Match(read) }.Where(match => match.Success).MinBy(match => match.Index);
+
+        if (first is not null)
+        {
+            read = read[..first.Index] + Place + read[(first.Index + first.Length)..];
+        }
+
+        read = DateThenPlace.Replace(read, Place, 1);
+
+        return DatelinePlace.Replace(read, match => match.Value.StartsWith('[') ? match.Value : Place);
+    }
 
     // ---- the filer's names and tickers ------------------------------------------
 
