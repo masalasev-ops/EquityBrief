@@ -275,7 +275,7 @@ public partial class FixtureExpectations
         using (var connection = store.Open())
         using (var transaction = connection.BeginTransaction())
         {
-            var night = DateOnly.ParseExact(TextRows(store, "SELECT MAX(session_date) FROM bar;").Single(), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var night = DateOnly.ParseExact(TextRows(store, "SELECT MAX(session_date) FROM bar").Single(), "yyyy-MM-dd", CultureInfo.InvariantCulture);
             var none = await IndexRuleTrades.KeepAsync(connection, transaction, "MID", night, null, [], CancellationToken.None);
 
             transaction.Commit();
