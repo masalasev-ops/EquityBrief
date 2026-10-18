@@ -1,0 +1,8 @@
+# The remedy of 20.3, its second half, run only once the reference set's labels are committed: the new reading version,
+# the model's file hashed whole and the instruction's version with the anonymiser's in it, then every stored release
+# read under it with its names and dates removed, oldest first, stopping at 07:00 New York time and going on from where
+# it stopped when run again, its pin's history marked complete once no stored release is left unread. The local model
+# alone, with LM Studio running and holding the model; no provider request, no SEC request and no paid call. Run after
+# the night's copy, outside the night; it keeps clear of each slot and of the night's window.
+local-run --pin
+releases --read --history --until 07:00

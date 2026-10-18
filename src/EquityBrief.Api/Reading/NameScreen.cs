@@ -543,7 +543,10 @@ public static partial class NameScreen
                 readings?.Valuation.Absent ?? (readings is null ? "no reading of its quarters was stored on the night" : null),
                 EquityBrief.Core.Report.QuarterLines.Multiples(inputs.Quarters),
                 peers),
-            EquityBrief.Core.Insiders.InsiderView.Of(inputs.Insiders ?? [], inputs.InsiderSpans ?? EquityBrief.Core.Insiders.InsiderCoverage.None, night));
+            EquityBrief.Core.Insiders.InsiderView.Of(inputs.Insiders ?? [], inputs.InsiderSpans ?? EquityBrief.Core.Insiders.InsiderCoverage.None, night),
+            inputs.Release is { } release && inputs.ReleaseModel is { } model
+                ? new ReleaseReadingView(DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(release.Accepted, EquityBrief.Core.Time.SessionZones.ResolveSessionZone(EquityBrief.Core.Time.SessionZones.UnitedStates)).DateTime), release.Answer, release.Pin, model)
+                : null);
     }
 
     // The figures a reader wants first, a figure to a row in two columns: the newest quarter's

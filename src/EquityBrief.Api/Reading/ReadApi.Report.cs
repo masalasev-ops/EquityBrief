@@ -26,7 +26,9 @@ public sealed record ReportInputs(
     string? Industry,
     IReadOnlyList<PeerValue> Peers,
     IReadOnlyList<InsiderRow>? Insiders = null,
-    InsiderCoverage? InsiderSpans = null);
+    InsiderCoverage? InsiderSpans = null,
+    NewestReading? Release = null,
+    string? ReleaseModel = null);
 
 // The reads of the regions phase 18 added between the card and the earnings reactions. The page draws what they return
 // through the core's functions and computes none of it.
@@ -287,8 +289,40 @@ public sealed partial class ReadApi
         }
 
         var (insiders, spans) = await InsidersAsync(connection, ticker, night);
+        var (release, model) = await ReleaseReadingAsync(connection, ticker, night);
 
-        return new ReportInputs(quarters, fetchedOn, estimate, trend, trendOn, ratings, dividends, tenYears, industry, peers, insiders, spans);
+        return new ReportInputs(quarters, fetchedOn, estimate, trend, trendOn, ratings, dividends, tenYears, industry, peers, insiders, spans, release, model);
+    }
+
+    // From 20.3 the newest results release of the stock's filer the night may read, as the local model read it under the
+    // newest reading version, with the model that version names; none where the store holds no reading of one.
+    // see: A release reading is readable from the first night whose late slot starts after the release was accepted
+    const string PinModel = "SELECT model FROM reading_pin WHERE id = $pin;";
+
+    async Task<(NewestReading? Release, string? Model)> ReleaseReadingAsync(SqliteConnection connection, string ticker, DateOnly night)
+    {
+        string? cik;
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = FilerOf;
+            command.Parameters.AddWithValue("$ticker", ticker);
+
+            cik = await command.ExecuteScalarAsync() as string;
+        }
+
+        if (cik is null || await ReleaseReadings.NewestAsync(connection, EquityBrief.Core.Providers.SecEdgarArchive.Padded(cik), night) is not { } newest)
+        {
+            return (null, null);
+        }
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = PinModel;
+            command.Parameters.AddWithValue("$pin", newest.Pin);
+
+            return (newest, await command.ExecuteScalarAsync() as string);
+        }
     }
 
     // The stock's filer's insiders' transactions filed in the year to the night, every code, and the spans the store's

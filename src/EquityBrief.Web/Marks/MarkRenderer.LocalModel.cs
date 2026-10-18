@@ -52,4 +52,30 @@ public sealed partial class MarkRenderer
             + "<tr><th>Run</th><th>Started and ended</th><th>Documents fetched</th><th>Documents read</th><th>Refused answers by cause</th><th>Time a call, median</th><th>Pinned to</th><th>Model's file checked by</th><th>Came to</th></tr>"
             + rows + "</table></div>";
     }
+
+    // From 20.3 the newest results release's four answers under what management said: each question with its word, the
+    // day the SEC accepted the release, and the line naming the model and the reading version it was read under from the
+    // release with its names and dates removed.
+    // see: A release is read with every name and date in it replaced by a neutral word, and product names kept
+    public string ReleaseReading(ReleaseReadingView view)
+    {
+        string Row(string question, string word) =>
+            $"<tr data-question=\"{Escaped(question)}\"><td>{Escaped(question)}</td><td data-reading=\"{Reading(question, word)}\">{Escaped(word)}</td></tr>";
+
+        return FormattableString.Invariant($"<div class=\"release-reading\" data-pin=\"{view.Pin}\" data-accepted=\"{view.AcceptedOn:yyyy-MM-dd}\">")
+            + FormattableString.Invariant($"<p>The newest results release, accepted {view.AcceptedOn:yyyy-MM-dd}, as the local model read it.</p>")
+            + "<div class=\"tbl-wrap\"><table class=\"release-answers\"><thead><tr><th>Question</th><th>The model's answer</th></tr></thead><tbody>"
+            + Row(ReleaseQuestions.Results, view.Answer.Results)
+            + Row(ReleaseQuestions.Outlook, view.Answer.Outlook)
+            + Row(ReleaseQuestions.Tone, view.Answer.Tone)
+            + Row(ReleaseQuestions.Demand, view.Answer.Demand)
+            + "</tbody></table></div>"
+            + FormattableString.Invariant($"<p class=\"release-read-by\">Read by the local model, {Escaped(view.Model)}, reading version {view.Pin}, from the release with its names and dates removed.</p>")
+            + "</div>";
+    }
+
+    static string Reading(string question, string word) =>
+        ReleaseQuestions.For(question).Words.FirstOrDefault(listed => listed.Word == word)?.Reading is { } reading
+            ? reading.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            : "none";
 }

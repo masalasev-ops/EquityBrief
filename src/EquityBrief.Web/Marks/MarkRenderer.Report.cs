@@ -19,7 +19,12 @@ public sealed record ReportView(
     AnalystReading? Analysts,
     DividendSafetyReading? Dividend,
     ValuationView? Valuation,
-    EquityBrief.Core.Insiders.InsiderView? Insiders = null);
+    EquityBrief.Core.Insiders.InsiderView? Insiders = null,
+    ReleaseReadingView? Release = null);
+
+// From 20.3 the newest results release's reading a name's page draws under what management said: the day the SEC accepted
+// it in New York, its four words, and the reading version and the model it was read under.
+public sealed record ReleaseReadingView(DateOnly AcceptedOn, EquityBrief.Core.Releases.ReleaseAnswer Answer, long Pin, string Model);
 
 // The valuation as the page draws it: the night's multiple, the low and high of its own quarters' multiples and where it
 // sits among them, as the night's reading stored them, each quarter's multiple, and the peer table.

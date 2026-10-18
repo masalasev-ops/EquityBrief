@@ -73,6 +73,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Release fetch"),
     ];
 
+    // 20.3's one: the accuracy report.
+    internal static string[] ReleaseAccuracyRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Release accuracy"),
+        CheckReach.Key(Scope.MatrixTable, "Release accuracy"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -101,6 +108,9 @@ public partial class ComponentAccess
 
             // 20.2, the release fetch.
             .. ReleaseFetchRows,
+
+            // 20.3, the accuracy report.
+            .. ReleaseAccuracyRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),
@@ -718,14 +728,15 @@ public partial class ComponentAccess
 
         Assert.Empty(faults);
 
-        // The eight that write no store, stated in advance: the page, the renderer, the
+        // The nine that write no store, stated in advance: the page, the renderer, the
         // trend classifier, which hands its label to the ladder builder, from 6.11 the
         // report exporter, whose file is kept wherever the person exporting chooses,
         // from 12.2 the filter counts, which print the shape counts and open the store read-only,
         // from 12.6 the comparison files, written to a folder the repository ignores, from 12.5 the
         // sweep history, which opens the store read-only and keeps its chunks and its report in a folder beside it,
-        // and the sweep's point-in-time check, which reads scratch stores of its own the night's components wrote.
-        Assert.Equal(["ComparisonFiles", "FilterCounts", "MarkRenderer", "ReportExporter", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
+        // and the sweep's point-in-time check, which reads scratch stores of its own the night's components wrote,
+        // and from 20.3 the release accuracy report, which prints its figures and writes nothing.
+        Assert.Equal(["ComparisonFiles", "FilterCounts", "MarkRenderer", "ReleaseAccuracy", "ReportExporter", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
 
         // And the row's own words, read off the document, are the words this holds.
         Assert.Equal(

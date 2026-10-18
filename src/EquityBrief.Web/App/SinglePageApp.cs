@@ -1806,8 +1806,41 @@ public sealed partial class SinglePageApp : IComponent
             filedOn);
 
         // What management said with its results, the written section read from the newest and the previous results
-        // releases, after the quarter where section 4 lists it.
-        Draw("management", AfterTheQuarter);
+        // releases, after the quarter where section 4 lists it; and from 20.3 beneath it the newest results release's four
+        // answers as the local model read it, the card holding them alone where no section is written.
+        // see: A release is read with every name and date in it replaced by a neutral word, and product names kept
+        var releaseRead = report?.Release is { } shown ? marks.ReleaseReading(shown) : null;
+
+        if (sections.FirstOrDefault(section => string.Equals(section.Section, MarkRenderer.WhatManagementSaid, StringComparison.Ordinal)) is { } managed)
+        {
+            Card(
+                "management",
+                SectionId(MarkRenderer.WhatManagementSaid),
+                MarkRenderer.WhatManagementSaid,
+                Cards.Dated(
+                    MarkRenderer.WhatManagementSaid,
+                    "Written",
+                    managed.AsOf,
+                    marks.WrittenSection(ticker, managed, documents) + (releaseRead ?? string.Empty),
+                    section: MarkRenderer.WhatManagementSaid,
+                    id: SectionId(MarkRenderer.WhatManagementSaid)),
+                managed.AsOf);
+        }
+        else if (releaseRead is not null && report?.Release is { } alone)
+        {
+            Card(
+                "management",
+                SectionId(MarkRenderer.WhatManagementSaid),
+                MarkRenderer.WhatManagementSaid,
+                Cards.Dated(
+                    MarkRenderer.WhatManagementSaid,
+                    "Accepted",
+                    alone.AcceptedOn,
+                    releaseRead,
+                    section: MarkRenderer.WhatManagementSaid,
+                    id: SectionId(MarkRenderer.WhatManagementSaid)),
+                alone.AcceptedOn);
+        }
 
         // The segments, which section 4 lists after what management said: the segment table the stated rule made of the
         // filing's, each segment's share of revenue, what the company sells and the segment commentary where written, and

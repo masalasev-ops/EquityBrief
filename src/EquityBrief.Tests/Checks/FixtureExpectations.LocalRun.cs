@@ -53,7 +53,9 @@ public partial class FixtureExpectations
             ReleaseQuestions.Instruction);
 
         // Its version, the first twelve hex characters of the SHA-256 of its bytes, worked out here with the suite's own hash.
-        Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(ReleaseQuestions.Instruction)))[..12], ReleaseQuestions.Version);
+        // From 20.3 the anonymiser's own version on a line after it, so a rule of what a release is read without moved is
+        // another version.
+        Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(ReleaseQuestions.Instruction + "\n" + ReleaseAnonymiser.Version)))[..12], ReleaseQuestions.Version);
 
         // Each word and its reading as the decision writes them, a word saying nothing read as none and never nought.
         Assert.Equal(

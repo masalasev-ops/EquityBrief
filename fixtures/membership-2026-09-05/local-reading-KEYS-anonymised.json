@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-wrvy2wwtzkq28uaycnhc9ci",
+  "object": "chat.completion",
+  "created": 1792327279,
+  "model": "google/gemma-4-26b-a4b-qat",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"results\": \"better\",\n  \"outlook\": \"raised\",\n  \"tone\": \"confident\",\n  \"demand\": \"stronger\"\n}",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 5755,
+    "completion_tokens": 42,
+    "total_tokens": 5797,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {
+    "tokens_per_second": 103.17190704462814,
+    "time_to_first_token": 2.113683,
+    "generation_time": 2.511078,
+    "stop_reason": "eosFound"
+  },
+  "model_info": {
+    "arch": "gemma4",
+    "quant": "Q4_0",
+    "format": "gguf",
+    "context_length": 50176
+  },
+  "runtime": {
+    "name": "llama.cpp-win-x86_64-nvidia-cuda12-avx2",
+    "version": "2.56.0",
+    "supported_formats": [
+      "gguf"
+    ]
+  }
+}

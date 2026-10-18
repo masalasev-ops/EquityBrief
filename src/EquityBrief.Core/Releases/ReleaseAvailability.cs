@@ -47,4 +47,70 @@ public static class ReleaseAvailability
     // The first of the sessions given, in their order, whose night may read the release, or none where none may.
     public static DateOnly? FirstNight(DateTimeOffset accepted, IEnumerable<DateOnly> sessions) =>
         sessions.Order().Where(session => ReadableOn(accepted, session)).Select(session => (DateOnly?)session).FirstOrDefault();
+
+    // From 20.3 the instant a print's release may be accepted from: the start in New York of the exchange's session
+    // before the print's report date, so a release of an earlier quarter never answers for the print, and none where
+    // the calendar places no session before it.
+    // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+    public static DateTimeOffset? WindowFrom(DateOnly reportDate, TimeZoneInfo zone, ReleaseCalendar calendar) =>
+        calendar.SessionBefore(reportDate) is { } day
+            ? new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(day.ToDateTime(TimeOnly.MinValue), zone), TimeSpan.Zero)
+            : null;
+
+    // The release that answers for a print on a night: of the filer's releases, the newest the SEC accepted from the
+    // print's window that the night may read, or none.
+    public static T? ReleaseFor<T>(IEnumerable<T> releases, Func<T, DateTimeOffset> accepted, DateOnly reportDate, DateOnly night, TimeZoneInfo zone, ReleaseCalendar calendar)
+        where T : class
+    {
+        if (WindowFrom(reportDate, zone, calendar) is not { } from)
+        {
+            return null;
+        }
+
+        return releases
+            .Where(release => accepted(release) >= from && ReadableOn(accepted(release), night))
+            .OrderByDescending(accepted)
+            .FirstOrDefault();
+    }
+}
+
+// The sessions the release rules read by: the exchange's closure table over the years it covers, and over the years
+// before it the sessions handed in, being the ones the ledger read, as the pulled history's sessions are read off the
+// names that traded them. A day before the first session handed in is placed by neither, and a day past the table's
+// years is refused by the table.
+public sealed class ReleaseCalendar
+{
+    readonly DateOnly[] before;
+
+    public ReleaseCalendar(IEnumerable<DateOnly> sessions) =>
+        before = [.. sessions.Where(day => day < Bars.ExchangeClosures.CoveredFrom).Distinct().Order()];
+
+    // The closure table's alone, as the night reads it.
+    public static ReleaseCalendar Exchange { get; } = new([]);
+
+    // Whether the exchange traded on a day, none where the calendar cannot place it.
+    public bool? IsSession(DateOnly day) =>
+        day >= Bars.ExchangeClosures.CoveredFrom ? Bars.ExchangeClosures.IsSession(day)
+        : before.Length > 0 && day >= before[0] ? Array.BinarySearch(before, day) >= 0
+        : null;
+
+    // The session before a day, none where the calendar cannot place a day before it.
+    public DateOnly? SessionBefore(DateOnly day) => Walk(day, -1);
+
+    // The session after a day, none where the calendar cannot place a day after it.
+    public DateOnly? SessionAfter(DateOnly day) => Walk(day, 1);
+
+    DateOnly? Walk(DateOnly day, int step)
+    {
+        for (var at = day.AddDays(step); ; at = at.AddDays(step))
+        {
+            switch (IsSession(at))
+            {
+                case true:
+                    return at;
+                case null:
+                    return null;
+            }
+        }
+    }
 }

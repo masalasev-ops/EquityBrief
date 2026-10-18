@@ -58,8 +58,9 @@ public static class ReleaseQuestions
         return string.Join(", ", quoted[..^1]) + " or " + quoted[^1];
     }
 
-    // The instruction's version: the first twelve hex characters of the SHA-256 of its bytes, so a word or a question
-    // moved is another version, which a pin refuses until a new one is written.
+    // The prompt's version: the first twelve hex characters of the SHA-256 of the instruction's bytes and, from 20.3, the
+    // anonymiser's own version after it on a line of its own, so a word, a question or a rule of what a release is read
+    // without moved is another version, which a pin refuses until a new one is written.
     public static string Version { get; } =
-        Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(Instruction)))[..12];
+        Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(Instruction + "\n" + ReleaseAnonymiser.Version)))[..12];
 }

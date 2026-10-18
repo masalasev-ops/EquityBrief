@@ -68,7 +68,10 @@ internal static class ComponentVocabulary
     // trade's fill at the next session's open beside the trades, each a record of what became of one. From 20.1 the
     // research and theme column holds the reading pins beside the sections a model wrote, each the version a local
     // model's readings are read under. From 20.2 the sources column holds the members' results releases and the days the
-    // release fetch read for them beside the source documents, each a document the SEC filed and kept as its text.
+    // release fetch read for them beside the source documents, each a document the SEC filed and kept as its text. From
+    // 20.3 the sources column holds the names and tickers each release's filer files under, read off its submissions
+    // beside its releases, and the research and theme column the local model's readings of the releases and its probes'
+    // answers beside the pins they are read under, each what a model wrote.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
@@ -81,8 +84,8 @@ internal static class ComponentVocabulary
         ("Facts", [DataStore.Facts]),
         ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk, DataStore.Company, DataStore.EstimateReading, DataStore.DividendReading, DataStore.EstimateTrend, DataStore.DividendEvent, DataStore.FiledFact, DataStore.FiledFactPull, DataStore.FilingDay, DataStore.InsiderTrade, DataStore.InsiderRead, DataStore.SecTicker]),
         ("News", [DataStore.NewsPulse, DataStore.NewsArticle, DataStore.NewsLabel]),
-        ("Research and theme", [DataStore.ResearchSection, DataStore.ThemeSection, DataStore.ReadingPin]),
-        ("Sources", [DataStore.SourceDocument, DataStore.ReleaseDocument, DataStore.ReleaseDay]),
+        ("Research and theme", [DataStore.ResearchSection, DataStore.ThemeSection, DataStore.ReadingPin, DataStore.ReleaseReading, DataStore.ReleaseProbe]),
+        ("Sources", [DataStore.SourceDocument, DataStore.ReleaseDocument, DataStore.ReleaseDay, DataStore.ReleaseFiler]),
         ("Candidate register", [DataStore.CandidateRegister]),
         ("Rule versions", [DataStore.RuleVersion]),
         ("Version scores and blocks", [DataStore.VersionScore, DataStore.VersionBlock]),
@@ -262,6 +265,9 @@ internal static class ComponentVocabulary
         ["reading pins"] = DataStore.ReadingPin,
         ["release documents"] = DataStore.ReleaseDocument,
         ["release days"] = DataStore.ReleaseDay,
+        ["release filers"] = DataStore.ReleaseFiler,
+        ["release readings"] = DataStore.ReleaseReading,
+        ["release probes"] = DataStore.ReleaseProbe,
         ["estimate readings"] = DataStore.EstimateReading,
         ["fundamental readings"] = DataStore.FundamentalReading,
         ["member readings"] = DataStore.MemberReading,

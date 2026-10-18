@@ -148,7 +148,7 @@ public static class LocalLocks
 // of the night's, the drain's or the monthly run's locks and waits to write while one is held, one local process at a
 // time by a lock of its own; and it writes one run log row a run, every call on its own row and never on a night's.
 // see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
-public sealed class LocalRun(
+public sealed partial class LocalRun(
     IReadingModelFeed feed,
     LocalModelSettings settings,
     IClock clock,
@@ -160,8 +160,18 @@ public sealed class LocalRun(
     public static ComponentAccess Access => new(
         Stores:
         [
-            new StoreTouch(Store.ReadingPin, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.ReadingPin, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.SourceDocument, Touch.Read),
+            new StoreTouch(Store.ReleaseDocument, Touch.Read),
+            new StoreTouch(Store.ReleaseFiler, Touch.Read),
+            new StoreTouch(Store.ReleaseReading, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.ReleaseProbe, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.Company, Touch.Read),
+            new StoreTouch(Store.PulledCompany, Touch.Read),
+            new StoreTouch(Store.SecTicker, Touch.Read),
+            new StoreTouch(Store.InsiderTrade, Touch.Read),
+            new StoreTouch(Store.Setup, Touch.Read),
+            new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
         ],
         Feeds: [Feed.LocalModel]);
@@ -216,6 +226,23 @@ public sealed class LocalRun(
                 $temperature, $seed, $answer_tokens, $context, $cutoff, $written_at, NULL, $run_id);
     ";
 
+    // From 20.3 the history read marks its pin complete once, where no stored release is left unread under it.
+    const string CompleteHistory = "UPDATE reading_pin SET history_completed_at = $at WHERE id = $id AND history_completed_at IS NULL;";
+
+    // From 20.3 a release's reading under a pin, kept once, its four words or the cause it was refused for.
+    const string InsertReading = @"
+        INSERT INTO release_reading (accession, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, run_id)
+        VALUES ($accession, $pin, $outcome, $cause, $results, $outlook, $tone, $demand, $seconds, $prompt_tokens, $read_at, $run_id)
+        ON CONFLICT (accession, pin) DO NOTHING;
+    ";
+
+    // From 20.3 a probe's answer over one release under a pin, kept once beside what it is set against.
+    const string InsertProbe = @"
+        INSERT INTO release_probe (kind, accession, pin, outcome, cause, answer, against, matched, seconds, read_at, run_id)
+        VALUES ($kind, $accession, $pin, $outcome, $cause, $answer, $against, $matched, $seconds, $read_at, $run_id)
+        ON CONFLICT (kind, accession, pin) DO NOTHING;
+    ";
+
     // The newest start of a local run that hashed the model's file whole and found it the pin's.
     const string LastHashedWhole = @"
         SELECT MAX(started_at) FROM run_log
@@ -263,23 +290,39 @@ public sealed class LocalRun(
             return await EndAsync(started, kind, refused with { Kind = kind, Fetched = stored, Requests = requests }, limit, output, cancellation);
         }
 
-        var outcome = fetched is null
+        // From 20.3 the releases accepted in the week before the slot's day that no reading under the pin holds.
+        var recent = await ReadRecentAsync(ready.Pin!, started, limit, cancellation);
+        var kept = recent.Read + recent.Refused.Values.Sum();
+
+        if (recent.Ended is { } ended)
+        {
+            return await EndAsync(
+                started,
+                kind,
+                ended with { Kind = kind, Fetched = stored, Requests = requests, Read = recent.Read, Refused = recent.Refused, Pin = ready.Pin, FileCheck = ready.Check, HashSeconds = ready.HashSeconds },
+                limit,
+                output,
+                cancellation,
+                rowsWritten: kept);
+        }
+
+        var outcome = fetched is null && kept == 0
             ? new LocalRunOutcome(kind, NothingToRead, "no stored release is waiting for a reading under the pin", 0, 0, NoRefusals, null, null, ready.Pin, ready.Check, ready.HashSeconds)
             : new LocalRunOutcome(
                 kind,
-                fetched.Refusal is null ? Finished : FetchRefused,
-                fetched.Refusal ?? fetched.Stopped,
+                fetched?.Refusal is not null ? FetchRefused : recent.Stopped ? LimitReached : Finished,
+                fetched?.Refusal ?? (recent.Stopped ? "the slot's last instant passed before every release was read" : fetched?.Stopped),
                 stored,
-                0,
-                NoRefusals,
-                null,
-                null,
+                recent.Read,
+                recent.Refused,
+                Median(recent.Seconds),
+                recent.Seconds.Count == 0 ? null : recent.Seconds.Max(),
                 ready.Pin,
                 ready.Check,
                 ready.HashSeconds,
                 Requests: requests);
 
-        return await EndAsync(started, kind, outcome, limit, output, cancellation);
+        return await EndAsync(started, kind, outcome, limit, output, cancellation, rowsWritten: kept);
     }
 
     // A new reading version: the model's file hashed whole, the runtime read off a probe's answer and the

@@ -63,6 +63,14 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "Release days"),
     ];
 
+    // 20.3's three: the releases' filers, the readings and the probes.
+    internal static string[] ReleaseReadingStoreRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Release filers"),
+        CheckReach.Key(Scope.StoresTable, "Release readings"),
+        CheckReach.Key(Scope.StoresTable, "Release probes"),
+    ];
+
     internal static CheckReach Reach => new(
         "schema-columns",
         ["docs/SCHEMA.md"],
@@ -168,6 +176,9 @@ public class SchemaColumns
 
             // 20.2, the results releases and their days.
             .. ReleaseStoreRows,
+
+            // 20.3, the releases' filers, the readings and the probes.
+            .. ReleaseReadingStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

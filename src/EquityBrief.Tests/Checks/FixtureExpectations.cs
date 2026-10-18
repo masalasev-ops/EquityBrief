@@ -157,6 +157,8 @@ public partial class FixtureExpectations
             .. LocalRunClaims,
             // 20.2, the release fetch: section 17's row and section 18's.
             .. ReleaseFetchClaims,
+            // 20.3, the release reading: section 17's row and section 18's.
+            .. ReleaseReadingClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

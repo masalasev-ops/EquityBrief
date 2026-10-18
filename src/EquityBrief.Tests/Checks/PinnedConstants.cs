@@ -296,6 +296,10 @@ public class PinnedConstants
             new("Local reading's settings", "20261018", Core.Releases.ReadingSettings.Seed, "ReadingSettings.Seed"),
             new("Local reading's settings", "256", Core.Releases.ReadingSettings.AnswerTokens, "ReadingSettings.AnswerTokens"),
             new("Local reading's settings", "1", Core.Releases.ReadingSettings.AskedAgain, "ReadingSettings.AskedAgain"),
+            // From 20.3 the days a slot reads and the late slot's start a night reads by.
+            new("Local reading's settings", "7", Worker.Local.LocalRun.SlotReadsDays, "LocalRun.SlotReadsDays"),
+            new("Local reading's settings", "21", Core.Releases.LocalSlots.LateStart.Hour, "LocalSlots.LateStart's hour"),
+            new("Local reading's settings", "40", Core.Releases.LocalSlots.LateStart.Minute, "LocalSlots.LateStart's minute"),
             // The release fetch's settings, 20.2.
             new("Release fetch's settings", "10", Worker.Local.ReleaseFetch.DaysASlot, "ReleaseFetch.DaysASlot"),
             new("Release fetch's settings", "7", Worker.Local.ReleaseFetch.FirstLookBack, "ReleaseFetch.FirstLookBack"),
@@ -303,6 +307,11 @@ public class PinnedConstants
             new("Release fetch's settings", "100", Core.Releases.ResultsReleases.CurrentPageSize, "ResultsReleases.CurrentPageSize"),
             new("Release fetch's settings", "10", Worker.Local.ReleaseFetch.RequestsASecond, "ReleaseFetch.RequestsASecond"),
             new("Release fetch's settings", "12", Worker.Local.ReleaseFetch.MonthsBefore, "ReleaseFetch.MonthsBefore"),
+            // The release reading's samples, 20.3.
+            new("Release reading's samples", "200", Core.Releases.ReleaseSamples.ProbeCount, "ReleaseSamples.ProbeCount"),
+            new("Release reading's samples", "100", Core.Releases.ReleaseSamples.ReferenceCount, "ReleaseSamples.ReferenceCount"),
+            new("Release reading's samples", "20261018", Core.Releases.ReleaseSamples.Seed, "ReleaseSamples.Seed"),
+            new("Release reading's samples", "2026", Core.Releases.ReleaseSamples.Before.Year, "ReleaseSamples.Before's year"),
             new("Live quotes a day", "500", Core.Quotes.QuoteLimits.DailyCap, "QuoteLimits.DailyCap"),
             new("Quote interval", "5", Core.Quotes.QuoteLimits.IntervalMinutes, "QuoteLimits.IntervalMinutes"),
             new("Report windows", "8", Core.Report.QuarterLines.GrowthQuarters, "QuarterLines.GrowthQuarters"),
