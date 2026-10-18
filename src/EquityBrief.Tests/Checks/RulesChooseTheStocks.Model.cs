@@ -10,7 +10,7 @@ namespace EquityBrief.Tests.Checks;
 // touching it but the read surface, which draws it, declares a read of what a language model wrote, a model or the
 // search among its feeds, or a read of the operator's trades or record.
 // see: A fitted statistical model is a rule
-// see: Rules choose the stocks, and a language model writes only the reports
+// see: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and no model judges a stock
 public partial class RulesChooseTheStocks
 {
     const string ReadSurface = "ReadApi";

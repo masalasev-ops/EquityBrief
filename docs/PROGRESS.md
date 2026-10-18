@@ -2639,3 +2639,79 @@ Carried:    (G1), SCHEMA's `family_trade` sentence saying the recorder's row nam
             16's (n3), owed by the next change to the exit press. The night of 2026-10-19 is the first to read the 12
             rules at their new versions. Phases 18 and 19 are signed after this one, each by its own session.
 Signed:     phase 17, over 171cc021.
+
+### 20.0 planning - phase 20 planned: local AI in the picks and the loop, the narrowed rule and the four questions written before any release is read, and the history's size and the local model's hours measured   2026-10-18
+
+Not a checkpoint entry. It lands 20.0, the pass that plans phase 20, and builds none of it.
+Queue:      done, phase 17's corrections as PR 485 and its sign-off as PR 486; in progress, this pass; next, in order,
+            20.1 the local run, 20.2 the results releases, 20.3 the anonymiser and the reading with its accuracy and
+            20.4 the drift's tone variant; then the corrections under 19.7 and 17.8 that phase 17's sign-off carried as
+            owed before phase 19's sign-off; then the sign-offs of phases 18 and 19, each in a fresh session the
+            operator starts; then 20.5 to 20.7; then the monthly run of 2026-11-07 and the operator's reading of its
+            proposals; then 20.8 to 20.10.
+Ruled:      by the operator on 2026-10-18, recorded here word for word as their ruling of that day: "Phase 20 is local
+            AI in the picks and the loop, planned now and built after phase 17's sign-off. It narrows the ruling of
+            2026-10-16: the sign-offs of phases 18 and 19 are deferred, each still owed by a fresh session at the slot
+            below, and no phase 20 checkpoint discharges them. The monthly run of 2026-11-07 still runs and its
+            proposals are read before anything that joins text readings to the ledger catalogue, the tester or the
+            monthly engines is merged. Rules choose the stocks, and a language model writes only the reports, is
+            narrowed to: a pinned local model's stored reading of a document, read with names and dates removed, is a
+            rule input like any other reading, and no model ever judges a stock directly. No model is asked for a
+            number, a date or an estimate; its answers are closed labels that code turns into readings. Phase 20 spends
+            no money. Every model call in it is the local model's. A change that would raise paid spend is put to me
+            naming the amount. No test result in this phase retires the local run, a reading, a variant or a family.
+            What a result would change is put to me." With it: "Supersede "Rules choose the stocks, and a language
+            model writes only the reports" with the narrowed decision, keeping its reasoning, and amend section 1's
+            boundary to match." The brief, the four answers on the plan, the five amendments, the approval through the
+            plan tool at about 05:43 UTC and the three answers after it are each word for word in
+            `prompts/2026-10-18-20.0-*.md` with a copy of the plan; R1 to R17 stand as the plan states them. The
+            sign-offs of phases 18 and 19 stay owed and outstanding, and nothing here discharges either.
+Asked:      by the operator while this pass ran: "please dont forget to update Build plan and other docs as you go";
+            and "Are there any pending questions for me ? I want you to  keep building otherwise until you reach the
+            sign off point", answered by the three questions in `prompts/2026-10-18-20.0-operator-answers-second.md`:
+            the two slots' tasks registered once 20.1 merges, the two items carried before phase 19's sign-off
+            corrected after 20.4, and the reference set labelled on the operator's plan.
+Planned:    `BUILD_PLAN.md`'s phase 20 section with its checkpoints 20.0 to 20.10 and section 20's row; the decisions the
+            phase rests on before anything is built: the narrowed rule superseding the one it narrows, with section 1's
+            boundary amended and its eleven citations repointed, the phase's order, the four questions and the tone
+            variant. The decisions that change what runs are written where they are built. Phase 20 opens no operating
+            row. The guide's account of what chooses the stocks changes at 20.4, where a reading first reaches a rule,
+            since until then it describes what runs.
+Measured:   before anything was built, read-only on the live store with no provider or paid call; the samples by a
+            script in the session's scratch folder, committed nowhere.
+            The local model: 50 of the 52 results releases research passes have stored, drawn at seed 20261018 and
+            read once under the four questions by LM Studio's native chat answer with the model loaded at its
+            profile's context of 50,176 tokens, its reasoning off, temperature zero and the seed: 3.48 seconds a
+            release on average, 3.07 at the median and 8.37 at the slowest, over 9,726 prompt tokens a release on
+            average and 25,635 at the most; all 50 answered in the listed words and none was cut off; no reasoning
+            token was spent, and every answer named its runtime as llama.cpp-win-x86_64-nvidia-cuda12-avx2 2.56.0.
+            The load took 32.5 seconds and nothing else was loaded; the model was unloaded after, as the runtime was
+            found. Its file, 14,439,363,264 bytes, was hashed whole in 211 seconds by PowerShell's own hash.
+            The history: the ledger reads 2,024 tickers from 2019-01-02, eight holding no filer, under 1,977 filers;
+            50 filers drawn at seed 20261018 filed a mean of 19.44 results releases inside their span in the ledger and
+            the one before it, read from their SEC submissions over 56 requests in 35 seconds, and of the 1,491 they
+            filed since 2019 whatever their span, 9 were amendments carrying the same item. So the history holds about
+            38,400 releases; fetching them asks about 79,000
+            requests, two a release and one or two a filer, about 2.2 hours at the SEC's pace of 10 a second; at
+            32.5 KB of text a release compressing 3.2 to 1, as the 52 stored releases measure, the store grows by
+            about 0.39 GB; and at 3.48 seconds a release the history read takes about 37 hours of the local model,
+            about four of the runbook's nights from the copy's end to 07:00 in New York. The plan estimated 55,000
+            releases, 61 hours, 114,000 requests and 0.56 GB before these samples.
+            The pins 20.4 moves, read off the code: the S&P 500's breakout and drift evaluators pin the family
+            evaluator's own file, and every S&P 400 and 600 evaluator pins it and the index night's files, while the
+            S&P 500's heavyweights and the swing filter pin neither. Handing the readings to the drift on the night
+            moves the S&P 500's breakout and drift, which the replay reads and keeps where they reproduce, and every
+            S&P 400 and 600 rule standing, which no replay reads and which restart at their registration. The plan
+            named the drift and the index rules; the breakout is named here, before 20.4 builds.
+Tests:      2420, unchanged; two check sources' citations repointed and no test added.
+Claims:     1340, unchanged: section 20's row is no claim, and the plan and the decisions sit in no table the harness
+            reads.
+Pins:       none moved: the pass edits no shipped source.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2420 of 2420 tests ran with none failed,
+            migrations 0 to 97 with none pending, schema version 97, against `data-ci` and never `data`; the phase
+            report 60 tables, 1340 claims, 1340 passing, none out of scope and none unexamined, 1351 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the sign-offs of phases 18 and 19, owed to fresh sessions after 20.4; the two items phase 17's sign-off
+            carried as owed before phase 19's sign-off, corrected after 20.4; (G1), SCHEMA's `family_trade` sentence,
+            owed by the next edit of that section.

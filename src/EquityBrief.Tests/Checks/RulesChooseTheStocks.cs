@@ -20,7 +20,7 @@ namespace EquityBrief.Tests.Checks;
 // rules-choose-the-stocks. No model's output decides, filters, ranks or orders a pick, a family, a variant, a gate
 // or a record: every component that does declares no read of what a model wrote and no model or search among its
 // feeds, and no source under the folders their code runs through names a table a model's output is stored in.
-// see: Rules choose the stocks, and a language model writes only the reports
+// see: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and no model judges a stock
 public partial class RulesChooseTheStocks
 {
     // The components that decide a pick, a list, a family, a variant, a gate or a record, and the arithmetic their
