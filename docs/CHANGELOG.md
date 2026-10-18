@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - .claude/rules/checks.md - fixture-expectations states the gate at its enumerated limit
+Corrects: no test read the tester's gate at the 24 blocks section 17 pins, so its comparison made strict left every test over the loop, the ledger and the score green; found by phase 17's first sign-off review on 2026-10-18 as its m1.
+Was:
+> `fixture-expectations`: ... a former member and a ticker joining on a later session, each holding no filer, counted among none |
+Now:
+> Added without replacing anything: the gate at its enumerated limit, twenty-four blocks of one size read over every arrangement to the binomial tail worked by hand, and twenty-five read off the draws at its seed, a whole count over 2^24 near that tail and not it.
+Why: a roster row names what its check asserts.
+
 ### 2026-10-18 - .claude/rules/checks.md - fixture-expectations states the SEC tickers step's members
 Corrects: the SEC tickers step counted every ticker whose newest company row held no filer, members or not, and called them members; its run of 2026-10-17 at 01:45 UTC wrote 38 where 36 were, PARA and PSKY having left the S&P 500; found by phase 17's first sign-off review on 2026-10-18.
 Was:

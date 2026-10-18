@@ -153,6 +153,44 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public void TheGateReadsEveryArrangementAtItsEnumeratedLimitAndDrawsPastIt()
+    {
+        // Blocks of one size: the studentised mean follows the signed sum alone, so an arrangement reaches the observed
+        // exactly where it turns as many blocks up or more, and the share over every arrangement is the binomial tail
+        // worked here. At the limit, twenty-four blocks with fourteen up, the gate reads every arrangement and gives that
+        // tail exactly.
+        double[] atTheLimit = [.. Enumerable.Repeat(1.0, 14), .. Enumerable.Repeat(-1.0, 10)];
+
+        Assert.Equal(LoopGate.Enumerated, atTheLimit.Length);
+        Assert.Equal(Tail(24, 14), LoopGate.Adjusted([atTheLimit])[0]);
+
+        // One block past it, twenty-five with fifteen up, the gate reads the observed arrangement and as many drawn at its
+        // seed as make 2^24 in all: a whole count over 2^24 near the tail over every arrangement and not that tail.
+        double[] pastIt = [.. Enumerable.Repeat(1.0, 15), .. Enumerable.Repeat(-1.0, 10)];
+        var drawn = LoopGate.Adjusted([pastIt])[0];
+        var count = drawn * (1L << LoopGate.Enumerated);
+
+        Assert.Equal(Math.Round(count), count);
+        Assert.NotEqual(Tail(25, 15), drawn);
+        Assert.True(Math.Abs(drawn - Tail(25, 15)) < 0.002, FormattableString.Invariant($"drawn {drawn} against the tail {Tail(25, 15)}"));
+
+        // The share of the 2^blocks arrangements turning at least so many blocks up.
+        static double Tail(int blocks, int up)
+        {
+            long ways = 1;
+            long reach = 0;
+
+            for (var turned = 0; turned <= blocks; turned++)
+            {
+                reach += turned >= up ? ways : 0;
+                ways = ways * (blocks - turned) / (turned + 1);
+            }
+
+            return (double)reach / (1L << blocks);
+        }
+    }
+
+    [Fact]
     public void TheThreeScreensAreEachWorkedOnBothSidesOfTheirEdge()
     {
         static LoopYear Year(int year, double current, double proposed, int currentUnits = 60, int proposedUnits = 60, bool complete = true) =>
