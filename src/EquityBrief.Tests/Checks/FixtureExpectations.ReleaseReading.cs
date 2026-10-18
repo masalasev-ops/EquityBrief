@@ -201,12 +201,13 @@ public partial class FixtureExpectations
         // A dateline's place with a wire's name, a bracket or a dash before its date, in mixed case with its state, and
         // after its date; a heading's capitals before a date and a period's end left as they stand.
         var acme = new ReleaseFiler(["ACME WIDGETS CORP"], ["AWX"], []);
+        var dash = char.ConvertFromUtf32(0x2014);
 
         Assert.Equal("Results grew. [place]--(BUSINESS WIRE)-- [date] --Sales rose.", ReleaseAnonymiser.Anonymise("Results grew. LITTLE ROCK, Ark.--(BUSINESS WIRE)-- May 30, 2019 --Sales rose.", acme));
         Assert.Equal("Sales rose. [place] ([date]) - Results grew.", ReleaseAnonymiser.Anonymise("Sales rose. CAMP HILL, PA (February 24, 2022) - Results grew.", acme));
-        Assert.Equal("[place] — [date] – Sales rose.", ReleaseAnonymiser.Anonymise("Danvers, Mass. — April 28, 2022 – Sales rose.", acme));
+        Assert.Equal($"[place] {dash} [date] – Sales rose.", ReleaseAnonymiser.Anonymise($"Danvers, Mass. {dash} April 28, 2022 – Sales rose.", acme));
         Assert.Equal("[date], [place] – Sales rose.", ReleaseAnonymiser.Anonymise("June 4, 2025, LOUISVILLE, Ky. – Sales rose.", acme));
-        Assert.Equal("Results rose. [place], [date] — Sales grew.", ReleaseAnonymiser.Anonymise("Results rose. PHOENIX, AZ., November 5, 2025 — Sales grew.", acme));
+        Assert.Equal($"Results rose. [place], [date] {dash} Sales grew.", ReleaseAnonymiser.Anonymise($"Results rose. PHOENIX, AZ., November 5, 2025 {dash} Sales grew.", acme));
         Assert.Equal(
             "FOR IMMEDIATE RELEASE [date]. Sales for the Three Months Ended [date] rose. THREE MONTHS ENDED [date].",
             ReleaseAnonymiser.Anonymise("FOR IMMEDIATE RELEASE May 30, 2019. Sales for the Three Months Ended May 30, 2019 rose. THREE MONTHS ENDED May 30, 2019.", acme));

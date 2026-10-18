@@ -23,7 +23,7 @@ public static class ReleaseAnonymiser
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "ef9867cce471";
+    public const string Version = "175a444d0383";
 
     public const string Company = "[company]";
     public const string Ticker = "[ticker]";
@@ -210,7 +210,7 @@ public static class ReleaseAnonymiser
         RegexOptions.CultureInvariant);
 
     // A dateline's place before its date with a wire's name, a dash, a bracket, a semicolon or spaces between, as
-    // "LITTLE ROCK, Ark.--(BUSINESS WIRE)-- [date]", "CAMP HILL, PA ([date])" or "Danvers, Mass. — [date]", or after its
+    // "LITTLE ROCK, Ark.--(BUSINESS WIRE)-- [date]", "CAMP HILL, PA ([date])" or "Danvers, Mass." and a dash before it, or after its
     // date, as "[date], LOUISVILLE, Ky. –": a town in capitals, with its state or country or none, or a town in mixed
     // case with its state or country, the first a release writes alone, since a dateline opens a release once; a word of
     // a heading or a table written in capitals is no town.
@@ -249,7 +249,8 @@ public static class ReleaseAnonymiser
 
     const string Wire = @"(?:BUSINESS\s+WIRE|Business\s+Wire|GLOBE\s+NEWSWIRE|Globe\s*Newswire|GlobeNewswire|PR\s*NEWSWIRE|PR\s*Newswire|PRNewswire|ACCESS\s*WIRE|ACCESSWIRE|ACCESS\s+Newswire|Marketwired|MARKETWIRED)";
 
-    const string ToTheDate = @"(?=\s*[,;.:]{0,2}\s*(?:[-–—]{1,2}\s*)?(?:\(?\s*" + Wire + @"\s*\)?\s*[,;.:]?\s*(?:[-–—]{1,2}\s*)?)?\(?\s*\[date\])";
+    // A dash before a dateline's date is a hyphen or any of the dashes from U+2010 to U+2015.
+    const string ToTheDate = @"(?=\s*[,;.:]{0,2}\s*(?:[-‐-―]{1,2}\s*)?(?:\(?\s*" + Wire + @"\s*\)?\s*[,;.:]?\s*(?:[-‐-―]{1,2}\s*)?)?\(?\s*\[date\])";
 
     static readonly string CapitalsWord = @"(?!(?:" + string.Join("|", NotPlaces) + @")(?![\p{L}]))[A-Z][A-Z'’\-]*\.?(?![\p{Ll}])";
 
@@ -262,7 +263,7 @@ public static class ReleaseAnonymiser
         RegexOptions.CultureInvariant);
 
     static readonly Regex DateThenPlace = new(
-        @"(?<=\[date\]\s*,\s*)" + CapitalsWord + @"(?:\s+" + CapitalsWord + @"){0,3}\s*,\s*" + DatelineState + @"(?=\s*[-–—(])",
+        @"(?<=\[date\]\s*,\s*)" + CapitalsWord + @"(?:\s+" + CapitalsWord + @"){0,3}\s*,\s*" + DatelineState + @"(?=\s*[-‐-―(])",
         RegexOptions.CultureInvariant);
 
     static string Dateline(string text)
