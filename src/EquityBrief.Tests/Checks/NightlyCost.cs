@@ -723,6 +723,16 @@ public partial class NightlyCost
             LanesTheNightMayNotCall("new ProseWriter(model, settings, lane, clock, db)", components),
             offence => offence.Contains(nameof(Feed.LocalModel), StringComparison.Ordinal));
 
+        // From 20.2 the ninth carve-out, the local run and its release fetch, carved by no name since no night constructs
+        // either: a night that did is found by the local model and the filings archive each declares.
+        // see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+        Assert.Contains(
+            LanesTheNightMayNotCall("new LocalRun(feed, settings, clock, db, root, pause, fetch)", components),
+            offence => offence.Contains(nameof(Feed.LocalModel), StringComparison.Ordinal));
+        Assert.Contains(
+            LanesTheNightMayNotCall("new ReleaseFetch(archive, clock, db, root)", components),
+            offence => offence.Contains("ReleaseFetch", StringComparison.Ordinal) && offence.Contains(nameof(Feed.FilingsArchive), StringComparison.Ordinal));
+
         // And a comment naming one is not a construction of it.
         Assert.Empty(LanesTheNightMayNotCall("// new SpendCap(feed, caps, clock, db) is not built here", components));
     }

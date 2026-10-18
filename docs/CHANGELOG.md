@@ -26,6 +26,54 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - CLAUDE.md - the nightly hard rule's ninth carve-out, the local run
+Authorised by: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it
+Was:
+> Eight carve-outs are named rather than left to be discovered, and none asks for every member every night: ...
+> ... free, keyless and neither the provider's, so it follows the provider's faults rather than the index, on the operator's ruling of 2026-10-12. (see: The nightly run is arithmetic only) ... (see: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read)
+Now:
+> Nine carve-outs are named rather than left to be discovered, and none asks for every member every night: ...
+> ... free, keyless and neither the provider's, so it follows the provider's faults rather than the index, on the operator's ruling of 2026-10-12, and the local run, a process of its own at two slots outside the night, which from 20.2 asks the SEC for the members' results releases accepted since the slot before, one request a day's index or a page of the current 8-K feed and one for each member's announcement and its release, free, keyless and from the SEC rather than the provider, so it follows the filings calendar rather than the index, and calls the local model on the operator's own machine, its requests and its calls on its own run and never on the night's, on the operator's rulings of 2026-10-18. (see: The nightly run is arithmetic only) ... (see: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read) (see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin) (see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it)
+Why: from 20.2 the local run's slots ask the SEC a request a filing for the members that filed, which phase 20's plan names as the hard rule's ninth carve-out so it is named rather than left to be discovered.
+
+### 2026-10-18 - SCHEMA.md - the local run's row counts the releases a slot stored and the SEC's requests, and the release history writes a row of its own
+Authorised by: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it
+Was:
+> ... with the stage `local-run`, once any lock it waits on is let go: `model_calls` the local model's calls the run made, no network request and a `spend` of `0`, and `detail` JSON naming its kind, its outcome and why, the documents it fetched and read, its refused answers by cause, ... It carries no path of any file, and the Run page draws the newest ten (see: ...).
+Now:
+> ... with the stage `local-run`, once any lock it waits on is let go: `model_calls` the local model's calls the run made, `network_requests` the SEC's documents a slot's release fetch asked for, from 20.2, and none for a run that fetches nothing, `rows_written` the releases the fetch stored with the rows the run wrote, and a `spend` of `0`, and `detail` JSON naming its kind, its outcome and why, the releases it fetched and the SEC's requests for them, the documents it read, its refused answers by cause, ... A slot whose fetch the SEC refused comes to `fetch refused` with the refusal as why. It carries no path of any file, and the Run page draws the newest ten (see: ...).
+> Added without replacing anything: the tables `release_document` and `release_day` with their ownership rows, and the paragraph on the release history's own row.
+Why: from 20.2 a slot fetches the members' results releases before it reads, so its row counts the SEC's requests and the releases it stored where at 20.1 it made no request.
+
+### 2026-10-18 - RUNBOOK.md - a slot fetches the members' results releases, and the history is fetched by hand
+Authorised by: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it
+Was:
+> A refusal after a deliberate update is answered by `--pin`. At 20.1 a slot reads nothing more; 20.2 adds the day's results releases and 20.3 their reading.
+Now:
+> A refusal after a deliberate update is answered by `--pin`. From 20.2 a slot first fetches the members' results releases the SEC accepted since the slot before, below, and 20.3 adds their reading.
+> Added without replacing anything: the paragraph on the members' results releases and the history's command, `releases --history --from 2019-01-02 --until 07:00`, with its requests, its time and its store's growth.
+Why: 20.2 builds the slots' fetch and the history by hand that the 20.1 sentence named as coming.
+
+### 2026-10-18 - BUILD_PLAN.md - 20.2's fetch, settings row and refused answers as built
+Corrects: 20.2's text had both slots read the current filings and the daily index from the last day read, a store of the feed's pages and the history read every extra page, and its done condition stored refused answers that 20.3's store is the first to hold, found building 20.2
+Was:
+> 20.2: The early and late slots find new results releases from the SEC's current filings and its daily index for each weekday since the last day read: each 8-K or 8-K/A a member's filer filed has its index page read for item 2.02 and for the instant the SEC accepted it, printed in New York's time and read through the clock, and its release found by the reader 6.2 wrote and fetched, free from the SEC under the existing contact and pace, the night adding no request. ... and a store of the days and the feed's pages read. `releases --history --from 2019-01-02` with its `--until`, run by hand and resumable, reads each ledger filer's submissions with their extra pages and fetches every release ... Writes the release fetch's catalogue and matrix rows, section 18's row for the SEC refusing, ...
+> 20.2's Done when: ...; a member's 8-K carrying no item 2.02 and a filer that is no member are asked for nothing; a release's compressed text reads back byte for byte to its stored hash; ...; a reading is worked by hand from a fixture release's recorded answer, a refused answer is stored refused, a pin mismatch refuses and the availability rule holds over a constructed store; ...
+Now:
+> 20.2: The early slot finds new results releases from the SEC's daily index for each weekday since the last day read, each 8-K or 8-K/A a member's filer filed having its index page read for item 2.02 and for the instant the SEC accepted it, printed in New York's time and read through the clock; the late slot finds them from the SEC's current 8-K feed back to the start of the late slot before it, the feed stating each filing's items and instant, and reads a page only for a member's results; each release is found by the reader 6.2 wrote and fetched, free from the SEC under the existing contact and pace, the night adding no request. ... and a store of the days of the index and of the current feed read. `releases --history --from 2019-01-02` with its `--until`, run by hand and resumable, reads each ledger filer's submissions with a further page where its filings reach the year before the filer's first session, and fetches every release ... Writes the release fetch's catalogue and matrix rows, section 17's row of its settings, section 18's row for the SEC refusing, ...
+> 20.2's Done when: ...; a member's 8-K carrying no item 2.02 and a filer that is no member are asked for nothing; the late slot reads the current feed back to the start of the late slot before it; a release's compressed text reads back byte for byte to its stored hash; ...; a reading is worked by hand from a fixture release's recorded answer, a refused answer is counted refused on the run's row until 20.3 stores readings, a pin mismatch refuses and the availability rule holds over a constructed store; ...
+Why: the feed states each filing's items and accepted instant, so the late slot asks a page only for a member's results, and reading it back to the slot before keeps a release accepted in the evening for the night that may read it, as the availability rule needs; a further page reaching no nearer than its filings' end is read only where it can hold the release before a filer's first session; and no store holds a reading until 20.3, so a refused answer is counted on the run's row as at 20.1. 20.2 amends its own done condition, and its entry says so.
+
+### 2026-10-18 - .claude/rules/checks.md - two rows gain what 20.2 asserts
+Authorised by: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it
+Was:
+> `fixture-expectations`: ... waiting to write while the night holds its lock, and a slot giving up on the local lock past its last instant |
+> `nightly-cost`: ... and from 20.1 the local run's reading feed, which its own process asks of LM Studio and no night constructs, is among the shipped files that may hold a client and reach a model |
+Now:
+> `fixture-expectations`: ... and a slot giving up on the local lock past its last instant; and from 20.2 the current filings feed, a filer's submissions and their further page and an 8-K's own index page read as the SEC sent them, ... and a slot's row through the local run counting the releases it stored and the SEC's requests and saying where the SEC refused |
+> `nightly-cost`: ... is among the shipped files that may hold a client and reach a model; and from 20.2 the ninth carve-out, the local run and its release fetch, is carved by no name, since no night constructs either, a night constructing one found by the local model and the filings archive each declares |
+Why: 20.2 adds the release fetch's tests to `fixture-expectations` and the ninth carve-out's proof to `nightly-cost`, and a roster row states what its check asserts.
+
 ### 2026-10-18 - BUILD_PLAN.md - 20.1's forms, refusals and count as built
 Corrects: 20.1's text named two verbs and a store of refused answers that 20.1 builds as two forms of the local run's verb and a count on the run's row, and the 52 stored releases the 20.0 pass counted, found reading the store again at 20.1
 Was:

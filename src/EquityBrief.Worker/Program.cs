@@ -74,13 +74,14 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "quote" => await QuoteRun(args),
     "dividends" => await DividendsRun(args),
     "local-run" => await LocalRunVerb(args),
+    "releases" => await ReleasesVerb(args),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 45 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 46 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -224,11 +225,15 @@ static int NoVerb()
         "one request a member, stating its asks and their weighted calls before the first request, and keeps each beside " +
         "the ones the nights kept, with '--index <GSPC, MID or SML>' naming the index and '--names' with codes between " +
         "commas asking only those members, and " +
-        "'local-run --slot early' or '--slot late' runs the local run's slot, checking the newest reading pin before " +
+        "'local-run --slot early' or '--slot late' runs the local run's slot, fetching from the SEC the members' results " +
+        "releases accepted since the slot before and checking the newest reading pin before " +
         "anything is read and asking nothing past the slot's last instant, '--pin' writes a new reading version from the " +
         "model's file hashed whole, the runtime a probe's answer states and the instruction's version, and '--twice' " +
         "reads every results release a research pass stored twice under the pin and states how many were answered " +
-        "alike, each loading the local model where it is not loaded and leaving the runtime as it found it. '--live' " +
+        "alike, each loading the local model where it is not loaded and leaving the runtime as it found it, and " +
+        "'releases --history --from <yyyy-MM-dd>' fetches every ledger filer's results releases from the one before its " +
+        "first session in the ledger from that day through its last, with '--until <HH:mm>' stopping cleanly at that " +
+        "time in New York, and goes on from where an earlier run stopped. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -1889,12 +1894,86 @@ static async Task<int> LocalRunVerb(string[] args)
         return 1;
     }
 
-    var run = new LocalRun(LmStudioReadingFeed.Live(settings), settings, clock, store.DatabaseFile, store.DataRoot);
+    // A slot fetches its members' results releases from the SEC before it reads, under the archive's contact.
+    ReleaseFetch? fetch = null;
+
+    if (slot is not null)
+    {
+        var contact = configuration[ArchiveAgent.ContactName];
+
+        if (string.IsNullOrWhiteSpace(contact))
+        {
+            Console.Error.WriteLine($"local-run: no archive contact. Set '{ArchiveAgent.ContactName}' in appsettings.Secrets.json, since the archive refuses a request that names none.");
+
+            return 1;
+        }
+
+        fetch = new ReleaseFetch(SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(contact)), clock, store.DatabaseFile, store.DataRoot);
+    }
+
+    var run = new LocalRun(LmStudioReadingFeed.Live(settings), settings, clock, store.DatabaseFile, store.DataRoot, fetch: fetch);
     var outcome = slot is { } named ? await run.SlotAsync(named, Console.Out)
         : pin ? await run.PinAsync(Console.Out)
         : await run.TwiceAsync(Console.Out);
 
     return outcome.Outcome is LocalRun.Finished or LocalRun.NothingToRead or LocalRun.PinUnchanged ? 0 : 1;
+}
+
+// The results releases' history by hand, from 20.2: every ledger filer's releases from the one before its first session
+// in the ledger from the day named through its last, those not yet stored, stopping cleanly at '--until', a time in New
+// York, and going on from where an earlier run stopped. Requests of the SEC alone, at its pace under its contact.
+// see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it
+static async Task<int> ReleasesVerb(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    IClock clock = SystemClock.ForUnitedStatesSessions();
+
+    if (!args.Contains("--history", StringComparer.Ordinal)
+        || Argument(args, "--from") is not { } fromText
+        || !DateOnly.TryParseExact(fromText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var from))
+    {
+        Console.Error.WriteLine("releases: name '--history --from <yyyy-MM-dd>', with '--until <HH:mm>' in New York's time where the run should stop.");
+
+        return 1;
+    }
+
+    DateTimeOffset? until = null;
+
+    if (Argument(args, "--until") is { } untilText)
+    {
+        if (!TimeOnly.TryParseExact(untilText, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var local))
+        {
+            Console.Error.WriteLine($"releases: '--until {untilText}' is no time written as HH:mm.");
+
+            return 1;
+        }
+
+        until = ResultsReleases.UntilNext(local, clock.UtcNow, clock.SessionZone);
+        Console.WriteLine(FormattableString.Invariant($"releases: stopping at {local:HH:mm} New York time, {until:yyyy-MM-ddTHH:mm:ssZ}"));
+    }
+
+    if (!File.Exists(store.DatabaseFile))
+    {
+        Console.Error.WriteLine($"releases: no store at '{store.DatabaseFile}'.");
+
+        return 1;
+    }
+
+    var contact = configuration[ArchiveAgent.ContactName];
+
+    if (string.IsNullOrWhiteSpace(contact))
+    {
+        Console.Error.WriteLine($"releases: no archive contact. Set '{ArchiveAgent.ContactName}' in appsettings.Secrets.json, since the archive refuses a request that names none.");
+
+        return 1;
+    }
+
+    var fetch = new ReleaseFetch(SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(contact)), clock, store.DatabaseFile, store.DataRoot);
+    var runId = FormattableString.Invariant($"release-history-{clock.UtcNow:yyyyMMddTHHmmss.fffffffZ}");
+    var outcome = await fetch.HistoryAsync(from, until, runId, Console.Out);
+
+    return outcome.Refusal is null ? 0 : 1;
 }
 
 static async Task<int> LabelNews(string[] args)

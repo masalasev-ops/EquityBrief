@@ -319,6 +319,12 @@ public class FixtureReplay
         // states.
         await RequestDrain.AskForTheNightAsync(store.DatabaseFile, new DateOnly(2026, 9, 8), night);
 
+        // From 20.2 the local run's early slot over the fixture's daily indexes, read at the night's own clock: the members'
+        // announcements of the week before, each one's page asked for its items and a release stored where one carries
+        // item 2.02, which none of the fixture's week does. The slot is no part of the night, which asks for none of it.
+        await new EquityBrief.Worker.Local.ReleaseFetch(RecordedReleaseArchiveFeed.FromFolder(Folder()), night, store.DatabaseFile, store.Root, (_, _) => Task.CompletedTask)
+            .SlotAsync(Core.Releases.LocalSlots.Early, "replay-releases", DateTimeOffset.MaxValue);
+
         return store;
     }
 

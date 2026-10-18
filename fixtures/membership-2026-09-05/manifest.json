@@ -1559,6 +1559,20 @@
       "query": "POST http://127.0.0.1:1234/api/v0/chat/completions naming the model no-such/model, which the runtime does not hold, with the probe's instruction and question, while google/gemma-4-26b-a4b-qat stood loaded",
       "fetchedAt": "2026-10-18T06:30:57Z",
       "trimmedTo": "nothing. The whole answer: a 200 answered by the model the runtime had loaded and naming it, not the one asked for, which is why the local run reads the answering model off every answer and refuses one that is not the pin's."
+    },
+    {
+      "file": "current-8k-2026-10-16.atom",
+      "endpoint": "cgi-bin/browse-edgar?action=getcurrent on www.sec.gov, the SEC's current filings feed as Atom, keyless, under the archive's contact",
+      "query": "GET https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=8-K&company=&dateb=&owner=include&start=0&count=40&output=atom on Sunday 2026-10-18, answering with the forty newest 8-K and 8-K/A filings, all filed on Friday 2026-10-16",
+      "fetchedAt": "2026-10-18T09:30:06Z",
+      "trimmedTo": "the feed's head and seven of its forty entries as sent, byte for byte, in their order: GoPro's, NioCorp's first and Kingstone's 8-Ks carrying item 2.02, Powerus's and Builders FirstSource's 8-K/As, NioCorp's second 8-K, which carries none, and Eaton's 8-K, which carries none, the oldest entry kept; the other thirty-three entries taken out whole"
+    },
+    {
+      "file": "submissions-KEYS-001.json",
+      "endpoint": "submissions/CIK0001601046-submissions-001.json on data.sec.gov, the further page of Keysight's submissions its first page names, keyless, under the archive's contact",
+      "query": "GET https://data.sec.gov/submissions/CIK0001601046-submissions-001.json, the page naming 170 filings from 2014-03-05 to 2015-12-14",
+      "fetchedAt": "2026-10-18T09:30:36Z",
+      "trimmedTo": "six of its 170 filings, every column of each in the page's own order and serialized as the SEC serializes the whole: the three results announcements filed from 2015-05-01, an 8-K carrying no results, a 10-Q and a Form 4"
     }
   ]
 }
