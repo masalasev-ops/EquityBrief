@@ -26,6 +26,32 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - .claude/rules/checks.md - fixture-expectations states the SEC tickers step's members
+Corrects: the SEC tickers step counted every ticker whose newest company row held no filer, members or not, and called them members; its run of 2026-10-17 at 01:45 UTC wrote 38 where 36 were, PARA and PSKY having left the S&P 500; found by phase 17's first sign-off review on 2026-10-18.
+Was:
+> `fixture-expectations`: ... a labeller's limit ending exactly as a peak window opens ending there and not after the window |
+Now:
+> Added without replacing anything: the step's members the tickers the three indices hold on its session, a former member and a ticker joining on a later session, each holding no filer, counted among none.
+Why: a roster row names what its check asserts.
+
+### 2026-10-18 - RUNBOOK.md - the SEC tickers step counts the members of the three indices on its session
+Corrects: as the entry above.
+Was:
+> ... prints how many of the members the provider files no CIK for it names and which it does not; it is refused while a night holds the store ...
+Now:
+> ... prints how many of the members the provider files no CIK for it names and which it does not, a member being a ticker one of the three indices holds on the session it runs on, so a former member's company row is counted among none; it is refused while a night holds the store ...
+Why: the step's line is what the operator reads the unmatched members off, and a former member named as one is a member it does not name.
+
+### 2026-10-18 - ARCHITECTURE.html - the SEC tickers step reads the membership
+Corrects: as the entries above.
+Was:
+> component catalogue, SEC tickers: reads "filings archive, companies"; ... names on its run's row the members whose newest company row carries no filer of the provider's and which of them the file does not name; ...
+> read and write matrix, SEC tickers: no mark under Membership
+Now:
+> reads "filings archive, membership, companies"; ... and which of them the file does not name, from the 17.3 correction of 2026-10-18 a member being a ticker one of the three indices holds on the session the step runs on and a former member's company row read as no member's; ...
+> an R under Membership
+Why: the step reads the members it names off the membership, so its row and its matrix row declare the read.
+
 ### 2026-10-17 - .claude/rules/checks.md - read-surface states the presses' accepted edges
 Corrects: the roster named none of the second 16.2 correction's assertions of 2026-10-17, three edges the first 16.2 correction of that day left no test holding, found preparing phase 16's sign-off.
 Was:

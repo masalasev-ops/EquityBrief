@@ -9,7 +9,8 @@ namespace EquityBrief.Tests.Checks;
 
 // fixture-expectations, the 17.3 correction of 2026-10-16: a member the provider files no CIK for, as it files none for
 // a ticker changed since it last read the company, is matched to its filer by the SEC's own ticker file, read as sent,
-// kept by the step that reads it and taken by the quarters fetch where the provider's answer files none.
+// kept by the step that reads it and taken by the quarters fetch where the provider's answer files none, the step's
+// members being the tickers the three indices hold on its session alone.
 // see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
 public partial class FixtureExpectations
 {
@@ -48,12 +49,24 @@ public partial class FixtureExpectations
         store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('AAPL', '2026-10-01T00:00:00Z', '0000320193');");
         store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('BNY', '2026-10-01T00:00:00Z', NULL);");
         store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('ZZZZ', '2026-10-01T00:00:00Z', NULL);");
+        store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('GONE', '2026-10-01T00:00:00Z', NULL);");
+        store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('SOON', '2026-10-01T00:00:00Z', NULL);");
+
+        // The members on the session the clock falls on, 2026-10-16: AAPL and BNY in the S&P 500 and ZZZZ in the S&P 600.
+        // GONE's span leaves the S&P 500 on that session and SOON's joins the S&P 400 on a later one, so neither is a
+        // member whatever its company row holds.
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', 'AAPL', '1982-11-30', NULL, '2026-10-16T22:00:00Z');");
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', 'BNY', NULL, NULL, '2026-10-16T22:00:00Z');");
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('SML', 'ZZZZ', '2026-10-05', NULL, '2026-10-16T22:00:00Z');");
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', 'GONE', '2022-02-17', '2026-10-16', '2026-10-16T22:00:00Z');");
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('MID', 'SOON', '2026-10-19', NULL, '2026-10-16T22:00:00Z');");
 
         var clock = FixedClock.At(new DateTimeOffset(2026, 10, 17, 1, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates);
         var feed = new RecordedSecTickersFeed(TickersCapture());
         var outcome = await new SecTickers(clock, store.DatabaseFile).ReadAsync(feed, TextWriter.Null, "sec-tickers-constructed");
 
-        // Every line kept under the run, and of the two members the provider files no CIK for, BNY named and ZZZZ not.
+        // Every line kept under the run, and of the two members the provider files no CIK for, BNY named and ZZZZ not;
+        // GONE and SOON, holding none and named by no line of the file, counted among neither.
         Assert.Equal((7, 2, null as string), (outcome.Tickers, outcome.Unmatched, outcome.Refusal));
         Assert.Equal(["ZZZZ"], outcome.NotListed);
         Assert.Equal(7L, Scalar(store, "SELECT COUNT(*) FROM sec_ticker WHERE run_id = 'sec-tickers-constructed';"));
