@@ -3,6 +3,9 @@ using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Loop;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Loop;
+using Microsoft.ML;
+using Microsoft.ML.Data;
+using Microsoft.ML.Trainers.FastTree;
 using Xunit;
 
 namespace EquityBrief.Tests.Checks;
@@ -100,6 +103,47 @@ public partial class FixtureExpectations
 
             Assert.True(Math.Abs(walked - package[row]) <= 1e-6 * Math.Max(1, Math.Abs(walked)), FormattableString.Invariant($"row {row}: walked {walked}, the package {package[row]}"));
         }
+    }
+
+    [Fact]
+    public void AReadingExactlyOnAFittedThresholdIsWalkedToTheLeafThePackageScoresItAt()
+    {
+        // One reading over two hundred rows a half apart, its label one above 50 and nought at or under it, and one tree
+        // of two leaves fitted by the package, which splits it once between two of the rows. A member whose reading sits
+        // exactly on the threshold the package fitted is scored by the package and by the core's walk of the stored tree
+        // at the same leaf, the one at or under it, and one the next figure past it at the other.
+        var ml = new MLContext(TreeFit.Seed);
+        var schema = SchemaDefinition.Create(typeof(TreeFit.TreeRow));
+
+        schema[nameof(TreeFit.TreeRow.Features)].ColumnType = new VectorDataViewType(NumberDataViewType.Single, 1);
+
+        TreeFit.TreeRow[] rows = [.. Enumerable.Range(0, 200).Select(at => new TreeFit.TreeRow { Features = [at * 0.5f], Label = at * 0.5f > 50 ? 1 : 0 })];
+        var trained = ml.Regression.Trainers.FastTree(new FastTreeRegressionTrainer.Options
+        {
+            NumberOfTrees = 1,
+            NumberOfLeaves = 2,
+            MinimumExampleCountPerLeaf = 1,
+            NumberOfThreads = 1,
+        }).Fit(ml.Data.LoadFromEnumerable(rows, schema));
+        var ensemble = trained.Model.TrainedTreeEnsemble;
+        var fitted = Assert.Single(ensemble.Trees);
+        var tree = new ScoreTree([.. fitted.NumericalSplitFeatureIndexes], [.. fitted.NumericalSplitThresholds], [.. fitted.LeftChild], [.. fitted.RightChild], [.. fitted.LeafValues], ensemble.TreeWeights[0]);
+        var threshold = Assert.Single(tree.Thresholds);
+        var past = MathF.BitIncrement(threshold);
+
+        float Package(float reading) =>
+            trained.Transform(ml.Data.LoadFromEnumerable([new TreeFit.TreeRow { Features = [reading] }], schema)).GetColumn<float>("Score").Single();
+
+        double Walked(float reading) => ensemble.Bias + tree.Output([reading]);
+
+        void Same(double package, double walked) =>
+            Assert.True(Math.Abs(walked - package) <= 1e-6 * Math.Max(1, Math.Abs(walked)), FormattableString.Invariant($"walked {walked}, the package {package}"));
+
+        Assert.InRange(threshold, 50f, 50.5f);
+        Assert.True(Math.Abs(Package(threshold) - Package(past)) > 0.1);
+        Same(Package(threshold), Walked(threshold));
+        Same(Package(past), Walked(past));
+        Same(Package(0), Walked(threshold));
     }
 
     [Fact]

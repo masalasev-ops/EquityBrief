@@ -219,6 +219,17 @@ public partial class FixtureExpectations
         Assert.Equal(["14"], TextRows(store, $"SELECT DISTINCT IFNULL(exit, 'none') FROM index_rule_trade WHERE candidate = '{Hooked}';"));
         Assert.Equal(["none"], TextRows(store, $"SELECT DISTINCT IFNULL(exit, 'none') FROM index_rule_trade WHERE candidate = '{liveName}';"));
 
+        // The night run again handed no readings: the hooked rule lists nothing, and the five trades the run that read
+        // them stored stand as they stood, every field the same, while the live rule's five are written again.
+        string HookedTrades() => string.Join("; ", TextRows(store, $"SELECT ticker || '|' || place || '|' || entry || '|' || stop || '|' || IFNULL(target, 'none') || '|' || cap || '|' || IFNULL(exit, 'none') FROM index_rule_trade WHERE candidate = '{Hooked}' ORDER BY place;"));
+        var hookedKept = HookedTrades();
+
+        await new IndexFamilies(clock, store.DatabaseFile).RunAsync("no-readings-again", default, register, FreezeAt.AddHours(1));
+
+        Assert.Equal(hookedKept, HookedTrades());
+        Assert.Equal(["ID|1", "PN|2", "IE|3", "IA|4", "IB|5"], Kept(Hooked));
+        Assert.Equal(["IE|1", "MV|2", "PN|3", "IA|4", "IC|5"], Kept(liveName));
+
         // Three sessions after it IE, held by both rules at one buy and stop, closes 0.6 of a risk up, then 0.2 of a risk
         // under its buy, then 1.6 risks up, each other member flat. The live rule, stating no hook, trails a risk under
         // its highest close and holds through all three, where a stop raised to the buy would have sold the dip; the

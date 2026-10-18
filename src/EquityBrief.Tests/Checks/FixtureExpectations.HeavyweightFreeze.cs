@@ -298,6 +298,28 @@ public partial class FixtureExpectations
             StringComparison.Ordinal);
         Assert.Equal(4, first.Rules!.Count(rule => rule.Rebalanced && rule.Fault is null));
 
+        static string Quoted(string candidate) => candidate.Replace("'", "''", StringComparison.Ordinal);
+
+        string Book(string candidate) => string.Join("; ", TextRows(store,
+            "SELECT ticker || '|' || entered_on || '|' || entry_close || '|' || printf('%.9f', growth) || '|' || through || '|' || IFNULL(ended_on, 'open') || '|' || IFNULL(exit_close, 'none') " +
+            $"|| '|' || IFNULL(reason, 'none') || '|' || IFNULL(printf('%.9f', result), 'none') || '|' || IFNULL(printf('%.9f', cut_return), 'none') FROM heavyweight_rule_holding WHERE candidate = '{Quoted(candidate)}' ORDER BY ticker, entered_on;"));
+
+        IReadOnlyList<Core.Candidates.RegisterRow> Moving(string candidate) =>
+            [.. rules.Select(rule => rule.Candidate == candidate ? rule with { EvaluatorVersion = "000000000001" } : rule)];
+
+        // The night run again with every company's variant registered at a version the code no longer carries: it keeps
+        // no book that night and fails the stage, its buys of the night and its reading standing as the first run stored
+        // them, while each other book's night is written again as it was.
+        var everyBought = Book(every);
+        var firstAgain = await new HeavyweightBook(FreezeClock(FreezeNight), store.DatabaseFile).RunAsync("GSPC", "night-freeze-1-again", default, Moving(every));
+
+        Assert.Contains("registered under heavyweight at 000000000001", firstAgain.Rules!.Single(rule => rule.Candidate == every).Fault, StringComparison.Ordinal);
+        Assert.Equal(everyBought, Book(every));
+        Assert.Equal(["C01", "C11"], HeldBy(every));
+        Assert.Equal(11, Scalar(store, $"SELECT COUNT(*) FROM heavyweight_rule_night WHERE candidate = '{Quoted(every)}';"));
+        Assert.Equal(["C01"], HeldBy(live));
+        Assert.Equal(10, Scalar(store, $"SELECT COUNT(*) FROM heavyweight_rule_night WHERE candidate = '{Quoted(live)}';"));
+
         // The session after, inside the month: C01 closes at 75, under its 200-day average of 80. The variant selling on
         // either exit sells it at that close; the live rule, the members' variant and every company's keep it, and so
         // does the page's book, which holds at the live setting.
@@ -318,6 +340,17 @@ public partial class FixtureExpectations
         // Its result is 75 over 130 less one, and its size cut's the mean of the ten's growths over the same session.
         Assert.Equal((75.0 / 130.0) - 1.0, Figure(store, $"SELECT result FROM heavyweight_rule_holding WHERE candidate = '{bothExits.Replace("'", "''", StringComparison.Ordinal)}';"), 9);
         Assert.Equal((((75.0 / 130.0) + 9.0) / 10.0) - 1.0, Figure(store, $"SELECT cut_return FROM heavyweight_rule_holding WHERE candidate = '{bothExits.Replace("'", "''", StringComparison.Ordinal)}';"), 9);
+
+        // The session after run again with the variant selling on either exit registered at a version the code no longer
+        // carries: its sale of C01 that night is not opened again, its close, reason, result and size cut's return as
+        // stored, while the live rule's book is carried again to the same holding.
+        var bothSold = Book(bothExits);
+        var nextAgain = await new HeavyweightBook(FreezeClock(FreezeNext), store.DatabaseFile).RunAsync("GSPC", "night-freeze-2-again", default, Moving(bothExits));
+
+        Assert.Contains("registered under heavyweight at 000000000001", nextAgain.Rules!.Single(rule => rule.Candidate == bothExits).Fault, StringComparison.Ordinal);
+        Assert.Equal(bothSold, Book(bothExits));
+        Assert.Empty(HeldBy(bothExits));
+        Assert.Equal(["C01"], HeldBy(live));
     }
 
     [Fact]

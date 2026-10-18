@@ -1909,7 +1909,9 @@ public static class IndexHeavyweights
 // trail or its cap's last close, with its result and its round trip at the published table beside it and never in it;
 // a trade whose cap's sessions have passed given the benchmark of the same plan on every member of the index that night;
 // then each rule's members passing tonight kept in its family's order, five at most, none whose stock it holds a trade
-// on. A night run again replaces the trades it kept that night.
+// on. A night run again replaces the trades of each rule it keeps a list for that night, and leaves as stored those of
+// a rule it keeps none for: one the night does not read, as one registered at a version the code no longer carries,
+// one whose hooks read what the night did not supply, and every rule on a night the index's inputs could not be read.
 // see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
 // see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends
 public static class IndexRuleTrades
@@ -1917,7 +1919,7 @@ public static class IndexRuleTrades
     // What a night did for an index's registered rules: the trades they kept, ended and benchmarked.
     public sealed record Kept(int Trades, int Ended, int Benchmarked);
 
-    const string ClearTheNight = "DELETE FROM index_rule_trade WHERE index_code = $index AND session_date = $night;";
+    const string ClearTheRulesNight = "DELETE FROM index_rule_trade WHERE index_code = $index AND session_date = $night AND candidate = $candidate;";
 
     // Every trade from before the night not yet ended or not yet benchmarked.
     const string Pending = @"
@@ -1954,8 +1956,6 @@ public static class IndexRuleTrades
         CancellationToken cancellation,
         Func<string, IReadOnlyList<double?>?>? readings = null)
     {
-        await ExecuteAsync(connection, transaction, ClearTheNight, [("$index", index), ("$night", Stamp(night))], cancellation);
-
         if (inputs is null)
         {
             return new Kept(0, 0, 0);
@@ -1967,6 +1967,19 @@ public static class IndexRuleTrades
 
         foreach (var (rule, answers) in rules)
         {
+            // The rule's hooks as its registration states them: its list kept and ordered by them where they read the
+            // night's readings, a rule reading them on a night that supplied none listing nothing and keeping the trades
+            // a run of the night stored for it; and the exit its trades are walked under.
+            // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+            var hooks = RuleHooks.Of(rule.Parameters).With(trees);
+
+            if (hooks.ReadsReadings && readings is null)
+            {
+                continue;
+            }
+
+            await ExecuteAsync(connection, transaction, ClearTheRulesNight, [("$index", index), ("$night", Stamp(night)), ("$candidate", rule.Candidate)], cancellation);
+
             var holding = new HashSet<string>(StringComparer.Ordinal);
 
             await using (var command = connection.CreateCommand())
@@ -1985,17 +1998,6 @@ public static class IndexRuleTrades
             }
 
             var place = 0;
-
-            // The rule's hooks as its registration states them: its list kept and ordered by them where they read the
-            // night's readings, a rule reading them on a night that supplied none listing nothing; and the exit its
-            // trades are walked under.
-            // see: Every engine's settings hooks land together and all default off, so the families' pins move once
-            var hooks = RuleHooks.Of(rule.Parameters).With(trees);
-
-            if (hooks.ReadsReadings && readings is null)
-            {
-                continue;
-            }
 
             foreach (var answer in hooks.Order([.. answers.Where(one => one.Passed && !holding.Contains(one.Ticker)).OrderBy(one => one.Place)], one => readings?.Invoke(one.Ticker)).Take(IndexRules.PerNight))
             {

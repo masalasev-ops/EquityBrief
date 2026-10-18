@@ -250,12 +250,16 @@ public partial class FixtureExpectations
 
         Assert.Contains(moved, row => row.Parameters.Contains("\"highSessions\": 200", StringComparison.Ordinal));
 
+        const string Trades = "SELECT candidate || '|' || ticker || '|' || session_date || '|' || place || '|' || entry || '|' || stop || '|' || IFNULL(target, 'none') || '|' || IFNULL(trail, 'none') || '|' || cap || '|' || IFNULL(ended_on, 'open') FROM index_rule_trade ORDER BY candidate, ticker;";
+        var kept = TextRows(store, Trades);
+
         await new IndexFamilies(clock, store.DatabaseFile).RunAsync("moved-night", default, moved, FreezeAt.AddHours(1));
 
-        // The night run again with neither read: the trades it kept are gone and none is kept, the night names no live
-        // rule, and the family's list is the provisional rule's, every member breaking out above its floors with four
-        // profitable quarters and not IE alone.
-        Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM index_rule_trade;"));
+        // The night run again with neither read: each trade the first run kept stands as it stored it, every field the
+        // same, the night names no live rule, and the family's list is the provisional rule's, every member breaking out
+        // above its floors with four profitable quarters and not IE alone.
+        Assert.Equal(2, kept.Count);
+        Assert.Equal(kept, TextRows(store, Trades));
         Assert.Equal(0, JsonDocument.Parse(TextRows(store, "SELECT settings FROM index_family_night WHERE index_code = 'MID';").Single()).RootElement.GetProperty("live").GetArrayLength());
         Assert.Equal("IE,MV,PN,IA,IC,ID,IB", Listed());
 
@@ -265,6 +269,21 @@ public partial class FixtureExpectations
 
         Assert.Contains($"its evaluator moved from 0123456789ab to {breakout.Version}", detail, StringComparison.Ordinal);
         Assert.Contains("'high' is 200", detail, StringComparison.Ordinal);
+
+        // A night whose index's inputs could not be read, as the step hands its rules' trades when no member holds the
+        // night's bar, keeps no trade and leaves every one a run of the night stored.
+        using (var connection = store.Open())
+        using (var transaction = connection.BeginTransaction())
+        {
+            var night = DateOnly.ParseExact(TextRows(store, "SELECT MAX(session_date) FROM bar").Single(), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var none = await IndexRuleTrades.KeepAsync(connection, transaction, "MID", night, null, [], CancellationToken.None);
+
+            transaction.Commit();
+
+            Assert.Equal(new IndexRuleTrades.Kept(0, 0, 0), none);
+        }
+
+        Assert.Equal(kept, TextRows(store, Trades));
     }
 
     [Fact]

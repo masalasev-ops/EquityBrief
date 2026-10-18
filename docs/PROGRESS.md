@@ -2392,3 +2392,171 @@ Carried:    (n3), the press test pressing an exit on a trade holding both an exi
             none of G3's seven payers on a card on the live store, each verified by the suite alone and read on the
             first night one occurs. Phases 17, 18 and 19 are signed after this one, each by its own session.
 Signed:     phase 16, over 8cc8c8ca.
+
+### 17.3 - correction: the SEC tickers step's members are the tickers the three indices hold on its session   2026-10-18
+
+Queue:      done, phases 0 to 16 signed, PR 484; in progress, the corrections of phase 17's first sign-off review of
+            2026-10-18, its F1 to F4 and two siblings of F4, in one pull request; next, phase 17's second sign-off
+            review by a fresh session, then those of phases 18 and 19, then the monthly run of 2026-11-07.
+Found:      F1 of the review, which signed nothing over 3475252f; asked how the review proceeds, the operator ruled
+            "Correct first (Recommended)". `sec-tickers` counted every ticker whose newest company row held no filer,
+            members or not, and called them members: its run of 2026-10-17 at 01:45 UTC wrote "38 of the 38 member(s)
+            the provider files no CIK for named by it" where 36 members held none, 11, 3 and 22, the other two PARA and
+            PSKY, whose S&P 500 spans left on 2026-10-14 and 2026-10-15.
+Built:      a ticker is a member where a span of any of the three indices holds it on the session the clock falls on,
+            as the quarters fetch reads members, and the step declares the membership read. The catalogue's and the
+            matrix's rows, the runbook, the roster and the changelog. No source a rule's version pins moves.
+Stored:     kept, not rewritten: that run's row. Read over the store as the run found it, the corrected query passes
+            over 2 former members' rows, PARA's and PSKY's, and counts the 36; their newest company rows carry the
+            SEC's filer since that night's remedy, so the step run now counts none.
+Tests:      none new: the step's test adds a member of the S&P 600, one of the S&P 400 joining on the session, one of
+            the S&P 500 leaving on the UTC date at the clock, a former member and a ticker joining on a later session,
+            each holding no filer, the last two counted among none; and the membership reads' check, which states the
+            set of reads asking the join date, holds the step among them.
+Claims:     1340, as before.
+Mutated:    the rule, stated before the runs for all six corrections: one mutation a property each adds or holds whose
+            failure a stored record or a run's row would show, the smallest edit that breaks it, made in this checkout
+            over the committed corrections and restored from the file's own text, the tree's diff the same after the
+            sweep as before, each run filtered to the tests named, a test hashing a pinned source red at any edit of it
+            and discounted. M1 the membership clause made true of any span, the query reading every company row again:
+            red at the step's test alone, of the SEC tickers file's 3. M11 a span joining on the session read as no
+            member, and M12 one leaving on it read as a member: each red at the step's test and at the membership reads'
+            check, of those 4. M15 the session read as the UTC date: red at the step's test alone, of the 4.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 14.6 correction's entry
+            below, as it records.
+Carried:    phase 17's second sign-off review by a fresh session, since this one committed code.
+
+### 17.4 - correction: the gate at its enumerated limit is held by an assertion   2026-10-18
+
+Queue:      as the 17.3 correction's entry above states.
+Found:      F2 of the review, under the operator's "Correct first (Recommended)": the gate's comparison at its limit
+            made strict, its m1, left green all 52 tests over the loop's, the ledger's and the score's files. At exactly
+            24 blocks, the figure section 17 pins, the gate reads every sign arrangement, and past it 2^24 - 1 drawn at
+            its seed; the live runs read 17 and 18 blocks, so no stored verdict moved.
+Built:      an assertion alone, no behaviour changed: twenty-four blocks of one size, fourteen up, read over every
+            arrangement to the binomial tail the test works by hand, and twenty-five, fifteen up, read off the draws, a
+            whole count over 2^24 within 0.002 of that tail and not it, in about 6 seconds. The roster and the changelog.
+Tests:      1 new.
+Claims:     1340, as before.
+Mutated:    under the rule the 17.3 correction's entry states. M2 the review's m1, the comparison strict: red at the new
+            test. M3 the limit read a block further: red at it. Each filtered to the gate's 2 tests.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 14.6 correction's entry
+            below, as it records.
+Carried:    as the 17.3 correction's entry above states.
+
+### 17.15 - correction: a reading exactly on a tree's split is held by assertions   2026-10-18
+
+Queue:      as the 17.3 correction's entry above states.
+Found:      F3 of the review, under the operator's "Correct first (Recommended)": the walk's comparison made strict, its
+            m16, reddened only the two tests that hash the walk's source, the package test's rows sitting on no
+            threshold and the constructed tree read at 40 and 60 against its 50, while 17.15's done condition that the
+            core's walk equals the package's scores rests on the walk's at or under to the left.
+Built:      assertions alone, no behaviour changed: the constructed tree's member at 50 scores the left leaf; and a tree
+            of two leaves fitted by the package over one reading, a member exactly on its threshold scored by the
+            package and by the core's walk at the leaf at or under it, and the next figure past it at the other. The
+            package goes left at its threshold, as the walk does. The roster's two rows and the changelog.
+Tests:      1 new.
+Claims:     1340, as before.
+Mutated:    under the rule the 17.3 correction's entry states. M4 the review's m16: red at both new assertions and at
+            the two pin tests, discounted, and at none other of the 9 tests the run read; its first run's filter, on
+            the word Tree, left the package's test out, and it was run again with it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 14.6 correction's entry
+            below, as it records.
+Carried:    as the 17.3 correction's entry above states.
+
+### 13.9 - correction: a night run again keeps the trades of a family rule it lists nothing for   2026-10-18
+
+Queue:      as the 17.3 correction's entry above states.
+Found:      by phase 17's first sign-off review, beyond phase 17; asked what happens to it, the operator ruled "Add to
+            the corrections (Recommended)", described as "Correct it as a separate 13.9 correction in the same PR: a
+            night run again keeps the stored trades of a rule it skips, with a test over a moved rule." A night run
+            again deleted every family trade of the night and kept trades only for the rules the shadow step gave
+            verdicts, so a rule it skipped lost its trades of the night: `night-20261005T025156Z-for-2026-10-02`, one of
+            the 517 nights run again on 2026-10-05, kept 0 by 14 rules where the night of 2026-10-02 had kept 2, FDS
+            and CCL under two drift rules, each skipped as registered under drift at 3309f7f59e9e where the code carried
+            acfc9db2b20b. 17.5's remedy replay of 2026-10-09 at 14:13 UTC kept both, read "differs" on those two of its
+            16 rules and restarted their records at 2026-10-09; 17.15's of 2026-10-12 reproduced 16 of 16. No entry
+            recorded that replay's reading until this one.
+Built:      the recorder deletes a rule's trades of the night only for a rule it lists that night, and leaves as stored
+            those of a rule it lists nothing for: one the night's rows hold no verdict of, one whose hooks read readings
+            the night did not supply, and one no longer standing, its row naming the first two with the trades left.
+            No decision's words change: the decision states no run again, and SCHEMA's, the catalogue's and the stores'
+            sentences now say it. No source a rule's version pins moves. The roster and the changelog.
+Stored:     kept, not rewritten: the night of 2026-10-02 holds no family trade, and FDS's and CCL's rules count their
+            records from 2026-10-09, as the replay's rows say.
+Tests:      1 new: a night recorded, then run again with the live rule's verdicts changed, a rule moved, a rule handed
+            no readings and a rule retired, the live rule's trades replaced and the other three's left field by field;
+            and the recorder's first test reads a rule holding no verdict and no trade of the night named with why.
+Claims:     1340, as before.
+Mutated:    under the rule the 17.3 correction's entry states. M5 the night cleared whole before the rules, as the code
+            stood: red at the new test alone, of the recorder's and the replay's 16. Its first form, each rule's delete
+            reading every rule's trades, deleted what the rules before it kept that run and was red at 12 of the 16. M6
+            a rule holding no verdict read as one listed: red at the new test alone, of the recorder's 3. M14 the reason
+            dropped from the words for a rule holding neither: red at the recorder's first test alone, of the 3.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 14.6 correction's entry
+            below, as it records.
+Carried:    as the 17.3 correction's entry above states.
+
+### 15.5 - correction: an index night run again keeps the trades of a rule it keeps no list for   2026-10-18
+
+Queue:      as the 17.3 correction's entry above states.
+Found:      correcting F4, its sibling: asked whether to add it and the heavyweights' to this pull request, the operator
+            ruled "Add both, as two correction commits in this PR. Each gets tests that a night run again over a rule
+            whose registered version is no longer the code's keeps every stored trade, buy and sale of that rule
+            untouched. For 15.5, also a night with no inputs leaving the stored trades untouched. For 14.6, a skipped
+            rule's buys of the night kept and its sales not reopened. Each with a mutation shown red." The index
+            families deleted every registered rule's trade of the night before keeping the lists of the rules they
+            read, so a night run again over a rule they do not read lost its trades of the night, and a night with no
+            inputs lost every rule's; the 15.5 test held the loss, reading no trade after the run again. No index
+            families' row on the store names a rule not read, and its 9 index rule trades, 2 and 7, run from 2026-10-12.
+Built:      each rule's trades of the night deleted only where its list is kept, before its holdings are read, which
+            count the night's own trades; a rule whose hooks read readings the night did not supply keeps its, and a
+            night with no inputs deletes none. The index evaluators' versions move: breakout b1dbb89e6a0b, drift
+            0517e0869555, pullback 87e8cc8312bd and heavyweights 9e8ebd36a0e5. SCHEMA, the catalogue's and the stores'
+            rows, the roster and the changelog.
+Tests:      none new: the 15.5 test reads every field of the two trades the first run kept unchanged after the run again
+            over the moved rules, and hands the rules' trades a night with no inputs as the step does, keeping none and
+            leaving them; and the hooks' index test runs its night again handed no readings, the hooked rule's five
+            trades standing field by field while the live rule's are written again.
+Claims:     1340, as before.
+Mutated:    under the rule the 17.3 correction's entry states. M7 the night cleared whole before the inputs are read, as
+            the code stood: red at the moved rules' test and at the pin test, discounted. M8 a rule's night cleared after
+            its holdings are read, its run again reading the night's own trades as held: red at the frozen rules' test
+            and at the pin test. Each filtered to the index freezes' 4 tests and the pin test. M13 a rule's night cleared
+            before its hooks are held against the night's readings: red at the hooks' index test and at the pin test,
+            of 4.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 14.6 correction's entry
+            below, as it records.
+Carried:    the remedy, as the 14.6 correction's entry below states; and as the 17.3 correction's entry above states.
+
+### 14.6 - correction: a heavyweights night run again keeps the book of a rule it keeps none for   2026-10-18
+
+Queue:      as the 17.3 correction's entry above states.
+Found:      the second sibling, under the ruling the 15.5 correction's entry quotes. The heavyweight book undid every
+            registered rule's night before keeping the books of the rules the code carries at their versions, so a night
+            run again over a moved rule deleted its buys of the night and opened its sales again, keeping no book for it.
+            The book reads no session before one it has read, so only the newest night run again reaches it; no
+            heavyweights row on the store names a moved rule.
+Built:      a rule's night undone only for a rule whose book it keeps; a rule it names as the failure it is keeps its
+            buys of the night, its reading and its sales unopened. The S&P 500 heavyweights' version moves to
+            161a4d9d9dce. SCHEMA's two tables, the catalogue's and the two stores' rows, the roster, the changelog and
+            the remedy.
+Tests:      none new, 2420 in all: the heavyweights test runs the first night again with every company's variant moved
+            and the session after again with the variant selling on either exit moved.
+Claims:     1340, as before.
+Remedy:     `tools/remedies/2026-10-18-14.6-the-moved-rules-registered-again.txt`, run from main after the merge and
+            before the night of 2026-10-19, with no night or off-peak run writing: `register --moved`, the 12 standing
+            rules the 15.5 and 14.6 corrections moved registered again unchanged, the S&P 400's and 600's breakout,
+            drift and pullback, the S&P 600's two heavyweights books and the S&P 500's four; none is replayed, so each
+            restarts its record at the registration. No migration, no provider request and no model call. Left to the
+            night, each is skipped and named as a failure.
+Mutated:    under the rule the 17.3 correction's entry states. M9 a buy of the night deleted for every rule: red at the
+            heavyweights test and at the pin test, discounted. M10 a sale of the night opened again for every rule: red
+            at the same two. Each filtered to the heavyweights' 3 tests and the pin test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2420 of 2420 tests ran with none failed,
+            migrations 0 to 97 with none pending, schema version 97, against `data-ci` and never `data`; the phase
+            report 60 tables, 1340 claims, 1340 passing, none out of scope and none unexamined, 1351 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the remedy, the operator's, before the night of 2026-10-19; phase 17's second sign-off review by a fresh
+            session, since this one committed code; then those of phases 18 and 19.

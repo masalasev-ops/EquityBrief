@@ -26,6 +26,131 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - .claude/rules/checks.md - fixture-expectations states a heavyweights night run again keeping the book of a rule it keeps none for
+Corrects: the heavyweight book undid every registered rule's night, deleting what each bought that night and opening again what each sold, before keeping the books of the rules the code carries at their versions, so a night run again over a rule registered at a version the code no longer carries lost that rule's buys of the night and reopened its sales; found correcting phase 17's first sign-off review on 2026-10-18 as F4's sibling, no stored holding touched, and added on the operator's ruling of that day.
+Was:
+> `fixture-expectations`: ... and a night whose index's inputs could not be read keeping no trade and leaving them as they stood |
+Now:
+> Added without replacing anything: a heavyweights night run again over a rule registered at a version the code no longer carries, named as the failure it is, keeping that rule's buys of the night and its reading as stored and leaving its sale of the night unopened, its close, reason, result and size cut's return as stored, while every other book's night is written again as it was.
+Why: a roster row names what its check asserts.
+
+### 2026-10-18 - SCHEMA.md - a heavyweights night run again keeps the book of a rule it keeps none for
+Corrects: as the entry above.
+Was:
+> heavyweight_rule_night: ... A night run again replaces its own session's rows for every rule and touches no other. ...
+> heavyweight_rule_holding: ... A night run again deletes what each rule bought that night, opens again what each ended that night, and writes the night again. ...
+Now:
+> ... A night run again replaces its own session's rows for every rule whose book it keeps that night and touches no other, from the 14.6 correction of 2026-10-18 a rule it keeps none for, registered at a version the code no longer carries, keeping its rows of the night. ...
+> ... A night run again deletes what each rule bought that night, opens again what each ended that night, and writes the night again, from the 14.6 correction of 2026-10-18 for each rule whose book it keeps that night alone: a rule it keeps none for, registered at a version the code no longer carries, keeps its buys of the night and its sales unopened as a run of the night stored them. ...
+Why: a book the night does not keep has no night to write again, and what its registration's own version bought and sold is its record.
+
+### 2026-10-18 - ARCHITECTURE.html - a heavyweights night run again keeps the book of a rule it keeps none for
+Corrects: as the entries above.
+Was:
+> component catalogue, Heavyweight book: ... replaces what it wrote for the night where the night is run again and reads nothing for a session earlier than one it has read, ...
+> stores, Heavyweight rule nights, retention: ... a night run again replacing its own session's rows and no other's (see: ...
+> stores, Heavyweight rule holdings, retention: ... a night run again deletes what each rule bought that night and opens again what each sold that night (see: ...
+Now:
+> ... replaces what it wrote for the night where the night is run again, from the 14.6 correction of 2026-10-18 a registered rule's only where it keeps that rule's book that night, so a rule it names as a failure keeps its buys of the night and its sales unopened, and reads nothing for a session earlier than one it has read, ...
+> ... a night run again replacing its own session's rows and no other's, from the 14.6 correction of 2026-10-18 for a rule whose book it keeps that night alone (see: ...
+> ... a night run again deletes what each rule bought that night and opens again what each sold that night, from the 14.6 correction of 2026-10-18 for a rule whose book it keeps that night alone (see: ...
+Why: as the entry above.
+
+### 2026-10-18 - .claude/rules/checks.md - fixture-expectations states an index night run again keeping the trades of a rule it keeps no list for
+Corrects: the index families deleted every registered rule's trade of the night before keeping the lists of the rules they read, so a night run again over a rule registered at a version the code no longer carries, or at a setting its grid refuses, lost its stored trades of that night, and a night whose index's inputs could not be read lost every rule's; found correcting phase 17's first sign-off review on 2026-10-18 as F4's sibling, no stored trade lost, and added on the operator's ruling of that day.
+Was:
+> `fixture-expectations`: ... one whose hooks read readings the run was handed none of and one retired between the runs, its row naming the first two with their trades left and a rule holding no verdict and no trade of the night with why |
+Now:
+> Added without replacing anything: an S&P 400 night run again over a rule registered at a version the code no longer carries and one at a setting its grid refuses leaving every trade the first run kept as it stored it, field by field, a run again handed no readings leaving a hooked rule's trades as the run reading them stored them, and a night whose index's inputs could not be read keeping no trade and leaving them as they stood.
+Why: a roster row names what its check asserts.
+
+### 2026-10-18 - SCHEMA.md - an index night run again keeps the trades of a rule it keeps no list for
+Corrects: as the entry above.
+Was:
+> index_rule_trade: ... A night run again replaces the trades it kept that night and no other night's. ...
+Now:
+> ... A night run again replaces the trades of each rule it keeps a list for that night and no other night's; from the 15.5 correction of 2026-10-18 it leaves as a run of the night stored them the trades of a rule it keeps none for: one the night does not read, registered at a version the code no longer carries or at a setting its grid refuses, one whose hooks read readings the night did not supply, and every rule's on a night the index's inputs could not be read. ...
+Why: a rule the night does not read has no list that night to replace its trades with, and the trades its registration's own version kept are its record.
+
+### 2026-10-18 - ARCHITECTURE.html - an index night run again keeps the trades of a rule it keeps no list for
+Corrects: as the entries above.
+Was:
+> component catalogue, Index families: ... replaces its own night where the night is run again, evaluates no S&P 500 rule, ...
+> stores, Index rule trades, retention: ... a night run again replaces the trades it kept that night and no other night's, and a trade's end and benchmark are written once ...
+Now:
+> ... replaces its own night where the night is run again, from the 15.5 correction of 2026-10-18 a registered rule's trades only for a rule it keeps a list for that night, the trades of one it does not read, one whose hooks read what the night did not supply, and every rule's on a night the index's inputs could not be read left as stored; evaluates no S&P 500 rule, ...
+> ... a night run again replaces the trades of each rule it keeps a list for that night and no other night's, from the 15.5 correction of 2026-10-18 leaving those of a rule it keeps none for as stored, and a trade's end and benchmark are written once ...
+Why: as the entry above.
+
+### 2026-10-18 - .claude/rules/checks.md - fixture-expectations states a night run again keeping the trades of a family rule it lists nothing for
+Corrects: a night run again deleted every family trade of the night and kept trades only for the rules the shadow step gave verdicts, so a rule it skipped, registered at a version the code no longer carried, lost its stored trades of that night: `night-20261005T025156Z-for-2026-10-02` kept 0 where the night of 2026-10-02 had kept 2, FDS and CCL under two drift rules; found by phase 17's first sign-off review on 2026-10-18.
+Was:
+> `fixture-expectations`: ... and the next figure past it at the other |
+Now:
+> Added without replacing anything: a night run again replacing the trades of each family rule it lists and leaving as the first run stored them those of a rule the night's rows hold no verdict of, one whose hooks read readings the run was handed none of and one retired between the runs, its row naming the first two with their trades left and a rule holding no verdict and no trade of the night with why.
+Why: a roster row names what its check asserts.
+
+### 2026-10-18 - SCHEMA.md - a night run again keeps the trades of a family rule it lists nothing for
+Corrects: as the entry above.
+Was:
+> family_trade: ... A night run again replaces the trades it kept for that night and touches no other night's. ...
+Now:
+> ... A night run again replaces the trades of each rule it lists that night and touches no other night's; from the 13.9 correction of 2026-10-18 it leaves as a run of the night stored them the trades of a rule it lists nothing for: one the night's rows hold no verdict of, as the shadow step gives none to a rule registered at a version the code no longer carries, one whose hooks read readings the night did not supply, and one no longer standing, each its run log row naming. ...
+Why: a rule the night does not evaluate has no list that night to replace its trades with, and the trades its registration's own version kept are its record.
+
+### 2026-10-18 - ARCHITECTURE.html - a night run again keeps the trades of a family rule it lists nothing for
+Corrects: as the entries above.
+Was:
+> component catalogue, Family recorder: ... it replaces the trades it listed for the night where the night is run again, runs after the family lister, ...
+> stores, Family trades, retention: ... a night run again replaces the trades it kept that night and no other night's, and a trade's end and benchmark are written once ...
+Now:
+> ... it replaces the trades of each rule it lists for the night where the night is run again, and from the 13.9 correction of 2026-10-18 leaves as stored those of a rule it lists nothing for, one the night's rows hold no verdict of, as a rule registered at a version the code no longer carries holds none, one whose hooks read what the night did not supply and one no longer standing; it runs after the family lister, ...
+> ... a night run again replaces the trades of each rule it lists that night and no other night's, from the 13.9 correction of 2026-10-18 leaving those of a rule it lists nothing for as stored, and a trade's end and benchmark are written once ...
+Why: as the entry above.
+
+### 2026-10-18 - .claude/rules/checks.md - fixture-expectations and read-surface state a reading exactly on a tree's threshold
+Corrects: no test read a member whose reading sits exactly on a tree's split threshold, so the walk's comparison made strict reddened only the two tests that hash its source, while 17.15's done condition that the core's walk equals the package's scores rests on the walk's at or under to the left; found by phase 17's first sign-off review on 2026-10-18 as its m16.
+Was:
+> `fixture-expectations`: ... twenty-five read off the draws at its seed, a whole count over 2^24 near that tail and not it |
+> `read-surface`: ... and an exit dated on its fill's own session recorded |
+Now:
+> Added without replacing anything, to `fixture-expectations`: a reading exactly on a threshold the package fitted scored by the package and by the core's walk of the stored tree at the same leaf, the one at or under it, and the next figure past it at the other; and to `read-surface`: a member exactly at the constructed tree's split scored at the leaf at or under it.
+Why: a roster row names what its check asserts.
+
+### 2026-10-18 - .claude/rules/checks.md - fixture-expectations states the gate at its enumerated limit
+Corrects: no test read the tester's gate at the 24 blocks section 17 pins, so its comparison made strict left every test over the loop, the ledger and the score green; found by phase 17's first sign-off review on 2026-10-18 as its m1.
+Was:
+> `fixture-expectations`: ... a former member and a ticker joining on a later session, each holding no filer, counted among none |
+Now:
+> Added without replacing anything: the gate at its enumerated limit, twenty-four blocks of one size read over every arrangement to the binomial tail worked by hand, and twenty-five read off the draws at its seed, a whole count over 2^24 near that tail and not it.
+Why: a roster row names what its check asserts.
+
+### 2026-10-18 - .claude/rules/checks.md - fixture-expectations states the SEC tickers step's members
+Corrects: the SEC tickers step counted every ticker whose newest company row held no filer, members or not, and called them members; its run of 2026-10-17 at 01:45 UTC wrote 38 where 36 were, PARA and PSKY having left the S&P 500; found by phase 17's first sign-off review on 2026-10-18.
+Was:
+> `fixture-expectations`: ... a labeller's limit ending exactly as a peak window opens ending there and not after the window |
+Now:
+> Added without replacing anything: the step's members the tickers the three indices hold on its session, the session the clock falls on in New York and not the UTC date, a ticker joining on that session and one leaving on the UTC date among them, a former member and a ticker joining on a later session, each holding no filer, counted among none.
+Why: a roster row names what its check asserts.
+
+### 2026-10-18 - RUNBOOK.md - the SEC tickers step counts the members of the three indices on its session
+Corrects: as the entry above.
+Was:
+> ... prints how many of the members the provider files no CIK for it names and which it does not; it is refused while a night holds the store ...
+Now:
+> ... prints how many of the members the provider files no CIK for it names and which it does not, a member being a ticker one of the three indices holds on the session it runs on, so a former member's company row is counted among none; it is refused while a night holds the store ...
+Why: the step's line is what the operator reads the unmatched members off, and a former member named as one is a member it does not name.
+
+### 2026-10-18 - ARCHITECTURE.html - the SEC tickers step reads the membership
+Corrects: as the entries above.
+Was:
+> component catalogue, SEC tickers: reads "filings archive, companies"; ... names on its run's row the members whose newest company row carries no filer of the provider's and which of them the file does not name; ...
+> read and write matrix, SEC tickers: no mark under Membership
+Now:
+> reads "filings archive, membership, companies"; ... and which of them the file does not name, from the 17.3 correction of 2026-10-18 a member being a ticker one of the three indices holds on the session the step runs on and a former member's company row read as no member's; ...
+> an R under Membership
+Why: the step reads the members it names off the membership, so its row and its matrix row declare the read.
+
 ### 2026-10-17 - .claude/rules/checks.md - read-surface states the presses' accepted edges
 Corrects: the roster named none of the second 16.2 correction's assertions of 2026-10-17, three edges the first 16.2 correction of that day left no test holding, found preparing phase 16's sign-off.
 Was:

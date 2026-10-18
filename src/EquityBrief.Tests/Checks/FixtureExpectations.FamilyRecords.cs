@@ -517,10 +517,101 @@ public partial class FixtureExpectations
             FamilyRows(store, "SELECT detail FROM run_log WHERE run_id = 'records-third-again';").Single(),
             StringComparison.Ordinal);
 
+        // R2, which the third night's rows hold no verdict of and which stored no trade that night, is named last with why.
+        Assert.EndsWith(
+            $"; '{r2.Candidate}' kept 0, the night's rows holding no verdict of it",
+            FamilyRows(store, "SELECT detail FROM run_log WHERE run_id = 'records-third-again';").Single(),
+            StringComparison.Ordinal);
+
         // A night with no family rule standing keeps nothing and says so.
         await RecordAsync(store, "records-none", []);
 
         Assert.EndsWith("; no family rule stands registered", FamilyRows(store, "SELECT detail FROM run_log WHERE run_id = 'records-none';").Single(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ANightRunAgainReplacesTheTradesOfEachRuleItListsAndKeepsThoseOfARuleItListsNothingFor()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        // Four breakout rules: the live rule; a variant the night's first run evaluated and whose registration the code
+        // no longer carries when the night is run again, so the shadow step then evaluates it on no member; a variant
+        // whose hooks read the night's readings, which the run again is handed none of; and a variant retired between
+        // the two runs.
+        var live = Rule(1, TheSetupFamilies.Breakouts[0]);
+        var moved = Rule(2, TheSetupFamilies.Breakouts[1]);
+        var hooked = Rule(3, TheSetupFamilies.Breakouts[2]) with
+        {
+            Parameters = CandidateEvaluator.Write(new Dictionary<string, double>(TheSetupFamilies.Breakouts[2].Parameters, StringComparer.Ordinal) { ["also_rsi_above"] = 30 }),
+        };
+        var retired = Rule(4, TheSetupFamilies.Breakouts[3]);
+        RegisterRow[] rules = [live, moved, hooked, retired];
+
+        IReadOnlyList<double?> Readings(string ticker)
+        {
+            var held = new double?[Core.Ledger.LedgerReadings.Count];
+
+            held[Core.Ledger.LedgerReadings.IndexOf("rsi")] = 50;
+
+            return held;
+        }
+
+        Task<FamilyRecordsOutcome> Record(string run, IReadOnlyList<RegisterRow> standing, Func<string, IReadOnlyList<double?>?>? readings) =>
+            new FamilyRecorder(FixedClock.At(new DateTimeOffset(2026, 6, 1, 23, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile)
+                .RunAsync("GSPC", run, standing, CancellationToken.None, readings);
+
+        // Every member's row carrying a verdict of each rule given, firing where the night's list names it.
+        void Night(IReadOnlyList<RegisterRow> evaluated, IReadOnlyDictionary<string, (RegisterRow Rule, double Order)> fires)
+        {
+            store.Execute($"DELETE FROM family_result WHERE session_date = '{On(0)}';");
+
+            foreach (var ticker in new[] { "A", "B", "C", "D", "E" })
+            {
+                Verdicts(store, 0, BreakoutRule.Name, ticker, [.. evaluated.Select(rule => new RuleVerdict(
+                    rule.Candidate,
+                    fires.TryGetValue(ticker, out var fire) && fire.Rule.Candidate == rule.Candidate,
+                    "100",
+                    "97",
+                    null,
+                    fires.TryGetValue(ticker, out var order) ? order.Order : 0,
+                    "2"))]);
+            }
+        }
+
+        foreach (var ticker in new[] { "A", "B", "C", "D", "E" })
+        {
+            Closes(store, ticker, 0, 100m);
+        }
+
+        string Rows() => string.Join("; ", FamilyRows(store,
+            $"SELECT CASE candidate WHEN '{live.Candidate}' THEN 'live' WHEN '{moved.Candidate}' THEN 'moved' WHEN '{hooked.Candidate}' THEN 'hooked' ELSE 'retired' END " +
+            $"|| '|' || ticker || '|' || place || '|' || entry || '|' || stop FROM family_trade WHERE session_date = '{On(0)}' ORDER BY 1, place;"));
+
+        // The night's first run, every rule evaluated and the readings supplied: the live rule keeps A and B, and each
+        // variant the one member it fired on.
+        Night(rules, new Dictionary<string, (RegisterRow, double)> { ["A"] = (live, 2), ["B"] = (live, 1), ["C"] = (moved, 1), ["D"] = (hooked, 1), ["E"] = (retired, 1) });
+
+        Assert.Equal(5, (await Record("rerun-first", rules, Readings)).Kept);
+        Assert.Equal("hooked|D|1|100|97; live|A|1|100|97; live|B|2|100|97; moved|C|1|100|97; retired|E|1|100|97", Rows());
+
+        // The night run again: the live rule now fires on B alone; the moved variant, registered at a version the code no
+        // longer carries, holds no verdict on any row; the hooked variant's verdicts stand but no readings are handed to
+        // the recorder; the retired variant stands no more. The live rule's trades are replaced by its list tonight, and
+        // every other rule's trade of the night is left as the first run stored it.
+        var movedAway = moved with { EvaluatorVersion = "000000000001" };
+
+        Night([live, hooked], new Dictionary<string, (RegisterRow, double)> { ["B"] = (live, 1), ["D"] = (hooked, 1) });
+
+        var again = await Record("rerun-again", [live, movedAway, hooked], null);
+
+        Assert.Equal(1, again.Kept);
+        Assert.Equal("hooked|D|1|100|97; live|B|1|100|97; moved|C|1|100|97; retired|E|1|100|97", Rows());
+
+        var said = FamilyRows(store, "SELECT detail FROM run_log WHERE run_id = 'rerun-again';").Single();
+
+        Assert.Contains($"'{moved.Candidate}' kept 0, the night's rows holding no verdict of it, its 1 trade(s) stored for the night left as they were", said, StringComparison.Ordinal);
+        Assert.Contains($"'{hooked.Candidate}' kept 0, its hooks reading what the night did not supply, its 1 trade(s) stored for the night left as they were", said, StringComparison.Ordinal);
+        Assert.Contains($"'{live.Candidate}' kept 1", said, StringComparison.Ordinal);
     }
 
     [Fact]

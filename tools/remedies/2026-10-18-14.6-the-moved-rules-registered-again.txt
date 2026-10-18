@@ -1,0 +1,11 @@
+# The remedy of the 15.5 and 14.6 corrections of 2026-10-18 (an index night run again keeping the trades of a rule it
+# keeps no list for, and the heavyweight book keeping the night of a rule it keeps no book for), as the 14.6 correction's
+# PROGRESS entry prints it. The 15.5 correction edits the index families' source, which every S&P 400 and 600 rule pins,
+# and the 14.6 correction the heavyweight book's, which the S&P 500's sector heavyweights rules pin, so their evaluators'
+# versions move and each such rule would be skipped and named as a failure on the night until it is registered again.
+# Registering the moved rules again writes each again unchanged at the version the code carries, all at one instant.
+# An S&P 400 or 600 rule is read over its own index by the index families and replayed by none, and a heavyweights rule
+# is named as not replayed, so each restarts its record at this registration. The S&P 500's breakout, drift and pullback
+# rules move no version. No migration, no provider request and no model call. Run after the merge and before the night,
+# when no night is running.
+register --moved --evidence "15.5 and 14.6 corrections of 2026-10-18: a night run again keeps the trades and the books of a rule it does not read, so the index families' and the heavyweight book's sources move every S&P 400 and 600 rule's version and the S&P 500 heavyweights'; nothing a rule evaluates changed"

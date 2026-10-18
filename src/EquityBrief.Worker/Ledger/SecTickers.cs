@@ -12,13 +12,14 @@ namespace EquityBrief.Worker.Ledger;
 // never by the night, a row a ticker it lists under a run of its own, which the quarters fetch reads for a member the
 // provider files no CIK for, as it files none for a ticker changed since it last read the company. Each read keeps its
 // own rows, so the newest names the filer; the run's row says how many members the provider files no CIK for the file
-// names and which it does not.
+// names and which it does not, a member being a ticker any of the three indices holds on the session the step runs on.
 // see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
 public sealed class SecTickers(IClock clock, string databaseFile) : IComponent
 {
     public static ComponentAccess Access => new(
         Stores:
         [
+            new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.SecTicker, Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
@@ -33,11 +34,18 @@ public sealed class SecTickers(IClock clock, string databaseFile) : IComponent
         ON CONFLICT (ticker, run_id) DO NOTHING;
     ";
 
-    // The tickers whose newest company row carries no CIK of the provider's.
+    // The members on the session whose newest company row carries no CIK of the provider's; a ticker no index holds on
+    // the session is no member, whatever its company row holds.
+    // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
     const string ProviderFilesNone = @"
         SELECT c.ticker FROM company c
         WHERE c.fetched_at = (SELECT MAX(d.fetched_at) FROM company d WHERE d.ticker = c.ticker)
           AND c.cik IS NULL
+          AND EXISTS (
+              SELECT 1 FROM membership m
+              WHERE m.ticker = c.ticker
+                AND (m.joined IS NULL OR m.joined <= $session)
+                AND (m.""left"" IS NULL OR m.""left"" > $session))
         ORDER BY c.ticker;
     ";
 
@@ -94,6 +102,7 @@ public sealed class SecTickers(IClock clock, string databaseFile) : IComponent
         await using (var command = connection.CreateCommand())
         {
             command.CommandText = ProviderFilesNone;
+            command.Parameters.AddWithValue("$session", clock.SessionDateAt(started).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
             await using var reader = await command.ExecuteReaderAsync(cancellation);
 

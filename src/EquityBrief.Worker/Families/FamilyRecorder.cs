@@ -26,8 +26,10 @@ public sealed record FamilyRecordsOutcome(DateOnly? Night, int Kept, int Ended, 
 //
 // It runs in the swing filter's step after the family lister. A trade is stored the night it is made and its
 // result and benchmark are written once, because the bars and the typical moves they are read from are kept a
-// year. It replaces the trades it listed for the night where the night is run again, makes no request and
-// calls no model.
+// year. Where the night is run again it replaces the trades of each rule it lists and leaves as stored those of
+// a rule it lists nothing for, one the night's rows hold no verdict of, as the shadow step gives none to a rule
+// registered at a version the code no longer carries, or whose hooks read what the night did not supply. It makes
+// no request and calls no model.
 // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
 // see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends
 // see: The nightly run is arithmetic only
@@ -108,7 +110,10 @@ public sealed class FamilyRecorder : IComponent
         WHERE candidate = $candidate AND session_date < $night AND (ended_on IS NULL OR ended_on >= $night);
     ";
 
-    const string ClearTheNight = "DELETE FROM family_trade WHERE session_date = $night;";
+    // One rule's trades of the night, which a night run again replaces only for a rule it lists.
+    const string ClearTheRulesNight = "DELETE FROM family_trade WHERE session_date = $night AND candidate = $candidate;";
+
+    const string StoredOn = "SELECT COUNT(*) FROM family_trade WHERE session_date = $night AND candidate = $candidate;";
 
     const string Ended = "UPDATE family_trade SET ended_on = $ended_on, result = $result WHERE candidate = $candidate AND ticker = $ticker AND session_date = $session;";
 
@@ -224,8 +229,6 @@ public sealed class FamilyRecorder : IComponent
             }
         }
 
-        await ExecuteAsync(connection, transaction, ClearTheNight, cancellation, ("$night", Stamp(night)));
-
         var verdicts = await ShadowsAsync(connection, transaction, night, cancellation);
         var trees = await EquityBrief.Worker.Loop.StoredTrees.ReadAsync(connection, transaction, cancellation);
         var kept = 0;
@@ -237,22 +240,27 @@ public sealed class FamilyRecorder : IComponent
             var family = ((FamilyRuleEvaluator)CandidateEvaluators.Find(rule.Evaluator)!).Family;
             var cap = SetupFamilies.Named(family)?.CapSessions ?? 0;
             var hooks = RuleHooks.Of(CandidateEvaluator.Read(rule.Parameters)).With(trees);
+            (string Ticker, ShadowOutcome Outcome)[] own = [.. verdicts.Where(verdict => verdict.Family == family && verdict.Outcome.Candidate == rule.Candidate).Select(verdict => (verdict.Ticker, verdict.Outcome))];
 
             // A rule whose hooks read readings the night did not supply lists nothing tonight rather than a list its
-            // hooks did not order.
-            if (hooks.ReadsReadings && readings is null)
+            // hooks did not order, and one the night's rows hold no verdict of lists nothing it was not evaluated for;
+            // either keeps the trades a run of the night stored for it before.
+            if ((hooks.ReadsReadings && readings is null) || own.Length == 0)
             {
-                said.Add(FormattableString.Invariant($"'{rule.Candidate}' kept 0, its hooks reading what the night did not supply"));
+                var why = own.Length == 0 ? "the night's rows holding no verdict of it" : "its hooks reading what the night did not supply";
+                var stored = await StoredAsync(connection, transaction, rule.Candidate, night, cancellation);
+
+                said.Add(stored == 0
+                    ? FormattableString.Invariant($"'{rule.Candidate}' kept 0, {why}")
+                    : FormattableString.Invariant($"'{rule.Candidate}' kept 0, {why}, its {stored} trade(s) stored for the night left as they were"));
 
                 continue;
             }
 
+            await ExecuteAsync(connection, transaction, ClearTheRulesNight, cancellation, ("$night", Stamp(night)), ("$candidate", rule.Candidate));
+
             var held = await HeldAsync(connection, transaction, rule.Candidate, night, cancellation);
-            var listed = Keep(
-                verdicts.Where(verdict => verdict.Family == family && verdict.Outcome.Candidate == rule.Candidate).Select(verdict => (verdict.Ticker, verdict.Outcome)),
-                held,
-                hooks,
-                readings);
+            var listed = Keep(own, held, hooks, readings);
 
             foreach (var (ticker, place, plan) in listed)
             {
@@ -662,6 +670,18 @@ public sealed class FamilyRecorder : IComponent
         }
 
         return verdicts;
+    }
+
+    static async Task<long> StoredAsync(SqliteConnection connection, SqliteTransaction transaction, string candidate, DateOnly night, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.Transaction = transaction;
+        command.CommandText = StoredOn;
+        command.Parameters.AddWithValue("$candidate", candidate);
+        command.Parameters.AddWithValue("$night", Stamp(night));
+
+        return (long)(await command.ExecuteScalarAsync(cancellation) ?? 0L);
     }
 
     static async Task<IReadOnlySet<string>> HeldAsync(SqliteConnection connection, SqliteTransaction transaction, string candidate, DateOnly night, CancellationToken cancellation)
