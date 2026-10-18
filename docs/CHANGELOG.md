@@ -26,6 +26,16 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - ARCHITECTURE.html - 15.7's close to a buy point rows open a stock's chart page
+Corrects: 15.7 still had a stock one gate short link to its page and a name close to a buy point open to its page, which 19.11 moved to the stock's chart page, found by the operator's review of the corpus
+Was:
+> Tonight's stocks one gate short: ... Each row draws the setup as its tag and the stock linking to its page with its company and the gate it missed ...
+> ... never count a row of it, and a name on it opens to its page, whose Why it is here names the gate it missed and by how much (see: ...)
+Now:
+> Tonight's stocks one gate short: ... Each row draws the setup as its tag and the stock linking to its chart page with its company and the gate it missed ...
+> ... never count a row of it, and a name on it opens to its chart page, and its report's Why it is here names the gate it missed and by how much (see: ...)
+Why: from 19.11 every link that opens a stock opens its chart page first, and the rows' tickers link to `#/chart/<ticker>`, so the two phrases contradicted the code.
+
 ### 2026-10-18 - ARCHITECTURE.html - 13.10's benchmark is bought at each member's own next open
 Corrects: 13.10 still entered the setup ledger's benchmark at the close, which 19.10 moved to each member's own next open as the same paragraph's earlier sentence says, found by the operator's review of the corpus
 Was:

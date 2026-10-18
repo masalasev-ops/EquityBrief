@@ -2913,5 +2913,23 @@ Built:      the sentence says the benchmark is entered on every member that sess
             next open, checked first against the code, which prices it through `TradeFills.Swing` at the open; the
             changelog holds the prior text. Documents alone, with the guide's new text beside it in this pull request.
 Tests:      none new; no code changes.
-Verified:   as the 19.11 correction's entry below records.
+Verified:   `tools/ci.ps1` green over main's code, as the 19.11 correction's entry below records.
 Carried:    as the 19.11 correction's entry below records.
+
+### 19.11 - correction: 15.7's close to a buy point rows say a stock opens its chart page   2026-10-18
+
+Found:      by the operator's review of the corpus: 15.7 still had a stock one gate short link to its page and a name
+            close to a buy point open to its page, where from 19.11 every link that opens a stock opens its chart page.
+Built:      both phrases say the chart page, checked first against the code, whose rows link the ticker to
+            `#/chart/<ticker>`; the changelog holds the prior text. Not changed and put to the operator: 13.10's
+            heavyweights' setup still "bought at the session's close", where the code prices it at the next open as
+            every setup; and 15.7's note still says a row's "ticker is a link opening the name's own page", where from
+            19.11 it opens the chart page.
+Tests:      none new; no code changes.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over main's code at 2528192e, as the 20.2 entry
+            records: 2443 of 2443 tests, 1355 claims, 1355 passing. This pull request changes documents alone, the
+            guide among them, and the checks that read the corpus ran filtered over its tree: RecordAppendOnly,
+            TwoPlatform, ObligationReconciles, BannedProse, DecisionCitations, CoverageReported, StatedCounts,
+            ArchitectureConformance with the guide's tests, PinnedConstants, ChangelogReconciles,
+            DoneConditionProducible and FigureFits.
+Carried:    as the 20.2 entry above records.
