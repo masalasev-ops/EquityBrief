@@ -159,6 +159,8 @@ public partial class FixtureExpectations
             .. ReleaseFetchClaims,
             // 20.3, the release reading: section 17's row and section 18's.
             .. ReleaseReadingClaims,
+            // 20.4, the drift's tone variant: 15.7's card row and section 17's window row.
+            .. ToneVariantClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

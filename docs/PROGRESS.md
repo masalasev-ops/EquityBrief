@@ -3030,3 +3030,80 @@ Carried:    20.2's history fetch, still running from main, and its record; the l
             the filer's first word or tickers and where, all before 20.4's remedy; the sign-offs of phases 18 and 19,
             owed to fresh sessions after 20.4; the two items phase 17's sign-off carried, corrected after 20.4; (G1),
             SCHEMA's `family_trade` sentence, owed by the next edit of that section.
+
+### 20.4 - the drift's tone variant: the night hands each drift setup its release reading, and the variant waits on its remedy   2026-10-18
+
+Queue:      done, phase 17's sign-off and 20.0 to 20.3 with the operator's guide and two corrections, PRs 486 to 493; in
+            progress, this checkpoint, with 20.2's history fetch from main still running; next, 20.2's record once the
+            fetch ends, 20.3's remedy and its record, this checkpoint's two remedies, the two items phase 17's sign-off
+            carried, and the sign-offs of phases 18 and 19 by fresh sessions.
+Built:      on the operator's rulings of 2026-10-18 (see: The drift's tone variant lists only where its print's release
+            reads better than expected and its outlook was not lowered or withdrawn) (see: An S&P 400 or 600 family's
+            variants are registered again whole to add one beside its provisional rule). In the core the tone condition,
+            read after a drift rule's gates and its switches where its registration names a reading version, an optional
+            parameter the drift on every index reads and no other evaluator, with its chip and its funnel's two steps.
+            The family evaluator hands each print inside the widest window a standing drift rule reads its release under
+            every version a standing rule names, and the index families each listed drift setup's, through the one
+            reader of the release readings and none under a version whose history read is not complete, each stage's row
+            saying what each version held. The registrar refuses a version not complete or no whole number; the drift
+            registered again adds its ninth rule at the newest complete version; `register --index-variants` takes
+            `--again` with `--evidence`; the replay names an index rule as not replayed. The cards count a tone rule's
+            release read and its tone, an index tone variant read again for its funnel. The per-rule step keeps the
+            variant not testable in the operator's words. `rules-choose-the-stocks` gains the release readings' test.
+            The corpus as 20.4 lists it, the matrix's column headed Research and readings, and two remedy files.
+Found:      the shared evaluator file every evaluator pins took the optional parameters first, which moved every pin,
+            the swing filter's and the three candidates' among them, so the tone condition's own file names them; the
+            reader of the complete versions set a command's transaction to none, which the cards' stage refuses inside
+            its own, so a night with a tone rule standing would have left the S&P 500's rule rows not computed; an S&P
+            400 or 600 variant's card drew no funnel; and no replay reads an index rule.
+Amended:    20.4 amends its own done condition: the read of the release readings it finds is one outside the one reader
+            of the release readings, which 20.3 built beside the stores and not in the core; and its text on that ground,
+            and in that `--again` names each standing index variant as not replayed. The changelog says the same.
+Tests:      9 new, 2467 in all: the tone condition on both sides of each answer's words, after a VIX switch and read by
+            no rule naming no version; the fixture's release reading passing it as worked by hand; a release at the
+            second its print's window opens and a second before, and a version not complete; the S&P 500's drift
+            registered again without and with its ninth rule, the night listing DA and not DB, its row's counts and the
+            card's funnel, and a version not complete listing nothing; each index's night over seven members worked by
+            hand, its row and its card's funnel; `--again`'s refusals and its registration; the chips and the per-rule
+            words; and the release readings read by a deciding component through the one reader alone, with planted
+            reads found. Derived expectation `tone-variant.json`, the fixture's release reading worked by hand.
+Claims:     1364, two more than 1362 and the plan's about 2: 15.7's The drift's tone variant and section 17's Tone
+            variant's release window, named beside phase 19's pair as rows after its report, each passing.
+Pins:       moved as 20.0 read them off the code and no other: the S&P 500's breakout 68080b6ae692 to c4cf32e70c59 and
+            drift 05ae10606fa0 to f6b52da6e0c6; on the S&P 400 and 600 the breakout b1dbb89e6a0b to 220315e2b29d, the
+            drift 0517e0869555 to d3b31d4c3a35, the pullback 87e8cc8312bd to 2d47fe58f8ca and the heavyweights
+            9e8ebd36a0e5 to 2dfd307b477a.
+Remedy:     after the merge and before the night, `tools/remedies/2026-10-18-20.4-the-moved-rules-registered-again.txt`
+            from main, the S&P 500's rules replayed and kept and each index rule restarting; once version 2's history
+            read completes and its record entry is written, `tools/remedies/2026-10-18-20.4-the-tone-variants.txt`. No
+            provider request and no model call.
+Mutated:    the rule, stated before the runs: one mutation a property 20.4 adds whose failure would list a drift setup
+            its condition keeps off, keep off one it lists, hand a reading a rule may not read, leave a night's empty
+            list unexplained, or register what the form refuses; the smallest edit to shipped source, each run filtered
+            to 20.4's nine tests with the rules check's two before them, its red predicted, made in this checkout and
+            reverted with the editor. M1 the results alone read: red at the condition and the index night, and at the
+            S&P 500's night, where DB's withdrawn outlook passed. M2 in line read as better: red at the condition and
+            the index night. M3 no reading passing: red at the condition and both nights. M4 the gate read by a rule
+            naming no version: red at the condition and the S&P 500's night. M5 a version not complete handed: red at
+            the window and both nights. M6 only tonight's reactions handed on the S&P 500: red at its night. M7 an index
+            rule's check skipped: red at the index night. M8 only tonight's reactions handed on an index: red at the
+            index night. M9 the S&P 500 card's release read step dropped: red at its night. M10 no index funnel: red at
+            the index night. M11 a standing variant left out allowed: red at the form. M12 nothing added allowed: red
+            at the form. M13 a version not complete registered: red at the form. M14 `--again` with no evidence: red at
+            the form. M15 no ninth rule: red at the S&P 500's night. M16 the per-rule step walking it: red at the words.
+            M17 no chip: red at the words. M18 a deciding source naming the readings' table: red at the rules check.
+            M19 an index rule unnamed by the replay: red at the form. M20 the transaction set to none: red at both
+            nights. M21 the evaluator's row silent: red at the S&P 500's night. M22 the index's no-reading part
+            unnamed: red at the index night. M23 the reading version refused on an index: red at the form and the index
+            night. M24 a fractional version registered: red at the form. Each red as predicted, M1 at one test more.
+            Not mutated: the release read step's own count on the S&P 500 apart from the tone, and the stage rows'
+            order of reasons.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2467 of 2467 tests ran with none failed,
+            migrations 0 to 100 with none pending, schema version 100, against `data-ci` and never `data`; the phase
+            report 60 tables, 1364 claims, 1364 passing, none out of scope and none unexamined, 1375 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    20.2's history fetch and its record; the late slot's first fetch; 20.3's remedy, the reference set's labels
+            and the history read with its record before this checkpoint's second remedy; this checkpoint's two remedies;
+            the sign-offs of phases 18 and 19, owed to fresh sessions from now; the two items phase 17's sign-off
+            carried; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.

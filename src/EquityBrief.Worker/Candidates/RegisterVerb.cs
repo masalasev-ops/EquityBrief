@@ -55,6 +55,11 @@ public static class RegisterVerb
     // see: An index family's variants may stand registered before its freeze, its provisional rule staying the live one
     public const string IndexVariants = "--index-variants";
 
+    // From 20.4 the switch that registers an index family's standing variants again whole with the ones given, on the
+    // evidence given, which is how a variant joins them.
+    // see: An S&P 400 or 600 family's variants are registered again whole to add one beside its provisional rule
+    public const string Again = "--again";
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--candidate", ["--candidate", "--rule", "--test", "--evaluator"], ["--parameters"], []),
@@ -66,7 +71,7 @@ public static class RegisterVerb
         new(TheFamilyAgain, ["--evidence"], [], [TheFamilyAgain]),
         new(FamilyAgain, [FamilyAgain, "--evidence"], [], []),
         new(IndexFamily, [IndexFamily, "--index", "--parameters"], ["--variants"], []),
-        new(IndexVariants, [IndexVariants, "--index", "--variants"], [], []),
+        new(IndexVariants, [IndexVariants, "--index", "--variants"], ["--evidence"], [Again]),
     ];
 
     // The run id, to the ten-millionth of a second, so two commands a second apart never share one.
@@ -200,6 +205,38 @@ public static class RegisterVerb
             catch (FormatException unreadable)
             {
                 return await RefusedAsync(registrar, runId, unreadable.Message, error);
+            }
+
+            var again = args.Contains(Again, StringComparer.Ordinal);
+            var evidence = VerbArguments.Value(args, "--evidence");
+
+            if (again != (evidence is not null))
+            {
+                return await RefusedAsync(
+                    registrar,
+                    runId,
+                    again
+                        ? "--again retires the variants standing, so it takes --evidence saying why, and nothing was written."
+                        : "--evidence is given without --again, and a registration of variants beside the provisional rule retires nothing, so nothing was written.",
+                    error);
+            }
+
+            if (again)
+            {
+                var (written, refusedAgain) = Indices.IndexRules.VariantsAgain(Given(IndexVariants), Given("--index"), variants, await registrar.RowsAsync(), at);
+
+                if (written is null)
+                {
+                    return await RefusedAsync(registrar, runId, refusedAgain!, error);
+                }
+
+                // The variants standing are replayed first, as a family registered again is, and the replay says each
+                // restarts, since no replay reads an S&P 400's or 600's rule.
+                var family = Core.Candidates.IndexRuleCandidate.FamilyOn(Given(IndexVariants), Given("--index"));
+
+                await ReplayedAsync(await replay.FamilyAsync(family), output);
+
+                return await Said(await registrar.RegisterTheIndexVariantsAgainAsync(family, written, evidence!, runId), output, error);
             }
 
             var (registrations, refused) = Indices.IndexRules.Variants(Given(IndexVariants), Given("--index"), variants, await registrar.RowsAsync(), at);

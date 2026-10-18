@@ -1436,7 +1436,8 @@ public partial class ArchitectureConformance
         // 232 at 19.12: the Ledger page's table of which readings go with winners.
         // 233 at 19.13: the report's Insiders region.
         // 234 at 20.1: the Run page's local model region.
-        Assert.Equal(234, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 235 at 20.4: Tonight's row for the drift's tone variant on its card.
+        Assert.Equal(235, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1585,7 +1586,8 @@ public partial class ArchitectureConformance
         // 633 at 19.12: the Ledger page's table of which readings go with winners.
         // 634 at 19.13: the report's Insiders region.
         // 635 at 20.1: the Run page's local model region.
-        Assert.Equal(635, inDocument.Length);
+        // 636 at 20.4: Tonight's row for the drift's tone variant on its card.
+        Assert.Equal(636, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

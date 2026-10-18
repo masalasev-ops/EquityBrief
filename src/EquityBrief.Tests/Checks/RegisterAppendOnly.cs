@@ -560,10 +560,15 @@ public class RegisterAppendOnly
         var books = evaluators.OfType<BookEvaluator>().ToArray();
 
         Assert.Equal(["breakout", "drift"], families.Select(family => family.Family).Order(StringComparer.Ordinal));
-        // Four of its own, and from 17.5 the engines' hooks and the exit menu its list and trades are read through.
+        // Four of its own, and from 17.5 the engines' hooks and the exit menu its list and trades are read through; and from
+        // 20.4 the drift's tone condition's file beside its four, which the drift on every index pins and no other evaluator.
         // see: Every engine's settings hooks land together and all default off, so the families' pins move once
-        Assert.All(families, family => Assert.Equal(4 + Core.Loop.RuleHooks.Sources.Count, family.OwnSources.Count));
+        // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+        Assert.All(families, family => Assert.Equal(4 + (family.Family == Core.Families.DriftRule.Name ? 1 : 0) + Core.Loop.RuleHooks.Sources.Count, family.OwnSources.Count));
         Assert.All(families, family => Assert.Equal(Core.Loop.RuleHooks.Sources, family.OwnSources.TakeLast(Core.Loop.RuleHooks.Sources.Count)));
+        Assert.Equal(
+            ["drift", "drift-400", "drift-600"],
+            evaluators.Where(evaluator => evaluator.OwnSources.Contains("src/EquityBrief.Core/Releases/ReleaseTone.cs", StringComparer.Ordinal)).Select(evaluator => evaluator.Name).Order(StringComparer.Ordinal));
         Assert.Equal(["heavyweight"], books.Select(book => book.Family));
         Assert.All(evaluators.Where(evaluator => evaluator is not (FamilyRuleEvaluator or BookEvaluator)), evaluator => Assert.Empty(evaluator.OwnSources));
 

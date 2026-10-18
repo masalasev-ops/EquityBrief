@@ -3,6 +3,7 @@ using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Readings;
+using EquityBrief.Core.Releases;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Sweep;
@@ -23,8 +24,10 @@ public sealed record IndexRule(string Candidate, IndexRuleCandidate Evaluator, I
 // The readings a rule's levels read on the night, as the member readings, the switches and the S&P 500's market reading
 // stored them: each member's industry's return over a month and a quarter and its coverage, each member's peers'
 // surprise on each session the rows hold, the index fund against SPY over half a year and a year, the credit fund
-// against its average and its own past, and the S&P 500's breadth.
+// against its average and its own past, and the S&P 500's breadth; and from 20.4 the release of each print a drift's
+// reaction can reach, by its ticker and report date, under each reading version a standing rule names.
 // see: A member's coverage is read on the night only over quarters whose fetch read their interest expense
+// see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
 public sealed record IndexLevels(
     IReadOnlyDictionary<string, (double? Month, double? Quarter)> Industry,
     IReadOnlyDictionary<string, bool?> Coverage,
@@ -33,7 +36,8 @@ public sealed record IndexLevels(
     double? FundYear,
     double? CreditAverage,
     double? CreditChange,
-    double? LargeBreadth)
+    double? LargeBreadth,
+    IReadOnlyDictionary<(string Ticker, DateOnly Report, long Version), PrintRelease>? Releases = null)
 {
     public static IndexLevels None { get; } = new(
         new Dictionary<string, (double?, double?)>(StringComparer.Ordinal),
@@ -65,6 +69,12 @@ public static class IndexRules
     public const string VolumeUnder = "volume under its rule's multiple";
 
     public const string PeersNotAbove = "its peers' surprise not above nothing";
+
+    // From 20.4 the reasons the tone condition keeps a listed drift member off: its print's release read under the rule's
+    // version and failing, and no reading of it held under the version.
+    public const string ToneFailed = ReleaseTone.FailedOnTheIndex;
+
+    public const string ToneNotHeld = ReleaseTone.NotHeldOnTheIndex;
 
     // The most rules a family keeps a night, and the most variants a freeze registers beside its live rule.
     public const int PerNight = 5;
@@ -111,7 +121,7 @@ public static class IndexRules
             }
         }
 
-        if (parameters.Keys.Where(name => !hooked || !EquityBrief.Core.Loop.RuleHooks.IsHook(name)).Except(evaluator.Parameters, StringComparer.Ordinal).FirstOrDefault() is { } unread)
+        if (parameters.Keys.Where(name => !hooked || !EquityBrief.Core.Loop.RuleHooks.IsHook(name)).Except([.. evaluator.Parameters, .. ReleaseTone.OptionalOf(evaluator)], StringComparer.Ordinal).FirstOrDefault() is { } unread)
         {
             return $"'{evaluator.Name}' reads no parameter named '{unread}'.";
         }
@@ -494,6 +504,76 @@ public static class IndexRules
             return (null, $"rules of the {carried.Family} already stand registered; variants are registered beside the provisional rule alone, and a family whose rules stand changes by a freeze once they are retired.");
         }
 
+        return VariantsOf(carried, index, variants);
+    }
+
+    // From 20.4 a family's variants on its index registered again whole to add one beside its provisional rule: every
+    // variant standing stated again among those given and at least one given that does not stand, each the provisional
+    // setting with the parameters it names moved and refused as the form without it refuses one; or why none can be
+    // written, no rule of the family standing and its live rule standing among the reasons, since a freeze is then the
+    // form that changes it. The registrar retires the standing variants and registers those given at one instant.
+    // see: An S&P 400 or 600 family's variants are registered again whole to add one beside its provisional rule
+    public static (IReadOnlyList<Registration>? Registrations, string? Refusal) VariantsAgain(
+        string family,
+        string index,
+        IReadOnlyList<IReadOnlyDictionary<string, double>> variants,
+        IReadOnlyList<RegisterRow> register,
+        DateTimeOffset at)
+    {
+        if (CandidateEvaluators.All.OfType<IndexRuleCandidate>().FirstOrDefault(evaluator => evaluator.SetupFamily == family && evaluator.Index == index) is not { } carried)
+        {
+            return (null, $"no rule of a family named '{family}' is carried for an index coded '{index}'; the families are {string.Join(", ", CandidateEvaluators.All.OfType<IndexRuleCandidate>().Select(evaluator => evaluator.SetupFamily).Distinct(StringComparer.Ordinal))} and the indices MID and SML.");
+        }
+
+        var standing = CandidateFamily.In(CandidateFamily.Standing(register, at), carried.Family);
+
+        if (standing.Count == 0)
+        {
+            return (null, $"no rule of the {carried.Family} stands registered, so there are no variants to register again; the form without --again registers them.");
+        }
+
+        if (standing.FirstOrDefault(row => FamilyRecords.IsLive(row.Candidate)) is { } live)
+        {
+            return (null, $"the {carried.Family}'s live rule '{live.Candidate}' stands, and this form registers again the variants beside a provisional rule alone.");
+        }
+
+        var (registrations, refused) = VariantsOf(carried, index, variants);
+
+        if (registrations is null)
+        {
+            return (null, refused);
+        }
+
+        static bool Same(IReadOnlyDictionary<string, double> one, IReadOnlyDictionary<string, double> other) =>
+            one.Count == other.Count && one.All(pair => other.TryGetValue(pair.Key, out var value) && value == pair.Value);
+
+        if (standing.FirstOrDefault(row => !registrations.Any(one => Same(one.Parameters, CandidateEvaluator.Read(row.Parameters)))) is { } left)
+        {
+            return (null, $"'{left.Candidate}' stands and is not among the variants given; this form registers the family's variants again whole to add one, and a variant left out is retired on its own.");
+        }
+
+        if (registrations.Count == standing.Count)
+        {
+            return (null, "every variant given stands already, so none would be added; this form registers the family's variants again whole to add one.");
+        }
+
+        return (registrations, null);
+    }
+
+    // A family's variants as given, each the provisional setting with the parameters it names moved, at most eight, every
+    // one at settings its index's sweep read and none stating the provisional setting itself or a setting given before it.
+    static (IReadOnlyList<Registration>? Registrations, string? Refusal) VariantsOf(IndexRuleCandidate carried, string index, IReadOnlyList<IReadOnlyDictionary<string, double>> variants)
+    {
+        if (variants.Count == 0)
+        {
+            return (null, "no variant was given; each variant names the parameters it moves from the provisional rule.");
+        }
+
+        if (variants.Count > MostVariants)
+        {
+            return (null, FormattableString.Invariant($"{variants.Count} variants were given, and at most {MostVariants} stand beside a family's provisional rule."));
+        }
+
         var provisional = Provisional(carried);
         var settings = new List<IReadOnlyDictionary<string, double>> { provisional };
 
@@ -511,7 +591,7 @@ public static class IndexRules
                 return (null, FormattableString.Invariant($"variant {settings.Count}: {refused}"));
             }
 
-            if (settings.Any(one => one.Count == variant.Count && one.All(pair => variant[pair.Key] == pair.Value)))
+            if (settings.Any(one => one.Count == variant.Count && one.All(pair => variant.TryGetValue(pair.Key, out var value) && value == pair.Value)))
             {
                 return (null, FormattableString.Invariant($"variant {settings.Count} states the provisional rule's settings or a variant's given before it."));
             }
@@ -674,6 +754,11 @@ public static class IndexRules
             {
                 words.Add("its peers' surprise before the reaction above nothing");
             }
+
+            if (ReleaseTone.VersionOf(p) is var version and > 0)
+            {
+                words.Add(FormattableString.Invariant($"its print's release reading better with its outlook not cut under reading version {version}"));
+            }
         }
 
         return ", " + string.Join(", ", words);
@@ -802,6 +887,26 @@ public static class IndexRules
             || (p[IndexRuleCandidate.CreditChangeParameter] == 1 && levels.CreditChange is not > 1))
         {
             return SwitchClosed;
+        }
+
+        // The tone condition after the switches, as the S&P 500's drift reads it after its market switches: the release of
+        // the print the listing reacts to, the newest the night's bar reads, under the version the rule names.
+        // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+        if (rule.Evaluator is IndexDriftCandidate && ReleaseTone.VersionOf(p) is var version and > 0)
+        {
+            var series = inputs.Series[name];
+            var bar = IndexNightRead.BarOf(series, inputs.At);
+            PrintRelease? release = null;
+
+            if (bar >= 0 && series.NewestSurprise[bar] is var newest and >= 0)
+            {
+                levels.Releases?.TryGetValue((ticker, series.Name.Surprises[newest].EventDate, version), out release);
+            }
+
+            if (!ReleaseTone.GateOf(version, release).Passed)
+            {
+                return release?.Answer is null ? ToneNotHeld : ToneFailed;
+            }
         }
 
         return null;

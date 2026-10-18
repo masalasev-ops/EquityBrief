@@ -34,6 +34,17 @@ public sealed class FamilyRuleShadow
             .Append(DriftRule.WindowSessions)
             .Max();
 
+    // From 20.4 the reading versions the standing drift rules name, whose readings of each member's print the stage
+    // reads for them, none where no rule names one.
+    public IReadOnlyList<long> ReadingVersions =>
+    [
+        .. ShadowColumn.ForTheFamily(standing, DriftRule.Name)
+            .Select(row => Releases.ReleaseTone.VersionOf(CandidateEvaluator.Read(row.Parameters)))
+            .Where(version => version > 0)
+            .Distinct()
+            .Order(),
+    ];
+
     public int Evaluated { get; private set; }
 
     public IReadOnlyList<string> Faults => [.. faults.Keys];

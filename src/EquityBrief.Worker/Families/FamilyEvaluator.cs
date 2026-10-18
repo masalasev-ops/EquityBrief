@@ -7,6 +7,7 @@ using EquityBrief.Core.Filter;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Loop;
 using EquityBrief.Core.Prices;
+using EquityBrief.Core.Releases;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using EquityBrief.Worker.Indices;
@@ -64,6 +65,10 @@ public sealed class FamilyEvaluator : IComponent
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
             new StoreTouch(Store.LoopModel, Touch.Read),
+            new StoreTouch(Store.Company, Touch.Read),
+            new StoreTouch(Store.ReleaseDocument, Touch.Read),
+            new StoreTouch(Store.ReleaseReading, Touch.Read),
+            new StoreTouch(Store.ReadingPin, Touch.Read),
             new StoreTouch(Store.FamilyResult, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -181,7 +186,7 @@ public sealed class FamilyEvaluator : IComponent
             return new FamilyEvaluatorOutcome(null, 0, []);
         }
 
-        if (await InputsAsync(connection, session, shadow.DriftWindowReach, cancellation) is not { } inputs)
+        if (await InputsAsync(connection, session, shadow.DriftWindowReach, cancellation, shadow.ReadingVersions) is not { } inputs)
         {
             await AppendAsync(connection, null, runId, startedAt, 0, FormattableString.Invariant($"the swing filter stored no result for {Stamp(session)}, so no family was evaluated"), false, cancellation);
 
@@ -264,7 +269,7 @@ public sealed class FamilyEvaluator : IComponent
             .ToArray();
         var outcome = new FamilyEvaluatorOutcome(session, results.Count, families, shadow.Evaluated, shadow.Faults);
 
-        await AppendAsync(connection, transaction, runId, startedAt, results.Count, Detail(outcome) + shadow.Said + Switches(shadow, inputs.Closes),shadow.Faults.Count > 0, cancellation);
+        await AppendAsync(connection, transaction, runId, startedAt, results.Count, Detail(outcome) + shadow.Said + Switches(shadow, inputs.Closes) + Releases(shadow, inputs), shadow.Faults.Count > 0, cancellation);
         await transaction.CommitAsync(cancellation);
 
         return outcome;
@@ -274,7 +279,15 @@ public sealed class FamilyEvaluator : IComponent
     // bars and readings to the night and none after it, and none where the filter stored no result for the night.
     // The night's own run reads its night through it, and a replay of a rule reads an earlier night the same way.
     // see: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
-    public static async Task<FamilyNightInputs?> InputsAsync(SqliteConnection connection, DateOnly night, int driftWindowReach, CancellationToken cancellation = default)
+    // From 20.4 each print inside the widest drift window a standing rule reads is handed its release under every reading
+    // version a standing rule names, through the one reader of the release readings.
+    // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+    public static async Task<FamilyNightInputs?> InputsAsync(
+        SqliteConnection connection,
+        DateOnly night,
+        int driftWindowReach,
+        CancellationToken cancellation = default,
+        IReadOnlyList<long>? readingVersions = null)
     {
         var (members, market) = await FilterRowsAsync(connection, night, cancellation);
 
@@ -296,6 +309,10 @@ public sealed class FamilyEvaluator : IComponent
         var bands = await BandsAsync(connection, night, cancellation);
         var closes = await MarketAsync(connection, night, cancellation);
         var read = new List<FamilyNightMember>();
+        var versions = readingVersions ?? [];
+        var filers = versions.Count > 0 ? await ReleaseReadings.FilersAsync(connection, cancellation) : null;
+        var complete = versions.Count > 0 ? await ReleaseReadings.CompleteVersionsAsync(connection, null, cancellation) : [];
+        var zone = SessionZones.ResolveSessionZone(SessionZones.UnitedStates);
 
         foreach (var member in members)
         {
@@ -305,6 +322,20 @@ public sealed class FamilyEvaluator : IComponent
             // The reaction's own session among the member's bars, which the two readings beside it are stored for.
             var print = prints.GetValueOrDefault(member.Ticker);
             var at = print is null ? -1 : held.Select((bar, index) => (bar, index)).Where(pair => pair.bar.Session == print.ReactionSession).Select(pair => pair.index).DefaultIfEmpty(-1).First();
+
+            // The print's release under each version, read only where its reaction falls inside the widest window.
+            List<PrintRelease>? releases = null;
+
+            if (print is not null && at >= 0 && held.Count - 1 - at < driftWindowReach && versions.Count > 0)
+            {
+                releases = [];
+
+                foreach (var version in versions)
+                {
+                    releases.Add(await ReleaseReadings.ForRuleAsync(
+                        connection, filers!.GetValueOrDefault(member.Ticker), print.ReportDate, night, version, complete.Contains(version), ReleaseCalendar.Exchange, zone, cancellation));
+                }
+            }
 
             var inputs = new FamilyMember(
                 new BreakoutInputs(
@@ -324,7 +355,8 @@ public sealed class FamilyEvaluator : IComponent
                     typical,
                     bands.GetValueOrDefault(member.Ticker) ?? [],
                     member.Exclusions),
-                closes);
+                closes,
+                releases);
 
             // A member the night holds no bar for, or holds across a gap, is a counted skip of every family candidate.
             read.Add(new FamilyNightMember(
@@ -579,6 +611,18 @@ public sealed class FamilyEvaluator : IComponent
             .ToArray();
 
         return gates.Length == 0 ? string.Empty : "; the market switches: " + string.Join("; ", gates);
+    }
+
+    // From 20.4 what the night's releases held under each reading version a standing rule names, so the stage's row says
+    // why a rule reading one listed nothing; nothing where no standing rule names one.
+    // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+    static string Releases(FamilyRuleShadow shadow, FamilyNightInputs inputs)
+    {
+        var said = shadow.ReadingVersions
+            .Select(version => ReleaseTone.Said(version, [.. inputs.Members.Select(member => member.Inputs.Releases?.FirstOrDefault(release => release.Version == version)).OfType<PrintRelease>()]))
+            .ToArray();
+
+        return said.Length == 0 ? string.Empty : "; the release readings: " + string.Join("; ", said);
     }
 
     static async Task<DateOnly?> NewestAsync(SqliteConnection connection, CancellationToken cancellation)

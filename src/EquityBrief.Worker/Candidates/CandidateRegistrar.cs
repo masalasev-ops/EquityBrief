@@ -2,6 +2,7 @@ using System.Globalization;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Filter;
+using EquityBrief.Core.Releases;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Time;
@@ -35,11 +36,29 @@ public sealed class CandidateRegistrar : IComponent
         [
             new StoreTouch(Store.CandidateRegister, Touch.Read | Touch.Insert),
             new StoreTouch(Store.FilterVersion, Touch.Read),
+            new StoreTouch(Store.ReadingPin, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
 
     public const string Stage = "candidate-register";
+
+    // From 20.4 why a registration naming a reading version is refused against the store, or none: the version's history
+    // read must be complete, since the night reads that version's readings alone and a version still being read holds
+    // none for the releases it has not reached.
+    static async Task<string?> VersionRefusalAsync(SqliteConnection connection, SqliteTransaction transaction, string candidate, IReadOnlyDictionary<string, double> parameters, CancellationToken cancellation)
+    {
+        if (!parameters.TryGetValue(ReleaseTone.VersionParameter, out var stated))
+        {
+            return null;
+        }
+
+        var complete = await ReleaseReadings.CompleteVersionsAsync(connection, transaction, cancellation);
+
+        return complete.Contains((long)stated)
+            ? null
+            : FormattableString.Invariant($"'{candidate}' reads reading version {stated}, whose history read is not complete, so the night would read no release of the history under it; the versions complete are {(complete.Count == 0 ? "none" : string.Join(", ", complete))}.");
+    }
 
     public const string Registered = "registered";
 
@@ -101,7 +120,7 @@ public sealed class CandidateRegistrar : IComponent
 
         var rows = await RowsAsync(connection, cancellation);
 
-        if ((Unstated(rule, test) ?? Refusal(rows, candidate, evaluator, parameters, startedAt)) is { } refusal)
+        if ((Unstated(rule, test) ?? Refusal(rows, candidate, evaluator, parameters, startedAt) ?? await VersionRefusalAsync(connection, transaction, candidate, parameters, cancellation)) is { } refusal)
         {
             await transaction.RollbackAsync(cancellation);
             await RecordAsync(connection, runId, startedAt, Refused, 0, refusal, cancellation);
@@ -177,7 +196,7 @@ public sealed class CandidateRegistrar : IComponent
 
         foreach (var one in registrations)
         {
-            if ((Unstated(one.Rule, one.Test) ?? Refusal(taken, one.Candidate, one.Evaluator, one.Parameters, startedAt)) is { } refusal)
+            if ((Unstated(one.Rule, one.Test) ?? Refusal(taken, one.Candidate, one.Evaluator, one.Parameters, startedAt) ?? await VersionRefusalAsync(connection, transaction, one.Candidate, one.Parameters, cancellation)) is { } refusal)
             {
                 await transaction.RollbackAsync(cancellation);
 
@@ -304,7 +323,7 @@ public sealed class CandidateRegistrar : IComponent
 
         foreach (var one in family)
         {
-            if ((Unstated(one.Rule, one.Test) ?? Refusal(taken, one.Candidate, one.Evaluator, one.Parameters, startedAt)) is { } refusal)
+            if ((Unstated(one.Rule, one.Test) ?? Refusal(taken, one.Candidate, one.Evaluator, one.Parameters, startedAt) ?? await VersionRefusalAsync(connection, transaction, one.Candidate, one.Parameters, cancellation)) is { } refusal)
             {
                 return await RefuseAsync(FormattableString.Invariant($"'{one.Candidate}' was refused, so none of the {TheSwingFamily.RowsAtOnce} rows was written: {refusal}"));
             }
@@ -387,9 +406,45 @@ public sealed class CandidateRegistrar : IComponent
     // evidence given and the family the code writes for it registered, a rule added to it among them, or none of it.
     // At one instant for the reason a family registers at one, since each rule's level is divided across the rules
     // the first night evaluated beside it. Refused where the code writes no family by the name given, and where no
-    // rule of the family stands, since there is then no family to register again and its freeze registers it.
+    // rule of the family stands, since there is then no family to register again and its freeze registers it. From 20.4
+    // the drift is written with its tone variant reading the newest reading version whose history read is complete,
+    // and without it where no version's is.
     // see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, each family registered again whole and its records replayed
-    public async Task<RegistrationOutcome> RegisterTheSetupFamilyAgainAsync(string family, string evidence, string runId, CancellationToken cancellation = default)
+    // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+    public Task<RegistrationOutcome> RegisterTheSetupFamilyAgainAsync(string family, string evidence, string runId, CancellationToken cancellation = default) =>
+        AgainAsync(
+            family,
+            async (connection, transaction) => TheSetupFamilies.For(family, (await ReleaseReadings.CompleteVersionsAsync(connection, transaction, cancellation)).FirstOrDefault()),
+            $"no freeze is written for a family named '{family}', so it was not registered again; the families a freeze is written for are {string.Join(", ", TheSetupFamilies.Names)}.",
+            $"no rule of the {family} family stands registered, so there is no family to register again and none was written; its freeze registers it.",
+            evidence,
+            runId,
+            cancellation);
+
+    // From 20.4 an S&P 400's or 600's family's variants registered again whole at one instant: every standing rule of the
+    // family on its index retired on the evidence given and the variants given registered, the standing ones stated again
+    // among them, or none of it.
+    // see: An S&P 400 or 600 family's variants are registered again whole to add one beside its provisional rule
+    public Task<RegistrationOutcome> RegisterTheIndexVariantsAgainAsync(string family, IReadOnlyList<Registration> variants, string evidence, string runId, CancellationToken cancellation = default) =>
+        AgainAsync(
+            family,
+            (_, _) => Task.FromResult<IReadOnlyList<Registration>?>(variants),
+            $"no variant of the {family} was given, so none was registered again.",
+            $"no rule of the {family} stands registered, so there are no variants to register again and none was written; the form without --again registers them.",
+            evidence,
+            runId,
+            cancellation);
+
+    // A family registered again whole at one instant: every standing rule of the family retired on the evidence given and
+    // the registrations written for it registered, or none of it, refused where none is written or none of the family stands.
+    async Task<RegistrationOutcome> AgainAsync(
+        string family,
+        Func<SqliteConnection, SqliteTransaction, Task<IReadOnlyList<Registration>?>> write,
+        string noneWritten,
+        string noneStanding,
+        string evidence,
+        string runId,
+        CancellationToken cancellation)
     {
         var startedAt = clock.UtcNow;
 
@@ -406,10 +461,9 @@ public sealed class CandidateRegistrar : IComponent
             return new RegistrationOutcome(Refused, null, said);
         }
 
-        if (TheSetupFamilies.For(family) is not { } written)
+        if (await write(connection, transaction) is not { Count: > 0 } written)
         {
-            return await RefuseAsync(
-                $"no freeze is written for a family named '{family}', so it was not registered again; the families a freeze is written for are {string.Join(", ", TheSetupFamilies.Names)}.");
+            return await RefuseAsync(noneWritten);
         }
 
         var rows = await RowsAsync(connection, cancellation);
@@ -417,7 +471,7 @@ public sealed class CandidateRegistrar : IComponent
 
         if (standing.Length == 0)
         {
-            return await RefuseAsync($"no rule of the {family} family stands registered, so there is no family to register again and none was written; its freeze registers it.");
+            return await RefuseAsync(noneStanding);
         }
 
         var taken = rows.ToList();
@@ -434,7 +488,7 @@ public sealed class CandidateRegistrar : IComponent
 
         foreach (var one in written)
         {
-            if ((Unstated(one.Rule, one.Test) ?? Refusal(taken, one.Candidate, one.Evaluator, one.Parameters, startedAt)) is { } refusal)
+            if ((Unstated(one.Rule, one.Test) ?? Refusal(taken, one.Candidate, one.Evaluator, one.Parameters, startedAt) ?? await VersionRefusalAsync(connection, transaction, one.Candidate, one.Parameters, cancellation)) is { } refusal)
             {
                 return await RefuseAsync($"'{one.Candidate}' was refused, so none of the {standing.Length + written.Count} was written: {refusal}");
             }
@@ -616,7 +670,7 @@ public sealed class CandidateRegistrar : IComponent
             taken.Add(standing with { Id = taken.Max(one => one.Id) + 1, Event = Retired, Retires = registration.Candidate, RegisteredAt = startedAt, Evidence = evidence });
         }
 
-        if ((Unstated(registration.Rule, registration.Test) ?? Refusal(taken, registration.Candidate, registration.Evaluator, registration.Parameters, startedAt)) is { } refused)
+        if ((Unstated(registration.Rule, registration.Test) ?? Refusal(taken, registration.Candidate, registration.Evaluator, registration.Parameters, startedAt) ?? await VersionRefusalAsync(connection, transaction, registration.Candidate, registration.Parameters, cancellation)) is { } refused)
         {
             return await RefuseAsync(refused);
         }
@@ -762,7 +816,7 @@ public sealed class CandidateRegistrar : IComponent
 
         foreach (var one in family)
         {
-            if ((Unstated(one.Rule, one.Test) ?? Refusal(taken, one.Candidate, one.Evaluator, one.Parameters, startedAt)) is { } refusal)
+            if ((Unstated(one.Rule, one.Test) ?? Refusal(taken, one.Candidate, one.Evaluator, one.Parameters, startedAt) ?? await VersionRefusalAsync(connection, transaction, one.Candidate, one.Parameters, cancellation)) is { } refusal)
             {
                 return await RefuseAsync($"'{one.Candidate}' was refused, so none of the {standing.Length + family.Count} was written: {refusal}");
             }
@@ -974,8 +1028,20 @@ public sealed class CandidateRegistrar : IComponent
             }
         }
 
+        // A family rule's optional parameters, each off where it is not stated, from 20.4 the reading version a drift
+        // rule's tone condition reads, which is a whole number from 1 where it is stated.
+        // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+        var optional = ReleaseTone.OptionalOf(carried);
+
+        if (optional.Contains(ReleaseTone.VersionParameter, StringComparer.Ordinal)
+            && parameters.TryGetValue(ReleaseTone.VersionParameter, out var version)
+            && (version < 1 || version != Math.Floor(version)))
+        {
+            return FormattableString.Invariant($"'{evaluator}' is registered at reading version {version}, which names no version: a reading version is a whole number from 1, and a rule reading none states none.");
+        }
+
         var given = parameters.Keys
-            .Where(name => !hooked || !EquityBrief.Core.Loop.RuleHooks.IsHook(name))
+            .Where(name => (!hooked || !EquityBrief.Core.Loop.RuleHooks.IsHook(name)) && !optional.Contains(name, StringComparer.Ordinal))
             .OrderBy(name => name, StringComparer.Ordinal)
             .ToArray();
         var wanted = carried.Parameters.OrderBy(name => name, StringComparer.Ordinal).ToArray();

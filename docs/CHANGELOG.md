@@ -26,6 +26,52 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - ARCHITECTURE.html - the drift's tone variant: five components read the release readings, the matrix's column named for them, 15.7's card row, section 17's window row and section 14's step
+Authorised by: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+Was:
+> The catalogue's Family evaluator reads: bar store, market series, indicators, levels, earnings reactions, gate results, provisional settings, loop models, family results; its description ending "... (see: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score)"
+> The catalogue's Index families reads: membership, bar store, market series, calendar, companies, reported quarters, filed facts, gate results, filter versions, ...; its description ending "... (see: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless)"
+> The catalogue's Family replay reads: bar store, market series, indicators, levels, earnings reactions, gate results, family results, family trades, candidate register, run log; its description: "... a sector heavyweights rule's book is not replayed, and its row says its record restarts at the registration (see: ...); it makes no request and calls no model"
+> The catalogue's Rule cards reads: membership, bar store, market series, calendar, indicators, levels, earnings reactions, reported quarters, companies, gate results, ...; its description: "... its funnel counted off the family's own checks after the floors; a night run again replaces its own rows ..."
+> The catalogue's Candidate registrar reads: candidate register, filter versions; its description ending "... (see: A candidate whose evaluator a code change moved is registered again unchanged, every one at one instant)"
+> The matrix's column headed Research and theme; Family evaluator, Index families, Family replay and Rule cards blank under it and under Sources; Family evaluator and Family replay blank under Fundamentals; Candidate registrar blank under it
+> Section 14's swing filter step: "... with the exit it names beside each pick (see: The market check closes every swing family's list together, and the sector heavyweights read none); then draw the page's list ..." and "... and read each rule registered on an index at its own settings the same way, a family's live rule drawing its list in the provisional rule's place ..."
+Now:
+> Each of the five reads the reading pins, and the evaluator, the index families, the replay and the cards the release documents and the release readings too, the evaluator and the replay the companies as well; each description says what it does with them from 20.4, the replay naming an S&P 400's or 600's rule as not replayed
+> The matrix's column is headed Research and readings, with R under it for the five, under Sources for the four and under Fundamentals for the evaluator and the replay
+> 15.7 gains the row The drift's tone variant, and section 17 the row Tone variant's release window
+> Section 14's step hands each drift setup's print its release under every reading version a standing rule names through the one reader of the release readings, and an index's drift rule naming one its setups' releases the same way
+Why: 20.4 hands the drift's setups their release readings through the one reader of them, so every component reading the family evaluator's or the index families' inputs reads the stores that reader reads, and the column holding the research sections is named for the readings a rule may now read beside them, which stay barred.
+
+### 2026-10-18 - BUILD_PLAN.md - 20.4's text as built: no replay reads an index rule, and the one reader of the release readings sits beside the stores
+Corrects: the plan read each standing S&P 400 or 600 variant as replayed first by the form's `--again`, while no replay reads an index rule, as the plan's own findings state for the pins 20.4 moves; and it placed the reader of the stored readings in the core, which 20.3 built beside the stores. Found while building 20.4.
+Was:
+> - On the S&P 400 and 600 the 17.11 form registers a family's variants again whole to add one beside the provisional rule, each standing variant replayed first.
+> 20.4: "... handing each drift setup's release reading through the core's one reader, filtered to that version ..."; "... on the S&P 400 and 600 the 17.11 form gains `--again`, registering a family's variants again whole to add one beside the provisional rule, each standing variant replayed first."; "... through the core's reader and filtered to a registered and complete version, ..."; and its done condition "... a read of the release readings outside the core's reader; ..."
+> Where the code lives: "... the availability rule and the reader of the stored readings in the core."
+Now:
+> each standing variant named as not replayed with its record restarting at the registration, since no replay reads an index rule; through the one reader of the release readings, in each of the four places; the availability rule in the core, and the one reader of the stored readings beside the stores
+Why: the text says what the build does, and 20.4's entry states that it amends its own done condition.
+
+### 2026-10-18 - RUNBOOK.md - an index family's variants registered again, and the drift registered again with its tone variant
+Authorised by: An S&P 400 or 600 family's variants are registered again whole to add one beside its provisional rule
+Was:
+> A new setup family registered again: "... Each replay writes one row a rule on the run log under a run of its own named `replay-` and its instant, and the PROGRESS entry that owes the command copies the lines it printed."
+> After the market-off variants' paragraph, no paragraph on registering an index family's variants again
+Now:
+> The paragraph adds that from 20.4 the drift registered again adds its tone variant at the newest reading version whose history read is complete, through the remedy that registers it; a paragraph on `--index-variants` with `--again` follows the market-off variants' with its refusals, its replay lines and the tone variant's two commands
+Why: 20.4 builds the form's `--again` and the drift's ninth rule, and the operator registers both through a remedy.
+
+### 2026-10-18 - .claude/rules/checks.md - rules-choose-the-stocks, fixture-expectations and register-append-only state the tone variant
+Authorised by: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+Was:
+> rules-choose-the-stocks: "... and from 17.9 the apply step and the live alarm join the components held"
+> fixture-expectations: "... and the accuracy report naming a reading written before its label"
+> register-append-only: "... the index night's files and every family rule's shared files"
+Now:
+> Each gains its clause from 20.4: the release readings read by a deciding component through the one reader alone with the planted reads found; the tone condition, its window, its night on each index, its registration and its per-rule words worked by hand; and the tone condition's file pinned by the drift on every index alone
+Why: the checks hold what 20.4 built.
+
 ### 2026-10-18 - ARCHITECTURE.html - the release reading: the local run's and the release fetch's rows, the reading pins' store, what management said, the local reading's settings and an answer refused
 Authorised by: A release is read with every name and date in it replaced by a neutral word, and product names kept
 Was:

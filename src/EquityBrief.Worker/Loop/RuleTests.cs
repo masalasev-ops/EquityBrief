@@ -85,6 +85,10 @@ public static class RuleTests
 
     public const string Estimates = "the analysts' estimates, which the store keeps only from 2026-10-03";
 
+    // From 20.4 why a drift rule reading a release reading cannot be walked yet, in the operator's words.
+    // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+    public const string ReleaseReading = "its release reading joins the tester at 20.8";
+
     public const string Leadership = "sector leadership, which the history's walk does not read";
 
     public const string OffTheGrid = "a setting off its sweep's grid";
@@ -375,6 +379,11 @@ public static class RuleTests
         string[] dials = breakout
             ? [IndexBreakoutCandidate.NearnessParameter, IndexBreakoutCandidate.RecencyParameter, IndexBreakoutCandidate.HighVolumeParameter]
             : [IndexDriftCandidate.WideWindowParameter, IndexDriftCandidate.PeersParameter];
+        if (NotWalkedYet(family, row) is { } kept)
+        {
+            return kept;
+        }
+
         var why = (large ? null : LevelsWhy(p, dials))
             ?? (places.Any(place => place < 0) ? OffTheGrid : null)
             ?? (marketSwitches.IndexAverageSessions is not (0 or SweepIdeas.SlowAverage) || marketSwitches.VixLookbackSessions is not (0 or SweepIdeas.Lookback) ? Switches : null)
@@ -400,6 +409,14 @@ public static class RuleTests
 
         return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, Units(trades));
     }
+
+    // A swing rule kept with why before any walk is read: from 20.4 a drift rule reading a release reading, in the
+    // operator's words, until its reading joins the tester; none for a rule whose walk is read.
+    // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+    public static RuleUnderTest? NotWalkedYet(string family, RegisterRow row) =>
+        Core.Releases.ReleaseTone.VersionOf(CandidateEvaluator.Read(row.Parameters)) > 0
+            ? new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, 0, Why: ReleaseReading)
+            : null;
 
     // The fundamentals-first family's provisional rule, by its search's own walk: the pullback's base listings kept where
     // the family's parts pass at the setting an approval stored for it on the index or its provisional one, walked at the

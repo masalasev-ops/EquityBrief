@@ -71,7 +71,8 @@ internal static class ComponentVocabulary
     // release fetch read for them beside the source documents, each a document the SEC filed and kept as its text. From
     // 20.3 the sources column holds the names and tickers each release's filer files under, read off its submissions
     // beside its releases, and the research and theme column the local model's readings of the releases and its probes'
-    // answers beside the pins they are read under, each what a model wrote.
+    // answers beside the pins they are read under, each what a model wrote. From 20.4 that column is headed research and
+    // readings, since the family rules read the release readings in it and the research sections stay barred to them.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
@@ -84,7 +85,7 @@ internal static class ComponentVocabulary
         ("Facts", [DataStore.Facts]),
         ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk, DataStore.Company, DataStore.EstimateReading, DataStore.DividendReading, DataStore.EstimateTrend, DataStore.DividendEvent, DataStore.FiledFact, DataStore.FiledFactPull, DataStore.FilingDay, DataStore.InsiderTrade, DataStore.InsiderRead, DataStore.SecTicker]),
         ("News", [DataStore.NewsPulse, DataStore.NewsArticle, DataStore.NewsLabel]),
-        ("Research and theme", [DataStore.ResearchSection, DataStore.ThemeSection, DataStore.ReadingPin, DataStore.ReleaseReading, DataStore.ReleaseProbe]),
+        ("Research and readings", [DataStore.ResearchSection, DataStore.ThemeSection, DataStore.ReadingPin, DataStore.ReleaseReading, DataStore.ReleaseProbe]),
         ("Sources", [DataStore.SourceDocument, DataStore.ReleaseDocument, DataStore.ReleaseDay, DataStore.ReleaseFiler]),
         ("Candidate register", [DataStore.CandidateRegister]),
         ("Rule versions", [DataStore.RuleVersion]),

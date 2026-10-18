@@ -16,7 +16,7 @@ public sealed class IndexBreakoutCandidate(string index) : IndexRuleCandidate(in
     public const string RecencyParameter = "recency";
     public const string HighVolumeParameter = "highVolume";
 
-    public override string Version => "b1dbb89e6a0b";
+    public override string Version => "220315e2b29d";
 
     public override string SetupFamily => BreakoutRule.Name;
 

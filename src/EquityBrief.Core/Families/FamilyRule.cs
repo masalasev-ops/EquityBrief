@@ -9,8 +9,9 @@ public readonly record struct FamilyBar(DateOnly Session, decimal High, decimal 
 
 // What the families' rules the family evaluator reads take for one member on one night, together, which a
 // registered family rule is handed so it reads its own family's, with the night's market series a registered
-// rule's market switch reads, none reading every switch as closed.
-public sealed record FamilyMember(BreakoutInputs Breakout, DriftInputs Drift, MarketCloses? Market = null);
+// rule's market switch reads, none reading every switch as closed, and from 20.4 its drift print's release under each
+// reading version a standing rule names, none where no rule names one.
+public sealed record FamilyMember(BreakoutInputs Breakout, DriftInputs Drift, MarketCloses? Market = null, IReadOnlyList<Releases.PrintRelease>? Releases = null);
 
 // The index's and the VIX's closes on the store's sessions to the night, oldest first, as a registered family
 // rule's market switch reads them: a session a series holds no close for reads none, and a day a series holds that
