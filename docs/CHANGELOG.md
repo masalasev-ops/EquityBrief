@@ -26,6 +26,32 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - .claude/rules/checks.md - fixture-expectations states a night run again keeping the trades of a family rule it lists nothing for
+Corrects: a night run again deleted every family trade of the night and kept trades only for the rules the shadow step gave verdicts, so a rule it skipped, registered at a version the code no longer carried, lost its stored trades of that night: `night-20261005T025156Z-for-2026-10-02` kept 0 where the night of 2026-10-02 had kept 2, FDS and CCL under two drift rules; found by phase 17's first sign-off review on 2026-10-18.
+Was:
+> `fixture-expectations`: ... and the next figure past it at the other |
+Now:
+> Added without replacing anything: a night run again replacing the trades of each family rule it lists and leaving as the first run stored them those of a rule the night's rows hold no verdict of, one whose hooks read readings the run was handed none of and one retired between the runs, its row naming the first two with their trades left.
+Why: a roster row names what its check asserts.
+
+### 2026-10-18 - SCHEMA.md - a night run again keeps the trades of a family rule it lists nothing for
+Corrects: as the entry above.
+Was:
+> family_trade: ... A night run again replaces the trades it kept for that night and touches no other night's. ...
+Now:
+> ... A night run again replaces the trades of each rule it lists that night and touches no other night's; from the 13.9 correction of 2026-10-18 it leaves as a run of the night stored them the trades of a rule it lists nothing for: one the night's rows hold no verdict of, as the shadow step gives none to a rule registered at a version the code no longer carries, one whose hooks read readings the night did not supply, and one no longer standing, each its run log row naming. ...
+Why: a rule the night does not evaluate has no list that night to replace its trades with, and the trades its registration's own version kept are its record.
+
+### 2026-10-18 - ARCHITECTURE.html - a night run again keeps the trades of a family rule it lists nothing for
+Corrects: as the entries above.
+Was:
+> component catalogue, Family recorder: ... it replaces the trades it listed for the night where the night is run again, runs after the family lister, ...
+> stores, Family trades, retention: ... a night run again replaces the trades it kept that night and no other night's, and a trade's end and benchmark are written once ...
+Now:
+> ... it replaces the trades of each rule it lists for the night where the night is run again, and from the 13.9 correction of 2026-10-18 leaves as stored those of a rule it lists nothing for, one the night's rows hold no verdict of, as a rule registered at a version the code no longer carries holds none, one whose hooks read what the night did not supply and one no longer standing; it runs after the family lister, ...
+> ... a night run again replaces the trades of each rule it lists that night and no other night's, from the 13.9 correction of 2026-10-18 leaving those of a rule it lists nothing for as stored, and a trade's end and benchmark are written once ...
+Why: as the entry above.
+
 ### 2026-10-18 - .claude/rules/checks.md - fixture-expectations and read-surface state a reading exactly on a tree's threshold
 Corrects: no test read a member whose reading sits exactly on a tree's split threshold, so the walk's comparison made strict reddened only the two tests that hash its source, while 17.15's done condition that the core's walk equals the package's scores rests on the walk's at or under to the left; found by phase 17's first sign-off review on 2026-10-18 as its m16.
 Was:
