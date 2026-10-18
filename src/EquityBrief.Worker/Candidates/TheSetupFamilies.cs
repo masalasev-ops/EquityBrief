@@ -41,7 +41,14 @@ public static class TheSetupFamilies
         "stated floor's typical moves beneath where one is stated and the low sits nearer, and the target the nearer of the " +
         "lowest band two typical moves above and the stated multiple of the risk, with the family's cap; a member firing " +
         "where every gate passes and no exclusion applies, the rule's own list at most five a night by the surprise, with " +
-        "one open trade a stock" + SwitchWords;
+        "one open trade a stock" + SwitchWords + ToneWords;
+
+    // How a registration's reading version is read, which the drift's words end on from 20.4.
+    // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+    const string ToneWords =
+        "; where a reading version is stated, only where the release of the print the setup reacts to, the newest the night " +
+        "may read accepted from the start of the session before the report date, reads under that version results better " +
+        "and an outlook not lowered or withdrawn, a release with no reading held under it listing nothing";
 
     public const string HeavyweightWords =
         "the sector heavyweights' rule at every setting stated: on the first session of each month, or of each week where " +
@@ -79,6 +86,26 @@ public static class TheSetupFamilies
         Core.Families.HeavyweightRule.Name => Heavyweights,
         _ => null,
     };
+
+    // A family's registrations as it is registered again, from 20.4 the drift's with its tone variant where a reading
+    // version whose history read is complete is given, and as its freeze wrote them where none is.
+    public static IReadOnlyList<Registration>? For(string family, long readingVersion) =>
+        family == Core.Families.DriftRule.Name && readingVersion > 0 ? [.. Drifts, ToneVariant(readingVersion)] : For(family);
+
+    // From 20.4 the drift's tone variant: the live rule's setting with the condition, reading the version given, the
+    // family's ninth rule.
+    // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+    public static Registration ToneVariant(long readingVersion) =>
+        new(
+            Named(false, Words(Core.Families.DriftRule.Live) + Tone(readingVersion)),
+            DriftWords,
+            FamilySweepReport.Test,
+            DriftCandidate.EvaluatorName,
+            DriftCandidate.ParametersOf(Core.Families.DriftRule.Live, MarketSwitches.None, readingVersion));
+
+    // The tone condition in a rule's name, where it reads a version.
+    public static string Tone(long readingVersion) =>
+        readingVersion > 0 ? FormattableString.Invariant($", its print's release reading better with its outlook not cut under reading version {readingVersion}") : string.Empty;
 
     public static IReadOnlyList<Registration> Breakouts { get; } = BreakoutsAtTheFreeze();
 

@@ -4,8 +4,10 @@ namespace EquityBrief.Core.Candidates;
 
 // The earnings drift on the S&P 400 or the S&P 600 as a registered candidate: its sweep's grid of four dials, the stop
 // floor in typical moves, nought holding the stop at the reaction's low, and the levels its index's sweep read beside
-// them, the drift's own two among them: the wider window and the peers' surprise before the reaction above nothing.
+// them, the drift's own two among them: the wider window and the peers' surprise before the reaction above nothing; and
+// from 20.4 the tone condition where a registration names a reading version.
 // see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
+// see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
 public sealed class IndexDriftCandidate(string index) : IndexRuleCandidate(index)
 {
     public const string WindowSessionsParameter = "windowSessions";
@@ -16,12 +18,12 @@ public sealed class IndexDriftCandidate(string index) : IndexRuleCandidate(index
     public const string WideWindowParameter = "wideWindow";
     public const string PeersParameter = "peers";
 
-    public override string Version => "0517e0869555";
+    public override string Version => "d3b31d4c3a35";
 
     public override string SetupFamily => DriftRule.Name;
 
     public override IReadOnlyList<string> Parameters { get; } =
         [WindowSessionsParameter, ReactionMovesParameter, VolumeMultipleParameter, TargetMultipleParameter, StopFloorParameter, .. Levels, WideWindowParameter, PeersParameter];
 
-    public override IReadOnlyList<string> OwnSources { get; } = IndexSourcesWith("src/EquityBrief.Worker/Sweep/DriftSweep.cs");
+    public override IReadOnlyList<string> OwnSources { get; } = IndexSourcesWith("src/EquityBrief.Worker/Sweep/DriftSweep.cs", "src/EquityBrief.Core/Releases/ReleaseTone.cs");
 }

@@ -1,0 +1,8 @@
+# The first remedy of 20.4 (the drift's tone variant), as its PROGRESS entry prints it: the night hands the drift's setups
+# their release readings through the family evaluator and the index families, which moves the S&P 500's breakout and
+# drift and every S&P 400 and 600 rule's version, so the rules standing would be skipped and named as failures on the night
+# until they are registered again. The S&P 500's rules are replayed first and keep their records where the replay
+# reproduces them, which it does since no rule standing names a reading version; each S&P 400 and 600 rule is named as not
+# replayed and restarts. No migration, no request to the provider and no model call. Run from main after the merge and
+# before the night, when no night, local run, drain, labeller or monthly run is writing.
+register --moved --evidence "20.4: the family evaluator and the index families hand the drift's setups their release readings, which moves the S&P 500's breakout and drift and every S&P 400 and 600 rule's version; each standing rule is registered again unchanged"

@@ -158,6 +158,14 @@ public static class RuleChips
             Add(MarketSwitches.VixLookbackParameter, At(MarketSwitches.VixLookbackParameter) is > 0 and var vix ? Invariant($"VIX falling over {Number(vix)}") : null);
         }
 
+        // From 20.4 the drift's tone condition, read after every other part of its rule, where its registration names a
+        // reading version.
+        // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+        if (kind is RuleKind.Drift or RuleKind.IndexDrift)
+        {
+            Add(Releases.ReleaseTone.VersionParameter, Releases.ReleaseTone.VersionOf(p) > 0 ? Releases.ReleaseTone.Words : null);
+        }
+
         // The change an approval set on the rule, in the words its hooks state, where it states any.
         Add("hooks", RuleHooks.Of(p).Words());
 

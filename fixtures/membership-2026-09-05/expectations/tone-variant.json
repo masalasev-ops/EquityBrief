@@ -1,0 +1,9 @@
+{
+ "stage": "tone-variant",
+ "derivation": "derived",
+ "derivedFrom": "the fixture's KEYS results release as the replay stores it in source_document, read with its names and dates removed, and the recorded answer local-reading-KEYS-anonymised.json read by hand into its words, results better and outlook raised, as release-reading.json records them; and the drift's tone condition as its decision writes it worked by hand over those two words, not a run: results better with an outlook neither lowered nor withdrawn passes, so a drift setup whose print this release answers for lists under a rule naming the reading version it was read under, and the gate says so in the words below",
+ "tables": ["source_document"],
+ "answer": {"results": "better", "outlook": "raised"},
+ "passes": true,
+ "reason": "the release reads results better and outlook raised, under reading version 1"
+}

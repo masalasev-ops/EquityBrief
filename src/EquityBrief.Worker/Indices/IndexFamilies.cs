@@ -31,6 +31,10 @@ public sealed record IndexNightOutcome(string Index, int Members, double? Breadt
     public IndexRuleTrades.Kept RuleTrades { get; init; } = new(0, 0, 0);
 
     public IndexHeavyweightsOutcome HeavyweightRules { get; init; } = new(false, 0, 0, 0);
+
+    // From 20.4 what the night's releases held under each reading version a standing drift rule names, none where none
+    // names one.
+    public string? Releases { get; init; }
 }
 
 // The night the index families read, none where the store holds no bar, and each index's outcome.
@@ -62,6 +66,9 @@ public sealed class IndexFamilies : IComponent
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
+            new StoreTouch(Store.ReleaseDocument, Touch.Read),
+            new StoreTouch(Store.ReleaseReading, Touch.Read),
+            new StoreTouch(Store.ReadingPin, Touch.Read),
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
             new StoreTouch(Store.LoopModel, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
@@ -348,7 +355,8 @@ public sealed class IndexFamilies : IComponent
     {
         var (names, income) = await InputsAsync(connection, index, session, cancellation);
         var inputs = IndexNightRead.Prepare(index, session, names, income);
-        var levels = inputs is null || rules.Count == 0 ? IndexLevels.None : await LevelsAsync(connection, inputs, cancellation);
+        var versions = ReadingVersions(rules);
+        var levels = inputs is null || rules.Count == 0 ? IndexLevels.None : await LevelsAsync(connection, inputs, cancellation, versions);
 
         // The S&P 500 is read here for the fundamentals-first family alone, its other families being the S&P 500's own and
         // its book the S&P 500's sector heavyweights'.
@@ -476,6 +484,9 @@ public sealed class IndexFamilies : IComponent
             Rules = rules.Count,
             RuleTrades = ruleTrades,
             HeavyweightRules = heavyweightRules,
+            Releases = versions.Count == 0 || levels.Releases is not { } releases
+                ? null
+                : string.Join("; ", versions.Select(version => Core.Releases.ReleaseTone.Said(version, [.. releases.Where(pair => pair.Key.Version == version).Select(pair => pair.Value)]))),
         };
 
         return (outcome, 1 + read.Answers.Count + picks.Count + kept + ruleTrades.Trades);
@@ -488,7 +499,8 @@ public sealed class IndexFamilies : IComponent
             : FormattableString.Invariant(
                 $"{outcome.Index}: {outcome.Members} member(s) read, breadth {(outcome.Breadth is { } breadth ? breadth.ToString("0.00", CultureInfo.InvariantCulture) : "not read")}, the market check {(outcome.MarketOpen ? "open" : "closed")}, {string.Join(", ", outcome.Passed.Select(pair => $"{pair.Value} passed by the {pair.Key}"))}, {outcome.Listed} listed, {outcome.HeldByATrade} held back by a trade still open, {outcome.TradesKept} trade(s) kept, {outcome.TradesEnded} ended; the sector heavyweights {(outcome.Heavyweights.Rebalanced ? "rebalanced" : "carried")}{(outcome.Heavyweights.Waits is { } waits ? ", " + waits : string.Empty)}, {outcome.Heavyweights.Entered} bought, {outcome.Heavyweights.Ended} sold, {outcome.Heavyweights.Held} held")
                 + (outcome.Rules > 0 ? FormattableString.Invariant($"; {outcome.Rules} registered rule(s) kept {outcome.RuleTrades.Trades} trade(s) on their own lists, {outcome.RuleTrades.Ended} ended and {outcome.RuleTrades.Benchmarked} benchmarked") : string.Empty)
-                + (outcome.HeavyweightRules is { Held: > 0 } or { Entered: > 0 } or { Ended: > 0 } or { Rebalanced: true } or { Waits: not null } ? FormattableString.Invariant($"; the registered heavyweights rules' books {(outcome.HeavyweightRules.Rebalanced ? "rebalanced" : "carried")}, {outcome.HeavyweightRules.Entered} bought, {outcome.HeavyweightRules.Ended} sold, {outcome.HeavyweightRules.Held} held{(outcome.HeavyweightRules.Waits is { } ruleWaits ? "; " + ruleWaits : string.Empty)}") : string.Empty)));
+                + (outcome.HeavyweightRules is { Held: > 0 } or { Entered: > 0 } or { Ended: > 0 } or { Rebalanced: true } or { Waits: not null } ? FormattableString.Invariant($"; the registered heavyweights rules' books {(outcome.HeavyweightRules.Rebalanced ? "rebalanced" : "carried")}, {outcome.HeavyweightRules.Entered} bought, {outcome.HeavyweightRules.Ended} sold, {outcome.HeavyweightRules.Held} held{(outcome.HeavyweightRules.Waits is { } ruleWaits ? "; " + ruleWaits : string.Empty)}") : string.Empty)
+                + (outcome.Releases is { } releases ? "; the release readings: " + releases : string.Empty)));
 
     // The registered rules a night left unread, each with why, after the indices' own words.
     static string Skipped(IReadOnlyList<string> skipped) =>
@@ -694,9 +706,23 @@ public sealed class IndexFamilies : IComponent
         return (rules, skipped);
     }
 
+    // From 20.4 the reading versions the index's standing drift rules name, none where none names one.
+    static IReadOnlyList<long> ReadingVersions(IReadOnlyList<IndexRule> rules) =>
+    [
+        .. rules
+            .Where(rule => rule.Evaluator is Core.Candidates.IndexDriftCandidate)
+            .Select(rule => Core.Releases.ReleaseTone.VersionOf(rule.Parameters))
+            .Where(version => version > 0)
+            .Distinct()
+            .Order(),
+    ];
+
     // The readings a night's index rules read: each member's industry figures and coverage and its peers' surprise over
-    // the sessions a drift's reaction can reach, the switches and the S&P 500's breadth, as the night stored them.
-    public static async Task<IndexLevels> LevelsAsync(SqliteConnection connection, IndexNightInputs inputs, CancellationToken cancellation)
+    // the sessions a drift's reaction can reach, the switches and the S&P 500's breadth, as the night stored them; and from
+    // 20.4 the release of each member's print whose reaction a drift can reach, under each reading version given, through
+    // the one reader of the release readings.
+    // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+    public static async Task<IndexLevels> LevelsAsync(SqliteConnection connection, IndexNightInputs inputs, CancellationToken cancellation, IReadOnlyList<long>? readingVersions = null)
     {
         var industry = new Dictionary<string, (double?, double?)>(StringComparer.Ordinal);
         var coverage = new Dictionary<string, bool?>(StringComparer.Ordinal);
@@ -745,7 +771,46 @@ public sealed class IndexFamilies : IComponent
 
         double? large = await ScalarAsync(connection, LargeBreadth, [("$night", Stamp(inputs.Night))], cancellation) is double breadth ? breadth : null;
 
-        return new IndexLevels(industry, coverage, peers, switches[0], switches[1], switches[2], switches[3], large);
+        return new IndexLevels(industry, coverage, peers, switches[0], switches[1], switches[2], switches[3], large, await ReleasesAsync(connection, inputs, readingVersions ?? [], cancellation));
+    }
+
+    // Each member's newest print whose reaction sits inside the sessions a drift's reaction can reach, its release under
+    // each version given, keyed by its ticker and report date.
+    static async Task<IReadOnlyDictionary<(string, DateOnly, long), Core.Releases.PrintRelease>?> ReleasesAsync(
+        SqliteConnection connection,
+        IndexNightInputs inputs,
+        IReadOnlyList<long> versions,
+        CancellationToken cancellation)
+    {
+        if (versions.Count == 0)
+        {
+            return null;
+        }
+
+        var filers = await ReleaseReadings.FilersAsync(connection, cancellation);
+        var complete = await ReleaseReadings.CompleteVersionsAsync(connection, null, cancellation);
+        var zone = SessionZones.ResolveSessionZone(SessionZones.UnitedStates);
+        var releases = new Dictionary<(string, DateOnly, long), Core.Releases.PrintRelease>();
+
+        foreach (var series in inputs.Series)
+        {
+            var bar = IndexNightRead.BarOf(series, inputs.At);
+
+            if (bar < 0 || series.NewestSurprise[bar] is not (var newest and >= 0) || bar - series.SurpriseBar[newest] >= ReactionReach)
+            {
+                continue;
+            }
+
+            var (ticker, report) = (series.Name.Ticker, series.Name.Surprises[newest].EventDate);
+
+            foreach (var version in versions)
+            {
+                releases[(ticker, report, version)] = await ReleaseReadings.ForRuleAsync(
+                    connection, filers.GetValueOrDefault(ticker), report, inputs.Night, version, complete.Contains(version), Core.Releases.ReleaseCalendar.Exchange, zone, cancellation);
+            }
+        }
+
+        return releases;
     }
 
     // The sessions back a drift's reaction can sit, its widest window and a margin.

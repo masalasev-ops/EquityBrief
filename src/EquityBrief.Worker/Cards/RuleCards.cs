@@ -7,6 +7,7 @@ using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Readings;
+using EquityBrief.Core.Releases;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
@@ -61,6 +62,9 @@ public sealed class RuleCards : IComponent
             new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
+            new StoreTouch(Store.ReleaseDocument, Touch.Read),
+            new StoreTouch(Store.ReleaseReading, Touch.Read),
+            new StoreTouch(Store.ReadingPin, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.FamilyPick, Touch.Read),
             new StoreTouch(Store.FamilyTrade, Touch.Read),
@@ -337,7 +341,8 @@ public sealed class RuleCards : IComponent
 
         if (familyRules.Length > 0)
         {
-            var inputs = await FamilyEvaluator.InputsAsync(connection, night, FamilyRuleShadow.For(standing, DateTimeOffset.MaxValue).DriftWindowReach, cancellation);
+            var shadow = FamilyRuleShadow.For(standing, DateTimeOffset.MaxValue);
+            var inputs = await FamilyEvaluator.InputsAsync(connection, night, shadow.DriftWindowReach, cancellation, shadow.ReadingVersions);
             var earnings = await NextEarningsAsync(connection, transaction, night, cancellation);
 
             foreach (var row in familyRules)
@@ -350,9 +355,17 @@ public sealed class RuleCards : IComponent
                 if (evaluated)
                 {
                     var results = inputs!.Members.Where(member => member.Withheld is null).Select(member => evaluator.EvaluateMember(member.Inputs, parameters)).ToArray();
-                    var order = evaluator.Family == BreakoutRule.Name ? BreakoutRule.Order : DriftRule.Order;
+                    IReadOnlyList<string> order = evaluator.Family == BreakoutRule.Name ? BreakoutRule.Order : DriftRule.Order;
 
-                    gates = Funnel(order, results.Select(result => result.Gates.ToDictionary(gate => gate.Name, gate => gate.Passed ? Passed : Failed, StringComparer.Ordinal)).ToArray());
+                    // From 20.4 a rule reading a release reading counts its print's release read and then its tone after
+                    // its own gates, so a night holding no reading says on its card where its members stopped.
+                    // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+                    if (ReleaseTone.VersionOf(parameters) > 0)
+                    {
+                        order = [.. order, ReleaseTone.ReadStep, ReleaseTone.Gate];
+                    }
+
+                    gates = Funnel(order, results.Select(Answers).ToArray());
 
                     if (evaluator.Family == BreakoutRule.Name)
                     {
@@ -424,7 +437,7 @@ public sealed class RuleCards : IComponent
 
             foreach (var variant in own.Where(row => CandidateEvaluators.Find(row.Evaluator) is IndexRuleCandidate rule && rule.SetupFamily == family && row != live))
             {
-                rules.Add(new RuleNightRow(index, family, variant.Candidate, computed, ruleListed.GetValueOrDefault(variant.Candidate), null, null));
+                rules.Add(new RuleNightRow(index, family, variant.Candidate, computed, ruleListed.GetValueOrDefault(variant.Candidate), computed ? await ToneFunnelAsync(connection, index, night, variant, cancellation) : null, null));
             }
 
             if (family == BreakoutRule.Name && computed)
@@ -448,6 +461,36 @@ public sealed class RuleCards : IComponent
         await InsertNightsAsync(connection, transaction, index, night, rules, cancellation);
 
         return new RuleCardsIndex(index, rules.Count, 0, formingRows);
+    }
+
+    // From 20.4 an S&P 400's or 600's drift variant naming a reading version read again over the night for its funnel, the
+    // parts its members failed in order with its print's release read and its tone after the provisional rule's own, so a
+    // night holding no reading says on its card where its members stopped; none for every other variant, whose funnel the
+    // night does not keep, and none for a variant the night did not read.
+    // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+    static async Task<IReadOnlyList<(string Gate, int Passed)>?> ToneFunnelAsync(SqliteConnection connection, string index, DateOnly night, RegisterRow row, CancellationToken cancellation)
+    {
+        var parameters = CandidateEvaluator.Read(row.Parameters);
+
+        if (CandidateEvaluators.Find(row.Evaluator) is not IndexDriftCandidate drift
+            || ReleaseTone.VersionOf(parameters) is not (var version and > 0)
+            || drift.Version != row.EvaluatorVersion
+            || IndexRules.Refusal(drift, parameters) is not null)
+        {
+            return null;
+        }
+
+        var (names, income) = await IndexFamilies.InputsAsync(connection, index, night, cancellation);
+
+        if (IndexNightRead.Prepare(index, night, names, income) is not { } inputs)
+        {
+            return null;
+        }
+
+        var levels = await IndexFamilies.LevelsAsync(connection, inputs, cancellation, [version]);
+        var answers = IndexNightRead.Answers(inputs, DriftRule.Name, IndexRules.Read(inputs, new IndexRule(row.Candidate, drift, parameters, row.RegisteredAt), levels));
+
+        return IndexFunnel([.. answers.Select(answer => (answer.Family, answer.Passed, answer.Reason))], DriftRule.Name, tone: true);
     }
 
     // The members forming a breakout on the S&P 400 or 600 under the rule drawing its list: those passing the index's
@@ -505,6 +548,19 @@ public sealed class RuleCards : IComponent
         return new BreakoutSettings((int)BreakoutSweep.Grid.Value(setting, 0), BreakoutSweep.Grid.Value(setting, 1), BreakoutSweep.Grid.Value(setting, 2), BreakoutSweep.Grid.Value(setting, 3));
     }
 
+    // A member's answer by gate name, a tone gate's release read beside it as a step of its own.
+    static IReadOnlyDictionary<string, string> Answers(FamilyResult result)
+    {
+        var answers = result.Gates.ToDictionary(gate => gate.Name, gate => gate.Passed ? Passed : Failed, StringComparer.Ordinal);
+
+        if (result.Gates.FirstOrDefault(gate => gate.Name == ReleaseTone.Gate) is { } tone)
+        {
+            answers[ReleaseTone.ReadStep] = ReleaseTone.IsRead(tone) ? Passed : Failed;
+        }
+
+        return answers;
+    }
+
     // The members passing each gate and every gate before it, in the rule's order, read off each member's answers by
     // gate name.
     public static IReadOnlyList<(string Gate, int Passed)> Funnel(IReadOnlyList<string> order, IReadOnlyList<IReadOnlyDictionary<string, string>> answers)
@@ -521,12 +577,14 @@ public sealed class RuleCards : IComponent
 
     // The members passing each part of an index rule and every part before, read off the first part each failed and
     // named as the part, not as the reason a member fails it; the fundamentals-first family's parts its own, the
-    // business's after the floors.
-    public static IReadOnlyList<(string Gate, int Passed)> IndexFunnel(IReadOnlyList<(string Family, bool Passed, string? Reason)> answers, string? family = null)
+    // business's after the floors; and from 20.4 a drift rule's tone after the swing families' parts.
+    public static IReadOnlyList<(string Gate, int Passed)> IndexFunnel(IReadOnlyList<(string Family, bool Passed, string? Reason)> answers, string? family = null, bool tone = false)
     {
         string[] reasons = family == FundamentalsRule.Name
             ? [IndexNightRead.MarketClosed, IndexNightRead.NoSetup, IndexNightRead.UnderTheFloors, FundamentalsRule.NoReadings, FundamentalsRule.NoProfit, FundamentalsRule.NoRevenue, FundamentalsRule.NoMargin, FundamentalsRule.NoCash, FundamentalsRule.NoTrend]
-            : [IndexNightRead.MarketClosed, IndexNightRead.NoSetup, IndexNightRead.UnderTheFloors, IndexNightRead.NoProfit, IndexNightRead.NoCover];
+            : tone
+                ? [IndexNightRead.MarketClosed, IndexNightRead.NoSetup, IndexNightRead.UnderTheFloors, IndexNightRead.NoProfit, IndexNightRead.NoCover, ReleaseTone.NotHeldOnTheIndex, ReleaseTone.FailedOnTheIndex]
+                : [IndexNightRead.MarketClosed, IndexNightRead.NoSetup, IndexNightRead.UnderTheFloors, IndexNightRead.NoProfit, IndexNightRead.NoCover];
         var counts = new List<(string, int)>();
 
         foreach (var (reason, at) in reasons.Select((reason, at) => (reason, at)))

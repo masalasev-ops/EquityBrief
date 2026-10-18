@@ -52,6 +52,8 @@ public static class RuleRows
         [FundamentalsRule.NoMargin] = Margin,
         [FundamentalsRule.NoCash] = Cash,
         [FundamentalsRule.NoTrend] = Trend,
+        [Releases.ReleaseTone.NotHeldOnTheIndex] = Releases.ReleaseTone.ReadStep,
+        [Releases.ReleaseTone.FailedOnTheIndex] = Releases.ReleaseTone.Gate,
     };
 
     // The part a stored funnel names: a part stored under the reason a member fails it is read as the part.

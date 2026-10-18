@@ -36,6 +36,10 @@ public sealed class FamilyReplay : IComponent
             new StoreTouch(Store.Level, Touch.Read),
             new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
+            new StoreTouch(Store.Company, Touch.Read),
+            new StoreTouch(Store.ReleaseDocument, Touch.Read),
+            new StoreTouch(Store.ReleaseReading, Touch.Read),
+            new StoreTouch(Store.ReadingPin, Touch.Read),
             new StoreTouch(Store.FamilyResult, Touch.Read),
             new StoreTouch(Store.FamilyTrade, Touch.Read),
             new StoreTouch(Store.CandidateRegister, Touch.Read),
@@ -125,10 +129,12 @@ public sealed class FamilyReplay : IComponent
             found.AddRange(await FamilyAsync(connection, family.Key, [.. family], register, replays, cancellation));
         }
 
-        // A rule the heavyweights' book keeps is not replayed, so its record restarts at the registration and its row says so.
+        // A rule the heavyweights' book keeps is not replayed, so its record restarts at the registration and its row says so,
+        // and from 20.4 an S&P 400's or 600's rule the same.
         // see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut
+        // see: An S&P 400 or 600 family's variants are registered again whole to add one beside its provisional rule
         found.AddRange(standing
-            .Where(rule => CandidateEvaluators.Find(rule.Evaluator) is BookEvaluator)
+            .Where(rule => CandidateEvaluators.Find(rule.Evaluator) is BookEvaluator or IndexRuleCandidate)
             .Select(rule => new FamilyReplayed(
                 rule.Candidate,
                 CandidateEvaluators.Find(rule.Evaluator)!.Version,
@@ -137,7 +143,7 @@ public sealed class FamilyReplay : IComponent
                 0,
                 0,
                 false,
-                NotReplayed)));
+                CandidateEvaluators.Find(rule.Evaluator) is BookEvaluator ? NotReplayed : NotReplayedOnItsIndex)));
 
         foreach (var one in found)
         {
@@ -189,7 +195,7 @@ public sealed class FamilyReplay : IComponent
 
         foreach (var night in nights)
         {
-            if (await FamilyEvaluator.InputsAsync(connection, night, shadow.DriftWindowReach, cancellation) is not { } inputs)
+            if (await FamilyEvaluator.InputsAsync(connection, night, shadow.DriftWindowReach, cancellation, shadow.ReadingVersions) is not { } inputs)
             {
                 continue;
             }
@@ -326,6 +332,8 @@ public sealed class FamilyReplay : IComponent
 
     // What a heavyweights rule's row says, which the run page states beside it.
     public const string NotReplayed = "the sector heavyweights' books are not replayed, so its record restarts at this registration";
+
+    public const string NotReplayedOnItsIndex = "an S&P 400's or 600's rule is not replayed, so its record restarts at this registration";
 
     static async Task<IReadOnlyList<RegisterRow>> RegisterAsync(SqliteConnection connection, CancellationToken cancellation)
     {
