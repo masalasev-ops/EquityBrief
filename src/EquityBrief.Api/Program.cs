@@ -2645,6 +2645,7 @@ app.MapGet("/screens/run/{night?}", async (
                 Universes.Large.Name,
                 (await read.RuleTestsAsync(Universes.Large.Code)).Rules),
             storeCopy: storeCopy,
+            localRuns: RunScreen.LocalRuns(await read.LocalRunsAsync()),
             selector: selector,
             // From 19.2 the night's operations and its reason totals, which Tonight drew before.
             duration: await read.NightDurationAsync(dated),

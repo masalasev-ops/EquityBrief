@@ -429,6 +429,9 @@ public sealed record LabellerRunRow(string RunId, string Outcome, string Started
 // One attempt of the store's copy, as its own row records it.
 public sealed record StoreBackupRow(string RunId, string Outcome, string StartedAt, string EndedAt, string Detail);
 
+// One local run's own row: its run, its outcome, its start and end and the detail the run wrote.
+public sealed record LocalRunRow(string RunId, string Outcome, string StartedAt, string EndedAt, string Detail);
+
 // One member's swing filter result on a night as the filter stored it: each gate's pass, the family
 // and the trigger, the trade read three ways, the exclusions, the rank among the names passing, and
 // the gates' reasons and values as stored. The plan clear of the noise enters at the same close as the
@@ -2718,6 +2721,17 @@ public sealed partial class ReadApi : IComponent
         LIMIT 40;
     ";
 
+    // The local run's own rows, newest first, as many as the Run page draws.
+    const string LocalRunRows = @"
+        SELECT run_id, outcome, started_at, ended_at, detail FROM run_log
+        WHERE stage = $stage
+        ORDER BY rowid DESC
+        LIMIT $most;
+    ";
+
+    // How many of the local run's runs the Run page draws.
+    public const int LocalRunsDrawn = 10;
+
     // The news labeller's own row of each of its runs, newest first; the night each labelled is in its detail.
     const string LabellerRunRows = @"
         SELECT run_id, outcome, started_at, ended_at, detail FROM run_log
@@ -2827,6 +2841,34 @@ public sealed partial class ReadApi : IComponent
         while (await reader.ReadAsync())
         {
             rows.Add(new StoreBackupRow(
+                reader.GetString(0),
+                reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                reader.IsDBNull(4) ? string.Empty : reader.GetString(4)));
+        }
+
+        return rows;
+    }
+
+    // The local run's own rows, newest first.
+    // see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+    public async Task<IReadOnlyList<LocalRunRow>> LocalRunsAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = LocalRunRows;
+        command.Parameters.AddWithValue("$stage", EquityBrief.Core.Releases.LocalSlots.Stage);
+        command.Parameters.AddWithValue("$most", LocalRunsDrawn);
+
+        var rows = new List<LocalRunRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new LocalRunRow(
                 reader.GetString(0),
                 reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
                 reader.IsDBNull(2) ? string.Empty : reader.GetString(2),

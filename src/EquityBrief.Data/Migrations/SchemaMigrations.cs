@@ -718,7 +718,35 @@ public static class SchemaMigrations
         new Migration(95, "add setup's published factor readings, and create loop_link", AddFactorReadings),
         new Migration(96, "create insider_trade and insider_read, and add setup's insider readings", AddInsiderTrades),
         new Migration(97, "create sec_ticker, and add company.cik_source", AddSecTickers),
+        new Migration(98, "create reading_pin", CreateReadingPins),
     ];
+
+    // From 20.1: the reading versions the local run reads under, a row a version written by hand, each pinning the
+    // model, its file by its path under LM Studio's models folder and the file's hash, size and modified instant, the
+    // runtime as an answer stated it, the instruction's version and the settings, with the instant its history read
+    // completed, none until it has. Created empty, nothing copied and nothing dropped.
+    // see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+    const string CreateReadingPins = @"
+        CREATE TABLE reading_pin (
+            id                    INTEGER PRIMARY KEY,
+            model                 TEXT    NOT NULL,
+            model_file            TEXT    NOT NULL,
+            sha256                TEXT    NOT NULL,
+            size                  INTEGER NOT NULL,
+            modified              TEXT    NOT NULL,
+            runtime_name          TEXT    NOT NULL,
+            runtime_version       TEXT    NOT NULL,
+            prompt_version        TEXT    NOT NULL,
+            temperature           REAL    NOT NULL,
+            seed                  INTEGER NOT NULL,
+            answer_tokens         INTEGER NOT NULL,
+            context               INTEGER NOT NULL,
+            cutoff                TEXT    NOT NULL,
+            written_at            TEXT    NOT NULL,
+            history_completed_at  TEXT,
+            run_id                TEXT    NOT NULL
+        ) STRICT;
+    ";
 
     // From the 17.3 correction of 2026-10-16: the SEC's own ticker file a read at a time, a row a ticker it lists, which
     // the quarters fetch reads for a member the provider files no CIK for; and the column saying where a company row's

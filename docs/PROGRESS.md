@@ -2734,3 +2734,71 @@ Tests:      none of its own; the 20.1 entry below states the suite.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 20.1 entry below, as it
             records.
 Carried:    nothing.
+
+### 20.1 - the local run, pinned, checked and visible   2026-10-18
+
+Queue:      done, phase 17's sign-off and phase 20's planning, PRs 486 and 487; in progress, this checkpoint with the
+            20.0 correction above; next, its remedy from main and the two slots' tasks, then 20.2, 20.3 and 20.4, the
+            two items phase 17's sign-off carried, and the sign-offs of phases 18 and 19 by fresh sessions.
+Built:      on the operator's ruling of 2026-10-18 (see: The local run is a process of its own at two slots outside the
+            night and refuses any model file, runtime or prompt but its pin). LM Studio's native chat answer captured
+            before its reader was written: the probe, KEYS's release, a prompt past the context refused and a model the
+            runtime does not hold answered by the loaded one. In the core the four questions and their readings (see:
+            The release reading asks four closed questions written before any release is read, and code turns each
+            answer into a reading), the answer's reader with its eight causes, the pin's rules and the availability
+            rule (see: A release reading is readable from the first night whose late slot starts after the release was
+            accepted). The reading feed, one request at a time at temperature 0, the seed 20261018, 256 tokens and
+            reasoning off, loading the model where it is not loaded and unloading it only where it did. Migration 98's
+            `reading_pin`; the worker's `local-run` with a slot, `--pin` or `--twice`; `tools/localrun` and its wrapper
+            from a clean copy of main's commit with a check mode; the profile's model file, models folder and cutoff,
+            2025-01-31; and the Run page's local model region. The corpus as 20.1 lists it, and the remedy file.
+Found:      the archive's reader stores a release with its envelope's own words, so KEYS's answer was captured again
+            over that text, 22,996 characters, in the same four words as over the unwrapped 22,946; and the schema's
+            reader took no column name holding a digit, as `sha256` does, and now takes one opening on a letter.
+Amended:    20.1 amends its own done condition: the share stated is of the 70 stored results releases, where it said
+            52, and a refused answer is counted on the run's row, the readings' store arriving at 20.3, where it said
+            stored refused; BUILD_PLAN and the changelog say the same.
+Measured:   the twice-read before the build, by the scratch script that read 20.0's sample, read-only on the live
+            store: all 70 stored results releases read twice under the four questions at the pin's settings, 70 of 70
+            answered alike, none refused and none asked again, 3.21 seconds a call at the median and 8.49 at the
+            slowest, every answer from google/gemma-4-26b-a4b-qat on llama.cpp-win-x86_64-nvidia-cuda12-avx2 2.56.0,
+            the model loaded for it and unloaded after. The read-back: the branch's Debug build over a store migrated
+            fresh to 98 in the session's scratch folder holding seven constructed runs, the Run page at 1440 and a true
+            390 in both palettes, no page wider than its screen, at 390 the region's table scrolling inside its own
+            frame, 764 px of table in 328, and each start and end held on one line.
+Tests:      14 new, 2434 in all: the questions and their readings; the reader's causes; KEYS's answer read by hand
+            from the text the replay stores and read twice by the local run over the replayed store; the captures;
+            the pin's parts and its file check; availability at 21:39:59 and 21:40:00 and over a weekend; the pin
+            written with the runtime left as found; a slot checking the pin; the runtime not running and the model
+            not held; the twice-read asking once more; an answer the pin does not name; the lock waits; the script's
+            check mode; and the Run page's region. Derived expectation `local-run.json`, KEYS's answer read by hand.
+Claims:     1349, nine more than 1340 and the plan's about 9: the catalogue's and the matrix's Local run, section 16's
+            Reading pins, section 17's Local reading's settings, section 18's four and 15.10's The local model's runs,
+            named beside phase 19's pair as rows after its report, each passing.
+Pins:       none moved: no source a rule's version, a candidate evaluator, the hooks or the learned score pins changes.
+Remedy:     `tools/remedies/2026-10-18-20.1-the-local-run.txt`, from main after the merge and before the night, with
+            LM Studio running and holding the model: the migration to 98, `local-run --pin` and `local-run --twice`;
+            then the two slots' tasks registered as the runbook states, on the operator's word of 2026-10-18. No
+            provider request and no paid call. The pin's hash time, the twice-read's share and the slots' first runs
+            are owed to its record entry.
+Mutated:    the rule, stated before the runs: one mutation a property 20.1 adds whose failure would let a reading stand
+            under a version it was not read under or keep a reader from seeing a run, the smallest edit to shipped
+            source or the script, each run filtered to the tests named with its red predicted, made in this checkout
+            and reverted from the file's own text, the tree's diff the same after the sweep as before. M1 the file not
+            hashed whole on a new ISO week: red at the pin's parts and the slot's check. M2 the file compared by size
+            and time where hashed whole: red at the pin's parts. M3 a word read whatever its case: red at the reader.
+            M4 a release accepted at the late slot's start read that night: red at availability. M5 no answer asked
+            once more: red at the twice-read. M6 an answer's runtime version not checked: red at the pin-not-named
+            test. M7 the runs read oldest first: red at the Run page's region. M8 reasoning left on: red at the
+            captures' test. M9 the model left loaded where the run loaded it: red at the pin written. M10 a run
+            writing while the night holds its lock: red at the lock test. M11 the script not refusing a main ahead of
+            origin/main: red at the check mode. Each red as predicted. Not mutated: a slot's give-up past its last
+            instant, the probe's refusal and the models folder's default.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2434 of 2434 tests ran with none failed,
+            migrations 0 to 98 with none pending, schema version 98, against `data-ci` and never `data`; the phase
+            report 60 tables, 1349 claims, 1349 passing, none out of scope and none unexamined, 1360 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    20.1's remedy from main and its record; the sign-offs of phases 18 and 19, owed to fresh sessions after
+            20.4; the two items phase 17's sign-off carried, corrected after 20.4; (G1), SCHEMA's `family_trade`
+            sentence, owed by the next edit of that section.

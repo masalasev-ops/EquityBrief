@@ -105,8 +105,9 @@ internal static class StoreSchema
             var notes = cells[3].Trim();
 
             // One cell may name several columns of the same type, as
-            // started_at and ended_at do.
-            foreach (Match name in Regex.Matches(cells[1], "`([a-z_]+)`"))
+            // started_at and ended_at do, and a name may carry a digit after
+            // its first letter, as the reading pins' sha256 does.
+            foreach (Match name in Regex.Matches(cells[1], "`([a-z][a-z0-9_]*)`"))
             {
                 columns.Add((new StoreColumn(name.Groups[1].Value, type), notes));
             }

@@ -291,6 +291,11 @@ public class PinnedConstants
             new("News labelling window", "8,000", Core.News.NewsInstruction.TextCharacters, "NewsInstruction.TextCharacters"),
             new("News labeller time limit", "20", Worker.News.NewsLimits.DefaultTimeLimitMinutes, "NewsLimits.DefaultTimeLimitMinutes"),
             new("News labeller month limit", "5", Worker.News.NewsLimits.DefaultMonthLimit, "NewsLimits.DefaultMonthLimit"),
+            // The local run's reading settings, 20.1.
+            new("Local reading's settings", "0", (decimal)Core.Releases.ReadingSettings.Temperature, "ReadingSettings.Temperature"),
+            new("Local reading's settings", "20261018", Core.Releases.ReadingSettings.Seed, "ReadingSettings.Seed"),
+            new("Local reading's settings", "256", Core.Releases.ReadingSettings.AnswerTokens, "ReadingSettings.AnswerTokens"),
+            new("Local reading's settings", "1", Core.Releases.ReadingSettings.AskedAgain, "ReadingSettings.AskedAgain"),
             new("Live quotes a day", "500", Core.Quotes.QuoteLimits.DailyCap, "QuoteLimits.DailyCap"),
             new("Quote interval", "5", Core.Quotes.QuoteLimits.IntervalMinutes, "QuoteLimits.IntervalMinutes"),
             new("Report windows", "8", Core.Report.QuarterLines.GrowthQuarters, "QuarterLines.GrowthQuarters"),

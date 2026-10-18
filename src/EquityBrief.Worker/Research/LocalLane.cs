@@ -100,8 +100,24 @@ public static class LocalLane
             chosen[LocalModelSettings.ModelName] ?? string.Empty,
             Required(configuration, LocalModelSettings.KeyOf(flagged[0], LocalModelSettings.TimeoutName)),
             Required(configuration, LocalModelSettings.KeyOf(flagged[0], LocalModelSettings.ContextTokensName)),
-            Required(configuration, LocalModelSettings.KeyOf(flagged[0], LocalModelSettings.LoadName)));
+            Required(configuration, LocalModelSettings.KeyOf(flagged[0], LocalModelSettings.LoadName)))
+        {
+            ModelFile = Stated(chosen[LocalModelSettings.ModelFileName]),
+            ModelsFolder = Stated(chosen[LocalModelSettings.ModelsFolderName]),
+            KnowledgeCutoff = Cutoff(configuration, LocalModelSettings.KeyOf(flagged[0], LocalModelSettings.KnowledgeCutoffName)),
+        };
     }
+
+    static string? Stated(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    // A cutoff as written, a date in yyyy-MM-dd, none where the profile names none; any other form is refused rather
+    // than read as another date.
+    static DateOnly? Cutoff(IConfiguration configuration, string key) =>
+        Stated(configuration[key]) is not { } value
+            ? null
+            : DateOnly.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day)
+                ? day
+                : throw new InvalidOperationException($"'{key}' is '{value}', which is not a date in yyyy-MM-dd.");
 
     // The profile a capture's recordings were made under, from the models file in its folder, so a switch
     // of the shipped default moves no recorded test.

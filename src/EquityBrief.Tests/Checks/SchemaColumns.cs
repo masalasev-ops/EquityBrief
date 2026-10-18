@@ -50,6 +50,12 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "SEC tickers"),
     ];
 
+    // 20.1's one: the reading versions the local run reads under.
+    internal static string[] ReadingPinStoreRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Reading pins"),
+    ];
+
     internal static CheckReach Reach => new(
         "schema-columns",
         ["docs/SCHEMA.md"],
@@ -149,6 +155,9 @@ public class SchemaColumns
 
             // The 17.3 correction, the SEC's ticker file.
             .. SecTickerStoreRows,
+
+            // 20.1, the reading pins.
+            .. ReadingPinStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

@@ -1,0 +1,15 @@
+{
+ "stage": "local-run",
+ "derivation": "derived",
+ "derivedFrom": "the four questions and their words as the decision writes them, and the captured answer local-reading-KEYS-answered.json read by hand, not a run: its content is one object holding results better, outlook raised, tone confident and demand stronger, each a word its question lists, so the readings the decision's words give are 1, 1, 1 and 1; the answer names google/gemma-4-26b-a4b-qat as the model that answered and llama.cpp-win-x86_64-nvidia-cuda12-avx2 at 2.56.0 as its runtime, spent 5988 prompt tokens, 42 completion tokens and no reasoning token, and stopped on stop. The text it was asked over is the fixture's release-KEYS.htm as the archive's reader makes it text, its envelope's own words included, 22996 characters, which the replay's research pass stores in the source documents as KEYS's results release and the local run reads from there.",
+ "tables": ["source_document"],
+ "capture": "local-reading-KEYS-answered.json",
+ "characters": 22996,
+ "model": "google/gemma-4-26b-a4b-qat",
+ "runtime": "llama.cpp-win-x86_64-nvidia-cuda12-avx2",
+ "runtimeVersion": "2.56.0",
+ "words": ["better", "raised", "confident", "stronger"],
+ "readings": [1, 1, 1, 1],
+ "promptTokens": 5988,
+ "completionTokens": 42
+}

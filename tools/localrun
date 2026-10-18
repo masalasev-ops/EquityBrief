@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+# What the scheduler calls at the local run's two slots, as shipped 12:05Z and 21:40Z every day, and what runs the
+# local run by hand. Runs it from a clean copy of the committed code, as tools/offpeak does: main's own commit, read
+# from the main branch with no fetch whatever branch the checkout is on, exported whole with `git archive` into the
+# data root's folder of nights, one folder a commit, built once in Release and reused where a night built that commit
+# already; the data root and the secrets file are the checkout's, each named by absolute path, so the copy never
+# finds, creates or writes a store of its own. A main holding a commit origin/main does not have is refused before any
+# worker exists; a checkout on a branch is not, since the run builds a commit and never the working tree.
+#
+# The worker's local-run verb then does what the arguments name, a process of its own whose model calls stand on its
+# own run log rows and never on a night's.
+#
+#   tools/localrun --slot early     the early slot, after the second off-peak run
+#   tools/localrun --slot late      the late slot, ending before the night's window
+#   tools/localrun --pin            write a new reading version from the model's file, the runtime and the prompt
+#   tools/localrun --twice          read every stored results release twice and state how many were answered alike
+#   tools/localrun ... --check      print what a run would build and run, and run nothing
+set -euo pipefail
+
+# The root in the form the platform's own tools read, as tools/nightly reads it.
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && (pwd -W 2>/dev/null || pwd))"
+cd "$root"
+
+data="${EquityBrief__DataRoot:-$root/data}"
+case "$data" in
+    /*|[A-Za-z]:*) ;;
+    *) data="$root/$data" ;;
+esac
+mkdir -p "$data"
+
+check=0
+pass=()
+
+for argument in "$@"; do
+    case "$argument" in
+        --check) check=1 ;;
+        *) pass+=("$argument") ;;
+    esac
+done
+
+if [ "${#pass[@]}" = 0 ]; then
+    echo "localrun: name a form, --slot early, --slot late, --pin or --twice" >&2
+    exit 1
+fi
+
+refuse() {
+    echo "localrun: refused before any worker exists: $1" >&2
+    exit 1
+}
+
+branch="$(git symbolic-ref --short -q HEAD || true)"
+commit="$(git rev-parse --verify -q 'refs/heads/main^{commit}' || true)"
+
+if [ -z "$commit" ]; then
+    refuse "the checkout holds no main branch, so no build was made"
+fi
+
+short="${commit:0:12}"
+note="built from $short"
+
+if [ "$branch" != "main" ]; then
+    note="$note, main's own commit while the checkout is on '${branch:-no branch}'"
+fi
+
+if git rev-parse --verify -q refs/remotes/origin/main >/dev/null; then
+    ahead="$(git rev-list --count "origin/main..$commit")"
+
+    if [ "$ahead" != 0 ]; then
+        refuse "main holds $ahead commit(s) origin/main does not have, so no build was made from it"
+    fi
+
+    behind="$(git rev-list --count "$commit..origin/main")"
+
+    if [ "$behind" != 0 ]; then
+        note="$note, $behind commit(s) behind origin/main"
+    fi
+else
+    note="$note, with no origin/main to read against"
+fi
+
+copies="$data/nights"
+copy="$copies/$short"
+secrets="$root/src/EquityBrief.Worker/appsettings.Secrets.json"
+
+worker_in() {
+    find "$1/src/EquityBrief.Worker/bin/Release" -name EquityBrief.Worker.dll 2>/dev/null | head -n 1 || true
+}
+
+built="$(worker_in "$copy")"
+
+if [ "$check" = 1 ]; then
+    echo "localrun: would run $commit, $note"
+    echo "localrun: copy $copy, ${built:+built already}${built:-to build}"
+    echo "localrun: data root $data"
+    echo "localrun: secrets read from $secrets, none copied"
+    echo "localrun: would run local-run ${pass[*]}"
+    exit 0
+fi
+
+if [ -z "$built" ]; then
+    started=$SECONDS
+    rm -rf "$copy" "$copy.partial"
+    mkdir -p "$copy.partial"
+    git archive "$commit" | tar -x -C "$copy.partial"
+    dotnet build "$copy.partial/src/EquityBrief.Worker" -c Release --nologo -v quiet
+    mv "$copy.partial" "$copy"
+    built="$(worker_in "$copy")"
+
+    if [ -z "$built" ]; then
+        echo "localrun: the build of $short left no worker assembly under $copy" >&2
+        exit 1
+    fi
+
+    note="$note, built in $((SECONDS - started)) s"
+else
+    note="$note, build reused"
+fi
+
+touch "$copy"
+
+echo "localrun: $note"
+
+export EquityBrief__DataRoot="$data"
+export EquityBrief__SecretsFile="$secrets"
+
+exec dotnet "$built" local-run "${pass[@]}"

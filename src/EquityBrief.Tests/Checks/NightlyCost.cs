@@ -128,6 +128,7 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/EodhdNewsFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdQuoteFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdSymbolListFeed.cs",
+        "src/EquityBrief.Core/Providers/LmStudioReadingFeed.cs",
         "src/EquityBrief.Core/Providers/SecEdgarFilingsArchiveFeed.cs",
         "src/EquityBrief.Core/Providers/SecEdgarFundSnapshotFeed.cs",
         "src/EquityBrief.Core/Providers/OpenAiCompatibleModelFeed.cs",
@@ -156,12 +157,15 @@ public partial class NightlyCost
     // pattern is what holds that, because a file naming it is a file this scan reports.
     // It was three for one commit, while the feed was named for the provider and the
     // double carried the name by calling it. The third from 12.6, the feed over Claude's own
-    // messages interface, named for its format as the other is.
+    // messages interface, named for its format as the other is. The fourth from 20.1, the local
+    // run's readings over LM Studio's native chat answer, which no night constructs.
     // see: The outward-request scan names the files that may hold a client rather than dropping the patterns
     // see: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp
+    // see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
     internal static readonly string[] MayHoldAModel =
     [
         "src/EquityBrief.Core/Providers/AnthropicMessagesFeed.cs",
+        "src/EquityBrief.Core/Providers/LmStudioReadingFeed.cs",
         "src/EquityBrief.Core/Providers/OpenAiCompatibleModelFeed.cs",
         "src/EquityBrief.Core/Providers/OpenAiCompatibleResearchFeed.cs",
     ];
@@ -311,15 +315,16 @@ public partial class NightlyCost
         // delayed quote, one request a listing on a name page's ask in the session, which no night asks, and twenty-two
         // from 18.2, the Treasury's par yield table, one free request a night to the Treasury and none to the provider,
         // and twenty-three from the 2.1 correction that skips a refused member, Yahoo's chart and Nasdaq's quote, asked by the fetch
-        // for a member whose row the provider's day file refused.
+        // for a member whose row the provider's day file refused, and twenty-four from 20.1, the local run's readings, which
+        // its own process asks of LM Studio and no night does.
         Assert.True(
-            MayHoldAClient.Length <= 23,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are twenty-three feed " +
-            "implementations. A twenty-fourth is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 24,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are twenty-four feed " +
+            "implementations. A twenty-fifth is a file that is not one, or a feed nobody declared.");
 
-        // The model list, stated the same way: three files, the local lane's client and
-        // the paid model's live feed in each of its two formats.
-        Assert.Equal(3, MayHoldAModel.Length);
+        // The model list, stated the same way: four files, the local lane's client, the local
+        // run's reading feed and the paid model's live feed in each of its two formats.
+        Assert.Equal(4, MayHoldAModel.Length);
 
         // And the list holds exactly the provider implementations, in both
         // directions, so a file added to it that is not one fails rather than

@@ -153,6 +153,8 @@ public partial class FixtureExpectations
             .. ReadingLinkClaims,
             // 19.13, the insiders' trades: section 17's row and section 18's.
             .. InsiderClaims,
+            // 20.1, the local run: section 17's row and section 18's four.
+            .. LocalRunClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

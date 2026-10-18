@@ -185,15 +185,18 @@ public class StoreNeverDeleted
 
         // The store `tools/ci.*` created and drops is `data-ci`, never the data root. The night's script
         // removes its own refusal note, a partial or stale build copy under the data root's folder of
-        // nights, and copies older than a week; the ledger's build script, the monthly run's script and the off-peak
-        // run's script each remove a partial or stale copy of their commit in the same folder; the phase report removes its own artifacts, the
-        // suite's result and its stamp among them only where it runs the suite itself.
+        // nights, and copies older than a week; the ledger's build script, the local run's script, the monthly run's
+        // script and the off-peak run's script each remove a partial or stale copy of their commit in the same folder;
+        // the phase report removes its own artifacts, the suite's result and its stamp among them only where it runs the
+        // suite itself.
         Assert.Equal(
             [
                 "ci.ps1: Step \"drop the store\"  { if (Test-Path data-ci) { Remove-Item -Recurse -Force data-ci } }",
                 "ci.sh: rm -rf data-ci",
                 "ledger-build: rm -rf \"$copy\" \"$copy.partial\"",
                 "ledger-build: mv \"$copy.partial\" \"$copy\"",
+                "localrun: rm -rf \"$copy\" \"$copy.partial\"",
+                "localrun: mv \"$copy.partial\" \"$copy\"",
                 "monthly: rm -rf \"$copy\" \"$copy.partial\"",
                 "monthly: mv \"$copy.partial\" \"$copy\"",
                 "nightly: rm -f \"$data/night.refused\"",
@@ -212,7 +215,7 @@ public class StoreNeverDeleted
 
         // The night's copies are folders named for a commit under the data root's `nights`, so the folder
         // it clears is never the data root: the two lines that say so are read off the script.
-        foreach (var script in new[] { "nightly", "ledger-build" })
+        foreach (var script in new[] { "nightly", "ledger-build", "localrun" })
         {
             var text = File.ReadAllText(Repository.Tool(script));
 

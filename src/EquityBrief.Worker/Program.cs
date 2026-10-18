@@ -3,6 +3,7 @@ using System.Globalization;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Providers;
+using EquityBrief.Core.Releases;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Spending;
 using EquityBrief.Core.Time;
@@ -14,6 +15,7 @@ using EquityBrief.Worker.Facts;
 using EquityBrief.Worker.Fundamentals;
 using EquityBrief.Worker.Filter;
 using EquityBrief.Worker.Indices;
+using EquityBrief.Worker.Local;
 using EquityBrief.Worker.News;
 using EquityBrief.Worker.Nights;
 using EquityBrief.Worker.Research;
@@ -71,13 +73,14 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "backup" => await BackupRun(args),
     "quote" => await QuoteRun(args),
     "dividends" => await DividendsRun(args),
+    "local-run" => await LocalRunVerb(args),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 44 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 45 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -220,7 +223,12 @@ static int NoVerb()
         "'dividends --history --from <yyyy-MM-dd>' asks each member the index holds today for its dividends from that date, " +
         "one request a member, stating its asks and their weighted calls before the first request, and keeps each beside " +
         "the ones the nights kept, with '--index <GSPC, MID or SML>' naming the index and '--names' with codes between " +
-        "commas asking only those members. '--live' " +
+        "commas asking only those members, and " +
+        "'local-run --slot early' or '--slot late' runs the local run's slot, checking the newest reading pin before " +
+        "anything is read and asking nothing past the slot's last instant, '--pin' writes a new reading version from the " +
+        "model's file hashed whole, the runtime a probe's answer states and the instruction's version, and '--twice' " +
+        "reads every results release a research pass stored twice under the pin and states how many were answered " +
+        "alike, each loading the local model where it is not loaded and leaving the runtime as it found it. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -1841,6 +1849,54 @@ static IConfiguration Configuration() => WorkerConfiguration.Build();
 // on this run's own rows. A refusal at the settings or a model that does not answer stops it before any call,
 // written as its own row where the store is there to hold it.
 // see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
+// The local run, as tools/localrun starts it at its two slots and by hand: '--slot early' or '--slot late', '--pin' or
+// '--twice', one form a run. A profile the settings cannot read refuses before the store is opened.
+// see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+static async Task<int> LocalRunVerb(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    IClock clock = SystemClock.ForUnitedStatesSessions();
+
+    var slot = Argument(args, "--slot");
+    var pin = args.Contains("--pin");
+    var twice = args.Contains("--twice");
+
+    if ((slot is null ? 0 : 1) + (pin ? 1 : 0) + (twice ? 1 : 0) != 1 || (slot is not null && !LocalSlots.All.Contains(slot)))
+    {
+        Console.Error.WriteLine("local-run: name one form, '--slot early', '--slot late', '--pin' or '--twice'.");
+
+        return 1;
+    }
+
+    if (!File.Exists(store.DatabaseFile))
+    {
+        Console.Error.WriteLine($"local-run: no store at '{store.DatabaseFile}'.");
+
+        return 1;
+    }
+
+    LocalModelSettings settings;
+
+    try
+    {
+        settings = LocalLane.Settings(configuration);
+    }
+    catch (InvalidOperationException refused)
+    {
+        Console.Error.WriteLine("local-run: " + refused.Message);
+
+        return 1;
+    }
+
+    var run = new LocalRun(LmStudioReadingFeed.Live(settings), settings, clock, store.DatabaseFile, store.DataRoot);
+    var outcome = slot is { } named ? await run.SlotAsync(named, Console.Out)
+        : pin ? await run.PinAsync(Console.Out)
+        : await run.TwiceAsync(Console.Out);
+
+    return outcome.Outcome is LocalRun.Finished or LocalRun.NothingToRead or LocalRun.PinUnchanged ? 0 : 1;
+}
+
 static async Task<int> LabelNews(string[] args)
 {
     var configuration = Configuration();

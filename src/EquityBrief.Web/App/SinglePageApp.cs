@@ -2879,7 +2879,8 @@ public sealed partial class SinglePageApp : IComponent
         bool listedByFilter = true,
         IReadOnlyList<DateOnly>? oldCorrections = null,
         IReadOnlyList<RouteTime>? routeTimes = null,
-        DateTimeOffset? routeTimesSince = null)
+        DateTimeOffset? routeTimesSince = null,
+        IReadOnlyList<LocalRunView>? localRuns = null)
     {
         var region = new StringBuilder();
         var heading = "Run evidence: " + Universes.Large.Titled;
@@ -3002,6 +3003,19 @@ public sealed partial class SinglePageApp : IComponent
                 lede: "What the paid model spent this month against its cap, and the reports written over the last week.",
                 stamp: Cards.Night(night),
                 region: "research-picture"));
+        }
+
+        // From 20.1 the local model's runs under Research, newest first, each with the pin it read.
+        // see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+        if (localRuns is { } runs)
+        {
+            region.Append(Cards.Computed(
+                "Local model",
+                marks.LocalModelRegion(runs),
+                title: "The local model's runs",
+                lede: "Each run of the local model, newest first whatever the night: what it read, the answers it refused and why, how long a call took, and the model, file, runtime and prompt it was pinned to.",
+                stamp: Cards.Night(null),
+                region: "local-model"));
         }
 
         // The detail: every table the page drew before, each in a section folded shut, so a reader checking
