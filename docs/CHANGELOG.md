@@ -26,6 +26,32 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - .claude/rules/checks.md - fixture-expectations states an index night run again keeping the trades of a rule it keeps no list for
+Corrects: the index families deleted every registered rule's trade of the night before keeping the lists of the rules they read, so a night run again over a rule registered at a version the code no longer carries, or at a setting its grid refuses, lost its stored trades of that night, and a night whose index's inputs could not be read lost every rule's; found correcting phase 17's first sign-off review on 2026-10-18 as F4's sibling, no stored trade lost, and added on the operator's ruling of that day.
+Was:
+> `fixture-expectations`: ... one whose hooks read readings the run was handed none of and one retired between the runs, its row naming the first two with their trades left |
+Now:
+> Added without replacing anything: an S&P 400 night run again over a rule registered at a version the code no longer carries and one at a setting its grid refuses leaving every trade the first run kept as it stored it, field by field, and a night whose index's inputs could not be read keeping no trade and leaving them as they stood.
+Why: a roster row names what its check asserts.
+
+### 2026-10-18 - SCHEMA.md - an index night run again keeps the trades of a rule it keeps no list for
+Corrects: as the entry above.
+Was:
+> index_rule_trade: ... A night run again replaces the trades it kept that night and no other night's. ...
+Now:
+> ... A night run again replaces the trades of each rule it keeps a list for that night and no other night's; from the 15.5 correction of 2026-10-18 it leaves as a run of the night stored them the trades of a rule it keeps none for: one the night does not read, registered at a version the code no longer carries or at a setting its grid refuses, one whose hooks read readings the night did not supply, and every rule's on a night the index's inputs could not be read. ...
+Why: a rule the night does not read has no list that night to replace its trades with, and the trades its registration's own version kept are its record.
+
+### 2026-10-18 - ARCHITECTURE.html - an index night run again keeps the trades of a rule it keeps no list for
+Corrects: as the entries above.
+Was:
+> component catalogue, Index families: ... replaces its own night where the night is run again, evaluates no S&P 500 rule, ...
+> stores, Index rule trades, retention: ... a night run again replaces the trades it kept that night and no other night's, and a trade's end and benchmark are written once ...
+Now:
+> ... replaces its own night where the night is run again, from the 15.5 correction of 2026-10-18 a registered rule's trades only for a rule it keeps a list for that night, the trades of one it does not read, one whose hooks read what the night did not supply, and every rule's on a night the index's inputs could not be read left as stored; evaluates no S&P 500 rule, ...
+> ... a night run again replaces the trades of each rule it keeps a list for that night and no other night's, from the 15.5 correction of 2026-10-18 leaving those of a rule it keeps none for as stored, and a trade's end and benchmark are written once ...
+Why: as the entry above.
+
 ### 2026-10-18 - .claude/rules/checks.md - fixture-expectations states a night run again keeping the trades of a family rule it lists nothing for
 Corrects: a night run again deleted every family trade of the night and kept trades only for the rules the shadow step gave verdicts, so a rule it skipped, registered at a version the code no longer carried, lost its stored trades of that night: `night-20261005T025156Z-for-2026-10-02` kept 0 where the night of 2026-10-02 had kept 2, FDS and CCL under two drift rules; found by phase 17's first sign-off review on 2026-10-18.
 Was:
