@@ -2409,9 +2409,10 @@ Built:      a ticker is a member where a span of any of the three indices holds 
 Stored:     kept, not rewritten: that run's row. Read over the store as the run found it, the corrected query passes
             over 2 former members' rows, PARA's and PSKY's, and counts the 36; their newest company rows carry the
             SEC's filer since that night's remedy, so the step run now counts none.
-Tests:      none new: the step's test adds a member of the S&P 600, one of the S&P 400 joining on the session, a former
-            member and a ticker joining on a later session, each holding no filer, the last two counted among none; and
-            the membership reads' check, which states the set of reads asking the join date, holds the step among them.
+Tests:      none new: the step's test adds a member of the S&P 600, one of the S&P 400 joining on the session, one of
+            the S&P 500 leaving on the UTC date at the clock, a former member and a ticker joining on a later session,
+            each holding no filer, the last two counted among none; and the membership reads' check, which states the
+            set of reads asking the join date, holds the step among them.
 Claims:     1340, as before.
 Mutated:    the rule, stated before the runs for all six corrections: one mutation a property each adds or holds whose
             failure a stored record or a run's row would show, the smallest edit that breaks it, made in this checkout
@@ -2420,7 +2421,7 @@ Mutated:    the rule, stated before the runs for all six corrections: one mutati
             and discounted. M1 the membership clause made true of any span, the query reading every company row again:
             red at the step's test alone, of the SEC tickers file's 3. M11 a span joining on the session read as no
             member, and M12 one leaving on it read as a member: each red at the step's test and at the membership reads'
-            check, of those 4.
+            check, of those 4. M15 the session read as the UTC date: red at the step's test alone, of the 4.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 14.6 correction's entry
             below, as it records.
 Carried:    phase 17's second sign-off review by a fresh session, since this one committed code.
