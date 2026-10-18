@@ -2171,6 +2171,70 @@ public static class RunScreen
     // The outcome of the row a copy writes as it starts, as the worker writes it.
     public const string CopyStarted = "started";
 
+    // The local run's rows as the Run page draws them, newest first: each row's kind, start and end, its counts, its
+    // refused answers by cause, its times a call, the pin it read and the check of the model's file it made, and what it
+    // came to with why. A row whose detail cannot be read is drawn by its outcome alone.
+    // see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+    public static IReadOnlyList<LocalRunView> LocalRuns(IReadOnlyList<LocalRunRow> rows) =>
+    [
+        .. rows.Select(row =>
+        {
+            JsonElement detail;
+
+            try
+            {
+                using var document = JsonDocument.Parse(row.Detail);
+
+                detail = document.RootElement.Clone();
+            }
+            catch (JsonException)
+            {
+                detail = default;
+            }
+
+            string? Text(string name) =>
+                detail.ValueKind == JsonValueKind.Object && detail.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
+
+            int Whole(string name) =>
+                detail.ValueKind == JsonValueKind.Object && detail.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number ? value.GetInt32() : 0;
+
+            double? Figure(string name) =>
+                detail.ValueKind == JsonValueKind.Object && detail.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number ? value.GetDouble() : null;
+
+            var refused = detail.ValueKind == JsonValueKind.Object && detail.TryGetProperty("refused", out var causes) && causes.ValueKind == JsonValueKind.Object
+                ? causes.EnumerateObject().Where(cause => cause.Value.ValueKind == JsonValueKind.Number).Select(cause => (cause.Name, cause.Value.GetInt32())).ToArray()
+                : [];
+
+            var pin = detail.ValueKind == JsonValueKind.Object && detail.TryGetProperty("pin", out var id) && id.ValueKind == JsonValueKind.Number
+                ? FormattableString.Invariant($"pin {id.GetInt64()}: {Text("model")}, file {Text("hash")}, {Text("runtime")}, prompt {Text("prompt")}")
+                : null;
+
+            // A twice-read that compared releases says how many it read alike where it names no other why.
+            var alike = Whole("compared") is > 0 and var compared
+                ? FormattableString.Invariant($"{Whole("identical")} of {compared} answered alike when read twice")
+                : null;
+
+            return new LocalRunView(
+                Text("kind") ?? "a run",
+                Instant(row.StartedAt) ?? DateTimeOffset.MinValue,
+                Instant(row.EndedAt),
+                Whole("fetched"),
+                Whole("read"),
+                refused,
+                Figure("medianSeconds"),
+                Figure("slowestSeconds"),
+                pin,
+                Text("fileCheck"),
+                row.Outcome,
+                Text("why") ?? alike);
+        }),
+    ];
+
+    static DateTimeOffset? Instant(string text) =>
+        DateTimeOffset.TryParseExact(text, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var at)
+            ? at
+            : null;
+
     // The store's newest copy off the copies' own rows, newest first: the newest ending row that made one, its
     // folder read against this surface's data root or named alone where its row could carry no path to it, the
     // newest attempt after it that made none, with why, the newest copy started after it that has written no end,

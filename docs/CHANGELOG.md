@@ -26,6 +26,46 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - BUILD_PLAN.md - 20.1's forms, refusals and count as built
+Corrects: 20.1's text named two verbs and a store of refused answers that 20.1 builds as two forms of the local run's verb and a count on the run's row, and the 52 stored releases the 20.0 pass counted, found reading the store again at 20.1
+Was:
+> 20.1: Migration 98 creates the pin's store, ...; `local-pin` writes a version by hand, hashing the file whole. ... An answer empty, cut off, not one object, missing a key or holding a word its question does not list is asked once more and then stored refused with its cause, never as a reading. `local-check --twice` reads the 52 stored releases twice and states the share answered identically, writing a run row and no reading. ... The Run page gains the local model's region: ...
+> 20.1's Done when: ...; each refusal cause is asked once more and then stored refused; ...; and the entry states the share of the 52 stored releases answered identically when read twice.
+Now:
+> 20.1: Migration 98 creates the reading pins' store, ...; `local-run --pin` writes a version by hand, hashing the file whole. ... is asked once more and then counted refused with its cause on the run's row, never as a reading, the readings' store arriving at 20.3. `local-run --twice` reads the 70 stored results releases twice and states the share answered identically, writing a run row and no reading. ... The Run page gains the local model's runs as a region: ...
+> 20.1's Done when: ...; each refusal cause is asked once more and then counted refused on the run's row; ...; and the entry states the share of the 70 stored results releases answered identically when read twice.
+Why: 20.1 builds the pin and the twice-read as forms of the local run's one verb and stores no reading, so an answer refused is counted on the run's row until 20.3 stores readings, and the twice-read reads all 70 stored results releases. 20.1 amends its own done condition, and its entry says so.
+
+### 2026-10-18 - BUILD_PLAN.md - phase 20's findings count the 70 results releases research passes have stored
+Corrects: the 20.0 pass counted 52 stored releases by their exhibits' file names where research passes have stored 70 results releases by title, found reading the store again at 20.1
+Was:
+> Findings: **What a release costs to read.** 50 of the 52 releases research passes have stored, drawn at seed 20261018 and read once under the four questions ...
+> Findings: The samples are drawn at seed 20261018 by index in proportion to members: the 52 stored releases read twice at 20.1, and at 20.3 ...
+Now:
+> Findings: ... 50 of the 70 results releases research passes have stored, drawn at seed 20261018 from the 52 whose exhibit's file name carries its exhibit number, and read once ...
+> Findings: ... every one of the 70 stored results releases read twice at 20.1, and at 20.3 ...
+Why: the store holds 70 results releases by the titles research passes give them, the 52 being the ones whose exhibit's file name carries its number, and the 50 the sample drew are among the 70; the 20.0 correction in the record says so.
+
+### 2026-10-18 - CLAUDE.md - the local run's script in the layout and the commands, and among the processes no merge is made beside
+Authorised by: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+Was:
+> Nothing is merged to `main`, and the checkout is not fast-forwarded, while a night is running, or while the off-peak run's labeller or its drain, the setup ledger's history build or the monthly run is writing from a copy of the checkout's commit; that it has finished is read off the machine's processes and the night's own rows on the run log before the merge.
+Now:
+> Nothing is merged to `main`, and the checkout is not fast-forwarded, while a night is running, or while the off-peak run's labeller or its drain, the local run, the setup ledger's history build or the monthly run is writing from a copy of the checkout's commit; that it has finished is read off the machine's processes and the night's own rows on the run log before the merge.
+> Added without replacing anything: the layout's `localrun  localrun.ps1` entry under `/tools`, and the commands' row writing a reading version.
+Why: 20.1 adds the local run, a process of its own built from a clean copy of main's commit that writes the store at its two slots, and a merge beside it is the merge the section forbids beside the others.
+
+### 2026-10-18 - .claude/rules/checks.md - four rows gain what 20.1 asserts
+Authorised by: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+Was:
+> `fixture-expectations`: ... while every other book's night is written again as it was |
+> `nightly-run`: ... and the five sessions' return as a figure |
+> `read-surface`: ... and from the 17.15 correction of 2026-10-18 a member exactly at the constructed tree's split scored at the leaf at or under it |
+> `nightly-cost`: ... each day it reads whole recorded as a span |
+Now:
+> each row as it stood, followed by its clause from 20.1: fixture-expectations' four questions and their readings, the answers' reader, the fixture release's answer read by hand from the text the replay stores, the captures, the pin's parts and its file check, the availability rule and the local run over a constructed store; nightly-run's local run script in its check mode; read-surface's local model region on the Run page; and nightly-cost's reading feed among the files that may hold a client and reach a model
+Why: each check asserts a property 20.1 adds, and the roster states what every check reaches.
+
 ### 2026-10-18 - .claude/rules/checks.md - rules-choose-the-stocks cites the decision that narrows the one it cited
 Authorised by: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and no model judges a stock
 Was:

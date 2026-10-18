@@ -59,6 +59,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "SEC tickers"),
     ];
 
+    // 20.1's one: the local run.
+    internal static string[] LocalRunRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Local run"),
+        CheckReach.Key(Scope.MatrixTable, "Local run"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -81,6 +88,9 @@ public partial class ComponentAccess
 
             // The 17.3 correction, the SEC's ticker file.
             .. SecTickerRows,
+
+            // 20.1, the local run.
+            .. LocalRunRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

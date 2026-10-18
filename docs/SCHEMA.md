@@ -115,6 +115,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `insider_trade` | InsiderTrades | none | none |
 | `insider_read` | InsiderTrades | none | none |
 | `sec_ticker` | SecTickers | none | none |
+| `reading_pin` | LocalRun | none | none |
 | `taken_trade` | ReadApi | ReadApi, TakenFollower | ReadApi |
 | `taken_record` | TakenFollower | none | TakenFollower |
 | `dividend_reading` | QuarterFetcher | none | none |
@@ -1965,6 +1966,33 @@ Primary key: `ticker`, `run_id`.
 
 Append-only, a read's rows written in one write, by the SEC tickers step by hand and in the monthly run's facts step and never by the night; the quarters fetch reads the newest read's filer for a member the provider files no CIK for (see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file).
 
+### reading_pin
+Grain: one row per reading version the local run reads under, from 20.1, written by hand.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | INTEGER | the version, in the order written |
+| `model` | TEXT | the model's identifier as LM Studio lists it |
+| `model_file` | TEXT | the model's file by its path under LM Studio's models folder, forward-slashed, never a path a machine roots |
+| `sha256` | TEXT | the file's SHA-256 over every byte, hashed whole when the version was written |
+| `size` | INTEGER | the file's size in bytes |
+| `modified` | TEXT | the file's last-modified instant, UTC, to its tick |
+| `runtime_name` | TEXT | the runtime's name as the probe's answer stated it |
+| `runtime_version` | TEXT | the runtime's version as that answer stated it |
+| `prompt_version` | TEXT | the instruction's version, the first twelve hex characters of its SHA-256 |
+| `temperature` | REAL | nought |
+| `seed` | INTEGER | the seed every reading under the version is asked with |
+| `answer_tokens` | INTEGER | the answer's budget |
+| `context` | INTEGER | the context the model is loaded at, from its profile |
+| `cutoff` | TEXT | the model's knowledge cutoff, a date, from its profile |
+| `written_at` | TEXT | UTC instant |
+| `history_completed_at` | TEXT | UTC instant the history read under the version completed, null until it has |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `id`.
+
+Insert only, by the local run's pin by hand and never by the night or a slot; the newest row is the pin every run compares before it reads, and a run whose model, file or instruction differs from it refuses, as does an answer from a model or runtime it does not name (see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin).
+
 ### taken_trade
 Grain: one row per trade the operator took from a pick's card.
 
@@ -2646,6 +2674,8 @@ Primary key: `run_id`, `stage`.
 **A night's try again is a run of its own, and the stop it follows says when it starts.** A try the night makes again after a stop before the close, and a run of the rest of a night by the press or `--resume`, writes under the id of the night's first try with `-try-` and its number, and writes only the stages it runs. Beside the stop, the try that stopped writes one row under its own run with the stage `try again` and the outcome `waiting`, with `started_at` and `ended_at` the instant it wrote it and `detail` naming the next try's number, the step it starts from and the instant it starts at; a try with no try left writes none. Written by `Nightly` alone, and read by `RunScreen.Night` alone, which reads a night's first try and every try carrying its id as one night (see: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own).
 
 **The store's copy writes two rows of its own, one as it starts and one as it ends, and names its folder relative to the data root.** From the operator's ruling of 2026-10-02 the copy the night starts after its labeller writes under `backup-` and its instant. As it starts, before it waits for anything, it writes a row with the stage `store-backup-started`, its start at both ends and the outcome `started`, its `detail` JSON saying whether it waits for the labeller; a start with no ending row of its run is a copy ended before it finished. As it ends it writes a row with the stage `store-backup`: `ok` where a copy was made, opened and read, its `detail` JSON carrying the copy's name, the folder relative to the data root with forward separators, or its name alone where it lies on a volume no relative path reaches, its bytes, the newest session and the bars it read back, the copies kept, those removed, any kept copy that did not open and read, the copies the newest ending row before it kept that were gone from the folder when it began, removed by no copy, and what it waited for; `failed` where it made none or the new copy did not open and read, with why. The copies the ending rows name, made or refused, are the store's own, and the only ones a copy counts or removes (see: A store's copy counts and removes only the copies its own rows name, and a test or a rehearsal names a copies' folder of its own). The night's own step writes one row under the night's run with the stage `backup`, saying the copy was started or why it was not (see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends).
+
+**The local run writes one row a run under a run of its own.** From 20.1 each run of the local run, a slot, a pin written by hand or the stored releases read twice, writes one row under `local-run-` with its start, its kind and a short tag, with the stage `local-run`, once any lock it waits on is let go: `model_calls` the local model's calls the run made, no network request and a `spend` of `0`, and `detail` JSON naming its kind, its outcome and why, the documents it fetched and read, its refused answers by cause, its median and slowest seconds a call, the pin it read by its id, model, the start of its file's hash, its runtime and its prompt's version, how it checked the model's file and in how many seconds where it hashed it whole, and for the twice-read how many releases it compared and how many were answered alike. It carries no path of any file, and the Run page draws the newest ten (see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin).
 
 **A drain that stops on an error writes one row of its own.** From the 9.2 correction of 2026-10-03 an error escaping the drain's put-back or its queue is written by `RequestDrain` under `drain-` and the instant the drain started, with the stage `drain` and the outcome `failed`, `started_at` the drain's start and `ended_at` the instant it stopped, nothing counted, nothing spent and `detail` the error's type and words with no path a machine roots. The queue page reads the newest such row while no row of a pass's run starts after it, and the run page's checklist names each such row on the night it fell on (see: A drain that stops on an error writes a row of its own, and the queue page states it until a pass starts after it).
 

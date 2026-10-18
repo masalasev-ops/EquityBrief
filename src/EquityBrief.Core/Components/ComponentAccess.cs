@@ -89,6 +89,7 @@ public enum Store
     InsiderTrade,
     InsiderRead,
     SecTicker,
+    ReadingPin,
     LedgerSummary,
     LedgerReading,
     LoopRun,

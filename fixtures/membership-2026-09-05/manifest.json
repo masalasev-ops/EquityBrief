@@ -1531,6 +1531,34 @@
       "query": "https://www.sec.gov/files/company_tickers.json",
       "fetchedAt": "2026-10-16T22:15:20Z",
       "trimmedTo": "seven of the 10,444 entries of a file of 799,355 bytes whose SHA-256 is 5df1323d2c05ca6dea661d2b7c73cb8c86649bbf43f28e83280f484c214837d6: the fixture's four names, BNY, whose provider files no CIK, and Alphabet's two classes under one CIK, each under its key as sent, compact on one line as sent."
+    },
+    {
+      "file": "local-reading-probe-answered.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio 0.4.25 serving google/gemma-4-26b-a4b-qat, its native chat answer",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions with the system instruction 'Reply with the one word ready.' and the question 'Are you ready?', temperature 0, seed 20261018, max_tokens 16, stream false and reasoning_effort none, against the model loaded at a context of 50,176 tokens, as the local run's pin asks it to read the runtime off the answer",
+      "fetchedAt": "2026-10-18T06:30:52Z",
+      "trimmedTo": "nothing. The whole answer: the answering model at the top, the runtime's name and version under runtime, and no reasoning token spent with reasoning_effort none, which the OpenAI-compatible answer does not state."
+    },
+    {
+      "file": "local-reading-KEYS-answered.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio 0.4.25 serving google/gemma-4-26b-a4b-qat, its native chat answer",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions with the release reading's instruction of 20.1 and, as the user's message, the text of the fixture's release-KEYS.htm as the archive's reader makes it text and a research pass stores it, its envelope's own words included, 22,996 characters, temperature 0, seed 20261018, max_tokens 256, stream false and reasoning_effort none, against the model loaded at a context of 50,176 tokens",
+      "fetchedAt": "2026-10-18T07:26:33Z",
+      "trimmedTo": "nothing. The whole answer, one object of the four keys each holding one listed word, 5,988 prompt tokens and 42 completion tokens; the same request asked again at once was answered with the same content."
+    },
+    {
+      "file": "local-reading-past-context-refused.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio 0.4.25 serving google/gemma-4-26b-a4b-qat, its native chat answer",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions with the release reading's instruction and the KEYS release's text repeated eleven times, 252,417 characters, past the 50,176 tokens the model is loaded at",
+      "fetchedAt": "2026-10-18T06:30:57Z",
+      "trimmedTo": "nothing. The whole answer, a 400 whose error is a string wrapping the engine's own refusal naming the prompt's tokens and the loaded context, exceed_context_size_error, rather than a prompt cut short."
+    },
+    {
+      "file": "local-reading-unknown-model-answered.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio 0.4.25 serving google/gemma-4-26b-a4b-qat, its native chat answer",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions naming the model no-such/model, which the runtime does not hold, with the probe's instruction and question, while google/gemma-4-26b-a4b-qat stood loaded",
+      "fetchedAt": "2026-10-18T06:30:57Z",
+      "trimmedTo": "nothing. The whole answer: a 200 answered by the model the runtime had loaded and naming it, not the one asked for, which is why the local run reads the answering model off every answer and refuses one that is not the pin's."
     }
   ]
 }

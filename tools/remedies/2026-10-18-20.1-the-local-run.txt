@@ -1,0 +1,9 @@
+# The remedy of 20.1, the local run, as its PROGRESS entry prints it: the migration creating the reading pins' store,
+# the first reading version written from the local profile's model file hashed whole and a probe's answer, and every
+# results release research passes have stored read twice under it, the share answered alike stated on the run's row.
+# It needs LM Studio running and holding the model the local profile names; a run loads the model where it is not
+# loaded, unloading any other first, and unloads it after only where it loaded it. No provider request and no paid
+# call. Run after the merge and before the night, when no night is running.
+migrate
+local-run --pin
+local-run --twice

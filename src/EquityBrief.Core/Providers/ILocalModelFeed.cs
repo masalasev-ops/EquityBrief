@@ -83,6 +83,13 @@ public sealed record LocalModelSettings
     public const string LoadName = "LoadSeconds";
     public const string IsDefaultName = "IsDefault";
 
+    // From 20.1 the keys the local run reads beside them and the report lane does not: the model's file by its path
+    // under LM Studio's models folder, the folder where it is not the one under the machine's home, and the model's
+    // knowledge cutoff, a date.
+    public const string ModelFileName = "ModelFile";
+    public const string ModelsFolderName = "ModelsFolder";
+    public const string KnowledgeCutoffName = "KnowledgeCutoff";
+
     // The longest a call or a load may be given, a day: a bound past it is a slip in the file rather than a wait,
     // and three of it still fit the transport's own limit.
     public const int MostSeconds = 86400;
@@ -110,6 +117,17 @@ public sealed record LocalModelSettings
 
     // How long the runtime may take to load the model before a pass calls it.
     public TimeSpan Load { get; }
+
+    // The model's file by its path under LM Studio's models folder, written with forward slashes, none where the
+    // profile names none; the folder, none where the profile names none and the one under the machine's home is read;
+    // and the model's knowledge cutoff, none where the profile names none. The local run reads all three and the
+    // report lane none.
+    // see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+    public string? ModelFile { get; init; }
+
+    public string? ModelsFolder { get; init; }
+
+    public DateOnly? KnowledgeCutoff { get; init; }
 
     // Why the settings name no model the lane can call, where they do not: then every call is the local model
     // unavailable with this reason, and no other value is one the lane reads.

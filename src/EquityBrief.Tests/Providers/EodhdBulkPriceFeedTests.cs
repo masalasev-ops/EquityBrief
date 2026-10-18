@@ -336,8 +336,10 @@ public class EodhdBulkPriceFeedTests
         // until 18.2 added the Treasury's par yield table, one free request a
         // night to the Treasury and none to the provider, and twenty-two until
         // the 2.1 correction that skips a refused member added Yahoo's chart and
-        // Nasdaq's quote, asked by the fetch for that member alone.
-        Assert.Equal(23, Checks.NightlyCost.MayHoldAClient.Length);
+        // Nasdaq's quote, asked by the fetch for that member alone, and
+        // twenty-three until 20.1 added the local run's readings, which its own
+        // process asks of LM Studio and no night does.
+        Assert.Equal(24, Checks.NightlyCost.MayHoldAClient.Length);
         Assert.All(
             Checks.NightlyCost.MayHoldAClient,
             file => Assert.EndsWith("Feed.cs", file, StringComparison.Ordinal));

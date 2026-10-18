@@ -157,6 +157,9 @@ public partial class ReadSurface
             // 19.13, the report's Insiders region.
             .. InsiderRows,
 
+            // 20.1, the Run page's local model region.
+            .. LocalModelRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 

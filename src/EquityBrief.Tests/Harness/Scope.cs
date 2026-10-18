@@ -3351,6 +3351,44 @@ internal static class Scope
             Verdict.Pass,
             "the night runs the refresh after the quarters step and before the queue, on its output and its run log's order, and over the fixture's week it refreshes the one member that filed a report and asks nothing for the others",
             ByNight),
+        // 20.1, the local run: its catalogue and matrix rows, its store, section 17's row, section 18's four and 15.10's
+        // region.
+        [CheckReach.Key(CatalogueTable, "Local run")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the reading pins, the source documents and the run log it reads, the reading pins and the run log it writes and the local model among its feeds, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Local run")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Reading pins")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Local reading's settings")] = new Scoped(
+            Verdict.Pass,
+            "the request a reading sends read off its body at temperature 0, the seed, the answer's budget and reasoning off, the pin written with them over a constructed store, and an answer that cannot be read asked once more and then read; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "LM Studio is not running when a local run starts")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store a runtime refusing the connection ends the run before it reads anything, its row naming the runtime not running and why",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The model the local profile names is not held")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store a runtime listing no such model and a profile naming a file the models folder does not hold each end the run with the model not held, nothing asked of the runtime where the file is missing",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The model, its file, the runtime or the prompt is not the pin's")] = new Scoped(
+            Verdict.Pass,
+            "each of the pin's parts refusing on its own, and over a constructed store a model's file written again refusing a slot named as the model's file, a profile naming another model refusing named as the model, and an answer stating a runtime the pin does not name ending the run with nothing compared",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "An answer the local run cannot read, or one the runtime refuses")] = new Scoped(
+            Verdict.Pass,
+            "each cause of an answer that cannot be read worked by hand, and over a constructed store an answer that cannot be read asked once more and then read, and the runtime's refusal of a prompt past its context, read as captured, counted refused at once with no second ask",
+            ByExpectations),
+        [CheckReach.Key("15.10 Run", "The local model's runs")] = new Scoped(
+            Verdict.Pass,
+            "one line naming the two slots where no run is stored, and ten runs of twelve newest first by the order they were written, each column read back off the rendered page against the detail the run's own writer wrote, a twice-read saying how many of the releases it compared it read alike, a row whose detail cannot be read drawn by its outcome alone and a row under another stage drawn by none, over a constructed store",
+            ByReadSurface),
         // 17.3, the Ledger page: its six parts and its summary's store.
         [CheckReach.Key(StoresTable, "Ledger summaries")] = new Scoped(
             Verdict.Pass,
@@ -6014,6 +6052,7 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Every page's time")] = "19.11",
         [CheckReach.Key(LedgerPage, "Which readings go with winners")] = "19.12",
         [CheckReach.Key("15.9 Name", "Insiders")] = "19.13",
+        [CheckReach.Key("15.10 Run", "The local model's runs")] = "20.1",
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks, a bar for each of the last twenty evenings split into the names new that evening and those the evening before also listed")] = "12.3",
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks, the night's split in words")] = "12.3",
         [CheckReach.Key("15.10 Run", "Research and spend, the month's spend against the month cap")] = "12.3",

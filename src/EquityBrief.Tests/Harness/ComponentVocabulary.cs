@@ -65,7 +65,9 @@ internal static class ComponentVocabulary
     // estimate trend each quarters fetch keeps and each dividend kept, each a provider's answer about a company. From 18.3
     // the computed tables column holds each name's typical earnings move and its long view, figures the night works out
     // for the name page as it works out the chart's averages. From 19.10 the forward returns column holds each stored
-    // trade's fill at the next session's open beside the trades, each a record of what became of one.
+    // trade's fill at the next session's open beside the trades, each a record of what became of one. From 20.1 the
+    // research and theme column holds the reading pins beside the sections a model wrote, each the version a local
+    // model's readings are read under.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
@@ -78,7 +80,7 @@ internal static class ComponentVocabulary
         ("Facts", [DataStore.Facts]),
         ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk, DataStore.Company, DataStore.EstimateReading, DataStore.DividendReading, DataStore.EstimateTrend, DataStore.DividendEvent, DataStore.FiledFact, DataStore.FiledFactPull, DataStore.FilingDay, DataStore.InsiderTrade, DataStore.InsiderRead, DataStore.SecTicker]),
         ("News", [DataStore.NewsPulse, DataStore.NewsArticle, DataStore.NewsLabel]),
-        ("Research and theme", [DataStore.ResearchSection, DataStore.ThemeSection]),
+        ("Research and theme", [DataStore.ResearchSection, DataStore.ThemeSection, DataStore.ReadingPin]),
         ("Sources", [DataStore.SourceDocument]),
         ("Candidate register", [DataStore.CandidateRegister]),
         ("Rule versions", [DataStore.RuleVersion]),
@@ -256,6 +258,7 @@ internal static class ComponentVocabulary
         ["insider trades"] = DataStore.InsiderTrade,
         ["insider reads"] = DataStore.InsiderRead,
         ["SEC tickers"] = DataStore.SecTicker,
+        ["reading pins"] = DataStore.ReadingPin,
         ["estimate readings"] = DataStore.EstimateReading,
         ["fundamental readings"] = DataStore.FundamentalReading,
         ["member readings"] = DataStore.MemberReading,

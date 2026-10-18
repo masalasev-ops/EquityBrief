@@ -150,7 +150,9 @@ public partial class ArchitectureConformance
     // operator's ruling of the same day, the insider trades' catalogue and matrix rows, their two stores, section 17's row,
     // section 18's and 15.9's region, the chart page's group landing as words in its figures row that stood and section 4's
     // region outside the claims; and the 17.3 correction of 2026-10-16's three, the SEC tickers step's catalogue and
-    // matrix rows and its store.
+    // matrix rows and its store; and 20.1's nine, the local run's catalogue and matrix rows, the reading pins' store,
+    // section 17's row, section 18's four and the Run page's local model region, which phase 20's own pair counts once
+    // its report is written.
     internal static string[] AfterPhaseNineteen =>
     [
         .. FixtureExpectations.TradeFillRows,
@@ -164,6 +166,10 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.InsiderRows,
         .. ComponentAccess.SecTickerRows,
         .. SchemaColumns.SecTickerStoreRows,
+        .. ComponentAccess.LocalRunRows,
+        .. SchemaColumns.ReadingPinStoreRows,
+        .. FixtureExpectations.LocalRunClaims,
+        .. Reading.ReadSurface.LocalModelRows,
     ];
 
     internal static string[] TakenOutAfterPhaseNineteen => [];

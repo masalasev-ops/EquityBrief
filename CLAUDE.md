@@ -63,6 +63,10 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
                   nightly  nightly.ps1   what the scheduler calls, not run by CI
                   ledger-build  ledger-build.ps1   build the setup ledger's history by hand from a
                                  clean copy of the main checkout's commit, as a night is built
+                  localrun  localrun.ps1   the local run, what the scheduler calls at its two slots, 12:05
+                                 and 21:40 UTC every day, and what writes a reading version or reads
+                                 the stored releases twice by hand, from a clean copy of the main
+                                 checkout's commit
                   monthly  monthly.ps1   the monthly run, what the scheduler calls on the first Saturday
                                  of the month, from a clean copy of the main checkout's commit
                   offpeak  offpeak.ps1   the off-peak run, what the scheduler calls five minutes after each
@@ -118,6 +122,7 @@ global.json       pins the SDK to the 10.0.3xx feature band
 | Run a night by hand | `tools/nightly.ps1` | `tools/nightly` | PowerShell on Windows, bash on macOS |
 | Run a remedy | `tools/remedy.ps1 <file>` | `tools/remedy <file>` | PowerShell on Windows, bash on macOS |
 | Run the off-peak run by hand | `tools/offpeak.ps1` | `tools/offpeak` | PowerShell on Windows, bash on macOS |
+| Write a reading version | `tools/localrun.ps1 --pin` | `tools/localrun --pin` | PowerShell on Windows, bash on macOS |
 
 **The target framework is `net10.0`, pinned in one place.** `global.json` at the root holds the SDK to the 10.0.3xx feature band and rolls forward to the latest installed, and `src/Directory.Build.props` carries the framework, nullable reference types and warnings as errors for all six projects. Before this the workflow was the only statement of the version anywhere, which left the two machines free to build against something CI never sees.
 
@@ -217,7 +222,7 @@ Done conditions are written against **what the file will say after the edit**, n
 
 **A checkpoint lands as its own commit** and satisfies all nine done conditions on its own, and a session that has committed code still may not sign it off.
 
-**Every change reaches `main` through a branch and a pull request, and none is committed to `main` directly.** That includes a document pass, a correction, a ruling and a sign-off. The branch is checked out in this repository's own tree, the one the operator follows the work in, and no worktree or second copy of the project is made beside it or anywhere else. This tree is also the production checkout the scheduled night runs from, and the night builds only a clean copy of the checkout's own commit and refuses to start from a checkout off `main` (see: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main), so before each night the branch's work is committed and pushed and the checkout is back on `main`. The read surface the operator uses runs from this checkout's Release build of `main`, and every build a branch's gates and tests make is Debug, so building a branch never rewrites the files it runs from. After the merge the branch is deleted, locally and on the remote, and the checkout is fast-forwarded to `main`. Nothing is merged to `main`, and the checkout is not fast-forwarded, while a night is running, or while the off-peak run's labeller or its drain, the setup ledger's history build or the monthly run is writing from a copy of the checkout's commit; that it has finished is read off the machine's processes and the night's own rows on the run log before the merge.
+**Every change reaches `main` through a branch and a pull request, and none is committed to `main` directly.** That includes a document pass, a correction, a ruling and a sign-off. The branch is checked out in this repository's own tree, the one the operator follows the work in, and no worktree or second copy of the project is made beside it or anywhere else. This tree is also the production checkout the scheduled night runs from, and the night builds only a clean copy of the checkout's own commit and refuses to start from a checkout off `main` (see: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main), so before each night the branch's work is committed and pushed and the checkout is back on `main`. The read surface the operator uses runs from this checkout's Release build of `main`, and every build a branch's gates and tests make is Debug, so building a branch never rewrites the files it runs from. After the merge the branch is deleted, locally and on the remote, and the checkout is fast-forwarded to `main`. Nothing is merged to `main`, and the checkout is not fast-forwarded, while a night is running, or while the off-peak run's labeller or its drain, the local run, the setup ledger's history build or the monthly run is writing from a copy of the checkout's commit; that it has finished is read off the machine's processes and the night's own rows on the run log before the merge.
 
 ## Document lifecycle
 

@@ -1050,6 +1050,69 @@ Load it with `launchctl load ~/Library/LaunchAgents/dev.equitybrief.offpeak.plis
 
 **Writing one report now.** Each outstanding row on the queue page carries Write now, which starts the drain on that one request at once, ahead of the rest, as `drain --now <TICKER>` run by hand does. Inside a peak window the page first says when the window ends and how many times the off-peak price the report costs, and the press goes only once that is confirmed; the drain then writes it at the peak price, as `drain --now <TICKER> --at-peak` does by hand, and each call's price on the run page shows what was paid (see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now). A drain waiting out a peak window lets its lock go while it waits, so a Write now press is never held behind it.
 
+### The local run
+
+From 20.1 the local model reads documents for the rules in a process of its own, never inside the night, at two slots a day in UTC: the early slot at 12:05, after the second off-peak run, asking nothing after 21:30; and the late slot at 21:40, asking nothing after 22:50 and writing its row by 22:55, before the night's window (see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin). It is built from a clean copy of main's own commit as the off-peak run is, and each form runs the worker's `local-run` verb:
+
+```
+tools/localrun.ps1 --slot early
+tools/localrun.ps1 --slot late
+tools/localrun.ps1 --pin
+tools/localrun.ps1 --twice
+```
+
+`--pin` writes a reading version. It hashes the model's file whole under LM Studio's models folder, which took 211 seconds for Gemma 4's 14 GB file, asks the model one probe and reads the runtime's name and version off its answer, and writes a row to `reading_pin` where the model, its file, the runtime or the instruction differs from the newest pin, and none where nothing does. Run it once after 20.1 merges, with LM Studio running and holding the model the local profile names, and again after LM Studio, its engine or the model is updated on purpose. A run that finds the model not loaded loads it at its profile's context, unloading any other model first, and unloads it at its end only where it loaded it, so the runtime is left as the run found it. `--twice` reads every stored results release twice under the pin and states how many were answered alike, writing a run row and no reading.
+
+A slot checks the newest pin before it reads anything: the model the profile names, the model's file by its size and modified instant, hashed whole where either differs from the pin's and on the first run of each ISO week in UTC, and the instruction's version. Any difference refuses the run and its row names the part; an answer whose model or runtime is not the pin's ends the run the same way. A refusal after a deliberate update is answered by `--pin`. At 20.1 a slot reads nothing more; 20.2 adds the day's results releases and 20.3 their reading.
+
+Each run writes one row on the run log under `local-run`, which the Run page's Local model region draws: its kind, start and end, what it fetched and read, its refused answers by cause, its median and slowest seconds a call, the pin it read, how it checked the model's file and what it came to. LM Studio not running, or not holding the model, ends the run and its row says so, and the night is not touched. The local run takes none of the night's, the drain's or the monthly run's locks: it waits to write while one is held, and one local process calls the model at a time by `data/drains/local.lock`. Nothing is merged to main while it is writing, as for a night.
+
+The local profile carries three settings for it, under the worker's `LocalModel` profiles: `ModelFile`, the model's file by its path under LM Studio's models folder; `ModelsFolder`, empty for `.lmstudio/models` under the machine's own home folder; and `KnowledgeCutoff`, the model's cutoff from its maker's card as a date, 2025-01-31 for Gemma 4, which every figure split before and after the cutoff reads.
+
+**Scheduling it.** Every day at 12:05 and 21:40 UTC, each start boundary pinned in UTC as the night's is, its output kept in `data/localrun.log`, two tasks since each slot is a form of its own:
+
+```powershell
+$root     = 'E:\Stock Analysis  Tool Ideas\EquityBrief'
+$settings = New-ScheduledTaskSettingsSet -WakeToRun -StartWhenAvailable `
+              -DontStopIfGoingOnBatteries -AllowStartIfOnBatteries `
+              -ExecutionTimeLimit (New-TimeSpan -Hours 10)
+$early    = New-ScheduledTaskAction -Execute 'powershell.exe' `
+              -Argument "-NoProfile -ExecutionPolicy Bypass -Command `"& '$root\tools\localrun.ps1' --slot early *>> '$root\data\localrun.log'`"" `
+              -WorkingDirectory $root
+$at       = New-ScheduledTaskTrigger -Daily -At 8:05am
+$at.StartBoundary = '2026-10-19T12:05:00Z'
+Register-ScheduledTask -TaskName 'EquityBrief localrun early' -Action $early -Trigger $at -Settings $settings
+$late     = New-ScheduledTaskAction -Execute 'powershell.exe' `
+              -Argument "-NoProfile -ExecutionPolicy Bypass -Command `"& '$root\tools\localrun.ps1' --slot late *>> '$root\data\localrun.log'`"" `
+              -WorkingDirectory $root
+$at       = New-ScheduledTaskTrigger -Daily -At 5:40pm
+$at.StartBoundary = '2026-10-19T21:40:00Z'
+Register-ScheduledTask -TaskName 'EquityBrief localrun late' -Action $late -Trigger $at -Settings $settings
+```
+
+On macOS the job runs every hour at five past and twenty to, and the script runs a slot at 12 and 21 UTC alone:
+
+```xml
+<!-- ~/Library/LaunchAgents/dev.equitybrief.localrun.plist -->
+<plist version="1.0"><dict>
+  <key>Label</key><string>dev.equitybrief.localrun</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-lc</string>
+    <string>h="$(date -u +%H)"; m="$(date -u +%M)"; if [ "$h" = 12 ] &amp;&amp; [ "$m" -lt 40 ]; then s=early; elif [ "$h" = 21 ] &amp;&amp; [ "$m" -ge 40 ]; then s=late; else exit 0; fi; exec "$HOME/EquityBrief/tools/localrun" --slot "$s" &gt;&gt; "$HOME/EquityBrief/data/localrun.log" 2&gt;&amp;1</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict><key>Minute</key><integer>5</integer></dict>
+    <dict><key>Minute</key><integer>40</integer></dict>
+  </array>
+  <key>RunAtLoad</key><false/>
+</dict></plist>
+```
+
+Load it with `launchctl load ~/Library/LaunchAgents/dev.equitybrief.localrun.plist`. The Run page's Local model region names each run once it has run.
+
 ### The fundamentals-first family
 
 From 17.8 a fifth family lists on every index from its first night, on its provisional setting: a company whose four newest quarters and newest quarter are profitable, whose revenue grew on the year-earlier quarter faster than the quarter before grew, whose gross or operating margin widened on the year and whose cash from operations is at least its net income, closing above its 200-day average with the 50-day above it, bought at the pullback's buy point (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point). Its business is read from the SEC's facts as the night's filings refresh leaves them, a filing read from the session after the day it was filed. The index families' step reads it on the S&P 400 and 600 beside their own families and on the S&P 500 alone for this family, after the S&P 500's own families, whose picks it holds back. Its card stands after each index's own families' on Tonight; on the S&P 500 the card says the S&P 400's and 600's step read it.
