@@ -59,7 +59,7 @@ Why: as the entry above.
 ### 2026-10-18 - .claude/rules/checks.md - fixture-expectations states an index night run again keeping the trades of a rule it keeps no list for
 Corrects: the index families deleted every registered rule's trade of the night before keeping the lists of the rules they read, so a night run again over a rule registered at a version the code no longer carries, or at a setting its grid refuses, lost its stored trades of that night, and a night whose index's inputs could not be read lost every rule's; found correcting phase 17's first sign-off review on 2026-10-18 as F4's sibling, no stored trade lost, and added on the operator's ruling of that day.
 Was:
-> `fixture-expectations`: ... one whose hooks read readings the run was handed none of and one retired between the runs, its row naming the first two with their trades left |
+> `fixture-expectations`: ... one whose hooks read readings the run was handed none of and one retired between the runs, its row naming the first two with their trades left and a rule holding no verdict and no trade of the night with why |
 Now:
 > Added without replacing anything: an S&P 400 night run again over a rule registered at a version the code no longer carries and one at a setting its grid refuses leaving every trade the first run kept as it stored it, field by field, and a night whose index's inputs could not be read keeping no trade and leaving them as they stood.
 Why: a roster row names what its check asserts.
@@ -87,7 +87,7 @@ Corrects: a night run again deleted every family trade of the night and kept tra
 Was:
 > `fixture-expectations`: ... and the next figure past it at the other |
 Now:
-> Added without replacing anything: a night run again replacing the trades of each family rule it lists and leaving as the first run stored them those of a rule the night's rows hold no verdict of, one whose hooks read readings the run was handed none of and one retired between the runs, its row naming the first two with their trades left.
+> Added without replacing anything: a night run again replacing the trades of each family rule it lists and leaving as the first run stored them those of a rule the night's rows hold no verdict of, one whose hooks read readings the run was handed none of and one retired between the runs, its row naming the first two with their trades left and a rule holding no verdict and no trade of the night with why.
 Why: a roster row names what its check asserts.
 
 ### 2026-10-18 - SCHEMA.md - a night run again keeps the trades of a family rule it lists nothing for

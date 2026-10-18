@@ -517,6 +517,12 @@ public partial class FixtureExpectations
             FamilyRows(store, "SELECT detail FROM run_log WHERE run_id = 'records-third-again';").Single(),
             StringComparison.Ordinal);
 
+        // R2, which the third night's rows hold no verdict of and which stored no trade that night, is named last with why.
+        Assert.EndsWith(
+            $"; '{r2.Candidate}' kept 0, the night's rows holding no verdict of it",
+            FamilyRows(store, "SELECT detail FROM run_log WHERE run_id = 'records-third-again';").Single(),
+            StringComparison.Ordinal);
+
         // A night with no family rule standing keeps nothing and says so.
         await RecordAsync(store, "records-none", []);
 
