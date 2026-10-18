@@ -2409,15 +2409,18 @@ Built:      a ticker is a member where a span of any of the three indices holds 
 Stored:     kept, not rewritten: that run's row. Read over the store as the run found it, the corrected query passes
             over 2 former members' rows, PARA's and PSKY's, and counts the 36; their newest company rows carry the
             SEC's filer since that night's remedy, so the step run now counts none.
-Tests:      none new: the step's test adds a member of the S&P 600, a former member and a ticker joining on a later
-            session, each holding no filer, the last two counted among none.
+Tests:      none new: the step's test adds a member of the S&P 600, one of the S&P 400 joining on the session, a former
+            member and a ticker joining on a later session, each holding no filer, the last two counted among none; and
+            the membership reads' check, which states the set of reads asking the join date, holds the step among them.
 Claims:     1340, as before.
 Mutated:    the rule, stated before the runs for all six corrections: one mutation a property each adds or holds whose
             failure a stored record or a run's row would show, the smallest edit that breaks it, made in this checkout
             over the committed corrections and restored from the file's own text, the tree's diff the same after the
             sweep as before, each run filtered to the tests named, a test hashing a pinned source red at any edit of it
             and discounted. M1 the membership clause made true of any span, the query reading every company row again:
-            red at the step's test alone, of the SEC tickers file's 3.
+            red at the step's test alone, of the SEC tickers file's 3. M11 a span joining on the session read as no
+            member, and M12 one leaving on it read as a member: each red at the step's test and at the membership reads'
+            check, of those 4.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 14.6 correction's entry
             below, as it records.
 Carried:    phase 17's second sign-off review by a fresh session, since this one committed code.
@@ -2481,12 +2484,14 @@ Built:      the recorder deletes a rule's trades of the night only for a rule it
 Stored:     kept, not rewritten: the night of 2026-10-02 holds no family trade, and FDS's and CCL's rules count their
             records from 2026-10-09, as the replay's rows say.
 Tests:      1 new: a night recorded, then run again with the live rule's verdicts changed, a rule moved, a rule handed
-            no readings and a rule retired, the live rule's trades replaced and the other three's left field by field.
+            no readings and a rule retired, the live rule's trades replaced and the other three's left field by field;
+            and the recorder's first test reads a rule holding no verdict and no trade of the night named with why.
 Claims:     1340, as before.
 Mutated:    under the rule the 17.3 correction's entry states. M5 the night cleared whole before the rules, as the code
             stood: red at the new test alone, of the recorder's and the replay's 16. Its first form, each rule's delete
             reading every rule's trades, deleted what the rules before it kept that run and was red at 12 of the 16. M6
-            a rule holding no verdict read as one listed: red at the new test alone, of the recorder's 3.
+            a rule holding no verdict read as one listed: red at the new test alone, of the recorder's 3. M14 the reason
+            dropped from the words for a rule holding neither: red at the recorder's first test alone, of the 3.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 14.6 correction's entry
             below, as it records.
 Carried:    as the 17.3 correction's entry above states.
@@ -2510,12 +2515,15 @@ Built:      each rule's trades of the night deleted only where its list is kept,
             rows, the roster and the changelog.
 Tests:      none new: the 15.5 test reads every field of the two trades the first run kept unchanged after the run again
             over the moved rules, and hands the rules' trades a night with no inputs as the step does, keeping none and
-            leaving them.
+            leaving them; and the hooks' index test runs its night again handed no readings, the hooked rule's five
+            trades standing field by field while the live rule's are written again.
 Claims:     1340, as before.
 Mutated:    under the rule the 17.3 correction's entry states. M7 the night cleared whole before the inputs are read, as
             the code stood: red at the moved rules' test and at the pin test, discounted. M8 a rule's night cleared after
             its holdings are read, its run again reading the night's own trades as held: red at the frozen rules' test
-            and at the pin test. Each filtered to the index freezes' 4 tests and the pin test.
+            and at the pin test. Each filtered to the index freezes' 4 tests and the pin test. M13 a rule's night cleared
+            before its hooks are held against the night's readings: red at the hooks' index test and at the pin test,
+            of 4.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 14.6 correction's entry
             below, as it records.
 Carried:    the remedy, as the 14.6 correction's entry below states; and as the 17.3 correction's entry above states.
