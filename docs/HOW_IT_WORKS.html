@@ -25,17 +25,18 @@
   }
   *{box-sizing:border-box}
   html{background:var(--paper);scroll-padding-top:calc(16px + env(safe-area-inset-top,0px))}
-  body{margin:0;color:var(--ink);background:var(--paper);font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;font-size:16px;line-height:1.6}
+  body{margin:0;color:var(--ink);background:var(--paper);font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;font-size:16.5px;line-height:1.6}
   a,a:visited{color:var(--link)}
-  main{max-width:1000px;margin:0 auto;padding:40px 24px 90px}
+  main{max-width:960px;margin:0 auto;padding:40px 28px 90px}
+  @media (max-width:640px){main{padding:28px 16px 70px}body{font-size:16px}}
   h1,h2,h3{font-family:Cambria,Georgia,"Times New Roman",serif;font-weight:600;letter-spacing:-0.01em;margin:0}
   h1{font-size:38px;line-height:1.1}
   h2{font-size:26px;margin:58px 0 4px;padding-top:16px;border-top:1px solid var(--rule)}
   h3{font-size:18px;margin:22px 0 6px}
-  p{margin:0 0 12px;max-width:72ch}
-  ul{margin:0 0 12px;padding-left:22px;max-width:72ch}
+  p{margin:0 0 12px}
+  ul,ol{margin:0 0 12px;padding-left:22px}
   li{margin-bottom:5px}
-  .lede{font-size:17.5px;color:var(--muted);margin:12px 0 0;max-width:66ch}
+  .lede{font-size:18px;color:var(--muted);margin:12px 0 0}
   .asks{font-family:Cambria,Georgia,serif;font-size:18px;color:var(--muted);margin:2px 0 18px}
   .note{font-size:14px;color:var(--muted)}
   #themeToggle{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:14px;z-index:5;font:12.5px "Segoe UI",Arial,sans-serif;padding:7px 12px;border:1px solid var(--rule);border-radius:4px;background:var(--panel);color:var(--muted);cursor:pointer}
@@ -49,18 +50,18 @@
 
   figure{margin:10px 0 8px}
   svg{width:100%;height:auto;display:block}
-  .key{background:var(--panel);border:1px solid var(--rule);border-radius:5px;padding:10px 14px;font-size:14.5px;margin:6px 0 16px}
+  .key{background:var(--panel);border:1px solid var(--rule);border-radius:5px;padding:10px 14px;font-size:15px;margin:6px 0 16px}
   .key p{margin:0 0 4px;max-width:none}
-  .why{background:var(--flagbg);border-radius:5px;padding:11px 14px;font-size:15px;margin:12px 0 14px}
+  .why{background:var(--flagbg);border-radius:5px;padding:11px 14px;font-size:15.5px;margin:12px 0 14px}
   .why p{margin:0 0 6px;max-width:none}
   .why p:last-child{margin-bottom:0}
   .refuse{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:14px 0}
   .refuse div{background:var(--panel);border:1px solid var(--rule);border-left:4px solid var(--check);border-radius:5px;padding:10px 12px;font-size:15px}
   .refuse b{display:block;margin-bottom:2px}
 
-  table{border-collapse:collapse;width:100%;font-size:14.5px;margin:8px 0 12px}
+  table{border-collapse:collapse;width:100%;font-size:15px;margin:8px 0 12px}
   th,td{text-align:left;vertical-align:top;padding:8px 9px;border-bottom:1px solid var(--rule)}
-  th{font-weight:600;color:var(--muted);font-size:13.5px}
+  th{font-weight:600;color:var(--muted);font-size:14px}
   .wrap{overflow-x:auto}
 
   dl.words{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:4px 26px;margin:10px 0}
@@ -103,7 +104,7 @@
   .mark{fill:var(--ink)}
   .touch{fill:var(--boxbg);stroke:var(--ink);stroke-width:1.5}
   .f0{fill:var(--store);opacity:.10}.f1{fill:var(--store);opacity:.16}.f2{fill:var(--store);opacity:.22}
-  .f3{fill:var(--store);opacity:.29}.f4{fill:var(--store);opacity:.36}.f5{fill:var(--store);opacity:.44}.f6{fill:var(--store);opacity:.54}
+  .f3{fill:var(--store);opacity:.29}.f4{fill:var(--store);opacity:.36}.f5{fill:var(--store);opacity:.44}.f6{fill:var(--store);opacity:.54}.f7{fill:var(--store);opacity:.64}
   .fun{stroke:var(--store);stroke-width:1.2}
   .tl-ax{stroke:var(--rule);stroke-width:2.5}
   .dot-n{fill:var(--store)}.dot-k{fill:var(--check)}.dot-v{fill:var(--serve)}
@@ -139,9 +140,9 @@
 <p class="asks">What problem does this tool solve?</p>
 <p>Every evening after the US market closes, EquityBrief reads every stock in three indices: the S&amp;P 500 of the largest companies, the S&amp;P 400 of mid-sized ones and the S&amp;P 600 of smaller ones, about fifteen hundred stocks in all. For each index it finds the few stocks sitting at a buy point for a swing trade, a position held for days to a few weeks, and lists them on that evening's page.</p>
 <p>The picks come from five setup families. Each is a rule of its own with its own card, its own list of at most five stocks a night and its own record: the pullback into support, the breakout to a new high, the drift after an earnings beat, business first, which reads the company before the chart, and the sector heavyweights, a rotation among the largest companies held for months. Each index runs its own copy of every family, judged among that index's own stocks, so a rule that works on the largest companies is never assumed to work on the smallest.</p>
-<p>Rules choose the stocks. Every pick, and the order it is listed in, comes from fixed rules over stored prices, company filings, counts and dates. A rule can be replayed over years of stored history and gives the same answer every time, so its record can be measured. A language model writes the research reports and sorts the news, and nothing it writes decides, filters or orders a pick.</p>
-<p>Behind the lists the system keeps three kinds of evidence. Each rule's record counts its own trades after their costs, set against the same plan bought on every stock of the index that night, or for a heavyweight against its sector's largest companies. Paper trading turns each rule's trades into an account of the size you choose, so the rules can be compared in money. And once a month the improvement loop proposes changes to the rules, tests each on years it never saw, and puts the strongest to you. No rule changes without your approval.</p>
-<p>Any stock in the three indices can also be opened on its own. It opens to a full report: the chart, the prices that matter, a plan, the company's numbers and a written view of the business.</p>
+<p>Rules choose the stocks, and no model ever judges a stock. Every pick, and the order it is listed in, comes from fixed rules over stored prices, company filings, counts and dates. A rule can be replayed over years of stored history and gives the same answer every time, so its record can be measured. One more kind of input may join them: the answers a local model on your own machine gives to four closed questions about a company's results release, read with its names and dates removed, under a pin that makes it answer the same text the same way every time (section 10). A language model writes the research reports and sorts the news, and nothing it writes there decides, filters, ranks or orders a pick, a list, a gate or a record.</p>
+<p>Behind the lists the system keeps three kinds of evidence. Each rule's record counts its own trades after their costs, set against the same plan bought at the next session's open on every stock of the index, or for a heavyweight against its sector's largest companies. Paper trading turns each rule's trades into an account of the size you choose, so the rules can be compared in money. And once a month the improvement loop proposes changes to the rules, tests each on years it never saw, and puts the strongest to you. No rule changes without your approval.</p>
+<p>Any stock in the three indices can also be opened on its own. It opens on its chart, and from there to a full report: the prices that matter, a plan, the company's numbers and a written view of the business.</p>
 
 <div class="refuse">
   <div><b>It does not predict prices.</b>It finds prices a stock has respected before and says what to do if it gets there again.</div>
@@ -204,7 +205,7 @@
 
     <rect class="bx-v" x="268" y="216" width="220" height="80" rx="6"/>
     <text class="t" x="378" y="248" text-anchor="middle">Open a stock</text>
-    <text class="ts" x="378" y="272" text-anchor="middle">its report at once</text>
+    <text class="ts" x="378" y="272" text-anchor="middle">its chart, then report</text>
 
     <rect class="bx-r" x="516" y="216" width="220" height="80" rx="6"/>
     <text class="t" x="626" y="248" text-anchor="middle">Research</text>
@@ -233,6 +234,7 @@
 </div>
 <p><b>A night that stops.</b> A night that stops partway tries again by itself from the step that stopped, up to three more times fifteen minutes apart. Tonight's page and the Run page say whether it is running, waiting to try again or left unfinished, with a button that runs the rest of it.</p>
 <p><b>A copy of the store every night.</b> Once the night has finished, the whole store is copied into a folder of its own. Each copy is opened and read back against the store before it counts, and the newest three are kept, so a damaged night still leaves the two before it. The Run page says when the newest copy was made and where it is. A copy guards against a damaged file; one kept on the same disk does not guard against the disk failing.</p>
+<p><b>Twice a day, the local model's runs.</b> At 12:05 and 21:40 UTC a run of its own fetches the results releases companies filed since the run before, free from the SEC, for the local model on your machine to read. It never runs inside the night, holds none of the night's locks and spends nothing, and the Run page shows each run.</p>
 <p><b>Once a month.</b> On the first Saturday of each month, after Friday's night, the improvement loop runs. It refreshes the companies' filings, rebuilds each index's history of near-setups, checks that nothing in it read a later day, tests its proposals and every rule standing, and writes the month's report. Section 10 explains it.</p>
 
 <!-- 3 -->
@@ -263,11 +265,12 @@
   <div><dt>Provisional</dt><dd>A family's rule on an index before it is frozen there: it lists from its first night on starting settings, and its card says so.</dd></div>
   <div><dt>Freeze</dt><dd>Fixing a family's settings on an index, on your word, from what its test over the history found. It registers the live rule and its variants, and only trades from then on count toward its record.</dd></div>
   <div><dt>Variant</dt><dd>A registered rule run beside the live one, usually differing from it in one setting. It runs every night with its own list, trades and paper account. It never draws Tonight's list, though its tab on the card shows what it would have picked.</dd></div>
-  <div><dt>Edge</dt><dd>How much better a trade did than the same plan bought on every stock in the index that night, or for a heavyweight than its sector's largest companies, so a rising market earns a rule nothing.</dd></div>
+  <div><dt>Edge</dt><dd>How much better a trade did than the same plan bought at the next session's open on every stock in the index, or for a heavyweight than its sector's largest companies, so a rising market earns a rule nothing.</dd></div>
   <div><dt>Record</dt><dd>A rule's trades after their costs, with their edge. It is the rule's record over every stock it bought, never one stock's chance.</dd></div>
   <div><dt>Settings version</dt><dd>The set of thresholds the pullback's filter runs with each night. A change opens a new version; the old one and its record are kept.</dd></div>
   <div><dt>Ledger</dt><dd>Every near-setup the families' looser gates pass on every index, picked or not, with its readings as they stood and how it would have turned out. The improvement loop's memory.</dd></div>
   <div><dt>Test years</dt><dd>The years from 2022 on, each used once as an exam for a proposed change that never saw it while being chosen.</dd></div>
+  <div><dt>Release reading</dt><dd>One of four closed answers the local model gives about a company's results release, read with its names and dates removed: results better, in line, worse or not stated; outlook raised, kept, lowered or withdrawn, or none given; tone confident, neutral or cautious; demand stronger, steady, weaker or not stated. Code turns each answer into a number, not stated or none given counting as no reading. The local model is being set up to give them and no rule reads one yet.</dd></div>
   <div><dt>Learned score</dt><dd>An order for a rule's list fitted by code to the setups of the past: a weighted sum, and beside it a challenger of decision trees. It never lists a stock its rule's gates refuse.</dd></div>
   <div><dt>Paper account</dt><dd>One rule's trades walked through an account of your size, paying their costs, worked out each time the page is read and stored nowhere.</dd></div>
 </dl>
@@ -434,7 +437,10 @@
 <!-- 6 -->
 <h2 id="list">6. Choosing tonight's lists</h2>
 <p class="asks">Out of about fifteen hundred stocks, which are at a buy point tonight?</p>
-<p>Each index's page is drawn from the five families in one order: the pullback, the breakout, the earnings drift, business first, and then the sector heavyweights. Each family reads every member of the index every night and lists at most five in its own order. The pullback's rule is the filter drawn below, five gates every stock must pass; each other family is described after it.</p>
+<p>Each index's page is drawn from the five families in one order: the pullback, the breakout, the earnings drift, business first, and then the sector heavyweights. Each family reads every member of the index every night and lists at most five in its own order. Each is drawn below the same way: its gates as a funnel, a table of what each gate asks and why it is there, and how its trade is bought and sold.</p>
+
+<h3>The pullback</h3>
+<p>The pullback buys a rising stock that has dipped back into support on quiet trading, at a price its own chart has respected before, once its buy signal fires.</p>
 <figure>
   <svg viewBox="0 0 1000 450" role="img" aria-labelledby="f6">
     <title id="f6">The pullback's filter as a funnel of five gates</title>
@@ -480,16 +486,181 @@
 </table></div>
 <p class="note">The exact values each gate uses are in the specification. They change only through a tested proposal you approve, described in section 10.</p>
 
+<p><b>The trade.</b> Its plan is set at the night's close and it is bought at the next session's open. Its stop is the low edge of the support band it pulled back into, or of the next support band beneath it where that edge sits less than a typical day's move below, and its target is the lowest band at least two typical moves above. It ends at the stop, at the target or at its cap on holding time.</p>
+
 <p><b>Improving businesses first.</b> Among the stocks that pass, the pullback's card puts first those whose business is improving: sales above a year earlier and the operating margin wider than a year earlier, in both of the last two quarters. Steady businesses come next, then those with too few quarters or none stored yet, then those deteriorating, and inside each group the order stays reward to risk, then strength, then support. Every stock that passes is still listed. The order decides what comes first, not what is recommended, and no gate reads the business at all.</p>
 
-<p><b>The breakout.</b> A stock closes above its highest price of the past six months on heavy volume, after its daily ranges narrowed. Its plan is set at that close and it is bought at the next session's open, with its stop one and a half typical moves below the close, raised as the price climbs and never lowered, and no target, so a winner is held while it keeps climbing. Its result is read in multiples of its risk. Its card lists the heaviest volume against its own average first.</p>
+<h3>The breakout</h3>
+<p>The breakout buys a stock the day it breaks to a new high on heavy volume, after a quiet stretch, and rides it for as long as it keeps climbing.</p>
+<figure>
+  <svg viewBox="0 0 1000 344" role="img" aria-labelledby="f6b">
+    <title id="f6b">The breakout's gates as a funnel</title>
+    <polygon class="f0 fun" points="30,20 400,20 388,72 42,72"/>
+    <polygon class="f1 fun" points="44,76 386,76 374,128 56,128"/>
+    <polygon class="f2 fun" points="58,132 372,132 360,184 70,184"/>
+    <polygon class="f3 fun" points="72,188 358,188 346,240 84,240"/>
+    <polygon class="f4 fun" points="86,244 344,244 332,296 98,296"/>
+    <text class="t" x="215" y="52" text-anchor="middle">Every stock in the index</text>
+    <text class="ts" x="430" y="52">Every member, every night.</text>
+    <text class="t" x="215" y="108" text-anchor="middle">1  The market</text>
+    <text class="ts" x="430" y="108">The index's market check is open.</text>
+    <text class="t" x="215" y="164" text-anchor="middle">2  A new high</text>
+    <text class="ts" x="430" y="164">It closes above its highest price of the past half year.</text>
+    <text class="t" x="215" y="220" text-anchor="middle">3  Heavy volume</text>
+    <text class="ts" x="430" y="220">At least one and a half times its usual daily volume.</text>
+    <text class="t" x="215" y="276" text-anchor="middle">4  A quiet run-up</text>
+    <text class="ts" x="430" y="276">Its daily ranges narrowed over the last twenty sessions.</text>
+    <text class="t" x="215" y="326" text-anchor="middle">The breakout's card, best first</text>
+    <text class="ts" x="430" y="326">Heaviest volume against its own average first.</text>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> Each layer is one test, read as the pullback's is. The settings shown are the S&amp;P 500's, frozen from its sweep. The S&amp;P 400 and 600 read the same settings and hold each stock to their price, trading and profit floors as well, until a rule of their own is frozen there.</p>
+  <p><b>What to take from it.</b> A breakout needs all four on the same night, so most nights the card lists few stocks or none, and its stocks closest to breaking out are listed beneath it.</p>
+</div>
+<div class="wrap"><table>
+  <tr><th>Gate</th><th>What it asks</th><th>Why it is there</th></tr>
+  <tr><td>The market</td><td>Is a large enough share of the index above its long-term average?</td><td>Every swing family reads the same market check, so a weak market closes them together.</td></tr>
+  <tr><td>A new high</td><td>Did it close above its highest price of the past half year?</td><td>Stocks near their own recent high have tended to keep rising (<a href="#s-gh">George and Hwang 2004</a>).</td></tr>
+  <tr><td>Heavy volume</td><td>Was tonight's volume at least one and a half times its fifty-day average?</td><td>A new high on ordinary volume is a price nobody was pushed to pay, and unusually heavy trading has tended to come before gains (<a href="#s-gervais">Gervais, Kaniel and Mingelgrin 2001</a>).</td></tr>
+  <tr><td>A quiet run-up</td><td>Were its daily ranges over the last twenty sessions no wider than 0.85 of the twenty before?</td><td>A range that tightened before the break is the base breakout traders look for. No study sets the figure: the family's sweep proposed it and you froze it, and the setting it replaced, ranges merely no wider, runs on beside it as a variant.</td></tr>
+</table></div>
+<p><b>The trade.</b> Its plan is set at the night's close and it is bought at the next session's open. Its stop starts one and a half typical moves below the close and trails the highest close since the buy at the same distance, raised as the price climbs and never lowered. It has no target, so a winner is held while it keeps climbing, and it ends at the first close under the stop or after 63 sessions. Its result is read in multiples of the risk its plan set. Trailing stops have been found to cut the worst losses at the cost of a lower average result (<a href="#s-dai">Dai, Marshall, Nguyen and Visaltanachoti 2021</a>).</p>
+<p><b>Breakouts forming.</b> Under each breakout card is a list of the stocks closest to breaking out: each within a move and a half of its look-back high, with the price it would have to close above, the volume the rule would need against tonight's, how far its ranges have narrowed, the gates it still fails and its next report where one falls within the next twenty sessions, the nearest misses first and ten at most. These have not broken out. If one closes above its breakout price on the volume shown, with the market check open, the rule reads its other gates that night as on any other. Nothing on it is a pick.</p>
 
-<p><b>The earnings drift.</b> A company beats its estimate and the stock closes up at least half a typical day's move on twice its usual volume. It is listed at the close of that day or of either of the two sessions after it, while it holds above that day's low, and bought at the next session's open, with its stop at that low and its target at the first band at least two typical moves above the buy or two and a half times the risk, whichever is nearer. Its card lists the largest earnings surprise first. On the S&amp;P 400 and 600 its card also states the published evidence against it: the drift after a surprise has faded in recent years, and where it lasted, in the least traded stocks, trading costs took most of it.</p>
+<h3>The earnings drift</h3>
+<p>The earnings drift buys a company in the few days after it beat its estimate and the market cheered, on the evidence that prices keep moving the way a surprise moved them.</p>
+<figure>
+  <svg viewBox="0 0 1000 400" role="img" aria-labelledby="f6d">
+    <title id="f6d">The earnings drift's gates as a funnel</title>
+    <polygon class="f0 fun" points="30,20 400,20 390,72 40,72"/>
+    <polygon class="f1 fun" points="42,76 388,76 379,128 51,128"/>
+    <polygon class="f2 fun" points="53,132 377,132 367,184 63,184"/>
+    <polygon class="f3 fun" points="65,188 365,188 355,240 75,240"/>
+    <polygon class="f4 fun" points="77,244 353,244 344,296 86,296"/>
+    <polygon class="f5 fun" points="88,300 342,300 332,352 98,352"/>
+    <text class="t" x="215" y="52" text-anchor="middle">Every stock in the index</text>
+    <text class="ts" x="430" y="52">Every member, every night.</text>
+    <text class="t" x="215" y="108" text-anchor="middle">1  The market</text>
+    <text class="ts" x="430" y="108">The index's market check is open.</text>
+    <text class="t" x="215" y="164" text-anchor="middle">2  A beat</text>
+    <text class="ts" x="430" y="164">Its newest report beat the analysts' estimate.</text>
+    <text class="t" x="215" y="220" text-anchor="middle">3  A strong reaction</text>
+    <text class="ts" x="430" y="220">That day it closed up at least half a typical move.</text>
+    <text class="t" x="215" y="276" text-anchor="middle">4  Heavy volume</text>
+    <text class="ts" x="430" y="276">On at least twice its usual daily volume.</text>
+    <text class="t" x="215" y="332" text-anchor="middle">5  Still holding</text>
+    <text class="ts" x="430" y="332">Within three sessions, still above that day's low.</text>
+    <text class="t" x="215" y="382" text-anchor="middle">The drift's card, best first</text>
+    <text class="ts" x="430" y="382">Largest earnings surprise first.</text>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> Each layer is one test. The reaction day is the first session to trade on the report. The settings shown are the S&amp;P 500's, frozen from its sweep, and the S&amp;P 400 and 600 read them with their own floors added, until a rule of their own is frozen there.</p>
+  <p><b>What to take from it.</b> The drift lists only in the few days after each report, so its card is often empty outside earnings season.</p>
+</div>
+<div class="wrap"><table>
+  <tr><th>Gate</th><th>What it asks</th><th>Why it is there</th></tr>
+  <tr><td>The market</td><td>Is a large enough share of the index above its long-term average?</td><td>Every swing family reads the same market check.</td></tr>
+  <tr><td>A beat</td><td>Did the newest report beat the analysts' estimate?</td><td>Prices have tended to keep moving the way an earnings surprise moved them for weeks after the report (<a href="#s-bt">Bernard and Thomas 1989</a>).</td></tr>
+  <tr><td>A strong reaction</td><td>Did the stock close up at least half a typical move on its reaction day?</td><td>The market's own first verdict on the report. The day's return has been found to carry more about the drift to come than the size of the beat alone (Brandt, Kishore, Santa-Clara and Venkatachalam 2008).</td></tr>
+  <tr><td>Heavy volume</td><td>Was the reaction day's volume at least twice its fifty-day average?</td><td>A reaction on ordinary volume is a price few were pushed to pay.</td></tr>
+  <tr><td>Still holding</td><td>Is tonight within three sessions of the reaction day, counting that day, and still above its low?</td><td>The drift is steepest in the first days after a report, and a close back under the reaction day's low says the market changed its mind.</td></tr>
+</table></div>
+<p><b>The trade.</b> It is listed at the close of the reaction day or either of the two sessions after it, and bought at the next session's open. Its stop is the reaction day's low, and its target the nearer of the first price band at least two typical moves above the close and two and a half times the risk above it. It ends at the stop, at the target or after 60 sessions, about the span the drift was first measured over. On the S&amp;P 400 and 600 its card also states the published evidence against it: the drift after a surprise has faded in recent years (<a href="#s-martineau">Martineau 2022</a>), and where it lasted, in the least traded stocks, trading costs took most of it.</p>
 
-<p><b>Business first.</b> This family reads the company before the chart. A stock qualifies where its company made a profit over its last four quarters together and in the latest one alone, the test S&amp;P sets before adding a company to its indices; its latest quarter's sales grew on the same quarter a year before, and grew faster than the quarter before had; its gross or its operating margin widened on the year; and the cash its business brought in over its latest year was at least the profit it reported, a sign the profit is not mostly accounting entries. Then the chart has to agree: the price above its 200-day average and the 50-day above the 200-day. A stock passing all of that is bought only at the pullback's buy point, with the pullback's own stop and target. The business figures are the ones the company filed with the SEC, as first filed, and a filing counts from the first trading day after the day it was filed. Stocks whose sales came in above expectations have tended to keep rising after the report (<a href="#s-jl">Jegadeesh and Livnat 2006</a>), more profitable companies have tended to earn more (<a href="#s-nm">Novy-Marx 2013</a>), and profit backed by cash has lasted longer than profit that is not (<a href="#s-sloan">Sloan 1996</a>), though trading on that last difference has paid less since it was published (<a href="#s-ghs">Green, Hand and Soliman 2011</a>), so here it is a check on the profit and not a reason to buy. It lists on all three indices on its starting settings until you freeze it; a search over settings written down before it ran is brought to you, and nothing is frozen without your word.</p>
+<h3>Business first</h3>
+<p>Business first reads the company before the chart. It buys a stock only where the business is profitable, growing faster and turning its profit into cash, and then only at the pullback's own buy point.</p>
+<figure>
+  <svg viewBox="0 0 1000 512" role="img" aria-labelledby="f6f">
+    <title id="f6f">Business first's gates as a funnel</title>
+    <polygon class="f0 fun" points="30,20 400,20 393,72 37,72"/>
+    <polygon class="f1 fun" points="39,76 391,76 384,128 46,128"/>
+    <polygon class="f2 fun" points="48,132 382,132 376,184 54,184"/>
+    <polygon class="f3 fun" points="56,188 374,188 367,240 63,240"/>
+    <polygon class="f4 fun" points="65,244 365,244 358,296 72,296"/>
+    <polygon class="f5 fun" points="74,300 356,300 350,352 80,352"/>
+    <polygon class="f6 fun" points="82,356 348,356 341,408 89,408"/>
+    <polygon class="f7 fun" points="91,412 339,412 332,464 98,464"/>
+    <text class="t" x="215" y="52" text-anchor="middle">Every stock in the index</text>
+    <text class="ts" x="430" y="52">Every member, every night.</text>
+    <text class="t" x="215" y="108" text-anchor="middle">1  The pullback's base</text>
+    <text class="ts" x="430" y="108">The pullback's rule at its base settings lists it.</text>
+    <text class="t" x="215" y="164" text-anchor="middle">2  The index's floors</text>
+    <text class="ts" x="430" y="164">Its price and daily trading clear its index's floors.</text>
+    <text class="t" x="215" y="220" text-anchor="middle">3  Profit</text>
+    <text class="ts" x="430" y="220">It made money over its last four quarters and the latest.</text>
+    <text class="t" x="215" y="276" text-anchor="middle">4  Sales speeding up</text>
+    <text class="ts" x="430" y="276">Sales up on a year before, and faster than last quarter.</text>
+    <text class="t" x="215" y="332" text-anchor="middle">5  Margins widening</text>
+    <text class="ts" x="430" y="332">Its gross or operating margin wider than a year before.</text>
+    <text class="t" x="215" y="388" text-anchor="middle">6  Cash behind the profit</text>
+    <text class="ts" x="430" y="388">Cash from the business at least its reported profit.</text>
+    <text class="t" x="215" y="444" text-anchor="middle">7  The trend agrees</text>
+    <text class="ts" x="430" y="444">Above its 200-day average, the 50-day above the 200-day.</text>
+    <text class="t" x="215" y="494" text-anchor="middle">Business first's card, best first</text>
+    <text class="ts" x="430" y="494">In the pullback's own order.</text>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> Each layer is one test, the business ones read from what the company filed with the SEC, as first filed, each filing counting from the trading day after it was filed. The settings shown are the starting ones, the same on every index.</p>
+  <p><b>What to take from it.</b> Because it buys only at the pullback's buy point, this family changes which stock is bought, not when.</p>
+</div>
+<div class="wrap"><table>
+  <tr><th>Gate</th><th>What it asks</th><th>Why it is there</th></tr>
+  <tr><td>The pullback's base</td><td>Does the pullback's rule at its base settings list the stock tonight?</td><td>It is the one entry every index already replays and records, so the business decides which stock and the pullback when.</td></tr>
+  <tr><td>The index's floors</td><td>Do its price and daily dollar volume clear its index's floors?</td><td>A stock too cheap or too thinly traded costs too much to buy and sell.</td></tr>
+  <tr><td>Profit</td><td>Did the four newest quarters' profits add up above nothing, and the newest on its own?</td><td>The test S&amp;P sets before adding a company to its indices.</td></tr>
+  <tr><td>Sales speeding up</td><td>Did the newest quarter's sales beat the same quarter a year before, by more than the quarter before had?</td><td>Stocks whose sales came in above expectations have tended to keep rising after the report (<a href="#s-jl">Jegadeesh and Livnat 2006</a>).</td></tr>
+  <tr><td>Margins widening</td><td>Is the gross or the operating margin wider than a year before?</td><td>More profitable companies have tended to earn more (<a href="#s-nm">Novy-Marx 2013</a>).</td></tr>
+  <tr><td>Cash behind the profit</td><td>Did the business bring in at least as much cash over its latest year as it reported as profit?</td><td>Profit backed by cash has lasted longer than profit that is not (<a href="#s-sloan">Sloan 1996</a>), though trading on the difference has paid less since it was published (<a href="#s-ghs">Green, Hand and Soliman 2011</a>), so here it is a check on the profit and not a reason to buy.</td></tr>
+  <tr><td>The trend agrees</td><td>Is the close above its 200-day average, and the 50-day above the 200-day?</td><td>A good business in a falling stock can keep falling; the chart has to agree before anything is bought.</td></tr>
+</table></div>
+<p><b>The trade.</b> A stock passing all of that is bought at the pullback's buy point with the pullback's own stop, target and limit on holding time, at the next session's open, five a night in the pullback's order. An earnings surprise is no trigger here, since the drift after one has gone from large companies and more recently from smaller ones (<a href="#s-martineau">Martineau 2022</a>). Its card stands after the index's own families' cards, and on the S&amp;P 500 it holds back a stock the index's own families listed that night. It lists on all three indices on its starting settings until you approve a change the monthly loop proposes for it on an index, from a grid of 27 settings of its three dials written into the code before any search runs; it registers no live rule and is never frozen, and a search run by hand is only a reading for you and changes nothing.</p>
 
-<p><b>The sector heavyweights, a rotation held for months.</b> On the first trading day of each month the night ranks each of the eleven sectors' companies by their size that day, counting a company once however many share classes it lists, and looks at the ten largest. It buys the two whose return over the past twelve months beat their sector's fund by the most, where each beat the fund at all, sits above its 50-day average with that above its 200-day, and has moved at least as much as the market over the past year, a beta of one or more, bought at the next session's open. A holding has no stop and no target. It is kept while it leads, and sold at the close of a later month's rebalance where the rule would no longer buy it, or at its last close before it leaves the index. Its result is read in percent beside what its sector's ten largest made over the same days, so its record asks whether leading picked well among the largest, rather than whether the largest did well. A rebalance waits for a night whose stored prices hold every reading it needs, and the card names the day it waits for, rather than selling on figures it never read. On the S&amp;P 400 and 600 the card lists each index's own leaders, a sector's return read as the average of its members, since no fund holds an index's sector. A second design, the followers of the S&amp;P 500's leading industries, is tested beside it and runs only if you freeze it. The market check never closes this card, and the night asks for a report on a stock it buys, never on one it carries from an earlier month.</p>
+<h3>The sector heavyweights</h3>
+<p>The sector heavyweights are a rotation, not a swing trade: once a month they buy the largest companies that lead their sectors and hold them for as long as they keep leading.</p>
+<figure>
+  <svg viewBox="0 0 1000 400" role="img" aria-labelledby="f6h">
+    <title id="f6h">The sector heavyweights' gates as a funnel</title>
+    <polygon class="f0 fun" points="30,20 400,20 390,72 40,72"/>
+    <polygon class="f1 fun" points="42,76 388,76 379,128 51,128"/>
+    <polygon class="f2 fun" points="53,132 377,132 367,184 63,184"/>
+    <polygon class="f3 fun" points="65,188 365,188 355,240 75,240"/>
+    <polygon class="f4 fun" points="77,244 353,244 344,296 86,296"/>
+    <polygon class="f5 fun" points="88,300 342,300 332,352 98,352"/>
+    <text class="t" x="215" y="52" text-anchor="middle">Every company, by sector</text>
+    <text class="ts" x="430" y="52">The eleven sectors' members, once a month.</text>
+    <text class="t" x="215" y="108" text-anchor="middle">1  Rebalance day</text>
+    <text class="ts" x="430" y="108">The month's first trading day its stored prices allow.</text>
+    <text class="t" x="215" y="164" text-anchor="middle">2  Among the largest</text>
+    <text class="ts" x="430" y="164">One of its sector's ten largest companies that day.</text>
+    <text class="t" x="215" y="220" text-anchor="middle">3  Leading its sector</text>
+    <text class="ts" x="430" y="220">Its year's return beat its sector's, two leaders a sector.</text>
+    <text class="t" x="215" y="276" text-anchor="middle">4  In an uptrend</text>
+    <text class="ts" x="430" y="276">Above its 50-day average, the 50-day above the 200-day.</text>
+    <text class="t" x="215" y="332" text-anchor="middle">5  Moves with the market</text>
+    <text class="ts" x="430" y="332">A beta of at least one over the past year.</text>
+    <text class="t" x="215" y="382" text-anchor="middle">The heavyweights' book</text>
+    <text class="ts" x="430" y="382">Up to two a sector, held while they lead.</text>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> Each layer is one test, read on the month's rebalance and not every night. A company is counted once however many share classes it lists, and on the S&amp;P 400 and 600 a sector's return is the average of its members, since no fund holds an index's sector.</p>
+  <p><b>What to take from it.</b> The book changes only once a month, and the market check never closes it.</p>
+</div>
+<div class="wrap"><table>
+  <tr><th>Gate</th><th>What it asks</th><th>Why it is there</th></tr>
+  <tr><td>Rebalance day</td><td>Is tonight the month's first trading day, or the first after it whose stored prices hold the year its readings need?</td><td>A rebalance that cannot read a lead or a beta for every company waits, and its card names the session it waits for, rather than selling on figures it never read.</td></tr>
+  <tr><td>Among the largest</td><td>Is it one of its sector's ten largest companies by value that day?</td><td>The largest companies hold most of a sector's value, and the ten are also what its result is measured against.</td></tr>
+  <tr><td>Leading its sector</td><td>Did its return over the past twelve months beat its sector's by more than nothing, and by one of the two largest margins among the ten?</td><td>Industries that beat the others over recent months have tended to keep beating them (<a href="#s-mg">Moskowitz and Grinblatt 1999</a>), and stocks that beat over three to twelve months have tended to keep beating over the months after (<a href="#s-jt">Jegadeesh and Titman 1993</a>). Both studies rank every stock and hold a tenth of them, not the largest few of a sector, so the ten, the year and the two are the family's sweep's proposal, which no study sets.</td></tr>
+  <tr><td>In an uptrend</td><td>Is it above its 50-day average, and the 50-day above the 200-day?</td><td>A leader that is already falling is not leading for long.</td></tr>
+  <tr><td>Moves with the market</td><td>Has it moved at least as much as the market over the past year, a beta of one or more?</td><td>Stocks that swing more than the market have earned less for their risk (<a href="#s-fp">Frazzini and Pedersen 2014</a>), and the gate reads against that: over the pulled history the leaders did better with a beta of one or more than without it, a question its variants and its live record go on asking.</td></tr>
+</table></div>
+<p><b>The holding.</b> Each holding is bought at the next session's open after its rebalance. It has no stop and no target: it is sold at the close of a later month's rebalance where the rule would no longer buy it, or at its last close before it leaves the index. Its result is read in percent beside what its sector's ten largest made over the same days, so its record asks whether leading picked well among the largest, rather than whether the largest did well. On the S&amp;P 400 and 600 the card lists each index's own leaders; a second design, the followers of the S&amp;P 500's leading industries, is tested beside it and runs only if you freeze it. The night asks for a report on a stock it buys, never on one it carries from an earlier month.</p>
+<p><b>Its card.</b> Four tiles: how many it holds, how many of the eleven sectors hold one, what it has made since the last rebalance beside the funds of the sectors it holds, and the sessions to the next rebalance. Its holdings stand at the night's close under their sectors, each sector with its fund's return over the year, and each holding with the day it was bought, its lead at the rebalance that last read it, its close against its 200-day average, what it has made since, and a pill saying whether it still leads at tonight's prices, which sells nothing. The sectors holding nothing are folded beneath, each naming the stock that came closest and the figure it missed by.</p>
 
+<h3>Across the families</h3>
 <p><b>Five a family, and one trade a stock.</b> Each family lists at most five stocks a night in its own order, and a note counts any past its five. A stock two families pass is listed once, under the first in the page's order, with a label naming the other. A stock with a trade still open from an earlier night is not listed again under any swing family until that trade ends, on any index, and the card says so in a note naming the index that holds it. The sector heavyweights keep their own: a stock they hold can stand on a swing card too, and a swing trade holds back no heavyweight.</p>
 
 <p><b>Provisional and live, index by index.</b> A family lists on each index from its first night, on starting settings and marked as provisional. The S&amp;P 400 and 600 rules add a minimum price, a minimum daily dollar volume and a check that the company made money over its last four quarters, and every trade on them pays the published trading cost for its company's size and price. When you freeze a family on an index, one command registers its live rule and up to eight variants beside it, each at settings that index's test over the history read. From the night after, the frozen rule draws the card, which reads "Live rule since" the day you froze it, and its record counts only from then.</p>
@@ -502,8 +673,6 @@
 
 <p><b>Close to a buy point.</b> Each card keeps, folded behind a line counting them, the stocks one gate short of its rule, each with the gate it missed and the three numbers that card draws in place of sentences; none of them is a pick, and nothing counts them as one. A pullback's three are how far it came down in its own typical day's moves, how quiet its volume was on the way down and how strong it has been against the other members; a breakout's are the days since its high, its volume against its average and how far its daily range has narrowed; an earnings drift's are the size of the reaction, its volume and the days since the report.</p>
 
-<p><b>Breakouts forming.</b> Under each breakout card is a list of the stocks closest to breaking out: each within a move and a half of its look-back high, with the price it would have to close above, the volume the rule would need against tonight's, how far its ranges have narrowed, the gates it still fails and its next report where one falls within the next twenty sessions, the nearest misses first and ten at most. These have not broken out. If one closes above its breakout price on the volume shown, with the market check open, the rule reads its other gates that night as on any other. Nothing on it is a pick.</p>
-
 <div class="why">
   <p><b>Why a filter and not a score.</b> Each gate is a fact you can check on the chart. A single blended score would hide which fact put a stock on the list. A learned score, once it passes its exams and you approve it, may order the stocks a rule's gates pass and leave its weakest off, but it never puts a stock on the list.</p>
   <p><b>Why separate families.</b> A pullback, a breakout, the drift after an earnings beat and a strong business at a buy point are different moments chosen for different reasons, so each keeps its own rule, its own five a night and its own record, and none is judged by another's. Stocks near their own recent high have tended to keep rising (<a href="#s-gh">George and Hwang 2004</a>), and prices have tended to keep moving the way an earnings surprise moved them for weeks after the report (<a href="#s-bt">Bernard and Thomas 1989</a>). The heavyweights are a different idea again, held for months rather than weeks: the industries that beat the others over six months have tended to keep beating them (<a href="#s-mg">Moskowitz and Grinblatt 1999</a>), and stocks that swing more than the market have earned less for their risk (<a href="#s-fp">Frazzini and Pedersen 2014</a>), a question the heavyweights' tests and records keep asking.</p>
@@ -513,7 +682,7 @@
 <!-- 7 -->
 <h2 id="card">7. How to read a pick's card</h2>
 <p class="asks">A stock is on tonight's list. What does its card tell me before I buy?</p>
-<p>Each pick on Tonight has a card, opened beneath its row and drawn at the top of the stock's page. It gathers what a decision on that one trade needs into eight parts, every figure in them worked out by the tool from stored prices and filings, never by a model. The picture below is a card with its figures blanked out as n.n and nn%, so it shows what each part says rather than any one night's numbers.</p>
+<p>Each pick on Tonight has a card, opened beneath its row and drawn on the stock's page after the short version. It gathers what a decision on that one trade needs into eight parts, every figure in them worked out by the tool from stored prices and filings, never by a model. The picture below is a card with its figures blanked out as n.n and nn%, so it shows what each part says rather than any one night's numbers.</p>
 <figure>
 <svg viewBox="0 0 700 680" role="img" aria-labelledby="f-card">
 <title id="f-card">A pick's card, its eight parts numbered</title>
@@ -589,12 +758,12 @@
 <figcaption>A pick's card, its figures blanked out, each part numbered as the list below explains it.</figcaption>
 </figure>
 <ol class="parts">
-  <li data-part="1"><b>Six quick checks on the trade.</b> A tick means nothing stands against it, a "!" means look closer, and each says why in words: whether the stock is rising and strong, whether the company makes money and earns enough to pay its interest, whether the market and the stock's industry are healthy, whether the company reports its results before the trade would usually end, whether the stock is cheap to buy and sell, and how many of your open trades are in the same industry.</li>
+  <li data-part="1"><b>Six quick checks on the trade.</b> A tick means nothing stands against it, a "!" means look closer, and each says why in words: whether the stock is rising and strong, whether the company makes money and earns enough to pay its interest, whether the market and the stock's sector are healthy, whether the company reports its results before the trade would usually end, whether the stock is cheap to buy and sell, and how many of your open trades are in the same sector.</li>
   <li data-part="2"><b>How the rule that picked it has done.</b> The rule replayed over years of past prices, after trading costs: how many trades it made, how many reached their target, the average gain or loss, and how long it held them. It is the rule's record over every stock it bought, never a forecast for this one.</li>
   <li data-part="3"><b>The trade in your money.</b> Once you have entered your account's size and how much you are willing to lose on one trade, how many shares that buys and how much is at risk if the stop is hit.</li>
   <li data-part="4"><b>When to sell, exactly as the rule does.</b> At the close of a day that ends below the stop, at the close of a day that ends at or above the target, or after a set number of days, whichever comes first.</li>
   <li data-part="5"><b>What could jolt the price before the trade ends.</b> How far the stock moved on its past results days compared with this trade's stop, when its next dividend comes off the price, and the Federal Reserve decisions and inflation reports due in the meantime.</li>
-  <li data-part="6"><b>Your own trades of this rule.</b> How the trades you took from it went, and beneath them how the rule's own picks on those same days went at the plan's price, so a gap between the two is your choices and your buying prices rather than the market of those weeks.</li>
+  <li data-part="6"><b>Your own trades of this rule.</b> How the trades you took from it went, and beneath them how the rule's own picks on those same days went, each bought at the next session's open, so a gap between the two is your choices and your buying prices rather than the market of those weeks.</li>
   <li data-part="7"><b>The button you press when you buy.</b> It records the trade, at the price you paid if you enter it; until the next day's opening price is stored the card assumes the plan's price, and then that opening price.</li>
   <li data-part="8"><b>What is behind the stock.</b> Its readings grouped under seven headings, from momentum to the quality of its earnings, each a bar of where it stands among the other members of its index that night, and a heading with nothing stored saying so. Where the learned score has passed its test on the index, each heading also shows how far it pushes the score up, in green, or down, in red, from a setup sitting at the averages to this one. It describes the stock; it is not the stock's chance.</li>
 </ol>
@@ -964,7 +1133,6 @@
   <p><b>How claims are checked.</b> Every number in the writing must match a number the system computed or read from a filing. Every claim must name a document that was fetched and stored. A sentence about the system's own figures, such as the closing price or an average, marks them with [N] instead, and a sentence that names only documents may quote only numbers those documents contain, so a company's results release cannot be cited for a share price it never mentions. Each written part may state only the figures its own part of the page draws and says the rest in words, so a figure is drawn in one place with its source rather than repeated in prose. The headline and the short version are written last, from the sentences the check accepted in the other parts, each sentence citing the ones it rests on, and the short version may not repeat a figure the tiles show or run past three paragraphs of five sentences each, since the parts beneath draw every claim in full. A section that fails is asked for again up to three times, and one still failing is left out rather than guessed.</p>
   <p><b>Why so strict.</b> The failure of automated research is a confident sentence that is wrong. Requiring a stored source for every claim means any sentence can be traced back to the document that supports it, months later.</p>
   <p><b>Two models, and which writes today.</b> Sorting and extracting from one document is small work a model on your own machine could do for free, and two short sections, what the company sells and the segment commentary, are set aside for it. Weighing the whole evidence into a view of the company needs a stronger, paid model. A small model given many documents tends to write figures the stored data does not hold, so the local lane is used only once a comparison on the same documents shows it writes only what the store holds. Until then every report is written whole by the paid model. The Research menu shows the local choice drawn but not offered until the two have been compared properly. Which local model it is, is a setting: each model has its own entry and one is flagged as the one used, the tool loads it and waits until it is ready before its first draft, and every section records the model that wrote it.</p>
-  <p><b>A local model that reads releases, pinned.</b> A model on your own machine, Gemma 4 in LM Studio, is set to read each company's quarterly results release with its names and dates removed and answer four closed questions: whether the results came in better than expected, in line or worse; whether the outlook was raised, kept, lowered or withdrawn; whether management's own words sound confident, neutral or cautious; and whether demand is stronger, steady or weaker. Code turns each answer into a reading, and the model is never asked for a number. It runs as a process of its own at 12:05 and 21:40 UTC each day, never inside the night, and spends nothing. Every reading is read under a pin: the model, its file checked by its fingerprint, the runtime that serves it and the questions, all fixed and compared before each run, at a setting that gives the same answer to the same text, so the history read again answers as it did the first time. Anything that differs refuses the run, and the Run page names the part. Each of the two daily runs first fetches the releases the companies filed since the one before, free from the SEC: the morning run reads the SEC's list of each day's filings, and the evening run its live feed of filings back to the evening before, so a release filed after the close is kept before that night. A release is the press release attached to a company's results filing, kept once as text, compressed, with the exact moment the SEC accepted it, and the years before are fetched once by hand from each company's own filing history. Keeping the readings comes next, and no rule reads a reading yet.</p>
   <p><b>When a section is refused.</b> A refused section is told each thing the check refused and asked for again, up to three times, and one still refused at its last try is left out, the page naming each rule it was refused by. Where the short version or the headline is left out, or no other part was accepted to write it from, the page puts one written by code from the night's own figures in its place, saying so. Every model is told who the reader is, someone deciding whether to hold a swing trade over the next weeks to months, and is given each document marked as a company filing, a news report or someone's opinion.</p>
   <p><b>Seeing which sections keep failing.</b> The run page lists each report section by section: passed first time, passed on its retry, or left out and why, with what each cost, and each section's rate over the last twenty reports. One setting names the model for each section, so a section that keeps failing can be given to another model. Before that, a trial can ask the other model for the same section beside a few reports, and a command writes the drafts side by side to a file without changing the report or showing them on any page. For now every report is written by DeepSeek, since a report written on Claude cost many times as much, and every job's setting names DeepSeek.</p>
 </div>
@@ -975,7 +1143,7 @@
 <p>The improvement loop has a nightly half that records and a monthly half that proposes and tests. Once a month it reads what the nights stored, proposes changes to each family's rule on each index, tests each on years it never saw, and puts at most one change a family on each index to you. Nothing changes a rule until you approve it, and each index is judged and changed apart from the others. The four figures below follow one night, the test years, one month, and one month across the three indices.</p>
 
 <h3>The ledger, the loop's memory</h3>
-<p>Each night writes down every stock that came anywhere near a setup, not only the five a rule lists: every pullback, breakout and earnings drift setup that passes a much looser version of its family's gates, on each of the three indices, and on the S&amp;P 500 each of a sector's ten largest companies on the heavyweights' monthly rebalance, held as the rule would hold it. Each is stored with whether the live rule would have taken it, whether the night's list did, the plan it would have been bought on, its readings of the stock, its business and the market as they stood that evening, and later how the trade would have turned out against the same plan bought on every stock in the index that night. Nothing is read from a later day, so a row written tonight and a row rebuilt from the history for the same evening say the same thing. The proposals the loop puts to you are drawn from what these near-setups did, and never only from the stocks a rule happened to pick.</p>
+<p>Each night writes down every stock that came anywhere near a setup, not only the five a rule lists: every pullback, breakout, earnings drift and business-first setup that passes a much looser version of its family's gates, on each of the three indices, and on the S&amp;P 500 each of a sector's ten largest companies on the heavyweights' monthly rebalance, held as the rule would hold it. Each is stored with whether the live rule would have taken it, whether the night's list did, the plan it would have been bought on, its readings of the stock, its business and the market as they stood that evening, and later how the trade would have turned out against the same plan bought at the next session's open on every stock in the index. Nothing is read from a later day, so a row written tonight and a row rebuilt from the history for the same evening say the same thing. The proposals the loop puts to you are drawn from what these near-setups did, and never only from the stocks a rule happened to pick.</p>
 <p>One reading asks whether a stock is cheap or dear against its own past: its last year's earnings as a share of what the whole company is worth at that evening's price, set against the same figure at the end of each of its last twelve quarters. Five readings describe the company rather than its chart: whether its sales grew against the same quarter a year before and whether that growth is speeding up, whether its gross and operating margins widened, and whether the cash its business brought in covers the profit it reported. They come from the figures companies file with the SEC, each as first filed, and only from filings made before the evening the setup is read on. To keep them fresh, after the close each night the tool reads the SEC's free daily list of filings, picks out the members that filed a quarterly or annual report, a correction to one or an earnings announcement, and asks for those companies' figures alone. A slow or unavailable SEC leaves the figures as they were and holds up nothing else.</p>
 <p>Twenty-two more readings are measures researchers have published about a stock's recent prices and trading, added so the loop's engines have more places to look for why some setups win and others lose. None of them picks, filters or ranks a stock, and no rule changed when they were added; they are extra columns the engines may search, read from the stock's own days up to that evening:</p>
 <ul>
@@ -1042,6 +1210,9 @@
   <p><b>How to read it.</b> One night, along the top row and then the bottom one. Green boxes are arithmetic, blue boxes are stores the night writes, and the purple box reads from outside. <b>The families draw the lists</b>, and then <b>the ledger appends the setups</b>: every member and night a family's loose gates pass, kept or not, with its readings as they stood that night. <b>Windows close as paths end</b>, so a setup's result and its edge over the same plan on every member are written once its trade would have ended. <b>The filings refresh</b> reads the SEC's archive after the close for the members that filed and for no other, their <b>business readings read again</b> from the new filings, and <b>the summary rewritten</b> for the Ledger page.</p>
   <p><b>What to take from it.</b> The ledger is the loop's memory. It holds the setups the rules turned away as well as the ones they picked, so a change can be judged on everything it would have done.</p>
 </div>
+
+<h3>Readings from results releases, by the local model</h3>
+<p>A model on your own machine, Gemma 4 in LM Studio, is being set up to read each company's quarterly results release with its names and dates removed and answer four closed questions: whether the results came in better than expected, in line, worse or not stated; whether the outlook was raised, kept, lowered or withdrawn, or none was given; whether management's own words sound confident, neutral or cautious; and whether demand is stronger, steady, weaker or not stated. Code will turn each answer into a reading, an answer of not stated or none given counting as no reading, and the model is never asked for a number. It runs as a process of its own at 12:05 and 21:40 UTC each day, never inside the night, and spends nothing. Each run works under a pin: the model, its file checked by its fingerprint and the questions are fixed and compared before the run starts, and the runtime that serves the model is checked on every answer, at a setting that gives the same answer to the same text, so the history read again answers as it did the first time. Anything that differs refuses the run, and the Run page names the part. Today each run fetches the releases the companies filed since the one before, free from the SEC, and checks the pin: the morning run reads the SEC's list of each day's filings, and the evening run its live feed of filings back to the evening before, so a release filed after the close is kept before that night. A release is the press release attached to a company's results filing, kept once as text, compressed, with the exact moment the SEC accepted it, and the years before are fetched once by hand from each company's own filing history. Reading each release with its names and dates removed, and keeping the readings, come next; no rule reads a reading yet.</p>
 
 <h3>Testing a change on years it never saw</h3>
 <p>A proposed change to a rule is only worth having if it would have helped in years nobody looked at when choosing it. The tester treats each year from 2022 as an exam: the search that proposes the change is run again using only the trades that had finished before that year began, whatever setting it picks is traded through that year, and the year's results are set against what the rule as it stands today did over the same year. So it is the way of choosing a change that is tested, not one lucky setting. A change passes only where four things hold together: the combined difference over all the exam years is too large to be luck, at a strict bar that stays the same every month; it was better in most of the complete years, the latest among them; it still helps once each side's five biggest results, good or bad, are set aside; and it rests on enough trades, or for the sector heavyweights, whose holdings last for months, enough months. Today's rules were themselves chosen with these same years in view, so the comparison leans in their favour, and the Loop page says so.</p>
@@ -1159,7 +1330,7 @@
 <p>After the proposals, the monthly run also tests every rule standing on each index the same way, on the same exam years: each variant against its live rule, and each live rule against the same plan bought on every member. A rule it cannot replay, such as one reading the analysts' estimates the tool keeps only from when it began storing them, is marked as not testable with the reading it lacks. Those verdicts change nothing. They stand beside each rule's account on Paper trading, described in section 11.</p>
 
 <h3>What the loop can change</h3>
-<p>The pullback, the breakout and the drift can take an exit, an extra condition or a score order you approve on the Loop page, on the index you approve it on: on the S&amp;P 500 at any time, and on the S&amp;P 400 and 600 while the family is provisional there, since a family frozen on one of those indices changes only by a new freeze. Business first is tested every month but the engines do not propose for it yet. On the S&amp;P 500 the pullback's shape clock, below, also proposes moves to three of its filter settings: how strong a stock's recent return must be, how quiet the volume must be on the way down, and the minimum reward for the risk, each tested like any other proposal. A sector heavyweights book changes its settings only by a freeze. How deep a pullback counts, whether the market gate applies at all, how far away the stop may sit and how healthy the market must be move only by your ruling. The rules for finding levels and building the report's plan do not change through this loop.</p>
+<p>The pullback, the breakout, the drift and business first can take an exit, an extra condition or a score order you approve on the Loop page, on the index you approve it on, and business first one of its 27 settings as well: on the S&amp;P 500 at any time, and on the S&amp;P 400 and 600 while the family is provisional there, since a family frozen on one of those indices changes only by a new freeze. Business first is provisional on every index, so its changes are stored settings everywhere. On the S&amp;P 500 the pullback's shape clock, below, also proposes moves to three of its filter settings: how strong a stock's recent return must be, how quiet the volume must be on the way down, and the minimum reward for the risk, each tested like any other proposal. A sector heavyweights book changes its settings only by a freeze. How deep a pullback counts, whether the market gate applies at all, how far away the stop may sit and how healthy the market must be move only by your ruling. The rules for finding levels and building the report's plan do not change through this loop.</p>
 
 <h3>Monitoring that changes nothing</h3>
 <p>Beside the monthly loop, the S&amp;P 500's pullback keeps two gauges, which watch and change nothing by themselves.</p>
@@ -1196,7 +1367,7 @@
 </div>
 
 <h3>Where the starting settings came from</h3>
-<p>On the S&amp;P 500 the settings each family started from were first chosen by hand, then replaced by a starting point the stored history supports. On the S&amp;P 400 and 600, and for business first everywhere, the starting settings stand until you freeze a sweep's proposal, or until you approve a change the loop proposes for one of them. A sweep replays a family's rule over the years of history the store holds under every combination of its settings, and for the pullback under many designs of each step, scoring every trade each would have taken the way the live record scores it, one open trade a stock. Each result is read as an edge over the same plan bought on every stock in the index that night, so a setting is not credited for a rising market. The sweep does not pick the single best result, because among that many tries one always looks good by luck. It looks for a plateau instead, a region of settings that all beat the odds year after year, and proposes the setting deepest inside it, the one that can be moved furthest in any direction and still hold. Beside it, it proposes a few variants, each changing one thing on a question the history left open. None of it takes effect by itself: a sweep writes a report, and its starting point and variants begin running only when you freeze them, after which only the trades that follow are judged.</p>
+<p>On the S&amp;P 500 the settings each family started from were first chosen by hand, then replaced by a starting point the stored history supports. On the S&amp;P 400 and 600 the starting settings stand until you freeze a sweep's proposal or approve a change the loop proposes, and business first's on every index until you approve a change the loop proposes. A sweep replays a family's rule over the years of history the store holds under every combination of its settings, and for the pullback under many designs of each step, scoring every trade each would have taken as bought at the listing night's close, one open trade a stock. Each result is read as an edge over the same plan bought on every stock in the index that night, so a setting is not credited for a rising market. The sweep does not pick the single best result, because among that many tries one always looks good by luck. It looks for a plateau instead, a region of settings that all beat the odds year after year, and proposes the setting deepest inside it, the one that can be moved furthest in any direction and still hold. Beside it, it proposes a few variants, each changing one thing on a question the history left open. None of it takes effect by itself: a sweep writes a report, and its starting point and variants begin running only when you freeze them, after which only the trades that follow are judged.</p>
 <p>Ideas a sweep's grid does not hold, such as switches that keep a list off a weak market, a stop touched during the day, only the night's best three, a trailing stop and shorter holds, are tried on a rule one at a time. One is kept only where it does better than the rule in most years, the latest among them, and stays better without its largest few results. The report says how many ideas were tried and how many luck alone would pass, and an idea that holds is registered as a variant rather than made the live rule, so its own record decides. Changes to a live rule come through the monthly loop above.</p>
 
 <div class="why">
@@ -1288,12 +1459,12 @@
     <text class="ts" x="524" y="368">every near-setup and what it came to</text>
 
     <rect class="bx" x="6" y="398" width="988" height="64" rx="6"/>
-    <text class="t" x="22" y="424">A stock's page</text>
-    <text class="ts" x="22" y="448">opened from any ticker on any page: the full report on one company</text>
+    <text class="t" x="22" y="424">A stock's chart and report</text>
+    <text class="ts" x="22" y="448">the chart from any ticker on any page, the full report one press further</text>
   </svg>
 </figure>
 <div class="key">
-  <p><b>How to read it.</b> The four pages in the top row sit in the bar of every page. The Research menu, in purple, holds the written research and what you follow; the Records menu, in blue, holds what the nights and the trades left behind. A stock's page opens from any ticker on any of them.</p>
+  <p><b>How to read it.</b> The four pages in the top row sit in the bar of every page. The Research menu, in purple, holds the written research and what you follow; the Records menu, in blue, holds what the nights and the trades left behind. A stock's chart opens from any ticker on any of them, and its report from the chart.</p>
   <p><b>What to take from it.</b> On every screen green means a level below the price, a buy or a gain; red means a stop, a loss or something that failed; orange means a level above the price or a sale; and amber means take care or wait. Each family has a colour of its own too, drawn as the edge of its tile and the small square beside its name and never as the colour of words, and its name always stands beside it.</p>
 </div>
 <p><b>The bar.</b> Every page opens on one bar: the tool's name, the four pages you use most, with a count on the Loop of the changes waiting for your word, the Research and Records menus, each opening beneath its name, then the search, a menu choosing the index the page reads with each index's size of company and its members, and the light and dark switch. The Research menu also shows which model writes the reports. The page you are on is shaded. On a phone the links, the search and the switch sit behind a Menu button, and the index menu stays in the bar.</p>
@@ -1484,7 +1655,7 @@
   <li data-part="1"><b>A tile for each sector.</b> How many members it holds, how many are in an uptrend with a bar for their share, how many tonight's lists hold and how its sector fund did over the year; press one to see only that sector and press it again to see them all.</li>
   <li data-part="2"><b>The search and the chips.</b> Find a stock by its ticker or any part of its company's name, and keep only one trend or sector, the stocks near their support or resistance, or those one gate short of a setup, at fifty, a hundred or every row a page.</li>
   <li data-part="3"><b>The headings.</b> Each says what its column holds when you hold the pointer over it, and pressing one sorts the table by it, pressing again the other way.</li>
-  <li data-part="4"><b>A stock's row.</b> Its ticker opening its page above the company's name, a tag in the setup's colour naming the setup and the gate it missed where it is one gate short, its sector, close and trend, and the distance picture with the close at its centre.</li>
+  <li data-part="4"><b>A stock's row.</b> Its ticker opening its chart above the company's name, a tag in the setup's colour naming the setup and the gate it missed where it is one gate short, its sector, close and trend, and the distance picture with the close at its centre.</li>
   <li data-part="5"><b>Its readings.</b> How strong it has been against the rest of the index with a bar, how far it has pulled back in days of its ordinary movement, and bars for how thin trading has been and how tight its range is, the first marked where the pullback rule draws its line.</li>
   <li data-part="6"><b>Its history on the list and the pages.</b> The last evening it was on the list and a mark for each of the last sixty evenings it was, then how many stocks your choices kept and which page of them this is.</li>
 </ol>
@@ -1493,7 +1664,7 @@
 <p>Any ticker you press opens the stock's chart first: on Tonight, in a setup's card, on Universe, Researched, the Queue, the Watch list, Past picks and paper trading, and from the search box. The top of the page is the same as the report's, the price now and the index and sector, with a button to open the report, or a line saying none is written yet beside the request for one. Beneath it the chart fills the width: Daily shows the stored year, Weekly and Monthly roll the days into one candle a week or a month and reach back into the history pulled before that year, brought to the stored prices' scale by the close both hold. The three lines are the 20, 50 and 200 session averages, named with their values where your pointer is; the bars beneath are the volume, green where the candle closed above the one before and red where it closed below; R and D mark a report and an ex-dividend date. Where a rule lists the stock tonight, its plan's price, its stop and its target are drawn across the chart, the trade buying at the next open, and a button shows the night's levels behind the candles. Under the chart, the figures a buyer asks next: the company, its valuation, its last quarter, its dividend, its technical readings, its returns from a week to five years, the longest the history from 2018 reaches, and what its insiders did, the net they bought on the open market over ninety days and over the year, how many bought and the day of the newest purchase, a figure the report also draws worked the same way, and "not stored" where EquityBrief holds none. It draws what is stored and decides nothing.</p>
 
 <h3>A stock's page</h3>
-<p>The full report on one company, opened from its chart's button. Section 8 describes it part by part, and a pick's card, section 7, stands at its top when a rule picked the stock that night. Its own top links back to the chart.</p>
+<p>The full report on one company, opened from its chart's button. Section 8 describes it part by part, and a pick's card, section 7, stands after its short version when a rule picked the stock that night. Its own top links back to the chart.</p>
 
 <h3>Paper trading</h3>
 <p>Every rule's trades as an account of your size, with each account's test-years verdict and its record since registration drawn apart, as section 11 describes. The old account page's address opens it too.</p>
@@ -1674,7 +1845,7 @@
 <h3>Researched, the Queue and the Watch list</h3>
 <p><b>Researched</b> lists every stock holding a written report, with the day its newest section was written and why it was written: tonight's list, asked by you, a regeneration you asked for, or by hand. Beside each stands whether it still stands or has gone stale, judged as the stock's own page judges it, how far the stock has moved since, and how many sections it holds out of the full set. Sort it by the day written or with the stale reports first.</p>
 <p><b>The queue.</b> Every report you or the night asked for. What is waiting comes first, in the order it will be written, with when each will start and finish, the night's own waiting for the run after the dearer hours; each carries Write now, which writes that one report at once, and inside the dearer hours first tells you until when they last and how many times the usual price it costs, going only once you confirm. Then what is being written now; then what came of the rest, one row for each stock and New York day it was asked on, with what its newest request came to and how many times it was asked that day, so a stock asked for four times in an evening is one row and not four. Beneath them, one row a day counts the reports written with no request behind them, a regenerate you pressed on a stock's page or a pass run from the worker's command, with what they cost. The page shows the last fourteen days in New York, with a link to every day before them. Every time on it is New York's, marked ET; hold the pointer over one to see it in UTC, which is how the run log records it.</p>
-<p><b>The watch list.</b> Up to twenty stocks you choose to follow, each as it stands on the newest night whether or not a list holds it: its nearest setup in the setup's colour, the one that passed it tonight or the one it missed by the fewest gates, with the first gate it missed, its distance picture, the sessions to its next report, its close and the day's change, its trend, the reward to risk of its trade, and what the pullback's filter said of it. You add a stock by searching for it in the bar at the top while the watch list is open. The watch list is yours alone and decides nothing.</p>
+<p><b>The watch list.</b> Up to twenty stocks you choose to follow, each as it stands on the newest night whether or not a list holds it: its nearest setup in the setup's colour, the one that passed it tonight or the one it missed by the fewest gates, with the first gate it missed, its distance picture, the sessions to its next report, its close and the day's change, its trend, the reward to risk of its trade, and what the pullback's filter said of it. You add a stock by searching for it in the bar at the top while the watch list is open, or with the Watch press on Tonight's stocks one gate short or on a stock's chart or report. The watch list is yours alone and decides nothing.</p>
 
 <!-- 13 -->
 <h2 id="why">13. Why these choices: sources</h2>
@@ -1700,7 +1871,9 @@
   <tr><td>Buying in steps</td><td id="s-brennan">Brennan, Li and Torous (2005), <i>Dollar cost averaging</i>, working paper. <a href="https://www.anderson.ucla.edu/documents/areas/fac/finance/dollarcostave.pdf">Link</a></td><td>When spreading a purchase over time helps and when it does not.</td></tr>
 
   <tr><td>Stops and gaps</td><td id="s-arratia">Arratia and Dorador (2019), <i>On the efficacy of stop-loss rules in the presence of overnight gaps</i>, Quantitative Finance. <a href="https://upcommons.upc.edu/server/api/core/bitstreams/2e11812d-c6d1-4e56-b88b-a14edf870e3e/content">Link</a></td><td>How overnight gaps change what a stop actually delivers.</td></tr>
+  <tr><td></td><td id="s-dai">Dai, Marshall, Nguyen and Visaltanachoti (2021), <i>Risk reduction using trailing stop-loss rules</i>, International Review of Finance. <a href="https://acfr.aut.ac.nz/research/using-trailing-stop-loss-rules-to-reduce-risk">Link</a></td><td>Trailing stops cut the worst losses for a somewhat lower average return, which is the trade the breakout's stop makes.</td></tr>
   <tr><td>Earnings drift</td><td id="s-bt">Bernard and Thomas (1989), <i>Post-earnings-announcement drift: delayed price response or risk premium?</i>, Journal of Accounting Research, read as a secondary account gives it. <a href="https://alpha-suite.org/blog/post-earnings-announcement-drift">Link</a></td><td>Prices have tended to keep moving the way an earnings surprise moved them for weeks after the report.</td></tr>
+  <tr><td></td><td id="s-martineau">Martineau (2022), <i>Rest in peace post-earnings announcement drift</i>, Critical Finance Review. <a href="https://ideas.repec.org/a/now/jnlcfr/104.00000122.html">Link</a></td><td>Prices now take in an earnings surprise on the day it is announced, the drift after it gone from large companies and fading in smaller ones, which is why the drift's card on the S&amp;P 400 and 600 states the evidence against it.</td></tr>
   <tr><td>Sector heavyweights</td><td id="s-mg">Moskowitz and Grinblatt (1999), <i>Do industries explain momentum?</i>, Journal of Finance. <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/0022-1082.00146">Link</a></td><td>The industries with the highest returns over six months went on beating those with the lowest, and much of a single stock's momentum is its industry's.</td></tr>
   <tr><td></td><td id="s-fp">Frazzini and Pedersen (2014), <i>Betting against beta</i>, Journal of Financial Economics, read as a secondary account gives it. <a href="https://doi.org/10.1016/j.jfineco.2013.10.005">Link</a></td><td>Stocks that swing more than the market earned less for the risk they carried, which is why a high beta is a setting the heavyweights' sweep tested rather than assumed, and one their variants and record keep testing.</td></tr>
   <tr><td>Business first</td><td id="s-jl">Jegadeesh and Livnat (2006), <i>Revenue surprises and stock returns</i>, Journal of Accounting and Economics, read as a secondary account gives it. <a href="https://doi.org/10.1016/j.jacceco.2005.10.001">Link</a></td><td>Stocks whose sales came in above what their past sales suggested went on rising after the report, beyond what the earnings surprise alone explained.</td></tr>
