@@ -2802,3 +2802,30 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    20.1's remedy from main and its record; the sign-offs of phases 18 and 19, owed to fresh sessions after
             20.4; the two items phase 17's sign-off carried, corrected after 20.4; (G1), SCHEMA's `family_trade`
             sentence, owed by the next edit of that section.
+
+### 20.1 - the remedy run from main: migration 98, the first reading pin, the stored releases read twice under it, and the two slots' tasks registered   2026-10-18
+
+Not a checkpoint entry: it records 20.1's remedy and what it measured, and lands nothing.
+Ran:        from main's 44785460, the merge of PR 488: `tools/remedies/2026-10-18-20.1-the-local-run.txt` between
+            08:47:40Z and 08:57:55Z, with no night, off-peak run or monthly run writing and LM Studio holding no model:
+            migration 98 applied, then `local-run --pin` and `local-run --twice`. No provider request, no request of
+            the SEC and no paid call; every model call the local model's.
+Measured:   the pin between 08:47:53Z and 08:48:45Z: the model's file, 14,439,363,264 bytes, hashed whole in 32.3
+            seconds by the run against 211 by PowerShell's own hash at 20.0, its SHA-256 the one 20.0 measured; the
+            probe answered by google/gemma-4-26b-a4b-qat on llama.cpp-win-x86_64-nvidia-cuda12-avx2 2.56.0; pin 1
+            written under the instruction's version d1675c9d8e4d at a context of 50,176 tokens and the cutoff
+            2025-01-31, from one model call. The twice-read under pin 1 between 08:48:47Z and 08:57:54Z: the 70
+            stored results releases read twice in 140 calls, 70 of 70 answered alike, none refused and none asked
+            again, 3.23 seconds a call at the median and 8.67 at the slowest, the model's file checked by its size and
+            modified instant in the ISO week the pin hashed it whole. Each run loaded the model and unloaded it after,
+            leaving LM Studio holding none.
+Tasks:      `EquityBrief localrun early` and `EquityBrief localrun late` registered at 08:59Z on the operator's word
+            of 2026-10-18, as the runbook states, each start boundary pinned in UTC as the night's and the off-peak
+            run's are, their next runs 12:05Z and 21:40Z on 2026-10-18. The read surface on 5152 restarted from main's
+            Release, its Run page drawing the local model's region with the two runs above.
+Tests:      2434, unchanged.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 20.1's tree as its entry records; this entry
+            alone changes, so the checks reading the record ran filtered over the tree carrying it.
+Carried:    the slots' first runs, read off the Run page and recorded in 20.2's entry; the sign-offs of phases 18 and
+            19, owed to fresh sessions after 20.4; the two items phase 17's sign-off carried, corrected after 20.4;
+            (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.
