@@ -69,19 +69,37 @@ public partial class FixtureExpectations
         Review("14:20:00", Cases, 7, cases, SectionTrial.FirstTime, cases);
         Review("14:30:00", Cases, 8, cases, SectionTrial.FirstTime, cases);
 
+        // Two nights on the run log, the second writing the facts file the retention later emptied; and a version written
+        // after both whose review was asked between them, over the first night's facts, which stand whole, so it is asked
+        // and the second night's empty row is not read in their place.
+        static string Night(string session) =>
+            $"('night-{session.Replace("-", "", StringComparison.Ordinal)}T230000Z', 'fetch', '{session}T23:00:00Z', '{session}T23:05:00Z', 'ok', 0, 0, 1, '0', '{{\"members\":4,\"session\":\"{session}\"}}'), " +
+            $"('night-{session.Replace("-", "", StringComparison.Ordinal)}T230000Z', 'facts', '{session}T23:10:00Z', '{session}T23:12:00Z', 'ok', 4, 0, 0, '0', '4 name(s), 4 file(s) written')";
+
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES " +
+            Night("2026-09-08") + ", " + Night("2026-09-09") + ";");
+        store.Execute(
+            "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason, parts) " +
+            $"SELECT ticker, section, 9, '2026-09-10', model, status, prose, source_ids, reject_reason, parts FROM research_section WHERE ticker = 'KEYS' AND section = '{Cases}' AND version = 1;");
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES " +
+            $"('research-early-KEYS', '{SectionTrial.ReviewStageFor(Cases)}', '2026-09-09T15:00:00Z', '2026-09-09T15:00:00Z', '{SectionTrial.FirstTime}', 0, 0, 0, '0', '{Detail(Cases, 9, cases, SectionTrial.FirstTime, cases).Replace("'", "''", StringComparison.Ordinal)}');");
+
         var before = RowsByTable(store);
         var settings = new LocalModelSettings("gemma-4", "http://127.0.0.1:1234/v1/", Gemma, 30, 50176, 30);
         var runtime = AnsweringRuntime(loaded: false, chat: _ => throw new InvalidOperationException("the comparison's answers are the test's own"));
-        var answers = new Queue<string>([cases, "Not the fields the section asks for.", riskFields]);
+        var answers = new Queue<string>([cases, cases, "Not the fields the section asks for.", riskFields]);
         var feed = new LabelAnsweringFeed(ReadingFeedOver(runtime, settings), _ => Reply(answers.Dequeue()));
         var clock = FixedClock.At(new DateTimeOffset(2026, 10, 19, 12, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates);
         var said = new StringWriter();
 
         var outcome = await new LocalComparison(feed, settings, clock, store.DatabaseFile, store.Root, NoWait).ReviewsAsync(said);
 
-        // Worked by hand: four stored and two asked; the two cases passed first time as stored, and the risks, refused for an
-        // answer that is not its fields, passed on its retry where the stored review left it out.
-        Assert.Equal((4, 2, 1), (outcome.Stored, outcome.Asked, outcome.OutcomesAgreeing));
+        // Worked by hand: five stored and three asked; the review between the nights and the two cases passed first time as
+        // stored, and the risks, refused for an answer that is not its fields, passed on its retry where the stored review
+        // left it out.
+        Assert.Equal((5, 3, 2), (outcome.Stored, outcome.Asked, outcome.OutcomesAgreeing));
         Assert.Equal(
             [
                 $"KEYS, {Cases}, version 7: {LocalComparison.VersionNotHeld}",
@@ -89,17 +107,17 @@ public partial class FixtureExpectations
             ],
             outcome.NotAsked);
 
-        // The sentences: every one of the two cases' kept by the local model and all but the last by the stored review, and
-        // every one of the risks' kept by both.
+        // The sentences: every one of the two cases' kept by both reviews between the nights; every one kept by the local
+        // model and all but the last by the stored review on the later day; and every one of the risks' kept by both.
         var riskCount = ClaimRules.Sentences(risks).Count;
 
         Assert.Equal(
-            (caseSentences.Length + riskCount, caseSentences.Length - 1 + riskCount, 0, 1),
+            (2 * caseSentences.Length + riskCount, 2 * caseSentences.Length - 1 + riskCount, 0, 1),
             (outcome.Sentences, outcome.BothKept, outcome.BothChanged, outcome.Differ));
 
         // Asked as the review asked: its first round handed the draft and the section's checks under the pass's own request,
         // at the readings' seed and the review's budget, and the risks asked once more after its refusal.
-        Assert.Equal(3, feed.Asked.Count);
+        Assert.Equal(4, feed.Asked.Count);
 
         var facts = EquityBrief.Core.Facts.FactsFile.Read(Query(store, $"SELECT payload FROM facts WHERE ticker = 'KEYS' AND session_date <= '{asOf}' AND payload != '' ORDER BY session_date DESC LIMIT 1;").Single());
 
@@ -110,15 +128,16 @@ public partial class FixtureExpectations
         // Loaded where it was not and unloaded at the end, its line and its file, and every table's rows as they were.
         Assert.Contains(runtime.Asked, request => request.StartsWith("POST /api/v1/models/load", StringComparison.Ordinal));
         Assert.Contains(runtime.Asked, request => request.StartsWith("POST /api/v1/models/unload", StringComparison.Ordinal));
-        Assert.Contains($"compare-reviews: 4 reviews are stored; {Gemma} on {Runtime256} {RuntimeVersion} was asked 2 again and not 2, ", said.ToString(), StringComparison.Ordinal);
-        Assert.Contains("; the outcome agreed on 1 of 2; ", said.ToString(), StringComparison.Ordinal);
+        Assert.Contains($"compare-reviews: 5 reviews are stored; {Gemma} on {Runtime256} {RuntimeVersion} was asked 3 again and not 2, ", said.ToString(), StringComparison.Ordinal);
+        Assert.Contains("; the outcome agreed on 2 of 3; ", said.ToString(), StringComparison.Ordinal);
         Assert.Equal("comparisons/reviews-20261019T120000Z.json", outcome.File);
 
         using (var written = JsonDocument.Parse(File.ReadAllText(Path.Combine(store.Root, "comparisons", "reviews-20261019T120000Z.json"))))
         {
             var rows = written.RootElement.GetProperty("reviews").EnumerateArray().Select(review => (review.GetProperty("section").GetString(), review.GetProperty("stored").GetString(), review.GetProperty("local").GetString())).ToArray();
 
-            Assert.Equal([(Cases, SectionTrial.FirstTime, SectionTrial.FirstTime), (Risks, SectionTrial.LeftOut, SectionTrial.OnRetry)], rows);
+            Assert.Equal([(Cases, SectionTrial.FirstTime, SectionTrial.FirstTime), (Cases, SectionTrial.FirstTime, SectionTrial.FirstTime), (Risks, SectionTrial.LeftOut, SectionTrial.OnRetry)], rows);
+            Assert.Equal(["2026-09-08", "2026-09-08", "2026-09-08"], written.RootElement.GetProperty("reviews").EnumerateArray().Select(review => review.GetProperty("night").GetString()));
         }
 
         Assert.Equal(before, RowsByTable(store));

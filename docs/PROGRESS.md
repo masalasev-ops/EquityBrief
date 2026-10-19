@@ -3480,3 +3480,33 @@ Carried:    the comparisons' records, 20.5's and this one's, each run from main 
             second remedy after the history read; the sentence-start rule and the lower-case names, put to the operator;
             the sign-offs of phases 18 and 19, owed to fresh sessions after 20.10; (G1), SCHEMA's `family_trade` sentence,
             owed by the next edit of that section.
+
+### 20.7 - correction: a stored review is asked over the facts of the night it was asked over, read off the run log, and not over a later night's emptied file   2026-10-19
+
+Queue:      done, 20.5 and 20.7 merged, PRs 499 and 500, and 20.5's comparison run from main; in progress, this; next,
+            20.7's comparison run again from main once this merges, then 20.6, recorded and awaiting its gates, then 20.9.
+Found:      by the first run of `compare-reviews` from main at 990611f5, at 05:37 UTC: none of the nine stored reviews was
+            asked, each named as its night's facts file no longer held whole, BDX's three among them, whose night of
+            2026-09-29 stands whole. A review's facts were read as the newest row on or before its version's day,
+            2026-09-30, which is the row the night of 2026-09-30 wrote that evening, hours after the reviews ran, and the
+            retention has emptied since.
+Built:      a review's night is read off the run log: the newest night whose facts step began before the review, named by
+            that night's own fetch row, its facts the newest row on or before that night, or on or before the version's
+            day where the run log holds no such night. The roster's row and the changelog. No catalogue, matrix or decision
+            text moves: each already says the facts file of the review's night.
+Tests:      none new, 2475 in all: the review comparison's test gains two nights on the run log and a review asked between
+            them over a version dated after both, asked over the first night's facts where the second night's row is
+            empty, each figure worked by hand again over five stored reviews.
+Claims:     1366, as before.
+Mutated:    the rule, stated before the run: one mutation of the property the correction adds, the smallest edit undoing it,
+            filtered to the comparison's test with its red predicted. RN the night read off the run log never lowering the
+            day the facts are read through: red, 2 reviews asked and not 3. As predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2475 of 2475 tests ran with none failed,
+            migrations 0 to 100 with none pending, schema version 100, against `data-ci` and never `data`; the phase
+            report 60 tables, 1366 claims, 1366 passing, none out of scope and none unexamined, 1377 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    20.7's comparison run again from main once this merges, and the two comparisons' records; 20.6; the history
+            read and its record; 20.2's record; 20.4's second remedy after the history read; the sentence-start rule and the
+            lower-case names, put to the operator; the sign-offs of phases 18 and 19, owed to fresh sessions after 20.10;
+            (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.

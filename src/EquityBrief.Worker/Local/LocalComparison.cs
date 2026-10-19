@@ -87,25 +87,42 @@ public sealed class LocalComparison(
         ORDER BY b.labelled_at, b.ticker, b.article_id;
     ";
 
-    // The reviews the run log holds, oldest first.
+    // The reviews the run log holds, oldest first, each with the instant it began.
     const string StoredReviews = @"
-        SELECT detail FROM run_log
+        SELECT started_at, detail FROM run_log
         WHERE substr(stage, 1, length($stage)) = $stage
         ORDER BY started_at, run_id, stage;
     ";
 
-    // The facts file of the night a version was written over: the newest row on or before its day with its payload as
-    // stored, so a night the retention has emptied since is found empty and never replaced by an older night's.
+    // The facts file a review read: the newest row on or before the night it was asked over, with its payload as stored,
+    // so a night the retention has emptied since is found empty, and neither a later night's row nor an older night's is
+    // read in its place.
     const string NightFacts = @"
         SELECT session_date, payload FROM facts
-        WHERE ticker = $ticker AND session_date <= $as_of
+        WHERE ticker = $ticker AND session_date <= $through
         ORDER BY session_date DESC
         LIMIT 1;
     ";
 
+    // The session of the newest night whose facts step began before an instant, read off that night's own fetch row,
+    // which names it: a review reads the newest facts file standing when it is asked, and a facts file is written by its
+    // night.
+    const string NightBefore = @"
+        SELECT json_extract(f.detail, '$.session')
+        FROM run_log n
+        JOIN run_log f ON f.run_id = n.run_id AND f.stage = $fetch
+        WHERE substr(n.run_id, 1, length($night)) = $night AND n.stage = $facts AND n.started_at < $before
+          AND json_valid(f.detail)
+        ORDER BY n.started_at DESC
+        LIMIT 1;
+    ";
+
+    // The run a night writes its rows under, named by its prefix.
+    const string NightRuns = "night-";
+
     sealed record PaidArticle(string Ticker, string ArticleId, string Title, string Text, string Company, NewsLabel Label);
 
-    sealed record StoredReview(string Ticker, string Section, int Version, string Outcome, string? Final);
+    sealed record StoredReview(string Ticker, string Section, int Version, string Outcome, string? Final, string Started);
 
     sealed record ReadyReview(StoredReview Stored, SectionTrial.PassVersion Version, IReadOnlyList<Fact> Facts, DateOnly Night, IReadOnlyList<StoredDocument> Admitted, IReadOnlyList<Claim>? Claims);
 
@@ -415,7 +432,7 @@ public sealed class LocalComparison(
     static async Task<ReadyReview?> ReadyAsync(SqliteConnection connection, StoredReview review, CancellationToken cancellation)
     {
         if (await SectionTrial.VersionAsync(connection, review.Ticker, review.Section, review.Version, cancellation) is not { } version
-            || await FactsOfAsync(connection, review.Ticker, version.AsOf, cancellation) is not { } night)
+            || await FactsOfAsync(connection, review, version.AsOf, cancellation) is not { } night)
         {
             return null;
         }
@@ -436,15 +453,35 @@ public sealed class LocalComparison(
     static async Task<string> WhyNotAsync(SqliteConnection connection, StoredReview review, CancellationToken cancellation) =>
         await SectionTrial.VersionAsync(connection, review.Ticker, review.Section, review.Version, cancellation) is not { } version
             ? VersionNotHeld
-            : await FactsOfAsync(connection, review.Ticker, version.AsOf, cancellation) is null ? FactsNotHeld : ClaimsNotHeld;
+            : await FactsOfAsync(connection, review, version.AsOf, cancellation) is null ? FactsNotHeld : ClaimsNotHeld;
 
-    static async Task<(DateOnly Session, IReadOnlyList<Fact> Facts)?> FactsOfAsync(SqliteConnection connection, string ticker, DateOnly asOf, CancellationToken cancellation)
+    // The facts a review read, through the night it was asked over: the newest night whose facts step began before it,
+    // or the version's own day where the run log holds no such night or names a later one.
+    static async Task<(DateOnly Session, IReadOnlyList<Fact> Facts)?> FactsOfAsync(SqliteConnection connection, StoredReview review, DateOnly asOf, CancellationToken cancellation)
     {
+        var through = asOf;
+
+        await using (var night = connection.CreateCommand())
+        {
+            night.CommandText = NightBefore;
+            night.Parameters.AddWithValue("$fetch", Bars.BarFetcher.Stage);
+            night.Parameters.AddWithValue("$facts", Facts.FactsAssembler.Stage);
+            night.Parameters.AddWithValue("$night", NightRuns);
+            night.Parameters.AddWithValue("$before", review.Started);
+
+            if (await night.ExecuteScalarAsync(cancellation) is string session
+                && DateOnly.TryParseExact(session, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var read)
+                && read < through)
+            {
+                through = read;
+            }
+        }
+
         await using var command = connection.CreateCommand();
 
         command.CommandText = NightFacts;
-        command.Parameters.AddWithValue("$ticker", ticker);
-        command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$ticker", review.Ticker);
+        command.Parameters.AddWithValue("$through", through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
@@ -466,7 +503,7 @@ public sealed class LocalComparison(
 
         while (await reader.ReadAsync(cancellation))
         {
-            using var detail = JsonDocument.Parse(reader.GetString(0));
+            using var detail = JsonDocument.Parse(reader.GetString(1));
             var root = detail.RootElement;
             var final = root.GetProperty("rounds").EnumerateArray()
                 .Select(round => round.TryGetProperty("prose", out var prose) && prose.ValueKind == JsonValueKind.String ? prose.GetString() : null)
@@ -477,7 +514,8 @@ public sealed class LocalComparison(
                 root.GetProperty("section").GetString()!,
                 root.GetProperty("compared").GetProperty("version").GetInt32(),
                 root.GetProperty("outcome").GetString()!,
-                final));
+                final,
+                reader.GetString(0)));
         }
 
         return reviews;

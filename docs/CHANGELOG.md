@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the night a stored review was asked over
+Corrects: the review comparison read a review's facts as the newest row on or before the version's day, which a night written after the review and emptied since answered, so the first run from main asked none of the nine stored reviews, BDX's three among them, whose night's facts stand whole.
+Was:
+> fixture-expectations: ... a review whose version is not stored or whose night's facts file is emptied named and not asked, its file written under the data root and every table's rows as they were |
+Now:
+> fixture-expectations: ... its file written under the data root and every table's rows as they were; and from the 20.7 correction of 2026-10-19 a review's night read off the run log as the newest whose facts step began before the review, a review asked between two nights read over the first night's facts and not the second's emptied file |
+Why: each roster row says what its check asserts, and the correction's case extends the review comparison's test.
+
 ### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the review comparison
 Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
 Was:
