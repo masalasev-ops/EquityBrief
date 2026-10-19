@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-19 - .claude/rules/checks.md - read-surface states the session read in UTC and the card's coloured marks
+Corrects: the read surface wrote a session's open and close, instants at New York's offset, with a Z after New York's clock time, so the masthead and the Run page saw no quote or ask after noon in New York; found reading the Run page of 2026-10-13 back on 5152 after PR 511 merged, one ask of the session's five. And the operator asked for the card's marks in colour.
+Was:
+> read-surface: ... and from the 18.3 correction of 2026-10-19 each report's estimate and actual drawn to two places with the stored figure whole on its element |
+Now:
+> read-surface: ... with the stored figure whole on its element; and from the second 18.1 correction of 2026-10-19 the masthead's newest quote and the Run page's asks and quotes read between the session's own open and close, instants at New York's offset written in UTC, a quote and an ask after noon in New York among them; and from the second 16.1 correction of 2026-10-19 a card's tick drawn in the green a gain is drawn in on its fill, its note in grey and its warning in the caution's amber |
+Why: each roster row says what its check asserts, and the two corrections' tests extend read-surface's.
+
 ### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the local run's guard of LM Studio's saved structured output
 Authorised by: The local run refuses to start where LM Studio's saved structured output for the model differs from the one its history read started under
 Was:

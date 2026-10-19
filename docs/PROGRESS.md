@@ -4139,3 +4139,58 @@ Carried:    the guard reaches the history read once this merges and the read is 
             07:00 stop; the local lane's one text field and the comparison recorded again; 21.0 once the phase 21 ruling
             is given; the sign-offs of phases 18 and 19, owed to fresh sessions while pin 3's read runs; pin 3's completion
             steps; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.
+
+### 18.1 - correction: the read surface writes a session's open and close in UTC to read the quotes and the asks between them, where it wrote New York's clock times with a Z and saw nothing asked after noon there   2026-10-19
+
+Queue:      done, phase 18's review and its corrections, PR 511, merged by its session at 22:26:57 UTC on the operator's
+            word; in progress, the local run's guard, PR 510, brought up to date with main, with this correction and the
+            card's coloured marks; next, PR 510 merged once the night and its store copy end, 5152 started again, pin 3's
+            history read started again from main's copy under the guard, then the phase 18 sign-off prompt, the local
+            lane's one text field, 21.0 once its ruling is given and the phase 19 sign-off prompt, then pin 3's
+            completion steps.
+Ruled:      by the operator on 2026-10-19, after this session found the defect below: "yes merge it", of PR 511; "You can
+            also stop the read  temporarily and start it back up after the nightly run finishes"; "Can we also merge  in
+            #510 ?"; "fdix the defect on teh #510 branch and fix merge conflicts and merge it. Can we also have the
+            checkboxes color coded"; and to whether this session might work on the branch during the night once it had
+            built its copy, "Yes, work during the night (Recommended)". Pin 3's history read was stopped at 22:28:08 UTC,
+            its run leaving no row of its own and its readings standing under pin 3; the night of 2026-10-19 built from
+            26bfbe21e64d, main with PR 511, at 23:00:49, and this branch was taken after it.
+Found:      reading the Run page of 2026-10-13 back on 5152 after PR 511 merged: one ask of the session's five. The read
+            surface handed its quote queries the session's open and close, instants at New York's offset, written in the
+            store's instant format, which writes an instant's own clock time with a Z: 09:30 and 16:00 read as UTC, four
+            hours before the session's, so every ask and every quote after noon in New York stood outside the session, the
+            masthead's newest quote among them, a quote asked in the afternoon drawing the last close. 18.1's tests built
+            the session's instants in UTC.
+Corrected:  each of the read surface's quote queries writes the session's instants in UTC.
+Tests:      the asks' test reads the session from its own instants, as the page does, an ask after noon in New York among
+            those counted, and holds the masthead's newest quote asked at 19:30 UTC, 15:30 in New York, and the Run page
+            counting it.
+Mutated:    the rule as the 4.7 correction's entry above states it. M13 the masthead's window written at New York's clock
+            again: red at the asks' test, the morning's quote drawn for the afternoon's, as predicted. M14 the asks' window
+            so written: red at it, one ask of three counted, the live page's fault, as predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 16.1 correction's entry
+            below, with the figures it states.
+Carried:    as the 16.1 correction's entry below.
+
+### 16.1 - correction: a pick's card draws its tick in the green a gain is drawn in, its note in grey and its warning in the caution's amber, on the operator's word   2026-10-19
+
+Queue:      as the 18.1 correction's entry above.
+Ruled:      the operator's "Can we also have the checkboxes color coded", in the words the entry above quotes.
+Corrected:  the tick's mark is drawn in the green a gain is, on the gain's fill with its border; the note in grey and the
+            warning in the caution's amber stand as they were.
+Tests:      the marks' test reads the three rules; the palette's test already holds the gain's green on its fill and the
+            caution's amber on its own at 4.5 to 1 or more on every ground in both palettes. 7 new tests since main at
+            d63191c9, PR 511's 6 and the guard's 1: 2496 in all, read off the suite's own list.
+Claims:     1372, as before.
+Mutated:    M15 the tick drawn in ink again: red at the marks' test, as predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2496 of 2496 tests ran with none failed,
+            migrations 0 to 101 with none pending, schema version 101, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    PR 510 merged once the night and its store copy end; 5152 started again from main; pin 3's history read
+            started again from main's copy, under the guard; the phase 18 sign-off by a fresh session over main; the quote's
+            operating row counting from PR 511's merge and the short version's at its trigger; the two findings the first
+            16.1 correction's entry puts to the operator; the local lane's one text field and its comparison; 21.0 once its
+            ruling is given; the phase 19 sign-off; pin 3's completion steps; (G1), SCHEMA's `family_trade` sentence, owed
+            by the next edit of that section.
