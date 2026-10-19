@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-19 - RUNBOOK.md - the release history's time as measured
+Corrects: the runbook stated the history fetch at 2.2 hours, 20.0's estimate at the archive's pace, and the fetch of 2026-10-18 took ten and a half, found by its record entry.
+Was:
+> at ten a second under the archive's contact. 20.0 measured about 38,400 releases over 1,977 filers, about 79,000 requests and 2.2 hours at that pace, and about 0.39 GB of store growth.
+Now:
+> at ten a second under the archive's contact. The fetch of 2026-10-18 stored 45,282 releases of 1,977 filers over 93,463 requests in ten and a half hours, about 2.5 requests a second, the exhibits' own size slowing it under that pace, and 0.46 GB of compressed text; 20.0's sample had estimated about 38,400 releases, 79,000 requests, 2.2 hours and 0.39 GB.
+Why: a reader planning a fetch again reads the time it took, and "measured" named an estimate.
+
 ### 2026-10-19 - .claude/rules/checks.md - fixture-expectations, rules-choose-the-stocks and read-surface state the idea generator
 Authorised by: The idea generator proposes conditions in the winners' grammar by closed labels code turns into levels, judged as a procedure inside each fold
 Was:

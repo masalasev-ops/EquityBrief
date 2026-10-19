@@ -3619,3 +3619,55 @@ Carried:    the comparisons' records; the history read and its record; 20.2's re
             history read; the generator's first asks, at the monthly run of 2026-11-07; the sentence-start rule and the
             lower-case names, put to the operator; the sign-offs of phases 18 and 19, owed to fresh sessions after 20.10;
             (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.
+
+### 20.2 - the release history fetched from main's build: 45,282 results releases of 1,977 filers over 93,463 requests in ten and a half hours   2026-10-19
+
+Ran:        from main's clean copy after 20.2's merge, outside the night: `releases --history --from 2019-01-02` from
+            12:07:02 to 22:40:45 UTC on 2026-10-18, its one row `release-history-20261018T120702.3878865Z`. Free requests
+            to the SEC under the archive's contact; no provider request and no model call.
+Results:    1,977 of 1,977 ledger filers read, 45,792 releases in their spans and 45,282 stored, beside the 46 the slots
+            and the research passes had stored, 45,328 in `release_document`; 93,463 requests, about 2.5 a second over the
+            run against the archive's pace of 10, the exhibits' own size the difference. By the year the SEC accepted
+            them, 634 in 2018, the release before a filer's first session, then 5,191, 6,012, 5,959, 5,874, 5,894, 5,959
+            and 5,886 from 2019 to 2025 and 3,895 in 2026 to 2026-10-16, and 24 before 2018 for filers whose release before
+            their first session is that old. Counted under each index whose ledger holds the filer, a filer that moved
+            between them counted under each: the S&P 500 17,732, the S&P 400 16,821 and the S&P 600 21,210, and 1 whose
+            filer the ledger holds in none. The store grew by 0.46 GB of compressed text, 1.47 GB as text, 3.2 to 1.
+Against:    20.0's estimate from its sample of 50 filers: about 38,400 releases, 79,000 requests, 2.2 hours and 0.39 GB.
+            The count, the requests and the store's growth came within a fifth of it; the time did not, read at the
+            archive's pace, and the runbook now states the time measured.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the code these records sit on, PR 503's, as
+            20.9's entry above records: 2488 of 2488 tests, 1372 claims, 1372 passing. This pull request changes
+            documents alone, and the checks that read the corpus ran filtered over its tree: RecordAppendOnly,
+            TwoPlatform, ObligationReconciles, BannedProse, DecisionCitations, CoverageReported, StatedCounts,
+            ArchitectureConformance, PinnedConstants, ChangelogReconciles, DoneConditionProducible and FigureFits.
+Carried:    the history read and its record; 20.4's second remedy after it.
+
+### 20.5 - the label comparison run from main's build: 211 of the 264 paid labels labelled again on Gemma, the kind agreeing on 157 and the direction on 181   2026-10-19
+
+Ran:        from the clean copy of main's 5fb44388, with the history read stopped and no night, drain, labeller or copy
+            running: `compare-labels` at 05:00:17 UTC, google/gemma-4-26b-a4b-qat on
+            llama.cpp-win-x86_64-nvidia-cuda12-avx2 2.56.0, the card held at 250 W. No paid call and no store row.
+Results:    264 articles the news job's DeepSeek profile labelled are still stored, from 2026-10-03. The local model
+            labelled 211 and could not label 53: 50 answered a kind outside the set, nearly all "opinion" alone where the
+            set lists "opinion or promotional", and the runtime refused 3, each an article of TRV's. Of the 211 labels the
+            kind agreed on 157, the direction on 181 and both on 138; 313 of the 313 reasons its answers stated held no
+            digit. The figures and each article's two labels are in `comparisons/labels-20261019T050017Z.json` under the
+            data root.
+Put:        to the operator, switching nothing: the labeller stays on DeepSeek, whose 17 runs from 2026-10-01 to
+            2026-10-17 spent $0.117 on the run log; a switch, or the kind's words written so Gemma's answer reads, is theirs.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over PR 503's code, as 20.9's entry records; this pull
+            request changes documents alone, and the checks that read the corpus ran filtered over its tree.
+
+### 20.7 - the review comparison run from main's build after its correction: 3 of the 9 stored reviews asked again on Gemma, the outcome agreeing on 1 and every sentence changed by both   2026-10-19
+
+Ran:        from the clean copy of main's a3579675, the correction merged, with the history read stopped: `compare-reviews`
+            at 06:28:00 UTC on the same model and runtime. No paid call and no store row.
+Results:    9 reviews are stored. 3 were asked again, BDX's two cases at version 1 and its risks at versions 1 and 3; 6
+            were named and not asked, MO's and IT's, since the retention has emptied their nights' facts files. The
+            outcome agreed on 1 of the 3, the two cases left out by both, while the risks DeepSeek accepted first time
+            the local model left out at both versions. Of the 47 sentences the drafts handed held, both reviews changed all
+            47. In `comparisons/reviews-20261019T062800Z.json` under the data root.
+Put:        to the operator, switching nothing: the review job stays on DeepSeek.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over PR 503's code, as 20.9's entry records; this pull
+            request changes documents alone, and the checks that read the corpus ran filtered over its tree.
