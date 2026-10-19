@@ -23,7 +23,8 @@ public sealed record IndexRuleSettings(
     IReadOnlyDictionary<string, string> Heavyweights,
     IReadOnlyList<string>? ReadByLiveRule = null,
     string? Fundamentals = null,
-    IReadOnlyDictionary<string, string>? Approved = null)
+    IReadOnlyDictionary<string, string>? Approved = null,
+    string? FundamentalsSetting = null)
 {
     // The settings as the night stored them, each family's dials read off its key.
     public static IndexRuleSettings Read(string stored)
@@ -58,6 +59,9 @@ public sealed record IndexRuleSettings(
                 : null,
             root.TryGetProperty("approved", out var approved) && approved.ValueKind == JsonValueKind.Object
                 ? approved.EnumerateObject().Where(change => change.Value.ValueKind == JsonValueKind.String).ToDictionary(change => change.Name, change => change.Value.GetString()!, StringComparer.Ordinal)
+                : null,
+            root.TryGetProperty("fundamentals", out var business) && business.ValueKind == JsonValueKind.Object && business.TryGetProperty("setting", out var held)
+                ? held.GetString()
                 : null);
     }
 }

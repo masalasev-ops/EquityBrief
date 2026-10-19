@@ -242,6 +242,20 @@ public static class RuleChips
     }
 
     // A variant's tab: its number by its first registration and the chips it differs by, one beside another.
+    // The fundamentals-first family's chips, read off the setting its night stored on any index: the revenue growth it
+    // asks, the margins it asks to widen and the cash it asks for.
+    public static IReadOnlyList<RuleChip> Of(FundamentalsSetting setting) =>
+    [
+        new("growth", Invariant($"revenue up more than {Percent(setting.GrowthFloor)}")),
+        new("margins", setting.Margins switch
+        {
+            MarginRule.Both => "gross and operating margins up",
+            MarginRule.Operating => "operating margin up",
+            _ => "gross or operating margin up",
+        }),
+        new("cash", Invariant($"cash at least {Number(setting.CashFloor)} times income")),
+    ];
+
     public static string TabWords(int variant, IReadOnlyList<RuleChip> differing) =>
         Invariant($"V{variant} · ") + (differing.Count == 0 ? "the same settings" : string.Join(" · ", differing.Select(chip => chip.Words)));
 

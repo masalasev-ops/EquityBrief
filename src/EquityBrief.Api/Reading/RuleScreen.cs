@@ -179,7 +179,8 @@ public static class RuleScreen
 
     // An S&P 400's or 600's provisional rule's chips, read off the settings its night stored as a registration would
     // state them: its family's dials and the levels every provisional rule holds, the profit gate where the night read
-    // one, its own breadth and the dollar volume floor at one times.
+    // one, its own breadth and the dollar volume floor at one times; and the fundamentals-first family's on any index, off
+    // the setting its night stored.
     public static IReadOnlyList<RuleChip> ProvisionalChips(string family, IndexRuleSettings settings)
     {
         var p = new Dictionary<string, double>(StringComparer.Ordinal)
@@ -243,6 +244,9 @@ public static class RuleScreen
                 Set(IndexHeavyweightCandidate.AverageExitParameter, settings.Heavyweights.GetValueOrDefault("exit") is "break" or "both" ? 1 : 0);
 
                 return RuleChips.Of(RuleKind.IndexHeavyweights, p);
+
+            case FundamentalsRule.Name:
+                return FundamentalsSetting.FromShort(settings.FundamentalsSetting) is { } business ? RuleChips.Of(business) : [];
 
             default:
                 return [];

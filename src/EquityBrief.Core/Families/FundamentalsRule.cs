@@ -24,6 +24,26 @@ public sealed record FundamentalsSetting(double GrowthFloor, MarginRule Margins,
     // bars are commas.
     public string Short => FormattableString.Invariant($"growth {GrowthFloor:0.##}|margins {Margins.ToString().ToLowerInvariant()}|cash {CashFloor.ToString("0.0#", CultureInfo.InvariantCulture)}");
 
+    // A setting read back from its short form as a night stores it, none where a dial is missing or not one of its kind.
+    public static FundamentalsSetting? FromShort(string? text)
+    {
+        var dials = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var part in (text ?? string.Empty).Split('|'))
+        {
+            if (part.Split(' ', 2) is [var dial, var level])
+            {
+                dials[dial] = level;
+            }
+        }
+
+        return dials.TryGetValue("growth", out var growth) && double.TryParse(growth, NumberStyles.Float, CultureInfo.InvariantCulture, out var growthFloor)
+            && dials.TryGetValue("margins", out var margins) && Enum.TryParse<MarginRule>(margins, ignoreCase: true, out var rule) && Enum.IsDefined(rule) && !char.IsDigit(margins[0])
+            && dials.TryGetValue("cash", out var cash) && double.TryParse(cash, NumberStyles.Float, CultureInfo.InvariantCulture, out var cashFloor)
+                ? new FundamentalsSetting(growthFloor, rule, cashFloor)
+                : null;
+    }
+
     // The setting in words, as a card states the rule.
     public string Words =>
         FormattableString.Invariant($"revenue up more than {GrowthFloor * 100:0} per cent on the year-earlier quarter and growing faster than the quarter before")

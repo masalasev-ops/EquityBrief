@@ -78,6 +78,13 @@ public partial class ReadSurface
 
         Assert.Contains("data-picks=\"0\"", small, StringComparison.Ordinal);
         Assert.Contains(FundamentalsRule.NoTrend, Read(small), StringComparison.Ordinal);
+
+        // From the 19.7 correction of 2026-10-18 each card's chips, read off the provisional setting its night stored, as a
+        // family's card draws its rule's.
+        const string Chips = "<ul class=\"rule-chips\" data-chips=\"3\"><li class=\"rule-chip\">revenue up more than 0%</li><li class=\"rule-chip\">gross or operating margin up</li><li class=\"rule-chip\">cash at least 1 times income</li></ul>";
+
+        Assert.Contains(Chips, midCard, StringComparison.Ordinal);
+        Assert.Contains(Chips, small, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -111,5 +118,8 @@ public partial class ReadSurface
         Assert.Equal(["FF1"], CardPicksOf(card));
         Assert.Contains("Read on the S&P 500 by the S&P 400's and 600's step, apart from its own families.", Read(card), StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"FF1\" data-family=\"fundamentals\"", Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>")), StringComparison.Ordinal);
+
+        // From the 19.7 correction of 2026-10-18 its chips on the S&P 500 too, off the setting the S&P 500's night stored.
+        Assert.Contains("<ul class=\"rule-chips\" data-chips=\"3\"><li class=\"rule-chip\">revenue up more than 0%</li><li class=\"rule-chip\">gross or operating margin up</li><li class=\"rule-chip\">cash at least 1 times income</li></ul>", card, StringComparison.Ordinal);
     }
 }

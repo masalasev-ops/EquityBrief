@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - .claude/rules/checks.md - read-surface states the fundamentals-first family's rule today and its card's chips
+Corrects: the Loop page's summary read "not read" for the fundamentals-first family's rule today on every index, and its card drew no chips; carried from phase 17's sign-off as owed before phase 19's.
+Was:
+> read-surface: ... a release accepted at the late slot's start on the night and one read under an older version alone drawing none |
+Now:
+> read-surface: ... a release accepted at the late slot's start on the night and one read under an older version alone drawing none; and from the 19.7 correction of 2026-10-18 the fundamentals-first family's rule today on the Loop page's summary and its card's chips on Tonight, on every index the S&P 500's among them, read off the setting its night stored and back off the rendered pages, a provisional and an approved setting worked by hand, and the setting read back from its short form over the family's whole grid |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
 ### 2026-10-18 - .claude/rules/checks.md - fixture-expectations states the reference set's labels
 Authorised by: The release reading asks four closed questions written before any release is read, and code turns each answer into a reading
 Was:
