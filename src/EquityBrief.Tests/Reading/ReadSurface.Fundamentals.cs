@@ -78,6 +78,13 @@ public partial class ReadSurface
 
         Assert.Contains("data-picks=\"0\"", small, StringComparison.Ordinal);
         Assert.Contains(FundamentalsRule.NoTrend, Read(small), StringComparison.Ordinal);
+
+        // From the 19.7 correction of 2026-10-18 each card's chips, read off the provisional setting its night stored, as a
+        // family's card draws its rule's.
+        const string Chips = "<ul class=\"rule-chips\" data-chips=\"3\"><li class=\"rule-chip\">revenue up more than 0%</li><li class=\"rule-chip\">gross or operating margin up</li><li class=\"rule-chip\">cash at least 1 times income</li></ul>";
+
+        Assert.Contains(Chips, midCard, StringComparison.Ordinal);
+        Assert.Contains(Chips, small, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -111,5 +118,28 @@ public partial class ReadSurface
         Assert.Equal(["FF1"], CardPicksOf(card));
         Assert.Contains("Read on the S&P 500 by the S&P 400's and 600's step, apart from its own families.", Read(card), StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"FF1\" data-family=\"fundamentals\"", Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>")), StringComparison.Ordinal);
+
+        // From the 19.7 correction of 2026-10-18 its chips on the S&P 500 too, off the setting the S&P 500's night stored.
+        Assert.Contains("<ul class=\"rule-chips\" data-chips=\"3\"><li class=\"rule-chip\">revenue up more than 0%</li><li class=\"rule-chip\">gross or operating margin up</li><li class=\"rule-chip\">cash at least 1 times income</li></ul>", card, StringComparison.Ordinal);
+
+        // From the 17.8 correction of 2026-10-18 the family's S&P 500 trade, kept under the S&P 500 by the index families'
+        // step: on Past picks in a card of its own after the S&P 500's swing trades, named with its index, and on the Run
+        // page as the family's row after the S&P 500's own families, listed tonight, open, and provisional.
+        store.Execute(
+            "INSERT INTO index_family_trade (index_code, family, ticker, session_date, place, entry, stop, target, trail, cap) VALUES " +
+            $"('GSPC', 'fundamentals', 'FF1', '{TheSwitch}', 1, '80', '76', '88', NULL, 20);");
+
+        var picks = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks"));
+        var trades = Assert.Single(Blocks(picks, "<section class=\"card\" data-card=\"business-first-picks\">.*?</section>"));
+
+        Assert.Contains("1 S&P 500 fundamentals-first trade, 1 open", trades, StringComparison.Ordinal);
+        Assert.Contains($"<tr data-ticker=\"FF1\" data-index=\"S&P 500\" data-family=\"fundamentals\" data-listed=\"{TheSwitch}\" data-ended=\"open\"", trades, StringComparison.Ordinal);
+        Assert.True(picks.IndexOf("data-card=\"picks", StringComparison.Ordinal) < picks.IndexOf("data-card=\"business-first-picks\"", StringComparison.Ordinal));
+
+        var run = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{TheSwitch}"));
+        var setups = Regex.Matches(Assert.Single(Blocks(run, "<table class=\"list-table family-run\".*?</table>")), "<tr data-family=\"([a-z]+)\"").Select(match => match.Groups[1].Value);
+
+        Assert.Equal(["pullback", "breakout", "drift", "fundamentals"], setups);
+        Assert.Contains("<tr data-family=\"fundamentals\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-listed=\"1\" data-trades=\"1\" data-open=\"1\" data-finished=\"0\">", run, StringComparison.Ordinal);
     }
 }

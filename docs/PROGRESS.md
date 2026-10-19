@@ -3275,3 +3275,76 @@ Carried:    the new pin, written once this merges and before any reference relea
             lower-case names, put to the operator; the sign-offs of phases 18 and 19, owed to fresh sessions; the two
             items phase 17's sign-off carried; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that
             section.
+
+### 19.7 - correction: the Loop summary and the fundamentals-first family's card read its rule's chips off the setting its night stored, on every index   2026-10-18
+
+Queue:      done, phases 0 to 19 built and 20.0 to 20.4 merged with 20.3's two corrections and the reference set's
+            labels, PRs 486 to 496, pin 2 written and the history read started at 02:02 UTC; in progress, the two items
+            phase 17's sign-off carried, this the first; next, the second, 17.8's S&P 500 Past picks and Run page, then
+            the history read over the coming nights and its record, 20.2's record, and the sign-offs of phases 18 and 19
+            by fresh sessions.
+Found:      carried from phase 17's sign-off, owed before phase 19's: the Loop page's summary read "not read" for the
+            fundamentals-first family's rule today on every index, since no registration states its rule and the
+            provisional chips held no case for it; the same left its card on Tonight without the chips 15.7's row puts
+            its rule beneath, on every index.
+Built:      the family's setting read back from the short form its night stores; its chips, the revenue growth it
+            asks, the margins it asks to widen and the cash it asks for; the provisional chips reading them off the
+            setting the night stored on any index; and the Loop summary reading the S&P 500's night for this family
+            alone. No source a rule's version pins moves. The roster's row and the changelog.
+Measured:   the store's three nights of 2026-10-16 each hold the provisional setting, so each index's summary and card
+            read revenue up more than 0%, gross or operating margin up, and cash at least 1 times income.
+Tests:      1 new, 2471 in all: the summary over a constructed store, the S&P 400 at the provisional setting and the
+            S&P 500 at an approved one, each chip worked by hand, and the setting read back from its short form over the
+            whole grid and refused where a dial is missing or numeric; the chips added to the card's two tests on all
+            three indices.
+Claims:     1364, as before.
+Mutated:    the rule, stated before the runs: one mutation a property the correction adds, the smallest edit undoing it
+            alone, each run filtered to the three tests holding the chips with its red predicted, made in this checkout
+            and reverted with the editor. N1 the provisional chips with no case for the family: red at all three. N2 the
+            summary not reading the S&P 500's night: red at the summary's test alone. N3 the night's setting not read:
+            red at all three. N4 a numeric margins level read back: red at the summary's test. N5 both margins worded as
+            either: red at the summary's test, at the S&P 500's approved setting. Each as predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2471 of 2471 tests ran with none failed,
+            migrations 0 to 100 with none pending, schema version 100, against `data-ci` and never `data`; the phase
+            report 60 tables, 1364 claims, 1364 passing, none out of scope and none unexamined, 1375 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the second item, 17.8's S&P 500 Past picks and Run page drawing the family's S&P 500 trades; the history
+            read and its record; 20.2's record; 20.4's second remedy after the history read; the sentence-start rule and
+            the lower-case names, put to the operator; the sign-offs of phases 18 and 19, owed to fresh sessions; (G1),
+            SCHEMA's `family_trade` sentence, owed by the next edit of that section.
+
+### 17.8 - correction: the S&P 500's Past picks and Run page draw the fundamentals-first family's S&P 500 trades   2026-10-18
+
+Queue:      done, phases 0 to 19 built and 20.0 to 20.4 merged with 20.3's two corrections and the reference set's
+            labels, PRs 486 to 496, pin 2 written and the history read started, and the first item phase 17's sign-off
+            carried, the 19.7 correction above; in progress, this, the second; next, the history read over the coming
+            nights and its record, 20.2's record, and the sign-offs of phases 18 and 19 by fresh sessions.
+Found:      carried from phase 17's sign-off, owed before phase 19's: 17.8 keeps the family's S&P 500 trades under the
+            S&P 500 in the index families' trades, but the S&P 500's Past picks drew only its own families' trades and
+            the heavyweights' holdings, and its Run page a row for its own three families alone.
+Built:      the S&P 500's Past picks draws the family's S&P 500 trades in a card of their own after its trades and before
+            the heavyweights' holdings, each named with its setup and its index as the S&P 400's and 600's are, and
+            nothing where it has listed none; its Run page draws the family's row after its own families, counted from
+            the index families' picks and trades under the S&P 500 as an index's row is. Section 15.17's paragraph
+            states it, as it states the S&P 400's and 600's trades, so no claim is added; the roster's row and the
+            changelog.
+Measured:   the store holds none of the family's S&P 500 trades yet, so the card is drawn from the night one is listed,
+            and the Run page's row reads none listed and none kept until then.
+Tests:      none new, 2471 in all: the S&P 500's card test extended with a constructed trade read back off Past picks'
+            card after the trades' card and off the Run page's row; the Run page's setup rows read as every index's
+            families.
+Claims:     1364, as before.
+Mutated:    the rule, stated before the runs: one mutation a property the correction adds, the smallest edit undoing it
+            alone, each run filtered to the two tests holding it with its red predicted, made in this checkout and
+            reverted with the editor. M1 the card never drawn: red at the S&P 500's test. M2 the trades read under the S&P
+            400: red at the S&P 500's test. M3 the Run page's row left out: red at both. Each as predicted. The filter to
+            the family is not mutated: the index families' step keeps no other family's trade under the S&P 500.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2471 of 2471 tests ran with none failed,
+            migrations 0 to 100 with none pending, schema version 100, against `data-ci` and never `data`; the phase
+            report 60 tables, 1364 claims, 1364 passing, none out of scope and none unexamined, 1375 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the history read and its record; 20.2's record; 20.4's second remedy after the history read; the
+            sentence-start rule and the lower-case names, put to the operator; the sign-offs of phases 18 and 19, owed to
+            fresh sessions; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.

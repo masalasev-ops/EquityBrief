@@ -277,6 +277,48 @@ public partial class ReadSurface
     }
 
     [Fact]
+    public async Task TheLoopSummaryDrawsTheBusinessFirstFamilysRuleTodayFromTheSettingItsNightStoredOnEveryIndex()
+    {
+        // From the 19.7 correction of 2026-10-18: no rule of the business-first family is registered, so its rule today is
+        // the setting each index's night stored, read back from its short form; the S&P 400 at the provisional setting and
+        // the S&P 500 at an approved one, each chip worked by hand from the setting's words.
+        Assert.Equal(EquityBrief.Core.Families.FundamentalsRule.Provisional, EquityBrief.Core.Families.FundamentalsSetting.FromShort("growth 0|margins either|cash 1.0"));
+        Assert.All(EquityBrief.Core.Families.FundamentalsRule.Grid, setting => Assert.Equal(setting, EquityBrief.Core.Families.FundamentalsSetting.FromShort(setting.Short)));
+        Assert.Null(EquityBrief.Core.Families.FundamentalsSetting.FromShort("growth 0|margins 1|cash 1.0"));
+        Assert.Null(EquityBrief.Core.Families.FundamentalsSetting.FromShort("growth 0|cash 1.0"));
+        Assert.Null(EquityBrief.Core.Families.FundamentalsSetting.FromShort(null));
+
+        static string NightSettings(string setting) =>
+            "{\"floors\":{\"price\":5,\"dollarVolume\":10000000,\"sessions\":50},\"marketFloor\":0.45,\"pullback\":{\"setting\":\"strength 0.5\",\"cap\":63},"
+            + "\"fundamentals\":{\"setting\":\"" + setting + "\",\"words\":\"the setting in words\",\"cap\":63}}";
+
+        using var store = new TemporaryStore().Migrated();
+
+        Run(store, "loop-test-MID-20261009T120000Z", "MID", "2026-10");
+        Run(store, "loop-test-GSPC-20261009T120000Z", "GSPC", "2026-10");
+        store.Execute("INSERT INTO listing (ticker, session_date, reasons, fired_count, plan_at_listing, shadow_reasons) VALUES ('KEYS', '2026-10-16', '[]', 0, '{}', '[]');");
+        store.Execute(
+            "INSERT INTO index_family_night (index_code, session_date, members, breadth, market_open, settings, rebalanced) VALUES "
+            + $"('MID', '2026-10-16', 400, 0.5, 1, '{NightSettings("growth 0|margins either|cash 1.0")}', 0), "
+            + $"('GSPC', '2026-10-16', 503, 0.5, 1, '{NightSettings("growth 0.05|margins both|cash 1.2")}', 0);");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        static string RuleToday(string page) =>
+            Regex.Match(Card(WebUtility.HtmlDecode(page), "loop-summary"), "<tr data-family=\"fundamentals\".*?</td><td.*?</td>", RegexOptions.Singleline).Value;
+
+        Assert.EndsWith(
+            "<td><span class=\"rule-chips\"><span class=\"chip\">revenue up more than 0%</span><span class=\"chip\">gross or operating margin up</span><span class=\"chip\">cash at least 1 times income</span></span></td>",
+            RuleToday(await client.GetStringAsync("/screens/loop?universe=400")),
+            StringComparison.Ordinal);
+        Assert.EndsWith(
+            "<td><span class=\"rule-chips\"><span class=\"chip\">revenue up more than 5%</span><span class=\"chip\">gross and operating margins up</span><span class=\"chip\">cash at least 1.2 times income</span></span></td>",
+            RuleToday(await client.GetStringAsync("/screens/loop?universe=500")),
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void TheLearnedScoreIsNamedByTheMonthItWasFittedWithItsHashUnderThePointer()
     {
         var proposals = new[] { new LoopProposalRow("pullback", RidgeScore.Proposal + ", ranked 1", "the score", "today", "risks", 400, 19, 0.5, false, false, 4, 1, 0.1, true, 0.1, 2, false) };
