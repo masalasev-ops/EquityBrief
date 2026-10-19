@@ -245,7 +245,7 @@ public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock
 
     sealed record Pass(DateOnly AsOf, IReadOnlyList<Written> Written);
 
-    sealed record PassVersion(int Number, DateOnly AsOf, string Model, string Status, string Prose, string SourceIds, string? Parts);
+    internal sealed record PassVersion(int Number, DateOnly AsOf, string Model, string Status, string Prose, string SourceIds, string? Parts);
 
     async Task<long> CountAsync(SqliteConnection connection, CancellationToken cancellation)
     {
@@ -291,7 +291,9 @@ public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock
             ]);
     }
 
-    static async Task<PassVersion?> VersionAsync(SqliteConnection connection, string ticker, string section, int version, CancellationToken cancellation)
+    // A pass's version of a section and the documents it cites, read as the trial and the review read them and, from 20.7,
+    // as the local comparison reads them to ask a stored review again.
+    internal static async Task<PassVersion?> VersionAsync(SqliteConnection connection, string ticker, string section, int version, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
@@ -329,7 +331,7 @@ public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock
             : (null, asOf);
     }
 
-    static async Task<IReadOnlyList<StoredDocument?>> SourcesAsync(SqliteConnection connection, string sourceIds, CancellationToken cancellation)
+    internal static async Task<IReadOnlyList<StoredDocument?>> SourcesAsync(SqliteConnection connection, string sourceIds, CancellationToken cancellation)
     {
         var sources = new List<StoredDocument?>();
 

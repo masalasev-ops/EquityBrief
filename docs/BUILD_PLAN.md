@@ -1807,7 +1807,7 @@ The S&P 500's drift and the S&P 400's and 600's index rules gain the tone condit
 **Done when** the comparison over the fixture's evidence sets states each section's outcome on both sides through the claim checker, writes no store row and reads only the comparison's own folder of local recordings.
 
 ### 20.7 The reviewer on the local model, compared
-The stored reviews of the two cases and of the risks are reviewed again by Gemma over the same drafts, writing no store row, and the agreement is stated as each review's outcome and as the share of the drafts' sentences both kept or both changed. Switching the review job waits for the operator's word. Writes the runbook's command and the guide.
+The stored reviews of the two cases and of the risks are reviewed again by Gemma over the same drafts, writing no store row, and the agreement is stated as each review's outcome and as the share of the drafts' sentences both kept or both changed. It is `compare-reviews`, the local comparison's second form: each review the run log holds asked again as the review asked it, over the pass's version, the facts file of its night and the documents the version cites, its first round handed the draft and the section's checks and each round checked in memory, a review whose version is not stored or whose night's facts file the retention has emptied named and not asked, since asked over another night's facts it would be another review. Switching the review job waits for the operator's word. Writes the catalogue's and the matrix's rows widened, the runbook's command, the roster's row and the guide.
 
 **Done when** the comparison over constructed reviews states both agreements worked by hand and writes no store row, and its record states them over the stored reviews.
 
