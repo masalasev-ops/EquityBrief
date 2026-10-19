@@ -159,6 +159,61 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public void AFilersNameIsReadAcrossItsJoinsPointsAndStateAndATickerWhereverItStands()
+    {
+        // From the 20.3 correction of 2026-10-18, each worked by hand from the reference set's own releases. A state the
+        // SEC writes between backslashes, and "U.S." for the US it files.
+        Assert.Equal(["US BANCORP", "US"], ReleaseAnonymiser.Variants("US BANCORP \\DE\\"));
+        Assert.Equal(
+            "[company] ([ticker]) reported. Net income at [company] rose, and [ticker] grew.",
+            ReleaseAnonymiser.Anonymise("U.S. Bancorp (NYSE: USB) reported. Net income at U.S. Bancorp rose, and USB grew.", new ReleaseFiler(["US BANCORP \\DE\\"], ["USB"], [])));
+
+        // A state written bare after a legal word, a name's words joined by hyphens, and no first two words read where the
+        // second is an article, so "rent a sofa" stays.
+        Assert.Equal(["RENT A CENTER INC", "RENT A CENTER"], ReleaseAnonymiser.Variants("RENT A CENTER INC DE"));
+        Assert.Equal(
+            "[company] grew. Sales at [company] rose, as customers rent a sofa.",
+            ReleaseAnonymiser.Anonymise("Rent-A-Center grew. Sales at Rent-A-Center rose, as customers rent a sofa.", new ReleaseFiler(["UPBOUND GROUP, INC.", "RENT A CENTER INC DE"], ["UPBD"], [])));
+
+        // A name filed with spaces and written with a hyphen, and a class's ticker filed with a hyphen and written with a
+        // point or nothing.
+        Assert.Equal(
+            "[company] ([ticker], [ticker]) reported. [company] grew, and [ticker] rose.",
+            ReleaseAnonymiser.Anonymise("Brown-Forman Corporation (NYSE: BFA, BFB) reported. Brown-Forman grew, and BF.B rose.", new ReleaseFiler(["BROWN FORMAN CORP"], ["BF-B", "BF-A"], [])));
+
+        // A name filed with an ampersand and written with it or without it, and a figure before a word opening on a month's
+        // short name read as no date, as "Exhibit 99.1 Marsh" was read as "1 Mar".
+        Assert.Equal(
+            "[company] ([ticker]) reported. [company] grew. Exhibit 99.1 [company] reports, on [date].",
+            ReleaseAnonymiser.Anonymise("Marsh McLennan (NYSE: MMC) reported. Marsh & McLennan Companies grew. Exhibit 99.1 Marsh McLennan reports, on 16 April 2026.", new ReleaseFiler(["MARSH & MCLENNAN COMPANIES, INC."], ["MMC"], [])));
+
+        // A ticker opening a sentence, which no ordinary word is.
+        Assert.Equal(
+            "[ticker] had a strong quarter. [ticker] grew.",
+            ReleaseAnonymiser.Anonymise("AIG had a strong quarter. AIG grew.", new ReleaseFiler(["AMERICAN INTERNATIONAL GROUP, INC."], ["AIG"], [])));
+
+        // A product's name running into a title's word is no person, as "Automated Impella Controller" was taken for one;
+        // a name before its title with a comma between is.
+        Assert.Equal(
+            "Shipments of the Automated Widget Controller rose. “We grew,” said [person 1], Controller.",
+            ReleaseAnonymiser.Anonymise("Shipments of the Automated Widget Controller rose. “We grew,” said Jane Roe, Controller.", new ReleaseFiler(["ACME WIDGETS CORP"], ["AWX"], [])));
+
+        // A dateline's place with a wire's name, a bracket or a dash before its date, in mixed case with its state, and
+        // after its date; a heading's capitals before a date and a period's end left as they stand.
+        var acme = new ReleaseFiler(["ACME WIDGETS CORP"], ["AWX"], []);
+        var dash = char.ConvertFromUtf32(0x2014);
+
+        Assert.Equal("Results grew. [place]--(BUSINESS WIRE)-- [date] --Sales rose.", ReleaseAnonymiser.Anonymise("Results grew. LITTLE ROCK, Ark.--(BUSINESS WIRE)-- May 30, 2019 --Sales rose.", acme));
+        Assert.Equal("Sales rose. [place] ([date]) - Results grew.", ReleaseAnonymiser.Anonymise("Sales rose. CAMP HILL, PA (February 24, 2022) - Results grew.", acme));
+        Assert.Equal($"[place] {dash} [date] – Sales rose.", ReleaseAnonymiser.Anonymise($"Danvers, Mass. {dash} April 28, 2022 – Sales rose.", acme));
+        Assert.Equal("[date], [place] – Sales rose.", ReleaseAnonymiser.Anonymise("June 4, 2025, LOUISVILLE, Ky. – Sales rose.", acme));
+        Assert.Equal($"Results rose. [place], [date] {dash} Sales grew.", ReleaseAnonymiser.Anonymise($"Results rose. PHOENIX, AZ., November 5, 2025 {dash} Sales grew.", acme));
+        Assert.Equal(
+            "FOR IMMEDIATE RELEASE [date]. Sales for the Three Months Ended [date] rose. THREE MONTHS ENDED [date].",
+            ReleaseAnonymiser.Anonymise("FOR IMMEDIATE RELEASE May 30, 2019. Sales for the Three Months Ended May 30, 2019 rose. THREE MONTHS ENDED May 30, 2019.", acme));
+    }
+
+    [Fact]
     public void TheAnonymisersVersionIsThePinOfItsSourceAndPartOfThePromptsVersion()
     {
         var source = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Core", "Releases", "ReleaseAnonymiser.cs"));

@@ -12,16 +12,18 @@ public sealed record ReleaseFiler(IReadOnlyList<string> Names, IReadOnlyList<str
 // A results release with every name and date in it replaced by a neutral word, so the model reads what the release says
 // and not whose it is or when. Contact details first, since an address or a file name carries the company and the day;
 // then the dates and the fiscal labels, so "Q3" or "September 30" is never read as a name; then the dateline's place,
-// the filer's names and tickers, and its people. A name of several words is matched whatever its case; a single word,
-// a company name's first word or a surname, only as written with its capital and never as a sentence's first word,
-// and a company name's first word only where the common words below do not hold it. Product names stay. The version
-// is the pin of this file, and it is part of the reading's prompt version, so a changed rule is a new reading version.
+// the filer's names and tickers, and its people. A name of several words is matched whatever its case, its words joined
+// by a space, a hyphen or an ampersand alike and a short capitalised word written with points or without; a single
+// word, a company name's first word or a surname, only as written with its capital and never as a sentence's first
+// word, and a company name's first word only where the common words below do not hold it; a ticker as written, wherever
+// it stands. Product names stay. The version is the pin of this file, and it is part of the reading's prompt version, so
+// a changed rule is a new reading version.
 // see: A release is read with every name and date in it replaced by a neutral word, and product names kept
 public static class ReleaseAnonymiser
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "ff6d3fbf541f";
+    public const string Version = "175a444d0383";
 
     public const string Company = "[company]";
     public const string Ticker = "[ticker]";
@@ -58,6 +60,14 @@ public static class ReleaseAnonymiser
         "Inc", "Incorporated", "Corp", "Corporation", "Co", "Company", "Companies", "Ltd", "Limited", "LLC", "L.L.C",
         "LP", "L.P", "PLC", "N.V", "NV", "S.A", "SA", "AG", "SE", "Holdings", "Holding", "Group", "Bancorp",
         "Bancorporation", "Trust",
+    ];
+
+    // The states the SEC writes bare after a legal word, as RENT A CENTER INC DE.
+    static readonly string[] States =
+    [
+        "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DC", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA",
+        "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR",
+        "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
     ];
 
     // The titles beside which a run of capitalised words is a person's name.
@@ -152,7 +162,8 @@ public static class ReleaseAnonymiser
 
     static readonly Regex MonthDay = new(@"\b" + Month + @"\s+\d{1,2}(?:st|nd|rd|th)?\b(?:,?\s+\d{4}\b)?", RegexOptions.CultureInvariant);
 
-    static readonly Regex DayMonth = new(@"\b\d{1,2}(?:st|nd|rd|th)?\s+" + Month + @"(?:,?\s+\d{4}\b)?", RegexOptions.CultureInvariant);
+    // A month after its day ends its word, so "99.1 Marsh" or "1 Mayor" holds no date.
+    static readonly Regex DayMonth = new(@"\b\d{1,2}(?:st|nd|rd|th)?\s+" + Month + @"(?!\p{L})(?:,?\s+\d{4}\b)?", RegexOptions.CultureInvariant);
 
     static readonly Regex MonthYear = new(@"\b" + Month + @",?\s+\d{4}\b", RegexOptions.CultureInvariant);
 
@@ -198,8 +209,77 @@ public static class ReleaseAnonymiser
         @"(?<=^|[\s>|])(?:[A-Z][A-Za-z.'\-]*)(?:\s+[A-Z][A-Za-z.'\-]*){0,3}(?:,\s+[A-Z][A-Za-z.]{1,15})?(?=,\s+\[date\])",
         RegexOptions.CultureInvariant);
 
-    static string Dateline(string text) =>
-        DatelinePlace.Replace(text, match => match.Value.StartsWith('[') ? match.Value : Place);
+    // A dateline's place before its date with a wire's name, a dash, a bracket, a semicolon or spaces between, as
+    // "LITTLE ROCK, Ark.--(BUSINESS WIRE)-- [date]", "CAMP HILL, PA ([date])" or "Danvers, Mass." and a dash before it, or after its
+    // date, as "[date], LOUISVILLE, Ky. –": a town in capitals, with its state or country or none, or a town in mixed
+    // case with its state or country, the first a release writes alone, since a dateline opens a release once; a word of
+    // a heading or a table written in capitals is no town.
+    static readonly string[] DatelineStates =
+    [
+        "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DC", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA",
+        "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR",
+        "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
+        "Ala.", "Ariz.", "Ark.", "Calif.", "Colo.", "Conn.", "Del.", "D.C.", "Fla.", "Ga.", "Ill.", "Ind.", "Kan.", "Kans.",
+        "Ky.", "La.", "Md.", "Mass.", "Mich.", "Minn.", "Miss.", "Mo.", "Mont.", "Neb.", "Nev.", "N.H.", "N.J.", "N.M.",
+        "N.Y.", "N.C.", "N.D.", "Okla.", "Ore.", "Pa.", "R.I.", "S.C.", "S.D.", "Tenn.", "Tex.", "Vt.", "Va.", "Wash.",
+        "W.Va.", "Wis.", "Wyo.",
+        "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida",
+        "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine",
+        "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+        "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma",
+        "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah",
+        "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming",
+        "United Kingdom", "England", "Ireland", "Canada", "Bermuda", "Israel", "Netherlands", "Switzerland", "Luxembourg",
+        "Germany", "France", "Japan", "Singapore", "Australia",
+    ];
+
+    static readonly string[] NotPlaces =
+    [
+        "FOR", "IMMEDIATE", "RELEASE", "PRESS", "NEWS", "DATED", "DATE", "ENDED", "ENDING", "QUARTER", "QUARTERS", "YEAR",
+        "YEARS", "MONTH", "MONTHS", "WEEK", "WEEKS", "PERIOD", "PERIODS", "AS", "OF", "AT", "ON", "BY", "THROUGH", "FROM",
+        "TO", "AND", "THE", "RESULTS", "REPORTS", "REPORT", "REPORTED", "FISCAL", "GUIDANCE", "EARNINGS", "DIVIDEND",
+        "PAYABLE", "EXHIBIT", "DOCUMENT", "CONTACT", "CONTACTS", "UPDATE", "UPDATES", "OUTLOOK", "FULL", "HALF",
+        "BALANCE", "BALANCES", "TOTAL", "INVESTOR", "INVESTORS", "MEDIA", "EFFECTIVE", "ISSUED", "RECORD", "SINCE",
+        "UNTIL", "BEFORE", "AFTER", "BEGINNING", "END", "STATEMENT", "STATEMENTS", "ANNOUNCES", "ANNOUNCED", "DECLARES",
+        "DECLARED", "PAGE", "TABLE", "NOTE", "NOTES", "UNAUDITED", "AUDITED", "THREE", "SIX", "NINE", "TWELVE",
+    ];
+
+    // A state or a country as written, in capitals as well where it is more than its code, with a point after or none.
+    static readonly string DatelineState = "(?:" + string.Join("|", DatelineStates.Concat(DatelineStates.Where(state => state.Length > 3).Select(state => state.ToUpperInvariant())).Distinct(StringComparer.Ordinal).OrderByDescending(state => state.Length).Select(Regex.Escape)) + @")\.?(?![\p{L}])";
+
+    const string Wire = @"(?:BUSINESS\s+WIRE|Business\s+Wire|GLOBE\s+NEWSWIRE|Globe\s*Newswire|GlobeNewswire|PR\s*NEWSWIRE|PR\s*Newswire|PRNewswire|ACCESS\s*WIRE|ACCESSWIRE|ACCESS\s+Newswire|Marketwired|MARKETWIRED)";
+
+    // A dash before a dateline's date is a hyphen or any of the dashes from U+2010 to U+2015.
+    const string ToTheDate = @"(?=\s*[,;.:]{0,2}\s*(?:[-‐-―]{1,2}\s*)?(?:\(?\s*" + Wire + @"\s*\)?\s*[,;.:]?\s*(?:[-‐-―]{1,2}\s*)?)?\(?\s*\[date\])";
+
+    static readonly string CapitalsWord = @"(?!(?:" + string.Join("|", NotPlaces) + @")(?![\p{L}]))[A-Z][A-Z'’\-]*\.?(?![\p{Ll}])";
+
+    static readonly Regex CapitalsDateline = new(
+        @"(?<![\p{L}\p{N}\]])" + CapitalsWord + @"(?:\s+" + CapitalsWord + @"){0,3}(?:\s*,\s*" + DatelineState + ")?" + ToTheDate,
+        RegexOptions.CultureInvariant);
+
+    static readonly Regex TownDateline = new(
+        @"(?<![\p{L}\p{N}\]])[A-Z][a-z]+(?:[\s\-][A-Z][a-z]+){0,2}\s*,\s*" + DatelineState + ToTheDate,
+        RegexOptions.CultureInvariant);
+
+    static readonly Regex DateThenPlace = new(
+        @"(?<=\[date\]\s*,\s*)" + CapitalsWord + @"(?:\s+" + CapitalsWord + @"){0,3}\s*,\s*" + DatelineState + @"(?=\s*[-‐-―(])",
+        RegexOptions.CultureInvariant);
+
+    static string Dateline(string text)
+    {
+        var read = text;
+        var first = new[] { CapitalsDateline.Match(read), TownDateline.Match(read) }.Where(match => match.Success).MinBy(match => match.Index);
+
+        if (first is not null)
+        {
+            read = read[..first.Index] + Place + read[(first.Index + first.Length)..];
+        }
+
+        read = DateThenPlace.Replace(read, Place, 1);
+
+        return DatelinePlace.Replace(read, match => match.Value.StartsWith('[') ? match.Value : Place);
+    }
 
     // ---- the filer's names and tickers ------------------------------------------
 
@@ -233,13 +313,19 @@ public static class ReleaseAnonymiser
         return read;
     }
 
-    // A name as filed and each shorter name a release writes for it: a state the SEC adds after a slash and a leading
-    // "The" taken off, and each legal word at its end in turn, with the comma or the ampersand before it.
+    // A name as filed and each shorter name a release writes for it: a state the SEC adds between slashes or backslashes,
+    // or bare after a legal word, and a leading "The" taken off, and each legal word at its end in turn, with the comma or
+    // the ampersand before it.
     public static IReadOnlyList<string> Variants(string name)
     {
-        var filed = Regex.Replace(name, @"\s*/\s*[A-Z]{1,5}/?\s*$", string.Empty, RegexOptions.CultureInvariant).Trim();
+        var filed = Regex.Replace(name, @"\s*[/\\]\s*[A-Z]{1,5}[/\\]?\s*$", string.Empty, RegexOptions.CultureInvariant).Trim();
 
         filed = Regex.Replace(filed, @"\s+", " ", RegexOptions.CultureInvariant);
+
+        if (filed.Split(' ') is { Length: > 2 } parts && States.Contains(parts[^1], StringComparer.Ordinal) && LegalSuffixes.Contains(parts[^2].Trim(',', '.'), StringComparer.OrdinalIgnoreCase))
+        {
+            filed = string.Join(' ', parts[..^1]);
+        }
 
         var variants = new List<string>();
         var current = filed;
@@ -286,7 +372,7 @@ public static class ReleaseAnonymiser
         return [.. variants.Where(variant => variant.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase)];
     }
 
-    static readonly string[] Joining = ["&", "and", "of", "the", "for", "de", "du"];
+    static readonly string[] Joining = ["&", "and", "of", "the", "for", "de", "du", "a", "an"];
 
     static string FirstWord(string name)
     {
@@ -300,12 +386,14 @@ public static class ReleaseAnonymiser
 
     static string[] Words(string text) => text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-    // A name of several words, matched word by word whatever its case, a comma or spaces between them, a legal word's
-    // closing point optional and its short and long forms alike, as CORP for Corporation.
+    // A name of several words, matched word by word whatever its case: a comma or spaces between them, a hyphen, or an
+    // ampersand or "and" the release may write or leave out, so BROWN FORMAN reads Brown-Forman and MARSH & MCLENNAN reads
+    // Marsh McLennan; no space after a word's point, as A.O. Smith; a legal word's closing point optional and its short
+    // and long forms alike, as CORP for Corporation.
     static string NamePattern(string variant)
     {
-        var words = Words(variant).Select(word => word.Trim(','));
-        var body = string.Join(@",?\s+", words.Select(word =>
+        var words = Words(variant).Select(word => word.Trim(',')).Where(word => !Ampersands.Contains(word, StringComparer.OrdinalIgnoreCase));
+        var body = string.Join(Joined, words.Select(word =>
             LegalForms.FirstOrDefault(forms => forms.Contains(word.TrimEnd('.'), StringComparer.OrdinalIgnoreCase)) is { } forms
                 ? "(?:" + string.Join("|", forms.Select(form => Regex.Escape(form) + @"\.?")) + ")"
                 : WordPattern(word)));
@@ -313,13 +401,26 @@ public static class ReleaseAnonymiser
         return @"(?<![\p{L}\p{N}])" + body + @"(?![\p{L}\p{N}])";
     }
 
+    static readonly string[] Ampersands = ["&", "and"];
+
+    // What may stand between two words of a name: spaces after an optional comma with an ampersand or "and" between, a
+    // hyphen, or nothing after a word's point.
+    const string Joined = @"(?:,?\s+(?:(?:&|and)\s+)?|\s*&\s*|\s*[-‐‑‒–]\s*|(?<=\.))";
+
     static readonly string[][] LegalForms = [["Inc", "Incorporated"], ["Corp", "Corporation"], ["Co", "Company"], ["Ltd", "Limited"]];
 
     // One word of a name as a release may write it: either apostrophe for the other, any hyphen for a hyphen, an
-    // apostrophe before a closing s the SEC leaves out, as DOMINOS for Domino's, and a closing point optional.
+    // apostrophe before a closing s the SEC leaves out, as DOMINOS for Domino's, and a closing point optional; a word of
+    // one to three capital letters with a point after each or none, as U.S. for US.
     static string WordPattern(string word)
     {
         var bare = word.EndsWith('.') ? word[..^1] : word;
+
+        if (bare.Length is > 0 and <= 3 && bare.All(char.IsAsciiLetterUpper))
+        {
+            return string.Concat(bare.Select(letter => Regex.Escape(letter.ToString()) + @"\.?"));
+        }
+
         var body = string.Concat(bare.Select(letter => letter switch
         {
             '\'' or '’' => "['’]",
@@ -339,11 +440,18 @@ public static class ReleaseAnonymiser
     static string Titled(string word) =>
         word.Length == 0 ? word : char.ToUpperInvariant(word[0]) + word[1..].ToLowerInvariant();
 
+    // A class's ticker the SEC files with a hyphen, as BF-B, and a release writes with a point, a slash, a space or
+    // nothing, as BF.B or BFB.
+    static IEnumerable<string> TickerForms(string ticker) =>
+        ticker.Contains('-', StringComparison.Ordinal)
+            ? [ticker, ticker.Replace('-', '.'), ticker.Replace('-', '/'), ticker.Replace('-', ' '), ticker.Replace("-", string.Empty, StringComparison.Ordinal)]
+            : [ticker];
+
     static string Tickers(string text, IReadOnlyList<string> tickers)
     {
         var read = text;
 
-        foreach (var ticker in tickers.Where(ticker => ticker.Length > 0).Distinct(StringComparer.Ordinal).OrderByDescending(ticker => ticker.Length))
+        foreach (var ticker in tickers.Where(ticker => ticker.Length > 0).SelectMany(TickerForms).Distinct(StringComparer.Ordinal).OrderByDescending(ticker => ticker.Length))
         {
             read = Regex.Replace(
                 read,
@@ -351,10 +459,12 @@ public static class ReleaseAnonymiser
                 Ticker,
                 RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
-            // A ticker of one letter is a word of the language, so it is replaced in its exchange's form alone.
+            // A ticker of one letter is a word of the language, so it is replaced in its exchange's form alone; a longer one
+            // as written wherever it stands, a sentence's first word among them, since no sentence opens on it as an
+            // ordinary word.
             if (ticker.Length > 1)
             {
-                read = ReplaceWord(read, Regex.Escape(ticker), Ticker, anyCase: false);
+                read = Regex.Replace(read, @"(?<![\p{L}\p{N}\[])" + Regex.Escape(ticker) + @"(?![\p{L}\p{N}])", Ticker, RegexOptions.CultureInvariant);
             }
         }
 
@@ -388,8 +498,10 @@ public static class ReleaseAnonymiser
         @"\b(?:" + TitleAlternation + @")(?:\s*(?:,|and|&)\s*(?:" + TitleAlternation + @"))*\s*,?\s+(?<run>" + Run + ")",
         RegexOptions.CultureInvariant);
 
+    // A name before its title with a comma or an article between, as "Jane Roe, Controller" or "Jane Roe, our Chair", and
+    // never a run running straight into a title's word, as a product's "Automated Impella Controller".
     static readonly Regex NameThenTitle = new(
-        @"(?<run>" + Run + @")\s*,?\s+(?:the\s+|our\s+|\[company\]['’]s\s+)?(?:" + TitleAlternation + @")\b",
+        @"(?<run>" + Run + @")(?:\s*,\s+(?:the\s+|our\s+|\[company\]['’]s\s+)?|\s+(?:the|our)\s+|\s+\[company\]['’]s\s+)(?:" + TitleAlternation + @")\b",
         RegexOptions.CultureInvariant);
 
     static readonly Regex AfterContact = new(@"\bContacts?\s*:\s*(?<run>" + Run + ")", RegexOptions.CultureInvariant);
