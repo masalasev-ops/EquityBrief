@@ -26,6 +26,50 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the local run's guard of LM Studio's saved structured output
+Authorised by: The local run refuses to start where LM Studio's saved structured output for the model differs from the one its history read started under
+Was:
+> fixture-expectations: ... waiting to write while the night holds its lock, and a slot giving up on the local lock past its last instant; and from 20.2 the current filings feed, ...
+Now:
+> fixture-expectations: ... and a slot giving up on the local lock past its last instant; and from the 20.1 correction of 2026-10-19 a slot over saved model settings of the suite's own refused before anything is asked where LM Studio's saved structured output reads otherwise than the one its profile states the history read started under, in its words, ... and a profile stating none holding them to nothing; and from 20.2 the current filings feed, ...
+Why: each roster row says what its check asserts, and the correction's test extends fixture-expectations'.
+
+### 2026-10-19 - BUILD_PLAN.md - 20.1's profile carries the structured output the history read started under, and its done condition the guard
+Authorised by: The local run refuses to start where LM Studio's saved structured output for the model differs from the one its history read started under
+Was:
+> ... and the model's cutoff, read wherever a figure is split before and after it. The Run page gains ...
+> ... each named on the run's row; a model not loaded ...
+Now:
+> ... and the model's cutoff, read wherever a figure is split before and after it; from the operator's ruling of 2026-10-19 it gains as well the structured output LM Studio's saved settings for the model held when the history read started, json for pin 3's, which every run holds LM Studio's saved setting to before it reads anything, refusing where they differ and naming a setting it cannot read with the one the read started under, a guard beside the pin that moves no reading version. The Run page gains ...
+> ... each named on the run's row; from the 20.1 correction of 2026-10-19 a run refuses where LM Studio's saved structured output differs from the profile's, worked by hand over saved settings of the suite's own, and says so where they cannot be read; a model not loaded ...
+Why: the operator's ruling of 2026-10-19 has the local run guard LM Studio's saved structured output.
+
+### 2026-10-19 - RUNBOOK.md - the local profile's fourth setting and what a run refused by it asks
+Authorised by: The local run refuses to start where LM Studio's saved structured output for the model differs from the one its history read started under
+Was:
+> The local profile carries three settings for it, ... and `KnowledgeCutoff`, the model's cutoff from its maker's card as a date, 2025-01-31 for Gemma 4, which every figure split before and after the cutoff reads.
+Now:
+> The local profile carries three settings for it, ... which every figure split before and after the cutoff reads. From the 20.1 correction of 2026-10-19 it carries a fourth, `StructuredOutput`, `json`: ... set it back in LM Studio's settings for the model, or write a new pin with this setting changed beside it, before the next run. A run that cannot read the file says so on its row with the setting the read started under and goes on.
+Why: the operator's ruling of 2026-10-19 has the local run guard LM Studio's saved structured output, and the runbook says what a run it refuses asks of the operator.
+
+### 2026-10-19 - SCHEMA.md - the local run's row names what its guard read
+Authorised by: The local run refuses to start where LM Studio's saved structured output for the model differs from the one its history read started under
+Was:
+> ... and for the twice-read how many releases it compared and how many were answered alike. A slot whose fetch the SEC refused comes to `fetch refused` with the refusal as why.
+Now:
+> ... and for the twice-read how many releases it compared and how many were answered alike; and from the 20.1 correction of 2026-10-19, on a run whose profile states the structured output the history read started under, `structuredOutput`, ... A slot whose fetch the SEC refused comes to `fetch refused` with the refusal as why, and from that correction a run the guard refused comes to `setting differs` naming both settings (see: ...).
+Why: the operator's ruling of 2026-10-19 has the run say on its row what the guard read.
+
+### 2026-10-19 - ARCHITECTURE.html - the local run guards LM Studio's saved structured output, in 12's account and section 18's row
+Authorised by: The local run refuses to start where LM Studio's saved structured output for the model differs from the one its history read started under
+Was:
+> ... since the runtime answers a request naming a model it does not hold with whatever model it has loaded. A new pin is written by hand, ...
+> ... storing no reading under the pin, its row naming the part that differs (see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin)
+Now:
+> ... with whatever model it has loaded. From the 20.1 correction of 2026-10-19, before that, a run holds the structured output LM Studio's saved settings for the model hold, which LM Studio applies to every request, to the one its profile states the history read started under: ... (see: ...). A new pin is written by hand, ...
+> ... its row naming the part that differs (see: ...); from the 20.1 correction of 2026-10-19 the run refuses as well before it asks anything where LM Studio's saved structured output for the model differs from the one its profile states the history read started under, its outcome `setting differs` (see: ...)
+Why: the operator's ruling of 2026-10-19 has the local run guard LM Studio's saved structured output, a guard beside the pin.
+
 ### 2026-10-19 - RUNBOOK.md - the read surface started again after a merge carrying a migration only once the store holds it
 Corrects: on 2026-10-19 the read surface was started again from main after PRs 506 and 507 merged and drew blank screens, the store still at schema 100 while main read 101, found as it happened; the step after a merge said to start the page again and not that a migration the merge carries comes first.
 Was:

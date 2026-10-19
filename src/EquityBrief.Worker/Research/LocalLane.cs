@@ -105,6 +105,7 @@ public static class LocalLane
             ModelFile = Stated(chosen[LocalModelSettings.ModelFileName]),
             ModelsFolder = Stated(chosen[LocalModelSettings.ModelsFolderName]),
             KnowledgeCutoff = Cutoff(configuration, LocalModelSettings.KeyOf(flagged[0], LocalModelSettings.KnowledgeCutoffName)),
+            StructuredOutput = Stated(chosen[LocalModelSettings.StructuredOutputName]),
         };
     }
 
