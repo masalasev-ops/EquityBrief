@@ -26,6 +26,32 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-19 - .claude/rules/checks.md - fixture-expectations and read-surface state the corrections of phase 18's review of 2026-10-19
+Corrects: phase 18's quote never reached the provider, the Run page counted no ask it was asked, five of the phase 18 handoff's thirteen mutations survived on edges no test reached, and the pages drew a verdict's word for its mark, a stored count's "(s)", keys naming indigo and plum, a band of one price as a range, the catalogue's column names and axes at odd values, found by the review of 2026-10-19.
+Was:
+> fixture-expectations: ... the monthly run's steps built in the order their names state, each index's ideas after its readings' step and before its tester |
+> read-surface: ... and one naming no change drawing none, read back off the rendered page over a constructed store |
+Now:
+> fixture-expectations: ... each index's ideas after its readings' step and before its tester; and from the 18.1 correction of 2026-10-19 the quote feed built at the provider's own address where the settings name none, ... and from the 18.4 correction of 2026-10-19 results on the calendar's ninetieth day drawn |
+> read-surface: ... read back off the rendered page over a constructed store; and from the 18.1 correction of 2026-10-19 the Run page's quote line counting the asks the name pages wrote beside the quotes stored ... and from the 18.3 correction of 2026-10-19 each report's estimate and actual drawn to two places with the stored figure whole on its element |
+Why: each roster row says what its check asserts, and the corrections' tests extend both.
+
+### 2026-10-19 - BUILD_PLAN.md - the quote's operating row counts its five sessions from the 18.1 correction of 2026-10-19
+Corrects: every quote a name page asked from 18.1's merge to 2026-10-19 ended the worker before it wrote a row, so no session the trigger counted asked the provider for a quote, found by the review of 2026-10-19 reading the quote requests and Windows' application log.
+Was:
+> 5 sessions after 18.1 merges, read on the run page's row for the quote runs, which 18.1 builds.
+Now:
+> 5 sessions after the 18.1 correction of 2026-10-19 merges, the first under which a quote asks the provider at all, read on the run page's row for the quote runs, which 18.1 builds.
+Why: the cap is settled against sessions that asked quotes, and none before the correction did.
+
+### 2026-10-19 - ARCHITECTURE.html - the Run page's quote runs name each ask no run answered
+Corrects: the Run page said no delayed quote was asked on 2026-10-13, over five asks the name pages wrote that the quote job never answered, since it counted the quotes stored as the asks; found by the review of 2026-10-19.
+Was:
+> beneath the news labeller's line for the night's session: how many delayed quotes the name pages asked for against the day's cap and how long after its own time each was asked by the median and the longest; the runs by what each came to; a session that asked none saying so (see: ...)
+Now:
+> beneath the news labeller's line for the night's session: how many delayed quotes the name pages asked for against the day's cap and how long after its own time each was asked by the median and the longest; the runs by what each came to; a session that asked none saying so; from the 18.1 correction of 2026-10-19 the quotes stored beside the asks, and each ask no run of the quote job answered named with its instant (see: ...)
+Why: an ask the job never answered is a quote the page never drew, and the line is where the operator reads it.
+
 ### 2026-10-19 - RUNBOOK.md - the read surface started again after a merge carrying a migration only once the store holds it
 Corrects: on 2026-10-19 the read surface was started again from main after PRs 506 and 507 merged and drew blank screens, the store still at schema 100 while main read 101, found as it happened; the step after a merge said to start the page again and not that a migration the merge carries comes first.
 Was:
