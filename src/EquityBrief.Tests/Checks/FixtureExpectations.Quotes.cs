@@ -199,6 +199,43 @@ public partial class FixtureExpectations
             Query(other, $"SELECT outcome, json_extract(detail, '$.ticker') FROM run_log WHERE stage = '{QuoteJob.Stage}' ORDER BY started_at, run_id;"));
     }
 
+    [Fact]
+    public async Task AQuoteOnABandsEdgeIsInsideTheBandAndStandsNoDistanceFromIt()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        // The bands and the typical move of 2.00 the job's first test reads: a resistance from 215 to 218 and a support
+        // from 200 to 205.
+        store.Execute(
+            "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) VALUES " +
+            "('CVX', '2026-10-06', '215', '218', 'resistance', 1, 3, 1, '[]'), ('CVX', '2026-10-06', '200', '205', 'support', 1, 4, 1, '[]');");
+        store.Execute($"INSERT INTO indicator (ticker, session_date, name, value, bar_count) VALUES ('CVX', '2026-10-06', '{EquityBrief.Core.Indicators.IndicatorSeries.Atr14}', 2.0, 250);");
+
+        // A quote of 200.00, the support's low edge, is inside it and 15.00 under the resistance's low edge, 7.5 typical
+        // moves; one of 218.00, the resistance's high edge, is inside that and 13.00 above the support's high edge, 6.5.
+        var at = new DateTimeOffset(2026, 10, 7, 14, 58, 0, TimeSpan.Zero);
+
+        foreach (var (price, minutes) in new[] { (200.00m, 0), (218.00m, 10) })
+        {
+            var feed = new ConstructedQuoteFeed(new ProviderQuote(at.AddMinutes(minutes - 15), price, null, null, null));
+
+            Assert.Equal(QuoteJob.Quoted, (await new QuoteJob(new FixedClock(at.AddMinutes(minutes).AddSeconds(5), NewYork), store.DatabaseFile, feed).RunAsync("CVX", at.AddMinutes(minutes))).Outcome);
+        }
+
+        Assert.Equal(
+            ["200.00|200 205 support 0.0;215 218 resistance 7.5", "218.00|200 205 support 6.5;215 218 resistance 0.0"],
+            Query(store, "SELECT price, distances FROM live_quote ORDER BY asked_at;").Select(row =>
+            {
+                var parts = row.Split('|');
+
+                using var distances = JsonDocument.Parse(parts[1]);
+
+                return parts[0] + "|" + string.Join(";", distances.RootElement.EnumerateArray()
+                    .Select(band => $"{band.GetProperty("low").GetString()} {band.GetProperty("high").GetString()} {band.GetProperty("role").GetString()} {band.GetProperty("days").GetDouble().ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)}")
+                    .Order(StringComparer.Ordinal));
+            }));
+    }
+
     // A provider that never answers: each try waits until the request's own bound cancels it.
     sealed class SilentHandler : HttpMessageHandler
     {
