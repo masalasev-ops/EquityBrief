@@ -3803,3 +3803,66 @@ Carried:    pin 3 and its history read from the first release, by the remedy onc
             the native endpoint; 20.8's correction and merge; 20.3's accuracy record and 20.4's second remedy after pin
             3's read; the sign-offs of phases 18 and 19, owed to fresh sessions after 20.10; (G1), SCHEMA's
             `family_trade` sentence, owed by the next edit of that section.
+
+### 20.8 - the release readings join the ledger's catalogue, and what each answer came to   2026-10-19
+
+Queue:      done, 20.5, 20.7 with its correction, 20.6 and 20.9 merged, PRs 499 to 503, and the records of 20.2, 20.5 and
+            20.7, PR 504; in progress, this, merged while the history read runs, since only its remedy waits on the read;
+            next, once the read completes, 20.3's record, 20.4's second remedy and this remedy, then 20.10.
+Built:      the four release readings at the end of the ledger's catalogue, 76 readings: on a setup's session and on a
+            member's night, the local model's four answers on the newest results release the night may read that the SEC
+            accepted within the 95 days before it, under the newest reading version whose history read is complete,
+            through the one reader of the release readings; none where the newest such release's reading was refused or
+            is not held, and every one none until a version is complete. The night, the history build and the
+            point-in-time check read them alike; each night reads them again in its own rows of the seven days before it,
+            its row counting the rows it read again. Migration 102 adds the four columns to `setup`, every row in place,
+            and creates `release_answer_edge`, which the readings' step writes beside which readings go with winners: each
+            answer of each question over every family's settled setups on the index, a release holding no reading under
+            not read, with the setups, the winners and their mean result and edge, split at the version's cutoff by the
+            day the SEC accepted the release. The Ledger page draws it in the family's own unit; the Loop page draws beneath
+            a proposal reading a release reading, by a condition, a weight or a tree model, its total less the rule's in
+            the test years before the cutoff's year and from it, and the month's report states the same for the proposal
+            put and for each rule reading one. The per-rule test walks the drift's tone variant over the history, each
+            listing kept where the release its night reads for its print passes under the registration's version, and
+            keeps a rule whose version's history read is not complete not testable. No rule's version pins a source the
+            catalogue reads through, so nothing is registered again. The decision, the architecture's rows, the schema,
+            the runbook and the remedy file, the roster's rows, the guide and the changelog.
+Measured:   nothing live: every release reading is none until the history read marks its version complete, about two
+            days of the GPU from this entry; the remedy, the builds' times and the checks' results are its record.
+Tests:      10 new, 2498 in all: each reading worked by hand as a catalogue reading at a constructed session, at the
+            window's first day and the second before it, at the late slot's start and a second before, over a refused
+            newest release and through the ledger's context; what each answer came to over five settled setups, a release
+            on the cutoff's day before it and the day after after it; a change's test years split by hand and each kind of
+            change told reading one or none; the tone variant's walk keeping a listing by its print's release; the
+            point-in-time check rebuilding a setup's release readings from the releases its night could read; the
+            readings' step over a constructed store writing sixteen answers with its run and none before a version is
+            complete; the month's report's split; the night's step reading the week before again, three rows, and none on
+            a run again; and the Ledger page's card and the Loop page's split read back off the rendered pages.
+Claims:     1376, 4 new: the usefulness store, 15.19's row, 15.20's row and section 17's window row, 2 fewer than the
+            plan's about 6, the readings' count landing as words in 13.10 and the Setups row that stood and the monthly
+            run's report in 15.20's row.
+Mutated:    the rule, stated before the runs: one mutation a property the checkpoint adds, the smallest edit undoing it
+            alone, each run filtered to the tests naming the property with its red predicted, made in this checkout and
+            reverted with the editor. M1 the window's first day read as outside it: red at the catalogue test. M2 a refused
+            newest release passed over for the one before: red at the catalogue test. M3 a release on the cutoff's day read
+            as after it: red at the usefulness test. M4 the cutoff's year read as before it: red at the split test, the
+            report test and the Loop page's read-back, the report test's red read again by its assertion once its
+            constructed store's apostrophe was written as SQL takes it, which the first `tools/ci.ps1` over this tree
+            found. M5 every tone listing passing whatever its release reads: red at the
+            walk's test. M6 a rule whose version is not complete walked: red at the per-rule step's test. M7 the night's
+            read-again dropped: red at the night's test. M8 the readings' step writing no answer: red at the readings'
+            step's test. M9 the heavyweights' answers drawn in risks: red at the Ledger page's read-back. M10 the
+            point-in-time check rebuilding with no release: red at its test. M11 a tree model read as reading none: red at
+            the split test. Each as predicted. Not mutated: the night's choice of filer by its newest company row, which
+            19.13's tests already hold for the insiders' readings it shares.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over b5e81c48, the tree carrying this entry before it was
+            rebased onto PR 504's records, the figures below stated before the run: all six steps, 0 warnings, 0 errors,
+            2498 of 2498 tests ran with none failed, migrations 0 to 102 with none pending, schema version 102, against
+            `data-ci` and never `data`; the phase report 60 tables, 1376 claims, 1376 passing, none out of scope and none
+            unexamined, 1387 placements and verdicts reconciled against a floor of 34, 43 checks on the roster run and
+            passed. The rebase brings in documents alone, and the checks that read the corpus ran filtered over its tree.
+Carried:    the remedy, `tools/remedies/2026-10-19-20.8-the-release-readings-in-the-ledger.txt` with the three builds,
+            checks and readings' steps by hand, once the history read completes, its record stating the builds' times and
+            the checks' results; the tone variant's first walk, at the monthly run of 2026-11-07; the sentence-start rule
+            and the lower-case names, put to the operator; the sign-offs of phases 18 and 19, owed to fresh sessions after
+            20.10; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.

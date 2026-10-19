@@ -77,6 +77,12 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "Loop ideas"),
     ];
 
+    // 20.8's one: what each release answer came to.
+    internal static string[] ReleaseAnswerStoreRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Release answer edges"),
+    ];
+
     internal static CheckReach Reach => new(
         "schema-columns",
         ["docs/SCHEMA.md"],
@@ -188,6 +194,9 @@ public class SchemaColumns
 
             // 20.9, the idea generator's stored answers.
             .. LoopIdeaStoreRows,
+
+            // 20.8, what each release answer came to.
+            .. ReleaseAnswerStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

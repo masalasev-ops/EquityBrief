@@ -2251,8 +2251,9 @@ app.MapGet("/screens/ledger", async (HttpRequest request, ReadApi read, MarkRend
     }
 
     var links = family is null ? null : await read.LedgerLinksAsync(reading.Code, family);
+    var answers = family is null ? null : await read.LedgerAnswersAsync(reading.Code, family);
 
-    return Results.Content(page.LedgerRegion(marks, night, reading, selector, years, family, settled, path, links), "text/html; charset=utf-8");
+    return Results.Content(page.LedgerRegion(marks, night, reading, selector, years, family, settled, path, links, answers), "text/html; charset=utf-8");
 });
 
 app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page) =>
@@ -2291,7 +2292,10 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
         },
         StringComparer.Ordinal);
 
-    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest), chips), "text/html; charset=utf-8");
+    // From 20.8 the local model's cutoff, which a proposal reading a release reading is split at.
+    var cutoff = await read.ModelCutoffAsync();
+
+    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest, cutoff), chips), "text/html; charset=utf-8");
 });
 
 // The Loop's badge in the menu: the proposals each index's newest run puts to the operator that hold no word yet.

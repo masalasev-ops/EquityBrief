@@ -17,7 +17,7 @@ public static class LedgerReadings
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "f858ebd1ac63";
+    public const string Version = "a6a6ce340e21";
 
     // The reference high the pullback's readings are taken at, the live design's twenty sessions.
     public const int ReferenceHighSessions = 20;
@@ -114,6 +114,16 @@ public static class LedgerReadings
         new("insider_buyers", "the insiders with an open-market purchase filed in those 90 days, counted once each"),
         new("insider_officer_buy", "1 where an officer bought in the open market in those 90 days, 0 where none did"),
         new("insider_unplanned_sale", "the dollars of the open-market sales filed in those 90 days whose filing does not tick the Rule 10b5-1 box, over the company's value, none where the days reach before 2023-04-01, after Cohen, Malloy and Pomorski (2012)"),
+
+        // From 20.8 the release readings, appended so every reading before them keeps its place: the local model's four
+        // answers on the newest results release the night of the session may read that the SEC accepted within the 95
+        // days before it, read with its names and dates removed under the newest reading version whose history read is
+        // complete, each word turned into its reading by code.
+        // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+        new("release_results", "the quarter against what was expected in the newest results release readable on the session and accepted within the 95 days before it, as the local model read it with its names and dates removed: 1 better, 0 in line, -1 worse, none not stated"),
+        new("release_outlook", "that release's outlook: 1 raised, 0 kept, -1 lowered or withdrawn, none where none is given"),
+        new("release_tone", "the tone of management's own words in that release: 1 confident, 0 neutral, -1 cautious"),
+        new("release_demand", "demand or orders in that release: 1 stronger, 0 steady, -1 weaker, none not stated"),
     ];
 
     public static int Count => All.Count;

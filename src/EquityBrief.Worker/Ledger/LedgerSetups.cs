@@ -97,6 +97,16 @@ public sealed record LedgerContext(
 
     public InsiderCoverage InsiderSpans { get; init; } = InsiderCoverage.None;
 
+    // From 20.8 each member's results releases by ticker, its filer's, with their readings under the newest reading
+    // version whose history read is complete, which the four release readings read; none where the readings are read
+    // without them, and all four none for a ticker the store matches no filer for or holds no release of.
+    // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+    public IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? Releases { get; init; }
+
+    // A member's four release readings on a session, in the catalogue's order of their columns.
+    public IReadOnlyList<double?> ReleasesOf(string ticker, DateOnly session) =>
+        LedgerReleases.Readings(Releases?.GetValueOrDefault(ticker) is { } releases ? LedgerReleases.On(releases, session) : null);
+
     // A member's four insider readings on a session, each dollar figure over the company's value as the valuation
     // reading works it from the same facts and closes; all four none for a member the store matches no filer for, whose
     // filings no reader read, where a filer filing nothing reads nought.
@@ -618,6 +628,15 @@ public static class LedgerSetups
         Set("insider_buyers", insiders.Buyers);
         Set("insider_officer_buy", insiders.OfficerBuy);
         Set("insider_unplanned_sale", insiders.UnplannedSale);
+
+        // The release readings' four, the newest results release the night may read accepted within the window.
+        // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+        var releases = context.ReleasesOf(ticker, day);
+
+        for (var column = 0; column < LedgerReleases.Columns.Count; column++)
+        {
+            Set(LedgerReleases.Columns[column], releases[column]);
+        }
 
         return readings;
     }

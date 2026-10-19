@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Configuration;
+using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Loop;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
@@ -43,7 +44,11 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
         [
             new StoreTouch(Store.LoopRun, Touch.Read),
             new StoreTouch(Store.LoopProposal, Touch.Read),
+            new StoreTouch(Store.LoopTest, Touch.Read),
+            new StoreTouch(Store.LoopRule, Touch.Read),
+            new StoreTouch(Store.LoopRuleYear, Touch.Read),
             new StoreTouch(Store.LoopDecision, Touch.Read),
+            new StoreTouch(Store.ReadingPin, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
         ],
         Feeds: []);
@@ -106,6 +111,20 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
                 WHERE e.decision = 'declined' AND e.index_code = p.index_code AND e.family = p.family AND e.proposal = p.proposal AND e.run_id <> p.run_id
                     AND COALESCE(q.change, '') = COALESCE(p.change, ''))
         FROM loop_proposal p WHERE p.run_id = $run_id ORDER BY p.family, p.proposal;";
+
+    // From 20.8 a put proposal's test years, a rule's per-rule test of the month on an index with its test years, and the
+    // local model's cutoff, which a change or a rule reading a release reading is split at in the report.
+    const string ProposalYears = "SELECT year, proposed_units, proposed_total, current_total FROM loop_test WHERE run_id = $run_id AND family = $family AND proposal = $proposal ORDER BY year;";
+
+    const string RulesOfTheMonth = @"
+        SELECT r.run_id, r.family, r.rule, r.words, r.passed, r.why FROM loop_rule r
+        WHERE r.month = $month AND r.index_code = $index
+          AND r.run_id = (SELECT s.run_id FROM loop_rule s WHERE s.month = $month AND s.index_code = $index ORDER BY s.rowid DESC LIMIT 1)
+        ORDER BY r.rowid;";
+
+    const string RuleYears = "SELECT year, units, total, compared_total FROM loop_rule_year WHERE run_id = $run_id AND index_code = $index AND family = $family AND rule = $rule ORDER BY year;";
+
+    const string ModelCutoff = "SELECT cutoff FROM reading_pin WHERE history_completed_at IS NOT NULL ORDER BY id DESC LIMIT 1;";
 
     public async Task<MonthlyOutcome> RunAsync(string month, CancellationToken cancellation = default)
     {
@@ -193,6 +212,15 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
 
         var text = new StringBuilder();
         var put = 0;
+        DateOnly? cutoff = null;
+
+        await using (var command = Command(connection, ModelCutoff, []))
+        {
+            if (await command.ExecuteScalarAsync(cancellation) is string day)
+            {
+                cutoff = DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            }
+        }
 
         text.AppendLine(FormattableString.Invariant($"The monthly run for {month}, written {clock.UtcNow:yyyy-MM-dd HH:mm} UTC."));
         text.AppendLine("Each family on each index puts at most one proposal to you: the strongest that passed the tester, by its adjusted p-value.");
@@ -255,6 +283,25 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
                     put++;
                     text.AppendLine(FormattableString.Invariant(
                         $"  {family.Key}: put to you, {one.Proposal}: {one.Words ?? "no change in words"}; its adjusted p {one.Adjusted:0.####} against {LoopGate.Bar:0.####}, better in {one.Better} of {one.Counted} counted years, over {one.Units} units in {one.Blocks} blocks."));
+
+                    // From 20.8 a change reading a release reading, its test years before the local model's cutoff and
+                    // after it.
+                    // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+                    if (cutoff is { } day && LedgerReleases.Reads(one.Words))
+                    {
+                        var years = new List<(int, int, double, double)>();
+
+                        await using (var command = Command(connection, ProposalYears, [("$run_id", run), ("$family", one.Family), ("$proposal", one.Proposal)]))
+                        await using (var reader = await command.ExecuteReaderAsync(cancellation))
+                        {
+                            while (await reader.ReadAsync(cancellation))
+                            {
+                                years.Add((reader.GetInt32(0), reader.GetInt32(1), reader.GetDouble(2), reader.GetDouble(3)));
+                            }
+                        }
+
+                        text.AppendLine("    " + CutoffLine(LedgerReleases.Split(years, day), day, one.Unit));
+                    }
                 }
                 else if (passed == 0)
                 {
@@ -263,6 +310,43 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
                 else
                 {
                     text.AppendLine(FormattableString.Invariant($"  {family.Key}: {passed} of its {family.Count()} proposals passed and none is put to you, each stating no change or declined before over as many blocks as this run reads."));
+                }
+            }
+
+            // From 20.8 each rule of the index reading a release reading, its per-rule test of the month with its test
+            // years before the local model's cutoff and after it.
+            if (cutoff is { } split)
+            {
+                var rules = new List<(string Run, string Family, string Rule, bool Passed, string? Why)>();
+
+                await using (var command = Command(connection, RulesOfTheMonth, [("$month", month), ("$index", index)]))
+                await using (var reader = await command.ExecuteReaderAsync(cancellation))
+                {
+                    while (await reader.ReadAsync(cancellation))
+                    {
+                        if (LedgerReleases.Reads(reader.GetString(3)))
+                        {
+                            rules.Add((reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetInt64(4) == 1, reader.IsDBNull(5) ? null : reader.GetString(5)));
+                        }
+                    }
+                }
+
+                foreach (var (ruleRun, family, rule, passedTest, why) in rules)
+                {
+                    var years = new List<(int, int, double, double)>();
+
+                    await using (var command = Command(connection, RuleYears, [("$run_id", ruleRun), ("$index", index), ("$family", family), ("$rule", rule)]))
+                    await using (var reader = await command.ExecuteReaderAsync(cancellation))
+                    {
+                        while (await reader.ReadAsync(cancellation))
+                        {
+                            years.Add((reader.GetInt32(0), reader.GetInt32(1), reader.GetDouble(2), reader.GetDouble(3)));
+                        }
+                    }
+
+                    text.AppendLine(why is not null
+                        ? $"  {family}, {rule}: reads the release readings; its per-rule test names it not testable, {why}."
+                        : $"  {family}, {rule}: reads the release readings; its per-rule test {(passedTest ? "passed" : "did not pass")}. " + CutoffLine(LedgerReleases.Split(years, split), split, "risks"));
                 }
             }
         }
@@ -276,6 +360,22 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
         File.WriteAllText(report, text.ToString());
 
         return (true, FormattableString.Invariant($"{put} proposal(s) put to you over {runs.Count} index run(s), the report in {Folder}/{month}/{ReportFile}"));
+    }
+
+    // From 20.8 a change's or a rule's total less the one it is set against, on each side of the local model's cutoff.
+    // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+    public static string CutoffLine(CutoffSides sides, DateOnly cutoff, string unit)
+    {
+        static string Side(IReadOnlyList<int> years, int units, double difference, string unit) =>
+            years.Count == 0
+                ? "no test year"
+                : FormattableString.Invariant($"{(years.Count == 1 ? years[0].ToString(CultureInfo.InvariantCulture) : $"{years.Min()} to {years.Max()}")}, {difference:+0.000;-0.000} {unit} over {units} units");
+
+        return FormattableString.Invariant($"Before the local model's cutoff of {cutoff:yyyy-MM-dd}, which it may have known the outcome of: ")
+            + Side(sides.BeforeYears, sides.BeforeUnits, sides.BeforeProposed - sides.BeforeCurrent, unit)
+            + "; from it, the years relied on: "
+            + Side(sides.AfterYears, sides.AfterUnits, sides.AfterProposed - sides.AfterCurrent, unit)
+            + ".";
     }
 
     async Task<IReadOnlySet<string>> HeldAsync(string month, CancellationToken cancellation)

@@ -384,6 +384,9 @@ public partial class ReadSurface
             // 20.9's row on the Loop page, the idea generator's proposals.
             .. LoopIdeaClaims,
 
+            // 20.8's rows on the Ledger page and the Loop page, what the release readings came to and their split.
+            .. ReleaseAnswerClaims,
+
             // 17.7's learned score on the card and the Loop page, and section 18's two rows a reader sees on a card.
             .. ScorePageClaims,
             CheckReach.Key(Scope.FailureTable, "A model that cannot load"),

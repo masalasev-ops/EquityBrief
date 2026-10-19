@@ -1,4 +1,5 @@
 using System.Text;
+using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Loop;
 using EquityBrief.Core.Returns;
 
@@ -6,7 +7,7 @@ namespace EquityBrief.Web.Marks;
 
 // What a Loop page draws of the operator's word: every decision on the index with what the apply step did, the settings
 // approvals stored, the live alarm's periods, and the index's newest run, the one whose proposals are put to the operator.
-public sealed record LoopDecided(IReadOnlyList<LoopDecisionRow> Decisions, IReadOnlyList<LoopSettingRow> Settings, IReadOnlyList<LoopAlarmRow> Alarms, string? Newest);
+public sealed record LoopDecided(IReadOnlyList<LoopDecisionRow> Decisions, IReadOnlyList<LoopSettingRow> Settings, IReadOnlyList<LoopAlarmRow> Alarms, string? Newest, DateOnly? Cutoff = null);
 
 // The Loop page's marks: a family's rule today in the words its run stored, and each proposal tested against it, its
 // change, its verdict part by part and its test years with the setting each fold's learning years chose. Every figure
@@ -365,8 +366,30 @@ public sealed partial class MarkRenderer
             + $"<form class=\"loop-press\" method=\"post\" action=\"{Escaped(action)}\" data-loop-key=\"{Escaped(key)}\"><button type=\"submit\">Approve the restore</button></form><p class=\"loop-said\" aria-live=\"polite\"></p></div>";
     }
 
-    // One proposal: what it changes, its verdict part by part, its test years, and what the gate could detect.
-    public string LoopProposal(LoopProposalRow proposal, IReadOnlyList<LoopTestRow> years)
+    // From 20.8 a change or a rule reading a release reading on each side of the local model's cutoff: the total less the
+    // rule's over the test years before the cutoff's year, which the model may have known the outcome of, and over the
+    // years from it, the ones relied on.
+    // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+    public string CutoffSplit(CutoffSides sides, DateOnly cutoff, string unit)
+    {
+        string Side(IReadOnlyList<int> years, int units, double proposed, double current) =>
+            years.Count == 0
+                ? "no test year"
+                : Formatted($"{(years.Count == 1 ? years[0].ToString(Invariant) : $"{years.Min()} to {years.Max()}")}, {LoopFigure(unit, proposed - current)} over {LoopUnits(unit, units)}");
+
+        var before = sides.BeforeProposed - sides.BeforeCurrent;
+        var after = sides.AfterProposed - sides.AfterCurrent;
+        var day = cutoff.ToString("yyyy-MM-dd", Invariant);
+
+        return Formatted($"<p class=\"loop-cutoff\" data-cutoff=\"{day}\" data-before=\"{before.ToString("R", Invariant)}\" data-after=\"{after.ToString("R", Invariant)}\"><b>Before and after the local model's cutoff of {day}.</b> ")
+            + $"It reads what the local model read of the results releases. The total less the rule's in the test years before the cutoff, which the model may have known the outcome of: {Side(sides.BeforeYears, sides.BeforeUnits, sides.BeforeProposed, sides.BeforeCurrent)}. "
+            + $"In the years from it, the ones relied on: {Side(sides.AfterYears, sides.AfterUnits, sides.AfterProposed, sides.AfterCurrent)}.</p>";
+    }
+
+    // One proposal: what it changes, its verdict part by part, its test years, and what the gate could detect; and from
+    // 20.8, where its change reads a release reading, its test years before the local model's cutoff and after it, side by
+    // side, the years after it the ones relied on.
+    public string LoopProposal(LoopProposalRow proposal, IReadOnlyList<LoopTestRow> years, DateOnly? cutoff = null)
     {
         var book = proposal.Unit == LoopPoints;
         var fewest = LoopScreens.Fewest(book);
@@ -381,6 +404,11 @@ public sealed partial class MarkRenderer
         if (proposal.Finding is { } finding)
         {
             html.Append($"<p class=\"loop-finding\" data-finding=\"{Escaped(finding)}\"><b>Why.</b> {WithSignedFigures(Capitalised(finding))}.</p>");
+        }
+
+        if (cutoff is { } day && LedgerReleases.Reads(proposal.Words))
+        {
+            html.Append(CutoffSplit(LedgerReleases.Split(years.Select(year => (year.Year, year.ProposedUnits, year.ProposedTotal, year.CurrentTotal)), day), day, proposal.Unit));
         }
 
         var gate = proposal.Adjusted is { } p

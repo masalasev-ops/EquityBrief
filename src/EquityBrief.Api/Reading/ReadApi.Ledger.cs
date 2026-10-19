@@ -44,6 +44,60 @@ public sealed partial class ReadApi
           AND run_id = (SELECT run_id FROM loop_link WHERE index_code = $index ORDER BY rowid DESC LIMIT 1)
         ORDER BY rowid;";
 
+    // From 20.8 what each release answer came to for a family on an index: the rows of the newest run the walk-forward
+    // tester stored them under, in the order it wrote them, and none where no run stored any; the page works none of it.
+    // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+    const string NewestAnswersOf = @"
+        SELECT run_id, month, cutoff, question, answer, side, setups, winners, mean_result, mean_edge
+        FROM release_answer_edge
+        WHERE index_code = $index AND family = $family
+          AND run_id = (SELECT run_id FROM release_answer_edge WHERE index_code = $index ORDER BY rowid DESC LIMIT 1)
+        ORDER BY rowid;";
+
+    // From 20.8 the local model's cutoff the newest reading version whose history read is complete states, none before.
+    const string NewestCutoff = "SELECT cutoff FROM reading_pin WHERE history_completed_at IS NOT NULL ORDER BY id DESC LIMIT 1;";
+
+    public async Task<AnswerTable?> LedgerAnswersAsync(string index, string family)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestAnswersOf;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$family", family);
+
+        (string Run, string Month, DateOnly Cutoff)? held = null;
+        var rows = new List<AnswerEdge>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            held ??= (reader.GetString(0), reader.GetString(1), DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture));
+            rows.Add(new AnswerEdge(
+                family,
+                reader.GetString(3),
+                reader.GetString(4),
+                reader.GetString(5),
+                reader.GetInt32(6),
+                reader.GetInt32(7),
+                reader.GetDouble(8),
+                reader.GetDouble(9)));
+        }
+
+        return held is { } run ? new AnswerTable(run.Run, run.Month, run.Cutoff, rows) : null;
+    }
+
+    public async Task<DateOnly?> ModelCutoffAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestCutoff;
+
+        return await command.ExecuteScalarAsync() is string day ? DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
+    }
+
     public async Task<LinkTable?> LedgerLinksAsync(string index, string family)
     {
         await using var connection = Open();

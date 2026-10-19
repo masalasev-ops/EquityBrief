@@ -3478,6 +3478,24 @@ internal static class Scope
             Verdict.Pass,
             "over a constructed store a profile naming another model than the pin's refused before anything is asked and an answer under another runtime ending the run, each storing nothing it was not answered under the pin and writing its row with what it came to",
             ByExpectations),
+        // 20.8, the release readings in the ledger: what each answer came to, its store, the Loop page's split and the
+        // window's row.
+        [CheckReach.Key(LedgerPage, "What the release readings came to")] = new Scoped(
+            Verdict.Pass,
+            "the newest run's rows the tester stored for the index and the family chosen read back off the rendered page as stored, each answer after the cutoff and beside it before in the family's own unit with the month and the cutoff named, an older run's and another index's rows not drawn, and a line where no run has worked it",
+            ByReadSurface),
+        [CheckReach.Key(StoresTable, "Release answer edges")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LoopPage, "A change reading a release reading")] = new Scoped(
+            Verdict.Pass,
+            "a proposal whose change reads a release reading drawn with its total less the rule's before the cutoff's year and from it, worked by hand from its stored test years, and one reading none drawing no split, read back off the rendered page over a constructed store; the month's report's split for a rule reading one read back off the report written",
+            ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Ledger's release readings' window")] = new Scoped(
+            Verdict.Pass,
+            "each release reading worked by hand at a constructed session, a release accepted on the window's first day read and one the day before not, one at the late slot's start not read and one a second before it read, and a refused newest release reading none; a release on the cutoff's day before it and the day after after it; the figure read off the document against the constant",
+            ByExpectations),
         // 20.4, the drift's tone variant: 15.7's card row and section 17's window row.
         [CheckReach.Key("15.7 Tonight", "The drift's tone variant")] = new Scoped(
             Verdict.Pass,
@@ -5626,6 +5644,9 @@ internal static class Scope
         // 20.9's, which the plan calls the generator's stored answers.
         ["Loop ideas"] = "20.9",
 
+        // 20.8's, which the plan calls the usefulness store.
+        ["Release answer edges"] = "20.8",
+
         // 12.2's versions, which the plan names by the table rather than the store.
         ["Filter versions"] = "12.2",
 
@@ -6156,6 +6177,8 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "The local model's runs")] = "20.1",
         [CheckReach.Key("15.7 Tonight", "The drift's tone variant")] = "20.4",
         [CheckReach.Key(LoopPage, "The idea generator's proposals")] = "20.9",
+        [CheckReach.Key(LedgerPage, "What the release readings came to")] = "20.8",
+        [CheckReach.Key(LoopPage, "A change reading a release reading")] = "20.8",
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks, a bar for each of the last twenty evenings split into the names new that evening and those the evening before also listed")] = "12.3",
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks, the night's split in words")] = "12.3",
         [CheckReach.Key("15.10 Run", "Research and spend, the month's spend against the month cap")] = "12.3",

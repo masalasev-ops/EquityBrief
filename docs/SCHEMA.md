@@ -105,6 +105,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `loop_rule` | WalkForwardTester | none | none |
 | `loop_rule_year` | WalkForwardTester | none | none |
 | `loop_link` | WalkForwardTester | none | none |
+| `release_answer_edge` | WalkForwardTester | none | none |
 | `loop_decision` | ReadApi | none | none |
 | `loop_applied` | LoopApply | none | none |
 | `provisional_setting` | LoopApply | none | none |
@@ -1503,6 +1504,10 @@ Grain: one row per index, family, stock and session a family's loose gates passe
 | `insider_buyers` | REAL | the insiders with an open-market purchase filed in those 90 days, counted once each |
 | `insider_officer_buy` | REAL | 1 where an officer bought in the open market in those 90 days, 0 where none did |
 | `insider_unplanned_sale` | REAL | the dollars of the open-market sales filed in those 90 days whose filing does not tick the Rule 10b5-1 box, over the company's value, null where the days reach before 2023-04-01 |
+| `release_results` | REAL | from 20.8 the results answer of the newest results release the night of the session may read that the SEC accepted within the 95 days before it, read by the local model with its names and dates removed under the newest reading version whose history read is complete: 1 better, 0 in line, -1 worse, null not stated, and null where no release is readable or its reading was refused or is not held |
+| `release_outlook` | REAL | that release's outlook: 1 raised, 0 kept, -1 lowered or withdrawn, null where none is given |
+| `release_tone` | REAL | the tone of management's own words in that release: 1 confident, 0 neutral, -1 cautious |
+| `release_demand` | REAL | demand or orders in that release: 1 stronger, 0 steady, -1 weaker, null not stated |
 
 Primary key: `index_code`, `family`, `ticker`, `session_date`. Indexed on `index_code`, `settled` and `session_date`, which the step closing the windows reads by.
 
@@ -1563,7 +1568,7 @@ Grain: one row per index, member and night the ledger read, from 19.2.
 
 Primary key: `index_code`, `session_date`, `ticker`.
 
-**Every member's readings on a night, written by the setup ledger's night step beside its setups and its own deleter: a night run again replaces its own rows** (see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed). A member the night holds no bar for has no row, and the history's build writes none. The readings are statistics, stored as text only because the catalogue's readings sit in one cell; each reads back as the double it was. The read surface reads them for the chart of what is behind a stock, its percentiles among the members and its push on the learned score. From 19.12 the list holds the published factors after every reading before them, with no column added, and a row written before them holds the readings before them alone, which the read surface reads with the ones it lacks as none. From 19.13 it holds the four insider readings after them, and the setup ledger is its updater too: once the night's filings refresh has stored the session before's filings, it writes the night's rows' four insider readings again in place, every other reading left as the step wrote it (see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted).
+**Every member's readings on a night, written by the setup ledger's night step beside its setups and its own deleter: a night run again replaces its own rows** (see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed). A member the night holds no bar for has no row, and the history's build writes none. The readings are statistics, stored as text only because the catalogue's readings sit in one cell; each reads back as the double it was. The read surface reads them for the chart of what is behind a stock, its percentiles among the members and its push on the learned score. From 19.12 the list holds the published factors after every reading before them, with no column added, and a row written before them holds the readings before them alone, which the read surface reads with the ones it lacks as none. From 19.13 it holds the four insider readings after them, and the setup ledger is its updater too: once the night's filings refresh has stored the session before's filings, it writes the night's rows' four insider readings again in place, every other reading left as the step wrote it (see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted). From 20.8 it holds the four release readings after them, and each night's step writes the release readings of the rows of the seven days before the night again in place where they differ from what it reads now, a slot having since read a release those nights could read, every other reading left as written (see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff).
 
 ### loop_run
 Grain: one row per tester run on an index.
@@ -1780,6 +1785,28 @@ Grain: one row per run, index, family and reading of which readings go with winn
 Primary key: `run_id`, `index_code`, `family`, `reading`.
 
 **Written once by the walk-forward tester's monthly step with its run log row**, a row for every reading of the catalogue for each family the index's ledger holds settled setups of, so the Ledger page draws the newest run's rows and works none of them; no engine reads it, and its words move no rule (see: Which readings go with winners is worked by the monthly run and stored, and the words move no rule).
+
+### release_answer_edge
+Grain: one row per readings' run, index, family, question, answer and side of the local model's cutoff, from 20.8.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the readings' step's run, the one it writes `loop_link` under |
+| `month` | TEXT | the month the run is for, as `yyyy-MM` |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | the setups' family |
+| `question` | TEXT | `results`, `outlook`, `tone` or `demand` |
+| `answer` | TEXT | the word the question lists that the release answered, or `not read` where the release's reading was refused or is not held |
+| `side` | TEXT | `before` where the SEC accepted the release on or before the cutoff's day, `after` where after it |
+| `cutoff` | TEXT | the cutoff the reading version states, as `yyyy-MM-dd` |
+| `setups` | INTEGER | the family's settled setups on the index whose release read on their session holds the answer on that side |
+| `winners` | INTEGER | of those, the ones whose edge stood above nothing |
+| `mean_result` | REAL | their mean result, in risks or for the sector heavyweights as a share of the buy, as the setups store it |
+| `mean_edge` | REAL | their mean edge over their benchmark, in the same unit |
+
+Primary key: `run_id`, `index_code`, `family`, `question`, `answer`, `side`.
+
+**Written once by the walk-forward tester's readings step beside `loop_link`, in the same transaction**, a row for every answer a side holds, from the settled setups whose release the ledger reads on their session under the newest reading version whose history read is complete, and none where no version's history read is complete; the Ledger page draws the newest run's rows and works none of them, and no engine reads it (see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff).
 
 ### loop_decision
 Grain: one row per word the operator gave on a proposal of a run, or on a restore.

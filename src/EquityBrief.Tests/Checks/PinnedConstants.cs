@@ -312,6 +312,8 @@ public class PinnedConstants
             new("Release reading's samples", "100", Core.Releases.ReleaseSamples.ReferenceCount, "ReleaseSamples.ReferenceCount"),
             new("Release reading's samples", "20261018", Core.Releases.ReleaseSamples.Seed, "ReleaseSamples.Seed"),
             new("Release reading's samples", "2026", Core.Releases.ReleaseSamples.Before.Year, "ReleaseSamples.Before's year"),
+            // The ledger's release readings' window, 20.8.
+            new("Ledger's release readings' window", "95", Core.Ledger.LedgerReleases.WindowDays, "LedgerReleases.WindowDays"),
             new("Live quotes a day", "500", Core.Quotes.QuoteLimits.DailyCap, "QuoteLimits.DailyCap"),
             new("Quote interval", "5", Core.Quotes.QuoteLimits.IntervalMinutes, "QuoteLimits.IntervalMinutes"),
             new("Report windows", "8", Core.Report.QuarterLines.GrowthQuarters, "QuarterLines.GrowthQuarters"),

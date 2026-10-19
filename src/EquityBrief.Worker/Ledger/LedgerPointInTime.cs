@@ -47,8 +47,9 @@ public static class LedgerPointInTime
         IReadOnlyDictionary<string, string?> sectors,
         IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>> facts,
         string ticker,
-        LedgerInsiders? insiders = null) =>
-        Read(cut, income, sectors, facts, ticker, insiders) is { } read
+        LedgerInsiders? insiders = null,
+        IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? releases = null) =>
+        Read(cut, income, sectors, facts, ticker, insiders, releases) is { } read
             ? LedgerSetups.Readings(index, read.Name, read.Series[read.Name], Closes(read.Series[read.Name]), read.Bar, read.Sessions[read.At], read.Members, read.Calendar, read.At, market, read.Context)
             : null;
 
@@ -65,9 +66,10 @@ public static class LedgerPointInTime
         IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>> facts,
         string family,
         string ticker,
-        LedgerInsiders? insiders = null)
+        LedgerInsiders? insiders = null,
+        IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? releases = null)
     {
-        if (Read(cut, income, sectors, facts, ticker, insiders) is not { } read)
+        if (Read(cut, income, sectors, facts, ticker, insiders, releases) is not { } read)
         {
             return (false, null);
         }
@@ -93,7 +95,8 @@ public static class LedgerPointInTime
         IReadOnlyDictionary<string, string?> sectors,
         IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>> facts,
         string ticker,
-        LedgerInsiders? insiders)
+        LedgerInsiders? insiders,
+        IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? releases)
     {
         var calendar = cut.Sessions;
 
@@ -130,6 +133,7 @@ public static class LedgerPointInTime
             Ranks = new FactorRanks(series, members),
             Insiders = insiders?.Rows,
             InsiderSpans = insiders?.Spans ?? InsiderCoverage.None,
+            Releases = releases,
         });
     }
 

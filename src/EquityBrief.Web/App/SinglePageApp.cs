@@ -3393,7 +3393,8 @@ public sealed partial class SinglePageApp : IComponent
         string? family,
         IReadOnlyList<EquityBrief.Core.Ledger.LedgerSetupRow> settled,
         EquityBrief.Core.Ledger.LedgerPath? path,
-        EquityBrief.Core.Ledger.LinkTable? links = null)
+        EquityBrief.Core.Ledger.LinkTable? links = null,
+        EquityBrief.Core.Ledger.AnswerTable? answers = null)
     {
         static string Named(string word) => word switch
         {
@@ -3466,6 +3467,20 @@ public sealed partial class SinglePageApp : IComponent
             title: family is null ? "Which readings go with winners" : "Which readings go with winners: " + Escaped(Named(family)),
             stamp: Cards.Night(night),
             region: "reading-links"));
+
+        // From 20.8 what each answer the local model gave of the results releases came to on the family's settled setups,
+        // after the model's cutoff and beside it before, as the monthly run stored it.
+        // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+        region.Append(Cards.Computed(
+            "Setup ledger",
+            marks.LedgerAnswers(family ?? string.Empty, answers)
+                + Cards.Key(
+                    "How to read it.",
+                    "Each row is one answer the local model gave to one of its four questions on the newest results release of each settled setup, read with the release's names and dates removed: how many setups held it, how many of them won, a winner one whose edge was above nothing, and their mean result and edge in the unit each heading names, first over the releases the SEC accepted after the model's cutoff and beside them over those before. A setup whose release holds no reading stands under not read.",
+                    "The model was trained on text up to its cutoff, so before it it may have known what followed a release: the columns after the cutoff are the ones to rely on. Nothing here changes a rule."),
+            title: family is null ? "What the release readings came to" : "What the release readings came to: " + Escaped(Named(family)),
+            stamp: Cards.Night(night),
+            region: "release-answers"));
         region.Append("</section>");
 
         return region.ToString();
@@ -3578,7 +3593,7 @@ public sealed partial class SinglePageApp : IComponent
                     decision = "<p class=\"loop-pressed-above\">Its presses stand in the summary above.</p>";
                 }
 
-                body.Append(marks.LoopProposalRow(proposal, [.. tests.Where(test => test.Family == family && test.Proposal == proposal.Proposal)], decision));
+                body.Append(marks.LoopProposalRow(proposal, [.. tests.Where(test => test.Family == family && test.Proposal == proposal.Proposal)], decision, decided?.Cutoff));
             }
 
             summary.Add(new LoopSummaryRow(

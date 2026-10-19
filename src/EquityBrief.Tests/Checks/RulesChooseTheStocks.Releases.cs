@@ -8,9 +8,11 @@ namespace EquityBrief.Tests.Checks;
 // rules-choose-the-stocks, 20.4: the release readings are the one thing a model wrote that a component deciding a pick may
 // read. It reads them through the one reader of the release readings alone, which hands a rule a release only under a
 // registered version whose history read is complete, so no source under the deciding folders names their table; the
-// research sections, the theme sections and the news labels stay barred to every deciding component.
+// research sections, the theme sections and the news labels stay barred to every deciding component. From 20.8 the setup
+// ledger and the walk-forward tester read them as well, through the same reader.
 // see: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and no model judges a stock
 // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+// see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
 public partial class RulesChooseTheStocks
 {
     // The table a pinned local model's readings of the releases are stored in, and the one reader every component deciding
@@ -30,9 +32,14 @@ public partial class RulesChooseTheStocks
 
         // The scope, by name: the local run writes them, its accuracy report and the read surface read them, and the night's
         // family evaluator and the S&P 400's and 600's families hand them to the drift, as the replay and the cards reading
-        // the evaluator's inputs do.
-        Assert.Equal(["FamilyEvaluator", "FamilyReplay", "IndexFamilies", "LocalRun", "ReadApi", "ReleaseAccuracy", "RuleCards"], reading);
+        // the evaluator's inputs do; and from 20.8 the setup ledger reads them for its four release readings and the
+        // walk-forward tester for the tone variant's walk and what each answer came to, through the one reader as every
+        // deciding read is.
+        Assert.Equal(["FamilyEvaluator", "FamilyReplay", "IndexFamilies", "LocalRun", "ReadApi", "ReleaseAccuracy", "RuleCards", "SetupLedger", "WalkForwardTester"], reading);
         Assert.Equal(["FamilyEvaluator"], Deciding.Where(one => one.Access.On(DataStore.ReleaseReading) != Touch.None).Select(one => one.Name));
+        Assert.Equal(
+            ["FamilyEvaluator", "IndexFamilies", "SetupLedger", "WalkForwardTester"],
+            PickMaking.Where(one => one.Access.On(DataStore.ReleaseReading) != Touch.None).Select(one => one.Name).Order(StringComparer.Ordinal));
 
         var sources = SourcesUnderTheFolders();
         var naming = sources.SelectMany(file => NamesTheReleaseReadings(file, File.ReadAllText(Path.Combine(Repository.Root, file)))).ToArray();

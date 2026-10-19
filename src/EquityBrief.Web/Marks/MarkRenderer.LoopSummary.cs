@@ -94,7 +94,7 @@ public sealed partial class MarkRenderer
     // A proposal as one row opening to its reasons: its change in short words, its p as a meter, its years better, its
     // trimmed difference and its count in the summary, and beneath the part by part verdict, the test years as paired
     // bars beside their figures, and the presses.
-    public string LoopProposalRow(LoopProposalRow proposal, IReadOnlyList<LoopTestRow> years, string presses)
+    public string LoopProposalRow(LoopProposalRow proposal, IReadOnlyList<LoopTestRow> years, string presses, DateOnly? cutoff = null)
     {
         var book = proposal.Unit == LoopPoints;
         var html = new StringBuilder();
@@ -108,7 +108,7 @@ public sealed partial class MarkRenderer
         html.Append(Invariant, $"<span class=\"lr-count\">{LoopUnits(proposal.Unit, proposal.Units)} of {(book ? LoopScreens.BookMonths : LoopScreens.SwingTrades)}</span>");
         html.Append("</summary>");
         html.Append(LoopYearBars(proposal, years));
-        html.Append(LoopProposal(proposal, years));
+        html.Append(LoopProposal(proposal, years, cutoff));
         html.Append(presses);
         html.Append("</details>");
 

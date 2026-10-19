@@ -722,7 +722,36 @@ public static class SchemaMigrations
         new Migration(99, "create release_document and release_day", CreateReleases),
         new Migration(100, "create release_filer, release_reading and release_probe", CreateReleaseReadings),
         new Migration(101, "create loop_idea", CreateLoopIdeas),
+        new Migration(102, "add setup's release readings, and create release_answer_edge", AddReleaseReadings),
     ];
+
+    // From 20.8: the setup ledger's four release readings, a column a reading after every column before them, each row
+    // kept and the new columns null until a build or a night writes them; and what each answer of each question came to
+    // on every family's settled setups, worked by the monthly run's readings step a row a run, index, family, question,
+    // answer and side of the model's cutoff. Nothing is copied and nothing is dropped.
+    // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+    const string AddReleaseReadings = @"
+        ALTER TABLE setup ADD COLUMN release_results REAL;
+        ALTER TABLE setup ADD COLUMN release_outlook REAL;
+        ALTER TABLE setup ADD COLUMN release_tone REAL;
+        ALTER TABLE setup ADD COLUMN release_demand REAL;
+
+        CREATE TABLE release_answer_edge (
+            run_id       TEXT    NOT NULL,
+            month        TEXT    NOT NULL,
+            index_code   TEXT    NOT NULL,
+            family       TEXT    NOT NULL,
+            question     TEXT    NOT NULL,
+            answer       TEXT    NOT NULL,
+            side         TEXT    NOT NULL CHECK (side IN ('before', 'after')),
+            cutoff       TEXT    NOT NULL,
+            setups       INTEGER NOT NULL,
+            winners      INTEGER NOT NULL,
+            mean_result  REAL,
+            mean_edge    REAL,
+            PRIMARY KEY (run_id, index_code, family, question, answer, side)
+        ) STRICT;
+    ";
 
     // From 20.9: each answer the idea generator stored, a row a prompt and reading version, with the prompt as it was put,
     // what the answer came to, its cause where refused and its text. Created empty, nothing copied and nothing dropped.

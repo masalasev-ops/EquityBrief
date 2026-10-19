@@ -65,6 +65,10 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             new StoreTouch(Store.FilterVersion, Touch.Read),
             new StoreTouch(Store.ShapeProposal, Touch.Read),
             new StoreTouch(Store.LoopIdea, Touch.Read),
+            new StoreTouch(Store.ReleaseDocument, Touch.Read),
+            new StoreTouch(Store.ReleaseReading, Touch.Read),
+            new StoreTouch(Store.ReadingPin, Touch.Read),
+            new StoreTouch(Store.ReleaseAnswerEdge, Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -409,6 +413,12 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         VALUES ($run_id, $month, $index_code, $family, $reading, $setups, $years, $correlation, $same_way, $shuffled, $words);
     ";
 
+    // From 20.8 a row of what a release answer came to, which the readings' step writes with its run.
+    const string InsertAnswerEdge = @"
+        INSERT INTO release_answer_edge (run_id, month, index_code, family, question, answer, side, cutoff, setups, winners, mean_result, mean_edge)
+        VALUES ($run_id, $month, $index_code, $family, $question, $answer, $side, $cutoff, $setups, $winners, $mean_result, $mean_edge);
+    ";
+
     // The monthly per-rule test on an index for a month: every family rule standing on the index when the run begins
     // walked at its own settings over the history and judged, each variant against its live or provisional rule and each
     // of those against its benchmark, written whole; with print, printed and nothing written. It adopts and retires
@@ -491,7 +501,8 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             await StoredTreesAsync(databaseFile, cancellation),
             filter,
             output.WriteLine,
-            pullbacks));
+            pullbacks,
+            await TonesAsync(read, cancellation)));
         var tested = RuleTests.Judge(read, rules);
         var runId = FormattableString.Invariant($"{RulesVerb}-{index}-{started:yyyyMMddTHHmmssZ}");
 
@@ -510,6 +521,22 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             : FormattableString.Invariant($"{RulesVerb}: run {runId}, {RulesDetail(tested, index, runMonth, through, read.Folds.Count)}"));
 
         return 0;
+    }
+
+    // From 20.8 the release readings the drift's tone variant is walked over, each stock of the history's under every
+    // reading version whose history read is complete, with the zone and the history's sessions the print's window is
+    // placed by.
+    // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+    async Task<ToneReleases> TonesAsync(LoopRead read, CancellationToken cancellation)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+
+        await connection.OpenAsync(cancellation);
+
+        return new ToneReleases(
+            await Ledger.SetupLedger.CompleteReleasesAsync(connection, read.Series.Select(one => one.Name.Ticker), cancellation),
+            clock.SessionZone,
+            new Core.Releases.ReleaseCalendar(read.Calendar));
     }
 
     static string RulesDetail(IReadOnlyList<RuleTested> tested, string index, string month, DateOnly through, int folds) =>
