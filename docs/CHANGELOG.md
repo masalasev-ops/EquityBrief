@@ -26,6 +26,40 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the review comparison
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> fixture-expectations: ... its file written under the data root and every table's rows as they were, and a store holding no paid label asking nothing |
+Now:
+> fixture-expectations: ... and a store holding no paid label asking nothing; and from 20.7 the review comparison over the fixture's pass, each review the run log holds asked again as the review asked it over the pass's version, its night's facts file and the documents it cites, its first round handed the draft and the section's checks and a refused answer asked once more, each outcome and each sentence the drafts handed held worked by hand, a review whose version is not stored or whose night's facts file is emptied named and not asked, its file written under the data root and every table's rows as they were |
+Why: each roster row says what its check asserts, and the review comparison's test extends fixture-expectations'.
+
+### 2026-10-19 - BUILD_PLAN.md - 20.7's text as built: the local comparison's second form
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> ... the agreement is stated as each review's outcome and as the share of the drafts' sentences both kept or both changed. Switching the review job waits for the operator's word. Writes the runbook's command and the guide.
+Now:
+> ... the agreement is stated as each review's outcome and as the share of the drafts' sentences both kept or both changed. It is `compare-reviews`, the local comparison's second form: each review the run log holds asked again as the review asked it, over the pass's version, the facts file of its night and the documents the version cites, its first round handed the draft and the section's checks and each round checked in memory, a review whose version is not stored or whose night's facts file the retention has emptied named and not asked, since asked over another night's facts it would be another review. Switching the review job waits for the operator's word. Writes the catalogue's and the matrix's rows widened, the runbook's command, the roster's row and the guide.
+Why: the store's retention has emptied the facts files of two of the three nights the stored reviews were asked over, which the plan did not know, and the comparison reads the stores the review read, which widens the component's rows.
+
+### 2026-10-19 - ARCHITECTURE.html - the local comparison's catalogue and matrix rows widened to the reviews
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> Local comparison | research | by hand, through the worker's compare-labels | membership, news articles, news labels, local model | none | from 20.5 sets the local model against paid work already stored: ... and writes them with each article's two labels to a file of its own under the data root; holds the local lock, ...
+> Local comparison: R under membership and news alone.
+Now:
+> Local comparison | research | by hand, through the worker's compare-labels and compare-reviews | membership, news articles, news labels, research store, facts, source documents, run log, local model | none | from 20.5 ... to a file of its own under the data root; from 20.7 asks every review the run log holds again of the local model as the review asked it, over the pass's version, the facts file of its night where the store still holds it whole and the documents the version cites, its first round handed the draft and the section's checks and a refused answer told what was refused once, each round checked in memory by the claim checker's own rules, a review whose version is not stored or whose night's facts file the retention has emptied named and not asked, and writes how many outcomes agree and how many of the sentences each draft handed held both reviews kept, both changed or treated apart, with each review's rounds, to a file of its own under the data root; holds the local lock, ...
+> Local comparison: R under membership, facts, news, research and readings, sources and the run log.
+Why: the review comparison reads the pass's version, its night's facts file, its documents and the stored reviews, as the review did.
+
+### 2026-10-19 - RUNBOOK.md - comparing the local model with the stored reviews
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> (no paragraph on it)
+Now:
+> Added without replacing anything: the paragraph after the paid labels' on `compare-reviews`, run while the history read is stopped, the reviews it does not ask and why, its line, its file under the data root and that switching the review job waits for your word.
+Why: every worker verb the specs name is one the runbook shows.
+
 ### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the label comparison
 Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
 Was:

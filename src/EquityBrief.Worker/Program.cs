@@ -76,13 +76,14 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "local-run" => await LocalRunVerb(args),
     "releases" => await ReleasesVerb(args),
     "compare-labels" => await CompareLabelsVerb(),
+    "compare-reviews" => await CompareReviewsVerb(),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 47 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 48 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -234,7 +235,10 @@ static int NoVerb()
         "alike, each loading the local model where it is not loaded and leaving the runtime as it found it, and " +
         "'compare-labels' labels again on the local model, under the labeller's own instruction, every article the news " +
         "job's paid profile labelled that the store still holds, and writes the agreement on each label's kind and " +
-        "direction and how many of its reasons held no digit to a file under the data root, writing nothing to the store, and " +
+        "direction and how many of its reasons held no digit to a file under the data root, writing nothing to the store, " +
+        "'compare-reviews' asks the local model again every review the run log holds, over the pass's version, its night's " +
+        "facts file and the documents it cites, and writes how many outcomes agreed and how many of the drafts' sentences " +
+        "both reviews kept or both changed to a file under the data root, writing nothing to the store, and " +
         "'releases --history --from <yyyy-MM-dd>' fetches every ledger filer's results releases from the one before its " +
         "first session in the ledger from that day through its last, with '--until <HH:mm>' stopping cleanly at that " +
         "time in New York, and goes on from where an earlier run stopped. '--live' " +
@@ -2128,6 +2132,41 @@ static async Task<int> CompareLabelsVerb()
 
     var outcome = await new LocalComparison(LmStudioReadingFeed.Live(settings), settings, SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot)
         .LabelsAsync(paid.Name, answerTokens, Console.Out);
+
+    return outcome.Stopped is null ? 0 : 1;
+}
+
+// From 20.7 the reviews compared by hand: every review the run log holds asked again of the local profile's model as the
+// review asked it, each round checked in memory, the agreement written to a file under the data root and nothing to the
+// store. The work is in `LocalComparison`.
+// see: A comparison of the local model against stored paid work writes no store row and switches nothing
+static async Task<int> CompareReviewsVerb()
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (!File.Exists(store.DatabaseFile))
+    {
+        Console.Error.WriteLine($"compare-reviews: no store at '{store.DatabaseFile}', so there are no reviews to compare.");
+
+        return 1;
+    }
+
+    LocalModelSettings settings;
+
+    try
+    {
+        settings = LocalLane.Settings(configuration);
+    }
+    catch (InvalidOperationException refused)
+    {
+        Console.Error.WriteLine("compare-reviews: " + refused.Message);
+
+        return 1;
+    }
+
+    var outcome = await new LocalComparison(LmStudioReadingFeed.Live(settings), settings, SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot)
+        .ReviewsAsync(Console.Out);
 
     return outcome.Stopped is null ? 0 : 1;
 }

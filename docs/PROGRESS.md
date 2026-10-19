@@ -3437,3 +3437,46 @@ Carried:    the comparison's record, run from main once this merges while the hi
             remedy after the history read; the sentence-start rule and the lower-case names, put to the operator; the
             sign-offs of phases 18 and 19, owed to fresh sessions after 20.10; (G1), SCHEMA's `family_trade` sentence,
             owed by the next edit of that section.
+
+### 20.7 - the reviews compared on the local model: every stored review asked again as the review asked it, writing no store row and switching nothing   2026-10-19
+
+Queue:      done, phases 0 to 19 built and 20.0 to 20.4 merged with their corrections and labels, and the ruling of
+            2026-10-18, PRs 486 to 498; in review, 20.5, PR 499; in progress, this; next, 20.6 once its recording is made
+            while the history read is stopped, then 20.9 while the read runs, then 20.3's record, 20.4's second remedy,
+            20.8 and 20.10, then the sign-offs of phases 18 and 19 by fresh sessions.
+Built:      `compare-reviews`, the local comparison's second form: every review the run log holds, oldest first, asked
+            again of the local profile's model as the review asked it, over the pass's version read as the review read it,
+            the facts file of its night and the documents the version cites, its first round handed the draft and the
+            section's checks, a refused answer told what was refused once, each round checked in memory by the claim
+            checker's own rules, at the readings' seed and an answer budget of 4,096 tokens. A review whose version is not
+            stored, or whose night's facts file the store's retention has emptied since, is named and not asked, since
+            asked over another night's facts it would be another review; the store holds nine, from 2026-09-30, over the
+            nights of BDX, MO and IT, and has emptied MO's and IT's, so BDX's three can be asked. It states how many
+            outcomes agree and, for each draft handed, how many of its sentences, read by the checker's own splitter, both
+            reviews kept, both changed or treated apart, writing them with each review's rounds to
+            `comparisons/reviews-<instant>.json`. The review's readers of a version and its documents are opened to the
+            comparison; the catalogue's and the matrix's rows widened to the stores it reads, the runbook's command, the
+            roster's row, the guide and the changelog.
+Tests:      2 new, 2475 in all: the comparison over the fixture's replayed pass, four stored reviews constructed over its
+            versions, the two cases asked once and passing first time as stored, the risks refused for an answer that is
+            not its fields and passing on its retry where the stored review left it out, a version not stored and a night
+            whose facts file is emptied named and not asked, each outcome and each sentence worked by hand, the model
+            loaded and unloaded, the file read back and every table's rows counted before and after; and two reviews of a
+            draft set side by side over four sentences, and none where either came to no draft.
+Claims:     1366, as before: the catalogue's and the matrix's rows stood and say more.
+Mutated:    the rule, stated before the runs: one mutation a property the checkpoint adds, the smallest edit undoing it
+            alone, each run filtered to the two new tests with its red predicted, made in this checkout and reverted with
+            the editor. R1 an emptied night's facts read past to an older night's: red, version 8 asked. R2 the first round
+            handed no draft: red at the review's brief. R3 one round only: red, 2 outcomes agreeing and not 1. R4 a sentence
+            both kept counted as both changed: red at both tests. R5 the readings' budget of 256 tokens: red at the budget.
+            R6 a version not stored named as an emptied night: red at the reviews not asked. Each as predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2475 of 2475 tests ran with none failed,
+            migrations 0 to 100 with none pending, schema version 100, against `data-ci` and never `data`; the phase
+            report 60 tables, 1366 claims, 1366 passing, none out of scope and none unexamined, 1377 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the comparisons' records, 20.5's and this one's, each run from main once it merges while the history read is
+            stopped; 20.6, its recording owed to the same window; the history read and its record; 20.2's record; 20.4's
+            second remedy after the history read; the sentence-start rule and the lower-case names, put to the operator;
+            the sign-offs of phases 18 and 19, owed to fresh sessions after 20.10; (G1), SCHEMA's `family_trade` sentence,
+            owed by the next edit of that section.
