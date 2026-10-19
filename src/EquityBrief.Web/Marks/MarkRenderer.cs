@@ -5757,6 +5757,12 @@ public sealed partial class MarkRenderer : IComponent
         return svg.ToString();
     }
 
+    // A stored earnings a share at two places, as the masthead's tile draws one; anything that is no number as stored.
+    static string PerShareRead(string stored) =>
+        decimal.TryParse(stored, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, Invariant, out var value)
+            ? Figures.PerShare(value)
+            : stored;
+
     // Section 4's earnings reaction record, beside the earnings setups: one row per print over the
     // calendar's year behind, each with its report date, its timing, the session it moved on, the
     // estimate, the actual, the provider's surprise and that session's move, drawn as stored. A print
@@ -5791,10 +5797,10 @@ public sealed partial class MarkRenderer : IComponent
             table.Append(Invariant, $"<tr data-report-date=\"{print.ReportDate:yyyy-MM-dd}\" data-timing=\"{Escaped(print.Timing)}\" data-session=\"{print.Session:yyyy-MM-dd}\">");
             table.Append(Invariant, $"<td class=\"nw\">{print.ReportDate:yyyy-MM-dd}</td><td>{when}</td><td class=\"nw\">{print.Session:yyyy-MM-dd}</td>");
             table.Append(print.Estimate is { } estimate
-                ? Formatted($"<td class=\"r num\" data-estimate=\"{Escaped(estimate)}\">{Escaped(Figures.Read(estimate))}</td>")
+                ? Formatted($"<td class=\"r num\" data-estimate=\"{Escaped(estimate)}\">{Escaped(PerShareRead(estimate))}</td>")
                 : "<td class=\"estimate\" data-estimate=\"\"><span class=\"degraded\">none was filed</span></td>");
             table.Append(print.Actual is { } actual
-                ? Formatted($"<td class=\"r num\" data-actual=\"{Escaped(actual)}\">{Escaped(Figures.Read(actual))}</td>")
+                ? Formatted($"<td class=\"r num\" data-actual=\"{Escaped(actual)}\">{Escaped(PerShareRead(actual))}</td>")
                 : "<td class=\"actual\" data-actual=\"\"><span class=\"degraded\">not filed</span></td>");
             table.Append(print.Estimate is null
                 ? "<td class=\"surprise\" data-surprise=\"\"><span class=\"degraded\">none, with no estimate to measure against</span></td>"

@@ -52,6 +52,13 @@ public partial class ReadSurface
         Assert.Contains("data-estimate=\"\"><span class=\"degraded\">none was filed</span>", rows[3].Markup, StringComparison.Ordinal);
         Assert.Contains("data-actual=\"0.75\">0.75</td>", rows[3].Markup, StringComparison.Ordinal);
         Assert.Contains("none, with no estimate to measure against", rows[3].Markup, StringComparison.Ordinal);
+
+        // Each estimate and actual reads to two places as the masthead's tile reads them, CVX's estimate of 5.8 as 5.80
+        // and one stored to four places at two, its stored figure whole on its element.
+        var places = ReactionRowsOf(WebUtility.HtmlDecode(new MarkRenderer().ReactionsTable("CVX", [new(new DateOnly(2026, 7, 31), "before", new DateOnly(2026, 7, 31), "5.8", "6.0625", 4.48, 2.35)])));
+
+        Assert.Contains("data-estimate=\"5.8\">5.80</td>", places[0].Markup, StringComparison.Ordinal);
+        Assert.Contains("data-actual=\"6.0625\">6.06</td>", places[0].Markup, StringComparison.Ordinal);
         Assert.DoesNotMatch("data-surprise=\"0\"|>0%<|>\\+0%<", rows[3].Markup);
 
         // A record holding no print says so.
