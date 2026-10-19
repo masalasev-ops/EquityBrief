@@ -2833,7 +2833,7 @@ public sealed partial class MarkRenderer : IComponent
 
         foreach (var gate in why.Gates)
         {
-            region.Append(Invariant, $"<p class=\"gate\" data-gate=\"{Escaped(gate.Name)}\" data-passed=\"{(gate.Passed ? "true" : "false")}\"><b>{Escaped(gate.Name)}</b>: {Escaped(gate.Reason)}</p>");
+            region.Append(Invariant, $"<p class=\"gate\" data-gate=\"{Escaped(gate.Name)}\" data-passed=\"{(gate.Passed ? "true" : "false")}\"><b>{Escaped(gate.Name)}</b>: {Escaped(CountsInWords(gate.Reason))}</p>");
         }
 
         region.Append(Invariant, $"<p class=\"context\" data-reasons=\"{why.Reasons.Count}\">");
@@ -3366,7 +3366,7 @@ public sealed partial class MarkRenderer : IComponent
             else if (byFilter)
             {
                 list.Append(row.Filter is { } gates
-                    ? Formatted($"<td class=\"gates\" data-rank=\"{gates.Rank}\" data-family=\"{Escaped(gates.Family ?? "none")}\" data-arrived=\"{Escaped(gates.Arrived)}\" data-input=\"{Escaped(gates.Input)}\" title=\"{Escaped(string.Join("; ", gates.Gates.Select(gate => gate.Name + ": " + gate.Reason)))}\">{Escaped(gates.Family ?? "no family")}, arrived {Escaped(gates.Arrived)}; {Escaped(PlanWords(gates.Input))}, reward to risk {Hundredths(gates.RewardToRisk)}, its stop {Hundredths(gates.StopMoves)} typical moves below the entry</td>")
+                    ? Formatted($"<td class=\"gates\" data-rank=\"{gates.Rank}\" data-family=\"{Escaped(gates.Family ?? "none")}\" data-arrived=\"{Escaped(gates.Arrived)}\" data-input=\"{Escaped(gates.Input)}\" title=\"{Escaped(string.Join("; ", gates.Gates.Select(gate => gate.Name + ": " + CountsInWords(gate.Reason))))}\">{Escaped(gates.Family ?? "no family")}, arrived {Escaped(gates.Arrived)}; {Escaped(PlanWords(gates.Input))}, reward to risk {Hundredths(gates.RewardToRisk)}, its stop {Hundredths(gates.StopMoves)} typical moves below the entry</td>")
                     : "<td class=\"gates\"><span class=\"degraded\">no gate result stored</span></td>");
             }
 
@@ -5757,6 +5757,12 @@ public sealed partial class MarkRenderer : IComponent
         return svg.ToString();
     }
 
+    // A stored earnings a share at two places, as the masthead's tile draws one; anything that is no number as stored.
+    static string PerShareRead(string stored) =>
+        decimal.TryParse(stored, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, Invariant, out var value)
+            ? Figures.PerShare(value)
+            : stored;
+
     // Section 4's earnings reaction record, beside the earnings setups: one row per print over the
     // calendar's year behind, each with its report date, its timing, the session it moved on, the
     // estimate, the actual, the provider's surprise and that session's move, drawn as stored. A print
@@ -5791,10 +5797,10 @@ public sealed partial class MarkRenderer : IComponent
             table.Append(Invariant, $"<tr data-report-date=\"{print.ReportDate:yyyy-MM-dd}\" data-timing=\"{Escaped(print.Timing)}\" data-session=\"{print.Session:yyyy-MM-dd}\">");
             table.Append(Invariant, $"<td class=\"nw\">{print.ReportDate:yyyy-MM-dd}</td><td>{when}</td><td class=\"nw\">{print.Session:yyyy-MM-dd}</td>");
             table.Append(print.Estimate is { } estimate
-                ? Formatted($"<td class=\"r num\" data-estimate=\"{Escaped(estimate)}\">{Escaped(Figures.Read(estimate))}</td>")
+                ? Formatted($"<td class=\"r num\" data-estimate=\"{Escaped(estimate)}\">{Escaped(PerShareRead(estimate))}</td>")
                 : "<td class=\"estimate\" data-estimate=\"\"><span class=\"degraded\">none was filed</span></td>");
             table.Append(print.Actual is { } actual
-                ? Formatted($"<td class=\"r num\" data-actual=\"{Escaped(actual)}\">{Escaped(Figures.Read(actual))}</td>")
+                ? Formatted($"<td class=\"r num\" data-actual=\"{Escaped(actual)}\">{Escaped(PerShareRead(actual))}</td>")
                 : "<td class=\"actual\" data-actual=\"\"><span class=\"degraded\">not filed</span></td>");
             table.Append(print.Estimate is null
                 ? "<td class=\"surprise\" data-surprise=\"\"><span class=\"degraded\">none, with no estimate to measure against</span></td>"
@@ -6302,7 +6308,7 @@ public sealed partial class MarkRenderer : IComponent
 
         foreach (var gate in view.Gates)
         {
-            region.Append(Invariant, $"<tr data-gate=\"{Escaped(gate.Gate)}\" data-passed=\"{(gate.Passed ? "yes" : "no")}\"><td>{Escaped(gate.Gate)}</td><td>{(gate.Passed ? "passed" : "failed")}</td><td>{Escaped(gate.Reason)}</td></tr>");
+            region.Append(Invariant, $"<tr data-gate=\"{Escaped(gate.Gate)}\" data-passed=\"{(gate.Passed ? "yes" : "no")}\"><td>{Escaped(gate.Gate)}</td><td>{(gate.Passed ? "passed" : "failed")}</td><td>{Escaped(CountsInWords(gate.Reason))}</td></tr>");
         }
 
         region.Append("</table></div>");
@@ -6792,6 +6798,11 @@ public sealed partial class MarkRenderer : IComponent
             ? string.Empty
             : $" <span class=\"business\" tabindex=\"0\" data-state=\"{Escaped(business.State)}\">{Escaped(business.State)}"
                 + $"<span class=\"says\" role=\"tooltip\">{string.Join(" ", business.Sentences.Select(WithSignedFigures))}</span></span>";
+
+    // A sentence a rule stored, its counts read as a reader reads them: a noun the rule's code wrote after a count with
+    // "(s)" takes its singular at one and its plural at any other count.
+    public static string CountsInWords(string stored) =>
+        Regex.Replace(stored, @"\b(\d{1,3}(?:,\d{3})+|\d+) ([A-Za-z]+)\(s\)", count => count.Groups[1].Value + " " + count.Groups[2].Value + (count.Groups[1].Value == "1" ? string.Empty : "s"));
 
     // A sentence the code wrote, escaped, each figure in it written with its sign drawn in the gain's green or the loss's
     // red by that sign, from 19.2.
@@ -7652,9 +7663,10 @@ public sealed partial class MarkRenderer : IComponent
         return region.ToString();
     }
 
-    // The quote runs of the night's session: how many quotes the name pages asked for against the day's cap, how long
-    // after its own time each was asked, by the median and the longest, and the runs refused or failed by why. A night
-    // whose session held none says so, and a night on no session draws nothing.
+    // The quote runs of the night's session: how many delayed quotes the name pages asked for and how many were stored
+    // against the day's cap, how long after its own time each stored one was asked, by the median and the longest, the
+    // runs refused or failed by why, and each ask no run of the quote job answered, by its name and instant. A night whose
+    // session's pages asked none says so, and a night on no session draws nothing.
     // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
     // owes: The day's live quotes stay under their cap on the first five sessions
     static string QuotesParagraph(EquityBrief.Web.App.QuoteRunsView? quotes)
@@ -7665,21 +7677,26 @@ public sealed partial class MarkRenderer : IComponent
         }
 
         var day = DayOf(DateOnly.FromDateTime(quotes.From.UtcDateTime));
+        var unanswered = quotes.Unanswered ?? [];
 
-        if (quotes.Asked.Count == 0 && quotes.Outcomes.Count == 0)
+        if (quotes.Asks == 0 && quotes.Asked.Count == 0 && quotes.Outcomes.Count == 0)
         {
-            return Formatted($"<p class=\"rp-quotes\" data-session=\"{day}\" data-asked=\"0\" data-cap=\"{quotes.Cap}\">No delayed quote was asked in the session of {day}, against a cap of {quotes.Cap}.</p>");
+            return Formatted($"<p class=\"rp-quotes\" data-session=\"{day}\" data-asks=\"0\" data-stored=\"0\" data-unanswered=\"0\" data-cap=\"{quotes.Cap}\">The name pages asked for no delayed quote in the session of {day}, against a cap of {quotes.Cap}.</p>");
         }
 
         var delays = quotes.Asked.Select(asked => asked.DelayMinutes).Order().ToArray();
         double? median = delays.Length == 0 ? null : delays.Length % 2 == 1 ? delays[delays.Length / 2] : (delays[(delays.Length / 2) - 1] + delays[delays.Length / 2]) / 2;
         var refused = quotes.Outcomes.Where(outcome => outcome.Outcome != EquityBrief.Web.App.QuoteRunsView.Quoted).ToArray();
 
-        return Formatted($"<p class=\"rp-quotes\" data-session=\"{day}\" data-asked=\"{quotes.Asked.Count}\" data-cap=\"{quotes.Cap}\" data-median-delay=\"{(median is { } middle ? middle.ToString(Invariant) : "none")}\">")
-            + Formatted($"{quotes.Asked.Count} delayed quote(s) asked in the session of {day}, against a cap of {quotes.Cap}")
+        return Formatted($"<p class=\"rp-quotes\" data-session=\"{day}\" data-asks=\"{quotes.Asks}\" data-stored=\"{quotes.Asked.Count}\" data-unanswered=\"{unanswered.Count}\" data-cap=\"{quotes.Cap}\" data-median-delay=\"{(median is { } middle ? middle.ToString(Invariant) : "none")}\">")
+            + Formatted($"The name pages asked for {Counted(quotes.Asks, "delayed quote", "delayed quotes")} in the session of {day}, and {Counted(quotes.Asked.Count, "quote was", "quotes were")} stored against a cap of {quotes.Cap}")
             + (median is { } typical ? ", each asked a median " + Figures.Duration(typical * 60) + " after its own time and at most " + Figures.Duration(delays[^1] * 60) : string.Empty)
-            + (refused.Length == 0 ? "." : "; " + string.Join(", ", refused.Select(outcome => Formatted($"{outcome.Runs} run(s) {Escaped(outcome.Outcome)}"))) + ".")
-            + "</p>";
+            + (refused.Length == 0 ? string.Empty : "; " + string.Join(", ", refused.Select(outcome => Formatted($"{Counted(outcome.Runs, "run", "runs")} {Escaped(outcome.Outcome)}"))))
+            + (unanswered.Count == 0
+                ? string.Empty
+                : "; " + Counted(unanswered.Count, "ask", "asks") + " no run of the quote job answered, the job ending before it wrote its row or never starting: "
+                    + string.Join(", ", unanswered.Select(ask => Formatted($"<span class=\"rp-unanswered\" data-ticker=\"{Escaped(ask.Ticker)}\" data-asked-at=\"{ask.AskedAt.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", Invariant)}\">{Escaped(ask.Ticker)} at {ask.AskedAt.UtcDateTime.ToString("HH:mm:ss", Invariant)} UTC</span>"))))
+            + ".</p>";
     }
 
     // The news labeller's line for the night: what it cost and the month against its limit, the articles

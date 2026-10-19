@@ -74,6 +74,11 @@ public static partial class Figures
     public static string InSentence(string text) =>
         Long().Replace(text, number => Price(decimal.Parse(number.Value, Invariant)));
 
+    // A sentence's band whose two edges are one price as it is read, named at that price: "inside 217.78 to 217.78" is
+    // "inside the band at 217.78".
+    public static string OneBandAtItsPrice(string sentence) =>
+        Regex.Replace(sentence, @"\binside (\d+(?:\.\d+)?) to \1(?![\d.])", "inside the band at $1");
+
     // The scale is the largest at which the figure rounds to at least one, so a figure a shade
     // under a billion reads as $1.0B rather than $1000.0M.
     static string Scaled(decimal value)

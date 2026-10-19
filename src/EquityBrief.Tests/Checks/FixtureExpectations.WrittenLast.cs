@@ -136,6 +136,11 @@ public partial class FixtureExpectations
             items.Select(item => $"{Iso(item.Date)}|{item.Kind}|{item.Words}|{item.Declared}"));
         Assert.Equal(["FOMC decision"], past);
 
+        // Results on the ninetieth day itself are drawn, as that day's CPI is.
+        Assert.Equal(
+            ["2027-01-07|results|Results, before the open"],
+            PageCalendar.Of(night, [(through, "earnings", "before")], kept: null, []).Items.Select(item => $"{Iso(item.Date)}|{item.Kind}|{item.Words}"));
+
         // No date declared: the last ex-date carried forward by a year over four payments, 91 days, 1.08 a year paying
         // 0.27 a share, drawn on day 90 and not on day 91.
         DividendKept Kept(DateOnly last) => new(1.08m, last, []) { PaymentsAYear = 4 };

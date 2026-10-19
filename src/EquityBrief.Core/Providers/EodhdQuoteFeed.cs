@@ -20,17 +20,21 @@ public sealed class EodhdQuoteFeed(
 
     public int Requests { get; private set; }
 
+    public Uri? Address => client.BaseAddress;
+
+    // A blank address is the provider's own, as every other feed of the provider reads one.
     public static EodhdQuoteFeed Live(
-        string baseAddress,
+        string? baseAddress,
         ProviderCredentials credentials,
         ProviderRequest? request = null)
     {
         var policy = request?.Policy ?? RetryPolicy.Standard;
+        var address = string.IsNullOrWhiteSpace(baseAddress) ? EodhdBulkPriceFeed.DefaultBaseAddress : baseAddress;
 
         return new(
             new HttpClient
             {
-                BaseAddress = new Uri(baseAddress.EndsWith('/') ? baseAddress : baseAddress + "/"),
+                BaseAddress = new Uri(address.EndsWith('/') ? address : address + "/"),
                 Timeout = policy.Timeout + policy.Timeout,
             },
             credentials,

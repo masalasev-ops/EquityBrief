@@ -3928,3 +3928,171 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the cod
             ruling above states: 2489 of 2489 tests, 1372 claims, 1372 passing. This record changes documents alone, and
             the checks that read the corpus ran filtered over its tree, as the ruling's did.
 Carried:    as the ruling above.
+
+### 4.7 - correction: the event book's trigger names a band whose edges are one price as it is read at that price, where CVX's flush after the print read inside 217.78 to 217.78   2026-10-19
+
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, PRs 508 and 509; in review, the
+            local run's guard, PR 510, and 20.8 with its correction, PR 505; in progress, phase 18's review and its
+            corrections, this entry and the seven after it; next, the guard and these corrections merged at the history
+            read's 07:00 New York stop, then the phase 18 sign-off prompt, the local lane's one text field, 21.0 once its
+            ruling is given and the phase 19 sign-off prompt, then pin 3's completion steps.
+Ruled:      by the operator on 2026-10-19, after the phase 18 sign-off prompt was withheld over the quote's defect the 18.1
+            correction's entry below names: "ok do an independent review without trying to sign off and do all
+            corrections", and while it ran: "also UI says tick and warning withjout actually having a graphical
+            checkmark". The session reviewing committed no phase 18 code before the review and signs nothing.
+Found:      reading CVX's name page on 5152 at 1440 pixels: the event book's flush after the print read "inside 217.78 to
+            217.78", a band of one price written as a range, the fault the 18.4 correction of 2026-10-10 repaired in the
+            risks' computed lines.
+Corrected:  the page names a band whose two edges read as one price at that price, "inside the band at 217.78", once the
+            sentence's prices are read to two places. The stored trigger stands as the night wrote it, its source being one
+            the ladder rules, every candidate evaluator and the swing filter pin.
+Tests:      the figures test widened, worked by hand: a band of one price, one whose edges round to one, one a cent wide,
+            one whose price only begins with the other, and the event book drawing the first.
+Mutated:    the rule, stated before the runs, for every entry of this review: each property a correction adds, the smallest
+            edit undoing it, run filtered to the tests over its file with its red predicted, made in this checkout and
+            restored with the editor. M9 the event book drawing its trigger as before: red at the figures test, as
+            predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 19.2 correction's entry
+            below, with the figures it states.
+Carried:    as the 19.2 correction's entry below.
+
+### 16.1 - correction: each line of a pick's card is marked by a drawn tick, note sign or warning sign named by its verdict's word, where the word itself stood in capitals in a box   2026-10-19
+
+Queue:      as the 4.7 correction's entry above.
+Found:      by the operator, reading TRV's card on its page, in the words the 4.7 correction's entry quotes; the guide's
+            account of the card already said "A tick means nothing stands against it, a "!" means look closer", where the
+            page drew the words "tick" and "warning".
+Corrected:  each line's mark is drawn as a tick, a circle around an i for a note or a triangle around an exclamation for a
+            warning, in its mark's own colour on its fill, the verdict's word its label and its title for a reader that
+            does not see it; a verdict none of the three is drawn as its word. The mark's column is 24 pixels where the
+            word's was 78.
+Tests:      one new, worked by hand: each mark drawn as its shape, named by its word and never drawn as the word, and the
+            stylesheet's rules for it; the two read-back tests read the new markup.
+Mutated:    M5 the tick drawn as its word: red at the new test and at both read-back tests, as predicted, and at the
+            concentration test, which reads the card's sixth line through the same markup.
+Put:        to the operator, changing nothing, two findings on the same card. The drift's stored trade words name its
+            target at three places, "441.815", beside the plan's 441.82, from a source every family rule's version pins,
+            so writing it at two places moves the drift's pins on every index and restarts the S&P 400's and 600's records.
+            The earnings line warns "No report date is on file for it" on every drift pick, the stock having just reported,
+            though the calendar's ninety days reach past the drift's hold, as section 15's card states the line and 16.1
+            built it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 19.2 correction's entry
+            below, with the figures it states.
+Carried:    as the 19.2 correction's entry below.
+
+### 17.7 - correction: a pick's card names the readings its like setups were matched on by the words the ledger's catalogue defines them in, where it named them by their columns   2026-10-19
+
+Queue:      as the 4.7 correction's entry above.
+Found:      TRV's card drew its like setups "the nearest on breadth, close_over_fifty, close_over_long, index_over_long,
+            return_half_year, close_over_twenty", the ledger's columns, where the catalogue defines each in words.
+Corrected:  the card counts the readings and names each by the catalogue's definition in a bracket after "the nearest by
+            their places among them on", the columns kept on the line's own attribute.
+Tests:      the score part's read-back tests read the definitions and no column.
+Mutated:    M10 the columns drawn in place of the definitions: red at both read-back tests, as predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 19.2 correction's entry
+            below, with the figures it states.
+Carried:    as the 19.2 correction's entry below.
+
+### 18.1 - correction: the quote verb asks the provider at its own address, a quote not answered in time writes its row, the Run page names each ask no run answered, a quote on a band's edge is inside it, and a stored count's "(s)" is drawn in words   2026-10-19
+
+Queue:      as the 4.7 correction's entry above.
+Found:      gathering the phase 18 sign-off's figures: the seven quote asks the name pages wrote inside the session, five
+            on 2026-10-13 and two on 2026-10-16, left no quote and no run row, and Windows' application log holds each
+            worker's end, a `UriFormatException` in the quote feed's factory, the verb handing it the settings' blank
+            address where every other verb of the provider falls back to the provider's own; the Run page for 2026-10-13
+            said no delayed quote was asked, counting the quotes stored. Reading the job beside it, a provider answering
+            no try in time escaped it as a cancellation, ending it with no row. The handoff's m3 survived: a quote at a
+            band's low edge was read outside the band and given the distance to its far edge. And TRV's card and the
+            name page's gates drew the rules' stored "0 session(s)", where the 18.1 correction of 2026-10-11 holds the
+            page's words to a noun's singular or plural.
+Corrected:  the feed reads a blank address as the provider's own; the job writes its failed row where the provider answers
+            no try in time; the Run page counts the asks beside the quotes stored and names each ask no run answered with
+            its instant; and the page reads a stored count's "(s)" as its noun's singular or plural on the card, the
+            gates and the lines saying why the filter passed a name, the stored rows as the rules wrote them. The quote's
+            operating row counts its five sessions from this correction's merge, its prior text in the changelog, and the
+            seven asks stand as written.
+Swept:      the thirteen mutations of the phase 18 sign-off handoff of 2026-10-13, each filtered to the tests naming its
+            file: m1, m2, m4, m7, m8, m10, m12 and m13 red where predicted; m3, m5, m6, m9 and m11 survived, each an edge
+            no test stood on and each one a store can hold, and each is now held by the assertion its checkpoint's entry
+            names and red there.
+Tests:      four new: the live feed's address from a blank setting; the Run page naming each ask no run answered over a
+            constructed store whose quote job, run as the worker runs it, answers one; a quote on each band's edge; and
+            a stored count in words, worked by hand over the card, the gates table and the lines; and the job's test
+            widened by a provider answering none of three tries in time through the live feed and its own retries.
+Mutated:    M1 the blank address read as written: red at the address test, with the exception the asks ended on. M2 the
+            timeout's catch removed: red at the job's test. M3 the unanswered asks inverted: red at the store's test. M4
+            the line's unanswered clause dropped: red at both quote line tests. M6 the counts read as stored: red at the
+            counts test. M7 the gates table's reasons read as stored: red at the counts test. m3 again over the edge test:
+            red there, as predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 19.2 correction's entry
+            below, with the figures it states.
+Carried:    as the 19.2 correction's entry below.
+
+### 18.2 - correction: the segment table's sum at its tolerance and a dividend a trailing year before the night held at their edges, and the report charts' axes ticked at round values   2026-10-19
+
+Queue:      as the 4.7 correction's entry above.
+Found:      the handoff's m5 and m6 survived: the segment test missed its total by one and by two millions over two
+            segments, whose tolerance of a million and a half no table in millions reaches, and the dividend test held no
+            dividend exactly a trailing year before the night. CVX's growth chart's axis read 265%, 155.7%, 46.4% and
+            -62.9%, four ticks evenly between its ends with nought unmarked, as the yield's, the multiples' and the
+            reactions' did.
+Corrected:  assertions alone for the two edges. The report charts tick at every multiple between an axis's ends of the step
+            of one, two, two and a half or five times a power of ten that is the least at or above a quarter of its span,
+            so nought is marked wherever an axis spans it.
+Tests:      the two edges worked by hand in their tests; one new, the ticks worked by hand over CVX's four axes, a span
+            whose quarter is exactly two and a half and one a few hundredths wide.
+Mutated:    m5 and m6 again, each alone: red at its own test. M11 the step of two and a half dropped: red at the ticks
+            test, as predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 19.2 correction's entry
+            below, with the figures it states.
+Carried:    as the 19.2 correction's entry below.
+
+### 18.3 - correction: the long view's month the store's year opens on takes the store's close, and each report's estimate and actual read to two places   2026-10-19
+
+Queue:      as the 4.7 correction's entry above.
+Found:      the handoff's m11 survived: where the store's first session is the last of its month and the pull holds it as
+            well, the month's point was read off whichever close came first, and the test's shared month held store
+            sessions after the pull's. CVX's reactions table drew its newest estimate as 5.8 beside the tile's 5.80.
+Corrected:  an assertion alone for the long view; the reactions table reads each estimate and actual to two places, the
+            stored figure whole on its element.
+Tests:      the long view's October worked by hand at the store's 104 and not the pull's 101.0204; the reactions test
+            reads 5.8 as 5.80 and 6.0625 as 6.06.
+Mutated:    m11 again: red at the long view test with October at 101.0204. M12 the estimate drawn as stored: red at the
+            reactions test, as predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 19.2 correction's entry
+            below, with the figures it states.
+Carried:    as the 19.2 correction's entry below.
+
+### 18.4 - correction: results on the calendar's ninetieth day are held drawn, where the test read that day's other events and left results there unread   2026-10-19
+
+Queue:      as the 4.7 correction's entry above.
+Found:      the handoff's m9 survived: the calendar test read results on the fortieth day and the ninety-first and the
+            ninetieth day's CPI and ex-dividend dates, and never results on the ninetieth.
+Corrected:  an assertion alone.
+Tests:      results on the ninetieth day drawn.
+Mutated:    m9 again, alone: red at the calendar test, as predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 19.2 correction's entry
+            below, with the figures it states.
+Carried:    as the 19.2 correction's entry below.
+
+### 19.2 - correction: the keys of the latest quarter, its growth and the dividend's years name the green and red their figures are drawn in, where they named the indigo and plum 19.2 replaced   2026-10-19
+
+Queue:      as the 4.7 correction's entry above.
+Found:      CVX's latest quarter, its growth chart and its dividend's years said a rise is drawn in indigo and a fall in
+            plum, where from 19.2 the page draws them green and red.
+Corrected:  the three keys name green and red, and the dividend's grey for a year held level or not compared.
+Tests:      the signed figures test also reads every page and export it reads for indigo, and for plum other than a
+            written section's plum-grey, and finds the three keys' words. 6 new tests in all across this review's eight
+            entries, 2495 in all, read off the suite's own list.
+Claims:     1372, as before.
+Mutated:    M8 the growth key's indigo restored: red at the signed figures test, as predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2495 of 2495 tests ran with none failed,
+            migrations 0 to 101 with none pending, schema version 101, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the local run's guard, PR 510, and these corrections, each merged at the history read's stop; the phase 18
+            sign-off by a fresh session over the corrected tree, the quote's operating row counting from this merge and
+            the short version's at its trigger; the two findings the 16.1 correction's entry puts to the operator; the
+            local lane's one text field and its comparison; 21.0 once its ruling is given; the phase 19 sign-off; pin 3's
+            completion steps; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.
