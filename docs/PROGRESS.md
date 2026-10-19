@@ -3237,3 +3237,41 @@ Carried:    the sentence-start rule's leak, at a bullet's opening as well, and a
             history read and its record; 20.2's record; 20.4's second remedy after the history read; the sign-offs of
             phases 18 and 19, owed to fresh sessions; the two items phase 17's sign-off carried; (G1), SCHEMA's
             `family_trade` sentence, owed by the next edit of that section.
+
+### 20.3 - the reference set's 100 labels, committed before the model reads any of them   2026-10-18
+
+Queue:      done, phases 0 to 19 built and 20.0 to 20.4 merged with 20.3's first correction, PRs 486 to 495, 20.2's
+            history fetched, 20.3's filers named and 20.4's first remedy run; in progress, the anonymiser's second
+            correction above and these labels; next, the new pin and the history read, 20.2's record, the two items
+            phase 17's sign-off carried, and the sign-offs of phases 18 and 19 by fresh sessions.
+Built:      `fixtures/release-reference-2026/`: its manifest naming one input, `sample.txt`, the 100 results releases
+            `releases --reference` drew at seed 20261018 from those the SEC accepted before 2026-10-18, by index in
+            proportion to members, 50 on or before the model's cutoff and 50 after, listed by accession as the command
+            first wrote them at 2026-10-18T23:01:19Z; and `labels.json`, the four words the build session gave each
+            from the text the model reads, how each question was read and the 57 conventions fixed while labelling so
+            every release was read alike, its `labelledAt` 2026-10-19T00:10:42Z, the instant the last label was
+            written. The texts stay in the store and the command writes them again. A test reads the labels through the
+            accuracy report's own reader; the fixtures README's paragraph, the roster's row and the changelog.
+Measured:   results 75 not stated, 12 better, 10 in line, 3 worse; outlook 46 kept, 31 none given, 16 raised, 7
+            lowered or withdrawn; tone 78 confident, 19 neutral, 3 cautious; demand 59 stronger, 19 not stated, 12
+            steady, 10 weaker. The labels were read from the texts the anonymiser wrote at 175a444d0383, which the
+            correction above writes again at fe22a6282817 differing only by a code page's characters and neutral
+            words. The build session's reading ran on the operator's plan, as their word of 2026-09-17 describes, so no
+            bill by the token applies, which 20.3's plan asks this entry to state.
+Tests:      1 new, 2470 in all: the committed labels one for each release the sample lists, in its order, every word
+            one its question lists, read by the accuracy report's own reader.
+Claims:     1364, as before.
+Mutated:    the rule, stated before the runs: one mutation each to the file the test reads, made with the editor and
+            reverted, the file read back byte for byte after, each run filtered to the new test with its red predicted
+            there. MF1 the last label dropped: red at the sample's order. MF2 one answer written "in-line": red, the
+            reader refusing it by name.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2470 of 2470 tests ran with none failed,
+            migrations 0 to 100 with none pending, schema version 100, against `data-ci` and never `data`; the phase
+            report 60 tables, 1364 claims, 1364 passing, none out of scope and none unexamined, 1375 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the new pin, written once this merges and before any reference release is read, then the history read and
+            its record; 20.2's record; 20.4's second remedy after the history read; the sentence-start rule and the
+            lower-case names, put to the operator; the sign-offs of phases 18 and 19, owed to fresh sessions; the two
+            items phase 17's sign-off carried; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that
+            section.

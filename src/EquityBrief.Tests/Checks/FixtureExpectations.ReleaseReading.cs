@@ -280,6 +280,21 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public void TheReferenceSetsLabelsAreItsSamplesReleasesOneEachReadByTheAccuracyReportsOwnReader()
+    {
+        // The labels committed at 20.3 before the local model read any reference release: one for each release the sample
+        // lists, in its order, every word one its question lists, read through the reader the accuracy report reads them
+        // with, and the instant the last was written.
+        var folder = Path.Combine(Repository.Root, "fixtures", "release-reference-2026");
+        var sample = File.ReadAllLines(Path.Combine(folder, "sample.txt")).Where(line => line.Length > 0).ToArray();
+        var set = ReleaseLabels.Read(File.ReadAllText(Path.Combine(folder, "labels.json")));
+
+        Assert.Equal(100, sample.Length);
+        Assert.Equal(sample, set.Labels.Select(label => label.Accession));
+        Assert.Equal(new DateTimeOffset(2026, 10, 19, 0, 10, 42, TimeSpan.Zero), set.LabelledAt);
+    }
+
+    [Fact]
     public void TheAnonymisersVersionIsThePinOfItsSourceAndPartOfThePromptsVersion()
     {
         var source = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Core", "Releases", "ReleaseAnonymiser.cs"));

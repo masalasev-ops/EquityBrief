@@ -1,0 +1,13 @@
+{
+  "fixture": "release-reference-2026",
+  "capturedFor": "2026-10-18",
+  "noCredentials": true,
+  "inputs": [
+    {
+      "file": "sample.txt",
+      "endpoint": "the results releases the history fetch of 2026-10-18 stored from the SEC archive, each the EX-99 exhibit of an 8-K carrying item 2.02",
+      "query": "releases --reference: 100 releases drawn at seed 20261018 by index in proportion to members from those the SEC accepted before 2026-10-18, 50 on or before the model's cutoff of 2025-01-31 and 50 after, listed by accession, each written out with its names and dates removed",
+      "fetchedAt": "2026-10-18T23:01:19Z"
+    }
+  ]
+}
