@@ -104,6 +104,18 @@ public class LiveFeedTests
     }
 
     [Fact]
+    public void TheLiveQuoteFeedIsBuiltAtTheProvidersOwnAddressWhereTheSettingsNameNone()
+    {
+        // The quote verb hands the feed the settings' address as read, and the shipped settings name none.
+        foreach (var blank in new[] { null, "", " " })
+        {
+            Assert.Equal(new Uri(EodhdBulkPriceFeed.DefaultBaseAddress), EodhdQuoteFeed.Live(blank, new ProviderCredentials(Key)).Address);
+        }
+
+        Assert.Equal(new Uri(Base), EodhdQuoteFeed.Live("https://eodhd.example/api", new ProviderCredentials(Key)).Address);
+    }
+
+    [Fact]
     public async Task TheHistoricalFeedAsksForTheWindowAndTheSuffixTheProviderWants()
     {
         var (client, handler) = Client(_ => Ok(Captured("bars-AAPL.json")));

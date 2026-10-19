@@ -182,6 +182,32 @@ public partial class FixtureExpectations
         Assert.Equal(
             [QuoteJob.NoPrice, QuoteJob.Failed],
             Query(other, $"SELECT outcome FROM run_log WHERE stage = '{QuoteJob.Stage}' ORDER BY started_at, run_id;"));
+
+        // A provider that answers none of its three tries inside the request's bound stores nothing either, and its run
+        // says the provider did not answer in time, through the live feed and the request's own retries.
+        var late = new EodhdQuoteFeed(
+            new HttpClient(new SilentHandler()) { BaseAddress = new Uri("https://eodhd.example/api/") },
+            new ProviderCredentials("constructed-key"),
+            new ProviderRequest(new RetryPolicy(3, TimeSpan.Zero, TimeSpan.FromMilliseconds(50), TimeSpan.FromSeconds(10)), (_, _) => Task.CompletedTask));
+        var timedOut = await new QuoteJob(new FixedClock(inSession.AddMinutes(20), NewYork), other.DatabaseFile, late).RunAsync("CVX", asked.AddMinutes(20));
+
+        Assert.Equal((QuoteJob.Failed, 1), (timedOut.Outcome, late.Requests));
+        Assert.Equal("the provider did not answer in time on any of its tries", timedOut.Detail);
+        Assert.Empty(Query(other, "SELECT ticker FROM live_quote;"));
+        Assert.Equal(
+            [$"{QuoteJob.NoPrice}|CVX", $"{QuoteJob.Failed}|CVX", $"{QuoteJob.Failed}|CVX"],
+            Query(other, $"SELECT outcome, json_extract(detail, '$.ticker') FROM run_log WHERE stage = '{QuoteJob.Stage}' ORDER BY started_at, run_id;"));
+    }
+
+    // A provider that never answers: each try waits until the request's own bound cancels it.
+    sealed class SilentHandler : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            await Task.Delay(Timeout.Infinite, cancellationToken);
+
+            return new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+        }
     }
 
     // A quote feed whose provider does not answer, throwing what the live feed throws then, counting its requests.
