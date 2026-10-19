@@ -209,7 +209,9 @@ public partial class ReadSurface
         Assert.Contains("<p class=\"card-caution\">Setups like this one under this rule on the S&P 500, not this stock's chance.</p>", part, StringComparison.Ordinal);
         Assert.Contains($"<p class=\"card-rank degraded\" data-rank=\"none\">{CardSimilar.NotValidated}.</p>", part, StringComparison.Ordinal);
         Assert.Contains("<dd data-similar=\"40\"", part, StringComparison.Ordinal);
-        Assert.Contains("40 of the rule's 40 finished setups on this index, the nearest on close_over_twenty", part, StringComparison.Ordinal);
+        Assert.Contains("40 of the rule's 40 finished setups on this index, the nearest by their places among them on ", part, StringComparison.Ordinal);
+        Assert.Contains("(the close over its 20-session average", part, StringComparison.Ordinal);
+        Assert.DoesNotContain("close_over_twenty, ", part, StringComparison.Ordinal);
         Assert.Contains($"<p class=\"card-verdict\" data-distinguishable=\"false\">{CardSimilar.NotDistinguishable}</p>", part, StringComparison.Ordinal);
         Assert.DoesNotContain("places it at hundredth", part, StringComparison.Ordinal);
 
@@ -352,7 +354,7 @@ public partial class ReadSurface
         var part = ScorePart((await CardsReadBack(client, StoredCards(store), TheSwitch))["K1"]);
 
         Assert.Contains("<p class=\"card-rank\" data-rank=\"83\">The learned score, which passed the walk-forward tester on this index, places it at hundredth 83 of the setups it learned on here.</p>", part, StringComparison.Ordinal);
-        Assert.Contains("<dd data-similar=\"250\" data-distance=\"0.125\">250 of the rule's 3,120 finished setups on this index, the nearest on close_over_twenty, liquidity by their places among them, a median distance of 0.125</dd>", part, StringComparison.Ordinal);
+        Assert.Contains("<dd data-similar=\"250\" data-distance=\"0.125\" data-readings=\"close_over_twenty,liquidity\">250 of the rule's 3,120 finished setups on this index, the nearest by their places among them on 2 readings (the close over its 20-session average; the base-10 logarithm of the mean of close times volume over the 50 sessions to the session), a median distance of 0.125</dd>", part, StringComparison.Ordinal);
         Assert.Contains("<dd data-mean=\"0.2\" data-low=\"0.1\" data-high=\"0.3\">a mean <span class=\"gain\">+0.20</span> of the risk against the same plan on every member that session, before costs, ninety per cent between <span class=\"gain\">+0.10</span> and <span class=\"gain\">+0.30</span></dd>", part, StringComparison.Ordinal);
         Assert.Contains("<dd data-rule-mean=\"0.05\">a mean <span class=\"gain\">+0.05</span> over every one of them</dd>", part, StringComparison.Ordinal);
         Assert.DoesNotContain(CardSimilar.NotValidated, part, StringComparison.Ordinal);
