@@ -4,9 +4,10 @@
 # again whole with its ninth rule, the live setting with the condition reading the newest complete version, each standing
 # rule replayed first and keeping its record where the replay reproduces it; on the S&P 400 and 600 the variant with the
 # market check off is stated again beside the tone variant, the provisional setting with the condition, and is named as
-# not replayed and restarts. Check the version's number on reading_pin before running: the lines name version 2, the
-# version `local-run --pin` writes after the reference labels are committed. No migration, no request to the provider and
-# no model call. Run from main before the night, when no night, local run, drain, labeller or monthly run is writing.
+# not replayed and restarts. Check the version's number on reading_pin before running: the lines name version 3, the
+# version `local-run --pin` writes after the 20.3 correction of 2026-10-19 merges, version 2's read having been stopped
+# by the operator's ruling of that day. No migration, no request to the provider and no model call. Run from main before
+# the night, when no night, local run, drain, labeller or monthly run is writing.
 register --family-again drift --evidence "20.4: the drift's tone variant joins the family as its ninth rule, reading the newest reading version whose history read is complete"
-register --index-variants drift --index MID --again --evidence "20.4: the drift's tone variant joins the variant standing beside the S&P 400's provisional drift" --variants "largeBreadth=2;readingVersion=2"
-register --index-variants drift --index SML --again --evidence "20.4: the drift's tone variant joins the variant standing beside the S&P 600's provisional drift" --variants "largeBreadth=2;readingVersion=2"
+register --index-variants drift --index MID --again --evidence "20.4: the drift's tone variant joins the variant standing beside the S&P 400's provisional drift" --variants "largeBreadth=2;readingVersion=3"
+register --index-variants drift --index SML --again --evidence "20.4: the drift's tone variant joins the variant standing beside the S&P 600's provisional drift" --variants "largeBreadth=2;readingVersion=3"

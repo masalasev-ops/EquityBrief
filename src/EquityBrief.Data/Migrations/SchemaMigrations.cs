@@ -750,7 +750,7 @@ public static class SchemaMigrations
     // From 20.3: each filer's names and tickers as the SEC's submissions state them, which the anonymiser reads; each
     // release's reading under a reading version, its four words or the cause it was refused for; and the probes' answers
     // over their samples. Each created empty, nothing copied and nothing dropped.
-    // see: A release is read with every name and date in it replaced by a neutral word, and product names kept
+    // see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
     const string CreateReleaseReadings = @"
         CREATE TABLE release_filer (
             cik      TEXT NOT NULL PRIMARY KEY,

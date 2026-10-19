@@ -1,7 +1,7 @@
 {
-  "id": "chatcmpl-wrvy2wwtzkq28uaycnhc9ci",
+  "id": "chatcmpl-2jypnfl9kahdylb700p31d",
   "object": "chat.completion",
-  "created": 1792327279,
+  "created": 1792414014,
   "model": "google/gemma-4-26b-a4b-qat",
   "choices": [
     {
@@ -17,17 +17,17 @@
     }
   ],
   "usage": {
-    "prompt_tokens": 5755,
+    "prompt_tokens": 5761,
     "completion_tokens": 42,
-    "total_tokens": 5797,
+    "total_tokens": 5803,
     "completion_tokens_details": {
       "reasoning_tokens": 0
     }
   },
   "stats": {
-    "tokens_per_second": 103.17190704462814,
-    "time_to_first_token": 2.113683,
-    "generation_time": 2.511078,
+    "tokens_per_second": 104.27130885924646,
+    "time_to_first_token": 2.200889,
+    "generation_time": 2.594094,
     "stop_reason": "eosFound"
   },
   "model_info": {

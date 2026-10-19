@@ -2016,7 +2016,7 @@ static async Task<int> LocalRunVerb(string[] args)
 // its sample; '--reference --out <folder>', the reference set's releases written out as the model reads them; and
 // '--accuracy', with '--labels <file>', every accuracy figure printed and nothing written.
 // see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it
-// see: A release is read with every name and date in it replaced by a neutral word, and product names kept
+// see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
 static async Task<int> ReleasesVerb(string[] args)
 {
     var configuration = Configuration();

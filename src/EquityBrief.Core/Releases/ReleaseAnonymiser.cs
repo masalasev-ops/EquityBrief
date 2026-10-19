@@ -13,18 +13,19 @@ public sealed record ReleaseFiler(IReadOnlyList<string> Names, IReadOnlyList<str
 // and not whose it is or when. The characters a Windows code page wrote into the archive's text are read as that page's
 // first; then contact details, since an address or a file name carries the company and the day; then the dates and the
 // fiscal labels, so "Q3" or "September 30" is never read as a name; then the dateline's place, the filer's names and
-// tickers, and its people. A name of several words is matched whatever its case, its words joined
-// by a space, a hyphen or an ampersand alike and a short capitalised word written with points or without; a single
-// word, a company name's first word or a surname, only as written with its capital and never as a sentence's first
-// word, and a company name's first word only where the common words below do not hold it; a ticker as written, wherever
-// it stands. Product names stay. The version is the pin of this file, and it is part of the reading's prompt version, so
-// a changed rule is a new reading version.
-// see: A release is read with every name and date in it replaced by a neutral word, and product names kept
+// tickers, the short forms it defines for itself and its initials, and its people. A name of several words is matched
+// whatever its case, its words joined by a space, a hyphen or an ampersand alike and a short capitalised word written
+// with points or without; a single word, a company name's first word or a surname, only as written with its capital,
+// a sentence's or a list's first word among them unless the common words below hold it, and a company name's first word
+// only where they do not; a name's word with a capital after its first letter, as nVent, in that exact case wherever it
+// stands; a ticker as written, wherever it stands. Product names stay. The version is the pin of this file, and it is
+// part of the reading's prompt version, so a changed rule is a new reading version.
+// see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
 public static class ReleaseAnonymiser
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "fe22a6282817";
+    public const string Version = "b1e7ebe80c9e";
 
     public const string Company = "[company]";
     public const string Ticker = "[ticker]";
@@ -38,22 +39,41 @@ public static class ReleaseAnonymiser
     public static string Person(int number) => FormattableString.Invariant($"[person {number}]");
 
     // Ordinary English and business words a company's name may open on that a release also writes with a capital in
-    // their ordinary sense, in its headings, its segments and its tables, each left in place where it stands alone. A
-    // word a release capitalises only as the company, as Regions or Target, is not one.
+    // their ordinary sense, in its headings, its segments and its tables, each left in place where it stands alone, a
+    // sentence's or a list's first word among them; and the general words a release defines as its own term for itself,
+    // as the Company, which stay where they are defined. A word a release capitalises only as the company, as Regions or
+    // Target, is not one.
+    // see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
     public static IReadOnlyList<string> CommonWords { get; } =
     [
         "Advanced", "Affiliated", "Air", "American", "Atlantic", "Bank", "Best", "Big", "Black",
         "Blue", "Bright", "Builders", "Capital", "Central", "Century", "City", "Clean", "Clear", "Commerce", "Commercial",
-        "Community", "Consolidated", "Construction", "Core", "Credit", "Customers", "Digital", "East", "Eastern",
-        "Employers", "Energy", "Enterprise", "Equity", "Essential", "Extra", "Federal", "Fifth", "Financial", "First",
-        "Five", "Four", "Gaming", "General", "Global", "Golden", "Grand", "Great", "Green", "Group", "Health",
-        "Healthcare", "Home", "Independent", "Interactive", "International", "Life", "Live", "Medical", "Merchants",
-        "Mid", "Minerals", "Mobility", "National", "New", "News", "North", "Northern", "Northwest", "Old", "One",
-        "Pacific", "Packaging", "People", "Performance", "Power", "Preferred", "Premier", "Prime", "Public", "Red",
-        "Safety", "Science", "Second", "Select", "Service", "Services", "Silver", "Six", "Smart", "South", "Southern",
-        "Southwest", "Standard", "Star", "State", "Steel", "Strategic", "Sun", "Third", "Three", "Trade", "Travel",
-        "Two", "Union", "United", "Universal", "Us", "Valley", "Waste", "Water", "West", "Western", "White", "World",
+        "Community", "Company", "Consolidated", "Construction", "Core", "Corporation", "Credit", "Customers", "Digital",
+        "East", "Eastern", "Employers", "Energy", "Enterprise", "Equity", "Essential", "Extra", "Federal", "Fifth",
+        "Financial", "Firm", "First", "Five", "Four", "Gaming", "General", "Global", "Golden", "Grand", "Great", "Green",
+        "Group", "Health", "Healthcare", "Holdings", "Home", "Independent", "Interactive", "International", "Life", "Live",
+        "Medical", "Merchants", "Mid", "Minerals", "Mobility", "National", "New", "News", "North", "Northern",
+        "Northwest", "Old", "One", "Pacific", "Packaging", "Partnership", "People", "Performance", "Power", "Preferred",
+        "Premier", "Prime", "Public", "Red", "Safety", "Science", "Second", "Select", "Service", "Services", "Silver",
+        "Six", "Smart", "South", "Southern", "Southwest", "Standard", "Star", "State", "Steel", "Strategic", "Sun",
+        "Third", "Three", "Trade", "Travel", "Trust", "Two", "Union", "United", "Universal", "Us", "Valley", "Waste",
+        "Water", "West", "Western", "White", "World",
     ];
+
+    // Ordinary words an insider's surname may also be, which a sentence or a list's item opens on in their ordinary sense
+    // far more often than as the person, as "Gross margin" or "To learn more": on the common-word list for a sentence's
+    // or a list's first word alone, so a person of that name beside a title or a verb of saying is still read. No
+    // member's name opens on one.
+    public static IReadOnlyList<string> OrdinarySurnames { get; } =
+    [
+        "Banks", "Call", "Case", "Cash", "Constant", "Control", "Day", "Given", "Gold", "Grant", "Gross", "Guest", "Last",
+        "Little", "Major", "Marks", "May", "Page", "Plant", "Port", "Prior", "Read", "Rose", "Severance", "Share", "Small",
+        "Strong", "To", "Weeks", "Winter", "Wood",
+    ];
+
+    // Whether the common-word list holds a word at a sentence's or a list's first word, where it stays.
+    static bool KeptAtAnOpening(string word) =>
+        CommonWords.Contains(Titled(word), StringComparer.Ordinal) || OrdinarySurnames.Contains(Titled(word), StringComparer.Ordinal);
 
     // The legal words a name ends on, each taken off in turn to make the shorter names a release writes.
     public static IReadOnlyList<string> LegalSuffixes { get; } =
@@ -123,6 +143,7 @@ public static class ReleaseAnonymiser
         read = Companies(read, filer.Names);
         read = UndatedDateline(read);
         read = Tickers(read, filer.Tickers);
+        read = ShortForms(read, filer.Names);
         read = People(read, filer.People);
 
         return read;
@@ -376,7 +397,7 @@ public static class ReleaseAnonymiser
 
         foreach (var single in singles)
         {
-            read = ReplaceWord(read, WordPattern(single), Company, anyCase: true);
+            read = ReplaceWord(read, single, Company);
         }
 
         return read;
@@ -748,7 +769,9 @@ public static class ReleaseAnonymiser
                 first++;
             }
 
-            if (first == at && AtSentenceStart(text, tokens[at].Index))
+            // A surname alone opening a sentence or a list's item is kept only where the common-word list holds it, which
+            // a sentence opens on in its ordinary sense.
+            if (first == at && AtSentenceStart(text, tokens[at].Index) && KeptAtAnOpening(word))
             {
                 continue;
             }
@@ -897,15 +920,118 @@ public static class ReleaseAnonymiser
 
     // ---- single words -----------------------------------------------------------
 
-    // A single word replaced whole and never as a sentence's first word: a ticker only as written, and a name's word
-    // whatever its case but only where it opens on a capital or a figure, so "Keysight", "KEYSIGHT" and
-    // "UnitedHealth" are read as the name and "keysight" is not.
-    static string ReplaceWord(string text, string pattern, string with, bool anyCase) =>
+    // A name's single word replaced whole wherever it stands, a sentence's or a list's first word among them unless the
+    // common-word list holds it there: whatever its case where it opens on a capital or a figure, so "Keysight",
+    // "KEYSIGHT" and "UnitedHealth" are read as the name and "keysight" is not; and a word written with a capital after
+    // its first letter, as nVent, in that exact case as well.
+    static string ReplaceWord(string text, string word, string with) =>
         Regex.Replace(
             text,
-            @"(?<![\p{L}\p{N}\[])" + pattern + @"(?![\p{L}\p{N}])",
-            match => char.IsLower(match.Value[0]) || AtSentenceStart(text, match.Index) ? match.Value : with,
-            anyCase ? RegexOptions.CultureInvariant | RegexOptions.IgnoreCase : RegexOptions.CultureInvariant);
+            @"(?<![\p{L}\p{N}\[])" + WordPattern(word) + @"(?![\p{L}\p{N}])",
+            match => (!char.IsLower(match.Value[0]) || (InnerCapital(word) && string.Equals(match.Value, word, StringComparison.Ordinal)))
+                && !(KeptAtAnOpening(word) && AtSentenceStart(text, match.Index))
+                    ? with
+                    : match.Value,
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+    static bool InnerCapital(string word) => word.Skip(1).Any(char.IsUpper);
+
+    // ---- short forms and initials -------------------------------------------------
+
+    // A bracket straight after the filer's name or its ticker, a ticker's bracket and a comma between them or none, as
+    // "[company] (“BD”)" or "[company] ([ticker]), (“GCE” or the “Company”)", whose terms in quotes opening on a
+    // capital, or its one short word in capitals, are the short forms the release defines for the filer.
+    static readonly Regex AfterName = new(
+        @"\[(?:company|ticker)\](?:\s*\(\s*\[ticker\]\s*\))?\s*,?\s*\((?<inside>[^()\r\n]{1,80})\)",
+        RegexOptions.CultureInvariant);
+
+    static readonly Regex QuotedTerm = new(@"[""“‘'](?<term>\p{Lu}[^""”’'\r\n]{0,23}?)[""”’']", RegexOptions.CultureInvariant);
+
+    static readonly Regex BareTerm = new(@"^\s*(?<term>\p{Lu}[\p{Lu}&.]{1,5})\s*$", RegexOptions.CultureInvariant);
+
+    // A short form standing straight before a bracket that holds the filer's name alone, as "BD ([company])".
+    static readonly Regex BeforeName = new(@"(?<![\p{L}\p{N}\[])(?<term>\p{Lu}[\p{L}\p{N}&.\-]{1,9})\s*\(\s*\[company\]\s*\)", RegexOptions.CultureInvariant);
+
+    static readonly string[] Exchanges = ["NYSE", "NASDAQ", "AMEX", "OTC", "TSX", "LSE", "CBOE"];
+
+    // The legal form a name closes on, which its initials leave out, as Inc. or Company; a word naming what the company
+    // is, as Group or Holdings, stays in them, so American International Group's initials are AIG.
+    static readonly string[] FormWords =
+        ["Inc", "Incorporated", "Corp", "Corporation", "Co", "Company", "Ltd", "Limited", "LLC", "L.L.C", "LP", "L.P", "PLC", "N.V", "NV", "S.A", "SA", "AG", "SE"];
+
+    // The short forms the release defines for the filer and the filer's initials in capitals, each replaced wherever it
+    // recurs in the case it is written in, and none the common words hold, so "the Company" stays.
+    static string ShortForms(string text, IReadOnlyList<string> names)
+    {
+        var terms = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (Match match in AfterName.Matches(text))
+        {
+            var inside = match.Groups["inside"].Value;
+            var quoted = QuotedTerm.Matches(inside);
+
+            foreach (Match term in quoted)
+            {
+                terms.Add(term.Groups["term"].Value.TrimEnd(',', '.', ';', ':', ' '));
+            }
+
+            if (quoted.Count == 0 && BareTerm.Match(inside) is { Success: true } bare)
+            {
+                terms.Add(bare.Groups["term"].Value);
+            }
+        }
+
+        foreach (Match match in BeforeName.Matches(text))
+        {
+            terms.Add(match.Groups["term"].Value);
+        }
+
+        terms.UnionWith(names.Select(InitialsOf).Where(initials => initials.Length > 1));
+
+        var read = text;
+
+        foreach (var term in terms.Where(term => term.Length > 1 && !Held(term)).OrderByDescending(term => term.Length))
+        {
+            read = Regex.Replace(read, @"(?<![\p{L}\p{N}\[])" + Regex.Escape(term) + @"(?![\p{L}\p{N}])", Company, RegexOptions.CultureInvariant);
+        }
+
+        return read;
+    }
+
+    // A term the release's own words keep: one the common words hold, a legal word or an exchange's name.
+    static bool Held(string term) =>
+        KeptAtAnOpening(term)
+        || LegalSuffixes.Contains(term.TrimEnd('.'), StringComparer.OrdinalIgnoreCase)
+        || Exchanges.Contains(term, StringComparer.OrdinalIgnoreCase);
+
+    // A name's initials: the first letter of each of its words in capitals, its state, a leading article, its legal form
+    // and its joining words left out, where two words or more remain, as BD for Becton, Dickinson and Company.
+    public static string InitialsOf(string name)
+    {
+        var words = Regex.Replace(name, @"\s*[/\\]\s*[A-Z]{1,5}[/\\]?\s*$", string.Empty, RegexOptions.CultureInvariant)
+            .Split([' ', ','], StringSplitOptions.RemoveEmptyEntries)
+            .Select(word => word.TrimEnd('.'))
+            .ToList();
+
+        if (words.Count > 2 && States.Contains(words[^1], StringComparer.Ordinal) && LegalSuffixes.Contains(words[^2], StringComparer.OrdinalIgnoreCase))
+        {
+            words.RemoveAt(words.Count - 1);
+        }
+
+        while (words.Count > 0 && (FormWords.Contains(words[^1], StringComparer.OrdinalIgnoreCase) || Joining.Contains(words[^1], StringComparer.OrdinalIgnoreCase)))
+        {
+            words.RemoveAt(words.Count - 1);
+        }
+
+        if (words.Count > 0 && words[0].Equals("The", StringComparison.OrdinalIgnoreCase))
+        {
+            words.RemoveAt(0);
+        }
+
+        var letters = words.Where(word => !Joining.Contains(word, StringComparer.OrdinalIgnoreCase) && char.IsLetter(word[0])).Select(word => char.ToUpperInvariant(word[0])).ToArray();
+
+        return letters.Length > 1 ? new string(letters) : string.Empty;
+    }
 
     // Whether the word at an index opens a sentence: the text's start, or a sentence's end or a list's mark before it,
     // with only spaces, quotation marks or an opening bracket between. A point closing an honorific, an initial or a

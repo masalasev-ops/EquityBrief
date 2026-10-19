@@ -22,7 +22,7 @@ sealed record ReadingTaken(ReleaseAnswerRead Read, double? Seconds, int? PromptT
 // asking nothing past its last instant; the history by hand every release no reading under the pin holds, oldest
 // first, stopping cleanly at the instant it is given and pausing for each slot and for the night, the pin's history
 // marked complete once none is left.
-// see: A release is read with every name and date in it replaced by a neutral word, and product names kept
+// see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
 // see: The release reading asks four closed questions written before any release is read, and code turns each answer into a reading
 public sealed partial class LocalRun
 {

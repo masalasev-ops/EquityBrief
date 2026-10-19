@@ -56,7 +56,7 @@ public sealed partial class MarkRenderer
     // From 20.3 the newest results release's four answers under what management said: each question with its word, the
     // day the SEC accepted the release, and the line naming the model and the reading version it was read under from the
     // release with its names and dates removed.
-    // see: A release is read with every name and date in it replaced by a neutral word, and product names kept
+    // see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
     public string ReleaseReading(ReleaseReadingView view)
     {
         string Row(string question, string word) =>
