@@ -239,7 +239,10 @@ public partial class ReadSurface
 
         Assert.Contains(".card-mark svg{width:16px;height:16px;fill:none;stroke:currentColor;", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains(".card-mark svg .dot{fill:currentColor;stroke:none}", Stylesheet.Css, StringComparison.Ordinal);
-        Assert.Contains(".card-mark[data-verdict='tick']{color:var(--ink);", Stylesheet.Css, StringComparison.Ordinal);
+        // Each mark in a colour of its own: a tick in the green a gain is drawn in, on its fill, a note in grey and a warning
+        // in the caution's amber, each pair read at 4.5 to 1 or more in both palettes by the palette's own test.
+        Assert.Contains(".card-mark[data-verdict='tick']{color:var(--up);background:var(--up-fill);border:1px solid var(--up)}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".card-mark[data-verdict='note']{color:var(--ink-2);background:var(--plot);", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains(".card-mark[data-verdict='warning']{color:var(--warn);background:var(--warn-fill);", Stylesheet.Css, StringComparison.Ordinal);
     }
 

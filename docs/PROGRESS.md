@@ -4096,3 +4096,101 @@ Carried:    the local run's guard, PR 510, and these corrections, each merged at
             the short version's at its trigger; the two findings the 16.1 correction's entry puts to the operator; the
             local lane's one text field and its comparison; 21.0 once its ruling is given; the phase 19 sign-off; pin 3's
             completion steps; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.
+
+### 20.1 - correction: the local run refuses to start where LM Studio's saved structured output for the model differs from the one pin 3's history read started under   2026-10-19
+
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged, the morning's ruling and the 20.3 correction, PRs
+            506 and 507, and pin 3 written with its history read running; in review, 20.6's record through the native
+            endpoint, PR 508, 20.8 with its correction, PR 505, and the evening's ruling with the afternoon's record, PR
+            509; in progress, this correction; next, the local lane's one text field, the PRs at the read's 07:00 stop,
+            21.0 and the sign-offs of phases 18 and 19 while the read runs, then pin 3's completion steps.
+Ruled:      step 2 of the operator's ruling of 2026-10-19, evening, word for word in the ruling entry above.
+Built:      a decision (see: The local run refuses to start where LM Studio's saved structured output for the model
+            differs from the one its history read started under). The local profile states `StructuredOutput`, json,
+            the structured output LM Studio's saved settings for Gemma held when pin 3's history read started: the file
+            LM Studio keeps for the model was last written on 2026-10-07 at 00:16 UTC, holding the structured output as
+            json, before pins 1, 2 and 3. Every local run asking the model under the newest pin, a slot, the history read,
+            the twice-read, a probe and the idea generator, reads that file before anything else and refuses where it
+            reads otherwise, its outcome `setting differs` and its why naming both; no file for the model, or one holding
+            no structured output, reads off; a folder or a file it cannot read is named on the row with the setting the
+            read started under, and the run goes on. The row's detail carries what the guard read, as `structuredOutput`,
+            and only on a run whose profile states the setting, so every other row reads as before. A guard beside the
+            pin and no part of it: pin 3 and its prompt's version stand. The architecture's 12 and section 18's row, the
+            schema's row, the runbook's profile, the build plan's 20.1 and its done condition, the roster's row, the guide
+            and the changelog. This correction amends its own done condition, 20.1's: a run refusing on LM Studio's saved
+            structured output is held by it as well.
+Tests:      1 new, 2490 in all: over an LM Studio home of the suite's own, saved settings holding json letting a slot go on
+            with its row naming json, saved settings holding none refusing it before anything is asked in the words
+            "LM Studio's saved structured output for google/gemma-4-26b-a4b-qat reads off, not json, the one the history
+            read started under", a home keeping no folder of saved settings letting it go on with its row saying so beside
+            json, and a profile stating none writing its row as before.
+Claims:     1372, as before: the guard lands as words in 12's paragraph and section 18's row that stood.
+Mutated:    the rule, stated before the run: one mutation, the property the correction adds, a run refused where the
+            saved setting differs, the smallest edit undoing it, run filtered to the guard's test and the local run's three
+            neighbouring tests with its red predicted at the guard's test, made in this checkout and reverted with the
+            editor. G1 the comparison never finding a difference: red at the guard's test, the slot coming to nothing to
+            read where it should refuse, as predicted, and the four passing after the revert.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2490 of 2490 tests ran with none failed,
+            migrations 0 to 101 with none pending, schema version 101, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the guard reaches the history read once this merges and the read is started again from main's copy at its
+            07:00 stop; the local lane's one text field and the comparison recorded again; 21.0 once the phase 21 ruling
+            is given; the sign-offs of phases 18 and 19, owed to fresh sessions while pin 3's read runs; pin 3's completion
+            steps; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.
+
+### 18.1 - correction: the read surface writes a session's open and close in UTC to read the quotes and the asks between them, where it wrote New York's clock times with a Z and saw nothing asked after noon there   2026-10-19
+
+Queue:      done, phase 18's review and its corrections, PR 511, merged by its session at 22:26:57 UTC on the operator's
+            word; in progress, the local run's guard, PR 510, brought up to date with main, with this correction and the
+            card's coloured marks; next, PR 510 merged once the night and its store copy end, 5152 started again, pin 3's
+            history read started again from main's copy under the guard, then the phase 18 sign-off prompt, the local
+            lane's one text field, 21.0 once its ruling is given and the phase 19 sign-off prompt, then pin 3's
+            completion steps.
+Ruled:      by the operator on 2026-10-19, after this session found the defect below: "yes merge it", of PR 511; "You can
+            also stop the read  temporarily and start it back up after the nightly run finishes"; "Can we also merge  in
+            #510 ?"; "fdix the defect on teh #510 branch and fix merge conflicts and merge it. Can we also have the
+            checkboxes color coded"; and to whether this session might work on the branch during the night once it had
+            built its copy, "Yes, work during the night (Recommended)". Pin 3's history read was stopped at 22:28:08 UTC,
+            its run leaving no row of its own and its readings standing under pin 3; the night of 2026-10-19 built from
+            26bfbe21e64d, main with PR 511, at 23:00:49, and this branch was taken after it.
+Found:      reading the Run page of 2026-10-13 back on 5152 after PR 511 merged: one ask of the session's five. The read
+            surface handed its quote queries the session's open and close, instants at New York's offset, written in the
+            store's instant format, which writes an instant's own clock time with a Z: 09:30 and 16:00 read as UTC, four
+            hours before the session's, so every ask and every quote after noon in New York stood outside the session, the
+            masthead's newest quote among them, a quote asked in the afternoon drawing the last close. 18.1's tests built
+            the session's instants in UTC.
+Corrected:  each of the read surface's quote queries writes the session's instants in UTC.
+Tests:      the asks' test reads the session from its own instants, as the page does, an ask after noon in New York among
+            those counted, and holds the masthead's newest quote asked at 19:30 UTC, 15:30 in New York, and the Run page
+            counting it.
+Mutated:    the rule as the 4.7 correction's entry above states it. M13 the masthead's window written at New York's clock
+            again: red at the asks' test, the morning's quote drawn for the afternoon's, as predicted. M14 the asks' window
+            so written: red at it, one ask of three counted, the live page's fault, as predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 16.1 correction's entry
+            below, with the figures it states.
+Carried:    as the 16.1 correction's entry below.
+
+### 16.1 - correction: a pick's card draws its tick in the green a gain is drawn in, its note in grey and its warning in the caution's amber, on the operator's word   2026-10-19
+
+Queue:      as the 18.1 correction's entry above.
+Ruled:      the operator's "Can we also have the checkboxes color coded", in the words the entry above quotes.
+Corrected:  the tick's mark is drawn in the green a gain is, on the gain's fill with its border; the note in grey and the
+            warning in the caution's amber stand as they were.
+Tests:      the marks' test reads the three rules; the palette's test already holds the gain's green on its fill and the
+            caution's amber on its own at 4.5 to 1 or more on every ground in both palettes. 7 new tests since main at
+            d63191c9, PR 511's 6 and the guard's 1: 2496 in all, read off the suite's own list.
+Claims:     1372, as before.
+Mutated:    M15 the tick drawn in ink again: red at the marks' test, as predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2496 of 2496 tests ran with none failed,
+            migrations 0 to 101 with none pending, schema version 101, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    PR 510 merged once the night and its store copy end; 5152 started again from main; pin 3's history read
+            started again from main's copy, under the guard; the phase 18 sign-off by a fresh session over main; the quote's
+            operating row counting from PR 511's merge and the short version's at its trigger; the two findings the first
+            16.1 correction's entry puts to the operator; the local lane's one text field and its comparison; 21.0 once its
+            ruling is given; the phase 19 sign-off; pin 3's completion steps; (G1), SCHEMA's `family_trade` sentence, owed
+            by the next edit of that section.

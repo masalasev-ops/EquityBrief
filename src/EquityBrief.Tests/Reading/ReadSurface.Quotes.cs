@@ -365,11 +365,16 @@ public partial class ReadSurface
     public async Task TheRunPageNamesEachAskOfTheSessionNoRunOfTheQuoteJobAnswered()
     {
         using var store = new TemporaryStore().Migrated();
-        var open = new DateTimeOffset(2026, 10, 7, 13, 30, 0, TimeSpan.Zero);
-        var close = new DateTimeOffset(2026, 10, 7, 20, 0, 0, TimeSpan.Zero);
 
-        // Four asks the name pages wrote, three in the session of 2026-10-07 and one in the next day's; the quote job,
-        // run as the worker runs it, answers CVX's, and the session's other two have no run.
+        // The session as the Run page and the masthead read it, its open and close instants at New York's offset: 09:30
+        // to 16:00 there, 13:30Z to 20:00Z.
+        var (open, close) = EquityBrief.Core.Quotes.RegularSession.On(new DateOnly(2026, 10, 7), SessionZones.ResolveSessionZone(SessionZones.UnitedStates))!.Value;
+
+        Assert.Equal((TimeSpan.FromHours(-4), new DateTimeOffset(2026, 10, 7, 20, 0, 0, TimeSpan.Zero)), (open.Offset, close));
+
+        // Four asks the name pages wrote, three in the session of 2026-10-07, two of them after noon in New York, and one
+        // in the next day's; the quote job, run as the worker runs it, answers CVX's, and the session's other two have no
+        // run.
         store.Execute("INSERT INTO quote_request (ticker, asked_at) VALUES ('CVX', '2026-10-07T14:38:23Z'), ('PBI', '2026-10-07T17:08:28Z'), ('JNJ', '2026-10-07T19:04:56Z'), ('BNY', '2026-10-08T14:00:00Z');");
 
         var quoted = new EquityBrief.Core.Providers.ProviderQuote(new DateTimeOffset(2026, 10, 7, 14, 23, 0, TimeSpan.Zero), 211.40m, 210.10m, 1.30m, 0.6187);
@@ -389,6 +394,18 @@ public partial class ReadSurface
 
         Assert.Contains("data-asks=\"3\" data-stored=\"1\" data-unanswered=\"2\"", drawn, StringComparison.Ordinal);
         Assert.Contains("; 2 asks no run of the quote job answered, the job ending before it wrote its row or never starting: <span class=\"rp-unanswered\" data-ticker=\"PBI\" data-asked-at=\"2026-10-07T17:08:28Z\">PBI at 17:08:28 UTC</span>, <span class=\"rp-unanswered\" data-ticker=\"JNJ\" data-asked-at=\"2026-10-07T19:04:56Z\">JNJ at 19:04:56 UTC</span>.</p>", drawn, StringComparison.Ordinal);
+
+        // A quote asked at 19:30Z, 15:30 in New York, is the newest of the session the masthead draws, and the Run page
+        // counts it among the session's quotes stored.
+        var afternoon = await new QuoteJob(FixedClock.At(new DateTimeOffset(2026, 10, 7, 19, 30, 5, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile, new AnsweringQuoteFeed(quoted with { QuotedAt = new DateTimeOffset(2026, 10, 7, 19, 15, 0, TimeSpan.Zero), Price = 212.05m }))
+            .RunAsync("CVX", new DateTimeOffset(2026, 10, 7, 19, 30, 0, TimeSpan.Zero));
+        var read = new ReadApi(store.DatabaseFile, FixedClock.At(close, SessionZones.UnitedStates));
+        var newest = await read.NewestQuoteAsync("CVX", open, close);
+
+        Assert.Equal(QuoteJob.Quoted, afternoon.Outcome);
+        Assert.NotNull(newest);
+        Assert.Equal((new DateTimeOffset(2026, 10, 7, 19, 30, 0, TimeSpan.Zero), 212.05m), (newest.AskedAt, newest.Price));
+        Assert.Equal(2, (await read.QuoteRunsAsync(open, close)).Asked.Count);
     }
 
     // A quote feed answering the quote it is handed.

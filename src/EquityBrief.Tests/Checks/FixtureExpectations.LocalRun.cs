@@ -367,6 +367,71 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task ARunRefusesWhereLmStudiosSavedStructuredOutputDiffersFromTheOneTheHistoryReadStartedUnder()
+    {
+        // From the 20.1 correction of 2026-10-19, on the operator's ruling of that evening: an LM Studio home of the
+        // suite's own, its models folder holding the model's file and beside it the folder of saved model settings, and a
+        // profile stating the structured output the history read started under, json.
+        using var store = new TemporaryStore().Migrated();
+        using var home = new TemporaryDirectory();
+        var modelsRoot = Path.Combine(home.Path, "models");
+
+        Directory.CreateDirectory(Path.Combine(modelsRoot, "pub", "model"));
+        System.IO.File.WriteAllBytes(Path.Combine(modelsRoot, "pub", "model", "m.gguf"), Encoding.UTF8.GetBytes("a model file of the suite's own"));
+
+        var settings = ReadingProfile(modelsRoot) with { StructuredOutput = "json" };
+        var saved = Path.Combine(home.Path, ".internal", "user-concrete-model-default-config", "google", "gemma-4-26b-a4b-qat.json");
+        var clock = FixedClock.At(new DateTimeOffset(2026, 10, 20, 12, 5, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+        var untouched = AnsweringRuntime(loaded: true, chat: _ => throw new InvalidOperationException("no reading is asked"));
+
+        void Saved(string fields)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(saved)!);
+            System.IO.File.WriteAllText(saved, "{\"preset\":\"\",\"operation\":{\"fields\":[" + fields + "]},\"load\":{\"fields\":[]}}");
+        }
+
+        string Detail() => Query(store, "SELECT detail FROM run_log WHERE stage = 'local-run' ORDER BY rowid DESC LIMIT 1;").Single();
+
+        await new LocalRun(ReadingFeedOver(AnsweringRuntime(loaded: true, chat: _ => Runtime("local-reading-probe-answered.json")), settings), settings, clock, store.DatabaseFile, store.Root, NoWait).PinAsync(TextWriter.Null);
+
+        // Worked by hand. LM Studio's saved settings for the model hold the structured output as json, the one the read
+        // started under: the slot goes on, nothing waiting to be read, and its row names what it read.
+        Saved("{\"key\":\"llm.prediction.temperature\",\"value\":0.69},{\"key\":\"llm.prediction.structured\",\"value\":{\"type\":\"json\"}}");
+
+        Assert.Equal(LocalRun.NothingToRead, (await SlotOver(store, settings, clock, untouched)).Outcome);
+        Assert.Contains("\"structuredOutput\":\"json\"", Detail(), StringComparison.Ordinal);
+
+        // The setting taken off, which LM Studio saves as no field: the slot refuses before anything is asked of the
+        // runtime, saying so on its row in these words.
+        Saved("{\"key\":\"llm.prediction.temperature\",\"value\":0.69}");
+
+        var refused = await SlotOver(store, settings, clock, untouched);
+
+        Assert.Equal(
+            (LocalRun.SettingDiffers, "LM Studio's saved structured output for google/gemma-4-26b-a4b-qat reads off, not json, the one the history read started under"),
+            (refused.Outcome, refused.Why));
+        Assert.Equal(["setting differs"], Query(store, "SELECT outcome FROM run_log WHERE stage = 'local-run' ORDER BY rowid DESC LIMIT 1;"));
+        Assert.Contains("\"structuredOutput\":\"off\"", Detail(), StringComparison.Ordinal);
+        Assert.Empty(untouched.Asked);
+
+        // A home holding the model's file as the first holds it, its size and modified instant the pin's, and no folder of
+        // saved settings to read: the slot says so on its row with the setting the read started under, and goes on.
+        using var bare = new TemporaryDirectory();
+        var bareFile = Path.Combine(bare.Path, "models", "pub", "model", "m.gguf");
+
+        Directory.CreateDirectory(Path.GetDirectoryName(bareFile)!);
+        System.IO.File.Copy(Path.Combine(modelsRoot, "pub", "model", "m.gguf"), bareFile);
+        System.IO.File.SetLastWriteTimeUtc(bareFile, System.IO.File.GetLastWriteTimeUtc(Path.Combine(modelsRoot, "pub", "model", "m.gguf")));
+
+        Assert.Equal(LocalRun.NothingToRead, (await SlotOver(store, settings with { ModelsFolder = Path.Combine(bare.Path, "models") }, clock, untouched)).Outcome);
+        Assert.Contains("\"structuredOutput\":\"not read: LM Studio keeps no folder of saved model settings beside its models folder; the history read started under json\"", Detail(), StringComparison.Ordinal);
+
+        // A profile stating no setting holds the saved settings to nothing, and its row carries no reading of them.
+        Assert.Equal(LocalRun.NothingToRead, (await SlotOver(store, settings with { StructuredOutput = null }, clock, untouched)).Outcome);
+        Assert.DoesNotContain("structuredOutput", Detail(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task TheRuntimeNotRunningAndTheModelNotHeldEndTheRunAndSaySo()
     {
         using var store = new TemporaryStore().Migrated();

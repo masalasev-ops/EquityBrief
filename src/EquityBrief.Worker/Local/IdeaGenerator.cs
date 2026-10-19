@@ -72,6 +72,8 @@ public sealed class IdeaGenerator(
 
         var ready = await LocalRun.ReadyAsync(settings, databaseFile, started, null, cancellation);
 
+        guarded = ready.Structured;
+
         if (ready.Refusal is { } refused)
         {
             return await EndAsync(runId, index, started, refused with { Kind = kind }, [], output, cancellation);
@@ -200,8 +202,13 @@ public sealed class IdeaGenerator(
 
     // The answers asked and the run's row, written in one transaction with the drain's lock held, and its line on the
     // output.
+    // What the run's guard of LM Studio's saved structured output read, which its row carries.
+    string? guarded;
+
     async Task<LocalRunOutcome> EndAsync(string runId, string index, DateTimeOffset started, LocalRunOutcome outcome, IReadOnlyList<Asked> asked, TextWriter output, CancellationToken cancellation)
     {
+        outcome = outcome with { Structured = outcome.Structured ?? guarded };
+
         using (await DrainLock.AcquireAsync(dataRoot, () => wait(LocalRun.Poll, cancellation), cancellation))
         {
             await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));

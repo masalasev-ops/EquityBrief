@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Providers;
@@ -32,7 +33,8 @@ public sealed record LocalRunOutcome(
     double? HashSeconds,
     int Compared = 0,
     int Identical = 0,
-    int Requests = 0);
+    int Requests = 0,
+    string? Structured = null);
 
 // The model's file as the local run reads it off the disk: its path under LM Studio's models folder, which is what the
 // pin and the run's row hold, its size and its last-modified instant.
@@ -68,6 +70,79 @@ public static class LocalModelFile
         await using var stream = File.OpenRead(PathOf(folder, relative));
 
         return Convert.ToHexStringLower(await SHA256.HashDataAsync(stream, cancellation));
+    }
+}
+
+// LM Studio's own saved settings for a model, which its runtime applies to every request for the model whatever the
+// request asks: the structured output they hold, read off the file LM Studio keeps for the model's key in its folder of
+// saved model settings, its home beside the models folder. Off where it keeps no file for the model or the file holds no
+// structured output; none, with why, where the folder or the file cannot be read.
+// see: The local run refuses to start where LM Studio's saved structured output for the model differs from the one its history read started under
+public static class LmStudioSaved
+{
+    public const string Off = "off";
+
+    // The key LM Studio writes the structured output under, among a saved setting's fields.
+    public const string StructuredKey = "llm.prediction.structured";
+
+    public static string HomeOf(LocalModelSettings settings) =>
+        Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(LocalModelFile.FolderOf(settings))) ?? LocalModelFile.FolderOf(settings);
+
+    public static (string? Value, string? Unread) StructuredOutput(string home, string model)
+    {
+        var folder = Path.Combine(home, ".internal", "user-concrete-model-default-config");
+
+        if (!Directory.Exists(folder))
+        {
+            return (null, "LM Studio keeps no folder of saved model settings beside its models folder");
+        }
+
+        var file = Path.Combine([folder, .. model.Split('/', StringSplitOptions.RemoveEmptyEntries)]) + ".json";
+
+        if (!File.Exists(file))
+        {
+            return (Off, null);
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(File.ReadAllText(file));
+
+            if (document.RootElement.ValueKind == JsonValueKind.Object
+                && document.RootElement.TryGetProperty("operation", out var operation)
+                && operation.ValueKind == JsonValueKind.Object
+                && operation.TryGetProperty("fields", out var fields)
+                && fields.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var field in fields.EnumerateArray())
+                {
+                    if (field.ValueKind == JsonValueKind.Object
+                        && field.TryGetProperty("key", out var key)
+                        && key.ValueKind == JsonValueKind.String
+                        && key.GetString() == StructuredKey
+                        && field.TryGetProperty("value", out var value))
+                    {
+                        return (value.ValueKind == JsonValueKind.Object && value.TryGetProperty("type", out var type) && type.ValueKind == JsonValueKind.String
+                            ? type.GetString()
+                            : value.GetRawText(), null);
+                    }
+                }
+            }
+
+            return (Off, null);
+        }
+        catch (JsonException)
+        {
+            return (null, "LM Studio's saved settings for the model are not JSON it can be read from");
+        }
+        catch (IOException)
+        {
+            return (null, "LM Studio's saved settings for the model could not be opened");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return (null, "LM Studio's saved settings for the model could not be opened");
+        }
     }
 }
 
@@ -194,6 +269,7 @@ public sealed partial class LocalRun(
     public const string LimitReached = "limit reached";
     public const string LockHeld = "lock held";
     public const string FetchRefused = "fetch refused";
+    public const string SettingDiffers = "setting differs";
 
     // How long a run waits between looks at a held lock.
     public static TimeSpan Poll { get; } = TimeSpan.FromSeconds(30);
@@ -570,13 +646,23 @@ public sealed partial class LocalRun(
     sealed class PinBroken(string message) : Exception(message);
 
     // Whether the run may read: the profile's file and cutoff named, a pin written, the model, the file and the
-    // instruction the pin's, the file hashed whole where the pin's rule says.
-    Task<(ReadingPin? Pin, string? Check, double? HashSeconds, LocalRunOutcome? Refusal)> ReadyAsync(DateTimeOffset started, CancellationToken cancellation) =>
-        ReadyAsync(settings, databaseFile, started, ReleaseQuestions.Version, cancellation);
+    // instruction the pin's, the file hashed whole where the pin's rule says; and from the 20.1 correction of 2026-10-19
+    // LM Studio's saved structured output the profile's, what the guard read kept for the run's row.
+    async Task<(ReadingPin? Pin, string? Check, double? HashSeconds, LocalRunOutcome? Refusal, string? Structured)> ReadyAsync(DateTimeOffset started, CancellationToken cancellation)
+    {
+        var ready = await ReadyAsync(settings, databaseFile, started, ReleaseQuestions.Version, cancellation);
+
+        structured = ready.Structured;
+
+        return ready;
+    }
+
+    // What the run's guard of LM Studio's saved structured output read, which its row carries.
+    string? structured;
 
     // The same for any process asking the local model under the newest pin, a prompt version of none comparing no prompt,
     // as the idea generator reads it, its own instruction's version being part of each answer's key.
-    internal static async Task<(ReadingPin? Pin, string? Check, double? HashSeconds, LocalRunOutcome? Refusal)> ReadyAsync(
+    internal static async Task<(ReadingPin? Pin, string? Check, double? HashSeconds, LocalRunOutcome? Refusal, string? Structured)> ReadyAsync(
         LocalModelSettings settings,
         string databaseFile,
         DateTimeOffset started,
@@ -585,7 +671,7 @@ public sealed partial class LocalRun(
     {
         if (settings.ModelFile is not { } relative || settings.KnowledgeCutoff is null)
         {
-            return (null, null, null, Ended(string.Empty, NotSet, $"the local profile {settings.Profile} names no {LocalModelSettings.ModelFileName} or no {LocalModelSettings.KnowledgeCutoffName}"));
+            return (null, null, null, Ended(string.Empty, NotSet, $"the local profile {settings.Profile} names no {LocalModelSettings.ModelFileName} or no {LocalModelSettings.KnowledgeCutoffName}"), null);
         }
 
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
@@ -594,14 +680,32 @@ public sealed partial class LocalRun(
 
         if (await NewestPinAsync(connection, cancellation) is not { } pin)
         {
-            return (null, null, null, Ended(string.Empty, NoPin, "no reading version is pinned yet; write one with the pin by hand"));
+            return (null, null, null, Ended(string.Empty, NoPin, "no reading version is pinned yet; write one with the pin by hand"), null);
+        }
+
+        // From the 20.1 correction of 2026-10-19 LM Studio's saved structured output for the model, held to the one the
+        // profile states the history read started under before anything else is read: a run refused where they differ,
+        // and one that cannot read the saved setting saying so and going on.
+        // see: The local run refuses to start where LM Studio's saved structured output for the model differs from the one its history read started under
+        var guarded = (string?)null;
+
+        if (settings.StructuredOutput is { } expected)
+        {
+            var (value, unread) = LmStudioSaved.StructuredOutput(LmStudioSaved.HomeOf(settings), settings.Model);
+
+            if (value is { } saved && !string.Equals(saved, expected, StringComparison.Ordinal))
+            {
+                return (pin, null, null, Ended(string.Empty, SettingDiffers, $"LM Studio's saved structured output for {settings.Model} reads {saved}, not {expected}, the one the history read started under") with { Pin = pin, Structured = saved }, saved);
+            }
+
+            guarded = value ?? $"not read: {unread}; the history read started under {expected}";
         }
 
         var folder = LocalModelFile.FolderOf(settings);
 
         if (LocalModelFile.Facts(folder, relative) is not { } facts)
         {
-            return (pin, null, null, Ended(string.Empty, ReadingRuntimeUnavailable.ModelNotHeld, $"no file {relative} stands under LM Studio's models folder") with { Pin = pin });
+            return (pin, null, null, Ended(string.Empty, ReadingRuntimeUnavailable.ModelNotHeld, $"no file {relative} stands under LM Studio's models folder") with { Pin = pin, Structured = guarded }, guarded);
         }
 
         DateTimeOffset? last = null;
@@ -631,10 +735,10 @@ public sealed partial class LocalRun(
 
         if (ReadingPins.Differs(pin, settings.Model, sha, facts.Size, facts.Modified, promptVersion ?? pin.PromptVersion) is { } part)
         {
-            return (pin, check, hashSeconds, Ended(string.Empty, PinRefused, $"{part} is not pin {pin.Id}'s") with { Pin = pin, FileCheck = check, HashSeconds = hashSeconds });
+            return (pin, check, hashSeconds, Ended(string.Empty, PinRefused, $"{part} is not pin {pin.Id}'s") with { Pin = pin, FileCheck = check, HashSeconds = hashSeconds, Structured = guarded }, guarded);
         }
 
-        return (pin, check, hashSeconds, null);
+        return (pin, check, hashSeconds, null, guarded);
     }
 
     internal static LocalRunOutcome Ended(string kind, string outcome, string why) =>
@@ -662,7 +766,7 @@ public sealed partial class LocalRun(
     // The run's one row, written once any lock it waits on is let go, and its line on the output.
     async Task<LocalRunOutcome> EndAsync(DateTimeOffset started, string kind, LocalRunOutcome outcome, DateTimeOffset? limit, TextWriter output, CancellationToken cancellation, int rowsWritten = 0)
     {
-        var ended = outcome with { Kind = kind };
+        var ended = outcome with { Kind = kind, Structured = outcome.Structured ?? structured };
 
         if (!await WaitToWriteAsync(limit is { } last ? last.AddMinutes(5) : null, output, cancellation))
         {
@@ -696,8 +800,25 @@ public sealed partial class LocalRun(
             : string.Empty;
 
     // The row's detail, which the Run page draws: what the run was and came to, its counts, its times, the pin and the
-    // file check. It carries no path of any file.
-    public static string Detail(LocalRunOutcome outcome) =>
+    // file check, and from the 20.1 correction of 2026-10-19 what the guard of LM Studio's saved structured output read,
+    // on a run whose profile states the setting. It carries no path of any file.
+    public static string Detail(LocalRunOutcome outcome)
+    {
+        var detail = Described(outcome);
+
+        if (outcome.Structured is not { } structured)
+        {
+            return detail;
+        }
+
+        var node = JsonNode.Parse(detail)!.AsObject();
+
+        node["structuredOutput"] = structured;
+
+        return node.ToJsonString();
+    }
+
+    static string Described(LocalRunOutcome outcome) =>
         JsonSerializer.Serialize(new
         {
             kind = outcome.Kind,
