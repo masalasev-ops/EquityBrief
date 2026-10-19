@@ -1785,11 +1785,11 @@ public sealed partial class SinglePageApp : IComponent
         quarterBody.Append(report is null ? string.Empty : marks.QuarterTable(ticker, report));
         quarterBody.Append(report is null ? string.Empty : Cards.Key(
             "How to read it.",
-            "Each line of the newest quarter the company reported: what it reported, the analysts' average estimate kept before the report where one was, the difference in the line's own unit and in per cent of the estimate, the same quarter a year earlier and the change on it, and for gross, operating and net income their margin on revenue then and a year earlier. A rise is drawn in indigo and a fall in plum, with its sign always written.",
+            "Each line of the newest quarter the company reported: what it reported, the analysts' average estimate kept before the report where one was, the difference in the line's own unit and in per cent of the estimate, the same quarter a year earlier and the change on it, and for gross, operating and net income their margin on revenue then and a year earlier. A rise is drawn in green and a fall in red, with its sign always written.",
             "A line beating its estimate says the quarter came in ahead of what was expected, and the change on a year says whether the business grew; neither moves the plan, which is read from the price."));
         quarterBody.Append(report is null ? string.Empty : "<div class=\"sub\">Growth on a year, the eight newest quarters</div><div class=\"fig\">" + marks.GrowthBars(ticker, report.Growth) + "</div>" + Cards.Key(
             "How to read it.",
-            "Each quarter's revenue, the filled bar, and earnings a share, the outlined bar, against the same quarter a year earlier, in per cent about the zero rule. A bar above the rule rose and is drawn in indigo, one below it fell and is drawn in plum.",
+            "Each quarter's revenue, the filled bar, and earnings a share, the outlined bar, against the same quarter a year earlier, in per cent about the zero rule. A bar above the rule rose and is drawn in green, one below it fell and is drawn in red.",
             "Growth that slows quarter by quarter reads as a business losing pace even while each quarter still grows."));
         quarterBody.Append(numbers);
 
@@ -1974,7 +1974,7 @@ public sealed partial class SinglePageApp : IComponent
                     + "<div class=\"sub\">The yield against the 10-year</div><div class=\"fig\">" + marks.YieldLines(dividend) + "</div>"
                     + Cards.Key(
                         "How to read it.",
-                        "The rate is the forward annual dividend a share the company's newest fetch files, and the yield is it over the price the masthead draws. The payout on earnings is the rate over the last four quarters' earnings a share, and the payout on free cash flow the dividends paid over the last four quarters over their free cash flow. The bars are the dividends a share each year the store kept, a raise in indigo and a cut in plum, the year so far starred; the lines are the year's dividends over each session's close beside the Treasury's own 10-year par yield.",
+                        "The rate is the forward annual dividend a share the company's newest fetch files, and the yield is it over the price the masthead draws. The payout on earnings is the rate over the last four quarters' earnings a share, and the payout on free cash flow the dividends paid over the last four quarters over their free cash flow. The bars are the dividends a share each year the store kept, a raise in green, a cut in red and a year level or not compared in grey, the year so far starred; the lines are the year's dividends over each session's close beside the Treasury's own 10-year par yield.",
                         "A payout under the earnings and the cash leaves room to keep paying; one above either is paid from something else, and a yield above the 10-year is paid for the risk of holding a stock."),
                 title: "Whether the dividend is covered",
                 stamp: Cards.Night(session),
