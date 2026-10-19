@@ -6424,7 +6424,8 @@ public sealed partial class ReadApi : IComponent
     //
     // A name page open in the regular session asks for the delayed quote, this surface writes the ask, and the worker's
     // quote job answers it. An ask inside the interval of the name's newest is not written, so two pages open on one name
-    // ask once between them, and the page draws the newest stored quote of the session it is in.
+    // ask once between them, and the page draws the newest stored quote of the session it is in. A session's open and
+    // close are instants at New York's offset, and the store's instants are UTC, so each is written in UTC to compare.
     // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
 
     const string NewestQuoteAsk = "SELECT MAX(asked_at) FROM quote_request WHERE ticker = $ticker;";
@@ -6517,8 +6518,8 @@ public sealed partial class ReadApi : IComponent
 
         command.CommandText = NewestQuoteOf;
         command.Parameters.AddWithValue("$ticker", ticker);
-        command.Parameters.AddWithValue("$from", from.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
-        command.Parameters.AddWithValue("$to", to.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$from", from.UtcDateTime.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$to", to.UtcDateTime.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
 
         await using var reader = await command.ExecuteReaderAsync();
 
@@ -6558,8 +6559,8 @@ public sealed partial class ReadApi : IComponent
         await using (var command = connection.CreateCommand())
         {
             command.CommandText = QuoteAsksBetween;
-            command.Parameters.AddWithValue("$from", from.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
-            command.Parameters.AddWithValue("$to", to.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$from", from.UtcDateTime.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$to", to.UtcDateTime.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
 
             await using var reader = await command.ExecuteReaderAsync();
 
@@ -6573,7 +6574,7 @@ public sealed partial class ReadApi : IComponent
         {
             command.CommandText = QuoteRunsAnswering;
             command.Parameters.AddWithValue("$stage", QuoteStage);
-            command.Parameters.AddWithValue("$from", from.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$from", from.UtcDateTime.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
 
             await using var reader = await command.ExecuteReaderAsync();
 
@@ -6589,8 +6590,8 @@ public sealed partial class ReadApi : IComponent
         await using (var command = connection.CreateCommand())
         {
             command.CommandText = QuotesBetween;
-            command.Parameters.AddWithValue("$from", from.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
-            command.Parameters.AddWithValue("$to", to.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$from", from.UtcDateTime.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$to", to.UtcDateTime.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
 
             await using var reader = await command.ExecuteReaderAsync();
 
@@ -6604,8 +6605,8 @@ public sealed partial class ReadApi : IComponent
         {
             command.CommandText = QuoteRunsBetween;
             command.Parameters.AddWithValue("$stage", QuoteStage);
-            command.Parameters.AddWithValue("$from", from.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
-            command.Parameters.AddWithValue("$to", to.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$from", from.UtcDateTime.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$to", to.UtcDateTime.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
 
             await using var reader = await command.ExecuteReaderAsync();
 
