@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-19 - RUNBOOK.md - the read surface started again after a merge carrying a migration only once the store holds it
+Corrects: on 2026-10-19 the read surface was started again from main after PRs 506 and 507 merged and drew blank screens, the store still at schema 100 while main read 101, found as it happened; the step after a merge said to start the page again and not that a migration the merge carries comes first.
+Was:
+> **It runs from a Release build of `main`.** ... After a merge the checkout is back on `main`, and the page is stopped and started again the same way to serve what merged.
+Now:
+> **It runs from a Release build of `main`.** ... After a merge the checkout is back on `main`, and the page is stopped and started again the same way to serve what merged. Where the merge carries a migration, the page is started again only once the store holds it: `tools/migrate` applies it while nothing writes, the history read stopped for it and started again after, since a page whose checkout reads a newer schema than the store's draws nothing.
+Why: the operator's ruling of 2026-10-19 amends the merge steps so the page is never started over a store behind its checkout.
+
 ### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the 20.3 correction of 2026-10-19
 Authorised by: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
 Was:
