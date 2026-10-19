@@ -3348,3 +3348,50 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the history read and its record; 20.2's record; 20.4's second remedy after the history read; the
             sentence-start rule and the lower-case names, put to the operator; the sign-offs of phases 18 and 19, owed to
             fresh sessions; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.
+
+### 20.5 ruling - phase 20 built whole in the order its dependencies set, the sign-offs of phases 18 and 19 after 20.10, and the history read around the clock with the card held at 250 W   2026-10-18
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-18, after 20.0 to 20.4 had merged. Asked whether the sign-offs of phases 18 and
+            19 or the rest of phase 20 came first: "Forget about  phase 18 and 19 sign offs. I want entire phase 20 to be
+            built. Can this be done ?" Told the plan paused after 20.7 for the monthly run of 2026-11-07 and their
+            reading of its proposals: "why does it need to s top after 20.7 ?" and "i want the entire phase to be
+            finished unless there is some actual dependency". On the history read's use of the card: "i dont need the
+            GPU however, i need phase 20 to continue building". Hearing the card's fans at its limit of 390 W: "NO that
+            will cause unncessary heating of GPU. I need  it to lower down the usage of GPU then. I cant burn  out the
+            GPU", "Be mindful that GPU does not  overheat." and "you can continue to let it do the read  non-stop , i
+            just down want it overheating. Run it under capped wattage as much as you want". The words are kept in
+            `prompts/`.
+Plan:       a decision supersedes the order 20.0 wrote, which moves to Previously decided with its reasoning, its
+            money and retirement terms standing word for word in the new one (see: Phase 20 is built whole in the order
+            its dependencies set with the sign-offs of phases 18 and 19 after it, spending no money and retiring nothing
+            on a result). The order is what each checkpoint reads: 20.5 to 20.7 compare stored paid work and 20.9's
+            generator reads the tester's own tables, so each is built while the history read runs, its runs of the local
+            model made while the read is stopped, 20.9 taking migration 101; once the read completes, 20.3's record,
+            20.4's second remedy and 20.8, taking migration 102, since a setup's reading needs its release read; then
+            20.10; then the sign-offs of phases 18 and 19, each still owed by a fresh session on its phase as a whole
+            before phase 21's plan and discharged by nothing phase 20 does. The monthly run of 2026-11-07 runs on its
+            schedule over whatever has merged by then. `BUILD_PLAN.md`'s phase 20 section, section 20's row, the
+            runbook's account of the history read and the tone variant's decision's citation follow the ruling, the
+            changelog holding the three specs' prior text.
+Measured:   pin 2's history read, started at 02:02 UTC from main's copy at 8379773e, read 1,181 releases at 4.63
+            seconds each with the card at its limit of 390 W, its core at 70 degrees and its fan at 80 per cent. Stopped
+            at 03:35 UTC, the card's limit set to 250 W by `nvidia-smi -pl 250` run as administrator and the read
+            started again at 03:36, it read 101 releases at 5.73 seconds each in its first ten minutes, longer releases
+            than the first 1,181, at 0.425 seconds a thousand prompt tokens against 0.377, about 13 per cent slower a
+            token, its core at 57 to 60 degrees and its fan at 55 to 61 per cent, refusing none. 44,030 releases were
+            left to read, about 64 hours of the card at 250 W. A watcher beside the read stops it where the core reaches
+            72 degrees on two samples running or the limit leaves 250 W.
+Queue:      done, phases 0 to 19 built and 20.0 to 20.4 merged with 20.3's two corrections and the reference set's
+            labels, PRs 486 to 496, pin 2 written and its history read started; in progress, this ruling and PR 497
+            beneath it, the two items phase 17's sign-off carried; next, 20.5, 20.6, 20.7 and 20.9 while the read runs,
+            then 20.3's record, 20.4's second remedy, 20.8 and 20.10, then the sign-offs of phases 18 and 19 by fresh
+            sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the code this ruling sits on, PR 497's, as the
+            17.8 correction's entry above records: 2471 of 2471 tests, 1364 claims, 1364 passing. This pull request
+            changes documents alone, and the checks that read the corpus ran filtered over its tree: RecordAppendOnly,
+            TwoPlatform, ObligationReconciles, BannedProse, DecisionCitations, CoverageReported, StatedCounts,
+            ArchitectureConformance, PinnedConstants, ChangelogReconciles, DoneConditionProducible and FigureFits.
+Carried:    the history read and its record; 20.2's record; 20.4's second remedy after the history read; the
+            sentence-start rule and the lower-case names, put to the operator; the sign-offs of phases 18 and 19, owed to
+            fresh sessions after 20.10; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.
