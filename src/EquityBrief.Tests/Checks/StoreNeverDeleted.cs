@@ -76,7 +76,8 @@ public class StoreNeverDeleted
         // sweep's folder, and IndexSweepRunner into the run folder it claimed there; FamilySweepRunner, HeavyweightSweepRunner
         // and IndexSweepRunner write the answer a search states beside them, as SweepRunner writes its own through `Of`.
         // From 20.3 the local run writes the reference set's releases as the model reads them, a file each named by its
-        // accession, and their list into a folder the operator names. MonthlyRun writes its month's report into the
+        // accession, and their list into a folder the operator names; from 20.5 its comparison writes its figures into the
+        // data root's folder of comparisons, a file named by its instant. MonthlyRun writes its month's report into the
         // month's folder under the loop's folder of the data root, a run again writing it over the one before. NightLock
         // writes and removes the night's lock file.
         // SweepPointInTime removes the scratch stores it built under the machine's temporary folder, which
@@ -107,6 +108,7 @@ public class StoreNeverDeleted
                 "IndexSweepRunner.cs: File.WriteAllText(Path.Combine(folder, FiguresFile))",
                 "IndexSweepRunner.cs: File.WriteAllText(Path.Combine(folder, SweepAnswer.File))",
                 "IndexSweepRunner.cs: File.WriteAllText(report)",
+                "LocalComparison.cs: File.WriteAllTextAsync(Path.Combine(folder, name))",
                 "LocalRun.Probes.cs: File.WriteAllLinesAsync(Path.Combine(folder, \"sample.txt\"))",
                 "LocalRun.Probes.cs: File.WriteAllTextAsync(Path.Combine(folder, accession + \".txt\"))",
                 "MonthlyRun.cs: File.WriteAllText(report)",

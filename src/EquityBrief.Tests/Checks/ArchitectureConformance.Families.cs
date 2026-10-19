@@ -380,9 +380,10 @@ public partial class ArchitectureConformance
         // the Run page's local model region, and 1355 from 20.2, the release fetch's catalogue and matrix rows, its two
         // stores, section 17's row and section 18's, and 1362 from 20.3, the accuracy report's catalogue and matrix rows,
         // the three stores of the releases' filers, readings and probes, section 17's row and section 18's, and 1364 from
-        // 20.4, the tone variant's card row in 15.7 and section 17's window row.
+        // 20.4, the tone variant's card row in 15.7 and section 17's window row, and 1366 from 20.5, the local comparison's
+        // catalogue and matrix rows.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1364),
+            (789, 853, 6, 4, 855, 876, 1366),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

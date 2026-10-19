@@ -80,6 +80,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Release accuracy"),
     ];
 
+    // 20.5's one: the local model set against paid work already stored.
+    internal static string[] LocalComparisonRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Local comparison"),
+        CheckReach.Key(Scope.MatrixTable, "Local comparison"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -111,6 +118,9 @@ public partial class ComponentAccess
 
             // 20.3, the accuracy report.
             .. ReleaseAccuracyRows,
+
+            // 20.5, the local comparison.
+            .. LocalComparisonRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),
@@ -728,15 +738,16 @@ public partial class ComponentAccess
 
         Assert.Empty(faults);
 
-        // The nine that write no store, stated in advance: the page, the renderer, the
+        // The ten that write no store, stated in advance: the page, the renderer, the
         // trend classifier, which hands its label to the ladder builder, from 6.11 the
         // report exporter, whose file is kept wherever the person exporting chooses,
         // from 12.2 the filter counts, which print the shape counts and open the store read-only,
         // from 12.6 the comparison files, written to a folder the repository ignores, from 12.5 the
         // sweep history, which opens the store read-only and keeps its chunks and its report in a folder beside it,
         // and the sweep's point-in-time check, which reads scratch stores of its own the night's components wrote,
-        // and from 20.3 the release accuracy report, which prints its figures and writes nothing.
-        Assert.Equal(["ComparisonFiles", "FilterCounts", "MarkRenderer", "ReleaseAccuracy", "ReportExporter", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
+        // from 20.3 the release accuracy report, which prints its figures and writes nothing, and from 20.5 the local
+        // comparison, which opens the store read-only and writes its figures to a file under the data root.
+        Assert.Equal(["ComparisonFiles", "FilterCounts", "LocalComparison", "MarkRenderer", "ReleaseAccuracy", "ReportExporter", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
 
         // And the row's own words, read off the document, are the words this holds.
         Assert.Equal(

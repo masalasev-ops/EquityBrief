@@ -75,13 +75,14 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "dividends" => await DividendsRun(args),
     "local-run" => await LocalRunVerb(args),
     "releases" => await ReleasesVerb(args),
+    "compare-labels" => await CompareLabelsVerb(),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 46 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 47 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -231,6 +232,9 @@ static int NoVerb()
         "model's file hashed whole, the runtime a probe's answer states and the instruction's version, and '--twice' " +
         "reads every results release a research pass stored twice under the pin and states how many were answered " +
         "alike, each loading the local model where it is not loaded and leaving the runtime as it found it, and " +
+        "'compare-labels' labels again on the local model, under the labeller's own instruction, every article the news " +
+        "job's paid profile labelled that the store still holds, and writes the agreement on each label's kind and " +
+        "direction and how many of its reasons held no digit to a file under the data root, writing nothing to the store, and " +
         "'releases --history --from <yyyy-MM-dd>' fetches every ledger filer's results releases from the one before its " +
         "first session in the ledger from that day through its last, with '--until <HH:mm>' stopping cleanly at that " +
         "time in New York, and goes on from where an earlier run stopped. '--live' " +
@@ -2075,6 +2079,57 @@ static (bool Read, DateTimeOffset? Until) Until(string[] args, IClock clock)
     Console.WriteLine(FormattableString.Invariant($"releases: stopping at {local:HH:mm} New York time, {until:yyyy-MM-ddTHH:mm:ssZ}"));
 
     return (true, until);
+}
+
+// From 20.5 the news labels compared by hand: every article the news job's paid profile labelled that the store still
+// holds labelled again by the local profile's model under the labeller's own instruction, at the news job's answer
+// budget, the agreement written to a file under the data root and nothing to the store. The work is in `LocalComparison`.
+// see: A comparison of the local model against stored paid work writes no store row and switches nothing
+static async Task<int> CompareLabelsVerb()
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (!File.Exists(store.DatabaseFile))
+    {
+        Console.Error.WriteLine($"compare-labels: no store at '{store.DatabaseFile}', so there are no labels to compare.");
+
+        return 1;
+    }
+
+    if (NewsLane.Profile(configuration) is not { } paid)
+    {
+        Console.Error.WriteLine("compare-labels: the news job names no profile, so there are no paid labels to compare against.");
+
+        return 1;
+    }
+
+    var budget = configuration[ModelProfiles.JobField(ModelProfiles.NewsJob, ModelProfiles.AnswerTokensField)];
+
+    if (!int.TryParse(budget, NumberStyles.None, CultureInfo.InvariantCulture, out var answerTokens) || answerTokens <= 0)
+    {
+        Console.Error.WriteLine($"compare-labels: the news job's answer budget is '{budget}', which is not a whole number of tokens above zero.");
+
+        return 1;
+    }
+
+    LocalModelSettings settings;
+
+    try
+    {
+        settings = LocalLane.Settings(configuration);
+    }
+    catch (InvalidOperationException refused)
+    {
+        Console.Error.WriteLine("compare-labels: " + refused.Message);
+
+        return 1;
+    }
+
+    var outcome = await new LocalComparison(LmStudioReadingFeed.Live(settings), settings, SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot)
+        .LabelsAsync(paid.Name, answerTokens, Console.Out);
+
+    return outcome.Stopped is null ? 0 : 1;
 }
 
 static async Task<int> LabelNews(string[] args)

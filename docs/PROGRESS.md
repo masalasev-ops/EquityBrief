@@ -3395,3 +3395,45 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the cod
 Carried:    the history read and its record; 20.2's record; 20.4's second remedy after the history read; the
             sentence-start rule and the lower-case names, put to the operator; the sign-offs of phases 18 and 19, owed to
             fresh sessions after 20.10; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.
+
+### 20.5 - the news labels compared on the local model: every article the paid profile labelled, labelled again under the labeller's own instruction, writing no store row and switching nothing   2026-10-19
+
+Queue:      done, phases 0 to 19 built and 20.0 to 20.4 merged with 20.3's two corrections and its labels, the two items
+            phase 17's sign-off carried and the ruling above, PRs 486 to 498, the history read under pin 2 running with
+            the card held at 250 W; in progress, this; next, 20.6, 20.7 and 20.9 while the read runs, then 20.3's record,
+            20.4's second remedy, 20.8 and 20.10, then the sign-offs of phases 18 and 19 by fresh sessions.
+Built:      `compare-labels`, the local comparison, a component of its own: every article the news job's paid profile
+            labelled under the instruction's version that the store still holds, oldest label first, labelled again by
+            the local profile's model under the labeller's own instruction and the company name the labeller sends, at
+            temperature zero with the readings' seed and the news job's answer budget, an answer it cannot read asked
+            once more as the labeller asks it. It holds the local lock, saying so where it waits for it, loads the model
+            where it is not loaded and unloads it at its end only where it loaded it, opens the store read-only, and
+            writes its figures with each article's two labels and every answer to `comparisons/labels-<instant>.json`
+            under the data root, printing them on one line. The agreement's arithmetic sits in the core: how many it
+            labelled and could not by cause, the kind, the direction and both agreeing, and the reasons its answers
+            stated holding no digit, every answer counted. The decision, the catalogue's and the matrix's rows, the
+            runbook's command, the roster's row, the guide and the changelog. The plan's ruling drew one run log row
+            beside the file; a row is a store row and nothing reads it, so none is written and the decision says why.
+Tests:      2 new, 2473 in all: the comparison over a constructed store, four paid labels and four labels it leaves out,
+            worked by hand with the lock held and given up, the runtime loading and unloading, the file read back and
+            every table's rows counted before and after, and a store holding no paid label asking nothing; and a reason
+            read off an answer's object.
+Claims:     1366, the local comparison's catalogue and matrix rows, each passing on component-access.
+Mutated:    the rule, stated before the runs: one mutation a property the checkpoint adds, the smallest edit undoing it
+            alone, each run filtered to the two new tests with its red predicted, made in this checkout and reverted with
+            the editor. M1 the paid labels read whatever their outcome: red at the comparison. M2 an unreadable answer not
+            asked once more: red, 2 labelled of 4 and not 3. M3 the kind's agreement read off the direction: red, 2 and
+            not 3. M4 the reasons holding a digit counted in place of those holding none: red, 1 and not 3. M5 the model
+            not unloaded at the end: red at the unload. M6 the lock not waited for: red, no wait. M7 the file written to
+            another folder: red at the line. M8 a reason of spaces read as a reason: red at the reader's test alone. Each
+            as predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2473 of 2473 tests ran with none failed,
+            migrations 0 to 100 with none pending, schema version 100, against `data-ci` and never `data`; the phase
+            report 60 tables, 1366 claims, 1366 passing, none out of scope and none unexamined, 1377 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the comparison's record, run from main once this merges while the history read is stopped, stating the
+            agreement over the labels the store holds; the history read and its record; 20.2's record; 20.4's second
+            remedy after the history read; the sentence-start rule and the lower-case names, put to the operator; the
+            sign-offs of phases 18 and 19, owed to fresh sessions after 20.10; (G1), SCHEMA's `family_trade` sentence,
+            owed by the next edit of that section.

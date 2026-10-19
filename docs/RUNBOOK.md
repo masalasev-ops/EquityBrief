@@ -1100,6 +1100,14 @@ dotnet run --project src/EquityBrief.Worker -- releases --accuracy --labels fixt
 
 `twice` reads each release twice and `distract` once with its names removed and once with them in, about 25 minutes each, and `reidentify` asks which company issued each text, about ten; each keeps its answers in `release_probe` and goes on from the releases it has not probed. `--accuracy` prints each answer's agreement with every reference before the model's cutoff and after it, the probes' shares and each index's tone variant shares, and is what the record entry after the history read states.
 
+**Comparing the local model with the paid labels.** From 20.5, while the history read is stopped, since it holds the local lock and the comparison waits for it:
+
+```
+dotnet run --project src/EquityBrief.Worker -- compare-labels
+```
+
+It labels again on the local model, under the labeller's own instruction and at the news job's answer budget, every article the news job's paid profile labelled that the store still holds, about 270 at three seconds each, asks an answer it cannot read once more as the labeller does, and prints one line: how many it labelled and could not, with each cause, how many of its labels agree with the paid one on the kind, on the direction and on both, and how many of its reasons held no digit. It writes the same figures, with each article's two labels and every answer, to `comparisons/labels-<instant>.json` under the data root, opens the store read-only and writes no row of it, and switches nothing: moving the labeller to the local model, or widening it to the S&P 400's and 600's lists, waits for your word (see: A comparison of the local model against stored paid work writes no store row and switches nothing).
+
 The local profile carries three settings for it, under the worker's `LocalModel` profiles: `ModelFile`, the model's file by its path under LM Studio's models folder; `ModelsFolder`, empty for `.lmstudio/models` under the machine's own home folder; and `KnowledgeCutoff`, the model's cutoff from its maker's card as a date, 2025-01-31 for Gemma 4, which every figure split before and after the cutoff reads.
 
 **Scheduling it.** Every day at 12:05 and 21:40 UTC, each start boundary pinned in UTC as the night's is, its output kept in `data/localrun.log`, two tasks since each slot is a form of its own:
