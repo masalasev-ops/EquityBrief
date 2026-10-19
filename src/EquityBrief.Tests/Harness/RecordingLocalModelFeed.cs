@@ -4,9 +4,9 @@ using EquityBrief.Core.Providers;
 namespace EquityBrief.Tests.Harness;
 
 // The local model asked live, each answer kept byte for byte under its request's key in a folder, for a comparison the
-// operator records by hand: the live feed over a client whose handler keeps the body of each completion it is answered
-// with, written once the call returns or refuses, so a replay through the recorded feed reads the same answers and the
-// same refusals. A request asked again in the same run is answered from its first recording and not asked again, as the
+// operator records by hand: the live feed over a client whose handler sends each completion to LM Studio's native chat
+// endpoint and keeps the body it is answered with, written once the call returns or refuses, so a replay through the
+// recorded feed reads the same answers and the same refusals. A request asked again in the same run is answered from its first recording and not asked again, as the
 // replay answers it, since the runtime can answer one request two ways and a recording keyed on the request holds one.
 // A run that names no recording never constructs one, so the suite reaches no runtime.
 internal sealed class RecordingLocalModelFeed : ILocalModelFeed
@@ -19,11 +19,14 @@ internal sealed class RecordingLocalModelFeed : ILocalModelFeed
     public RecordingLocalModelFeed(LocalModelSettings settings, string folder, HttpMessageHandler? runtime = null)
     {
         this.folder = folder;
-        keeping = new Keeping { InnerHandler = runtime ?? new HttpClientHandler() };
+
+        var address = new Uri(settings.BaseAddress.EndsWith('/') ? settings.BaseAddress : settings.BaseAddress + "/");
+
+        keeping = new Keeping { InnerHandler = runtime ?? new HttpClientHandler(), Native = new Uri(address, LmStudioReadingFeed.ChatPath) };
         live = new OpenAiCompatibleModelFeed(
             new HttpClient(keeping)
             {
-                BaseAddress = new Uri(settings.BaseAddress.EndsWith('/') ? settings.BaseAddress : settings.BaseAddress + "/"),
+                BaseAddress = address,
                 Timeout = settings.Load + settings.Timeout + settings.Timeout,
             },
             settings);
@@ -63,16 +66,28 @@ internal sealed class RecordingLocalModelFeed : ILocalModelFeed
         }
     }
 
-    // Keeps the body of the completion a call is answered with, and hands the caller the same bytes.
+    // Sends a completion to LM Studio's native chat endpoint, the one the release reading asks, with the request as the
+    // lane builds it, since on the OpenAI-compatible endpoint the runtime answers a request for prose with a JSON object;
+    // keeps the body it is answered with, and hands the caller the same bytes.
     sealed class Keeping : DelegatingHandler
     {
         public string? Body { get; set; }
 
+        // The native endpoint as the release reading's feed resolves it against the lane's address.
+        public required Uri Native { get; init; }
+
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            var completion = request.RequestUri!.AbsolutePath.EndsWith("/" + OpenAiCompatibleModelFeed.Path, StringComparison.Ordinal);
+
+            if (completion)
+            {
+                request.RequestUri = Native;
+            }
+
             var response = await base.SendAsync(request, cancellationToken);
 
-            if (request.RequestUri!.AbsolutePath.EndsWith("/" + OpenAiCompatibleModelFeed.Path, StringComparison.Ordinal))
+            if (completion)
             {
                 Body = await response.Content.ReadAsStringAsync(cancellationToken);
                 response.Content = new StringContent(Body, Encoding.UTF8, "application/json");

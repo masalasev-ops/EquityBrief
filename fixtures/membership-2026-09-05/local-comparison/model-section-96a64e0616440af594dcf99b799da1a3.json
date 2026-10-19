@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-gzdgfq0w82gbnwnks8gi7w",
+  "object": "chat.completion",
+  "created": 1792418183,
+  "model": "google/gemma-4-26b-a4b-qat",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"error\": \"No claims provided for the first paragraph (latest results and management reporting). Please provide claims corresponding to the company's recent financial performance and management commentary to complete the report.\"\n}",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 910,
+    "completion_tokens": 49,
+    "total_tokens": 959,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {
+    "tokens_per_second": 92.3096450117214,
+    "time_to_first_token": 0.5369510000000001,
+    "generation_time": 1.05694,
+    "stop_reason": "eosFound"
+  },
+  "model_info": {
+    "arch": "gemma4",
+    "quant": "Q4_0",
+    "format": "gguf",
+    "context_length": 50176
+  },
+  "runtime": {
+    "name": "llama.cpp-win-x86_64-nvidia-cuda12-avx2",
+    "version": "2.56.0",
+    "supported_formats": [
+      "gguf"
+    ]
+  }
+}

@@ -3803,3 +3803,128 @@ Carried:    pin 3 and its history read from the first release, by the remedy onc
             the native endpoint; 20.8's correction and merge; 20.3's accuracy record and 20.4's second remedy after pin
             3's read; the sign-offs of phases 18 and 19, owed to fresh sessions after 20.10; (G1), SCHEMA's
             `family_trade` sentence, owed by the next edit of that section.
+
+### 20.6 - correction: the local side recorded again through LM Studio's native endpoint, both sides' outcomes stated again and nothing switched   2026-10-19
+
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged, the records of 20.2, 20.5 and 20.7, the ruling
+            of 2026-10-19 and the 20.3 correction, PRs 506 and 507, pin 3 written at 14:11 UTC and its history read
+            started from the first release; in progress, this; next, 20.8's correction in PR 505, then 20.3's accuracy
+            record, 20.4's second remedy and 20.8's merge and remedy once pin 3's read completes, then 20.10, then the
+            sign-offs of phases 18 and 19 by fresh sessions.
+Ruled:      step 5 of the operator's ruling of 2026-10-19, word for word in the ruling entry above: record the local side
+            again through LM Studio's native endpoint while the read is stopped and state both sides' outcomes again,
+            switching nothing, the first recording's refusals read as the OpenAI-compatible endpoint wrapping prose in JSON.
+Built:      the recorder asks LM Studio's native chat endpoint, `api/v0/chat/completions`, the one the release reading
+            asks, with each request as the lane builds it, and never the OpenAI-compatible one; the shipped lane is as it
+            was. A recording writes each section the checker left out with its reason beside its outcome. The local side
+            was recorded again by hand at 13:55 UTC with the history read stopped, LM Studio 0.4.25 serving the model at
+            a context of 50,176 tokens on the card held at 250 W: 21 answers over 34 calls, each carrying the native
+            answer's runtime and stats; the answers of the first recording this one did not write were removed and the
+            manifest's entries written again. A recording made a minute before it, the first through the native
+            endpoint, was not kept: over 28 calls it left every section out, the risks among them, the runtime
+            answering one request two ways at temperature zero as the first recording found. The runbook, the build
+            plan's 20.6, the roster's row, the fixtures README and the changelog.
+Measured:   the paid side as 6.8's comparison stated it, all eight of its sections accepted, the segment commentary and the
+            short version on their retries. The local side through the native endpoint accepted the risks alone, at its
+            second draft, and left the other eight out, each refused at every retry as an answer written as a JSON object
+            rather than prose: `{}` for the cause of each large move, the dated calendar items and the segment commentary,
+            an object holding an `error` for what the company sells, what management said, the short version and the
+            headline, and the two cases as an object of a `bull_case` and its fields. So the refusals are not the
+            endpoint's: asked the same requests, the native endpoint answers in the same shape. They come from LM
+            Studio's saved default for this model, its structured output set to JSON, which LM Studio applies to every
+            request for Gemma on either endpoint; two probe calls asking for one sentence of plain prose were answered
+            as a one-field object, the second with the request's own `response_format` set to text.
+Put:        to the operator, switching nothing and leaving LM Studio's setting as found: the local lane writes no prose
+            section on Gemma while that setting stands, so offering the lane in the Research menu waits on the setting
+            turned off in LM Studio's model settings and the comparison recorded again, or the lane reading the text
+            inside a one-field object, each theirs to rule. The release readings ask for a JSON object and read as before.
+Tests:      none new, 2489 in all: the recorder's test now holds each completion asked of the native endpoint and none of
+            the OpenAI-compatible one, and the comparison reads the new recording.
+Claims:     1372, as before.
+Mutated:    the rule, stated before the run: one mutation, the property the correction adds, the recorder asking the
+            native endpoint, the smallest edit undoing it, run filtered to the comparison's and the recorder's tests with
+            its red predicted at the recorder's test, made in this checkout and reverted with the editor. N1 the
+            recorder's redirect dropped: red at the recorder's test, the runtime answering the OpenAI-compatible path
+            with a 404, as predicted, the comparison passing on recordings read by their key whatever the endpoint. Not
+            mutated: the reasons a recording writes, which only a recording by hand reaches.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2489 of 2489 tests ran with none failed,
+            migrations 0 to 101 with none pending, schema version 101, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    LM Studio's structured output for Gemma and the local lane's prose, put to the operator; pin 3's history read
+            and its record; 20.8's correction and merge; 20.3's accuracy record and 20.4's second remedy after pin 3's
+            read; the sign-offs of phases 18 and 19, owed to fresh sessions after 20.10; (G1), SCHEMA's `family_trade`
+            sentence, owed by the next edit of that section.
+
+### 20.6 ruling - the local lane asks each prose section as one text field, the local run guards LM Studio's saved structured output, the afternoon's migration recorded, and the queue with phase 21   2026-10-19
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-19 in the evening, after 20.6's comparison recorded through LM Studio's native
+            endpoint, PR 508, found Gemma's answers wrapped in JSON there too by LM Studio's saved structured output for
+            the model, in these words, kept whole in `prompts/`: "Operator's rulings of 2026-10-19, evening. 1. 20.6: the
+            local lane asks each prose section as an object of one text field and reads the prose from that field. LM
+            Studio's saved structured-output setting for Gemma stays as found. Record the comparison again through this,
+            switching nothing, and state both sides' outcomes. 2. The local run checks LM Studio's saved structured-output
+            setting for the pinned model before each run starts, read from LM Studio's own saved configuration or its API,
+            and refuses to start where it differs from the setting pin 3's history read started under, saying so on its
+            row. It is a guard and not a field of the pin, so pin 3's version does not move. Where the setting cannot be
+            read, say so and record what the read started under. A test worked by hand for the refusal and one mutation,
+            the rule stated before the run. 3. Record today's change to the live store as a dated entry: the read surface
+            restarted from main on 5152 drew blank screens because the store was at schema 100; the history read was
+            stopped for about a minute, 20.9's migration 101 applied with tools/migrate and nothing else, and the read and
+            its guard started again. State the times and that no other row moved. Amend the runbook's merge steps: where a
+            merge carries a migration, the read surface is restarted only once the store holds it, applied with
+            tools/migrate while nothing writes, the history read stopped for it and started again after. 4. Then the queue
+            as it stands, with the phase 21 ruling pasted beside this: PR 508 at tomorrow's 07:00 New York stop; the
+            sign-offs of phases 18 and 19 and 21.0 while pin 3's read runs; pin 3's completion steps ahead of phase 21's
+            next checkpoint. Merge only when nothing is writing. No Co-Authored-By or "Generated with" lines." The phase
+            21 ruling the fourth item names was not in the message as received, and is recorded once it is given.
+Plan:       in the order ruled, each change through a pull request of its own: the record of the afternoon's migration
+            and the runbook's merge steps beside this entry; the local run's guard as a correction of 20.1, comparing
+            LM Studio's saved structured output for the pinned model with the setting pin 3's history read started under,
+            JSON, stated in the local profile's settings and named on the guard's row; the local lane's one text field as
+            a second correction of 20.6, its comparison recorded again at the read's next stop, since a recording is made
+            with the read stopped; PR 508 merged at that stop, and nothing merged while the read writes. Then 21.0 once
+            the phase 21 ruling is given, and the sign-offs of phases 18 and 19 by fresh sessions, while pin 3's read
+            runs; pin 3's completion steps, 20.3's accuracy record, 20.4's second remedy and 20.8's merge and remedy,
+            ahead of phase 21's next checkpoint.
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with the records of 20.2, 20.5 and 20.7, the
+            morning's ruling and the 20.3 correction, PRs 506 and 507, and pin 3 written with its history read running;
+            in review, 20.6's record through the native endpoint, PR 508, and 20.8 with its correction, PR 505; in
+            progress, this ruling; next, the afternoon's record, the local run's guard and the local lane's one text
+            field, PR 508 at the read's 07:00 stop, 21.0 and the sign-offs of phases 18 and 19 while the read runs, then
+            pin 3's completion steps.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the code this ruling sits on, PR 508's, as the
+            20.6 correction's entry records: 2489 of 2489 tests, 1372 claims, 1372 passing. This pull request changes
+            documents alone, and the checks that read the corpus ran filtered over its tree: RecordAppendOnly,
+            TwoPlatform, ObligationReconciles, BannedProse, DecisionCitations, CoverageReported, StatedCounts,
+            ArchitectureConformance, PinnedConstants, ChangelogReconciles, DoneConditionProducible and FigureFits.
+Carried:    the local run's guard; the local lane's one text field and the comparison recorded again; PR 508's merge;
+            21.0 once the phase 21 ruling is given; the sign-offs of phases 18 and 19, owed to fresh sessions while pin
+            3's read runs; pin 3's completion steps; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that
+            section.
+
+### 20.9 - record: migration 101 applied to the store by hand after the read surface started from main drew blank screens, the history read stopped for thirty seconds   2026-10-19
+
+Queue:      as the ruling above.
+Recorded:   on the operator's ruling of the same evening. At 15:29:55 UTC the read surface was started again on 5152
+            from main's Release build, a7ab4dde, after PRs 506 and 507 merged, its row the run log's
+            `read-api-20261019T152955.7332112Z`. Every screen drew the line that the store is at schema 100 and the
+            checkout reads 101: 20.9's migration 101, merged in PR 503, had not reached the store, which the night would
+            have applied at 23:00, and the runbook's step to run `tools/migrate` before starting the page was not
+            followed. Pin 3's history read, the run `local-run-20261019T141259Z-history-read-f78432`, was stopped after
+            its 905th reading, written at 15:31:04; `tools/migrate` then applied migration 101 and nothing else, creating
+            `loop_idea` empty and moving the schema from 100 to 101; and the read was started again from the same clean
+            copy of main's commit as `local-run-20261019T153134Z-history-read-ce9528` at 15:31:34, its first reading at
+            15:31:39, the GPU guard started again beside it at 15:32. Every screen drew again from then. No other row
+            moved: the run log holds no row from the pin's, ended at 14:12:29, to now but the read surface's start; the
+            stopped run left no row of its own, a history read writing its row as it ends, and its 905 readings stand
+            under pin 3; and `loop_idea` holds no row.
+Amended:    the runbook's step after a merge: where a merge carries a migration, the read surface is started again only
+            once the store holds it, applied with `tools/migrate` while nothing writes, the history read stopped for it
+            and started again after; and the changelog.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the code this record sits on, PR 508's, as the
+            ruling above states: 2489 of 2489 tests, 1372 claims, 1372 passing. This record changes documents alone, and
+            the checks that read the corpus ran filtered over its tree, as the ruling's did.
+Carried:    as the ruling above.

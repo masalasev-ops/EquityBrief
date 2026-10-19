@@ -1583,143 +1583,150 @@
     },
     {
       "file": "local-comparison/model-section-5bceb85a43f440e8f2f1cc13bfecde60.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 5bceb85a43f440e8f2f1cc13bfecde60, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:21:58Z",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The cause of each large move on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 5bceb85a43f440e8f2f1cc13bfecde60, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:55:23Z",
       "trimmedTo": "nothing. The whole response to one section call, 9834 prompt tokens and 7 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
       "file": "local-comparison/model-section-9f2cda613e30a6f765c0a63087b0e9e5.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What the company sells on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 9f2cda613e30a6f765c0a63087b0e9e5, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:00Z",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for What the company sells on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 9f2cda613e30a6f765c0a63087b0e9e5, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:55:25Z",
       "trimmedTo": "nothing. The whole response to one section call, 12063 prompt tokens and 20 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
       "file": "local-comparison/model-section-e45cee6244e60734d51a66bb99bca801.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed e45cee6244e60734d51a66bb99bca801, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:01Z",
-      "trimmedTo": "nothing. The whole response to one section call, 12146 prompt tokens and 7 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The segment commentary on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed e45cee6244e60734d51a66bb99bca801, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:55:26Z",
+      "trimmedTo": "nothing. The whole response to one section call, 12146 prompt tokens and 20 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
       "file": "local-comparison/model-section-6f255b3b366ee859ad390bf96e5fd720.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What management said on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 6f255b3b366ee859ad390bf96e5fd720, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:02Z",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for What management said on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 6f255b3b366ee859ad390bf96e5fd720, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:55:27Z",
       "trimmedTo": "nothing. The whole response to one section call, 18367 prompt tokens and 36 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
       "file": "local-comparison/model-section-38d31d8a5ad57d87911009018c87407c.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The dated calendar items on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 38d31d8a5ad57d87911009018c87407c, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:04Z",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The dated calendar items on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 38d31d8a5ad57d87911009018c87407c, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:55:29Z",
       "trimmedTo": "nothing. The whole response to one section call, 19102 prompt tokens and 7 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
       "file": "local-comparison/model-section-48ed68b58b1142ac5a45bcac9dfe3fe9.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The two cases on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 48ed68b58b1142ac5a45bcac9dfe3fe9, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:07Z",
-      "trimmedTo": "nothing. The whole response to one section call, 19378 prompt tokens and 264 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The two cases on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 48ed68b58b1142ac5a45bcac9dfe3fe9, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:55:37Z",
+      "trimmedTo": "nothing. The whole response to one section call, 19378 prompt tokens and 252 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
       "file": "local-comparison/model-section-7d3dfda4d5fa9bfff19fea2543338ac6.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 7d3dfda4d5fa9bfff19fea2543338ac6, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:14Z",
-      "trimmedTo": "nothing. The whole response to one section call, 19963 prompt tokens and 624 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 7d3dfda4d5fa9bfff19fea2543338ac6, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:55:47Z",
+      "trimmedTo": "nothing. The whole response to one section call, 19963 prompt tokens and 631 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
       "file": "local-comparison/model-section-183528d855aa4d1de248a8730e550a28.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 183528d855aa4d1de248a8730e550a28, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:15Z",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The cause of each large move on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 183528d855aa4d1de248a8730e550a28, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:02Z",
       "trimmedTo": "nothing. The whole response to one section call, 9903 prompt tokens and 7 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
       "file": "local-comparison/model-section-007a469df12327fff24a74245c50e856.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What the company sells on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 007a469df12327fff24a74245c50e856, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:17Z",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for What the company sells on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 007a469df12327fff24a74245c50e856, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:03Z",
       "trimmedTo": "nothing. The whole response to one section call, 12144 prompt tokens and 20 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-c778223dcf3aecd41edb66c92a5af09e.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed c778223dcf3aecd41edb66c92a5af09e, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:18Z",
-      "trimmedTo": "nothing. The whole response to one section call, 12215 prompt tokens and 7 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-9717cc8de50d36c74f1167c6d3f51585.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The segment commentary on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 9717cc8de50d36c74f1167c6d3f51585, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:04Z",
+      "trimmedTo": "nothing. The whole response to one section call, 12227 prompt tokens and 7 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
       "file": "local-comparison/model-section-62e95616d41f4dcd49314d42e865b70d.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What management said on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 62e95616d41f4dcd49314d42e865b70d, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:19Z",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for What management said on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 62e95616d41f4dcd49314d42e865b70d, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:05Z",
       "trimmedTo": "nothing. The whole response to one section call, 18452 prompt tokens and 53 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
       "file": "local-comparison/model-section-981f18d2ef188f1a60c95d0bce1cef14.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The dated calendar items on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 981f18d2ef188f1a60c95d0bce1cef14, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:21Z",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The dated calendar items on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 981f18d2ef188f1a60c95d0bce1cef14, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:07Z",
       "trimmedTo": "nothing. The whole response to one section call, 19171 prompt tokens and 7 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
       "file": "local-comparison/model-section-461c9efce96af3c16856e9cec0bec109.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The two cases on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 461c9efce96af3c16856e9cec0bec109, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:24Z",
-      "trimmedTo": "nothing. The whole response to one section call, 19468 prompt tokens and 259 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The two cases on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 461c9efce96af3c16856e9cec0bec109, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:08Z",
+      "trimmedTo": "nothing. The whole response to one section call, 19468 prompt tokens and 233 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-243a81a3c543741124b9ed178fce6d5f.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 243a81a3c543741124b9ed178fce6d5f, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:31Z",
-      "trimmedTo": "nothing. The whole response to one section call, 20211 prompt tokens and 513 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-ff2a547db44402cbc78fef954cb846bc.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed ff2a547db44402cbc78fef954cb846bc, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:12Z",
+      "trimmedTo": "nothing. The whole response to one section call, 20202 prompt tokens and 266 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-2016498a1728f8cf5e6d11ff70166c52.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The two cases on KEYS in the local lane, its retry 2, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 2016498a1728f8cf5e6d11ff70166c52, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:34Z",
-      "trimmedTo": "nothing. The whole response to one section call, 19467 prompt tokens and 261 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-c778223dcf3aecd41edb66c92a5af09e.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The segment commentary on KEYS in the local lane, its retry 2, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed c778223dcf3aecd41edb66c92a5af09e, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:16Z",
+      "trimmedTo": "nothing. The whole response to one section call, 12215 prompt tokens and 7 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-b5e13542dc1a589e14098332a6e070f8.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, its retry 2, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed b5e13542dc1a589e14098332a6e070f8, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:38Z",
-      "trimmedTo": "nothing. The whole response to one section call, 20103 prompt tokens and 311 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-3823ee34704d83eff09ad38aa2384235.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The two cases on KEYS in the local lane, its retry 2, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 3823ee34704d83eff09ad38aa2384235, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:17Z",
+      "trimmedTo": "nothing. The whole response to one section call, 19467 prompt tokens and 229 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-0a74412af43fb56d8dfd0f3ffafb721c.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The short version on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 0a74412af43fb56d8dfd0f3ffafb721c, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:40Z",
-      "trimmedTo": "nothing. The whole response to one section call, 955 prompt tokens and 49 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-db077edca7d44d2eed86164f513e2079.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The two cases on KEYS in the local lane, its retry 3, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed db077edca7d44d2eed86164f513e2079, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:21Z",
+      "trimmedTo": "nothing. The whole response to one section call, 19467 prompt tokens and 222 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-f18bb82f01963a8bbcead0c04fde0950.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The headline on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed f18bb82f01963a8bbcead0c04fde0950, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:42Z",
-      "trimmedTo": "nothing. The whole response to one section call, 848 prompt tokens and 72 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-96a64e0616440af594dcf99b799da1a3.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The short version on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 96a64e0616440af594dcf99b799da1a3, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:23Z",
+      "trimmedTo": "nothing. The whole response to one section call, 910 prompt tokens and 49 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-d6dbd3fb63714d6fa5aea66f2a35fb8b.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The short version on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed d6dbd3fb63714d6fa5aea66f2a35fb8b, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:43Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1043 prompt tokens and 56 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-5527a61ba24427a19fd61a69558490f7.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The headline on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 5527a61ba24427a19fd61a69558490f7, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:25Z",
+      "trimmedTo": "nothing. The whole response to one section call, 803 prompt tokens and 141 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-f22cd06089b1965f7d3c94cd90c2d8d5.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The headline on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed f22cd06089b1965f7d3c94cd90c2d8d5, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:44Z",
-      "trimmedTo": "nothing. The whole response to one section call, 938 prompt tokens and 58 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-33bb85687da9071de812b5a12c4c19be.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The short version on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 33bb85687da9071de812b5a12c4c19be, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:27Z",
+      "trimmedTo": "nothing. The whole response to one section call, 998 prompt tokens and 57 completion tokens, named for the request's key so the comparison asking the same request reads it."
+    },
+    {
+      "file": "local-comparison/model-section-e8f4bbd5a97b059cc3f920a1ec164e7c.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The headline on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed e8f4bbd5a97b059cc3f920a1ec164e7c, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:28Z",
+      "trimmedTo": "nothing. The whole response to one section call, 890 prompt tokens and 55 completion tokens, named for the request's key so the comparison asking the same request reads it."
     }
   ]
 }

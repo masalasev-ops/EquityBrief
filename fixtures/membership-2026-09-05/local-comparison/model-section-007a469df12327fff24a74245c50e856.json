@@ -1,7 +1,7 @@
 {
-  "id": "chatcmpl-w7fs2toblhzsw65mfhfx",
+  "id": "chatcmpl-2dt69auskiksghqbqzb94k",
   "object": "chat.completion",
-  "created": 1792387335,
+  "created": 1792418163,
   "model": "google/gemma-4-26b-a4b-qat",
   "choices": [
     {
@@ -24,6 +24,23 @@
       "reasoning_tokens": 0
     }
   },
-  "stats": {},
-  "system_fingerprint": "google/gemma-4-26b-a4b-qat"
+  "stats": {
+    "tokens_per_second": 104.09247794883032,
+    "time_to_first_token": 0.400065,
+    "generation_time": 0.582595,
+    "stop_reason": "eosFound"
+  },
+  "model_info": {
+    "arch": "gemma4",
+    "quant": "Q4_0",
+    "format": "gguf",
+    "context_length": 50176
+  },
+  "runtime": {
+    "name": "llama.cpp-win-x86_64-nvidia-cuda12-avx2",
+    "version": "2.56.0",
+    "supported_formats": [
+      "gguf"
+    ]
+  }
 }

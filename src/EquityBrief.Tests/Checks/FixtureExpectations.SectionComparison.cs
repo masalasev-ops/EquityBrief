@@ -36,12 +36,17 @@ public partial class FixtureExpectations
             .RunAsync(FixtureReplay.ResearchName, "replay-research", new ResearchPassRequest(PaidForLocal: false));
 
         // A recording made by hand writes what it found to the machine's temporary folder for the expectation and the
-        // manifest to be written from, and asserts nothing.
+        // manifest to be written from, each section the checker left out with its reason, and asserts nothing.
         if (local is RecordingLocalModelFeed made)
         {
             File.WriteAllLines(
                 Path.Combine(Path.GetTempPath(), "equitybrief-local-comparison.txt"),
-                [.. Outcomes(localStore), FormattableString.Invariant($"calls {made.Requests}"), .. made.Kept.Select(kept => kept.File + " " + kept.Section)]);
+                [
+                    .. Outcomes(localStore),
+                    .. Query(localStore, "SELECT section, reject_reason FROM research_section WHERE ticker = 'KEYS' AND status = 'fallback' ORDER BY section;").Select(row => "reason " + row),
+                    FormattableString.Invariant($"calls {made.Requests}"),
+                    .. made.Kept.Select(kept => kept.File + " " + kept.Section),
+                ]);
 
             return;
         }
@@ -80,11 +85,12 @@ public partial class FixtureExpectations
         static string Body(string text) =>
             JsonSerializer.Serialize(new { model = Gemma, choices = new[] { new { message = new { role = "assistant", content = text }, finish_reason = "stop" } }, usage = new { prompt_tokens = 10, completion_tokens = 2 } });
 
-        // A runtime holding the model loaded, which answers each completion with the next of three answers.
+        // A runtime holding the model loaded, which answers each completion on its native chat endpoint with the next of
+        // three answers, and none on the OpenAI-compatible one.
         var runtime = new ScriptedRuntime((path, _) => Task.FromResult(path switch
         {
             "/api/v1/models" => Answered(System.Net.HttpStatusCode.OK, Runtime("local-runtime-models-gemma-loaded.json")),
-            "/v1/chat/completions" => Answered(System.Net.HttpStatusCode.OK, Body(answers.Dequeue())),
+            "/api/v0/chat/completions" => Answered(System.Net.HttpStatusCode.OK, Body(answers.Dequeue())),
             _ => Answered(System.Net.HttpStatusCode.NotFound, "{}"),
         }));
         var recorder = new RecordingLocalModelFeed(settings, folder.Path, runtime);
@@ -92,12 +98,14 @@ public partial class FixtureExpectations
         var other = once with { Prompt = "another prompt" };
 
         // Worked by hand: the first request answered first and kept as sent; the second request answered second; the
-        // first asked again answered from its recording, the runtime not asked, and its file left as first written.
+        // first asked again answered from its recording, the runtime not asked, and its file left as first written; each
+        // asked of the native endpoint and none of the OpenAI-compatible one.
         Assert.Equal("first", (await recorder.CompleteAsync(once)).Text);
         Assert.Equal("second", (await recorder.CompleteAsync(other)).Text);
         Assert.Equal("first", (await recorder.CompleteAsync(once)).Text);
         Assert.Equal(3, recorder.Requests);
-        Assert.Equal(2, runtime.Asked.Count(asked => asked.StartsWith("POST /v1/chat/completions", StringComparison.Ordinal)));
+        Assert.Equal(2, runtime.Asked.Count(asked => asked.StartsWith("POST /api/v0/chat/completions", StringComparison.Ordinal)));
+        Assert.DoesNotContain(runtime.Asked, asked => asked.StartsWith("POST /v1/chat/completions", StringComparison.Ordinal));
         Assert.Equal(Body("first"), File.ReadAllText(Path.Combine(folder.Path, RecordedLocalModelFeed.FileFor(once))));
         Assert.Equal([RecordedLocalModelFeed.FileFor(once), RecordedLocalModelFeed.FileFor(other)], recorder.Kept.Select(kept => kept.File));
 

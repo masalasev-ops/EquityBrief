@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-19 - RUNBOOK.md - the read surface started again after a merge carrying a migration only once the store holds it
+Corrects: on 2026-10-19 the read surface was started again from main after PRs 506 and 507 merged and drew blank screens, the store still at schema 100 while main read 101, found as it happened; the step after a merge said to start the page again and not that a migration the merge carries comes first.
+Was:
+> **It runs from a Release build of `main`.** ... After a merge the checkout is back on `main`, and the page is stopped and started again the same way to serve what merged.
+Now:
+> **It runs from a Release build of `main`.** ... After a merge the checkout is back on `main`, and the page is stopped and started again the same way to serve what merged. Where the merge carries a migration, the page is started again only once the store holds it: `tools/migrate` applies it while nothing writes, the history read stopped for it and started again after, since a page whose checkout reads a newer schema than the store's draws nothing.
+Why: the operator's ruling of 2026-10-19 amends the merge steps so the page is never started over a store behind its checkout.
+
 ### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the 20.3 correction of 2026-10-19
 Authorised by: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
 Was:
@@ -75,6 +83,30 @@ Now:
 > ... its tickers and their exchange forms become [ticker]; from the 20.3 correction of 2026-10-19 a short form the release defines for the filer, in quotation marks or a bracket straight after its name or its ticker or standing straight before a bracket holding its name, and the filer's initials in capitals become [company] wherever they recur, none the common words hold, so "the Company" stays; its people, the insiders its Forms 4 name ...
 > The date and quarter patterns run first, and a name's first word or a surname replaced on its own keeps its case, a word with a capital after its first letter, as nVent, read in that exact case; from the 20.3 correction of 2026-10-19 it is replaced where it opens a sentence or a list's item as anywhere else unless the common-word list holds it, or there alone one of the ordinary words an insider's surname may be, so a common word that is not the name stays, while a ticker goes wherever it stands.
 Why: the operator amended the anonymiser's decision on 2026-10-19, which the corpus writes as a new decision superseding the old, and a spec cites none that is superseded.
+
+### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the recorder asking the native endpoint
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> fixture-expectations: ... and the recorder keeping each answer as sent and answering a request asked again from its first recording; and from 20.9 ...
+Now:
+> fixture-expectations: ... and the recorder keeping each answer as sent and answering a request asked again from its first recording, from the 20.6 correction of 2026-10-19 asking LM Studio's native chat endpoint and never the OpenAI-compatible one; and from 20.9 ...
+Why: each roster row says what its check asserts, and the correction's test extends the recorder's.
+
+### 2026-10-19 - RUNBOOK.md - the comparison's local side recorded through the native endpoint, with each refused section's reason
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> ... The test then asks the model live for every section of the fixture's pass in the local lane, about a minute, writes each answer into the folder under its request's key, answers a request asked again from its first answer, and writes what each section came to into `equitybrief-local-comparison.txt` in the machine's temporary folder, ...
+Now:
+> ... The test then asks the model live, through LM Studio's native chat endpoint from the operator's ruling of 2026-10-19, for every section of the fixture's pass in the local lane, about a minute, writes each answer into the folder under its request's key, answers a request asked again from its first answer, and writes what each section came to, with the checker's reason for each it left out, into `equitybrief-local-comparison.txt` in the machine's temporary folder, ...
+Why: the operator's ruling of 2026-10-19 has the local side recorded again through the native endpoint, and the expectation holds each refused section's reason, which the recording now writes.
+
+### 2026-10-19 - BUILD_PLAN.md - 20.6's recording through the native endpoint
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> ... which the same test records anew by hand with a variable set while the history read is stopped, a request asked again in one recording answered from its first recording as the replay answers it, ...
+Now:
+> ... which the same test records anew by hand with a variable set while the history read is stopped, from the operator's ruling of 2026-10-19 through LM Studio's native chat endpoint, a request asked again in one recording answered from its first recording as the replay answers it, ...
+Why: the operator's ruling of 2026-10-19 has the local side recorded again through the native endpoint.
 
 ### 2026-10-19 - RUNBOOK.md - the release history's time as measured
 Corrects: the runbook stated the history fetch at 2.2 hours, 20.0's estimate at the archive's pace, and the fetch of 2026-10-18 took ten and a half, found by its record entry.
