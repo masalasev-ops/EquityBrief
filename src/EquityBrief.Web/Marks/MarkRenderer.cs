@@ -7652,9 +7652,10 @@ public sealed partial class MarkRenderer : IComponent
         return region.ToString();
     }
 
-    // The quote runs of the night's session: how many quotes the name pages asked for against the day's cap, how long
-    // after its own time each was asked, by the median and the longest, and the runs refused or failed by why. A night
-    // whose session held none says so, and a night on no session draws nothing.
+    // The quote runs of the night's session: how many delayed quotes the name pages asked for and how many were stored
+    // against the day's cap, how long after its own time each stored one was asked, by the median and the longest, the
+    // runs refused or failed by why, and each ask no run of the quote job answered, by its name and instant. A night whose
+    // session's pages asked none says so, and a night on no session draws nothing.
     // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
     // owes: The day's live quotes stay under their cap on the first five sessions
     static string QuotesParagraph(EquityBrief.Web.App.QuoteRunsView? quotes)
@@ -7665,21 +7666,26 @@ public sealed partial class MarkRenderer : IComponent
         }
 
         var day = DayOf(DateOnly.FromDateTime(quotes.From.UtcDateTime));
+        var unanswered = quotes.Unanswered ?? [];
 
-        if (quotes.Asked.Count == 0 && quotes.Outcomes.Count == 0)
+        if (quotes.Asks == 0 && quotes.Asked.Count == 0 && quotes.Outcomes.Count == 0)
         {
-            return Formatted($"<p class=\"rp-quotes\" data-session=\"{day}\" data-asked=\"0\" data-cap=\"{quotes.Cap}\">No delayed quote was asked in the session of {day}, against a cap of {quotes.Cap}.</p>");
+            return Formatted($"<p class=\"rp-quotes\" data-session=\"{day}\" data-asks=\"0\" data-stored=\"0\" data-unanswered=\"0\" data-cap=\"{quotes.Cap}\">The name pages asked for no delayed quote in the session of {day}, against a cap of {quotes.Cap}.</p>");
         }
 
         var delays = quotes.Asked.Select(asked => asked.DelayMinutes).Order().ToArray();
         double? median = delays.Length == 0 ? null : delays.Length % 2 == 1 ? delays[delays.Length / 2] : (delays[(delays.Length / 2) - 1] + delays[delays.Length / 2]) / 2;
         var refused = quotes.Outcomes.Where(outcome => outcome.Outcome != EquityBrief.Web.App.QuoteRunsView.Quoted).ToArray();
 
-        return Formatted($"<p class=\"rp-quotes\" data-session=\"{day}\" data-asked=\"{quotes.Asked.Count}\" data-cap=\"{quotes.Cap}\" data-median-delay=\"{(median is { } middle ? middle.ToString(Invariant) : "none")}\">")
-            + Formatted($"{quotes.Asked.Count} delayed quote(s) asked in the session of {day}, against a cap of {quotes.Cap}")
+        return Formatted($"<p class=\"rp-quotes\" data-session=\"{day}\" data-asks=\"{quotes.Asks}\" data-stored=\"{quotes.Asked.Count}\" data-unanswered=\"{unanswered.Count}\" data-cap=\"{quotes.Cap}\" data-median-delay=\"{(median is { } middle ? middle.ToString(Invariant) : "none")}\">")
+            + Formatted($"The name pages asked for {Counted(quotes.Asks, "delayed quote", "delayed quotes")} in the session of {day}, and {Counted(quotes.Asked.Count, "quote was", "quotes were")} stored against a cap of {quotes.Cap}")
             + (median is { } typical ? ", each asked a median " + Figures.Duration(typical * 60) + " after its own time and at most " + Figures.Duration(delays[^1] * 60) : string.Empty)
-            + (refused.Length == 0 ? "." : "; " + string.Join(", ", refused.Select(outcome => Formatted($"{outcome.Runs} run(s) {Escaped(outcome.Outcome)}"))) + ".")
-            + "</p>";
+            + (refused.Length == 0 ? string.Empty : "; " + string.Join(", ", refused.Select(outcome => Formatted($"{Counted(outcome.Runs, "run", "runs")} {Escaped(outcome.Outcome)}"))))
+            + (unanswered.Count == 0
+                ? string.Empty
+                : "; " + Counted(unanswered.Count, "ask", "asks") + " no run of the quote job answered, the job ending before it wrote its row or never starting: "
+                    + string.Join(", ", unanswered.Select(ask => Formatted($"<span class=\"rp-unanswered\" data-ticker=\"{Escaped(ask.Ticker)}\" data-asked-at=\"{ask.AskedAt.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", Invariant)}\">{Escaped(ask.Ticker)} at {ask.AskedAt.UtcDateTime.ToString("HH:mm:ss", Invariant)} UTC</span>"))))
+            + ".</p>";
     }
 
     // The news labeller's line for the night: what it cost and the month against its limit, the articles

@@ -6454,6 +6454,20 @@ public sealed partial class ReadApi : IComponent
         ORDER BY outcome;
     ";
 
+    const string QuoteAsksBetween = @"
+        SELECT ticker, asked_at
+        FROM quote_request
+        WHERE asked_at >= $from AND asked_at < $to
+        ORDER BY asked_at, ticker;
+    ";
+
+    // Each run names the ask it answers by the name and the instant the page asked, and starts after it.
+    const string QuoteRunsAnswering = @"
+        SELECT json_extract(detail, '$.ticker'), json_extract(detail, '$.askedAt')
+        FROM run_log
+        WHERE stage = $stage AND started_at >= $from;
+    ";
+
     // Writes the ask unless the name's newest ask is inside the interval, and says which.
     public async Task<QuoteAsk> AskQuoteAsync(string ticker)
     {
@@ -6530,13 +6544,47 @@ public sealed partial class ReadApi : IComponent
                 band.GetProperty("days").ValueKind == JsonValueKind.Number ? band.GetProperty("days").GetDouble() : null))]);
     }
 
-    // The quotes asked between two instants, each with how long after its own time it was asked, and the quote job's runs
-    // between them by what each came to, which the Run page's row for the quote runs draws against the day's cap.
+    // The quotes stored between two instants, each with how long after its own time it was asked, the quote job's runs
+    // between them by what each came to, and the asks the name pages wrote between them with each no run answered, which
+    // the Run page's row for the quote runs draws against the day's cap.
     public async Task<QuoteRunsView> QuoteRunsAsync(DateTimeOffset from, DateTimeOffset to)
     {
         await using var connection = Open();
         var asked = new List<(string Ticker, DateTimeOffset AskedAt, double DelayMinutes)>();
         var outcomes = new List<(string Outcome, int Runs)>();
+        var asks = new List<(string Ticker, string AskedAt)>();
+        var answered = new HashSet<(string, string)>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = QuoteAsksBetween;
+            command.Parameters.AddWithValue("$from", from.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$to", to.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                asks.Add((reader.GetString(0), reader.GetString(1)));
+            }
+        }
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = QuoteRunsAnswering;
+            command.Parameters.AddWithValue("$stage", QuoteStage);
+            command.Parameters.AddWithValue("$from", from.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                if (!reader.IsDBNull(0) && !reader.IsDBNull(1))
+                {
+                    answered.Add((reader.GetString(0), reader.GetString(1)));
+                }
+            }
+        }
 
         await using (var command = connection.CreateCommand())
         {
@@ -6567,7 +6615,14 @@ public sealed partial class ReadApi : IComponent
             }
         }
 
-        return new QuoteRunsView(from, to, asked, outcomes, QuoteLimits.DailyCap);
+        return new QuoteRunsView(
+            from,
+            to,
+            asked,
+            outcomes,
+            QuoteLimits.DailyCap,
+            asks.Count,
+            [.. asks.Where(ask => !answered.Contains(ask)).Select(ask => (ask.Ticker, Instant(ask.AskedAt)))]);
     }
 
     // The stage the quote job writes its rows under. The worker's own constant cannot be referenced from here, so the

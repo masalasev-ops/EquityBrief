@@ -45,14 +45,16 @@ public sealed record TilesView(
     decimal? Price,
     bool Live);
 
-// The quotes asked in one session and the quote job's runs over it by what each came to, against the day's cap: the
-// Run page's row for the quote runs.
+// The quotes stored in one session and the quote job's runs over it by what each came to, against the day's cap, with
+// how many asks the name pages wrote in it and each ask no run of the job answered: the Run page's row for the quote runs.
 public sealed record QuoteRunsView(
     DateTimeOffset From,
     DateTimeOffset To,
     IReadOnlyList<(string Ticker, DateTimeOffset AskedAt, double DelayMinutes)> Asked,
     IReadOnlyList<(string Outcome, int Runs)> Outcomes,
-    int Cap)
+    int Cap,
+    int Asks = 0,
+    IReadOnlyList<(string Ticker, DateTimeOffset AskedAt)>? Unanswered = null)
 {
     // The word a run that stored a quote writes. The worker's own constant cannot be referenced from here, so it is
     // stated and `read-surface` asserts the two agree.
