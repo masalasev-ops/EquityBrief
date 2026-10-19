@@ -95,6 +95,7 @@ public enum Store
     ReleaseFiler,
     ReleaseReading,
     ReleaseProbe,
+    LoopIdea,
     LedgerSummary,
     LedgerReading,
     LoopRun,

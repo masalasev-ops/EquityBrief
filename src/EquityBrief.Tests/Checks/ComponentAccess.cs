@@ -87,6 +87,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Local comparison"),
     ];
 
+    // 20.9's one: the idea generator, the local model asked over the loop's tables.
+    internal static string[] IdeaGeneratorRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Idea generator"),
+        CheckReach.Key(Scope.MatrixTable, "Idea generator"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -121,6 +128,9 @@ public partial class ComponentAccess
 
             // 20.5, the local comparison.
             .. LocalComparisonRows,
+
+            // 20.9, the idea generator.
+            .. IdeaGeneratorRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

@@ -63,6 +63,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "loop-links" => await LoopLinksRun(args),
     "loop-apply" => await LoopApplyRun(),
     "loop-month" => await LoopMonthRun(args),
+    "loop-ideas" => await LoopIdeasRun(args),
     "sweep-fundamentals" => await SweepFundamentalsRun(args),
     "sweep-ideas" => await SweepIdeasRun(),
     "sweep-family-ideas" => await SweepFamilyIdeasRun(args),
@@ -83,7 +84,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 48 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 49 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -200,9 +201,12 @@ static int NoVerb()
         "'loop-apply' applies each change the operator approved on the Loop page that no apply has answered, as the " +
         "night does before the S&P 400's and 600's families, an S&P 400 or 600 swing family's written as the setting it " +
         "stands at from the next night and every other refused with why, " +
+        "'loop-ideas --index <GSPC, MID or SML>' puts to the local model the prompts each family's tables make in each of " +
+        "the tester's folds on the index, each one its pin has answered already asked nothing again, and stores each " +
+        "answer or the cause it was refused for, which the tester's next run reads, " +
         "'loop-month' runs the month's steps in order, the SEC's facts asked whole, the history written again beside the " +
         "standing one and kept where a family would lose its benchmarks, each index's point-in-time check, " +
-        "which readings go with winners on each index, " +
+        "which readings go with winners on each index, the idea generator on each index, " +
         "each index's tester run, each index's per-rule test and the month's report naming the one proposal a family an " +
         "index puts to you, with " +
         "'--month <yyyy-MM>' naming the month, and run again goes on from the first step no try of the month held, as " +
@@ -830,9 +834,9 @@ static async Task<int> LoopApplyRun()
 
 // The monthly run, by hand or from tools/monthly on the first Saturday of the month: the SEC's facts asked whole, the
 // indices' history written again beside the standing one, each index's point-in-time check, which readings go with
-// winners on each index, each index's tester run and per-rule test, and the month's report, a step at a time, going on
-// from the first step no try of the month held. The history's, the readings' and the testers' steps take the drain's
-// lock themselves as they write.
+// winners on each index, the idea generator on each index, each index's tester run and per-rule test, and the month's
+// report, a step at a time, going on from the first step no try of the month held. The history's, the readings', the
+// generator's and the testers' steps take the drain's lock themselves as they write.
 // see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator
 static async Task<int> LoopMonthRun(string[] args)
 {
@@ -892,6 +896,41 @@ static async Task<int> LoopMonthRun(string[] args)
             TakesTheLock: true));
     }
 
+    // The idea generator on each index before its tester runs. A runtime not running, a model not held or a pin that
+    // does not match is the step's words and stops no step, the tester then reading the answers stored before.
+    // see: The idea generator proposes conditions in the winners' grammar by closed labels code turns into levels, judged as a procedure inside each fold
+    foreach (var index in EquityBrief.Worker.Loop.MonthlyRun.Indices)
+    {
+        steps.Add(new(
+            "ideas-" + index,
+            async (_, cancellation) =>
+            {
+                var asks = await new EquityBrief.Worker.Loop.WalkForwardTester(clock, store.DatabaseFile, store.DataRoot, Console.Out).IdeaAsksAsync(index, cancellation);
+
+                if (asks is null)
+                {
+                    return (false, "the tester's read of the index did not finish, so no prompt was put");
+                }
+
+                LocalModelSettings settings;
+
+                try
+                {
+                    settings = LocalLane.Settings(configuration);
+                }
+                catch (InvalidOperationException refused)
+                {
+                    return (true, "no prompt was put, the tester reading the answers stored before: " + refused.Message);
+                }
+
+                var outcome = await new IdeaGenerator(LmStudioReadingFeed.Live(settings), settings, clock, store.DatabaseFile, store.DataRoot)
+                    .RunAsync(index, asks, Console.Out, cancellation);
+
+                return (true, IdeaGenerator.Words(outcome, asks.Count));
+            },
+            TakesTheLock: true));
+    }
+
     foreach (var index in EquityBrief.Worker.Loop.MonthlyRun.Indices)
     {
         steps.Add(new(
@@ -919,6 +958,48 @@ static async Task<int> LoopMonthRun(string[] args)
     run = new EquityBrief.Worker.Loop.MonthlyRun(clock, store.DatabaseFile, store.DataRoot, Console.Out, steps);
 
     return (await run.RunAsync(month)).Stopped is null ? 0 : 1;
+}
+
+// The idea generator by hand on one index: the prompts the tester's own read makes put to the local model, each one its
+// pin has answered already asked nothing again, and each answer stored for the tester's next run.
+// see: The idea generator proposes conditions in the winners' grammar by closed labels code turns into levels, judged as a procedure inside each fold
+static async Task<int> LoopIdeasRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    IClock clock = SystemClock.ForUnitedStatesSessions();
+
+    if (VerbArguments.Value(args, "--index") is not { } index)
+    {
+        Console.Error.WriteLine("loop-ideas: give '--index <GSPC, MID or SML>'.");
+
+        return 1;
+    }
+
+    LocalModelSettings settings;
+
+    try
+    {
+        settings = LocalLane.Settings(configuration);
+    }
+    catch (InvalidOperationException refused)
+    {
+        Console.Error.WriteLine("loop-ideas: " + refused.Message);
+
+        return 1;
+    }
+
+    var asks = await new EquityBrief.Worker.Loop.WalkForwardTester(clock, store.DatabaseFile, store.DataRoot, Console.Out).IdeaAsksAsync(index);
+
+    if (asks is null)
+    {
+        return 1;
+    }
+
+    var outcome = await new IdeaGenerator(LmStudioReadingFeed.Live(settings), settings, clock, store.DatabaseFile, store.DataRoot)
+        .RunAsync(index, asks, Console.Out);
+
+    return outcome.Outcome is LocalRun.Finished or LocalRun.NothingToRead ? 0 : 1;
 }
 
 // The fundamentals-first family's search by hand on one index, its 27 settings registered before it ran, printed and

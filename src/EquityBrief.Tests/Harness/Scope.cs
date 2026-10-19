@@ -3453,6 +3453,31 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included",
             ByAccess),
+        // 20.9, the idea generator: its catalogue and matrix rows, its store, the Loop page's row and section 18's two.
+        [CheckReach.Key(CatalogueTable, "Idea generator")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the reading pins it reads, the loop ideas and the run log it reads and writes and the local model its one feed, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Idea generator")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Loop ideas")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LoopPage, "The idea generator's proposals")] = new Scoped(
+            Verdict.Pass,
+            "a proposal of the generator drawn as every proposal is, its name, its change and its finding naming the idea the local model answered beneath the change, and one naming no change drawing none, read back off the rendered page over a constructed store",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "An answer the idea generator cannot read, or one the runtime refuses")] = new Scoped(
+            Verdict.Pass,
+            "each cause of an answer outside the grammar worked by hand, and over a constructed store an answer that cannot be read asked once more and then stored answered, and the runtime's refusal stored refused at once with its cause, the tester's one reader holding it as no idea",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The idea generator cannot ask the local model in the monthly run")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store a profile naming another model than the pin's refused before anything is asked and an answer under another runtime ending the run, each storing nothing it was not answered under the pin and writing its row with what it came to",
+            ByExpectations),
         // 20.4, the drift's tone variant: 15.7's card row and section 17's window row.
         [CheckReach.Key("15.7 Tonight", "The drift's tone variant")] = new Scoped(
             Verdict.Pass,
@@ -5598,6 +5623,9 @@ internal static class Scope
         // And 11.7's, one row per name and print over the calendar's year behind.
         ["Earnings reactions"] = "11.7",
 
+        // 20.9's, which the plan calls the generator's stored answers.
+        ["Loop ideas"] = "20.9",
+
         // 12.2's versions, which the plan names by the table rather than the store.
         ["Filter versions"] = "12.2",
 
@@ -6127,6 +6155,7 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Insiders")] = "19.13",
         [CheckReach.Key("15.10 Run", "The local model's runs")] = "20.1",
         [CheckReach.Key("15.7 Tonight", "The drift's tone variant")] = "20.4",
+        [CheckReach.Key(LoopPage, "The idea generator's proposals")] = "20.9",
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks, a bar for each of the last twenty evenings split into the names new that evening and those the evening before also listed")] = "12.3",
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks, the night's split in words")] = "12.3",
         [CheckReach.Key("15.10 Run", "Research and spend, the month's spend against the month cap")] = "12.3",
@@ -7187,6 +7216,9 @@ internal static class Scope
         // element is owed. The level sections arrive at 3.5 and the plan
         // section's tables at 4.4, which is the last surface the cell names.
         ["A gap in one name's series, level and plan sections"] = "4.6",
+        // 20.9's two, which the plan calls an answer outside the grammar refused with its cause.
+        ["An answer the idea generator cannot read, or one the runtime refuses"] = "20.9",
+        ["The idea generator cannot ask the local model in the monthly run"] = "20.9",
         // 18.3's typical earnings move and long view, which a gapped name keeps none of.
         ["A gap in one name's series, typical earnings move and long view"] = "18.3",
         ["A split or dividend not caught"] = "1.6",

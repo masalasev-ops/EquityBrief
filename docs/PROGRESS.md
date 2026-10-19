@@ -3559,3 +3559,63 @@ Carried:    20.7's comparison run again from main once its correction merges, an
             read and its record; 20.2's record; 20.4's second remedy after the history read; the sentence-start rule and the
             lower-case names, put to the operator; the sign-offs of phases 18 and 19, owed to fresh sessions after 20.10;
             (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.
+
+### 20.9 - the idea generator in the monthly run: the local model asked for each fold's conditions as closed labels code turns into levels, judged as a procedure with the family's other proposals   2026-10-19
+
+Queue:      done, 20.5, 20.7 with its correction and 20.6 merged, PRs 499 to 502; in progress, this; next, the records of
+            20.5's and 20.7's comparison runs, then, once the history read completes, 20.3's record, 20.4's second remedy,
+            20.8 and 20.10.
+Built:      the idea generator, a component of its own: for each family rule on an index the tester's own read, running no
+            procedure, makes each fold's prompt from that fold's tables, the autopsy's figures over the rule's trades that
+            ended before its year and each reading's spread over the listings that did, and the same over all finished
+            data, with no ticker and no date; the generator puts each prompt its pin has not answered to the local model
+            under the local run's pin check and lock, at temperature zero with the pin's seed, asks an answer it cannot read
+            once more, ends the run on an answer under another model or runtime, and stores each answer or its cause in
+            `loop_idea`, migration 101, keyed on the hash of the instruction's version and the prompt, with one row under
+            the local run's stage. The model answers at most three labels, a reading of the catalogue, above or below, and a
+            tenth from one to nine, and code turns each into a condition at that tenth's upper edge over the fold's own
+            listings, where winners against losers cuts the reading. The tester reads the stored answers through the one
+            reader of them alone and asks no model: the k-th proposal, "the idea generator, ranked k", is the k-th label
+            each fold's answer holds, walked over the fold's year and judged with the family's other proposals by the
+            step-down, its finding naming the label. `loop-ideas` by hand, and the monthly run's steps `ideas-GSPC`,
+            `ideas-MID` and `ideas-SML` after which readings go with winners and before the testers, each holding with its
+            words where the model cannot be asked. The monthly run's list of its step names now names the readings' steps
+            19.12 added to the worker's own list and not to the names, a test holding the names to the order the worker
+            builds its steps in. The decision, the architecture's rows and 13.13's engine, the schema, the runbook, the
+            roster's rows, the guide and the changelog.
+Measured:   nothing live: the generator's first prompts are the monthly run's of 2026-11-07, or a run by hand while the
+            history read is stopped, about 24 an index the first month and fewer after as a complete year's fold makes
+            the same prompt each month.
+Tests:      11 new, 2488 in all: each label's condition worked by hand at its tenth's upper edge over twenty listings, the
+            level at every tenth the search's own cut, and a reading no listing holds giving none; each of the grammar's
+            refusals; the 2022 fold's prompt worked by hand, a listing and a trade ending in 2022 moving nothing in it; the
+            k-th proposal over constructed folds and stored answers, a fold holding no answer choosing none, and the
+            generator's three judged with the family's other proposal by one step-down, moving its adjusted p-value from
+            0.0039 alone to 0.066; the generator over a constructed store asking each prompt once under the pin and storing
+            each answer or cause, a run again asking nothing, another model refused before any ask and an answer under
+            another runtime ending the run; the tester's read for the generator refusing under the generator's verb; the
+            monthly run's step names held to the worker's own order; the one reader of the stored answers; and the Loop
+            page drawing a proposal of the generator with its finding.
+Claims:     1372, 6 new: the generator's catalogue and matrix rows, the loop ideas' store, 15.20's row and section 18's two,
+            the 6 the plan counted at 20.9.
+Mutated:    the rule, stated before the runs: one mutation a property the checkpoint adds, the smallest edit undoing it
+            alone, each run filtered to the tests naming the property with its red predicted, made in this checkout and
+            reverted with the editor. M1 a label's level at its tenth's lower edge: red at the label test and the k-th
+            proposal test. M2 four ideas accepted: red at the grammar test. M3 a fold's autopsy over every finished trade:
+            red at the fold's prompt. M4 the generator's proposals under a family of their own: red at the step-down, the
+            other proposal's p-value 0.0039 judged apart. M5 a run again asking every prompt: red at the generator's store
+            test. M6 an answer under another runtime read as the pin's: red at the pin test. M7 the pin check's refusal
+            passed over: red at the pin test. M8 the ideas' steps after the testers: red at the three tests of the steps'
+            order. M9 the tester's source naming the table: red at the one reader's test. M10 every rank reading the first
+            label: red at the k-th proposal test. Each as predicted. Not mutated: the tester's run composing the
+            generator's proposals beside the other engines', which no test reaches since the fixture holds no history a
+            run reads, as no engine's composition is reached; its first run is the monthly run of 2026-11-07.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2488 of 2488 tests ran with none failed,
+            migrations 0 to 101 with none pending, schema version 101, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the comparisons' records; the history read and its record; 20.2's record; 20.4's second remedy after the
+            history read; the generator's first asks, at the monthly run of 2026-11-07; the sentence-start rule and the
+            lower-case names, put to the operator; the sign-offs of phases 18 and 19, owed to fresh sessions after 20.10;
+            (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.
