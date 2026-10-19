@@ -280,6 +280,10 @@ public partial class FixtureExpectations
         Assert.True(SegmentTable.Read(SegmentsOf(10_000_000_000m, ("Upstream", 6_000_000_000m), ("Downstream", 3_999_000_000m))).Clean);
         Assert.False(SegmentTable.Read(SegmentsOf(10_000_000_000m, ("Upstream", 6_000_000_000m), ("Downstream", 3_998_000_000m))).Clean);
 
+        // Three segments in millions may miss it by two millions, the tolerance itself, and not by three.
+        Assert.True(SegmentTable.Read(SegmentsOf(10_000_000_000m, ("Upstream", 5_000_000_000m), ("Midstream", 3_000_000_000m), ("Downstream", 1_998_000_000m))).Clean);
+        Assert.False(SegmentTable.Read(SegmentsOf(10_000_000_000m, ("Upstream", 5_000_000_000m), ("Midstream", 3_000_000_000m), ("Downstream", 1_997_000_000m))).Clean);
+
         // An elimination, a total and a corporate amount are no segments: a table whose segments sum to the total only
         // with its eliminations is drawn as filed, and a subtotal and a corporate group beside them change nothing.
         var eliminated = SegmentTable.Read(SegmentsOf(
@@ -459,6 +463,13 @@ public partial class FixtureExpectations
         var summed = DividendSafety.Of(null, 100m, 8m, quarters, kept, tenYears, [], night)!;
 
         Assert.Equal((4.00m, false), (summed.Rate, summed.RateIsForward));
+
+        // The year to the night is the 365 days after 2025-10-08: a dividend on that day is outside it and one a day later
+        // inside, so beside 2026's three the rate is 3.00 and 4.00.
+        KeptDividend[] edge = [new(new DateOnly(2025, 10, 8), 1.00m), .. new[] { 2, 5, 8 }.Select(month => new KeptDividend(new DateOnly(2026, month, 10), 1.00m))];
+
+        Assert.Equal(3.00m, DividendSafety.Of(null, 100m, 8m, quarters, edge, tenYears, [], night)!.Rate);
+        Assert.Equal(4.00m, DividendSafety.Of(null, 100m, 8m, quarters, [edge[0] with { ExDate = new DateOnly(2025, 10, 9) }, .. edge[1..]], tenYears, [], night)!.Rate);
         Assert.Null(DividendSafety.Of(0m, 100m, 8m, quarters, [], tenYears, [], night));
         Assert.Null(DividendSafety.Of(4m, 100m, 8m, [quarters[0] with { DividendsPaid = null }, .. quarters[1..]], kept, tenYears, [], night)!.PayoutOnCash);
     }
