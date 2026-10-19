@@ -26,6 +26,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the label comparison
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> fixture-expectations: ... every word one its question lists, read by the accuracy report's own reader |
+Now:
+> fixture-expectations: ... every word one its question lists, read by the accuracy report's own reader; and from 20.5 the label comparison over a constructed store, every article the paid profile labelled under the instruction's version that the store still holds, oldest label first, labelled again by a local model answering as constructed under the labeller's own instruction for the company the labeller names, at the readings' seed and the budget handed in, an answer that cannot be read asked once more, its agreement on the kind, on the direction and on both and the reasons holding no digit worked by hand, the local lock waited for, the model loaded and unloaded, its file written under the data root and every table's rows as they were, and a store holding no paid label asking nothing |
+Why: each roster row says what its check asserts, and the comparison's test extends fixture-expectations'.
+
+### 2026-10-19 - BUILD_PLAN.md - 20.5's text as built: the local comparison, a component of its own
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> ... and states the agreement on each label's kind and direction and the share of reasons holding no digit. Switching the labeller to the local profile and widening it to the S&P 400's and 600's lists each wait for the operator's word, a widening on the paid profile named with its cost. Writes the decision that a comparison writes no store row and switches nothing, the runbook's command and the guide.
+Now:
+> ... and states the agreement on each label's kind and direction and the share of reasons holding no digit. It is the local comparison, a component of its own that 20.6 and 20.7 widen, holding the local lock, opening the store read-only and writing its figures to a file under the data root. Switching the labeller to the local profile and widening it to the S&P 400's and 600's lists each wait for the operator's word, a widening on the paid profile named with its cost. Writes the component catalogue's and the matrix's rows, the decision that a comparison writes no store row and switches nothing, the runbook's command, the roster's row and the guide.
+Why: the comparison reads stores, so it is a component with a catalogue row and a matrix row, which the text named nowhere.
+
+### 2026-10-19 - ARCHITECTURE.html - the local comparison's catalogue and matrix rows
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> (no row for it)
+Now:
+> Added without replacing anything: the Local comparison's catalogue row after the release accuracy report's, run by hand through the worker's compare-labels, reading the membership, the news articles, the news labels and the local model and writing nothing; and its matrix row reading the membership and the news.
+Why: a new component is added to the catalogue in the commit that introduces it.
+
+### 2026-10-19 - RUNBOOK.md - comparing the local model with the paid labels
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> (no paragraph on it)
+Now:
+> Added without replacing anything: the paragraph after the probes' on `compare-labels`, run while the history read is stopped, its line, its file under the data root and that it switches nothing.
+Why: every worker verb the specs name is one the runbook shows.
+
 ### 2026-10-18 - BUILD_PLAN.md - phase 20 built whole in the order its dependencies set, its history read around the clock with the card held at 250 W, and the sign-offs of phases 18 and 19 after 20.10
 Authorised by: Phase 20 is built whole in the order its dependencies set with the sign-offs of phases 18 and 19 after it, spending no money and retiring nothing on a result
 Was:

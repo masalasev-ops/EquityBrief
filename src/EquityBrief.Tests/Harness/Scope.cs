@@ -3444,6 +3444,15 @@ internal static class Scope
             Verdict.Pass,
             "over a constructed store a release whose stored text is not its hash is stored refused with the cause and asked nothing, while the release beside it is read",
             ByExpectations),
+        // 20.5, the local model set against paid work already stored: the local comparison's catalogue and matrix rows.
+        [CheckReach.Key(CatalogueTable, "Local comparison")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership, the news articles and the news labels it reads and nothing it writes, the local model its one feed, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Local comparison")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
         // 20.4, the drift's tone variant: 15.7's card row and section 17's window row.
         [CheckReach.Key("15.7 Tonight", "The drift's tone variant")] = new Scoped(
             Verdict.Pass,
