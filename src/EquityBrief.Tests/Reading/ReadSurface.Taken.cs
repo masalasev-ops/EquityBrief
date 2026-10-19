@@ -553,7 +553,7 @@ public partial class ReadSurface
 
     static string LineSix(string card)
     {
-        var line = Regex.Match(card, "<li class=\"card-line\" data-line=\"6\" data-verdict=\"([a-z]+)\"><span class=\"card-mark\" data-verdict=\"\\1\">\\1</span> <b class=\"card-name\">([^<]*)</b> <span class=\"card-words\">(.*?)</span></li>");
+        var line = Regex.Match(card, "<li class=\"card-line\" data-line=\"6\" data-verdict=\"([a-z]+)\"><span class=\"card-mark\" data-verdict=\"\\1\" role=\"img\" aria-label=\"\\1\" title=\"\\1\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\">.*?</svg></span> <b class=\"card-name\">([^<]*)</b> <span class=\"card-words\">(.*?)</span></li>");
 
         Assert.True(line.Success, "The card draws no sixth line.");
 

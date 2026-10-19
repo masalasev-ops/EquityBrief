@@ -191,7 +191,7 @@ public partial class ReadSurface
         Assert.True(narrow.Success, "The stylesheet states no rules for a phone's screen.");
         Assert.Contains(" .card-line,.card-figures{grid-template-columns:1fr}", narrow.Groups[1].Value, StringComparison.Ordinal);
         Assert.Contains(" .card-mark{justify-self:start}", narrow.Groups[1].Value, StringComparison.Ordinal);
-        Assert.Contains(".card-line{display:grid;grid-template-columns:78px 150px minmax(0,1fr);", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".card-line{display:grid;grid-template-columns:24px 150px minmax(0,1fr);", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains(".decision-card{position:sticky;left:0;max-width:min(860px,calc(100vw - 2*var(--gutter) - 24px));", Stylesheet.Css, StringComparison.Ordinal);
 
         // From 19.3 a row a table opens beneath one of its rows, the buy points' plan and card and a heavyweight's card, is
@@ -207,6 +207,40 @@ public partial class ReadSurface
 
         Assert.StartsWith("<tr class=\"card-row\" id=\"card-gspc-pullback-f1\" hidden><td colspan=\"9\"><div class=\"row-open\"><div class=\"decision-card\"", marks.CardRow(card, 9), StringComparison.Ordinal);
         Assert.EndsWith("</div></div></td></tr>", marks.CardRow(card, 9), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void EachLineOfAPicksCardIsMarkedByATickANoteSignOrAWarningSignAndNotByItsWord()
+    {
+        var card = new DecisionCardView(
+            "GSPC",
+            new DateOnly(2026, 10, 16),
+            "drift",
+            "TRV",
+            "the earnings drift",
+            389.54m,
+            368.63m,
+            441.82m,
+            [
+                new CardLineView(1, "Trend and strength", "tick", "Passed every gate."),
+                new CardLineView(2, "Business", "note", "Its cover is not read."),
+                new CardLineView(3, "Earnings in the hold", "warning", "No report date is on file for it."),
+            ],
+            null);
+        var drawn = new MarkRenderer().DecisionCard(card);
+
+        // A tick is a check's two strokes; a note a circle around an i, its stroke and its dot; a warning a triangle
+        // around an exclamation, its stroke and its dot. Each is drawn in its mark's own colour and named by its verdict's
+        // word for a reader that does not see it.
+        Assert.Contains("<li class=\"card-line\" data-line=\"1\" data-verdict=\"tick\"><span class=\"card-mark\" data-verdict=\"tick\" role=\"img\" aria-label=\"tick\" title=\"tick\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M3.2 8.6l3 3 6.6-7\"/></svg></span> <b class=\"card-name\">Trend and strength</b>", drawn, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"card-mark\" data-verdict=\"note\" role=\"img\" aria-label=\"note\" title=\"note\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><circle cx=\"8\" cy=\"8\" r=\"6.2\"/><path d=\"M8 7.3v4.2\"/><circle class=\"dot\" cx=\"8\" cy=\"4.9\" r=\"1\"/></svg></span> <b class=\"card-name\">Business</b>", drawn, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"card-mark\" data-verdict=\"warning\" role=\"img\" aria-label=\"warning\" title=\"warning\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M8 1.9l6.6 11.6H1.4z\"/><path d=\"M8 6.4v3.6\"/><circle class=\"dot\" cx=\"8\" cy=\"11.7\" r=\"1\"/></svg></span> <b class=\"card-name\">Earnings in the hold</b>", drawn, StringComparison.Ordinal);
+        Assert.DoesNotMatch(">(?:tick|note|warning)<", drawn);
+
+        Assert.Contains(".card-mark svg{width:16px;height:16px;fill:none;stroke:currentColor;", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".card-mark svg .dot{fill:currentColor;stroke:none}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".card-mark[data-verdict='tick']{color:var(--ink);", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".card-mark[data-verdict='warning']{color:var(--warn);background:var(--warn-fill);", Stylesheet.Css, StringComparison.Ordinal);
     }
 
     // The page each index's Tonight is read on.
@@ -257,7 +291,7 @@ public partial class ReadSurface
 
                 // The lines the night stored, in their order, and after them the sixth, which Tonight works out from the
                 // operator's open trades where it draws the card.
-                var drawn = Regex.Matches(body, "<li class=\"card-line\" data-line=\"(\\d+)\" data-verdict=\"([a-z]+)\"><span class=\"card-mark\" data-verdict=\"\\2\">\\2</span> <b class=\"card-name\">([^<]*)</b> <span class=\"card-words\">(.*?)</span></li>")
+                var drawn = Regex.Matches(body, "<li class=\"card-line\" data-line=\"(\\d+)\" data-verdict=\"([a-z]+)\"><span class=\"card-mark\" data-verdict=\"\\2\" role=\"img\" aria-label=\"\\2\" title=\"\\2\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\">.*?</svg></span> <b class=\"card-name\">([^<]*)</b> <span class=\"card-words\">(.*?)</span></li>")
                     .Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}|{match.Groups[3].Value}|{CardWords(match.Groups[4].Value)}")
                     .ToArray();
 

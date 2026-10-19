@@ -127,7 +127,7 @@ public sealed partial class MarkRenderer
         foreach (var line in card.Lines)
         {
             body.Append(Invariant, $"<li class=\"card-line\" data-line=\"{line.Number}\" data-verdict=\"{Escaped(line.Verdict)}\">");
-            body.Append(Invariant, $"<span class=\"card-mark\" data-verdict=\"{Escaped(line.Verdict)}\">{Escaped(line.Verdict)}</span> ");
+            body.Append(CardMark(line.Verdict)).Append(' ');
             body.Append(Invariant, $"<b class=\"card-name\">{Escaped(line.Name)}</b> ");
             body.Append(Invariant, $"<span class=\"card-words\">{WithSignedFigures(line.Words)}</span></li>");
         }
@@ -144,6 +144,17 @@ public sealed partial class MarkRenderer
 
         return body.ToString();
     }
+
+    // A checklist line's mark drawn as a tick, a note's sign or a warning's sign, the verdict's word its label and its
+    // title; a verdict none of the three is drawn as its word.
+    static string CardMark(string verdict) =>
+        Formatted($"<span class=\"card-mark\" data-verdict=\"{Escaped(verdict)}\" role=\"img\" aria-label=\"{Escaped(verdict)}\" title=\"{Escaped(verdict)}\">") + verdict switch
+        {
+            "tick" => "<svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M3.2 8.6l3 3 6.6-7\"/></svg>",
+            "note" => "<svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><circle cx=\"8\" cy=\"8\" r=\"6.2\"/><path d=\"M8 7.3v4.2\"/><circle class=\"dot\" cx=\"8\" cy=\"4.9\" r=\"1\"/></svg>",
+            "warning" => "<svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M8 1.9l6.6 11.6H1.4z\"/><path d=\"M8 6.4v3.6\"/><circle class=\"dot\" cx=\"8\" cy=\"11.7\" r=\"1\"/></svg>",
+            _ => Escaped(verdict),
+        } + "</span>";
 
     // The route of the settings page the plan links to where the account is not set.
     public const string AccountRoute = "#/account";
