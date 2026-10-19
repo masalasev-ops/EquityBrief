@@ -214,6 +214,87 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public void AContactLineAJointFilingsOwnersAFounderAPhoneAndALoneMonthAreReadAsTheDecisionNamesThem()
+    {
+        // From the second 20.3 correction of 2026-10-18, each worked by hand from a release the reference set holds. A
+        // Windows code page's quotation marks, bullet and dash read as that page's, so a dateline's dash is read before its
+        // date.
+        var acme = new ReleaseFiler(["ACME WIDGETS CORP"], ["AWX"], []);
+        var dash = char.ConvertFromUtf32(0x2014);
+
+        Assert.Equal(
+            $"[place] {dash} [date] {dash} “We grew,” said [person 1], Controller.",
+            ReleaseAnonymiser.Anonymise($"SAN JOSE, Calif. {(char)0x97} May 30, 2019 {(char)0x97} {(char)0x93}We grew,{(char)0x94} said Jane Roe, Controller.", acme));
+
+        // A phone written with its country's code after a plus, and one with its area's brackets between hyphens, with
+        // its country's code and without it.
+        Assert.Equal(
+            "Call [phone], [phone] or [phone].",
+            ReleaseAnonymiser.Anonymise("Call +86 (138) 1079-1480, +1-(978)-256-1300 or (978)-256-1300.", acme));
+
+        // A month named alone, a fiscal label in the plural and a year the archive split after a date, while a month
+        // before a surname is a first name and May opening a sentence may be the verb.
+        Assert.Equal(
+            "Sales rose in [date], and its [date] guidance held for the [quarter] Ended; paid on [date], [year] to holders. May not recur, said [person 1], Chief Financial Officer.",
+            ReleaseAnonymiser.Anonymise("Sales rose in February, and its November guidance held for the Second Quarters Ended; paid on June 4, 20 26 to holders. May not recur, said June Smith, Chief Financial Officer.", acme));
+
+        // A dateline whose date the release sets elsewhere, before the filer's name, and a town under a signature's
+        // title read from its first word that is no title's.
+        Assert.Equal("[place] - [company] ([ticker]) reported.", ReleaseAnonymiser.Anonymise("BIRMINGHAM, Ala. - Acme Widgets Corp. (NYSE: AWX) reported.", acme));
+        Assert.Equal(
+            "[place] – [date] – Sales rose. Signed, Chief Executive Officer [place], [date].",
+            ReleaseAnonymiser.Anonymise("Woonsocket, R.I. – May 1, 2019 – Sales rose. Signed, Chief Executive Officer WOONSOCKET, R.I., May 30, 2019.", acme));
+
+        // A ticker the release states in an exchange's form after the filer's name, the filer since renamed, read wherever
+        // it stands, and a preferred stock's ticker opening on the filer's.
+        Assert.Equal(
+            "[company] ([ticker]) reported. [ticker] rose, and its Series J Preferred Stock ([ticker]) paid.",
+            ReleaseAnonymiser.Anonymise("Acme Widgets Corp. (NYSE: OLD) reported. OLD rose, and its Series J Preferred Stock (NYSE: AWXPrJ) paid.", acme));
+
+        // A contact line's label in capitals, in lower case, without its colon and running into the next label, the name
+        // after each read up to its title's words.
+        Assert.Equal(
+            "INVESTOR CONTACTS: [person 1] Vice President, Investor Relations. For more information contact: [person 2] - VP. Investor Contact [person 3] [address] Investor Contact: PR Contact: [person 4] [phone] Media CONTACT [person 5]",
+            ReleaseAnonymiser.Anonymise("INVESTOR CONTACTS: Yvonne Perron Vice President, Investor Relations. For more information contact: Kate Lowrey - VP. Investor Contact James Baglanis ir@acme.com Investor Contact: PR Contact: Suzanne Schmidt 212-555-0100 Media CONTACT Denise Pacioni", acme));
+
+        // Each owner of a joint filing read and a fund that files beside them no person; a name after an honorific read to
+        // its surname; a given name a filing names first and its surname one person; a surname's particles; a generation
+        // that is no surname; and a place a fund's name opens on left as it stands.
+        Assert.Equal(
+            "Trian Fund Management holds shares, and [person 1] joined the board.",
+            ReleaseAnonymiser.Anonymise("Trian Fund Management holds shares, and Joshua D. Frank joined the board.", new ReleaseFiler(["ACME WIDGETS CORP"], ["AWX"], ["TRIAN FUND MANAGEMENT, L.P.; Frank Joshua D."])));
+        Assert.Equal(
+            "said Dr. [person 1], President. Dr. [person 1] added that Shanghai and David Corp grew, said [person 2], Chief Executive Officer. Mr. [person 2] agreed.",
+            ReleaseAnonymiser.Anonymise(
+                "said Dr. David H. Wang, President. Dr. Wang added that Shanghai and David Corp grew, said Jason Fox, Chief Executive Officer. Mr. Fox agreed.",
+                new ReleaseFiler(["ACME WIDGETS CORP"], ["AWX"], ["Shanghai Science & Technology Venture Capital (Group) Co., Ltd.; Shanghai Pudong Science & Technology Investment Group Co., Ltd.", "Jason Fox"])));
+        Assert.Equal(
+            "said [person 1], Chief Financial Officer. Mr. van der [person 1] added. Corporate Contact: [person 2] II Chief Corporate Affairs Officer. The EPIONE II study enrolled.",
+            ReleaseAnonymiser.Anonymise("said Jaco van der Walt, Chief Financial Officer. Mr. van der Walt added. Corporate Contact: AJ Jones II Chief Corporate Affairs Officer. The EPIONE II study enrolled.", acme));
+
+        // A founder whose surname is the filer's one-word name, beside a title and after an honorific, while the name
+        // standing on its own is the filer.
+        Assert.Equal(
+            "“We grew,” said [person 1], Chairman. [company] thanks Mr. [person 1].",
+            ReleaseAnonymiser.Anonymise("“We grew,” said Michael Dellware, Chairman. Dellware Inc. thanks Mr. Dellware.", new ReleaseFiler(["DELLWARE INC"], ["DLW"], [])));
+    }
+
+    [Fact]
+    public void TheReferenceSetsLabelsAreItsSamplesReleasesOneEachReadByTheAccuracyReportsOwnReader()
+    {
+        // The labels committed at 20.3 before the local model read any reference release: one for each release the sample
+        // lists, in its order, every word one its question lists, read through the reader the accuracy report reads them
+        // with, and the instant the last was written.
+        var folder = Path.Combine(Repository.Root, "fixtures", "release-reference-2026");
+        var sample = File.ReadAllLines(Path.Combine(folder, "sample.txt")).Where(line => line.Length > 0).ToArray();
+        var set = ReleaseLabels.Read(File.ReadAllText(Path.Combine(folder, "labels.json")));
+
+        Assert.Equal(100, sample.Length);
+        Assert.Equal(sample, set.Labels.Select(label => label.Accession));
+        Assert.Equal(new DateTimeOffset(2026, 10, 19, 0, 10, 42, TimeSpan.Zero), set.LabelledAt);
+    }
+
+    [Fact]
     public void TheAnonymisersVersionIsThePinOfItsSourceAndPartOfThePromptsVersion()
     {
         var source = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Core", "Releases", "ReleaseAnonymiser.cs"));

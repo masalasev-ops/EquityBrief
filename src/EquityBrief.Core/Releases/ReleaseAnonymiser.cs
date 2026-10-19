@@ -10,9 +10,10 @@ namespace EquityBrief.Core.Releases;
 public sealed record ReleaseFiler(IReadOnlyList<string> Names, IReadOnlyList<string> Tickers, IReadOnlyList<string> People);
 
 // A results release with every name and date in it replaced by a neutral word, so the model reads what the release says
-// and not whose it is or when. Contact details first, since an address or a file name carries the company and the day;
-// then the dates and the fiscal labels, so "Q3" or "September 30" is never read as a name; then the dateline's place,
-// the filer's names and tickers, and its people. A name of several words is matched whatever its case, its words joined
+// and not whose it is or when. The characters a Windows code page wrote into the archive's text are read as that page's
+// first; then contact details, since an address or a file name carries the company and the day; then the dates and the
+// fiscal labels, so "Q3" or "September 30" is never read as a name; then the dateline's place, the filer's names and
+// tickers, and its people. A name of several words is matched whatever its case, its words joined
 // by a space, a hyphen or an ampersand alike and a short capitalised word written with points or without; a single
 // word, a company name's first word or a surname, only as written with its capital and never as a sentence's first
 // word, and a company name's first word only where the common words below do not hold it; a ticker as written, wherever
@@ -23,7 +24,7 @@ public static class ReleaseAnonymiser
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "175a444d0383";
+    public const string Version = "fe22a6282817";
 
     public const string Company = "[company]";
     public const string Ticker = "[ticker]";
@@ -115,16 +116,37 @@ public static class ReleaseAnonymiser
 
     public static string Anonymise(string text, ReleaseFiler filer)
     {
-        var read = Contacts(text);
+        var read = Contacts(Characters(text));
 
         read = Dates(read);
         read = Dateline(read);
         read = Companies(read, filer.Names);
+        read = UndatedDateline(read);
         read = Tickers(read, filer.Tickers);
         read = People(read, filer.People);
 
         return read;
     }
+
+    // ---- characters -------------------------------------------------------------
+
+    // The characters a Windows code page writes from 0x80 to 0x9F, which the archive's text carries where a filer's page
+    // was written in that page and read as another: its quotation marks, dashes and bullets, each read as the page's own
+    // before any pattern, so a dateline's dash or a quotation's mark is read as written. A code the page leaves unassigned
+    // stays as it stands.
+    static readonly int[] Windows1252 =
+    [
+        0x20AC, 0x0081, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, 0x008D, 0x017D,
+        0x008F, 0x0090, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0x009D,
+        0x017E, 0x0178,
+    ];
+
+    static bool InWindowsRange(char character) => character is >= (char)0x80 and <= (char)0x9F;
+
+    static string Characters(string text) =>
+        text.Any(InWindowsRange)
+            ? new string([.. text.Select(character => InWindowsRange(character) ? (char)Windows1252[character - 0x80] : character)])
+            : text;
 
     // ---- contact details --------------------------------------------------------
 
@@ -141,7 +163,13 @@ public static class ReleaseAnonymiser
         RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
     static readonly Regex PhoneNumber = new(
-        @"(?<![\w\-])(?:\+?1[\s.\-])?(?:\(\d{3}\)\s?|\d{3}[\s.\-])\d{3}[\s.\-]\d{4}(?![\w\-])",
+        @"(?<![\w\-])(?:\+?1[\s.\-])?(?:\(\d{3}\)[\s.\-]?|\d{3}[\s.\-])\d{3}[\s.\-]\d{4}(?![\w\-])",
+        RegexOptions.CultureInvariant);
+
+    // A number written after a plus and its country's code, its area in brackets or not, as "+86 (138) 1079-1480" or
+    // "+1-(978)-256-1300".
+    static readonly Regex InternationalPhone = new(
+        @"(?<![\w\-+])\+\d{1,3}[\s.\-]?(?:\(\d{1,4}\)[\s.\-]?)?\d{2,4}(?:[\s.\-]\d{2,5}){1,3}(?![\w\-])",
         RegexOptions.CultureInvariant);
 
     static string Contacts(string text)
@@ -151,6 +179,7 @@ public static class ReleaseAnonymiser
         read = Web.Replace(read, Address);
         read = Domain.Replace(read, Address);
         read = FileName.Replace(read, Address);
+        read = InternationalPhone.Replace(read, Phone);
 
         return PhoneNumber.Replace(read, Phone);
     }
@@ -172,8 +201,18 @@ public static class ReleaseAnonymiser
     static readonly Regex IsoDate = new(@"\b(?:19|20)\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])\b", RegexOptions.CultureInvariant);
 
     static readonly Regex OrdinalQuarter = new(
-        @"\b(?:first|second|third|fourth|1st|2nd|3rd|4th)(?:[\s\-]+fiscal)?[\s\-]+quarter\b",
+        @"\b(?:first|second|third|fourth|1st|2nd|3rd|4th)(?:[\s\-]+fiscal)?[\s\-]+quarters?\b",
         RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+    // A year the archive's text split after its first two figures, as "[date], 20 26", read where a date stands before it.
+    static readonly Regex SplitYear = new(@"(?<=\[date\],?\s+)(?:19 9\d|20 [0-3]\d)(?![\p{L}\p{N}])", RegexOptions.CultureInvariant);
+
+    // A month named alone, as "in February" or "its November guidance", says when as a date does. A month a capitalised
+    // word, a figure or a neutral word follows is left, as June before a surname in June Smith, and May opening a
+    // sentence, which may be the verb.
+    static readonly Regex LoneMonth = new(
+        @"(?<![\p{L}\p{N}])(?:" + string.Join("|", MonthNames) + @")(?![\p{L}\p{N}])(?!\s+[\p{Lu}\p{N}\[])",
+        RegexOptions.CultureInvariant);
 
     static readonly Regex Half = new(@"\b(?:first|second)[\s\-]+half\b", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
@@ -193,6 +232,11 @@ public static class ReleaseAnonymiser
         read = MonthYear.Replace(read, Date);
         read = SlashDate.Replace(read, Date);
         read = IsoDate.Replace(read, Date);
+        read = SplitYear.Replace(read, Year);
+
+        var months = read;
+
+        read = LoneMonth.Replace(months, match => match.Value == "May" && AtSentenceStart(months, match.Index) ? match.Value : Date);
         read = OrdinalQuarter.Replace(read, Quarter);
         read = Half.Replace(read, Quarter);
         read = QuarterLabel.Replace(read, Quarter);
@@ -278,8 +322,33 @@ public static class ReleaseAnonymiser
 
         read = DateThenPlace.Replace(read, Place, 1);
 
-        return DatelinePlace.Replace(read, match => match.Value.StartsWith('[') ? match.Value : Place);
+        return DatelinePlace.Replace(read, match => match.Value.StartsWith('[') ? match.Value : TitledPlace(match.Value));
     }
+
+    static readonly HashSet<string> TitleWords = new(Titles.SelectMany(Words), StringComparer.Ordinal);
+
+    static bool IsTitleWord(string word) => TitleWords.Contains(word.TrimEnd(',', '.'));
+
+    // A place a title's words stand straight before, as "Chief Executive Officer WOONSOCKET, R.I." under a signature,
+    // read from its first word that is no title's.
+    static string TitledPlace(string run)
+    {
+        var words = Regex.Split(run, @"\s+");
+        var titled = words.TakeWhile(IsTitleWord).Count();
+
+        return titled == words.Length ? run : string.Join(' ', words[..titled].Append(Place));
+    }
+
+    // A dateline whose date the release sets elsewhere, as "BIRMINGHAM, Ala. - [company]": a town and its state before a
+    // dash, or a wire's name between dashes, opening the release's first sentence on the filer's name, read where no
+    // dateline was read before it.
+    static readonly Regex DatelineBeforeName = new(
+        @"(?<![\p{L}\p{N}\]])(?:" + CapitalsWord + @"(?:\s+" + CapitalsWord + @"){0,3}|[A-Z][a-z]+(?:[\s\-][A-Z][a-z]+){0,2})\s*,\s*" + DatelineState
+        + @"(?=\s*[-‐-―]{1,2}\s*(?:\(?\s*" + Wire + @"\s*\)?\s*[-‐-―]{1,2}\s*)?\[company\])",
+        RegexOptions.CultureInvariant);
+
+    static string UndatedDateline(string text) =>
+        text.Contains(Place, StringComparison.Ordinal) ? text : DatelineBeforeName.Replace(text, Place, 1);
 
     // ---- the filer's names and tickers ------------------------------------------
 
@@ -447,15 +516,27 @@ public static class ReleaseAnonymiser
             ? [ticker, ticker.Replace('-', '.'), ticker.Replace('-', '/'), ticker.Replace('-', ' '), ticker.Replace("-", string.Empty, StringComparison.Ordinal)]
             : [ticker];
 
+    const string Exchange = @"(?:NYSE(?:\s+American|\s+Arca|\s+MKT)?|Nasdaq(?:\s+(?:Global\s+Select\s+Market|Global\s+Market|Capital\s+Market|GS|GM|CM))?|Cboe\s+BZX)";
+
+    // The ticker a release states in an exchange's form straight after the filer's name, as "[company] (NYSE: HSC)" for a
+    // filer since renamed and trading under another, is the filer's own.
+    static readonly Regex StatedTicker = new(
+        @"\[company\](?:['’]s)?\s*\(\s*(?i:" + Exchange + @")\s*:\s*(?<ticker>[A-Z](?:[A-Z.\-]{0,5}[A-Z])?)(?![\p{L}\p{N}])",
+        RegexOptions.CultureInvariant);
+
+    // A class's or a preferred stock's mark after the ticker in an exchange's form, as SPGPrJ or SPG-PJ for SPG's.
+    const string ClassMark = @"(?:[.\-/]?(?:PR?|p)[A-Z]?|[.\-/][A-Z])?";
+
     static string Tickers(string text, IReadOnlyList<string> tickers)
     {
         var read = text;
+        var filers = tickers.Concat(StatedTicker.Matches(text).Select(match => match.Groups["ticker"].Value)).ToArray();
 
-        foreach (var ticker in tickers.Where(ticker => ticker.Length > 0).SelectMany(TickerForms).Distinct(StringComparer.Ordinal).OrderByDescending(ticker => ticker.Length))
+        foreach (var ticker in filers.Where(ticker => ticker.Length > 0).SelectMany(TickerForms).Distinct(StringComparer.Ordinal).OrderByDescending(ticker => ticker.Length))
         {
             read = Regex.Replace(
                 read,
-                @"\b(?:NYSE(?:\s+American|\s+Arca|\s+MKT)?|Nasdaq(?:\s+(?:Global\s+Select\s+Market|Global\s+Market|Capital\s+Market|GS|GM|CM))?|Cboe\s+BZX)\s*:\s*" + Regex.Escape(ticker) + @"(?![\p{L}\p{N}])",
+                @"\b" + Exchange + @"\s*:\s*" + Regex.Escape(ticker) + ClassMark + @"(?![\p{L}\p{N}])",
                 Ticker,
                 RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
@@ -470,7 +551,7 @@ public static class ReleaseAnonymiser
 
         // A document's name carrying the filer's ticker or name with its figures, as the exhibit's own name in the
         // filing's envelope, which says whose release it is and when.
-        var keys = tickers.Where(ticker => ticker.Length > 2)
+        var keys = filers.Where(ticker => ticker.Length > 2)
             .Select(ticker => ticker.ToLowerInvariant())
             .Distinct(StringComparer.Ordinal)
             .ToArray();
@@ -490,7 +571,13 @@ public static class ReleaseAnonymiser
 
     static readonly string NameWord = "(?:" + CapitalWord + "|" + Initial + ")";
 
-    static readonly string Run = NameWord + @"(?:\s+" + NameWord + "){1,3}";
+    // The words a surname may carry before it in lower case, as van der Walt, and the generation a name may close on, as
+    // Jones II, which is no surname.
+    static readonly string[] Particles = ["van", "der", "de", "den", "von", "la", "le", "du", "da", "di", "del", "della", "dos", "das", "ter", "ten"];
+
+    static readonly string[] Generations = ["Jr", "Sr", "II", "III", "IV"];
+
+    static readonly string Run = NameWord + @"(?:\s+(?:(?:" + string.Join("|", Particles) + @")\s+){0,2}" + NameWord + "){1,3}";
 
     static readonly string TitleAlternation = string.Join("|", Titles.Select(Regex.Escape));
 
@@ -504,15 +591,43 @@ public static class ReleaseAnonymiser
         @"(?<run>" + Run + @")(?:\s*,\s+(?:the\s+|our\s+|\[company\]['’]s\s+)?|\s+(?:the|our)\s+|\s+\[company\]['’]s\s+)(?:" + TitleAlternation + @")\b",
         RegexOptions.CultureInvariant);
 
-    static readonly Regex AfterContact = new(@"\bContacts?\s*:\s*(?<run>" + Run + ")", RegexOptions.CultureInvariant);
+    // A contact line's label, with its colon in any case or as a heading's word without one, as "CONTACTS:", "contact:" or
+    // "Investor Contact Jane Roe", the name after each label read though one label's line runs into the next.
+    static readonly Regex AfterContact = new(
+        @"(?<![\p{L}])(?:(?i:contacts?)\s*:|(?:Contacts?|CONTACTS?)(?![\p{L}]))\s*(?=(?<run>" + Run + "))",
+        RegexOptions.CultureInvariant);
 
     static readonly Regex AfterSaying = new(
         @"\b(?:" + string.Join("|", Sayings) + @")\s*,?\s+(?:(?:" + TitleAlternation + @")\s+)?(?<run>" + Run + ")",
         RegexOptions.CultureInvariant);
 
+    // A name after an honorific, read to its surname across a given name and an initial, as "Dr. David H. Wang".
     static readonly Regex AfterHonorific = new(
-        @"\b(?:" + string.Join("|", Honorifics) + @")\.?\s+(?<run>" + CapitalWord + ")",
+        @"\b(?:" + string.Join("|", Honorifics) + @")\.?\s+(?<run>" + CapitalWord + @"(?:\s+" + Initial + @")?(?:\s+" + CapitalWord + @")?)",
         RegexOptions.CultureInvariant);
+
+    // A person whose surname is the filer's one-word name, as a founder, written "Michael [company]" once the name is
+    // replaced: the words before it beside a title or a verb of saying are the person's given names.
+    static readonly string GivenBeforeName = @"(?<given>" + NameWord + @"(?:\s+" + NameWord + @"){0,2})\s+\[company\](?![\p{L}\p{N}])";
+
+    static readonly Regex[] FounderPatterns =
+    [
+        new(@"\b(?:" + TitleAlternation + @")(?:\s*(?:,|and|&)\s*(?:" + TitleAlternation + @"))*\s*,?\s+" + GivenBeforeName, RegexOptions.CultureInvariant),
+        new(GivenBeforeName + @"(?:,?\s+(?:Jr|Sr|II|III|IV)\.?)?(?:\s*,\s+(?:the\s+|our\s+)?|\s+(?:the|our)\s+)(?:" + TitleAlternation + @")\b", RegexOptions.CultureInvariant),
+        new(@"\b(?:" + string.Join("|", Sayings) + @")\s*,?\s+(?:(?:" + TitleAlternation + @")\s+)?" + GivenBeforeName, RegexOptions.CultureInvariant),
+    ];
+
+    // A filing's reporting owner that is a fund or a company, as "TRIAN FUND MANAGEMENT, L.P." beside an insider it files
+    // with, is no person, so its first word, often a place or a brand, is no surname.
+    static readonly string[] EntityWords =
+    [
+        "LLC", "L.L.C", "LP", "L.P", "LLP", "Inc", "Corp", "Corporation", "Co", "Company", "Ltd", "Limited", "PLC", "AG", "SA",
+        "NV", "Fund", "Funds", "Partners", "Capital", "Management", "Holdings", "Holding", "Trust", "Group", "Investment",
+        "Investments", "Advisors", "Advisers", "Associates", "Ventures", "Foundation", "Bancorp", "Bank",
+    ];
+
+    static bool IsEntity(string owner) =>
+        owner.Split([' ', ',', '(', ')'], StringSplitOptions.RemoveEmptyEntries).Any(word => EntityWords.Contains(word.Trim('.'), StringComparer.OrdinalIgnoreCase));
 
     static readonly Regex Token = new(@"\[[a-z]+(?: \d+)?\]|[\p{L}\p{N}][\p{L}\p{N}’'\-.&]*", RegexOptions.CultureInvariant);
 
@@ -520,9 +635,11 @@ public static class ReleaseAnonymiser
     {
         var surnames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var insider in insiders)
+        // Each owner a filing names, a joint filing's owners written one after another, and none that is a fund or a
+        // company.
+        foreach (var owner in insiders.SelectMany(insider => insider.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)).Where(owner => !IsEntity(owner)))
         {
-            var surname = insider.Split([' ', ','], StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+            var surname = owner.Split([' ', ','], StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
 
             if (surname is { Length: > 1 } && char.IsLetter(surname[0]))
             {
@@ -541,26 +658,56 @@ public static class ReleaseAnonymiser
             }
         }
 
+        // A possessive or a word that is no name's ends an honorific's name at its first word, as Dr. Reddy's
+        // Laboratories.
         foreach (Match match in AfterHonorific.Matches(text))
         {
-            if (SurnameOf(match.Groups["run"].Value, 1) is { } surname)
+            var words = Words(match.Groups["run"].Value);
+            var name = words.Length > 1 && !IsPossessive(words[0]) && Namelike(words[^1]) ? words[^1] : words[0];
+
+            if (SurnameOf(name, 1) is { } surname)
             {
                 surnames.Add(surname);
             }
         }
 
-        if (surnames.Count == 0)
+        var givens = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var pattern in FounderPatterns)
+        {
+            foreach (Match match in pattern.Matches(text))
+            {
+                var given = Words(match.Groups["given"].Value).Reverse().TakeWhile(Namelike).Reverse().ToArray();
+
+                if (given.Length > 0)
+                {
+                    givens.Add(string.Join(' ', given));
+                }
+            }
+        }
+
+        if (surnames.Count == 0 && givens.Count == 0)
         {
             return text;
         }
 
         var tokens = Token.Matches(text).ToArray();
-        var numbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        var spans = new List<(int Start, int End, string Surname)>();
+        var spans = new List<(int Start, int End, string Key, bool Single)>();
         var taken = 0;
 
         for (var at = 0; at < tokens.Length; at++)
         {
+            if (tokens[at].Value == Company)
+            {
+                if (Founder(text, tokens, at, taken, givens) is { } founder)
+                {
+                    spans.Add((tokens[founder.First].Index, tokens[at].Index + Company.Length, founder.Key, false));
+                    taken = at + 1;
+                }
+
+                continue;
+            }
+
             var word = Possessive(tokens[at].Value);
 
             if (!char.IsUpper(word[0]) || !surnames.Contains(word))
@@ -569,15 +716,26 @@ public static class ReleaseAnonymiser
             }
 
             // The name's earlier words: capitalised words and initials just before it, a space apart, that are no
-            // title and no ordinary word, and no part of a name already taken.
+            // title and no ordinary word, and no part of a name already taken, with the particles a surname carries
+            // between them.
             var first = at;
+            var particles = 0;
 
-            while (first > taken && at - first < 3)
+            while (first > taken && at - first < 3 + particles)
             {
                 var before = tokens[first - 1];
                 var gap = text[(before.Index + before.Length)..tokens[first].Index];
 
-                if (gap != " " || !Namelike(before.Value))
+                if (gap != " ")
+                {
+                    break;
+                }
+
+                if (Particles.Contains(before.Value, StringComparer.Ordinal))
+                {
+                    particles++;
+                }
+                else if (!Namelike(before.Value))
                 {
                     break;
                 }
@@ -585,27 +743,72 @@ public static class ReleaseAnonymiser
                 first--;
             }
 
+            while (first < at && Particles.Contains(tokens[first].Value, StringComparer.Ordinal))
+            {
+                first++;
+            }
+
             if (first == at && AtSentenceStart(text, tokens[at].Index))
             {
                 continue;
             }
 
-            spans.Add((tokens[first].Index, tokens[at].Index + word.Length, word));
+            spans.Add((tokens[first].Index, tokens[at].Index + word.Length, word, first == at));
             taken = at + 1;
         }
 
+        // A word read as a surname alone that stands straight before another name is that person's, as a given name a
+        // filing or an honorific gave on its own, so a person keeps one number.
+        var parent = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        string Root(string key)
+        {
+            while (parent.TryGetValue(key, out var up))
+            {
+                key = up;
+            }
+
+            return key;
+        }
+
+        var joined = new List<(int Start, int End, string Key)>();
+        var single = false;
+
         foreach (var span in spans)
         {
-            numbers.TryAdd(span.Surname, numbers.Count + 1);
+            if (single && text[joined[^1].End..span.Start] == " ")
+            {
+                var (start, _, key) = joined[^1];
+
+                if (!string.Equals(Root(key), Root(span.Key), StringComparison.OrdinalIgnoreCase))
+                {
+                    parent[Root(key)] = Root(span.Key);
+                }
+
+                joined[^1] = (start, span.End, span.Key);
+                single = false;
+
+                continue;
+            }
+
+            joined.Add((span.Start, span.End, span.Key));
+            single = span.Single;
+        }
+
+        var numbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var span in joined)
+        {
+            numbers.TryAdd(Root(span.Key), numbers.Count + 1);
         }
 
         var built = new StringBuilder(text.Length);
         var from = 0;
 
-        foreach (var span in spans)
+        foreach (var span in joined)
         {
             built.Append(text, from, span.Start - from);
-            built.Append(Person(numbers[span.Surname]));
+            built.Append(Person(numbers[Root(span.Key)]));
             from = span.End;
         }
 
@@ -614,11 +817,58 @@ public static class ReleaseAnonymiser
         return built.ToString();
     }
 
-    // A run's surname: its last word, where the run holds the words a name needs once its titles are left out. A month in a
-    // run is a first name, as June, since a month with its day was read as a date before any name.
+    // The given names standing straight before the filer's replaced name that a title or a verb of saying read with it,
+    // or an honorific straight before it where one such person is read, as "Mr. [company]" for the founder.
+    static (int First, string Key)? Founder(string text, Match[] tokens, int at, int taken, HashSet<string> givens)
+    {
+        if (givens.Count == 0)
+        {
+            return null;
+        }
+
+        var first = at;
+
+        while (first > taken && at - first < 3)
+        {
+            var before = tokens[first - 1];
+
+            if (text[(before.Index + before.Length)..tokens[first].Index] != " " || !Namelike(before.Value))
+            {
+                break;
+            }
+
+            first--;
+        }
+
+        for (var from = first; from < at; from++)
+        {
+            var given = string.Join(' ', tokens[from..at].Select(token => token.Value));
+
+            if (givens.Contains(given))
+            {
+                return (from, given + " " + Company);
+            }
+        }
+
+        if (givens.Count == 1 && at > taken && Honorifics.Contains(tokens[at - 1].Value.TrimEnd('.'), StringComparer.Ordinal)
+            && text[(tokens[at - 1].Index + tokens[at - 1].Length)..tokens[at].Index] == " ")
+        {
+            return (at, givens.Single() + " " + Company);
+        }
+
+        return null;
+    }
+
+    // A run's surname: its last word, where the run holds the words a name needs once the titles' words before and after
+    // it are left out, as "Jane Roe Vice President" after a contact's label. A month in a run is a first name, as June,
+    // since a month with its day was read as a date before any name.
     static string? SurnameOf(string run, int least)
     {
-        var words = Words(run).Where(word => !Titles.Contains(word, StringComparer.Ordinal)).ToArray();
+        var words = Words(run)
+            .SkipWhile(IsTitleWord)
+            .TakeWhile(word => !IsTitleWord(word))
+            .Where(word => !Particles.Contains(word, StringComparer.Ordinal) && !Generations.Contains(word.TrimEnd('.', ','), StringComparer.Ordinal))
+            .ToArray();
 
         if (words.Length < least || words.Any(word => NotNames.Contains(Possessive(word))))
         {
@@ -631,17 +881,19 @@ public static class ReleaseAnonymiser
     }
 
     // A word that may open a person's name before its surname: written with a capital, no title, honorific, ordinary word
-    // or word of the business, and no neutral word already written.
+    // or word of the business in any case, as a contact line's CONTACT, and no neutral word already written.
     static bool Namelike(string word) =>
         !word.StartsWith('[')
         && char.IsUpper(word[0])
         && !Titles.Contains(word, StringComparer.Ordinal)
         && !Honorifics.Contains(word.TrimEnd('.'), StringComparer.Ordinal)
         && !NotNames.Contains(word)
+        && !NotNames.Contains(Titled(word))
         && !CommonWords.Contains(word, StringComparer.Ordinal);
 
-    static string Possessive(string word) =>
-        word.EndsWith("’s", StringComparison.Ordinal) || word.EndsWith("'s", StringComparison.Ordinal) ? word[..^2] : word.TrimEnd('.', ',');
+    static string Possessive(string word) => IsPossessive(word) ? word[..^2] : word.TrimEnd('.', ',');
+
+    static bool IsPossessive(string word) => word.EndsWith("’s", StringComparison.Ordinal) || word.EndsWith("'s", StringComparison.Ordinal);
 
     // ---- single words -----------------------------------------------------------
 
