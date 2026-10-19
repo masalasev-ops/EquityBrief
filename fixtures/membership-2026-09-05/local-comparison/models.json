@@ -1,0 +1,19 @@
+{
+  "constructed": "Settings rather than a captured response: the local model's profile the recordings in this folder were made under, for 20.6's comparison of the report sections on the local model, written here by hand from the shipped configuration as it stood when they were recorded and read in place of the fixture's own models file, so the comparison's local side names the model that answered it and a switch the operator makes in the shipped settings moves no recorded test.",
+  "EquityBrief": {
+    "Models": {
+      "Local": {
+        "Profiles": {
+          "gemma-4": {
+            "BaseAddress": "http://127.0.0.1:1234/v1/",
+            "Model": "google/gemma-4-26b-a4b-qat",
+            "TimeoutSeconds": "300",
+            "ContextTokens": "50176",
+            "LoadSeconds": "600",
+            "IsDefault": "true"
+          }
+        }
+      }
+    }
+  }
+}

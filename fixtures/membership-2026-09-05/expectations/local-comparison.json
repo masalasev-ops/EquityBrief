@@ -1,0 +1,33 @@
+{
+  "stage": "local-comparison",
+  "derivation": "frozen",
+  "derivedFrom": "the fixture's research pass for KEYS with every section in the local lane, each call answered from the recordings in the folder local-comparison and each answer checked by the claim checker as a pass checks it, set beside the paid side research-record.json's comparison.paid derives",
+  "frozenFrom": "the recording run of 2026-10-19 at 05:21 UTC, the comparison's own test run by hand with EQUITYBRIEF_RECORD_LOCAL_COMPARISON set to 1, LM Studio 0.4.25 serving google/gemma-4-26b-a4b-qat on llama.cpp-win-x86_64-nvidia-cuda12-avx2 2.56.0 at a context of 50,176 tokens, the card held at 250 W",
+  "tables": [ "research_section" ],
+  "local": {
+    "accepted": {
+      "The risks, each with what would confirm it": 3
+    },
+    "fallback": [
+      "The cause of each large move",
+      "The dated calendar items",
+      "The headline",
+      "The segment commentary",
+      "The short version",
+      "The two cases",
+      "What management said",
+      "What the company sells"
+    ],
+    "reasons": {
+      "The cause of each large move": "rejected on every retry, the last retry repeating what the draft before it was refused for: an answer written as a JSON object or list rather than prose: {}",
+      "The dated calendar items": "rejected on every retry, the last retry repeating what the draft before it was refused for: an answer written as a JSON object or list rather than prose: {}",
+      "The headline": "rejected on every retry, the last retry repeating what the draft before it was refused for: an answer written as a JSON object or list rather than prose: {\n  \"error\": \"The user provided a prompt that asks for a single sentence of no m...",
+      "The segment commentary": "rejected on every retry, the last retry repeating what the draft before it was refused for: an answer written as a JSON object or list rather than prose: {}",
+      "The short version": "rejected on every retry, the last retry repeating what the draft before it was refused for: an answer written as a JSON object or list rather than prose: {\n  \"error\": \"No claims provided for the first paragraph (latest results and man...",
+      "The two cases": "rejected on every retry, the last retry repeating what the draft before it was refused for: an answer written as a JSON object or list rather than prose: {\n \"bull_case\": \"The bull case rests on the substantial surge in orders that exc...",
+      "What management said": "rejected on every retry, the last retry repeating what the draft before it was refused for: an answer written as a JSON object or list rather than prose: {\n  \"error\": \"The provided document does not contain information regarding what ...",
+      "What the company sells": "rejected on every retry, the last retry repeating what the draft before it was refused for: an answer written as a JSON object or list rather than prose: {\n  \"error\": \"no text at all\"\n}"
+    },
+    "calls": 35
+  }
+}

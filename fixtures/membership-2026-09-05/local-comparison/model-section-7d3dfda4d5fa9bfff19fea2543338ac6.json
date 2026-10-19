@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-en2dgg5n9bb7x1wwmeg0f9",
+  "object": "chat.completion",
+  "created": 1792387327,
+  "model": "google/gemma-4-26b-a4b-qat",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"risks\": [\n    {\n      \"risk\": \"the first risk is that supply chain constraints act as a governor on near-term revenue conversion\",\n      \"riskDocument\": 3,\n      \"confirm\": {\n        \"event\": \"revenue conversion is limited by external component supply\",\n        \"kind\": \"supply\"\n      },\n      \"direction\": \"falls below\",\n      \"level\": \"1.846\",\n      \"why\": \"because supply is a limiter for the ability to convert demand into revenue\",\n      \"whyDocument\": 3\n    },\n    {\n      \"risk\": \"the second risk is that one-time tariff impacts that won't repeat create a high comparison bar for future profitability\",\n      \"riskDocument\": 3,\n      \"confirm\": {\n        \"event\": \"profitability is impacted by non-repeating tariff effects\",\n        \"kind\": \"other\"\n      },\n      \"direction\": \"falls below\",\n      \"level\": \"3.07\",\n      \"why\": \"because the current profitability includes a non-repeating tailwind\",\n      \"whyDocument\": 3\n    },\n    {\n      \"risk\": \"the third risk is that the supply environment is less flexible than in the prior year\",\n      \"riskDocument\": 1,\n      \"confirm\": {\n        \"event\": \"supply environment flexibility decreases\",\n        \"kind\": \"supply\"\n      },\n      \"direction\": \"falls below\",\n      \"level\": \"0.365385\",\n      \"why\": \"because the supply environment is less flexible today than a year ago\",\n      \"whyDocument\": 1\n    }\n  ],\n  \"turnsUp\": [\n    {\n      \"what\": \"It would turn up if demand for AI infrastructure continues to scale\",\n      \"document\": 2\n    },\n    {\n      \"what\": \"It would turn up if the 6G opportunity materializes as expected\",\n      \"document\": 3\n    },\n    {\n      \"what\": \"It would turn up if cost synergies from recent acquisitions are realized\",\n      \"document\": 3\n    },\n    {\n      \"what\": \"It would turn up if aerospace and defense modernization demand accelerates\",\n      \"document\": 4\n    }\n  ],\n  \"makesWorse\": [\n    {\n      \"what\": \"It would get worse if supply chain constraints intensify\",\n      \"document\": 3\n    },\n    {\n      \"what\": \"It would get worse if design margins continue to shrink\",\n      \"document\": 4\n    },\n    {\n      \"what\": \"It would get worse if geopolitical tensions impact global economic conditions\",\n      \"document\": 1\n    }\n  ]\n}",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 19963,
+    "completion_tokens": 624,
+    "total_tokens": 20587,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "google/gemma-4-26b-a4b-qat"
+}

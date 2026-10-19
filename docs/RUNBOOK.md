@@ -1100,6 +1100,14 @@ dotnet run --project src/EquityBrief.Worker -- releases --accuracy --labels fixt
 
 `twice` reads each release twice and `distract` once with its names removed and once with them in, about 25 minutes each, and `reidentify` asks which company issued each text, about ten; each keeps its answers in `release_probe` and goes on from the releases it has not probed. `--accuracy` prints each answer's agreement with every reference before the model's cutoff and after it, the probes' shares and each index's tone variant shares, and is what the record entry after the history read states.
 
+**Comparing the local model's report sections.** From 20.6 the comparison is a test of the suite, which reads the local model's answers recorded in the fixture's folder `local-comparison` beside the paid answers the fixture already holds, and runs on every CI run. To record the local side again, with LM Studio holding the model, the card held at 250 W and the history read stopped:
+
+```
+EQUITYBRIEF_RECORD_LOCAL_COMPARISON=1 dotnet test src/EquityBrief.Tests --filter "FullyQualifiedName~TheReportSectionsAreComparedOnTheLocalModelOverTheFixturesEvidenceSet"
+```
+
+PowerShell sets the variable with `$env:EQUITYBRIEF_RECORD_LOCAL_COMPARISON = '1'` first. The test then asks the model live for every section of the fixture's pass in the local lane, about a minute, writes each answer into the folder under its request's key, answers a request asked again from its first answer, and writes what each section came to into `equitybrief-local-comparison.txt` in the machine's temporary folder, from which the expectation `local-comparison.json` and the manifest's entries are written. Remove from the folder any answer the new recording did not write before the test is run without the variable, which holds the folder to the answers it reads.
+
 **Comparing the local model with the paid labels.** From 20.5, while the history read is stopped, since it holds the local lock and the comparison waits for it:
 
 ```

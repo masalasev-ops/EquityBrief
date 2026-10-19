@@ -26,6 +26,32 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the report sections compared, and banned-prose reads a folder within a fixture as the fixture's
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> fixture-expectations: ... a review asked between two nights read over the first night's facts and not the second's emptied file |
+> banned-prose: ... with every json file beside a manifest declared by it, constructed here and saying so in its first key, or the one payload the check names with its reason. Every other tracked file ...
+Now:
+> fixture-expectations: ... a review asked between two nights read over the first night's facts and not the second's emptied file; and from 20.6 the report sections compared on the local model over the fixture's evidence set, every section in the local lane under the model the comparison's own folder names and answered from that folder's recordings alone, the folder holding exactly the answers it reads, beside the paid side read from the fixture's own recordings, each section's outcome and the checker's reason for each it left out held on both sides, and the recorder keeping each answer as sent and answering a request asked again from its first recording |
+> banned-prose: ... or the one payload the check names with its reason, and from 20.6 a folder within a fixture read as the fixture's, a file in it declared by the fixture's manifest by its path from the manifest's folder, its expectations aside. Every other tracked file ...
+Why: each roster row says what its check asserts; the comparison's recordings sit in a folder of their own within the fixture, which the capture exclusion read as no fixture's until it read a declaration by its path.
+
+### 2026-10-19 - BUILD_PLAN.md - 20.6's text as built: a test of the suite over recordings made by hand
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> ... and the sections the local side passes are put to the operator. Offering the local lane in the Research menu, and any rise in reports a night with its cost, wait for the operator's word. Writes the runbook's command and the guide.
+Now:
+> ... and the sections the local side passes are put to the operator. The comparison is a test of the suite reading the folder's recordings, which the same test records anew by hand with a variable set while the history read is stopped, a request asked again in one recording answered from its first recording as the replay answers it, each answer declared in the fixture's manifest. Offering the local lane in the Research menu, and any rise in reports a night with its cost, wait for the operator's word. Writes the fixture's folder with its manifest entries and expectation, the runbook's command, the roster's row and the guide.
+Why: the pass over the fixture's evidence is the suite's own replay, so the comparison lives where the replay does; and the runtime answered one request two ways at temperature zero, which a recording keyed on the request has to settle.
+
+### 2026-10-19 - RUNBOOK.md - comparing the local model's report sections
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> (no paragraph on it)
+Now:
+> Added without replacing anything: the paragraph before the paid labels' on the comparison of the report sections, a test of the suite on every CI run, and how its local side is recorded again by hand with `EQUITYBRIEF_RECORD_LOCAL_COMPARISON=1`, the answers the new recording did not write removed before the test runs without it.
+Why: the recording is a command the operator runs, and the runbook shows it.
+
 ### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the night a stored review was asked over
 Corrects: the review comparison read a review's facts as the newest row on or before the version's day, which a night written after the review and emptied since answered, so the first run from main asked none of the nine stored reviews, BDX's three among them, whose night's facts stand whole.
 Was:

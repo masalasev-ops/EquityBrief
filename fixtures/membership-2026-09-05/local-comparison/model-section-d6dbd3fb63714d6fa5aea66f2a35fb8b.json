@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-92azlu1v1jj8gj205rbxb8",
+  "object": "chat.completion",
+  "created": 1792387362,
+  "model": "google/gemma-4-26b-a4b-qat",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"error\": \"No claims provided for the first paragraph (latest results and man...: an answer written as a JSON object or list rather than prose. Answer in plain prose, with no JSON. Write the section again.\"\n}",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1043,
+    "completion_tokens": 56,
+    "total_tokens": 1099,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "google/gemma-4-26b-a4b-qat"
+}
