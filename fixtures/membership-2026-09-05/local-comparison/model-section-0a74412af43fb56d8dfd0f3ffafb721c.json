@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-sp0cou8xrla6gi4sy651i",
+  "object": "chat.completion",
+  "created": 1792387359,
+  "model": "google/gemma-4-26b-a4b-qat",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"error\": \"No claims provided for the first paragraph (latest results and management reporting). Please provide claims related to the company's recent financial performance or management statements to complete the report.\"\n}",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 955,
+    "completion_tokens": 49,
+    "total_tokens": 1004,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "google/gemma-4-26b-a4b-qat"
+}

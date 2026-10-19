@@ -83,19 +83,14 @@ public class BannedProse
     // cannot fill. It is scanned, as every file no manifest declares is.
     static readonly string[] UndeclaredPayloads = ["calendar-2026-09-08.json"];
 
-    // A captured provider response: a .json file inside a fixture folder that
-    // some manifest names as an input.
+    // A captured provider response: a .json file inside a fixture folder, or a
+    // folder within one, that the fixture's manifest names as an input by its
+    // path from the manifest's own folder.
     internal static bool IsCapture(string file)
     {
-        if (!file.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        var folder = Path.GetDirectoryName(file);
-        var manifest = folder is null ? null : Path.Combine(folder, "manifest.json");
-
-        if (manifest is null || !File.Exists(manifest) || string.Equals(file, manifest, StringComparison.Ordinal))
+        if (!file.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
+            || ManifestOver(file) is not { } manifest
+            || string.Equals(Path.GetFullPath(file), manifest, StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
@@ -103,8 +98,28 @@ public class BannedProse
         // Named by the manifest, so a json file dropped into a fixture folder
         // and never declared is still scanned. The exclusion follows the
         // declaration rather than the folder.
-        return File.ReadAllText(manifest)
-            .Contains($"\"{Path.GetFileName(file)}\"", StringComparison.Ordinal);
+        var named = Path.GetRelativePath(Path.GetDirectoryName(manifest)!, Path.GetFullPath(file)).Replace('\\', '/');
+
+        return File.ReadAllText(manifest).Contains($"\"{named}\"", StringComparison.Ordinal);
+    }
+
+    // The manifest of the fixture a file sits in: the nearest manifest.json at
+    // or above the file's own folder, inside the fixtures folder.
+    internal static string? ManifestOver(string file)
+    {
+        var fixtures = Path.GetFullPath(Path.Combine(Repository.Root, "fixtures"));
+
+        for (var folder = Path.GetDirectoryName(Path.GetFullPath(file)); folder is not null && folder.StartsWith(fixtures, StringComparison.OrdinalIgnoreCase); folder = Path.GetDirectoryName(folder))
+        {
+            var manifest = Path.Combine(folder, "manifest.json");
+
+            if (File.Exists(manifest))
+            {
+                return manifest;
+            }
+        }
+
+        return null;
     }
 
     static IReadOnlyList<CorpusFinding> Occurrences(string pattern, bool exemptTheRule) =>
@@ -265,6 +280,15 @@ public class BannedProse
         Assert.False(IsCapture(Path.Combine(root, "undeclared.json")));
         Assert.False(IsCapture(Path.Combine(Repository.Root, "source-lists.json")));
 
+        // From 20.6 a folder within a fixture is the fixture's: excluded where its manifest names the file by its path
+        // from the manifest's folder, and scanned where it names none, the folder's own constructed models file among them.
+        var comparison = Directory.GetFiles(Path.Combine(root, FixtureExpectations.ComparisonFolderName), "model-section-*.json")[0];
+
+        Assert.True(IsCapture(comparison));
+        Assert.False(IsCapture(Path.Combine(root, FixtureExpectations.ComparisonFolderName, "undeclared.json")));
+        Assert.False(IsCapture(Path.Combine(root, FixtureExpectations.ComparisonFolderName, "models.json")));
+        Assert.False(IsCapture(Path.Combine(root, "expectations", Path.GetFileName(comparison))));
+
         // And the scan still reads the corpus. The count is stated because an
         // exclusion that had taken the whole population would leave every
         // assertion above true and every assertion about prose vacuous.
@@ -301,8 +325,12 @@ public class BannedProse
         // And every json file beside a manifest is one it declares, one constructed here that says so
         // in its first key, or the one payload named below with its reason, so a capture added without
         // a manifest entry fails rather than being read as prose.
+        // A folder within a fixture counts as the fixture's, from 20.6, but its expectations, which state their own
+        // derivation under a check of their own, and are no capture.
         var beside = Directory.GetFiles(Path.Combine(Repository.Root, "fixtures"), "*.json", SearchOption.AllDirectories)
-            .Where(file => File.Exists(Path.Combine(Path.GetDirectoryName(file)!, "manifest.json")) && Path.GetFileName(file) != "manifest.json")
+            .Where(file => ManifestOver(file) is { } manifest
+                && !string.Equals(Path.GetFullPath(file), manifest, StringComparison.OrdinalIgnoreCase)
+                && Path.GetFileName(Path.GetDirectoryName(file)) != "expectations")
             .Select(Path.GetFullPath)
             .ToArray();
         var undeclared = beside

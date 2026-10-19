@@ -3510,3 +3510,52 @@ Carried:    20.7's comparison run again from main once this merges, and the two 
             read and its record; 20.2's record; 20.4's second remedy after the history read; the sentence-start rule and the
             lower-case names, put to the operator; the sign-offs of phases 18 and 19, owed to fresh sessions after 20.10;
             (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.
+
+### 20.6 - the report sections compared on the local model: the fixture's pass with every section on Gemma, beside the paid side, through the same claim checker   2026-10-19
+
+Queue:      done, 20.5 and 20.7 merged, PRs 499 and 500, and 20.5's comparison run from main; in review, the 20.7
+            correction, PR 501, beneath this; in progress, this; next, 20.7's comparison run again from main and the two
+            comparisons' records, then 20.9 while the read runs, then 20.3's record, 20.4's second remedy, 20.8 and 20.10.
+Built:      the comparison is a test of the suite: the fixture's research pass for KEYS with every section in the local
+            lane under the model the folder `local-comparison` names, google/gemma-4-26b-a4b-qat, its answers read from
+            that folder's recordings alone, beside the paid side read from the fixture's own recordings as 6.8's comparison
+            read it, each section's outcome and the checker's reason for each it left out held on both sides. The local
+            side was recorded by hand through the same test with `EQUITYBRIEF_RECORD_LOCAL_COMPARISON=1`, LM Studio 0.4.25
+            serving the model at a context of 50,176 tokens on the card held at 250 W: 20 answers over 35 calls in 52
+            seconds, each declared in the fixture's manifest. A request asked again in one recording is answered from its
+            first recording, as the replay answers it: in the first recording the runtime answered one request two ways at
+            temperature zero, and the replay of it asked what no recording held, so it was made again. The banned-prose
+            check reads a folder within a fixture as the fixture's, a file in it declared by the fixture's manifest by its
+            path from the manifest's folder. The fixtures README, the runbook's command, the roster's rows, the guide and
+            the changelog.
+Measured:   the paid side as 6.8's comparison stated it, all eight of its sections accepted, the segment commentary and the
+            short version on their retries. The local side accepted the risks alone, at its third draft, and left the other
+            eight out, every one refused at every retry as an answer written as a JSON object or list rather than prose:
+            on LM Studio's OpenAI-compatible endpoint Gemma wraps every answer in an object, `{}` or `{"error": ...}`
+            where a section asks for prose, as the fixture's own capture of 2026-10-06 shows for a one-sentence
+            question, and the risks, asked for as an object of fields, are the one section the shape fits.
+Put:        to the operator, switching nothing: the local lane writes no prose section on Gemma as LM Studio serves it
+            there, so offering it in the Research menu waits on a change to how it is asked, the text inside a one-field
+            object read or the native endpoint asked, which is itself theirs to rule.
+Tests:      2 new, 2477 in all: the comparison over the fixture's evidence set, the local side answered from the
+            comparison's folder alone and the folder holding exactly the answers it reads, every request under the
+            folder's model, the paid side's outcomes and the local side's with the checker's reasons; and the recorder over
+            a scripted runtime, each answer kept as sent and a request asked again answered from its first recording. The
+            banned-prose check's own test proves a folder within a fixture both ways.
+Claims:     1366, as before.
+Mutated:    the rule, stated before the runs: one mutation a property the checkpoint adds, the smallest edit undoing it
+            alone, each run filtered to the comparison's, the recorder's and the capture exclusion's tests with its red
+            predicted, made in this checkout and reverted with the editor. S1 the local side read from the fixture's own
+            folder: red, no recording for the folder's model. S2 every section in the paid lane: red at the local side's
+            outcomes. S3 a request asked again asked live again: red at the recorder's test alone. S4 a capture matched by
+            its file name alone: red at the capture exclusion. S5 the manifest looked for in the file's own folder alone:
+            red at the capture exclusion. Each as predicted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2477 of 2477 tests ran with none failed,
+            migrations 0 to 100 with none pending, schema version 100, against `data-ci` and never `data`; the phase
+            report 60 tables, 1366 claims, 1366 passing, none out of scope and none unexamined, 1377 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    20.7's comparison run again from main once its correction merges, and the comparisons' records; the history
+            read and its record; 20.2's record; 20.4's second remedy after the history read; the sentence-start rule and the
+            lower-case names, put to the operator; the sign-offs of phases 18 and 19, owed to fresh sessions after 20.10;
+            (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.
