@@ -295,7 +295,7 @@ public partial class ReadSurface
                     .Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}|{match.Groups[3].Value}|{CardWords(match.Groups[4].Value)}")
                     .ToArray();
 
-                Assert.Equal(card.Lines.Select(line => $"{line.Number}|{line.Verdict}|{line.Name}|{line.Words}"), drawn[..^1]);
+                Assert.Equal(card.Lines.Select(line => $"{line.Number}|{line.Verdict}|{line.Name}|{Said(line.Words)}"), drawn[..^1]);
                 Assert.StartsWith($"6|", drawn[^1], StringComparison.Ordinal);
                 Assert.Contains($"|{EquityBrief.Core.Cards.CardLines.ConcentrationName}|", drawn[^1], StringComparison.Ordinal);
 
@@ -319,7 +319,7 @@ public partial class ReadSurface
                 ["how-to-read", "s-the-short-version", "card"],
                 Regex.Matches(named, "<section class=\"(?:card[^\"]*|absent)\" id=\"([^\"]+)\"").Select(match => match.Groups[1].Value).Take(3));
             Assert.Equal(
-                card.Lines.Select(line => line.Words),
+                card.Lines.Select(line => Said(line.Words)),
                 Regex.Matches(top.Groups[1].Value, "<span class=\"card-words\">(.*?)</span></li>").Select(match => CardWords(match.Groups[1].Value)));
         }
 
@@ -330,6 +330,39 @@ public partial class ReadSurface
     // other markup, so a line drawing anything but the pair beside its words fails.
     static string CardWords(string drawn) =>
         Regex.Replace(drawn, "<span class=\"(?:gain|loss)\">([^<]*)</span>", "$1");
+
+    // A sentence a rule stored as the page states it, by the test's own reading: a count of one with its noun's singular
+    // where the rule wrote "(s)" after it, and any other count with the noun's plural.
+    static string Said(string stored) =>
+        Regex.Replace(stored, "(\\d[\\d,]*) ([A-Za-z]+)\\(s\\)", count => count.Groups[1].Value == "1" ? $"1 {count.Groups[2].Value}" : $"{count.Groups[1].Value} {count.Groups[2].Value}s");
+
+    [Fact]
+    public void ACountARuleStoredWithItsNounsSIsDrawnAsTheReaderSaysIt()
+    {
+        // Worked by hand: one session, none and two sessions, a count over a thousand, and a sentence holding no such count
+        // left as stored.
+        Assert.Equal("the print of 2026-10-16 reacted on 2026-10-16, 0 sessions before tonight, inside the 3-session window", MarkRenderer.CountsInWords("the print of 2026-10-16 reacted on 2026-10-16, 0 session(s) before tonight, inside the 3-session window"));
+        Assert.Equal("the trigger first fired on 2026-09-04, 1 session before tonight", MarkRenderer.CountsInWords("the trigger first fired on 2026-09-04, 1 session(s) before tonight"));
+        Assert.Equal("2 sessions and 1,250 calls", MarkRenderer.CountsInWords("2 session(s) and 1,250 call(s)"));
+        Assert.Equal("its stop sits 0.85 typical moves below", MarkRenderer.CountsInWords("its stop sits 0.85 typical moves below"));
+
+        // On a pick's card the line reads the same, and the stored words are kept as the rule wrote them.
+        var line = new CardLineView(1, "Trend and strength", "tick", "Passed every gate: print, the print of 2026-10-16 reacted on 2026-10-16, 0 session(s) before tonight.");
+        var drawn = new MarkRenderer().DecisionCard(new DecisionCardView("GSPC", new DateOnly(2026, 10, 16), "drift", "TRV", "the earnings drift", 389.54m, 368.63m, 441.82m, [line], null));
+
+        Assert.Contains("<span class=\"card-words\">Passed every gate: print, the print of 2026-10-16 reacted on 2026-10-16, 0 sessions before tonight.</span>", drawn, StringComparison.Ordinal);
+        Assert.DoesNotContain("(s)", drawn, StringComparison.Ordinal);
+
+        // The name page's gates and the lines saying why the filter passed it read their stored reasons the same way.
+        const string Trigger = "the trigger first fired on 2026-09-04, 1 session(s) before tonight, inside the 3-session window";
+        var marks = new MarkRenderer();
+        var gates = marks.GatesTable("F1", new GatesView(new DateOnly(2026, 9, 5), "3", [new GateLine("trigger", true, Trigger)], null, null, null, null, null, null, null, null, null, [], [], true, null));
+        var why = marks.WhyItPassed("F1", new FilterWhy(new DateOnly(2026, 9, 5), [new FilterGate("trigger", true, Trigger)], []));
+
+        Assert.Contains("<td>the trigger first fired on 2026-09-04, 1 session before tonight, inside the 3-session window</td>", gates, StringComparison.Ordinal);
+        Assert.Contains("<b>trigger</b>: the trigger first fired on 2026-09-04, 1 session before tonight, inside the 3-session window</p>", why, StringComparison.Ordinal);
+        Assert.DoesNotContain("(s)", gates + why, StringComparison.Ordinal);
+    }
 
     // The cards the night stored, each line read off the stored lines by the test's own reading.
     static IReadOnlyList<StoredCard> StoredCards(TemporaryStore store)

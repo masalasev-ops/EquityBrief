@@ -2833,7 +2833,7 @@ public sealed partial class MarkRenderer : IComponent
 
         foreach (var gate in why.Gates)
         {
-            region.Append(Invariant, $"<p class=\"gate\" data-gate=\"{Escaped(gate.Name)}\" data-passed=\"{(gate.Passed ? "true" : "false")}\"><b>{Escaped(gate.Name)}</b>: {Escaped(gate.Reason)}</p>");
+            region.Append(Invariant, $"<p class=\"gate\" data-gate=\"{Escaped(gate.Name)}\" data-passed=\"{(gate.Passed ? "true" : "false")}\"><b>{Escaped(gate.Name)}</b>: {Escaped(CountsInWords(gate.Reason))}</p>");
         }
 
         region.Append(Invariant, $"<p class=\"context\" data-reasons=\"{why.Reasons.Count}\">");
@@ -3366,7 +3366,7 @@ public sealed partial class MarkRenderer : IComponent
             else if (byFilter)
             {
                 list.Append(row.Filter is { } gates
-                    ? Formatted($"<td class=\"gates\" data-rank=\"{gates.Rank}\" data-family=\"{Escaped(gates.Family ?? "none")}\" data-arrived=\"{Escaped(gates.Arrived)}\" data-input=\"{Escaped(gates.Input)}\" title=\"{Escaped(string.Join("; ", gates.Gates.Select(gate => gate.Name + ": " + gate.Reason)))}\">{Escaped(gates.Family ?? "no family")}, arrived {Escaped(gates.Arrived)}; {Escaped(PlanWords(gates.Input))}, reward to risk {Hundredths(gates.RewardToRisk)}, its stop {Hundredths(gates.StopMoves)} typical moves below the entry</td>")
+                    ? Formatted($"<td class=\"gates\" data-rank=\"{gates.Rank}\" data-family=\"{Escaped(gates.Family ?? "none")}\" data-arrived=\"{Escaped(gates.Arrived)}\" data-input=\"{Escaped(gates.Input)}\" title=\"{Escaped(string.Join("; ", gates.Gates.Select(gate => gate.Name + ": " + CountsInWords(gate.Reason))))}\">{Escaped(gates.Family ?? "no family")}, arrived {Escaped(gates.Arrived)}; {Escaped(PlanWords(gates.Input))}, reward to risk {Hundredths(gates.RewardToRisk)}, its stop {Hundredths(gates.StopMoves)} typical moves below the entry</td>")
                     : "<td class=\"gates\"><span class=\"degraded\">no gate result stored</span></td>");
             }
 
@@ -6302,7 +6302,7 @@ public sealed partial class MarkRenderer : IComponent
 
         foreach (var gate in view.Gates)
         {
-            region.Append(Invariant, $"<tr data-gate=\"{Escaped(gate.Gate)}\" data-passed=\"{(gate.Passed ? "yes" : "no")}\"><td>{Escaped(gate.Gate)}</td><td>{(gate.Passed ? "passed" : "failed")}</td><td>{Escaped(gate.Reason)}</td></tr>");
+            region.Append(Invariant, $"<tr data-gate=\"{Escaped(gate.Gate)}\" data-passed=\"{(gate.Passed ? "yes" : "no")}\"><td>{Escaped(gate.Gate)}</td><td>{(gate.Passed ? "passed" : "failed")}</td><td>{Escaped(CountsInWords(gate.Reason))}</td></tr>");
         }
 
         region.Append("</table></div>");
@@ -6792,6 +6792,11 @@ public sealed partial class MarkRenderer : IComponent
             ? string.Empty
             : $" <span class=\"business\" tabindex=\"0\" data-state=\"{Escaped(business.State)}\">{Escaped(business.State)}"
                 + $"<span class=\"says\" role=\"tooltip\">{string.Join(" ", business.Sentences.Select(WithSignedFigures))}</span></span>";
+
+    // A sentence a rule stored, its counts read as a reader reads them: a noun the rule's code wrote after a count with
+    // "(s)" takes its singular at one and its plural at any other count.
+    public static string CountsInWords(string stored) =>
+        Regex.Replace(stored, @"\b(\d{1,3}(?:,\d{3})+|\d+) ([A-Za-z]+)\(s\)", count => count.Groups[1].Value + " " + count.Groups[2].Value + (count.Groups[1].Value == "1" ? string.Empty : "s"));
 
     // A sentence the code wrote, escaped, each figure in it written with its sign drawn in the gain's green or the loss's
     // red by that sign, from 19.2.
