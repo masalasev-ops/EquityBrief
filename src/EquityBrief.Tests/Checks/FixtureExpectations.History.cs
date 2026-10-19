@@ -188,6 +188,13 @@ public partial class FixtureExpectations
             ],
             view);
 
+        // A store whose year opens on the last session of a month the pull holds as well takes that month's point from its
+        // own close: October's reads the store's 104 on 2025-10-31 and not the pull's 99 there, which reads 101.0204.
+        Assert.Equal(
+            [new MonthEnd(Date("2025-09-30"), 100m), new MonthEnd(Date("2025-10-31"), 104m), new MonthEnd(Date("2025-11-28"), 105m)],
+            LongViews.Of([(Date("2025-09-30"), 98m), (Date("2025-10-31"), 99m)], ratio, [(Date("2025-10-31"), 104m), (Date("2025-11-28"), 105m)]));
+        Assert.Equal(101.0204m, LongViews.Scaled(99m, ratio));
+
         // A name the pulls never held draws its stored year alone.
         Assert.Equal([new MonthEnd(Date("2025-03-31"), 102m), new MonthEnd(Date("2025-04-30"), 103.5m)], LongViews.Of([], 1m, [(Date("2025-03-14"), 101m), (Date("2025-03-31"), 102m), (Date("2025-04-30"), 103.5m)]));
     }

@@ -17,6 +17,22 @@ namespace EquityBrief.Tests.Reading;
 // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
 public partial class ReadSurface
 {
+    [Fact]
+    public void TheReportChartsAreTickedAtRoundValuesWithNoughtWhereTheAxisSpansIt()
+    {
+        // CVX's growth axis from -62.9% to 265%: a quarter of its span is 82, so the ticks rise by a hundred, 0, 100 and
+        // 200; its reactions' from -3.2% to 3.8% rise by two, -2, 0 and 2; its multiples' from 7.8 to 30.4 times by ten;
+        // and its yield's from nought to 5.8% by two.
+        Assert.Equal([0d, 100d, 200d], MarkRenderer.TickValues(-62.9, 265));
+        Assert.Equal([-2d, 0d, 2d], MarkRenderer.TickValues(-3.2, 3.8));
+        Assert.Equal([10d, 20d, 30d], MarkRenderer.TickValues(7.8, 30.4));
+        Assert.Equal([0d, 2d, 4d], MarkRenderer.TickValues(0, 5.8));
+
+        // A quarter of the span exactly at two and a half, and a span a few hundredths wide.
+        Assert.Equal([0d, 2.5d, 5d, 7.5d, 10d], MarkRenderer.TickValues(0, 10));
+        Assert.Equal([1.25, 1.3, 1.35], MarkRenderer.TickValues(1.24, 1.36));
+    }
+
     // The rows 18.2 adds that this check reaches: section 15.5's nine marks and section 15.9's seven regions.
     internal static string[] ReportPageRows =>
     [

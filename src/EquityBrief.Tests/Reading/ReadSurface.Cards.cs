@@ -191,7 +191,7 @@ public partial class ReadSurface
         Assert.True(narrow.Success, "The stylesheet states no rules for a phone's screen.");
         Assert.Contains(" .card-line,.card-figures{grid-template-columns:1fr}", narrow.Groups[1].Value, StringComparison.Ordinal);
         Assert.Contains(" .card-mark{justify-self:start}", narrow.Groups[1].Value, StringComparison.Ordinal);
-        Assert.Contains(".card-line{display:grid;grid-template-columns:78px 150px minmax(0,1fr);", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".card-line{display:grid;grid-template-columns:24px 150px minmax(0,1fr);", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains(".decision-card{position:sticky;left:0;max-width:min(860px,calc(100vw - 2*var(--gutter) - 24px));", Stylesheet.Css, StringComparison.Ordinal);
 
         // From 19.3 a row a table opens beneath one of its rows, the buy points' plan and card and a heavyweight's card, is
@@ -207,6 +207,40 @@ public partial class ReadSurface
 
         Assert.StartsWith("<tr class=\"card-row\" id=\"card-gspc-pullback-f1\" hidden><td colspan=\"9\"><div class=\"row-open\"><div class=\"decision-card\"", marks.CardRow(card, 9), StringComparison.Ordinal);
         Assert.EndsWith("</div></div></td></tr>", marks.CardRow(card, 9), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void EachLineOfAPicksCardIsMarkedByATickANoteSignOrAWarningSignAndNotByItsWord()
+    {
+        var card = new DecisionCardView(
+            "GSPC",
+            new DateOnly(2026, 10, 16),
+            "drift",
+            "TRV",
+            "the earnings drift",
+            389.54m,
+            368.63m,
+            441.82m,
+            [
+                new CardLineView(1, "Trend and strength", "tick", "Passed every gate."),
+                new CardLineView(2, "Business", "note", "Its cover is not read."),
+                new CardLineView(3, "Earnings in the hold", "warning", "No report date is on file for it."),
+            ],
+            null);
+        var drawn = new MarkRenderer().DecisionCard(card);
+
+        // A tick is a check's two strokes; a note a circle around an i, its stroke and its dot; a warning a triangle
+        // around an exclamation, its stroke and its dot. Each is drawn in its mark's own colour and named by its verdict's
+        // word for a reader that does not see it.
+        Assert.Contains("<li class=\"card-line\" data-line=\"1\" data-verdict=\"tick\"><span class=\"card-mark\" data-verdict=\"tick\" role=\"img\" aria-label=\"tick\" title=\"tick\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M3.2 8.6l3 3 6.6-7\"/></svg></span> <b class=\"card-name\">Trend and strength</b>", drawn, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"card-mark\" data-verdict=\"note\" role=\"img\" aria-label=\"note\" title=\"note\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><circle cx=\"8\" cy=\"8\" r=\"6.2\"/><path d=\"M8 7.3v4.2\"/><circle class=\"dot\" cx=\"8\" cy=\"4.9\" r=\"1\"/></svg></span> <b class=\"card-name\">Business</b>", drawn, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"card-mark\" data-verdict=\"warning\" role=\"img\" aria-label=\"warning\" title=\"warning\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M8 1.9l6.6 11.6H1.4z\"/><path d=\"M8 6.4v3.6\"/><circle class=\"dot\" cx=\"8\" cy=\"11.7\" r=\"1\"/></svg></span> <b class=\"card-name\">Earnings in the hold</b>", drawn, StringComparison.Ordinal);
+        Assert.DoesNotMatch(">(?:tick|note|warning)<", drawn);
+
+        Assert.Contains(".card-mark svg{width:16px;height:16px;fill:none;stroke:currentColor;", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".card-mark svg .dot{fill:currentColor;stroke:none}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".card-mark[data-verdict='tick']{color:var(--ink);", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".card-mark[data-verdict='warning']{color:var(--warn);background:var(--warn-fill);", Stylesheet.Css, StringComparison.Ordinal);
     }
 
     // The page each index's Tonight is read on.
@@ -257,11 +291,11 @@ public partial class ReadSurface
 
                 // The lines the night stored, in their order, and after them the sixth, which Tonight works out from the
                 // operator's open trades where it draws the card.
-                var drawn = Regex.Matches(body, "<li class=\"card-line\" data-line=\"(\\d+)\" data-verdict=\"([a-z]+)\"><span class=\"card-mark\" data-verdict=\"\\2\">\\2</span> <b class=\"card-name\">([^<]*)</b> <span class=\"card-words\">(.*?)</span></li>")
+                var drawn = Regex.Matches(body, "<li class=\"card-line\" data-line=\"(\\d+)\" data-verdict=\"([a-z]+)\"><span class=\"card-mark\" data-verdict=\"\\2\" role=\"img\" aria-label=\"\\2\" title=\"\\2\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\">.*?</svg></span> <b class=\"card-name\">([^<]*)</b> <span class=\"card-words\">(.*?)</span></li>")
                     .Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}|{match.Groups[3].Value}|{CardWords(match.Groups[4].Value)}")
                     .ToArray();
 
-                Assert.Equal(card.Lines.Select(line => $"{line.Number}|{line.Verdict}|{line.Name}|{line.Words}"), drawn[..^1]);
+                Assert.Equal(card.Lines.Select(line => $"{line.Number}|{line.Verdict}|{line.Name}|{Said(line.Words)}"), drawn[..^1]);
                 Assert.StartsWith($"6|", drawn[^1], StringComparison.Ordinal);
                 Assert.Contains($"|{EquityBrief.Core.Cards.CardLines.ConcentrationName}|", drawn[^1], StringComparison.Ordinal);
 
@@ -285,7 +319,7 @@ public partial class ReadSurface
                 ["how-to-read", "s-the-short-version", "card"],
                 Regex.Matches(named, "<section class=\"(?:card[^\"]*|absent)\" id=\"([^\"]+)\"").Select(match => match.Groups[1].Value).Take(3));
             Assert.Equal(
-                card.Lines.Select(line => line.Words),
+                card.Lines.Select(line => Said(line.Words)),
                 Regex.Matches(top.Groups[1].Value, "<span class=\"card-words\">(.*?)</span></li>").Select(match => CardWords(match.Groups[1].Value)));
         }
 
@@ -296,6 +330,39 @@ public partial class ReadSurface
     // other markup, so a line drawing anything but the pair beside its words fails.
     static string CardWords(string drawn) =>
         Regex.Replace(drawn, "<span class=\"(?:gain|loss)\">([^<]*)</span>", "$1");
+
+    // A sentence a rule stored as the page states it, by the test's own reading: a count of one with its noun's singular
+    // where the rule wrote "(s)" after it, and any other count with the noun's plural.
+    static string Said(string stored) =>
+        Regex.Replace(stored, "(\\d[\\d,]*) ([A-Za-z]+)\\(s\\)", count => count.Groups[1].Value == "1" ? $"1 {count.Groups[2].Value}" : $"{count.Groups[1].Value} {count.Groups[2].Value}s");
+
+    [Fact]
+    public void ACountARuleStoredWithItsNounsSIsDrawnAsTheReaderSaysIt()
+    {
+        // Worked by hand: one session, none and two sessions, a count over a thousand, and a sentence holding no such count
+        // left as stored.
+        Assert.Equal("the print of 2026-10-16 reacted on 2026-10-16, 0 sessions before tonight, inside the 3-session window", MarkRenderer.CountsInWords("the print of 2026-10-16 reacted on 2026-10-16, 0 session(s) before tonight, inside the 3-session window"));
+        Assert.Equal("the trigger first fired on 2026-09-04, 1 session before tonight", MarkRenderer.CountsInWords("the trigger first fired on 2026-09-04, 1 session(s) before tonight"));
+        Assert.Equal("2 sessions and 1,250 calls", MarkRenderer.CountsInWords("2 session(s) and 1,250 call(s)"));
+        Assert.Equal("its stop sits 0.85 typical moves below", MarkRenderer.CountsInWords("its stop sits 0.85 typical moves below"));
+
+        // On a pick's card the line reads the same, and the stored words are kept as the rule wrote them.
+        var line = new CardLineView(1, "Trend and strength", "tick", "Passed every gate: print, the print of 2026-10-16 reacted on 2026-10-16, 0 session(s) before tonight.");
+        var drawn = new MarkRenderer().DecisionCard(new DecisionCardView("GSPC", new DateOnly(2026, 10, 16), "drift", "TRV", "the earnings drift", 389.54m, 368.63m, 441.82m, [line], null));
+
+        Assert.Contains("<span class=\"card-words\">Passed every gate: print, the print of 2026-10-16 reacted on 2026-10-16, 0 sessions before tonight.</span>", drawn, StringComparison.Ordinal);
+        Assert.DoesNotContain("(s)", drawn, StringComparison.Ordinal);
+
+        // The name page's gates and the lines saying why the filter passed it read their stored reasons the same way.
+        const string Trigger = "the trigger first fired on 2026-09-04, 1 session(s) before tonight, inside the 3-session window";
+        var marks = new MarkRenderer();
+        var gates = marks.GatesTable("F1", new GatesView(new DateOnly(2026, 9, 5), "3", [new GateLine("trigger", true, Trigger)], null, null, null, null, null, null, null, null, null, [], [], true, null));
+        var why = marks.WhyItPassed("F1", new FilterWhy(new DateOnly(2026, 9, 5), [new FilterGate("trigger", true, Trigger)], []));
+
+        Assert.Contains("<td>the trigger first fired on 2026-09-04, 1 session before tonight, inside the 3-session window</td>", gates, StringComparison.Ordinal);
+        Assert.Contains("<b>trigger</b>: the trigger first fired on 2026-09-04, 1 session before tonight, inside the 3-session window</p>", why, StringComparison.Ordinal);
+        Assert.DoesNotContain("(s)", gates + why, StringComparison.Ordinal);
+    }
 
     // The cards the night stored, each line read off the stored lines by the test's own reading.
     static IReadOnlyList<StoredCard> StoredCards(TemporaryStore store)

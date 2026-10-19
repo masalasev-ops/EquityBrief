@@ -1929,7 +1929,7 @@ static async Task<int> QuoteRun(string[] args)
     var outcome = await new EquityBrief.Worker.Quotes.QuoteJob(
         SystemClock.ForUnitedStatesSessions(),
         store.DatabaseFile,
-        EodhdQuoteFeed.Live(configuration[EodhdBulkPriceFeed.BaseAddressKey] ?? string.Empty, credentials)).RunAsync(ticker.ToUpperInvariant(), askedAt);
+        EodhdQuoteFeed.Live(configuration[EodhdBulkPriceFeed.BaseAddressKey], credentials)).RunAsync(ticker.ToUpperInvariant(), askedAt);
 
     Console.WriteLine($"quote: {outcome.Outcome}, {outcome.Detail}");
 

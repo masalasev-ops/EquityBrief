@@ -107,6 +107,10 @@ public sealed class QuoteJob(IClock clock, string databaseFile, IQuoteFeed feed)
         {
             return await EndAsync(connection, runId, started, ticker, askedAt, Failed, "the provider's answer could not be read: " + unreadable.Message, 0, feed.Requests, cancellation);
         }
+        catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
+        {
+            return await EndAsync(connection, runId, started, ticker, askedAt, Failed, "the provider did not answer in time on any of its tries", 0, feed.Requests, cancellation);
+        }
 
         if (quote is null)
         {

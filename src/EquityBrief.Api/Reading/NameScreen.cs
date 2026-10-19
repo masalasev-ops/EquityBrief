@@ -166,7 +166,7 @@ public static partial class NameScreen
 
             html.Append(CultureInfo.InvariantCulture, $"<tr data-setup=\"{setup.GetProperty("name").GetString()}\" data-proposal=\"true\" data-entry=\"{entry}\" data-stop=\"{stop}\" data-target=\"{target}\">");
             html.Append(CultureInfo.InvariantCulture, $"<td>{setup.GetProperty("name").GetString()} on {setup.GetProperty("eventDate").GetString()}</td>");
-            html.Append(CultureInfo.InvariantCulture, $"<td>{Figures.InSentence(setup.GetProperty("trigger").GetString() ?? string.Empty)}</td>");
+            html.Append(CultureInfo.InvariantCulture, $"<td>{Figures.OneBandAtItsPrice(Figures.InSentence(setup.GetProperty("trigger").GetString() ?? string.Empty))}</td>");
             html.Append(CultureInfo.InvariantCulture, $"<td>enter {Drawn(entry, Figures.Price)}, stop {Drawn(stop, Figures.Price)}, target {Drawn(target, Figures.Price)}</td></tr>");
         }
 

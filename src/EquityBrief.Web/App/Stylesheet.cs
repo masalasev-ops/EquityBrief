@@ -639,8 +639,10 @@ details.expander>*:not(summary){margin:10px 12px}
 .list-table .report-state{display:block;font-size:12px;color:var(--soft)}
 .card-head{margin:0 0 8px;color:var(--ink-2)}
 .card-lines{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:6px}
-.card-line{display:grid;grid-template-columns:78px 150px minmax(0,1fr);gap:8px;align-items:baseline}
-.card-mark{font:600 11px var(--sans);text-transform:uppercase;letter-spacing:.04em;border-radius:4px;padding:1px 6px;text-align:center}
+.card-line{display:grid;grid-template-columns:24px 150px minmax(0,1fr);gap:8px;align-items:start}
+.card-mark{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;width:24px;height:24px;border-radius:6px;font:600 11px var(--sans)}
+.card-mark svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.card-mark svg .dot{fill:currentColor;stroke:none}
 .card-mark[data-verdict='tick']{color:var(--ink);background:var(--plot);border:1px solid var(--ink-2)}
 .card-mark[data-verdict='note']{color:var(--ink-2);background:var(--plot);border:1px solid var(--hair-2)}
 .card-mark[data-verdict='warning']{color:var(--warn);background:var(--warn-fill);border:1px solid var(--warn)}
