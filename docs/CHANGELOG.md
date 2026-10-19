@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - ARCHITECTURE.html - 15.17 says the S&P 500's Past picks draws the fundamentals-first family's S&P 500 trades
+Corrects: the S&P 500's Past picks and Run page drew none of the trades 17.8 keeps for the fundamentals-first family under the S&P 500; carried from phase 17's sign-off as owed before phase 19's.
+Was:
+> From 15.1 the page reads the index chosen under Universe ... every rule of those indices is provisional, so no share and no average is drawn (see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it).
+Now:
+> From 15.1 the page reads the index chosen under Universe ... every rule of those indices is provisional, so no share and no average is drawn (see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it). From the 17.8 correction of 2026-10-18 the S&P 500's draws beneath its trades and before its sector heavyweights' holdings every trade the fundamentals-first family listed on the S&P 500, which the index families' step keeps under it apart from the S&P 500's own families, newest first and drawn as the S&P 400's and 600's trades are, provisional and in no share, and nothing where it has listed none (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point).
+Why: the page drew the S&P 400's and 600's trades of every family and not the S&P 500's of the one family the index families' step reads there.
+
+### 2026-10-18 - .claude/rules/checks.md - read-surface states the S&P 500's fundamentals-first trades on Past picks and the Run page
+Corrects: the same fault.
+Was:
+> read-surface: ... a provisional and an approved setting worked by hand, and the setting read back from its short form over the family's whole grid |
+Now:
+> read-surface: ... a provisional and an approved setting worked by hand, and the setting read back from its short form over the family's whole grid; and from the 17.8 correction of 2026-10-18 the S&P 500's Past picks drawing the fundamentals-first family's S&P 500 trades in a card of their own after its trades, each named with its index, and its Run page the family's row after the S&P 500's own families counted from the index families' picks and trades, read back over a constructed store |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
 ### 2026-10-18 - .claude/rules/checks.md - read-surface states the fundamentals-first family's rule today and its card's chips
 Corrects: the Loop page's summary read "not read" for the fundamentals-first family's rule today on every index, and its card drew no chips; carried from phase 17's sign-off as owed before phase 19's.
 Was:

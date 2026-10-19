@@ -372,8 +372,10 @@ public partial class ReadSurface
         var run = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{TheSwitch}"));
         var table = Assert.Single(Blocks(run, "<table class=\"list-table family-run\".*?</table>"));
 
+        // From the 17.8 correction of 2026-10-18 the fundamentals-first family's row after the S&P 500's own families, as
+        // every index's Run page draws it.
         Assert.Equal(
-            SetupFamilies.InPageOrder.Select(family => family.Name),
+            SetupFamilies.OnEveryIndex.Select(family => family.Name),
             Regex.Matches(table, "<tr data-family=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
         Assert.Equal(
             [

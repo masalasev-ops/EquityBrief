@@ -2168,8 +2168,17 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
     // see: A sector heavyweight's trade is scored by its percent return less the equal-weighted return of the size cut it was chosen from
     var heavyweights = night is { } held ? PicksScreen.Heavyweights(await read.HeavyweightHoldingsAsync(held)) : [];
 
+    // The fundamentals-first family's S&P 500 trades between them, which the index families' step lists and keeps under
+    // the S&P 500 apart from its own families.
+    // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+    var businessFirst = night is { } listedOn
+        ? PicksScreen.IndexTrades(
+            [.. (await read.IndexTradesAsync(Universes.Large.Code, listedOn)).Where(trade => trade.Family == EquityBrief.Core.Families.FundamentalsRule.Name)],
+            (await read.IndexMembersAsync(Universes.Large.Code, listedOn)).ToDictionary(member => member.Ticker, member => member.Company, StringComparer.Ordinal))
+        : [];
+
     return Results.Content(
-        page.PicksRegion(marks, night, PicksScreen.Summary(under), PicksScreen.Filtered(under, status), status, setup, setups, heavyweights, selector) +
+        page.PicksRegion(marks, night, PicksScreen.Summary(under), PicksScreen.Filtered(under, status), status, setup, setups, heavyweights, selector, businessFirst) +
         page.YourTradesRegion(reading.Name, PicksScreen.YourTrades(await read.TakenTradesAsync(), reading.Code)),
         "text/html; charset=utf-8");
 });
@@ -2632,13 +2641,16 @@ app.MapGet("/screens/run/{night?}", async (
             // of a new setup read over its own trades.
             setupFamilies: await read.FamilyNightAsync(dated) is null
                 ? null
-                : TonightScreen.FamilyRun(
-                    dated,
-                    await read.FamilyPicksAsync(dated),
-                    PicksScreen.Cells(await read.PicksAsync(dated), dated),
-                    await read.RegisteredCandidatesAsync(),
-                    await read.FamilyTradesAsync(dated),
-                    await read.FamilyReplaysAsync()),
+                : TonightScreen.WithBusinessFirst(
+                    TonightScreen.FamilyRun(
+                        dated,
+                        await read.FamilyPicksAsync(dated),
+                        PicksScreen.Cells(await read.PicksAsync(dated), dated),
+                        await read.RegisteredCandidatesAsync(),
+                        await read.FamilyTradesAsync(dated),
+                        await read.FamilyReplaysAsync()),
+                    await read.IndexPicksAsync(Universes.Large.Code, dated),
+                    await read.IndexTradesAsync(Universes.Large.Code, dated)),
             familyRecords: RunScreen.Named(
                 TonightScreen.FamilyRecordRows(await read.RegisteredCandidatesAsync(), await read.FamilyTradesAsync(dated), dated, await read.FamilyReplaysAsync()),
                 await read.RegisteredCandidatesAsync(),

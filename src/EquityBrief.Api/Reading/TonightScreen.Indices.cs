@@ -449,6 +449,12 @@ public static partial class TonightScreen
             SetupFamilies.Provisional),
     ];
 
+    // The S&P 500's setups on its Run page with the fundamentals-first family's row after its own families', counted from
+    // the picks and trades the index families' step keeps for it under the S&P 500 as an index's row is.
+    // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+    public static IReadOnlyList<FamilyRunRow> WithBusinessFirst(IReadOnlyList<FamilyRunRow> rows, IReadOnlyList<FamilyPickRow> picks, IReadOnlyList<IndexTradeRow> trades) =>
+        [.. rows, .. IndexFamilyRun(picks, trades, []).Where(row => row.Family == FundamentalsRule.Name)];
+
     // The line an index's page opens its setups on: the index's own market check with its figures, how many of its
     // members a setup passed, the buy points its cards list and how many setups list one, and its trades still open.
     public static MarketLineView IndexLine(UniverseChoice universe, IndexNightRow night, IReadOnlyList<FamilyCardView> cards, IReadOnlyList<IndexResultRow> results, int openTrades) =>

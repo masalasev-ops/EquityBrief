@@ -3759,7 +3759,7 @@ public sealed partial class SinglePageApp : IComponent
     // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
     // The counts and the rows are those of the setup the hash names, where it names one, and of every setup
     // where it names none; the setups are the ones the page has listed a trade under, each with its trades.
-    public string PicksRegion(MarkRenderer marks, DateOnly? night, PicksSummary summary, IReadOnlyList<PickCell> shown, string? status, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null, IReadOnlyList<HeavyweightPickCell>? heavyweights = null, string selector = "")
+    public string PicksRegion(MarkRenderer marks, DateOnly? night, PicksSummary summary, IReadOnlyList<PickCell> shown, string? status, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null, IReadOnlyList<HeavyweightPickCell>? heavyweights = null, string selector = "", IReadOnlyList<IndexTradeCell>? businessFirst = null)
     {
         var region = new StringBuilder();
         var drawn = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
@@ -3781,6 +3781,7 @@ public sealed partial class SinglePageApp : IComponent
                 title: "How the list's picks have done",
                 stamp: Cards.Night(night),
                 region: "picks-summary"));
+            region.Append(BusinessFirstPicksCard(marks, night, businessFirst));
             region.Append(HeavyweightPicksCard(marks, night, heavyweights));
             region.Append("</section>");
 
@@ -3829,10 +3830,38 @@ public sealed partial class SinglePageApp : IComponent
             lede: "Filters live in the address, so a filtered view is a link you can keep.",
             stamp: Cards.Night(night),
             region: "picks"));
+        region.Append(BusinessFirstPicksCard(marks, night, businessFirst));
         region.Append(HeavyweightPicksCard(marks, night, heavyweights));
         region.Append("</section>");
 
         return region.ToString();
+    }
+
+    // Past picks' card of the fundamentals-first family's S&P 500 trades, which the index families' step lists and keeps
+    // under the S&P 500 apart from its own families, each named with its index as the S&P 400's and 600's are, and
+    // nothing where it has listed none.
+    // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+    static string BusinessFirstPicksCard(MarkRenderer marks, DateOnly? night, IReadOnlyList<IndexTradeCell>? trades)
+    {
+        if (trades is not { Count: > 0 } kept)
+        {
+            return string.Empty;
+        }
+
+        var open = kept.Count(trade => trade.EndedOn is null);
+
+        return Cards.Computed(
+            "Past picks",
+            Invariant($"<p class=\"list-count\" data-business-first=\"{kept.Count}\" data-open=\"{open}\">{kept.Count} {Escaped(Universes.Large.Name)} fundamentals-first trade{(kept.Count == 1 ? string.Empty : "s")}, {open} open</p>")
+                + marks.IndexTrades(kept, Universes.Large.Name)
+                + Cards.Key(
+                    "How to read it.",
+                    "A trade is listed on the night the setup passes a stock and stays open until a close reaches its target, a close falls through its stop, or its sessions run out. Its result is what it made in multiples of what it risked; its cost is its round trip at the published spread for its size and price, in the same units.",
+                    "The setup is read on the S&P 500 by the S&P 400's and 600's step, apart from the S&P 500's own families, and is provisional: followed, and in no record until its freeze."),
+            title: Invariant($"The {Universes.Large.Possessive} fundamentals-first trades, newest first"),
+            lede: "Each listed by the fundamentals-first setup on its provisional settings, named with its index.",
+            stamp: Cards.Night(night),
+            region: "business-first-picks");
     }
 
     // The Run page for the S&P 400 or the S&P 600: how the index's own night went, read off the rows its families
