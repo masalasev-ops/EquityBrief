@@ -3169,3 +3169,71 @@ Carried:    the sentence-start rule's leak above, put to the operator with these
             read an input a later night changed, put to the operator, and its second remedy after the history read; the
             sign-offs of phases 18 and 19, owed to fresh sessions; the two items phase 17's sign-off carried; (G1),
             SCHEMA's `family_trade` sentence, owed by the next edit of that section.
+
+### 20.3 - correction: the anonymiser reads a code page's characters, every contact line, each owner of a joint filing and a name after an honorific, and the dates, phones and tickers it missed   2026-10-18
+
+Queue:      done, phases 0 to 19 built and 20.0 to 20.4 merged with 20.3's first correction, PRs 486 to 495, 20.2's
+            history fetched, 20.3's filers named, 20.4's first remedy run and the reference set's 100 labels written; in
+            progress, this correction, found labelling the reference set; next, the reference set's fixture with its
+            labels, the new pin and the history read, 20.2's record, the two items phase 17's sign-off carried, and the
+            sign-offs of phases 18 and 19 by fresh sessions.
+Found:      labelling the 100 releases of the reference set, each read whole as the first correction wrote it, misses
+            against the decision (see: A release is read with every name and date in it replaced by a neutral word, and
+            product names kept): a Windows code page's quotation marks, bullets and dashes in 8 of the 100, two
+            datelines among them left in; a contact line's label in capitals, in lower case, without its colon or
+            running into the next, its names left in, as Kate Lowrey and James Baglanis; a joint filing's owners read as
+            one, so a fund's first word, Shanghai, TRIAN, Mantle, BlueHalo, was taken for a surname and the insider
+            beside it missed; "Dr. David H. Wang" read as two people, the honorific's given name taken for a surname;
+            "+86 (138) 1079-1480" and "+1-(978)-256-1300"; a month named alone, "in February", "its November
+            guidance"; "Second Quarters Ended"; a year split after a date, "[date], 20 26"; a dateline whose date
+            stands elsewhere, "BIRMINGHAM, Ala. -"; a signature's title taken with its town; the ticker a release
+            states after the name of a filer since renamed, HSC, BEAT, BRKL and MMC, and a preferred stock's, SPGPrJ;
+            "Jaco van der" before a surname; a founder named for the filer, "William T. [company]"; and "II" taken for
+            a surname from "AJ Jones II". The filer's one-word name opening a sentence and a name opening on a
+            lower-case letter, as nVent and iStar, stand by the decision's own words and are put to the operator.
+Built:      the anonymiser reads 0x80 to 0x9F as Windows-1252's characters before any pattern; a phone after a plus and
+            its country's code, and one with its area's brackets before a hyphen; a month named alone as a date where
+            no capitalised word, figure or neutral word follows it and it is not May opening a sentence, a fiscal label
+            in the plural, and a year split after a date; a dateline whose date the release sets elsewhere, a town and
+            its state before a dash opening on the filer's name, where no dateline was read, and a signature's title
+            words kept before a town; the ticker a release states in an exchange's form straight after the filer's
+            name as the filer's, and a class's or a preferred stock's mark after a ticker in that form; each owner of a
+            joint filing, and no fund or company; a contact line's label in any case, with its colon or as a heading's
+            word without one, each label's name read up to its title's words, a label in capitals no part of a name;
+            an honorific's name to its surname; a word read alone as a surname joined to the name straight after it; a
+            surname's particles; no generation as a surname; and a founder whose surname is the filer's one-word name
+            beside a title or a verb of saying, and after an honorific where one is read. Its version moves from
+            175a444d0383 to fe22a6282817, and the instruction's with it; no reading was written under either, and the
+            fixture's release reads as before. The roster's row and the changelog.
+Measured:   the reference set written through the corrected anonymiser into a folder of its own and compared word by
+            word with the texts it was labelled from: 63 of the 100 change at 753 places, 554 the code page's
+            characters, 57 a month or a year, 19 a fiscal label, 15 a phone, 6 a ticker, 3 a dateline, 29 a person
+            replaced, 27 a person's number joined or moved, 32 a fund or a company no longer read as a person, and 10
+            the filer's one-word name standing where a bullet, read now as the code page's, opens a list's item, which
+            the decision's rule keeps. No other word moved, so the labels read from the earlier texts stand.
+Tests:      1 new, 2469 in all: each miss worked by hand from the reference set's own releases.
+Claims:     1364, as before.
+Mutated:    the rule, stated before the runs: one mutation a miss the correction mends, the smallest edit to the
+            anonymiser undoing that fix alone, each run filtered to the anonymiser's 8 tests with its red predicted at
+            the new test, made in this checkout and reverted with the editor; each also reddens the version test, which
+            is counted and is no kill. M1 the code page not read. M2 no phone after a plus. M3 no hyphen after an
+            area's brackets. M4 no month named alone. M5 a month before a surname read as a date. M6 May opening a
+            sentence read as a date. M7 no plural fiscal label. M8 no split year. M9 no undated dateline. M10 a title
+            read into a town. M11 no stated ticker. M12 no preferred stock's mark. M13 the contact label as it was. M14
+            a run's title words kept. M15 a joint filing read whole. M16 a fund read as a person. M17 an honorific's
+            name read as one word. M18 no join of a word read alone as a surname. M19 no particles. M20 a generation
+            read as a surname. M21 no founder beside a title or a verb of saying. M22 no founder after an honorific.
+            M23 a label in capitals read into a name. Each red at the new test as predicted, M5 at the common-word
+            test as well, which holds June Smith too, and at no other but the version test. The first run of M3 was
+            made with M2 still in place, its revert having missed; M2 was restored and M3 run again alone, red as
+            predicted, and the version test passing after the last revert shows the source as it was.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2469 of 2469 tests ran with none failed,
+            migrations 0 to 100 with none pending, schema version 100, against `data-ci` and never `data`; the phase
+            report 60 tables, 1364 claims, 1364 passing, none out of scope and none unexamined, 1375 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the sentence-start rule's leak, at a bullet's opening as well, and a name opening on a lower-case letter,
+            put to the operator; the reference set's fixture and its labels committed before the new pin, then the
+            history read and its record; 20.2's record; 20.4's second remedy after the history read; the sign-offs of
+            phases 18 and 19, owed to fresh sessions; the two items phase 17's sign-off carried; (G1), SCHEMA's
+            `family_trade` sentence, owed by the next edit of that section.
