@@ -643,7 +643,7 @@ details.expander>*:not(summary){margin:10px 12px}
 .card-mark{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;width:24px;height:24px;border-radius:6px;font:600 11px var(--sans)}
 .card-mark svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .card-mark svg .dot{fill:currentColor;stroke:none}
-.card-mark[data-verdict='tick']{color:var(--ink);background:var(--plot);border:1px solid var(--ink-2)}
+.card-mark[data-verdict='tick']{color:var(--up);background:var(--up-fill);border:1px solid var(--up)}
 .card-mark[data-verdict='note']{color:var(--ink-2);background:var(--plot);border:1px solid var(--hair-2)}
 .card-mark[data-verdict='warning']{color:var(--warn);background:var(--warn-fill);border:1px solid var(--warn)}
 .card-record{border:1px solid var(--hair-2);border-radius:6px;padding:10px 12px}
