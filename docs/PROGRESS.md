@@ -3671,3 +3671,64 @@ Results:    9 reviews are stored. 3 were asked again, BDX's two cases at version
 Put:        to the operator, switching nothing: the review job stays on DeepSeek.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over PR 503's code, as 20.9's entry records; this pull
             request changes documents alone, and the checks that read the corpus ran filtered over its tree.
+
+### 20.3 ruling - the anonymiser corrected under a new pin and the history read again from its start, 20.8 putting a release reading's proposal only where its years from the cutoff stand above nothing, 20.6 recorded again through the native endpoint, and nothing switched   2026-10-19
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-19, after 20.8's pull request, PR 505, was opened and before it merged, in these
+            words, kept whole in `prompts/`: "Operator's rulings of 2026-10-19 on 20.8 and the items put to me. Record
+            them as a ruling entry with my words, then build in this order. 1. Stop the history read now. It resumes only
+            under the new pin from step 2. Pin 2's readings stay stored and are read by nothing once pin 3's read is
+            complete. 2. 20.3 correction, the anonymiser, one change and one new pin: a. Sentence and bullet openings: a
+            filer's name word or a found surname that opens a sentence or a list item is replaced as anywhere else, unless
+            the common-word list holds it. Amend the decision (A release is read with every name and date in it replaced
+            by a neutral word, and product names kept): the skip at a sentence's first word, as first written, was too
+            broad. Its reason, keeping an ordinary word that is not the name, stands and now rests on the common-word list
+            alone. My words: "the sentence-start skip applies only to words on the common-word list". b. Lower-case names:
+            a filer's name word with a capital after its first letter, as nVent, iStar, eBay, is replaced in that exact
+            case wherever it stands. c. Short forms, which the brief already names: a short form the release defines for
+            the filer, in quotes or brackets straight after its name or ticker as ("BD"), or standing straight before a
+            bracket that holds its name, is replaced by [company] wherever it recurs; the filer's initials in capitals
+            likewise, where the common-word list does not hold them. A defined term the list holds, as "the Company",
+            stays. d. Measure as the earlier corrections did: the reference set written through the corrected anonymiser;
+            the filer's names, tickers and initials scanned; every trace left counted with where it stands; every
+            replacement that hit a word that is not the filer counted and listed. Compare word by word with the labelled
+            texts: the labels stand where only names became neutral words. Say so, or list what moved. e. Tests worked by
+            hand from the reference set's own releases for a to c, one mutation each, the rule stated before the run. Then
+            write the new pin and start the history read again from the start under it, card held at 250 W, watcher as
+            before. 3. 20.8 correction before it merges: a proposal reading a release reading is put to me only where its
+            total less the rule's over the test years from the cutoff's year is also above nothing. The Loop page and the
+            month's report keep drawing both sides as now, and a proposal held back by this says so in those words.
+            Nothing is retired or hidden by it. 4. The labeller and the review job stay on DeepSeek. Switch nothing. 5.
+            20.6: while the read is stopped for step 2, record the local side again through LM Studio's native endpoint
+            and state both sides' outcomes again, switching nothing. The first recording's refusals were the
+            OpenAI-compatible endpoint wrapping prose in JSON, not the model's answers. 6. Then the queue as it stands:
+            20.3's accuracy record, 20.4's second remedy, and 20.8's merge and remedy, each waiting on pin 3's read.
+            tools/ci.ps1 and tools/verify-phase.ps1 green on every code change. Merge only when nothing is writing. No
+            Co-Authored-By or "Generated with" lines."
+Plan:       in the order ruled. The 20.3 correction amends the anonymiser's decision as the operator worded it and
+            changes the anonymiser on its three points, the anonymiser's version moving the prompt's and so the pin's;
+            it is measured over the reference set as the two corrections of 2026-10-18 were, merged, and pin 3 written,
+            the history read then started again from its first release under pin 3, the card held at 250 W with its
+            watcher. While the read is stopped, 20.6's local side is recorded again through the native endpoint, its
+            outcomes stated beside the paid side's again, switching nothing. 20.8's correction goes into PR 505 before it
+            merges, the Loop page, the month's report and the put alike reading the rule. Then 20.3's accuracy record,
+            20.4's second remedy and 20.8's merge and remedy, each once pin 3's history read is complete, then 20.10.
+            The labeller and the review job stay on DeepSeek.
+Measured:   pin 2's history read stopped at 12:04:53 UTC with 7,078 of the 45,328 stored releases read or refused, 30 of
+            them refused; its readings stay stored, and once pin 3's read is complete nothing reads them, every reader
+            taking the newest complete version.
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged, and the records of 20.2, 20.5 and 20.7, PR 504; in
+            progress, this ruling; next, the 20.3 correction and pin 3 with its history read, 20.6's record through the
+            native endpoint, 20.8's correction in PR 505, then 20.3's accuracy record, 20.4's second remedy and 20.8's
+            merge and remedy once pin 3's read completes, then 20.10, then the sign-offs of phases 18 and 19 by fresh
+            sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the code this ruling sits on, PR 503's, as 20.9's
+            entry records: 2488 of 2488 tests, 1372 claims, 1372 passing. This pull request changes documents alone, and
+            the checks that read the corpus ran filtered over its tree: RecordAppendOnly, TwoPlatform,
+            ObligationReconciles, BannedProse, DecisionCitations, CoverageReported, StatedCounts, ArchitectureConformance,
+            PinnedConstants, ChangelogReconciles, DoneConditionProducible and FigureFits.
+Carried:    the 20.3 correction and pin 3's history read; 20.6's record through the native endpoint; 20.8's correction
+            and merge; 20.3's accuracy record and 20.4's second remedy after pin 3's read; the sign-offs of phases 18 and
+            19, owed to fresh sessions after 20.10; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that
+            section.
