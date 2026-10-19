@@ -173,6 +173,34 @@ public partial class FixtureExpectations
         Assert.False(LedgerReleases.Reads(null));
     }
 
+    [Fact]
+    public void AProposalReadingAReleaseReadingIsHeldBackWhereItsTotalLessTheRulesFromTheCutoffsYearIsNotAboveNothing()
+    {
+        // From the 20.8 correction of 2026-10-19, on the operator's ruling of that day, worked by hand, the years before the
+        // cutoff's year standing at +16 each time. From 2025, 3.75 against 1.25, +2.50, is put, and 1.01 against 1.0 a
+        // hundredth above nothing is put; exactly nothing, -0.25 over two years, and no year from 2025 at all are held back.
+        // No cutoff, a change reading no release reading and no change hold nothing back.
+        const string Reads = "also requires release_results at or above 1";
+        (int, int, double, double)[] before = [(2022, 10, 9.0, 1.0), (2023, 12, 9.0, 1.0)];
+
+        Assert.False(LoopDecisions.HeldByCutoff(Reads, [.. before, (2025, 20, 3.0, 1.0), (2026, 6, 0.75, 0.25)], ReleaseCutoff));
+        Assert.False(LoopDecisions.HeldByCutoff(Reads, [.. before, (2025, 20, 1.01, 1.0)], ReleaseCutoff));
+        Assert.True(LoopDecisions.HeldByCutoff(Reads, [.. before, (2025, 20, 1.0, 1.0)], ReleaseCutoff));
+        Assert.True(LoopDecisions.HeldByCutoff(Reads, [.. before, (2025, 20, 0.5, 1.0), (2026, 6, 0.25, 0.0)], ReleaseCutoff));
+        Assert.True(LoopDecisions.HeldByCutoff(Reads, before, ReleaseCutoff));
+        Assert.False(LoopDecisions.HeldByCutoff(Reads, [.. before, (2025, 20, 0.5, 1.0)], null));
+        Assert.False(LoopDecisions.HeldByCutoff("also requires rsi at or above 60", [.. before, (2025, 20, 0.5, 1.0)], ReleaseCutoff));
+        Assert.False(LoopDecisions.HeldByCutoff(null, [(2025, 20, 0.5, 1.0)], ReleaseCutoff));
+
+        // The put passes over a stronger proposal the cutoff holds back to the next that passed, and puts none where it was
+        // the only one; the words a held proposal says.
+        Assert.Equal("the second", LoopDecisions.PutOf([("the first", 0.001, true, true, true), ("the second", 0.002, true, true, false)]));
+        Assert.Null(LoopDecisions.PutOf([("the first", 0.001, true, true, true)]));
+        Assert.Equal(
+            "Held back: it reads a release reading, and its total less the rule's over the test years from the cutoff's year, 2025, is not above nothing, so it is not put to you.",
+            LoopDecisions.HeldByCutoffWords(ReleaseCutoff));
+    }
+
     // One stock's series over the calendar given for the tone walk, its prints the surprises given and its newest print on
     // each bar the one given, every other reading a sweep series holds left at nothing.
     static SweepSeries ToneSeries(string ticker, DateOnly[] calendar, IReadOnlyList<SweepSurprise> surprises, int[] newest) =>
@@ -449,5 +477,59 @@ public partial class FixtureExpectations
             text,
             StringComparison.Ordinal);
         Assert.DoesNotContain("the live drift: reads", text, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheMonthsReportHoldsBackAProposalReadingAReleaseReadingWhoseYearsFromTheCutoffStandAtNothingOrUnder()
+    {
+        using var store = new TemporaryStore().Migrated();
+        using var output = new StringWriter();
+        var clock = new CallClock(new DateTimeOffset(2026, 11, 7, 14, 0, 0, TimeSpan.Zero));
+        const string Run = "loop-test-GSPC-20261107T120000Z";
+
+        // From the 20.8 correction of 2026-10-19: the S&P 500's November run, the drift's condition on the release's results
+        // the stronger of two passing, its years from the cutoff's year 1.0 and 0.25 against the rule's 3.0 and 0.75, and a
+        // condition on the RSI beside it.
+        LoopRun(store, Run, "GSPC", "2026-11");
+
+        foreach (var (proposal, words, hook, adjusted) in new[] { ("winners against losers, ranked 1", "also requires release_results at or above 1", "also_release_results_above", 0.001), ("winners against losers, ranked 2", "also requires rsi at or above 61.5", "also_rsi_above", 0.002) })
+        {
+            store.Execute(
+                "INSERT INTO loop_proposal (run_id, index_code, family, proposal, words, current_words, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, detectable, stable_folds, passed, finding, change) "
+                + FormattableString.Invariant($"VALUES ('{Run}', 'GSPC', 'drift', '{proposal}', '{words}', 'the rule today', 'risks', 56, 19, {adjusted}, 1, 1, 4, 3, 1.5, 1, 0.1, 3, 1, NULL, '{LoopChange.OfHooks(new Dictionary<string, double>(StringComparer.Ordinal) { [hook] = 1 }).Json}');"));
+
+            foreach (var (year, units, proposed, current) in new[] { (2022, 10, 2.0, 1.0), (2023, 12, 1.5, 2.0), (2024, 8, 1.5, 0.5), (2025, 20, 1.0, 3.0), (2026, 6, 0.25, 0.75) })
+            {
+                store.Execute(
+                    "INSERT INTO loop_test (run_id, index_code, family, proposal, year, complete, chosen, current_units, proposed_units, current_total, proposed_total) "
+                    + FormattableString.Invariant($"VALUES ('{Run}', 'GSPC', 'drift', '{proposal}', {year}, 1, 'a', {units}, {units}, {current}, {proposed});"));
+            }
+        }
+
+        var run = new MonthlyRun(clock, store.DatabaseFile, store.Root, output, []);
+        var report = Path.Combine(store.Root, MonthlyRun.Folder, "2026-11", MonthlyRun.ReportFile);
+
+        // No reading version's history read is complete: nothing is held back, and the stronger is put.
+        await run.ReportAsync("2026-11");
+
+        Assert.Contains("  drift: put to you, winners against losers, ranked 1: also requires release_results at or above 1;", File.ReadAllText(report), StringComparison.Ordinal);
+
+        store.Execute(
+            "INSERT INTO reading_pin (model, model_file, sha256, size, modified, runtime_name, runtime_version, prompt_version, temperature, seed, answer_tokens, context, cutoff, written_at, history_completed_at, run_id) "
+            + "VALUES ('m', 'f', 'h', 1, '2026-10-18T00:00:00.0000000Z', 'r', 'v', 'p', 0, 1, 1, 1, '2025-01-31', '2026-10-18T00:00:00Z', '2026-10-21T00:00:00Z', 'constructed');");
+
+        await run.ReportAsync("2026-11");
+
+        var text = File.ReadAllText(report);
+
+        // Worked by hand: before the cutoff's year, 2022 to 2024, 5.0 against 3.5 over 30, +1.500; from it, 2025 and 2026,
+        // 1.25 against 3.75 over 26, -2.500, not above nothing, so it is held back, said so with both sides, and the RSI's
+        // condition is put.
+        Assert.Contains("  drift: put to you, winners against losers, ranked 2: also requires rsi at or above 61.5;", text, StringComparison.Ordinal);
+        Assert.Contains(
+            "  drift: winners against losers, ranked 1: also requires release_results at or above 1. Held back: it reads a release reading, and its total less the rule's over the test years from the cutoff's year, 2025, is not above nothing, so it is not put to you." + Environment.NewLine
+            + "    Before the local model's cutoff of 2025-01-31, which it may have known the outcome of: 2022 to 2024, +1.500 risks over 30 units; from it, the years relied on: 2025 to 2026, -2.500 risks over 26 units.",
+            text,
+            StringComparison.Ordinal);
     }
 }

@@ -3866,3 +3866,51 @@ Carried:    the remedy, `tools/remedies/2026-10-19-20.8-the-release-readings-in-
             the checks' results; the tone variant's first walk, at the monthly run of 2026-11-07; the sentence-start rule
             and the lower-case names, put to the operator; the sign-offs of phases 18 and 19, owed to fresh sessions after
             20.10; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.
+
+### 20.8 - correction: a proposal reading a release reading put only where its total less the rule's over the test years from the cutoff's year is above nothing, as the operator ruled on 2026-10-19   2026-10-19
+
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged, the records of 20.2, 20.5 and 20.7, the ruling
+            of 2026-10-19 and the 20.3 correction, PRs 506 and 507, pin 3 written and its history read started from the
+            first release; in review, the 20.6 correction, PR 508, merging once nothing is writing; in progress, this
+            correction in 20.8's pull request, PR 505, which merges once pin 3's read completes; next, 20.3's accuracy
+            record, 20.4's second remedy and 20.8's merge and remedy once that read completes, then 20.10, then the
+            sign-offs of phases 18 and 19 by fresh sessions.
+Ruled:      step 3 of the operator's ruling of 2026-10-19, word for word in the ruling entry: "20.8 correction before it
+            merges: a proposal reading a release reading is put to me only where its total less the rule's over the test
+            years from the cutoff's year is also above nothing. The Loop page and the month's report keep drawing both
+            sides as now, and a proposal held back by this says so in those words. Nothing is retired or hidden by it."
+Built:      one rule in the core: a proposal whose change reads a release reading is held back where its total less the
+            rule's over the test years from the local model's cutoff's year is not above nothing, the years before it
+            weighing nothing, and none is held back where no reading version's history read is complete. Every put leaves
+            it out: the Loop page's summary and the menu's badge, the Run page's monthly region, the approval press, which
+            refuses an approval and a decline of it in its words, and the month's report. The Loop page draws beneath its
+            two sides, which stay drawn, and on its card: "Held back: it reads a release reading, and its total less the
+            rule's over the test years from the cutoff's year, 2025, is not above nothing, so it is not put to you."; a
+            family left with no put waits in the same words; the month's report puts the next that passed and names the
+            held one with its two sides. The decision's text, the monthly run's catalogue row, 13's paragraph on the
+            presses and 15.20's row, the build plan's 20.8 and its done condition, the roster's two rows, the guide and
+            the changelog. This correction amends its own done condition, 20.8's: the Loop page, its presses and the
+            monthly run's report hold the hold as well.
+Tests:      3 new, 2502 in all: the hold worked by hand a hundredth above nothing, at it and under it whatever the years
+            before, with no cutoff and for a change reading none, and the put passing to the next that passed; the
+            month's report over a constructed store before and after a reading version's history read completes; and the
+            Loop page, its badge and its presses over a constructed store, the drift's held proposal beside the RSI's put
+            and the breakout's held one leaving its family waiting. The report's line where none is put names the hold.
+Claims:     1376, as before: the hold lands as words in the rows that stood.
+Mutated:    the rule, stated before the runs: one mutation each property the correction adds, the smallest edit undoing
+            it alone, each run filtered to the correction's three tests and the report's own with its red predicted, made
+            in this checkout and reverted with the editor. P1 exactly nothing put: red at the core test and the Loop
+            page's. P2 the whole span read in place of the years from the cutoff: red at both. P3 the Loop page's put
+            ignoring the cutoff: red at the Loop page's test, its waiting line first. P4 the approval's refusal dropped:
+            red at the presses. P5 the report's put ignoring the cutoff: red at the report's test. P6 the line beneath the
+            two sides dropped: red at the Loop page's test. Each as predicted; the four passing after the last revert.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2502 of 2502 tests ran with none failed,
+            migrations 0 to 102 with none pending, schema version 102, against `data-ci` and never `data`; the phase
+            report 60 tables, 1376 claims, 1376 passing, none out of scope and none unexamined, 1387 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    20.8's merge once pin 3's history read completes, as ruled, and then its remedy,
+            `tools/remedies/2026-10-19-20.8-the-release-readings-in-the-ledger.txt`, with the three builds, checks and
+            readings' steps by hand, its record stating the builds' times and the checks' results; the tone variant's
+            first walk, at the monthly run of 2026-11-07; the sign-offs of phases 18 and 19, owed to fresh sessions after
+            20.10; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.

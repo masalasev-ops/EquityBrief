@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
 using EquityBrief.Tests.Harness;
+using EquityBrief.Web.App;
 
 namespace EquityBrief.Tests.Reading;
 
@@ -142,5 +143,76 @@ public partial class ReadSurface
         var split = page.IndexOf("class=\"loop-cutoff\"", StringComparison.Ordinal);
 
         Assert.True(first < split && split < second, "The split is drawn beneath the proposal reading a release reading and before the next.");
+    }
+
+    // A passing proposal of the S&P 400's October run stating a condition, in the words given.
+    static void PassingCondition(TemporaryStore store, string family, string proposal, string words, string column, double adjusted) =>
+        store.Execute(
+            "INSERT INTO loop_proposal (run_id, index_code, family, proposal, words, current_words, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, detectable, stable_folds, passed, finding, change) "
+            + FormattableString.Invariant($"VALUES ('{OctoberRun}', 'MID', '{family}', '{proposal}', '{words}', 'the {family} rule today', 'risks', 400, 19, {adjusted}, 1, 1, 4, 3, 1.5, 1, 0.1, 3, 1, NULL, '{Condition(column, 1)}');"));
+
+    [Fact]
+    public async Task TheLoopPageAndItsPressesHoldBackAProposalReadingAReleaseReadingWhoseYearsFromTheCutoffStandAtNothingOrUnder()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        // From the 20.8 correction of 2026-10-19, on the operator's ruling of that day: the S&P 400's October run, its newest,
+        // two drift conditions passing with a change, the stronger on the release's results and the other on the RSI, and
+        // the breakout's one condition, on the release's tone.
+        Run(store, OctoberRun, "MID", "2026-10");
+        PassingCondition(store, "drift", "winners against losers, ranked 1", "also requires release_results at or above 1", "release_results", 0.001);
+        PassingCondition(store, "drift", "winners against losers, ranked 2", "also requires rsi at or above 61.5", "rsi", 0.002);
+        PassingCondition(store, "breakout", "winners against losers, ranked 1", "also requires release_tone at or above 1", "release_tone", 0.001);
+
+        // Worked by hand: the drift's results condition from the cutoff's year, 2025 and 2026, 1.25 against the rule's 3.75,
+        // -2.50, though 5.0 against 3.5 before it; the breakout's from 2025, 3.0 against exactly 3.0, nothing, though +3.0
+        // before it. Each is held back; the RSI's reads no release reading.
+        foreach (var proposal in new[] { "winners against losers, ranked 1", "winners against losers, ranked 2" })
+        {
+            LoopTestRow(store, "drift", proposal, 2022, 1, "a", 10, 10, 1.0, 2.0);
+            LoopTestRow(store, "drift", proposal, 2023, 1, "a", 12, 12, 2.0, 1.5);
+            LoopTestRow(store, "drift", proposal, 2024, 1, "a", 8, 8, 0.5, 1.5);
+            LoopTestRow(store, "drift", proposal, 2025, 1, "a", 20, 20, 3.0, 1.0);
+            LoopTestRow(store, "drift", proposal, 2026, 0, "a", 6, 6, 0.75, 0.25);
+        }
+
+        LoopTestRow(store, "breakout", "winners against losers, ranked 1", 2024, 1, "a", 10, 10, 1.0, 4.0);
+        LoopTestRow(store, "breakout", "winners against losers, ranked 1", 2025, 1, "a", 10, 10, 3.0, 3.0);
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        async Task<string> Loop() => WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=400"));
+        async Task<string> Badge() => await client.GetStringAsync(SinglePageApp.LoopPutRoute);
+        async Task<(HttpStatusCode Status, string Said)> Press(string family, string proposal, string decision, string? reason = null) =>
+            await CardPress(client, Decide("MID", OctoberRun, family), [("proposal", proposal), ("decision", decision), .. reason is null ? Array.Empty<(string, string)>() : [("reason", reason)]], true);
+
+        // No reading version's history read is complete, so nothing is held back: the two stronger are put.
+        Assert.DoesNotContain("held-cutoff", await Loop(), StringComparison.Ordinal);
+        Assert.Equal("2", await Badge());
+
+        CompletePin(store, "2025-01-31");
+
+        const string Words = "Held back: it reads a release reading, and its total less the rule's over the test years from the cutoff's year, 2025, is not above nothing, so it is not put to you.";
+        var page = await Loop();
+
+        // Both held back with the words, beneath each one's two sides, which stay drawn; the RSI's condition put to you with
+        // its presses, and the breakout waiting with the words.
+        Assert.Equal(2, Regex.Count(page, "<p class=\"loop-held-cutoff\" data-held=\"cutoff\">" + Regex.Escape(Words) + "</p>"));
+        Assert.Equal(2, Regex.Count(page, "<p class=\"degraded\" data-decision=\"held-cutoff\">" + Regex.Escape(Words) + "</p>"));
+        Assert.Contains("data-after=\"-2.5\"", page, StringComparison.Ordinal);
+        Assert.Contains("data-after=\"0\"", page, StringComparison.Ordinal);
+        Assert.Contains("Its passing proposal reads a release reading. " + Words + " The next monthly run is on 2026-11-07.", page, StringComparison.Ordinal);
+        Assert.Equal("1", await Badge());
+
+        // The presses: the held proposals refused with the words, an approval and a decline alike, writing nothing; the
+        // RSI's condition approved.
+        Assert.Contains("Nothing was decided. " + Words, (await Press("drift", "winners against losers, ranked 1", "approve")).Said, StringComparison.Ordinal);
+        Assert.Contains("Nothing was decided. " + Words, (await Press("drift", "winners against losers, ranked 1", "decline", "not now")).Said, StringComparison.Ordinal);
+        Assert.Contains("Nothing was decided. " + Words, (await Press("breakout", "winners against losers, ranked 1", "approve")).Said, StringComparison.Ordinal);
+        Assert.Equal(0L, Scalar(store, "SELECT COUNT(*) FROM loop_decision;"));
+        Assert.Equal(HttpStatusCode.OK, (await Press("drift", "winners against losers, ranked 2", "approve")).Status);
+        Assert.Equal(1L, Scalar(store, "SELECT COUNT(*) FROM loop_decision;"));
+        Assert.Equal(1L, Scalar(store, "SELECT COUNT(*) FROM loop_decision WHERE proposal = 'winners against losers, ranked 2' AND decision = 'approved';"));
     }
 }

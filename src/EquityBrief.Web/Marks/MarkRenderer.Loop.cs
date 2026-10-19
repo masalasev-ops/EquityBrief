@@ -6,8 +6,16 @@ using EquityBrief.Core.Returns;
 namespace EquityBrief.Web.Marks;
 
 // What a Loop page draws of the operator's word: every decision on the index with what the apply step did, the settings
-// approvals stored, the live alarm's periods, and the index's newest run, the one whose proposals are put to the operator.
-public sealed record LoopDecided(IReadOnlyList<LoopDecisionRow> Decisions, IReadOnlyList<LoopSettingRow> Settings, IReadOnlyList<LoopAlarmRow> Alarms, string? Newest, DateOnly? Cutoff = null);
+// approvals stored, the live alarm's periods, and the index's newest run, the one whose proposals are put to the operator;
+// from 20.8 the local model's cutoff, and from its correction of 2026-10-19 the run's test years, which a proposal reading a
+// release reading is held back by.
+public sealed record LoopDecided(
+    IReadOnlyList<LoopDecisionRow> Decisions,
+    IReadOnlyList<LoopSettingRow> Settings,
+    IReadOnlyList<LoopAlarmRow> Alarms,
+    string? Newest,
+    DateOnly? Cutoff = null,
+    IReadOnlyList<LoopTestRow>? Tests = null);
 
 // The Loop page's marks: a family's rule today in the words its run stored, and each proposal tested against it, its
 // change, its verdict part by part and its test years with the setting each fold's learning years chose. Every figure
@@ -189,6 +197,10 @@ public sealed partial class MarkRenderer
             {
                 html.Append(Formatted($"<p class=\"loop-decided\" data-decision=\"declined-before\"><b>Declined</b> on {Escaped(DayOf(before.DecidedAt))} over {before.Blocks ?? 0} blocks: {Escaped(before.Reason ?? string.Empty)}. It is put to you again once a later run reads a new complete block and it passes with that block.</p>"));
             }
+            else if (HeldByCutoff(proposal, decided) && decided.Cutoff is { } cutoff)
+            {
+                html.Append($"<p class=\"degraded\" data-decision=\"held-cutoff\">{Escaped(LoopDecisions.HeldByCutoffWords(cutoff))}</p>");
+            }
             else if (approvedInRun)
             {
                 html.Append("<p class=\"degraded\" data-decision=\"one-a-run\">Another change to this family was approved in this run, and one change a family a run is applied.</p>");
@@ -218,15 +230,28 @@ public sealed partial class MarkRenderer
         return html.ToString();
     }
 
+    // Whether a proposal is held back from being put on this run: by an earlier run's decline, or from the 20.8 correction
+    // of 2026-10-19 by the local model's cutoff.
+    public static bool HeldBack(LoopRunRow run, LoopProposalRow proposal, LoopDecided decided) =>
+        Declined(run, proposal, decided) || HeldByCutoff(proposal, decided);
+
     // Whether an earlier run's decline of the same proposal and change holds it back on this run: it was declined over
     // at least as many blocks as this run reads.
     // see: A declined proposal is put again once a new complete block has been added since the decline and it passes with that block
-    public static bool HeldBack(LoopRunRow run, LoopProposalRow proposal, LoopDecided decided) =>
+    public static bool Declined(LoopRunRow run, LoopProposalRow proposal, LoopDecided decided) =>
         decided.Decisions
             .Where(one => one.Run != run.RunId && one.Family == proposal.Family && one.Proposal == proposal.Proposal && one.Decision == LoopDecisions.Declined && one.Change == proposal.Change)
             .Select(one => one.Blocks ?? 0)
             .DefaultIfEmpty(-1)
             .Max() is var declined && declined >= 0 && !LoopDecisions.PutAgain(declined, proposal.Blocks, passedNow: true);
+
+    // Whether the local model's cutoff holds a proposal back, read over the run's own test years for it.
+    // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+    public static bool HeldByCutoff(LoopProposalRow proposal, LoopDecided decided) =>
+        LoopDecisions.HeldByCutoff(proposal.Words, YearsOf(proposal, decided.Tests ?? []), decided.Cutoff);
+
+    static IEnumerable<(int Year, int Units, double Proposed, double Current)> YearsOf(LoopProposalRow proposal, IEnumerable<LoopTestRow> years) =>
+        years.Where(year => year.Family == proposal.Family && year.Proposal == proposal.Proposal).Select(year => (year.Year, year.ProposedUnits, year.ProposedTotal, year.CurrentTotal));
 
     // Every decision on the index, newest first, with what the apply step did, and every setting approvals stored, each
     // family's newest first; none where neither holds a row.
@@ -408,7 +433,13 @@ public sealed partial class MarkRenderer
 
         if (cutoff is { } day && LedgerReleases.Reads(proposal.Words))
         {
-            html.Append(CutoffSplit(LedgerReleases.Split(years.Select(year => (year.Year, year.ProposedUnits, year.ProposedTotal, year.CurrentTotal)), day), day, proposal.Unit));
+            html.Append(CutoffSplit(LedgerReleases.Split(YearsOf(proposal, years), day), day, proposal.Unit));
+
+            // From the 20.8 correction of 2026-10-19 a passing proposal stating a change that the cutoff holds back says so.
+            if (proposal.Passed && proposal.Change is not null && LoopDecisions.HeldByCutoff(proposal.Words, YearsOf(proposal, years), day))
+            {
+                html.Append($"<p class=\"loop-held-cutoff\" data-held=\"cutoff\">{Escaped(LoopDecisions.HeldByCutoffWords(day))}</p>");
+            }
         }
 
         var gate = proposal.Adjusted is { } p

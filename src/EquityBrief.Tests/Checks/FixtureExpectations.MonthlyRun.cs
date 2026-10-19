@@ -296,7 +296,7 @@ public partial class FixtureExpectations
         Assert.Contains("The S&P 400, run loop-test-MID-20261003T120000Z:", report, StringComparison.Ordinal);
         Assert.Contains("  pullback: put to you, winners against losers, ranked 1: the change; its adjusted p 0.002 against 0.0042", report, StringComparison.Ordinal);
         Assert.DoesNotContain("ranked 0", report, StringComparison.Ordinal);
-        Assert.Contains("  drift: 1 of its 1 proposals passed and none is put to you, each stating no change or declined before over as many blocks as this run reads.", report, StringComparison.Ordinal);
+        Assert.Contains("  drift: 1 of its 1 proposals passed and none is put to you, each stating no change, declined before over as many blocks as this run reads or held back by the local model's cutoff.", report, StringComparison.Ordinal);
         Assert.Contains("The S&P 600, run loop-test-SML-20261003T130000Z:", report, StringComparison.Ordinal);
         Assert.Contains("  breakout: put to you, the autopsy's exit, ranked 2: the change; its adjusted p 0.001 against 0.0042", report, StringComparison.Ordinal);
         Assert.DoesNotContain("ranked 1: the change; its adjusted p 0.003", report, StringComparison.Ordinal);

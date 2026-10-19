@@ -26,6 +26,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-19 - .claude/rules/checks.md - fixture-expectations and read-surface state the 20.8 correction's hold on the put
+Authorised by: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+Was:
+> fixture-expectations: ... and the month's report stating the split for a rule reading a release reading |
+> read-surface: ... a proposal reading none drawing no split, each read back off the rendered page over a constructed store |
+Now:
+> fixture-expectations: ... and the month's report stating the split for a rule reading a release reading; and from the 20.8 correction of 2026-10-19 a proposal reading a release reading held back where its total less the rule's over the test years from the cutoff's year is not above nothing, ... and the month's report putting the next and saying the held one is held back with both sides over a constructed store |
+> read-surface: ... each read back off the rendered page over a constructed store; and from the 20.8 correction of 2026-10-19 a passing proposal reading a release reading whose total less the rule's from the cutoff's year is not above nothing drawn held back in those words beneath its two sides and on its card, ... and an approval and a decline of the held one refused writing nothing, none held back before a reading version's history read is complete |
+Why: each roster row says what its check asserts, and the correction's tests extend both.
+
+### 2026-10-19 - BUILD_PLAN.md - 20.8's put held back by the cutoff, and its done condition
+Authorised by: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+Was:
+> ... and the month's report states the same for the proposal put and for each rule whose per-rule test reads one, the pass rule unchanged. The per-rule test walks ...
+> ... the Loop page's split and the monthly run's report are read back over a constructed store; a reading is worked by hand ...
+Now:
+> ... and the month's report states the same for the proposal put and for each rule whose per-rule test reads one, the pass rule unchanged; from the operator's ruling of 2026-10-19, before 20.8 merges, such a proposal is put only where its total less the rule's over the test years from the cutoff's year is also above nothing, one held back saying so in those words on the Loop page, in the month's report and to a press, nothing retired or hidden by it. The per-rule test walks ...
+> ... the Loop page's split and the monthly run's report are read back over a constructed store, and from the 20.8 correction of 2026-10-19 a proposal reading a release reading held back where its total less the rule's from the cutoff's year is not above nothing, worked by hand on both sides of nothing and at it, on the Loop page, its presses and the monthly run's report; a reading is worked by hand ...
+Why: the operator's ruling of 2026-10-19 puts a proposal reading a release reading only where its years from the cutoff stand above nothing.
+
+### 2026-10-19 - ARCHITECTURE.html - a proposal reading a release reading put only where its years from the cutoff stand above nothing
+Authorised by: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+Was:
+> ... the strongest that passed and states a change by its adjusted p-value, leaving out one an earlier decline holds back, or that none is put, and from 20.8 for the one put ... (the monthly run's catalogue row)
+> ... the strongest that passed and states a change by its adjusted p-value, leaving out one an earlier decline holds back, and a press writes one row ... (13's paragraph on the presses)
+> ... the month's report stating the same for the proposal put and for each rule whose per-rule test reads one (see: ...) (15.20's row for a change reading a release reading)
+Now:
+> ... leaving out one an earlier decline holds back and from the 20.8 correction of 2026-10-19 one reading a release reading whose total less the rule's over the test years from the local model's cutoff's year is not above nothing, which it names as held back, or that none is put, and from 20.8 for the one put ...
+> ... leaving out one an earlier decline holds back and from the 20.8 correction of 2026-10-19 one reading a release reading whose total less the rule's over the test years from the local model's cutoff's year is not above nothing, which says so and is refused a press (see: ...), and a press writes one row ...
+> ... the month's report stating the same for the proposal put and for each rule whose per-rule test reads one; from the 20.8 correction of 2026-10-19 such a proposal passing with a change whose total less the rule's over the years from the cutoff's year is not above nothing put to no one and saying so beneath its two sides and on its card as the month's report says it; an approval or a decline of it refused in the same words (see: ...)
+Why: the operator's ruling of 2026-10-19 puts a proposal reading a release reading only where its years from the cutoff stand above nothing, saying so where it does not, and nothing retired or hidden by it.
+
 ### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the 20.3 correction of 2026-10-19
 Authorised by: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
 Was:

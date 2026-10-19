@@ -126,6 +126,22 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
 
     const string ModelCutoff = "SELECT cutoff FROM reading_pin WHERE history_completed_at IS NOT NULL ORDER BY id DESC LIMIT 1;";
 
+    // A proposal's test years on its run, each year's units and the proposal's and the rule's totals.
+    static async Task<List<(int Year, int Units, double Proposed, double Current)>> YearsAsync(SqliteConnection connection, string run, LoopProposalRow proposal, CancellationToken cancellation)
+    {
+        var years = new List<(int, int, double, double)>();
+
+        await using var command = Command(connection, ProposalYears, [("$run_id", run), ("$family", proposal.Family), ("$proposal", proposal.Proposal)]);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            years.Add((reader.GetInt32(0), reader.GetInt32(1), reader.GetDouble(2), reader.GetDouble(3)));
+        }
+
+        return years;
+    }
+
     public async Task<MonthlyOutcome> RunAsync(string month, CancellationToken cancellation = default)
     {
         var started = clock.UtcNow;
@@ -278,7 +294,25 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
             {
                 var passed = family.Count(proposal => proposal.Passed);
 
-                if (LoopDecisions.PutOf(family, proposal => heldBack.Contains(proposal.Family + "|" + proposal.Proposal)) is { } one)
+                // From the 20.8 correction of 2026-10-19 each passing proposal reading a release reading that the local
+                // model's cutoff holds back, put to no one and said so with its test years on both sides of the cutoff.
+                // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+                var byCutoff = new List<(LoopProposalRow Proposal, CutoffSides Sides)>();
+
+                if (cutoff is { } cut)
+                {
+                    foreach (var reading in family.Where(proposal => proposal.Passed && proposal.Change is not null && LedgerReleases.Reads(proposal.Words)))
+                    {
+                        var years = await YearsAsync(connection, run, reading, cancellation);
+
+                        if (LoopDecisions.HeldByCutoff(reading.Words, years, cut))
+                        {
+                            byCutoff.Add((reading, LedgerReleases.Split(years, cut)));
+                        }
+                    }
+                }
+
+                if (LoopDecisions.PutOf(family, proposal => heldBack.Contains(proposal.Family + "|" + proposal.Proposal) || byCutoff.Any(held => held.Proposal.Proposal == proposal.Proposal)) is { } one)
                 {
                     put++;
                     text.AppendLine(FormattableString.Invariant(
@@ -289,18 +323,7 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
                     // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
                     if (cutoff is { } day && LedgerReleases.Reads(one.Words))
                     {
-                        var years = new List<(int, int, double, double)>();
-
-                        await using (var command = Command(connection, ProposalYears, [("$run_id", run), ("$family", one.Family), ("$proposal", one.Proposal)]))
-                        await using (var reader = await command.ExecuteReaderAsync(cancellation))
-                        {
-                            while (await reader.ReadAsync(cancellation))
-                            {
-                                years.Add((reader.GetInt32(0), reader.GetInt32(1), reader.GetDouble(2), reader.GetDouble(3)));
-                            }
-                        }
-
-                        text.AppendLine("    " + CutoffLine(LedgerReleases.Split(years, day), day, one.Unit));
+                        text.AppendLine("    " + CutoffLine(LedgerReleases.Split(await YearsAsync(connection, run, one, cancellation), day), day, one.Unit));
                     }
                 }
                 else if (passed == 0)
@@ -309,7 +332,13 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
                 }
                 else
                 {
-                    text.AppendLine(FormattableString.Invariant($"  {family.Key}: {passed} of its {family.Count()} proposals passed and none is put to you, each stating no change or declined before over as many blocks as this run reads."));
+                    text.AppendLine(FormattableString.Invariant($"  {family.Key}: {passed} of its {family.Count()} proposals passed and none is put to you, each stating no change, declined before over as many blocks as this run reads or held back by the local model's cutoff."));
+                }
+
+                foreach (var (proposal, sides) in byCutoff)
+                {
+                    text.AppendLine($"  {family.Key}: {proposal.Proposal}: {proposal.Words}. {LoopDecisions.HeldByCutoffWords(cutoff!.Value)}");
+                    text.AppendLine("    " + CutoffLine(sides, cutoff.Value, proposal.Unit));
                 }
             }
 
