@@ -20,9 +20,9 @@ public partial class ReadSurface
     [Fact]
     public void TheReportChartsAreTickedAtRoundValuesWithNoughtWhereTheAxisSpansIt()
     {
-        // CVX's growth axis from -62.9% to 265%: a quarter of its span is 82, the step 100, the ticks 0, 100 and 200; its
-        // reactions' from -3.2% to 3.8%, a step of 2 and the ticks -2, 0 and 2; its multiples' from 7.8 to 30.4 times, a
-        // step of 10; and its yield's from nought to 5.8%, a step of 2.
+        // CVX's growth axis from -62.9% to 265%: a quarter of its span is 82, so the ticks rise by a hundred, 0, 100 and
+        // 200; its reactions' from -3.2% to 3.8% rise by two, -2, 0 and 2; its multiples' from 7.8 to 30.4 times by ten;
+        // and its yield's from nought to 5.8% by two.
         Assert.Equal([0d, 100d, 200d], MarkRenderer.TickValues(-62.9, 265));
         Assert.Equal([-2d, 0d, 2d], MarkRenderer.TickValues(-3.2, 3.8));
         Assert.Equal([10d, 20d, 30d], MarkRenderer.TickValues(7.8, 30.4));
