@@ -721,7 +721,31 @@ public static class SchemaMigrations
         new Migration(98, "create reading_pin", CreateReadingPins),
         new Migration(99, "create release_document and release_day", CreateReleases),
         new Migration(100, "create release_filer, release_reading and release_probe", CreateReleaseReadings),
+        new Migration(101, "create loop_idea", CreateLoopIdeas),
     ];
+
+    // From 20.9: each answer the idea generator stored, a row a prompt and reading version, with the prompt as it was put,
+    // what the answer came to, its cause where refused and its text. Created empty, nothing copied and nothing dropped.
+    // see: The idea generator proposes conditions in the winners' grammar by closed labels code turns into levels, judged as a procedure inside each fold
+    const string CreateLoopIdeas = @"
+        CREATE TABLE loop_idea (
+            prompt_key     TEXT    NOT NULL,
+            pin            INTEGER NOT NULL,
+            version        TEXT    NOT NULL,
+            index_code     TEXT    NOT NULL,
+            family         TEXT    NOT NULL,
+            year           INTEGER NOT NULL,
+            prompt         TEXT    NOT NULL,
+            outcome        TEXT    NOT NULL CHECK (outcome IN ('answered', 'refused')),
+            cause          TEXT,
+            answer         TEXT,
+            seconds        REAL,
+            prompt_tokens  INTEGER,
+            asked_at       TEXT    NOT NULL,
+            run_id         TEXT    NOT NULL,
+            PRIMARY KEY (prompt_key, pin)
+        ) STRICT;
+    ";
 
     // From 20.3: each filer's names and tickers as the SEC's submissions state them, which the anonymiser reads; each
     // release's reading under a reading version, its four words or the cause it was refused for; and the probes' answers

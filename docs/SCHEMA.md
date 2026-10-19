@@ -121,6 +121,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `release_filer` | ReleaseFetch | ReleaseFetch | none |
 | `release_reading` | LocalRun | none | none |
 | `release_probe` | LocalRun | none | none |
+| `loop_idea` | IdeaGenerator | none | none |
 | `taken_trade` | ReadApi | ReadApi, TakenFollower | ReadApi |
 | `taken_record` | TakenFollower | none | TakenFollower |
 | `dividend_reading` | QuarterFetcher | none | none |
@@ -2095,6 +2096,30 @@ Grain: one row per probe, release and reading version, from 20.3.
 Primary key: `kind`, `accession`, `pin`.
 
 Insert only, by the local run's probes by hand and never by the night or a slot, each over the sample drawn at the seed from the releases accepted before the samples' day, a probe going on from the releases it has not probed; the accuracy report reads it (see: A release is read with every name and date in it replaced by a neutral word, and product names kept).
+
+### loop_idea
+Grain: one row per prompt the idea generator put and reading version it was answered under, from 20.9.
+
+| Column | Type | Notes |
+|---|---|---|
+| `prompt_key` | TEXT | the first 32 hex characters of the SHA-256 of the instruction's version and the prompt |
+| `pin` | INTEGER | the reading version it was asked under, `reading_pin`'s `id` |
+| `version` | TEXT | the generator's instruction's version |
+| `index_code` | TEXT | the index the prompt was put for, `GSPC`, `MID` or `SML` |
+| `family` | TEXT | the family whose rule's tables made the prompt |
+| `year` | INTEGER | the fold's test year, the year after the newest session's for the prompt over all finished data |
+| `prompt` | TEXT | the prompt as it was put, the fold's tables with no ticker and no date |
+| `outcome` | TEXT | `answered` or `refused` |
+| `cause` | TEXT | why it was refused, one of the causes an idea's answer is refused for, null where answered |
+| `answer` | TEXT | the answer's text as the runtime sent it, null where the runtime refused it |
+| `seconds` | REAL | the time the answer took, null where the runtime refused it |
+| `prompt_tokens` | INTEGER | the prompt's tokens as the runtime counted them, null where it stated none |
+| `asked_at` | TEXT | UTC instant |
+| `run_id` | TEXT | the generator's run |
+
+Primary key: `prompt_key`, `pin`.
+
+Insert only, by the idea generator, a step of the monthly run and a verb by hand, and never by the night; a prompt is asked once under a version, a refused one kept refused with its cause, and asked again only under a new version or where its tables made another prompt. The walk-forward tester reads each prompt's newest answer through the one reader of the stored answers, and code turns each label it holds into a condition (see: The idea generator proposes conditions in the winners' grammar by closed labels code turns into levels, judged as a procedure inside each fold).
 
 ### taken_trade
 Grain: one row per trade the operator took from a pick's card.

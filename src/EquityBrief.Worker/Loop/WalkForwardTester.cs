@@ -64,11 +64,15 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
             new StoreTouch(Store.FilterVersion, Touch.Read),
             new StoreTouch(Store.ShapeProposal, Touch.Read),
+            new StoreTouch(Store.LoopIdea, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
 
     public const string Verb = "loop-test";
+
+    // The verb the idea generator runs under, whose prompts the tester's own read of an index makes.
+    public const string IdeasVerb = "loop-ideas";
 
     // How long a run is allowed for before the night's window, which it does not start inside.
     public static readonly TimeSpan Expected = TimeSpan.FromHours(1);
@@ -137,32 +141,48 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     }
 
     // A run on an index for a month, written whole; with print, read and printed and nothing written.
-    public async Task<int> RunAsync(string index, string? month, CancellationToken cancellation = default, bool print = false)
+    public Task<int> RunAsync(string index, string? month, CancellationToken cancellation = default, bool print = false) =>
+        RunAsync(index, month, print, null, cancellation);
+
+    // The prompts the idea generator puts for an index: each family rule's in each fold and over all finished data, made
+    // from the history, the rules and the readings a run reads, with no procedure run and nothing written; none where the
+    // run would refuse to start.
+    // see: The idea generator proposes conditions in the winners' grammar by closed labels code turns into levels, judged as a procedure inside each fold
+    public async Task<IReadOnlyList<IdeaAsk>?> IdeaAsksAsync(string index, CancellationToken cancellation = default)
     {
+        var asks = new List<IdeaAsk>();
+
+        return await RunAsync(index, null, true, asks, cancellation) == 0 ? asks : null;
+    }
+
+    async Task<int> RunAsync(string index, string? month, bool print, List<IdeaAsk>? asks, CancellationToken cancellation)
+    {
+        var verb = asks is null ? Verb : IdeasVerb;
+
         if (!Indices.Contains(index, StringComparer.Ordinal))
         {
-            output.WriteLine($"{Verb}: name an index with '--index', GSPC, MID or SML");
+            output.WriteLine($"{verb}: name an index with '--index', GSPC, MID or SML");
 
             return 2;
         }
 
         if (month is not null && !DateOnly.TryParseExact(month + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
         {
-            output.WriteLine($"{Verb}: '--month' takes a month as yyyy-MM, not '{month}'");
+            output.WriteLine($"{verb}: '--month' takes a month as yyyy-MM, not '{month}'");
 
             return 2;
         }
 
         if (NightLock.Holder(dataRoot) is { } holder)
         {
-            output.WriteLine($"{Verb}: the night holds the store ({holder}); run it once the night has finished");
+            output.WriteLine($"{verb}: the night holds the store ({holder}); run it once the night has finished");
 
             return 2;
         }
 
         if (SweepRunner.InTheNightsWindow(clock.UtcNow, Expected))
         {
-            output.WriteLine(FormattableString.Invariant($"{Verb}: a run started now would reach the night's window, which begins at {SweepRunner.PauseFrom:hh\\:mm} UTC on a weekday; run it after the night"));
+            output.WriteLine(FormattableString.Invariant($"{verb}: a run started now would reach the night's window, which begins at {SweepRunner.PauseFrom:hh\\:mm} UTC on a weekday; run it after the night"));
 
             return 2;
         }
@@ -178,7 +198,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
 
         if (inputs.Names.Count == 0)
         {
-            output.WriteLine($"{Verb}: the store holds no member of the {DecisionCards.NameOf(index)}; pull them first with 'history-pull --members --index {index}', then their history");
+            output.WriteLine($"{verb}: the store holds no member of the {DecisionCards.NameOf(index)}; pull them first with 'history-pull --members --index {index}', then their history");
 
             return 2;
         }
@@ -187,7 +207,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
 
         if (read.Folds.Count == 0)
         {
-            output.WriteLine(FormattableString.Invariant($"{Verb}: the history ends {through:yyyy-MM-dd}, before the first test year, {LoopFolds.FirstTestYear}"));
+            output.WriteLine(FormattableString.Invariant($"{verb}: the history ends {through:yyyy-MM-dd}, before the first test year, {LoopFolds.FirstTestYear}"));
 
             return 2;
         }
@@ -195,13 +215,15 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         // Part 0's procedures on the S&P 400 and 600; then each family a rule's hooks reach, the S&P 400's and 600's
         // provisional pullback, the S&P 500's swing filter with its shape clock's moves, and the breakout and the drift on
         // every index, read once and handed to the autopsy's exits,
-        // to winners against losers and to the learned score, fitted on the family's finished setups of all three
-        // indices; then the sector heavyweights' two exits on every index; each family's proposals read together by the
-        // step-down.
+        // to winners against losers, to the idea generator's stored answers and to the learned score, fitted on the
+        // family's finished setups of all three indices; then the sector heavyweights' two exits on every index; each
+        // family's proposals read together by the step-down. The generator's prompts are the rules' own and read no
+        // procedure, so the generator's read runs none.
+        var procedures = asks is null;
         var proposals = new List<LoopProposalRead>();
         var findings = new Dictionary<string, IReadOnlyList<AutopsyFigure>>(StringComparer.Ordinal);
         var spreads = new Dictionary<string, IReadOnlyList<ReadingSpread>>(StringComparer.Ordinal);
-        var lay = await HeavyweightLay.ReadAsync(read, history, through, output.WriteLine, cancellation);
+        var lay = procedures ? await HeavyweightLay.ReadAsync(read, history, through, output.WriteLine, cancellation) : null;
 
         // Each family is tested against the rule as it stands: at the setting an approval stored for it on its index where
         // one did, the S&P 500's breakout and drift at their own setting with the hooks it stores, and at its provisional
@@ -211,7 +233,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
         var standing = await StandingAsync(databaseFile, index, cancellation);
 
-        if (!large)
+        if (!large && procedures)
         {
             foreach (var family in new[] { BreakoutRule.Name, DriftRule.Name })
             {
@@ -225,7 +247,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
                 proposals.Add(LoopProcedures.Swing(read, family, output.WriteLine, standing.GetValueOrDefault(family)));
             }
 
-            proposals.AddRange(LoopProcedures.Heavyweights(read, lay, output.WriteLine));
+            proposals.AddRange(LoopProcedures.Heavyweights(read, lay!, output.WriteLine));
         }
 
         var readings = await LoopReadings.ReadAsync(read, databaseFile, through, cancellation);
@@ -256,7 +278,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
 
             rules.Add(filter);
 
-            if (await ShapeMovesAsync(databaseFile, open.Version, cancellation) is { } shape)
+            if (procedures && await ShapeMovesAsync(databaseFile, open.Version, cancellation) is { } shape)
             {
                 proposals.AddRange(ShapeProcedures.Run(read, filter, WalkAt, open.Settings, shape.Moves, shape.Id, output.WriteLine));
             }
@@ -276,11 +298,11 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         var baseListings = RuleWalk.BaseListings(read, baseReplay);
         var fundamentals = RuleWalk.Fundamentals(read, baseReplay.Series, baseListings, readings, fundamentalsSetting, output.WriteLine, fundamentalsStanding, trees);
 
-        if (fundamentalsStanding is { Hooks.Count: > 0 })
+        if (procedures && fundamentalsStanding is { Hooks.Count: > 0 })
         {
             output.WriteLine($"{Verb}: the {FundamentalsRule.Name}'s grid is not searched on the {DecisionCards.NameOf(index)}, since the rule stands at {fundamentalsStanding.Words()} and the grid's walk reads no hook");
         }
-        else
+        else if (procedures)
         {
             output.WriteLine(FormattableString.Invariant($"walking the {FundamentalsRule.Name}'s {FundamentalsSearch.Grid.Settings.Count} setting(s) on the {DecisionCards.NameOf(index)} over the whole history"));
             proposals.Add(LoopProcedures.Fundamentals(
@@ -293,23 +315,38 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
 
         rules.Add(fundamentals);
 
+        if (asks is not null)
+        {
+            foreach (var rule in rules)
+            {
+                asks.AddRange(IdeaProcedures.Prompts(read, rule, readings));
+            }
+
+            output.WriteLine(FormattableString.Invariant($"{verb}: {asks.Count} prompt(s) over {rules.Count} rule(s) on the {DecisionCards.NameOf(index)}, through {through:yyyy-MM-dd}, over {read.Folds.Count} fold(s)"));
+
+            return 0;
+        }
+
         var scores = new List<FittedScore>();
+        var answered = await StoredIdeasAsync(databaseFile, cancellation);
 
         foreach (var rule in rules)
         {
             var (exits, figures) = ExitProcedures.Autopsy(read, rule, output.WriteLine);
             var (conditions, spread) = ConditionProcedures.Run(read, rule, readings, output.WriteLine);
+            var ideas = IdeaProcedures.Run(read, rule, readings, answered, output.WriteLine);
             var (scored, fitted) = ScoreProcedures.Run(read, rule, readings, await FinishedAsync(databaseFile, rule.Family, cancellation), output.WriteLine);
 
             proposals.AddRange(exits);
             proposals.AddRange(conditions);
+            proposals.AddRange(ideas);
             proposals.AddRange(scored);
             scores.AddRange(fitted);
             findings[rule.Family] = figures;
             spreads[rule.Family] = spread;
         }
 
-        proposals.AddRange(ExitProcedures.Heavyweights(read, lay, output.WriteLine));
+        proposals.AddRange(ExitProcedures.Heavyweights(read, lay!, output.WriteLine));
 
         var tested = ScoreProcedures.AgainstRidge(Judge(read, proposals));
         var runId = FormattableString.Invariant($"{Verb}-{index}-{started:yyyyMMddTHHmmssZ}");
@@ -624,6 +661,18 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         return await reader.ReadAsync(cancellation) ? (reader.GetInt64(0), ShapeProcedures.MovesOf(reader.GetString(1))) : null;
     }
 
+    // The answers the idea generator stored, read through the one reader of them: each prompt's newest read into its
+    // labels, a refused answer holding none.
+    static async Task<Func<string, IReadOnlyList<IdeaLabel>?>> StoredIdeasAsync(string databaseFile, CancellationToken cancellation)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var stored = await LoopIdeas.NewestAsync(connection, cancellation);
+
+        return key => stored.TryGetValue(key, out var idea) && idea.Outcome == LoopIdeas.Answered ? IdeaPrompt.Read(idea.Answer, null).Labels : null;
+    }
+
     // The tree models earlier runs stored, which a rule standing at an approved change of the learned score's
     // challenger is walked by.
     static async Task<Func<long, TreeModel?>> StoredTreesAsync(string databaseFile, CancellationToken cancellation)
@@ -906,7 +955,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         var gate = verdict.Adjusted is { } p ? FormattableString.Invariant($"adjusted p {p:0.####} against {LoopGate.Bar:0.####}") : FormattableString.Invariant($"{verdict.Blocks} block(s), under the floor of {EquityBrief.Core.Returns.Blocks.Floor}");
 
         return FormattableString.Invariant(
-            $"{proposal.Family}, {proposal.Proposal}: {(one.Passed ? "passed" : "did not pass")}; {proposal.Words ?? "no setting chosen on all finished data"}; {gate}; better in {verdict.Better} of {verdict.Counted} counted year(s){(verdict.Stable ? string.Empty : ", short of the stability screen")}; {verdict.Units} {proposal.Unit} unit(s){(verdict.Counts ? string.Empty : ", short of the count")}{(one.BeatsRidge == false ? ", not above the learned score's proposal of its kind" : string.Empty)}; {proposal.StableFolds} of {proposal.Folds.Count} folds {(proposal.Proposal.StartsWith(RidgeScore.Proposal, StringComparison.Ordinal) || proposal.Proposal.StartsWith(TreeScore.Proposal, StringComparison.Ordinal) ? "fitted a score" : "within a step")}");
+            $"{proposal.Family}, {proposal.Proposal}: {(one.Passed ? "passed" : "did not pass")}; {proposal.Words ?? "no setting chosen on all finished data"}; {gate}; better in {verdict.Better} of {verdict.Counted} counted year(s){(verdict.Stable ? string.Empty : ", short of the stability screen")}; {verdict.Units} {proposal.Unit} unit(s){(verdict.Counts ? string.Empty : ", short of the count")}{(one.BeatsRidge == false ? ", not above the learned score's proposal of its kind" : string.Empty)}; {proposal.StableFolds} of {proposal.Folds.Count} folds {(proposal.Proposal.StartsWith(RidgeScore.Proposal, StringComparison.Ordinal) || proposal.Proposal.StartsWith(TreeScore.Proposal, StringComparison.Ordinal) ? "fitted a score" : proposal.Proposal.StartsWith(IdeaProcedures.Prefix, StringComparison.Ordinal) ? "named the same idea" : "within a step")}");
     }
 
     static async Task ExecuteAsync(SqliteConnection connection, SqliteTransaction transaction, string sql, IReadOnlyList<(string Name, object Value)> parameters, CancellationToken cancellation)

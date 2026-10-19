@@ -161,6 +161,8 @@ public partial class FixtureExpectations
             .. ReleaseReadingClaims,
             // 20.4, the drift's tone variant: 15.7's card row and section 17's window row.
             .. ToneVariantClaims,
+            // 20.9, the idea generator: section 18's two rows.
+            .. IdeaGeneratorClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

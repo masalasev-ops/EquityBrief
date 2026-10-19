@@ -1437,7 +1437,8 @@ public partial class ArchitectureConformance
         // 233 at 19.13: the report's Insiders region.
         // 234 at 20.1: the Run page's local model region.
         // 235 at 20.4: Tonight's row for the drift's tone variant on its card.
-        Assert.Equal(235, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 236 at 20.9: the Loop page's row for the idea generator's proposals.
+        Assert.Equal(236, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1587,7 +1588,8 @@ public partial class ArchitectureConformance
         // 634 at 19.13: the report's Insiders region.
         // 635 at 20.1: the Run page's local model region.
         // 636 at 20.4: Tonight's row for the drift's tone variant on its card.
-        Assert.Equal(636, inDocument.Length);
+        // 637 at 20.9: the Loop page's row for the idea generator's proposals.
+        Assert.Equal(637, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

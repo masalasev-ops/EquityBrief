@@ -571,14 +571,26 @@ public sealed partial class LocalRun(
 
     // Whether the run may read: the profile's file and cutoff named, a pin written, the model, the file and the
     // instruction the pin's, the file hashed whole where the pin's rule says.
-    async Task<(ReadingPin? Pin, string? Check, double? HashSeconds, LocalRunOutcome? Refusal)> ReadyAsync(DateTimeOffset started, CancellationToken cancellation)
+    Task<(ReadingPin? Pin, string? Check, double? HashSeconds, LocalRunOutcome? Refusal)> ReadyAsync(DateTimeOffset started, CancellationToken cancellation) =>
+        ReadyAsync(settings, databaseFile, started, ReleaseQuestions.Version, cancellation);
+
+    // The same for any process asking the local model under the newest pin, a prompt version of none comparing no prompt,
+    // as the idea generator reads it, its own instruction's version being part of each answer's key.
+    internal static async Task<(ReadingPin? Pin, string? Check, double? HashSeconds, LocalRunOutcome? Refusal)> ReadyAsync(
+        LocalModelSettings settings,
+        string databaseFile,
+        DateTimeOffset started,
+        string? promptVersion,
+        CancellationToken cancellation)
     {
         if (settings.ModelFile is not { } relative || settings.KnowledgeCutoff is null)
         {
             return (null, null, null, Ended(string.Empty, NotSet, $"the local profile {settings.Profile} names no {LocalModelSettings.ModelFileName} or no {LocalModelSettings.KnowledgeCutoffName}"));
         }
 
-        await using var connection = await OpenAsync(cancellation);
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+
+        await connection.OpenAsync(cancellation);
 
         if (await NewestPinAsync(connection, cancellation) is not { } pin)
         {
@@ -617,7 +629,7 @@ public sealed partial class LocalRun(
             check = ReadingPins.WholeHash;
         }
 
-        if (ReadingPins.Differs(pin, settings.Model, sha, facts.Size, facts.Modified, ReleaseQuestions.Version) is { } part)
+        if (ReadingPins.Differs(pin, settings.Model, sha, facts.Size, facts.Modified, promptVersion ?? pin.PromptVersion) is { } part)
         {
             return (pin, check, hashSeconds, Ended(string.Empty, PinRefused, $"{part} is not pin {pin.Id}'s") with { Pin = pin, FileCheck = check, HashSeconds = hashSeconds });
         }
@@ -625,10 +637,10 @@ public sealed partial class LocalRun(
         return (pin, check, hashSeconds, null);
     }
 
-    static LocalRunOutcome Ended(string kind, string outcome, string why) =>
+    internal static LocalRunOutcome Ended(string kind, string outcome, string why) =>
         new(kind, outcome, why, 0, 0, NoRefusals, null, null, null, null, null);
 
-    static readonly IReadOnlyDictionary<string, int> NoRefusals = new Dictionary<string, int>(StringComparer.Ordinal);
+    internal static readonly IReadOnlyDictionary<string, int> NoRefusals = new Dictionary<string, int>(StringComparer.Ordinal);
 
     // Waits while the night, the drain or the monthly run holds its lock, up to the instant given where there is one.
     async Task<bool> WaitToWriteAsync(DateTimeOffset? until, TextWriter output, CancellationToken cancellation)
@@ -708,7 +720,7 @@ public sealed partial class LocalRun(
             identical = outcome.Identical,
         });
 
-    static double? Median(List<double> values)
+    internal static double? Median(List<double> values)
     {
         if (values.Count == 0)
         {

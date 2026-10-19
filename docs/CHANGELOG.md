@@ -26,6 +26,63 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-19 - .claude/rules/checks.md - fixture-expectations, rules-choose-the-stocks and read-surface state the idea generator
+Authorised by: The idea generator proposes conditions in the winners' grammar by closed labels code turns into levels, judged as a procedure inside each fold
+Was:
+> fixture-expectations: ... and the recorder keeping each answer as sent and answering a request asked again from its first recording |
+> rules-choose-the-stocks: ... and of the release readings in a source outside the one reader and to pass the one reader and a source calling it |
+> read-surface: ... its Run page the family's row after the S&P 500's own families counted from the index families' picks and trades, read back over a constructed store |
+Now:
+> fixture-expectations: ... and the recorder keeping each answer as sent and answering a request asked again from its first recording; and from 20.9 each label the idea generator's answer holds turned into its condition at its tenth's upper edge over a fold's own listings worked by hand, ... and the monthly run's steps built in the order their names state, each index's ideas after its readings' step and before its tester |
+> rules-choose-the-stocks: ... and to pass the one reader and a source calling it; and from 20.9 the idea generator's stored answers are the other thing a model wrote that a deciding component may read: the walk-forward tester reads them through the one reader of the stored answers alone and asks no model, ... the reader shown to find a planted read of it outside the one reader and to pass the one reader and a source calling it |
+> read-surface: ... read back over a constructed store; and from 20.9 the Loop page drawing the idea generator's proposal as every proposal is, its change and beneath it its finding naming the idea the local model answered, and one naming no change drawing none, read back off the rendered page over a constructed store |
+Why: each roster row says what its check asserts, and 20.9's tests extend all three.
+
+### 2026-10-19 - BUILD_PLAN.md - 20.9's text as built: the idea generator, its step and the tester's read of its stored answers
+Authorised by: The idea generator proposes conditions in the winners' grammar by closed labels code turns into levels, judged as a procedure inside each fold
+Was:
+> ... which code turns into a condition in winners against losers' grammar at the edge the table stored for that tenth. An answer outside the grammar is refused with its cause, at most three proposals a family on an index each run. ... so a run again reads them. Writes section 13's step, 15.20's row, section 18's refused answer, the component catalogue's and the matrix's rows, the schema, the runbook, the decision naming the generator, the roster's row for the tester reading its stored answers and the guide.
+Now:
+> ... which code turns into a condition in winners against losers' grammar at the upper edge of that tenth over the fold's own listings, the level the search itself cuts the reading at. An answer outside the grammar is refused with its cause, asked once more first where the cause is read off the answer, ... It is the idea generator, a component of its own, by hand `loop-ideas` and in the monthly run the steps `ideas-GSPC`, `ideas-MID` and `ideas-SML` ... A step that cannot ask the local model holds with its words, so the tester reads the answers stored before. Writes section 13's step and engine, 15.20's row, section 18's two rows, the component catalogue's and the matrix's rows, the stores' row, the schema, the runbook, the decision naming the generator, the roster's rows for the tester reading its stored answers, the expectations and the Loop page, and the guide.
+Why: the edge a tenth's label names is where the search cuts a reading, which the table's tenths' mean edges do not state, and the generator asks the model in a step of its own so the tester stays model-free.
+
+### 2026-10-19 - RUNBOOK.md - the idea generator by hand and its steps in the monthly run
+Authorised by: The idea generator proposes conditions in the winners' grammar by closed labels code turns into levels, judged as a procedure inside each fold
+Was:
+> From 17.10 the loop runs once a month: ... from 19.12 which readings go with winners on each index, each index's tester run, ...
+> ... from 19.12 `links-GSPC`, `links-MID` and `links-SML`, `test-GSPC`, `test-MID` and `test-SML`, from 19.4 `rules-GSPC`, `rules-MID` and `rules-SML`, and `report`.
+> ... the history's, the testers' and the per-rule tests' steps take that lock themselves for each chunk they write.
+Now:
+> From 17.10 the loop runs once a month: ... from 19.12 which readings go with winners on each index, from 20.9 the idea generator on each index, each index's tester run, ...
+> ... from 19.12 `links-GSPC`, `links-MID` and `links-SML`, from 20.9 `ideas-GSPC`, `ideas-MID` and `ideas-SML`, `test-GSPC`, ... and `report`. A generator's step holds whatever the local model came to, ...
+> ... the history's, the readings', the generator's, the testers' and the per-rule tests' steps take that lock themselves for each chunk they write. The generator's steps hold the local lock while they ask, ...
+> and a paragraph on the generator with its `loop-ideas` commands under the walk-forward tester, where there was none
+Why: the generator is a step of the monthly run and a verb by hand, and the readings' step already took the lock itself where the paragraph did not say so.
+
+### 2026-10-19 - SCHEMA.md - loop_idea, the idea generator's stored answers
+Authorised by: The idea generator proposes conditions in the winners' grammar by closed labels code turns into levels, judged as a procedure inside each fold
+Was:
+> (no row and no table for it)
+Now:
+> | `loop_idea` | IdeaGenerator | none | none |, and the table's section with its grain, columns, key and who writes and reads it
+Why: migration 101 creates it, and the generator is its one writer.
+
+### 2026-10-19 - ARCHITECTURE.html - the idea generator: its catalogue, matrix and stores rows, 13.13's engine, the monthly steps, 15.20's row and section 18's two
+Authorised by: The idea generator proposes conditions in the winners' grammar by closed labels code turns into levels, judged as a procedure inside each fold
+Was:
+> Walk-forward tester, reads: ... filter versions, shape proposals, loop models, candidate register; does: ... changing no rule (see: Which readings go with winners is worked by the monthly run and stored, and the words move no rule)
+> Walk-forward tester's matrix row: no read under Research and readings
+> Monthly run, does: ... (see: Which readings go with winners ...), each index's tester run by the walk-forward tester with its engines inside it, ... holds the drain's lock while a step runs but for the history's, the readings', the testers' and the per-rule tests', which take it themselves as they write; makes no request and calls no model of its own (see: ...)
+> 13.16: ... each index's point-in-time check on the history just written, ...; each index's tester run, the autopsy, winners against losers and the learned score inside it; ... the history's, the testers' and the per-rule tests' steps take that lock themselves as they write, and the run leaves it to them.
+> (no Idea generator catalogue or matrix row, no Loop ideas row in the stores table, no paragraph on a third engine in 13.13, no Loop page row for the generator's proposals and no section 18 rows for it)
+Now:
+> Walk-forward tester, reads: ... shape proposals, loop models, loop ideas, candidate register; does: ... changing no rule (see: ...); and from 20.9 reads the idea generator's stored answers through the one reader of them alone and asks no model: ...
+> Walk-forward tester's matrix row: R under Research and readings
+> Monthly run, does: ... from 20.9 the idea generator on each index after every readings' step, its step holding with its words where the local model cannot be asked so the tester reads the answers stored before (see: ...), each index's tester run ... but for the history's, the readings', the generator's, the testers' and the per-rule tests', ...; makes no request and calls no model of its own, the generator's step asking the local model on a row of its own (see: ...)
+> 13.16: ... from 20.9 the idea generator on each index after which readings go with winners, ...; each index's tester run, the autopsy, winners against losers, the generator's stored answers and the learned score inside it; ... the history's, the readings', the generator's, the testers' and the per-rule tests' steps take that lock themselves as they write, and the run leaves it to them.
+> the Idea generator's catalogue and matrix rows, the Loop ideas row, 13.13's paragraph from 20.9 on a third engine reading the same two tables with the local model, 15.20's row for the idea generator's proposals, and section 18's rows for an answer the idea generator cannot read and for the generator unable to ask the local model in the monthly run
+Why: the generator is a component of its own whose answers the tester reads, and the readings' step already took the drain's lock itself where 13.16 did not say so.
+
 ### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the report sections compared, and banned-prose reads a folder within a fixture as the fixture's
 Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
 Was:

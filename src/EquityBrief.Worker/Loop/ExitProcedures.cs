@@ -269,7 +269,7 @@ public static class ExitProcedures
             exit).Average;
 
     // A finished trade's closes from its buy to its end, its stop read as where it ended where the walk named none.
-    static TradePath Path(LoopRead read, double[][] closes, Walked trade)
+    internal static TradePath Path(LoopRead read, double[][] closes, Walked trade)
     {
         var listing = trade.Trade.Listing;
         var series = closes[listing.Name];

@@ -381,6 +381,9 @@ public partial class ReadSurface
             // 17.4's Loop page under Universe.
             .. LoopPageClaims,
 
+            // 20.9's row on the Loop page, the idea generator's proposals.
+            .. LoopIdeaClaims,
+
             // 17.7's learned score on the card and the Loop page, and section 18's two rows a reader sees on a card.
             .. ScorePageClaims,
             CheckReach.Key(Scope.FailureTable, "A model that cannot load"),
