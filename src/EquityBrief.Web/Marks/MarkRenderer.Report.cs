@@ -769,21 +769,43 @@ public sealed partial class MarkRenderer
         return row.ToString();
     }
 
-    // Four ticks on the axis at the left with their values, and a light rule across the plot at each.
+    // The axis's ticks at the left with their values, and a light rule across the plot at each.
     string Ticks(double low, double high, Func<double, double> y, string unit)
     {
         var ticks = new StringBuilder();
 
-        for (var step = 0; step <= 3; step++)
+        foreach (var value in TickValues(low, high))
         {
-            var value = low + ((high - low) * step / 3);
-            var fine = Math.Abs(high - low) < 3;
-
             ticks.Append(Formatted($"<line class=\"m-gridline\" x1=\"{Number(ChartLeft)}\" x2=\"{Number(ChartWide - ChartRight)}\" y1=\"{Number(y(value))}\" y2=\"{Number(y(value))}\"/>"));
-            ticks.Append(Formatted($"<text class=\"m-tick\" x=\"{Number(ChartLeft - 6)}\" y=\"{Number(y(value) + 4)}\" text-anchor=\"end\">{Unsigned(value, fine ? 2 : 1).ToString(fine ? "0.00" : "0.#", Invariant)}{unit}</text>"));
+            ticks.Append(Formatted($"<text class=\"m-tick\" x=\"{Number(ChartLeft - 6)}\" y=\"{Number(y(value) + 4)}\" text-anchor=\"end\">{Unsigned(value, 4).ToString("0.####", Invariant)}{unit}</text>"));
         }
 
         return ticks.ToString();
+    }
+
+    // An axis's ticks at round values: every multiple between its ends of the step of one, two, two and a half or five
+    // times a power of ten that is the least at or above a quarter of the axis's span, so at most five and nought among
+    // them where the axis spans it.
+    public static IReadOnlyList<double> TickValues(double low, double high)
+    {
+        var rough = (high - low) / 4;
+
+        if (!(rough > 0) || double.IsInfinity(rough))
+        {
+            return [low];
+        }
+
+        var power = Math.Pow(10, Math.Floor(Math.Log10(rough)));
+        var fraction = rough / power;
+        var step = (fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 2.5 ? 2.5 : fraction <= 5 ? 5 : 10) * power;
+        var values = new List<double>();
+
+        for (var at = (long)Math.Ceiling((low / step) - 1e-9); at * step <= high + (step * 1e-9); at++)
+        {
+            values.Add(Math.Round(at * step, 10));
+        }
+
+        return values;
     }
 
     // An axis's ends with a little room past the values, including nought where the values straddle it or zero is asked for.
