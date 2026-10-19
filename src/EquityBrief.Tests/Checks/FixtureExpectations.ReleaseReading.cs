@@ -18,7 +18,7 @@ namespace EquityBrief.Tests.Checks;
 // start and across a weekend; the agreement, the probes' and the tone variant's arithmetic over constructed rows; the
 // sample drawn at its seed; the history read pausing for a slot; the filers' names read off their submissions; and the
 // accuracy report naming a reading written before its label.
-// see: A release is read with every name and date in it replaced by a neutral word, and product names kept
+// see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
 // see: A release reading is readable from the first night whose late slot starts after the release was accepted
 public partial class FixtureExpectations
 {
@@ -67,14 +67,14 @@ public partial class FixtureExpectations
             Assert.Contains(passage.GetProperty("read").GetString()!, read, StringComparison.Ordinal);
         }
 
-        // Nothing of the filer, its people, its place or its dates is left, but its first word where a sentence opens on it,
-        // which no single word is replaced as.
-        foreach (var kept in expected.GetProperty("keptAtASentenceStart").EnumerateArray())
+        // Nothing of the filer, its people, its place or its dates is left, from the 20.3 correction of 2026-10-19 its first
+        // word where a sentence opens on it among them.
+        foreach (var opening in expected.GetProperty("readAtASentenceStart").EnumerateArray())
         {
-            Assert.Contains(kept.GetString()!, read, StringComparison.Ordinal);
+            Assert.Contains(opening.GetString()!, read, StringComparison.Ordinal);
         }
 
-        Assert.Equal(2, System.Text.RegularExpressions.Regex.Count(read, "Keysight"));
+        Assert.DoesNotContain("Keysight", read, StringComparison.Ordinal);
 
         foreach (var gone in new[] { "KEYS", "Dhanasekaran", "Satish", "SANTA ROSA", "Calif.", "2026", "2025", "August", "July", "keysight.com", "585-542" })
         {
@@ -114,17 +114,18 @@ public partial class FixtureExpectations
 
         Assert.Equal([read], asked);
         Assert.Equal((LocalRun.Finished, 1), (outcome.Outcome, outcome.Read));
-        Assert.Equal([$"{KeysAugust}|1|read|null|better|raised|confident|stronger|5755"], Query(store, "SELECT accession, pin, outcome, cause, results, outlook, tone, demand, prompt_tokens FROM release_reading;"));
+        Assert.Equal([$"{KeysAugust}|1|read|null|better|raised|confident|stronger|{expected.GetProperty("promptTokens").GetInt32()}"], Query(store, "SELECT accession, pin, outcome, cause, results, outlook, tone, demand, prompt_tokens FROM release_reading;"));
         Assert.Equal(1L, Scalar(store, "SELECT COUNT(*) FROM reading_pin WHERE history_completed_at IS NOT NULL;"));
     }
 
     [Fact]
     public void AFilerNamedWithACommonWordAndAnInsiderWithAnOrdinarySurnameAreLeftWhereTheyAreNotTheName()
     {
-        // A filer opening on General, a common word, and an insider whose surname, Young, is an ordinary word. Worked by
-        // hand: the name in its long legal form, the ticker in its exchange's form, the quarter, the day and the fiscal
-        // year replaced; General standing alone and the product Widgets kept; Young kept as a sentence's first word and in
-        // lower case, and replaced as the chief executive's name and after Mr.
+        // A filer opening on General, a common word, and an insider whose surname, Young, is an ordinary word the
+        // common-word list does not hold. Worked by hand: the name in its long legal form, the ticker in its exchange's
+        // form, the quarter, the day and the fiscal year replaced; General standing alone and the product Widgets kept;
+        // Young kept in lower case, and from the 20.3 correction of 2026-10-19 replaced where it opens a sentence as well
+        // as the chief executive's name and after Mr.
         const string Text =
             "General Widgets Corporation (NYSE: GWX) reported its third quarter results on October 14, 2026. General and administrative expenses fell. " +
             "Widgets shipped rose, and general demand improved. Sales of General Purpose widgets rose. Young said the quarter was strong. " +
@@ -132,14 +133,14 @@ public partial class FixtureExpectations
 
         Assert.Equal(
             "[company] ([ticker]) reported its [quarter] results on [date]. General and administrative expenses fell. " +
-            "Widgets shipped rose, and general demand improved. Sales of General Purpose widgets rose. Young said the quarter was strong. " +
+            "Widgets shipped rose, and general demand improved. Sales of General Purpose widgets rose. [person 1] said the quarter was strong. " +
             "“We grew,” said [person 1], Chief Executive Officer. Mr. [person 1] added that young customers grew in FY[year].",
             ReleaseAnonymiser.Anonymise(Text, new ReleaseFiler(["GENERAL WIDGETS CORP"], ["GWX"], ["Young Robert A"])));
 
         // The same sentences for a filer whose first word no common word holds: replaced on its own where it opens on a
-        // capital inside a sentence, and kept where it opens one or is written in lower case.
+        // capital, a sentence's first word among them from the 20.3 correction of 2026-10-19, and kept in lower case.
         Assert.Equal(
-            "Acme grew. Sales of [company] Purpose widgets rose, and acme demand improved.",
+            "[company] grew. Sales of [company] Purpose widgets rose, and acme demand improved.",
             ReleaseAnonymiser.Anonymise("Acme grew. Sales of Acme Purpose widgets rose, and acme demand improved.", new ReleaseFiler(["ACME WIDGETS CORP"], ["AWX"], [])));
 
         // "Q3" and "September 30" are read as dates before any name is, so neither is taken for one, and June in a run
@@ -149,12 +150,13 @@ public partial class FixtureExpectations
             ReleaseAnonymiser.Anonymise("Revenue for Q3, the quarter ended September 30, rose, said June Smith, Chief Financial Officer.", new ReleaseFiler(["ACME HOLDINGS INC"], ["ACM"], [])));
 
         // A name's forms: a state the SEC adds after a slash, a leading article and each legal word taken off, the first two
-        // words of a longer name, an apostrophe the SEC leaves out, and a document's name carrying the ticker.
+        // words of a longer name, an apostrophe the SEC leaves out, and a document's name carrying the ticker; the name
+        // opening a sentence replaced from the 20.3 correction of 2026-10-19.
         Assert.Equal(["WELLS FARGO & COMPANY", "WELLS FARGO"], ReleaseAnonymiser.Variants("WELLS FARGO & COMPANY/MN"));
         Assert.Equal(["The Home Depot, Inc.", "Home Depot, Inc.", "The Home Depot", "Home Depot"], ReleaseAnonymiser.Variants("The Home Depot, Inc."));
         Assert.Contains("FIRST FINANCIAL", ReleaseAnonymiser.Variants("FIRST FINANCIAL BANKSHARES INC"));
         Assert.Equal(
-            "[company] reported. Domino’s grew, while [company] stores rose; see [address].",
+            "[company] reported. [company] grew, while [company] stores rose; see [address].",
             ReleaseAnonymiser.Anonymise("Domino’s Pizza, Inc. reported. Domino’s grew, while Domino’s stores rose; see earningsrelease3q26dpz.", new ReleaseFiler(["DOMINOS PIZZA INC"], ["DPZ"], [])));
     }
 
@@ -277,6 +279,110 @@ public partial class FixtureExpectations
         Assert.Equal(
             "“We grew,” said [person 1], Chairman. [company] thanks Mr. [person 1].",
             ReleaseAnonymiser.Anonymise("“We grew,” said Michael Dellware, Chairman. Dellware Inc. thanks Mr. Dellware.", new ReleaseFiler(["DELLWARE INC"], ["DLW"], [])));
+    }
+
+    [Fact]
+    public void ANameOpeningASentenceOrAListsItemANameWithACapitalAfterItsFirstLetterAndAShortFormTheReleaseDefinesAreTheFilers()
+    {
+        // From the 20.3 correction of 2026-10-19, on the operator's rulings of that day, each worked by hand from a release
+        // the reference set holds. (a) The filer's one-word name opening a quotation and a list's item and a sentence, as
+        // Mosaic's release writes it, and a surname a title found opening a sentence, as Tractor Supply's writes Lawton,
+        // are replaced as anywhere else.
+        Assert.Equal(
+            "“[company] delivered record EBITDA in [year], and we expect strong performance to continue in [year],” said [person 1], President and CEO. "
+            + "• [company] expects to initiate an accelerated share repurchase (ASR) of $400 million in [date]. [company] remains on track to complete the ramp up of K3 by the end of the [quarter] of [year].",
+            ReleaseAnonymiser.Anonymise(
+                "“Mosaic delivered record EBITDA in 2021, and we expect strong performance to continue in 2022,” said Joc O’Rourke, President and CEO. "
+                + "• Mosaic expects to initiate an accelerated share repurchase (ASR) of $400 million in February. Mosaic remains on track to complete the ramp up of K3 by the end of the first quarter of 2022.",
+                new ReleaseFiler(["MOSAIC CO", "GLOBAL NUTRITION SOLUTIONS INC"], ["MOS"], [])));
+        Assert.Equal(
+            "dedication to serving our customers every day,” said [person 1], President and Chief Executive Officer of [company]. [person 1] continued, “We are updating our fiscal [year] outlook",
+            ReleaseAnonymiser.Anonymise(
+                "dedication to serving our customers every day,” said Hal Lawton, President and Chief Executive Officer of Tractor Supply. Lawton continued, “We are updating our fiscal 2026 outlook",
+                new ReleaseFiler(["TRACTOR SUPPLY CO /DE/"], ["TSCO"], [])));
+
+        // An insider's surname that is an ordinary word the common-word list holds stays where it opens a sentence, as
+        // RGA's insider To My Chi beside "To learn more", on the operator's answer of the same day; and "the Company's"
+        // stays.
+        Assert.Contains("To", ReleaseAnonymiser.OrdinarySurnames);
+        Assert.Equal(
+            "and financial solutions. To learn more about [ticker] and its businesses, visit the Company’s website at [address] .",
+            ReleaseAnonymiser.Anonymise(
+                "and financial solutions. To learn more about RGA and its businesses, visit the Company’s website at www.rgare.com .",
+                new ReleaseFiler(["REINSURANCE GROUP OF AMERICA INC"], ["RGA"], ["To My Chi"])));
+
+        // (b) A name's word with a capital after its first letter, as nVent's release writes its name, in that exact case
+        // wherever it stands, where no short form defines it; and with its name, its ticker and the short form it defines
+        // after them in its dateline.
+        var nvent = new ReleaseFiler(["nVent Electric plc"], ["NVT"], []);
+
+        Assert.Equal(
+            "EARNINGS CONFERENCE CALL [company]’s management team will discuss the company’s [quarter] performance on a conference call",
+            ReleaseAnonymiser.Anonymise("EARNINGS CONFERENCE CALL nVent’s management team will discuss the company’s second quarter performance on a conference call", nvent));
+        Assert.Equal(
+            "[place] – [date] – [company] ([ticker]) (“[company]”), a global leader in electrical connection and protection solutions",
+            ReleaseAnonymiser.Anonymise("LONDON, UNITED KINGDOM – July 31, 2026 – nVent Electric plc (NYSE:NVT) (“nVent”), a global leader in electrical connection and protection solutions", nvent));
+
+        // (c) The filer's initials, BD, replaced wherever they recur, a heading's and a list's among them, in the part of
+        // BD's release that defines no short form, so the initials alone read them; and in the whole of it, where BD also
+        // stands straight before a bracket holding its name.
+        Assert.Equal("BD", ReleaseAnonymiser.InitialsOf("BECTON DICKINSON & CO"));
+        Assert.Equal(
+            "[company] ANNOUNCES FISCAL [quarter] AND FULL YEAR [year] RESULTS; PROVIDES FISCAL [year] GUIDANCE • [company]’s COVID-19 testing sales totaled more than $440 million in the [quarter].",
+            ReleaseAnonymiser.Anonymise(
+                "BD ANNOUNCES FISCAL FOURTH QUARTER AND FULL YEAR 2020 RESULTS; PROVIDES FISCAL 2021 GUIDANCE • BD’s COVID-19 testing sales totaled more than $440 million in the fourth fiscal quarter.",
+                new ReleaseFiler(["BECTON DICKINSON & CO"], ["BDX"], [])));
+        Assert.Equal(
+            "[company] ANNOUNCES FISCAL [quarter] AND FULL YEAR [year] RESULTS; PROVIDES FISCAL [year] GUIDANCE • Fiscal [quarter] revenues of $4.784 billion grew 4.4% on a reported and currency-neutral basis. "
+            + "• [company]’s COVID-19 testing sales totaled more than $440 million in the [quarter]. [place] ([date]) - [company] ([company]) ([ticker]), a leading global medical technology company",
+            ReleaseAnonymiser.Anonymise(
+                "BD ANNOUNCES FISCAL FOURTH QUARTER AND FULL YEAR 2020 RESULTS; PROVIDES FISCAL 2021 GUIDANCE • Fiscal fourth quarter revenues of $4.784 billion grew 4.4% on a reported and currency-neutral basis. "
+                + "• BD’s COVID-19 testing sales totaled more than $440 million in the fourth fiscal quarter. Franklin Lakes, NJ (November 5, 2020) - BD (Becton, Dickinson and Company) (NYSE: BDX), a leading global medical technology company",
+                new ReleaseFiler(["BECTON DICKINSON & CO"], ["BDX"], [])));
+
+        // Short forms in quotes in a bracket after the name and its ticker, as GCE's release writes "GCE" beside "the
+        // Company", which the common-word list holds and so stays; and after the name alone, as AeroVironment's writes
+        // "AV", whose one-word name holds no initials.
+        var dash = char.ConvertFromUtf32(0x2014);
+
+        Assert.Equal(
+            $"[place], [date] {dash} [company] ([ticker]), (“[company]” or the “Company”), is a publicly traded education services company that currently provides services to 20 university partners. [company] provides a full array of support services",
+            ReleaseAnonymiser.Anonymise(
+                $"PHOENIX, AZ., November 5, 2025 {dash} Grand Canyon Education, Inc. (NASDAQ: LOPE), (“GCE” or the “Company”), is a publicly traded education services company that currently provides services to 20 university partners. GCE provides a full array of support services",
+                new ReleaseFiler(["Grand Canyon Education, Inc."], ["LOPE"], [])));
+        Assert.Equal(string.Empty, ReleaseAnonymiser.InitialsOf("AEROVIRONMENT INC"));
+        Assert.Equal(
+            "ABOUT [company] ​ [company] (“[company]”) ([ticker]) is a defense technology leader",
+            ReleaseAnonymiser.Anonymise("ABOUT AEROVIRONMENT, INC. ​ AeroVironment (“AV”) (NASDAQ: AVAV) is a defense technology leader", new ReleaseFiler(["AEROVIRONMENT INC"], ["AVAV"], [])));
+
+        // A short form in capitals in a bracket after the name, as PSEG's release writes it, which its initials are as
+        // well, and a code page's bullet before it read as that page's; and the bullet alone, where the initials alone
+        // read it.
+        var pseg = new ReleaseFiler(["PUBLIC SERVICE ENTERPRISE GROUP INC"], ["PEG"], []);
+
+        Assert.Equal("PSEG", ReleaseAnonymiser.InitialsOf("PUBLIC SERVICE ENTERPRISE GROUP INC"));
+        Assert.Equal(
+            "• [company]’s solid [quarter] and year-to-date operating results. About [company] [company] ([company]) ([ticker]) is a predominantly regulated infrastructure company",
+            ReleaseAnonymiser.Anonymise(
+                $"{(char)0x95} PSEG’s solid third quarter and year-to-date operating results. About PSEG Public Service Enterprise Group (PSEG) (NYSE: PEG) is a predominantly regulated infrastructure company",
+                pseg));
+        Assert.Equal(
+            "• [company]’s solid [quarter] and year-to-date operating results.",
+            ReleaseAnonymiser.Anonymise($"{(char)0x95} PSEG’s solid third quarter and year-to-date operating results.", pseg));
+
+        // Constructed, since in the reference set every short form in capitals in a bracket after the name and every one
+        // before a bracket holding it is the filer's initials as well: each read by its own form alone, the initials AW.
+        var acme = new ReleaseFiler(["ACME WIDGETS CORP"], ["AWX"], []);
+
+        Assert.Equal("AW", ReleaseAnonymiser.InitialsOf("ACME WIDGETS CORP"));
+        Assert.Equal("[company] ([company]) reported. [company] grew.", ReleaseAnonymiser.Anonymise("Acme Widgets Corp. (ACW) reported. ACW grew.", acme));
+        Assert.Equal("[company] ([company]) reported. [company] grew.", ReleaseAnonymiser.Anonymise("WidgetCo (Acme Widgets Corp.) reported. WidgetCo grew.", acme));
+
+        // Constructed as well, since the reference set's "the Company" is a legal word too and its two banks define "the
+        // Bank" after no name: a defined term the common-word list alone holds stays where the release defines it.
+        Assert.Equal(
+            "[company] (the “Bank”) reported. The Bank grew.",
+            ReleaseAnonymiser.Anonymise("Acme Bancorp, Inc. (the “Bank”) reported. The Bank grew.", new ReleaseFiler(["ACME BANCORP INC"], ["ABX"], [])));
     }
 
     [Fact]

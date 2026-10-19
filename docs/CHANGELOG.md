@@ -26,6 +26,56 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the 20.3 correction of 2026-10-19
+Authorised by: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
+Was:
+> fixture-expectations: ... every word one its question lists, read by the accuracy report's own reader; and from 20.5 the label comparison over a constructed store, ...
+Now:
+> fixture-expectations: ... every word one its question lists, read by the accuracy report's own reader; and from the 20.3 correction of 2026-10-19 a filer's name word and a found surname opening a sentence, a quotation or a list's item replaced as anywhere else and an ordinary word the common-word list holds left there, the ordinary words of the operator's answer among them, a name's word with a capital after its first letter replaced in that exact case where no short form defines it, and a short form a release defines for the filer, in quotation marks or a bracket after its name or its ticker or before a bracket holding its name, and the filer's initials read as the filer wherever they recur, each form alone, a defined term the common words hold staying, each worked by hand from the reference set's own releases and the bracket's two forms alone over a constructed filer; and from 20.5 the label comparison over a constructed store, ...
+Why: each roster row says what its check asserts, and the correction's test extends fixture-expectations'.
+
+### 2026-10-19 - BUILD_PLAN.md - 20.3's anonymiser and its done condition as the correction of 2026-10-19 amends them
+Authorised by: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
+Was:
+> - The anonymiser replaces ... The date and quarter patterns run before the name patterns, a company name's first word is replaced on its own only where a common-word list does not hold it, and every single-word replacement is case-sensitive and skips the first word of a sentence.
+> ... the date and quarter patterns run first, and a name's first word or a surname replaced on its own is case-sensitive and skips a sentence's first word, a ticker going wherever it stands. Product names stay. ...
+> **Done when** a fixture release's names, tickers, people, dates and fiscal labels are replaced by hand and its product names kept, a constructed filer named with a common first word and a surname that is an ordinary word both left intact where they are not the name, in lower case and as a sentence's first word, the date and quarter patterns running before the name patterns; a reading is worked by hand ...
+Now:
+> - The anonymiser replaces ... The date and quarter patterns run before the name patterns, a company name's first word is replaced on its own only where a common-word list does not hold it, and every single-word replacement is case-sensitive; from the operator's ruling of 2026-10-19 a word with a capital after its first letter is read in that exact case, a sentence's or a list's first word is replaced as anywhere else unless the common-word list holds it, and a short form the release defines for the filer and the filer's initials are replaced wherever they recur.
+> ... the date and quarter patterns run first, and a name's first word or a surname replaced on its own is case-sensitive, a ticker going wherever it stands; from the 20.3 correction of 2026-10-19 a word with a capital after its first letter is read in that exact case, a sentence's or a list's first word is replaced as anywhere else unless the common-word list holds it, or there alone one of the ordinary words an insider's surname may be, and a short form the release defines for the filer, in quotation marks or a bracket after its name or its ticker or before a bracket holding its name, and the filer's initials in capitals are replaced by `[company]` wherever they recur, none the common words hold. Product names stay. ...
+> **Done when** a fixture release's names, tickers, people, dates and fiscal labels are replaced by hand and its product names kept, a constructed filer named with a common first word and a surname that is an ordinary word both left intact where they are not the name, in lower case and, where the common-word list holds the word, as a sentence's first word, the date and quarter patterns running before the name patterns; from the 20.3 correction of 2026-10-19 a filer's name word and a found surname opening a sentence or a list's item replaced as anywhere else, a name's word with a capital after its first letter replaced in that exact case, and a short form a release defines for the filer and the filer's initials replaced wherever they recur, each worked by hand from the reference set's own releases; a reading is worked by hand ...
+Why: the operator's ruling of 2026-10-19 amends the anonymiser's decision on a sentence's first word, a name written with a capital after its first letter and the short forms, and 20.3's text and done condition state what the checkpoint builds.
+
+### 2026-10-19 - RUNBOOK.md - the anonymiser's decision cited by the name that supersedes it, pin 3 after the correction, and the tone variant's form naming version 3
+Authorised by: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
+Was:
+> ... in `release_reading` (see: A release is read with every name and date in it replaced by a neutral word, and product names kept). The anonymiser's version is part of the instruction's, so once 20.3 merges the newest pin no longer matches and every slot refuses naming the prompt until a new pin is written; the slots go on fetching meanwhile. After the merge, ...
+> dotnet run --project src/EquityBrief.Worker -- register --index-variants drift --index MID --again --evidence "the drift's tone variant of 20.4" --variants "largeBreadth=2;readingVersion=2"
+Now:
+> ... in `release_reading` (see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept). The anonymiser's version is part of the instruction's, so once 20.3 merges the newest pin no longer matches and every slot refuses naming the prompt until a new pin is written; the slots go on fetching meanwhile. So it is again once the 20.3 correction of 2026-10-19 merges: its remedy writes pin 3 and reads the history again from its first release under it, pin 2's readings kept and read by nothing once pin 3's read is complete. After the merge, ...
+> dotnet run --project src/EquityBrief.Worker -- register --index-variants drift --index MID --again --evidence "the drift's tone variant of 20.4" --variants "largeBreadth=2;readingVersion=3"
+Why: a spec cites no superseded decision; the correction moves the anonymiser's version and so the pin, and the operator's ruling of 2026-10-19 stopped pin 2's read, so the variant reads the version pin 3 writes.
+
+### 2026-10-19 - SCHEMA.md - the anonymiser's decision cited by the name that supersedes it
+Authorised by: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
+Was:
+> ... (see: A release is read with every name and date in it replaced by a neutral word, and product names kept), in `release_filer`'s and `release_probe`'s ownership and in the local run's and the release names' run log rows
+Now:
+> ... (see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept), in the same four places
+Why: the operator amended the anonymiser's decision on 2026-10-19, which the corpus writes as a new decision superseding the old, and a spec cites none that is superseded.
+
+### 2026-10-19 - ARCHITECTURE.html - the anonymiser's decision cited by the name that supersedes it, and 12.3's account of the short forms, the names written with a capital after their first letter and a sentence's first word
+Authorised by: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
+Was:
+> ... (see: A release is read with every name and date in it replaced by a neutral word, and product names kept), in section 4's and 15.9's rows for what management said, the local run's and the release fetch's catalogue rows, 12.3's account and the release filers' and release probes' store rows
+> ... its tickers and their exchange forms become [ticker]; its people, the insiders its Forms 4 name ...
+> The date and quarter patterns run first, and a name's first word or a surname replaced on its own keeps its case and skips a sentence's first word, so a common word that is not the name stays, while a ticker goes wherever it stands.
+Now:
+> ... (see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept), in the same seven places
+> ... its tickers and their exchange forms become [ticker]; from the 20.3 correction of 2026-10-19 a short form the release defines for the filer, in quotation marks or a bracket straight after its name or its ticker or standing straight before a bracket holding its name, and the filer's initials in capitals become [company] wherever they recur, none the common words hold, so "the Company" stays; its people, the insiders its Forms 4 name ...
+> The date and quarter patterns run first, and a name's first word or a surname replaced on its own keeps its case, a word with a capital after its first letter, as nVent, read in that exact case; from the 20.3 correction of 2026-10-19 it is replaced where it opens a sentence or a list's item as anywhere else unless the common-word list holds it, or there alone one of the ordinary words an insider's surname may be, so a common word that is not the name stays, while a ticker goes wherever it stands.
+Why: the operator amended the anonymiser's decision on 2026-10-19, which the corpus writes as a new decision superseding the old, and a spec cites none that is superseded.
+
 ### 2026-10-19 - RUNBOOK.md - the release history's time as measured
 Corrects: the runbook stated the history fetch at 2.2 hours, 20.0's estimate at the archive's pace, and the fetch of 2026-10-18 took ten and a half, found by its record entry.
 Was:

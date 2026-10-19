@@ -11,7 +11,7 @@ namespace EquityBrief.Tests.Reading;
 // reading and the line naming the model and the version; MSFT, which no pass wrote for, drawing the region for the reading
 // alone after the latest quarter, dated by the day in New York the SEC accepted the release; and AAPL, whose release is
 // read under an older version alone, drawing no region.
-// see: A release is read with every name and date in it replaced by a neutral word, and product names kept
+// see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
 // see: A release reading is readable from the first night whose late slot starts after the release was accepted
 public partial class ReadSurface
 {

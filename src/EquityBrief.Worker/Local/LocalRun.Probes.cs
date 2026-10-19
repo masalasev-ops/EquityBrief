@@ -8,7 +8,7 @@ namespace EquityBrief.Worker.Local;
 // From 20.3 the probes over their sample, each answer kept under the pin with the answer it is set against and whether
 // the two agree, going on from the releases a run has not probed; and the reference set's releases written out with
 // their names and dates removed, the text the model reads, for the build session to label before the model reads them.
-// see: A release is read with every name and date in it replaced by a neutral word, and product names kept
+// see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
 public sealed partial class LocalRun
 {
     public const string Probing = "probe";

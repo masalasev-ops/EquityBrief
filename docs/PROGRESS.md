@@ -3732,3 +3732,74 @@ Carried:    the 20.3 correction and pin 3's history read; 20.6's record through 
             and merge; 20.3's accuracy record and 20.4's second remedy after pin 3's read; the sign-offs of phases 18 and
             19, owed to fresh sessions after 20.10; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that
             section.
+
+### 20.3 - correction: the anonymiser reads a name opening a sentence or a list's item, a name written with a capital after its first letter, and the filer's short forms and initials, as the operator ruled on 2026-10-19   2026-10-19
+
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged, the records of 20.2, 20.5 and 20.7, and the
+            ruling of 2026-10-19, PR 506; in progress, this correction; next, pin 3 and its history read from the first
+            release, 20.6's record through the native endpoint, 20.8's correction in PR 505, then 20.3's accuracy record,
+            20.4's second remedy and 20.8's merge and remedy once pin 3's read completes, then 20.10, then the sign-offs
+            of phases 18 and 19 by fresh sessions.
+Ruled:      step 2 of the operator's ruling of 2026-10-19, word for word in the ruling entry above; and their answer the
+            same day, asked while building it whether the ordinary words an insider's surname may be, which 1,278
+            sentence openings across the 45,328 stored releases would read as a person, should join the common-word
+            list: "Add them (Recommended)", the 31 no member's name opens on, kept in `prompts/`.
+Built:      the decision amended as the corpus changes one: a new decision (see: A release is read with every name and
+            date in it replaced by a neutral word wherever it stands, and product names kept) supersedes the old, which
+            moves to Previously decided with its reasoning, and the 23 citations in specs and code name the new one. The
+            anonymiser replaces a filer's name word or a found surname opening a sentence, a quotation or a list's item
+            as anywhere else unless the common-word list holds it, the 31 ordinary words held beside the list for that
+            place alone, so a person of that name beside a title is still read; reads a name's word with a capital after
+            its first letter, as nVent, in that exact case wherever it stands; and reads a short form the release defines
+            for the filer, in quotation marks or a bracket straight after its name or its ticker or straight before a
+            bracket holding its name, and the filer's initials in capitals as [company] wherever they recur, none the
+            common words, a legal word or an exchange's name hold. The common words gain Company, Corporation, Firm,
+            Holdings, Partnership and Trust, the terms a release defines for itself. Its version moves from fe22a6282817
+            to b1e7ebe80c9e, and the instruction's with it, so every slot refuses on pin 2's prompt until pin 3 is
+            written. The fixture's KEYS release reads Keysight as [company] where it opens a sentence, 22,636 characters
+            anonymised, and its recorded answer was asked again of the runtime over that text: the same four words at
+            5,761 prompt tokens, alike when asked twice. The remedy
+            `tools/remedies/2026-10-19-20.3-correction-the-history-read-again.txt` writes pin 3 and reads the history from
+            its first release; 20.4's second remedy and the runbook's form name version 3. This correction amends its
+            own done condition, 20.3's: a surname that is an ordinary word is left intact as a sentence's first word only
+            where the common-word list holds it, as the ruling says.
+Measured:   the reference set's 100 releases written through the corrected anonymiser into a folder of their own and
+            compared word by word with the texts they were labelled from: 59 of the 100 differ. 346 more places read
+            [company], 324 a word of the filer's names, short forms or initials, as BD 62 times, PSEG 44, nVent 16,
+            Nasdaq 15 and Mosaic 14, and 22 a ticker that is also the filer's name word, read [ticker] before where it
+            opened a sentence; 3 words read as a person, Blachar and Lawton, the filers' chief executives, and Smith in
+            "78. Smith Haven Mall"; Jackson in "25. Jackson Premium Outlets NJ Jackson" joined to the person the
+            anonymiser before had read in that row; and one word back, "Europe." before "Simon's", which the anonymiser
+            before had read with Simon as a person. The filers' names, tickers and initials scanned across the 100: 326
+            traces left under the anonymiser before, none under this one. The replacements that hit a word that is not
+            the filer are 2, Smith Haven Mall and the Jackson outlet, both in Simon's table of properties, the misses put
+            to the operator, whose answer keeps them. So the labels stand: only names became neutral words, and the one
+            word that came back, Europe, bears on none of the four answers.
+Tests:      1 new, 2489 in all: (a) to (c) worked by hand from the reference set's own releases, Mosaic's, Tractor
+            Supply's, RGA's, nVent's, BD's, Grand Canyon Education's, AeroVironment's and PSEG's, BD's heading and PSEG's
+            bullet alone where the initials alone read them; and three constructed filers for what the reference set does
+            not separate, a bare short form in a bracket and one before a bracket holding the name, each the filer's
+            initials as well wherever the reference set holds one, and a defined term the common words alone hold, "the
+            Bank". The fixture release's test and the common-word test now hold the ruling at a sentence's first word.
+Claims:     1372, as before.
+Mutated:    the rule, stated before the runs: one mutation for each point the ruling and the operator's answer name, the
+            smallest edit to the anonymiser undoing that point alone, each run filtered to the anonymiser's six tests with
+            its red predicted at the new test, made in this checkout and reverted with the editor; each also reddens the
+            version test, which is counted and is no kill. M1 a name's word skipped at every opening: red at the new
+            test, the fixture release's and the common-word test. M2 a surname skipped at every opening: red at the new
+            test and the common-word test. M3 no exact case for a name like nVent: red at the new test. M4 no short form
+            in quotation marks: red at AeroVironment's "AV". M5 no bare short form in a bracket: red at the constructed
+            ACW. M6 no short form before a bracket: red at the constructed WidgetCo. M7 no initials: red at BD's heading.
+            M8 a defined term the common words hold not kept: survived, "the Company" being a legal word as well, a
+            missing property; the constructed "the Bank" was added and M8 run again, red there. M9 the ordinary words not
+            kept at an opening: red at RGA's "To learn more". Each as predicted but M8's first run; the six passing after
+            the last revert, the version test among them, show the source as it was.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2489 of 2489 tests ran with none failed,
+            migrations 0 to 101 with none pending, schema version 101, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    pin 3 and its history read from the first release, by the remedy once this merges; 20.6's record through
+            the native endpoint; 20.8's correction and merge; 20.3's accuracy record and 20.4's second remedy after pin
+            3's read; the sign-offs of phases 18 and 19, owed to fresh sessions after 20.10; (G1), SCHEMA's
+            `family_trade` sentence, owed by the next edit of that section.

@@ -1,11 +1,11 @@
 {
  "stage": "release-reading",
  "derivation": "derived",
- "derivedFrom": "the fixture's KEYS results release as the replay stores it in source_document, the archive's reader's text of release-KEYS.htm with its envelope's own words, 22,996 characters, read by hand with its names and dates removed for the filer its submissions name, Keysight Technologies, Inc., its ticker KEYS and no insider: each passage below as stored and as it is read, the dateline's place, every date, year and fiscal label, the filer's name in each of its forms, its ticker and the exchange's form of it, the person a verb of saying names, the web address and both telephone numbers replaced, the segment's name kept, and the filer's first word left where it opens a sentence, which no single word is replaced as; and the recorded answer local-reading-KEYS-anonymised.json read by hand into its four words",
+ "derivedFrom": "the fixture's KEYS results release as the replay stores it in source_document, the archive's reader's text of release-KEYS.htm with its envelope's own words, 22,996 characters, read by hand with its names and dates removed for the filer its submissions name, Keysight Technologies, Inc., its ticker KEYS and no insider: each passage below as stored and as it is read, the dateline's place, every date, year and fiscal label, the filer's name in each of its forms, its ticker and the exchange's form of it, the person a verb of saying names, the web address and both telephone numbers replaced, the segment's name kept, and from the 20.3 correction of 2026-10-19 the filer's first word replaced where it opens a sentence as anywhere else, the common-word list not holding it; and the recorded answer local-reading-KEYS-anonymised.json, asked again of the runtime over the corrected text, read by hand into its four words",
  "tables": ["source_document"],
  "filer": {"names": ["Keysight Technologies, Inc."], "tickers": ["KEYS"]},
  "characters": 22996,
- "anonymisedCharacters": 22634,
+ "anonymisedCharacters": 22636,
  "passages": [
   {"stored": "Exhibit 99.1 Keysight Technologies Reports Third Quarter 2026 Results", "read": "Exhibit 99.1 [company] Reports [quarter] [year] Results"},
   {"stored": "improved SANTA ROSA, Calif., August 18, 2026 - Keysight Technologies, Inc. (NYSE: KEYS) today reported financial results for the third fiscal quarter ended July 31, 2026.", "read": "improved [place], [date] - [company] ([ticker]) today reported financial results for the [quarter] ended [date]."},
@@ -15,7 +15,7 @@
   {"stored": "Reporting Segments • Communications Solutions Group (CSG) CSG reported revenue of $1,345 million in the third quarter", "read": "Reporting Segments • Communications Solutions Group (CSG) CSG reported revenue of $1,345 million in the [quarter]"},
   {"stored": "as defined in the Securities Exchange Act of 1934", "read": "as defined in the Securities Exchange Act of 1934"}
  ],
- "keptAtASentenceStart": ["\"Keysight’s record [quarter] results", "hereof. Keysight undertakes no responsibility"],
+ "readAtASentenceStart": ["\"[company]’s record [quarter] results", "hereof. [company] undertakes no responsibility"],
  "answer": {"results": "better", "outlook": "raised", "tone": "confident", "demand": "stronger"},
- "promptTokens": 5755
+ "promptTokens": 5761
 }

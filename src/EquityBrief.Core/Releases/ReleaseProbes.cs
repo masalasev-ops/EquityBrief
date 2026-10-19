@@ -7,7 +7,7 @@ namespace EquityBrief.Core.Releases;
 // re-identification probe asks the model which company issued each release so read and whether it names the filer; and
 // the distraction probe reads each release once with its names removed and once with them in, and asks whether the
 // answers are alike. Each is put to the operator and none retires anything.
-// see: A release is read with every name and date in it replaced by a neutral word, and product names kept
+// see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
 public static class ReleaseProbes
 {
     public const string Twice = "twice";

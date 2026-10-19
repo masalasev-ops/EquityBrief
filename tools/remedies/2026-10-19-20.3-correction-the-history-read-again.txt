@@ -1,0 +1,10 @@
+# The remedy of the 20.3 correction of 2026-10-19, as its PROGRESS entry prints it: the anonymiser's version moves and
+# with it the instruction's, so every slot refuses naming the prompt until a new pin is written. Pin 3 is written, the
+# model's file hashed whole, and every stored release is read under it from the first, with its names and dates removed
+# as the correction reads them, oldest first, stopping at 07:00 New York time and going on from where it stopped when run
+# again, its pin's history marked complete once no stored release is left unread. Pin 2's readings stay stored and are
+# read by nothing once pin 3's read is complete. The local model alone, with LM Studio running and holding the model and
+# the card held at 250 W; no provider request, no SEC request and no paid call. Run from main after the merge, outside
+# the night; it keeps clear of each slot and of the night's window.
+local-run --pin
+releases --read --history --until 07:00

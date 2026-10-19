@@ -1808,7 +1808,7 @@ public sealed partial class SinglePageApp : IComponent
         // What management said with its results, the written section read from the newest and the previous results
         // releases, after the quarter where section 4 lists it; and from 20.3 beneath it the newest results release's four
         // answers as the local model read it, the card holding them alone where no section is written.
-        // see: A release is read with every name and date in it replaced by a neutral word, and product names kept
+        // see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
         var releaseRead = report?.Release is { } shown ? marks.ReleaseReading(shown) : null;
 
         if (sections.FirstOrDefault(section => string.Equals(section.Section, MarkRenderer.WhatManagementSaid, StringComparison.Ordinal)) is { } managed)
