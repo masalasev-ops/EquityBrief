@@ -49,6 +49,24 @@ public partial class ReadSurface
         Assert.Equal(
             "the session after the print closes down more than 2 typical days and inside 213.57 to 230.21",
             Figures.InSentence("the session after the print closes down more than 2 typical days and inside 213.571 to 230.2124"));
+
+        // A band whose edges are one price as read is named at that price, CVX's support at 217.78 among them, and edges
+        // a cent apart, or a price that only begins with the other, are left as a range.
+        Assert.Equal(
+            "the session after the print closes down more than 2 typical days and inside the band at 217.78, and the next session holds its low",
+            Figures.OneBandAtItsPrice(Figures.InSentence("the session after the print closes down more than 2 typical days and inside 217.78 to 217.78, and the next session holds its low")));
+        Assert.Equal("inside the band at 213.57", Figures.OneBandAtItsPrice(Figures.InSentence("inside 213.571 to 213.5724")));
+        Assert.Equal("inside 217.78 to 217.79", Figures.OneBandAtItsPrice("inside 217.78 to 217.79"));
+        Assert.Equal("inside 217.7 to 217.78", Figures.OneBandAtItsPrice("inside 217.7 to 217.78"));
+
+        // The event book draws its trigger so.
+        var ladder = new EquityBrief.Api.Reading.LadderRow(
+            "CVX",
+            new DateOnly(2026, 10, 16),
+            "uptrend",
+            "{\"events\":[{\"name\":\"a flush after the print\",\"eventDate\":\"2026-10-30\",\"trigger\":\"the session after the print closes down more than 2 typical days and inside 217.78 to 217.78, and the next session holds its low\",\"entry\":\"217.78\",\"stop\":\"213.24\",\"target\":\"224.99\"}]}");
+
+        Assert.Contains("<td>the session after the print closes down more than 2 typical days and inside the band at 217.78, and the next session holds its low</td>", EquityBrief.Api.Reading.NameScreen.EventBook(ladder), StringComparison.Ordinal);
     }
 
     [Fact]
