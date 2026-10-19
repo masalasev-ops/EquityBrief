@@ -3803,3 +3803,56 @@ Carried:    pin 3 and its history read from the first release, by the remedy onc
             the native endpoint; 20.8's correction and merge; 20.3's accuracy record and 20.4's second remedy after pin
             3's read; the sign-offs of phases 18 and 19, owed to fresh sessions after 20.10; (G1), SCHEMA's
             `family_trade` sentence, owed by the next edit of that section.
+
+### 20.6 - correction: the local side recorded again through LM Studio's native endpoint, both sides' outcomes stated again and nothing switched   2026-10-19
+
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged, the records of 20.2, 20.5 and 20.7, the ruling
+            of 2026-10-19 and the 20.3 correction, PRs 506 and 507, pin 3 written at 14:11 UTC and its history read
+            started from the first release; in progress, this; next, 20.8's correction in PR 505, then 20.3's accuracy
+            record, 20.4's second remedy and 20.8's merge and remedy once pin 3's read completes, then 20.10, then the
+            sign-offs of phases 18 and 19 by fresh sessions.
+Ruled:      step 5 of the operator's ruling of 2026-10-19, word for word in the ruling entry above: record the local side
+            again through LM Studio's native endpoint while the read is stopped and state both sides' outcomes again,
+            switching nothing, the first recording's refusals read as the OpenAI-compatible endpoint wrapping prose in JSON.
+Built:      the recorder asks LM Studio's native chat endpoint, `api/v0/chat/completions`, the one the release reading
+            asks, with each request as the lane builds it, and never the OpenAI-compatible one; the shipped lane is as it
+            was. A recording writes each section the checker left out with its reason beside its outcome. The local side
+            was recorded again by hand at 13:55 UTC with the history read stopped, LM Studio 0.4.25 serving the model at
+            a context of 50,176 tokens on the card held at 250 W: 21 answers over 34 calls, each carrying the native
+            answer's runtime and stats; the answers of the first recording this one did not write were removed and the
+            manifest's entries written again. A recording made a minute before it, the first through the native
+            endpoint, was not kept: over 28 calls it left every section out, the risks among them, the runtime
+            answering one request two ways at temperature zero as the first recording found. The runbook, the build
+            plan's 20.6, the roster's row, the fixtures README and the changelog.
+Measured:   the paid side as 6.8's comparison stated it, all eight of its sections accepted, the segment commentary and the
+            short version on their retries. The local side through the native endpoint accepted the risks alone, at its
+            second draft, and left the other eight out, each refused at every retry as an answer written as a JSON object
+            rather than prose: `{}` for the cause of each large move, the dated calendar items and the segment commentary,
+            an object holding an `error` for what the company sells, what management said, the short version and the
+            headline, and the two cases as an object of a `bull_case` and its fields. So the refusals are not the
+            endpoint's: asked the same requests, the native endpoint answers in the same shape. They come from LM
+            Studio's saved default for this model, its structured output set to JSON, which LM Studio applies to every
+            request for Gemma on either endpoint; two probe calls asking for one sentence of plain prose were answered
+            as a one-field object, the second with the request's own `response_format` set to text.
+Put:        to the operator, switching nothing and leaving LM Studio's setting as found: the local lane writes no prose
+            section on Gemma while that setting stands, so offering the lane in the Research menu waits on the setting
+            turned off in LM Studio's model settings and the comparison recorded again, or the lane reading the text
+            inside a one-field object, each theirs to rule. The release readings ask for a JSON object and read as before.
+Tests:      none new, 2489 in all: the recorder's test now holds each completion asked of the native endpoint and none of
+            the OpenAI-compatible one, and the comparison reads the new recording.
+Claims:     1372, as before.
+Mutated:    the rule, stated before the run: one mutation, the property the correction adds, the recorder asking the
+            native endpoint, the smallest edit undoing it, run filtered to the comparison's and the recorder's tests with
+            its red predicted at the recorder's test, made in this checkout and reverted with the editor. N1 the
+            recorder's redirect dropped: red at the recorder's test, the runtime answering the OpenAI-compatible path
+            with a 404, as predicted, the comparison passing on recordings read by their key whatever the endpoint. Not
+            mutated: the reasons a recording writes, which only a recording by hand reaches.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2489 of 2489 tests ran with none failed,
+            migrations 0 to 101 with none pending, schema version 101, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    LM Studio's structured output for Gemma and the local lane's prose, put to the operator; pin 3's history read
+            and its record; 20.8's correction and merge; 20.3's accuracy record and 20.4's second remedy after pin 3's
+            read; the sign-offs of phases 18 and 19, owed to fresh sessions after 20.10; (G1), SCHEMA's `family_trade`
+            sentence, owed by the next edit of that section.

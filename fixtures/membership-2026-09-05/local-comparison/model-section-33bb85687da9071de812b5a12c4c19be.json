@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-x40c9an4l8c5txjdfjytvn",
+  "object": "chat.completion",
+  "created": 1792418187,
+  "model": "google/gemma-4-26b-a4b-qat",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"error\": \"No claims provided for the first paragraph (latest results and management reporting): the first paragraph must be written in plain prose based on the claims provided, but no claims were provided for the first paragraph in the prompt.\"\n}",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 998,
+    "completion_tokens": 57,
+    "total_tokens": 1055,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {
+    "tokens_per_second": 99.48675493747436,
+    "time_to_first_token": 0.376488,
+    "generation_time": 0.9393769999999999,
+    "stop_reason": "eosFound"
+  },
+  "model_info": {
+    "arch": "gemma4",
+    "quant": "Q4_0",
+    "format": "gguf",
+    "context_length": 50176
+  },
+  "runtime": {
+    "name": "llama.cpp-win-x86_64-nvidia-cuda12-avx2",
+    "version": "2.56.0",
+    "supported_formats": [
+      "gguf"
+    ]
+  }
+}

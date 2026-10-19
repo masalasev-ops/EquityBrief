@@ -76,6 +76,30 @@ Now:
 > The date and quarter patterns run first, and a name's first word or a surname replaced on its own keeps its case, a word with a capital after its first letter, as nVent, read in that exact case; from the 20.3 correction of 2026-10-19 it is replaced where it opens a sentence or a list's item as anywhere else unless the common-word list holds it, or there alone one of the ordinary words an insider's surname may be, so a common word that is not the name stays, while a ticker goes wherever it stands.
 Why: the operator amended the anonymiser's decision on 2026-10-19, which the corpus writes as a new decision superseding the old, and a spec cites none that is superseded.
 
+### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the recorder asking the native endpoint
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> fixture-expectations: ... and the recorder keeping each answer as sent and answering a request asked again from its first recording; and from 20.9 ...
+Now:
+> fixture-expectations: ... and the recorder keeping each answer as sent and answering a request asked again from its first recording, from the 20.6 correction of 2026-10-19 asking LM Studio's native chat endpoint and never the OpenAI-compatible one; and from 20.9 ...
+Why: each roster row says what its check asserts, and the correction's test extends the recorder's.
+
+### 2026-10-19 - RUNBOOK.md - the comparison's local side recorded through the native endpoint, with each refused section's reason
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> ... The test then asks the model live for every section of the fixture's pass in the local lane, about a minute, writes each answer into the folder under its request's key, answers a request asked again from its first answer, and writes what each section came to into `equitybrief-local-comparison.txt` in the machine's temporary folder, ...
+Now:
+> ... The test then asks the model live, through LM Studio's native chat endpoint from the operator's ruling of 2026-10-19, for every section of the fixture's pass in the local lane, about a minute, writes each answer into the folder under its request's key, answers a request asked again from its first answer, and writes what each section came to, with the checker's reason for each it left out, into `equitybrief-local-comparison.txt` in the machine's temporary folder, ...
+Why: the operator's ruling of 2026-10-19 has the local side recorded again through the native endpoint, and the expectation holds each refused section's reason, which the recording now writes.
+
+### 2026-10-19 - BUILD_PLAN.md - 20.6's recording through the native endpoint
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> ... which the same test records anew by hand with a variable set while the history read is stopped, a request asked again in one recording answered from its first recording as the replay answers it, ...
+Now:
+> ... which the same test records anew by hand with a variable set while the history read is stopped, from the operator's ruling of 2026-10-19 through LM Studio's native chat endpoint, a request asked again in one recording answered from its first recording as the replay answers it, ...
+Why: the operator's ruling of 2026-10-19 has the local side recorded again through the native endpoint.
+
 ### 2026-10-19 - RUNBOOK.md - the release history's time as measured
 Corrects: the runbook stated the history fetch at 2.2 hours, 20.0's estimate at the archive's pace, and the fetch of 2026-10-18 took ten and a half, found by its record entry.
 Was:

@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-samknmn6q6ez5cqxq2wis",
+  "object": "chat.completion",
+  "created": 1792418172,
+  "model": "google/gemma-4-26b-a4b-qat",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\"risks\":[{\"risk\":\"that supply chain constraints act as a governor on near-term revenue conversion\",\"riskDocument\":3,\"confirm\":{\"event\":\"external component supply dependencies\",\"kind\":\"supply\"},\"why\":\"because demand is not the limiter\",\"whyDocument\":3},{\"risk\":\"that profitability is impacted by the absence of one-time tariff tailwinds\",\"riskDocument\":3,\"confirm\":{\"event\":\"one-time tariff impacts\",\"kind\":\"other\"},\"why\":\"because these impacts won't repeat\",\"whyDocument\":3}],\"turnsUp\":[{\"what\":\"It would turn up if revenue and earnings per share exceed guidance\",\"document\":2},{\"what\":\"It would turn up if demand for AI infrastructure continues to scale\",\"document\":2},{\"what\":\"It would turn up if the 6G opportunity materializes as expected\",\"document\":3},{\"what\":\"It would turn up if cost synergies from acquisitions are realized\",\"document\":3}],\"makesWorse\":[{\"what\":\"It would get worse if supply environment flexibility continues to decrease\",\"document\":3},{\"what\":\"It would get worse if demand for products or services slows\",\"document\":1},{\"what\":\"It would get worse if geopolitical tensions increase\",\"document\":1},{\"what\":\"It would get worse if customer purchasing decisions change\",\"document\":1}] }",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 20202,
+    "completion_tokens": 266,
+    "total_tokens": 20468,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {
+    "tokens_per_second": 92.72867240534676,
+    "time_to_first_token": 0.628167,
+    "generation_time": 3.485967,
+    "stop_reason": "eosFound"
+  },
+  "model_info": {
+    "arch": "gemma4",
+    "quant": "Q4_0",
+    "format": "gguf",
+    "context_length": 50176
+  },
+  "runtime": {
+    "name": "llama.cpp-win-x86_64-nvidia-cuda12-avx2",
+    "version": "2.56.0",
+    "supported_formats": [
+      "gguf"
+    ]
+  }
+}

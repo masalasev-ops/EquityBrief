@@ -18,9 +18,10 @@ One folder per fixture name and date. Committed, never regenerated, and the expe
                        made under, read over the shipped settings, so a switch the operator makes
                        there moves no recorded test
   local-comparison/    from 20.6, the local model's answers for a pass with every section in the
-                       local lane, each declared in the manifest, and the `models.json` naming the
-                       model they were recorded under; read by the comparison's test alone and by no
-                       replay of the pipeline
+                       local lane, recorded through LM Studio's native chat endpoint from the
+                       correction of 2026-10-19, each declared in the manifest, and the
+                       `models.json` naming the model they were recorded under; read by the
+                       comparison's test alone and by no replay of the pipeline
   expectations/        one file per stage, flat, each naming the tables it covers and how it
                        was derived
     indicators.json    swings.json    volume-profile.json
