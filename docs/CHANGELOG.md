@@ -26,6 +26,42 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - BUILD_PLAN.md - phase 20 built whole in the order its dependencies set, its history read around the clock with the card held at 250 W, and the sign-offs of phases 18 and 19 after 20.10
+Authorised by: Phase 20 is built whole in the order its dependencies set with the sign-offs of phases 18 and 19 after it, spending no money and retiring nothing on a result
+Was:
+> What this phase is for: ... The phase builds the local run at 20.1, the releases at 20.2, the anonymiser and the reading with its accuracy at 20.3 and the drift's tone variant at 20.4; then the sign-offs of phases 18 and 19 run; then three comparisons of the local model against paid work already stored, switching nothing, at 20.5 to 20.7; then, after the monthly run of 2026-11-07 and the operator's reading of its proposals, the readings join the ledger's catalogue at 20.8, an idea generator joins the monthly run at 20.9 and 20.10 is the phase report. ... (see: Phase 20 is built after phase 17's sign-off with the sign-offs of phases 18 and 19 after 20.4, spending no money and retiring nothing on a result).
+> The rulings of 2026-10-18: ... R1 to R17 stand as the plan states them.
+> R7's bullet: ... resumable, the runbook stating the local model's hours a night from the copy's end to 07:00.
+> One pull request a checkpoint: ... after 20.3 the history is read and its accuracy is stated in a record entry before 20.4's remedy; and after 20.4, once the history read has completed, its remedy registers the variants. Then the two corrections phase 17's sign-off carried and the sign-offs of phases 18 and 19, then 20.5 to 20.7, then the monthly run of 2026-11-07 and the operator's reading of its proposals, then 20.8 to 20.10.
+> 20.8: After the monthly run of 2026-11-07 and the operator's reading of its proposals. The four release readings join ... Migration 101 adds their columns ...
+> 20.9: ... and its answers are stored under the prompt's hash by migration 102, so a run again reads them.
+> Tabled for phase 21: ... in the order its own section states (see: Phase 20 is built after phase 17's sign-off with the sign-offs of phases 18 and 19 after 20.4, spending no money and retiring nothing on a result).
+Now:
+> What this phase is for: ... The phase builds the local run at 20.1, the releases at 20.2, the anonymiser and the reading with its accuracy at 20.3 and the drift's tone variant at 20.4; then three comparisons of the local model against paid work already stored, switching nothing, at 20.5 to 20.7, and an idea generator in the monthly run at 20.9, each while the history read runs; then, once the history read has completed, the readings join the ledger's catalogue at 20.8, and 20.10 is the phase report, the sign-offs of phases 18 and 19 coming after it. ... (see: Phase 20 is built whole in the order its dependencies set with the sign-offs of phases 18 and 19 after it, spending no money and retiring nothing on a result).
+> The rulings of 2026-10-18: ... R1 to R17 stand as the plan states them, but for R2's order and R7's hours a night, which the operator's ruling after 20.4 replaced (see: Phase 20 is built whole in the order its dependencies set with the sign-offs of phases 18 and 19 after it, spending no money and retiring nothing on a result).
+> R7's bullet: ... resumable, the runbook stating the local model's hours to the read's end.
+> One pull request a checkpoint: ... after 20.3 the history is read around the clock with the card's power held at 250 W, stopping at 07:00 in New York each morning for the day's merges and started again after them; and after 20.4 the two corrections phase 17's sign-off carried. Then 20.5, 20.6, 20.7 and 20.9, each built while the read runs, its runs of the local model made while the read is stopped; once the read has completed, 20.3's record entry states its accuracy, 20.4's remedy registers the variants and 20.8 is built; then 20.10, and after it the sign-offs of phases 18 and 19.
+> 20.8: Once the history read has completed, since a setup's reading needs its release read. The four release readings join ... Migration 102 adds their columns ...
+> 20.9: ... and its answers are stored under the prompt's hash by migration 101, so a run again reads them.
+> Tabled for phase 21: ... (see: Phase 20 is built whole in the order its dependencies set with the sign-offs of phases 18 and 19 after it, spending no money and retiring nothing on a result).
+Why: the operator ruled after 20.4 that the whole phase be built in the order its checkpoints' dependencies set, with the sign-offs of phases 18 and 19 after it and the history read around the clock with the card held at 250 W; 20.9 reads no release reading and comes before 20.8, which needs the history read complete, so the two take each other's migration.
+
+### 2026-10-18 - ARCHITECTURE.html - section 20's row for phase 20: the readings join the ledger's catalogue once the history read is complete
+Authorised by: Phase 20 is built whole in the order its dependencies set with the sign-offs of phases 18 and 19 after it, spending no money and retiring nothing on a result
+Was:
+> 20. Local AI in the picks and the loop: ... the news labeller, the report sections and the reviewer compared on the local model, switching nothing; and after the monthly run of 2026-11-07 the readings joining the ledger's catalogue with their use read on the years after the cutoff, and an idea generator in the monthly run proposing conditions by closed labels
+Now:
+> 20. Local AI in the picks and the loop: ... the news labeller, the report sections and the reviewer compared on the local model, switching nothing; and once the history read is complete the readings joining the ledger's catalogue with their use read on the years after the cutoff, and an idea generator in the monthly run proposing conditions by closed labels
+Why: the same ruling: the readings join the catalogue once every release is read, and not after the monthly run of 2026-11-07.
+
+### 2026-10-18 - RUNBOOK.md - the history read runs around the clock with the card's power held at 250 W
+Authorised by: Phase 20 is built whole in the order its dependencies set with the sign-offs of phases 18 and 19 after it, spending no money and retiring nothing on a result
+Was:
+> ... It needs LM Studio running and holding the model, and loads it where it is not loaded. 20.0 measured 3.48 seconds a release, so the history's 38,400 releases take about 37 hours of the GPU; run from after the night's copy, about 21:30 in New York, to `--until 07:00`, a weeknight gives about nine and a half hours, about four nights, and a weekend day the hours between its slots.
+Now:
+> ... It needs LM Studio running and holding the model, and loads it where it is not loaded. It runs around the clock with the card's power held at 250 W (see: Phase 20 is built whole in the order its dependencies set with the sign-offs of phases 18 and 19 after it, spending no money and retiring nothing on a result): set the limit first from a prompt run as administrator with `nvidia-smi -pl 250`, which the machine forgets when it restarts, read it back with `nvidia-smi --query-gpu=power.limit,temperature.gpu --format=csv`, and stop the read where the card's core reaches 72 degrees. Started after the morning's merges with `--until 07:00`, it reads through the day and the night, keeping clear of the slots and the night by itself, and stops at 07:00 in New York the next morning for the day's merges. Pin 2's read took 4.63 seconds a release over its first 1,181 with the card at its limit of 390 W, and about 5.2 held at 250 W, about 13 per cent slower a token, so the history's 45,328 releases take about 65 hours of the GPU, about three days.
+Why: the same ruling; the times are pin 2's read as measured over the 45,328 releases the history fetch stored, in place of 20.0's estimate over 38,400.
+
 ### 2026-10-18 - ARCHITECTURE.html - 15.17 says the S&P 500's Past picks draws the fundamentals-first family's S&P 500 trades
 Corrects: the S&P 500's Past picks and Run page drew none of the trades 17.8 keeps for the fundamentals-first family under the S&P 500; carried from phase 17's sign-off as owed before phase 19's.
 Was:
