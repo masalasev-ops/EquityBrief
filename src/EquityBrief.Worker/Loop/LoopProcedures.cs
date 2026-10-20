@@ -30,8 +30,9 @@ public sealed record LoopRead(
 
     public string Ticker(int name) => Series[name].Name.Ticker;
 
-    // The years a fold learns on, from the first scored year to the one before its own.
-    public int LearningYears(LoopFold fold) => fold.TestFrom.Year - SweepColumns.FirstScored.Year;
+    // The years a fold learns on, from the first scored year to the one before its own: the run on all finished data's own
+    // year is the one after the newest session's, so it learns on every year the history holds, the newest among them.
+    public int LearningYears(LoopFold fold) => fold.Year - SweepColumns.FirstScored.Year;
 
     // The folds and, last, the procedure run on all finished data: what had ended by the newest session.
     public LoopFold AllFinished => new(Calendar[^1].Year + 1, Calendar[^1].AddDays(1), Calendar[^1].AddDays(1), false);
