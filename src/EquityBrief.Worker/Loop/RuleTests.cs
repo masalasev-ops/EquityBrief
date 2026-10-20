@@ -287,7 +287,9 @@ public static class RuleTests
 
     // Why an index rule's levels keep the history from walking it: a level the walk does not read moved from the one it
     // reads, or the S&P 500's breadth; none where the walk reads them all. The walk reads the dollar floor at its
-    // multiple of one, the lowest close, the profit gate and the index's own breadth, or no market check.
+    // multiple of one, the lowest close, the profit gate and the index's own breadth at the filter's floor, or no market
+    // check; from 20.11 a floor of the index's own breadth other than the filter's is a level it does not read.
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
     public static string? LevelsWhy(IReadOnlyDictionary<string, double> p, IReadOnlyList<string> dials)
     {
         if (p.GetValueOrDefault(IndexRuleCandidate.LargeBreadthParameter) == 1)
@@ -309,6 +311,11 @@ public static class RuleTests
         Read(IndexRuleCandidate.LowestCloseParameter, Core.Prices.Statistic.FromPrice(MemberReadings.LowestPrice));
         Read(IndexRuleCandidate.QualityParameter, 1);
 
+        if (p.GetValueOrDefault(IndexRuleCandidate.LargeBreadthParameter) == 0)
+        {
+            Read(IndexRuleCandidate.BreadthFloorParameter, FamilySweep.MarketFloor);
+        }
+
         foreach (var name in new[] { IndexRuleCandidate.HoldParameter, IndexRuleCandidate.IndustryFallParameter, IndexRuleCandidate.FundOverSpyParameter, IndexRuleCandidate.CreditAverageParameter, IndexRuleCandidate.CreditChangeParameter }.Concat(dials))
         {
             Read(name, 0);
@@ -321,8 +328,11 @@ public static class RuleTests
     static IReadOnlyDictionary<string, double> HooksOf(IReadOnlyDictionary<string, double> p) =>
         p.Where(pair => RuleHooks.IsHook(pair.Key)).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
 
+    // An index family's standing rules the test reads, the rule of the day before a freeze kept in the background left out,
+    // which no monthly test reads.
+    // see: A freeze on the S&P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions
     static RegisterRow[] IndexRows(RuleTestInputs inputs, string family) =>
-        [.. inputs.Standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is IndexRuleCandidate rule && rule.Index == inputs.Read.Index && rule.SetupFamily == family)];
+        [.. inputs.Standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is IndexRuleCandidate rule && rule.Index == inputs.Read.Index && rule.SetupFamily == family && !FamilyRecords.IsBackground(row.Candidate))];
 
     // The breakout or the drift: on the S&P 500 each registered rule, on the S&P 400 or 600 its live rule or its
     // provisional one and each registered rule, each at its places on its sweep's grid.
@@ -378,7 +388,7 @@ public static class RuleTests
         var marketSwitches = large ? MarketSwitches.Of(p) : MarketSwitches.None;
         string[] dials = breakout
             ? [IndexBreakoutCandidate.NearnessParameter, IndexBreakoutCandidate.RecencyParameter, IndexBreakoutCandidate.HighVolumeParameter]
-            : [IndexDriftCandidate.WideWindowParameter, IndexDriftCandidate.PeersParameter];
+            : [IndexDriftCandidate.WideWindowParameter, IndexDriftCandidate.PeersParameter, IndexDriftCandidate.EntryParameter, IndexDriftCandidate.RevenueGrewParameter];
         if (NotWalkedYet(family, row) is { } kept)
         {
             return kept;
@@ -459,7 +469,7 @@ public static class RuleTests
             yield break;
         }
 
-        var rows = inputs.Standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is IndexHeavyweightCandidate rule && rule.Index == read.Index).ToArray();
+        var rows = inputs.Standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is IndexHeavyweightCandidate rule && rule.Index == read.Index && !FamilyRecords.IsBackground(row.Candidate)).ToArray();
 
         if (!rows.Any(row => FamilyRecords.IsLive(row.Candidate)))
         {

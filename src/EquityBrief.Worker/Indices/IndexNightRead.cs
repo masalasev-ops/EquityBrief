@@ -72,8 +72,9 @@ public sealed record IndexNightInputs(
 {
     public double? Breadth => Sessions[At].Breadth;
 
-    // The index's own breadth over its own members closes every swing list of the index together.
-    // see: Each index's market check closes its own swing lists together on its own breadth
+    // The index's own breadth over its own members at the S&P 500's floor, which closes the lists of every rule of the
+    // index with no freeze standing together; a registered rule reads the breadth and the floor it states.
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
     public bool Open => Breadth >= FamilySweep.MarketFloor;
 }
 
@@ -132,6 +133,12 @@ public static class IndexNightRead
     // check opened.
     public static IReadOnlyList<SweepColumns.Session> OpenOn(IReadOnlyList<SweepColumns.Session> sessions, int at) =>
         [.. sessions.Select((one, place) => place == at ? one with { Breadth = 1.0 } : one)];
+
+    // Every session read as every member above its average, as the sweeps on each index's own history read a family's
+    // listings before its market check keeps the sessions its level holds open: a drift waiting for its pullback reads
+    // the sessions back to its reaction so.
+    public static IReadOnlyList<SweepColumns.Session> AllOpen(IReadOnlyList<SweepColumns.Session> sessions) =>
+        [.. sessions.Select(one => one with { Breadth = 1.0 })];
 
     // The first part a member fails in the rule's order, none where it passes every part.
     public static string? FirstFailed(IEnumerable<RulePart> parts) => parts.Where(part => !part.Passed).Select(part => part.Reason).FirstOrDefault();
@@ -429,6 +436,33 @@ public static class IndexNightRead
     // buy where the reaction's low sits nearer, and read over a wider window where one is stated.
     public static IReadOnlyList<(int Name, IndexTrade Trade)> Drifts(IndexNightInputs inputs, int[] setting, double stopFloor, double? window, IReadOnlyList<SweepColumns.Session> sessions) =>
         FromListings(inputs, DriftSweep.Listings(new DriftSweep(inputs.Series, inputs.Members).Readings(sessions, inputs.At, window), setting, stopFloor, window));
+
+    // From 20.11 the drift on the night bought on the first pullback after its reaction, as its sweep's entry level reads
+    // it: every listing its setting makes over the sessions a reaction the night's pullback follows can sit in, each moved
+    // to the first session within ten after its reaction whose close is below the close before it, and kept where that
+    // session is the night, a member's first in the order its readings are read; its stop the one its listing set, its
+    // target the nearer of the band and the setting's multiple of the new risk. A member whose first such session came
+    // before the night, or finds its close at or under the stop, lists none, and no later session is read for it.
+    // see: A drift rule on the S&P 400 or 600 stating the first pullback is bought on the night through the one function its search's entry level reads
+    public static IReadOnlyList<(int Name, IndexTrade Trade)> DriftPullbacks(IndexNightInputs inputs, int[] setting, double stopFloor, double? window, IReadOnlyList<SweepColumns.Session> sessions, IDictionary<int, int>? backs = null)
+    {
+        var readings = new DriftSweep(inputs.Series, inputs.Members).Readings(sessions, Math.Max(0, inputs.At - DriftSweep.FirstPullbackSessions), window);
+        var reactions = readings.ToDictionary(reading => (reading.Name, reading.Bar), reading => reading.Bar - reading.Back);
+        var multiple = DriftSweep.Grid.Value(setting, 3);
+        var moved = DriftSweep.Listings(readings, setting, stopFloor, window)
+            .SelectMany(listing => DriftSweep.FirstPullback(listing, inputs.Series[listing.Name], reactions[(listing.Name, listing.Bar)], multiple, sessions)
+                .Select(pullback => (Listing: pullback, Reaction: reactions[(listing.Name, listing.Bar)])))
+            .Where(one => one.Listing.Session == inputs.At)
+            .DistinctBy(one => one.Listing.Name)
+            .ToArray();
+
+        foreach (var (listing, reaction) in moved)
+        {
+            backs?.TryAdd(listing.Name, inputs.At - inputs.Series[listing.Name].SessionAt[reaction]);
+        }
+
+        return FromListings(inputs, moved.Select(one => one.Listing));
+    }
 
     // A family's listings on the night as trades, in the family's own order.
     static IReadOnlyList<(int Name, IndexTrade Trade)> FromListings(IndexNightInputs inputs, IEnumerable<FamilyListing> listings)

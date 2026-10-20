@@ -363,16 +363,24 @@ public sealed partial class IndexSweepRunner
 
         SweepSurprise? Newest(FamilyListing listing) => NewestReport(Series[listing.Name], listing.Bar);
 
-        // A report's revenue growth on the year as first filed, known from the report whatever day the filing came, as the
-        // drift's level reads it; none where the filer stated none the reading finds.
+        // A report's revenue growth on the year as first filed, read from 20.11 as the night reads it: over the quarters first
+        // filed before the session before the listing's, which are those the night's filings refresh has stored by the
+        // listing's night, so a quarter filed the day of its report is read from the second session after it; none where
+        // the filer stated none the reading finds by then.
         // see: A drift print's revenue growth is its quarter's revenue as first filed against the same quarter a year before
+        // see: A drift's revenue level on the S&P 400 and 600 reads a quarter only once its filing is stored, on the night and in its sweep alike
         PrintRevenue? RevenueOf(FamilyListing listing)
         {
             var one = Series[listing.Name];
 
-            return Newest(listing) is { } newest && revenue.TryGetValue(one.Name.Ticker, out var facts)
-                ? RevenueGrowth.Of(newest.EventDate, quartersOf.GetOrAdd(one.Name.Ticker, _ => FirstFiledRevenue.Quarters(facts)))
-                : null;
+            if (Newest(listing) is not { } newest || !revenue.TryGetValue(one.Name.Ticker, out var facts))
+            {
+                return null;
+            }
+
+            var stored = Calendar[Math.Max(0, listing.Session - 1)];
+
+            return RevenueGrowth.Of(newest.EventDate, [.. quartersOf.GetOrAdd(one.Name.Ticker, _ => FirstFiledRevenue.Quarters(facts)).Where(quarter => quarter.Filed < stored)]);
         }
 
         bool PeersBeat(FamilyListing listing)
@@ -463,7 +471,7 @@ public sealed partial class IndexSweepRunner
                 levels.Add(new("entry", $"the first pullback to the level within {SweepEntries.PullbackSessions} sessions", Instead: (listing, setting) =>
                     SweepEntries.BreakoutPullback(listing, Series[listing.Name], HighOf(listing, setting), BreakoutSweep.Grid.Value(setting, 3), AllOpen)));
                 levels.Add(new("the newest report", "beat its estimate", Keep: listing => Newest(listing) is { Percent: > 0 }));
-                levels.Add(new("the newest report", "revenue grew on the year as first filed", Keep: listing => RevenueOf(listing) is { Growth: > 0 }));
+                levels.Add(new("the newest report", "revenue grew on the year as first filed and stored before the night", Keep: listing => RevenueOf(listing) is { Growth: > 0 }));
                 levels.Add(new("the breakout day's move", FormattableString.Invariant($"at most {LargestDayMoves:0} typical moves"), Keep: listing => DayMoves(Series[listing.Name], listing.Bar) <= LargestDayMoves));
             }
 
@@ -474,7 +482,7 @@ public sealed partial class IndexSweepRunner
                 levels.Add(new("hold", "10 sessions", Hold: 10));
                 levels.Add(new("surprise", "at least 5 per cent", Keep: listing => listing.Order >= LeastSurprise));
                 levels.Add(new("surprise", "at least 10 per cent", Keep: listing => listing.Order >= LargeSurprise));
-                levels.Add(new("revenue", "grew on the quarter a year before, both as first filed", Keep: listing => RevenueOf(listing) is { Growth: > 0 }));
+                levels.Add(new("revenue", "grew on the quarter a year before, both as first filed and stored before the night", Keep: listing => RevenueOf(listing) is { Growth: > 0 }));
                 levels.Add(new("entry", $"the first pullback after the reaction within {SweepEntries.PullbackSessions} sessions", Instead: (listing, setting) =>
                     backOf.TryGetValue((listing.Name, listing.Bar), out var back)
                         ? SweepEntries.DriftPullback(listing, Series[listing.Name], listing.Bar - back, DriftSweep.Grid.Value(setting, 3), AllOpen)

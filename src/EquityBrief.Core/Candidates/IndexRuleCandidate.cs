@@ -16,8 +16,8 @@ public abstract class IndexRuleCandidate(string index) : FamilyRuleEvaluator
     // The levels every swing family's rule on an index states beside its family's own dials, each nought where the
     // level is off: the dollar volume floor's multiple, the lowest close, the quality, the sessions held where the
     // family's own cap is not, the window the industry's fall is read over, the index fund against SPY's window, the
-    // credit fund above its average and rising, and the breadth the market check reads: the index's own, the S&P 500's
-    // in its place, or none.
+    // credit fund above its average and rising, the breadth the market check reads, the index's own, the S&P 500's in
+    // its place, or none, and from 20.11 the floor that breadth is read against, nought where the check reads none.
     public const string FloorsParameter = "floors";
     public const string LowestCloseParameter = "lowestClose";
     public const string QualityParameter = "quality";
@@ -27,10 +27,18 @@ public abstract class IndexRuleCandidate(string index) : FamilyRuleEvaluator
     public const string CreditAverageParameter = "creditAverage";
     public const string CreditChangeParameter = "creditChange";
     public const string LargeBreadthParameter = "largeBreadth";
+    public const string BreadthFloorParameter = "breadthFloor";
 
-    // The breadth level's third value, a rule reading no market check at all, and the short words naming it: the one
-    // value the registration form admits that no sweep read, for a variant beside an index's provisional rule.
-    // see: An S&P 400 or 600 swing family may carry a variant with no market check, the check standing on its provisional rule
+    // The floors the index's own breadth is read against, the four its sweep on its own history read; the S&P 500's
+    // breadth is read at its own floor, the one its filter reads, which the third of them equals.
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
+    public static IReadOnlyList<double> BreadthFloors { get; } = [0.35, 0.40, 0.45, 0.50];
+
+    public const double LargeBreadthFloor = 0.45;
+
+    // The breadth level's third value, a rule reading no market check at all, and the short words naming it, the level
+    // each index's own search reads as its market check off, read on the night as every member above its average.
+    // see: A freeze on the S&P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions
     public const double NoMarketCheck = 2;
 
     public const string MarketCheckOff = "market check off";
@@ -46,6 +54,7 @@ public abstract class IndexRuleCandidate(string index) : FamilyRuleEvaluator
         CreditAverageParameter,
         CreditChangeParameter,
         LargeBreadthParameter,
+        BreadthFloorParameter,
     ];
 
     // The index the rule reads, by its code in the store.

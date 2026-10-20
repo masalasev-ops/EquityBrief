@@ -30,7 +30,7 @@ public sealed class IndexHeavyweightCandidate(string index) : IndexRuleCandidate
     public const int DesignA = 0;
     public const int DesignB = 1;
 
-    public override string Version => "c40735ea9a73";
+    public override string Version => "7e11d1133547";
 
     public override string SetupFamily => HeavyweightRule.Name;
 

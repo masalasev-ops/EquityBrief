@@ -13,12 +13,16 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Cards;
 
-// The rule's record a card draws, by hand: each rule a card can name on each index, each family's live rule on the S&P 500
-// and its provisional one on the S&P 400 and 600, replayed at its one setting over the pulled history with the sweep's own
-// walk and each trade after its cost, its figures stored one row an index and family over what an earlier run stored. It
-// does not start while the night holds the store or inside the night's window, makes no request and calls no model, and
-// writes one row of its own to the run log.
+// The rule's record a card draws, by hand: each rule a card can name on each index, each family's live rule on the S&P 500,
+// and on the S&P 400 and 600 each family's live rule where one stands as the night reads it and its provisional one
+// otherwise, replayed at its one setting over the pulled history with its sweep's own walk and each trade after its cost,
+// its figures stored one row an index and family over what an earlier run stored. A family's live rule on the S&P 400 or
+// 600 is replayed by its sweep's own reading of the index's history at the next open, its row naming the rule in its
+// registration's words and the setting by its sweep's key; one whose settings that reading cannot read writes no row and
+// says why. It does not start while the night holds the store or inside the night's window, makes no request and calls
+// no model, and writes one row of its own to the run log.
 // see: A rule's record is replayed at its one setting by the sweep's own code over the pulled history, after costs on every index
+// see: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone
 public sealed class RuleRecorder(IClock clock, string databaseFile, string dataRoot, TextWriter output) : IComponent
 {
     public static ComponentAccess Access => new(
@@ -27,6 +31,7 @@ public sealed class RuleRecorder(IClock clock, string databaseFile, string dataR
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
+            new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.PulledEarnings, Touch.Read),
             new StoreTouch(Store.PulledSurprise, Touch.Read),
@@ -107,27 +112,45 @@ public sealed class RuleRecorder(IClock clock, string databaseFile, string dataR
         var startedAt = clock.UtcNow;
         var runId = FormattableString.Invariant($"{Verb}-{startedAt:yyyyMMddTHHmmssZ}");
         var lines = new List<string>();
+        var written = 0;
+
+        // The S&P 400's and 600's rules as the night reads them as of the run, each family's live rule among them where
+        // one stands; one whose evaluator moved or whose settings left its grid is read by no night, and its family keeps
+        // its provisional replay.
+        var (rules, _) = IndexFamilies.StandingRules(await new CandidateRegistrar(clock, databaseFile).RowsAsync(cancellation), startedAt);
 
         foreach (var index in indices)
         {
-            var replayed = await RuleReplay.IndexAsync(databaseFile, index, output.WriteLine, cancellation);
+            var replayed = await RuleReplay.IndexAsync(databaseFile, index, output.WriteLine, cancellation, live: rules);
+            var indexName = DecisionCards.NameOf(index);
 
             foreach (var rule in replayed)
             {
+                if (rule.Refused is { } why)
+                {
+                    var refusal = $"{indexName} {rule.Family}: its live rule, the {rule.Rule}, is not replayed, since {why}, and no record is written for it";
+
+                    lines.Add(refusal);
+                    output.WriteLine(refusal);
+
+                    continue;
+                }
+
                 var figures = RuleRecordFigures.Of(rule.Trades);
-                var indexName = DecisionCards.NameOf(index);
                 var median = Whole(figures.MedianSessions);
+                var frozen = index != IndexFamilies.LargeIndex && rules.Any(one => one.Live && one.Index == index && one.Family == rule.Family);
 
                 await WriteAsync(index, rule, figures, startedAt, cancellation);
+                written++;
 
-                var line = FormattableString.Invariant($"{indexName} {rule.Family}: {figures.Trades} trade(s) from {rule.From:yyyy-MM-dd} to {rule.Through:yyyy-MM-dd}, {rule.Membership}, average {Number(figures.Average)} {rule.Unit}, won {Number(figures.Won)}, median {median} session(s) held");
+                var line = FormattableString.Invariant($"{indexName} {rule.Family}{(frozen ? ", its live rule at " + rule.Settings : string.Empty)}: {figures.Trades} trade(s) from {rule.From:yyyy-MM-dd} to {rule.Through:yyyy-MM-dd}, {rule.Membership}, average {Number(figures.Average)} {rule.Unit}, won {Number(figures.Won)}, median {median} session(s) held");
 
                 lines.Add(line);
                 output.WriteLine(line);
             }
         }
 
-        await AppendAsync(runId, startedAt, lines.Count, string.Join("; ", lines), cancellation);
+        await AppendAsync(runId, startedAt, written, string.Join("; ", lines), cancellation);
 
         return 0;
     }
@@ -135,10 +158,13 @@ public sealed class RuleRecorder(IClock clock, string databaseFile, string dataR
     // The `--nights` form: each standing rule's listed count on every scored session of the pulled history, replayed with
     // the sweep's own walk and written as the rule's history for the cards' stretch lines, through the cards' stage,
     // which carries the history on night by night. The S&P 500's live swing filter, breakout and drift rules, the S&P
-    // 400's and 600's live or provisional rules, and the breakout's and the drift's registered variants whose settings
-    // sit on their family's grid and read no market switch; a variant off the grid, reading a switch or of the swing
-    // filter's own starts its history at its registration, and the sector heavyweights carry no stretch line.
+    // 400's and 600's live rules as the night reads them, each replayed at its own settings by its sweep's own reading of
+    // the index's history and written under its name, or the provisional rule where none stands, and the breakout's and
+    // the drift's registered variants on the S&P 500 whose settings sit on their family's grid and read no market switch;
+    // a variant off the grid, reading a switch or of the swing filter's own, and every other rule on the S&P 400 and 600,
+    // starts its history at its registration, and the sector heavyweights carry no stretch line.
     // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
+    // see: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone
     public async Task<int> NightsAsync(IReadOnlyList<string> named, CancellationToken cancellation = default)
     {
         var indices = named.Count == 0 ? DecisionCards.Indices : named;
@@ -169,6 +195,7 @@ public sealed class RuleRecorder(IClock clock, string databaseFile, string dataR
         var runId = FormattableString.Invariant($"{Verb}-nights-{startedAt:yyyyMMddTHHmmssZ}");
         var register = await new CandidateRegistrar(clock, databaseFile).RowsAsync(cancellation);
         var standing = CandidateFamily.StandingBefore(register, startedAt);
+        var (rules, _) = IndexFamilies.StandingRules(register, startedAt);
         var cards = new RuleCards(clock, databaseFile);
         var lines = new List<string>();
         var rows = 0;
@@ -177,13 +204,25 @@ public sealed class RuleRecorder(IClock clock, string databaseFile, string dataR
         {
             var large = index == IndexFamilies.LargeIndex;
             var variants = large ? Variants(standing) : [];
-            var replayed = await RuleReplay.IndexAsync(databaseFile, index, output.WriteLine, cancellation, [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name], variants);
+            var replayed = await RuleReplay.IndexAsync(databaseFile, index, output.WriteLine, cancellation, [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name], variants, large ? null : rules);
 
             foreach (var rule in replayed)
             {
+                if (rule.Refused is { } why)
+                {
+                    var refusal = $"{DecisionCards.NameOf(index)} {rule.Family}: its live rule, the {rule.Rule}, is not replayed, since {why}, so its history is not written";
+
+                    lines.Add(refusal);
+                    output.WriteLine(refusal);
+
+                    continue;
+                }
+
+                // On the S&P 400 and 600 the rule the night reads a family's list by, its live rule where one stands, the
+                // rule the replay walked.
                 var name = large
                     ? rule.Family == SetupFamilies.Pullback ? LiveName(standing, row => CandidateEvaluators.Find(row.Evaluator) is SwingFilterRule) : rule.Rule
-                    : LiveName(standing, row => CandidateEvaluators.Find(row.Evaluator) is IndexRuleCandidate own && own.Index == index && own.SetupFamily == rule.Family) ?? RuleCards.ProvisionalRule;
+                    : rules.FirstOrDefault(one => one.Live && one.Index == index && one.Family == rule.Family)?.Candidate ?? RuleCards.ProvisionalRule;
 
                 if (name is null)
                 {

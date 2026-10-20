@@ -4757,3 +4757,111 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             request, with the figures it states.
 Carried:    as the newest entry of this pull request; the live alarm still reading the index's own heavyweights book on
             a frozen index, put to the operator.
+
+### 20.11 - the S&P 400's and 600's eight families frozen at their own searches' answers: each rule's own market check, the S&P 400 drift's first pullback and the S&P 600 drift's revenue as stored before the night, the rule of the day before in the background, the frozen cards' figures, records and checks, and a retired rule's positions ended   2026-10-20
+
+Queue:      as the 20.11 ruling's entry above.
+Built:      on the operator's rulings and answers of 2026-10-20 (see: The S&P 400's and 600's families freeze at the
+            settings their own sweeps would run, business first alone left on the pullback's base). A swing rule on the
+            S&P 400 and 600 states the floor its market check reads, `breadthFloor`, its setups read with the night open
+            and its check alone closing its list (see: Each frozen rule on the S&P 400 and 600 reads its market check at
+            the level its own sweep chose); a drift states `entry`, bought on its first lower close within ten sessions of
+            its reaction through the search's own function, and `revenueGrew`, reading its print's two quarters as first
+            filed before the session before the night, as its search now reads them (see: A drift rule on the S&P 400 or
+            600 stating the first pullback is bought on the night through the one function its search's entry level
+            reads) (see: A drift's revenue level on the S&P 400 and 600 reads a quarter only once its filing is stored, on
+            the night and in its sweep alike). The freeze form refuses only where a live rule stands, keeps the variants
+            standing and registers the rule of the day before in the background, which the night's apply step retires
+            after one block and which is no trial of its family's on the Run page (see: A freeze on the S&P 400 or 600 is
+            refused only where the family's live rule stands, the variants standing before it kept beside it) (see: A
+            freeze on the S&P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces
+            in the background for 63 sessions); `--again` registers a frozen family's variants again beside its live rule
+            (see: An S&P 400 or 600 family's variants are registered again whole beside its provisional rule or its frozen
+            live rule). A retired heavyweights rule's book sells its holdings at the close of the session it was retired
+            on (see: A retired rule's open positions are ended, a book's holdings sold at the close of the session it was
+            retired on and a swing rule's trades walked to their own exits). Migration 102 adds the sweep answers'
+            figures, which `sweep-answer --tester` records with the tester's verdict, and the frozen card draws them with
+            its line kept at its freeze (see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no
+            setting beat luck or the tester's bar). `nightly --session <newest> --register-now` reads the register as it
+            stands, the night's settings carry the instant and the pages read the rules standing at it (see: A night run
+            again for the newest session reads the register as it stands when it runs where the operator says so, and its
+            page reads the rules that run read). The rule recorder replays each frozen rule by its sweep's own reading,
+            the ledger reads each frozen live rule, and a frozen pick's card names the check its rule reads, the S&P
+            500's breadth where it reads that, and draws its record and the setups like it under that rule alone (see: A
+            frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws
+            that record alone) (see: The setup ledger reads each S&P 400 and 600 family's frozen live rule where one
+            stands, and a card draws setups like a pick only once its history is built under that rule). The corpus:
+            eleven decisions, four moved under Previously decided, sections 7, 11.4, 13.9, 13.10, 14, 15.7, 15.18, 16
+            and 17, the schema, the runbook, the build plan, the roster, the guide and the changelog; and two remedies.
+Found:      by the check the operator asked for of each reading the eight frozen rules read, the sweep's timing against
+            the night's, beside the 15.1 and 17.1 corrections above, each put to the operator before the merge: the S&P
+            400 breakout's year's high of 251 sessions is read by the night only where the store's year holds 252, so on
+            66 of the 302 nights to the end of 2027, 57 of them Mondays, it lists nothing; the heavyweights' books
+            rebalance a session after the sweep's in 7 of the 15 months to 2027, three in April 2027, as their decision
+            has them wait for 252 closes; the sweep's dollar volume, read over closes adjusted for every later dividend,
+            refused 3.40 per cent of the S&P 600's member-sessions before the store's year and 0.90 of the S&P 400's
+            that the night clears; the night reads a new quarter for the profit gate a session after the sweep for 79.3
+            per cent of quarters, its verdict differing on 0.22 per cent of member-sessions; a reaction night's surprise
+            stood unfiled on 3 of the S&P 500's 34 drift prints since 2026-10-01 and moved across zero later on 2; the
+            date the night holds put 9 of 416 pullback setups on the other side of the 15 sessions to a report; after a
+            plain split that follows a member's last count, the night's heavyweights value the company on the count's
+            basis until a later quarter's count, no member so now and 3 to 14 splits a year an index; the sweep reads
+            membership from quarterly snapshots, at most 3.4 per cent of member-sessions differing; and the S&P 500's
+            registered heavyweights books leave a retired rule's holdings open, its pinned source moving every S&P 500
+            heavyweights record. Until the operator's word on them, the S&P 400 drift, whose search the 17.1
+            correction left passing none, is frozen at its strongest as the operator ruled the S&P 600 drift's answer,
+            and nothing else changes: the breakout's high, the heavyweights' value after a split and the S&P 500's
+            retired books wait on their word, and the sweep's dollar volume and quarter timing, the reaction night's
+            surprise, the report date and the snapshots' membership stand as stated here. And by the replay's own
+            reading, beside the 15.5 correction above: the live alarm reads the index's own heavyweights book where a
+            frozen rule's book stands; the record command's start guard admits a run whose end crosses midnight UTC into
+            a weekday's night window; and a provisional card draws whatever record is stored on a night that reads its
+            family by the provisional rule after the freeze.
+Fixture:    the fixture holds no S&P 400 or 600 member, so its replay freezes no rule and `fixture-replay` names none.
+            20.11's expectations are `fixture-expectations`' over constructed stores, derived by hand: seven of
+            seventeen members above their averages, 41.2 per cent, open at the floors of 35 and 40 per cent and closed at
+            45 and 50; a first pullback bought at 101.6 with its stop near 99.72, a typical move of about 1.280 under the
+            reaction's close of 101; the rule of the day before retired on 2027-01-22 and not 2027-01-21, the 63rd
+            session after the freeze's first; and a retired book's holding sold at 110 at the close of its retirement's
+            session.
+Amended:    20.11 amends its own done condition: the word came as freezes rather than provisional rules, so it is done
+            when the remedy's lines register the eight freezes over a register shaped as the operator's, each frozen rule's
+            reading and the retirement of the rule of the day before are worked by hand, a retired rule's positions are
+            ended and the sweep answers' figures are recorded, with one mutation. The changelog says the same.
+Tests:      54 new since main at 6ecf423f across this pull request, 2550 in all, read off the suite's own
+            list: in 20.11's freezes, the market check worked by hand at each floor and the S&P 500's, a pullback with its
+            own dial off at its rule's floor, a drift stating the entry and the S&P 600 drift's revenue and hold, the
+            freeze keeping the rule of the day before and the books, a stand read from its opening registration, the rule
+            of the day before retired on the block's night, a retired book sold and a retired swing trade walked, the
+            sweep answers' figures and tester, the remedy's lines over the operator's register and the night's
+            `--register-now`; the ledger's four, the line's four, the records' five and the frozen cards' tests, a
+            frozen pick's market line on the S&P 500's breadth, its setups like it leaving out a row read under the
+            provisional rule and the rule of the day before no trial among them; and the corrections' tests above.
+Claims:     1372, as before.
+Pins:       moved on the S&P 400 and 600 and no other, every S&P 500 evaluator's version as it stood: from main's, the
+            pullback 2d47fe58f8ca to 51c963c077f7, the breakout 220315e2b29d to c8bbfa8055e9, the drift d3b31d4c3a35 to
+            b1770e2c06a5 and the heavyweights 2dfd307b477a to 7e11d1133547.
+Remedy:     after the merge, at the read's daily stop, from main: `tools/remedies/2026-10-20-20.11-the-index-freezes.txt`,
+            migration 102, the ten answers recorded with their figures and testers, the six variants of 19.1 retired,
+            the S&P 600 heavyweights' two books registered again, the eight freezes and the rule recorder's replay of
+            the frozen rules' records, about an hour; then `tools/nightly.ps1 --session 2026-10-20 --register-now` where
+            it ends before the open; then `tools/remedies/2026-10-20-20.11-the-frozen-rules-stretch-lines.txt`, the
+            frozen rules' nights, about an hour. No provider request and no model call.
+Mutated:    the rule, stated before the run: a retired rule's book selling its holdings at the close of the session it was
+            retired on, broken by handing the night no retired books: predicted red at the retired book's test. Result:
+            red, the retired book's L1 left open where its sale at 110 on 2026-10-02 was expected, the swing rule's
+            walk held green beside it. Made on this branch and reverted before anything was committed, and the test
+            green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2550 of 2550 tests ran with none failed,
+            migrations 0 to 102 with none pending, schema version 102, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the operator's word on the S&P 400 drift's setting, the S&P 400 breakout's year's high, the heavyweights'
+            value after a split and the S&P 500's retired books, each put to them before the merge; the live alarm on
+            a frozen heavyweights rule's own book, the record command's start guard across midnight UTC and a
+            provisional card's record after a freeze, each put to them; the merge at the read's daily stop with the two
+            remedies and the newest night run again where it ends before the open, recorded in an entry of its own
+            naming the night it replaced and what each index listed; the setups like a frozen pick waiting for the next
+            ledger history build; PR 505 rebased with its migration at 103; and the phase 18 sign-off by a fresh
+            session.

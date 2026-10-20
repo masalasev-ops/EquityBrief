@@ -34,8 +34,8 @@ public sealed record BusinessReading(decimal? NetIncome, decimal? Cover, bool No
 public sealed record SectorPlace(string Sector, double Return, int Place, int Of, int Members);
 
 // The index's breadth against the floor its swing lists are read at, and whether the family that listed the pick reads
-// the market check at all.
-public sealed record MarketReading(double? Breadth, double Floor, bool ReadByTheFamily);
+// the market check at all; or the breadth of the index the family's rule reads in its own index's place, named.
+public sealed record MarketReading(double? Breadth, double Floor, bool ReadByTheFamily, string? Of = null);
 
 // The next report on file after the night: its date, whether it comes after the close, and the sessions from the night to
 // the session it moves, none where that session lies past the exchange calendar's table.
@@ -189,9 +189,10 @@ public static class CardLines
     // stands among the card's bottom places of the index's sectors, or is not ranked.
     public static CardLine Market(MarketReading market, SectorPlace? sector, string index, CardSettings settings)
     {
+        var of = market.Of ?? index;
         var breadth = market.Breadth is { } read
-            ? FormattableString.Invariant($"the {index}'s breadth is {FloorShare.Percent(read, market.Floor)}% against its floor of {market.Floor:0%}")
-            : $"the {index}'s breadth was not read";
+            ? FormattableString.Invariant($"the {of}'s breadth is {FloorShare.Percent(read, market.Floor)}% against its floor of {market.Floor:0%}")
+            : $"the {of}'s breadth was not read";
         var check = market.ReadByTheFamily ? breadth : breadth + ", a check this rule does not read";
 
         if (sector is null)

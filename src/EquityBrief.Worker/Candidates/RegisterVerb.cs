@@ -56,8 +56,8 @@ public static class RegisterVerb
     public const string IndexVariants = "--index-variants";
 
     // From 20.4 the switch that registers an index family's standing variants again whole with the ones given, on the
-    // evidence given, which is how a variant joins them.
-    // see: An S&P 400 or 600 family's variants are registered again whole to add one beside its provisional rule
+    // evidence given, which is how a variant joins them, and from 20.11 beside a frozen family's live rule.
+    // see: An S&P 400 or 600 family's variants are registered again whole beside its provisional rule or its frozen live rule
     public const string Again = "--again";
 
     public static IReadOnlyList<VerbForm> Forms { get; } =

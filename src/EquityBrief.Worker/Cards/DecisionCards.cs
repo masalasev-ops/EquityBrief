@@ -35,11 +35,16 @@ public sealed record DecisionCardsOutcome(DateOnly? Session, IReadOnlyList<Index
 // as the card read it, with the card's values it was read with; and for a family a learned score reaches, the setups
 // like the pick under its rule and its rank once the score passed on the index. Read from stored rows alone, with no
 // request and no language model; a night run again replaces its own cards. A failure in one index's cards undoes them,
-// is named on the stage's row and the next index is read, so the night goes on whatever became of its cards.
+// is named on the stage's row and the next index is read, so the night goes on whatever became of its cards. From 20.11 a
+// card whose family on the S&P 400 or 600 its night read by its live rule names that rule's gates and market check, draws
+// a record only where the record replays that rule, and draws setups like the pick only where the setup ledger's history
+// stands under it.
 // see: A pick's card draws the setups like it under its rule beneath the rule's record, and the score's rank only once the score passed on its index
 // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
 // see: The nightly run is arithmetic only
 // see: Every computed table's writer is its own deleter
+// see: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone
+// see: The setup ledger reads each S&P 400 and 600 family's frozen live rule where one stands, and a card draws setups like a pick only once its history is built under that rule
 public sealed class DecisionCards : IComponent
 {
     public static ComponentAccess Access => new(
@@ -221,10 +226,26 @@ public sealed class DecisionCards : IComponent
     // The sessions the ledger read a family on an index, by which one stock's setups are counted apart.
     const string SessionsRead = "SELECT DISTINCT session_date FROM setup_night WHERE index_code = $index AND family = $family ORDER BY session_date;";
 
-    // Every finished setup the rule's own setting passed on an index holding each reading matched on.
-    static string RulesSetups(IReadOnlyList<string> columns) =>
+    // The rule the ledger's earliest setup of a family on an index was read under, which a history built again under a
+    // rule writes on every setup of its span.
+    const string EarliestSetupRule = "SELECT rule FROM setup WHERE index_code = $index AND family = $family ORDER BY session_date, ticker LIMIT 1;";
+
+    // Every part of a pick's rule as its night stored it for the pick, the market check first.
+    const string IndexFamilyGates = @"
+        SELECT gates FROM index_family_result
+        WHERE index_code = $index AND session_date = $night AND ticker = $ticker AND family = $family;
+    ";
+
+    // What a card of a family its night read by its live rule says in place of the setups like the pick, where the setup
+    // ledger's history on its index was read under another rule.
+    public const string LedgerWaits = "the setups like it wait for the next ledger history build under this rule";
+
+    // Every finished setup the rule's own setting passed on an index holding each reading matched on; for a family the
+    // night read by its live rule, only those whose pass was read under that rule.
+    static string RulesSetups(IReadOnlyList<string> columns, bool underLive) =>
         "SELECT ticker, session_date, edge, " + string.Join(", ", columns)
         + " FROM setup WHERE index_code = $index AND family = $family AND live_pass = 1 AND settled = 1 AND edge IS NOT NULL"
+        + (underLive ? " AND rule = $rule" : string.Empty)
         + string.Concat(columns.Select(column => " AND " + column + " IS NOT NULL"))
         + " ORDER BY session_date, ticker;";
 
@@ -318,6 +339,7 @@ public sealed class DecisionCards : IComponent
     {
         var large = index == IndexFamilies.LargeIndex;
         var picks = await PicksAsync(connection, transaction, large ? LargePicks : IndexPicks, index, night, cancellation);
+
         // On the S&P 400 or 600 the night's settings name the live rule it read each family by: where that names the
         // sector heavyweights, the buys are that rule's own book's, and the index's own book's otherwise.
         // see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
@@ -353,17 +375,24 @@ public sealed class DecisionCards : IComponent
                 ? largeSettings!.TryGetValue(family, out var stood) && stood.Hooks.Count > 0 ? stood.Words() : null
                 : ApprovedOf(indexSettings, family);
 
+        // On the S&P 400 or 600 the words of the live rule the night read a family's list by, none where it read the
+        // family by its provisional rule or a stored setting.
+        string? Live(string family) => large ? null : LiveWordsOf(indexSettings, family);
+
         foreach (var pick in picks)
         {
+            var live = Live(pick.Family);
             var plan = large
                 ? await LargePlanAsync(connection, transaction, pick, night, cancellation)
                 : await IndexPlanAsync(connection, transaction, index, pick, night, indexSettings, cancellation);
             var market = large
                 ? await LargeMarketAsync(connection, transaction, pick.Ticker, night, true, cancellation)
-                : new MarketReading(breadth, floor, true);
-            var score = await ScorePartAsync(connection, transaction, index, pick.Family, pick.Ticker, scores, cancellation);
+                : live is null
+                    ? new MarketReading(breadth, floor, true)
+                    : await LiveMarketAsync(connection, transaction, index, pick, night, breadth, floor, cancellation);
+            var score = await ScorePartAsync(connection, transaction, index, pick.Family, pick.Ticker, scores, cancellation, live);
 
-            written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, market, sectors, ranks, null, cancellation, score, Approved(pick.Family));
+            written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, market, sectors, ranks, null, cancellation, score, Approved(pick.Family), live);
         }
 
         // The fundamentals-first family's picks on the S&P 500, which the index families' step lists, each with the score's
@@ -398,7 +427,7 @@ public sealed class DecisionCards : IComponent
                 ? await LargeMarketAsync(connection, transaction, buy.Ticker, night, false, cancellation)
                 : new MarketReading(breadth, floor, false);
 
-            written += await WriteAsync(connection, transaction, index, night, Heavyweights, buy.Ticker, ++place, plan, market, sectors, ranks, holdings, cancellation);
+            written += await WriteAsync(connection, transaction, index, night, Heavyweights, buy.Ticker, ++place, plan, market, sectors, ranks, holdings, cancellation, live: Live(Heavyweights));
         }
 
         return written;
@@ -413,16 +442,20 @@ public sealed class DecisionCards : IComponent
     sealed record Bought(string Ticker, string Sector, decimal? Entry);
 
     // A rule standing at a change an approval set is not the rule its stored record replayed, so its card reads no
-    // record and carries the change's words in its place.
+    // record and carries the change's words in its place. A family its night read by its live rule on the S&P 400 or 600
+    // reads the stored record only where that record replayed the live rule, its words the rule's own, and none otherwise,
+    // so a record stored before the rule's replay is never drawn under it.
     // see: An approved change is applied by the night's own build on the index it was approved on alone
-    async Task<int> WriteAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, string family, string ticker, int place, Plan plan, MarketReading market, IReadOnlyDictionary<string, string> sectors, IReadOnlyList<SectorPlace> ranks, int? bookHoldings, CancellationToken cancellation, ScorePart? score = null, string? approved = null)
+    // see: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone
+    async Task<int> WriteAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, string family, string ticker, int place, Plan plan, MarketReading market, IReadOnlyDictionary<string, string> sectors, IReadOnlyList<SectorPlace> ranks, int? bookHoldings, CancellationToken cancellation, ScorePart? score = null, string? approved = null, string? live = null)
     {
         var named = NameOf(index);
         var words = SetupFamilies.Named(family)?.Label.ToLowerInvariant() ?? SetupFamilies.SectorHeavyweights.Heading.ToLowerInvariant();
         var (state, dollarVolume, value) = await ReadingAsync(connection, transaction, index, ticker, night, cancellation);
         var quarters = await QuartersAsync(connection, transaction, ticker, night, cancellation);
         var sector = sectors.GetValueOrDefault(ticker);
-        var record = approved is null ? await RecordAsync(connection, transaction, index, family, cancellation) : null;
+        var stored = approved is null ? await RecordAsync(connection, transaction, index, family, cancellation) : null;
+        var record = live is null || string.Equals(stored?.Rule, live, StringComparison.Ordinal) ? stored : null;
         var held = record is null ? null : RuleRecordFigures.HeldBy(record.EndedBy, settings.HeldShare);
         var report = await ReportAsync(connection, transaction, ticker, night, cancellation);
         var noStop = plan.Stop is null;
@@ -476,6 +509,46 @@ public sealed class DecisionCards : IComponent
                 ? words
                 : null;
 
+    // The words of the live rule an S&P 400 or 600 night read a family's list by, as the night's settings state them; none
+    // where the night read the family by its provisional rule or a stored setting.
+    public static string? LiveWordsOf(JsonElement? settings, string family) => LiveOf(settings, family, "words");
+
+    // The registered name of that live rule, which its own book's rows carry.
+    public static string? LiveCandidateOf(JsonElement? settings, string family) => LiveOf(settings, family, "candidate");
+
+    static string? LiveOf(JsonElement? settings, string family, string field)
+    {
+        if (settings is not { } read || !read.TryGetProperty("live", out var live) || live.ValueKind != JsonValueKind.Array)
+        {
+            return null;
+        }
+
+        foreach (var rule in live.EnumerateArray())
+        {
+            if (rule.TryGetProperty("family", out var named) && named.GetString() == family
+                && rule.TryGetProperty(field, out var value) && value.GetString() is { Length: > 0 } stated)
+            {
+                return stated;
+            }
+        }
+
+        return null;
+    }
+
+    // The live rule's name an S&P 400 or 600 night's stored settings name for a family, read by a component holding the
+    // settings' text.
+    public static string? LiveCandidateOf(string? settings, string family)
+    {
+        if (settings is null)
+        {
+            return null;
+        }
+
+        using var document = JsonDocument.Parse(settings);
+
+        return LiveCandidateOf(document.RootElement.Clone(), family);
+    }
+
     // A card's rank under its index's learned score, none until the score has passed the tester on the index, and its
     // part of setups like the pick, none for a family no score reaches.
     sealed record ScorePart(int? Rank, CardSimilar? Similar);
@@ -493,14 +566,20 @@ public sealed class DecisionCards : IComponent
         public Func<string, IReadOnlyList<double?>?>? Readings;
 
         public Dictionary<string, IReadOnlyList<SimilarSetup>> Setups { get; } = new(StringComparer.Ordinal);
+
+        // The rule each family's earliest setup on the index was read under, none where the ledger holds none.
+        public Dictionary<string, string?> EarliestRules { get; } = new(StringComparer.Ordinal);
     }
 
     // The score's part of a pick's card: where the score has passed the tester on the index, the pick's rank among the
     // setups it learned on there; and the setups like the pick under its rule, matched on the readings weighing most in
     // the index's current score, or why none were matched. A part that cannot be read is named on the card and the
-    // card is written regardless.
+    // card is written regardless. A family its night read by its live rule on the S&P 400 or 600 is matched only where the
+    // setup ledger's history on the index stands under that rule, its earliest setup read under the rule's own words,
+    // and otherwise says the setups like it wait for the next history build under the rule.
     // see: A pick's card draws the setups like it under its rule beneath the rule's record, and the score's rank only once the score passed on its index
-    async Task<ScorePart?> ScorePartAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string family, string ticker, IndexScores scores, CancellationToken cancellation)
+    // see: The setup ledger reads each S&P 400 and 600 family's frozen live rule where one stands, and a card draws setups like a pick only once its history is built under that rule
+    async Task<ScorePart?> ScorePartAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string family, string ticker, IndexScores scores, CancellationToken cancellation, string? live = null)
     {
         if (!ScoreProcedures.Reaches(index, family))
         {
@@ -545,9 +624,23 @@ public sealed class DecisionCards : IComponent
                 return new ScorePart(rank, new CardSimilar(Unmatched: $"the pick holds no {LedgerReadings.All[missing].Column} reading tonight, which the match reads"));
             }
 
+            if (live is not null)
+            {
+                if (!scores.EarliestRules.TryGetValue(family, out var earliest))
+                {
+                    earliest = await ScalarAsync(connection, EarliestSetupRule, [("$index", index), ("$family", family)], cancellation, transaction) as string;
+                    scores.EarliestRules[family] = earliest;
+                }
+
+                if (!string.Equals(earliest, live, StringComparison.Ordinal))
+                {
+                    return new ScorePart(rank, new CardSimilar(Unmatched: LedgerWaits));
+                }
+            }
+
             if (!scores.Setups.TryGetValue(family, out var setups))
             {
-                setups = await RulesSetupsAsync(connection, transaction, index, family, columns, cancellation);
+                setups = await RulesSetupsAsync(connection, transaction, index, family, columns, live, cancellation);
                 scores.Setups[family] = setups;
             }
 
@@ -562,8 +655,8 @@ public sealed class DecisionCards : IComponent
     }
 
     // Every finished setup the rule's own setting passed on an index, each with its session's place among the sessions
-    // the ledger read and the readings matched on.
-    static async Task<IReadOnlyList<SimilarSetup>> RulesSetupsAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string family, IReadOnlyList<string> columns, CancellationToken cancellation)
+    // the ledger read and the readings matched on; under a live rule, those whose pass was read under it alone.
+    static async Task<IReadOnlyList<SimilarSetup>> RulesSetupsAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string family, IReadOnlyList<string> columns, string? live, CancellationToken cancellation)
     {
         var sessions = new Dictionary<string, int>(StringComparer.Ordinal);
 
@@ -578,7 +671,7 @@ public sealed class DecisionCards : IComponent
 
         var setups = new List<SimilarSetup>();
 
-        await using (var command = Command(connection, transaction, RulesSetups(columns), [("$index", index), ("$family", family)]))
+        await using (var command = Command(connection, transaction, RulesSetups(columns, live is not null), live is null ? [("$index", index), ("$family", family)] : [("$index", index), ("$family", family), ("$rule", live)]))
         await using (var reader = await command.ExecuteReaderAsync(cancellation))
         {
             while (await reader.ReadAsync(cancellation))
@@ -903,7 +996,10 @@ public sealed class DecisionCards : IComponent
             MoneyOrNone(reader, 3));
     }
 
-    // The gates an S&P 400 or 600 rule reads, in the words its night's settings state them.
+    // The gates an S&P 400 or 600 rule reads, in the words its night's settings state them: the index's floors, and the
+    // provisional rule's profit gate, market check and setting, or for a family the night read by its live rule that rule
+    // in its registration's words, which state its quality, its market check and every level it reads.
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
     public static IReadOnlyList<string> IndexGates(JsonElement? settings, string family)
     {
         if (settings is not { } read)
@@ -916,6 +1012,18 @@ public sealed class DecisionCards : IComponent
         if (read.TryGetProperty("floors", out var floors))
         {
             gates.Add(FormattableString.Invariant($"floors, a close of at least ${floors.GetProperty("price").GetDecimal():0.##} and {floors.GetProperty("dollarVolume").GetDecimal() / 1_000_000m:0.##} million dollars a session over {floors.GetProperty("sessions").GetInt32()} sessions"));
+        }
+
+        if (LiveWordsOf(settings, family) is { } live)
+        {
+            gates.Add("its rule, " + live);
+
+            if (ApprovedOf(settings, family) is { } changed)
+            {
+                gates.Add("its change approved on the Loop page, " + changed);
+            }
+
+            return gates;
         }
 
         if (read.TryGetProperty("profitGate", out var profit))
@@ -953,41 +1061,6 @@ public sealed class DecisionCards : IComponent
         return gates;
     }
 
-    // The registered name of the live rule an S&P 400 or 600 night read a family by, as the night's settings state it,
-    // which that rule's own book's rows carry; none where the night read the family by its provisional rule.
-    public static string? LiveCandidateOf(JsonElement? settings, string family)
-    {
-        if (settings is not { } read || !read.TryGetProperty("live", out var live) || live.ValueKind != JsonValueKind.Array)
-        {
-            return null;
-        }
-
-        foreach (var rule in live.EnumerateArray())
-        {
-            if (rule.TryGetProperty("family", out var named) && named.GetString() == family
-                && rule.TryGetProperty("candidate", out var candidate) && candidate.GetString() is { Length: > 0 } stated)
-            {
-                return stated;
-            }
-        }
-
-        return null;
-    }
-
-    // The live rule's name an S&P 400 or 600 night's stored settings name for a family, read by a component holding the
-    // settings' text.
-    public static string? LiveCandidateOf(string? settings, string family)
-    {
-        if (settings is null)
-        {
-            return null;
-        }
-
-        using var document = JsonDocument.Parse(settings);
-
-        return LiveCandidateOf(document.RootElement.Clone(), family);
-    }
-
     static async Task<(double? Breadth, double Floor, JsonElement? Settings)> IndexNightAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, CancellationToken cancellation)
     {
         await using var command = Command(connection, transaction, IndexNightRow, [("$index", index), ("$night", Stamp(night))]);
@@ -1002,6 +1075,36 @@ public sealed class DecisionCards : IComponent
         var settings = document.RootElement.Clone();
 
         return (reader.IsDBNull(0) ? null : reader.GetDouble(0), settings.TryGetProperty("marketFloor", out var floor) ? floor.GetDouble() : 0, settings);
+    }
+
+    // The market check of a pick whose family the night read by its live rule, as the night stored that rule's check on the
+    // pick's own row: the index's own breadth against the floor the rule reads it at, or the S&P 500's against its floor
+    // where the rule reads that; and where the rule reads none, the index's own breadth against the floor the night
+    // states, a check this rule does not read. A night that stored no part of the rule reads the index's own check as
+    // before.
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
+    static async Task<MarketReading> LiveMarketAsync(SqliteConnection connection, SqliteTransaction transaction, string index, Pick pick, DateOnly night, double? breadth, double floor, CancellationToken cancellation)
+    {
+        if (await ScalarAsync(connection, IndexFamilyGates, [("$index", index), ("$night", Stamp(night)), ("$ticker", pick.Ticker), ("$family", pick.Family)], cancellation, transaction) is not string stored
+            || FamilyRule.GatesOf(stored).FirstOrDefault(gate => gate.Name == RuleRows.Market) is not { } market)
+        {
+            return new MarketReading(breadth, floor, true);
+        }
+
+        double? Figure(string name) =>
+            market.Values.TryGetValue(name, out var held) && double.TryParse(held, NumberStyles.Float, CultureInfo.InvariantCulture, out var read) ? read : null;
+
+        if (market.Reason.StartsWith(IndexNightRead.LargeBreadth, StringComparison.Ordinal))
+        {
+            return new MarketReading(Figure("breadth"), Figure("floor") ?? floor, true, NameOf(IndexFamilies.LargeIndex));
+        }
+
+        if (!market.Reason.StartsWith(IndexNightRead.OwnBreadth, StringComparison.Ordinal))
+        {
+            return new MarketReading(breadth, floor, false);
+        }
+
+        return new MarketReading(Figure("breadth"), Figure("floor") ?? floor, true);
     }
 
     // An S&P 500 member's market gate as the swing filter stored it, its breadth and the floor it was read against.

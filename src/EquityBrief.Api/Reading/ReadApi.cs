@@ -5962,14 +5962,16 @@ public sealed partial class ReadApi : IComponent
     }
 
     // The sweep answers recorded for an index before an instant, every run's, which a card reads to say its family's
-    // sweep found no setting that passed the floors.
+    // sweep found no setting that passed the floors; and from 20.11 the figures each run stated where it stated them,
+    // which a frozen card states of the sweep its freeze followed.
     // see: No family on any index is set aside or hidden by a test result without the operator's word
+    // see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
     public async Task<IReadOnlyList<RecordedAnswer>> SweepAnswersAsync(string indexCode, DateTimeOffset before)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT run, index_code, family, design, answer, recorded_at FROM sweep_answer WHERE index_code = $index AND recorded_at < $before;";
+        command.CommandText = "SELECT run, index_code, family, design, answer, recorded_at, setting, trades, edge, year_edges, without_largest, settings_read, meeting, luck, tester_run, adjusted, tester_passed FROM sweep_answer WHERE index_code = $index AND recorded_at < $before;";
         command.Parameters.AddWithValue("$index", indexCode);
         command.Parameters.AddWithValue("$before", before.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture));
 
@@ -5977,18 +5979,51 @@ public sealed partial class ReadApi : IComponent
 
         await using var reader = await command.ExecuteReaderAsync();
 
+        double? Real(int column) => reader.IsDBNull(column) ? null : reader.GetDouble(column);
+
+        int? Whole(int column) => reader.IsDBNull(column) ? null : reader.GetInt32(column);
+
         while (await reader.ReadAsync())
         {
+            var figures = reader.IsDBNull(6) || reader.IsDBNull(7)
+                ? null
+                : new AnswerFigures(
+                    reader.GetString(6),
+                    reader.GetInt32(7),
+                    Real(8),
+                    reader.IsDBNull(9) ? new Dictionary<int, double?>() : YearEdges(reader.GetString(9)),
+                    Real(10),
+                    Whole(11),
+                    Whole(12),
+                    Real(13),
+                    reader.IsDBNull(14) ? null : reader.GetString(14),
+                    Real(15),
+                    reader.IsDBNull(16) ? null : reader.GetInt64(16) == 1);
+
             rows.Add(new RecordedAnswer(
                 reader.GetString(0),
                 reader.GetString(1),
                 reader.GetString(2),
                 reader.IsDBNull(3) ? null : reader.GetString(3),
                 reader.GetString(4),
-                DateTimeOffset.ParseExact(reader.GetString(5), "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal)));
+                DateTimeOffset.ParseExact(reader.GetString(5), "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
+                figures));
         }
 
         return rows;
+    }
+
+    // A run's edge each year as the store keeps it, an object of each calendar year to its edge, a year holding none
+    // read as none.
+    static IReadOnlyDictionary<int, double?> YearEdges(string stored)
+    {
+        using var document = JsonDocument.Parse(stored);
+
+        static double? EdgeOf(JsonElement edge) => edge.ValueKind == JsonValueKind.Number ? edge.GetDouble() : null;
+
+        return document.RootElement.EnumerateObject().ToDictionary(
+            year => int.Parse(year.Name, NumberStyles.Integer, CultureInfo.InvariantCulture),
+            year => EdgeOf(year.Value));
     }
 
     // Every replay of a family rule the run log holds, each read back as where the rule's record counts from.

@@ -132,7 +132,7 @@ public sealed class FamilyReplay : IComponent
         // A rule the heavyweights' book keeps is not replayed, so its record restarts at the registration and its row says so,
         // and from 20.4 an S&P 400's or 600's rule the same.
         // see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut
-        // see: An S&P 400 or 600 family's variants are registered again whole to add one beside its provisional rule
+        // see: An S&P 400 or 600 family's variants are registered again whole beside its provisional rule or its frozen live rule
         found.AddRange(standing
             .Where(rule => CandidateEvaluators.Find(rule.Evaluator) is BookEvaluator or IndexRuleCandidate)
             .Select(rule => new FamilyReplayed(

@@ -61,6 +61,9 @@ public static class Nightly
     // tries three more times fifteen minutes apart; a run of the rest of a night, and a night the suite
     // runs unless it asks, tries once.
     // see: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own
+    // The flag a night run again for the newest session takes to read the register as it stands when it runs.
+    public const string RegisterNow = "--register-now";
+
     public sealed record TryPlan(int Retries, TimeSpan Wait, Func<TimeSpan, Task>? Delay = null)
     {
         public static TryPlan Standard { get; } = new(3, TimeSpan.FromMinutes(15));
@@ -153,7 +156,8 @@ public static class Nightly
         Build? build = null,
         CardSettings? cards = null,
         FormingSettings? forming = null,
-        string? adopt = null)
+        string? adopt = null,
+        DateTimeOffset? registerAt = null)
     {
         // The night's deadline, and the thing that can cancel it.
         //
@@ -490,8 +494,11 @@ public static class Nightly
                     wroteFrom = applyStartedAt;
                 }
 
+                // The register as it stood when the night started, or for the newest session run again the morning after a
+                // freeze as it stands when that run starts, which the operator names.
+                // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
                 var register = await new CandidateRegistrar(clock, store.DatabaseFile).RowsAsync(night.Token);
-                var standingAt = EquityBrief.Worker.Loop.LoopApply.ReadFrom(register, nightStartedAt, wroteFrom);
+                var standingAt = EquityBrief.Worker.Loop.LoopApply.ReadFrom(register, registerAt ?? nightStartedAt, wroteFrom);
                 var family = FamilyShadow.For(register, standingAt);
                 var rules = FamilyRuleShadow.For(register, standingAt);
                 var estimates = new EstimatesFetcher(askForTheFirstName ? companies : null, () => feeds.WeightedCalls, clock, store.DatabaseFile);

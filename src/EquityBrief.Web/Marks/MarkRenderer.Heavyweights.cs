@@ -58,7 +58,9 @@ public sealed record HeavyweightCardView(
     IReadOnlyDictionary<string, string>? Says = null,
     RuleView? RuleChoice = null,
     HeavyweightTilesView? Tiles = null,
-    IReadOnlyList<HeavyweightSectorView>? Sectors = null);
+    IReadOnlyList<HeavyweightSectorView>? Sectors = null,
+    IReadOnlyList<int>? SweepLost = null,
+    FrozenSweepView? Frozen = null);
 
 // One holding on Past picks as of a night: the stock, its sector, its buy and its sale with their closes, why it
 // ended, its return, its size cut's over the same sessions and the difference, each in percent and none while open.
@@ -113,7 +115,8 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"data-live-since=\"{(card.LiveSince is { } since ? DayOf(since) : "none")}\" data-variants=\"{card.Variants}\" ");
         body.Append(Invariant, $"data-last-rebalance=\"{(card.LastRebalance is { } last ? DayOf(last) : "none")}\" data-next-rebalance=\"{(card.NextRebalance is { } next ? DayOf(next) : "none")}\" data-look-back=\"{card.LookBack}\">");
         body.Append(CardHead(EquityBrief.Core.Families.HeavyweightRule.Name, card.Heading, pill, pillClass, pillTitle, Count(card.Holdings.Count, "holding") + " tonight", HeavyweightCardGuide));
-        body.Append(SweepFoundNoneLine(card.SweepFoundNone));
+        body.Append(SweepFoundNoneLine(card.SweepFoundNone, card.SweepLost));
+        body.Append(variant is null ? FrozenSweepLine(card.Frozen) : string.Empty);
 
         // The tabs the swing cards carry, and a registered variant's own book drawn under the same band, with what it
         // shares with the live book, adds and drops.

@@ -722,14 +722,30 @@ public static class SchemaMigrations
         new Migration(99, "create release_document and release_day", CreateReleases),
         new Migration(100, "create release_filer, release_reading and release_probe", CreateReleaseReadings),
         new Migration(101, "create loop_idea", CreateLoopIdeas),
-        new Migration(102, "add index_family_result.gates", AddIndexResultGates),
+        new Migration(102, "add index_family_result.gates and the sweep answers' figures", AddIndexResultGates),
     ];
 
     // From 20.11: every part of an S&P 400 or 600 rule a member is answered on, the market check its own, each with its
-    // answer, in the form the S&P 500's family rows keep their gates. A row stored before the change holds none.
+    // answer, in the form the S&P 500's family rows keep their gates. A row stored before the change holds none. And each
+    // recorded sweep answer's figures as its run states them: the setting the family would run, its trades, its edge after
+    // costs, its edge each year, its edge without its five largest results, how many settings the run read, how many met
+    // the floors and what luck alone would pass, and the tester's verdict on the family's search where a tester run was
+    // named with it. An answer recorded before the change, or from a run stating none of them, holds none.
     // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
+    // see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
     const string AddIndexResultGates = @"
         ALTER TABLE index_family_result ADD COLUMN gates TEXT;
+        ALTER TABLE sweep_answer ADD COLUMN setting TEXT;
+        ALTER TABLE sweep_answer ADD COLUMN trades INTEGER;
+        ALTER TABLE sweep_answer ADD COLUMN edge REAL;
+        ALTER TABLE sweep_answer ADD COLUMN year_edges TEXT;
+        ALTER TABLE sweep_answer ADD COLUMN without_largest REAL;
+        ALTER TABLE sweep_answer ADD COLUMN settings_read INTEGER;
+        ALTER TABLE sweep_answer ADD COLUMN meeting INTEGER;
+        ALTER TABLE sweep_answer ADD COLUMN luck REAL;
+        ALTER TABLE sweep_answer ADD COLUMN tester_run TEXT;
+        ALTER TABLE sweep_answer ADD COLUMN adjusted REAL;
+        ALTER TABLE sweep_answer ADD COLUMN tester_passed INTEGER;
     ";
 
     // From 20.9: each answer the idea generator stored, a row a prompt and reading version, with the prompt as it was put,

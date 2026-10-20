@@ -14,7 +14,7 @@ namespace EquityBrief.Tests.Checks;
 // setting beside the index's own breadth and the S&P 500's. It lists on a night its index's breadth closes the
 // provisional rule's list; the form registers it with a pullback's own market dial off and refuses it with that dial on;
 // a fourth value is refused; and the rule's words name it.
-// see: An S&P 400 or 600 swing family may carry a variant with no market check, the check standing on its provisional rule
+// see: A freeze on the S&P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions
 public partial class FixtureExpectations
 {
     // The S&P 400 of the index families' store with ten more members, F1 to F10, each closing at 90 on the night under
@@ -93,13 +93,13 @@ public partial class FixtureExpectations
         Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM candidate_register;"));
 
         // The six the remedy registers, a pullback, a breakout and a drift on each index, each the provisional rule with the
-        // check off, the pullback's own market dial off with it, every one named for its index with the words ending on the
-        // check off and none the live rule.
+        // check off, the pullback's own market dial off with it, and from 20.11 the floor of no check, nought; every one named
+        // for its index with the words ending on the check off and none the live rule.
         foreach (var (index, minute) in new[] { ("MID", 1), ("SML", 2) })
         {
-            Assert.Equal(0, (await Variants("pullback", index, "largeBreadth=2,market=0", at.AddMinutes(minute))).Code);
-            Assert.Equal(0, (await Variants("breakout", index, "largeBreadth=2", at.AddMinutes(minute).AddSeconds(1))).Code);
-            Assert.Equal(0, (await Variants("drift", index, "largeBreadth=2", at.AddMinutes(minute).AddSeconds(2))).Code);
+            Assert.Equal(0, (await Variants("pullback", index, "largeBreadth=2,market=0,breadthFloor=0", at.AddMinutes(minute))).Code);
+            Assert.Equal(0, (await Variants("breakout", index, "largeBreadth=2,breadthFloor=0", at.AddMinutes(minute).AddSeconds(1))).Code);
+            Assert.Equal(0, (await Variants("drift", index, "largeBreadth=2,breadthFloor=0", at.AddMinutes(minute).AddSeconds(2))).Code);
         }
 
         var rows = TextRows(store, "SELECT candidate || '|' || evaluator FROM candidate_register ORDER BY id;");
@@ -109,7 +109,7 @@ public partial class FixtureExpectations
             rows.Select(row => row.Split('|')[1]).ToArray());
         Assert.All(rows, row => Assert.EndsWith(", the market check off|" + row.Split('|')[1], row, StringComparison.Ordinal));
         Assert.All(rows, row => Assert.StartsWith("the S&P " + row.Split('|')[1][^3..] + " ", row, StringComparison.Ordinal));
-        Assert.Contains("the market off and band strength", rows[0], StringComparison.Ordinal);
+        Assert.Contains("its own market floor off and band strength", rows[0], StringComparison.Ordinal);
 
         // Each stands at the provisional setting with its moves and nothing else, and its own refusal reads it as one the
         // form admits.
@@ -118,7 +118,7 @@ public partial class FixtureExpectations
         foreach (var row in register)
         {
             var evaluator = IndexEvaluator(row.Evaluator);
-            var expected = new Dictionary<string, double>(IndexRules.Provisional(evaluator), StringComparer.Ordinal) { [IndexRuleCandidate.LargeBreadthParameter] = IndexRuleCandidate.NoMarketCheck };
+            var expected = new Dictionary<string, double>(IndexRules.Provisional(evaluator), StringComparer.Ordinal) { [IndexRuleCandidate.LargeBreadthParameter] = IndexRuleCandidate.NoMarketCheck, [IndexRuleCandidate.BreadthFloorParameter] = 0 };
 
             if (evaluator is IndexPullbackCandidate)
             {
@@ -129,7 +129,7 @@ public partial class FixtureExpectations
             Assert.Null(IndexRules.Refusal(evaluator, CandidateEvaluator.Read(row.Parameters)));
         }
 
-        // The words every index rule's registration states name the third value.
-        Assert.Contains("the market check on the index's own breadth unless the S&P 500's or none is stated", IndexRules.RuleWords, StringComparison.Ordinal);
+        // The words every index rule's registration states name the third value, and from 20.11 the floor.
+        Assert.Contains("the market check on the index's own breadth at the stated floor unless the S&P 500's at its own floor or none is stated", IndexRules.RuleWords, StringComparison.Ordinal);
     }
 }

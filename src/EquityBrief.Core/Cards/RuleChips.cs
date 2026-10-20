@@ -100,6 +100,13 @@ public static class RuleChips
                 Add("stopFloor", (At(DriftCandidate.StopFloorMovesParameter) ?? At(IndexDriftCandidate.StopFloorParameter)) is > 0 and var floor ? "stop at least " + Moves(floor) : null);
                 Add(IndexDriftCandidate.WideWindowParameter, At(IndexDriftCandidate.WideWindowParameter) is > 0 and var wide ? Invariant($"window {Number(wide)} sessions") : null);
                 Add(IndexDriftCandidate.PeersParameter, At(IndexDriftCandidate.PeersParameter) == 1 ? "peers beat first" : null);
+
+                // From 20.11 the entry on the first pullback after the reaction and the revenue level, each drawn where
+                // the rule states it on.
+                // see: A drift rule on the S&P 400 or 600 stating the first pullback is bought on the night through the one function its search's entry level reads
+                // see: A drift's revenue level on the S&P 400 and 600 reads a quarter only once its filing is stored, on the night and in its sweep alike
+                Add(IndexDriftCandidate.EntryParameter, At(IndexDriftCandidate.EntryParameter) == 1 ? "bought on its first lower close" : null);
+                Add(IndexDriftCandidate.RevenueGrewParameter, At(IndexDriftCandidate.RevenueGrewParameter) == 1 ? "revenue above a year before" : null);
                 break;
 
             case RuleKind.Heavyweights:
@@ -174,7 +181,9 @@ public static class RuleChips
 
     // The levels every swing family's rule on the S&P 400 or 600 states beside its own dials, each drawn whatever its
     // value, so a variant moving one differs from its provisional rule there: the dollar volume floor, the lowest close,
-    // the quality, and the market check, which for the pullback carries its own market dial beside the breadth it reads.
+    // the quality, and the market check, naming the floor its breadth is read at where the rule states one, which for the
+    // pullback carries its own market dial beside the breadth it reads where the dial reads otherwise than that floor.
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
     static IEnumerable<RuleChip> Levels(RuleKind kind, IReadOnlyDictionary<string, double> p)
     {
         double At(string key, double otherwise) => p.TryGetValue(key, out var value) ? value : otherwise;
@@ -214,15 +223,21 @@ public static class RuleChips
         }
 
         var breadth = At(IndexRuleCandidate.LargeBreadthParameter, 0);
+        double? floor = p.TryGetValue(IndexRuleCandidate.BreadthFloorParameter, out var stated) && stated > 0 ? stated : null;
+        var level = floor is { } at ? Invariant($" at {Percent(at)}") : string.Empty;
         var dial = kind == RuleKind.IndexPullback && p.TryGetValue(IndexPullbackCandidate.MarketParameter, out var market)
-            ? market == 0 ? ", its own dial off" : Invariant($" at {Percent(market)}")
+            ? market == 0
+                ? ", its own dial off"
+                : floor is null
+                    ? Invariant($" at {Percent(market)}")
+                    : floor == market ? string.Empty : Invariant($", its own dial at {Percent(market)}")
             : string.Empty;
 
         yield return new RuleChip(IndexRuleCandidate.LargeBreadthParameter, breadth switch
         {
             IndexRuleCandidate.NoMarketCheck => IndexRuleCandidate.MarketCheckOff,
-            1 => "market check on the S&P 500's breadth" + dial,
-            _ => "market check on its own breadth" + dial,
+            1 => "market check on the S&P 500's breadth" + level + dial,
+            _ => "market check on its own breadth" + level + dial,
         });
     }
 

@@ -52,54 +52,12 @@ public static class SweepEntries
         }
     }
 
-    // A drift bought on the first pullback after its reaction: the first session within ten after the reaction whose
-    // close is below the close before it, bought at that close with the reaction's low still its stop and its target the
-    // nearer of the band and the setting's multiple of the new risk; none where no session falls, or where the first
-    // that does comes before the listing's own session, whose stop no buy before it could have read, or finds the market
-    // check closed, the member out of the index or holding a gap, or its close at or under the stop.
-    public static IEnumerable<FamilyListing> DriftPullback(FamilyListing listing, SweepSeries one, int reaction, double multiple, IReadOnlyList<SweepColumns.Session> sessions)
-    {
-        for (var bar = reaction + 1; bar <= reaction + PullbackSessions && bar < one.Bars.Length; bar++)
-        {
-            if (!(one.Bars[bar].Close < one.Bars[bar - 1].Close))
-            {
-                continue;
-            }
-
-            var close = Statistic.FromPrice(one.Bars[bar].Close);
-
-            if (bar >= listing.Bar && Opens(one, bar, sessions) && close > listing.Stop)
-            {
-                var byRisk = close + (multiple * (close - listing.Stop));
-                var band = BandAbove(one, bar, close);
-
-                yield return listing with { Bar = bar, Session = one.SessionAt[bar], Entry = close, Target = !double.IsNaN(band) && band < byRisk ? band : byRisk, Move = one.Atr[bar] };
-            }
-
-            yield break;
-        }
-    }
+    // A drift bought on the first pullback after its reaction, read by the drift's own sweep file, which the frozen drift
+    // the night reads at this entry pins.
+    public static IEnumerable<FamilyListing> DriftPullback(FamilyListing listing, SweepSeries one, int reaction, double multiple, IReadOnlyList<SweepColumns.Session> sessions) =>
+        DriftSweep.FirstPullback(listing, one, reaction, multiple, sessions);
 
     // A session the rule could list on: the market check open, the member in the index and its series with no gap.
     static bool Opens(SweepSeries one, int bar, IReadOnlyList<SweepColumns.Session> sessions) =>
         one.Member[bar] && !one.Gap[bar] && sessions[one.SessionAt[bar]].Breadth >= FamilySweep.MarketFloor;
-
-    // The lowest band whose low edge sits the drift's typical moves or more above the close, as the drift's own listing
-    // reads its target, none where none does or the bar holds no typical move.
-    static double BandAbove(SweepSeries one, int bar, double close)
-    {
-        var move = one.Atr[bar];
-
-        if (!(move > 0))
-        {
-            return double.NaN;
-        }
-
-        var edges = SweepCandidates.LevelsOn(one, bar)
-            .Select(level => Statistic.FromPrice(level.LowEdge))
-            .Where(edge => edge > close && (edge - close) / move >= DriftRule.TargetBandMoves)
-            .ToArray();
-
-        return edges.Length > 0 ? edges.Min() : double.NaN;
-    }
 }

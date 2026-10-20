@@ -122,7 +122,8 @@ public static class PaperScreen
     // Every account on an index in the one family order, each family's live or provisional rule first and its variants
     // after it as its card numbers them, then the operator's own. A registered rule's account counts the trades of its
     // current version alone, from where the Run page's record of the rule starts; a provisional account and the
-    // operator's own count every trade from their first.
+    // operator's own count every trade from their first. The register is read as the night's page reads it, as of the
+    // instant given where a night run again read it later, and the rule a freeze keeps in the background has no account.
     // see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts
     public static IReadOnlyList<PaperAccountSource> Accounts(
         bool large,
@@ -133,7 +134,8 @@ public static class PaperScreen
         IReadOnlyList<PaperRow> rows,
         IReadOnlyList<PickCell> pageCells,
         IReadOnlyList<(PaperTrade Trade, double? Result, string Family)> yours,
-        IReadOnlyList<FamilyReplayRow>? replays = null)
+        IReadOnlyList<FamilyReplayRow>? replays = null,
+        DateTimeOffset? asOf = null)
     {
         var accounts = new List<PaperAccountSource>();
         var replayed = large ? replays ?? [] : [];
@@ -160,7 +162,7 @@ public static class PaperScreen
 
         foreach (var family in SetupFamilies.Order)
         {
-            var (live, variants) = RuleScreen.Accounts(family, large, indexName, register, night, provisional);
+            var (live, variants) = RuleScreen.Accounts(family, large, indexName, register, night, provisional, asOf);
             var book = family == HeavyweightRule.Name;
             var pageList = large && SetupFamilies.InPageOrder.Any(swing => swing.Name == family);
             var listed = pageList ? null : !large && live is not null ? live.Candidate : ReadApi.PageList + " " + family;

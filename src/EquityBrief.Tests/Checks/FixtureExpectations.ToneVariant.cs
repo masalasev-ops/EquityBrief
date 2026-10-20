@@ -24,7 +24,7 @@ namespace EquityBrief.Tests.Checks;
 // 17.11 form's `--again` registers an index's variants again whole and refuses as it refused before; and the per-rule
 // step keeps the variant not testable in the operator's words.
 // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
-// see: An S&P 400 or 600 family's variants are registered again whole to add one beside its provisional rule
+// see: An S&P 400 or 600 family's variants are registered again whole beside its provisional rule or its frozen live rule
 public partial class FixtureExpectations
 {
     // The claims the tone variant makes, which this check reaches: 15.7's row for its card and section 17's row for its
@@ -428,8 +428,9 @@ public partial class FixtureExpectations
         Task<(int Code, string Said)> Variants(DateTimeOffset when, string index, string variants, params string[] more) =>
             RegisterVerbAt(store, when, [RegisterVerb.IndexVariants, DriftRule.Name, "--index", index, "--variants", variants, .. more]);
 
-        // The variant with the market check off stands on the S&P 400, as the remedy of 19.1 registered it.
-        Assert.Equal(0, (await Variants(at, "MID", "largeBreadth=2")).Code);
+        // The variant with the market check off stands on the S&P 400, as the remedy of 19.1 registered it, from 20.11 stating
+        // the floor of no check, nought.
+        Assert.Equal(0, (await Variants(at, "MID", "largeBreadth=2,breadthFloor=0")).Code);
 
         var standing = Scalar(store, "SELECT COUNT(*) FROM candidate_register;");
 
@@ -438,13 +439,13 @@ public partial class FixtureExpectations
         // is not complete or that is no whole number, and a family none of whose rules stands. Each writes nothing.
         var refusals = new[]
         {
-            (await Variants(at.AddSeconds(1), "MID", "largeBreadth=2;readingVersion=1")).Said,
-            (await Variants(at.AddSeconds(2), "MID", "largeBreadth=2;readingVersion=1", RegisterVerb.Again)).Said,
-            (await Variants(at.AddSeconds(3), "MID", "largeBreadth=2;readingVersion=1", "--evidence", "e")).Said,
+            (await Variants(at.AddSeconds(1), "MID", "largeBreadth=2,breadthFloor=0;readingVersion=1")).Said,
+            (await Variants(at.AddSeconds(2), "MID", "largeBreadth=2,breadthFloor=0;readingVersion=1", RegisterVerb.Again)).Said,
+            (await Variants(at.AddSeconds(3), "MID", "largeBreadth=2,breadthFloor=0;readingVersion=1", "--evidence", "e")).Said,
             (await Variants(at.AddSeconds(4), "MID", "readingVersion=1", RegisterVerb.Again, "--evidence", "e")).Said,
-            (await Variants(at.AddSeconds(5), "MID", "largeBreadth=2", RegisterVerb.Again, "--evidence", "e")).Said,
-            (await Variants(at.AddSeconds(6), "MID", "largeBreadth=2;readingVersion=2", RegisterVerb.Again, "--evidence", "e")).Said,
-            (await Variants(at.AddSeconds(7), "MID", "largeBreadth=2;readingVersion=1.5", RegisterVerb.Again, "--evidence", "e")).Said,
+            (await Variants(at.AddSeconds(5), "MID", "largeBreadth=2,breadthFloor=0", RegisterVerb.Again, "--evidence", "e")).Said,
+            (await Variants(at.AddSeconds(6), "MID", "largeBreadth=2,breadthFloor=0;readingVersion=2", RegisterVerb.Again, "--evidence", "e")).Said,
+            (await Variants(at.AddSeconds(7), "MID", "largeBreadth=2,breadthFloor=0;readingVersion=1.5", RegisterVerb.Again, "--evidence", "e")).Said,
             (await Variants(at.AddSeconds(8), "SML", "readingVersion=1", RegisterVerb.Again, "--evidence", "e")).Said,
         };
 
@@ -461,7 +462,7 @@ public partial class FixtureExpectations
         // Given both, the standing variant is replayed first, said to restart since no replay reads an index rule, retired,
         // and registered again beside the tone variant at one instant.
         var again = at.AddMinutes(1);
-        var (code, said) = await Variants(again, "MID", "largeBreadth=2;readingVersion=1", RegisterVerb.Again, "--evidence", "the tone variant joins");
+        var (code, said) = await Variants(again, "MID", "largeBreadth=2,breadthFloor=0;readingVersion=1", RegisterVerb.Again, "--evidence", "the tone variant joins");
 
         Assert.Equal(0, code);
         Assert.Contains("restarts its record at this registration: " + FamilyReplay.NotReplayedOnItsIndex, said, StringComparison.Ordinal);
@@ -475,12 +476,17 @@ public partial class FixtureExpectations
         Assert.EndsWith(", the market check off", rows[1], StringComparison.Ordinal);
         Assert.EndsWith("its print's release reading better with its outlook not cut under reading version 1", rows[2], StringComparison.Ordinal);
 
-        // A family whose live rule stands is not registered again by the form.
+        // From 20.11 a family whose live rule stands is registered again beside it: the tone variant is the live rule's setting
+        // with the condition, and the live rule stands on untouched, nothing of it retired.
         store.Execute(
             "INSERT INTO candidate_register (id, candidate, rule, test, evaluator, parameters, evaluator_version, event, retires, registered_at, evidence) " +
             $"SELECT MAX(id) + 1, 'the live S&P 600 drift rule', 'a rule', 'a test', 'drift-600', '{CandidateEvaluator.Write(IndexRules.Provisional(IndexEvaluator("drift-600")))}', '{IndexEvaluator("drift-600").Version}', 'registered', NULL, '2026-10-12T12:00:00Z', NULL FROM candidate_register;");
 
-        Assert.Contains("the drift on the S&P 600's live rule 'the live S&P 600 drift rule' stands", (await Variants(at.AddMinutes(2), "SML", "readingVersion=1", RegisterVerb.Again, "--evidence", "e")).Said, StringComparison.Ordinal);
+        var beside = await Variants(at.AddMinutes(2), "SML", "readingVersion=1", RegisterVerb.Again, "--evidence", "the tone variant joins the frozen drift");
+
+        Assert.Equal(0, beside.Code);
+        Assert.Contains("retired 0 and registered 1 at one instant, family of 2 of 9", beside.Said, StringComparison.Ordinal);
+        Assert.Equal(["registered|the live S&P 600 drift rule"], TextRows(store, "SELECT event || '|' || candidate FROM candidate_register WHERE evaluator = 'drift-600' AND event = 'registered' AND candidate LIKE 'the live %';"));
     }
 
     [Fact]

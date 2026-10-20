@@ -1201,10 +1201,14 @@ app.MapGet("/screens/tonight/{night?}", async (
         var members = await read.IndexMembersAsync(reading.Code, dated);
         var indexResults = await read.IndexResultsAsync(reading.Code, dated);
         var (indexQueued, indexTimes, _) = await QueueRead(read, clock);
-        // Each card with its family's recorded sweep answers on the index, each line gone with the family's next passing
-        // sweep or its freeze, and a frozen family's card live with its rule's words.
+        // Each card with its family's recorded sweep answers on the index, each line kept at the freeze made on its answer
+        // and gone with the family's next freeze or its next passing sweep, a frozen family's card live with its rule's
+        // words and the figures of the sweep its freeze followed; the register and the answers read as of the instant the
+        // night read the register at where a night run again read it later.
         // see: No family on any index is set aside or hidden by a test result without the operator's word
-        var indexAnswers = await read.SweepAnswersAsync(reading.Code, TonightScreen.PastTheNight(dated));
+        // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
+        var indexAsOf = TonightScreen.ReadAsOf(indexNight, dated);
+        var indexAnswers = await read.SweepAnswersAsync(reading.Code, indexAsOf);
         var indexRegister = await read.RegisteredCandidatesAsync();
         var indexCardContext = await CardContextAsync(read, store);
         // Each card drawn by the rule the link chooses for it, the provisional rule or the live rule where it names none,
@@ -1227,7 +1231,7 @@ app.MapGet("/screens/tonight/{night?}", async (
                         indexRegister,
                         indexNight),
                     indexAnswers,
-                    family => TonightScreen.IndexFrozenAt(reading.Code, family, indexRegister, indexNight)),
+                    family => TonightScreen.IndexFreezesOf(reading.Code, family, indexRegister, indexNight)),
                 await read.DecisionCardsAsync(reading.Code, dated),
                 indexCardContext),
             reading.Name,
@@ -1238,8 +1242,11 @@ app.MapGet("/screens/tonight/{night?}", async (
             await read.RuleNightsAsync(reading.Code, dated),
             await read.RulePicksAsync(reading.Code, dated),
             await read.FormingRowsAsync(reading.Code, dated),
-            indexNight.MarketOpen,
-            IndexRuleSettings.Read(indexNight.Settings));
+            // The breakouts forming read against the breakout's own market check, as each family reads its own.
+            // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
+            TonightScreen.FamilyOpen(indexNight, indexResults, EquityBrief.Core.Families.BreakoutRule.Name),
+            IndexRuleSettings.Read(indexNight.Settings),
+            indexAsOf);
         // From 20.11 the stocks one gate short read off every part's answer the night stored, the market check among them.
         // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
         var indexClose = TonightScreen.IndexCloseAcross(indexResults, members);
@@ -1286,7 +1293,8 @@ app.MapGet("/screens/tonight/{night?}", async (
             request.Query[RuleScreen.QueryKey(EquityBrief.Core.Families.HeavyweightRule.Name)].FirstOrDefault(),
             heavyweightCard.Rule,
             await read.SixSettingsAsync(reading.Code),
-            IndexRuleSettings.Read(indexNight.Settings));
+            IndexRuleSettings.Read(indexNight.Settings),
+            indexAsOf);
         var liveHoldings = heavyweightCard.Holdings.Select(holding => holding.Ticker).ToArray();
 
         if (indexHeavyweightVariant is { } chosenBook)
@@ -1330,12 +1338,10 @@ app.MapGet("/screens/tonight/{night?}", async (
                 TonightScreen.IndexLine(reading, indexNight, indexCards, indexResults, indexOpen, indexClose) with { CloseHref = indexCloseHref },
                 indexCards,
                 CardScreen.WithCards(
-                    heavyweightCard with
-                    {
-                        SweepFoundNone = EquityBrief.Core.Sweep.SweepLine.Drawn(
-                            [.. indexAnswers.Where(answer => answer.Family == EquityBrief.Core.Families.HeavyweightRule.Name)],
-                            TonightScreen.IndexFrozenAt(reading.Code, EquityBrief.Core.Families.HeavyweightRule.Name, indexRegister, indexNight)),
-                    },
+                    TonightScreen.WithSweepLine(
+                        heavyweightCard,
+                        indexAnswers,
+                        TonightScreen.IndexFreezesOf(reading.Code, EquityBrief.Core.Families.HeavyweightRule.Name, indexRegister, indexNight)),
                     boughtCards,
                     indexCardContext),
                 indexNight.Fault is null ? null : TonightScreen.NotComputed(reading),
@@ -1516,8 +1522,8 @@ app.MapGet("/screens/tonight/{night?}", async (
     var ruleView = TonightScreen.RuleView(rule, gates, market);
     var familyResults = onThePage is null ? [] : await read.FamilyResultsAsync(dated);
     var pullbackSettings = gates?.FirstOrDefault() is { } stored ? await FilterSettingsOf(read, stored.Version) : null;
-    // Each card with the line its family's recorded sweep answers draw, read against the instant its live rule was
-    // registered as of the night.
+    // Each card with the line its family's recorded sweep answers draw, read against its freezes and its live rule as of
+    // the night.
     // see: No family on any index is set aside or hidden by a test result without the operator's word
     var register = await read.RegisteredCandidatesAsync();
     var answers = await read.SweepAnswersAsync(reading.Code, TonightScreen.PastTheNight(dated));
@@ -1534,7 +1540,7 @@ app.MapGet("/screens/tonight/{night?}", async (
                 TonightScreen.WithSweepLines(
                     TonightScreen.Families(dated, onThePage, familyPicks, rows, gates, register, ruleView, familyResults, pullbackSettings, await read.LoopSettingsAsync(reading.Code)),
                     answers,
-                    family => TonightScreen.FrozenAt(family, register, dated)),
+                    family => TonightScreen.FreezesOf(family, register, dated)),
                 await read.DecisionCardsAsync(reading.Code, dated),
                 cardContext),
             reading.Name,
@@ -1606,11 +1612,11 @@ app.MapGet("/screens/tonight/{night?}", async (
     var heavyweights = cards is null
         ? null
         : CardScreen.WithCards(
-            TonightScreen.Heavyweights(dated, heavyweightHoldings, heavyweightRead, await read.HeavyweightClosesAsync(dated, heavyweightVariant), cells, register) with
+            TonightScreen.WithSweepLine(
+                TonightScreen.Heavyweights(dated, heavyweightHoldings, heavyweightRead, await read.HeavyweightClosesAsync(dated, heavyweightVariant), cells, register),
+                answers,
+                TonightScreen.FreezesOf(EquityBrief.Core.Families.HeavyweightRule.Name, register, dated)) with
             {
-                SweepFoundNone = EquityBrief.Core.Sweep.SweepLine.Drawn(
-                    [.. answers.Where(answer => answer.Family == EquityBrief.Core.Families.HeavyweightRule.Name)],
-                    TonightScreen.FrozenAt(EquityBrief.Core.Families.HeavyweightRule.Name, register, dated)),
                 RuleChoice = heavyweightVariant is null
                     ? heavyweightChoice
                     : heavyweightChoice with
@@ -1810,8 +1816,11 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
     var large = reading == Universes.Large;
     var rows = await read.PaperRowsAsync(reading.Code);
     var cells = large ? PicksScreen.Cells(await read.PicksAsync(night), night) : [];
-    var provisional = large ? null : await read.IndexNightAsync(reading.Code, night) is { } indexNight ? IndexRuleSettings.Read(indexNight.Settings) : null;
-    var sources = PaperScreen.Accounts(large, reading.Name, night, await read.RegisteredCandidatesAsync(), provisional, rows, cells, PaperScreen.Yours(await read.TakenTradesAsync(), reading.Code), large ? await read.FamilyReplaysAsync() : []);
+    var indexNight = large ? null : await read.IndexNightAsync(reading.Code, night);
+    var provisional = indexNight is null ? null : IndexRuleSettings.Read(indexNight.Settings);
+    // The register read as the night's page reads it, as of the instant a night run again read it at.
+    // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
+    var sources = PaperScreen.Accounts(large, reading.Name, night, await read.RegisteredCandidatesAsync(), provisional, rows, cells, PaperScreen.Yours(await read.TakenTradesAsync(), reading.Code), large ? await read.FamilyReplaysAsync() : [], large ? null : TonightScreen.ReadAsOf(indexNight, night));
     (string Ticker, DateOnly Session)[] bought = [.. sources.SelectMany(account => account.Trades.Select(one => (one.Trade.Ticker, one.Trade.Bought))).Distinct()];
 
     // The trades an account leaves out are read for their trade log's result so far, and walked by nothing.
@@ -2153,6 +2162,10 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
         var members = night is { } on ? await read.IndexMembersAsync(reading.Code, on) : [];
         var companies = members.ToDictionary(member => member.Ticker, member => member.Company, StringComparer.Ordinal);
 
+        // The families the night read by their live rules, which the page names as frozen and no other.
+        // see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, business first alone left on the pullback's base
+        var frozenOn = night is { } frozenNight ? TonightScreen.FrozenOn(reading, await read.RegisteredCandidatesAsync(), await read.IndexNightAsync(reading.Code, frozenNight)) : [];
+
         return Results.Content(
             page.IndexPicksRegion(
                 marks,
@@ -2160,7 +2173,8 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
                 reading,
                 selector,
                 night is { } through ? PicksScreen.IndexTrades(await read.IndexTradesAsync(reading.Code, through), companies) : [],
-                night is { } kept ? PicksScreen.IndexHeavyweights(await read.IndexHoldingsAsync(reading.Code, kept)) : []) +
+                night is { } kept ? PicksScreen.IndexHeavyweights(await read.IndexHoldingsAsync(reading.Code, kept)) : [],
+                frozenOn) +
             page.YourTradesRegion(reading.Name, PicksScreen.YourTrades(await read.TakenTradesAsync(), reading.Code)),
             "text/html; charset=utf-8");
     }
@@ -2292,12 +2306,16 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
     // fundamentals-first family's on the S&P 500 as well off the settings its night stored there, as its card reads them.
     var large = reading == Universes.Large;
     var register = await read.RegisteredCandidatesAsync();
-    var provisional = night is not { } stored ? null : await read.IndexNightAsync(reading.Code, stored) is { } indexNight ? IndexRuleSettings.Read(indexNight.Settings) : null;
+    var loopNight = night is not { } stored ? null : await read.IndexNightAsync(reading.Code, stored);
+    var provisional = loopNight is null ? null : IndexRuleSettings.Read(loopNight.Settings);
+    // An S&P 400's or 600's rules read as its night's page reads them, as of the instant a night run again read them at.
+    // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
+    DateTimeOffset? loopAsOf = large || night is not { } readOn ? null : TonightScreen.ReadAsOf(loopNight, readOn);
     var chips = EquityBrief.Core.Families.SetupFamilies.Order.ToDictionary(
         family => family,
         family =>
         {
-            var (live, _) = RuleScreen.Accounts(family, large, reading.Name, register, night ?? DateOnly.MinValue, large ? null : provisional);
+            var (live, _) = RuleScreen.Accounts(family, large, reading.Name, register, night ?? DateOnly.MinValue, large ? null : provisional, loopAsOf);
             var readsNight = !large || family == EquityBrief.Core.Families.FundamentalsRule.Name;
 
             return (IReadOnlyList<string>)[.. (live is not null ? RuleScreen.ChipsOf(live) : readsNight && provisional is not null ? RuleScreen.ProvisionalChips(family, provisional) : []).Select(chip => chip.Words)];
@@ -2481,14 +2499,18 @@ app.MapGet("/screens/run/{night?}", async (
         var indexHoldings = await read.IndexHoldingsAsync(reading.Code, dated);
         var indexRegister = await read.RegisteredCandidatesAsync();
 
-        // Each registered rule's record, from the index's first freeze on, and its family's setup row live beside it.
+        // Each registered rule's record, from the index's first freeze on, and its family's setup row live beside it, the
+        // register read as of the instant the night read it at where a night run again read it later.
+        // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
+        var indexAsOf = TonightScreen.ReadAsOf(indexNight, dated);
         var indexRecords = RunScreen.Named(
-            TonightScreen.IndexRecordRows(reading, indexRegister, await read.IndexRuleTradesAsync(reading.Code, dated), dated),
+            TonightScreen.IndexRecordRows(reading, indexRegister, await read.IndexRuleTradesAsync(reading.Code, dated), dated, indexAsOf),
             indexRegister,
             dated,
             false,
             reading.Name,
-            (await read.RuleTestsAsync(reading.Code)).Rules);
+            (await read.RuleTestsAsync(reading.Code)).Rules,
+            indexAsOf);
 
         return Results.Content(
             page.IndexRunRegion(
@@ -2500,7 +2522,7 @@ app.MapGet("/screens/run/{night?}", async (
                 indexNight is null ? null : TonightScreen.IndexRun(indexNight, indexPicks, await read.IndexResultsAsync(reading.Code, dated), indexTrades, indexHoldings),
                 TonightScreen.WithIndexFreezes(TonightScreen.IndexFamilyRun(indexPicks, indexTrades, indexHoldings), reading, indexRegister, indexRecords, indexNight, dated),
                 indexRecords,
-                RuleScreen.Flagged(await read.RuleNightsAsync(reading.Code, dated), dated, indexRegister)),
+                RuleScreen.Flagged(await read.RuleNightsAsync(reading.Code, dated), dated, indexRegister, indexAsOf)),
             "text/html; charset=utf-8");
     }
 
