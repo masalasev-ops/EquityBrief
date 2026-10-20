@@ -5003,3 +5003,25 @@ Queue:      as the ruling above.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 17.2 - correction: the record command's start guard refuses a run whose end crosses midnight UTC into a weekday's night window, where it read the run's end by its time of day alone   2026-10-20
+
+Queue:      as the 20.11 rulings' entries of the evening above.
+Found:      by 20.11's replay and put to the operator, who ruled it fixed on the evening of 2026-10-20: the night window
+            the record command's start guard reads, the sweep runner's own, looked at a run's end by its time of day
+            alone, so the `--nights` form, given two hours, was admitted from 21:01 to 22:59 UTC on a weekday with its
+            end past midnight, though it would still be running at 23:00; a chunk of the sweep, the ledger's build or
+            the fundamentals search of more than an hour was admitted the same way.
+Corrected:  every weekday's 23:00 UTC from a run's start to its end is read, so a run ending past midnight is refused as
+            one ending before it is, and a weekend's evening is still no night (see: The sweep reads the live store
+            read-only in short reads and writes nothing to it, pausing for every night).
+Tests:      2551, one more: the window worked by hand at its edges, and the record command's nights form refused at
+            22:00 on Monday 2026-10-19 before it reads anything.
+Claims:     1372, as before.
+Mutated:    the rule, stated before the run: every weekday's 23:00 inside a run read whatever day the run ends on,
+            broken by reading the run's end by its time of day alone: predicted red at the window's first case. Result:
+            red, two hours from 22:00 on the Monday admitted. Made on this branch and reverted before anything was
+            committed, and the tests green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.

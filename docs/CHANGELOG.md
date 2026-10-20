@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-20 - RUNBOOK.md - the record command's `--nights` form refuses a run ending past midnight UTC into a weekday's night window
+Corrects: the window the record command's start guard reads looked at a run's end by its time of day alone, so the `--nights` form, given two hours, was admitted from 21:01 to 22:59 UTC on a weekday with its end past midnight, though it would still be running at 23:00; found by 20.11's replay and put to the operator, who ruled it fixed on 2026-10-20.
+Was:
+> ... and refuses while the night holds the store or where a run started now would reach the night's window. 17.2's remedy ...
+Now:
+> ... and refuses while the night holds the store or where a run started now would reach the night's window, which opens at 23:00 UTC on a weekday, a run of its two hours ending past midnight UTC among them. 17.2's remedy ...
+Why: the window is read over every weekday's 23:00 inside the run, whatever day the run ends on.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states the record command's start guard across midnight UTC
+Corrects: as the RUNBOOK.md entry above.
+Was:
+> fixture-expectations: ... and the replay written again leaving that row standing and writing the 600 sessions before it |
+Now:
+> fixture-expectations: ... and the replay written again leaving that row standing and writing the 600 sessions before it; and from the second 17.2 correction of 2026-10-20 every weekday's 23:00 UTC inside a run read whatever day the run ends on, a run of two hours from 22:00 on a Monday refused with its end at midnight, one from a Sunday's 22:00 and one starting after a weekday's midnight admitted, a Saturday's run reaching Monday's 23:00 refused, and the record command's nights form refused at that Monday's 22:00 before it reads anything |
+Why: the roster's row says what its check asserts.
+
 ### 2026-10-20 - SCHEMA.md - a night's own rule row stands in place of a replay's on its session, and a replay leaves a night's rows standing
 Corrects: from 17.2 a night run again cleared its own rule rows alone, so on a session the record command's `--nights` form had replayed it could not write its own row beside the replay's and its rule rows on the S&P 400 and 600 were not computed, as the night of 2026-10-19 run again found on 2026-10-20; and a replay writing over a session a night had written stopped the same way.
 Was:

@@ -320,6 +320,34 @@ public partial class FixtureExpectations
         Assert.Equal(0, AfterCosts("high=126|volume=1.5|ceiling=0.85|stop=1.5|market=1").GetProperty("Trades").GetInt32());
     }
 
+    // The record command's start guard, on the operator's ruling of the evening of 2026-10-20: a run is refused where it
+    // would still be running at a weekday's 23:00 UTC, one whose end falls past midnight among them. The window read by
+    // hand at its edges, a Sunday's evening holding no night and a Saturday's run reaching Monday's 23:00 refused; then the
+    // nights' form, given two hours, started at 22:00 on Monday 2026-10-19 would end at midnight and is refused before it
+    // reads anything.
+    [Fact]
+    public async Task TheRecordCommandRefusesARunWhoseEndCrossesMidnightIntoTheNightsWindow()
+    {
+        var twoHours = RuleRecorder.Expected + RuleRecorder.Expected;
+
+        Assert.True(SweepRunner.InTheNightsWindow(SweepUtc(10, 19, 22, 0), twoHours));
+        Assert.True(SweepRunner.InTheNightsWindow(SweepUtc(10, 19, 22, 59), twoHours));
+        Assert.True(SweepRunner.InTheNightsWindow(SweepUtc(10, 23, 22, 30), twoHours));
+        Assert.False(SweepRunner.InTheNightsWindow(SweepUtc(10, 19, 20, 59), twoHours));
+        Assert.False(SweepRunner.InTheNightsWindow(SweepUtc(10, 18, 22, 0), twoHours));
+        Assert.False(SweepRunner.InTheNightsWindow(SweepUtc(10, 20, 0, 30), twoHours));
+        Assert.False(SweepRunner.InTheNightsWindow(SweepUtc(10, 24, 22, 0), TimeSpan.FromHours(26)));
+        Assert.True(SweepRunner.InTheNightsWindow(SweepUtc(10, 24, 22, 0), TimeSpan.FromHours(49)));
+
+        var root = Path.Combine(Path.GetTempPath(), "equitybrief-tests", Guid.NewGuid().ToString("n"));
+        var clock = new SweepClock(SweepUtc(10, 19, 22, 0));
+
+        using var said = new StringWriter();
+
+        Assert.Equal(2, await new RuleRecorder(clock, Path.Combine(root, "store.db"), root, said).NightsAsync([]));
+        Assert.Contains("a run started now would reach the night's window", said.ToString(), StringComparison.Ordinal);
+    }
+
     static (int Trades, double? Average, int? Median, double? Won, string EndedBy) FrozenBreakoutRecord(TemporaryStore store)
     {
         using var connection = store.Open();
