@@ -4980,3 +4980,26 @@ Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their 
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 20.11 ruling - clause 2 of the evening's rulings replaced: the bar store keeps its year, and a night's reading needing more closes than the year holds reads the sessions before it from the pulled history at the store's scale   2026-10-20
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on the evening of 2026-10-20, amending the ruling above before any of its clause 2 was built,
+            in these words, kept whole in `prompts/2026-10-20-20.11-ruling-evening-amendment.md`: "Amendment to my rulings
+            of this evening, replacing clause 2 only. Everything else stands. Clause 2 is withdrawn: the bar store keeps
+            its year and no sessions are added to it. Instead, where a night's reading needs more closes than the bar
+            store's year holds, as the S&P 400 breakout's 251-session high and the heavyweights' 252 closes do, it reads
+            the sessions before the store's year from the pulled history at the store's scale, held as it stood by the
+            point-in-time check, as the valuation reading has done since 2026-10-12. Narrow the hard rule for these
+            readings alone, keeping its reasoning, and record its prior wording in the changelog. A member the pulled
+            history holds no session for reads none on such a night and says so. A test worked by hand over a night
+            holding 251 sessions, with one mutation. If you have already built the 260-session store, revert it before
+            the merge."
+Plan:       as the ruling above with its clause 2 replaced: nothing of the 260-session store was built, so nothing is
+            reverted, the store keeps its year, and the remedy copies no kept bar; the readings needing more closes than
+            the year holds read the sessions before it as the valuation reading does, and the hard rule is narrowed for
+            them with its prior wording in the changelog.
+Queue:      as the ruling above.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
