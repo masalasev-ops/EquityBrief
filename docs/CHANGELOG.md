@@ -26,6 +26,36 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-20 - ARCHITECTURE.html - the S&P 400's and 600's heavyweights read by a frozen live rule have their cards, report requests and taken trades read off that rule's own book
+Corrects: from 15.5's second pull request the night's cards, its report requests and the taken trades' follower read the S&P 400's and 600's own heavyweights book whatever rule the page drew the family by, so a frozen live rule's buys would get no card and no report and the index's own book's would, labelled with the live rule's words; found by the 20.11 replay's own reading on 2026-10-20 before any heavyweights freeze stood on the operator's store.
+Was:
+> Decision cards reads: ... index heavyweight holdings, rule records, ...; ... (see: An approved change reaches the S&amp;P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions)
+> Decision cards matrix row: no candidate register
+> Taken follower reads: membership, bar store, heavyweight holdings, index heavyweight holdings, decision cards, taken trades; ... (see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then)
+> Request drain reads: family nights, family picks, gate results, fundamental readings, heavyweight holdings, index family picks, index heavyweight holdings, research requests, run log; ... It writes no research itself (see: ...)
+Now:
+> Decision cards reads: ... index heavyweight holdings, index heavyweight rule holdings, candidate register, rule records, ...; ... (see: An approved change reaches ...); and from the 15.5 correction of 2026-10-20, on the S&amp;P 400 or 600 a sector heavyweights family the night read by its frozen live rule writes the cards of that rule's own book's buys, each sized over the rule's own leaders in each sector, and none of the index's own book's (see: A rule of the S&amp;P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step)
+> Decision cards matrix row: reading the candidate register
+> Taken follower reads: ..., index heavyweight holdings, index heavyweight rule holdings, index family nights, decision cards, taken trades; ... (see: ...); and from the 15.5 correction of 2026-10-20 a sector heavyweight taken on the S&amp;P 400 or 600 ends at its sale by the book its card's night drew, a frozen live rule's own where the night read the family by one (see: A rule of the S&amp;P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step)
+> Request drain reads: ..., index family picks, index family nights, index heavyweight holdings, index heavyweight rule holdings, research requests, run log; ... It writes no research itself (see: ...). From the 15.5 correction of 2026-10-20 an S&amp;P 400's or 600's sector heavyweights read by a frozen live rule on the night are asked for by that rule's own book's buys, as its page draws them, and not by the index's own book's (see: ...)
+Why: the read surface draws a frozen live rule's own book from 15.5's second pull request, and every other reader of the book the page draws now reads the same one.
+
+### 2026-10-20 - SCHEMA.md - a frozen heavyweights rule's book is the one the night's cards, report requests and taken trades read
+Corrects: as the ARCHITECTURE.html entry above.
+Was:
+> index_heavyweight_rule_holding: ... The rows are never deleted otherwise: a rule's record on the index's Run page is its holdings.
+Now:
+> index_heavyweight_rule_holding: ... a rule's record on the index's Run page is its holdings. From the 15.5 correction of 2026-10-20, on a night that read the family by a frozen live rule, the night's cards, its report requests and the taken trades' follower read that rule's buys and sales here, as its page draws them, in the index's own book's place.
+Why: as the ARCHITECTURE.html entry above.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states the frozen heavyweights' cards, report requests and taken trades
+Corrects: as the ARCHITECTURE.html entry above.
+Was:
+> fixture-expectations: ... and a night stored before the parts read as reading none |
+Now:
+> fixture-expectations: ... and from the 15.5 correction of 2026-10-20 an S&P 600 night that read its sector heavyweights by a frozen live rule writing its cards for that rule's own book's buys sized over its own leaders, asking for their reports and following a taken one to that book's sale, worked by hand over one constructed night, the index's own book's buys read for none of them |
+Why: the roster's row says what its check asserts.
+
 ### 2026-10-20 - RUNBOOK.md - each search on an index's own history states the setting its family would run, and the tester's pullback run takes about an hour
 Corrects: the paragraph named no setting a search would run, which every search on an index's own history states on its last line and in its report since 5d9ed7e3, and gave the tester's pullback run about three hours an index where its runs on 2026-10-20 took 57 and 72 minutes side by side; found writing 20.11's run entries.
 Was:

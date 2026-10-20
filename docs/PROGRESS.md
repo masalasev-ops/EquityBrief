@@ -4731,3 +4731,29 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             request, with the figures it states.
 Carried:    as the newest entry of this pull request; the S&P 400 drift's answer moved, put to the operator before its
             freeze.
+
+### 15.5 - correction: the S&P 400's and 600's sector heavyweights read by a frozen live rule have their cards, their report requests and their taken trades read off that rule's own book, where they read the index's own book whatever rule the page drew   2026-10-20
+
+Queue:      as the 20.11 ruling's entry above.
+Found:      by the 20.11 replay's own reading on 2026-10-20: from 15.5's second pull request the page draws a frozen
+            heavyweights rule's own book on the S&P 400 and 600, while the night's cards, its report requests and the
+            taken trades' follower read the index's own book, so on a night either book buys, the frozen books' first
+            night after 20.11's remedy among them, a live rule's buys would get no card and no report and the index's
+            own book's would, under the live rule's words and over its leaders, and a taken one would wait for a sale
+            its card's book never makes. No heavyweights freeze stood on the operator's store, so no row was written
+            under it.
+Corrected:  where the night's settings name a frozen live heavyweights rule, the cards, the report requests and the
+            follower read that rule's own book, a card sized over the rule's own leaders, and the index's own book
+            otherwise (see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either
+            design, read by the index families' step).
+Tests:      over one constructed S&P 600 night whose own book bought S1 and S2 and whose live rule, one leader a sector,
+            bought S2: one card, S2's, over 11 holdings; S2 alone asked for; and a taken S2 sold with the live rule's
+            book on 2026-10-06 at 22.00, 10.0000 per cent.
+Mutated:    the rule, stated before the run: a frozen live rule's book read in the index's own book's place wherever the
+            night's settings name the rule, broken by the settings naming none: predicted red at all three. Result:
+            red at all three, S1's and S2's cards over 22 holdings, S1 and S2 asked for, and the taken S2 left open.
+            Made on this branch and reverted before anything was committed, and the tests green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request; the live alarm still reading the index's own heavyweights book on
+            a frozen index, put to the operator.

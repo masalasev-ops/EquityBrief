@@ -56,6 +56,8 @@ public sealed class DecisionCards : IComponent
             new StoreTouch(Store.IndexFamilyResult, Touch.Read),
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
+            new StoreTouch(Store.IndexHeavyweightRuleHolding, Touch.Read),
+            new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
@@ -117,6 +119,21 @@ public sealed class DecisionCards : IComponent
         SELECT ticker, sector, entry_close FROM index_heavyweight_holding
         WHERE index_code = $index AND entered_on = $night
         ORDER BY sector, ticker;
+    ";
+
+    // What a heavyweights rule the night read the family by bought on its own book.
+    const string LiveHeavyweights = @"
+        SELECT ticker, sector, entry_close FROM index_heavyweight_rule_holding
+        WHERE index_code = $index AND candidate = $candidate AND entered_on = $night
+        ORDER BY sector, ticker;
+    ";
+
+    // The settings a rule stood registered at, its newest registration's.
+    const string Registered = @"
+        SELECT parameters FROM candidate_register
+        WHERE candidate = $candidate AND event = 'registered'
+        ORDER BY registered_at DESC, id DESC
+        LIMIT 1;
     ";
 
     // The swing filter's row for a member, which holds the pullback's plans and every member's market gate.
@@ -301,7 +318,14 @@ public sealed class DecisionCards : IComponent
     {
         var large = index == IndexFamilies.LargeIndex;
         var picks = await PicksAsync(connection, transaction, large ? LargePicks : IndexPicks, index, night, cancellation);
-        var bought = await BoughtAsync(connection, transaction, large ? LargeHeavyweights : IndexHeavyweights, index, night, cancellation);
+        // On the S&P 400 or 600 the night's settings name the live rule it read each family by: where that names the
+        // sector heavyweights, the buys are that rule's own book's, and the index's own book's otherwise.
+        // see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
+        var indexNight = large ? (null, 0d, null) : await IndexNightAsync(connection, transaction, index, night, cancellation);
+        var liveBook = large ? null : LiveCandidateOf(indexNight.Settings, Heavyweights);
+        var bought = liveBook is null
+            ? await BoughtAsync(connection, transaction, large ? LargeHeavyweights : IndexHeavyweights, index, night, cancellation)
+            : await BoughtAsync(connection, transaction, LiveHeavyweights, index, night, cancellation, liveBook);
 
         // On the S&P 500, the fundamentals-first family's picks, which the index families' step lists there under its own
         // rows.
@@ -315,7 +339,7 @@ public sealed class DecisionCards : IComponent
 
         var sectors = await SectorsAsync(connection, transaction, cancellation);
         var ranks = await RanksAsync(connection, transaction, index, night, sectors, cancellation);
-        var (breadth, floor, indexSettings) = large && indexPicks.Count == 0 ? (null, 0d, null) : await IndexNightAsync(connection, transaction, index, night, cancellation);
+        var (breadth, floor, indexSettings) = !large ? indexNight : indexPicks.Count == 0 ? (null, 0d, null) : await IndexNightAsync(connection, transaction, index, night, cancellation);
         var scores = new IndexScores();
         var written = 0;
 
@@ -354,10 +378,18 @@ public sealed class DecisionCards : IComponent
 
         var place = 0;
 
-        // The most holdings the index's book can hold, its leaders in each of the eleven sectors, over which a holding
-        // with no stop is sized.
+        // The most holdings the book can hold, its leaders in each of the eleven sectors, over which a holding with no
+        // stop is sized: a live rule's own leaders, the index's provisional book's where the rule states none.
         // see: A holding with no stop is sized at an equal share of the account across the most holdings its book can hold
-        var holdings = GicsSectors.Eleven.Count * (large ? HeavyweightRule.Live.Leaders : EquityBrief.Worker.Indices.IndexHeavyweights.Provisional.Leaders);
+        var leaders = large ? HeavyweightRule.Live.Leaders : EquityBrief.Worker.Indices.IndexHeavyweights.Provisional.Leaders;
+
+        if (liveBook is not null && await ScalarAsync(connection, Registered, [("$candidate", liveBook)], cancellation, transaction) is string stood
+            && CandidateEvaluator.Read(stood).TryGetValue(IndexHeavyweightCandidate.LeadersParameter, out var stated) && stated >= 1)
+        {
+            leaders = (int)stated;
+        }
+
+        var holdings = GicsSectors.Eleven.Count * leaders;
 
         foreach (var buy in bought)
         {
@@ -785,11 +817,11 @@ public sealed class DecisionCards : IComponent
         return picks;
     }
 
-    static async Task<IReadOnlyList<Bought>> BoughtAsync(SqliteConnection connection, SqliteTransaction transaction, string sql, string index, DateOnly night, CancellationToken cancellation)
+    static async Task<IReadOnlyList<Bought>> BoughtAsync(SqliteConnection connection, SqliteTransaction transaction, string sql, string index, DateOnly night, CancellationToken cancellation, string? candidate = null)
     {
         var bought = new List<Bought>();
 
-        await using var command = Command(connection, transaction, sql, [("$index", index), ("$night", Stamp(night))]);
+        await using var command = Command(connection, transaction, sql, candidate is null ? [("$index", index), ("$night", Stamp(night))] : [("$index", index), ("$night", Stamp(night)), ("$candidate", candidate)]);
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         while (await reader.ReadAsync(cancellation))
@@ -919,6 +951,41 @@ public sealed class DecisionCards : IComponent
         }
 
         return gates;
+    }
+
+    // The registered name of the live rule an S&P 400 or 600 night read a family by, as the night's settings state it,
+    // which that rule's own book's rows carry; none where the night read the family by its provisional rule.
+    public static string? LiveCandidateOf(JsonElement? settings, string family)
+    {
+        if (settings is not { } read || !read.TryGetProperty("live", out var live) || live.ValueKind != JsonValueKind.Array)
+        {
+            return null;
+        }
+
+        foreach (var rule in live.EnumerateArray())
+        {
+            if (rule.TryGetProperty("family", out var named) && named.GetString() == family
+                && rule.TryGetProperty("candidate", out var candidate) && candidate.GetString() is { Length: > 0 } stated)
+            {
+                return stated;
+            }
+        }
+
+        return null;
+    }
+
+    // The live rule's name an S&P 400 or 600 night's stored settings name for a family, read by a component holding the
+    // settings' text.
+    public static string? LiveCandidateOf(string? settings, string family)
+    {
+        if (settings is null)
+        {
+            return null;
+        }
+
+        using var document = JsonDocument.Parse(settings);
+
+        return LiveCandidateOf(document.RootElement.Clone(), family);
     }
 
     static async Task<(double? Breadth, double Floor, JsonElement? Settings)> IndexNightAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, CancellationToken cancellation)

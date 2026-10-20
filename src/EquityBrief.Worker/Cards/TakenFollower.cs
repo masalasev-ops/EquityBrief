@@ -30,6 +30,8 @@ public sealed class TakenFollower : IComponent
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.HeavyweightHolding, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
+            new StoreTouch(Store.IndexHeavyweightRuleHolding, Touch.Read),
+            new StoreTouch(Store.IndexFamilyNight, Touch.Read),
             new StoreTouch(Store.DecisionCard, Touch.Read),
             new StoreTouch(Store.TakenTrade, Touch.Read | Touch.Update),
             new StoreTouch(Store.TakenRecord, Touch.Insert | Touch.Delete),
@@ -70,6 +72,13 @@ public sealed class TakenFollower : IComponent
         SELECT ended_on FROM index_heavyweight_holding
         WHERE index_code = $index AND ticker = $ticker AND entered_on = $night AND ended_on IS NOT NULL;
     ";
+
+    const string LiveSale = @"
+        SELECT ended_on FROM index_heavyweight_rule_holding
+        WHERE index_code = $index AND candidate = $candidate AND ticker = $ticker AND entered_on = $night AND ended_on IS NOT NULL;
+    ";
+
+    const string IndexNightSettings = "SELECT settings FROM index_family_night WHERE index_code = $index AND session_date = $night;";
 
     const string MemberOn = @"
         SELECT COUNT(*) FROM membership
@@ -263,11 +272,18 @@ public sealed class TakenFollower : IComponent
         return new Followed(fill, provisional, first.On, PriceForm.Round(first.Raw), first.Reason, result);
     }
 
+    // A heavyweight's sale by the book its card's night drew: on the S&P 400 or 600, the live rule's own book where the
+    // night read the family by one, and the index's own book otherwise.
     async Task<DateOnly?> SoldAsync(SqliteConnection connection, SqliteTransaction transaction, Taken trade, CancellationToken cancellation)
     {
+        var liveBook = trade.Index == IndexFamilies.LargeIndex
+            ? null
+            : DecisionCards.LiveCandidateOf(await ScalarAsync(connection, IndexNightSettings, [("$index", trade.Index), ("$night", Stamp(trade.Night))], cancellation, transaction) as string, DecisionCards.Heavyweights);
         var sold = trade.Index == IndexFamilies.LargeIndex
             ? await ScalarAsync(connection, LargeSale, [("$ticker", trade.Ticker), ("$night", Stamp(trade.Night))], cancellation, transaction)
-            : await ScalarAsync(connection, IndexSale, [("$index", trade.Index), ("$ticker", trade.Ticker), ("$night", Stamp(trade.Night))], cancellation, transaction);
+            : liveBook is null
+                ? await ScalarAsync(connection, IndexSale, [("$index", trade.Index), ("$ticker", trade.Ticker), ("$night", Stamp(trade.Night))], cancellation, transaction)
+                : await ScalarAsync(connection, LiveSale, [("$index", trade.Index), ("$candidate", liveBook), ("$ticker", trade.Ticker), ("$night", Stamp(trade.Night))], cancellation, transaction);
 
         return sold is string on ? Date(on) : null;
     }
