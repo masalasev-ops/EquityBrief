@@ -4629,3 +4629,24 @@ Mutated:    the rule, stated before the run: a refused step's code reaching the 
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 15.1 - correction: the index families read the quarters fetched on nights before theirs, so a night run again reads the quarters its first run read, where it read the ones its own quarters step fetched after its families   2026-10-20
+
+Queue:      as the 20.11 ruling's entry above.
+Found:      by the check the operator asked for on 2026-10-20 of each reading the eight frozen rules read, the sweep's timing
+            against the night's: the index families' profit gate read every quarter the store holds, while the night's
+            quarters step runs after them, so a night run again the next morning, as 20.11's remedy runs the newest night
+            again, read quarters its first run could not; over the store the night of 2026-10-19 run again would have read
+            new quarters for seven S&P 400 and 600 members. The member readings, which the cover the index families read
+            comes from, already read only the quarters fetched on nights before theirs.
+Corrected:  the index families read a quarter only where a night before theirs fetched it, as the member readings do; a
+            night on the clock reads what it read before.
+Tests:      a member holding four quarters fetched on 2026-08-01 and a loss of 50 filed on 2026-10-01 that the night of
+            2026-10-02 fetched after its families: that night run again reads the four, summing to 40, and the night after
+            reads all five, its newest four summing to -20.
+Mutated:    the rule, stated before the run: a night reading only the quarters nights before it fetched, broken by dropping
+            the condition on the fetch's night: predicted red at the new test. Result: red, five quarters read where four
+            were expected. Made on this branch and reverted before anything was committed, and the test green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.

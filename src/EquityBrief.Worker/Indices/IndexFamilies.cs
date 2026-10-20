@@ -117,10 +117,12 @@ public sealed class IndexFamilies : IComponent
 
     const string PrintsOf = "SELECT event_date, timing, detail FROM calendar WHERE ticker = $ticker AND kind = 'earnings' ORDER BY event_date;";
 
-    // Each quarter as filed, its net and operating income, the profit gate's reading.
+    // Each quarter as filed, its net and operating income, the profit gate's reading, from the fetches nights before this
+    // one stored, as the member readings read them, since the night's own quarters step runs after its index families and
+    // a night run again the next morning reads what its night read.
     const string QuartersOf = @"
         SELECT period_end, filing_date, net_income, operating_income FROM reported_quarter
-        WHERE ticker = $ticker AND filing_date IS NOT NULL ORDER BY period_end;
+        WHERE ticker = $ticker AND filing_date IS NOT NULL AND session_date < $night ORDER BY period_end;
     ";
 
     // Every trade an index's list kept, all indices together, which the open trade rule reads.
@@ -886,7 +888,7 @@ public sealed class IndexFamilies : IComponent
                 }
             }
 
-            await foreach (var row in RowsAsync(connection, QuartersOf, [("$ticker", ticker)], cancellation))
+            await foreach (var row in RowsAsync(connection, QuartersOf, [("$ticker", ticker), ("$night", Stamp(night))], cancellation))
             {
                 quarters.Add(new FiledIncome(
                     Date(row.GetString(0)),
