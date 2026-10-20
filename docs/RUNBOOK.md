@@ -728,7 +728,7 @@ dotnet run --project src/EquityBrief.Worker -- sweep-index --index MID --family 
 dotnet run --project src/EquityBrief.Worker -- sweep-index --index SML --family tester-pullback-own
 ```
 
-Each reads the live store read-only, writes nothing to it, and writes its report and its figures into a run folder of its own; the searches state their answer as every search does, and the market check and the tester's runs state none. On this machine the market check takes about fifteen minutes an index, each swing search a few, the pullback's search about half an hour and the tester's pullback run about three hours an index. Nothing any of them shows is adopted, frozen or registered; the night reads an index's own rules only on the operator's word.
+Each reads the live store read-only, writes nothing to it, and writes its report and its figures into a run folder of its own; the searches state their answer as every search does and, on their last line and in their report, the setting their family would run, the best edge after costs among the settings that pass or, where none passes, the highest edge among the settings holding the trade floor (see: The setting a family on the S&P 400 or 600 would run is the best edge among its passing settings, or the strongest read where none passes), and the market check and the tester's runs state none. On this machine the market check takes about fifteen minutes an index, each swing search a few, the pullback's search about half an hour and the tester's pullback run about an hour an index. Nothing any of them shows is adopted, frozen or registered; the night reads an index's own rules only on the operator's word.
 
 ### The rule's record on each pick's card
 

@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-20 - RUNBOOK.md - each search on an index's own history states the setting its family would run, and the tester's pullback run takes about an hour
+Corrects: the paragraph named no setting a search would run, which every search on an index's own history states on its last line and in its report since 5d9ed7e3, and gave the tester's pullback run about three hours an index where its runs on 2026-10-20 took 57 and 72 minutes side by side; found writing 20.11's run entries.
+Was:
+> ... the searches state their answer as every search does, and the market check and the tester's runs state none. On this machine the market check takes about fifteen minutes an index, each swing search a few, the pullback's search about half an hour and the tester's pullback run about three hours an index.
+Now:
+> ... the searches state their answer as every search does and, on their last line and in their report, the setting their family would run, the best edge after costs among the settings that pass or, where none passes, the highest edge among the settings holding the trade floor (see: ...), and the market check and the tester's runs state none. On this machine the market check takes about fifteen minutes an index, each swing search a few, the pullback's search about half an hour and the tester's pullback run about an hour an index.
+Why: the runbook states what each run shows and how long it takes.
+
 ### 2026-10-20 - BUILD_PLAN.md - 20.11's section names the pulled history and the pullback's base in words that are not their subjects
 Corrects: 20.11's section, added by its ruling, named "the pulled history" and "pullback base" as whole words, so the plan read 20.11 as the checkpoint owing both subjects where they were built at 12.2 and 13.9, and `architecture-conformance` failed on the due points written for them; found running it over the branch before item 5's commit.
 Was:
