@@ -82,11 +82,14 @@ public partial class NightlyRun
             $"('MID', '{RuleNight}', 'M1', 'breakout', 'listed', 1, '[]');");
 
         // The S&P 400 breakout's history as the record command replays it: 600 sessions before the night, listing on the
-        // first of every twelve, so 50 completed stretches of eleven empty nights and a mark of 11.
+        // first of every twelve, so 50 completed stretches of eleven empty nights and a mark of 11; and from the 17.2
+        // correction of 2026-10-20 the night's own session as well, listing none, as a replay reaching the store's newest
+        // session writes it before that night is run again.
         var cards = new RuleCards(FixedClock.At(new DateTimeOffset(2026, 10, 7, 23, 50, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile);
         var history = Enumerable.Range(0, 600).Select(at => (new DateOnly(2024, 1, 1).AddDays(at), at % 12 == 0 ? 1 : 0)).ToArray();
+        (DateOnly, int)[] replayed = [.. history, (new DateOnly(2026, 10, 7), 0)];
 
-        Assert.Equal(600, await cards.WriteHistoryAsync("MID", "breakout", RuleRows.ProvisionalRule, history));
+        Assert.Equal(601, await cards.WriteHistoryAsync("MID", "breakout", RuleRows.ProvisionalRule, replayed));
         Assert.Equal(["history"], Texts(store, "SELECT DISTINCT source FROM rule_night;"));
 
         RegisterRow[] register = [Registered(1, LiveFilter, "swing-filter", "2026-10-04T16:00:00Z"), Registered(2, FilterVariant, "swing-filter", "2026-10-04T16:00:00Z")];
@@ -128,5 +131,12 @@ public partial class NightlyRun
         Assert.Equal(["2"], Texts(store, "SELECT COUNT(*) FROM rule_pick;"));
         Assert.Equal([RuleCards.Ok, RuleCards.Ok], Texts(store, $"SELECT outcome FROM run_log WHERE stage = '{RuleCards.Stage}' ORDER BY rowid;"));
         Assert.StartsWith("2 rule(s), 1 pick(s) of their own and 0 forming on the S&P 500; 5 rule(s), 0 pick(s) of their own and 0 forming on the S&P 400; 0 rule(s)", Texts(store, $"SELECT detail FROM run_log WHERE stage = '{RuleCards.Stage}' ORDER BY rowid;").First(), StringComparison.Ordinal);
+
+        // The night's own row stands in the replay's place on its session, listing M1 with its funnel; and the history
+        // replayed again over the night's session writes the 600 before it and leaves the night's own row standing.
+        Assert.Equal(["night|1|1"], Texts(store, $"SELECT source || '|' || listed || '|' || (gates IS NOT NULL) FROM rule_night WHERE session_date = '{RuleNight}' AND index_code = 'MID' AND family = 'breakout';"));
+        Assert.Equal(600, await cards.WriteHistoryAsync("MID", "breakout", RuleRows.ProvisionalRule, replayed));
+        Assert.Equal(["night|1|1"], Texts(store, $"SELECT source || '|' || listed || '|' || (gates IS NOT NULL) FROM rule_night WHERE session_date = '{RuleNight}' AND index_code = 'MID' AND family = 'breakout';"));
+        Assert.Equal(["607"], Texts(store, "SELECT COUNT(*) FROM rule_night;"));
     }
 }

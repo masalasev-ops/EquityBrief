@@ -26,6 +26,30 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-20 - SCHEMA.md - a night's own rule row stands in place of a replay's on its session, and a replay leaves a night's rows standing
+Corrects: from 17.2 a night run again cleared its own rule rows alone, so on a session the record command's `--nights` form had replayed it could not write its own row beside the replay's and its rule rows on the S&P 400 and 600 were not computed, as the night of 2026-10-19 run again found on 2026-10-20; and a replay writing over a session a night had written stopped the same way.
+Was:
+> rule_night: ... which is its own deleter: a night run again replaces its own rows, and a replay writes over the rule's history** (see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches).
+Now:
+> rule_night: ... (see: ...). From the 17.2 correction of 2026-10-20 a night's own row stands in place of a replay's on its session, the night deleting the replay's row of the rule on it, and a replay leaves standing every row a night wrote the rule on, writing its history around them.
+Why: a night's row and a replay's row of one rule and session cannot both stand, and the night's is the one the card reads.
+
+### 2026-10-20 - RUNBOOK.md - the record command's `--nights` form leaves a night's own rows standing
+Corrects: as the SCHEMA.md entry above.
+Was:
+> ... about two hours for the three indices, writing one row a rule and session over what an earlier replay wrote and a run log row; ...
+Now:
+> ... about two hours for the three indices, writing one row a rule and session over what an earlier replay wrote, a session a night already wrote the rule's own row on keeping that row, and a run log row, and a night run again afterwards for a session the replay reached writing its own row in the replay's place; ...
+Why: as the SCHEMA.md entry above.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states a night's rule row over a replay's session
+Corrects: as the SCHEMA.md entry above.
+Was:
+> fixture-expectations: ... the index's own book's buys read for none of them |
+Now:
+> fixture-expectations: ... the index's own book's buys read for none of them; and from the 17.2 correction of 2026-10-20 a replay of a rule's history reaching the night's own session, the night's own row standing in its place with its funnel when the night runs, and the replay written again leaving that row standing and writing the 600 sessions before it |
+Why: the roster's row says what its check asserts.
+
 ### 2026-10-20 - ARCHITECTURE.html - a frozen pick's card draws its own rule's record, the setups like it under that rule and the check that rule reads
 Authorised by: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone
 Was:

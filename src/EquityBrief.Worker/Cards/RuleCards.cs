@@ -109,6 +109,12 @@ public sealed class RuleCards : IComponent
 
     const string ClearTheHistory = "DELETE FROM rule_night WHERE index_code = $index AND family = $family AND rule = $rule AND source = 'history';";
 
+    // The replay's row of a rule on the night's own session, which the night's own row stands in place of.
+    const string ClearTheReplayedNight = "DELETE FROM rule_night WHERE index_code = $index AND session_date = $night AND family = $family AND rule = $rule AND source = 'history';";
+
+    // The sessions a night wrote a rule's own row on, which a replay of its history leaves standing.
+    const string NightsWritten = "SELECT session_date FROM rule_night WHERE index_code = $index AND family = $family AND rule = $rule AND source = 'night';";
+
     // A rule's listed counts on the nights before, oldest first, which its stretch is read over.
     const string ListedBefore = @"
         SELECT listed FROM rule_night
@@ -274,7 +280,8 @@ public sealed class RuleCards : IComponent
 
     // A rule's history replayed by the record command: its listed count on each session the replay evaluated it on,
     // oldest first, written in place of what an earlier replay wrote, each night carrying the stretch and the mark read
-    // to it. The night's own rows stand beside them and are read after them.
+    // to it. The night's own rows stand beside them and are read after them, a session a night wrote the rule's own row
+    // on keeping that row, and the rows written are counted.
     public async Task<int> WriteHistoryAsync(string index, string family, string rule, IReadOnlyList<(DateOnly Session, int Listed)> nights, CancellationToken cancellation = default)
     {
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
@@ -283,17 +290,42 @@ public sealed class RuleCards : IComponent
 
         await ExecuteAsync(connection, transaction, ClearTheHistory, [("$index", index), ("$family", family), ("$rule", rule)], cancellation);
 
+        var written = new HashSet<string>(StringComparer.Ordinal);
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText = NightsWritten;
+            command.Parameters.AddWithValue("$index", index);
+            command.Parameters.AddWithValue("$family", family);
+            command.Parameters.AddWithValue("$rule", rule);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                written.Add(reader.GetString(0));
+            }
+        }
+
         var ordered = nights.OrderBy(night => night.Session).ToArray();
         var readings = RuleStretch.ReadEach([.. ordered.Select(night => night.Listed)]);
+        var rows = 0;
 
         for (var at = 0; at < ordered.Length; at++)
         {
+            if (written.Contains(Stamp(ordered[at].Session)))
+            {
+                continue;
+            }
+
             await InsertNightAsync(connection, transaction, index, ordered[at].Session, new RuleNightRow(index, family, rule, true, ordered[at].Listed, null, readings[at]), FromTheHistory, cancellation);
+            rows++;
         }
 
         await transaction.CommitAsync(cancellation);
 
-        return ordered.Length;
+        return rows;
     }
 
     // The S&P 500's rules on the night.
@@ -755,6 +787,7 @@ public sealed class RuleCards : IComponent
                 ? RuleStretch.Read([.. await ListedBeforeAsync(connection, transaction, index, rule.Family, rule.Rule, night, cancellation), rule.Listed])
                 : null;
 
+            await ExecuteAsync(connection, transaction, ClearTheReplayedNight, [("$index", index), ("$night", Stamp(night)), ("$family", rule.Family), ("$rule", rule.Rule)], cancellation);
             await InsertNightAsync(connection, transaction, index, night, rule with { Stretch = stretch }, FromTheNight, cancellation);
         }
     }
