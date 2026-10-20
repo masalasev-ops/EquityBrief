@@ -1327,7 +1327,7 @@ Grain: one row per index, night, family and rule standing when the night started
 
 Primary key: `index_code`, `session_date`, `family`, `rule`.
 
-**The rule cards stage writes the night's rows in the swing filter's step after the decision cards, and the record command's `--nights` form writes the history's through the same component, which is its own deleter: a night run again replaces its own rows, and a replay writes over the rule's history** (see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches).
+**The rule cards stage writes the night's rows in the swing filter's step after the decision cards, and the record command's `--nights` form writes the history's through the same component, which is its own deleter: a night run again replaces its own rows, and a replay writes over the rule's history** (see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches). From the 17.2 correction of 2026-10-20 a night's own row stands in place of a replay's on its session, the night deleting the replay's row of the rule on it, and a replay leaves standing every row a night wrote the rule on, writing its history around them.
 
 ### rule_pick
 Grain: one row per index, rule, stock and night a rule whose list no other table keeps kept a pick on, the swing filter's variants.

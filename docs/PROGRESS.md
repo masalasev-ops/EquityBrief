@@ -4909,3 +4909,34 @@ Carried:    as 20.11's entry, the morning's merge, remedies and night run again 
             heavyweights' first rebalance on the first night holding 252 sessions; the setups like a frozen pick
             waiting for the next ledger history build; PR 505 rebased with its migration at 103; and the phase 18
             sign-off by a fresh session.
+
+### 17.2 - correction: a night's own rule row stands in place of the record command's replayed row on its session, and a replay leaves a night's rows standing, where the night of 2026-10-19 run again found its S&P 400 and 600 rule rows not computed   2026-10-20
+
+Queue:      as the 20.11 ruling's entry, with 20.11 merged and its two remedies run.
+Found:      by the night of 2026-10-19 run again after 20.11's second remedy: from 17.2 a night run again clears its own
+            rule rows alone, so on a session the record command's `--nights` form had replayed, the store's newest among
+            them, its insert of each rule's row met the replay's row of that rule and session and the S&P 400's and 600's
+            rule rows were not computed that night; and a replay over a session a night had already written the rule's
+            own row on stops the same way, a latent fault for the next replay of a rule a night has read.
+Corrected:  the night deletes the replay's row of each rule on its own session before writing its own, which stands in
+            the replay's place, and the replay writes each rule's history around the rows a night wrote, leaving them
+            standing and counting the rows it wrote (see: A card's stretch line counts its mark over past empty nights
+            and draws none under thirty completed stretches).
+Tests:      2550, unchanged in count: the rule cards' stage over a replay reaching the night's own session, the night's
+            own row standing in its place with its funnel, and the replay written again leaving that row standing and
+            writing the 600 sessions before it.
+Claims:     1372, as before.
+Mutated:    the rule, stated before the run: the night's own row standing in place of the replay's on its session,
+            broken by writing it without deleting the replay's row: predicted red at the stage's test. Result: red, the
+            S&P 400's rule rows not computed as the night of 2026-10-19 run again found them. And the replay leaving a
+            night's rows standing, broken by writing over them: predicted red at the same test. Result: red, the replay
+            stopped on the rule's row of the night. Each made on this branch and reverted before anything was
+            committed, and the test green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2550 of 2550 tests ran with none failed,
+            migrations 0 to 102 with none pending, schema version 102, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the night of 2026-10-19's rule rows on the S&P 400 and 600 as that run left them, the night of 2026-10-20
+            writing its own; the live alarm on a frozen heavyweights rule's own book, the record command's start guard
+            across midnight UTC and a provisional card's record after a freeze, as 20.11's entry carries them.
