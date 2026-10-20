@@ -68,7 +68,7 @@ public partial class ReadSurface
     const string MidBreakoutFrozen =
         "<p class=\"family-frozen\" data-frozen=\"2026-10-02\" data-run=\"20261001T120000Z\" data-answer=\"none passed\" data-setting=\"high=251|volume=1.5|ceiling=1|stop=3|market=5\" " +
         "data-trades=\"1033\" data-edge=\"0.023\" data-years=\"2019=0.091 2020=0.054 2021=-0.012 2022=0.033 2023=-0.045 2024=0.078 2025=-0.071 2026=-0.096\" data-without-largest=\"-0.01\" " +
-        "data-settings-read=\"378\" data-meeting=\"0\" data-luck=\"54.6\" data-tester-run=\"20261020T062626Z\" data-adjusted=\"0.1798\" data-tester-passed=\"false\" data-beat-luck=\"false\">" +
+        "data-settings-read=\"378\" data-meeting=\"0\" data-luck=\"54.6\" data-tester-run=\"20261020T062626Z\" data-adjusted=\"0.1798\" data-tester-passed=\"false\" data-beat-luck=\"false\" data-ruled=\"none\" data-entry-kept=\"none\">" +
         "Frozen on 2026-10-02 at the strongest setting its sweep read, <span class=\"frozen-setting\">high=251|volume=1.5|ceiling=1|stop=3|market=5</span>: " +
         "1,033 trades at an edge after costs of <span class=\"gain\">+0.023</span> risks, <span class=\"loss\">-0.010</span> without its five largest results, above nothing in 4 of the 8 years it stored, 2025 at <span class=\"loss\">-0.071</span> and 2026 at <span class=\"loss\">-0.096</span>. " +
         "No setting it read beat luck or the tester's bar: 0 of the 378 settings it read met the floors where luck alone passes about 54.6, and the tester read its search at an adjusted p of 0.1798 against its bar of 0.0042, " +

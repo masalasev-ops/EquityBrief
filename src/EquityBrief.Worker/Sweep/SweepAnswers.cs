@@ -270,9 +270,11 @@ public sealed class SweepAnswers(IClock clock, string databaseFile, string sweep
             static double? Number(JsonElement element, string name) =>
                 element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number ? value.GetDouble() : null;
 
+            static double? Edge(JsonElement edge) => edge.ValueKind == JsonValueKind.Number ? edge.GetDouble() : null;
+
             static IReadOnlyDictionary<int, double?> Years(JsonElement edges) =>
                 edges.EnumerateArray()
-                    .Select((edge, place) => (Year: SweepColumns.FirstScored.Year + place, Edge: edge.ValueKind == JsonValueKind.Number ? edge.GetDouble() : (double?)null))
+                    .Select((edge, place) => (Year: SweepColumns.FirstScored.Year + place, Edge: Edge(edge)))
                     .ToDictionary(pair => pair.Year, pair => pair.Edge);
 
             if (!root.TryGetProperty("strongestTen", out var strongest) || !root.TryGetProperty("afterCosts", out var afterCosts))
