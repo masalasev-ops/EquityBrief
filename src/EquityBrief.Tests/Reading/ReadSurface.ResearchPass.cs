@@ -557,7 +557,8 @@ public partial class ReadSurface
 
         // The cycle is the theme's, and the research model answered the theme's call over the
         // pages its searches kept for the name's industry with nothing, so it is not drawn and
-        // the page says why in the words the pass stored on its row.
+        // the page says why in the words the pass stored on its row, a stored count's "(s)" drawn
+        // in words from the 18.1 correction of 2026-10-19.
         var reason = JsonDocument.Parse(Rows(store, "SELECT detail FROM run_log WHERE run_id = 'replay-research' AND stage = 'research';").Single()[0]).RootElement
             .GetProperty("notWritten").EnumerateArray()
             .Single(line => line.GetProperty("section").GetString() == "The industry cycle")
@@ -565,8 +566,9 @@ public partial class ReadSurface
 
         Assert.StartsWith(ResearchRunner.ThemeNotRefreshed, reason, StringComparison.Ordinal);
         Assert.Equal(-1, Section("The industry cycle"));
+        Assert.Contains("page(s)", reason, StringComparison.Ordinal);
         Assert.Equal(
-            $"The industry cycle is not written: {reason}",
+            $"The industry cycle is not written: {MarkRenderer.CountsInWords(reason)}",
             WebUtility.HtmlDecode(Regex.Match(page, "<p class=\"not-written\" data-section=\"The industry cycle\">([^<]*)</p>").Groups[1].Value));
     }
 

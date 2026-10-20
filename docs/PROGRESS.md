@@ -4650,3 +4650,20 @@ Mutated:    the rule, stated before the run: a night reading only the quarters n
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 18.1 - correction: the researched page's test reads the not-written reason with its counts in words as the page has drawn it since the 18.1 correction of 2026-10-19, where it read the stored count's "(s)" and failed   2026-10-20
+
+Queue:      as the 20.11 ruling's entry above.
+Found:      by the read surface's whole set run for 20.11: the 18.1 correction of 2026-10-19 drew a pass's stored reasons
+            with their counts in words, and the researched page's test of its sections' order still read the industry
+            cycle's not-written reason as stored, "2 page(s)", where the page draws "2 pages"; no gate had run over this
+            pull request since.
+Corrected:  the test reads the reason through the renderer's own words for counts, and holds that the stored reason
+            carries the count the page writes in words.
+Tests:      the researched sections drawn in section 4's order, the industry cycle's reason read as the page draws it.
+Mutated:    the rule, stated before the run: the page drawing a not-written reason's counts in words, broken by drawing
+            the stored reason as it is: predicted red at the test. Result: red, "2 page(s)" drawn where "2 pages" was
+            expected. Made on this branch and reverted before anything was committed, and the test green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
