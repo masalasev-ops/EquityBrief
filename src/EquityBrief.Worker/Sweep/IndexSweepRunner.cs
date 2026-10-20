@@ -674,7 +674,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
         var design = SweepDesign.Live;
         var grid = SweepGrid.Widened;
         var space = SweepSpace.For(ConditionSetting.Off.On, grid);
-        var baseSetting = grid.Carry(SweepGrid.Fine, DialSetting.LiveOnFine);
+        var baseSetting = PullbackBase(grid);
 
         Charge(1);
 
@@ -702,7 +702,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
         }
 
         var strongest = search.Strongest(StrongestRead);
-        var shown = new List<(string Label, int[] Point)> { ("the provisional base", space.LivePoint()) };
+        var shown = new List<(string Label, int[] Point)> { ("the provisional base", space.Point(baseSetting, ConditionSetting.Off)) };
 
         if (proposal is not null)
         {
@@ -1466,6 +1466,11 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
     public static string VariantKey(IndexQuality quality, decimal floors) =>
         "quality=" + quality switch { IndexQuality.Off => "off", IndexQuality.Profit => "profit", _ => "profit and cover" }
         + FormattableString.Invariant($"|floors={floors:0}x|");
+
+    // The pullback's provisional setting on an index as a search's grid places it: the base the index's night reads, the S&P
+    // 500 sweep's base at a reward to risk of 2.
+    // see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing
+    public static DialSetting PullbackBase(SweepGrid grid) => grid.Carry(SweepGrid.Extended, SweepIdeas.BaseRule.Setting);
 
     // A kept trade's round trip in multiples of its risk at a multiple of the table, its company valued on the listing's
     // session and its prices read as they traded for their bands, the sale at the price its result puts it.

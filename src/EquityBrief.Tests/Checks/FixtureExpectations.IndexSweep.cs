@@ -267,4 +267,20 @@ public partial class FixtureExpectations
         Assert.Contains("class=\"none-passed\"", smallReport, StringComparison.Ordinal);
         Assert.Contains("class=\"none-passed\"", midReport, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void EveryPullbackSearchOnTheIndicesReadsTheBaseItsNightReadsAsItsProvisionalSetting()
+    {
+        // The night's provisional pullback on the S&P 400 and 600 is the S&P 500 sweep's base on the extended grid:
+        // strength 0.50, a pullback 1 to 5 typical moves deep, the dry-up under 1.5, freshness 3, a reward to risk of 2, the
+        // stop 0.5 to 4 typical moves under, the market at 45 per cent and band strength 0.
+        var night = SweepIdeas.BaseRule.Setting.Describe(SweepGrid.Extended);
+
+        Assert.Equal("strength 0.5, depth 1 to 5, dry-up under 1.5, fresh within 3, reward to risk 2, stop 0.5 to 4, market 45%, band strength 0", night);
+
+        // The widened grid the searches read places it at those values; and it is not the S&P 500 filter's live setting at a
+        // reward to risk of 1.5 the searches read before.
+        Assert.Equal(night, IndexSweepRunner.PullbackBase(SweepGrid.Widened).Describe(SweepGrid.Widened));
+        Assert.NotEqual(night, SweepGrid.Widened.Carry(SweepGrid.Fine, DialSetting.LiveOnFine).Describe(SweepGrid.Widened));
+    }
 }
