@@ -4940,3 +4940,43 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the night of 2026-10-19's rule rows on the S&P 400 and 600 as that run left them, the night of 2026-10-20
             writing its own; the live alarm on a frozen heavyweights rule's own book, the record command's start guard
             across midnight UTC and a provisional card's record after a freeze, as 20.11's entry carries them.
+
+### 20.11 ruling - the S&P 400 drift frozen at the setting the operator ruled, the store's year held at 260 sessions, the heavyweights' value read after a split, the S&P 500's retired books ended, and the three defects 20.11 found fixed   2026-10-20
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on the evening of 2026-10-20 on the items 20.11's entry put to them, in these words, kept whole
+            in `prompts/2026-10-20-20.11-ruling-evening.md`: "Operator's rulings of 2026-10-20 evening, on the items
+            20.11's entry put to me. 1. S&P 400 drift: freeze it at the setting I ruled,
+            window=10|reaction=0.5|volume=1.25|target=3|market=3 entering on the first pullback, as corrected by 17.1:
+            +0.098 over 1,807 trades, 6 of 8 years, 2026 +0.099. It meets the floors on its own; its card says its entry
+            did not survive the search's second stage, so it is a starting point that depends on its exact setting. The
+            strongest it replaces stays as a background variant for 63 sessions, never on the page. 2. The store's year:
+            the bar store keeps 260 sessions, so every reading that needs 252 closes has them on every night, the S&P
+            400 breakout's 251-session high and the heavyweights' rebalance among them. The missing sessions come from
+            the table of dropped bars, with no provider request. Amend the decision that sets the store's year, keeping
+            its reasoning, and say plainly the old count was too short for the rules it serves. State the store's
+            growth. 3. Heavyweights after a split: a company's value reads its newest filed share count adjusted by
+            every split stored between that count's date and the session, so a split after the last count no longer
+            misranks it. A test worked by hand over a 2-for-1 split, with one mutation. 4. The S&P 500's registered
+            heavyweights books end a retired rule's holdings as the S&P 400's and 600's now do. Their records restart,
+            about two and a half weeks of them; state each record's length before the restart. 5. Fix the three defects
+            the entry also put to me: the live alarm reads a frozen heavyweights rule's own book; the record command's
+            start guard refuses a run whose end would cross into the night window, midnight UTC included; and a
+            provisional card draws no record on a night that reads its family by a frozen rule. A test and one mutation
+            for each. Merge only at the read's daily stop. No Co-Authored-By or "Generated with" lines."
+Plan:       one pull request, each item a commit of its own with its tests and its mutation, labelled for the checkpoint
+            that built what it changes; the decisions the items change written into the record of decisions with what
+            they supersede moved under Previously decided; and one remedy run from main after the merge: the S&P 400
+            drift's frozen rule retired and the ruled setting frozen in its place with its figures recorded, the
+            strongest kept in the background, the sessions the store's year now keeps copied back from the kept bars,
+            and every registration whose pin the work moves registered again, each record's length before its restart
+            stated in the remedy's entry.
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its two
+            remedies and the night of 2026-10-19 run again, and the 17.2 correction merged; in review, 20.8 with its
+            correction, PR 505; in progress, this ruling's work, in one pull request; next, this pull request merged at
+            the read's daily stop with its remedy, PR 505 rebased with its migration after this one's, the phase 18
+            sign-off by a fresh session, the local lane's one text field, 21.0 once its ruling is given, the phase 19
+            sign-off, and pin 3's completion steps.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
