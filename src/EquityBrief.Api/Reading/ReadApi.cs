@@ -5971,7 +5971,7 @@ public sealed partial class ReadApi : IComponent
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT run, index_code, family, design, answer, recorded_at, setting, trades, edge, year_edges, without_largest, settings_read, meeting, luck, tester_run, adjusted, tester_passed FROM sweep_answer WHERE index_code = $index AND recorded_at < $before;";
+        command.CommandText = "SELECT run, index_code, family, design, answer, recorded_at, setting, trades, edge, year_edges, without_largest, settings_read, meeting, luck, tester_run, adjusted, tester_passed, ruled_on, entry_kept FROM sweep_answer WHERE index_code = $index AND recorded_at < $before;";
         command.Parameters.AddWithValue("$index", indexCode);
         command.Parameters.AddWithValue("$before", before.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture));
 
@@ -5998,7 +5998,9 @@ public sealed partial class ReadApi : IComponent
                     Real(13),
                     reader.IsDBNull(14) ? null : reader.GetString(14),
                     Real(15),
-                    reader.IsDBNull(16) ? null : reader.GetInt64(16) == 1);
+                    reader.IsDBNull(16) ? null : reader.GetInt64(16) == 1,
+                    reader.IsDBNull(17) ? null : DateOnly.ParseExact(reader.GetString(17), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    reader.IsDBNull(18) ? null : reader.GetInt64(18) == 1);
 
             rows.Add(new RecordedAnswer(
                 reader.GetString(0),

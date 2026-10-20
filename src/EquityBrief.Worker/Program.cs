@@ -624,7 +624,10 @@ static async Task<int> SweepAnswerRun(string[] args)
         SystemClock.ForUnitedStatesSessions(),
         store.DatabaseFile,
         EquityBrief.Core.Sweep.SweepFolder.Resolve(configuration[EquityBrief.Core.Sweep.SweepFolder.Key], store.DataRoot),
-        Console.Out).RecordAsync(VerbArguments.Value(args, "--run") ?? string.Empty, tester: VerbArguments.Value(args, "--tester"));
+        Console.Out).RecordAsync(
+            VerbArguments.Value(args, "--run") ?? string.Empty,
+            tester: VerbArguments.Value(args, "--tester"),
+            ruled: EquityBrief.Worker.Sweep.SweepAnswers.RuledOf(VerbArguments.Value(args, "--ruled"), VerbArguments.Value(args, "--setting"), VerbArguments.Value(args, "--entry")));
 }
 
 // The record behind each pick's card, by hand: every rule a card names on each index replayed at its one setting over the

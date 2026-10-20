@@ -42,7 +42,9 @@ public sealed record RecordedAnswer(string Run, string Index, string Family, str
 // heavyweights as a fraction of the buy against the size cut, its edge each year by the calendar year it is counted in,
 // its edge without its five largest results, how many settings its first stage read and how many met the floors against
 // what luck alone would pass, none where the run states no such count, and the tester's verdict on the family's search,
-// its run, adjusted p and whether it passed, none where no tester run was recorded with it.
+// its run, adjusted p and whether it passed, none where no tester run was recorded with it. Where the operator ruled
+// another setting the run read in its place, that setting's figures, the day of the ruling and whether the run's second
+// stage kept the entry the setting is bought on.
 // see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
 public sealed record AnswerFigures(
     string Setting,
@@ -55,7 +57,9 @@ public sealed record AnswerFigures(
     double? Luck,
     string? TesterRun,
     double? Adjusted,
-    bool? TesterPassed)
+    bool? TesterPassed,
+    DateOnly? RuledOn = null,
+    bool? EntryKept = null)
 {
     // Whether more of the settings the run read met the floors than luck alone would pass, none where it states no count.
     public bool? BeatLuck => Meeting is { } meeting && Luck is { } luck ? meeting > luck : null;

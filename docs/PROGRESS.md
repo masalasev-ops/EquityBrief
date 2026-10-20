@@ -5105,3 +5105,37 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             request, with the figures it states.
 Carried:    as the newest entry of this pull request; the four S&P 500 heavyweights rules registered again by the remedy,
             each record's length before its restart stated in the remedy's entry.
+
+### 20.11 - the S&P 400 drift frozen at the setting the operator ruled, entering on the first pullback its search's second stage did not keep, the strongest it replaces kept in the background   2026-10-20
+
+Queue:      as the 20.11 rulings' entries of the evening above.
+Built:      on the operator's ruling of the evening of 2026-10-20, clause 1 (see: The S&P 400's and 600's families freeze at
+            the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first
+            on the pullback's base). Migration 103 adds to the sweep answers the day the operator ruled a setting and
+            whether the search's second stage kept its entry; `sweep-answer --ruled --setting --entry` records the ruled
+            setting's figures as the stage states them, refusing a setting not among the strongest the search read and an
+            entry not read on it; a frozen card drawing such an answer names the setting as the operator's with the day,
+            its own figures, and where the entry was not kept the sentence that it depends on its exact setting. The freeze
+            form's `--replacing` names the family's retired live rule, which it keeps in the background for 63 sessions in
+            the provisional rule's place (see: A freeze on the S&P 400 or 600 registers a market variant beside each swing
+            rule and keeps the rule it replaces in the background for 63 sessions). The decision freezing the eight at
+            their sweeps' settings is superseded and moved under Previously decided with its reasoning.
+Tests:      2556, two more: the command recording the ruled setting over a constructed drift run, 1,807 trades at +0.098
+            with each year's edge, the run's settings read and those meeting the floors against luck, the tester's verdict,
+            the day and the entry not kept, a setting not among the strongest and an entry not read on it refused with
+            nothing written; and the freeze replacing a retired live rule keeping it in the background with the
+            provisional rule beside it, one naming a rule that is no live rule refused with nothing written; and in the
+            frozen cards' sentence test the line for the ruled setting worked by hand, an entry kept drawing no sentence on
+            it.
+Claims:     1372, as before.
+Pins:       moved on the S&P 400 and 600, the freeze form among the files every index rule pins: the pullback from
+            51c963c077f7 to 784f41937a1b, the breakout c8bbfa8055e9 to 4495137feeef, the drift b1770e2c06a5 to
+            c7b3c0232b0e and the heavyweights 7e11d1133547 to 5020a72f88f2.
+Mutated:    the rule, stated before the run: a freeze replacing a retired live rule keeping that rule in the background,
+            broken by keeping the provisional rule whatever rule it replaces: predicted red at the family's standing rules.
+            Result: red, no background rule at the strongest's settings. Made on this branch and reverted before anything
+            was committed, and the tests green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request; the remedy's lines tested over a register shaped as the operator's
+            before the merge.

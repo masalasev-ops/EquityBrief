@@ -3990,7 +3990,7 @@ public sealed partial class SinglePageApp : IComponent
     // on the Run page; the page says which families the night read by their live rules and calls only the others
     // provisional.
     // see: Every page reads one index at a time chosen under Universe, and every figure names its index
-    // see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, business first alone left on the pullback's base
+    // see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
     public string IndexPicksRegion(MarkRenderer marks, DateOnly? night, UniverseChoice universe, string selector, IReadOnlyList<IndexTradeCell> trades, IReadOnlyList<HeavyweightPickCell> holdings, IReadOnlyList<(string Family, string Heading, DateOnly Since)>? frozen = null)
     {
         frozen ??= [];

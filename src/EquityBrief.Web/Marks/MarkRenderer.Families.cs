@@ -445,6 +445,9 @@ public sealed partial class MarkRenderer
     // The words a frozen card's figures close on where no setting its sweep read beat what it is measured against.
     public const string StartingPoint = "so this rule is a starting point and not a proven edge";
 
+    // The sentence a frozen card draws where the operator ruled a setting bought on an entry its search did not keep.
+    public const string EntryNotKept = "Its entry did not survive the search's second stage, so it is a starting point that depends on its exact setting.";
+
     // A frozen card's figures, as the sweep its freeze followed stated them: the day it was frozen, the setting its sweep
     // would run or, where it passed none, the strongest it read, its trades or holdings, its edge after costs in risks or
     // in points for the sector heavyweights and that edge without its five largest results, how many of the years it
@@ -475,8 +478,14 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<p class=\"family-frozen\" data-frozen=\"{DayOf(frozen.FrozenOn)}\" data-run=\"{Escaped(frozen.Run)}\" data-answer=\"{Escaped(frozen.Answer)}\" data-setting=\"{Escaped(figures.Setting)}\" ");
         body.Append(Invariant, $"data-trades=\"{figures.Trades}\" data-edge=\"{Whole(figures.Edge)}\" data-years=\"{string.Join(" ", years.Select(year => year.Key.ToString(Invariant) + "=" + Whole(year.Value)))}\" data-without-largest=\"{Whole(figures.WithoutLargest)}\" ");
         body.Append(Invariant, $"data-settings-read=\"{Counted(figures.SettingsRead)}\" data-meeting=\"{Counted(figures.Meeting)}\" data-luck=\"{Whole(figures.Luck)}\" ");
-        body.Append(Invariant, $"data-tester-run=\"{Escaped(figures.TesterRun ?? "none")}\" data-adjusted=\"{Whole(figures.Adjusted)}\" data-tester-passed=\"{(figures.TesterPassed is { } tested ? Flag(tested) : "none")}\" data-beat-luck=\"{(figures.BeatLuck is { } beat ? Flag(beat) : "none")}\">");
-        body.Append(Invariant, $"Frozen on {DayOf(frozen.FrozenOn)} at {(passed ? "the setting its sweep would run" : "the strongest setting its sweep read")}, <span class=\"frozen-setting\">{Escaped(figures.Setting)}</span>: ");
+        body.Append(Invariant, $"data-tester-run=\"{Escaped(figures.TesterRun ?? "none")}\" data-adjusted=\"{Whole(figures.Adjusted)}\" data-tester-passed=\"{(figures.TesterPassed is { } tested ? Flag(tested) : "none")}\" data-beat-luck=\"{(figures.BeatLuck is { } beat ? Flag(beat) : "none")}\" ");
+        body.Append(Invariant, $"data-ruled=\"{(figures.RuledOn is { } ruledOn ? DayOf(ruledOn) : "none")}\" data-entry-kept=\"{(figures.EntryKept is { } entryKept ? Flag(entryKept) : "none")}\">");
+
+        var at = figures.RuledOn is { } ruled
+            ? $"the setting the operator ruled on {DayOf(ruled)} from among those its sweep read"
+            : passed ? "the setting its sweep would run" : "the strongest setting its sweep read";
+
+        body.Append(Invariant, $"Frozen on {DayOf(frozen.FrozenOn)} at {at}, <span class=\"frozen-setting\">{Escaped(figures.Setting)}</span>: ");
         body.Append(Invariant, $"{figures.Trades.ToString("#,0", Invariant)} {noun}{(figures.Trades == 1 ? string.Empty : "s")} at an edge after costs of {(figures.Edge is { } edge ? Signed(edge) + " " + unit : "none stated")}, ");
         body.Append(figures.WithoutLargest is { } without ? Formatted($"{Signed(without)} without its five largest results, ") : string.Empty);
         body.Append(Invariant, $"above nothing in {EquityBrief.Core.Sweep.SweepLine.YearsAbove(figures)} of the {years.Length} years it stored");
@@ -490,6 +499,13 @@ public sealed partial class MarkRenderer
         }
 
         body.Append('.');
+
+        // A ruled setting bought on an entry the search's second stage did not keep says so.
+        if (figures.RuledOn is not null && figures.EntryKept == false)
+        {
+            body.Append(' ');
+            body.Append(Escaped(EntryNotKept));
+        }
 
         // The sentence that no setting beat what it was read against, drawn only where neither measure stored says one did
         // and one of them says none did: the settings meeting the floors against luck, the tester's adjusted p against its

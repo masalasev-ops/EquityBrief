@@ -26,6 +26,54 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-20 - ARCHITECTURE.html - the S&P 400 drift frozen at the setting the operator ruled
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
+Was:
+> 11.4 The setup families: ... (see: The S&amp;P 400's and 600's families freeze at the settings their own sweeps would run, business first alone left on the pullback's base). ... the drift within 3 sessions of a reaction of 1.5 typical moves on twice the volume, its target at twice the risk and its stop at least a typical move under the close it was listed at, with the profit gate and its own breadth at 50 per cent, the strongest its search read once corrected; ...
+Now:
+> 11.4 The setup families: ... (see: The S&amp;P 400's and 600's families freeze at the settings their own sweeps would run, the S&amp;P 400 drift at the setting the operator ruled and business first on the pullback's base). ... the drift within 10 sessions of a reaction of half a typical move on 1.25 times the volume, bought on its first pullback, its target at 3 times the risk and its stop at least a typical move under the close it was listed at, with the profit gate and its own breadth at 45 per cent, from the operator's ruling of the evening of 2026-10-20 the setting they ruled from among the strongest its search read, its entry one the search's second stage did not keep, and the strongest it replaced kept in the background for 63 sessions; ...
+Why: on the operator's ruling of the evening of 2026-10-20 the S&P 400 drift is frozen at the setting they ruled.
+
+### 2026-10-20 - RUNBOOK.md - the sweep answers command's ruled setting, a family frozen again, and the freeze decision's new name
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
+Was:
+> ... and a tester named beside a run stating no setting it would run are each refused with nothing written. A frozen family's card ... so a freeze's remedy records the answers before it freezes.
+> ... and the index's heavyweights' card draws the live rule's book.
+> **The S&P 400's and 600's freezes of 20.11** ... (see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, business first alone left on the pullback's base):
+Now:
+> ... so a freeze's remedy records the answers before it freezes. Where the operator rules a setting the run read in place of the one it states, from migration 103, `--ruled` names the day of the ruling, `--setting` the setting ... and `--entry` the entry its second stage read it at ...; a setting not among the strongest the search read and an entry the stage did not read on it are each refused with nothing written.
+> ... and the index's heavyweights' card draws the live rule's book. **A family frozen again on the S&P 400 or 600** follows its live rule's retirement: ... then freeze the family again with `--replacing` naming the retired live rule, which the form keeps in the background for 63 sessions in the provisional rule's place ...
+> **The S&P 400's and 600's freezes of 20.11** ... (see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base):
+Why: as the ARCHITECTURE.html entry above.
+
+### 2026-10-20 - BUILD_PLAN.md - 20.11's text cites the freeze decision that supersedes its first
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
+Was:
+> ... (see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, business first alone left on the pullback's base). ...
+Now:
+> ... (see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base). ...
+Why: a spec cites no decision under Previously decided.
+
+### 2026-10-20 - SCHEMA.md - the sweep answers' ruled setting from migration 103
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
+Was:
+> sweep_answer: ... | `tester_passed` | INTEGER | from migration 102, ... |
+> ... and a tester named beside a run stating no setting (see: ...). Recording a run again writes its row again, which is the update.
+Now:
+> sweep_answer: ... | `tester_passed` | ... | then `ruled_on`, from migration 103, the day the operator ruled the row's setting ..., and `entry_kept`, ... 1 where the run's second stage kept that level and 0 where it did not ...
+> ... and a tester named beside a run stating no setting (see: ...). From migration 103, on the operator's ruling of the evening of 2026-10-20, given the day of a ruling, a setting among the strongest the run's search read and the entry its second stage read it at, it records that setting's figures ... (see: ...). Recording a run again writes its row again, which is the update.
+Why: as the ARCHITECTURE.html entry above.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations and read-surface state the S&P 400 drift's ruled freeze
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
+Was:
+> fixture-expectations: ... and a rule retired and registered again in one second standing |
+> read-surface: ... and Past picks calling provisional only the families no freeze was read by |
+Now:
+> fixture-expectations: ... and a rule retired and registered again in one second standing; and from 20.11's ruling of the evening of 2026-10-20 the sweep answers command recording in a drift run's place the setting the operator ruled ..., and the freeze form keeping the retired live rule it replaces in the background, refusing a rule named that is no live rule of the family |
+> read-surface: ... and Past picks calling provisional only the families no freeze was read by; and from 20.11's ruling of the evening of 2026-10-20 a frozen card whose answer the operator ruled naming the setting as theirs with the day of the ruling, its own figures, 1,807 trades at +0.098, and the sentence that its entry did not survive the second stage before the one on luck and the tester, an entry kept drawing no such sentence |
+Why: the roster's rows say what their checks assert.
+
 ### 2026-10-20 - ARCHITECTURE.html - the S&P 500's registered heavyweights books sell a retired rule's holdings
 Authorised by: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
 Was:

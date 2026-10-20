@@ -453,7 +453,8 @@ public static class IndexRules
     // the live rule nor a variant states its settings; or why none can be written. A family whose live rule stands is
     // refused, its next freeze following that rule's retirement; variants standing before the freeze stand on beside the
     // rules it registers, and a setting given that one of them states is refused, as is a family past the most rules it
-    // keeps.
+    // keeps. A freeze naming the family's retired live rule it replaces keeps that rule in the background in the
+    // provisional rule's place, since the page drew it the day before.
     // see: A freeze on the S&P 400 or 600 is refused only where the family's live rule stands, the variants standing before it kept beside it
     // see: A freeze on the S&P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions
     public static (IReadOnlyList<Registration>? Registrations, string? Refusal) Freeze(
@@ -462,7 +463,8 @@ public static class IndexRules
         IReadOnlyDictionary<string, double> live,
         IReadOnlyList<IReadOnlyDictionary<string, double>> variants,
         IReadOnlyList<RegisterRow> register,
-        DateTimeOffset at)
+        DateTimeOffset at,
+        string? replacing = null)
     {
         if (CandidateEvaluators.All.OfType<IndexRuleCandidate>().FirstOrDefault(evaluator => evaluator.SetupFamily == family && evaluator.Index == index) is not { } carried)
         {
@@ -527,6 +529,26 @@ public static class IndexRules
         var named = IndexRuleCandidate.NameOf(index) + " ";
         var (rule, test) = carried is IndexHeavyweightCandidate ? (HeavyweightRuleWords, HeavyweightTest) : (RuleWords, Test);
         var today = Provisional(carried);
+
+        if (replacing is not null)
+        {
+            var naming = register.Where(row => (row.Event == CandidateFamily.Registered ? row.Candidate : row.Retires) == replacing && row.RegisteredAt <= at)
+                .OrderBy(row => row.RegisteredAt).ThenBy(row => row.Id).ToArray();
+            var registered = naming.Where(row => row.Event == CandidateFamily.Registered).ToArray();
+
+            if (registered.Length == 0 || !FamilyRecords.IsLive(replacing) || registered.Any(row => CandidateFamily.SetupFamilyOf(row.Evaluator) != carried.Family))
+            {
+                return (null, $"'{replacing}' is no live rule the {carried.Family} registered, so the freeze cannot keep it in the background.");
+            }
+
+            if (naming[^1].Event != CandidateFamily.Retired)
+            {
+                return (null, $"'{replacing}' stands registered; retire it before the freeze that replaces it.");
+            }
+
+            today = CandidateEvaluator.Read(registered[^1].Parameters);
+        }
+
         var background = settings.Any(one => Same(one, today)) || stood.Any(one => Same(one, today))
             ? null
             : new Registration(FamilyRecords.BackgroundPrefix + named + Words(carried, today), rule, BackgroundTest, carried.Name, today);

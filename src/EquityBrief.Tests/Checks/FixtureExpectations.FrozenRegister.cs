@@ -288,6 +288,124 @@ public partial class FixtureExpectations
         Assert.Contains("run 20261020T055645Z is not a tester's run on an index's own history", refusals, StringComparison.Ordinal);
     }
 
+    // A freeze replacing a retired live rule, on the operator's ruling of the evening of 2026-10-20: the S&P 400 drift
+    // frozen at its strongest with its market variant, then both retired, is frozen again at the setting the operator
+    // ruled with its own market variant, and the rule it replaces, the strongest, is kept in the background in the
+    // provisional rule's place, the provisional rule standing in the background already; the freeze naming a rule that is
+    // no live rule of the family is refused with nothing written.
+    [Fact]
+    public async Task AFreezeReplacingARetiredLiveRuleKeepsThatRuleInTheBackground()
+    {
+        using var store = new TemporaryStore().Migrated();
+        var drift = IndexEvaluator("drift-400");
+        var strongest = FrozenParameters(RemedyFreezes[2].Parameters);
+        const string ruled = "windowSessions=10,reactionMoves=0.5,volumeMultiple=1.25,targetMultiple=3,stopFloor=1,floors=1,lowestClose=5,quality=1,hold=0,industryFall=0,fundOverSpy=0,creditAverage=0,creditChange=0,largeBreadth=0,breadthFloor=0.45,wideWindow=0,peers=0,entry=1,revenueGrew=0";
+        var freezeAt = new DateTimeOffset(2026, 10, 20, 18, 37, 11, TimeSpan.Zero);
+
+        Assert.Equal(0, (await RegisterVerbAt(store, freezeAt, RegisterVerb.IndexFamily, DriftRule.Name, "--index", "MID", "--parameters", Typed(strongest), "--variants", "largeBreadth=2,breadthFloor=0")).Code);
+
+        var live = Text(store, "SELECT candidate FROM candidate_register WHERE candidate LIKE 'the live %';");
+        var variant = Text(store, "SELECT candidate FROM candidate_register WHERE candidate LIKE 'the S&P 400 drift%';");
+        var retiredAt = new DateTimeOffset(2026, 10, 21, 10, 0, 0, TimeSpan.Zero);
+
+        Assert.Equal(0, (await RegisterVerbAt(store, retiredAt, "--retire", variant, "--evidence", "the market variant of the rule the operator's ruling replaced")).Code);
+        Assert.Equal(0, (await RegisterVerbAt(store, retiredAt.AddSeconds(1), "--retire", live, "--evidence", "replaced by the setting the operator ruled")).Code);
+
+        // Named a rule that is no live rule: refused, nothing written.
+        var rows = Scalar(store, "SELECT COUNT(*) FROM candidate_register;");
+        var (refused, why) = await RegisterVerbAt(store, retiredAt.AddMinutes(1), RegisterVerb.IndexFamily, DriftRule.Name, "--index", "MID", "--parameters", ruled, "--variants", "largeBreadth=2,breadthFloor=0", RegisterVerb.Replacing, variant);
+
+        Assert.NotEqual(0, refused);
+        Assert.Contains($"'{variant}' is no live rule the {drift.Family} registered", why, StringComparison.Ordinal);
+        Assert.Equal(rows, Scalar(store, "SELECT COUNT(*) FROM candidate_register;"));
+
+        // Replacing the strongest: the ruled setting live, its variant with the check off, and the strongest in the
+        // background at its own settings, at one instant.
+        Assert.Equal(0, (await RegisterVerbAt(store, retiredAt.AddMinutes(2), RegisterVerb.IndexFamily, DriftRule.Name, "--index", "MID", "--parameters", ruled, "--variants", "largeBreadth=2,breadthFloor=0", RegisterVerb.Replacing, live)).Code);
+
+        var standing = CandidateFamily.Standing(await new CandidateRegistrar(FixedClock.At(retiredAt.AddMinutes(3), SessionZones.UnitedStates), store.DatabaseFile).RowsAsync(), retiredAt.AddMinutes(3));
+        var background = FamilyRecords.BackgroundPrefix + "S&P 400 " + IndexRules.Words(drift, strongest);
+
+        Assert.Equal(
+            [
+                FamilyRecords.BackgroundPrefix + "S&P 400 " + IndexRules.Words(drift, IndexRules.Provisional(drift)),
+                background,
+                FamilyRecords.LivePrefix + "S&P 400 " + IndexRules.Words(drift, FrozenParameters(ruled)),
+                "the S&P 400 " + IndexRules.Words(drift, FrozenMoved(FrozenParameters(ruled), (IndexRuleCandidate.LargeBreadthParameter, IndexRuleCandidate.NoMarketCheck), (IndexRuleCandidate.BreadthFloorParameter, 0))),
+            ],
+            standing.Select(row => row.Candidate).Order(StringComparer.Ordinal).ToArray().OrderBy(name => name.StartsWith(FamilyRecords.BackgroundPrefix, StringComparison.Ordinal) ? 0 : name.StartsWith(FamilyRecords.LivePrefix, StringComparison.Ordinal) ? 1 : 2));
+        Assert.Equal(strongest, CandidateEvaluator.Read(standing.Single(row => row.Candidate == background).Parameters));
+        Assert.Single(standing.Select(row => row.RegisteredAt).Where(instant => instant == retiredAt.AddMinutes(2)).Distinct());
+    }
+
+    // The S&P 400 drift's ruled setting, on the operator's ruling of the evening of 2026-10-20: a drift search passing none,
+    // its run stating the strongest of the two settings it read, records in its place the second, which the operator ruled,
+    // as its second stage read it at the first pullback's entry, 1,807 trades at +0.098 with its edge each year, beside the
+    // run's settings read and those meeting the floors against luck and the tester's verdict on the search, with the day of
+    // the ruling and that the stage kept no level; a setting not among the strongest and an entry the stage did not read on
+    // the setting are each refused with nothing written.
+    [Fact]
+    public async Task TheCommandRecordsTheSettingTheOperatorRuledAsTheSecondStageReadItAtItsEntry()
+    {
+        using var store = new TemporaryStore().Migrated();
+        using var sweeps = new TemporaryDirectory();
+        var said = new StringWriter();
+        var command = new SweepAnswers(new SweepClock(new DateTimeOffset(2026, 10, 21, 11, 10, 0, TimeSpan.Zero)), store.DatabaseFile, sweeps.Path, said);
+        double[] years = [0.031, 0.144, -0.116, 0.216, 0.189, 0.331, -0.067, 0.099];
+        const string entry = "the first pullback after the reaction within 10 sessions";
+        const string ruled = "window=10|reaction=0.5|volume=1.25|target=3|market=3";
+        const string strongest = "window=3|reaction=1.5|volume=2|target=2|market=4";
+
+        void Run(string name, SweepAnswer? answer, object figures)
+        {
+            Directory.CreateDirectory(Path.Combine(sweeps.Path, name));
+            File.WriteAllText(Path.Combine(sweeps.Path, name, IndexSweepRunner.FiguresFile), JsonSerializer.Serialize(figures));
+
+            if (answer is not null)
+            {
+                File.WriteAllText(Path.Combine(sweeps.Path, name, SweepAnswer.File), answer.Json());
+            }
+        }
+
+        Run("20261020T140546Z", new SweepAnswer("MID", "drift", null, false), new
+        {
+            index = "MID",
+            family = "drift",
+            afterCosts = new[] { new { Key = strongest, MeetsFloors = false }, new { Key = ruled, MeetsFloors = false } },
+            luck = new { settings = 81.9 },
+            wouldRun = new { key = strongest, passed = false, figures = new { Key = strongest, Trades = 1082, Edge = 0.041, YearEdge = years, EdgeWithoutLargest = 0.027, MeetsFloors = false } },
+            strongestTen = new[] { new { setting = strongest }, new { setting = ruled } },
+            tries = new object[]
+            {
+                new { Dial = "entry", Level = entry, Setting = 0, Kept = false, with = new { Scored = 1000, Edge = 0.01, YearEdge = years } },
+                new { Dial = "entry", Level = entry, Setting = 1, Kept = true, with = new { Scored = 1807, Edge = 0.098, YearEdge = years } },
+            },
+            crossedLevels = Array.Empty<object>(),
+        });
+        Run("20261020T141632Z", null, new
+        {
+            index = "MID",
+            family = IndexSweepRunner.TesterOwn,
+            tested = new object[] { new { Family = "drift", Proposal = OwnProcedures.SwingGrid, verdict = new { Adjusted = 0.4104 }, passed = false } },
+        });
+
+        var on = new DateOnly(2026, 10, 20);
+
+        Assert.Equal(0, await command.RecordAsync("20261020T140546Z", tester: "20261020T141632Z", ruled: new SweepAnswers.RuledSetting(on, ruled, entry)));
+        Assert.Equal(
+            [$"none passed|{ruled} entering on {entry}|1807|0.098|-|2|0|81.9|0.4104|0|2026-10-20|0"],
+            TextRows(store, "SELECT answer || '|' || setting || '|' || trades || '|' || edge || '|' || COALESCE(without_largest, '-') || '|' || settings_read || '|' || meeting || '|' || luck || '|' || adjusted || '|' || tester_passed || '|' || ruled_on || '|' || entry_kept FROM sweep_answer;"));
+        Assert.Equal(
+            "{\"2019\":0.031,\"2020\":0.144,\"2021\":-0.116,\"2022\":0.216,\"2023\":0.189,\"2024\":0.331,\"2025\":-0.067,\"2026\":0.099}",
+            Text(store, "SELECT year_edges FROM sweep_answer;"));
+
+        Assert.Equal(2, await command.RecordAsync("20261020T140546Z", ruled: new SweepAnswers.RuledSetting(on, "window=5|reaction=1|volume=1.5|target=3|market=6", entry)));
+        Assert.Equal(2, await command.RecordAsync("20261020T140546Z", ruled: new SweepAnswers.RuledSetting(on, ruled, "the first pullback after the reaction within 5 sessions")));
+        Assert.Contains("is not among the strongest settings run 20261020T140546Z's search read", said.ToString(), StringComparison.Ordinal);
+        Assert.Contains("second stage read no entry 'the first pullback after the reaction within 5 sessions'", said.ToString(), StringComparison.Ordinal);
+        Assert.Equal(["1807"], TextRows(store, "SELECT trades FROM sweep_answer;"));
+    }
+
     // A remedy line split into its arguments as the remedy script's shell splits it: words apart, a double-quoted run one.
     static string[] Arguments(string line)
     {

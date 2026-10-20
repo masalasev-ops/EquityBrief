@@ -146,7 +146,7 @@ public static partial class TonightScreen
     // did not read, one whose evaluator moved among them, keeps the provisional card its list was drawn by.
     // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
     // see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
-    // see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, business first alone left on the pullback's base
+    // see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
     public static IReadOnlyList<FamilyCardView> WithIndexFreezes(IReadOnlyList<FamilyCardView> cards, UniverseChoice universe, IReadOnlyList<CandidateRow> register, IndexNightRow night) =>
     [
         .. cards.Select(card => ReadByLiveRule(night, card.Family) && StandingRows(IndexRuleCandidate.FamilyOn(card.Family, universe.Code), register, ReadAsOf(night, night.Session)) is { Live: { } live } standing
