@@ -393,10 +393,42 @@ public sealed partial class IndexSweepRunner
             .Select(dial => dial.OrderByDescending(one => one.KeptOn).ThenByDescending(one => one.MedianChange ?? double.MinValue).First())
             .Select(best => levels.First(level => level.Dial == best.Dial && level.Name == best.Level))
             .ToArray();
-        var crossed = crossedLevels.Length > 0 ? ten.Select(setting => SweepDials.Of(TradesUnder(setting, crossedLevels))).ToArray() : [];
+        var crossedTrades = crossedLevels.Length > 0 ? ten.Select(setting => TradesUnder(setting, crossedLevels)).ToArray() : [];
+        var crossed = crossedTrades.Select(SweepDials.Of).ToArray();
 
         bool PassesCrossed(SweepMeasures measures) => MeetsTheFloors(measures) && (!lastTwo || LastTwoYears(measures.YearScored, measures.YearEdge) > 0);
 
+        // The setting the family would run on the index: the best edge after costs among its proposal and its crossings
+        // meeting the floors, or where none does, the strongest setting its first stage read, with its figures whole.
+        // see: The setting a family on the S&P 400 or 600 would run is the best edge among its passing settings, or the strongest read where none passes
+        (FamilyFigures Figures, bool Passed) WouldRun()
+        {
+            var passing = new List<FamilyFigures>();
+
+            if (proposal.Proposed is { } proposedFigures)
+            {
+                passing.Add(proposedFigures);
+            }
+
+            for (var at = 0; at < crossed.Length; at++)
+            {
+                if (PassesCrossed(crossed[at]))
+                {
+                    passing.Add(FamilySweep.Figures(OwnProcedures.KeyOf(grid, ten[at], crossedLevels), crossedTrades[at], nights));
+                }
+            }
+
+            if (passing.Count > 0)
+            {
+                return (passing.OrderByDescending(one => one.Edge ?? double.MinValue).ThenBy(one => one.Key, StringComparer.Ordinal).First(), true);
+            }
+
+            var strongest = SweepNonePassed.StrongestOf(read.Select(one => new Strongest(one.Figures.Key, one.Figures.Trades, one.Figures.YearsBeating, one.Figures.Edge))).First();
+
+            return (read.First(one => one.Figures.Key == strongest.Key).Figures, false);
+        }
+
+        var wouldRun = WouldRun();
         var legend = string.Join("; ", marketLevels.Select((level, at) => FormattableString.Invariant($"market={at} {level.Words}")));
         var countsFrom = firstCounted == DateOnly.MaxValue ? "none is stored" : FormattableString.Invariant($"the first fetch storing one was on {firstCounted:yyyy-MM-dd}, so a count stands from the session after it");
         var stage = StageSection(
@@ -434,6 +466,7 @@ public sealed partial class IndexSweepRunner
                 + Costs([.. shown.Distinct(StringComparer.Ordinal)], before, read.ToDictionary(one => one.Figures.Key, one => one.Figures, StringComparer.Ordinal), doubled)
                 + stage
                 + (lastTwo ? LastTwoYearsSection(read, [.. ten.Select(setting => grid.Key(setting))], crossed) : string.Empty)
+                + WouldRunSection(wouldRun.Figures.Key, wouldRun.Passed, wouldRun.Figures.Trades, wouldRun.Figures.Edge, wouldRun.Figures.YearEdge, wouldRun.Figures.EdgeWithoutLargest)
                 + Luck(read.Count, dialsRead.Count),
             new
             {
@@ -458,6 +491,7 @@ public sealed partial class IndexSweepRunner
                 analystCountsFrom = firstCounted == DateOnly.MaxValue ? null : (DateOnly?)firstCounted,
                 lastTwoYears = lastTwo ? new { settings = read.Count(one => Passes(one.Figures)), crossed = crossed.Count(PassesCrossed) } : null,
                 luck = new { settings = HeavyweightSweep.Luck(read.Count), levels = dialsRead.Count * SweepDials.LuckOfALevel },
+                wouldRun = new { key = wouldRun.Figures.Key, passed = wouldRun.Passed, figures = wouldRun.Figures },
             },
             new SweepAnswer(indexCode, family, null, proposal.Proposed is not null || crossed.Any(PassesCrossed)));
 
@@ -468,10 +502,18 @@ public sealed partial class IndexSweepRunner
         output.WriteLine(crossedLevels.Length == 0
             ? FormattableString.Invariant($"second stage: no level of {levels.Count} survives on {SweepDials.KeptOn} of the {ten.Length} strongest settings")
             : FormattableString.Invariant($"second stage: {string.Join("; ", crossedLevels.Select(level => level.Dial + ", " + level.Name))} survive; crossed, {crossed.Count(PassesCrossed)} of {ten.Length} meet the floors, the strongest reading {FamilySweepReport.Number(crossed.Max(one => one.Edge))} after costs"));
+        output.WriteLine(WouldRunLine(wouldRun.Figures.Key, wouldRun.Passed, wouldRun.Figures.Trades, wouldRun.Figures.Edge, wouldRun.Figures.YearEdge, wouldRun.Figures.EdgeWithoutLargest));
         output.WriteLine("report " + report);
 
         return 0;
     }
+
+    // The setting a family would run on the index with its figures, as a run's console line and as its report's section.
+    static string WouldRunLine(string key, bool passed, int trades, double? edge, IReadOnlyList<double?> yearEdge, double? withoutLargest) =>
+        FormattableString.Invariant($"would run {key}{(passed ? string.Empty : ", the strongest read with none passing")}: edge after costs {FamilySweepReport.Number(edge)} over {trades:N0} trades, {yearEdge.Count(one => one > 0)} of 8 years above nothing, 2025 {FamilySweepReport.Number(yearEdge[^2])}, 2026 {FamilySweepReport.Number(yearEdge[^1])}, without the five largest {FamilySweepReport.Number(withoutLargest)}");
+
+    static string WouldRunSection(string key, bool passed, int trades, double? edge, IReadOnlyList<double?> yearEdge, double? withoutLargest) =>
+        FormattableString.Invariant($"<h2>The setting it would run</h2><p class=\"would-run\" data-passed=\"{(passed ? "yes" : "no")}\">{WebUtility.HtmlEncode(WouldRunLine(key, passed, trades, edge, yearEdge, withoutLargest))}.</p>");
 
     public const string PullbackOwn = "pullback-own";
 
@@ -577,6 +619,58 @@ public sealed partial class IndexSweepRunner
         DialLevel<SweepCandidate>[] withCover = [.. crossedLevels.Where(level => level.Dial != cover.Dial), cover];
         var crossedWithCover = ReadUnder(withCover);
         var proposed = proposal is not null && MeetsTheFloors(after[1]);
+
+        // The setting the pullback would run on the index: the best edge after costs among its proposal and the crossings
+        // meeting the floors, with and without the cover check, or where none does, the strongest setting its search read;
+        // each with its edge without its five largest results read off its own picks.
+        // see: The setting a family on the S&P 400 or 600 would run is the best edge among its passing settings, or the strongest read where none passes
+        (string Key, SweepMeasures Measures, SweepTrimmed Trimmed, bool Passed) WouldRun()
+        {
+            var passing = new List<(string Key, SweepMeasures Measures, SweepTrimmed Trimmed)>();
+
+            if (proposed)
+            {
+                passing.Add((space.Describe(proposal!.Point), after[1], SweepStages.WithoutTheLargest(picks, design, space.Setting(proposal.Point), space.Conditions(proposal.Point))));
+            }
+
+            void Crossed(IReadOnlyList<DialLevel<SweepCandidate>> together, SweepMeasures[] measures)
+            {
+                var (held, levelPicks) = own.Under(together);
+
+                for (var at = 0; at < ten.Count; at++)
+                {
+                    if (MeetsTheFloors(measures[at]))
+                    {
+                        passing.Add((
+                            space.Describe(ten[at]) + " with " + string.Join("; ", together.Select(level => level.Dial + ", " + level.Name)),
+                            measures[at],
+                            SweepStages.WithoutTheLargest(levelPicks, held, own.SettingUnder(ten[at], together), space.Conditions(ten[at]))));
+                    }
+                }
+            }
+
+            if (crossedLevels.Length > 0)
+            {
+                Crossed(crossedLevels, crossed);
+            }
+
+            Crossed(withCover, crossedWithCover);
+
+            if (passing.Count > 0)
+            {
+                var best = passing.OrderByDescending(one => one.Measures.Edge ?? double.MinValue).ThenBy(one => one.Key, StringComparer.Ordinal).First();
+
+                return (best.Key, best.Measures, best.Trimmed, true);
+            }
+
+            var first = proposal is null ? 1 : 2;
+
+            return first < shown.Count
+                ? (space.Describe(shown[first].Point), after[first], SweepStages.WithoutTheLargest(picks, design, space.Setting(shown[first].Point), space.Conditions(shown[first].Point)), false)
+                : (space.Describe(shown[0].Point), after[0], SweepStages.WithoutTheLargest(picks, design, space.Setting(shown[0].Point), space.Conditions(shown[0].Point)), false);
+        }
+
+        var wouldRun = WouldRun();
         var note = FormattableString.Invariant($"{Membership(named, inputs)} A candidate is kept only where its close was at least $5, its mean dollar volume over the 50 sessions to it at least {MemberReadings.DollarVolumeFloor(indexCode)!.Value:N0} dollars and its four newest quarters filed before it summed above nothing: {candidates.Length:N0} of the {all.Length:N0} candidates the members made. Every plan bought at the close is bought at the open of the session after its listing through the core's one pricing function, {atOpen:N0} exits restated, {noOpen:N0} holding no open after their listing and so no trade, and {stepped:N0} of a stepped plan bought at its own fill left as they were; its benchmark the same plan on every member of the index bought at each member's own next open, paying no cost. The market check's own breadth is a dial of the grid, off or at {string.Join(", ", OwnBreadthFloors.Select(floor => floor.ToString("0.00", CultureInfo.InvariantCulture)))}; the S&P 500's breadth at {LargeBreadthFloor:0.00} and {IndexFunds[indexCode]} above its {FundTrendSessions}-session average are read as levels of the second stage.");
         var page = new StringBuilder("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>" + WebUtility.HtmlEncode(named) + " pullback on its own history</title><style>" + SweepReport.Style + "</style></head><body><main>");
 
@@ -607,6 +701,7 @@ public sealed partial class IndexSweepRunner
         }
 
         page.Append("</tbody></table></div>");
+        page.Append(WouldRunSection(wouldRun.Key, wouldRun.Passed, wouldRun.Measures.Scored, wouldRun.Measures.Edge, wouldRun.Measures.YearEdge, wouldRun.Trimmed.Edge));
         page.Append(Luck(search.Evaluations, dialsRead.Count));
 
         if (!proposed)
@@ -650,6 +745,7 @@ public sealed partial class IndexSweepRunner
                 crossedLevels = crossedLevels.Select(level => level.Dial + ", " + level.Name),
                 crossed = crossed.Select((measures, at) => new { setting = space.Describe(ten[at]), after = measures, meets = MeetsTheFloors(measures) }),
                 crossedWithCover = crossedWithCover.Select((measures, at) => new { setting = space.Describe(ten[at]), after = measures, meets = MeetsTheFloors(measures) }),
+                wouldRun = new { key = wouldRun.Key, passed = wouldRun.Passed, after = wouldRun.Measures, withoutTheLargest = wouldRun.Trimmed },
             },
             new SweepAnswer(indexCode, SetupFamilies.Pullback, null, proposed || crossed.Any(MeetsTheFloors) || crossedWithCover.Any(MeetsTheFloors)));
 
@@ -659,6 +755,7 @@ public sealed partial class IndexSweepRunner
         output.WriteLine(crossedLevels.Length == 0
             ? FormattableString.Invariant($"second stage: no level of {levels.Count} survives on {SweepDials.KeptOn} of the {ten.Count} strongest settings; with the cover check alone {crossedWithCover.Count(MeetsTheFloors)} of {ten.Count} meet the floors")
             : FormattableString.Invariant($"second stage: {string.Join("; ", crossedLevels.Select(level => level.Dial + ", " + level.Name))} survive; crossed, {crossed.Count(MeetsTheFloors)} of {ten.Count} meet the floors, with the cover check {crossedWithCover.Count(MeetsTheFloors)}"));
+        output.WriteLine(WouldRunLine(wouldRun.Key, wouldRun.Passed, wouldRun.Measures.Scored, wouldRun.Measures.Edge, wouldRun.Measures.YearEdge, wouldRun.Trimmed.Edge));
         output.WriteLine("report " + report);
 
         return 0;
