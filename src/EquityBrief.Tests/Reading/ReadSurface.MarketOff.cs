@@ -9,8 +9,9 @@ namespace EquityBrief.Tests.Reading;
 
 // read-surface, 19.1: on the S&P 400 a swing card's selector lists, after the provisional rule, the variant reading no
 // market check by its registration's words, and draws no line saying no variant is registered; chosen in the link, the
-// card marks the clause naming the check off among those the provisional rule's words lack.
-// see: An S&P 400 or 600 swing family may carry a variant with no market check, the check standing on its provisional rule
+// card marks the clause naming the check off among those the provisional rule's words lack. From 20.11 the variant states
+// no floor beside the check it reads none of.
+// see: A freeze on the S&P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions
 public partial class ReadSurface
 {
     // The card's rule row's part 19.1 adds, which 17.2's own parts leave out.
@@ -29,7 +30,7 @@ public partial class ReadSurface
         var (registrations, refusal) = IndexRules.Variants(
             "breakout",
             "MID",
-            [new Dictionary<string, double> { [IndexRuleCandidate.LargeBreadthParameter] = IndexRuleCandidate.NoMarketCheck }],
+            [new Dictionary<string, double> { [IndexRuleCandidate.LargeBreadthParameter] = IndexRuleCandidate.NoMarketCheck, [IndexRuleCandidate.BreadthFloorParameter] = 0 }],
             [],
             new DateTimeOffset(2026, 10, 1, 12, 0, 0, TimeSpan.Zero));
 

@@ -151,5 +151,10 @@ public partial class FixtureExpectations
         // leaves no trade with no later session read.
         Assert.Equal(reaction + 2, Assert.Single(SweepEntries.DriftPullback(listing with { Bar = reaction + 1, Session = reaction + 1 }, series[0], reaction, 2.5, sessions)).Bar);
         Assert.Empty(SweepEntries.DriftPullback(listing, series[0], reaction, 2.5, sessions.Select((one, at) => at == reaction + 2 ? one with { Breadth = 0 } : one).ToArray()));
+
+        // From the 17.1 correction of 2026-10-20 a listing on the session of the first fall buys it there, and one on the
+        // session after it buys none: the first fall came before that listing, whose stop no buy on it could have read.
+        Assert.Equal(reaction + 2, Assert.Single(SweepEntries.DriftPullback(listing with { Bar = reaction + 2, Session = reaction + 2 }, series[0], reaction, 2.5, sessions)).Bar);
+        Assert.Empty(SweepEntries.DriftPullback(listing with { Bar = reaction + 3, Session = reaction + 3 }, series[0], reaction, 2.5, sessions));
     }
 }

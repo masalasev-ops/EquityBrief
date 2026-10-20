@@ -77,11 +77,13 @@ public partial class FixtureExpectations
         Assert.Equal(1, Scalar(store, "SELECT COUNT(DISTINCT registered_at) FROM candidate_register;"));
         Assert.Equal("breakout on the S&P 400", CandidateFamily.SetupFamilyOf("breakout-400"));
 
-        // A second freeze of the family on the index is refused, and the S&P 600's breakout is a family of its own.
+        // A second freeze of the family on the index is refused while its live rule stands, and the S&P 600's breakout is a
+        // family of its own.
         var (again, refusal) = await RegisterVerbAt(store, FreezeAt.AddHours(1), RegisterVerb.IndexFamily, "breakout", "--index", "MID", "--parameters", live);
 
         Assert.Equal(1, again);
-        Assert.Contains("rules of the breakout on the S&P 400 already stand registered", refusal, StringComparison.Ordinal);
+        Assert.Contains("the breakout on the S&P 400's live rule 'the live S&P 400 breakout rule at a 126-session high", refusal, StringComparison.Ordinal);
+        Assert.Contains("stands registered; a family on an index is frozen again once its live rule is retired", refusal, StringComparison.Ordinal);
         Assert.Equal(0, (await RegisterVerbAt(store, FreezeAt.AddHours(2), RegisterVerb.IndexFamily, "breakout", "--index", "SML", "--parameters", Typed(IndexRules.Provisional(IndexEvaluator("breakout-600"))))).Code);
 
         // And each family's provisional rule on each index is one its own refusal reads as a setting its sweep read.
@@ -233,11 +235,18 @@ public partial class FixtureExpectations
         string Listed() => string.Join(",", TextRows(store, "SELECT ticker FROM index_family_result WHERE index_code = 'MID' AND family = 'breakout' AND passed = 1 ORDER BY place;"));
 
         // Read as registered, the live rule draws the family's list in the provisional rule's place, IE alone, and each
-        // rule keeps IE, the variant at the cover reading IE's coverage as stored passing.
+        // rule keeps IE, the variant at the cover reading IE's coverage as stored passing; and from 20.11 the rule of the
+        // day before the freeze, kept in the background, keeps its own list, the provisional rule's first five.
         await new IndexFamilies(clock, store.DatabaseFile).RunAsync("read-night", default, register, FreezeAt.AddHours(1));
 
         Assert.Equal("IE", Listed());
-        Assert.Equal(["IE", "IE"], TextRows(store, "SELECT ticker FROM index_rule_trade ORDER BY candidate DESC, place;"));
+        Assert.Equal(["IE", "IE", "MV", "PN", "IA", "IC", "IE"], TextRows(store, "SELECT ticker FROM index_rule_trade ORDER BY candidate DESC, place;"));
+        var rules = TextRows(store, "SELECT DISTINCT candidate FROM index_rule_trade ORDER BY candidate DESC;");
+
+        Assert.Equal(3, rules.Count);
+        Assert.StartsWith("the live S&P 400 breakout rule at a 126-session high", rules[0], StringComparison.Ordinal);
+        Assert.Equal(FamilyRecords.BackgroundPrefix + "S&P 400 " + IndexRules.Words(breakout, live), rules[1]);
+        Assert.StartsWith("the S&P 400 breakout rule at a 126-session high", rules[2], StringComparison.Ordinal);
 
         // The live rule as registered under an evaluator version the code no longer carries, and the variant stating a
         // high window its sweep's grid does not hold.
@@ -255,10 +264,11 @@ public partial class FixtureExpectations
 
         await new IndexFamilies(clock, store.DatabaseFile).RunAsync("moved-night", default, moved, FreezeAt.AddHours(1));
 
-        // The night run again with neither read: each trade the first run kept stands as it stored it, every field the
-        // same, the night names no live rule, and the family's list is the provisional rule's, every member breaking out
-        // above its floors with four profitable quarters and not IE alone.
-        Assert.Equal(2, kept.Count);
+        // The night run again with none read, the rule kept in the background stating the high window as the variant's
+        // does: each trade the first run kept stands as it stored it, every field the same, the night names no live rule,
+        // and the family's list is the provisional rule's, every member breaking out above its floors with four profitable
+        // quarters and not IE alone.
+        Assert.Equal(7, kept.Count);
         Assert.Equal(kept, TextRows(store, Trades));
         Assert.Equal(0, JsonDocument.Parse(TextRows(store, "SELECT settings FROM index_family_night WHERE index_code = 'MID';").Single()).RootElement.GetProperty("live").GetArrayLength());
         Assert.Equal("IE,MV,PN,IA,IC,ID,IB", Listed());

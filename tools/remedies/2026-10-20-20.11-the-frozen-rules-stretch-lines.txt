@@ -1,0 +1,8 @@
+# The second remedy of 20.11 (the S&P 400's and 600's freezes), as its PROGRESS entry prints it: run after the first
+# remedy of 20.11 and after the newest night is run again, so that run ends before the open. The record command's
+# --nights form replays the S&P 400's and 600's frozen pullback, breakout and drift rules at their own settings by each
+# sweep's own reading over the pulled history, writing each rule's listed count on every scored session under its name
+# for the cards' stretch lines, about an hour for the two indices. It reads the store read-only but for those rows, asks
+# for nothing and calls no model. Run from main when no night, local run, drain, labeller or monthly run is writing,
+# more than two hours before the night's window, and read the output for "remedy done".
+rule-record --nights --index MID,SML

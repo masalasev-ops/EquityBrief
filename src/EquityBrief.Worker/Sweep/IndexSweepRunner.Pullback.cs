@@ -218,7 +218,7 @@ public sealed partial class IndexSweepRunner
         var space = SweepSpace.For(ConditionSetting.Off.On, grid);
         var nights = mid.Nights;
         var parallelism = Environment.ProcessorCount;
-        var baseSetting = grid.Carry(SweepGrid.Fine, DialSetting.LiveOnFine);
+        var baseSetting = PullbackBase(grid);
         var live = SweepStages.Direct(joint, design, baseSetting, ConditionSetting.Off, nights, grid: grid);
         var search = new SweepDesignSearch(design, SweepStages.Picks(joint, design, grid), nights, space);
 
@@ -241,7 +241,7 @@ public sealed partial class IndexSweepRunner
             proposal = search.Extend(proposal, live, refinement, extensions, limits, LooksBeyond);
         }
 
-        var shown = new List<(string Label, int[] Point)> { ("the provisional base", space.LivePoint()) };
+        var shown = new List<(string Label, int[] Point)> { ("the provisional base", space.Point(baseSetting, ConditionSetting.Off)) };
 
         if (proposal is not null)
         {

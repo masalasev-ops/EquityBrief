@@ -125,38 +125,32 @@ public static class FundamentalsRule
         && MemberReadings.FiledBefore(quarters, session) is [{ NetIncome: > 0m }, ..];
 
     // The first part of the rule a member's readings and quarters fail on the session, none where it passes them all.
-    public static string? FailsOn(FundamentalsSetting setting, IReadOnlyList<double?> readings, IEnumerable<FiledIncome> quarters, DateOnly session)
+    public static string? FailsOn(FundamentalsSetting setting, IReadOnlyList<double?> readings, IEnumerable<FiledIncome> quarters, DateOnly session) =>
+        Parts(setting, readings, quarters, session).Where(part => !part.Passed).Select(part => part.Reason).FirstOrDefault();
+
+    // Each of the family's own parts past the floors as a member stands against it, in the rule's order and each named by
+    // the reason a member failing it is named by: its readings read tonight, its profit in the index's form, its revenue,
+    // its margins, its cash and its trend, every part reading the readings failed where none were read.
+    // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
+    public static IReadOnlyList<(string Reason, bool Passed)> Parts(FundamentalsSetting setting, IReadOnlyList<double?>? readings, IEnumerable<FiledIncome> quarters, DateOnly session)
     {
         static bool Above(double? value, double floor) => value is { } held && held > floor;
 
-        if (!ProfitInTheIndexForm(quarters, session))
+        var margins = readings is not null && setting.Margins switch
         {
-            return NoProfit;
-        }
-
-        if (!Above(readings[RevenueGrowth], setting.GrowthFloor) || !Above(readings[GrowthChange], 0))
-        {
-            return NoRevenue;
-        }
-
-        var (gross, operating) = (Above(readings[GrossMarginChange], 0), Above(readings[OperatingMarginChange], 0));
-        var margins = setting.Margins switch
-        {
-            MarginRule.Both => gross && operating,
-            MarginRule.Operating => operating,
-            _ => gross || operating,
+            MarginRule.Both => Above(readings[GrossMarginChange], 0) && Above(readings[OperatingMarginChange], 0),
+            MarginRule.Operating => Above(readings[OperatingMarginChange], 0),
+            _ => Above(readings[GrossMarginChange], 0) || Above(readings[OperatingMarginChange], 0),
         };
 
-        if (!margins)
-        {
-            return NoMargin;
-        }
-
-        if (readings[CashOverIncome] is not { } cash || cash < setting.CashFloor)
-        {
-            return NoCash;
-        }
-
-        return Above(readings[CloseOverLong], 1) && Above(readings[FiftyOverLong], 1) ? null : NoTrend;
+        return
+        [
+            (NoReadings, readings is not null),
+            (NoProfit, ProfitInTheIndexForm(quarters, session)),
+            (NoRevenue, readings is not null && Above(readings[RevenueGrowth], setting.GrowthFloor) && Above(readings[GrowthChange], 0)),
+            (NoMargin, margins),
+            (NoCash, readings?[CashOverIncome] is { } cash && !(cash < setting.CashFloor)),
+            (NoTrend, readings is not null && Above(readings[CloseOverLong], 1) && Above(readings[FiftyOverLong], 1)),
+        ];
     }
 }

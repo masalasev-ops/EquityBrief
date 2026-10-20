@@ -129,7 +129,7 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"<li class=\"card-line\" data-line=\"{line.Number}\" data-verdict=\"{Escaped(line.Verdict)}\">");
             body.Append(CardMark(line.Verdict)).Append(' ');
             body.Append(Invariant, $"<b class=\"card-name\">{Escaped(line.Name)}</b> ");
-            body.Append(Invariant, $"<span class=\"card-words\">{WithSignedFigures(CountsInWords(line.Words))}</span></li>");
+            body.Append(Invariant, $"<span class=\"card-words\">{WithSignedFigures(StoredWords(line.Words))}</span></li>");
         }
 
         body.Append("</ol>");

@@ -272,7 +272,7 @@ public partial class ReadSurface
         var stated = Assert.Single(Blocks(small600, "<p class=\"rule-words\">[^<]*approved on the Loop page[^<]*</p>"));
 
         Assert.StartsWith("<p class=\"rule-words\">A stock closes above its highest price of the 126 sessions before", stated, StringComparison.Ordinal);
-        Assert.Contains("lists close while the S&P 600's own breadth is under 45%; each trade's result is read after the published spread, half paid at each end. It stands at a change approved on the Loop page: exit: ", stated, StringComparison.Ordinal);
+        Assert.Contains("its list closes while the S&P 600's own breadth is under 45%; each trade's result is read after the published spread, half paid at each end. It stands at a change approved on the Loop page: exit: ", stated, StringComparison.Ordinal);
         Assert.Equal(mid, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")));
         Assert.Equal(large, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}")));
         Assert.Contains($"<p class=\"rule-words\">{MidBreakoutWords}</p>", mid, StringComparison.Ordinal);

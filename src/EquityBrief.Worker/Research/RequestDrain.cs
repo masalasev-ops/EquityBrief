@@ -6,6 +6,7 @@ using EquityBrief.Core.Quarters;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
+using EquityBrief.Worker.Cards;
 using EquityBrief.Worker.Families;
 using EquityBrief.Worker.Indices;
 using EquityBrief.Worker.Nights;
@@ -35,7 +36,9 @@ public sealed class RequestDrain : IComponent
             new StoreTouch(Store.FamilyPick, Touch.Read),
             new StoreTouch(Store.HeavyweightHolding, Touch.Read),
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
+            new StoreTouch(Store.IndexFamilyNight, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
+            new StoreTouch(Store.IndexHeavyweightRuleHolding, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.FundamentalReading, Touch.Read),
             new StoreTouch(Store.ResearchRequest, Touch.Read | Touch.Insert | Touch.Update),
@@ -139,6 +142,12 @@ public sealed class RequestDrain : IComponent
     const string IndexListedOnTheNight = "SELECT ticker FROM index_family_pick WHERE index_code = $index AND session_date = $night AND state = 'listed' ORDER BY place, ticker;";
 
     const string IndexBoughtOnTheNight = "SELECT ticker FROM index_heavyweight_holding WHERE index_code = $index AND entered_on = $night ORDER BY sector, ticker;";
+
+    // Where the night read the sector heavyweights by a live rule, what that rule's own book bought on the night, which
+    // the page draws in the index's own book's place.
+    const string LiveBoughtOnTheNight = "SELECT ticker FROM index_heavyweight_rule_holding WHERE index_code = $index AND candidate = $candidate AND entered_on = $night ORDER BY sector, ticker;";
+
+    const string IndexNightSettings = "SELECT settings FROM index_family_night WHERE index_code = $index AND session_date = $night;";
 
     // The names the night asks for, taken in turn from each index's list, one at a time in the order the lists are
     // handed in, each in its own page's order; a list with no name left passes its turn to the next, and a name is
@@ -305,13 +314,28 @@ public sealed class RequestDrain : IComponent
 
             try
             {
-                foreach (var query in new[] { IndexListedOnTheNight, IndexBoughtOnTheNight })
+                string? liveBook;
+
+                await using (var settings = connection.CreateCommand())
+                {
+                    settings.CommandText = IndexNightSettings;
+                    settings.Parameters.AddWithValue("$index", index);
+                    settings.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                    liveBook = DecisionCards.LiveCandidateOf(await settings.ExecuteScalarAsync(cancellation) as string, DecisionCards.Heavyweights);
+                }
+
+                foreach (var query in new[] { IndexListedOnTheNight, liveBook is null ? IndexBoughtOnTheNight : LiveBoughtOnTheNight })
                 {
                     await using var reading = connection.CreateCommand();
 
                     reading.CommandText = query;
                     reading.Parameters.AddWithValue("$index", index);
                     reading.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+                    if (query == LiveBoughtOnTheNight)
+                    {
+                        reading.Parameters.AddWithValue("$candidate", liveBook);
+                    }
 
                     await using var reader = await reading.ExecuteReaderAsync(cancellation);
 

@@ -11,30 +11,44 @@ public partial class FixtureExpectations
     static RecordedAnswer Answered(string run, string? design, string answer, int hour) =>
         new(run, "MID", "heavyweight", design, answer, new DateTimeOffset(2026, 10, 2, hour, 0, 0, TimeSpan.Zero));
 
+    // From 20.11 the line is kept at the freeze made on its answer and ends at the family's next freeze or a newer sweep
+    // that passes, where 15.4 ended it at any freeze at or after the answer.
+    // see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
     [Fact]
-    public void ACardsLineIsDrawnWhereEveryDesignsNewestAnswerSaysNonePassedAndNoFreezeCameAfterIt()
+    public void ACardsLineIsKeptAtTheFreezeMadeOnItsAnswerAndEndsAtTheNextFreezeOrANewerSweepThatPasses()
     {
         var at = (int hour) => new DateTimeOffset(2026, 10, 2, hour, 0, 0, TimeSpan.Zero);
+        var none = Answered("r1", null, SweepAnswer.NonePassedWord, 10);
 
         // No answer recorded: nothing to draw.
-        Assert.False(SweepLine.Drawn([], null));
+        Assert.False(SweepLine.Drawn([], [], null));
 
         // One design, none passed, no freeze: drawn; a newer run passing takes it away, and an older one passing does not.
-        Assert.True(SweepLine.Drawn([Answered("r1", null, SweepAnswer.NonePassedWord, 10)], null));
-        Assert.False(SweepLine.Drawn([Answered("r1", null, SweepAnswer.NonePassedWord, 10), Answered("r2", null, SweepAnswer.PassedWord, 11)], null));
-        Assert.True(SweepLine.Drawn([Answered("r1", null, SweepAnswer.PassedWord, 9), Answered("r2", null, SweepAnswer.NonePassedWord, 10)], null));
+        Assert.True(SweepLine.Drawn([none], [], null));
+        Assert.False(SweepLine.Drawn([none, Answered("r2", null, SweepAnswer.PassedWord, 11)], [], null));
+        Assert.True(SweepLine.Drawn([Answered("r0", null, SweepAnswer.PassedWord, 9), none], [], null));
 
         // Two designs: drawn only where both newest say none passed, one design passing being a result even where the
         // other's run after it found none.
-        Assert.False(SweepLine.Drawn([Answered("a1", "a", SweepAnswer.NonePassedWord, 10), Answered("b1", "b", SweepAnswer.PassedWord, 10)], null));
-        Assert.False(SweepLine.Drawn([Answered("a1", "a", SweepAnswer.PassedWord, 10), Answered("b1", "b", SweepAnswer.NonePassedWord, 11)], null));
-        Assert.True(SweepLine.Drawn([Answered("a1", "a", SweepAnswer.NonePassedWord, 10), Answered("b1", "b", SweepAnswer.PassedWord, 9), Answered("b2", "b", SweepAnswer.NonePassedWord, 11)], null));
+        Assert.False(SweepLine.Drawn([Answered("a1", "a", SweepAnswer.NonePassedWord, 10), Answered("b1", "b", SweepAnswer.PassedWord, 10)], [], null));
+        Assert.False(SweepLine.Drawn([Answered("a1", "a", SweepAnswer.PassedWord, 10), Answered("b1", "b", SweepAnswer.NonePassedWord, 11)], [], null));
+        Assert.True(SweepLine.Drawn([Answered("a1", "a", SweepAnswer.NonePassedWord, 10), Answered("b1", "b", SweepAnswer.PassedWord, 9), Answered("b2", "b", SweepAnswer.NonePassedWord, 11)], [], null));
 
-        // A freeze registered after the newest answer takes it away; one at its very instant does too, the freeze being
-        // what was done on the answer; one a second before it does not.
-        Assert.False(SweepLine.Drawn([Answered("r1", null, SweepAnswer.NonePassedWord, 10)], at(11)));
-        Assert.False(SweepLine.Drawn([Answered("r1", null, SweepAnswer.NonePassedWord, 10)], at(10)));
-        Assert.True(SweepLine.Drawn([Answered("r1", null, SweepAnswer.NonePassedWord, 10)], at(10).AddSeconds(-1)));
+        // Its freeze is the first at or after the answer, the answer's own instant counting as after it. A freeze an hour
+        // after the answer and one at its instant, each making the live rule X that reads the card, keep the line; a freeze
+        // a second before the answer is no freeze of it, the answer being read as recorded after the freeze, drawn.
+        Assert.True(SweepLine.Drawn([none], [new SweepFreeze("X", at(11))], "X"));
+        Assert.True(SweepLine.Drawn([none], [new SweepFreeze("X", at(10))], "X"));
+        Assert.True(SweepLine.Drawn([none], [new SweepFreeze("X", at(10).AddSeconds(-1))], "X"));
+
+        // The family's next freeze ends it: X at 11 and then Y at 12, Y reading the card. And a freeze at or after the answer
+        // that did not make the rule reading the card keeps nothing.
+        Assert.False(SweepLine.Drawn([none], [new SweepFreeze("X", at(11)), new SweepFreeze("Y", at(12))], "Y"));
+        Assert.False(SweepLine.Drawn([none], [new SweepFreeze("X", at(11))], "Y"));
+
+        // A newer sweep that passes ends it at its freeze as well; a card no live rule reads draws it whatever was frozen.
+        Assert.False(SweepLine.Drawn([none, Answered("r2", null, SweepAnswer.PassedWord, 13)], [new SweepFreeze("X", at(11))], "X"));
+        Assert.True(SweepLine.Drawn([none], [new SweepFreeze("X", at(11)), new SweepFreeze("Y", at(12))], null));
     }
 
     [Fact]

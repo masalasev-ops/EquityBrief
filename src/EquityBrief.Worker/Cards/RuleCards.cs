@@ -62,6 +62,7 @@ public sealed class RuleCards : IComponent
             new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
+            new StoreTouch(Store.FiledFact, Touch.Read),
             new StoreTouch(Store.ReleaseDocument, Touch.Read),
             new StoreTouch(Store.ReleaseReading, Touch.Read),
             new StoreTouch(Store.ReadingPin, Touch.Read),
@@ -159,6 +160,14 @@ public sealed class RuleCards : IComponent
     const string IndexNightRow = "SELECT fault, market_open FROM index_family_night WHERE index_code = $index AND session_date = $night;";
 
     const string IndexAnswers = "SELECT family, passed, reason FROM index_family_result WHERE index_code = $index AND session_date = $night;";
+
+    // Every part of one member's rule under a family as the night stored them, the market check first, the same for every
+    // member of the family.
+    const string FamilyGates = @"
+        SELECT gates FROM index_family_result
+        WHERE index_code = $index AND session_date = $night AND family = $family AND gates IS NOT NULL
+        ORDER BY ticker LIMIT 1;
+    ";
 
     const string IndexListed = "SELECT family, COUNT(*) FROM index_family_pick WHERE index_code = $index AND session_date = $night AND state = 'listed' GROUP BY family;";
 
@@ -487,7 +496,10 @@ public sealed class RuleCards : IComponent
             return null;
         }
 
-        var levels = await IndexFamilies.LevelsAsync(connection, inputs, cancellation, [version]);
+        // A variant reading the revenue level reads each member's quarters as first filed and stored before the night, as
+        // the night read it.
+        // see: A drift's revenue level on the S&P 400 and 600 reads a quarter only once its filing is stored, on the night and in its sweep alike
+        var levels = await IndexFamilies.LevelsAsync(connection, inputs, cancellation, [version], parameters.GetValueOrDefault(IndexDriftCandidate.RevenueGrewParameter) == 1);
         var answers = IndexNightRead.Answers(inputs, DriftRule.Name, IndexRules.Read(inputs, new IndexRule(row.Candidate, drift, parameters, row.RegisteredAt), levels));
 
         return IndexFunnel([.. answers.Select(answer => (answer.Family, answer.Passed, answer.Reason))], DriftRule.Name, tone: true);
@@ -495,7 +507,9 @@ public sealed class RuleCards : IComponent
 
     // The members forming a breakout on the S&P 400 or 600 under the rule drawing its list: those passing the index's
     // floors and profit gate as the provisional rule applies them, read through the breakout rule's own gates over the
-    // member's year of bars, the market check the index's own breadth.
+    // member's year of bars, the market check the one the rule drawing the list read on the night, as the night stored it
+    // among each member's parts, and the index's own check on a night that stored none.
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
     async Task<int> IndexFormingAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, string rule, RegisterRow? live, bool open, CancellationToken cancellation)
     {
         var (names, income) = await IndexFamilies.InputsAsync(connection, index, night, cancellation);
@@ -512,7 +526,8 @@ public sealed class RuleCards : IComponent
         var settings = live is not null ? BreakoutCandidate.SettingsOf(CandidateEvaluator.Read(live.Parameters))
             : stored?.GetValueOrDefault(BreakoutRule.Name)?.Places is { } places ? BreakoutAt(places)
             : BreakoutRule.Live;
-        var market = new Gate(FamilyRule.Market, open, open ? "the index's breadth at or above the floor" : "the index's breadth under the floor", FamilyRule.Values());
+        var market = MarketOf(await ScalarAsync(connection, FamilyGates, [("$index", index), ("$night", Stamp(night)), ("$family", BreakoutRule.Name)], cancellation, transaction) as string)
+            ?? new Gate(FamilyRule.Market, open, open ? "the index's breadth at or above the floor" : "the index's breadth under the floor", FamilyRule.Values());
         var members = new List<FormingMember>();
 
         foreach (var name in inputs.Held)
@@ -539,6 +554,13 @@ public sealed class RuleCards : IComponent
 
         return await InsertFormingAsync(connection, transaction, index, night, rule, FormingList.Order(members), earnings, cancellation);
     }
+
+    // The market check a family's parts stored on the night hold, as the gate the breakout rule reads its market by; none
+    // where the night stored no part.
+    public static Gate? MarketOf(string? stored) =>
+        stored is not null && FamilyRule.GatesOf(stored).FirstOrDefault(gate => gate.Name == RuleRows.Market) is { } market
+            ? market with { Name = FamilyRule.Market }
+            : null;
 
     // The breakout's settings at a setting of its sweep's grid.
     static BreakoutSettings BreakoutAt(IReadOnlyList<int> places)
@@ -575,16 +597,44 @@ public sealed class RuleCards : IComponent
         return counts;
     }
 
+    // The parts past the profit and the cover a registered rule's levels read, in the order its night reads them, each by
+    // the reason a member failing it carries: the industry's fall, the breakout's three levels, the drift's peers and its
+    // revenue, the switches, the tone's read and its answer, and a condition an approved setting's hooks add.
+    static readonly string[] LevelReasons =
+    [
+        IndexRules.IndustryFell,
+        IndexRules.NotNearItsHigh,
+        IndexRules.HighNotAsStated,
+        IndexRules.VolumeUnder,
+        IndexRules.PeersNotAbove,
+        IndexRules.RevenueNotAbove,
+        IndexRules.SwitchClosed,
+        ReleaseTone.NotHeldOnTheIndex,
+        ReleaseTone.FailedOnTheIndex,
+        IndexNightRead.NotByItsHooks,
+    ];
+
     // The members passing each part of an index rule and every part before, read off the first part each failed and
     // named as the part, not as the reason a member fails it; the fundamentals-first family's parts its own, the
-    // business's after the floors; and from 20.4 a drift rule's tone after the swing families' parts.
+    // business's after the floors; and from 20.4 a drift rule's tone after the swing families' parts. From 20.11 a level
+    // a registered rule reads is a part of its own after the cover, in the order the night reads it, where a member failed
+    // it, so a member a frozen rule's level kept off is never counted as stopping at the market check.
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
     public static IReadOnlyList<(string Gate, int Passed)> IndexFunnel(IReadOnlyList<(string Family, bool Passed, string? Reason)> answers, string? family = null, bool tone = false)
     {
         string[] reasons = family == FundamentalsRule.Name
             ? [IndexNightRead.MarketClosed, IndexNightRead.NoSetup, IndexNightRead.UnderTheFloors, FundamentalsRule.NoReadings, FundamentalsRule.NoProfit, FundamentalsRule.NoRevenue, FundamentalsRule.NoMargin, FundamentalsRule.NoCash, FundamentalsRule.NoTrend]
-            : tone
-                ? [IndexNightRead.MarketClosed, IndexNightRead.NoSetup, IndexNightRead.UnderTheFloors, IndexNightRead.NoProfit, IndexNightRead.NoCover, ReleaseTone.NotHeldOnTheIndex, ReleaseTone.FailedOnTheIndex]
-                : [IndexNightRead.MarketClosed, IndexNightRead.NoSetup, IndexNightRead.UnderTheFloors, IndexNightRead.NoProfit, IndexNightRead.NoCover];
+            :
+            [
+                IndexNightRead.MarketClosed,
+                IndexNightRead.NoSetup,
+                IndexNightRead.UnderTheFloors,
+                IndexNightRead.NoProfit,
+                IndexNightRead.NoCover,
+                .. LevelReasons.Where(reason =>
+                    (tone && reason is ReleaseTone.NotHeldOnTheIndex or ReleaseTone.FailedOnTheIndex)
+                    || answers.Any(answer => !answer.Passed && answer.Reason == reason)),
+            ];
         var counts = new List<(string, int)>();
 
         foreach (var (reason, at) in reasons.Select((reason, at) => (reason, at)))

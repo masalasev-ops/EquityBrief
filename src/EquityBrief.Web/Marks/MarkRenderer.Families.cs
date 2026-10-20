@@ -42,7 +42,15 @@ public sealed record FamilyCardView(
     int HeldBack = 0,
     IReadOnlyList<string>? Passes = null,
     IReadOnlyList<CloseToBuyCell>? Close = null,
-    IReadOnlyDictionary<string, IReadOnlyList<double?>>? Numbers = null);
+    IReadOnlyDictionary<string, IReadOnlyList<double?>>? Numbers = null,
+    IReadOnlyList<int>? SweepLost = null,
+    FrozenSweepView? Frozen = null);
+
+// What a frozen card states of the sweep its freeze followed: the day it was frozen, the run and the answer it stated,
+// the figures that run stated for its family's setting, and whether its edge is drawn in points, the sector
+// heavyweights' fraction of the buy against their size cut, or in risks.
+// see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
+public sealed record FrozenSweepView(DateOnly FrozenOn, string Run, string Answer, EquityBrief.Core.Sweep.AnswerFigures Figures, bool Points);
 
 // One choice on a card's tabs: the rule's name as the register holds it, the slug the link keeps it under, its variant
 // number by its first registration or none for the live rule, and the words its tab is drawn with, the settings it
@@ -119,7 +127,14 @@ public sealed record MarketLineView(
     string? Universe = null,
     string? RunHref = null,
     int? Watching = null,
-    string? CloseHref = null);
+    string? CloseHref = null,
+    IReadOnlyList<MarketCheckView>? Checks = null);
+
+// One setup's own market check on an S&P 400 or 600 night, as its rule's first stored part read it for every member: the
+// family, its label, whether it left the family's list open, the check's words, and the breadth and floor it read, none
+// where it read none.
+// see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
+public sealed record MarketCheckView(string Family, string Setup, bool Open, string Words, double? Breadth = null, double? Floor = null);
 
 // One stock a single gate short of a buy point under one setup, as the shared list draws it: the setup's
 // word and label, the gate it missed, and that gate's own words.
@@ -166,7 +181,7 @@ public sealed record IndexTradeCell(
 // How an S&P 400's or 600's night went, as its Run page states it: the members read, the index's own breadth against
 // the floor and whether its swing lists were open, the members a setup passed, those listed and held back, the trades
 // kept and ended, and its sector heavyweights' rebalance and holdings.
-public sealed record IndexRunView(int Members, double? Breadth, double Floor, bool MarketOpen, int Passed, int Listed, int HeldBack, int Kept, int Ended, bool Rebalanced, int Holdings, string? Fault = null);
+public sealed record IndexRunView(int Members, double? Breadth, double Floor, bool MarketOpen, int Passed, int Listed, int HeldBack, int Kept, int Ended, bool Rebalanced, int Holdings, string? Fault = null, IReadOnlyList<MarketCheckView>? Checks = null);
 
 public sealed partial class MarkRenderer
 {
@@ -174,7 +189,7 @@ public sealed partial class MarkRenderer
     public static IReadOnlyList<(string Heading, string Says)> IndexTradeHeadings { get; } =
     [
         ("Stock", "The ticker opens the stock's page, with the company beneath."),
-        ("Setup", "The setup that listed it, on the index's provisional settings."),
+        ("Setup", "The setup that listed it, by its family's live rule from its freeze and on the index's provisional settings before it."),
         ("Listed", "The night its list drew it, bought at the open of the session after."),
         ("Buy", "The open it was bought at, the session after its night, or its plan's close while it buys at the next open."),
         ("Stop", "The price a close beneath ends it at a loss, or the first level of a stop that trails."),
@@ -340,19 +355,42 @@ public sealed partial class MarkRenderer
         return body.ToString();
     }
 
+    // What a line says of an index's families' own market checks where they did not read alike: each family whose check
+    // closed its list, with the check's own words, and that it left the others open; that every check closed every list,
+    // each named, only where each did; and that each left its list open where none closed one.
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
+    public static string ChecksSaid(IReadOnlyList<MarketCheckView> checks)
+    {
+        var closed = checks.Where(check => !check.Open).ToArray();
+
+        static string Named(MarketCheckView check) => $"the {check.Setup.ToLowerInvariant()} list, {check.Words}";
+
+        return closed.Length == 0
+            ? "each setup's own market check left its list open"
+            : closed.Length == checks.Count
+                ? "the market check closed every list: " + string.Join("; ", closed.Select(Named))
+                : "the market check closed " + string.Join("; and ", closed.Select(Named)) + ", and left the others open";
+    }
+
     // The market line: the check's answer in words with both figures, then the night's counts, the open
-    // trades linking to Past picks.
+    // trades linking to Past picks. Where an index's families each read a check of their own and they did not read
+    // alike, the index's breadth and each family's check that closed its list, in the check's own words.
     public string MarketLine(MarketLineView line)
     {
-        var check = line.Breadth is { } breadth && line.Floor is { } floor
-            ? Formatted($"the {line.Index}'s breadth: {EquityBrief.Core.Cards.FloorShare.Percent(breadth, floor)}% of its members closed above their 200-day average, {(line.Open ? "at or above" : "below")} its floor of {floor * 100:0.#}%")
-            : $"the {line.Index}'s breadth is not available tonight";
+        var check = line.Checks is { } checks
+            ? (line.Breadth is { } read
+                ? Formatted($"the {line.Index}'s breadth: {(read * 100).ToString("0.0", Invariant)}% of its members closed above their 200-day average")
+                : $"the {line.Index}'s breadth is not available tonight") + "; " + ChecksSaid(checks)
+            : line.Breadth is { } breadth && line.Floor is { } floor
+                ? Formatted($"the {line.Index}'s breadth: {EquityBrief.Core.Cards.FloorShare.Percent(breadth, floor)}% of its members closed above their 200-day average, {(line.Open ? "at or above" : "below")} its floor of {floor * 100:0.#}%")
+                : $"the {line.Index}'s breadth is not available tonight";
 
         var body = new StringBuilder();
 
         body.Append(Invariant, $"<p class=\"market-line\" data-index=\"{Escaped(line.Index)}\" data-open=\"{Flag(line.Open)}\" data-breadth=\"{(line.Breadth is { } held ? held.ToString("R", Invariant) : "none")}\" data-floor=\"{(line.Floor is { } bar ? bar.ToString("R", Invariant) : "none")}\" ");
         body.Append(Invariant, $"data-passed=\"{(line.Passed is { } passed ? passed.ToString(Invariant) : "none")}\" data-members=\"{(line.Members is { } members ? members.ToString(Invariant) : "none")}\" ");
-        body.Append(Invariant, $"data-buy-points=\"{line.BuyPoints}\" data-setups-listing=\"{line.SetupsListing}\" data-setups=\"{line.Setups}\" data-close=\"{(line.CloseRead ? line.Close.ToString(Invariant) : "none")}\" data-open-trades=\"{line.OpenTrades}\">");
+        body.Append(Invariant, $"data-buy-points=\"{line.BuyPoints}\" data-setups-listing=\"{line.SetupsListing}\" data-setups=\"{line.Setups}\" data-close=\"{(line.CloseRead ? line.Close.ToString(Invariant) : "none")}\" data-open-trades=\"{line.OpenTrades}\"");
+        body.Append(line.Checks is { } closing ? Formatted($" data-closed=\"{Escaped(string.Join(" ", closing.Where(one => !one.Open).Select(one => one.Family)))}\">") : ">");
         body.Append(Invariant, $"<b class=\"market-{(line.Open ? "open" : "closed")}\">{(line.Open ? "The lists are open" : "The lists are closed")}</b>: {Escaped(check)}. ");
         body.Append("<span class=\"market-counts\">");
 
@@ -393,10 +431,97 @@ public sealed partial class MarkRenderer
     }
 
     // The one line a card draws under its standing while its family's recorded sweep found no setting that passed the
-    // floors, and nothing otherwise; the card still lists its picks.
+    // floors, and nothing otherwise; the card still lists its picks. Kept on a card frozen on that sweep, it adds the last
+    // years its sweep stored in which the setting frozen there lost, read off the answer's own figures, both, one or none.
     // see: No family on any index is set aside or hidden by a test result without the operator's word
-    internal static string SweepFoundNoneLine(bool drawn) =>
-        drawn ? $"<p class=\"family-sweep\" data-sweep=\"none passed\">{Escaped(EquityBrief.Core.Sweep.SweepAnswer.Line)}</p>" : string.Empty;
+    // see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
+    internal static string SweepFoundNoneLine(bool drawn, IReadOnlyList<int>? lost = null) =>
+        !drawn
+            ? string.Empty
+            : lost is null
+                ? $"<p class=\"family-sweep\" data-sweep=\"none passed\">{Escaped(EquityBrief.Core.Sweep.SweepAnswer.Line)}</p>"
+                : Formatted($"<p class=\"family-sweep\" data-sweep=\"none passed\" data-lost=\"{(lost.Count == 0 ? "none" : string.Join(" ", lost))}\">{Escaped(EquityBrief.Core.Sweep.SweepAnswer.Line + EquityBrief.Core.Sweep.SweepLine.LostLine(lost))}</p>");
+
+    // The words a frozen card's figures close on where no setting its sweep read beat what it is measured against.
+    public const string StartingPoint = "so this rule is a starting point and not a proven edge";
+
+    // A frozen card's figures, as the sweep its freeze followed stated them: the day it was frozen, the setting its sweep
+    // would run or, where it passed none, the strongest it read, its trades or holdings, its edge after costs in risks or
+    // in points for the sector heavyweights and that edge without its five largest results, how many of the years it
+    // stored stood above nothing and its last two years' edges; then, where neither the count of settings against luck nor
+    // the tester's verdict stored says a setting passed and either says none did, that none beat it, each figure it read
+    // named, so the rule is a starting point and not a proven edge. Every stored value is whole on the element.
+    // see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
+    internal static string FrozenSweepLine(FrozenSweepView? frozen)
+    {
+        if (frozen is null)
+        {
+            return string.Empty;
+        }
+
+        var figures = frozen.Figures;
+        var (scale, places, form, unit, noun) = frozen.Points ? (100d, 2, "+0.00;-0.00;0.00", "points", "holding") : (1d, 3, "+0.000;-0.000;0.000", "risks", "trade");
+
+        string Signed(double edge) => SignedFigure(edge * scale, places, Unsigned(edge * scale, places).ToString(form, Invariant));
+
+        static string Whole(double? value) => value is { } held ? held.ToString("R", Invariant) : "none";
+
+        static string Counted(int? value) => value is { } held ? held.ToString(Invariant) : "none";
+
+        var passed = frozen.Answer == EquityBrief.Core.Sweep.SweepAnswer.PassedWord;
+        var years = figures.YearEdges.OrderBy(year => year.Key).ToArray();
+        var body = new StringBuilder();
+
+        body.Append(Invariant, $"<p class=\"family-frozen\" data-frozen=\"{DayOf(frozen.FrozenOn)}\" data-run=\"{Escaped(frozen.Run)}\" data-answer=\"{Escaped(frozen.Answer)}\" data-setting=\"{Escaped(figures.Setting)}\" ");
+        body.Append(Invariant, $"data-trades=\"{figures.Trades}\" data-edge=\"{Whole(figures.Edge)}\" data-years=\"{string.Join(" ", years.Select(year => year.Key.ToString(Invariant) + "=" + Whole(year.Value)))}\" data-without-largest=\"{Whole(figures.WithoutLargest)}\" ");
+        body.Append(Invariant, $"data-settings-read=\"{Counted(figures.SettingsRead)}\" data-meeting=\"{Counted(figures.Meeting)}\" data-luck=\"{Whole(figures.Luck)}\" ");
+        body.Append(Invariant, $"data-tester-run=\"{Escaped(figures.TesterRun ?? "none")}\" data-adjusted=\"{Whole(figures.Adjusted)}\" data-tester-passed=\"{(figures.TesterPassed is { } tested ? Flag(tested) : "none")}\" data-beat-luck=\"{(figures.BeatLuck is { } beat ? Flag(beat) : "none")}\">");
+        body.Append(Invariant, $"Frozen on {DayOf(frozen.FrozenOn)} at {(passed ? "the setting its sweep would run" : "the strongest setting its sweep read")}, <span class=\"frozen-setting\">{Escaped(figures.Setting)}</span>: ");
+        body.Append(Invariant, $"{figures.Trades.ToString("#,0", Invariant)} {noun}{(figures.Trades == 1 ? string.Empty : "s")} at an edge after costs of {(figures.Edge is { } edge ? Signed(edge) + " " + unit : "none stated")}, ");
+        body.Append(figures.WithoutLargest is { } without ? Formatted($"{Signed(without)} without its five largest results, ") : string.Empty);
+        body.Append(Invariant, $"above nothing in {EquityBrief.Core.Sweep.SweepLine.YearsAbove(figures)} of the {years.Length} years it stored");
+
+        var last = EquityBrief.Core.Sweep.SweepLine.Last(figures);
+
+        if (last.Count > 0)
+        {
+            body.Append(", ");
+            body.Append(string.Join(" and ", last.Select(year => year.Edge is { } held ? Formatted($"{year.Year} at {Signed(held)}") : Formatted($"{year.Year} with no {noun}"))));
+        }
+
+        body.Append('.');
+
+        // The sentence that no setting beat what it was read against, drawn only where neither measure stored says one did
+        // and one of them says none did: the settings meeting the floors against luck, the tester's adjusted p against its
+        // bar, or both.
+        var luck = figures.BeatLuck;
+        var tester = figures.TesterPassed;
+
+        if (luck != true && tester != true && (luck == false || tester == false))
+        {
+            var against = new List<string>();
+
+            if (luck == false)
+            {
+                against.Add(Formatted($"{figures.Meeting} of the {(figures.SettingsRead is { } read ? read.ToString(Invariant) + " " : string.Empty)}settings it read met the floors where luck alone passes about {figures.Luck!.Value.ToString("0.#", Invariant)}"));
+            }
+
+            if (tester == false)
+            {
+                against.Add(figures.Adjusted is { } p
+                    ? Formatted($"the tester read its search at an adjusted p of {p.ToString("0.0000", Invariant)} against its bar of {EquityBrief.Core.Loop.LoopGate.Bar.ToString("0.0000", Invariant)}")
+                    : "the tester read too few blocks of its search to pass it");
+            }
+
+            var bar = luck == false && tester == false ? "luck or the tester's bar" : luck == false ? "luck" : "the tester's bar";
+
+            body.Append(Invariant, $" No setting it read beat {bar}: {Escaped(string.Join(", and ", against))}, {StartingPoint}.");
+        }
+
+        body.Append("</p>");
+
+        return body.ToString();
+    }
 
     // How a setup card is read, written once for every setup card on every index and opened from its header's "?",
     // where each card once repeated its key.
@@ -457,7 +582,10 @@ public sealed partial class MarkRenderer
             body.Append(CardHead(card.Family, card.Heading, pill, pillClass, pillTitle, count, SetupCardGuide));
         }
 
-        body.Append(SweepFoundNoneLine(card.SweepFoundNone));
+        body.Append(SweepFoundNoneLine(card.SweepFoundNone, card.SweepLost));
+
+        // A frozen card's figures are its live rule's, drawn while the live rule is the one chosen.
+        body.Append(variant is null ? FrozenSweepLine(card.Frozen) : string.Empty);
 
         if (card.RuleChoice is { } rule)
         {

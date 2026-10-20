@@ -115,6 +115,7 @@ public sealed class SweepHistory : IComponent
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.HeavyweightNight, Touch.Read),
+            new StoreTouch(Store.Company, Touch.Read),
         ],
         Feeds: []);
 
@@ -785,6 +786,37 @@ public sealed class SweepHistory : IComponent
         }
 
         return [.. bars];
+    }
+
+    // Each company's analyst counts as its fundamentals fetches stored them, oldest first, each with the UTC day it was
+    // fetched on: the analysts rating it strong buy, buy, hold, sell or strong sell together. A fetch is made by the night
+    // after its session's close, so a count stands on a session only where it was fetched on an earlier day, and no count
+    // is read before the first fetch that stored one.
+    // see: Analyst coverage is stored from each fetch and waits for dated counts before any rule tests it
+    public async Task<IReadOnlyDictionary<string, IReadOnlyList<(DateOnly Fetched, int Analysts)>>> AnalystCountsAsync(CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(ConnectionString(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var counts = new Dictionary<string, List<(DateOnly Fetched, int Analysts)>>(StringComparer.Ordinal);
+
+        await foreach (var row in RowsAsync(
+            connection,
+            "SELECT ticker, fetched_at, strong_buy, buy, hold, sell, strong_sell FROM company WHERE strong_buy IS NOT NULL AND buy IS NOT NULL AND hold IS NOT NULL AND sell IS NOT NULL AND strong_sell IS NOT NULL ORDER BY ticker, fetched_at;",
+            [],
+            cancellation))
+        {
+            var ticker = row.GetString(0);
+
+            if (!counts.TryGetValue(ticker, out var list))
+            {
+                counts[ticker] = list = [];
+            }
+
+            list.Add((Date(row.GetString(1)[..10]), row.GetInt32(2) + row.GetInt32(3) + row.GetInt32(4) + row.GetInt32(5) + row.GetInt32(6)));
+        }
+
+        return counts.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<(DateOnly Fetched, int Analysts)>)pair.Value, StringComparer.Ordinal);
     }
 
     // One statement, read to its end and closed before the caller computes anything over what it returned.

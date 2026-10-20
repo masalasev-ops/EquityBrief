@@ -1,11 +1,16 @@
+using System.Collections.Concurrent;
+using System.Globalization;
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Cards;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Readings;
+using EquityBrief.Core.Releases;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Indices;
+using EquityBrief.Worker.Loop;
 using EquityBrief.Worker.Sweep;
 
 namespace EquityBrief.Worker.Cards;
@@ -13,9 +18,12 @@ namespace EquityBrief.Worker.Cards;
 // One rule's replay for the record its card draws: the trades its one setting keeps over the pulled history with the
 // sweep's own walk, five a night with one open trade a stock as the page lists them, each after its cost at the published
 // table, with the sessions it was held and the lowest close it was held through. The S&P 500's rules apply no floors and
-// no gate, and the S&P 400's and 600's apply their own; no setting is searched, so a replay costs one walk a rule. It
-// reads the store and writes nothing.
+// no gate, and the S&P 400's and 600's apply their own; no setting is searched, so a replay costs one walk a rule. From
+// 20.11 a family frozen on the S&P 400 or 600 is replayed at its live rule's own settings by its sweep's own reading of
+// the index's history, every trade bought at the open after its listing and after its round trip as that sweep priced
+// it, so the record is the frozen rule's own. It reads the store and writes nothing.
 // see: A rule's record is replayed at its one setting by the sweep's own code over the pulled history, after costs on every index
+// see: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone
 public static class RuleReplay
 {
     public const string Risks = "risks";
@@ -29,7 +37,12 @@ public static class RuleReplay
     // One rule's replay: its family, the rule in words, the setting it was walked at, the history's first and last
     // session, whether membership was read as it stood or as today's members, the unit its results are in, its trades,
     // and how many it listed on each scored session, zeros included, which the cards' stretch lines read.
-    public sealed record Replayed(string Family, string Rule, string Settings, DateOnly From, DateOnly Through, string Membership, string Unit, IReadOnlyList<RecordTrade> Trades, IReadOnlyList<(DateOnly Session, int Listed)> Nights);
+    public sealed record Replayed(string Family, string Rule, string Settings, DateOnly From, DateOnly Through, string Membership, string Unit, IReadOnlyList<RecordTrade> Trades, IReadOnlyList<(DateOnly Session, int Listed)> Nights)
+    {
+        // Why a family's live rule was not replayed, none where it was: a setting its registration states that its sweep's
+        // own reading reads at no level, so no record is written for it.
+        public string? Refused { get; init; }
+    }
 
     // A registered breakout or drift rule walked in place of the family's frozen setting: its name as the register
     // holds it, its family, its place on the family's grid and the drift's stop floor in typical moves.
@@ -40,12 +53,19 @@ public static class RuleReplay
 
     // Every rule a card can name on an index, or the families named, each replayed over the history the index's sweep
     // reads; where variants are given for the breakout or the drift, each is walked at its own setting in place of the
-    // family's frozen one.
-    public static async Task<IReadOnlyList<Replayed>> IndexAsync(string databaseFile, string index, Action<string> progress, CancellationToken cancellation, IReadOnlyList<string>? families = null, IReadOnlyList<SwingVariant>? variants = null)
+    // family's frozen one; and on the S&P 400 or 600 each family whose live rule is among the rules given is replayed at
+    // that rule's own settings by its sweep's own reading of the index's history, every other keeping its provisional
+    // replay.
+    public static async Task<IReadOnlyList<Replayed>> IndexAsync(string databaseFile, string index, Action<string> progress, CancellationToken cancellation, IReadOnlyList<string>? families = null, IReadOnlyList<SwingVariant>? variants = null, IReadOnlyList<IndexRule>? live = null)
     {
         bool Asked(string family) => families is null || families.Contains(family, StringComparer.Ordinal);
 
         var large = index == IndexFamilies.LargeIndex;
+
+        // A family's live rule on the index, as the night reads its list by it; none on the S&P 500, whose families' records
+        // follow their own settings.
+        IndexRule? LiveOf(string family) => large ? null : (live ?? []).FirstOrDefault(rule => rule.Live && rule.Index == index && rule.Family == family);
+
         var history = new SweepHistory(databaseFile);
         var through = await history.NewestSessionAsync(cancellation);
         var inputs = large
@@ -64,40 +84,76 @@ public static class RuleReplay
 
         var read = new Read(index, large, inputs, series, companies, income, calendar[firstScored], inputs.Survivors > 0 ? SurvivorsOnly : AsItStood);
         var replayed = new List<Replayed>();
+        Frozen? frozen = null;
+
+        // The history laid out as the sweeps on the index's own history lay it, with the S&P 500 as it stood beside it, read
+        // once and only where a family's live rule is replayed.
+        async Task<Frozen> FrozenAsync() =>
+            frozen ??= new Frozen(IndexSweepRunner.OwnSwingRead.Laid(index, inputs, companies, income, through), await IndexSweepRunner.OwnSwingRead.LargeAsync(history, through, progress, cancellation), history, through);
 
         if (Asked(SetupFamilies.Pullback))
         {
-            progress($"replaying the pullback on the {DecisionCards.NameOf(index)}");
-            replayed.Add(Pullback(read, market, progress));
+            if (LiveOf(SetupFamilies.Pullback) is { } rule)
+            {
+                progress($"replaying the {DecisionCards.NameOf(index)}'s live pullback rule at its own settings by its sweep's own reading");
+                replayed.Add(await FrozenPullbackAsync(read, await FrozenAsync(), rule, progress, cancellation));
+            }
+            else
+            {
+                progress($"replaying the pullback on the {DecisionCards.NameOf(index)}");
+                replayed.Add(Pullback(read, market, progress));
+            }
         }
 
-        if (Asked(BreakoutRule.Name) || Asked(DriftRule.Name))
+        var swing = new[] { BreakoutRule.Name, DriftRule.Name }.Where(Asked).ToArray();
+
+        if (swing.Any(family => LiveOf(family) is null))
         {
             progress($"replaying the breakout and the drift on the {DecisionCards.NameOf(index)}");
-            var sessions = SweepColumns.Sessions(series, calendar);
-            var members = SweepBenchmark.On(series, calendar.Length);
+        }
 
-            foreach (var family in new[] { BreakoutRule.Name, DriftRule.Name }.Where(Asked))
+        IReadOnlyList<SweepColumns.Session>? sessions = null;
+        SweepBenchmark.Members? members = null;
+
+        foreach (var family in swing)
+        {
+            if (LiveOf(family) is { } rule)
             {
-                var own = (variants ?? []).Where(variant => variant.Family == family).ToArray();
+                progress($"replaying the {DecisionCards.NameOf(index)}'s live {family} rule at its own settings by its sweep's own reading");
+                replayed.Add(await FrozenSwingAsync(read, await FrozenAsync(), rule, cancellation));
 
-                if (own.Length == 0)
-                {
-                    replayed.Add(Swing(read, family, sessions, members, firstScored));
-                }
+                continue;
+            }
 
-                foreach (var variant in own)
-                {
-                    progress($"replaying {variant.Name} on the {DecisionCards.NameOf(index)}");
-                    replayed.Add(Swing(read, family, sessions, members, firstScored, variant.Setting, variant.StopFloor) with { Rule = variant.Name });
-                }
+            sessions ??= SweepColumns.Sessions(series, calendar);
+            members ??= SweepBenchmark.On(series, calendar.Length);
+
+            var own = (variants ?? []).Where(variant => variant.Family == family).ToArray();
+
+            if (own.Length == 0)
+            {
+                replayed.Add(Swing(read, family, sessions, members, firstScored));
+            }
+
+            foreach (var variant in own)
+            {
+                progress($"replaying {variant.Name} on the {DecisionCards.NameOf(index)}");
+                replayed.Add(Swing(read, family, sessions, members, firstScored, variant.Setting, variant.StopFloor) with { Rule = variant.Name });
             }
         }
 
         if (Asked(HeavyweightRule.Name))
         {
-            progress($"replaying the sector heavyweights on the {DecisionCards.NameOf(index)}");
-            replayed.Add(Heavyweights(read, fund, firstScored));
+            if (LiveOf(HeavyweightRule.Name) is { } rule)
+            {
+                progress($"replaying the {DecisionCards.NameOf(index)}'s live sector heavyweights rule at its own settings by its sweep's own reading");
+                replayed.Add(await FrozenBookAsync(read, await FrozenAsync(), rule, progress, cancellation));
+            }
+            else
+            {
+                progress($"replaying the sector heavyweights on the {DecisionCards.NameOf(index)}");
+                replayed.Add(Heavyweights(read, fund, firstScored));
+            }
         }
 
         return replayed;
@@ -121,6 +177,11 @@ public static class RuleReplay
         public bool Keeps(int name, int bar) =>
             Large || IndexSweepRunner.Clears(Index, Series[name], bar, Income.GetValueOrDefault(Ticker(name)) ?? []);
     }
+
+    // What every frozen rule of an index is replayed over: the history laid out as its sweeps on the index's own history lay
+    // it, the S&P 500 as it stood beside it, and the store's history and its last session, which their further series are
+    // read through.
+    sealed record Frozen(LoopRead Laid, SweepHistoryInputs Large, SweepHistory History, DateOnly Through);
 
     // The pullback's base in words, as its record and the tester name it.
     public static string PullbackWords { get; } =
@@ -341,6 +402,427 @@ public static class RuleReplay
             kept,
             []);
     }
+
+    // A frozen breakout's or drift's settings as its sweep on the index's own history reads them: its place on the family's
+    // grid with the market check's level as the grid's last dial, the second stage's levels it states, and the key the
+    // sweep names that setting by.
+    public sealed record SwingAt(int[] Setting, IReadOnlyList<DialLevel<FamilyListing>> Levels, string Key);
+
+    // A frozen pullback's settings as its search on the index's own history reads them: its place on the search's own grid,
+    // its point in the search's space, the second stage's levels it states, and the key the search names it by.
+    public sealed record PullbackAt(DialSetting Setting, int[] Point, IReadOnlyList<DialLevel<SweepCandidate>> Levels, string Key);
+
+    // A frozen sector heavyweights book's settings as its design's sweep at the next open reads them: design (a)'s setting,
+    // or design (b)'s window, industries and members an industry, with the quality and the multiple of the dollar volume
+    // floor, and the key the sweep names it by.
+    public sealed record BookAt(HeavyweightSetting? Setting, int Window, int Industries, int Members, IndexQuality Quality, decimal Floors, string Key);
+
+    // A registered breakout's or drift's settings on its sweep's own grid, or why the sweep reads no such setting: a dial
+    // off the family's grid, a market check's floor none of the sweep's levels reads, or a level the second stage did not
+    // read.
+    public static (SwingAt? At, string? Refused) OwnSwing(IndexSweepRunner.OwnSwingRead own, IndexRuleCandidate evaluator, IReadOnlyDictionary<string, double> p)
+    {
+        double[] values = evaluator switch
+        {
+            IndexBreakoutCandidate =>
+            [
+                p[IndexBreakoutCandidate.HighSessionsParameter],
+                p[IndexBreakoutCandidate.VolumeMultipleParameter],
+                p[IndexBreakoutCandidate.RangeCeilingParameter] == 0 ? double.PositiveInfinity : p[IndexBreakoutCandidate.RangeCeilingParameter],
+                p[IndexBreakoutCandidate.StopMovesParameter],
+            ],
+            IndexDriftCandidate =>
+            [
+                p[IndexDriftCandidate.WindowSessionsParameter],
+                p[IndexDriftCandidate.ReactionMovesParameter],
+                p[IndexDriftCandidate.VolumeMultipleParameter],
+                p[IndexDriftCandidate.TargetMultipleParameter],
+            ],
+            _ => [],
+        };
+        var places = IndexNightRead.Places(own.Adapter.Grid, values);
+
+        if (values.Length == 0 || places.Any(place => place < 0))
+        {
+            return (null, "its dials name a setting its sweep's grid does not hold");
+        }
+
+        if (MarketLevelOf(p) is not { } market)
+        {
+            return (null, "its market check reads a floor none of its sweep's levels reads");
+        }
+
+        var (levels, refused) = LevelsOf(own.Levels, evaluator, p);
+
+        if (levels is null)
+        {
+            return (null, refused);
+        }
+
+        int[] setting = [.. places, market];
+
+        return (new SwingAt(setting, levels, OwnProcedures.KeyOf(own.Grid, setting, levels)), null);
+    }
+
+    // The market check's level among the seven its sweep on the index's own history reads, in the order that sweep lays
+    // them: none first, then the index's own breadth at each of its four floors, then the S&P 500's at its own floor; none
+    // where the floor stated is not one of them.
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
+    public static int? MarketLevelOf(IReadOnlyDictionary<string, double> p)
+    {
+        var breadth = p.GetValueOrDefault(IndexRuleCandidate.LargeBreadthParameter);
+
+        if (breadth == IndexRuleCandidate.NoMarketCheck)
+        {
+            return 0;
+        }
+
+        if (breadth == 1)
+        {
+            return 1 + IndexSweepRunner.OwnBreadthFloors.Count;
+        }
+
+        var place = IndexSweepRunner.OwnBreadthFloors.ToList().IndexOf(p.TryGetValue(IndexRuleCandidate.BreadthFloorParameter, out var floor) ? floor : FamilySweep.MarketFloor);
+
+        return place < 0 ? null : 1 + place;
+    }
+
+    // A registered pullback's settings on its search's own grid, its market check the search's own dial at the floor of the
+    // index's own breadth it states, off where it reads none or the S&P 500's, which the second stage reads as a level; or
+    // why the search reads no such setting.
+    public static (PullbackAt? At, string? Refused) OwnPullback(IndexSweepRunner.OwnPullbackRead own, IndexRuleCandidate evaluator, IReadOnlyDictionary<string, double> p)
+    {
+        var grid = own.Grid;
+        var breadth = p.GetValueOrDefault(IndexRuleCandidate.LargeBreadthParameter);
+        var dial = p[IndexPullbackCandidate.MarketParameter];
+        var market = breadth == IndexRuleCandidate.NoMarketCheck || breadth == 1 ? SweepGrid.MarketOff
+            : dial != 0 ? dial
+            : p.TryGetValue(IndexRuleCandidate.BreadthFloorParameter, out var floor) ? floor : FamilySweep.MarketFloor;
+        int[] at =
+        [
+            SweepGrid.IndexOf(grid.StrengthBars, p[IndexPullbackCandidate.StrengthParameter]),
+            SweepGrid.IndexOf(grid.DepthLows, p[IndexPullbackCandidate.DepthLowParameter]),
+            SweepGrid.IndexOf(grid.DepthHighs, p[IndexPullbackCandidate.DepthHighParameter]),
+            SweepGrid.IndexOf(grid.DryUpCeilings, p[IndexPullbackCandidate.DryUpParameter] == 0 ? SweepGrid.Off : p[IndexPullbackCandidate.DryUpParameter]),
+            grid.Freshness.ToList().FindIndex(level => level == p[IndexPullbackCandidate.FreshnessParameter]),
+            SweepGrid.IndexOf(grid.RewardToRiskFloors, p[IndexPullbackCandidate.RewardToRiskParameter]),
+            grid.StopBounds.ToList().FindIndex(bounds => bounds.Low == p[IndexPullbackCandidate.StopLowParameter] && bounds.High == p[IndexPullbackCandidate.StopHighParameter]),
+            SweepGrid.IndexOf(grid.MarketFloors, market),
+            grid.BandStrengths.ToList().FindIndex(level => level == p[IndexPullbackCandidate.BandParameter]),
+        ];
+
+        if (at.Any(place => place < 0))
+        {
+            return (null, "its dials name a setting its search's grid does not hold");
+        }
+
+        var (levels, refused) = LevelsOf(own.Levels, evaluator, p, breadth == 1 ? own.LargeLevel : null);
+
+        if (levels is null)
+        {
+            return (null, refused);
+        }
+
+        var setting = new DialSetting(at[0], at[1], at[2], at[3], at[4], at[5], at[6], at[7], at[8]);
+        var point = own.Space.Point(setting, ConditionSetting.Off);
+        var key = own.Space.Describe(point) + (levels.Count == 0 ? string.Empty : " with " + string.Join("; ", levels.Select(level => level.Dial + ", " + level.Name)));
+
+        return (new PullbackAt(setting, point, levels, key), null);
+    }
+
+    // A registered heavyweights book's settings as its design's sweep reads them, or why it reads none: design (a) reading
+    // twelve months' strength, which its sweep at the next open read at no setting.
+    public static (BookAt? At, string? Refused) OwnBook(IReadOnlyDictionary<string, double> p)
+    {
+        var quality = p[IndexRuleCandidate.QualityParameter] switch
+        {
+            0 => IndexQuality.Off,
+            2 => IndexQuality.Cover,
+            _ => IndexQuality.Profit,
+        };
+        var floors = p[IndexRuleCandidate.FloorsParameter] == 2 ? 2m : 1m;
+
+        if (p[IndexHeavyweightCandidate.DesignParameter] == IndexHeavyweightCandidate.DesignA)
+        {
+            if (IndexRules.TwelveOne(p))
+            {
+                return (null, "it reads twelve months' strength skipping the latest month, which its design's sweep at the next open read at no setting");
+            }
+
+            var setting = IndexRules.HeavyweightSettingOf(p);
+
+            return (new BookAt(setting, 0, 0, 0, quality, floors, IndexSweepRunner.VariantKey(quality, floors) + setting.Key), null);
+        }
+
+        var window = (int)p[IndexHeavyweightCandidate.WindowParameter];
+        var industries = p[IndexHeavyweightCandidate.IndustriesParameter] == 0 ? IndexSweepRunner.EveryLeading : (int)p[IndexHeavyweightCandidate.IndustriesParameter];
+        var members = (int)p[IndexHeavyweightCandidate.MembersParameter];
+
+        return (new BookAt(null, window, industries, members, quality, floors, IndexSweepRunner.FollowersKey(window, industries, members, quality, floors)), null);
+    }
+
+    // The second stage's levels a registration states, each found among its sweep's own: a quality, a multiple of the dollar
+    // volume floor, a hold or a window by the figure it sets, every other by its dial's name and level, and the S&P 500's
+    // breadth where it is handed in; none where one it states is not among them exactly once, or where it states a market
+    // switch, a breakout's own level or a reading version, which no sweep on the index's own history reads, saying which.
+    // The levels are kept in the order the second stage reads them, which is the order its key names a crossing in.
+    static (IReadOnlyList<DialLevel<T>>? Levels, string? Refused) LevelsOf<T>(IReadOnlyList<DialLevel<T>> offered, IndexRuleCandidate evaluator, IReadOnlyDictionary<string, double> p, DialLevel<T>? also = null)
+    {
+        double At(string name) => p.GetValueOrDefault(name);
+
+        foreach (var name in new[] { IndexRuleCandidate.FundOverSpyParameter, IndexRuleCandidate.CreditAverageParameter, IndexRuleCandidate.CreditChangeParameter, IndexBreakoutCandidate.NearnessParameter, IndexBreakoutCandidate.RecencyParameter, IndexBreakoutCandidate.HighVolumeParameter })
+        {
+            if (At(name) != 0)
+            {
+                return (null, $"its {name} at {Number(At(name))} is a level its replay reads none of");
+            }
+        }
+
+        if (ReleaseTone.VersionOf(p) > 0)
+        {
+            return (null, "it reads a release reading, which its sweep on the index's own history reads none of");
+        }
+
+        var wanted = new List<(string Stated, Func<DialLevel<T>, bool> Is)>();
+        decimal? floors = At(IndexRuleCandidate.FloorsParameter) switch
+        {
+            0.5 => IndexSweepRunner.DollarVolumeHalf,
+            2 => 2m,
+            _ => null,
+        };
+        IndexQuality? quality = At(IndexRuleCandidate.QualityParameter) switch
+        {
+            0 => IndexQuality.Off,
+            2 => IndexQuality.Cover,
+            _ => null,
+        };
+
+        if (floors is { } multiple)
+        {
+            wanted.Add(($"{IndexRuleCandidate.FloorsParameter} at {Number(At(IndexRuleCandidate.FloorsParameter))}", level => level.Floors == multiple));
+        }
+
+        if (At(IndexRuleCandidate.LowestCloseParameter) == Statistic.FromPrice(IndexSweepRunner.HigherPrice))
+        {
+            wanted.Add(($"{IndexRuleCandidate.LowestCloseParameter} at {Number(At(IndexRuleCandidate.LowestCloseParameter))}", level => level.Dial == "minimum price"));
+        }
+
+        if (quality is { } held)
+        {
+            wanted.Add(($"{IndexRuleCandidate.QualityParameter} at {Number(At(IndexRuleCandidate.QualityParameter))}", level => level.Quality == held));
+        }
+
+        if (At(IndexRuleCandidate.HoldParameter) is var hold and > 0)
+        {
+            wanted.Add(($"{IndexRuleCandidate.HoldParameter} at {Number(hold)}", level => level.Hold == (int)hold));
+        }
+
+        if (At(IndexRuleCandidate.IndustryFallParameter) is var fall and > 0)
+        {
+            wanted.Add(($"{IndexRuleCandidate.IndustryFallParameter} at {Number(fall)}", level => level.Dial == "industry fall" && level.Name == FormattableString.Invariant($"{fall} sessions")));
+        }
+
+        if (evaluator is IndexDriftCandidate)
+        {
+            if (At(IndexDriftCandidate.WideWindowParameter) is var window and > 0)
+            {
+                wanted.Add(($"{IndexDriftCandidate.WideWindowParameter} at {Number(window)}", level => level.Window == (int)window));
+            }
+
+            if (At(IndexDriftCandidate.PeersParameter) == 1)
+            {
+                wanted.Add(($"{IndexDriftCandidate.PeersParameter} at 1", level => level.Dial == "peer version"));
+            }
+
+            if (At(IndexDriftCandidate.EntryParameter) == 1)
+            {
+                wanted.Add(($"{IndexDriftCandidate.EntryParameter} at 1", level => level.Dial == "entry"));
+            }
+
+            if (At(IndexDriftCandidate.RevenueGrewParameter) == 1)
+            {
+                wanted.Add(($"{IndexDriftCandidate.RevenueGrewParameter} at 1", level => level.Dial == "revenue"));
+            }
+        }
+
+        if (also is not null)
+        {
+            wanted.Add(($"{IndexRuleCandidate.LargeBreadthParameter} at 1", level => ReferenceEquals(level, also)));
+        }
+
+        var found = new List<DialLevel<T>>();
+
+        foreach (var (stated, isIt) in wanted)
+        {
+            var matching = offered.Where(isIt).ToArray();
+
+            if (matching.Length != 1)
+            {
+                return (null, $"its {stated} is no level its sweep's second stage read");
+            }
+
+            found.Add(matching[0]);
+        }
+
+        return ([.. offered.Where(level => found.Any(one => ReferenceEquals(one, level)))], null);
+    }
+
+    // A frozen breakout or drift replayed as its sweep on the index's own history reads it: the setting its registration
+    // states with the market check's level it reads, the drift's stop floor where it states one, and the second stage's
+    // levels it states read together as the sweep reads a crossing; five a night with one open trade a stock, every trade
+    // bought at the open after its listing and after its round trip at the published table.
+    static async Task<Replayed> FrozenSwingAsync(Read read, Frozen frozen, IndexRule rule, CancellationToken cancellation)
+    {
+        var p = rule.Parameters;
+        var words = IndexRules.Words(rule.Evaluator, p);
+        var stopFloor = rule.Evaluator is IndexDriftCandidate ? p[IndexDriftCandidate.StopFloorParameter] : 0;
+        var own = await IndexSweepRunner.OwnSwingRead.ReadAsync(frozen.Laid, frozen.Large, rule.Family, frozen.History, frozen.Through, stopFloor, cancellation);
+        var (at, refused) = OwnSwing(own, rule.Evaluator, p);
+
+        if (at is null)
+        {
+            return Refusal(read, rule.Family, words, refused!);
+        }
+
+        var held = new ConcurrentDictionary<(int Name, int Session), int>();
+        var trades = own.TradesUnder(at.Setting, at.Levels, held);
+        var kept = new List<RecordTrade>();
+
+        foreach (var trade in trades)
+        {
+            var listing = trade.Listing;
+            var one = own.Series[listing.Name];
+            var risk = listing.Entry - listing.Stop;
+
+            if (trade.Result is not { } result || OpenAfter(one, listing.Bar) is not { } open)
+            {
+                continue;
+            }
+
+            var sessions = held[(listing.Name, listing.Session)];
+
+            // Whether it ended at its target is read off its walk at the close, where its target's multiple stands, the
+            // walk the sweep's own adapter makes.
+            kept.Add(new RecordTrade(
+                result,
+                sessions,
+                Worst(one, listing.Bar, sessions, open, risk),
+                listing.Trails ? null : own.Adapter.Exit(listing).Result >= ((listing.Target - listing.Entry) / risk) - Tolerance));
+        }
+
+        return new Replayed(rule.Family, words, at.Key, read.From, read.Inputs.Through, read.Membership, Risks, kept, Nights(read, trades.Select(trade => trade.Listing.Session)));
+    }
+
+    // A frozen pullback replayed as its search on the index's own history reads it: every candidate's plan bought at the
+    // open after its listing and charged its round trip, the setting its registration states on the search's own grid with
+    // the levels it states, the profit and cover check among them, and the stages' own walk, one open trade a stock.
+    static async Task<Replayed> FrozenPullbackAsync(Read read, Frozen frozen, IndexRule rule, Action<string> progress, CancellationToken cancellation)
+    {
+        var words = IndexRules.Words(rule.Evaluator, rule.Parameters);
+        var own = await IndexSweepRunner.OwnPullbackRead.ReadAsync(frozen.Laid, frozen.Large, frozen.History, frozen.Through, progress, cancellation);
+        var (at, refused) = OwnPullback(own, rule.Evaluator, rule.Parameters);
+
+        if (at is null)
+        {
+            return Refusal(read, SetupFamilies.Pullback, words, refused!);
+        }
+
+        own.Charge(1);
+
+        var (design, picks) = own.Under(at.Levels);
+        var setting = own.SettingUnder(at.Point, at.Levels);
+        var walked = new HashSet<(int Name, int Session)>();
+
+        SweepStages.Measures(picks, design, setting, own.Space.Conditions(at.Point), own.Nights, walked);
+
+        var exit = design.ExitIndex;
+        var floor = SweepStages.StopFloor(setting);
+        var kept = new List<RecordTrade>();
+        var listed = new List<int>();
+
+        foreach (var pick in picks)
+        {
+            if (!walked.Remove((pick.Name, pick.Session)))
+            {
+                continue;
+            }
+
+            listed.Add(pick.Session);
+
+            var plan = pick.Plan;
+
+            if (pick.Year is < 0 or >= SweepFigures.Years
+                || plan.Code[exit] is not (SweepPlanOutcomes.Win or SweepPlanOutcomes.Loss or SweepPlanOutcomes.Unresolved)
+                || float.IsNaN(plan.Multiple[exit])
+                || !plan.IsATradeAt(exit, floor))
+            {
+                continue;
+            }
+
+            var one = frozen.Laid.Series[pick.Name];
+            var bar = Array.BinarySearch(one.SessionAt, pick.Session);
+
+            if (bar < 0 || OpenAfter(one, bar) is not { } open)
+            {
+                continue;
+            }
+
+            int sessions = plan.Ends[exit];
+
+            kept.Add(new RecordTrade(plan.Multiple[exit], sessions, Worst(one, bar, sessions, open, plan.StopMoves * one.Atr[bar]), plan.Code[exit] == SweepPlanOutcomes.Win));
+        }
+
+        return new Replayed(SetupFamilies.Pullback, words, at.Key, read.From, read.Inputs.Through, read.Membership, Risks, kept, Nights(read, listed));
+    }
+
+    // A frozen sector heavyweights book replayed as its design's sweep at the next open reads it: its rebalances over the
+    // members clearing the quality and the floors it states, its holdings walked under its exit, each bought at the open
+    // after its rebalance and after its round trip, its result in per cent of its buy; a holding still held at the
+    // history's end is in no record.
+    static async Task<Replayed> FrozenBookAsync(Read read, Frozen frozen, IndexRule rule, Action<string> progress, CancellationToken cancellation)
+    {
+        var words = IndexRules.Words(rule.Evaluator, rule.Parameters);
+        var (at, refused) = OwnBook(rule.Parameters);
+
+        if (at is null)
+        {
+            return Refusal(read, HeavyweightRule.Name, words, refused!);
+        }
+
+        var lay = await HeavyweightLay.ReadAsync(frozen.Laid, frozen.History, frozen.Through, progress, cancellation, frozen.Large);
+        var book = at.Setting is { } setting
+            ? lay.BookFrom(lay.RebalancesA(setting, at.Quality, at.Floors), setting.Exit, at.Key)
+            : lay.BookFrom(lay.RebalancesB(at.Window, at.Industries, at.Members, at.Quality, at.Floors), HeavyweightExit.Drop, at.Key);
+        var kept = new List<RecordTrade>();
+
+        foreach (var trade in book.Costed)
+        {
+            var one = frozen.Laid.Series[trade.Name];
+            var buy = Array.BinarySearch(one.SessionAt, trade.Entry);
+
+            if (trade.Result is not { } result || trade.End is not { } end || buy < 0 || OpenAfter(one, buy) is not { } open)
+            {
+                continue;
+            }
+
+            var lowest = 0.0;
+
+            for (var bar = buy + 1; bar < one.Bars.Length && one.SessionAt[bar] <= end; bar++)
+            {
+                lowest = Math.Min(lowest, ((Statistic.FromPrice(one.Bars[bar].Close) / open) - 1) * 100);
+            }
+
+            kept.Add(new RecordTrade(result * 100, end - trade.Entry, lowest, null));
+        }
+
+        return new Replayed(HeavyweightRule.Name, words, at.Key, read.From, read.Inputs.Through, read.Membership, Percent, kept, []);
+    }
+
+    // A family's live rule the replay cannot read, in its words with why and no trade.
+    static Replayed Refusal(Read read, string family, string words, string why) =>
+        new(family, words, string.Empty, read.From, read.Inputs.Through, read.Membership, family == HeavyweightRule.Name ? Percent : Risks, [], []) { Refused = why };
+
+    static string Number(double value) => value.ToString("0.##", CultureInfo.InvariantCulture);
 
     // How near a result may sit under its target's multiple and still be read as the close that reached it.
     const double Tolerance = 1e-9;

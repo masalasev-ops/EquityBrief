@@ -59,6 +59,13 @@ public partial class ReadSurface
 
         Assert.Contains("data-estimate=\"5.8\">5.80</td>", places[0].Markup, StringComparison.Ordinal);
         Assert.Contains("data-actual=\"6.0625\">6.06</td>", places[0].Markup, StringComparison.Ordinal);
+
+        // An actual stored at one place reads at two as an estimate does, 1.5 as 1.50, and one stored at four places 1.4625
+        // as 1.46.
+        var one = ReactionRowsOf(WebUtility.HtmlDecode(new MarkRenderer().ReactionsTable("CVX", [new(new DateOnly(2026, 4, 30), "before", new DateOnly(2026, 4, 30), "1.4625", "1.5", 4.48, 2.35)])));
+
+        Assert.Contains("data-estimate=\"1.4625\">1.46</td>", one[0].Markup, StringComparison.Ordinal);
+        Assert.Contains("data-actual=\"1.5\">1.50</td>", one[0].Markup, StringComparison.Ordinal);
         Assert.DoesNotMatch("data-surprise=\"0\"|>0%<|>\\+0%<", rows[3].Markup);
 
         // A record holding no print says so.

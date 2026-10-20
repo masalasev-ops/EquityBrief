@@ -416,10 +416,15 @@ public sealed class SweepDesignSearch
 
     public bool OnThePlateau(in SweepSummary summary) => summary.MeetsTheFloors && summary.HasEdge && summary.Edge >= Line;
 
-    // Every coarse setting, with the conditions as the combination step (c) carried.
+    // Every coarse setting placed on the space's grid by its values, with the conditions as the combination step (c)
+    // carried; a coarse value the grid holds no place for is not read.
     public void EvaluateCoarse(ConditionSetting combination, int parallelism)
     {
-        var points = SweepStages.CoarseOnExtended.Select(setting => Space.Point(setting, combination)).ToArray();
+        var points = SweepStages.CoarseOnExtended
+            .Select(setting => Space.Carried(SweepGrid.Extended, setting))
+            .OfType<DialSetting>()
+            .Select(setting => Space.Point(setting, combination))
+            .ToArray();
 
         EvaluateAll(points, parallelism);
     }

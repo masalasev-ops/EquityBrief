@@ -6,9 +6,11 @@ using EquityBrief.Core.Filter;
 namespace EquityBrief.Api.Reading;
 
 // What an index's families ran on, read off the settings its night stored: the floors and the gate every rule of the
-// index shares, the cost its trades pay, the market check's floor, each family's own settings, and from 15.5 the
-// families whose registered live rule the night read their list by.
+// index shares, the cost its trades pay, the market check's floor, each family's own settings, from 15.5 the families
+// whose registered live rule the night read their list by, and from 20.11 the instant the night read the register as
+// of, none for a night stored before it.
 // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+// see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
 public sealed record IndexRuleSettings(
     decimal LowestPrice,
     decimal DollarVolumeFloor,
@@ -24,7 +26,8 @@ public sealed record IndexRuleSettings(
     IReadOnlyList<string>? ReadByLiveRule = null,
     string? Fundamentals = null,
     IReadOnlyDictionary<string, string>? Approved = null,
-    string? FundamentalsSetting = null)
+    string? FundamentalsSetting = null,
+    DateTimeOffset? RegisterAt = null)
 {
     // The settings as the night stored them, each family's dials read off its key.
     public static IndexRuleSettings Read(string stored)
@@ -38,6 +41,11 @@ public sealed record IndexRuleSettings(
             root.TryGetProperty(name, out var key) && key.ValueKind == JsonValueKind.String
                 ? key.GetString()!.Split('|').Select(dial => dial.Split('=', 2)).Where(parts => parts.Length == 2).ToDictionary(parts => parts[0], parts => parts[1], StringComparer.Ordinal)
                 : new Dictionary<string, string>(StringComparer.Ordinal);
+
+        DateTimeOffset? registerAt = root.TryGetProperty("registerAt", out var instant) && instant.ValueKind == JsonValueKind.String
+            && DateTimeOffset.TryParseExact(instant.GetString(), "yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var read)
+                ? read
+                : null;
 
         return new IndexRuleSettings(
             floors.GetProperty("price").GetDecimal(),
@@ -62,7 +70,8 @@ public sealed record IndexRuleSettings(
                 : null,
             root.TryGetProperty("fundamentals", out var business) && business.ValueKind == JsonValueKind.Object && business.TryGetProperty("setting", out var held)
                 ? held.GetString()
-                : null);
+                : null,
+            registerAt);
     }
 }
 
@@ -113,11 +122,15 @@ public static class RuleWords
     // ---- the S&P 400's and 600's ----
 
     // What every rule of the index shares and the S&P 500's rules do not: the floors, the profit check, the index's own
-    // ranking and breadth, and the cost its trades pay.
-    public static string Differs(IndexRuleSettings settings, string index) =>
+    // ranking, the rule's own market check, and the cost its trades pay. Each rule reads a check of its own: the
+    // provisional swing rule's, as the fundamentals-first family's, the index's own breadth at the floor its night stored,
+    // closing its own list alone, and the sector heavyweights' book none.
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
+    public static string Differs(IndexRuleSettings settings, string index, bool book = false) =>
         Invariant($"Unlike the S&P 500's rules, a stock is read only at ${settings.LowestPrice:0.##} or more and trading at least ${settings.DollarVolumeFloor:#,0} a day over {settings.DollarVolumeSessions} sessions")
         + (settings.ProfitQuarters is { } quarters ? Invariant($", and only where its net income over its last {quarters} quarters sums above zero") : string.Empty)
-        + Invariant($"; it is ranked among the {index}'s own members, and the lists close while the {index}'s own breadth is under {settings.MarketFloor * 100:0}%")
+        + Invariant($"; it is ranked among the {index}'s own members, and ")
+        + (book ? "its book reads no market check" : Invariant($"its list closes while the {index}'s own breadth is under {settings.MarketFloor * 100:0}%"))
         + (settings.Costs is { } costs ? $"; each trade's result is read after {costs}, half paid at each end." : ".");
 
     public static string Pullback(IndexRuleSettings settings, string index) =>
@@ -160,7 +173,7 @@ public static class RuleWords
                 Dial(dials, "exit"),
                 $"of the {index}")
             + (members ? $" Design (a): a sector's return is its members' mean within the {index}, since no sector fund is read at the index's level. " : $" Design (a), a sector's return its fund's. ")
-            + Differs(settings, index);
+            + Differs(settings, index, book: true);
     }
 
     // ---- the words both share ----

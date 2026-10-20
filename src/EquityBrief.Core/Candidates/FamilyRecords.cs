@@ -46,6 +46,42 @@ public static class FamilyRecords
     // The words a family's live rule is named with, ahead of the rest of its name.
     public const string LivePrefix = "the live ";
 
+    // The words an S&P 400's or 600's rule of the day before its freeze is named with: kept beside the frozen live rule
+    // for a block of 63 sessions, drawn on no card, no account and no test, its record read on the Run page alone, and
+    // retired by the night once the block has passed.
+    // see: A freeze on the S&P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions
+    public const string BackgroundPrefix = "the background ";
+
+    public static bool IsBackground(string candidate) => candidate.StartsWith(BackgroundPrefix, StringComparison.Ordinal);
+
+    // The first session of a rule's current stand: the session its record counts from when its name was registered, read
+    // back over the rows naming it to the registration that opened its unbroken stand. A retirement written in the same
+    // second as a registration of the same name is a registration again, as a moved rule's is, and breaks nothing.
+    public static DateOnly StoodSince(IEnumerable<RegisterRow> register, string candidate)
+    {
+        var rows = register
+            .Where(row => row.Event == CandidateFamily.Registered ? string.Equals(row.Candidate, candidate, StringComparison.Ordinal) : string.Equals(row.Retires, candidate, StringComparison.Ordinal))
+            .OrderBy(row => row.RegisteredAt)
+            .ThenBy(row => row.Id)
+            .ToArray();
+        var registered = rows.Where(row => row.Event == CandidateFamily.Registered).Select(row => row.RegisteredAt).ToHashSet();
+        var opened = rows.LastOrDefault(row => row.Event == CandidateFamily.Registered)?.RegisteredAt;
+
+        for (var at = rows.Length - 1; at >= 0; at--)
+        {
+            if (rows[at].Event == CandidateFamily.Registered)
+            {
+                opened = rows[at].RegisteredAt;
+            }
+            else if (!registered.Contains(rows[at].RegisteredAt))
+            {
+                break;
+            }
+        }
+
+        return FirstSession(opened ?? throw new InvalidOperationException($"'{candidate}' was never registered."));
+    }
+
     // A replay's rows on the run log: the stage a rule's row is written under, the words and its name, read back by
     // the words, and the two outcomes a rule's row takes.
     public const string ReplayStage = "family-replay";

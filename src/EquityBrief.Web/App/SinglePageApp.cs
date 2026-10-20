@@ -268,12 +268,16 @@ public sealed partial class SinglePageApp : IComponent
 
     // Tonight's top on a night the families drew the page's list: a tile a setup in the one family order with tonight's
     // count and its state, and one table of tonight's buy points across every setup, each family's picks in its own order.
+    // Where an S&P 400's or 600's families each read a check of their own that did not read alike, a tile says the check
+    // closed by its own family's check.
     // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
     public static (IReadOnlyList<SetupTileView> Tiles, IReadOnlyList<BuyPointView> Points) TopOf(
         IReadOnlyList<FamilyCardView> families,
         HeavyweightCardView? heavyweights,
         bool marketOpen,
-        DateOnly night)
+        DateOnly night,
+        IReadOnlyList<MarketCheckView>? checks = null)
     {
         var tiles = new List<SetupTileView>();
         var points = new List<BuyPointView>();
@@ -283,9 +287,10 @@ public sealed partial class SinglePageApp : IComponent
         foreach (var card in families.OrderBy(card => EquityBrief.Core.Families.SetupFamilies.OrderOf(card.Family)))
         {
             var forming = card.RuleChoice?.Forming?.Forming ?? 0;
+            var open = checks?.FirstOrDefault(check => check.Family == card.Family) is { } own ? own.Open : marketOpen;
             var state = card.Picks.Count > 0
                 ? card.HeldBack > 0 ? HeldBack(card.HeldBack) : "listing tonight"
-                : !marketOpen ? "the market check closed"
+                : !open ? "the market check closed"
                 : card.HeldBack > 0 ? HeldBack(card.HeldBack)
                 : forming > 0 ? Invariant($"{forming} forming")
                 : "nothing tonight";
@@ -2748,9 +2753,9 @@ public sealed partial class SinglePageApp : IComponent
     }
 
     // Tonight's page for the S&P 400 or the S&P 600: its heading naming the index, the Universe selector, the line its
-    // setups open on with the index's own breadth and counts, one card a swing family each provisional with its rule
-    // written from the index's settings, and the index's sector heavyweights' card. A night the index's families did not
-    // read says so.
+    // setups open on with the index's own breadth and counts, the card of the stocks one gate short where the night stored
+    // every part's answer, one card a swing family each provisional with its rule written from the index's settings, and
+    // the index's sector heavyweights' card. A night the index's families did not read says so.
     // see: Every page reads one index at a time chosen under Universe, and every figure names its index
     public string IndexTonightRegion(
         MarkRenderer marks,
@@ -2763,7 +2768,9 @@ public sealed partial class SinglePageApp : IComponent
         HeavyweightCardView? heavyweights,
         string? notComputed = null,
         string due = "",
-        string? selectedTicker = null)
+        string? selectedTicker = null,
+        IReadOnlyList<CloseToBuyRow>? closeToBuy = null,
+        bool closeOpen = false)
     {
         var region = new StringBuilder();
         var heading = "Tonight: " + universe.Titled;
@@ -2794,15 +2801,17 @@ public sealed partial class SinglePageApp : IComponent
         // Tonight's top, as the S&P 500's: a tile a setup and one table of the index's buy points across every setup, the row
         // selected, the first where the link names none, drawing its pick's card beneath it, and every row's link keeping
         // the index.
-        var (tiles, points) = TopOf(families, heavyweights, line.Open, night);
+        var (tiles, points) = TopOf(families, heavyweights, line.Open, night, line.Checks);
         var chosen = points.Any(point => point.Pick.Row.Ticker == selectedTicker) ? selectedTicker : points.FirstOrDefault()?.Pick.Row.Ticker;
 
         region.Append(marks.SetupTiles(tiles));
-        region.Append(BuyPointsCard(marks, points, chosen, string.Empty, night, "&" + Universes.Query + "=" + universe.Word, line.CloseRead ? line.Close : null));
+        region.Append(BuyPointsCard(marks, points, chosen, string.Empty, night, "&" + Universes.Query + "=" + universe.Word, line.CloseRead ? line.Close : null, line.CloseHref));
 
-        // From 19.8 the card of the stocks one gate short, which on an index whose night stores only the first part each
-        // member failed says it reads none.
-        region.Append(marks.CloseToBuy(line.CloseRead ? [] : null, false, false, universe.Word));
+        // From 19.8 the card of the stocks one gate short, read from 20.11 off every part's answer the night stored, with no
+        // Watch press since the watch list holds the S&P 500's names alone; a night storing only the first part each member
+        // failed says it reads none.
+        // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
+        region.Append(marks.CloseToBuy(line.CloseRead ? closeToBuy ?? [] : null, closeOpen, false, universe.Word));
 
         // One card a setup, its header carrying the guide every setup card is read by in place of a key it repeated.
         // see: Every region is a card ruled down its left by its role, stating where its figures came from and how to read them
@@ -3906,9 +3915,19 @@ public sealed partial class SinglePageApp : IComponent
         {
             body.Append(Invariant($"<ul class=\"index-night\" data-members=\"{view.Members}\" data-passed=\"{view.Passed}\" data-listed=\"{view.Listed}\" data-held-back=\"{view.HeldBack}\" data-kept=\"{view.Kept}\" data-ended=\"{view.Ended}\" data-holdings=\"{view.Holdings}\" data-rebalanced=\"{(view.Rebalanced ? "true" : "false")}\">"));
             body.Append(Invariant($"<li>{view.Members} {Escaped(universe.Name)} members read on {night:yyyy-MM-dd}</li>"));
-            body.Append(view.Breadth is { } breadth
-                ? Invariant($"<li>the {Escaped(universe.Possessive)} breadth: {EquityBrief.Core.Cards.FloorShare.Percent(breadth, view.Floor)}% of its members above their 200-day average, {(view.MarketOpen ? "at or above" : "below")} its floor of {view.Floor * 100:0.#}%, so its swing lists were {(view.MarketOpen ? "open" : "closed")}</li>")
-                : Invariant($"<li>the {Escaped(universe.Possessive)} breadth was not available, so its swing lists were {(view.MarketOpen ? "open" : "closed")}</li>"));
+
+            // Where the index's families each read a check of their own that did not read alike, the index's breadth and
+            // what each family's check did.
+            // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
+            body.Append(view.Checks is { } checks
+                ? Invariant($"<li class=\"index-checks\" data-closed=\"{Escaped(string.Join(" ", checks.Where(check => !check.Open).Select(check => check.Family)))}\">")
+                    + (view.Breadth is { } read
+                        ? Invariant($"the {Escaped(universe.Possessive)} breadth: {(read * 100).ToString("0.0", CultureInfo.InvariantCulture)}% of its members above their 200-day average")
+                        : Invariant($"the {Escaped(universe.Possessive)} breadth was not available"))
+                    + "; " + Escaped(MarkRenderer.ChecksSaid(checks)) + "</li>"
+                : view.Breadth is { } breadth
+                    ? Invariant($"<li>the {Escaped(universe.Possessive)} breadth: {EquityBrief.Core.Cards.FloorShare.Percent(breadth, view.Floor)}% of its members above their 200-day average, {(view.MarketOpen ? "at or above" : "below")} its floor of {view.Floor * 100:0.#}%, so its swing lists were {(view.MarketOpen ? "open" : "closed")}</li>")
+                    : Invariant($"<li>the {Escaped(universe.Possessive)} breadth was not available, so its swing lists were {(view.MarketOpen ? "open" : "closed")}</li>"));
             body.Append(Invariant($"<li>{view.Passed} of {view.Members} {Escaped(universe.Name)} members passed a setup, {view.Listed} listed and {view.HeldBack} held back by a trade still open on any index's list</li>"));
             body.Append(Invariant($"<li>{view.Kept} {Escaped(universe.Name)} trade(s) kept tonight and {view.Ended} ended</li>"));
             body.Append(Invariant($"<li>the {Escaped(universe.Possessive)} sector heavyweights {(view.Rebalanced ? "rebalanced" : "carried their holdings")} tonight and hold {view.Holdings}</li>"));
@@ -3966,11 +3985,23 @@ public sealed partial class SinglePageApp : IComponent
     }
 
     // Past picks for the S&P 400 or the S&P 600: every trade its lists kept, newest first, each with its result before
-    // and after its cost, and its sector heavyweights' holdings, each named as the index's. Every rule of the index is
-    // provisional, so no share or average is drawn: each trade is followed and counts toward nothing until a freeze.
+    // and after its cost, and its sector heavyweights' holdings, each named as the index's. No share or average is drawn:
+    // a provisional rule's trades count toward nothing until its freeze, and a frozen family's live rule's record is read
+    // on the Run page; the page says which families the night read by their live rules and calls only the others
+    // provisional.
     // see: Every page reads one index at a time chosen under Universe, and every figure names its index
-    public string IndexPicksRegion(MarkRenderer marks, DateOnly? night, UniverseChoice universe, string selector, IReadOnlyList<IndexTradeCell> trades, IReadOnlyList<HeavyweightPickCell> holdings)
+    // see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, business first alone left on the pullback's base
+    public string IndexPicksRegion(MarkRenderer marks, DateOnly? night, UniverseChoice universe, string selector, IReadOnlyList<IndexTradeCell> trades, IReadOnlyList<HeavyweightPickCell> holdings, IReadOnlyList<(string Family, string Heading, DateOnly Since)>? frozen = null)
     {
+        frozen ??= [];
+
+        var frozenSwing = frozen.Where(one => one.Family != EquityBrief.Core.Families.HeavyweightRule.Name).ToArray();
+        var heavyweightsFrozen = frozen.Any(one => one.Family == EquityBrief.Core.Families.HeavyweightRule.Name);
+        var provisionalSwing = EquityBrief.Core.Families.SetupFamilies.OnEveryIndex.Where(family => frozenSwing.All(one => one.Family != family.Name)).Select(family => family.Heading).ToArray();
+
+        static string Listed(IReadOnlyList<string> names) =>
+            names.Count <= 1 ? string.Concat(names) : string.Join(", ", names.Take(names.Count - 1)) + " and " + names[^1];
+
         var region = new StringBuilder();
         var drawn = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
         var heading = "Past picks: " + universe.Titled;
@@ -3992,13 +4023,19 @@ public sealed partial class SinglePageApp : IComponent
         body.Append(Cards.Key(
             "How to read it.",
             "A trade is listed on the night its list drew it and stays open until a close reaches its target, a close falls through its stop or trailing stop, or its sessions run out. Its result is what it made in multiples of what it risked; its cost is its round trip at the published spread for its size and price, in the same units, and the result after cost is what the index's tests read.",
-            "Every rule of this index is provisional, so no share and no average is drawn: each trade is a fact and is followed, and none counts toward a rule's record until its freeze."));
+            frozenSwing.Length == 0
+                ? "Every rule of this index is provisional, so no share and no average is drawn: each trade is a fact and is followed, and none counts toward a rule's record until its freeze."
+                : Invariant($"{Listed([.. frozenSwing.Select(one => one.Heading)])} {(frozenSwing.Length == 1 ? "is" : "are")} frozen, listing by {(frozenSwing.Length == 1 ? "its" : "each one's")} live rule from the night of {(frozenSwing.Length == 1 ? "its" : "each")} freeze, {string.Join(", ", frozenSwing.Select(one => Invariant($"{one.Since:yyyy-MM-dd}")))}, {(frozenSwing.Length == 1 ? "its" : "each")} live rule's record read on the Run page")
+                    + (provisionalSwing.Length == 0 ? string.Empty : Invariant($"; {Listed(provisionalSwing)} {(provisionalSwing.Length == 1 ? "is" : "are")} provisional, followed and in no record until a freeze"))
+                    + ". No share and no average is drawn here: each trade is a fact and is followed."));
 
         region.Append(Cards.Computed(
             "Past picks",
             body.ToString(),
             title: Invariant($"Every {universe.Name} trade, newest first"),
-            lede: Invariant($"Each listed by a setup on the {universe.Possessive} provisional settings, named with its index."),
+            lede: frozenSwing.Length == 0
+                ? Invariant($"Each listed by a setup on the {universe.Possessive} provisional settings, named with its index.")
+                : Invariant($"Each listed by a setup on the {universe.Name}, by its live rule from its freeze and on the provisional settings before it, named with its index."),
             stamp: Cards.Night(night),
             region: "picks"));
 
@@ -4013,7 +4050,11 @@ public sealed partial class SinglePageApp : IComponent
                     + Cards.Key(
                         "How to read it.",
                         $"A holding is chosen at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, bought at the next session's open, and sold at the close of a later month's rebalance where it no longer leads its sector among the {Escaped(universe.Possessive)} members, or at its last close as a member. Its result is what it made in percent beside what its sector's largest members made over the same sessions.",
-                        "Provisional like every rule of this index: followed, and in no record until its freeze."),
+                        heavyweightsFrozen
+                            ? "The index's own book at the provisional setting, kept beside the frozen live rule's: followed, and in no record; the live rule's own book is drawn on Tonight and its record read on the Run page."
+                            : frozenSwing.Length == 0
+                                ? "Provisional like every rule of this index: followed, and in no record until its freeze."
+                                : "Provisional until its freeze: followed, and in no record until then."),
                 title: Invariant($"The {universe.Possessive} sector heavyweights, newest first"),
                 lede: "Held while leading: a result in percent rather than in multiples of a risk, since a holding has no stop.",
                 stamp: Cards.Night(night),

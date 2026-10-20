@@ -26,6 +26,263 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-20 - ARCHITECTURE.html - a frozen pick's card draws its own rule's record, the setups like it under that rule and the check that rule reads
+Authorised by: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone
+Was:
+> Decision cards: ... and from 17.13 a card whose S&amp;P 500 breakout or drift stands at a change an approval stored carries the change's words in the record's place and no record, as an S&amp;P 400's or 600's does (see: An approved change reaches the S&amp;P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions)
+> ... and warns where the sector stands among the bottom places, since industry momentum carries much of a stock's own (Moskowitz and Grinblatt (1999)). The earnings line ...
+> ... Below the rules' minimum only the trades against it are drawn, and a rule not yet replayed draws a dashed outline saying so.
+> ... a part the night could not match names why in its place, and the card is written regardless (see: A pick's card draws the setups like it under its rule beneath the rule's record, and the score's rank only once the score passed on its index).
+Now:
+> Decision cards: ... (see: An approved change reaches ...); and from 20.11, for a family on the S&amp;P 400 or 600 the night read by its frozen live rule, the first line naming the floors and the rule in its registration's words, the market line the check that rule reads as the night stored it on the pick's row, the rule's record only where the stored record replays that rule, and the setups like the pick only where the ledger's history on the index was built under it and from the setups whose pass was read under it, the card saying they wait for that build otherwise (see: A frozen rule on the S&amp;P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone) (see: The setup ledger reads each S&amp;P 400 and 600 family's frozen live rule where one stands, and a card draws setups like a pick only once its history is built under that rule)
+> ... (Moskowitz and Grinblatt (1999)). From 20.11 a pick of an S&amp;P 400 or 600 family the night read by its frozen live rule states the check that rule reads as its night stored it on the pick's row, the index's own breadth against the rule's floor or the S&amp;P 500's breadth against its own, and the index's breadth as a check the rule does not read where the rule reads none (see: Each frozen rule on the S&amp;P 400 and 600 reads its market check at the level its own sweep chose). The earnings line ...
+> ... a rule not yet replayed draws a dashed outline saying so. From 20.11 a card of a family its S&amp;P 400 or 600 night read by its frozen live rule draws a record only where the stored record replayed that rule, named in the rule's own words, and the outline otherwise, never the provisional rule's record under its heading (see: A frozen rule on the S&amp;P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone).
+> ... and the card is written regardless (see: ...). From 20.11 a card of a family its S&amp;P 400 or 600 night read by its frozen live rule matches the setups like the pick only where the setup ledger's history on the index stands under that rule, and says in the part's place that they wait for the next ledger history build under the rule otherwise (see: The setup ledger reads each S&amp;P 400 and 600 family's frozen live rule where one stands, and a card draws setups like a pick only once its history is built under that rule).
+Why: the operator agreed on 2026-10-20 that a frozen rule's card draws no record or setups like it until those exist for that rule, and a card's lines name the rule the night read, the S&P 400 breakout's market check being the S&P 500's breadth.
+
+### 2026-10-20 - SCHEMA.md - the rule recorder replays each frozen rule by its sweep's own reading, and a frozen card's record and setups like it read that rule alone
+Authorised by: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone
+Was:
+> rule_record: It replays each family's live rule on the S&P 500 and its provisional rule on the S&P 400 and 600 at its one setting, and a freeze's remedy runs it again so the row follows the rule a card names. No row is deleted.
+> decision_card `record`: ... the history's first and last session and its membership; null where the rule has not been replayed
+> decision_card `similar`: ... their mean edge with its interval's two ends and the rule's own mean, or why none were matched; null for a family no learned score reaches and on a card written before 17.7
+Now:
+> rule_record: It replays each family's live rule on the S&P 500 at its one setting, and on the S&P 400 and 600 each family's frozen live rule at its own settings by its sweep's own reading, its `rule` the registration's words and its `settings` the sweep's key, or the family's provisional rule where no live rule stands; a live rule stating a part its sweep read at no level writes no row, says why on its run log row and leaves the row before it, which the card then does not draw (see: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone). A freeze's remedy runs it again so the row follows the rule a card names. No row is deleted.
+> decision_card `record`: ...; null where the rule has not been replayed, and on an S&P 400 or 600 card whose family the night read by its frozen live rule where the stored record replays another rule
+> decision_card `similar`: ..., or why none were matched, on an S&P 400 or 600 card read by its frozen live rule the wait for the ledger's history built under that rule among the reasons; null for a family no learned score reaches and on a card written before 17.7
+Why: the remedy of 20.11 replays the eight frozen rules for their cards, and a frozen card draws no record or setups another rule took.
+
+### 2026-10-20 - RUNBOOK.md - the rule recorder's replay of the frozen rules and its time, and 20.11's second remedy for their nights
+Authorised by: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone
+Was:
+> It reads the store's pulled history read-only, writes one row an index and family over what an earlier run wrote and a run log row, asks for nothing and calls no model. It refuses ...
+> ... the swing filter's variants and a variant off the grid or reading a switch start their history at their registration. It reads the store read-only but for those rows, ... 17.2's remedy runs it once after the merge, and a freeze's remedy runs it again for the index frozen.
+> **The S&P 400's and 600's freezes of 20.11** are written by one remedy, run from main after the merge and before the newest night is run again, ...
+> ... and replays the frozen rules' records for their cards; it asks the provider for nothing and calls no model. ... As any night run again for a named session, it asks for no report, no quarters and no filings and calls no model.
+Now:
+> ... asks for nothing and calls no model. From 20.11 each S&P 400 and 600 family whose frozen live rule stands is replayed at that rule's own settings by its sweep's own reading, the pullback's candidates read over the index's whole history, which took about twenty minutes for the S&P 400 and thirty for the S&P 600 on a constructed store of their size; a live rule stating a part its sweep read at no level writes no row and says why, and its card draws no record until one is written under its words (see: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone). It refuses ...
+> ... start their history at their registration. From 20.11 an S&P 400 or 600 family's frozen live rule is replayed at its own settings by its sweep's own reading and written under its name, every other rule on those indices starting its history at its registration. ... a freeze's remedy runs it again for the index frozen; 20.11's second remedy runs it for the S&P 400 and 600 after the newest night is run again, so that run ends before the open.
+> **The S&P 400's and 600's freezes of 20.11** are written by two remedies, the first run from main after the merge and before the newest night is run again, ...
+> ... and replays the frozen rules' records for their cards, about an hour in all; ... calls no model. Last, the second remedy writes the frozen rules' stretch lines, about an hour, started more than two hours before the night's window: `tools/remedy.ps1 tools/remedies/2026-10-20-20.11-the-frozen-rules-stretch-lines.txt`
+Why: the frozen rules are replayed by their sweeps' own reading, which takes longer than the provisional replay, so the stretch lines' replay runs after the newest night is run again and that run ends before the open.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states the frozen rules' replay and cards, and read-surface the rule of the day before as no trial
+Authorised by: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone
+Was:
+> fixture-expectations: ... the history build writing the same rule and passes, and a live rule stating a part the ledger reads on no session leaving its family provisional and named |
+> read-surface: ... the rule of the day before on no tab, in no paper account and named on the Run page, a frozen family ...
+Now:
+> fixture-expectations: ... leaving its family provisional and named; and a frozen rule's record its own sweep's reading of its registered settings, each trade bought at the next open after its cost at its market check's own level, ...; a frozen family's card naming its rule's gates and the check it reads, the S&P 500's breadth where it reads that, drawing a record only where the record replays the rule and the setups like it only where the ledger's history stands under the rule and from the setups passed under it alone; the forming list reading the check of the rule drawing it; and the funnel counting a level the rule reads as a part of its own after the cover |
+> read-surface: ... the rule of the day before on no tab, in no paper account, named on the Run page and no trial of its family's, a frozen family ...
+Why: each roster row says what its check asserts, and the frozen rules' replay, their cards and the rule of the day before's place in its family's level are now asserted.
+
+### 2026-10-20 - ARCHITECTURE.html - each frozen rule on the S&P 400 and 600 reads its market check at its own level, the rule of the day before kept in the background, and a retired rule's positions ended
+Authorised by: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
+Was:
+> ... and read each rule registered on an index at its own settings the same way, a drift rule naming a reading version handed its setups' releases as the S&amp;P 500's are, a family's live rule drawing its list in the provisional rule's place, each swing rule keeping its own list and trades and each heavyweights rule its own book (see: ...) (see: Each index's market check closes its own swing lists together on its own breadth) (see: ...) (see: ...);
+> ... the S&amp;P 400's and 600's swing lists close on their own breadth at the floor the live filter reads, copied from the S&amp;P 500 and never tested on either index, and beside each family's provisional rule there a variant reads no market check, so its own list shows what the check costs (see: An S&amp;P 400 or 600 swing family may carry a variant with no market check, the check standing on its provisional rule)
+> ... on the S&amp;P 400 or 600 a variant reading no market check listed after the provisional rule by its registration's words, which end on the market check off as its tab does (see: ...) (see: An S&amp;P 400 or 600 swing family may carry a variant with no market check, the check standing on its provisional rule)
+> ... and through <code>register --index-variants</code> with <code>--again</code> retires an S&amp;P 400's or 600's family's standing variants and registers them again with the ones given at one instant or none (see: An S&amp;P 400 or 600 family's variants are registered again whole to add one beside its provisional rule)
+> ... and from 20.4 an S&amp;P 400's or 600's rule is not replayed either, its row saying the same (see: An S&amp;P 400 or 600 family's variants are registered again whole to add one beside its provisional rule); ...
+Now:
+> ... and read each rule registered on an index at its own settings the same way, its list closed on the breadth and at the floor it states, ..., a drift rule stating the entry bought on its first close below the close before it within ten sessions of its reaction and one stating the revenue level reading its quarters as first filed before the session before the night, a family's live rule drawing its list in the provisional rule's place and the rule its freeze kept in the background drawing none, ..., a retired rule's open trades walked to their own exits and a retired book's holdings sold at the close of the session it was retired on (see: ...) (see: Each frozen rule on the S&amp;P 400 and 600 reads its market check at the level its own sweep chose) (see: ...) (see: ...) (see: A retired rule's open positions are ended, ...);
+> ... the S&amp;P 400's and 600's swing lists with no freeze standing close on their own breadth at the floor the live filter reads, copied from the S&amp;P 500, and from 20.11 each frozen rule closes its own list on the breadth and at the floor its search chose, ..., with a variant beside it reading its check off, or the index's strongest floor where it reads none, ... (see: Each frozen rule on the S&amp;P 400 and 600 reads its market check at the level its own sweep chose) (see: A freeze on the S&amp;P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions)
+> ... listed after the provisional rule by its registration's words, which end on the market check off as its tab does (see: ...) (see: A freeze on the S&amp;P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions)
+> ... at one instant or none, from 20.11 beside a frozen family's live rule as well, ... (see: An S&amp;P 400 or 600 family's variants are registered again whole beside its provisional rule or its frozen live rule); and from 20.11 a freeze on the S&amp;P 400 or 600 is refused only where the family's live rule stands, ... (see: ...) (see: ...)
+> ... its row saying the same (see: An S&amp;P 400 or 600 family's variants are registered again whole beside its provisional rule or its frozen live rule); ...
+Why: the operator froze each family on the S&P 400 and 600 on 2026-10-20 at its own search's answer, each swing rule's market check at its own level, with a market variant and the rule of the day before beside it, and ruled that a retired rule's positions are ended; section 11.4 gains a paragraph stating the freezes.
+
+### 2026-10-20 - ARCHITECTURE.html - a frozen card states its sweep's figures, and the line saying its sweep passed none is kept at the freeze made on that answer
+Authorised by: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
+Was:
+> ... A family's card on any index then says its sweep found no setting that passed the floors where the newest answer recorded for each of its designs says none passed, the sector heavyweights sweeping two, and no freeze of the family on that index came after it, and goes on listing its picks; the line goes with a newer answer that passes or a freeze registered after it (see: A sweep passes where a setting it read meets the floors, and a card says none passed only where every design's newest answer does).
+> ... says none passed and no freeze of the family on that index was registered after it, and nothing where none is recorded; the card lists its picks whatever the line says (see: A sweep passes where a setting it read meets the floors, and a card says none passed only where every design's newest answer does) (see: ...).
+> ... and its list is the one the night read by that rule, so its sweep's line goes from that night and not before (see: ...).
+Now:
+> ... says none passed, the sector heavyweights sweeping two, and goes on listing its picks; the line goes with a newer answer that passes or, from 20.11, with the family's next freeze after the one made on that answer, ... From 20.11 the command also records beside the answer the figures its run states for the setting it would run and, given a tester's run on the index's own history, the tester's verdict on the family, which a frozen card draws (see: A frozen card on the S&amp;P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar).
+> ... says none passed and, from 20.11, no freeze of the family on that index was registered after the one made on that answer, ... From 20.11 a frozen family's card on the S&amp;P 400 or 600 states, while its live rule is chosen, the figures of the answer its live rule's freeze followed, ... (see: A frozen card on the S&amp;P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar) (see: ...).
+> ... and its list is the one the night read by that rule; its sweep's line went from that night until 20.11, and from 20.11 it is kept at the freeze made on its answer and goes with the family's next freeze or a sweep that passes (see: ...) (see: A frozen card ...). From 20.11 a family's freezes are the instants its live rule came to name a rule other than the one standing before, ... drawn on the index's Run page among the records as the rule before the freeze, kept 63 sessions beside it, with no verdict read.
+Why: the operator ruled on 2026-10-20 that each frozen card states the figures its sweep read and that no setting beat luck or the tester's bar, and that a family frozen on a sweep that passed none keeps its line until its next freeze or a sweep that passes.
+
+### 2026-10-20 - ARCHITECTURE.html - the setup ledger and the rule recorder read each S&P 400 and 600 family's frozen live rule, the rule cards the filed facts
+Authorised by: The setup ledger reads each S&P 400 and 600 family's frozen live rule where one stands, and a card draws setups like a pick only once its history is built under that rule
+Was:
+> Setup ledger reads: ... reported quarters, companies, member readings, filed facts, insider trades, insider reads, family picks, index family picks, heavyweight nights, setups, setup nights, ledger readings; its matrix row reading no candidate register
+> Rule recorder reads: membership, bar store, calendar, gate results, ...; its matrix row reading no fundamentals; and it replays each family's live rule on the S&amp;P 500 and its provisional one on the S&amp;P 400 and 600, at its one setting ...
+> Rule cards reads: ... reported quarters, companies, release documents, ...
+> ... with the live rule's own pass and the night's pick beside it, its plan as prices, ... (see: The fundamentals-first family's setups are the pullback's whose revenue and cash clear a grid step past the widest level its search tried).
+> ... with the live rule's own pass and the night's list beside it, so what the rule chose and what it passed over sit on the same row (see: ...).
+Now:
+> Setup ledger reads: ... member readings, switch readings, market readings, filed facts, insider trades, insider reads, family picks, index family picks, index family nights, candidate register, heavyweight nights, ...; its matrix row reading the candidate register; and from 20.11 on the S&amp;P 400 and 600 a setup's live pass is its family's frozen live rule's where one stands, ... (see: The setup ledger reads each S&amp;P 400 and 600 family's frozen live rule ...)
+> Rule recorder reads: membership, bar store, calendar, companies, gate results, ...; its matrix row reading the fundamentals; and it replays ... on the S&amp;P 400 and 600 its live rule where one stands as the night reads it and its provisional one otherwise, a live rule there by its family's sweep's own reading of the index's history at the next open (see: A frozen rule on the S&amp;P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone), ...
+> Rule cards reads: ... reported quarters, companies, filed facts, release documents, ...
+> ... with the live rule's own pass and the night's pick beside it, from 20.11 on the S&amp;P 400 and 600 the pass of the family's frozen live rule where one stands, read as the night read the register, a drift's reaction set passed on the night its rule buys it, ... (see: The setup ledger reads each S&amp;P 400 and 600 family's frozen live rule ...).
+> ... sit on the same row (see: ...). From 20.11 the live rule on the S&amp;P 400 and 600 is the family's frozen rule where one stands, ... (see: The setup ledger reads ...).
+Why: the operator agreed on 2026-10-20 that the cards draw no replayed record or setups like a pick until those exist for the frozen rules, and that the remedy replays the frozen rules' records; each component's reads are declared in its rows.
+
+### 2026-10-20 - SCHEMA.md - the sweep answers' figures, the night's register instant, each frozen rule's own check, the drift's revenue read and the ledger's frozen live rule
+Authorised by: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
+Was:
+> `market_open`: 1 where the breadth stood at or above the floor the S&P 500's filter reads, 0 otherwise, which closes every swing family's list of the index that night
+> `settings`: JSON: each family's rule as the night read it, ..., the fundamentals-first family's setting with its words and its cap among them
+> sweep_answer's columns ending at `recorded_at`; ... A family's card draws its one line, ..., where the newest answer recorded for each of the family's designs on its index says none passed and no live rule of the family was registered after the newest of them.
+> setup `rule`: ... so the ledger keeps one measure across every session it holds; `live_pass`: 1 where that setting passes the member-session as the sweep replays it, the market check included, 0 where it does not
+> ... and the step closes a window of a row the night wrote by updating it once its path ended or its benchmark settled, a history row settled by the build alone ...
+> setup_night: ... An index the night held no member of on the session has no row.
+Now:
+> `market_open`: ..., which closes the list of every swing family of the index with no freeze standing that night; from 20.11 a registered rule closes its own list on the breadth and at the floor it states (see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose)
+> `settings`: ..., and from 20.11 `registerAt`, the UTC instant the night read the register as of, which the pages read the rules standing at (see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read)
+> sweep_answer gains, from migration 102, `setting`, `trades`, `edge`, `year_edges`, `without_largest`, `settings_read`, `meeting`, `luck`, `tester_run`, `adjusted` and `tester_passed`; ... From 20.11 it reads beside the answer the figures the run states ... and, from 20.11, no live rule of the family was registered after the freeze made on the newest of them, and a frozen card on the S&P 400 or 600 draws the figures of the answer its live rule's freeze followed, the newest recorded at or before it.
+> filed_fact: ..., and from 20.11 each quarter's revenue among them as first filed before the session before the night for a drift rule stating the revenue level, through its filer's newest company row (see: A drift's revenue level on the S&P 400 and 600 reads a quarter only once its filing is stored, on the night and in its sweep alike).
+> setup `rule`: ...; from 20.11 on the S&P 400 and 600 the words of the family's frozen live rule where one stands ... (see: The setup ledger reads ...); `live_pass`: ...; from 20.11 under a frozen live rule 1 where the rule passes it as the night reads it, ..., and on a drift's row, anchored on its reaction's session, 1 where the rule buys that reaction on a session within its reach, set by the night that buys it
+> ... and from 20.11 sets a drift's row an earlier night wrote under a frozen live rule to passed on the night that rule buys its reaction, never setting one back and never touching a history row, ...
+> setup_night: ... From 20.11 an earlier session's row is written again, by deleting it and inserting it, with its live passes counted on the night a frozen drift buys one of its setups.
+Why: migration 102 adds the sweep answers' figures a frozen card draws, the night records the instant it read the register, and the index families and the setup ledger read each family's frozen live rule.
+
+### 2026-10-20 - RUNBOOK.md - the 20.11 freezes, their remedy and the newest night run again, the sweep answer's tester, and the forms beside a frozen live rule
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, business first alone left on the pullback's base
+Was:
+> ... and the line goes with the family's next sweep that passes, recorded the same way, or its next freeze. ...
+> It is refused whole where a value is one its sweep did not read, naming it, where more than eight variants are given, where a variant states a rule given before it, where the family already stands on the index, and for a family or an index no rule is carried for. ... no replay of an index rule is built, so its record counts from that registration.
+> ... and where any rule of the family stands on the index, a freeze then being the form once those rules are retired. ...
+> **A swing rule reading no market check** states the breadth's third value, `largeBreadth=2`, beside the index's own breadth at 0 and the S&P 500's at 1, the one value either form admits that no sweep read; ... (see: An S&P 400 or 600 swing family may carry a variant with no market check, the check standing on its provisional rule). The six variants of 19.1 ... are registered from main after the merge ...
+> **A family's variants registered again on the S&P 400 or 600**, from 20.4, is how a variant joins those standing beside the provisional rule: ... (see: An S&P 400 or 600 family's variants are registered again whole to add one beside its provisional rule). ... where no rule of the family stands, where the family's live rule stands, and wherever the form without `--again` refuses. ... `--variants "largeBreadth=2;readingVersion=3"` ... and the same with `--index SML`.
+> ... the share the live rule passes and the night's list picked, and the deciles of result and edge, with a chosen setup's path drawn from the bar store and the kept bars.
+Now:
+> ... or, from 20.11, the family's next freeze after the one made on that answer, ... (see: A frozen card ...). ... From 20.11 the command also records the figures the run states ... given `--tester` ...: `sweep-answer --run 20261020T053729Z --tester 20261020T062626Z` ...
+> It is refused whole where ..., where a variant states a rule given before it or a rule already standing, where the family's live rule stands on the index, naming it, ...; from 20.11 variants standing before the freeze stand on beside its rules ... `breadthFloor` ... `entry` ... `revenueGrew` ... "the background" ... the register's replay does not read an index rule, so its record counts from that registration, and the card's record is replayed by `rule-record`.
+> ... a freeze then being the form, which keeps them standing beside its own rules. ...
+> **A swing rule reading no market check** ..., from 20.11 with `breadthFloor=0`, the level each index's own search reads as its check off; ... (see: A freeze on the S&P 400 or 600 registers a market variant ...). The six variants of 19.1 ... were registered ..., and 20.11's remedy retires them as it freezes the families:
+> **A family's variants registered again on the S&P 400 or 600**, from 20.4, ..., and from 20.11 beside a frozen family's live rule: ... (see: An S&P 400 or 600 family's variants are registered again whole beside its provisional rule or its frozen live rule). ... `--variants "largeBreadth=2,breadthFloor=0;readingVersion=3"` ... and on the S&P 600 with `--index SML --variants "largeBreadth=0,breadthFloor=0.4;readingVersion=3"`.
+> ... drawn from the bar store and the kept bars. From 20.11 a build on the S&P 400 or 600 reads each family's frozen live rule standing when it runs, ...
+> and a new paragraph, **The S&P 400's and 600's freezes of 20.11**, naming the remedy `tools/remedies/2026-10-20-20.11-the-index-freezes.txt` and `tools/nightly.ps1 --session 2026-10-20 --register-now`.
+Why: the operator's rulings and answers of 2026-10-20 freeze the eight families through one remedy after the merge and run the newest night again; the runbook states the forms, the remedy and the run as they now stand.
+
+### 2026-10-20 - BUILD_PLAN.md - 20.11 amends its own done condition for the freezes the operator ruled
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, business first alone left on the pullback's base
+Was:
+> ... no S&P 400 or 600 rule's code version moves before the operator's word, asserted; and, the word given, the night reads each index's own provisional rules, the remedy registers the rules moved again, and a constructed S&P 400 night with its market check closed stores every gate's answer for every member, worked by hand, with one mutation of it shown red, the rule stated before the run.
+Now:
+> ... no S&P 400 or 600 rule's code version moves before the operator's word, asserted; a constructed S&P 400 night with its market check closed stores every gate's answer for every member, worked by hand; and, the word given, the remedy's lines register the eight freezes over a register shaped as the operator's, each frozen rule's market check is worked by hand at its own floor on both sides, the S&P 400 drift's first pullback and the S&P 600 drift's revenue read as first filed before the night are each worked by hand, the rule of the day before is retired on the night reaching the block after its freeze and not the night before, a retired book's holding is sold at the close of the session it was retired on and a retired swing rule's open trade walked to its stop, each worked by hand, and the sweep answer's figures and the tester's verdict are recorded from constructed runs; with one mutation of these shown red, the rule stated before the run.
+> and a paragraph stating the operator's word of 2026-10-20.
+Why: the operator's word came as freezes rather than provisional rules, with the parts named above, and the checkpoint says what it is done when against the word given.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations and read-surface state 20.11's freezes and the corrections of 2026-10-20, and the line kept at its freeze
+Authorised by: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
+Was:
+> fixture-expectations: ... a card's line is drawn where every design's newest answer says none passed and no freeze came after it, worked by hand over designs, newer runs and a freeze at the answer's instant and a second before it ... and a night stored before the parts read as reading none |
+> read-surface: ... and an S&P 500 card's line goes with a freeze registered after its answer and is drawn for an answer recorded after the freeze, ... its sweep's line gone from that night and not before and drawn again for an answer recorded after the freeze, ... its sweeps' line gone from that night and not before, ... and its Universe's chip keeping the four |
+Now:
+> fixture-expectations: ... a card's line is drawn where every design's newest answer says none passed, from 20.11 kept at the freeze made on that answer and gone with the next freeze or a newer answer that passes, ... and a night stored before the parts read as reading none; and from 20.11's freezes ...; and from the 15.1 correction of 2026-10-20 ...; and from the 17.1 correction of 2026-10-20 ...; and from 20.11 a family's freezes ...; and the setup ledger reading each S&P 400 and 600 family's frozen live rule ... |
+> read-surface: ... and an S&P 500 card's line is kept from 20.11 at the freeze made on its answer, goes with the next freeze and is drawn for an answer recorded after it, ... its sweep's line kept from 20.11 at the freeze made on its answer, ... its sweeps' line kept from 20.11 at the freeze made on both designs' answers, ... and its Universe's chip keeping the four; and from 20.11's freezes a frozen card on the S&P 400 or 600 drawing beside its kept line ... |
+Why: each roster row says what its check asserts, and 20.11's tests and the two corrections extend both while the line's tests now hold it at its freeze.
+
+### 2026-10-20 - ARCHITECTURE.html - the S&P 400's and 600's heavyweights read by a frozen live rule have their cards, report requests and taken trades read off that rule's own book
+Corrects: from 15.5's second pull request the night's cards, its report requests and the taken trades' follower read the S&P 400's and 600's own heavyweights book whatever rule the page drew the family by, so a frozen live rule's buys would get no card and no report and the index's own book's would, labelled with the live rule's words; found by the 20.11 replay's own reading on 2026-10-20 before any heavyweights freeze stood on the operator's store.
+Was:
+> Decision cards reads: ... index heavyweight holdings, rule records, ...; ... (see: An approved change reaches the S&amp;P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions)
+> Decision cards matrix row: no candidate register
+> Taken follower reads: membership, bar store, heavyweight holdings, index heavyweight holdings, decision cards, taken trades; ... (see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then)
+> Request drain reads: family nights, family picks, gate results, fundamental readings, heavyweight holdings, index family picks, index heavyweight holdings, research requests, run log; ... It writes no research itself (see: ...)
+Now:
+> Decision cards reads: ... index heavyweight holdings, index heavyweight rule holdings, candidate register, rule records, ...; ... (see: An approved change reaches ...); and from the 15.5 correction of 2026-10-20, on the S&amp;P 400 or 600 a sector heavyweights family the night read by its frozen live rule writes the cards of that rule's own book's buys, each sized over the rule's own leaders in each sector, and none of the index's own book's (see: A rule of the S&amp;P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step)
+> Decision cards matrix row: reading the candidate register
+> Taken follower reads: ..., index heavyweight holdings, index heavyweight rule holdings, index family nights, decision cards, taken trades; ... (see: ...); and from the 15.5 correction of 2026-10-20 a sector heavyweight taken on the S&amp;P 400 or 600 ends at its sale by the book its card's night drew, a frozen live rule's own where the night read the family by one (see: A rule of the S&amp;P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step)
+> Request drain reads: ..., index family picks, index family nights, index heavyweight holdings, index heavyweight rule holdings, research requests, run log; ... It writes no research itself (see: ...). From the 15.5 correction of 2026-10-20 an S&amp;P 400's or 600's sector heavyweights read by a frozen live rule on the night are asked for by that rule's own book's buys, as its page draws them, and not by the index's own book's (see: ...)
+Why: the read surface draws a frozen live rule's own book from 15.5's second pull request, and every other reader of the book the page draws now reads the same one.
+
+### 2026-10-20 - SCHEMA.md - a frozen heavyweights rule's book is the one the night's cards, report requests and taken trades read
+Corrects: as the ARCHITECTURE.html entry above.
+Was:
+> index_heavyweight_rule_holding: ... The rows are never deleted otherwise: a rule's record on the index's Run page is its holdings.
+Now:
+> index_heavyweight_rule_holding: ... a rule's record on the index's Run page is its holdings. From the 15.5 correction of 2026-10-20, on a night that read the family by a frozen live rule, the night's cards, its report requests and the taken trades' follower read that rule's buys and sales here, as its page draws them, in the index's own book's place.
+Why: as the ARCHITECTURE.html entry above.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states the frozen heavyweights' cards, report requests and taken trades
+Corrects: as the ARCHITECTURE.html entry above.
+Was:
+> fixture-expectations: ... and a night stored before the parts read as reading none |
+Now:
+> fixture-expectations: ... and from the 15.5 correction of 2026-10-20 an S&P 600 night that read its sector heavyweights by a frozen live rule writing its cards for that rule's own book's buys sized over its own leaders, asking for their reports and following a taken one to that book's sale, worked by hand over one constructed night, the index's own book's buys read for none of them |
+Why: the roster's row says what its check asserts.
+
+### 2026-10-20 - RUNBOOK.md - each search on an index's own history states the setting its family would run, and the tester's pullback run takes about an hour
+Corrects: the paragraph named no setting a search would run, which every search on an index's own history states on its last line and in its report since 5d9ed7e3, and gave the tester's pullback run about three hours an index where its runs on 2026-10-20 took 57 and 72 minutes side by side; found writing 20.11's run entries.
+Was:
+> ... the searches state their answer as every search does, and the market check and the tester's runs state none. On this machine the market check takes about fifteen minutes an index, each swing search a few, the pullback's search about half an hour and the tester's pullback run about three hours an index.
+Now:
+> ... the searches state their answer as every search does and, on their last line and in their report, the setting their family would run, the best edge after costs among the settings that pass or, where none passes, the highest edge among the settings holding the trade floor (see: ...), and the market check and the tester's runs state none. On this machine the market check takes about fifteen minutes an index, each swing search a few, the pullback's search about half an hour and the tester's pullback run about an hour an index.
+Why: the runbook states what each run shows and how long it takes.
+
+### 2026-10-20 - BUILD_PLAN.md - 20.11's section names the pulled history and the pullback's base in words that are not their subjects
+Corrects: 20.11's section, added by its ruling, named "the pulled history" and "pullback base" as whole words, so the plan read 20.11 as the checkpoint owing both subjects where they were built at 12.2 and 13.9, and `architecture-conformance` failed on the due points written for them; found running it over the branch before item 5's commit.
+Was:
+> ... over the pulled history on membership as it stood and after costs, ... the date the pulled history holds, which is the date as it happened ... The fundamentals-first family keeps buying at its own index's pullback base and follows the pullback's setting.
+Now:
+> ... over the history pulled for the years before the store's on membership as it stood and after costs, ... the date the history pulled holds, which is the date as it happened ... The fundamentals-first family keeps buying at its own index's pullback's base and follows the pullback's setting.
+Why: 20.11 reads both and builds neither, so its section names them without claiming them.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations and read-surface state 20.11's tests
+Authorised by: Each family on the S&P 400 and 600 is swept again on its own history at the next open, the market check a dial of each swing grid
+Was:
+> fixture-expectations: ... and from the 17.4 correction of 2026-10-20 the run on all finished data learning on every year the history holds, its floors and the S&P 400 drift's last two years read over all eight |
+> read-surface: ... and from the 18.3 correction of 2026-10-20 an actual stored at one place drawn to two |
+Now:
+> fixture-expectations: ... read over all eight; and from 20.11 the market check's seven levels worked by hand at each edge, ... each of the research's dials worked by hand at its edge, ... a level kept by the second stage's own rule over eight years and in proportion over a fold's fewer, ... a fold's pullback walk tallying only the trades ended before its year, ... a holding and its size cut bought at the open after the rebalance, ...; and an S&P 400 or 600 night with its market check closed storing every part of every member's rule with its answer, worked by hand over a constructed night: ... and a night stored before the parts read as reading none |
+> read-surface: ... an actual stored at one place drawn to two; and from 20.11 the S&P 400's Tonight over a constructed night with its market check closed drawing in its card of the stocks one gate short, on its market line and in the breakout's own expander the four stocks the check alone keeps off, ... and its Universe's chip keeping the four |
+Why: each roster row says what its check asserts, and 20.11's tests, item 5's among them (see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own), extend fixture-expectations' and read-surface's.
+
+### 2026-10-20 - ARCHITECTURE.html - the S&P 400's and 600's nights store every part's answer, and their one gate short card and chip read them
+Authorised by: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
+Was:
+> <td><b>Index families</b></td> ... stores every member's answer under each family whether it passed or not, draws each index's list by the S&amp;P 500's own rule, ...
+> <td>Tonight's stocks one gate short</td> ... A night before the newest draws no press and no link to Universe. An index whose night stores only the first part each member failed says in the card's line that it reads no stock as one gate short. Each family's card ...
+> <td>One gate short</td> ... with the gate it missed; the S&amp;P 400's and 600's tables say they cannot read it, since their nights store only the first part each member failed</td>
+Now:
+> <td><b>Index families</b></td> ... stores every member's answer under each family whether it passed or not, from 20.11 with every part of its rule and that part's answer, the market check its own and the setup read with the check open (see: The S&amp;P 400's and 600's nights store every part's answer for every member, the market check its own), draws each index's list by the S&amp;P 500's own rule, ...
+> <td>Tonight's stocks one gate short</td> ... A night before the newest draws no press and no link to Universe. From 20.11 the S&amp;P 400's and 600's nights store every part's answer for every member, and on those indices the card reads each member a family stored as passing its setup read with the market check open and failing exactly one other part, the market check among them, with that part's words, no press and no link to Universe, since the watch list holds the S&amp;P 500's names alone (see: ...); a night stored before them, storing only the first part each member failed, says in the card's line that it reads no stock as one gate short. Each family's card ...
+> <td>One gate short</td> ... with the gate it missed; from 20.11 on the S&amp;P 400 and 600 a member their night stored as passing a setup read with the market check open and failing exactly one other part, the first such setup in the one family order taken, and a table over a night stored before 20.11 says it cannot read it, since that night stores only the first part each member failed (see: ...)</td>
+Why: item 5 of the operator's addendum to 20.11 stores every part's answer on the S&P 400's and 600's nights so the one gate short list reads them on those pages; the catalogue and the two rows state what the night stores and what the pages read.
+
+### 2026-10-20 - ARCHITECTURE.html - the sweep history reads the companies' analyst counts, in its catalogue row and its matrix row
+Authorised by: Each family on the S&P 400 and 600 is swept again on its own history at the next open, the market check a dial of each swing grid
+Was:
+> <td><b>Sweep history</b></td> ... pulled snapshots, pulled holdings, calendar, gate results, heavyweight nights</td><td>none</td> ... matched by ISIN and then by name); the sweep computes over what it read outside the store, ...
+> <tr><td>Sweep history</td> ... six R cells ... <td></td><td></td><td></td><td></td> ... the Fundamentals cell blank ...
+Now:
+> <td><b>Sweep history</b></td> ... pulled snapshots, pulled holdings, calendar, gate results, heavyweight nights, companies</td><td>none</td> ... matched by ISIN and then by name); and from 20.11 each company's analysts as each fetch stored their counts with the day it fetched them, which the drift's sweep on an index's own history reads only from the session after a count was stored (see: Analyst coverage is stored from each fetch and waits for dated counts before any rule tests it); the sweep computes over what it read outside the store, ...
+> <tr><td>Sweep history</td> ... six R cells ... <td></td><td></td><td><span class="r">R</span></td> ... the Fundamentals cell R ...
+Why: the drift's dial of fewer analysts reads each company's counts as each fetch stored them, so the sweep history declares the read and the catalogue and the matrix state it.
+
+### 2026-10-20 - RUNBOOK.md - the history read runs with no daily stop and is stopped by hand for a merge
+Corrects: the paragraph started the history read with `--until 07:00` and had it stop each morning in New York for the day's merges, which is not how it runs since the operator asked at about 00:02 UTC on 2026-10-20 that the daily stop be removed, the read already keeping clear of the slots and the night by itself; found reading the runbook against the read restarted with no `--until`, and on the operator's word of 2026-10-20 that it may be paused while another run needs the machine.
+Was:
+> dotnet run --project src/EquityBrief.Worker -- releases --read --history --until 07:00
+> ... Started after the morning's merges with `--until 07:00`, it reads through the day and the night, keeping clear of the slots and the night by itself, and stops at 07:00 in New York the next morning for the day's merges. Pin 2's read ...
+Now:
+> dotnet run --project src/EquityBrief.Worker -- releases --read --history
+> ... It is started with no `--until` and reads through the day and the night, keeping clear of the slots and the night by itself; for a merge, or where another run needs the machine's memory, it is stopped by hand, the model unloaded, and started again afterwards from a clean copy of `main`'s commit with the card's limit read back first, going on from the release it stopped at. Pin 2's read ...
+Why: `--until` still stops the read cleanly where it is given; the runbook states how the read is run.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations and read-surface state the corrections of 2026-10-20
+Corrects: five defects in built work, found by phase 18's sign-off review and by 20.11's own runs over the live store, each recorded as a correction in PROGRESS.md: the event book's one-price band and a two-place price of a thousand or more without their thousands marked (4.7), a rule's stored words drawn past the places they are read at and the quote line's unanswered asks (18.1), an actual at one place (18.3), the S&P 400's and 600's pullback searches reading the S&P 500 filter's live setting as their provisional base (15.4), and the run on all finished data learning on one year fewer (17.4).
+Was:
+> fixture-expectations: ... and from the 18.4 correction of 2026-10-19 results on the calendar's ninetieth day drawn |
+> read-surface: ... and from the second 16.1 correction of 2026-10-19 a card's tick drawn in the green a gain is drawn in on its fill, its note in grey and its warning in the caution's amber |
+Now:
+> fixture-expectations: ... and from the 18.4 correction of 2026-10-19 results on the calendar's ninetieth day drawn; and from the 15.4 correction of 2026-10-20 every pullback search on the S&P 400 and 600 reading the base its night reads as its provisional setting, on the widened grid and on 20.11's own; and from the 17.4 correction of 2026-10-20 the run on all finished data learning on every year the history holds, its floors and the S&P 400 drift's last two years read over all eight |
+> read-surface: ... its warning in the caution's amber; and from the 4.7 correction of 2026-10-20 a band of one price at a thousand or more named at that price with its thousands marked, and a sentence's two-place price of a thousand or more read with its thousands marked; and from the 18.1 correction of 2026-10-20 a rule's stored words on a pick's card, the name page's gates and the lines saying why the filter passed a name reading their figures at the places they are read at, a pass's stored reasons taking their counts in words, and the Run page's quote line naming each ask no run answered and a second ask of one name; and from the 18.3 correction of 2026-10-20 an actual stored at one place drawn to two |
+Why: each roster row says what its check asserts, and the five corrections' tests extend fixture-expectations' and read-surface's.
+
+### 2026-10-20 - BUILD_PLAN.md - 20.8 takes migration 103 and 20.11 is added after 20.10
+Authorised by: the operator's ruling of 2026-10-19 and their answer of 2026-10-20 on the migration's number, recorded as the 20.11 ruling "the S&P 400's and 600's rules chosen on their own history: the market check swept, every family swept again at the next open with the research's dials, every gate's answer stored, and nothing switched before the operator's word" in PROGRESS.md
+Was:
+> readable on a setup's session and accepted within the 95 days before it, none otherwise, read as it stood. Migration 102 adds their columns to the setups' table, copying every row, and creates the usefulness store,
+Now:
+> readable on a setup's session and accepted within the 95 days before it, none otherwise, read as it stood. Migration 103, 20.11 taking 102 on the operator's answer of 2026-10-20, adds their columns to the setups' table, copying every row, and creates the usefulness store,
+Why: 20.11's column on the S&P 400's and 600's results takes migration 102 and merges first, and the migrator applies only migrations above the store's version, so 20.8's open pull request moves to 103 once 20.11 merges. 20.11's own section is added after 20.10, deleting no line.
+
 ### 2026-10-19 - .claude/rules/checks.md - read-surface states the session read in UTC and the card's coloured marks
 Corrects: the read surface wrote a session's open and close, instants at New York's offset, with a Z after New York's clock time, so the masthead and the Run page saw no quote or ask after noon in New York; found reading the Run page of 2026-10-13 back on 5152 after PR 511 merged, one ask of the session's five. And the operator asked for the card's marks in colour.
 Was:

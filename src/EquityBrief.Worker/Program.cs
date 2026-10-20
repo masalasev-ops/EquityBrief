@@ -624,7 +624,7 @@ static async Task<int> SweepAnswerRun(string[] args)
         SystemClock.ForUnitedStatesSessions(),
         store.DatabaseFile,
         EquityBrief.Core.Sweep.SweepFolder.Resolve(configuration[EquityBrief.Core.Sweep.SweepFolder.Key], store.DataRoot),
-        Console.Out).RecordAsync(VerbArguments.Value(args, "--run") ?? string.Empty);
+        Console.Out).RecordAsync(VerbArguments.Value(args, "--run") ?? string.Empty, tester: VerbArguments.Value(args, "--tester"));
 }
 
 // The record behind each pick's card, by hand: every rule a card names on each index replayed at its one setting over the
@@ -1790,6 +1790,29 @@ static async Task<int> NightlyRun(string[] args)
         return 1;
     }
 
+    // The newest session the store holds, run again the morning after a freeze, may read the register as it stands
+    // when it runs rather than as that session's evening stood, so the rules frozen since draw its lists; any other
+    // night reads the register as its evening stood, and the flag is refused for it.
+    // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
+    DateTimeOffset? registerAt = null;
+
+    if (args.Contains(Nightly.RegisterNow))
+    {
+        var newest = NightSession.NewestStored(store.DatabaseFile);
+
+        if (named is null || rest is not null || named != newest?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
+        {
+            Console.Error.WriteLine(
+                $"nightly: '{Nightly.RegisterNow}' reads the register as it stands now for the newest session the store holds, " +
+                $"{newest?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "none"}, run again with '--session'; a night on the clock reads it so already, " +
+                "and any other night reads it as its own evening stood.");
+
+            return 1;
+        }
+
+        registerAt = SystemClock.ForUnitedStatesSessions().UtcNow;
+    }
+
     // Where tonight's feeds come from, taken from configuration and overridable
     // for the run RUNBOOK asks for by hand.
     //
@@ -1867,7 +1890,8 @@ static async Task<int> NightlyRun(string[] args)
         build: build,
         cards: EquityBrief.Core.Cards.CardSettings.From(key => configuration[key]),
         forming: EquityBrief.Core.Cards.FormingSettings.From(key => configuration[key]),
-        adopt: configuration[EquityBrief.Core.Loop.LoopDecisions.AdoptSetting]);
+        adopt: configuration[EquityBrief.Core.Loop.LoopDecisions.AdoptSetting],
+        registerAt: registerAt);
 }
 
 // A night refused before its first step, on stderr and on the run log.

@@ -352,29 +352,83 @@ public static partial class TonightScreen
         return (live is null ? null : DateOnly.FromDateTime(live.RegisteredAt.UtcDateTime), variants);
     }
 
-    // The instant a family's live rule standing on the night was registered, read as its standing is, and none where no
-    // freeze has registered one; what a recorded sweep answer is read against.
-    public static DateTimeOffset? FrozenAt(string name, IReadOnlyList<CandidateRow> register, DateOnly night) =>
-        StandingRows(name, register, night).Live?.RegisteredAt;
+    // A family's live rule as a card reads it, none where the card is provisional, and the family's freezes up to the
+    // instant its page reads the register as of; and for the sector heavyweights, the design its live rule reads, whose
+    // answers its freeze followed.
+    public sealed record FamilyFreezes(string? Live, IReadOnlyList<SweepFreeze> Freezes, string? Design = null);
+
+    // A family's live rule standing past a night and its freezes up to then, as the S&P 500's cards read them.
+    public static FamilyFreezes FreezesOf(string name, IReadOnlyList<CandidateRow> register, DateOnly night)
+    {
+        var at = PastTheNight(night);
+        var live = StandingRows(name, register, at).Live?.Candidate;
+
+        return new(live, Freezes(name, register, at), name == HeavyweightRule.Name ? DesignOf(live, register) : null);
+    }
+
+    // The design a heavyweights rule reads, its sweep's answers recorded under it: design (b) where its registration
+    // states it and design (a) otherwise.
+    static string DesignOf(string? live, IReadOnlyList<CandidateRow> register) => RuleScreen.DesignB(live, register) ? "b" : "a";
+
+    // A family's freezes up to an instant: each instant its own register rows were written at, its live rule read as its
+    // standing is at that instant, and a freeze where that rule names one other than the rule standing just before.
+    public static IReadOnlyList<SweepFreeze> Freezes(string name, IReadOnlyList<CandidateRow> register, DateTimeOffset asOf) =>
+        SweepLine.Freezes(
+            register
+                .Where(row => row.RegisteredAt <= asOf && string.Equals(CandidateFamily.SetupFamilyOf(row.Evaluator), name, StringComparison.Ordinal))
+                .Select(row => row.RegisteredAt)
+                .Distinct()
+                .Select(at => (at, StandingRows(name, register, at).Live?.Candidate)));
 
     // The instant past a night from which nothing recorded counts on its page: a freeze or an answer written after the
     // night is read on no night before it.
     public static DateTimeOffset PastTheNight(DateOnly night) => new(night.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
 
-    // Each card with the line its family's recorded sweep answers draw on the night, the answers recorded before the
-    // night was past and its freeze read off the register as of the night.
+    // Each card with the line its family's recorded sweep answers draw on the night, read against its freezes and the live
+    // rule that reads it; on a card kept at the freeze made on a sweep that passed none, the years of the last two its
+    // setting lost; and on a card its live rule reads, the figures of the sweep its freeze followed.
     // see: No family on any index is set aside or hidden by a test result without the operator's word
-    public static IReadOnlyList<FamilyCardView> WithSweepLines(IReadOnlyList<FamilyCardView> cards, IReadOnlyList<RecordedAnswer> answers, Func<string, DateTimeOffset?> frozenAt) =>
+    // see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
+    public static IReadOnlyList<FamilyCardView> WithSweepLines(IReadOnlyList<FamilyCardView> cards, IReadOnlyList<RecordedAnswer> answers, Func<string, FamilyFreezes> standing) =>
     [
-        .. cards.Select(card => card with
+        .. cards.Select(card =>
         {
-            SweepFoundNone = SweepLine.Drawn([.. answers.Where(answer => answer.Family == card.Family)], frozenAt(card.Family)),
+            var (drawn, lost, frozen) = SweepLines([.. answers.Where(answer => answer.Family == card.Family)], standing(card.Family), card.Family == HeavyweightRule.Name);
+
+            return card with { SweepFoundNone = drawn, SweepLost = lost, Frozen = frozen };
         }),
     ];
 
-    static (RegisterRow? Live, int Variants) StandingRows(string name, IReadOnlyList<CandidateRow> register, DateOnly night)
+    // The heavyweights' card with its line and its figures, as a swing card's.
+    public static HeavyweightCardView WithSweepLine(HeavyweightCardView card, IReadOnlyList<RecordedAnswer> answers, FamilyFreezes standing)
     {
-        var at = PastTheNight(night);
+        var (drawn, lost, frozen) = SweepLines([.. answers.Where(answer => answer.Family == HeavyweightRule.Name)], standing, true);
+
+        return card with { SweepFoundNone = drawn, SweepLost = lost, Frozen = frozen };
+    }
+
+    // A family's line, the years its kept line adds, and its frozen card's figures, from its answers and its freezes.
+    static (bool Drawn, IReadOnlyList<int>? Lost, FrozenSweepView? Frozen) SweepLines(IReadOnlyList<RecordedAnswer> answers, FamilyFreezes standing, bool points)
+    {
+        var drawn = SweepLine.Drawn(answers, standing.Freezes, standing.Live);
+        var lost = drawn && SweepLine.KeptAt(answers, standing.Freezes, standing.Live) is { } kept && SweepLine.Followed(answers, kept, standing.Design) is { Figures: { } held }
+            ? SweepLine.LostIn(held)
+            : null;
+        var frozen = SweepLine.LiveFreeze(standing.Freezes, standing.Live) is { } made && SweepLine.Followed(answers, made, standing.Design) is { Figures: { } figures } followed
+            ? new FrozenSweepView(DateOnly.FromDateTime(made.At.UtcDateTime), followed.Run, followed.Answer, figures, points)
+            : null;
+
+        return (drawn, lost, frozen);
+    }
+
+    static (RegisterRow? Live, int Variants) StandingRows(string name, IReadOnlyList<CandidateRow> register, DateOnly night) =>
+        StandingRows(name, register, PastTheNight(night));
+
+    // A family's live rule and the variants standing beside it as of an instant. The rule of the day before an S&P 400 or
+    // 600 freeze, kept in the background, is no variant a card or an account counts.
+    // see: A freeze on the S&P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions
+    static (RegisterRow? Live, int Variants) StandingRows(string name, IReadOnlyList<CandidateRow> register, DateTimeOffset at)
+    {
         var standing = CandidateFamily.In(
                 CandidateFamily.Standing(
                     [
@@ -392,7 +446,7 @@ public static partial class TonightScreen
         // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
         var live = name == SetupFamilies.Pullback ? standing.LastOrDefault(row => SwingFamily.IsLive(row.Candidate)) : FamilyRecords.LiveOf(standing);
 
-        return (live, standing.Count(row => row != live));
+        return (live, standing.Count(row => row != live && !FamilyRecords.IsBackground(row.Candidate)));
     }
 
     // The notes beneath a family's picks: each stock it passed that a trade still open holds back, each one
