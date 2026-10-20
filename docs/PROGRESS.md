@@ -4865,3 +4865,47 @@ Carried:    the operator's word on the S&P 400 drift's setting, the S&P 400 brea
             naming the night it replaced and what each index listed; the setups like a frozen pick waiting for the next
             ledger history build; PR 505 rebased with its migration at 103; and the phase 18 sign-off by a fresh
             session.
+
+### 20.11 - the remedy run from main: migration 102, the answers recorded, the eight freezes registered with their records and nights replayed, and the night of 2026-10-19 run again under them   2026-10-20
+
+Not a checkpoint entry: it records 20.11's two remedies and the night run again, and lands nothing.
+Ran:        on the operator's word of 2026-10-20 to merge at once rather than at the next morning's stop, the history
+            read stopped at 18:35:37Z with LM Studio's model unloaded, PR 512 merged at 18:35:50Z as 4fc74bda and the
+            read surface on 5152 started again from main's Release at 18:37Z. From main, with no night, off-peak run,
+            drain, local run or monthly run writing: `tools/remedies/2026-10-20-20.11-the-index-freezes.txt` from
+            18:36:35Z to 19:04:54Z, all 27 steps; `tools/remedies/2026-10-20-20.11-the-frozen-rules-stretch-lines.txt`
+            from 19:05:17Z to 19:34:02Z, ahead of the night run again since the evening held time for both before the
+            night's window; then `tools/nightly.ps1 --session 2026-10-19 --register-now` from 19:34:14Z to 19:59:55Z,
+            2026-10-19 being the newest session the store held. No model call; the night run again asked the provider
+            55 requests, 371 weighted calls of 100,000, as any night does, and queued no report.
+Measured:   migration 102 applied, 101 to 102. The ten answers recorded with their testers, none of the families'
+            searches passing the tester's bar: on the S&P 400 the breakout none passed at 1,033 trades and an adjusted p
+            of 0.1798, the pullback 717 and 0.6552, the drift none passed at 1,082 and 0.4104, the heavyweights' designs
+            335 and 684 holdings at 0.261 and 0.2905; on the S&P 600 the pullback 540 and 0.9517, the breakout 957 and
+            0.5076, the drift 1,021 and 0.1953, the heavyweights' designs 304 and 496 at 0.9422. The six variants of
+            19.1 retired, the S&P 600 heavyweights' two books registered again, and the eight freezes registered, 25
+            S&P 400 and 600 rules standing after them: 8 live, 8 kept in the background, 6 market variants, the S&P 600
+            pullback's tester's choice and the two books. The records replayed in 28 minutes, 15 of them the S&P 600's
+            pullback: on the S&P 400 the pullback 720 trades, the breakout 1,033, the drift 1,082 and the heavyweights
+            335 holdings, and on the S&P 600 548, 957, 1,021 and 304, each under its rule's own words, the two
+            pullbacks' a few more than their searches' 717 and 540. The nights replayed over 1,960 sessions from
+            2019-01-02 to 2026-10-19: on the S&P 400 the pullback listing on 543 of them with 334 stretches completed
+            and a mark of 25, the breakout 619, 303 and 47, the drift 485, 208 and 53; on the S&P 600 437, 292 and 18,
+            521, 258 and 58, and 473, 215 and 23.
+Night:      the run again, night-20261020T193434Z-for-2026-10-19, built from 4fc74bdacf20, replaced
+            night-20261019T230020Z, which had listed nothing on any index. Run again it listed nothing either: the
+            S&P 500's filter passed no name and its drift's two were held back by trades still open; on the S&P 400,
+            at a breadth of 43.2 per cent, and on the S&P 600, at 45.6, no member passed any family's frozen rule, the
+            S&P 400 breakout's year's high unread on a night holding 251 sessions; neither index's frozen heavyweights
+            book bought, each waiting for a night holding the 252 sessions its readings need; and the S&P 600 drift
+            kept in the background kept one trade on its own list. Its rule rows on the S&P 400 and 600 were not
+            computed, the night's row of each frozen rule meeting the replay's row of 2026-10-19, which the 17.2
+            correction below repairs.
+Read:       the history read under pin 3 stood at 17,991 of 45,340 releases, 39.7 per cent, about 800 an hour, when it
+            stopped; started again at 20:02:21Z from main's clean copy, 4fc74bdacf20, with the card at 250 W.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as 20.11's entry, the morning's merge, remedies and night run again done here instead; the frozen
+            heavyweights' first rebalance on the first night holding 252 sessions; the setups like a frozen pick
+            waiting for the next ledger history build; PR 505 rebased with its migration at 103; and the phase 18
+            sign-off by a fresh session.
