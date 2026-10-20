@@ -4414,3 +4414,145 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             request, with the figures it states.
 Carried:    as the newest entry of this pull request; the earlier searches' records stand as run, 20.11's own search
             replacing them.
+
+### 20.11 run - the market check swept on the S&P 400 and 600 at seven levels, each swing family at the setting its night reads, every trade at the next open after its round trip   2026-10-20
+
+Not a checkpoint entry: it lands nothing.
+Queue:      as the 20.11 ruling's entry above.
+Ran:        `sweep-index --family market-check` from a clean copy of 2900729d's build, the S&P 400 from 06:26 to 06:59
+            UTC and the S&P 600 from 06:59 to 07:33 beside the runs below, every figure the same as its first run from
+            this branch's build at 03:22: over the history through 2026-10-19 on membership as it stood, scored from
+            2019-01-02, each family at the setting its night reads, each listing cleared by its index's floors and the
+            profit gate and bought at the open after it, its edge after its round trip; no request and no model call.
+Results:    each level's trades, edge in risks after costs, years of 8 above nothing, 2025's and 2026's edge and the edge
+            without the five largest results, then the sessions it closed of the 1,960 scored and of the last 60: off,
+            the index's own breadth at 0.35 to 0.50, the night's own at 0.45, the S&P 500's at 0.45 and the index's fund
+            above its 200-session average.
+            pullback  S&P 400                              S&P 600
+            off       1,378 +0.068 5 -0.142 +0.024 +0.057  1,673 +0.102 7 +0.271 +0.071 +0.090
+            own 0.35  1,313 +0.078 5 -0.135 +0.024 +0.067  1,552 +0.086 7 +0.251 +0.071 +0.073
+            own 0.40  1,277 +0.075 5 -0.133 +0.024 +0.064  1,425 +0.064 6 +0.290 +0.071 +0.050
+            own 0.45  1,184 +0.063 3 -0.118 -0.038 +0.046  1,280 +0.081 5 +0.249 +0.086 +0.066
+            own 0.50  1,068 +0.063 4 -0.131 -0.043 +0.044  1,133 +0.058 5 +0.200 +0.056 +0.040
+            500 0.45  1,245 +0.071 4 -0.135 +0.024 +0.055  1,533 +0.080 7 +0.249 +0.062 +0.066
+            fund      1,137 +0.090 4 -0.096 +0.006 +0.072  1,253 +0.079 6 +0.304 +0.062 +0.062
+            breakout  S&P 400                              S&P 600
+            off         703 -0.029 3 -0.284 -0.269 -0.079    857 -0.011 3 +0.053 +0.025 -0.047
+            own 0.35    676 -0.020 3 -0.261 -0.269 -0.073    806 -0.010 4 +0.104 +0.025 -0.048
+            own 0.40    666 -0.021 3 -0.261 -0.269 -0.074    753 +0.006 4 +0.081 +0.025 -0.034
+            own 0.45    638 -0.036 2 -0.226 -0.266 -0.092    713 -0.033 3 +0.192 +0.025 -0.076
+            own 0.50    591 -0.049 1 -0.318 -0.257 -0.109    644 -0.033 3 +0.166 +0.025 -0.081
+            500 0.45    663 -0.023 3 -0.261 -0.269 -0.076    812 -0.011 3 +0.057 +0.025 -0.049
+            fund        620 -0.065 2 -0.308 -0.269 -0.121    681 -0.031 3 +0.210 +0.025 -0.076
+            drift     S&P 400                              S&P 600
+            off       2,026 -0.095 3 -0.220 -0.134 -0.061  1,982 -0.273 1 -0.216 -0.460 -0.225
+            own 0.35  1,848 -0.086 3 -0.268 -0.134 -0.049  1,767 -0.328 1 -0.387 -0.460 -0.274
+            own 0.40  1,759 -0.088 3 -0.232 -0.134 -0.049  1,593 -0.283 1 -0.552 -0.460 -0.291
+            own 0.45  1,641 -0.085 3 -0.195 -0.140 -0.043  1,418 -0.304 1 -0.594 -0.460 -0.313
+            own 0.50  1,500 -0.090 3 -0.201 -0.136 -0.044  1,238 -0.342 0 -0.445 -0.431 -0.221
+            500 0.45  1,718 -0.089 3 -0.268 -0.134 -0.049  1,716 -0.304 1 -0.318 -0.460 -0.311
+            fund      1,571 -0.088 3 -0.190 -0.134 -0.045  1,375 -0.377 0 -0.613 -0.460 -0.269
+            closed    S&P 400        S&P 600
+            off           0 and 0         0 and 0
+            own 0.35    248 and 0       338 and 0
+            own 0.40    332 and 1       498 and 0
+            own 0.45    470 and 19      669 and 0
+            own 0.50    622 and 24      849 and 12
+            500 0.45    342 and 2       342 and 2
+            fund        513 and 9       702 and 8
+Read:       no level makes the breakout or the drift earn on the S&P 400, nor the drift on the S&P 600, at the settings
+            their nights read; the pullback earns at every level on both, the night's own 0.45 among its weakest.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 20.11 run - every family swept again on the S&P 400 and 600 at the next open, the market check a dial of each swing grid and the research's dials in each second stage, each answer the setting its family would run   2026-10-20
+
+Not a checkpoint entry: it lands nothing.
+Queue:      as the 20.11 ruling's entry above.
+Ran:        from a clean copy of 2900729d's build over the same history, read-only: `pullback-own` on both indices
+            from 05:56 to 06:23 and 06:26 UTC, `breakout-own` on the S&P 400 from 05:37 to 05:39, and from 07:33 to
+            07:51 `breakout-own` on the S&P 600 with `drift-own --stop-floor 1`, `heavyweights-own` and
+            `heavyweights-b-own` on both, every answer the same as its first run from this branch's builds of 03:32 to
+            05:31.
+Results:    each family's answer: the setting it would run, whether it passed the floors of 300 trades and 6 of 8 years
+            above nothing after costs, then its trades, edge in risks after costs, years above nothing, 2025's and
+            2026's edge and the edge without its five largest results, the heavyweights' in points over their size
+            cut's; the night's own rule; and the settings meeting the floors against what luck alone passes, 37 in 256 a
+            setting. A swing grid's last dial is the market check: 0 off, 1 to 4 the index's own breadth at 0.35, 0.40,
+            0.45 and 0.50, 5 the S&P 500's at 0.45 and 6 the index's fund above its 200-session average.
+            S&P 400
+            pullback     passed, crossed with the profit and cover check: strength 0.75, depth 1 to 3, dry-up 1.5,
+                         freshness 8, reward to risk 2, stop 0.5 to 4, own breadth at 35%, band strength 6; 717 trades,
+                         +0.190, 6, +0.424, +0.093, +0.148; the night's base +0.063 over 1,176; its search read all
+                         2,016,000 settings, its proposal short of the floors and 1 of its 10 strongest crossed meeting
+                         them
+            breakout     none passed, the strongest holding the trade floor: high=251|volume=1.5|ceiling=1|stop=3|
+                         market=5; 1,033 trades, +0.023, 4, -0.071, -0.096, -0.010; the night's -0.036 over 638; 0 of 378
+                         settings meeting the floors against 54.6 by luck, and no level of its second stage surviving
+            drift        passed, crossed with the first pullback within 10 sessions of the reaction as its entry:
+                         window=10|reaction=0.5|volume=1.25|target=3|market=3; 1,825 trades, +0.136, 7, +0.011, +0.103,
+                         +0.088; the night's -0.085 over 1,641; 0 of 567 meeting the floors against 81.9, 1 of 10
+                         crossed
+            heavyweights design (a), the stronger: quality off, floors 1x, size 10, look-back 251, leaders 2, beta at
+                         least 1, sold on a break; 335 holdings, +2.17 points, 6, +9.11, -2.81, -0.08; the night's +0.75
+                         over 446; 53 of 648 meeting the floors against 93.7; design (b): window 21, industries 5,
+                         members 2, quality off, floors 1x; 684 holdings, +0.57 points, 7, +1.49, +0.64, +0.16; 10 of 72
+                         against 10.4
+            S&P 600
+            pullback     passed, crossed with the profit and cover check: strength 0.75, depth 1 to 4, dry-up 1,
+                         freshness 8, reward to risk 2.5, stop 0.5 to 2.5, market off, band strength 2; 540 trades,
+                         +0.284, 6, +0.530, +0.586, +0.225; the night's base +0.081 over 1,266; its proposal short of the
+                         floors and all 10 of its strongest crossed with the cover check meeting them
+            breakout     passed, its proposal: high=126|volume=1.25|ceiling=0.85|stop=3|market=2; 957 trades, +0.033,
+                         6, +0.177, +0.033, +0.004; the night's -0.033 over 713; 11 of 378 meeting the floors against
+                         54.6
+            drift        passed, crossed with a hold of 63 sessions and the revenue grown on the year as first filed:
+                         window=10|reaction=0.5|volume=1.25|target=3|market=0; 2,458 trades, +0.054, 7, +0.133, +0.085,
+                         +0.041; the night's -0.304 over 1,418; 0 of 567 meeting the floors against 81.9, 9 of 10
+                         crossed
+            heavyweights design (a), the stronger: quality off, floors 1x, size 10, look-back 63, leaders 1, beta at
+                         least 1, sold on a break; 304 holdings, +3.78 points, 7, +10.29, -2.71, +1.25; the night's
+                         +0.95 over 455; 72 of 648 meeting the floors against 93.7; design (b): window 63, industries 5,
+                         members 2, quality off, floors 2x; 496 holdings, +1.57 points, 6, +0.93, +2.87, +0.33; 3 of 72
+                         against 10.4
+            The fundamentals-first family buys at its index's pullback's base and follows the pullback's setting.
+Read:       on either index no family's grid meets the floors more often than luck alone would, so each answer that
+            passes is a setting the floors admit and not yet an edge, as the tester's runs below read.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 20.11 run - each family's search on the S&P 400 and 600 judged by the tester year by year, none passing its bar   2026-10-20
+
+Not a checkpoint entry: it lands nothing.
+Queue:      as the 20.11 ruling's entry above.
+Ran:        from a clean copy of 2900729d's build, read-only: `tester-own` on the S&P 400 from 06:26 to 07:00 UTC and on
+            the S&P 600 from 07:00 to 07:35, and `tester-pullback-own` on each from 06:26 to 07:41 and 07:57, every
+            verdict the same as its first run from this branch's build at 04:43: each search run inside the folds of
+            2022 to 2026 on the years before each, its floors and its second stage's rule in proportion, and on all
+            finished data.
+Results:    each family's choice on all finished data, its adjusted p against the bar of 0.0042, the years it was better
+            in against the stability screen, its count and its folds within a step of its choice.
+            S&P 400
+            pullback      strength 0.75, depth 1 to 3, dry-up 1.5, freshness 8, reward to risk 2, stop 0.5 to 4, market
+                          35%, band strength 6 with the profit and cover check; 0.6552; 2 of 4, short; 490 risks; 0 of 5
+            breakout      none chosen; 0.1798; 1 of 2, short; 253 risks, short of the count; 0 of 5
+            drift         window=10|reaction=0.5|volume=1.25|target=3|market=3 entering on the first pullback; 0.4104;
+                          2 of 4, short; 1,053 risks; 0 of 5
+            heavyweights  design (a) at its sweep's proposal; 0.261; 2 of 3; 57 points; 4 of 5; design (b) at its
+                          sweep's proposal; 0.2905; 1 of 3, short; 56 points; 1 of 5
+            S&P 600
+            pullback      strength 0.75, depth 1 to 4, dry-up 1, freshness 8, reward to risk 2.5, stop 0.5 to 4, market
+                          off, band strength 0 with the profit and cover check; 0.9517; 0 of 2, short; 566 risks; 0 of 5
+            breakout      high=126|volume=1.25|ceiling=0.85|stop=3|market=2; 0.5076; 0 of 2, short; 302 risks; 0 of 5
+            drift         window=10|reaction=0.5|volume=1.25|target=3|market=0 held 63 sessions with the revenue grown
+                          as first filed; 0.043; 2 of 3; 1,329 risks; 0 of 5
+            heavyweights  design (a) at its sweep's proposal; 0.9422; 1 of 4, short; 57 points; 2 of 5; design (b) at
+                          its sweep's proposal; 0.9422; 0 of 4, short; 57 points; 0 of 5
+Read:       no family passes on either index; the S&P 600 drift comes nearest at 0.043, ten times the bar, and the S&P
+            600 pullback's choice on all finished data is not its sweep's, its search inside each fold choosing a
+            farther stop and no band strength.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
