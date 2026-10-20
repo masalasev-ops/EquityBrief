@@ -334,10 +334,80 @@ public partial class ReadSurface
     static string CardWords(string drawn) =>
         Regex.Replace(drawn, "<span class=\"(?:gain|loss)\">([^<]*)</span>", "$1");
 
-    // A sentence a rule stored as the page states it, by the test's own reading: a count of one with its noun's singular
-    // where the rule wrote "(s)" after it, and any other count with the noun's plural.
+    // A sentence a rule stored as the page states it, by the test's own reading: a figure written past two places, or to
+    // two at a thousand or more, at two places with its thousands marked, a count of one with its noun's singular where
+    // the rule wrote "(s)" after it, and any other count with the noun's plural.
     static string Said(string stored) =>
-        Regex.Replace(stored, "(\\d[\\d,]*) ([A-Za-z]+)\\(s\\)", count => count.Groups[1].Value == "1" ? $"1 {count.Groups[2].Value}" : $"{count.Groups[1].Value} {count.Groups[2].Value}s");
+        Regex.Replace(
+            Regex.Replace(
+                stored,
+                "(?<![\\d.])(\\d+)\\.(\\d+)(?![\\d.])",
+                figure => figure.Groups[2].Length > 2 || (figure.Groups[2].Length == 2 && figure.Groups[1].Length > 3)
+                    ? Math.Round(decimal.Parse(figure.Value, CultureInfo.InvariantCulture), 2, MidpointRounding.AwayFromZero).ToString("#,##0.00", CultureInfo.InvariantCulture)
+                    : figure.Value),
+            "(\\d[\\d,]*) ([A-Za-z]+)\\(s\\)",
+            count => count.Groups[1].Value == "1" ? $"1 {count.Groups[2].Value}" : $"{count.Groups[1].Value} {count.Groups[2].Value}s");
+
+    [Fact]
+    public void AFigureARuleStoredPastTwoPlacesIsDrawnAtThePlacesItIsReadAt()
+    {
+        // Worked by hand from TRV's card of 2026-10-16 and JBL's of 2026-10-13: the target stored at 441.815 reads 441.82
+        // as the plan beside it does, a strength of 0.540 against its floor of 0.500 reads 0.54 against 0.50, a reward to
+        // risk of 2.3085 reads 2.31 and a round trip of 0.013 of the risk 0.01, while a figure stored to two places, a
+        // percentage and a whole count stay as written.
+        Assert.Equal(
+            "bought at the close of 389.54 with the stop at 368.63 and the target at 441.82, 2.5 times the risk; strength 0.54 at or above its floor of 0.50; reward to risk 2.31 at or above 2; breadth 55.0% over 50 sessions; its round trip is 0.01 of the trade's risk",
+            MarkRenderer.StoredWords("bought at the close of 389.54 with the stop at 368.63 and the target at 441.815, 2.5 times the risk; strength 0.540 at or above its floor of 0.500; reward to risk 2.3085 at or above 2; breadth 55.0% over 50 session(s); its round trip is 0.013 of the trade's risk"));
+        Assert.Equal(MarkRenderer.StoredWords("the target at 441.815 and 3046.47, 2 session(s)"), Said("the target at 441.815 and 3046.47, 2 session(s)"));
+
+        // A pick's card, the name page's gates, the lines saying why the filter passed it and the gates beneath a row of
+        // Tonight's list each read the stored words so.
+        const string Trade = "reward to risk 2.3085 at or above 2; the target at 441.815, 1 session(s) before tonight";
+        const string Read = "reward to risk 2.31 at or above 2; the target at 441.82, 1 session before tonight";
+        var marks = new MarkRenderer();
+        var card = marks.DecisionCard(new DecisionCardView("GSPC", new DateOnly(2026, 10, 16), "drift", "TRV", "the earnings drift", 389.54m, 368.63m, 441.82m, [new CardLineView(1, "Trend and strength", "tick", Trade)], null));
+        var gates = marks.GatesTable("F1", new GatesView(new DateOnly(2026, 9, 5), "3", [new GateLine("trade", true, Trade)], null, null, null, null, null, null, null, null, null, [], [], true, null));
+        var why = marks.WhyItPassed("F1", new FilterWhy(new DateOnly(2026, 9, 5), [new FilterGate("trade", true, Trade)], []));
+        var list = marks.TonightList(
+            [new ListingCell("F1", new DateOnly(2026, 9, 5), 0, 0, 389.54m, [], Filter: new FilterRow(1, "drift", "tonight", EquityBrief.Core.Filter.FilterSettings.SwingWord, "2.3085", "1.95", [new FilterGate("trade", true, Trade)]))],
+            1,
+            [],
+            new ListRuleView(EquityBrief.Core.Shortlist.ListRules.Filter, true, 0.55, 0.45, [1, 1, 1, 1, 1]));
+
+        Assert.Contains($"<span class=\"card-words\">{Read}</span>", card, StringComparison.Ordinal);
+        Assert.Contains($"<td>{Read}</td>", gates, StringComparison.Ordinal);
+        Assert.Contains($"<b>trade</b>: {Read}</p>", why, StringComparison.Ordinal);
+        Assert.Contains($"title=\"trade: {Read}\"", WebUtility.HtmlDecode(list).Replace("&#39;", "'", StringComparison.Ordinal), StringComparison.Ordinal);
+
+        foreach (var drawn in new[] { card, gates, why, list })
+        {
+            Assert.DoesNotContain("441.815", drawn, StringComparison.Ordinal);
+            Assert.DoesNotContain("2.3085", drawn, StringComparison.Ordinal);
+            Assert.DoesNotContain("(s)", drawn, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void ARefusedOrUnwrittenSectionsStoredReasonTakesItsCountsInWords()
+    {
+        // TRV's industry cycle of 2026-10-17 and ADM's of 2026-10-11, as their passes stored them, and a pass's own line.
+        var drawn = new MarkRenderer().LeftOut(
+            "TRV",
+            [new LeftOutSection("TRV", "The two cases", "refused at its third retry: a figure no fact holds, 1 figure(s) named")],
+            notWritten:
+            [
+                new LeftOutSection("TRV", "The industry cycle", "the theme could not be refreshed: declined for lack of industry sources: the searches found 5 page(s) about Insurance - Property & Casualty, from federalreserve.gov, spglobal.com and statista.com"),
+                new LeftOutSection("ADM", "The industry cycle", "the theme could not be refreshed: declined for lack of industry sources: the searches found 1 page(s) about Farm Products, from statista.com"),
+            ],
+            pass: new ResearchPassLine("ok", new DateOnly(2026, 10, 17), "the newest research pass for this name ran on 2026-10-17 over 12 document(s)"));
+        var read = WebUtility.HtmlDecode(drawn);
+
+        Assert.Contains("The two cases is left out: refused at its third retry: a figure no fact holds, 1 figure named</p>", read, StringComparison.Ordinal);
+        Assert.Contains("The industry cycle is not written: the theme could not be refreshed: declined for lack of industry sources: the searches found 5 pages about Insurance - Property & Casualty, from federalreserve.gov, spglobal.com and statista.com</p>", read, StringComparison.Ordinal);
+        Assert.Contains("the searches found 1 page about Farm Products, from statista.com</p>", read, StringComparison.Ordinal);
+        Assert.Contains("ran on 2026-10-17 over 12 documents</p>", read, StringComparison.Ordinal);
+        Assert.DoesNotContain("(s)", read, StringComparison.Ordinal);
+    }
 
     [Fact]
     public void ACountARuleStoredWithItsNounsSIsDrawnAsTheReaderSaysIt()

@@ -408,6 +408,38 @@ public partial class ReadSurface
         Assert.Equal(2, (await read.QuoteRunsAsync(open, close)).Asked.Count);
     }
 
+    [Fact]
+    public async Task ASessionsAsksNoRunAnsweredAreNamedEachByItsOwnInstantWhereNoQuoteWasStored()
+    {
+        using var store = new TemporaryStore().Migrated();
+        var (open, close) = EquityBrief.Core.Quotes.RegularSession.On(new DateOnly(2026, 10, 7), SessionZones.ResolveSessionZone(SessionZones.UnitedStates))!.Value;
+
+        // CVX asked twice in the session and no run of the quote job yet, as the session of 2026-10-13 stood: the line
+        // counts both asks against no quote stored and names each, and never says the pages asked for none.
+        store.Execute("INSERT INTO quote_request (ticker, asked_at) VALUES ('CVX', '2026-10-07T14:38:23Z'), ('CVX', '2026-10-07T15:45:10Z');");
+
+        var read = new ReadApi(store.DatabaseFile, FixedClock.At(close, SessionZones.UnitedStates));
+        var unrun = await read.QuoteRunsAsync(open, close);
+        var drawn = WebUtility.HtmlDecode(new MarkRenderer().ResearchRegion(new ResearchPicture(new NightSpend(0m, 0m, 10m, 50m), [], Quotes: unrun)));
+
+        Assert.Equal((2, 0, 0), (unrun.Asks, unrun.Asked.Count, unrun.Outcomes.Count));
+        Assert.Contains("data-asks=\"2\" data-stored=\"0\" data-unanswered=\"2\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("The name pages asked for 2 delayed quotes in the session of 2026-10-07, and 0 quotes were stored against a cap of 500; 2 asks no run of the quote job answered, the job ending before it wrote its row or never starting: <span class=\"rp-unanswered\" data-ticker=\"CVX\" data-asked-at=\"2026-10-07T14:38:23Z\">CVX at 14:38:23 UTC</span>, <span class=\"rp-unanswered\" data-ticker=\"CVX\" data-asked-at=\"2026-10-07T15:45:10Z\">CVX at 15:45:10 UTC</span>.</p>", drawn, StringComparison.Ordinal);
+        Assert.DoesNotContain("asked for no delayed quote", drawn, StringComparison.Ordinal);
+
+        // The job answers the first ask alone: the second, of the same name, is still named, by its own instant.
+        var quoted = new EquityBrief.Core.Providers.ProviderQuote(new DateTimeOffset(2026, 10, 7, 14, 23, 0, TimeSpan.Zero), 211.40m, 210.10m, 1.30m, 0.6187);
+        var ran = await new QuoteJob(FixedClock.At(new DateTimeOffset(2026, 10, 7, 14, 38, 25, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile, new AnsweringQuoteFeed(quoted))
+            .RunAsync("CVX", new DateTimeOffset(2026, 10, 7, 14, 38, 23, TimeSpan.Zero));
+
+        Assert.Equal(QuoteJob.Quoted, ran.Outcome);
+
+        var runs = await read.QuoteRunsAsync(open, close);
+
+        Assert.Equal((2, 1), (runs.Asks, runs.Asked.Count));
+        Assert.Equal([("CVX", new DateTimeOffset(2026, 10, 7, 15, 45, 10, TimeSpan.Zero))], runs.Unanswered!);
+    }
+
     // A quote feed answering the quote it is handed.
     sealed class AnsweringQuoteFeed(EquityBrief.Core.Providers.ProviderQuote quote) : EquityBrief.Core.Providers.IQuoteFeed
     {
