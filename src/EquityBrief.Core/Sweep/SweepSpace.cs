@@ -88,11 +88,12 @@ public sealed class SweepSpace
 
     public int High(int dial) => high[dial];
 
-    // The space over the extended grid and the conditions given, by number from 1, in order.
-    public static SweepSpace For(IEnumerable<int> conditionsOn, SweepGrid? grid = null)
+    // The space over the extended grid and the conditions given, by number from 1, in order, each dial tested over the
+    // fine grid's range unless another grid is named as the range tested.
+    public static SweepSpace For(IEnumerable<int> conditionsOn, SweepGrid? grid = null, SweepGrid? tested = null)
     {
         var over = grid ?? SweepGrid.Extended;
-        var fine = SweepGrid.Fine;
+        var fine = tested ?? SweepGrid.Fine;
         var on = conditionsOn.Distinct().Order().ToArray();
         var dials = new List<SweepDial>();
 
@@ -281,6 +282,25 @@ public sealed class SweepSpace
 
     // The live rule's point: its fine settings, every condition off.
     public int[] LivePoint() => Point(Grid.Carry(SweepGrid.Fine, DialSetting.LiveOnFine), ConditionSetting.Off);
+
+    // A setting of another grid carried onto the space's grid by its values, none where the grid holds one of them at no
+    // place, as a grid whose market floors are not the extended grid's holds no place for some of the coarse floors.
+    public DialSetting? Carried(SweepGrid from, DialSetting setting)
+    {
+        var (low, high) = from.StopBounds[setting.Stop];
+
+        return SweepGrid.IndexOf(Grid.StrengthBars, from.StrengthBars[setting.Strength]) >= 0
+            && SweepGrid.IndexOf(Grid.DepthLows, from.DepthLows[setting.DepthLow]) >= 0
+            && SweepGrid.IndexOf(Grid.DepthHighs, from.DepthHighs[setting.DepthHigh]) >= 0
+            && SweepGrid.IndexOf(Grid.DryUpCeilings, from.DryUpCeilings[setting.DryUp]) >= 0
+            && SweepGrid.IndexOf(Grid.Freshness, from.Freshness[setting.Freshness]) >= 0
+            && SweepGrid.IndexOf(Grid.RewardToRiskFloors, from.RewardToRiskFloors[setting.RewardToRisk]) >= 0
+            && Grid.StopBounds.Contains((low, high))
+            && SweepGrid.IndexOf(Grid.MarketFloors, from.MarketFloors[setting.Market]) >= 0
+            && SweepGrid.IndexOf(Grid.BandStrengths, from.BandStrengths[setting.Band]) >= 0
+                ? Grid.Carry(from, setting)
+                : null;
+    }
 
     public bool Inside(ReadOnlySpan<int> point)
     {

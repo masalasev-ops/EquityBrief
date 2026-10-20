@@ -56,6 +56,14 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
         [FollowersSix] = "followers of the S&P 500's industry leaders, the sector heavyweights'",
         [PullbackNeighbours] = "pullback with profit and cover, at half steps",
         [PullbackJoint] = "pullback's nine dials with profit and cover, searched with the other index's",
+        [MarketCheck] = "swing families' market check",
+        [BreakoutOwn] = "breakouts' on its own history at the next open, the market check a dial,",
+        [DriftOwn] = "earnings drift's on its own history at the next open, the market check a dial,",
+        [PullbackOwn] = "pullback's nine dials, at the next open with the market check a dial,",
+        [HeavyweightsOwn] = "sector heavyweights' at the next open,",
+        [FollowersOwn] = "followers of the S&P 500's industry leaders at the next open, the sector heavyweights'",
+        [TesterOwn] = "families' searches on its own history, run year by year,",
+        [TesterPullbackOwn] = "pullback's search on its own history, run year by year,",
     };
 
     public const string Pullback = "pullback";
@@ -174,6 +182,41 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
         if (family == PullbackJoint)
         {
             return await PullbackJointAsync(indexCode, history, through, folder, started, cancellation);
+        }
+
+        if (family == MarketCheck)
+        {
+            return await MarketCheckAsync(indexCode, named, history, through, inputs, companies, income, folder, started, cancellation);
+        }
+
+        if (family == TesterOwn)
+        {
+            return await TesterOwnAsync(indexCode, named, words, history, through, inputs, companies, income, folder, started, cancellation);
+        }
+
+        if (family == TesterPullbackOwn)
+        {
+            return await TesterPullbackOwnAsync(indexCode, named, words, history, through, inputs, companies, income, folder, started, cancellation);
+        }
+
+        if (family == HeavyweightsOwn)
+        {
+            return await HeavyweightsAsync(indexCode, named, words, history, through, inputs, companies, income, folder, cancellation, atTheOpen: true);
+        }
+
+        if (family == FollowersOwn)
+        {
+            return await FollowersAsync(indexCode, named, words, history, through, inputs, companies, income, folder, cancellation, atTheOpen: true);
+        }
+
+        if (family == PullbackOwn)
+        {
+            return await PullbackOwnAsync(indexCode, named, words, history, through, inputs, companies, income, folder, started, cancellation);
+        }
+
+        if (family is BreakoutOwn or DriftOwn)
+        {
+            return await SwingOwnAsync(indexCode, named, words, family == BreakoutOwn ? BreakoutRule.Name : DriftRule.Name, history, through, inputs, companies, income, folder, started, stopFloor, cancellation);
         }
 
         var calendar = inputs.Sessions;
@@ -1124,7 +1167,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
     // read against the index's fund, the members each rebalance reads those clearing the floors and the gate on its
     // session, and each holding's result in per cent after its round trip, its size cut's return paying none.
     // see: A trade's cost comes off the trade and not its benchmark
-    async Task<int> HeavyweightsAsync(string indexCode, string named, string words, SweepHistory history, DateOnly through, SweepHistoryInputs inputs, HeavyweightHistory companies, IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income, string folder, CancellationToken cancellation)
+    async Task<int> HeavyweightsAsync(string indexCode, string named, string words, SweepHistory history, DateOnly through, SweepHistoryInputs inputs, HeavyweightHistory companies, IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income, string folder, CancellationToken cancellation, bool atTheOpen = false)
     {
         var fund = (await history.SeriesOfAsync([IndexFunds[indexCode]], through, cancellation)).FirstOrDefault();
         var calendar = inputs.Sessions;
@@ -1207,7 +1250,8 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
 
                 foreach (var setting in pair.Group)
                 {
-                    var trades = HeavyweightSweep.Walk(tape, rebalances, setting.Exit, EveryOnce);
+                    var walked = HeavyweightSweep.Walk(tape, rebalances, setting.Exit, EveryOnce);
+                    IReadOnlyList<HeavyweightTrade> trades = atTheOpen ? [.. walked.Select(trade => AtTheOpen(trade, tape, series, rebalances))] : walked;
                     var key = prefix + setting.Key;
 
                     figures[key] = (
@@ -1226,7 +1270,8 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
             .ToArray();
         var proposal = proposals.Where(one => one.Proposed is not null).OrderByDescending(one => one.Proposed!.Edge).FirstOrDefault() ?? proposals[0];
         var provisional = VariantKey(IndexQuality.Profit, 1m) + (HeavyweightSweep.Frozen with { Sector = HeavyweightSectorReturn.Members }).Key;
-        var note = FormattableString.Invariant($"{Membership(named, inputs)} Each sector's return is its members' mean and a leader's beta is read against {fund?.Series ?? "no fund"}. Every setting rebalances monthly and is read at three qualities, none, the profit gate, and the profit gate with the interest cover, the state the fourth level adds not read since the history holds no quarters as they stood for it, and at the index's dollar volume floor once and twice, a member read by a rebalance only where its close was at least $5: at the provisional floors and gate {clearing:N0} of {members:N0} member-sessions clear. Edges are in points of the buy, after each holding's round trip at the published table, its size cut paying none.");
+        var note = FormattableString.Invariant($"{Membership(named, inputs)} Each sector's return is its members' mean and a leader's beta is read against {fund?.Series ?? "no fund"}. Every setting rebalances monthly and is read at three qualities, none, the profit gate, and the profit gate with the interest cover, the state the fourth level adds not read since the history holds no quarters as they stood for it, and at the index's dollar volume floor once and twice, a member read by a rebalance only where its close was at least $5: at the provisional floors and gate {clearing:N0} of {members:N0} member-sessions clear. Edges are in points of the buy, after each holding's round trip at the published table, its size cut paying none.")
+            + (atTheOpen ? " Every holding is bought at the open of the session after its rebalance through the core's one pricing function, its size cut each member from its own open after it." : string.Empty);
 
         static string Points(double? value) => value is { } one ? FormattableString.Invariant($"{one * 100:+0.00;-0.00}") : "none";
 
@@ -1251,7 +1296,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
 
         page.Append("</tbody></table></div></main></body></html>");
 
-        var report = WriteRun(folder, page.ToString(), new { index = indexCode, family = Heavyweights, note, provisional, proposal = proposal.Proposed?.Key, settings = after.Select(one => new { one.After.Key, figures[one.After.Key].Before, figures[one.After.Key].After, figures[one.After.Key].Doubled }) }, new SweepAnswer(indexCode, HeavyweightRule.Name, DesignA, proposal.Proposed is not null));
+        var report = WriteRun(folder, page.ToString(), new { index = indexCode, family = atTheOpen ? HeavyweightsOwn : Heavyweights, atTheNextOpen = atTheOpen, note, provisional, proposal = proposal.Proposed?.Key, settings = after.Select(one => new { one.After.Key, figures[one.After.Key].Before, figures[one.After.Key].After, figures[one.After.Key].Doubled }) }, new SweepAnswer(indexCode, HeavyweightRule.Name, DesignA, proposal.Proposed is not null));
 
         var (firstBefore, firstAfter, firstDoubled) = figures[provisional];
 
@@ -1271,7 +1316,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
     // round trip, the benchmark paying none. The proposal is the strongest edge meeting the family sweeps' floors, with
     // no plateau read across this smaller grid.
     // see: The 400 and 600 each sweep two heavyweight designs and keep the stronger after costs
-    async Task<int> FollowersAsync(string indexCode, string named, string words, SweepHistory history, DateOnly through, SweepHistoryInputs inputs, HeavyweightHistory companies, IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income, string folder, CancellationToken cancellation)
+    async Task<int> FollowersAsync(string indexCode, string named, string words, SweepHistory history, DateOnly through, SweepHistoryInputs inputs, HeavyweightHistory companies, IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income, string folder, CancellationToken cancellation, bool atTheOpen = false)
     {
         var industries = await history.IndustriesAsync(cancellation);
         var spy = (await history.SeriesOfAsync(["SPY"], through, cancellation)).FirstOrDefault();
@@ -1347,7 +1392,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
             select (Window: window, Kept: kept, PerIndustry: perIndustry, variant.Quality, variant.Floors)).ToArray();
 
         string KeyOf((int Window, int Kept, int PerIndustry, IndexQuality Quality, decimal Floors) setting) =>
-            FormattableString.Invariant($"window={setting.Window}|industries={(setting.Kept == EveryLeading ? "every leading" : setting.Kept.ToString(CultureInfo.InvariantCulture))}|members={setting.PerIndustry}|") + VariantKey(setting.Quality, setting.Floors).TrimEnd('|');
+            FollowersKey(setting.Window, setting.Kept, setting.PerIndustry, setting.Quality, setting.Floors);
 
         var figures = new System.Collections.Concurrent.ConcurrentDictionary<string, (HeavyweightFigures Before, HeavyweightFigures After, HeavyweightFigures Doubled)>(StringComparer.Ordinal);
 
@@ -1384,7 +1429,8 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
                 ]);
             }
 
-            var trades = HeavyweightSweep.Walk(tape, rebalances, HeavyweightExit.Drop, EveryOnce);
+            var walked = HeavyweightSweep.Walk(tape, rebalances, HeavyweightExit.Drop, EveryOnce);
+            IReadOnlyList<HeavyweightTrade> trades = atTheOpen ? [.. walked.Select(trade => AtTheOpen(trade, tape, series, rebalances))] : walked;
             var key = KeyOf(setting);
 
             figures[key] = (
@@ -1395,7 +1441,8 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
 
         var after = settings.Select(setting => figures[KeyOf(setting)].After).ToArray();
         var proposed = after.Where(one => one.MeetsFloors && one.Edge is not null).OrderByDescending(one => one.Edge).ThenBy(one => one.Key, StringComparer.Ordinal).FirstOrDefault();
-        var note = FormattableString.Invariant($"{Membership(named, inputs)} An industry's lead is its S&P 500 members' return over the window, each weighted by its value at the window's start, the S&P 500 read as it stood, less SPY's; {industries.Count:N0} companies carry a GICS industry. Every setting rebalances monthly and is read at three qualities and the index's dollar volume floor once and twice, a member read only where its close was at least $5. Edges are in points of the buy against the equal-weighted members of the holding's sector in the index, after each holding's round trip at the published table, the benchmark paying none.");
+        var note = FormattableString.Invariant($"{Membership(named, inputs)} An industry's lead is its S&P 500 members' return over the window, each weighted by its value at the window's start, the S&P 500 read as it stood, less SPY's; {industries.Count:N0} companies carry a GICS industry. Every setting rebalances monthly and is read at three qualities and the index's dollar volume floor once and twice, a member read only where its close was at least $5. Edges are in points of the buy against the equal-weighted members of the holding's sector in the index, after each holding's round trip at the published table, the benchmark paying none.")
+            + (atTheOpen ? " Every holding is bought at the open of the session after its rebalance through the core's one pricing function, its sector's members each from its own open after it." : string.Empty);
 
         static string Points(double? value) => value is { } one ? FormattableString.Invariant($"{one * 100:+0.00;-0.00}") : "none";
 
@@ -1416,7 +1463,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
 
         page.Append("</tbody></table></div></main></body></html>");
 
-        var report = WriteRun(folder, page.ToString(), new { index = indexCode, family = Followers, note, proposal = proposed?.Key, settings = after.Select(one => new { one.Key, figures[one.Key].Before, figures[one.Key].After, figures[one.Key].Doubled }) }, new SweepAnswer(indexCode, HeavyweightRule.Name, DesignB, proposed is not null));
+        var report = WriteRun(folder, page.ToString(), new { index = indexCode, family = atTheOpen ? FollowersOwn : Followers, atTheNextOpen = atTheOpen, note, proposal = proposed?.Key, settings = after.Select(one => new { one.Key, figures[one.Key].Before, figures[one.Key].After, figures[one.Key].Doubled }) }, new SweepAnswer(indexCode, HeavyweightRule.Name, DesignB, proposed is not null));
 
         var best = after.OrderByDescending(one => one.Edge ?? double.MinValue).First();
 
@@ -1471,6 +1518,10 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
     // 500 sweep's base at a reward to risk of 2.
     // see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing
     public static DialSetting PullbackBase(SweepGrid grid) => grid.Carry(SweepGrid.Extended, SweepIdeas.BaseRule.Setting);
+
+    // A setting of design (b)'s grid as its sweep names it.
+    public static string FollowersKey(int window, int kept, int perIndustry, IndexQuality quality, decimal floors) =>
+        FormattableString.Invariant($"window={window}|industries={(kept == EveryLeading ? "every leading" : kept.ToString(CultureInfo.InvariantCulture))}|members={perIndustry}|") + VariantKey(quality, floors).TrimEnd('|');
 
     // A kept trade's round trip in multiples of its risk at a multiple of the table, its company valued on the listing's
     // session and its prices read as they traded for their bands, the sale at the price its result puts it.

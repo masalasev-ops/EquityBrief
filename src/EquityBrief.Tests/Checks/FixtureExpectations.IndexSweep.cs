@@ -278,9 +278,14 @@ public partial class FixtureExpectations
 
         Assert.Equal("strength 0.5, depth 1 to 5, dry-up under 1.5, fresh within 3, reward to risk 2, stop 0.5 to 4, market 45%, band strength 0", night);
 
-        // The widened grid the searches read places it at those values; and it is not the S&P 500 filter's live setting at a
-        // reward to risk of 1.5 the searches read before.
-        Assert.Equal(night, IndexSweepRunner.PullbackBase(SweepGrid.Widened).Describe(SweepGrid.Widened));
+        // Each search's grid places it at those values, on the widened grid and on the own grid, whose market floors differ;
+        // and it is not the S&P 500 filter's live setting at a reward to risk of 1.5 the searches read before.
+        foreach (var grid in new[] { SweepGrid.Widened, IndexSweepRunner.OwnPullbackGrid })
+        {
+            Assert.Equal(night, IndexSweepRunner.PullbackBase(grid).Describe(grid));
+        }
+
         Assert.NotEqual(night, SweepGrid.Widened.Carry(SweepGrid.Fine, DialSetting.LiveOnFine).Describe(SweepGrid.Widened));
+        Assert.Equal(3, IndexSweepRunner.PullbackBase(IndexSweepRunner.OwnPullbackGrid).Market);
     }
 }
