@@ -55,8 +55,8 @@ public static class SweepEntries
     // A drift bought on the first pullback after its reaction: the first session within ten after the reaction whose
     // close is below the close before it, bought at that close with the reaction's low still its stop and its target the
     // nearer of the band and the setting's multiple of the new risk; none where no session falls, or where the first
-    // that does finds the market check closed, the member out of the index or holding a gap, or its close at or under
-    // the stop.
+    // that does comes before the listing's own session, whose stop no buy before it could have read, or finds the market
+    // check closed, the member out of the index or holding a gap, or its close at or under the stop.
     public static IEnumerable<FamilyListing> DriftPullback(FamilyListing listing, SweepSeries one, int reaction, double multiple, IReadOnlyList<SweepColumns.Session> sessions)
     {
         for (var bar = reaction + 1; bar <= reaction + PullbackSessions && bar < one.Bars.Length; bar++)
@@ -68,7 +68,7 @@ public static class SweepEntries
 
             var close = Statistic.FromPrice(one.Bars[bar].Close);
 
-            if (Opens(one, bar, sessions) && close > listing.Stop)
+            if (bar >= listing.Bar && Opens(one, bar, sessions) && close > listing.Stop)
             {
                 var byRisk = close + (multiple * (close - listing.Stop));
                 var band = BandAbove(one, bar, close);

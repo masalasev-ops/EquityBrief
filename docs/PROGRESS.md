@@ -4695,3 +4695,39 @@ Read:       the revenue level had read a quarter filed before the listing's own 
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 17.1 - correction: a drift's first pullback is bought only on or after the session of the listing it is read from, where a listing after the pullback lent it a stop no buy on that session could read   2026-10-20
+
+Queue:      as the 20.11 ruling's entry above.
+Found:      by the check the operator asked for on 2026-10-20 of each reading the eight frozen rules read, the sweep's timing
+            against the night's: the drift's entry on its first pullback, a level of the S&P 400's and 600's drift
+            searches since 17.1's second pull request and the S&P 400 drift's ruled answer, read its reaction's first lower
+            close from every listing of the reaction, those after the fall among them, so where every listing up to the
+            fall held its stop at or over the fall's close, a later listing's lower stop bought it all the same; an
+            estimate over the S&P 400's prints put 97 of 4,234 of the search's pullback buys, 2.29 per cent, on a later
+            listing's stop. The night reads listings only up to itself and could buy none of them.
+Corrected:  a listing buys its reaction's first lower close only where that close falls on or after the listing's own
+            session; the night reads what it read.
+Tests:      over 17.1's constructed reaction, a listing on the session of the first fall buys it there and one on the
+            session after buys none; an S&P 400 drift stating the entry over its constructed night as before.
+Searches:   run again from a scratch build of this branch's tree with the correction, read-only, at the stop floor of a
+            typical move: the S&P 400's drift from 14:05 to 14:10 UTC, run 20261020T140546Z, its entry level now kept on
+            3 of its 10 strongest settings where it was kept on 7, so no level survives, nothing is crossed and the search
+            passes no setting, its strongest window=3|reaction=1.5|volume=2|target=2|market=4 at +0.041 over 1,082
+            trades, 3 of 8 years above nothing, 2025 -0.082, 2026 -0.210, without the five largest +0.027, and the
+            setting the operator ruled on reading +0.098 over 1,807 trades with the entry, 6 of 8, 2025 -0.067, 2026
+            +0.099, where it read +0.136 over 1,825, 7 of 8; the S&P 600's drift from 14:10 to 14:16, run
+            20261020T141046Z, answering as before, window=3|reaction=0.5|volume=1.25|target=2.5|market=0 held 63 sessions
+            with the revenue grown, +0.107 over 1,021 trades, 7 of 8, figure for figure; the tester on the S&P 400 from
+            14:16 to 14:39, run 20261020T141632Z, its drift's search choosing no setting on all finished data where it
+            chose the window of 10 with the entry, its adjusted p 0.4104 as before, and its breakout's and heavyweights'
+            verdicts as before; and the tester on the S&P 600 from 14:39 to 15:21, run 20261020T143925Z, each of its four
+            verdicts as before.
+Mutated:    the rule, stated before the run: a listing buying no fall before its own session, broken by dropping the
+            condition on the listing's session: predicted red at the new case. Result: red, the listing on the session
+            after the fall buying it. The night's drift entry test held green under the mutation, the night reading no
+            listing after itself. Made on this branch and reverted before anything was committed, and the tests green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request; the S&P 400 drift's answer moved, put to the operator before its
+            freeze.
