@@ -26,6 +26,30 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-20 - ARCHITECTURE.html - a card drawn by a family's provisional rule draws only the provisional rule's record
+Corrects: a card an S&P 400 or 600 night drew by a family's provisional rule drew whatever record was stored, so after the family's freeze, whose remedy replays the frozen rule into the family's one row, a night reading the family by its provisional rule, one run again for a session before the freeze or one reading its frozen rule by none, drew the frozen rule's record under the provisional rule's heading; found by 20.11's replay and put to the operator, who ruled it fixed on 2026-10-20.
+Was:
+> ... From 20.11 a card of a family its S&amp;P 400 or 600 night read by its frozen live rule draws a record only where the stored record replayed that rule, named in the rule's own words, and the outline otherwise, never the provisional rule's record under its heading (see: ...).
+Now:
+> ... never the provisional rule's record under its heading, and from the 20.11 correction of 2026-10-20 a card its night drew by the family's provisional rule draws a record only where the stored record replayed the provisional rule, never a frozen rule's (see: ...).
+Why: a record is drawn only under the rule it replays.
+
+### 2026-10-20 - SCHEMA.md - a decision card's record is null where its night read the family by its provisional rule and the stored record replays another rule
+Corrects: as the ARCHITECTURE.html entry above.
+Was:
+> decision_card.record: ... null where the rule has not been replayed, and on an S&P 400 or 600 card whose family the night read by its frozen live rule where the stored record replays another rule |
+Now:
+> decision_card.record: ... null where the rule has not been replayed, and on an S&P 400 or 600 card whose family the night read by its frozen live rule where the stored record replays another rule, and from the 20.11 correction of 2026-10-20 on one whose family the night read by its provisional rule where the stored record replays another rule, a frozen rule's among them |
+Why: as the ARCHITECTURE.html entry above.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states a provisional card's record after a freeze
+Corrects: as the ARCHITECTURE.html entry above.
+Was:
+> fixture-expectations: ... and the record command's nights form refused at that Monday's 22:00 before it reads anything |
+Now:
+> fixture-expectations: ... and the record command's nights form refused at that Monday's 22:00 before it reads anything; and from the 20.11 correction of 2026-10-20 a card an S&P 400 night drew by the drift's provisional rule drawing the record stored while it replays that rule and none once it is replayed under the drift's frozen rule, the frozen pullback's card drawing its own |
+Why: the roster's row says what its check asserts.
+
 ### 2026-10-20 - RUNBOOK.md - the record command's `--nights` form refuses a run ending past midnight UTC into a weekday's night window
 Corrects: the window the record command's start guard reads looked at a run's end by its time of day alone, so the `--nights` form, given two hours, was admitted from 21:01 to 22:59 UTC on a weekday with its end past midnight, though it would still be running at 23:00; found by 20.11's replay and put to the operator, who ruled it fixed on 2026-10-20.
 Was:

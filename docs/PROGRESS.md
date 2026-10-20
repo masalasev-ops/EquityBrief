@@ -5025,3 +5025,27 @@ Mutated:    the rule, stated before the run: every weekday's 23:00 inside a run 
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 20.11 - correction: a card an S&P 400 or 600 night drew by a family's provisional rule draws only the provisional rule's record, where it drew whatever record was stored, a frozen rule's among them   2026-10-20
+
+Queue:      as the 20.11 rulings' entries of the evening above.
+Found:      by 20.11's replay and put to the operator, who ruled it fixed on the evening of 2026-10-20: a card drawn by a
+            family's provisional rule drew whatever record was stored, so after a freeze, whose remedy replays the frozen
+            rule into the family's one record, a night reading the family by its provisional rule, one run again for a
+            session before the freeze or one reading its frozen rule by none, drew the frozen rule's record under the
+            provisional rule's heading.
+Corrected:  such a card draws the stored record only where it replayed the provisional rule, in the words the record
+            command writes that rule under, and none otherwise; the S&P 500's cards as before (see: A frozen rule on the
+            S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone).
+Tests:      2552, one more: over the frozen cards' constructed S&P 400, the drift's card drawn by its provisional rule
+            drawing the record while it replays that rule and none once it is replayed under the drift's frozen rule, the
+            frozen pullback's card drawing its own; and two card tests storing a provisional record under the words the
+            record command writes it in, where they stored a short form of them.
+Claims:     1372, as before.
+Mutated:    the rule, stated before the run: a card drawn by the provisional rule drawing only the provisional rule's
+            record, broken by drawing whatever record is stored on such a card: predicted red at the night run again
+            over the frozen drift's record. Result: red, the drift's card drawing the frozen rule's record. Made on this
+            branch and reverted before anything was committed, and the tests green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.

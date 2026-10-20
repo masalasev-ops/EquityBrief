@@ -313,7 +313,7 @@ public partial class FixtureExpectations
 
             // The pullback's record on the S&P 400: twenty trades, one ended at each session from the first to the twentieth.
             Run("INSERT INTO rule_record (index_code, family, rule, settings, recorded_at, first_session, last_session, membership, unit, trades, won, average, median_sessions, ended_by, worst_close) VALUES " +
-                $"('MID', 'pullback', 'the pullback''s base', 'base', '2026-10-06T12:00:00Z', '2019-01-02', '2026-10-02', 'as it stood', 'risks', 20, 0.5, 0.12, 10, '{RuleRecordFigures.EndedByJson([.. Enumerable.Repeat(1, 20)])}', -0.6);");
+                $"('MID', 'pullback', '{RuleReplay.PullbackWords.Replace("'", "''", StringComparison.Ordinal)}', 'base', '2026-10-06T12:00:00Z', '2019-01-02', '2026-10-02', 'as it stood', 'risks', 20, 0.5, 0.12, 10, '{RuleRecordFigures.EndedByJson([.. Enumerable.Repeat(1, 20)])}', -0.6);");
 
             transaction.Commit();
         }

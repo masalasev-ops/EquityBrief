@@ -317,6 +317,17 @@ public static class RuleReplay
             : TheSetupFamilies.Words(new DriftSettings((int)Dial(DriftSweep.Grid, 0), Dial(DriftSweep.Grid, 1), Dial(DriftSweep.Grid, 2), Dial(DriftSweep.Grid, 3))));
     }
 
+    // The words an S&P 400's or 600's family's provisional rule is replayed under, which a card its night drew by that rule
+    // reads its stored record by; none for a family the replay keeps no record of.
+    public static string? ProvisionalWords(string family) => family switch
+    {
+        SetupFamilies.Pullback => PullbackWords,
+        BreakoutRule.Name => SwingWords(family, IndexNightRead.BreakoutAsFrozen),
+        DriftRule.Name => SwingWords(family, IndexNightRead.DriftAsFrozen),
+        HeavyweightRule.Name => HeavyweightWords(IndexHeavyweights.Provisional),
+        _ => null,
+    };
+
     // The sector heavyweights' setting in the register's words, its sector's return, its period and its exit read off the
     // sweep's own setting.
     public static string HeavyweightWords(HeavyweightSetting setting) =>

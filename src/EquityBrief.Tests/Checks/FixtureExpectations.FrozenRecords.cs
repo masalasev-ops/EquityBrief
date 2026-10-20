@@ -480,7 +480,7 @@ public partial class FixtureExpectations
         Assert.Equal(15, pullback.Record!.Value.GetProperty("heldSessions").GetInt32());
 
         // ID's drift, read by its provisional rule: its card as before, its provisional setting and check named and the
-        // record stored drawn whatever rule it replays.
+        // record stored drawn, since it replays the provisional rule.
         var drift = cards["MID drift ID"];
 
         Assert.Contains("its setting, window 3, reaction 0.5, volume 2, target 2.5", drift.Lines[0].Words, StringComparison.Ordinal);
@@ -503,6 +503,32 @@ public partial class FixtureExpectations
         Assert.Equal(15, Cards(store)["MID breakout IA"].Record!.Value.GetProperty("heldSessions").GetInt32());
         Assert.Null(matched.Unmatched);
         Assert.Equal((39, 39), (matched.Count!.Value, matched.RuleSetups!.Value));
+    }
+
+    // A card a night drew by its family's provisional rule, on the operator's ruling of the evening of 2026-10-20: ID's
+    // drift, read by its provisional rule, draws the record stored while it replays that rule; replayed again under the
+    // S&P 400 drift's frozen rule, as a freeze's remedy writes it, the night run again, still reading the drift by its
+    // provisional rule, draws none, the record being the frozen rule's.
+    [Fact]
+    public async Task AProvisionalCardDrawsNoRecordWhereTheStoredRecordReplaysAFrozenRule()
+    {
+        var (store, _, _) = FrozenCardsStore();
+
+        using var held = store;
+        var clock = new SweepClock(new DateTimeOffset(2026, 10, 2, 23, 50, 0, TimeSpan.Zero));
+
+        await new DecisionCards(clock, store.DatabaseFile).RunAsync("cards-1");
+
+        Assert.Equal(20, Cards(store)["MID drift ID"].Record!.Value.GetProperty("trades").GetInt32());
+
+        var frozen = IndexRules.Words(IndexEvaluator("drift-400"), FrozenParameters(RemedyFreezes[2].Parameters));
+
+        store.Execute($"UPDATE rule_record SET rule = '{frozen.Replace("'", "''", StringComparison.Ordinal)}' WHERE index_code = 'MID' AND family = 'drift';");
+
+        await new DecisionCards(clock, store.DatabaseFile).RunAsync("cards-2");
+
+        Assert.Null(Cards(store)["MID drift ID"].Record);
+        Assert.Equal(15, Cards(store)["MID pullback IB"].Record!.Value.GetProperty("heldSessions").GetInt32());
     }
 
     [Fact]
