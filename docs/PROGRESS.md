@@ -5135,7 +5135,19 @@ Mutated:    the rule, stated before the run: a freeze replacing a retired live r
             broken by keeping the provisional rule whatever rule it replaces: predicted red at the family's standing rules.
             Result: red, no background rule at the strongest's settings. Made on this branch and reverted before anything
             was committed, and the tests green.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
-            request, with the figures it states.
-Carried:    as the newest entry of this pull request; the remedy's lines tested over a register shaped as the operator's
-            before the merge.
+Opened:     on the operator's word of 2026-10-20 at 22:27Z, "make the PR atleast. I can merge it on remote", this pull
+            request carries clauses 1, 4 and 5 of the evening's rulings and is opened before the local gates run, the
+            operator merging it on the remote; the checkout's main is not brought up to the merge before the night of
+            2026-10-20, which builds the commit it stood at. Clauses 2, as amended, and 3 follow in a second pull request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over main after the merge, the figures below stated
+            before that run: all six steps, 0 warnings, 0 errors, 2556 of 2556 tests ran with none failed, migrations 0 to
+            103 with none pending, schema version 103, against `data-ci` and never `data`; the phase report 60 tables,
+            1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and verdicts reconciled
+            against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the gates' run over main after the merge, recorded with the remedy's run; the remedy
+            `tools/remedies/2026-10-20-20.11-the-evening-rulings.txt` run from main after the merge and before the night of
+            2026-10-21, its register lines tested over a register shaped as the operator's in the second pull request
+            before it runs, and each S&P 500 heavyweights record's length before its restart stated in its entry; clauses
+            2 and 3 in the second pull request; the member readings' year's high, read over the sessions a short year
+            holds rather than none, put to the operator; PR 505 rebased with its migration at 104; and the phase 18
+            sign-off by a fresh session.
