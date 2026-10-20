@@ -26,6 +26,16 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-20 - ARCHITECTURE.html - the sweep history reads the companies' analyst counts, in its catalogue row and its matrix row
+Authorised by: Each family on the S&P 400 and 600 is swept again on its own history at the next open, the market check a dial of each swing grid
+Was:
+> <td><b>Sweep history</b></td> ... pulled snapshots, pulled holdings, calendar, gate results, heavyweight nights</td><td>none</td> ... matched by ISIN and then by name); the sweep computes over what it read outside the store, ...
+> <tr><td>Sweep history</td> ... six R cells ... <td></td><td></td><td></td><td></td> ... the Fundamentals cell blank ...
+Now:
+> <td><b>Sweep history</b></td> ... pulled snapshots, pulled holdings, calendar, gate results, heavyweight nights, companies</td><td>none</td> ... matched by ISIN and then by name); and from 20.11 each company's analysts as each fetch stored their counts with the day it fetched them, which the drift's sweep on an index's own history reads only from the session after a count was stored (see: Analyst coverage is stored from each fetch and waits for dated counts before any rule tests it); the sweep computes over what it read outside the store, ...
+> <tr><td>Sweep history</td> ... six R cells ... <td></td><td></td><td><span class="r">R</span></td> ... the Fundamentals cell R ...
+Why: the drift's dial of fewer analysts reads each company's counts as each fetch stored them, so the sweep history declares the read and the catalogue and the matrix state it.
+
 ### 2026-10-20 - RUNBOOK.md - the history read runs with no daily stop and is stopped by hand for a merge
 Corrects: the paragraph started the history read with `--until 07:00` and had it stop each morning in New York for the day's merges, which is not how it runs since the operator asked at about 00:02 UTC on 2026-10-20 that the daily stop be removed, the read already keeping clear of the slots and the night by itself; found reading the runbook against the read restarted with no `--until`, and on the operator's word of 2026-10-20 that it may be paused while another run needs the machine.
 Was:
