@@ -4667,3 +4667,31 @@ Mutated:    the rule, stated before the run: the page drawing a not-written reas
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 20.11 run - the S&P 600 drift swept again reading a print's revenue only from quarters stored before the night, its answer moving, and the searches and the tester reading a revenue run again the same way, every other answer the same   2026-10-20
+
+Not a checkpoint entry: it lands nothing.
+Queue:      as the 20.11 ruling's entry above.
+Ran:        on the operator's answer of 2026-10-20, from a scratch build of this branch's tree, read-only, the drifts at
+            the stop floor of a typical move: the S&P 600's drift from 13:18 to 13:23 UTC, run 20261020T131852Z, and the
+            tester on the S&P 600 from 13:23 to 13:35, run 20261020T132349Z; then the searches whose second stages read a
+            revenue, the S&P 400's drift from 13:31 to 13:35, run 20261020T133129Z, its breakout to 13:36, run
+            20261020T133529Z, and the S&P 600's breakout to 13:37, run 20261020T133641Z, and the tester on the S&P 400
+            from 13:37 to 13:44, run 20261020T133725Z.
+Results:    the S&P 600 drift passes, the setting it would run moving from window=10|reaction=0.5|volume=1.25|target=3|
+            market=0 held 63 sessions with the revenue grown, +0.054 over 2,458 trades, 7 of 8 years, 2025 +0.133, 2026
+            +0.085, without the five largest +0.041, to window=3|reaction=0.5|volume=1.25|target=2.5|market=0 held 63
+            sessions with the revenue grown as first filed and stored before the night, +0.107 over 1,021 trades, 7 of 8,
+            2025 +0.146, 2026 +0.163, without the five largest +0.084, each of its 10 crossed settings meeting the
+            floors; the tester's adjusted p for its search 0.1953 where it was 0.043, better in 2 of 3 counted years,
+            1,127 risks, 0 of 5 folds within a step, and the S&P 600's breakout at 0.5076 and heavyweights at 0.9422 for
+            each design as before. The S&P 400's drift and breakout and the S&P 600's breakout state the setting, the
+            trades, the edge, each year's edge and the edge without the five largest of their first runs,
+            20261020T073610Z, 20261020T053729Z and 20261020T073338Z, figure for figure, and the S&P 400's tester the four
+            verdicts of 20261020T062626Z.
+Read:       the revenue level had read a quarter filed before the listing's own session, a filing the night could not
+            yet have stored, and that was worth the S&P 600 drift's window of 10; read as the night reads it, the window
+            of 3 is the stronger, and no other search's answer moved.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
