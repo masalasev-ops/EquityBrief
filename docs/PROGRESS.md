@@ -4556,3 +4556,58 @@ Read:       no family passes on either index; the S&P 600 drift comes nearest at
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 20.11 ruling - the eight answers frozen as each family's live rule on its index with a market variant and the rule of the day before beside each, a retired rule's positions ended, and the S&P 600 drift swept again with the night's timing   2026-10-20
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-20 on 20.11's answers, in these words, kept whole with the table they name in
+            `prompts/2026-10-20-20.11-ruling-freezes.md`: "Operator's rulings of 2026-10-20 on 20.11's answers. 1. Item 4,
+            as freezes: each of the eight answers is frozen as its family's live rule on its index, as the table states it:
+            the pullback, breakout, drift and sector heavyweights on the S&P 400 and on the S&P 600. Everything is built and
+            tested on the branch first: the market check at each rule's own level, the S&P 400 drift's first-pullback
+            entry, the S&P 600 drift's 63-session hold with the revenue-grew check, and the card line in clause 3. One
+            remedy registers the eight freezes after the merge, and item 5 merges with it. Business first is not frozen and
+            follows its index's pullback base as now. 2. Variants, registered with each freeze: one market variant beside
+            each swing rule, with the check off where the rule reads one and at its index's strongest level from the market
+            sweep where it reads none; for the S&P 600 pullback, the tester's own choice, the wider stop with no band
+            strength; and each index's rule of today kept as a background variant for 63 sessions, never on the page, as an
+            approved S&P 500 change keeps the rule it replaces. The six market-off variants of 19.1 are retired. 3. Each
+            frozen card states the figures its sweep read and that no setting beat luck or the tester's bar, so each is a
+            starting point and not a proven edge. A frozen family whose sweep passed no setting keeps its card's line saying
+            so after its freeze, as the S&P 400 breakout's does, with that it lost in 2025 and 2026; the line now ends at
+            that family's next freeze or sweep that passes, not at any freeze. The S&P 400 breakout keeps listing. 4. Item 5
+            approved: every part of each rule stored for every stock on the S&P 400 and 600 nights. 5. In the read's daily
+            stop at 07:00 New York: merge, run the remedy, then run the newest night again, so the S&P 400's and 600's lists
+            are drawn by the frozen rules and their picks are bought at that morning's open, after the freeze. It queues no
+            report pass and spends nothing. Start it only where it will finish before the 09:30 open; otherwise leave it,
+            and the next scheduled night is the frozen rules' first. Record the run again in its own entry, saying which
+            night it replaced and what each index listed. Then PR 505 to migration 103, and the fresh session's phase 18
+            sign-off. No Co-Authored-By or "Generated with" lines."
+Answered:   asked what the mapping of the rulings onto the code found, in these words: "Answers to the mapping's questions,
+            2026-10-20. 1. S&P 600 heavyweights: keep both 17.11 books standing beside the frozen rule; the freeze form
+            refuses only where a live rule stands. Separately, fix the defect you found: a retired rule's open positions are
+            ended, not left open. A retired book's holdings are sold at the close of the session it is retired on, and a
+            retired swing rule's open trades are walked to their own exits. A test worked by hand for each, with one
+            mutation. 2. S&P 600 drift: run that one sweep again with the night's timing, the revenue read only once its
+            filing is stored, as the night will read it, and freeze what it answers under the 20.11 ruling: its proposal if
+            one passes, its strongest otherwise, with the card saying so. Check every other reading the eight frozen rules
+            use for the same gap between the sweep's timing and the night's, and report any before the merge. 3. Defaults
+            agreed: today's rules stay off Tonight, paper trading and the monthly test, with a row on the Run page for their
+            63-session comparison; the 20.4 tone variants sit beside each frozen drift; the cards draw no replayed record or
+            setups like it until those exist for the frozen rules. Run the rule recorder's replay of the eight frozen rules
+            in the remedy, so the cards draw their replayed records straight away. The setups like it wait for the next
+            ledger history build, and the card says so."
+Plan:       one checkpoint, 20.11, its text and done condition written into the build plan beside this entry, the
+            decisions each ruled part names written into the record of decisions with the four they supersede moved under
+            Previously decided. The freezes, the variants, the background rules, the six retirements and the S&P 600
+            heavyweights' books registered again are one remedy run after the merge, with the answers' figures recorded
+            and the frozen rules' records replayed before them; the newest night is then run again by hand reading the
+            register as it then stands, only where it ends before the open.
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, and 20.11's runs above; in review,
+            20.8 with its correction, PR 505; in progress, this ruling's work with the phase 18 sign-off review's three
+            corrections, in one pull request; next, this pull request merged at the read's daily stop with its remedy and the
+            newest night run again, PR 505 rebased with its migration at 103, the phase 18 sign-off by a fresh session, the
+            local lane's one text field, 21.0 once its ruling is given, the phase 19 sign-off, and pin 3's completion steps.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
