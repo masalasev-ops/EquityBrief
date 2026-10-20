@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-20 - BUILD_PLAN.md - 20.11's section names the pulled history and the pullback's base in words that are not their subjects
+Corrects: 20.11's section, added by its ruling, named "the pulled history" and "pullback base" as whole words, so the plan read 20.11 as the checkpoint owing both subjects where they were built at 12.2 and 13.9, and `architecture-conformance` failed on the due points written for them; found running it over the branch before item 5's commit.
+Was:
+> ... over the pulled history on membership as it stood and after costs, ... the date the pulled history holds, which is the date as it happened ... The fundamentals-first family keeps buying at its own index's pullback base and follows the pullback's setting.
+Now:
+> ... over the history pulled for the years before the store's on membership as it stood and after costs, ... the date the history pulled holds, which is the date as it happened ... The fundamentals-first family keeps buying at its own index's pullback's base and follows the pullback's setting.
+Why: 20.11 reads both and builds neither, so its section names them without claiming them.
+
 ### 2026-10-20 - ARCHITECTURE.html - the sweep history reads the companies' analyst counts, in its catalogue row and its matrix row
 Authorised by: Each family on the S&P 400 and 600 is swept again on its own history at the next open, the market check a dial of each swing grid
 Was:
