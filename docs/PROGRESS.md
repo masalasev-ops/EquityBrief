@@ -5049,3 +5049,28 @@ Mutated:    the rule, stated before the run: a card drawn by the provisional rul
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 17.9 - correction: the live alarm reads the S&P 400's and 600's sector heavyweights off the frozen live rule's own book where one stands, where it read the index's own book whatever rule the page drew   2026-10-20
+
+Queue:      as the 20.11 rulings' entries of the evening above.
+Found:      by 20.11's replay and put to the operator, who ruled it fixed on the evening of 2026-10-20: the live alarm read
+            an S&P 400's or 600's sector heavyweights quarters off the index's own book, so once a frozen live rule's own
+            book drew the page, as both indices' have since 2026-10-20, it would have read holdings the page no longer
+            draws and none of the rule's.
+Corrected:  where a frozen live heavyweights rule stands on the index when the alarm runs, its units are that rule's own
+            book's holdings sold with a result, each at its fill against its size cut's, and the index's own book's
+            otherwise (see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two
+            periods running) (see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either
+            design, read by the index families' step).
+Tests:      2553, one more: over the frozen book's constructed S&P 600, the fourth quarter of 2026 read off the live
+            rule's five sales at an edge of nothing against a low of a half, counted under it with a run of one, the
+            index's own book's five at 0.80 read for none of it; and the close-priced scan's statements stated in advance
+            at 23, the alarm's five.
+Claims:     1372, as before.
+Mutated:    the rule, stated before the run: the alarm reading a frozen heavyweights rule's own book on its index, broken
+            by reading the index's own book whatever rule stands: predicted red at the quarter's row. Result: red, the
+            quarter read at 0.80 and not under its low. Made on this branch and reverted before anything was committed,
+            and the tests green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.

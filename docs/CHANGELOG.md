@@ -26,6 +26,30 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-20 - ARCHITECTURE.html - the live alarm reads a frozen heavyweights rule's own book on the S&P 400 and 600
+Corrects: the live alarm read the S&P 400's and 600's sector heavyweights' units off the index's own book whatever rule the page drew, so once a frozen live rule's own book drew the page its quarters were read off holdings the page no longer drew; found by 20.11's replay and put to the operator, who ruled it fixed on 2026-10-20.
+Was:
+> Live alarm reader: ... index family trades, index heavyweight holdings, trade fills | ... and on the S&amp;P 400 and 600 the page's trades since the setting the family stands at, each trade's edge ...
+Now:
+> Live alarm reader: ... index family trades, index heavyweight holdings, index heavyweight rule holdings, trade fills | ... and on the S&amp;P 400 and 600 the page's trades since the setting the family stands at and the sector heavyweights' holdings of the index's own book, from the 17.9 correction of 2026-10-20 those of the frozen live rule's own book where one stands, as the page draws them, each trade's edge ...
+Why: the alarm reads the units of the rule the page draws.
+
+### 2026-10-20 - SCHEMA.md - the live alarm reads a frozen heavyweights rule's sales off its own book
+Corrects: as the ARCHITECTURE.html entry above.
+Was:
+> index_heavyweight_rule_holding: ... read that rule's buys and sales here, as its page draws them, in the index's own book's place.
+Now:
+> index_heavyweight_rule_holding: ... read that rule's buys and sales here, as its page draws them, in the index's own book's place, and from the 17.9 correction of 2026-10-20 the live alarm reads the sales of the family's frozen live rule here in the index's own book's place.
+Why: as the ARCHITECTURE.html entry above.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states the live alarm on a frozen heavyweights rule's own book
+Corrects: as the ARCHITECTURE.html entry above.
+Was:
+> fixture-expectations: ... the frozen pullback's card drawing its own |
+Now:
+> fixture-expectations: ... the frozen pullback's card drawing its own; and from the 17.9 correction of 2026-10-20 the live alarm reading an S&P 600 quarter off its frozen heavyweights rule's own book, five holdings each an edge of nothing under a low of a half, and none of the index's own book's five at 0.80, worked by hand over a constructed store |
+Why: the roster's row says what its check asserts.
+
 ### 2026-10-20 - ARCHITECTURE.html - a card drawn by a family's provisional rule draws only the provisional rule's record
 Corrects: a card an S&P 400 or 600 night drew by a family's provisional rule drew whatever record was stored, so after the family's freeze, whose remedy replays the frozen rule into the family's one row, a night reading the family by its provisional rule, one run again for a session before the freeze or one reading its frozen rule by none, drew the frozen rule's record under the provisional rule's heading; found by 20.11's replay and put to the operator, who ruled it fixed on 2026-10-20.
 Was:

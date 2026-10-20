@@ -281,8 +281,8 @@ public partial class FixtureExpectations
         var statements = files.SelectMany(file => TradeStatements(File.ReadAllText(file))).ToArray();
 
         // Every statement reading a trade's table on the read surface, the paper accounts and the live alarm, stated in
-        // advance: the Past picks' two halves, the records' and holdings' eight, the paper rows' eight and the alarm's four.
-        Assert.True(statements.Length >= 22, $"Read {statements.Length} statement(s) on a trade's table, expected at least 22.");
+        // advance: the Past picks' two halves, the records' and holdings' eight, the paper rows' eight and the alarm's five.
+        Assert.True(statements.Length >= 23, $"Read {statements.Length} statement(s) on a trade's table, expected at least 23.");
         Assert.Empty(statements.SelectMany(CloseFigures));
 
         // The reader is shown to find a close-priced figure read bare and through the trade's own alias, and to pass one

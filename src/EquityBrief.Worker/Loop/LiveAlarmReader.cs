@@ -25,8 +25,9 @@ public sealed record LiveAlarmOutcome(IReadOnlyList<AlarmRead> Reads)
 // The live alarm, in the swing filter's step after the rule cards. For each index and each family the newest tester run
 // on it stored a reference for, it reads the units of the family's live rule: on the S&P 500 the breakout's and the
 // drift's live rule's own trades and the sector heavyweights' book's holdings, and on the S&P 400 and 600 the trades the
-// index's page kept since the setting it stands at, each trade's edge after its round trip against the same plan on every
-// member that night and each holding's against its size cut after its round trip. A swing family's period is a month
+// index's page kept since the setting it stands at and the sector heavyweights' holdings of the frozen live rule's own book
+// where one stands, as the page draws them, and of the index's own book otherwise, each trade's edge after its round trip
+// against the same plan on every member that night and each holding's against its size cut after its round trip. A swing family's period is a month
 // and a book's a quarter, a unit counted in the period it ended in. A period is read once it has closed and every unit
 // that ended in it holds its edge, against the low the reference gives at its own count, and written once, its run of
 // counted periods under the low carried on from the period written before it; a rule two counted periods running under
@@ -49,6 +50,7 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
             new StoreTouch(Store.HeavyweightHolding, Touch.Read),
             new StoreTouch(Store.IndexFamilyTrade, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
+            new StoreTouch(Store.IndexHeavyweightRuleHolding, Touch.Read),
             new StoreTouch(Store.TradeFill, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -108,6 +110,13 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
         LEFT JOIN trade_fill f ON f.source = 'index_heavyweight_holding' AND f.index_code = h.index_code AND f.owner = '' AND f.ticker = h.ticker AND f.session_date = h.entered_on
         WHERE h.index_code = $index AND h.ended_on IS NOT NULL AND h.result IS NOT NULL AND h.cut_return IS NOT NULL;";
 
+    // The holdings an S&P 400's or 600's frozen sector heavyweights rule's own book sold with a result.
+    const string IndexRuleBook = @"
+        SELECT h.ended_on, f.result, h.cost, f.benchmark, CASE WHEN f.reason IS NOT NULL OR f.benchmark IS NOT NULL THEN 1 ELSE 0 END
+        FROM index_heavyweight_rule_holding h
+        LEFT JOIN trade_fill f ON f.source = 'index_heavyweight_rule_holding' AND f.index_code = h.index_code AND f.owner = h.candidate AND f.ticker = h.ticker AND f.session_date = h.entered_on
+        WHERE h.index_code = $index AND h.candidate = $candidate AND h.ended_on IS NOT NULL AND h.result IS NOT NULL AND h.cut_return IS NOT NULL;";
+
     const string InsertPeriod = @"
         INSERT INTO loop_alarm (index_code, family, period, trades, edge, edge_floor, counted, under, streak, flagged, reference, run_id)
         VALUES ($index, $family, $period, $trades, $edge, $edge_floor, $counted, $under, $streak, $flagged, $reference, $run_id);";
@@ -130,6 +139,14 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
         var register = CandidateFamily.Standing(await new EquityBrief.Worker.Candidates.CandidateRegistrar(clock, databaseFile).RowsAsync(cancellation), started);
 
         var live = LoopDecisions.LargeFamilies.ToDictionary(family => family, family => FamilyRecords.LiveOf(CandidateFamily.In(register, family))?.Candidate, StringComparer.Ordinal);
+
+        // On the S&P 400 and 600 a family's frozen live rule, whose own book the sector heavyweights' units are read from as
+        // the page draws it.
+        // see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
+        string? Drawing(string index, string family) =>
+            index == WalkForwardTester.LargeIndex
+                ? live.GetValueOrDefault(family)
+                : family == HeavyweightRule.Name ? FamilyRecords.LiveOf(CandidateFamily.In(register, IndexRuleCandidate.FamilyOn(family, index)))?.Candidate : null;
 
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
@@ -159,7 +176,7 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
 
                 foreach (var (family, reference) in references)
                 {
-                    var units = await UnitsAsync(connection, transaction, index, family, live.GetValueOrDefault(family), cancellation);
+                    var units = await UnitsAsync(connection, transaction, index, family, Drawing(index, family), cancellation);
 
                     reads.Add(await ReadAsync(connection, transaction, index, family, run, runId, night, reference, units, cancellation));
                 }
@@ -274,7 +291,12 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
         }
         else if (family == HeavyweightRule.Name)
         {
-            await foreach (var row in RowsAsync(connection, transaction, IndexBook, [("$index", index)], cancellation))
+            // The frozen live rule's own book where one stands on the index, and the index's own book otherwise.
+            var book = drawing is null
+                ? RowsAsync(connection, transaction, IndexBook, [("$index", index)], cancellation)
+                : RowsAsync(connection, transaction, IndexRuleBook, [("$index", index), ("$candidate", drawing)], cancellation);
+
+            await foreach (var row in book)
             {
                 units.Add(Holding(Date(row.GetString(0)), Optional(row, 1), Optional(row, 2) ?? 0, Optional(row, 3), row.GetInt64(4) == 1));
             }
