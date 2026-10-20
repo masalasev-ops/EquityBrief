@@ -456,8 +456,9 @@ public static partial class TonightScreen
         [.. rows, .. IndexFamilyRun(picks, trades, []).Where(row => row.Family == FundamentalsRule.Name)];
 
     // The line an index's page opens its setups on: the index's own market check with its figures, how many of its
-    // members a setup passed, the buy points its cards list and how many setups list one, and its trades still open.
-    public static MarketLineView IndexLine(UniverseChoice universe, IndexNightRow night, IReadOnlyList<FamilyCardView> cards, IReadOnlyList<IndexResultRow> results, int openTrades) =>
+    // members a setup passed, the buy points its cards list and how many setups list one, the stocks one gate short where
+    // the night stored every part's answer, and its trades still open.
+    public static MarketLineView IndexLine(UniverseChoice universe, IndexNightRow night, IReadOnlyList<FamilyCardView> cards, IReadOnlyList<IndexResultRow> results, int openTrades, IReadOnlyList<CloseToBuyCell>? close = null) =>
         new(
             night.MarketOpen,
             night.Breadth,
@@ -465,11 +466,51 @@ public static partial class TonightScreen
             cards.Sum(card => card.Picks.Count),
             cards.Count(card => card.Picks.Count > 0),
             cards.Count,
-            0,
+            close?.Count ?? 0,
             openTrades,
             universe.Name,
             results.Where(result => result.Passed).Select(result => result.Ticker).Distinct(StringComparer.Ordinal).Count(),
             night.Members,
-            CloseRead: false,
+            CloseRead: close is not null,
             Universe: universe.Word);
+
+    // The stocks one gate short of a buy point on an S&P 400 or 600 night, from 20.11: each member a family stored as
+    // passing its setup read with the market check open and failing exactly one other part, the market check among them,
+    // in the page's family order and by ticker, with that part and its stored words; none where the night stored no
+    // part's answer, as a night before 20.11 did.
+    // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+    // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
+    public static IReadOnlyList<CloseToBuyCell>? IndexCloseAcross(IReadOnlyList<IndexResultRow> results, IReadOnlyList<(string Ticker, string? Company, decimal? Close)> members)
+    {
+        if (results.Count == 0 || results.Any(result => result.Gates is null))
+        {
+            return null;
+        }
+
+        var companies = members.ToDictionary(member => member.Ticker, member => member.Company, StringComparer.Ordinal);
+        var cells = new List<CloseToBuyCell>();
+
+        foreach (var family in SetupFamilies.OnEveryIndex)
+        {
+            foreach (var result in results.Where(result => result.Family == family.Name && !result.Passed).OrderBy(result => result.Ticker, StringComparer.Ordinal))
+            {
+                var gates = FamilyRule.GatesOf(result.Gates!);
+
+                if (gates.Any(gate => gate.Name == EquityBrief.Core.Cards.RuleRows.Setup && gate.Passed) && gates.Count(gate => !gate.Passed) == 1)
+                {
+                    var missed = gates.First(gate => !gate.Passed);
+
+                    cells.Add(new CloseToBuyCell(result.Ticker, companies.GetValueOrDefault(result.Ticker), family.Name, family.Label, missed.Name, missed.Reason));
+                }
+            }
+        }
+
+        return cells;
+    }
+
+    // The index's card of those stocks, each with the sessions to its next report counted on the exchange's calendar and
+    // none watched, the watch list holding the S&P 500's names alone.
+    // see: The watch list is the operator's own, up to twenty names of the index, on a page of its own
+    public static IReadOnlyList<CloseToBuyRow> IndexCloseToBuy(IReadOnlyList<CloseToBuyCell> close, IReadOnlyDictionary<string, DateOnly> nextEvents, DateOnly night) =>
+        [.. close.Select(cell => new CloseToBuyRow(cell, nextEvents.TryGetValue(cell.Ticker, out var report) ? EquityBrief.Core.Bars.ExchangeClosures.SessionsUntil(night, report) : null, false))];
 }

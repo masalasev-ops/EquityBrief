@@ -34,6 +34,28 @@ Now:
 > ... over the history pulled for the years before the store's on membership as it stood and after costs, ... the date the history pulled holds, which is the date as it happened ... The fundamentals-first family keeps buying at its own index's pullback's base and follows the pullback's setting.
 Why: 20.11 reads both and builds neither, so its section names them without claiming them.
 
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations and read-surface state 20.11's tests
+Authorised by: Each family on the S&P 400 and 600 is swept again on its own history at the next open, the market check a dial of each swing grid
+Was:
+> fixture-expectations: ... and from the 17.4 correction of 2026-10-20 the run on all finished data learning on every year the history holds, its floors and the S&P 400 drift's last two years read over all eight |
+> read-surface: ... and from the 18.3 correction of 2026-10-20 an actual stored at one place drawn to two |
+Now:
+> fixture-expectations: ... read over all eight; and from 20.11 the market check's seven levels worked by hand at each edge, ... each of the research's dials worked by hand at its edge, ... a level kept by the second stage's own rule over eight years and in proportion over a fold's fewer, ... a fold's pullback walk tallying only the trades ended before its year, ... a holding and its size cut bought at the open after the rebalance, ...; and an S&P 400 or 600 night with its market check closed storing every part of every member's rule with its answer, worked by hand over a constructed night: ... and a night stored before the parts read as reading none |
+> read-surface: ... an actual stored at one place drawn to two; and from 20.11 the S&P 400's Tonight over a constructed night with its market check closed drawing in its card of the stocks one gate short, on its market line and in the breakout's own expander the four stocks the check alone keeps off, ... and its Universe's chip keeping the four |
+Why: each roster row says what its check asserts, and 20.11's tests, item 5's among them (see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own), extend fixture-expectations' and read-surface's.
+
+### 2026-10-20 - ARCHITECTURE.html - the S&P 400's and 600's nights store every part's answer, and their one gate short card and chip read them
+Authorised by: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
+Was:
+> <td><b>Index families</b></td> ... stores every member's answer under each family whether it passed or not, draws each index's list by the S&amp;P 500's own rule, ...
+> <td>Tonight's stocks one gate short</td> ... A night before the newest draws no press and no link to Universe. An index whose night stores only the first part each member failed says in the card's line that it reads no stock as one gate short. Each family's card ...
+> <td>One gate short</td> ... with the gate it missed; the S&amp;P 400's and 600's tables say they cannot read it, since their nights store only the first part each member failed</td>
+Now:
+> <td><b>Index families</b></td> ... stores every member's answer under each family whether it passed or not, from 20.11 with every part of its rule and that part's answer, the market check its own and the setup read with the check open (see: The S&amp;P 400's and 600's nights store every part's answer for every member, the market check its own), draws each index's list by the S&amp;P 500's own rule, ...
+> <td>Tonight's stocks one gate short</td> ... A night before the newest draws no press and no link to Universe. From 20.11 the S&amp;P 400's and 600's nights store every part's answer for every member, and on those indices the card reads each member a family stored as passing its setup read with the market check open and failing exactly one other part, the market check among them, with that part's words, no press and no link to Universe, since the watch list holds the S&amp;P 500's names alone (see: ...); a night stored before them, storing only the first part each member failed, says in the card's line that it reads no stock as one gate short. Each family's card ...
+> <td>One gate short</td> ... with the gate it missed; from 20.11 on the S&amp;P 400 and 600 a member their night stored as passing a setup read with the market check open and failing exactly one other part, the first such setup in the one family order taken, and a table over a night stored before 20.11 says it cannot read it, since that night stores only the first part each member failed (see: ...)</td>
+Why: item 5 of the operator's addendum to 20.11 stores every part's answer on the S&P 400's and 600's nights so the one gate short list reads them on those pages; the catalogue and the two rows state what the night stores and what the pages read.
+
 ### 2026-10-20 - ARCHITECTURE.html - the sweep history reads the companies' analyst counts, in its catalogue row and its matrix row
 Authorised by: Each family on the S&P 400 and 600 is swept again on its own history at the next open, the market check a dial of each swing grid
 Was:

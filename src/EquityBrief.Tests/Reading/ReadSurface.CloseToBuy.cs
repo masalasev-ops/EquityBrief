@@ -93,6 +93,39 @@ public partial class ReadSurface
     }
 
     [Fact]
+    public async Task OnTheSAndP400TheCardAndTheUniversesChipReadEveryPartTheNightStoredTheMarketCheckAmongThem()
+    {
+        // From 20.11 the S&P 400 of seventeen members with its market check closed at 7/17: IA, IB, IC and ID break out and
+        // pass every part but the check, FL fails the floor beside it and PR its profit, NH and ten more list no setup. The
+        // night stores every part of each, so the card, its line and the breakout's own expander read the four the check
+        // alone keeps off with no press and no link to Universe, and Universe's chip keeps the four.
+        // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
+        using var store = EquityBrief.Tests.Checks.FixtureExpectations.ClosedIndexStore();
+        var clock = EquityBrief.Core.Time.FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero), EquityBrief.Core.Time.SessionZones.UnitedStates);
+
+        await new IndexFamilies(clock, store.DatabaseFile).RunAsync("night-close");
+        store.Execute($"INSERT INTO listing (ticker, session_date, reasons, fired_count, plan_at_listing, shadow_reasons) VALUES ('ZZZ', '{IndexNight}', '[]', 0, '{{}}', '[]');");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var tonight = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
+        var card = CloseCard(tonight);
+        var universe = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/universe?universe=400&short=1&rows=all"));
+
+        Assert.Contains("data-count=\"4\"", card, StringComparison.Ordinal);
+        Assert.Equal(["IA", "IB", "IC", "ID"], Regex.Matches(card, "<tr data-ticker=\"([^\"]+)\" data-family=\"breakout\" data-gate=\"market\"").Select(match => match.Groups[1].Value));
+        Assert.Equal(4, Regex.Matches(card, "<td class=\"close-had\">the index's own breadth 41.2% below its floor of 45%</td>").Count);
+        Assert.Contains("data-close=\"4\"", Assert.Single(Blocks(tonight, "<p class=\"market-line\".*?</p>")), StringComparison.Ordinal);
+        Assert.DoesNotContain("<form", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("close-universe", card, StringComparison.Ordinal);
+        Assert.Equal(["IA", "IB", "IC", "ID"], FamilyCloseRows(tonight, BreakoutRule.Name).Rows);
+        Assert.Equal(4, FamilyCloseRows(tonight, BreakoutRule.Name).Count);
+        Assert.Equal(4, Regex.Matches(universe, "<span class=\"fam-tag short-tag\" data-family=\"breakout\" data-gate=\"market\"").Count);
+        Assert.Contains("data-value=\"one gate short\" aria-pressed=\"true\"", universe, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task TheCardsWatchPressAddsANameReadsWatchingForOneHeldAndIsRefusedOnATwentyFirstAndWithoutTheHeader()
     {
         using var store = await FamilyPagesStore();

@@ -591,8 +591,10 @@ public sealed record FamilyPickRow(
 public sealed record IndexNightRow(string Index, DateOnly Session, int Members, double? Breadth, bool MarketOpen, string Settings, bool Rebalanced, string? Fault = null);
 
 // One member's answer under one of an index's families on a night: whether the family's provisional rule passed it,
-// its place among those it passed and its trade, or the first part of the rule it failed.
-public sealed record IndexResultRow(string Ticker, string Family, bool Passed, int? Place, decimal? Entry, decimal? Stop, decimal? Target, decimal? Trail, int? Cap, double? OrderBy, string? Reason);
+// its place among those it passed and its trade, or the first part of the rule it failed; and from 20.11 every part's
+// answer as stored, none on a row stored before.
+// see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
+public sealed record IndexResultRow(string Ticker, string Family, bool Passed, int? Place, decimal? Entry, decimal? Stop, decimal? Target, decimal? Trail, int? Cap, double? OrderBy, string? Reason, string? Gates = null);
 
 // One trade an index's list kept: where it ended by the night, its result before its cost and its cost, each in
 // multiples of its risk, none while open on the night.
@@ -4083,7 +4085,7 @@ public sealed partial class ReadApi : IComponent
     }
 
     const string IndexResultsOn = @"
-        SELECT ticker, family, passed, place, entry, stop, target, trail, cap, order_by, reason
+        SELECT ticker, family, passed, place, entry, stop, target, trail, cap, order_by, reason, gates
         FROM index_family_result
         WHERE index_code = $index AND session_date = $on
         ORDER BY family, place IS NULL, place, ticker;
@@ -4118,7 +4120,8 @@ public sealed partial class ReadApi : IComponent
                 Price(7),
                 reader.IsDBNull(8) ? null : reader.GetInt32(8),
                 reader.IsDBNull(9) ? null : reader.GetDouble(9),
-                reader.IsDBNull(10) ? null : reader.GetString(10)));
+                reader.IsDBNull(10) ? null : reader.GetString(10),
+                reader.IsDBNull(11) ? null : reader.GetString(11)));
         }
 
         return rows;

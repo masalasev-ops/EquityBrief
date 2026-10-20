@@ -1,3 +1,4 @@
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Sweep;
@@ -300,5 +301,37 @@ public partial class FixtureExpectations
 
         Assert.Equal(TradeFills.AtOpen(1.5, 100, 2, 101)!.Value, fills.Exit((1.5, 10), listing).Result!.Value, 12);
         Assert.Equal(1.0, fills.Exit((1.5, 10), listing).Result!.Value, 12);
+    }
+
+    // The twelve files the market check, the searches on each index's own history and the tester's procedures over them
+    // live in, before the operator's word on their answers.
+    static readonly string[] OwnHistorySources =
+    [
+        "src/EquityBrief.Core/Sweep/SweepSpace.cs",
+        "src/EquityBrief.Worker/Loop/HeavyweightLay.cs",
+        "src/EquityBrief.Worker/Loop/LoopProcedures.cs",
+        "src/EquityBrief.Worker/Loop/OwnProcedures.cs",
+        "src/EquityBrief.Worker/Sweep/IndexSweepRunner.cs",
+        "src/EquityBrief.Worker/Sweep/IndexSweepRunner.Own.cs",
+        "src/EquityBrief.Worker/Sweep/IndexSweepRunner.OwnPullback.cs",
+        "src/EquityBrief.Worker/Sweep/IndexSweepRunner.OwnSwing.cs",
+        "src/EquityBrief.Worker/Sweep/IndexSweepRunner.Pullback.cs",
+        "src/EquityBrief.Worker/Sweep/IndexSweepRunner.Tester.cs",
+        "src/EquityBrief.Worker/Sweep/SweepHistory.cs",
+        "src/EquityBrief.Worker/Sweep/SweepSearch.cs",
+    ];
+
+    [Fact]
+    public void NoRuleOnTheIndicesPinsAFileTheSearchesOnTheirOwnHistoryLiveIn()
+    {
+        // Each of the twelve stands, and no S&P 400 or 600 rule's version, nor any evaluator's shared sources, is taken over
+        // one of them, so running the searches and the tester and stating their answers moves no rule's code version; the
+        // rules move only with the night's own reading of them, on the operator's word.
+        var index = CandidateEvaluators.All.OfType<IndexRuleCandidate>().ToArray();
+
+        Assert.Equal(8, index.Length);
+        Assert.All(OwnHistorySources, source => Assert.True(File.Exists(Path.Combine(Repository.Root, source)), source));
+        Assert.All(index, evaluator => Assert.Empty(evaluator.OwnSources.Intersect(OwnHistorySources, StringComparer.Ordinal)));
+        Assert.Empty(CandidateEvaluator.EvaluationSources.Intersect(OwnHistorySources, StringComparer.Ordinal));
     }
 }

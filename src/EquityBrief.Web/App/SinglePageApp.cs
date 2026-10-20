@@ -2748,9 +2748,9 @@ public sealed partial class SinglePageApp : IComponent
     }
 
     // Tonight's page for the S&P 400 or the S&P 600: its heading naming the index, the Universe selector, the line its
-    // setups open on with the index's own breadth and counts, one card a swing family each provisional with its rule
-    // written from the index's settings, and the index's sector heavyweights' card. A night the index's families did not
-    // read says so.
+    // setups open on with the index's own breadth and counts, the card of the stocks one gate short where the night stored
+    // every part's answer, one card a swing family each provisional with its rule written from the index's settings, and
+    // the index's sector heavyweights' card. A night the index's families did not read says so.
     // see: Every page reads one index at a time chosen under Universe, and every figure names its index
     public string IndexTonightRegion(
         MarkRenderer marks,
@@ -2763,7 +2763,9 @@ public sealed partial class SinglePageApp : IComponent
         HeavyweightCardView? heavyweights,
         string? notComputed = null,
         string due = "",
-        string? selectedTicker = null)
+        string? selectedTicker = null,
+        IReadOnlyList<CloseToBuyRow>? closeToBuy = null,
+        bool closeOpen = false)
     {
         var region = new StringBuilder();
         var heading = "Tonight: " + universe.Titled;
@@ -2798,11 +2800,13 @@ public sealed partial class SinglePageApp : IComponent
         var chosen = points.Any(point => point.Pick.Row.Ticker == selectedTicker) ? selectedTicker : points.FirstOrDefault()?.Pick.Row.Ticker;
 
         region.Append(marks.SetupTiles(tiles));
-        region.Append(BuyPointsCard(marks, points, chosen, string.Empty, night, "&" + Universes.Query + "=" + universe.Word, line.CloseRead ? line.Close : null));
+        region.Append(BuyPointsCard(marks, points, chosen, string.Empty, night, "&" + Universes.Query + "=" + universe.Word, line.CloseRead ? line.Close : null, line.CloseHref));
 
-        // From 19.8 the card of the stocks one gate short, which on an index whose night stores only the first part each
-        // member failed says it reads none.
-        region.Append(marks.CloseToBuy(line.CloseRead ? [] : null, false, false, universe.Word));
+        // From 19.8 the card of the stocks one gate short, read from 20.11 off every part's answer the night stored, with no
+        // Watch press since the watch list holds the S&P 500's names alone; a night storing only the first part each member
+        // failed says it reads none.
+        // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
+        region.Append(marks.CloseToBuy(line.CloseRead ? closeToBuy ?? [] : null, closeOpen, false, universe.Word));
 
         // One card a setup, its header carrying the guide every setup card is read by in place of a key it repeated.
         // see: Every region is a card ruled down its left by its role, stating where its figures came from and how to read them

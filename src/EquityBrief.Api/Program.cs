@@ -1240,8 +1240,13 @@ app.MapGet("/screens/tonight/{night?}", async (
             await read.FormingRowsAsync(reading.Code, dated),
             indexNight.MarketOpen,
             IndexRuleSettings.Read(indexNight.Settings));
+        // From 20.11 the stocks one gate short read off every part's answer the night stored, the market check among them.
+        // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
+        var indexClose = TonightScreen.IndexCloseAcross(indexResults, members);
+        var indexCloseHref = indexClose is null ? null : MarkRenderer.CloseToBuyHref(night is { Length: > 0 } ? SinglePageApp.NightRoute + night : "#/", reading.Word);
+
         indexCards = await WithBehindAsync(read, indexCards, reading, dated);
-        indexCards = await WithNumbersAsync(read, indexCards, reading, dated);
+        indexCards = await WithNumbersAsync(read, indexCards, reading, dated, indexClose);
         var indexOpen = (await read.IndexTradesAsync(reading.Code, dated)).Count(trade => trade.Listed < dated && trade.EndedOn is null);
 
         // The heavyweights' card drawn from the index's own book, or from its live rule's book where a freeze stands and the
@@ -1322,7 +1327,7 @@ app.MapGet("/screens/tonight/{night?}", async (
                 reading,
                 selector,
                 indexHeld,
-                TonightScreen.IndexLine(reading, indexNight, indexCards, indexResults, indexOpen),
+                TonightScreen.IndexLine(reading, indexNight, indexCards, indexResults, indexOpen, indexClose) with { CloseHref = indexCloseHref },
                 indexCards,
                 CardScreen.WithCards(
                     heavyweightCard with
@@ -1335,7 +1340,9 @@ app.MapGet("/screens/tonight/{night?}", async (
                     indexCardContext),
                 indexNight.Fault is null ? null : TonightScreen.NotComputed(reading),
                 due,
-                request.Query["name"].FirstOrDefault()),
+                request.Query["name"].FirstOrDefault(),
+                indexClose is null ? null : TonightScreen.IndexCloseToBuy(indexClose, await NextEventsAsync(read, dated), dated),
+                request.Query[MarkRenderer.CloseToBuyKey].FirstOrDefault() == MarkRenderer.CloseToBuyOpen),
             "text/html; charset=utf-8");
     }
 
@@ -2008,12 +2015,18 @@ app.MapGet("/screens/universe", async (
         : new Dictionary<string, SwingReadingRow>(StringComparer.Ordinal);
 
     // The S&P 500's swing filter rows and family answers of the night, which the one gate short chip and the dry-up's
-    // ceiling read; the S&P 400's and 600's nights store only the first part each member failed, so they read none.
+    // ceiling read; from 20.11 the S&P 400's and 600's every part's answer their night stored, the first family in the one
+    // order a member is one gate short of taken, and none on a night storing only the first part each member failed.
+    // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
     var large = reading == Universes.Large;
     IReadOnlyList<GateResultRow> gates = large && night is { } gatesOn ? await read.GateResultsAsync(gatesOn) : [];
+    var indexShort = !large && night is { } indexOn
+        ? TonightScreen.IndexCloseAcross(await read.IndexResultsAsync(reading.Code, indexOn), await read.IndexMembersAsync(reading.Code, indexOn))
+        : null;
     var oneShort = large && night is { } shortOn
         ? UniverseScreen.OneShort(gates, await read.FamilyResultsAsync(shortOn))
-        : new Dictionary<string, (string Family, string Gate)>(StringComparer.Ordinal);
+        : (indexShort ?? []).GroupBy(cell => cell.Ticker, StringComparer.Ordinal).ToDictionary(group => group.Key, group => (group.First().Family, group.First().Gate), StringComparer.Ordinal);
+    var shortRead = large || indexShort is not null;
 
     IReadOnlyList<UniverseCell> cells =
     [
@@ -2031,7 +2044,7 @@ app.MapGet("/screens/universe", async (
         sector,
         request.Query["q"].FirstOrDefault() is { Length: > 0 } words ? words.Trim() : null,
         near is UniverseScreen.NearSupport or UniverseScreen.NearResistance ? near : null,
-        large && request.Query["short"].FirstOrDefault() == "1",
+        shortRead && request.Query["short"].FirstOrDefault() == "1",
         sort is not null && UniverseScreen.SortKeys.Contains(sort, StringComparer.Ordinal) ? sort : null,
         request.Query["dir"].FirstOrDefault() == "desc",
         perPage == UniverseScreen.AllRows || (int.TryParse(perPage, NumberStyles.Integer, CultureInfo.InvariantCulture, out var size) && size != UniverseScreen.PageSize && UniverseScreen.PageSizes.Contains(size)) ? perPage : null,
@@ -2070,7 +2083,7 @@ app.MapGet("/screens/universe", async (
         tiles,
         cells.Count(cell => cell.Sector == UniverseScreen.SectorNotOnFile),
         EquityBrief.Core.Families.HeavyweightRule.LookBack,
-        large,
+        shortRead,
         UniverseScreen.PageSizes,
         gates.Count > 0 ? (await FilterSettingsOf(read, gates[0].Version)).DryUpCeiling : null);
 

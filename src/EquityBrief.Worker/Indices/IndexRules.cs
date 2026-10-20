@@ -767,9 +767,10 @@ public static class IndexRules
     static string Number(double value) => value.ToString("0.##", CultureInfo.InvariantCulture);
 
     // A rule's read on the night: its family's listings at its settings in its own order, its market check on the
-    // index's own breadth, on the S&P 500's where it states so or open on every night where it states none, and the
-    // first part of its rule past the setup a listed member fails, the floors and the quality and then each level in its
-    // sweep's order.
+    // index's own breadth, on the S&P 500's where it states so or open on every night where it states none, its listings
+    // read with the check open where it closed, and each part of its rule past the setup a member is read against, the
+    // floors and the quality and then each level in its sweep's order.
+    // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
     public static IndexFamilyRead Read(IndexNightInputs inputs, IndexRule rule, IndexLevels levels)
     {
         var p = rule.Parameters;
@@ -783,11 +784,11 @@ public static class IndexRules
             IndexRuleCandidate.NoMarketCheck => WithBreadth(inputs.Sessions, inputs.At, 1),
             _ => inputs.Sessions,
         };
-        var open = breadth switch
+        var market = breadth switch
         {
-            1 => levels.LargeBreadth >= FamilySweep.MarketFloor,
-            IndexRuleCandidate.NoMarketCheck => true,
-            _ => inputs.Open,
+            1 => IndexNightRead.MarketGate(levels.LargeBreadth, FamilySweep.MarketFloor, IndexNightRead.LargeBreadth),
+            IndexRuleCandidate.NoMarketCheck => IndexNightRead.NoMarketGate,
+            _ => IndexNightRead.MarketGate(inputs.Breadth, FamilySweep.MarketFloor),
         };
         var hold = (int)p[IndexRuleCandidate.HoldParameter];
         var floors = p[IndexRuleCandidate.FloorsParameter] switch { 0.5 => IndexSweepRunner.DollarVolumeHalf, 2 => 2m, _ => 1m };
@@ -795,25 +796,29 @@ public static class IndexRules
         var quality = (IndexQuality)(int)p[IndexRuleCandidate.QualityParameter];
         var backs = new Dictionary<int, int>();
 
-        IReadOnlyList<(int Name, IndexTrade Trade)> listed = rule.Evaluator switch
+        IReadOnlyList<(int Name, IndexTrade Trade)> ListedOn(IReadOnlyList<SweepColumns.Session> on)
         {
-            IndexBreakoutCandidate => IndexNightRead.Breakouts(inputs, IndexNightRead.Places(BreakoutSweep.Grid, BreakoutValues(p)), sessions),
-            IndexDriftCandidate => Drifts(inputs, p, sessions, backs),
-            _ => IndexNightRead.Pullbacks(inputs, new IdeaRule(PullbackOf(p)!.Value, IdeaExit.Base, int.MaxValue, []), IndexNightRead.PullbackCap, sessions),
-        };
+            IReadOnlyList<(int Name, IndexTrade Trade)> listed = rule.Evaluator switch
+            {
+                IndexBreakoutCandidate => IndexNightRead.Breakouts(inputs, IndexNightRead.Places(BreakoutSweep.Grid, BreakoutValues(p)), on),
+                IndexDriftCandidate => Drifts(inputs, p, on, backs),
+                _ => IndexNightRead.Pullbacks(inputs, new IdeaRule(PullbackOf(p)!.Value, IdeaExit.Base, int.MaxValue, []), IndexNightRead.PullbackCap, on),
+            };
 
-        if (hold > 0)
-        {
-            listed = [.. listed.Select(one => (one.Name, one.Trade with { Cap = hold }))];
+            return hold > 0 ? [.. listed.Select(one => (one.Name, one.Trade with { Cap = hold }))] : listed;
         }
 
-        var trades = listed.GroupBy(one => one.Name).ToDictionary(group => group.Key, group => group.First().Trade);
+        var listed = ListedOn(sessions);
+        var ifOpen = market.Passed ? listed : ListedOn(IndexNightRead.OpenOn(sessions, inputs.At));
+        var trades = ifOpen.GroupBy(one => one.Name).ToDictionary(group => group.Key, group => group.First().Trade);
 
-        string? FailsOn(int name) =>
-            IndexNightRead.FailsOn(inputs, name, floors, lowest, quality, ticker => levels.Coverage.GetValueOrDefault(ticker))
-            ?? LevelFails(inputs, rule, levels, name, trades[name], backs);
+        IReadOnlyList<RulePart> PartsOf(int name) =>
+        [
+            .. IndexNightRead.PartsOn(inputs, name, floors, lowest, quality, ticker => levels.Coverage.GetValueOrDefault(ticker)),
+            .. LevelParts(inputs, rule, levels, name, trades.TryGetValue(name, out var trade) ? trade : null, backs),
+        ];
 
-        return new IndexFamilyRead(listed, open, FailsOn);
+        return new IndexFamilyRead(listed, market, PartsOf) { ListedIfOpen = ifOpen };
     }
 
     // The drift's listings at its settings, noting each listing's sessions back to its reaction.
@@ -829,17 +834,18 @@ public static class IndexRules
         return IndexNightRead.Drifts(inputs, IndexNightRead.Places(DriftSweep.Grid, DriftValues(p)), p[IndexDriftCandidate.StopFloorParameter], window, sessions);
     }
 
-    // The first level a listed member fails, in its sweep's order; none where it passes every level its rule states.
-    static string? LevelFails(IndexNightInputs inputs, IndexRule rule, IndexLevels levels, int name, IndexTrade trade, IReadOnlyDictionary<int, int> backs)
+    // Each level a rule states as a part of its own, in its sweep's order, a member answered on every one: a level reading
+    // the trade its setup places failed for a member no setup listed, and the tone read in its two steps, the release's
+    // reading held and then its answer.
+    static IReadOnlyList<RulePart> LevelParts(IndexNightInputs inputs, IndexRule rule, IndexLevels levels, int name, IndexTrade? trade, IReadOnlyDictionary<int, int> backs)
     {
         var p = rule.Parameters;
         var ticker = inputs.Series[name].Name.Ticker;
+        var parts = new List<RulePart>();
 
-        if (p[IndexRuleCandidate.IndustryFallParameter] is var fall and > 0
-            && levels.Industry.TryGetValue(ticker, out var industry)
-            && (fall == MemberReadings.IndustryWindows[0] ? industry.Month : industry.Quarter) is < 0)
+        if (p[IndexRuleCandidate.IndustryFallParameter] is var fall and > 0)
         {
-            return IndustryFell;
+            parts.Add(new(IndustryFell, !(levels.Industry.TryGetValue(ticker, out var industry) && (fall == MemberReadings.IndustryWindows[0] ? industry.Month : industry.Quarter) is < 0)));
         }
 
         if (rule.Evaluator is IndexBreakoutCandidate)
@@ -849,20 +855,19 @@ public static class IndexRules
                 ? (Statistic.FromPrice(found.High), found.Since)
                 : (double.NaN, int.MaxValue);
 
-            if (p[IndexBreakoutCandidate.NearnessParameter] is var near and > 0 && !(Statistic.FromPrice(trade.Entry) / high >= near))
+            if (p[IndexBreakoutCandidate.NearnessParameter] is var near and > 0)
             {
-                return NotNearItsHigh;
+                parts.Add(trade is { } listed ? new(NotNearItsHigh, Statistic.FromPrice(listed.Entry) / high >= near) : new(NotNearItsHigh, false, IndexNightRead.NotReadWithoutASetup));
             }
 
-            if ((p[IndexBreakoutCandidate.RecencyParameter] > 0 && !(since <= IndexSweepRunner.RecentHighSessions))
-                || (p[IndexBreakoutCandidate.RecencyParameter] < 0 && !(since > IndexSweepRunner.RecentHighSessions)))
+            if (p[IndexBreakoutCandidate.RecencyParameter] is var recency and not 0)
             {
-                return HighNotAsStated;
+                parts.Add(new(HighNotAsStated, recency > 0 ? since <= IndexSweepRunner.RecentHighSessions : since > IndexSweepRunner.RecentHighSessions));
             }
 
-            if (p[IndexBreakoutCandidate.HighVolumeParameter] is var volume and > 0 && !(trade.Order >= volume))
+            if (p[IndexBreakoutCandidate.HighVolumeParameter] is var volume and > 0)
             {
-                return VolumeUnder;
+                parts.Add(trade is { } listed ? new(VolumeUnder, listed.Order >= volume) : new(VolumeUnder, false, IndexNightRead.NotReadWithoutASetup));
             }
         }
 
@@ -870,23 +875,20 @@ public static class IndexRules
         {
             var reaction = backs.TryGetValue(name, out var back) && inputs.At - back >= 0 ? inputs.Calendar[inputs.At - back] : (DateOnly?)null;
 
-            if (reaction is not { } session || levels.PeerSurprise.GetValueOrDefault((ticker, session)) is not > 0)
-            {
-                return PeersNotAbove;
-            }
+            parts.Add(new(PeersNotAbove, reaction is { } session && levels.PeerSurprise.GetValueOrDefault((ticker, session)) is > 0));
         }
 
-        // The switches last, as the second stage reads them after every other level.
-        if (p[IndexRuleCandidate.FundOverSpyParameter] is var window and > 0
-            && (window == IndexSwitches.SmallWindows[0] ? levels.FundHalfYear : levels.FundYear) is not > 1)
-        {
-            return SwitchClosed;
-        }
+        // The switches last, as the second stage reads them after every other level, one part however many the rule
+        // states.
+        var window = p[IndexRuleCandidate.FundOverSpyParameter];
+        var (average, change) = (p[IndexRuleCandidate.CreditAverageParameter] == 1, p[IndexRuleCandidate.CreditChangeParameter] == 1);
 
-        if ((p[IndexRuleCandidate.CreditAverageParameter] == 1 && levels.CreditAverage is not > 1)
-            || (p[IndexRuleCandidate.CreditChangeParameter] == 1 && levels.CreditChange is not > 1))
+        if (window > 0 || average || change)
         {
-            return SwitchClosed;
+            var fund = !(window > 0 && (window == IndexSwitches.SmallWindows[0] ? levels.FundHalfYear : levels.FundYear) is not > 1);
+            var credit = !((average && levels.CreditAverage is not > 1) || (change && levels.CreditChange is not > 1));
+
+            parts.Add(new(SwitchClosed, fund && credit));
         }
 
         // The tone condition after the switches, as the S&P 500's drift reads it after its market switches: the release of
@@ -903,13 +905,11 @@ public static class IndexRules
                 levels.Releases?.TryGetValue((ticker, series.Name.Surprises[newest].EventDate, version), out release);
             }
 
-            if (!ReleaseTone.GateOf(version, release).Passed)
-            {
-                return release?.Answer is null ? ToneNotHeld : ToneFailed;
-            }
+            parts.Add(new(ToneNotHeld, release?.Answer is not null));
+            parts.Add(new(ToneFailed, ReleaseTone.GateOf(version, release).Passed));
         }
 
-        return null;
+        return parts;
     }
 
     // The index's sessions with the night's breadth another's: the S&P 500's, or every member's for a rule reading none.

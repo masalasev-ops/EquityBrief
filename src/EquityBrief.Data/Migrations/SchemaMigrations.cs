@@ -722,7 +722,15 @@ public static class SchemaMigrations
         new Migration(99, "create release_document and release_day", CreateReleases),
         new Migration(100, "create release_filer, release_reading and release_probe", CreateReleaseReadings),
         new Migration(101, "create loop_idea", CreateLoopIdeas),
+        new Migration(102, "add index_family_result.gates", AddIndexResultGates),
     ];
+
+    // From 20.11: every part of an S&P 400 or 600 rule a member is answered on, the market check its own, each with its
+    // answer, in the form the S&P 500's family rows keep their gates. A row stored before the change holds none.
+    // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
+    const string AddIndexResultGates = @"
+        ALTER TABLE index_family_result ADD COLUMN gates TEXT;
+    ";
 
     // From 20.9: each answer the idea generator stored, a row a prompt and reading version, with the prompt as it was put,
     // what the answer came to, its cause where refused and its text. Created empty, nothing copied and nothing dropped.

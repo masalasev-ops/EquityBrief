@@ -1102,6 +1102,7 @@ Grain: one row per session, index, member and family.
 | `cap` | INTEGER | the sessions the trade is given, its family's, null on a row that did not pass |
 | `order_by` | REAL | the figure the family's order reads, largest first, null where it reads none |
 | `reason` | TEXT | on a row that did not pass, the first part of the rule it failed in the rule's order: the market check, no setup, the price under $5, the dollar volume under the floor or the profit check, and for the fundamentals-first family after the floors no readings read tonight or its profit check in the index's form, its revenue, margin, cash or trend check; null on a row that passed |
+| `gates` | TEXT | from migration 102, JSON in the form `family_result.gates` takes: every part of the rule the member was answered on, in the rule's order, each with whether it passed, what it had where it failed and the values that decided it, the market check first with the breadth it read and its floor, then the setup read with the check open, then each part past the setup named as the rule's funnel names it; null on a row stored before the column (see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own) |
 
 Primary key: `index_code`, `session_date`, `ticker`, `family`.
 

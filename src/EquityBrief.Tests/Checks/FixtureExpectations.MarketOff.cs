@@ -20,7 +20,7 @@ public partial class FixtureExpectations
     // The S&P 400 of the index families' store with ten more members, F1 to F10, each closing at 90 on the night under
     // the 200-day average its year near 99 holds: seven of seventeen members above their average, a breadth of 0.41 under
     // the floor of 0.45, so the index's market check is closed. None of the ten breaks out.
-    static TemporaryStore ClosedIndexStore()
+    internal static TemporaryStore ClosedIndexStore()
     {
         var store = IndexStore();
 

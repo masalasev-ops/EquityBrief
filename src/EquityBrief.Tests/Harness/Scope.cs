@@ -3203,7 +3203,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Tonight's stocks one gate short")] = new Scoped(
             Verdict.Pass,
-            "the card's count read off the rendered page against the market line's and the family cards' own tables on all three indices, the S&P 400 and 600 saying they read none; its rows in the family order each family's as its card orders them; folded by default and open where the link keeps it; its Watch press adding a name, the row then reading Watching and the market line's count moving, refused for a name held, on a twenty-first and without the page's header; a night before the newest drawing no press and no link to Universe; and the shell's script keeping its open state in the link and opening it from a count pressed",
+            "the card's count read off the rendered page against the market line's and the family cards' own tables on all three indices, the S&P 400 and 600 saying they read none over a night storing only the first part each member failed, and from 20.11 the S&P 400's card, line and breakout expander drawing the four a closed market check alone keeps off over a constructed night with no press and no link to Universe; its rows in the family order each family's as its card orders them; folded by default and open where the link keeps it; its Watch press adding a name, the row then reading Watching and the market line's count moving, refused for a name held, on a twenty-first and without the page's header; a night before the newest drawing no press and no link to Universe; and the shell's script keeping its open state in the link and opening it from a count pressed",
             ByReadSurface),
 
         // 19.11's, on the operator's rulings of 2026-10-16: the chart page and the Run page's time of every page.
@@ -3805,7 +3805,7 @@ internal static class Scope
         [CheckReach.Key("15.8 Universe", "Near a level")] = new Scoped(
             Verdict.Pass, "each chip worked by hand over constructed rows at one typical move from the band's edge and a hundredth past it, a close inside the band kept", ByReadSurface),
         [CheckReach.Key("15.8 Universe", "One gate short")] = new Scoped(
-            Verdict.Pass, "the members one gate short worked by hand from constructed gate rows and family answers, the first in the one family order taken and an excluded member left out, the chip keeping them and the tag naming the setup and the gate read off the rendered row, and the S&P 400's page saying it cannot read it", ByReadSurface),
+            Verdict.Pass, "the members one gate short worked by hand from constructed gate rows and family answers, the first in the one family order taken and an excluded member left out, the chip keeping them and the tag naming the setup and the gate read off the rendered row, the S&P 400's page saying it cannot read it over a night storing only the first part each member failed, and from 20.11 its chip keeping the four a closed market check alone keeps off over a constructed night", ByReadSurface),
         [CheckReach.Key("15.8 Universe", "The readings' bars")] = new Scoped(
             Verdict.Pass, "the strength's bar filled to its place, the dry-up's ticked at the open filter version's ceiling and the tightness's carrying no tick, read back off the rendered table against the store", ByReadSurface),
         [CheckReach.Key("15.8 Universe", "On a phone")] = new Scoped(
