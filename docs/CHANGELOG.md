@@ -26,6 +26,16 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-20 - RUNBOOK.md - the history read runs with no daily stop and is stopped by hand for a merge
+Corrects: the paragraph started the history read with `--until 07:00` and had it stop each morning in New York for the day's merges, which is not how it runs since the operator asked at about 00:02 UTC on 2026-10-20 that the daily stop be removed, the read already keeping clear of the slots and the night by itself; found reading the runbook against the read restarted with no `--until`, and on the operator's word of 2026-10-20 that it may be paused while another run needs the machine.
+Was:
+> dotnet run --project src/EquityBrief.Worker -- releases --read --history --until 07:00
+> ... Started after the morning's merges with `--until 07:00`, it reads through the day and the night, keeping clear of the slots and the night by itself, and stops at 07:00 in New York the next morning for the day's merges. Pin 2's read ...
+Now:
+> dotnet run --project src/EquityBrief.Worker -- releases --read --history
+> ... It is started with no `--until` and reads through the day and the night, keeping clear of the slots and the night by itself; for a merge, or where another run needs the machine's memory, it is stopped by hand, the model unloaded, and started again afterwards from a clean copy of `main`'s commit with the card's limit read back first, going on from the release it stopped at. Pin 2's read ...
+Why: `--until` still stops the read cleanly where it is given; the runbook states how the read is run.
+
 ### 2026-10-20 - .claude/rules/checks.md - fixture-expectations and read-surface state the corrections of 2026-10-20
 Corrects: five defects in built work, found by phase 18's sign-off review and by 20.11's own runs over the live store, each recorded as a correction in PROGRESS.md: the event book's one-price band and a two-place price of a thousand or more without their thousands marked (4.7), a rule's stored words drawn past the places they are read at and the quote line's unanswered asks (18.1), an actual at one place (18.3), the S&P 400's and 600's pullback searches reading the S&P 500 filter's live setting as their provisional base (15.4), and the run on all finished data learning on one year fewer (17.4).
 Was:
