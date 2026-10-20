@@ -4194,3 +4194,103 @@ Carried:    PR 510 merged once the night and its store copy end; 5152 started ag
             16.1 correction's entry puts to the operator; the local lane's one text field and its comparison; 21.0 once its
             ruling is given; the phase 19 sign-off; pin 3's completion steps; (G1), SCHEMA's `family_trade` sentence, owed
             by the next edit of that section.
+
+### 4.7 - correction: the event book's trigger names a band of one price at a thousand or more at that price, and a sentence's two-place price of a thousand or more reads with its thousands marked, where NVR's flush read inside 5,797.67 to 5,797.67   2026-10-20
+
+Queue:      as the 20.11 ruling's entry below.
+Found:      by the phase 18 sign-off review of 2026-10-20, a session that had committed no code, asked by the operator to
+            sign and told after its findings: "correct all the errors. Do not sign off". Reading NVR's and SNDK's pages on
+            5152 after the night of 2026-10-19: "inside 5,797.67 to 5,797.67" and "inside 1,216.38 to 1,216.38". The 4.7
+            correction of 2026-10-19 read a band's price as digits and a point, and a sentence reads a price stored past two
+            places with its thousands marked, so no band of one price at a thousand or more was named at its price; 43 such
+            triggers of 9 names were stored from 2026-09-01, NVR's and SNDK's of 2026-10-19 among them. AZO's band, stored to
+            two places, read "inside the band at 3046.47" beside its plan's 3,046.47, a sentence's price being read as a
+            price only where stored past two places.
+Corrected:  a sentence the night stored reads a number stored to two places at a thousand or more as a price, its thousands
+            marked, as it reads one stored past two places; a band of one price is named at that price written either way.
+Tests:      the figures test widened, worked by hand from NVR's, SNDK's and AZO's stored triggers of 2026-10-19: each named
+            at its price with its thousands marked, a band a cent wide and one whose price only begins with the other left
+            as ranges, a count of a thousand or more left as written, "inside 5 to 5,000" left as a range, and the event book
+            drawing NVR's.
+Mutated:    the rule, stated before the run, for every correction of this review: each property it adds, the smallest edit
+            undoing it, run filtered to the tests naming its member with its red predicted, made in this checkout over the
+            file's own text and restored from it, the tree's diff the same after each. K1 the grouped price dropped from the
+            band's pattern: red at the figures test. K2 the two places at a thousand or more dropped: red at the figures test
+            and at the 18.1 correction's figures test below, which reads its words through the same reading. K3 the guard
+            after the repeated price dropped: red at the figures test, "inside 5 to 5,000" read as a band of one price.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 18.1 - correction: a rule's stored words read their figures at the places they are read at, a pass's stored reasons their counts in words, and the Run page's quote line held where asks met no run and where one name was asked twice   2026-10-20
+
+Queue:      as the 20.11 ruling's entry below.
+Reviewed:   the phase 18 sign-off review of 2026-10-20 named in the 4.7 correction's entry above, over main at 6ecf423f,
+            whose tree is PR 510's head's: `tools/ci.ps1` green 00:14:53 to 00:37:44 UTC, all six steps, 0 warnings, 0
+            errors, 2496 of 2496 tests, migrations 0 to 101 against `data-ci` and none pending at 101; `tools/verify-phase.ps1`
+            green 00:37:57 to 00:38:01 UTC, 60 tables, 1372 claims, 1372 passing, none out of scope or unexamined, 1383
+            placements against a floor of 34, 43 checks run and passed. Hosted CI green on PR 511's head 4d224ee2 and PR
+            510's head f4976717 under both events and on main's push for 26bfbe21 and 6ecf423f, both jobs each; PR 511's
+            middle push 9dab869e was red at the check holding a night's step to its name, which 4d224ee2 repaired. The night
+            of 2026-10-19 ran every step ok, 23:00:21 to 23:50:01 UTC, built from 26bfbe21, every registered family rule read.
+Swept:      the thirteen mutations of the phase 18 handoff of 2026-10-13 again over 6ecf423f, each filtered to the tests
+            naming its type: m1 to m13 red, the five the first review found surviving among them. This review's own over the
+            corrections of 2026-10-19, predicted before the runs: n1 a blank address read by IsNullOrEmpty, n2 the timeout's
+            catch inverted, n4 the masthead's close alone written at New York's clock, n5 a count's singular at nought, n6
+            the band's lookahead dropped, n7 a quarter of the span exactly at two and a half read as five, n9 the warning's
+            sign keyed on another word and n11 the lines saying why the filter passed a name read as stored, each red where
+            predicted; n3 an ask matched to its run by the name alone, n8 the actual read by the list reader, n10 the empty
+            line keyed on stored quotes and runs alone and n12 Tonight's gates tooltip read as stored survived as predicted,
+            each an edge no test stood on; n13 the tick values unrounded survived where red was predicted, the labels being
+            written to four places so its rounding never reaches the page. The five together over the whole suite: 2496 of
+            2496 green, 1239 seconds.
+Found:      TRV's card on Tonight of 2026-10-16 drew "the target at 441.815, 2.5 times the risk" beside the plan's 441.82,
+            and every card the store holds, 27 of 27, draws a figure its night stored past two places, JBL's "strength 0.540
+            at or above its floor of 0.500" and "reward to risk 2.3085 at or above 2" among them, as the name page's gates and
+            its lines saying why the filter passed a name drew the same reasons, where (see: A figure is drawn at the places
+            it is read at, and its element carries the stored value whole) reads a sentence the nightly store wrote at the
+            places a price is read at. The first 16.1 correction of 2026-10-19 put the target to the operator as a stored
+            word whose change moves the drift's pins; the page reads it at two places as it draws it, the stored words as the
+            rule wrote them, and no pin moves. And the industry cycle's line on TRV's page and export read "the searches
+            found 5 page(s) about Insurance - Property & Casualty", as the passes of 9 names stored it, MO's, HPQ's,
+            STZ's, BBY's, ADM's, BDX's, DGX's and BNY's among them, where the 18.1 correction of 2026-10-11 holds the name
+            page's and the export's counts to their noun's singular or plural. n3, n10 and n12 above: the Run page's quote
+            line over a session whose asks met no run, the live session of 2026-10-13, could have said none were asked with
+            no test failing; one name asked twice with one ask answered was never stood on; and Tonight's gates tooltip held
+            no assertion.
+Corrected:  a rule's stored words on a pick's card, the name page's gates, the lines saying why the filter passed a name and
+            the gates beneath a row of Tonight's list read their counts in words and each figure written past two places, or
+            at a thousand or more, at the places a price is read at, the stored words standing as the rule wrote them; a
+            pass's stored reasons, its line, each section left out and each not written, read their counts in words.
+            Assertions alone for the quote line.
+Tests:      three new: a rule's stored words worked by hand from TRV's and JBL's cards, the target at 441.82, the strength
+            at 0.54 against 0.50, the reward to risk at 2.31 and the round trip at 0.01 of the risk, two-place figures,
+            percentages and whole counts as written, drawn so on the card, the gates, the lines and Tonight's tooltip; a
+            pass's reasons worked by hand from TRV's and ADM's industry cycles, "5 pages" and "1 page", a section left out
+            and the pass's own line; and over a constructed store CVX asked twice in a session, first with no run, the line
+            counting both asks against no quote stored and naming each by its instant, and then with the first answered, the
+            second still named. The card and gates read-back tests read the stored words through the test's own reading of
+            figures and counts.
+Mutated:    the rule as the 4.7 correction's entry above states it. K4 the card's words read for their counts alone: red at
+            the new figures test and at both card read-back tests. K5 the gates table so: red at the figures test and the
+            gates read-back test. K6 the lines saying why the filter passed a name so: red at the figures test. K7 Tonight's
+            tooltip so: red at the figures test. K8, K9 and K10 a pass's not-written reasons, its left-out reasons and its
+            line read as stored: each red at the reasons test. n3, n10 and n12 again: n3 and n10 red at the new quote test,
+            n12 red at the figures test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 18.3 - correction: an actual stored at one place is held reading at two as an estimate does, where the test's one actual read the same under either reader   2026-10-20
+
+Queue:      as the 20.11 ruling's entry below.
+Found:      the review's n8 above survived: the reactions test's one actual, 6.0625, reads 6.06 through the list reader as
+            through the per-share reading the correction of 2026-10-19 gave it, so an actual stored at one place could read
+            at one with no test failing.
+Corrected:  an assertion alone.
+Tests:      a print whose actual is stored at 1.5 and estimate at 1.4625 reads 1.50 and 1.46, each stored figure whole on its
+            element.
+Mutated:    n8 again: red at the reactions test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
