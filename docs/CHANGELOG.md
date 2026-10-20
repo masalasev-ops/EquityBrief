@@ -26,6 +26,16 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations and read-surface state the corrections of 2026-10-20
+Corrects: five defects in built work, found by phase 18's sign-off review and by 20.11's own runs over the live store, each recorded as a correction in PROGRESS.md: the event book's one-price band and a two-place price of a thousand or more without their thousands marked (4.7), a rule's stored words drawn past the places they are read at and the quote line's unanswered asks (18.1), an actual at one place (18.3), the S&P 400's and 600's pullback searches reading the S&P 500 filter's live setting as their provisional base (15.4), and the run on all finished data learning on one year fewer (17.4).
+Was:
+> fixture-expectations: ... and from the 18.4 correction of 2026-10-19 results on the calendar's ninetieth day drawn |
+> read-surface: ... and from the second 16.1 correction of 2026-10-19 a card's tick drawn in the green a gain is drawn in on its fill, its note in grey and its warning in the caution's amber |
+Now:
+> fixture-expectations: ... and from the 18.4 correction of 2026-10-19 results on the calendar's ninetieth day drawn; and from the 15.4 correction of 2026-10-20 every pullback search on the S&P 400 and 600 reading the base its night reads as its provisional setting, on the widened grid and on 20.11's own; and from the 17.4 correction of 2026-10-20 the run on all finished data learning on every year the history holds, its floors and the S&P 400 drift's last two years read over all eight |
+> read-surface: ... its warning in the caution's amber; and from the 4.7 correction of 2026-10-20 a band of one price at a thousand or more named at that price with its thousands marked, and a sentence's two-place price of a thousand or more read with its thousands marked; and from the 18.1 correction of 2026-10-20 a rule's stored words on a pick's card, the name page's gates and the lines saying why the filter passed a name reading their figures at the places they are read at, a pass's stored reasons taking their counts in words, and the Run page's quote line naming each ask no run answered and a second ask of one name; and from the 18.3 correction of 2026-10-20 an actual stored at one place drawn to two |
+Why: each roster row says what its check asserts, and the five corrections' tests extend fixture-expectations' and read-surface's.
+
 ### 2026-10-20 - BUILD_PLAN.md - 20.8 takes migration 103 and 20.11 is added after 20.10
 Authorised by: the operator's ruling of 2026-10-19 and their answer of 2026-10-20 on the migration's number, recorded as the 20.11 ruling "the S&P 400's and 600's rules chosen on their own history: the market check swept, every family swept again at the next open with the research's dials, every gate's answer stored, and nothing switched before the operator's word" in PROGRESS.md
 Was:

@@ -4370,3 +4370,47 @@ Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their 
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 17.4 - correction: the run on all finished data learns on every year the history holds, where it learned on one fewer and read the S&P 400 drift's last two years as 2024 and 2025   2026-10-20
+
+Queue:      as the 20.11 ruling's entry above.
+Found:      by the 20.11 tester's own procedures over the live store: the S&P 400 drift's search, whose crossed setting
+            passes the floors over every year, chose no setting on all finished data. The tester counts a fold's learning
+            years from its first test session's year, and the run on all finished data opens the day after the newest
+            session, 2026-10-20, so it learned on seven years where the history holds eight: its floors read 263 trades in
+            place of 300, and the S&P 400 drift's last two years 2024 and 2025 in place of 2025 and 2026. Every fold of a
+            test year counted right, so no verdict and no adjusted p moved; what each procedure chooses on all finished
+            data did, in October's monthly run, which put no proposal, as here.
+Corrected:  a fold's learning years are counted from its own year, the run on all finished data's the year after the
+            newest session's, so it learns on all eight.
+Tests:      a history ending in October 2026 whose folds testing 2022 to 2026 learn on three to seven years and whose run on
+            all finished data learns on eight, at the floors of 300 trades and 6 years, and reads the S&P 400 drift's last
+            two years as 2025's and 2026's, -0.15 over constructed edges where seven years read 2024's and 2025's, +0.15.
+Mutated:    the rule, stated before the run: the run on all finished data learning on every year, broken by counting from
+            the first test session's year again: predicted red at the new test. Result: red, 8 expected and 7 read. Made
+            on this branch and reverted before anything was committed, and the test green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request; the next monthly run proposes on all eight years.
+
+### 15.4 - correction: the S&P 400's and 600's pullback searches read the base their nights read as their provisional setting, where they read the S&P 500 filter's live setting at a reward to risk of 1.5   2026-10-20
+
+Queue:      as the 20.11 ruling's entry above.
+Found:      by 20.11's own pullback search before its first run: 15.4's `pullback-search` and 17.1's `pullback-joint`
+            named the S&P 500 filter's live setting on the fine grid "the provisional base", a reward to risk of 1.5, and
+            held each leader and refinement against it as the live rule, while the S&P 400's and 600's nights read the S&P
+            500 sweep's base at a reward to risk of 2. Each report's first row and its test of a leader trailing the rule
+            in a recent year read a rule no night runs.
+Corrected:  every pullback search on the S&P 400 and 600 takes its provisional setting from one function, the base the
+            index's night reads placed on the search's grid by its values, and draws that setting as the provisional base.
+Tests:      the night's base described on the extended grid, a reward to risk of 2 and the market at 45 per cent among its
+            values, read the same on the widened grid and on 20.11's own grid, whose market floors differ, and not the S&P
+            500 filter's live setting at 1.5.
+Mutated:    the rule, stated before the run: every search reading the night's base, broken by reading the filter's live
+            setting on the fine grid again: predicted red at the new test. Result: red, its words reading a reward to risk
+            of 1.5 where 2 was expected. Made on this branch and reverted before anything was committed, and the test
+            green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request; the earlier searches' records stand as run, 20.11's own search
+            replacing them.
