@@ -4294,3 +4294,79 @@ Mutated:    n8 again: red at the reactions test.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 20.11 ruling - the S&P 400's and 600's rules chosen on their own history: the market check swept, every family swept again at the next open with the research's dials, every gate's answer stored, and nothing switched before the operator's word   2026-10-20
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-19 in the evening, as an addendum to the phase 18 review's corrections, in these
+            words, kept whole in `prompts/2026-10-19-20.11-ruling-index-rules-on-their-own-history.md`: "Operator's ruling of
+            2026-10-19: the S&P 400 and 600 run rules chosen on their own history, never the S&P 500's. Today each index's
+            provisional rules are the S&P 500's frozen settings with the index's floors added, and its market check is a 45%
+            breadth floor copied from the S&P 500's filter and never tested on either index, as the 19.0 planning entry
+            states. The S&P 400 has listed nothing since its families went live, its breadth at 42 to 44.5%; the S&P 600
+            lists, but runs the drift on settings its own sweep found losing. Build after the phase 18 sign-off merges and
+            before phase 19's, while pin 3's read runs. The runs are read-only and need no GPU. 1. Decision: on the S&P 400
+            and 600 no family reads a setting because the S&P 500's rule holds it. Each family's provisional rule on each
+            index is its own: the setting that index's own sweep proposes, or where none passes, the strongest setting that
+            sweep read, its card saying its sweep found no setting that passed the floors. The market check is part of each
+            rule, at the index's own level or off, as its sweep chooses. The decisions that set the 400's and 600's
+            provisional rules at the S&P 500's frozen settings move to Previously decided with their reasoning. Nothing is
+            set aside or hidden by this: a family whose own sweep passed nothing still lists, and whether it keeps listing is
+            my call. 2. The market check swept on each index, each swing family apart, over the pulled history on membership
+            as it stood, after costs, every trade bought at the next open through the core's one pricing function as the
+            monthly tests are since 19.10, at these levels: off; the index's own breadth at 0.35, 0.40, 0.45 and 0.50; the
+            S&P 500's breadth at 0.45 as a signal, kept only if the index's own history chooses it. For each: trades, edge,
+            years above nothing with 2025 and 2026 shown, the edge without the five largest, and how many sessions it would
+            have closed the lists over the history and over the last 60 sessions. 3. Every family swept again on each index
+            at the next open, on membership as it stood and after costs, the market check a dial on each swing family's grid:
+            the pullback with the profit and interest-cover check among its crossed settings, the breakout, the drift, and
+            the sector heavyweights' two designs over their full grids. Each against the sweeps' floors and luck figure, and
+            each proposal also through the tester's year-by-year procedure with its adjusted p. Business first keeps buying
+            at its own index's pullback base, so it follows the pullback's own setting. 4. Bring every family's answer on
+            both indices to me: the setting it would run, whether it passed, and its figures. On my word the night reads them
+            as each index's provisional rules, the moved rules registered again by a remedy, variants restarting where they
+            must, the 19.1 market-off variants kept or replaced as I say. Freezing stays my word as before. 5. The S&P 400's
+            and 600's nights store every gate's answer for every member, as the S&P 500's night does, the market check its
+            own gate, so the one-gate-short list reads them on those pages. A test worked by hand over a constructed night
+            with the market check closed, and one mutation, the rule stated before the run. Record the ruling and each run's
+            figures in their own entries. Merge only at the read's daily stop. No Co-Authored-By or "Generated with" lines."
+            Then: "Do the above after the corrections but in same PR", and "Do not forget to update the docs after the end of
+            all the changes during this."
+Answered:   asked which migration item 5 takes, 20.8's open PR 505 holding 102 and the migrator applying only migrations above
+            the store's version: "This PR takes 102, 20.8 moves to 103 (Recommended)", PR 505 rebased with its migration
+            renumbered once this merges. Then, before any of this was built: "please do full research on how to design the
+            five categories we have for stock selection for both SP400 and Sp600 before blindly implementing them. The goal
+            is to identify good stocks with these criteria which are tuned to the specific midcap and smallcap stocks". The
+            research, every finding read in its source with its link, is `prompts/2026-10-20-20.11-research-index-families.md`.
+            Asked which of its dials the runs read, the operator answered, word for word in the ruling's file: the market
+            check gains a seventh level, "Add the fund's trend (Recommended)", the index's own fund above its 200-day
+            average; the pullback reads "Dip against its sector, No report in the dip, Cap the biggest one-day jump", the
+            sector dip "against the sector's own members on that index, never the S&P 500's sector fund"; the breakout
+            "Recent beat or revenue growth, Cap the breakout day's move", the beat and the revenue growth "as they stood on
+            the breakout's session, the revenue as first filed"; the drift "Exit before the next report, Fewer analysts
+            following", the exit "at the close a few sessions before it, the date read from the pulled history", stated as
+            the date as it happened, "which companies normally announce weeks ahead", and the analysts read "only over
+            sessions whose rating counts were stored as they stood", saying how far back they reach and "never read today's
+            counts into earlier sessions"; and each new dial on every family tried "alone on the ... ten best settings first
+            and keep it only where the edge after costs rises in 6 of 8 years with 2 of the last 3", crossing "only the
+            survivors".
+Plan:       one checkpoint, 20.11, written into the build plan beside this entry. The research is written into section 11.4
+            and the decisions with its sources in section 23. The sweeps of each index price every trade at the next
+            session's open through the core's one pricing function as the tester's walks do, read the market check as a dial
+            of seven levels on each swing family's grid, and read the research's dials as levels of each family's second
+            stage under the operator's rule above; the heavyweights' two designs read their full grids. The new code sits in
+            files no S&P 400 or 600 rule pins, so no rule's version moves for it. The tester reads each proposal year by year
+            with its adjusted p in a print that writes nothing. The runs read the live store read-only from this branch's
+            build, each run's figures in an entry of its own, and every family's answer on both indices goes to the
+            operator. Item 5's column, migration 102, and the decisions' citations in files those rules pin move every S&P
+            400 and 600 rule's version, so they land with the operator's word on the answers, under one remedy and one
+            restart. Nothing merges before that word, and then only at the read's daily stop.
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, and the local run's guard and phase
+            18's review with its corrections, PRs 510 and 511; in review, 20.8 with its correction, PR 505; in progress, the
+            phase 18 sign-off review's three corrections above and this ruling's work, in one pull request; next, the
+            answers put to the operator, this pull request merged at the read's daily stop after their word with its remedy,
+            PR 505 rebased with its migration at 103, the phase 18 sign-off by a fresh session, the local lane's one text
+            field, 21.0 once its ruling is given, the phase 19 sign-off, and pin 3's completion steps.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.

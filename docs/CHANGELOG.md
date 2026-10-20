@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-20 - BUILD_PLAN.md - 20.8 takes migration 103 and 20.11 is added after 20.10
+Authorised by: the operator's ruling of 2026-10-19 and their answer of 2026-10-20 on the migration's number, recorded as the 20.11 ruling "the S&P 400's and 600's rules chosen on their own history: the market check swept, every family swept again at the next open with the research's dials, every gate's answer stored, and nothing switched before the operator's word" in PROGRESS.md
+Was:
+> readable on a setup's session and accepted within the 95 days before it, none otherwise, read as it stood. Migration 102 adds their columns to the setups' table, copying every row, and creates the usefulness store,
+Now:
+> readable on a setup's session and accepted within the 95 days before it, none otherwise, read as it stood. Migration 103, 20.11 taking 102 on the operator's answer of 2026-10-20, adds their columns to the setups' table, copying every row, and creates the usefulness store,
+Why: 20.11's column on the S&P 400's and 600's results takes migration 102 and merges first, and the migrator applies only migrations above the store's version, so 20.8's open pull request moves to 103 once 20.11 merges. 20.11's own section is added after 20.10, deleting no line.
+
 ### 2026-10-19 - .claude/rules/checks.md - read-surface states the session read in UTC and the card's coloured marks
 Corrects: the read surface wrote a session's open and close, instants at New York's offset, with a Z after New York's clock time, so the masthead and the Run page saw no quote or ask after noon in New York; found reading the Run page of 2026-10-13 back on 5152 after PR 511 merged, one ask of the session's five. And the operator asked for the card's marks in colour.
 Was:
