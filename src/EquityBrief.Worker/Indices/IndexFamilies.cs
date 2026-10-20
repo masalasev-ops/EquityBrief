@@ -1756,7 +1756,7 @@ public static class IndexHeavyweights
         // every holding carried to that close first, so no holding of a book no night keeps any more stays open; one
         // whose stock holds no close that session is sold at the close it was last carried to. A rule retired since the
         // newest session waits for its session's night.
-        // see: A retired rule's open positions are ended, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
+        // see: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
         foreach (var (candidate, retiredAt) in retired ?? new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal))
         {
             var on = Core.Candidates.FamilyRecords.FirstSession(retiredAt);

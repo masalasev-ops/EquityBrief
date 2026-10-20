@@ -520,7 +520,7 @@ public static class Nightly
                     ? await ReadingsTonightAsync(night.Token)
                     : null;
                 var kept = await new FamilyRecorder(clock, store.DatabaseFile).RunAsync(indexCode, runId, rules.Standing, night.Token, hookReadings);
-                var held = await new HeavyweightBook(clock, store.DatabaseFile).RunAsync(indexCode, runId, night.Token, HeavyweightBook.Standing(register, standingAt));
+                var held = await new HeavyweightBook(clock, store.DatabaseFile).RunAsync(indexCode, runId, night.Token, HeavyweightBook.Standing(register, standingAt), HeavyweightBook.RetiredBooks(register, standingAt));
 
                 // The S&P 400's and 600's provisional rules, read after the S&P 500's list is drawn so each index's list
                 // holds back a stock whose S&P 500 trade is still open. A failure in their part is caught and named on

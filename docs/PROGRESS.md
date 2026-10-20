@@ -5074,3 +5074,34 @@ Mutated:    the rule, stated before the run: the alarm reading a frozen heavywei
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 20.11 - correction: the S&P 500's registered heavyweights books sell a retired rule's holdings at the close of the session it was retired on, as the S&P 400's and 600's do, where they left them open   2026-10-20
+
+Queue:      as the 20.11 rulings' entries of the evening above.
+Found:      by 20.11 and put to the operator, who ruled on the evening of 2026-10-20 that the S&P 500's registered
+            heavyweights books end a retired rule's holdings as the S&P 400's and 600's now do, their records restarting:
+            the S&P 500's books left a retired rule's holdings open, as the decision said they would until that word.
+Corrected:  the night hands the S&P 500's book the registered heavyweights rules retired as of its start, read off the
+            register by the last row naming each, and each retired rule's book sells every holding at its stock's close
+            on the session it was retired on, one whose stock holds no close there at the close it was last carried to,
+            for its rule retired; a rule retired and registered again in one second stands and keeps its book. The
+            decision citing the S&P 400 and 600 alone is superseded and moved under Previously decided with its reasoning
+            (see: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the
+            session it was retired on and a swing rule's trades walked to their own exits). No S&P 500 heavyweights rule
+            stands retired today: each of the four was retired and registered again in one second on 2026-10-07 and on
+            2026-10-18, so the change sells nothing on the operator's store.
+Tests:      2554, one more: over the heavyweights freeze's constructed S&P 500, every company's variant retired before the
+            open of 2026-10-02 having C01 sold at that session's close of 143 for a result of a tenth and C11 at 150 for
+            nothing, the live rule's book carrying C01 on, a night run again selling nothing twice, and a rule retired and
+            registered again in one second standing; and the night's step keyed in its new words in the three checks
+            reading it.
+Claims:     1372, as before.
+Pins:       the S&P 500 heavyweights' evaluator from 161a4d9d9dce to e2335d9e3024, its sources naming the register's
+            records and the exchange's calendar its book now reads; every other evaluator's version as it stood.
+Mutated:    the rule, stated before the run: a retired rule's book sold at the close of the session it was retired on,
+            broken by keeping no retired rule's book: predicted red at the sold rows. Result: red, C01 and C11 left open.
+            Made on this branch and reverted before anything was committed, and the tests green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request; the four S&P 500 heavyweights rules registered again by the remedy,
+            each record's length before its restart stated in the remedy's entry.

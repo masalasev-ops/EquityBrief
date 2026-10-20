@@ -26,6 +26,44 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-20 - ARCHITECTURE.html - the S&P 500's registered heavyweights books sell a retired rule's holdings
+Authorised by: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
+Was:
+> Heavyweight book: ... and reads nothing for a session earlier than one it has read, runs after the family recorder, makes no request and calls no model (see: The sector heavyweights hold ...) ...
+> 14, the swing filter's step: ... reading no market check and waiting for a night the store holds the closes a rebalance reads (see: The sector heavyweights hold ...) ... (see: A retired rule's open positions are ended, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits) ...
+> 11.4 The setup families: ... (see: A retired rule's open positions are ended, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits). ...
+Now:
+> Heavyweight book: ... and reads nothing for a session earlier than one it has read, and from the 20.11 correction of 2026-10-20 sells every holding of a retired rule's own book at the close of the session it was retired on, a rule retired and registered again in one second standing, runs after the family recorder, makes no request and calls no model (see: A retired rule's open positions are ended on every index, ...) (see: The sector heavyweights hold ...) ...
+> 14, the swing filter's step: ... reading no market check and waiting for a night the store holds the closes a rebalance reads, and sell each holding of a retired rule's own book at the close of the session it was retired on (see: The sector heavyweights hold ...) ... (see: A retired rule's open positions are ended on every index, ...) ...
+> 11.4 The setup families: ... (see: A retired rule's open positions are ended on every index, ...). ...
+Why: on the operator's ruling of the evening of 2026-10-20 the S&P 500's books end a retired rule's holdings as the S&P 400's and 600's do, and the decision citing the S&P 400 and 600 alone is superseded.
+
+### 2026-10-20 - SCHEMA.md - a registered S&P 500 heavyweights rule's holding sold for its rule retired
+Authorised by: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
+Was:
+> heavyweight_rule_holding.reason: `no longer the leader`, `a close under its 200-day average` or `left the index`, null while held
+> heavyweight_rule_holding: ... keeps its buys of the night and its sales unopened as a run of the night stored them. The rows are never deleted otherwise: ...
+Now:
+> heavyweight_rule_holding.reason: `no longer the leader`, `a close under its 200-day average` or `left the index`, and from the 20.11 correction of 2026-10-20 `its rule retired`, null while held
+> heavyweight_rule_holding: ... keeps its buys of the night and its sales unopened as a run of the night stored them. From the 20.11 correction of 2026-10-20 a retired rule's book sells every holding at its stock's close on the session it was retired on, its reason `its rule retired`, one whose stock holds no close that session at the close it was last carried to, and a night run again writes the sale again (see: ...). The rows are never deleted otherwise: ...
+Why: as the ARCHITECTURE.html entry above.
+
+### 2026-10-20 - BUILD_PLAN.md - 20.11's text cites the decision that supersedes the retired positions' first
+Authorised by: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
+Was:
+> A retired rule's open positions are ended (see: A retired rule's open positions are ended, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits).
+Now:
+> A retired rule's open positions are ended (see: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits).
+Why: a spec cites no decision under Previously decided.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states a retired S&P 500 heavyweights rule's book sold
+Authorised by: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
+Was:
+> fixture-expectations: ... and none of the index's own book's five at 0.80, worked by hand over a constructed store |
+Now:
+> fixture-expectations: ... and none of the index's own book's five at 0.80, worked by hand over a constructed store; and from the second 20.11 correction of 2026-10-20 an S&P 500 registered heavyweights rule retired before a session's open having its book's C01 sold at that session's close of 143 for a result of a tenth and its C11 at 150 for nothing, the live rule's book carrying C01 on, a night run again selling nothing twice, and a rule retired and registered again in one second standing |
+Why: the roster's row says what its check asserts.
+
 ### 2026-10-20 - ARCHITECTURE.html - the live alarm reads a frozen heavyweights rule's own book on the S&P 400 and 600
 Corrects: the live alarm read the S&P 400's and 600's sector heavyweights' units off the index's own book whatever rule the page drew, so once a frozen live rule's own book drew the page its quarters were read off holdings the page no longer drew; found by 20.11's replay and put to the operator, who ruled it fixed on 2026-10-20.
 Was:

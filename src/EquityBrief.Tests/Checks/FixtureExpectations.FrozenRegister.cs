@@ -21,7 +21,7 @@ namespace EquityBrief.Tests.Checks;
 // tester's verdict beside its answer; and the remedy's lines registering the eight freezes over a register shaped as the
 // operator's stood on 2026-10-20.
 // see: A freeze on the S&P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions
-// see: A retired rule's open positions are ended, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
+// see: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
 // see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
 public partial class FixtureExpectations
 {
