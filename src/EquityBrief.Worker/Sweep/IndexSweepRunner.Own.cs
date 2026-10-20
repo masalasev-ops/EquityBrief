@@ -399,7 +399,8 @@ public sealed partial class IndexSweepRunner
         bool PassesCrossed(SweepMeasures measures) => MeetsTheFloors(measures) && (!lastTwo || LastTwoYears(measures.YearScored, measures.YearEdge) > 0);
 
         // The setting the family would run on the index: the best edge after costs among its proposal and its crossings
-        // meeting the floors, or where none does, the strongest setting its first stage read, with its figures whole.
+        // meeting the floors, or where none does, the strongest setting its first stage read, the highest edge among those
+        // holding the trade floor and the most trades where none holds it, with its figures whole.
         // see: The setting a family on the S&P 400 or 600 would run is the best edge among its passing settings, or the strongest read where none passes
         (FamilyFigures Figures, bool Passed) WouldRun()
         {
@@ -423,9 +424,13 @@ public sealed partial class IndexSweepRunner
                 return (passing.OrderByDescending(one => one.Edge ?? double.MinValue).ThenBy(one => one.Key, StringComparer.Ordinal).First(), true);
             }
 
-            var strongest = SweepNonePassed.StrongestOf(read.Select(one => new Strongest(one.Figures.Key, one.Figures.Trades, one.Figures.YearsBeating, one.Figures.Edge))).First();
+            var strongest = read
+                .OrderBy(one => one.Figures.Trades >= FamilySweep.TradeFloor ? 0 : 1)
+                .ThenByDescending(one => one.Figures.Trades >= FamilySweep.TradeFloor ? one.Figures.Edge ?? double.MinValue : one.Figures.Trades)
+                .ThenBy(one => one.Figures.Key, StringComparer.Ordinal)
+                .First();
 
-            return (read.First(one => one.Figures.Key == strongest.Key).Figures, false);
+            return (strongest.Figures, false);
         }
 
         var wouldRun = WouldRun();
@@ -621,8 +626,9 @@ public sealed partial class IndexSweepRunner
         var proposed = proposal is not null && MeetsTheFloors(after[1]);
 
         // The setting the pullback would run on the index: the best edge after costs among its proposal and the crossings
-        // meeting the floors, with and without the cover check, or where none does, the strongest setting its search read;
-        // each with its edge without its five largest results read off its own picks.
+        // meeting the floors, with and without the cover check, or where none does, the strongest setting its search read,
+        // the highest edge among those holding the trade floor and the most trades where none holds it; each with its edge
+        // without its five largest results read off its own picks.
         // see: The setting a family on the S&P 400 or 600 would run is the best edge among its passing settings, or the strongest read where none passes
         (string Key, SweepMeasures Measures, SweepTrimmed Trimmed, bool Passed) WouldRun()
         {
@@ -663,11 +669,13 @@ public sealed partial class IndexSweepRunner
                 return (best.Key, best.Measures, best.Trimmed, true);
             }
 
-            var first = proposal is null ? 1 : 2;
+            var strongest = Enumerable.Range(0, shown.Count)
+                .OrderBy(at => after[at].Scored >= FamilySweep.TradeFloor ? 0 : 1)
+                .ThenByDescending(at => after[at].Scored >= FamilySweep.TradeFloor ? after[at].Edge ?? double.MinValue : after[at].Scored)
+                .ThenBy(at => space.Describe(shown[at].Point), StringComparer.Ordinal)
+                .First();
 
-            return first < shown.Count
-                ? (space.Describe(shown[first].Point), after[first], SweepStages.WithoutTheLargest(picks, design, space.Setting(shown[first].Point), space.Conditions(shown[first].Point)), false)
-                : (space.Describe(shown[0].Point), after[0], SweepStages.WithoutTheLargest(picks, design, space.Setting(shown[0].Point), space.Conditions(shown[0].Point)), false);
+            return (space.Describe(shown[strongest].Point), after[strongest], SweepStages.WithoutTheLargest(picks, design, space.Setting(shown[strongest].Point), space.Conditions(shown[strongest].Point)), false);
         }
 
         var wouldRun = WouldRun();
