@@ -4611,3 +4611,21 @@ Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their 
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 12.2 - correction: the remedy script stops at a refused step with that step's own exit code, where it read the code off its test of the step and stopped with nought   2026-10-20
+
+Queue:      as the 20.11 ruling's entry above.
+Found:      by 20.11's remedy, read before it was written: the script ran each step as `if ! dotnet run ...; then
+            code=$?`, and `$?` there is the status of the negated test, nought, so a step the worker refused printed that
+            the remedy stopped at it with exit 0 and the script exited nought, reading to whatever ran it as finished.
+Corrected:  each step's exit code is read off the step itself, nought where it ran, and any other stops the remedy with
+            that code and the line naming the step to start from again.
+Tests:      a constructed remedy of two register lines over a scratch data root holding no store, its first refused by
+            the worker: the script exits with a code other than nought, prints the first step and not the second, names
+            the first step stopped with the code it exits with, and never prints that the remedy is done.
+Mutated:    the rule, stated before the run: a refused step's code reaching the script's exit, broken by reading the code
+            off the negated test again: predicted red at the new test. Result: red, the exit read as 0 where another was
+            expected. Made on this branch and reverted before anything was committed, and the test green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.

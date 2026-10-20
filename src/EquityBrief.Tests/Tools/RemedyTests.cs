@@ -105,4 +105,51 @@ public class RemedyTests
         Assert.Equal(2, missing.ExitCode);
         Assert.Contains("no such file", missing.StandardError, StringComparison.Ordinal);
     }
+
+    // A step the worker refuses stops the remedy with that step's own exit code and runs no step after it: a register
+    // line over a scratch data root holding no store is refused by the worker before it writes, and the runner exits with
+    // the same code, never nought, so a refused step reads as one and the second step is never reached.
+    [Fact]
+    public void ARemedyWhoseStepIsRefusedStopsThereAndExitsWithThatStepsCode()
+    {
+        var bash = Shell.Bash();
+
+        if (bash is null)
+        {
+            Assert.False(OperatingSystem.IsWindows(), "Windows machines here carry a bash.");
+            return;
+        }
+
+        var root = Directory.CreateTempSubdirectory("remedy-refused-");
+
+        try
+        {
+            var file = Path.Combine(root.FullName, "refused.txt");
+
+            File.WriteAllLines(file,
+            [
+                "# a constructed remedy of two steps, the first refused",
+                "register --retire \"no such rule\" --evidence \"a step the worker refuses\"",
+                "register --retire \"another rule\" --evidence \"a step never reached\"",
+            ]);
+
+            var data = Path.Combine(root.FullName, "data");
+
+            Directory.CreateDirectory(data);
+
+            var run = Shell.Run(bash, [Repository.Tool("remedy"), file.Replace('\\', '/')], environment: new Dictionary<string, string> { ["EquityBrief__DataRoot"] = data.Replace('\\', '/') });
+            const int Refused = 1;
+            const int Steps = 2;
+
+            Assert.NotEqual(0, run.ExitCode);
+            Assert.Contains(FormattableString.Invariant($"=== {Refused} of {Steps}"), run.Output, StringComparison.Ordinal);
+            Assert.DoesNotContain(FormattableString.Invariant($"=== {Steps} of {Steps}"), run.Output, StringComparison.Ordinal);
+            Assert.Contains(FormattableString.Invariant($"remedy: stopped at step {Refused} of {Steps} with exit {run.ExitCode}"), run.StandardError, StringComparison.Ordinal);
+            Assert.DoesNotContain("remedy done", run.Output, StringComparison.Ordinal);
+        }
+        finally
+        {
+            root.Delete(recursive: true);
+        }
+    }
 }
