@@ -47,6 +47,9 @@ public partial class FixtureExpectations
 
         Assert.Equal(ruled, rows.Select(row => row[0]));
 
+        // Each funnel carries the four members the night read for its rule, each of which reached its first gate.
+        Assert.All(rows, row => Assert.Equal(4, RuleRows.ReachedOf(row[1])));
+
         // The line by the suite's own arithmetic: the largest fall from one gate's count to the next, the earlier gate
         // taking a tie, with the fall and the count reaching it; and the completed stretches against the thirty a usual
         // stretch waits for, none past them being read on a store of one night.

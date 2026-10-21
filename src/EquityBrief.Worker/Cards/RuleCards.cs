@@ -354,7 +354,8 @@ public sealed class RuleCards : IComponent
         {
             var verdicts = filter.Select(member => (member, Verdict: member.Shadow.FirstOrDefault(outcome => outcome.Candidate == row.Candidate))).Where(pair => pair.Verdict is not null).ToArray();
             var evaluated = filter.Count > 0 && verdicts.Length > 0;
-            var gates = evaluated ? Funnel(SwingGates.Order, verdicts.Select(pair => pair.Verdict!.Values).ToArray()) : null;
+            var parameters = CandidateEvaluator.Read(row.Parameters);
+            var gates = evaluated ? Funnel(SwingGates.Order, [.. verdicts.Select(pair => SwingAnswers(pair.Verdict!.Values, parameters))]) : null;
             int count;
 
             if (FamilyRecords.IsLive(row.Candidate))
@@ -625,6 +626,32 @@ public sealed class RuleCards : IComponent
         return answers;
     }
 
+    // A swing filter rule's answer at each of its gates as the rule reads it: a gate it does not read, the market check
+    // where it reads none and the trend and strength gate where its sector's lead stands in that gate's place, passed by
+    // every member it read, as an index rule reading no market check counts its market part.
+    public static IReadOnlyDictionary<string, string> SwingAnswers(IReadOnlyDictionary<string, string> values, IReadOnlyDictionary<string, double> parameters)
+    {
+        string[] unread =
+        [
+            .. parameters.GetValueOrDefault(SwingFilterRule.MarketGateParameter, 1) == 1 ? [] : new[] { SwingGates.Market },
+            .. parameters.GetValueOrDefault(SwingFilterRule.LeaderSectorsParameter) > 0 && parameters.GetValueOrDefault(SwingFilterRule.LeaderShareOfParameter) > 0 ? new[] { SwingGates.Trend } : [],
+        ];
+
+        if (unread.Length == 0)
+        {
+            return values;
+        }
+
+        var read = new Dictionary<string, string>(values, StringComparer.Ordinal);
+
+        foreach (var gate in unread)
+        {
+            read[gate] = Passed;
+        }
+
+        return read;
+    }
+
     // The members passing each gate and every gate before it, in the rule's order, read off each member's answers by
     // gate name.
     public static IReadOnlyList<(string Gate, int Passed)> Funnel(IReadOnlyList<string> order, IReadOnlyList<IReadOnlyDictionary<string, string>> answers)
@@ -658,14 +685,27 @@ public sealed class RuleCards : IComponent
 
     // The members passing each part of an index rule and every part before, read off the first part each failed and
     // named as the part, not as the reason a member fails it; the fundamentals-first family's parts its own, the
-    // business's after the floors; and from 20.4 a drift rule's tone after the swing families' parts. From 20.11 a level
-    // a registered rule reads is a part of its own after the cover, in the order the night reads it, where a member failed
-    // it, so a member a frozen rule's level kept off is never counted as stopping at the market check.
+    // business's after the floors, and a condition its approved setting's hooks add after them where a member failed it;
+    // and from 20.4 a drift rule's tone after the swing families' parts. From 20.11 a level a registered rule reads is a
+    // part of its own after the cover, in the order the night reads it, where a member failed it, so a member a frozen
+    // rule's level kept off is never counted as stopping at the market check.
     // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
     public static IReadOnlyList<(string Gate, int Passed)> IndexFunnel(IReadOnlyList<(string Family, bool Passed, string? Reason)> answers, string? family = null, bool tone = false)
     {
         string[] reasons = family == FundamentalsRule.Name
-            ? [IndexNightRead.MarketClosed, IndexNightRead.NoSetup, IndexNightRead.UnderTheFloors, FundamentalsRule.NoReadings, FundamentalsRule.NoProfit, FundamentalsRule.NoRevenue, FundamentalsRule.NoMargin, FundamentalsRule.NoCash, FundamentalsRule.NoTrend]
+            ?
+            [
+                IndexNightRead.MarketClosed,
+                IndexNightRead.NoSetup,
+                IndexNightRead.UnderTheFloors,
+                FundamentalsRule.NoReadings,
+                FundamentalsRule.NoProfit,
+                FundamentalsRule.NoRevenue,
+                FundamentalsRule.NoMargin,
+                FundamentalsRule.NoCash,
+                FundamentalsRule.NoTrend,
+                .. answers.Any(answer => !answer.Passed && answer.Reason == IndexNightRead.NotByItsHooks) ? new[] { IndexNightRead.NotByItsHooks } : [],
+            ]
             :
             [
                 IndexNightRead.MarketClosed,

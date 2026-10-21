@@ -1317,7 +1317,7 @@ Grain: one row per index, night, family and rule standing when the night started
 | `rule` | TEXT | the rule's name as the register holds it, or `provisional` for the rule drawing a family's list on an index no freeze has registered one on |
 | `evaluated` | INTEGER | 1 where the night evaluated the rule, 0 where its index's part failed |
 | `listed` | INTEGER | how many the rule listed on the night, zeros included |
-| `gates` | TEXT | JSON: each gate or part of the rule in its order with how many members passed it and every one before, and from the 19.3 correction of 2026-10-21 the first with how many members the night read for the rule, which reached it; null where the night did not evaluate the rule, for a sector heavyweights rule, and on a replayed row |
+| `gates` | TEXT | JSON: each gate or part of the rule in its order with how many members passed it and every one before, a gate a swing filter rule does not read passed by every member it read, and from the 19.3 correction of 2026-10-21 the first with how many members the night read for the rule, which reached it; null where the night did not evaluate the rule, for a sector heavyweights rule, for an S&P 400 or 600 variant naming no reading version, whose funnel the night does not keep, and on a replayed row |
 | `stretch` | INTEGER | the nights the rule has listed nothing for, counting this one where it listed nothing; null where it was not evaluated and for a sector heavyweights rule |
 | `mark` | INTEGER | the stretch the share of its past empty nights had not gone past; null under the floors |
 | `flagged` | INTEGER | 1 where the stretch is past the mark |

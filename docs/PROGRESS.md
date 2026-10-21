@@ -5350,21 +5350,39 @@ Built:      the rule cards store with each funnel how many members the night rea
             family's answers. A card draws each bar as the share of the members reaching its gate that passed it, the
             first gate reached by the members read and each later one by those the gate before passed, with how many
             passed of how many reached it in words beside it; a funnel stored without the count says how many passed its
-            first gate alone. The words' column is wider; the line naming the gate that stopped the most is unchanged. The
-            two architecture rows, SCHEMA's funnel note, the guide, the roster and the changelog.
-Tests:      2565, one more: a constructed S&P 400 night of three members, M1 alone passing the breakout's setup, through
+            first gate alone. A gate a swing filter rule does not read, the market check where it reads none and the trend
+            where its sector's lead stands in its place, counts every member it read as passing, and the business-first
+            family counts a member its approved setting's hooks keep off at a part of its own. The words' column is wider;
+            the line naming the gate that stopped the most is unchanged. The two architecture rows and the rule cards' row,
+            SCHEMA's funnel note, the guide, the roster and the changelog.
+Reviewed:   eleven findings confirmed and fixed here: no test told the stored count from the first gate's passes or
+            carried it from the store to a drawn row, and none read the S&P 500's business-first row's; a swing variant
+            reading no market check drew every gate past a closed check as 0 of 0 beside its own picks; a member the
+            business-first family's hooks keep off stood at no part, so a bar read a short reaching figure; and SCHEMA's
+            note named no evaluated variant whose funnel the night keeps none of. Three were refuted.
+Tests:      2567, three more: a constructed S&P 400 night of three members, M1 alone passing the breakout's setup, through
             the rule cards' stage and Tonight's page, the stored funnel carrying the three read and the card drawing the
             setup's 1 of 3 at a third of its bar and marked, each part after it 1 of 1 and whole, and beneath them the line
-            that the setup stopped 2 of the 3 reaching it. A closed market check drawn passing 0 of 397 and each part 0 of
-            0, and stored without the count saying 0 alone; the variant card's bars 3 of 10, 2 of 3, 1 of 2 and 1 of 1,
-            each worked by hand; and the stored funnels of the night's and the tone variant's tests carrying their counts.
+            that the setup stopped 2 of the 3 reaching it; the closed index store's night through the index families' and
+            the rule cards' stages, its breakout funnel stored with the seventeen members read while its market check
+            passes none and its card drawing 0 of 17 and then 0 of 0; and a swing variant reading no market check, one
+            reading its sector's lead and the business-first family's hooks, each funnel worked by hand. A closed market
+            check drawn passing 0 of 397, and stored without the count saying 0 alone; the variant card's bars 3 of 10, 2
+            of 3, 1 of 2 and 1 of 1; the count read off JSON as written; and the stored funnels of the night's, the tone
+            variant's and the fixture's business-first tests carrying their counts.
 Claims:     1372, as before: one part of the card's rule renamed and none added.
 Mutated:    the rule, stated before the run: each bar the share of the members reaching its gate that passed it, broken
             by drawing every bar against the first gate's count again: predicted red at the floors' bar, 33.3 where 100
-            is worked by hand. Result: red, the floors', the profit's and the interest cover's bars at 33.3. Made on this
-            branch and reverted before anything was committed, and the tests green.
+            is worked by hand. Result: red, the floors', the profit's and the interest cover's bars at 33.3. For the
+            review's fixes, each rule stated before its run: the stored count the members read, broken by storing the
+            first gate's passes: predicted red at the closed night's funnel; result red, reached 0 where 17. The count read
+            into the card, broken by handing the card none: predicted red at the closed night's market row; result red,
+            "0" where "0 of 17". A gate a rule does not read passed, broken by handing back its answers unchanged:
+            predicted red at the market-off funnel; result red, market 0 where 3. The hooks a part of their own, broken by
+            leaving them out of the business-first parts: predicted red at its funnel; result red, market 6 where 8. Each
+            made on this branch and reverted before anything was committed, and the tests green.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
-            stated before that run: all six steps, 0 warnings, 0 errors, 2565 of 2565 tests ran with none failed,
+            stated before that run: all six steps, 0 warnings, 0 errors, 2567 of 2567 tests ran with none failed,
             migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
             report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.

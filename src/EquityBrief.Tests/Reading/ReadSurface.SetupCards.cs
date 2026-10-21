@@ -10,6 +10,7 @@ using EquityBrief.Tests.Harness;
 using EquityBrief.Web.Marks;
 using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Cards;
+using EquityBrief.Worker.Indices;
 
 namespace EquityBrief.Tests.Reading;
 
@@ -306,6 +307,36 @@ public partial class ReadSurface
             [("setup", "1", "3", true, "33.3", "1 of 3"), ("floors", "1", "1", false, "100", "1 of 1"), ("profit", "1", "1", false, "100", "1 of 1"), ("interest cover", "1", "1", false, "100", "1 of 1")],
             FunnelRows(card));
         Assert.Contains("<p class=\"funnel-drop\" data-drop=\"setup\">Most stopped at the setup gate: 2 of the 3 reaching it.</p>", card, StringComparison.Ordinal);
+    }
+
+    // A constructed S&P 400 night whose market check closed, the index's own breadth of seven in seventeen under the
+    // provisional rule's floor: the index families and the rule cards store the breakout's funnel with the seventeen
+    // members the night read while its market check passes none, and the card draws the market's row as passing none of
+    // the seventeen reaching it, marked, and each part after it none of none.
+    [Fact]
+    public async Task AClosedMarketChecksRowIsDrawnAgainstTheMembersTheNightReadAsTheRuleCardsStoredThem()
+    {
+        using var store = Checks.FixtureExpectations.ClosedIndexStore();
+        var night = new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero);
+        var clock = FixedClock.At(night, SessionZones.UnitedStates);
+
+        await new IndexFamilies(clock, store.DatabaseFile).RunAsync("night-closed", default, [], night);
+
+        var cards = await new RuleCards(clock, store.DatabaseFile).RunAsync("night-closed-cards", [], night);
+
+        Assert.Null(cards.Indices.Single(index => index.Index == "MID").Fault);
+        Assert.Equal(
+            RuleRows.GatesJson([(RuleRows.Market, 0), (RuleRows.Setup, 0), (RuleRows.Floors, 0), (RuleRows.Profit, 0), (RuleRows.Cover, 0)], 17),
+            Text(store, $"SELECT gates FROM rule_night WHERE index_code = 'MID' AND session_date = '{IndexNight}' AND family = 'breakout';"));
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var card = Section(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")), "breakout");
+
+        Assert.Equal(
+            [("market", "0", "17", true, "0", "0 of 17"), ("setup", "0", "0", false, "0", "0 of 0"), ("floors", "0", "0", false, "0", "0 of 0"), ("profit", "0", "0", false, "0", "0 of 0"), ("interest cover", "0", "0", false, "0", "0 of 0")],
+            FunnelRows(card));
     }
 
     [Fact]
