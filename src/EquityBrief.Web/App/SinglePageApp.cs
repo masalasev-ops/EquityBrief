@@ -341,13 +341,13 @@ public sealed partial class SinglePageApp : IComponent
 
     // Tonight's buy points as a card of their own, the table across every setup with its key, each row folding its plan
     // and its card beneath it, the one the link names open; on a night no setup lists one, a line saying so with how many
-    // members stand one gate short, from 19.8 a link opening the card of them, its guide behind its "?".
+    // members stand one gate short, from 19.8 a link opening the card of them where any does, its guide behind its "?".
     // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
     static string BuyPointsCard(MarkRenderer marks, IReadOnlyList<BuyPointView> points, string? open, IReadOnlyDictionary<string, string>? plans, DateOnly night, int? oneShort = null, string? closeHref = null) =>
         points.Count == 0
             ? LineCard(
                 "buy-points",
-                Invariant($"<p class=\"buy-points-none\" data-buy-points=\"0\" data-one-short=\"{(oneShort is { } stated ? stated.ToString(CultureInfo.InvariantCulture) : "none")}\">No buy points tonight{(oneShort is not { } shortOf ? string.Empty : closeHref is { } href ? Invariant($" · <a class=\"close-open\" href=\"{Escaped(href)}\">{shortOf} one gate short</a>") : Invariant($" · {shortOf} one gate short"))}</p>"),
+                Invariant($"<p class=\"buy-points-none\" data-buy-points=\"0\" data-one-short=\"{(oneShort is { } stated ? stated.ToString(CultureInfo.InvariantCulture) : "none")}\">No buy points tonight{(oneShort is not { } shortOf ? string.Empty : closeHref is { } href && shortOf > 0 ? Invariant($" · <a class=\"close-open\" href=\"{Escaped(href)}\">{shortOf} one gate short</a>") : Invariant($" · {shortOf} one gate short"))}</p>"),
                 BuyPointsGuide)
             : Cards.Computed(
                 "Buy points",

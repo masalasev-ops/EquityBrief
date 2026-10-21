@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches a night with no stock one gate short drawing no card
+Corrects: a night reading no stock one gate short drew a card holding only the line "0 stocks one gate short of a buy point", its counts above linking to it, found on the S&P 400's Tonight by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... and on a phone the Watch list's and Researched's tables scrolling sideways in their box at a width their words read at, a gate's pill held to one line |
+Now:
+> read-surface: ... and on a phone the Watch list's and Researched's tables scrolling sideways in their box at a width their words read at, a gate's pill held to one line; and from the 19.8 correction of 2026-10-21 a night reading no stock one gate short drawing no card of them, the market line's count and the line's in the buy points' place reading nought with no link, and a night reading some linking both to the card |
+Why: the 19.8 correction of 2026-10-21 adds these assertions.
+
+### 2026-10-21 - ARCHITECTURE.html - a night with no stock one gate short draws no card of them
+Corrects: the card was drawn on a night reading no stock one gate short, holding nothing but its count of nought beneath a line already saying so, found on the S&P 400's Tonight by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> Tonight's stocks one gate short (15): ... A night stored before them holds only the first part each member failed and says in the card's line that it reads no stock as one gate short. Each family's card keeps its own stocks one gate short behind its expander ...
+Now:
+> Tonight's stocks one gate short (15): ... A night stored before them holds only the first part each member failed and says in the card's line that it reads no stock as one gate short. From the 19.8 correction of 2026-10-21 a night reading no stock one gate short draws no card, and the market line's count and the count on the line in the buy points' place read nought with no link. Each family's card keeps its own stocks one gate short behind its expander ...
+Why: the operator chose on 2026-10-21 to correct it with the review's other findings, "Empty one-gate-short card".
+
 ### 2026-10-21 - .claude/rules/checks.md - read-surface reaches dates drawn whole in three tables and two tables scrolling on a phone
 Corrects: the Watch list's Added and Researched's Written dates broke at a hyphen at 1440 px and Past picks' night listed at 390 px, and on a phone the Watch list and Researched squeezed their words into rows of 270 to 460 px, found by the second phase 19 sign-off review of 2026-10-21.
 Was:

@@ -5945,3 +5945,21 @@ Mutated:    under the rule stated in the 19.2 correction's entry: m5 the dates l
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 19.8 - correction: a night with no stock one gate short draws no card of them, and its counts read nought with no link   2026-10-21
+
+Queue:      as the 19.2 correction's entry above.
+Ruled:      among the smaller items the operator chose on 2026-10-21 to correct in this pull request, "Empty one-gate-short
+            card".
+Found:      by the second phase 19 sign-off review of 2026-10-21, on the S&P 400's Tonight over the operator's store: beneath
+            "No buy points tonight · 0 one gate short" the card 19.8 built stood holding nothing but "0 stocks one gate short
+            of a buy point", and the line's count and the market line's "0 close to a buy point" each linked to it.
+Corrected:  a night reading no stock one gate short draws no card of them, and both counts read nought with no link, while a
+            night reading some links both to the card. Section 15's row, the roster and the changelog.
+Tests:      none more: the buy points line's test reads a night reading none drawing no card and neither count linked, the
+            card's own call drawing nothing for no rows, and a night reading some linking both.
+Mutated:    under the rule stated in the 19.2 correction's entry: m8 the card drawn for no row: red at the buy points line's
+            test. m9 the market line's nought linked: red there. m10 the buy points line's nought linked: red there.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.

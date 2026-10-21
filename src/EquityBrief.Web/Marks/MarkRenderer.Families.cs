@@ -404,7 +404,7 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"{Count(line.BuyPoints, "buy point")} tonight across {line.SetupsListing} of {Count(line.Setups, "setup")} · ");
         body.Append(!line.CloseRead
             ? string.Empty
-            : line.CloseHref is { } closeHref
+            : line.CloseHref is { } closeHref && line.Close > 0
                 ? Formatted($"<a class=\"close-open\" href=\"{Escaped(closeHref)}\">{line.Close} close to a buy point</a> · ")
                 : Formatted($"{line.Close} close to a buy point · "));
         body.Append(Invariant, $"<a href=\"#/picks?status={PickStatus.Open}{(line.Universe is { } chosen ? "&amp;universe=" + Uri.EscapeDataString(chosen) : string.Empty)}\">{Count(line.OpenTrades, "open trade")}</a></span></p>");

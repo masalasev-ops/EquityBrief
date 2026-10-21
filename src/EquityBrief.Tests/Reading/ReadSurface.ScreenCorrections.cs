@@ -83,6 +83,21 @@ public partial class ReadSurface
         var unread = new SinglePageApp().IndexTonightRegion(new MarkRenderer(), night, Universes.Small, string.Empty, [night], line with { CloseRead = false }, [], null);
 
         Assert.Contains("<p class=\"buy-points-none\" data-buy-points=\"0\" data-one-short=\"none\">No buy points tonight</p>", unread, StringComparison.Ordinal);
+
+        // From the 19.8 correction of 2026-10-21 a night reading no stock one gate short draws no card of them, and the two
+        // counts that would open it read nought with no link, on the market line and on the line in the buy points' place,
+        // where a night reading some links both to the card.
+        var href = $"{SinglePageApp.NightRoute}2026-10-12?universe=600&close=open";
+        var none = new SinglePageApp().IndexTonightRegion(new MarkRenderer(), night, Universes.Small, string.Empty, [night], line with { Close = 0, CloseHref = href }, [], null);
+        var some = new SinglePageApp().IndexTonightRegion(new MarkRenderer(), night, Universes.Small, string.Empty, [night], line with { CloseHref = href }, [], null);
+
+        Assert.Contains("data-one-short=\"0\">No buy points tonight · 0 one gate short</p>", none, StringComparison.Ordinal);
+        Assert.Contains("0 close to a buy point · ", none, StringComparison.Ordinal);
+        Assert.DoesNotContain("close-open", none, StringComparison.Ordinal);
+        Assert.DoesNotContain("close-to-buy", none, StringComparison.Ordinal);
+        Assert.Empty(new MarkRenderer().CloseToBuy([], false, true, "500"));
+        Assert.Contains($"No buy points tonight · <a class=\"close-open\" href=\"{href}\">32 one gate short</a></p>", WebUtility.HtmlDecode(some), StringComparison.Ordinal);
+        Assert.Contains($"<a class=\"close-open\" href=\"{href}\">32 close to a buy point</a> · ", WebUtility.HtmlDecode(some), StringComparison.Ordinal);
     }
 
     [Fact]
