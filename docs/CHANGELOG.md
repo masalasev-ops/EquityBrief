@@ -117,21 +117,21 @@ Was:
 >
 > Tiles: ... and the distance from the year's high with the range bar; a tile whose figures are not stored saying so (see: Four tiles under the headline are worked by code from stored figures at the price the page draws)
 Now:
-> The figures: ... its years raised in a row over the whole years kept and not stored where fewer than two are kept; from the 19.11 correction of 2026-10-21 each of the four saying pays none for a company whose fetch files a dividend rate of nought with no dividend kept in the year to the night (see: A company filing ...); its last whole year still drawn where it paid in it; not stored left for a company storing neither a rate nor a dividend; the technicals: ...
+> The figures: ... its years raised in a row over the whole years kept and not stored where fewer than two are kept; from the 19.11 correction of 2026-10-21 each of the four saying pays none for a company with no dividend kept in the year to the night whose fetch files a dividend rate of nought or no rate beside dividends kept from before the year (see: A company filing ...); its last whole year still drawn where it paid in it; a company whose fetch files no rate above nought and that paid in the year read on its year's payments; not stored left for a company storing neither a rate nor a dividend; the technicals: ...
 >
-> Tiles: ... a tile whose figures are not stored saying so; from the 19.11 correction of 2026-10-21 the yield's tile saying a company paying none pays none (see: Four tiles under the headline ...) (see: A company filing ...)
-Why: the operator's words of 2026-10-21 on DGII's chart page, "Just saying not stored is not a good way to communicate", and their approval of the fix, "Yes, one PR now (Recommended)": 496 members paying none drew not stored in all four figures.
+> Tiles: ... a tile whose figures are not stored saying so; from the 19.11 correction of 2026-10-21 the yield's tile saying a company paying none pays none and reading a payer whose fetch files no rate above nought on its year's payments as the dividend's safety reads it (see: Four tiles under the headline ...) (see: A company filing ...)
+Why: the operator's words of 2026-10-21 on DGII's chart page, "Just saying not stored is not a good way to communicate", and their approval of the fix, "Yes, one PR now (Recommended)": 498 members drew not stored in all four figures, 496 of them paying none, and the yield tile said none was stored for 7 payers whose fetch files a rate of nought.
 
 ### 2026-10-21 - .claude/rules/checks.md - read-surface reaches a company paying none on the chart page and the yield tile
 Authorised by: A company filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing neither as not stored
 Was:
-> read-surface: ... and a group neither the member's row nor its company fetch names saying both |
+> read-surface: ... and a group the night read no name for saying so |
 Now:
-> read-surface: ... and a group neither the member's row nor its company fetch names saying both; and from the 19.11 correction of 2026-10-21 the chart page's four dividend figures pays none for a company whose fetch files a dividend rate of nought with no dividend kept in the year to the night, ... and the report's yield tile saying a company paying none pays none |
+> read-surface: ... and a group the night read no name for saying so; and from the 19.11 correction of 2026-10-21 the chart page's four dividend figures pays none for a company with no dividend kept in the year to the night whose fetch files a dividend rate of nought or no rate beside a dividend kept from before the year, ... and the report's yield tile, on the page and at the quote, saying a company paying none pays none and reading a payer whose fetch files nought on its year's payments |
 Why: the row named no assertion on a company paying none, which the 19.11 correction of 2026-10-21 adds.
 
-### 2026-10-21 - ARCHITECTURE.html - a member whose membership row names no industry is named and grouped by the GICS industry and sector its company fetch files
-Authorised by: A member whose membership row names no industry is named and grouped by the GICS industry and sector its company fetch files
+### 2026-10-21 - ARCHITECTURE.html - a member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
+Authorised by: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
 Was:
 > Move annotator: reads membership, bar store, calendar; ... and writes each print's earnings reaction over the calendar's year behind
 >

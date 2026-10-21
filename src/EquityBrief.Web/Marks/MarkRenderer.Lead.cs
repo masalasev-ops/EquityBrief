@@ -66,16 +66,17 @@ public sealed partial class MarkRenderer
                 "through the quarter to " + DayOf(tile.Through) + ", from its filings"),
         };
 
-    // A company paying none says so, and a company storing no rate says none is stored.
+    // A company paying none says so, a company storing neither a rate nor a dividend says none is stored, and a payer whose
+    // fetch files no rate above nought is read on the year's payments and says so.
     // see: A company filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing neither as not stored
     static string YieldTile(EquityBrief.Core.Tiles.YieldTile? yield, decimal? price, bool live, bool paysNone) =>
         yield is not { } tile
-            ? LeadTile("yield", "Dividend yield", "<span class=\"v none\">none</span>", paysNone ? "It pays none: its fetch files a dividend rate of nought and none is kept in the year." : "No dividend is stored for it.")
+            ? LeadTile("yield", "Dividend yield", "<span class=\"v none\">none</span>", paysNone ? "It pays none: its fetch files no dividend rate above nought and none is kept in the year." : "No dividend is stored for it.")
             : LeadTile(
                 "yield",
                 "Dividend yield",
                 Formatted($"<span class=\"v\" data-value=\"{tile.Percent.ToString(Invariant)}\">{tile.Percent.ToString("0.00", Invariant)}%</span>"),
-                Formatted($"<span data-rate=\"{tile.Rate.ToString(Invariant)}\">{Figures.PerShare(tile.Rate)}</span> a year at {(price is { } at ? Formatted($"<span data-price=\"{at.ToString(Invariant)}\">{Figures.Price(at)}</span>") : "the price")}, {(live ? "the quote" : "the last close")}")
+                Formatted($"<span data-rate=\"{tile.Rate.ToString(Invariant)}\">{Figures.PerShare(tile.Rate)}</span> {(tile.OnTheYear ? "paid in the last year" : "a year")} at {(price is { } at ? Formatted($"<span data-price=\"{at.ToString(Invariant)}\">{Figures.Price(at)}</span>") : "the price")}, {(live ? "the quote" : "the last close")}")
                     + (tile.TenYear is { } ten && tile.TenYearOn is { } on
                         ? Formatted($"; the 10-year <span data-ten-year=\"{ten.ToString(Invariant)}\">{ten.ToString("0.00", Invariant)}%</span> on ") + DayOf(on)
                         : "; the 10-year not read yet"));

@@ -1350,7 +1350,7 @@ public static partial class NameScreen
         var tiles = new TilesView(
             EquityBrief.Core.Tiles.NameTiles.Earnings(quarters),
             EquityBrief.Core.Tiles.NameTiles.Growth(reportInputs?.Trend ?? [], reportInputs?.TrendFetchedOn, quarters),
-            shownPrice is { } yieldAt ? EquityBrief.Core.Tiles.NameTiles.YieldBeside(forwardRate, yieldAt, reportInputs?.TenYears ?? [], tilesNight) : null,
+            shownPrice is { } yieldAt ? EquityBrief.Core.Report.DividendSafety.TileYield(forwardRate, reportInputs?.Dividends ?? [], yieldAt, reportInputs?.TenYears ?? [], tilesNight) : null,
             shownPrice is { } highAt && year is { } extremes ? EquityBrief.Core.Tiles.NameTiles.High(highAt, extremes.High, extremes.HighOn, extremes.Low, extremes.LowOn) : null,
             shownPrice,
             live is not null,

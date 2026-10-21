@@ -5565,21 +5565,27 @@ Ruled:      by the operator on 2026-10-21, on the chart page of DGII they showed
             communicate ." The first of the five fixes put to them, "Dividend rows say "pays none" where the stored rate is
             0, and "not stored" only where nothing is stored.", was answered "Yes, one PR now (Recommended)".
 Found:      DGII pays none and the store knew it, every fetch filing a forward rate of nought; the grid read the dividend's
-            safety, which reads a payer alone, so 496 of the 1,505 members on the night of 2026-10-20 drew not stored in
-            all four dividend figures where 2 stored neither a rate nor a dividend. The yield tile said none was stored for
-            each of them. Two figures also wrote "1 payments" and "1 years".
-Built:      one function in the core reads a company paying none, its fetch filing a dividend rate of nought with no
-            dividend kept in the year to the night (see: A company filing a dividend rate of nought with no dividend kept
-            in the year is drawn as paying none, and one storing neither as not stored); the chart page's four dividend
-            figures say pays none for it, its last whole year drawn where it paid in the whole year before the night's,
-            and the report's yield tile says it pays none under the pointer; not stored is left for a company storing
-            neither. A count of one takes its noun's singular. The decision, the chart page's figures row and the tiles
-            row, the guide's chart page, the roster and the changelog.
+            safety, which reads a payer alone, so 498 of the 1,505 members on the night of 2026-10-20 drew not stored in
+            all four dividend figures, 496 of them paying none and 2 storing neither a rate nor a dividend. The yield tile
+            said none was stored for each of them. Two figures also wrote "1 payments" and "1 years".
+Built:      one function in the core reads a company paying none, with no dividend kept in the year to the night and its
+            fetch filing a dividend rate of nought, or no rate beside dividends kept from before the year (see: A company
+            filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing
+            neither as not stored); the chart page's four dividend figures say pays none for it, its last whole year drawn
+            where it paid in the whole year before the night's, and the report's yield tile says it pays none under the
+            pointer; not stored is left for a company storing neither. One function reads the rate a yield is read at, the
+            forward rate or the year's payments, for the dividend's safety and for the yield tile on the page and at the
+            quote, the tile saying which. A count of one takes its noun's singular. The decision, the chart page's figures
+            row and the tiles row, the guide's chart page, the roster and the changelog.
 Tests:      one more, the suite's total in the newest entry of this pull request: a rate of nought with nothing kept, and
-            with a dividend a whole year before the night, paying none, and one a day inside the year paying; over the
-            universes' store S1 drawing pays none in all four figures, M1, which paid in 2025, drawing 0.50 in 2025, 1
-            payment, among them, M2 a payer on its year's payments at 1.00% of 0.50 and 2 payments, and M3 not stored in
-            all four; and S1's report's yield tile saying it pays none where M3's says none is stored.
+            with a dividend a whole year before the night, paying none, and one a day inside the year paying, no rate
+            beside a dividend before the year paying none and no rate beside nothing, or beside a dividend after the night
+            alone, not, and the rate a yield is read at worked by hand; over the universes' store S1 drawing pays none in
+            all four figures, M1, which paid in 2025, drawing 0.50 in 2025, 1 payment, among them, S2, filing no rate, the
+            same with 0.40, M2 a payer on its year's payments at 1.00% of 0.50 and 2 payments, AAA raised in the one year
+            after its first drawing 1 year, and M3 not stored in all four; and the report's yield tile saying S1 and S2 pay
+            none, M3 that none is stored and M2 1.00% on 0.50 paid in the last year, and at the quote inside the session
+            S1 paying none and M2 0.50% on its one dividend still inside that day's year.
 Claims:     as the newest entry of this pull request.
 Mutated:    each rule stated before its run. A company paying none read as one, broken by reading none as paying none:
             predicted red at S1's figures; result red at the first hand-worked reading, and with the page alone told
@@ -5588,7 +5594,21 @@ Mutated:    each rule stated before its run. A company paying none read as one, 
             red, M1's dividend of 2025-10-02 read inside the year. A company paying none drawing the year it last paid
             in, broken by drawing none: predicted red at M1's last whole year; result red, pays none where 0.50 in 2025,
             1 payment. Each made on this branch and reverted before anything was committed, and the tests green.
-Verified:   as the newest entry of this pull request.
+Reviewed:   before the merge, by a review of this pull request's work: the yield tile said none was stored for the 7
+            members on the night of 2026-10-20 whose fetch files a rate of nought and that paid in the year, SWKS among
+            them, where the chart page read them as payers; a company filing no rate beside dividends kept from before the
+            year drew not stored, latent on that night; the chart page's key and the guide said every dividend figure says
+            pays none, where the last whole year's draws what was paid; and the count drawing not stored was 498 where this
+            entry said 496. Each is repaired above, and each property the review added is mutated, the rule stated before
+            its run: the tile read on the year's payments, broken by reading the forward rate alone, predicted red at M2's
+            tile, result red, none and no dividend stored; no rate beside a dividend before the year paying none, broken by
+            reading a rate of nought alone, predicted red at the case worked by hand, result red there; a raise in one year
+            written as a year, broken by writing years, predicted red at AAA, result red, 1 years; and the tile at the
+            quote told a company pays none, broken by telling it none does, predicted red at S1's tile at the quote,
+            result red, no dividend stored. Each run filtered to the chart figures test, made in this checkout over the
+            file's own text and restored from it, the tree's diff the same after each.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
 Carried:    none of its own.
 
 ### 18.2 - correction: the latest quarter is read against the estimates kept before its release, a fiscal fourth quarter's revenue against its year's estimate less three quarters marked implied, and a line reading no estimate says why   2026-10-21

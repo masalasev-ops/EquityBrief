@@ -193,7 +193,7 @@ public sealed partial class SinglePageApp
         grid.Append("</div>");
         grid.Append(Cards.Key(
             "How to read it.",
-            "Every figure is read from what the store holds for the stock, worked by the same function the stock's report page uses for it. A figure EquityBrief fetches and holds none of for this stock says not stored, and each dividend figure says pays none where the company's fetch files a dividend rate of nought and no dividend is kept in the year. The returns are the newest close over the close the span reaches back to, over the stored year and, for the longer spans, the month-end closes of the history pulled before it.",
+            "Every figure is read from what the store holds for the stock, worked by the same function the stock's report page uses for it. A figure EquityBrief fetches and holds none of for this stock says not stored. Where no dividend is kept in the year and the company's fetch files a dividend rate of nought, or no rate beside dividends kept from before the year, each dividend figure says pays none, but its last whole year's still draws what it paid where it paid in that year. The returns are the newest close over the close the span reaches back to, over the stored year and, for the longer spans, the month-end closes of the history pulled before it.",
             "A figure here is context for the chart and no rule reads it from this page."));
 
         region.Append(Cards.Computed("The figures", grid.ToString(), title: "The stock in figures", stamp: Cards.Night(last), id: "figures", region: "chart-page-figures"));
