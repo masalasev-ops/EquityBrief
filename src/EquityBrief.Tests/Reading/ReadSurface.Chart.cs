@@ -467,6 +467,39 @@ public partial class ReadSurface
         Assert.DoesNotMatch("<a class=\"open[^\"]*\" href=\"#/chart/", tonight);
     }
 
+    // The column naming the newest close and each plan price is as wide as the longest of them, so every label ends inside
+    // the picture at the legend's measure of a character, 7.2: a target of 129.57 and one of 1,234.56 each stand whole,
+    // and a chart naming its close alone keeps the name page's column of 86.
+    [Fact]
+    public void TheColumnNamingThePlansPricesHoldsTheLongestOfThemInsideThePicture()
+    {
+        var marks = new MarkRenderer();
+        var first = new DateOnly(2026, 9, 1);
+
+        IReadOnlyList<ChartCandle> Candles(decimal close) =>
+        [
+            .. Enumerable.Range(0, 30).Select(at => new ChartCandle(first.AddDays(at), first.AddDays(at), close, close * 1.25m, close * 0.85m, close, 1_000, null, null, null)),
+        ];
+
+        foreach (var (close, plan, target) in new[]
+        {
+            (109.52m, new ChartPlan("Earnings drift", 109.52m, 101.50m, 129.57m), "target 129.57"),
+            (1_150m, new ChartPlan("Earnings drift", 1_150m, 1_111.11m, 1_234.56m), "target 1,234.56"),
+        })
+        {
+            var svg = marks.CandleChart("T", "daily", Candles(close), [], [plan], []);
+            var wide = double.Parse(Regex.Match(svg, "<svg [^>]*viewBox=\"0 0 ([0-9.]+) ").Groups[1].Value, CultureInfo.InvariantCulture);
+            var labels = Regex.Matches(svg, "<text class=\"(?:m-tick plan-tick-[a-z]+|m-nowtag-t)\" x=\"([0-9.]+)\"[^>]*>([^<]+)</text>");
+
+            Assert.Contains(target, labels.Select(label => label.Groups[2].Value));
+            Assert.All(labels, label => Assert.True(
+                double.Parse(label.Groups[1].Value, CultureInfo.InvariantCulture) + (label.Groups[2].Value.Length * 7.2) <= wide,
+                $"\"{label.Groups[2].Value}\" runs past the chart's edge at {wide}."));
+        }
+
+        Assert.Equal(86, MarkRenderer.PriceColumn(54m, []));
+    }
+
     // Tonight's plan: where a rule lists the stock on the newest night, its buy, stop and target drawn as lines across the
     // chart with the rule's name, read off the night's decision cards over the universes' store: the S&P 400's breakout
     // listing M1 at a buy of 50 and a stop of 47 with a trail and no target, the S&P 600's pullback listing S2 at 50, 48

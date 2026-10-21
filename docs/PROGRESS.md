@@ -5816,3 +5816,30 @@ Mutated:    under the rule stated in the 19.10 correction's entry: c4 the one-li
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 19.11 - correction: the chart page's column is as wide as the longest price it names, where a target of three digits ran past the chart's edge   2026-10-21
+
+Queue:      as the 19.10 correction's entry above.
+Found:      by the phase 19 sign-off review of 2026-10-21, on HAS's chart page at 1440 px over the operator's store: the
+            column naming the close and the plan's prices was the name page's, sized for a close alone, so "target
+            129.57" ran past the chart's edge and read "target 129.5", as every plan label of three integer digits or more
+            did.
+Corrected:  the chart page's column is as wide as the longest of the close and each plan price beside its kind, at the
+            legend's measure of a character, and never narrower than the name page's; read back on HAS's page from the
+            scratch build, "target 129.57" whole. The roster and the changelog.
+Tests:      one more, 2578 in all: a target of 129.57 and one of 1,234.56 each end inside the picture with every label,
+            and a chart naming its close alone keeps the column of 86.
+Claims:     1372, as before: no row's claim added or removed by this pull request.
+Mutated:    under the rule stated in the 19.10 correction's entry: c7 the column capped at the name page's: red at the
+            column's test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2578 of 2578 tests ran with none failed,
+            migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the S&P 500's groups and pages on the GICS scheme and the Financials' revenue basis, both put to the operator;
+            the review's judgement items put to the operator: counts written with "(s)" on phase 19's pages, the heading
+            percentiles averaging readings that point opposite ways, and the chart page's next report on the night a
+            stock reported; found beyond phase 19, the frozen S&P 400 and 600 heavyweights cards drawing their setting's
+            key as stored, owed a 20.11 correction; PR 505 rebased with its migration at 104; the phase 18 sign-off by a
+            fresh session; and the phase 19 sign-off by a fresh session over the corrected main.

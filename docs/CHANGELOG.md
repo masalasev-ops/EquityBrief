@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches the chart page's column holding every price it names
+Corrects: the chart page's column was sized for the close alone, so a plan's label of three integer digits or more ran past the chart's edge, HAS's "target 129.57" read "target 129.5" at 1440 px, found by the phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... its quote's words, its previous close and its links wrapping whole while a screen's date line holds one line |
+Now:
+> read-surface: ... while a screen's date line holds one line; and from the 19.11 correction of 2026-10-21 the chart page's column as wide as the longest price it names beside its kind, every label ending inside the picture at the legend's measure of a character, worked at a target of 129.57 and of 1,234.56, and a chart naming its close alone keeping the name page's column of 86 |
+Why: the 19.11 correction of 2026-10-21 adds this assertion.
+
 ### 2026-10-21 - ARCHITECTURE.html - a phone's bar holds the brand in two rows, and a stock's masthead line wraps whole
 Authorised by: The bar's index menu chooses the index every page reads, each choice naming its cap and its members
 Was:
