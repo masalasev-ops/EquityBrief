@@ -131,28 +131,42 @@ public partial class FixtureExpectations
     // 250 of them, its highest the 101 made 21 sessions back, and the pull the one before at the store's scale, IA's 203
     // reading 101.5 and IB's 206 reading 103, each made 251 sessions back, so IA's close of 102 stands at 102 / 101.5 of its
     // high and IB's at 102 / 103 of its. ID, the pull holding none of it, reads no year's high, and the step's row names it.
+    // GA of the S&P 500 and SA of the S&P 600, shaped and pulled as IA is, read as IA does, as every member of the three
+    // indices is read.
     [Fact]
     public async Task TheMemberReadingsYearsHighOverANightHolding251SessionsReadsTheSessionBeforeFromThePulledHistoryAtTheStoresScale()
     {
         var (store, _) = await BeforeTheYearStore();
 
         using var held = store;
+        var sessions = BeforeSessions(252);
 
-        await new MemberReader(BeforeClock, store.DatabaseFile).RunAsync("GSPC", "night-before-the-year", wider: ["MID"]);
+        foreach (var (index, ticker) in new[] { ("GSPC", "GA"), ("SML", "SA") })
+        {
+            StoreYear(store, ticker, [.. sessions.Select((session, at) => BeforeBar(session, at)).Skip(1)]);
+            store.Execute($"INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('{index}', '{ticker}', '2024-01-02', NULL, '2024-01-02T00:00:00Z');");
+            store.Execute(PulledBar(ticker, sessions[0], 203m, 196m, 198m));
+            store.Execute(PulledBar(ticker, sessions[1], 200m, 196m, 198m));
+        }
 
-        var rows = TextRows(store, "SELECT ticker || '|' || IFNULL(year_high, 'none') || '|' || IFNULL(since_high, 'none') || '|' || CASE WHEN nearness IS NULL THEN 'none' ELSE printf('%.12f', nearness) END "
-                + $"FROM member_reading WHERE index_code = 'MID' AND session_date = '{Day(BeforeNight)}' ORDER BY ticker;")
+        await new MemberReader(BeforeClock, store.DatabaseFile).RunAsync("GSPC", "night-before-the-year", wider: ["MID", "SML"]);
+
+        var rows = TextRows(store, "SELECT index_code || '|' || ticker || '|' || IFNULL(year_high, 'none') || '|' || IFNULL(since_high, 'none') || '|' || CASE WHEN nearness IS NULL THEN 'none' ELSE printf('%.12f', nearness) END "
+                + $"FROM member_reading WHERE session_date = '{Day(BeforeNight)}' ORDER BY ticker;")
             .Select(row => row.Split('|'))
-            .ToArray();
+            .ToDictionary(row => row[1], row => row, StringComparer.Ordinal);
 
-        Assert.Equal(["IA", "IB", "ID"], rows.Select(row => row[0]));
-        Assert.Equal((101.5m, "251"), (decimal.Parse(rows[0][1], CultureInfo.InvariantCulture), rows[0][2]));
-        Assert.Equal((103m, "251"), (decimal.Parse(rows[1][1], CultureInfo.InvariantCulture), rows[1][2]));
-        Assert.Equal(102.0 / 101.5, double.Parse(rows[0][3], CultureInfo.InvariantCulture), 9);
-        Assert.Equal(102.0 / 103.0, double.Parse(rows[1][3], CultureInfo.InvariantCulture), 9);
-        Assert.Equal(["ID", "none", "none", "none"], rows[2]);
+        Assert.Equal(["GA", "IA", "IB", "ID", "SA"], rows.Keys);
+        Assert.Equal((101.5m, "251"), (decimal.Parse(rows["IA"][2], CultureInfo.InvariantCulture), rows["IA"][3]));
+        Assert.Equal((103m, "251"), (decimal.Parse(rows["IB"][2], CultureInfo.InvariantCulture), rows["IB"][3]));
+        Assert.Equal(102.0 / 101.5, double.Parse(rows["IA"][4], CultureInfo.InvariantCulture), 9);
+        Assert.Equal(102.0 / 103.0, double.Parse(rows["IB"][4], CultureInfo.InvariantCulture), 9);
+        Assert.Equal(["MID", "ID", "none", "none", "none"], rows["ID"]);
+        Assert.All(new[] { (Ticker: "GA", Index: "GSPC"), (Ticker: "SA", Index: "SML") }, member => Assert.Equal(
+            (member.Index, 101.5m, "251"),
+            (rows[member.Ticker][0], decimal.Parse(rows[member.Ticker][2], CultureInfo.InvariantCulture), rows[member.Ticker][3])));
         Assert.EndsWith(
-            "; the store's year holds 251 of the 252 sessions the year's high reads, the sessions before it read from the pulled history for 2 member(s), which holds too few for 1, each reading no year's high: ID",
+            "; the store's year holds 251 of the 252 sessions the year's high reads, the sessions before it read from the pulled history for 4 member(s), which holds too few for 1, each reading no year's high: ID",
             Text(store, "SELECT detail FROM run_log WHERE run_id = 'night-before-the-year' AND stage = 'member-readings';"),
             StringComparison.Ordinal);
     }
@@ -165,12 +179,14 @@ public partial class FixtureExpectations
     // than 63 sessions and the variant reading it older keeps it; at the 126 sessions' high of 101 all three break out, and
     // that variant keeps IA alone, its close of 102 above its year's high where IB's stands under its 103 and ID reads none,
     // while the rule the page read before the freeze, kept in the background at that high and reading no check, keeps all
-    // three.
+    // three. A variant at the 126 sessions' high reading its year's high older than 63 sessions keeps IA and IB, each high
+    // made 251 sessions back, and not ID, whose year's high the night read none of: a check on a high not read fails, and
+    // its stored part says so.
     [Fact]
     public async Task TheSAndP400BreakoutsChecksOnItsYearsHighOverANightHolding251SessionsReadTheSessionBeforeFromThePulledHistory()
     {
         var live = new Dictionary<string, double>(FrozenBreakout(), StringComparer.Ordinal) { [IndexBreakoutCandidate.RecencyParameter] = 63 };
-        var (store, register) = await BeforeTheYearStore(live, "recency=-63;highSessions=126,recency=0,nearness=1");
+        var (store, register) = await BeforeTheYearStore(live, "recency=-63;highSessions=126,recency=0,nearness=1;highSessions=126,recency=-63");
 
         using var held = store;
 
@@ -180,12 +196,70 @@ public partial class FixtureExpectations
             [$"IA|0|{IndexRules.HighNotAsStated}", $"IB|0|{IndexNightRead.NoSetup}", $"ID|0|{IndexNightRead.NoSetup}"],
             FamilyRows(store, $"SELECT ticker, passed, reason FROM index_family_result WHERE index_code = 'MID' AND family = 'breakout' AND session_date = '{Day(BeforeNight)}' ORDER BY ticker;"));
 
-        IReadOnlyList<string> Kept(string words) => TextRows(store, $"SELECT ticker FROM index_rule_trade WHERE candidate LIKE '%{words}%' ORDER BY ticker;");
+        (bool Passed, string Reason) Recency(string ticker) => FamilyRule
+            .GatesOf(Text(store, $"SELECT gates FROM index_family_result WHERE index_code = 'MID' AND family = 'breakout' AND ticker = '{ticker}' AND session_date = '{Day(BeforeNight)}';"))
+            .Where(gate => gate.Name == IndexRules.HighNotAsStated)
+            .Select(gate => (gate.Passed, gate.Reason))
+            .Single();
+
+        Assert.Equal((false, IndexRules.HighNotAsStated), Recency("IA"));
+        Assert.Equal((false, IndexRules.NoYearHigh), Recency("ID"));
+
+        IReadOnlyList<string> Kept(params string[] words) =>
+            TextRows(store, $"SELECT ticker FROM index_rule_trade WHERE {string.Join(" AND ", words.Select(word => $"candidate LIKE '%{word}%'"))} ORDER BY ticker;");
 
         Assert.Empty(Kept("made within 63 sessions"));
-        Assert.Equal(["IA"], Kept("older than 63 sessions"));
+        Assert.Equal(["IA"], Kept("251-session high", "older than 63 sessions"));
         Assert.Equal(["IA"], Kept("the close at least 1 of its year"));
+        Assert.Equal(["IA", "IB"], Kept("126-session high", "older than 63 sessions"));
         Assert.Equal(["IA", "IB", "ID"], TextRows(store, "SELECT ticker FROM index_rule_trade WHERE candidate LIKE 'the background %' ORDER BY ticker;"));
+    }
+
+    // The pull read stops at a session the pull is missing, as no reading reaches across one the store is missing: IH, its
+    // year the store's 251 sessions shaped as IA's, is pulled at twice the store's prices on the year's first session and on
+    // the session two before the year, at a high of 200 there that reads 100 at the store's scale, and not on the session
+    // directly before the year. The index families read it no session before the year, so its breakout reads no year's
+    // high and it lists nothing, where the session two back read in the missing one's place would give it the store's 101
+    // made 21 sessions back and its close of 102 would break out; and the member readings read it none. Each step's row
+    // names it beside ID.
+    [Fact]
+    public async Task ThePullReadBeforeAYearOf251SessionsStopsAtASessionThePullIsMissing()
+    {
+        var (store, register) = await BeforeTheYearStore();
+
+        using var held = store;
+        var sessions = BeforeSessions(253);
+
+        StoreYear(store, "IH", [.. sessions[2..].Select((session, at) => BeforeBar(session, at + 1))]);
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('MID', 'IH', '2024-01-02', NULL, '2024-01-02T00:00:00Z');");
+        Quarters(store, "IH", 10m, 10m, 10m, 10m);
+        store.Execute(PulledBar("IH", sessions[0], 200m, 196m, 198m));
+        store.Execute(PulledBar("IH", sessions[2], 200m, 196m, 198m));
+
+        await using (var connection = new SqliteConnection(StoreConnection.For(store.DatabaseFile)))
+        {
+            await connection.OpenAsync();
+
+            var (names, _) = await IndexFamilies.InputsAsync(connection, "MID", BeforeNight, default);
+
+            Assert.Equal(["IA|1", "IB|1", "ID|0", "IH|0"], names.OrderBy(name => name.Ticker, StringComparer.Ordinal).Select(name => $"{name.Ticker}|{name.Before?.Length}"));
+        }
+
+        await new IndexFamilies(BeforeClock, store.DatabaseFile).RunAsync("night-before-the-year", default, register, BeforeFrozenAt.AddHours(1));
+        await new MemberReader(BeforeClock, store.DatabaseFile).RunAsync("GSPC", "night-before-the-year", wider: ["MID"]);
+
+        Assert.Equal(
+            ["IA|1", "IB|0", "ID|0", "IH|0"],
+            FamilyRows(store, $"SELECT ticker, passed FROM index_family_result WHERE index_code = 'MID' AND family = 'breakout' AND session_date = '{Day(BeforeNight)}' ORDER BY ticker;"));
+        Assert.Equal("none", Text(store, $"SELECT IFNULL(year_high, 'none') FROM member_reading WHERE ticker = 'IH' AND session_date = '{Day(BeforeNight)}';"));
+        Assert.Contains(
+            "which holds too few for 2, each reading none of them: ID, IH",
+            Text(store, "SELECT detail FROM run_log WHERE run_id = 'night-before-the-year' AND stage = 'index-families';"),
+            StringComparison.Ordinal);
+        Assert.EndsWith(
+            "which holds too few for 2, each reading no year's high: ID, IH",
+            Text(store, "SELECT detail FROM run_log WHERE run_id = 'night-before-the-year' AND stage = 'member-readings';"),
+            StringComparison.Ordinal);
     }
 
     // The pull read for what the year falls short by and not for what a member's own bars fall short by, over the same
@@ -307,6 +381,42 @@ public partial class FixtureExpectations
         Assert.Equal(["W1|read", "W2|none", "W3|none"], TextRows(store, $"SELECT ticker || '|' || CASE WHEN look_back IS NULL THEN 'none' ELSE 'read' END FROM heavyweight_night WHERE session_date = '{Day(monday)}' ORDER BY ticker;"));
         Assert.EndsWith(
             "; the store's year holds 251 of the 252 sessions the heavyweights' closes read, the sessions before it read from the pulled history for 2 member(s), which holds too few for 1, each reading no return and no beta: W3",
+            Text(store, "SELECT detail FROM run_log WHERE run_id = 'night-before-the-year' AND stage = 'heavyweights';"),
+            StringComparison.Ordinal);
+    }
+
+    // The S&P 500's heavyweights over the same store with W2's year whole and its pull missing the session directly before
+    // the year, holding the one before that: the read stops at the session the pull is missing, so W2 reads no close before
+    // the year and no return, as a member the pull holds none for, where the close two sessions back read in the missing
+    // one's place would give it a return over a session more than the year; and the row names it beside W3.
+    [Fact]
+    public async Task TheSAndP500sHeavyweightsReadNoCloseBeforeTheYearPastASessionThePullIsMissing()
+    {
+        using var store = WaitStore(new DateOnly(2025, 9, 2), new DateOnly(2026, 9, 30));
+
+        await WaitNight(store, new DateOnly(2026, 10, 1), "night-first");
+        WaitBars(store, new DateOnly(2026, 10, 2), new DateOnly(2026, 10, 30));
+
+        var monday = new DateOnly(2026, 11, 2);
+        (string Ticker, DateOnly Session)[] pulled =
+        [
+            ("W1", new DateOnly(2025, 10, 31)),
+            ("W1", new DateOnly(2025, 11, 3)),
+            ("W2", new DateOnly(2025, 10, 30)),
+            ("W2", new DateOnly(2025, 11, 3)),
+        ];
+
+        foreach (var (ticker, session) in pulled)
+        {
+            store.Execute(PulledBar(ticker, session, 2 * WaitClose(ticker, session), 2 * WaitClose(ticker, session), 2 * WaitClose(ticker, session)));
+        }
+
+        await WaitNight(store, monday, "night-before-the-year");
+
+        Assert.Equal(251, Scalar(store, "SELECT COUNT(*) FROM bar WHERE ticker = 'W2';"));
+        Assert.Equal(["W1|read", "W2|none", "W3|none"], TextRows(store, $"SELECT ticker || '|' || CASE WHEN look_back IS NULL THEN 'none' ELSE 'read' END FROM heavyweight_night WHERE session_date = '{Day(monday)}' ORDER BY ticker;"));
+        Assert.EndsWith(
+            "; the store's year holds 251 of the 252 sessions the heavyweights' closes read, the sessions before it read from the pulled history for 1 member(s), which holds too few for 2, each reading no return and no beta: W2, W3",
             Text(store, "SELECT detail FROM run_log WHERE run_id = 'night-before-the-year' AND stage = 'heavyweights';"),
             StringComparison.Ordinal);
     }

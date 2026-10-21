@@ -373,13 +373,14 @@ public partial class FixtureExpectations
 
         // The same over sessions read before the store's year laid before the bars: the pulled high of 95 made 251 sessions
         // back read where the two hold the 251 sessions before the bar, and a pulled 99 made 252 back not; none where they
-        // hold one fewer and none for a bar the series does not hold; and over the bars alone where none was read.
+        // hold one fewer, and none for a bar the series does not hold however many sessions were read before it; and over
+        // the bars alone where none was read.
         var year = bars[2..];
 
         Assert.Equal((95m, 251), MemberReadings.YearHigh([Bar(-1, 95m)], year, 250));
         Assert.Equal((95m, 251), MemberReadings.YearHigh([Bar(-2, 99m), Bar(-1, 95m)], year, 250));
         Assert.Null(MemberReadings.YearHigh([], year, 250));
-        Assert.Null(MemberReadings.YearHigh([Bar(-1, 95m)], year, -1));
+        Assert.Null(MemberReadings.YearHigh(bars[..252], year, -1));
         Assert.Equal((50m, 1), MemberReadings.YearHigh(null, year, 250));
 
         // The volume over its average, none where the average is nothing or not held.

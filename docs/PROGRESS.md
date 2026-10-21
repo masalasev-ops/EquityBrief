@@ -5408,22 +5408,37 @@ Built:      on a night whose store's year holds fewer sessions than the year's h
             sessions the index families read; both through one function, none where the pulled and stored sessions hold
             fewer than the high reads, as the breakout's own high reads none (see: The member readings' year's high and a
             breakout rule's checks on it read the sessions before a short year as the breakout's own high does). The
-            member readings' row names a member the pull holds too few for, and the name page says such a member's high
-            is not available rather than that it holds no bar. The decision, the hard rule with its prior wording in the
-            changelog, five architecture rows and the matrix, SCHEMA's pulled bars and year's high notes, the roster, and
-            the remedy `tools/remedies/2026-10-21-20.11-the-year-high-before-the-year.txt`.
+            member readings' row names a member the pull holds too few for, each check on its year's high fails with words
+            saying no high was read, and the name page says its high is not available rather than that it holds no bar.
+            The read of the sessions before the year ends at a session the pull is missing, in the index families and in
+            the S&P 500's heavyweights' book alike. The decision, the hard rule with its prior wording in the changelog,
+            six architecture rows and the matrix, SCHEMA's pulled bars and year's high notes, the roster, and the remedy
+            `tools/remedies/2026-10-21-20.11-the-year-high-before-the-year.txt`.
+Reviewed:   five findings confirmed and fixed here: a breakout rule reading its year's high older than 63 sessions
+            passed a member whose high the night read none of; the read of the sessions before the year passed over a
+            session the pull is missing and took the one before it, here and in the heavyweights' book; SCHEMA's lead and
+            section 17's readings row named no read of the pull for the year's high; an edge assertion could not fail;
+            and the decision said the three agree for every member, where a member whose bars start after the year's
+            first session still reads none in the breakout and the high of its own sessions in the other two, now stated
+            and put to the operator. Four were refuted.
 Pins:       every S&P 400 and 600 evaluator, which pins the index night's files and the member readings' file: the
-            pullback from adc4b9f11470 to 99df0e0c03e3, the breakout from acdeab81269c to 0fcd512afa81, the drift from
-            a60b29a9a6fe to 5e3cf4aa0f7f and the heavyweights from 33d344c490cd to db2781a85e6f; no S&P 500 version.
-Tests:      2569, two more: over the night holding 251 sessions, the member readings' year's high read off the pull's
+            pullback from adc4b9f11470 to 61634e51e013, the breakout from acdeab81269c to fa012e2fbaba, the drift from
+            a60b29a9a6fe to a0aac8d3d390 and the heavyweights from 33d344c490cd to 4aa690bef133; and the S&P 500's
+            heavyweights from 6ab1c2b1c6a4 to d78f1ca30465, its book's read of the pull ending at a missing session.
+Tests:      2571, four more: over the night holding 251 sessions, the member readings' year's high read off the pull's
             session before the year at the store's scale, IA's 203 reading 101.5 and IB's 206 reading 103, each made 251
-            sessions back where the store's own 101 was made 21 back, with their nearness, and ID, which the pull holds
-            none of, reading none and named on the step's row; and the S&P 400's breakout registered reading its year's
-            high within 63 sessions, which keeps IA off, a variant reading it older, which keeps IA, and a variant at a
-            126-session high reading the close at its year's high or above, which keeps IA alone where the rule kept in
-            the background reading no check keeps all three. The shared function at its edges; a member holding a bar
-            and no year's high drawn as not available; and the member readings' worked test on a store holding the
-            year's 252 sessions, its 70 falling 182 short under the ruling.
+            sessions back where the store's own 101 was made 21 back, with their nearness, an S&P 500 and an S&P 600
+            member read as IA is, and ID, which the pull holds none of, reading none and named on the step's row; the S&P
+            400's breakout registered reading its year's high within 63 sessions, which keeps IA off, a variant reading
+            it older, which keeps IA, a variant at a 126-session high reading the close at its year's high or above, which
+            keeps IA alone where the rule kept in the background reading no check keeps all three, and one at that high
+            reading it older, which keeps IA and IB and not ID, whose stored part says no year's high was read; IH, pulled
+            on the session two before the year and not the one before it, reading no session before the year, listing
+            nothing and reading no year's high, both steps' rows naming it beside ID; and the S&P 500's heavyweights
+            reading W2, its pull missing the session before the year, no return. The shared function at its edges, the
+            guard for a bar the series does not hold read over 252 pulled sessions; a member holding a bar and no year's
+            high drawn as not available; and the member readings' worked test on a store holding the year's 252 sessions,
+            its 70 falling 182 short under the ruling.
 Claims:     1372, as before.
 Mutated:    each rule stated before its run. The member readings' high read over the pulled sessions, broken by handing
             it none: predicted red at IA; result red, IA reading 101 made 21 back where 101.5 made 251 back. A breakout
@@ -5431,13 +5446,19 @@ Mutated:    each rule stated before its run. The member readings' high read over
             the rule reading its high within 63 sessions; result red, IA passing where it is kept off. A member the pull
             holds too few for reading none, broken by reading the high of the sessions held: predicted red at ID; result
             red, ID reading 101 where none, the 126-session variant keeping ID beside IA, and the shared function reading
-            a high one session short. Each made on this branch and reverted before anything was committed, and the tests
-            green.
+            a high one session short. For the review's fixes: a check on a high not read failing, broken by passing the
+            older form on none: predicted red at ID under the 126-session rule reading it older; result red, ID's stored
+            part saying its high was not as recent as stated, and with the words kept, ID kept beside IA and IB. The read
+            ending at a session the pull is missing, broken by passing over it in the index families: predicted red at
+            IH; result red, IH reading the session two back in the missing one's place. The same in the heavyweights'
+            book: predicted red at W2; result red, W2 reading a return. Each made on this branch and reverted before
+            anything was committed, and the tests green.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
-            stated before that run: all six steps, 0 warnings, 0 errors, 2569 of 2569 tests ran with none failed,
+            stated before that run: all six steps, 0 warnings, 0 errors, 2571 of 2571 tests ran with none failed,
             migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
             report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
-Carried:    the remedy run from main after the merge, every standing S&P 400 and 600 rule registered again at the
-            version this moves it to, with each record's length stated before it restarts; PR 505 rebased with its
-            migration at 104; and the phase 18 sign-off by a fresh session.
+Carried:    the remedy run from main after the merge, every standing S&P 400 and 600 rule and the S&P 500's
+            heavyweights registered again at the versions this moves them to, with each record's length stated before it
+            restarts; the year's high of a member whose bars start after the year's first session put to the operator;
+            PR 505 rebased with its migration at 104; and the phase 18 sign-off by a fresh session.

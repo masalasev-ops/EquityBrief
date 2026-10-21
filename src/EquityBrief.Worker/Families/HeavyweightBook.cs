@@ -745,7 +745,8 @@ public sealed class HeavyweightBook : IComponent
     // A member's sessions before its first stored one that the newest pull holding that session holds, the newest of them
     // up to the count asked, each close brought to the store's scale by the ratio of the stored close to the pulled one on
     // that first session and its close as traded as the pull holds it, a day the exchange's table holds no session on
-    // passed over; none where no pull holds the first session.
+    // passed over and a session the pull is missing ending the read, so no return reaches across a hole the pull holds;
+    // none where no pull holds the first session.
     static async Task<IReadOnlyList<Bar>> PulledAsync(SqliteConnection connection, SqliteTransaction transaction, string ticker, Bar first, int count, CancellationToken cancellation)
     {
         string? pull = null;
@@ -764,15 +765,27 @@ public sealed class HeavyweightBook : IComponent
 
         var ratio = first.Close / pulledClose;
         var earlier = new List<Bar>();
+        var after = first.Session;
+        var ended = false;
 
         await foreach (var row in RowsAsync(connection, transaction, PulledBefore, [("$ticker", ticker), ("$pull", pull), ("$first", Stamp(first.Session)), ("$count", count + 5)], cancellation))
         {
             var day = Day(row.GetString(0));
+            var covered = day >= Core.Bars.ExchangeClosures.CoveredFrom && day <= Core.Bars.ExchangeClosures.CoveredThrough;
 
-            if (earlier.Count == count || (day >= Core.Bars.ExchangeClosures.CoveredFrom && day <= Core.Bars.ExchangeClosures.CoveredThrough && !Core.Bars.ExchangeClosures.IsSession(day)))
+            if (ended || earlier.Count == count || (covered && !Core.Bars.ExchangeClosures.IsSession(day)))
             {
                 continue;
             }
+
+            if (covered && Core.Bars.ExchangeClosures.SessionsBetween(day, after).Count != 0)
+            {
+                ended = true;
+
+                continue;
+            }
+
+            after = day;
 
             var close = Money.FromStorage(row.GetString(1)) * ratio;
 
