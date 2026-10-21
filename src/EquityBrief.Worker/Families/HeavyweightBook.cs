@@ -106,6 +106,17 @@ public sealed class HeavyweightBook : IComponent
 
     const string Bars = "SELECT ticker, session_date, close, raw_close, volume FROM bar ORDER BY ticker, session_date;";
 
+    // The newest pull holding a member's first stored session, and its close there, which the store's scale is read from.
+    const string PullHoldingFirst = "SELECT pull, close FROM pulled_bar WHERE ticker = $ticker AND session_date = $first ORDER BY pull DESC LIMIT 1;";
+
+    // That pull's newest sessions before the first stored one, a few past the count a reading falls short by, so a day the
+    // exchange's table holds no session on, which the read passes over, does not leave it short.
+    const string PulledBefore = @"
+        SELECT session_date, close, raw_close, volume FROM pulled_bar
+        WHERE ticker = $ticker AND pull = $pull AND session_date < $first
+        ORDER BY session_date DESC LIMIT $count;
+    ";
+
     // The index's closes and each sector fund's, as the night's market series fetch stored them, to the night.
     const string SeriesCloses = "SELECT series, session_date, close FROM market_bar WHERE session_date <= $night ORDER BY series, session_date;";
 
@@ -682,7 +693,7 @@ public sealed class HeavyweightBook : IComponent
         DateOnly night,
         CancellationToken cancellation)
     {
-        var need = Indices.IndexFamilies.SessionsReadTo;
+        var need = HeavyweightRule.BetaReturns + 1;
 
         if (held >= need)
         {
@@ -707,18 +718,17 @@ public sealed class HeavyweightBook : IComponent
                 continue;
             }
 
-            var first = series.First().Value;
-            var earlier = await Indices.IndexFamilies.BeforeTheYearAsync(connection, transaction, ticker, new Core.Sweep.SweepBar(first.Session, 0m, 0m, first.Close, 0), need - own, cancellation);
+            var earlier = await PulledAsync(connection, transaction, ticker, series.First().Value, need - own, cancellation);
 
             foreach (var bar in earlier)
             {
-                series[bar.Session] = new Bar(bar.Session, bar.Close, bar.RawClose > 0m ? bar.RawClose : bar.Close, bar.Volume);
+                series[bar.Session] = bar;
                 added.Add(bar.Session);
             }
 
-            read += earlier.Length > 0 ? 1 : 0;
+            read += earlier.Count > 0 ? 1 : 0;
 
-            if (own + earlier.Length < need)
+            if (own + earlier.Count < need)
             {
                 few.Add(ticker);
             }
@@ -728,6 +738,46 @@ public sealed class HeavyweightBook : IComponent
             added.Count,
             FormattableString.Invariant($"the store's year holds {held} of the {need} sessions the heavyweights' closes read, the sessions before it read from the pulled history for {read} member(s)")
                 + (few.Count > 0 ? FormattableString.Invariant($", which holds too few for {few.Count}, each reading no return and no beta: {string.Join(", ", few)}") : string.Empty));
+    }
+
+    // A member's sessions before its first stored one that the newest pull holding that session holds, the newest of them
+    // up to the count asked, each close brought to the store's scale by the ratio of the stored close to the pulled one on
+    // that first session and its close as traded as the pull holds it, a day the exchange's table holds no session on
+    // passed over; none where no pull holds the first session.
+    static async Task<IReadOnlyList<Bar>> PulledAsync(SqliteConnection connection, SqliteTransaction transaction, string ticker, Bar first, int count, CancellationToken cancellation)
+    {
+        string? pull = null;
+        var pulledClose = 0m;
+
+        await foreach (var row in RowsAsync(connection, transaction, PullHoldingFirst, [("$ticker", ticker), ("$first", Stamp(first.Session))], cancellation))
+        {
+            pull = row.GetString(0);
+            pulledClose = Money.FromStorage(row.GetString(1));
+        }
+
+        if (pull is null || pulledClose <= 0m || first.Close <= 0m)
+        {
+            return [];
+        }
+
+        var ratio = first.Close / pulledClose;
+        var earlier = new List<Bar>();
+
+        await foreach (var row in RowsAsync(connection, transaction, PulledBefore, [("$ticker", ticker), ("$pull", pull), ("$first", Stamp(first.Session)), ("$count", count + 5)], cancellation))
+        {
+            var day = Day(row.GetString(0));
+
+            if (earlier.Count == count || (day >= Core.Bars.ExchangeClosures.CoveredFrom && day <= Core.Bars.ExchangeClosures.CoveredThrough && !Core.Bars.ExchangeClosures.IsSession(day)))
+            {
+                continue;
+            }
+
+            var close = Money.FromStorage(row.GetString(1)) * ratio;
+
+            earlier.Add(new Bar(day, close, row.IsDBNull(2) ? close : Money.FromStorage(row.GetString(2)), row.GetInt64(3)));
+        }
+
+        return earlier;
     }
 
     static async Task<IReadOnlyDictionary<string, SortedDictionary<DateOnly, Bar>>> BarsAsync(SqliteConnection connection, SqliteTransaction transaction, CancellationToken cancellation)

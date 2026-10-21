@@ -5187,3 +5187,96 @@ Mutated:    the rule, stated before the run: a member's count brought across the
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 20.11 - the evening's remedy run from main: migration 103, the ruled setting's answer, the strongest drift and its variant retired, 27 moved rules registered again, the S&P 400 drift frozen at the ruled setting and its records written   2026-10-21
+
+Not a checkpoint entry: it records the evening rulings' remedy and the night before it, and lands nothing.
+Night:      the night of 2026-10-20, night-20261020T230003Z, ran from 23:00:03Z to 23:48:19Z from 8c5fdae2, before the
+            merge, every step ok. On its 252 sessions the frozen heavyweights books rebalanced first: the S&P 400's live
+            rule bought SN, EQH, CRBG, BTSG and CORT and the S&P 600's URBN, MATX, PI and WOR, each index's card drawing
+            its live rule's buys; the rules kept in the background bought SN, CRBG, BTSG and CORT on the S&P 400 and
+            URBN, ETSY, MATX, ACA, DAVE and NSIT on the S&P 600. The S&P 600's business-first family listed DGII and the
+            S&P 500's drift EFX, HAS, KEY, MSCI and NOC.
+Gates:      `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 0899a177, PR 514's head, whose tree its merge
+            holds, from 23:52:51Z to 00:16:12Z: all six steps, 0 warnings, 2556 of 2556 tests, migrations 0 to 103 with
+            none pending, schema version 103; the phase report 60 tables, 1372 claims, 1372 passing, none out of scope
+            and none unexamined, 1383 placements reconciled against a floor of 34, 43 checks run and passed, each the
+            figure PR 514's newest entry stated, though the report held none of them to the run, that entry naming its
+            run over main after the merge and not over the tree carrying it.
+Tested:     the remedy's register lines before it ran, one test more, 2557 at its commit, before the 15.1 correction
+            above: the four lines over a register copied row by row from the operator's of the evening of 2026-10-20,
+            the S&P 500's four heavyweights rules and the S&P 400's and 600's twenty-five at their versions then, each
+            line written, the drift standing four after them with the strongest in the background at its own settings,
+            every rule at the version the code carries and none of the index rules skipped. Mutated, the rule stated
+            before the run: the freeze names the live rule it replaces as the register holds it, broken by cutting the
+            last character of the name it gives: predicted red at the freeze's line. Result: red, "is no live rule the
+            drift on the S&P 400 registered". Made on the branch and reverted before anything was committed.
+Records:    each S&P 500 heavyweights rule's record before its restart counted from 2026-10-19, two sessions, the four
+            having been registered again on 2026-10-18; their books held from 2026-10-07: the live rule 8 holdings, all
+            open; every company 11, all open; the 10 largest sold on no longer leading or under the average 8, 5 open,
+            GEV sold on 2026-10-15 at -7.09 per cent against its size cut's -0.75, ETN on 2026-10-16 at -9.29 against
+            -0.83 and GOOGL on 2026-10-20 at -2.92 against -0.25, GOOGL's the one sale inside its record; and against the
+            sector's members 8, all open.
+Ran:        PR 514 merged by the operator at about 01:08Z on 2026-10-21 as 31813181, the checkout's main brought up to
+            it at 01:09:13Z and the history read stopped at 01:09:29Z; `tools/remedies/2026-10-20-20.11-the-evening-rulings.txt`
+            from 01:09:41Z to 01:21:54Z, all 7 steps, with no night, off-peak run, drain, local run or monthly run
+            writing. No model call and no provider request.
+Measured:   migration 103 applied. The S&P 400 drift's answer recorded at the setting the operator ruled, 1,807 trades at
+            +0.098, entering on the first pullback, its entry not kept. The strongest's market variant retired as 433
+            and the strongest as 434; 27 rules registered again at one instant, each unchanged and named as restarting,
+            the S&P 400's and 600's 23 standing and the S&P 500's four heavyweights; the drift frozen at the ruled
+            setting, its live rule 489, its market variant 490 and the strongest kept in the background as 491, beside
+            the rule of the day before, 471. The S&P 400's records written again: the pullback 720 trades, the breakout
+            1,033, the drift 1,807 at an average of 0.099 risks, and the heavyweights 335 holdings.
+Read:       under pin 3 at 20,787 of 45,381 releases, 45.8 per cent, when it stopped; started again at 01:22:50Z from
+            8c5fdae2's clean copy, the newest main built, PR 514 moving none of the read's code, with the card at 250 W;
+            the read surface on 5152 started again from main's Release.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    the S&P 400 drift's nights under its frozen rule, replayed by this pull request's remedy; and as the newest
+            entry of this pull request.
+
+### 20.11 - a night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale: the S&P 400's and 600's breakout's year's high, the forming list's and the heavyweights' closes, a member the pull holds too few for named   2026-10-21
+
+Queue:      as the 20.11 rulings' entries of the evening above.
+Built:      on the operator's ruling of the evening of 2026-10-20, clause 2 as amended (see: A night's reading needing more
+            closes than the store's year holds reads the sessions before it from the pulled history at the store's
+            scale). On a night whose store's year holds fewer sessions than the night's longest readings read, 252 to the
+            night, the index families read each S&P 400 and 600 member's sessions before its first stored one, as many as
+            it falls short by, from the newest pull holding that session at the store's scale, a day the exchange's table
+            holds no session on passed over; the breakout's year's high and the forming list's read over them, and the
+            index books' returns and betas; the S&P 500's heavyweights book reads its members' the same way; and a book
+            waits only where the store's year and the pull together hold too few. A member the pull holds too few for
+            reads none of those readings, and the index families' row and the heavyweights' row name it beside the
+            sessions the year holds. Tonight's heavyweights cards read whether the pull reaches before the year, for the
+            next rebalance, and no price of it. The hard rule on pulled history is narrowed for these readings alone, its
+            prior wording in the changelog; the rotation decision is superseded and moved under Previously decided with
+            its reasoning (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the
+            first session of each month whose stored year and the pulled history before it hold the closes their
+            readings need), and the new decision narrows the pulled history's and the bar store's without superseding
+            them. Nothing of the 260-session store was built, so nothing is reverted.
+Tests:      2561, two more: over a night holding 251 sessions, three S&P 400 members pulled at twice the store's prices,
+            IA's pulled high of 203 read at the store's 101.5 under its close of 102 breaking out at the frozen
+            251-session high, IB's 206 read at 103 not, and ID, the pull holding none of it, reading none and named on
+            the night's row; and the S&P 500's heavyweights on Monday 2026-11-02, the store's year holding 251 sessions,
+            reading W1's and W2's close of 2025-10-31 from the pull and rebalancing in place of waiting, W1's return of
+            0.2407 worked by hand from its two closes, and W3, the pull holding none of it, reading no return and named;
+            and the wait tests' words and the empty card's sentence as they now read.
+Claims:     1372, as before.
+Pins:       the S&P 500 heavyweights' evaluator from 02c47d5f62d1 to 447e2bbffb26, its book reading the pull through a read
+            of its own, so it pins no index file; on the S&P 400 and 600 the pullback from ddd98f127cf5 to a13f39e63733, the breakout d66df3088314 to b8c3b69a5c95, the
+            drift 600c88d7f647 to 578b61cd85bb and the heavyweights dccd1de3ea09 to c0afc6691dcc.
+Mutated:    the rule, stated before the run: the sessions before the store's year read at the store's scale, broken by
+            reading them at the pull's own prices: predicted red at IA's breakout and W1's return. Result: red, IA listing
+            nothing and W1 reading -0.3797 where 0.2407 is worked by hand. Made on this branch and reverted before
+            anything was committed, and the tests green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2561 of 2561 tests ran with none failed,
+            migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the remedy `tools/remedies/2026-10-21-20.11-the-readings-before-the-year.txt` run from main after the merge
+            and before the next night, every S&P 400 and 600 rule and the S&P 500's four heavyweights registered again at
+            the versions this moves them to, and the S&P 400's frozen rules' nights replayed; the member readings' year's
+            high, read over the sessions a short year holds rather than none, put to the operator; PR 505 rebased with
+            its migration at 104; and the phase 18 sign-off by a fresh session.

@@ -1,0 +1,12 @@
+# The remedy of clauses 2, as amended, and 3 of the operator's rulings of the evening of 2026-10-20, as their PROGRESS
+# entries print it. On a night whose store's year holds fewer sessions than they read, the S&P 400's and 600's
+# breakout's year's high and the sector heavyweights' closes read the sessions before the year from the pulled history
+# at the store's scale, and a company's value is brought across a split after its count was asked, which moves every
+# S&P 400 and 600 rule's version and the S&P 500's sector heavyweights': each standing rule whose evaluator moved is
+# registered again unchanged, each named as not replayed and restarting. Last, the rule recorder replays the S&P 400's
+# frozen rules' nights, so the drift frozen at the ruled setting draws its own stretch line. No request to the provider
+# and no model call. Run from main after the merge, when no night, local run, drain, labeller or monthly run is
+# writing, and before 21:00 UTC on a weekday so the nights' replay ends before the night's window; read the output for
+# "remedy done".
+register --moved --evidence "the operator's rulings of the evening of 2026-10-20, clause 2 as amended and clause 3: the S&P 400's and 600's rules and the S&P 500's sector heavyweights read the sessions before the store's year from the pulled history at the store's scale and a company's value across a split after its count was asked; each is registered again unchanged"
+rule-record --nights --index MID
