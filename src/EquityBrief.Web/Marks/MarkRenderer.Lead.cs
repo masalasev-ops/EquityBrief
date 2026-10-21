@@ -71,7 +71,7 @@ public sealed partial class MarkRenderer
     // see: A company filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing neither as not stored
     static string YieldTile(EquityBrief.Core.Tiles.YieldTile? yield, decimal? price, bool live, bool paysNone) =>
         yield is not { } tile
-            ? LeadTile("yield", "Dividend yield", "<span class=\"v none\">none</span>", paysNone ? "It pays none: its fetch files no dividend rate above nought and none is kept in the year." : "No dividend is stored for it.")
+            ? LeadTile("yield", "Dividend yield", "<span class=\"v none\">none</span>", paysNone ? "It pays none: no payment is kept in the year, and its fetch files no rate above nought." : "No dividend is stored for it.")
             : LeadTile(
                 "yield",
                 "Dividend yield",

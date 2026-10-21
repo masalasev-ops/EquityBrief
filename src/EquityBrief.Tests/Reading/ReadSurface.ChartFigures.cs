@@ -98,7 +98,7 @@ public partial class ReadSurface
                 "<[^>]+>",
                 " ");
 
-        const string PaysNoneWords = "It pays none: its fetch files no dividend rate above nought and none is kept in the year.";
+        const string PaysNoneWords = "It pays none: no payment is kept in the year, and its fetch files no rate above nought.";
 
         Assert.Contains(PaysNoneWords, await Tile("S1"), StringComparison.Ordinal);
         Assert.Contains(PaysNoneWords, await Tile("S2"), StringComparison.Ordinal);
