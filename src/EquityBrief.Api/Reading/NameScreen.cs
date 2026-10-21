@@ -1708,10 +1708,15 @@ public static partial class NameScreen
         var years = UniverseScreen.Years(closes ?? []);
 
         // How many other members the group holds, as the annotator counted them when it read the name's group, of which the
-        // table draws the ones it chose. A count worked again here would read each member's group by the names the page
-        // draws, which are not the ones an S&P 500 group was read by.
-        // see: A member whose membership row names no industry is named and grouped by the GICS industry and sector its company fetch files
-        var others = own.GroupName is null ? 0 : groupMembers ?? 0;
+        // table draws the ones it chose. A name whose moves hold no count, one holding too few bars for a move, is counted
+        // again over the universe's rows, which read an S&P 500 sector group short since the rows' sectors are GICS.
+        // see: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
+        string? GroupOf(UniverseRow row) =>
+            string.Equals(own.GroupKind, EquityBrief.Core.Moves.Group.Industry, StringComparison.Ordinal) ? row.Industry : row.Sector;
+
+        var others = own.GroupName is null
+            ? 0
+            : groupMembers ?? members.Values.Count(row => !string.Equals(row.Ticker, ticker, StringComparison.Ordinal) && string.Equals(GroupOf(row), own.GroupName, StringComparison.Ordinal));
 
         PeerCell Row(string drawn, bool isOwn, PeerLikeness? likeness)
         {

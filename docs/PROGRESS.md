@@ -5511,24 +5511,27 @@ Found:      no S&P 400 or 600 membership row names an industry or a sector, thei
             beside no median; and the name page's peers table counted its group's other members again over the sectors
             the universe's rows name, which are GICS while an S&P 500 group is its row's, so 183 of the 503 S&P 500 tables
             drew a wrong count on the night of 2026-10-20, AAPL's 10 where its group holds 86.
-Built:      a member whose membership row names no industry, every S&P 400 and 600 member, is named on every page by the
-            GICS industry its newest company fetch files, and the move annotator reads its group among its own index's
-            members by the GICS industry and sector its newest company fetch made before the night started files, both
-            from that fetch; a member whose row names one, every S&P 500 member, keeps its row's (see: A member whose
-            membership row names no industry is named and grouped by the GICS industry and sector its company fetch
-            files). The peers table draws its group's other members as the annotator counted them, and a group no name is
-            read for says neither the row nor the fetch names it. The decision, the move annotator's catalogue and matrix
-            rows, section 4's two rows and the chart page's figures row, SCHEMA's group columns and companies note, the
-            roster and the changelog.
+Built:      a member whose membership row names neither a sector nor an industry, every S&P 400 and 600 member, is named
+            on every page by the GICS industry its newest company fetch files, and the move annotator reads its group
+            among its own index's members by the GICS industry and sector its newest company fetch made before the night
+            started files, both from that fetch; a member whose row names either, every S&P 500 member, keeps its row's
+            (see: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS
+            industry and sector its company fetch files). The peers table draws its group's other members as the
+            annotator counted them, a name whose moves hold no count counted over the rows as before, and a group the
+            night read no name for says so. The decision, the move annotator's catalogue and matrix rows, section 4's two
+            rows and the chart page's figures row, SCHEMA's group columns and companies note, the roster and the
+            changelog.
 Tests:      two more, the suite's total in the newest entry of this pull request: a constructed store of the three
             indices whose night is 2026-09-08, G1 grouped by its row's industry with five others beside its fetch's GICS
-            one, G7 alone in its row's industry and so in its row's sector with six, M1 by its newest fetch's Machinery
-            with five and not its older Banks, M7 alone in Building Products and so in its fetch's sector with six, its
-            Machinery fetched after the night started not read, M8 and S1 in no group, and G1's and M1's medians +3.0
-            worked by hand from the members' closes; and the chart page over the universes' store, M1 named by its newer
-            fetch's industry on the grid and its masthead, AAA by its row's over its fetch's and M3 not stored. The peers
-            table's count read as stored, 7 where the universe's sectors count 3, and a group no name is read for saying
-            both.
+            one, G7 alone in its row's industry and so in its row's sector with seven, G9, whose row names its sector and
+            no industry, by that sector with seven and not by its fetch's, M1 by its newest fetch's Machinery with five
+            and not its older Banks, M7 alone in Building Products and so in its fetch's sector with six, its Machinery
+            fetched after the night started not read, M8 and S1 in no group, and G1's and M1's medians +3.0 worked by
+            hand from the members' closes; and the chart page over the universes' store, M1 named by its newer fetch's
+            industry on the grid and its masthead, AAA by its row's over its fetch's, BBB, naming its sector alone, and
+            M3 not stored. The peers table's count read as stored, 7 where the universe's sectors count 3, and 3 over the
+            rows where the moves hold none; AAPL's rendered table counting the 9 its moves stored; and a group the night
+            read no name for saying so.
 Claims:     as the newest entry of this pull request.
 Mutated:    each rule stated before its run. A member whose row names no industry grouped by its company fetch, broken by
             reading the row's sector and industry alone: predicted red at M1; result red, M1 "sector none 0" where
@@ -5538,7 +5541,18 @@ Mutated:    each rule stated before its run. A member whose row names no industr
             peers count; result red, 3 where 7. The pages' industry the company fetch's where the row names none, broken
             by naming the row's alone: predicted red at M1's chart page; result red, not stored where "Oil, Gas &
             Consumable Fuels". Each made on this branch and reverted before anything was committed, and the tests green.
-Verified:   as the newest entry of this pull request.
+Reviewed:   before the merge, by a review of this pull request's work: the rule read the company fetch for a row naming no
+            industry, which would have moved an S&P 500 row naming its sector alone out of that sector's group into the
+            other scheme, and is keyed now on a row naming neither; a name whose moves hold no count, one holding a single
+            bar, drew its picks as its group's size, and is counted over the rows as before; the words for a group naming
+            no sector said neither the row nor the fetch names one, false of the groups an earlier night read until the
+            night rewrites them, and say the night read no name for it now; and no test read the count off a rendered
+            page, which one does now. Each is repaired above, and the rendered count is mutated, the rule stated before
+            its run: broken by handing the table no stored count, predicted red at AAPL's 9; result red, no count of 9
+            drawn. Run filtered to the test reading the fixture's peers tables, made in this checkout over the file's own
+            text and restored from it, the tree's diff the same after.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
 Carried:    the S&P 500's groups and the industry its pages name moved to the GICS scheme put to the operator with its
             cost: the group facts every recorded section prompt carries move with them, about 45 of the 68 paid
             recordings to be recorded again or answered as constructed.

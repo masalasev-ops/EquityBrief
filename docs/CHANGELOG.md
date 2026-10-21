@@ -143,19 +143,19 @@ Was:
 >
 > The read and write matrix's Move annotator row: no mark under Fundamentals.
 Now:
-> Move annotator: reads membership, companies, bar store, calendar; ... and writes each print's earnings reaction over the calendar's year behind; a group is read among the name's own index's members by the industry and sector each one's membership row names, or from the 15.1 correction of 2026-10-21 where the row names no industry by the GICS industry and sector its newest company fetch before the night files (see: A member whose membership row names no industry is named and grouped by the GICS industry and sector its company fetch files)
+> Move annotator: reads membership, companies, bar store, calendar; ... and writes each print's earnings reaction over the calendar's year behind; a group is read among the name's own index's members by the industry and sector each one's membership row names, or from the 15.1 correction of 2026-10-21 where the row names neither a sector nor an industry by the GICS industry and sector its newest company fetch before the night files (see: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files)
 >
-> How it got here, its source: ... each move's group median computed by the move annotator from the bars and the membership, a member whose row names no industry grouped by its company fetch (see: A large move ...) (see: A member whose membership row names no industry ...); ...
+> How it got here, its source: ... each move's group median computed by the move annotator from the bars and the membership, a member whose row names neither a sector nor an industry grouped by its company fetch (see: A large move ...) (see: A member whose membership row names neither a sector nor an industry ...); ...
 >
-> Its group, by price, its source: The peers' two readings and the members chosen, computed by the move annotator from the bars and the membership with a member whose row names no industry grouped by its company fetch; the group's other members as the annotator counted them (see: Peers are shown by price alone ...) (see: A member whose membership row names no industry ...)
+> Its group, by price, its source: The peers' two readings and the members chosen, computed by the move annotator from the bars and the membership with a member whose row names neither a sector nor an industry grouped by its company fetch; the group's other members as the annotator counted them (see: Peers are shown by price alone ...) (see: A member whose membership row names neither a sector nor an industry ...)
 >
-> The figures: ... the company: its index and sector and industry; from the 15.1 correction of 2026-10-21 its industry the one its membership row names and where the row names none the GICS industry its newest company fetch files (see: A member whose membership row names no industry ...); the provider's market value; ...
+> The figures: ... the company: its index and sector and industry; from the 15.1 correction of 2026-10-21 its industry the one its membership row names and where the row names neither a sector nor an industry the GICS industry its newest company fetch files (see: A member whose membership row names neither a sector nor an industry ...); the provider's market value; ...
 >
 > The read and write matrix's Move annotator row: R under Fundamentals, which holds the companies.
 Why: the operator approved on 2026-10-21, in the words "Yes, one PR now (Recommended)", reading a member's industry and its group from the company record as its sector already is: no S&P 400 or 600 membership row names an industry, so their chart pages drew it not stored and their moves had no group.
 
-### 2026-10-21 - SCHEMA.md - the move annotator reads a member's group off its company fetch where its membership row names no industry
-Authorised by: A member whose membership row names no industry is named and grouped by the GICS industry and sector its company fetch files
+### 2026-10-21 - SCHEMA.md - the move annotator reads a member's group off its company fetch where its membership row names neither a sector nor an industry
+Authorised by: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
 Was:
 > move and peer_reading, `group_name`: the industry or sector the membership row names, null where it names none
 >
@@ -163,23 +163,23 @@ Was:
 >
 > company: ... and `membership.sector` is the index snapshot's own scheme and is not read for it.
 Now:
-> move and peer_reading, `group_name`: the industry or sector the membership row names, or where it names no industry the GICS one the name's newest company fetch made before the night files; null where neither names one
+> move and peer_reading, `group_name`: the industry or sector the membership row names, or where it names neither the GICS one the name's newest company fetch made before the night files; null where neither names one
 >
-> The group columns are the annotator's: ... (see: A large move is shown beside its group's median move over the same sessions). From the 15.1 correction of 2026-10-21 a member whose membership row names no industry, which no S&P 400 or 600 member's does, is read by the GICS industry and sector its newest `company` row fetched before the night started files, both from that one row, so the annotator reads the companies as well; a member whose row names an industry is read by its row (see: A member whose membership row names no industry ...).
+> The group columns are the annotator's: ... (see: A large move is shown beside its group's median move over the same sessions). From the 15.1 correction of 2026-10-21 a member whose membership row names neither a sector nor an industry, which is every S&P 400 and 600 member, is read by the GICS industry and sector its newest `company` row fetched before the night started files, both from that one row, so the annotator reads the companies as well; a member whose row names either is read by its row (see: A member whose membership row names neither a sector nor an industry ...).
 >
-> company: ... is not read for it. From the 15.1 correction of 2026-10-21 the move annotator reads a member's newest row fetched before the night started for the industry and sector its group is read by, where its membership row names no industry, and the pages name such a member's industry by its newest row's (see: A member whose membership row names no industry ...).
+> company: ... is not read for it. From the 15.1 correction of 2026-10-21 the move annotator reads a member's newest row fetched before the night started for the industry and sector its group is read by, where its membership row names neither, and the pages name such a member's industry by its newest row's (see: A member whose membership row names neither a sector nor an industry ...).
 Why: as the architecture's entry above; the schema states what the annotator now reads.
 
 ### 2026-10-21 - .claude/rules/checks.md - fixture-expectations and read-surface reach a member's industry and group read off its company fetch
-Authorised by: A member whose membership row names no industry is named and grouped by the GICS industry and sector its company fetch files
+Authorised by: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
 Was:
 > fixture-expectations: ... and none for a bar the series does not hold however many sessions were read before it |
 >
 > read-surface: ... a member holding a bar on the night and no year's high saying its year's high is not available and not that it holds no bar |
 Now:
-> fixture-expectations: ... and none for a bar the series does not hold however many sessions were read before it; and from the 15.1 correction of 2026-10-21 a member whose membership row names no industry grouped among its own index's members by the GICS industry and sector its newest company fetch made before the night started files, ... worked by hand over a constructed store of the three indices |
+> fixture-expectations: ... and none for a bar the series does not hold however many sessions were read before it; and from the 15.1 correction of 2026-10-21 a member whose membership row names neither a sector nor an industry grouped among its own index's members by the GICS industry and sector its newest company fetch made before the night started files, ... worked by hand over a constructed store of the three indices |
 >
-> read-surface: ... and not that it holds no bar; and from the 15.1 correction of 2026-10-21 a member's industry on the chart page's grid and its masthead the one its membership row names, and where it names none the GICS industry its newest company fetch files, ... and a group neither the member's row nor its company fetch names saying both |
+> read-surface: ... and not that it holds no bar; and from the 15.1 correction of 2026-10-21 a member's industry on the chart page's grid and its masthead the one its membership row names, and where it names neither a sector nor an industry the GICS industry its newest company fetch files, ... and a group the night read no name for saying so |
 Why: the two rows named no assertion on a group or an industry read off the company fetch, which the 15.1 correction of 2026-10-21 adds.
 
 ### 2026-10-21 - CLAUDE.md - the hard rule on pulled history names the member readings' year's high and a breakout rule's checks on it

@@ -17,7 +17,7 @@ public sealed record MoveOutcome(int NamesExamined, int RowsWritten, int RowsDro
 // become the rows of the how-it-got-here table, each beside its group's median
 // move over the same sessions, read among its index's members on the night's
 // session by the sector and industry each one's membership row names, or where
-// the row names no industry by those its newest company fetch before the night
+// the row names neither by those its newest company fetch before the night
 // files.
 // Over the same bars it writes each name's two readings for the peers table,
 // beside the group its moves are read against, and each print's earnings
@@ -140,13 +140,14 @@ public sealed class MoveAnnotator : IComponent
     // and a 400 or 600 member's group is its own index's.
     // see: The universe is the S&P 1500's three indices with each member tagged by its index, and membership is fetched
     //
-    // A member whose row names no industry, which no S&P 400 or 600 member's does, is read by the GICS sector and industry
-    // its newest company fetch made before the night started files, both from that one fetch.
-    // see: A member whose membership row names no industry is named and grouped by the GICS industry and sector its company fetch files
+    // A member whose row names neither a sector nor an industry, which is every S&P 400 and 600 member, is read by the GICS
+    // sector and industry its newest company fetch made before the night started files, both from that one fetch; a row
+    // naming either keeps its own, so no S&P 500 member is read in the other scheme from its index's members.
+    // see: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
     const string MembersOnTheSession = @"
         SELECT m.ticker,
-               CASE WHEN m.industry IS NULL THEN c.sector ELSE m.sector END,
-               COALESCE(m.industry, c.industry),
+               CASE WHEN m.sector IS NULL AND m.industry IS NULL THEN c.sector ELSE m.sector END,
+               CASE WHEN m.sector IS NULL AND m.industry IS NULL THEN c.industry ELSE m.industry END,
                m.index_code
         FROM membership m
         LEFT JOIN company c ON c.rowid = (

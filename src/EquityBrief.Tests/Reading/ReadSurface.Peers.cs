@@ -101,10 +101,10 @@ public partial class ReadSurface
             WebUtility.HtmlDecode(new MarkRenderer().PeersTable("ZZDD", new PeersView("sector", "Communication Services", [new PeerCell("ZZDD", true, 5m, null, null, null)]))),
             StringComparison.Ordinal);
 
-        // From the 15.1 correction of 2026-10-21 a group whose name neither the member's row nor its company fetch names
-        // says both.
+        // From the 15.1 correction of 2026-10-21 a group the night read no name for says so, true before the night read the
+        // company fetches for the S&P 400's and 600's groups and after it where a row and a fetch name none.
         Assert.Contains(
-            "a sector neither its membership row nor its company fetch names holds no other member, so the table holds ZZDD alone.",
+            "a sector the night read no name for holds no other member, so the table holds ZZDD alone.",
             WebUtility.HtmlDecode(new MarkRenderer().PeersTable("ZZDD", new PeersView("sector", null, [new PeerCell("ZZDD", true, 5m, null, null, null)]))),
             StringComparison.Ordinal);
         Assert.Contains("No readings are stored for ZZEE", new MarkRenderer().PeersTable("ZZEE", new PeersView(null, null, [])), StringComparison.Ordinal);
@@ -135,13 +135,14 @@ public partial class ReadSurface
         CloseRow[] closes = [new("ZZAA", on.AddDays(-1), 9.5m), new("ZZAA", on, 10m), new("ZZDD", on, 40m)];
 
         // From the 15.1 correction of 2026-10-21 the group's other members are counted as the annotator stored them on the
-        // name's moves, 7 here, and not counted again over the sectors the universe's rows name, which would read 3.
+        // name's moves, 7 here, and not counted again over the sectors the universe's rows name, which would read 3; a name
+        // whose moves hold no count is counted over the rows as before, 3.
         var peers = NameScreen.Peers("ZZBB", universe, readings, null, closes, 7)!;
 
         Assert.Equal(["ZZBB", "ZZDD", "ZZAA"], peers.Rows.Select(row => row.Ticker).ToArray());
         Assert.Equal([true, false, false], peers.Rows.Select(row => row.Own).ToArray());
         Assert.Equal(7, peers.Others);
-        Assert.Equal(0, NameScreen.Peers("ZZBB", universe, readings, null, closes)!.Others);
+        Assert.Equal(3, NameScreen.Peers("ZZBB", universe, readings, null, closes)!.Others);
         Assert.True(peers.Chosen);
 
         // Each member carries the likeness, the industry mark and the company as stored, and its closes.
@@ -296,6 +297,12 @@ public partial class ReadSurface
 
         // Three rows on each Technology page and one on NFLX's.
         Assert.Equal(10, read);
+
+        // From the 15.1 correction of 2026-10-21 the table counts the group's other members as the annotator stored them on
+        // the name's moves: AAPL's moves made to hold 9, its page draws its 2 members of the 9.
+        store.Execute("UPDATE move SET group_members = 9 WHERE ticker = 'AAPL';");
+
+        Assert.Contains("AAPL and 2 of the 9 other members of the Technology sector", WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/AAPL")), StringComparison.Ordinal);
     }
 
     // A name the index does not hold on the night keeps its bars, moves and readings, stored as the
