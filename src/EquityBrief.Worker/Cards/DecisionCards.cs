@@ -444,7 +444,9 @@ public sealed class DecisionCards : IComponent
     // A rule standing at a change an approval set is not the rule its stored record replayed, so its card reads no
     // record and carries the change's words in its place. A family its night read by its live rule on the S&P 400 or 600
     // reads the stored record only where that record replayed the live rule, its words the rule's own, and none otherwise,
-    // so a record stored before the rule's replay is never drawn under it.
+    // so a record stored before the rule's replay is never drawn under it; and one read there by its provisional rule
+    // only where the record replayed the provisional rule, so a frozen rule's record is never drawn on a card its night
+    // drew by the provisional rule.
     // see: An approved change is applied by the night's own build on the index it was approved on alone
     // see: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone
     async Task<int> WriteAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, string family, string ticker, int place, Plan plan, MarketReading market, IReadOnlyDictionary<string, string> sectors, IReadOnlyList<SectorPlace> ranks, int? bookHoldings, CancellationToken cancellation, ScorePart? score = null, string? approved = null, string? live = null)
@@ -455,7 +457,8 @@ public sealed class DecisionCards : IComponent
         var quarters = await QuartersAsync(connection, transaction, ticker, night, cancellation);
         var sector = sectors.GetValueOrDefault(ticker);
         var stored = approved is null ? await RecordAsync(connection, transaction, index, family, cancellation) : null;
-        var record = live is null || string.Equals(stored?.Rule, live, StringComparison.Ordinal) ? stored : null;
+        var replays = live ?? (index == IndexFamilies.LargeIndex ? null : RuleReplay.ProvisionalWords(family));
+        var record = replays is null || string.Equals(stored?.Rule, replays, StringComparison.Ordinal) ? stored : null;
         var held = record is null ? null : RuleRecordFigures.HeldBy(record.EndedBy, settings.HeldShare);
         var report = await ReportAsync(connection, transaction, ticker, night, cancellation);
         var noStop = plan.Stop is null;

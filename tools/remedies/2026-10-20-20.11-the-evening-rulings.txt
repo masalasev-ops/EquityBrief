@@ -1,0 +1,17 @@
+# The remedy of the operator's rulings of the evening of 2026-10-20 on 20.11's items, as its PROGRESS entries print it.
+# Migration 103 adds the sweep answers' ruled setting. The S&P 400 drift's search is recorded again with the setting the
+# operator ruled in place of its strongest, read at the first pullback by its second stage, so the card the freeze draws
+# reads that setting's figures. The strongest's market variant and the strongest itself are retired; every standing rule
+# whose evaluator moved is registered again, each named as not replayed and restarting, the S&P 400's and 600's and the
+# S&P 500's sector heavyweights among them; and the S&P 400 drift is frozen again at the ruled setting with its market
+# variant, the strongest kept in the background for 63 sessions in the provisional rule's place. Last, the rule recorder
+# replays the S&P 400's frozen rules, so the drift's card draws its own record. No request to the provider and no model
+# call. Run from main after the merge, when no night, local run, drain, labeller or monthly run is writing, and read the
+# output for "remedy done".
+migrate
+sweep-answer --run 20261020T140546Z --tester 20261020T141632Z --ruled 2026-10-20 --setting "window=10|reaction=0.5|volume=1.25|target=3|market=3" --entry "the first pullback after the reaction within 10 sessions"
+register --retire "the S&P 400 drift rule within 3 sessions, up 1.5 typical moves on 2 times the volume, the target at 2 times the risk, the stop at least 1 typical move beneath, the profit gate, the market check off" --evidence "the operator's ruling of the evening of 2026-10-20: the S&P 400 drift is frozen again at the setting they ruled, with its own market variant"
+register --retire "the live S&P 400 drift rule within 3 sessions, up 1.5 typical moves on 2 times the volume, the target at 2 times the risk, the stop at least 1 typical move beneath, the profit gate, its market check on the index's own breadth at 50%" --evidence "the operator's ruling of the evening of 2026-10-20: the S&P 400 drift is frozen at the setting they ruled, the strongest it replaces kept in the background for 63 sessions"
+register --moved --evidence "the operator's rulings of the evening of 2026-10-20: every S&P 400 and 600 rule's version moves with the freeze form keeping the rule it replaces, and the S&P 500's sector heavyweights' with a retired rule's book sold; each is registered again unchanged"
+register --index-family drift --index MID --parameters "windowSessions=10,reactionMoves=0.5,volumeMultiple=1.25,targetMultiple=3,stopFloor=1,floors=1,lowestClose=5,quality=1,hold=0,industryFall=0,fundOverSpy=0,creditAverage=0,creditChange=0,largeBreadth=0,breadthFloor=0.45,wideWindow=0,peers=0,entry=1,revenueGrew=0" --variants "largeBreadth=2,breadthFloor=0" --replacing "the live S&P 400 drift rule within 3 sessions, up 1.5 typical moves on 2 times the volume, the target at 2 times the risk, the stop at least 1 typical move beneath, the profit gate, its market check on the index's own breadth at 50%"
+rule-record --index MID

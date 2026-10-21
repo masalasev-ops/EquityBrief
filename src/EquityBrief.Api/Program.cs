@@ -2163,7 +2163,7 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
         var companies = members.ToDictionary(member => member.Ticker, member => member.Company, StringComparer.Ordinal);
 
         // The families the night read by their live rules, which the page names as frozen and no other.
-        // see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, business first alone left on the pullback's base
+        // see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
         var frozenOn = night is { } frozenNight ? TonightScreen.FrozenOn(reading, await read.RegisteredCandidatesAsync(), await read.IndexNightAsync(reading.Code, frozenNight)) : [];
 
         return Results.Content(

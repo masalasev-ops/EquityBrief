@@ -105,7 +105,7 @@ public partial class ReadSurface
             $"('SML', '{IndexNight}', 'S1', 'breakout', 'listed', 1, '[]', NULL, NULL, NULL);");
         store.Execute(
             "INSERT INTO rule_record (index_code, family, rule, settings, recorded_at, first_session, last_session, membership, unit, trades, won, average, median_sessions, ended_by, worst_close) VALUES " +
-            "('MID', 'breakout', 'the breakout at high=126', 'high=126', '2026-10-02T12:00:00Z', '2019-01-02', '2026-10-01', 'as it stood', 'risks', 400, NULL, 0.21, 12, '[100,100,100,100]', -0.4);");
+            $"('MID', 'breakout', '{RuleReplay.ProvisionalWords("breakout")!.Replace("'", "''", StringComparison.Ordinal)}', 'high=126', '2026-10-02T12:00:00Z', '2019-01-02', '2026-10-01', 'as it stood', 'risks', 400, NULL, 0.21, 12, '[100,100,100,100]', -0.4);");
 
         await new DecisionCards(new WaitedClock(new DateTimeOffset(2026, 10, 2, 23, 50, 0, TimeSpan.Zero)), store.DatabaseFile).RunAsync("cards");
 

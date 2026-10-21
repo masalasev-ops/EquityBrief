@@ -40,14 +40,30 @@ public sealed class SweepAnswers(IClock clock, string databaseFile, string sweep
     static readonly string[] Families = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, HeavyweightRule.Name];
 
     const string Write = @"
-        INSERT INTO sweep_answer (run, index_code, family, design, answer, recorded_at, setting, trades, edge, year_edges, without_largest, settings_read, meeting, luck, tester_run, adjusted, tester_passed)
-        VALUES ($run, $index, $family, $design, $answer, $recorded, $setting, $trades, $edge, $year_edges, $without_largest, $settings_read, $meeting, $luck, $tester_run, $adjusted, $tester_passed)
+        INSERT INTO sweep_answer (run, index_code, family, design, answer, recorded_at, setting, trades, edge, year_edges, without_largest, settings_read, meeting, luck, tester_run, adjusted, tester_passed, ruled_on, entry_kept)
+        VALUES ($run, $index, $family, $design, $answer, $recorded, $setting, $trades, $edge, $year_edges, $without_largest, $settings_read, $meeting, $luck, $tester_run, $adjusted, $tester_passed, $ruled_on, $entry_kept)
         ON CONFLICT (run) DO UPDATE SET
             index_code = excluded.index_code, family = excluded.family, design = excluded.design,
             answer = excluded.answer, recorded_at = excluded.recorded_at, setting = excluded.setting, trades = excluded.trades,
             edge = excluded.edge, year_edges = excluded.year_edges, without_largest = excluded.without_largest,
             settings_read = excluded.settings_read, meeting = excluded.meeting, luck = excluded.luck,
-            tester_run = excluded.tester_run, adjusted = excluded.adjusted, tester_passed = excluded.tester_passed;";
+            tester_run = excluded.tester_run, adjusted = excluded.adjusted, tester_passed = excluded.tester_passed,
+            ruled_on = excluded.ruled_on, entry_kept = excluded.entry_kept;";
+
+    // A setting the operator ruled from among those a run read, in place of the one the run states: the day of the ruling,
+    // the setting by the key the run names it by, and the entry level it is bought on, as the run's second stage words it,
+    // where it names one.
+    public sealed record RuledSetting(DateOnly On, string Setting, string? Entry);
+
+    // The ruled setting the verb's options name, none where it names no ruling; a ruling with no setting or a day that
+    // cannot be read names one the command refuses.
+    public static RuledSetting? RuledOf(string? on, string? setting, string? entry) =>
+        on is null && setting is null && entry is null
+            ? null
+            : new RuledSetting(
+                DateOnly.TryParseExact(on ?? string.Empty, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day) ? day : DateOnly.MinValue,
+                setting ?? string.Empty,
+                entry);
 
     const string AppendRun = @"
         INSERT INTO run_log (
@@ -57,14 +73,14 @@ public sealed class SweepAnswers(IClock clock, string databaseFile, string sweep
             $run_id, $stage, $started_at, $ended_at, $outcome,
             $rows_written, 0, 0, '0', $detail);";
 
-    public async Task<int> RecordAsync(string run, CancellationToken cancellation = default, string? tester = null)
+    public async Task<int> RecordAsync(string run, CancellationToken cancellation = default, string? tester = null, RuledSetting? ruled = null)
     {
         var refusal = Refusal(run, out var answer);
         AnswerFigures? figures = null;
 
         if (refusal is null)
         {
-            (figures, refusal) = FiguresOf(run, answer!);
+            (figures, refusal) = ruled is null ? FiguresOf(run, answer!) : RuledFiguresOf(run, ruled);
         }
 
         if (refusal is null && tester is not null)
@@ -106,6 +122,8 @@ public sealed class SweepAnswers(IClock clock, string databaseFile, string sweep
             command.Parameters.AddWithValue("$tester_run", (object?)figures?.TesterRun ?? DBNull.Value);
             command.Parameters.AddWithValue("$adjusted", (object?)figures?.Adjusted ?? DBNull.Value);
             command.Parameters.AddWithValue("$tester_passed", figures?.TesterPassed is { } passed ? passed ? 1 : 0 : DBNull.Value);
+            command.Parameters.AddWithValue("$ruled_on", figures?.RuledOn is { } on ? on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : DBNull.Value);
+            command.Parameters.AddWithValue("$entry_kept", figures?.EntryKept is { } kept ? kept ? 1 : 0 : DBNull.Value);
             await command.ExecuteNonQueryAsync(cancellation);
         }
 
@@ -223,6 +241,88 @@ public sealed class SweepAnswers(IClock clock, string databaseFile, string sweep
             return (null, $"run {run}'s figures cannot be read whole: {unread.Message}");
         }
     }
+
+    // The figures a run's own figures file states for a setting the operator ruled from among the strongest settings its
+    // search read, in place of the one the run states: where an entry is named, that setting read at that entry by the
+    // search's second stage, its trades, its edge and its edge each year as the stage states them, with whether the stage
+    // kept the entry; otherwise the setting as the first stage read it; and beside either the run's settings read and those
+    // meeting the floors against luck. Refused where the ruling names no day or no setting, the run's figures hold no
+    // search, the setting is not among its strongest or the entry was not read on it.
+    (AnswerFigures? Figures, string? Refusal) RuledFiguresOf(string run, RuledSetting ruled)
+    {
+        if (ruled.On == DateOnly.MinValue || string.IsNullOrEmpty(ruled.Setting))
+        {
+            return (null, "a ruled setting names the day of the ruling as yyyy-MM-dd with '--ruled' and the setting by the key its run names it by with '--setting'");
+        }
+
+        var file = Path.Combine(sweepFolder, run, IndexSweepRunner.FiguresFile);
+
+        if (!File.Exists(file))
+        {
+            return (null, $"run {run} holds no figures to read a ruled setting from");
+        }
+
+        try
+        {
+            using var read = JsonDocument.Parse(File.ReadAllText(file));
+            var root = read.RootElement;
+
+            static double? Number(JsonElement element, string name) =>
+                element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number ? value.GetDouble() : null;
+
+            static double? Edge(JsonElement edge) => edge.ValueKind == JsonValueKind.Number ? edge.GetDouble() : null;
+
+            static IReadOnlyDictionary<int, double?> Years(JsonElement edges) =>
+                edges.EnumerateArray()
+                    .Select((edge, place) => (Year: SweepColumns.FirstScored.Year + place, Edge: Edge(edge)))
+                    .ToDictionary(pair => pair.Year, pair => pair.Edge);
+
+            if (!root.TryGetProperty("strongestTen", out var strongest) || !root.TryGetProperty("afterCosts", out var afterCosts))
+            {
+                return (null, $"run {run}'s figures hold no search's strongest settings to read a ruled setting from");
+            }
+
+            var ten = strongest.EnumerateArray().ToArray();
+            var place = Array.FindIndex(ten, one => one.GetProperty("setting").GetString() == ruled.Setting);
+
+            if (place < 0)
+            {
+                return (null, $"'{ruled.Setting}' is not among the strongest settings run {run}'s search read");
+            }
+
+            var settings = afterCosts.EnumerateArray().ToArray();
+            var meeting = settings.Count(setting => setting.GetProperty("MeetsFloors").GetBoolean());
+            var luck = Number(root.GetProperty("luck"), "settings");
+
+            if (ruled.Entry is null)
+            {
+                var first = ten[place].GetProperty("after");
+
+                return (new AnswerFigures(ruled.Setting, first.GetProperty("Scored").GetInt32(), Number(first, "Edge"), Years(first.GetProperty("YearEdge")), null, settings.Length, meeting, luck, null, null, null, ruled.On), null);
+            }
+
+            var tried = root.GetProperty("tries").EnumerateArray()
+                .FirstOrDefault(one => one.GetProperty("Dial").GetString() == EntryDial && one.GetProperty("Level").GetString() == ruled.Entry && one.GetProperty("Setting").GetInt32() == place);
+
+            if (tried.ValueKind != JsonValueKind.Object)
+            {
+                return (null, $"run {run}'s second stage read no entry '{ruled.Entry}' on '{ruled.Setting}'");
+            }
+
+            var with = tried.GetProperty("with");
+            var kept = root.GetProperty("crossedLevels").EnumerateArray().Any(level =>
+                level.ValueKind == JsonValueKind.String ? level.GetString() == ruled.Entry : level.TryGetProperty("Level", out var words) && words.GetString() == ruled.Entry);
+
+            return (new AnswerFigures($"{ruled.Setting} entering on {ruled.Entry}", with.GetProperty("Scored").GetInt32(), Number(with, "Edge"), Years(with.GetProperty("YearEdge")), null, settings.Length, meeting, luck, null, null, null, ruled.On, kept), null);
+        }
+        catch (Exception unread) when (unread is JsonException or KeyNotFoundException or InvalidOperationException or FormatException)
+        {
+            return (null, $"run {run}'s figures cannot be read whole: {unread.Message}");
+        }
+    }
+
+    // The second stage's dial a drift's entry is read on, as its tries name it.
+    const string EntryDial = "entry";
 
     // The tester's verdict on the family's search from a tester run's own figures: its run, its adjusted p and whether it
     // passed, the entry the run tested for the answer's family, and for the sector heavyweights for its design; refused

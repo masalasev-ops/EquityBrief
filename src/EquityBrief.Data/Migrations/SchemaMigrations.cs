@@ -723,7 +723,18 @@ public static class SchemaMigrations
         new Migration(100, "create release_filer, release_reading and release_probe", CreateReleaseReadings),
         new Migration(101, "create loop_idea", CreateLoopIdeas),
         new Migration(102, "add index_family_result.gates and the sweep answers' figures", AddIndexResultGates),
+        new Migration(103, "add the sweep answers' ruled setting", AddSweepAnswerRuled),
     ];
+
+    // From the operator's ruling of the evening of 2026-10-20: a recorded answer whose setting is one the operator ruled
+    // from among those the run read, in place of the one the run states, carries the day of that ruling, and whether the
+    // run's second stage kept the entry the setting is bought on. An answer recorded before the change, or of the setting
+    // the run states, holds none.
+    // see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
+    const string AddSweepAnswerRuled = @"
+        ALTER TABLE sweep_answer ADD COLUMN ruled_on TEXT;
+        ALTER TABLE sweep_answer ADD COLUMN entry_kept INTEGER;
+    ";
 
     // From 20.11: every part of an S&P 400 or 600 rule a member is answered on, the market check its own, each with its
     // answer, in the form the S&P 500's family rows keep their gates. A row stored before the change holds none. And each

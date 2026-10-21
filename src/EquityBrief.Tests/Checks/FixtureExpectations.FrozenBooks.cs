@@ -103,4 +103,51 @@ public partial class FixtureExpectations
             "2026-10-06 22.00 sold 10.0000",
             Text(store, "SELECT ended_on || ' ' || printf('%.2f', end_price) || ' ' || end_reason || ' ' || printf('%.4f', result) FROM taken_trade;"));
     }
+
+    // The live alarm, on the operator's ruling of the evening of 2026-10-20 (the 17.9 correction): the S&P 600's sector
+    // heavyweights read by a frozen live rule have their quarter read off that rule's own book, as the page draws it.
+    // Against the newest run's reference of thirty units each a half, so a low of a half, the live rule's book sold five
+    // holdings bought at the rebalance of 2026-10-01 in the fourth quarter, each filled at 0.10 against its size cut's
+    // 0.10, an edge of nothing a holding, so the quarter counts under the low and starts a run of one; the index's own book
+    // sold five over the same sessions at 0.90 against 0.10, an edge of 0.80 a holding, which the alarm reads none of. The
+    // live rule's sale of S2 on 2026-10-06 holds no fill, settled with no edge, and counts in neither.
+    [Fact]
+    public async Task TheLiveAlarmReadsAFrozenHeavyweightsRulesOwnBookOnItsIndex()
+    {
+        using var store = FrozenBookStore();
+
+        store.Execute("INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES ('S1', '2027-01-04', '10', '10', '10', '10', 1000, 'test', '2027-01-04T21:00:00Z', '10');");
+        store.Execute(
+            "INSERT INTO trade_fill (source, index_code, owner, ticker, session_date, filled_on, fill, past, result, benchmark, members, edge, reason, filled_at) " +
+            $"VALUES ('index_heavyweight_rule_holding', 'SML', '{FrozenBook}', 'S2', '{FrozenBookNight}', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'no open', '2026-10-02T21:00:00Z');");
+        LoopRun(store, "loop-test-SML-20261009T120000Z", "SML", "2026-10");
+        store.Execute(
+            "INSERT INTO loop_reference (run_id, index_code, family, place, entered, edge) VALUES "
+            + string.Join(", ", Enumerable.Range(1, 30).Select(at => FormattableString.Invariant($"('loop-test-SML-20261009T120000Z', 'SML', 'heavyweight', {at}, '{new DateOnly(2023, 1, 2).AddDays(at * 7):yyyy-MM-dd}', 0.5)"))) + ";");
+
+        for (var at = 0; at < 5; at++)
+        {
+            var ended = FormattableString.Invariant($"2026-11-1{at}");
+
+            store.Execute(
+                "INSERT INTO index_heavyweight_rule_holding (candidate, index_code, ticker, entered_on, sector, entry_close, growth, cut, through, ended_on, exit_close, reason, result, cut_return, cost) VALUES " +
+                $"('{FrozenBook}', 'SML', 'R{at}', '{FrozenBookNight}', 'Energy', '10', 1.1, '[]', '{ended}', '{ended}', '11', 'no longer the leader', 0.1, 0.1, 0);");
+            store.Execute(
+                "INSERT INTO index_heavyweight_holding (index_code, ticker, entered_on, sector, entry_close, growth, cut, through, ended_on, exit_close, reason, result, cut_return, cost) VALUES " +
+                $"('SML', 'O{at}', '{FrozenBookNight}', 'Energy', '10', 1.9, '[]', '{ended}', '{ended}', '19', 'no longer the leader', 0.9, 0.1, 0);");
+
+            foreach (var (source, owner, ticker, result) in new[] { ("index_heavyweight_rule_holding", FrozenBook, $"R{at}", "0.1"), ("index_heavyweight_holding", "", $"O{at}", "0.9") })
+            {
+                store.Execute(
+                    "INSERT INTO trade_fill (source, index_code, owner, ticker, session_date, filled_on, fill, past, result, benchmark, members, edge, reason, filled_at) " +
+                    $"VALUES ('{source}', 'SML', '{owner}', '{ticker}', '{FrozenBookNight}', '2026-10-02', '10', NULL, {result}, 0.1, NULL, NULL, NULL, '2026-10-02T21:00:00Z');");
+            }
+        }
+
+        await new EquityBrief.Worker.Loop.LiveAlarmReader(new SweepClock(new DateTimeOffset(2027, 1, 4, 23, 50, 0, TimeSpan.Zero)), store.DatabaseFile).RunAsync("night-alarm");
+
+        Assert.Equal(
+            ["2026-10-01|5|0|0.5|1|1|1|0"],
+            FamilyRows(store, "SELECT period, trades, round(edge, 9), edge_floor, counted, under, streak, flagged FROM loop_alarm WHERE index_code = 'SML' AND family = 'heavyweight' ORDER BY period;"));
+    }
 }

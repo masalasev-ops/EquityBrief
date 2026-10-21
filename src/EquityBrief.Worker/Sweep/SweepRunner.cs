@@ -742,14 +742,32 @@ public sealed class SweepRunner
         }
     }
 
-    // A weekday's night window: from 23:00 UTC less the chunk about to start, so the chunk ends by 23:00.
+    // A weekday's night window: from 23:00 UTC less the chunk about to start, so the chunk ends by 23:00. Every weekday's
+    // 23:00 from the chunk's start to its end is read, so a chunk ending past midnight UTC is held as one ending before it.
     public static bool InTheNightsWindow(DateTimeOffset now, TimeSpan chunk)
     {
-        var ends = now + chunk;
+        var starts = now.ToUniversalTime();
+        var ends = starts + chunk;
 
-        return ends.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday) && ends.TimeOfDay >= PauseFrom
-            || (now.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday) && now.TimeOfDay >= PauseFrom);
+        if (Weekday(starts.DayOfWeek) && starts.TimeOfDay >= PauseFrom)
+        {
+            return true;
+        }
+
+        for (var day = starts.Date; day <= ends.Date; day = day.AddDays(1))
+        {
+            var opens = new DateTimeOffset(day, TimeSpan.Zero) + PauseFrom;
+
+            if (Weekday(day.DayOfWeek) && opens > starts && opens <= ends)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
+
+    static bool Weekday(DayOfWeek day) => day is not (DayOfWeek.Saturday or DayOfWeek.Sunday);
 
     bool DrainHeld()
     {

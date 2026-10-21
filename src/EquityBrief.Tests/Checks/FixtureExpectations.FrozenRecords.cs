@@ -320,6 +320,34 @@ public partial class FixtureExpectations
         Assert.Equal(0, AfterCosts("high=126|volume=1.5|ceiling=0.85|stop=1.5|market=1").GetProperty("Trades").GetInt32());
     }
 
+    // The record command's start guard, on the operator's ruling of the evening of 2026-10-20: a run is refused where it
+    // would still be running at a weekday's 23:00 UTC, one whose end falls past midnight among them. The window read by
+    // hand at its edges, a Sunday's evening holding no night and a Saturday's run reaching Monday's 23:00 refused; then the
+    // nights' form, given two hours, started at 22:00 on Monday 2026-10-19 would end at midnight and is refused before it
+    // reads anything.
+    [Fact]
+    public async Task TheRecordCommandRefusesARunWhoseEndCrossesMidnightIntoTheNightsWindow()
+    {
+        var twoHours = RuleRecorder.Expected + RuleRecorder.Expected;
+
+        Assert.True(SweepRunner.InTheNightsWindow(SweepUtc(10, 19, 22, 0), twoHours));
+        Assert.True(SweepRunner.InTheNightsWindow(SweepUtc(10, 19, 22, 59), twoHours));
+        Assert.True(SweepRunner.InTheNightsWindow(SweepUtc(10, 23, 22, 30), twoHours));
+        Assert.False(SweepRunner.InTheNightsWindow(SweepUtc(10, 19, 20, 59), twoHours));
+        Assert.False(SweepRunner.InTheNightsWindow(SweepUtc(10, 18, 22, 0), twoHours));
+        Assert.False(SweepRunner.InTheNightsWindow(SweepUtc(10, 20, 0, 30), twoHours));
+        Assert.False(SweepRunner.InTheNightsWindow(SweepUtc(10, 24, 22, 0), TimeSpan.FromHours(26)));
+        Assert.True(SweepRunner.InTheNightsWindow(SweepUtc(10, 24, 22, 0), TimeSpan.FromHours(49)));
+
+        var root = Path.Combine(Path.GetTempPath(), "equitybrief-tests", Guid.NewGuid().ToString("n"));
+        var clock = new SweepClock(SweepUtc(10, 19, 22, 0));
+
+        using var said = new StringWriter();
+
+        Assert.Equal(2, await new RuleRecorder(clock, Path.Combine(root, "store.db"), root, said).NightsAsync([]));
+        Assert.Contains("a run started now would reach the night's window", said.ToString(), StringComparison.Ordinal);
+    }
+
     static (int Trades, double? Average, int? Median, double? Won, string EndedBy) FrozenBreakoutRecord(TemporaryStore store)
     {
         using var connection = store.Open();
@@ -452,7 +480,7 @@ public partial class FixtureExpectations
         Assert.Equal(15, pullback.Record!.Value.GetProperty("heldSessions").GetInt32());
 
         // ID's drift, read by its provisional rule: its card as before, its provisional setting and check named and the
-        // record stored drawn whatever rule it replays.
+        // record stored drawn, since it replays the provisional rule.
         var drift = cards["MID drift ID"];
 
         Assert.Contains("its setting, window 3, reaction 0.5, volume 2, target 2.5", drift.Lines[0].Words, StringComparison.Ordinal);
@@ -475,6 +503,32 @@ public partial class FixtureExpectations
         Assert.Equal(15, Cards(store)["MID breakout IA"].Record!.Value.GetProperty("heldSessions").GetInt32());
         Assert.Null(matched.Unmatched);
         Assert.Equal((39, 39), (matched.Count!.Value, matched.RuleSetups!.Value));
+    }
+
+    // A card a night drew by its family's provisional rule, on the operator's ruling of the evening of 2026-10-20: ID's
+    // drift, read by its provisional rule, draws the record stored while it replays that rule; replayed again under the
+    // S&P 400 drift's frozen rule, as a freeze's remedy writes it, the night run again, still reading the drift by its
+    // provisional rule, draws none, the record being the frozen rule's.
+    [Fact]
+    public async Task AProvisionalCardDrawsNoRecordWhereTheStoredRecordReplaysAFrozenRule()
+    {
+        var (store, _, _) = FrozenCardsStore();
+
+        using var held = store;
+        var clock = new SweepClock(new DateTimeOffset(2026, 10, 2, 23, 50, 0, TimeSpan.Zero));
+
+        await new DecisionCards(clock, store.DatabaseFile).RunAsync("cards-1");
+
+        Assert.Equal(20, Cards(store)["MID drift ID"].Record!.Value.GetProperty("trades").GetInt32());
+
+        var frozen = IndexRules.Words(IndexEvaluator("drift-400"), FrozenParameters(RemedyFreezes[2].Parameters));
+
+        store.Execute($"UPDATE rule_record SET rule = '{frozen.Replace("'", "''", StringComparison.Ordinal)}' WHERE index_code = 'MID' AND family = 'drift';");
+
+        await new DecisionCards(clock, store.DatabaseFile).RunAsync("cards-2");
+
+        Assert.Null(Cards(store)["MID drift ID"].Record);
+        Assert.Equal(15, Cards(store)["MID pullback IB"].Record!.Value.GetProperty("heldSessions").GetInt32());
     }
 
     [Fact]

@@ -26,6 +26,156 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-20 - ARCHITECTURE.html - the S&P 400 drift frozen at the setting the operator ruled
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
+Was:
+> 11.4 The setup families: ... (see: The S&amp;P 400's and 600's families freeze at the settings their own sweeps would run, business first alone left on the pullback's base). ... the drift within 3 sessions of a reaction of 1.5 typical moves on twice the volume, its target at twice the risk and its stop at least a typical move under the close it was listed at, with the profit gate and its own breadth at 50 per cent, the strongest its search read once corrected; ...
+Now:
+> 11.4 The setup families: ... (see: The S&amp;P 400's and 600's families freeze at the settings their own sweeps would run, the S&amp;P 400 drift at the setting the operator ruled and business first on the pullback's base). ... the drift within 10 sessions of a reaction of half a typical move on 1.25 times the volume, bought on its first pullback, its target at 3 times the risk and its stop at least a typical move under the close it was listed at, with the profit gate and its own breadth at 45 per cent, from the operator's ruling of the evening of 2026-10-20 the setting they ruled from among the strongest its search read, its entry one the search's second stage did not keep, and the strongest it replaced kept in the background for 63 sessions; ...
+Why: on the operator's ruling of the evening of 2026-10-20 the S&P 400 drift is frozen at the setting they ruled.
+
+### 2026-10-20 - RUNBOOK.md - the sweep answers command's ruled setting, a family frozen again, and the freeze decision's new name
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
+Was:
+> ... and a tester named beside a run stating no setting it would run are each refused with nothing written. A frozen family's card ... so a freeze's remedy records the answers before it freezes.
+> ... and the index's heavyweights' card draws the live rule's book.
+> **The S&P 400's and 600's freezes of 20.11** ... (see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, business first alone left on the pullback's base):
+Now:
+> ... so a freeze's remedy records the answers before it freezes. Where the operator rules a setting the run read in place of the one it states, from migration 103, `--ruled` names the day of the ruling, `--setting` the setting ... and `--entry` the entry its second stage read it at ...; a setting not among the strongest the search read and an entry the stage did not read on it are each refused with nothing written.
+> ... and the index's heavyweights' card draws the live rule's book. **A family frozen again on the S&P 400 or 600** follows its live rule's retirement: ... then freeze the family again with `--replacing` naming the retired live rule, which the form keeps in the background for 63 sessions in the provisional rule's place ...
+> **The S&P 400's and 600's freezes of 20.11** ... (see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base):
+Why: as the ARCHITECTURE.html entry above.
+
+### 2026-10-20 - BUILD_PLAN.md - 20.11's text cites the freeze decision that supersedes its first
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
+Was:
+> ... (see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, business first alone left on the pullback's base). ...
+Now:
+> ... (see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base). ...
+Why: a spec cites no decision under Previously decided.
+
+### 2026-10-20 - SCHEMA.md - the sweep answers' ruled setting from migration 103
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
+Was:
+> sweep_answer: ... | `tester_passed` | INTEGER | from migration 102, ... |
+> ... and a tester named beside a run stating no setting (see: ...). Recording a run again writes its row again, which is the update.
+Now:
+> sweep_answer: ... | `tester_passed` | ... | then `ruled_on`, from migration 103, the day the operator ruled the row's setting ..., and `entry_kept`, ... 1 where the run's second stage kept that level and 0 where it did not ...
+> ... and a tester named beside a run stating no setting (see: ...). From migration 103, on the operator's ruling of the evening of 2026-10-20, given the day of a ruling, a setting among the strongest the run's search read and the entry its second stage read it at, it records that setting's figures ... (see: ...). Recording a run again writes its row again, which is the update.
+Why: as the ARCHITECTURE.html entry above.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations and read-surface state the S&P 400 drift's ruled freeze
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
+Was:
+> fixture-expectations: ... and a rule retired and registered again in one second standing |
+> read-surface: ... and Past picks calling provisional only the families no freeze was read by |
+Now:
+> fixture-expectations: ... and a rule retired and registered again in one second standing; and from 20.11's ruling of the evening of 2026-10-20 the sweep answers command recording in a drift run's place the setting the operator ruled ..., and the freeze form keeping the retired live rule it replaces in the background, refusing a rule named that is no live rule of the family |
+> read-surface: ... and Past picks calling provisional only the families no freeze was read by; and from 20.11's ruling of the evening of 2026-10-20 a frozen card whose answer the operator ruled naming the setting as theirs with the day of the ruling, its own figures, 1,807 trades at +0.098, and the sentence that its entry did not survive the second stage before the one on luck and the tester, an entry kept drawing no such sentence |
+Why: the roster's rows say what their checks assert.
+
+### 2026-10-20 - ARCHITECTURE.html - the S&P 500's registered heavyweights books sell a retired rule's holdings
+Authorised by: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
+Was:
+> Heavyweight book: ... and reads nothing for a session earlier than one it has read, runs after the family recorder, makes no request and calls no model (see: The sector heavyweights hold ...) ...
+> 14, the swing filter's step: ... reading no market check and waiting for a night the store holds the closes a rebalance reads (see: The sector heavyweights hold ...) ... (see: A retired rule's open positions are ended, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits) ...
+> 11.4 The setup families: ... (see: A retired rule's open positions are ended, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits). ...
+Now:
+> Heavyweight book: ... and reads nothing for a session earlier than one it has read, and from the 20.11 correction of 2026-10-20 sells every holding of a retired rule's own book at the close of the session it was retired on, a rule retired and registered again in one second standing, runs after the family recorder, makes no request and calls no model (see: A retired rule's open positions are ended on every index, ...) (see: The sector heavyweights hold ...) ...
+> 14, the swing filter's step: ... reading no market check and waiting for a night the store holds the closes a rebalance reads, and sell each holding of a retired rule's own book at the close of the session it was retired on (see: The sector heavyweights hold ...) ... (see: A retired rule's open positions are ended on every index, ...) ...
+> 11.4 The setup families: ... (see: A retired rule's open positions are ended on every index, ...). ...
+Why: on the operator's ruling of the evening of 2026-10-20 the S&P 500's books end a retired rule's holdings as the S&P 400's and 600's do, and the decision citing the S&P 400 and 600 alone is superseded.
+
+### 2026-10-20 - SCHEMA.md - a registered S&P 500 heavyweights rule's holding sold for its rule retired
+Authorised by: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
+Was:
+> heavyweight_rule_holding.reason: `no longer the leader`, `a close under its 200-day average` or `left the index`, null while held
+> heavyweight_rule_holding: ... keeps its buys of the night and its sales unopened as a run of the night stored them. The rows are never deleted otherwise: ...
+Now:
+> heavyweight_rule_holding.reason: `no longer the leader`, `a close under its 200-day average` or `left the index`, and from the 20.11 correction of 2026-10-20 `its rule retired`, null while held
+> heavyweight_rule_holding: ... keeps its buys of the night and its sales unopened as a run of the night stored them. From the 20.11 correction of 2026-10-20 a retired rule's book sells every holding at its stock's close on the session it was retired on, its reason `its rule retired`, one whose stock holds no close that session at the close it was last carried to, and a night run again writes the sale again (see: ...). The rows are never deleted otherwise: ...
+Why: as the ARCHITECTURE.html entry above.
+
+### 2026-10-20 - BUILD_PLAN.md - 20.11's text cites the decision that supersedes the retired positions' first
+Authorised by: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
+Was:
+> A retired rule's open positions are ended (see: A retired rule's open positions are ended, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits).
+Now:
+> A retired rule's open positions are ended (see: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits).
+Why: a spec cites no decision under Previously decided.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states a retired S&P 500 heavyweights rule's book sold
+Authorised by: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
+Was:
+> fixture-expectations: ... and none of the index's own book's five at 0.80, worked by hand over a constructed store |
+Now:
+> fixture-expectations: ... and none of the index's own book's five at 0.80, worked by hand over a constructed store; and from the second 20.11 correction of 2026-10-20 an S&P 500 registered heavyweights rule retired before a session's open having its book's C01 sold at that session's close of 143 for a result of a tenth and its C11 at 150 for nothing, the live rule's book carrying C01 on, a night run again selling nothing twice, and a rule retired and registered again in one second standing |
+Why: the roster's row says what its check asserts.
+
+### 2026-10-20 - ARCHITECTURE.html - the live alarm reads a frozen heavyweights rule's own book on the S&P 400 and 600
+Corrects: the live alarm read the S&P 400's and 600's sector heavyweights' units off the index's own book whatever rule the page drew, so once a frozen live rule's own book drew the page its quarters were read off holdings the page no longer drew; found by 20.11's replay and put to the operator, who ruled it fixed on 2026-10-20.
+Was:
+> Live alarm reader: ... index family trades, index heavyweight holdings, trade fills | ... and on the S&amp;P 400 and 600 the page's trades since the setting the family stands at, each trade's edge ...
+Now:
+> Live alarm reader: ... index family trades, index heavyweight holdings, index heavyweight rule holdings, trade fills | ... and on the S&amp;P 400 and 600 the page's trades since the setting the family stands at and the sector heavyweights' holdings of the index's own book, from the 17.9 correction of 2026-10-20 those of the frozen live rule's own book where one stands, as the page draws them, each trade's edge ...
+Why: the alarm reads the units of the rule the page draws.
+
+### 2026-10-20 - SCHEMA.md - the live alarm reads a frozen heavyweights rule's sales off its own book
+Corrects: as the ARCHITECTURE.html entry above.
+Was:
+> index_heavyweight_rule_holding: ... read that rule's buys and sales here, as its page draws them, in the index's own book's place.
+Now:
+> index_heavyweight_rule_holding: ... read that rule's buys and sales here, as its page draws them, in the index's own book's place, and from the 17.9 correction of 2026-10-20 the live alarm reads the sales of the family's frozen live rule here in the index's own book's place.
+Why: as the ARCHITECTURE.html entry above.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states the live alarm on a frozen heavyweights rule's own book
+Corrects: as the ARCHITECTURE.html entry above.
+Was:
+> fixture-expectations: ... the frozen pullback's card drawing its own |
+Now:
+> fixture-expectations: ... the frozen pullback's card drawing its own; and from the 17.9 correction of 2026-10-20 the live alarm reading an S&P 600 quarter off its frozen heavyweights rule's own book, five holdings each an edge of nothing under a low of a half, and none of the index's own book's five at 0.80, worked by hand over a constructed store |
+Why: the roster's row says what its check asserts.
+
+### 2026-10-20 - ARCHITECTURE.html - a card drawn by a family's provisional rule draws only the provisional rule's record
+Corrects: a card an S&P 400 or 600 night drew by a family's provisional rule drew whatever record was stored, so after the family's freeze, whose remedy replays the frozen rule into the family's one row, a night reading the family by its provisional rule, one run again for a session before the freeze or one reading its frozen rule by none, drew the frozen rule's record under the provisional rule's heading; found by 20.11's replay and put to the operator, who ruled it fixed on 2026-10-20.
+Was:
+> ... From 20.11 a card of a family its S&amp;P 400 or 600 night read by its frozen live rule draws a record only where the stored record replayed that rule, named in the rule's own words, and the outline otherwise, never the provisional rule's record under its heading (see: ...).
+Now:
+> ... never the provisional rule's record under its heading, and from the 20.11 correction of 2026-10-20 a card its night drew by the family's provisional rule draws a record only where the stored record replayed the provisional rule, never a frozen rule's (see: ...).
+Why: a record is drawn only under the rule it replays.
+
+### 2026-10-20 - SCHEMA.md - a decision card's record is null where its night read the family by its provisional rule and the stored record replays another rule
+Corrects: as the ARCHITECTURE.html entry above.
+Was:
+> decision_card.record: ... null where the rule has not been replayed, and on an S&P 400 or 600 card whose family the night read by its frozen live rule where the stored record replays another rule |
+Now:
+> decision_card.record: ... null where the rule has not been replayed, and on an S&P 400 or 600 card whose family the night read by its frozen live rule where the stored record replays another rule, and from the 20.11 correction of 2026-10-20 on one whose family the night read by its provisional rule where the stored record replays another rule, a frozen rule's among them |
+Why: as the ARCHITECTURE.html entry above.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states a provisional card's record after a freeze
+Corrects: as the ARCHITECTURE.html entry above.
+Was:
+> fixture-expectations: ... and the record command's nights form refused at that Monday's 22:00 before it reads anything |
+Now:
+> fixture-expectations: ... and the record command's nights form refused at that Monday's 22:00 before it reads anything; and from the 20.11 correction of 2026-10-20 a card an S&P 400 night drew by the drift's provisional rule drawing the record stored while it replays that rule and none once it is replayed under the drift's frozen rule, the frozen pullback's card drawing its own |
+Why: the roster's row says what its check asserts.
+
+### 2026-10-20 - RUNBOOK.md - the record command's `--nights` form refuses a run ending past midnight UTC into a weekday's night window
+Corrects: the window the record command's start guard reads looked at a run's end by its time of day alone, so the `--nights` form, given two hours, was admitted from 21:01 to 22:59 UTC on a weekday with its end past midnight, though it would still be running at 23:00; found by 20.11's replay and put to the operator, who ruled it fixed on 2026-10-20.
+Was:
+> ... and refuses while the night holds the store or where a run started now would reach the night's window. 17.2's remedy ...
+Now:
+> ... and refuses while the night holds the store or where a run started now would reach the night's window, which opens at 23:00 UTC on a weekday, a run of its two hours ending past midnight UTC among them. 17.2's remedy ...
+Why: the window is read over every weekday's 23:00 inside the run, whatever day the run ends on.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states the record command's start guard across midnight UTC
+Corrects: as the RUNBOOK.md entry above.
+Was:
+> fixture-expectations: ... and the replay written again leaving that row standing and writing the 600 sessions before it |
+Now:
+> fixture-expectations: ... and the replay written again leaving that row standing and writing the 600 sessions before it; and from the second 17.2 correction of 2026-10-20 every weekday's 23:00 UTC inside a run read whatever day the run ends on, a run of two hours from 22:00 on a Monday refused with its end at midnight, one from a Sunday's 22:00 and one starting after a weekday's midnight admitted, a Saturday's run reaching Monday's 23:00 refused, and the record command's nights form refused at that Monday's 22:00 before it reads anything |
+Why: the roster's row says what its check asserts.
+
 ### 2026-10-20 - SCHEMA.md - a night's own rule row stands in place of a replay's on its session, and a replay leaves a night's rows standing
 Corrects: from 17.2 a night run again cleared its own rule rows alone, so on a session the record command's `--nights` form had replayed it could not write its own row beside the replay's and its rule rows on the S&P 400 and 600 were not computed, as the night of 2026-10-19 run again found on 2026-10-20; and a replay writing over a session a night had written stopped the same way.
 Was:

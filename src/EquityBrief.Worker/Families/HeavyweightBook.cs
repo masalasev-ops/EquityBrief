@@ -87,6 +87,7 @@ public sealed class HeavyweightBook : IComponent
     public const string NoLongerTheLeader = "no longer the leader";
     public const string UnderTheAverage = "a close under its 200-day average";
     public const string LeftTheIndex = "left the index";
+    public const string RuleRetired = Indices.IndexHeavyweights.RuleRetired;
 
     const string Sessions = "SELECT DISTINCT session_date FROM bar ORDER BY session_date;";
 
@@ -234,7 +235,20 @@ public sealed class HeavyweightBook : IComponent
     public static IReadOnlyList<RegisterRow> Standing(IReadOnlyList<RegisterRow> register, DateTimeOffset nightStartedAt) =>
         [.. ShadowColumn.StandingAt(register, nightStartedAt).Where(row => CandidateEvaluators.Find(row.Evaluator) is BookEvaluator)];
 
-    public async Task<HeavyweightBookOutcome> RunAsync(string indexCode, string runId, CancellationToken cancellation = default, IReadOnlyList<RegisterRow>? rules = null)
+    // The registered heavyweights rules retired as of an instant, each with the instant its retirement was written, read
+    // off the register by the last row naming each, so a rule registered again in the same second stands.
+    // see: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
+    public static IReadOnlyDictionary<string, DateTimeOffset> RetiredBooks(IReadOnlyList<RegisterRow> register, DateTimeOffset at) =>
+        register
+            .Where(row => row.RegisteredAt <= at && CandidateEvaluators.Find(row.Evaluator) is BookEvaluator)
+            .Select(row => (Row: row, Name: row.Event == CandidateFamily.Registered ? row.Candidate : row.Retires))
+            .Where(named => named.Name is not null)
+            .GroupBy(named => named.Name!, StringComparer.Ordinal)
+            .Select(group => group.OrderBy(named => named.Row.RegisteredAt).ThenBy(named => named.Row.Id).Last().Row)
+            .Where(row => row.Event == CandidateFamily.Retired)
+            .ToDictionary(row => row.Retires!, row => row.RegisteredAt, StringComparer.Ordinal);
+
+    public async Task<HeavyweightBookOutcome> RunAsync(string indexCode, string runId, CancellationToken cancellation = default, IReadOnlyList<RegisterRow>? rules = null, IReadOnlyDictionary<string, DateTimeOffset>? retired = null)
     {
         var startedAt = clock.UtcNow;
 
@@ -442,6 +456,33 @@ public sealed class HeavyweightBook : IComponent
 
             outcomes.Add(kept);
             written += ruleRows;
+        }
+
+        // Each retired rule's book sells what it still holds at the close of the session it was retired on, every holding
+        // carried to that close first, so no holding of a book no night keeps any more stays open; one whose stock holds no
+        // close that session is sold at the close it was last carried to. A rule retired since the newest session waits
+        // for its session's night.
+        // see: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
+        foreach (var (candidate, retiredAt) in retired ?? new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal))
+        {
+            var on = FamilyRecords.FirstSession(retiredAt);
+
+            if (on > night)
+            {
+                continue;
+            }
+
+            var ledger = new Ledger(candidate, page);
+
+            await ExecuteAsync(connection, transaction, ClearTheRulesNight, [("$candidate", candidate), ("$night", Stamp(night))], cancellation);
+
+            foreach (var holding in await OpenAsync(connection, transaction, ledger, cancellation))
+            {
+                var carried = holding.Through < on ? Carried(holding, on, CloseOn) : holding;
+
+                await EndAsync(connection, transaction, ledger, carried, carried.Through, CloseOn(carried.Ticker, carried.Through) ?? carried.EntryClose, RuleRetired, cancellation);
+                written++;
+            }
         }
 
         var outcome = new HeavyweightBookOutcome(night, book.Rebalanced, valuedOnPage, book.Entered, book.Ended, book.Held, Waits: book.Waits, Rules: outcomes);
