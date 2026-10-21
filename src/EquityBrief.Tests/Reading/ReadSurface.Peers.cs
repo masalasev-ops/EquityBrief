@@ -100,6 +100,13 @@ public partial class ReadSurface
             "the Communication Services sector holds no other member, so the table holds ZZDD alone.",
             WebUtility.HtmlDecode(new MarkRenderer().PeersTable("ZZDD", new PeersView("sector", "Communication Services", [new PeerCell("ZZDD", true, 5m, null, null, null)]))),
             StringComparison.Ordinal);
+
+        // From the 15.1 correction of 2026-10-21 a group whose name neither the member's row nor its company fetch names
+        // says both.
+        Assert.Contains(
+            "a sector neither its membership row nor its company fetch names holds no other member, so the table holds ZZDD alone.",
+            WebUtility.HtmlDecode(new MarkRenderer().PeersTable("ZZDD", new PeersView("sector", null, [new PeerCell("ZZDD", true, 5m, null, null, null)]))),
+            StringComparison.Ordinal);
         Assert.Contains("No readings are stored for ZZEE", new MarkRenderer().PeersTable("ZZEE", new PeersView(null, null, [])), StringComparison.Ordinal);
         Assert.Contains("kept for the newest night alone", new MarkRenderer().PeersTable("ZZFF", new PeersView(null, null, [], Kept: false)), StringComparison.Ordinal);
     }
@@ -127,11 +134,14 @@ public partial class ReadSurface
         ];
         CloseRow[] closes = [new("ZZAA", on.AddDays(-1), 9.5m), new("ZZAA", on, 10m), new("ZZDD", on, 40m)];
 
-        var peers = NameScreen.Peers("ZZBB", universe, readings, null, closes)!;
+        // From the 15.1 correction of 2026-10-21 the group's other members are counted as the annotator stored them on the
+        // name's moves, 7 here, and not counted again over the sectors the universe's rows name, which would read 3.
+        var peers = NameScreen.Peers("ZZBB", universe, readings, null, closes, 7)!;
 
         Assert.Equal(["ZZBB", "ZZDD", "ZZAA"], peers.Rows.Select(row => row.Ticker).ToArray());
         Assert.Equal([true, false, false], peers.Rows.Select(row => row.Own).ToArray());
-        Assert.Equal(3, peers.Others);
+        Assert.Equal(7, peers.Others);
+        Assert.Equal(0, NameScreen.Peers("ZZBB", universe, readings, null, closes)!.Others);
         Assert.True(peers.Chosen);
 
         // Each member carries the likeness, the industry mark and the company as stored, and its closes.
@@ -313,7 +323,7 @@ public partial class ReadSurface
         Assert.Contains("MSFT is not a member of the index on the night, so it has no group and no peers are drawn.", left, StringComparison.Ordinal);
         Assert.NotEmpty(cells);
         Assert.All(cells, cell => Assert.Equal($"not a member of the index on {night}, the night its moves' groups were read, so no group is read for this move", cell));
-        Assert.DoesNotContain("its membership row does not name", left, StringComparison.Ordinal);
+        Assert.DoesNotContain(MarkRenderer.UnnamedGroup, left, StringComparison.Ordinal);
         Assert.DoesNotContain("holds MSFT alone", left, StringComparison.Ordinal);
 
         // A member's page draws its group as before.
@@ -365,7 +375,7 @@ public partial class ReadSurface
         Assert.NotEmpty(cells);
         Assert.All(cells, cell => Assert.Equal($"not a member of the index on {night}, the night its moves' groups were read, so no group is read for this move", cell));
         Assert.Equal(cells.Length, Regex.Matches(page, $"data-read-on=\"{night}\"").Count);
-        Assert.DoesNotContain("its membership row does not name", page, StringComparison.Ordinal);
+        Assert.DoesNotContain(MarkRenderer.UnnamedGroup, page, StringComparison.Ordinal);
 
         // KEYS was not a member on the earlier evening and was on the newest night, and its moves
         // draw the group the newest night read; AAPL, a member on both, draws its group as before.

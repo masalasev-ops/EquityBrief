@@ -1405,7 +1405,7 @@ public static partial class NameScreen
             new NameMast(member?.Name, member?.Sector, member?.Industry, DayChange(ticker, bars), Universes.ByCode(indexCode)?.Name),
             filings.Count > 0 ? filings.Max(filing => filing.FilingDate) : null,
             night,
-            Peers(ticker, universe, peerReadings, night, peerCloses),
+            Peers(ticker, universe, peerReadings, night, peerCloses, moves.Select(move => move.GroupMembers).FirstOrDefault(count => count is not null)),
             reactions is null ? null : Reactions(reactions),
             swing is null ? null : Swing(swing),
             gates is null ? null : Gates(gates, versionPlan) with { Rule = listing is { } held && held.SessionDate == gates.SessionDate ? held.ListedBy : ListRules.Reasons },
@@ -1673,7 +1673,7 @@ public static partial class NameScreen
     // and the newest night's alone, so a page for an earlier night says so rather than drawing
     // tonight's beside that night's figures.
     // see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
-    public static PeersView? Peers(string ticker, IReadOnlyList<UniverseRow>? universe, IReadOnlyList<PeerReadingRow>? readings, DateOnly? night, IReadOnlyList<CloseRow>? closes = null)
+    public static PeersView? Peers(string ticker, IReadOnlyList<UniverseRow>? universe, IReadOnlyList<PeerReadingRow>? readings, DateOnly? night, IReadOnlyList<CloseRow>? closes = null, int? groupMembers = null)
     {
         if (universe is null || readings is null)
         {
@@ -1700,18 +1700,15 @@ public static partial class NameScreen
             return new PeersView(null, null, []);
         }
 
-        string? GroupOf(UniverseRow row) =>
-            string.Equals(own.GroupKind, EquityBrief.Core.Moves.Group.Industry, StringComparison.Ordinal) ? row.Industry : row.Sector;
-
         var cells = UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal);
         var members = universe.GroupBy(row => row.Ticker, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
         var years = UniverseScreen.Years(closes ?? []);
 
-        // How many other members the group holds on the page's night, of which the table draws the ones
-        // the annotator chose.
-        var others = own.GroupName is null
-            ? 0
-            : members.Values.Count(row => !string.Equals(row.Ticker, ticker, StringComparison.Ordinal) && string.Equals(GroupOf(row), own.GroupName, StringComparison.Ordinal));
+        // How many other members the group holds, as the annotator counted them when it read the name's group, of which the
+        // table draws the ones it chose. A count worked again here would read each member's group by the names the page
+        // draws, which are not the ones an S&P 500 group was read by.
+        // see: A member whose membership row names no industry is named and grouped by the GICS industry and sector its company fetch files
+        var others = own.GroupName is null ? 0 : groupMembers ?? 0;
 
         PeerCell Row(string drawn, bool isOwn, PeerLikeness? likeness)
         {

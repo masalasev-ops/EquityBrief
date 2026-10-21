@@ -5553,7 +5553,7 @@ public sealed partial class MarkRenderer : IComponent
             return FormattableString.Invariant($"<td class=\"group-median\" data-group=\"not-a-member\" data-read-on=\"{readOn:yyyy-MM-dd}\">not a member of the index on {readOn:yyyy-MM-dd}, the night its moves' groups were read, so no group is read for this move</td>");
         }
 
-        var named = group.Name is { Length: > 0 } name ? $"the {Escaped(name)} {Escaped(group.Kind)}" : $"a {Escaped(group.Kind)} its membership row does not name";
+        var named = group.Name is { Length: > 0 } name ? $"the {Escaped(name)} {Escaped(group.Kind)}" : $"a {Escaped(group.Kind)} {UnnamedGroup}";
         var attributes = Formatted($"data-group-kind=\"{Escaped(group.Kind)}\" data-group-name=\"{Escaped(group.Name ?? string.Empty)}\" data-group-members=\"{group.Members}\" data-group-counted=\"{group.Counted}\"");
 
         if (group.Members == 0)
@@ -5572,6 +5572,10 @@ public sealed partial class MarkRenderer : IComponent
             + (missing > 0 ? Formatted($", {missing} holding no close on one of the two sessions") : string.Empty)
             + "</td>";
     }
+
+    // What a group the night read no name for says, its member's row and its company fetch naming none.
+    // see: A member whose membership row names no industry is named and grouped by the GICS industry and sector its company fetch files
+    public const string UnnamedGroup = "neither its membership row nor its company fetch names";
 
     // Section 2's peers table: the name's own row, marked, then the members of its group the night
     // chose, ten at most, those sharing its industry first and then by how closely each one's daily
@@ -5614,7 +5618,7 @@ public sealed partial class MarkRenderer : IComponent
 
         var named = peers.GroupName is { Length: > 0 } name
             ? $"the {Escaped(name)} {Escaped(kind)}"
-            : $"a {Escaped(kind)} its membership row does not name";
+            : $"a {Escaped(kind)} {UnnamedGroup}";
 
         var followed = Formatted($"how closely each one's daily moves followed {Escaped(ticker)}'s over the sessions both hold");
 

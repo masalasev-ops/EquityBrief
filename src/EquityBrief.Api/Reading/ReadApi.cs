@@ -1586,12 +1586,19 @@ public sealed partial class ReadApi : IComponent
                     AND i.session_date <= $on
                 ORDER BY i.session_date DESC LIMIT 1),
                m.name,
-               m.industry,
+               " + NamedIndustry + @",
                " + ResearchedOn + @"
         FROM membership m
         WHERE " + CurrentMember + @"
         ORDER BY m.ticker;
     ";
+
+    // A member's industry as every page names it: the one its membership row names, and for a member whose row names
+    // none, which no S&P 400 or 600 member's does, the GICS industry its newest company fetch filed, read over a row
+    // aliased m holding its ticker.
+    // see: A member whose membership row names no industry is named and grouped by the GICS industry and sector its company fetch files
+    const string NamedIndustry = @"COALESCE(m.industry, (SELECT c.industry FROM company c WHERE c.ticker = m.ticker
+                ORDER BY c.fetched_at DESC, c.rowid DESC LIMIT 1))";
 
     // The bands the universe screen states, which are the immediate ones the
     // level builder already marked, at each name's latest as-of date at or

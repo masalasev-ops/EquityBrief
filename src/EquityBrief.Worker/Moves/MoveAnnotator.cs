@@ -15,7 +15,10 @@ public sealed record MoveOutcome(int NamesExamined, int RowsWritten, int RowsDro
 // The move annotator. Reads the stored bars for every name the store holds and
 // writes the largest single-day and multi-day moves of the stored year, which
 // become the rows of the how-it-got-here table, each beside its group's median
-// move over the same sessions, read off the membership on the night's session.
+// move over the same sessions, read among its index's members on the night's
+// session by the sector and industry each one's membership row names, or where
+// the row names no industry by those its newest company fetch before the night
+// files.
 // Over the same bars it writes each name's two readings for the peers table,
 // beside the group its moves are read against, and each print's earnings
 // reaction off the calendar.
@@ -44,6 +47,7 @@ public sealed class MoveAnnotator : IComponent
         Stores:
         [
             new StoreTouch(Store.Membership, Touch.Read),
+            new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Move, Touch.Insert | Touch.Update | Touch.Delete),
@@ -135,9 +139,21 @@ public sealed class MoveAnnotator : IComponent
     // A name's group is read among the members of its own index, so the S&P 500's groups hold the 500's members alone
     // and a 400 or 600 member's group is its own index's.
     // see: The universe is the S&P 1500's three indices with each member tagged by its index, and membership is fetched
+    //
+    // A member whose row names no industry, which no S&P 400 or 600 member's does, is read by the GICS sector and industry
+    // its newest company fetch made before the night started files, both from that one fetch.
+    // see: A member whose membership row names no industry is named and grouped by the GICS industry and sector its company fetch files
     const string MembersOnTheSession = @"
-        SELECT m.ticker, m.sector, m.industry, m.index_code
+        SELECT m.ticker,
+               CASE WHEN m.industry IS NULL THEN c.sector ELSE m.sector END,
+               COALESCE(m.industry, c.industry),
+               m.index_code
         FROM membership m
+        LEFT JOIN company c ON c.rowid = (
+            SELECT d.rowid FROM company d
+            WHERE d.ticker = m.ticker AND d.fetched_at <= $at
+            ORDER BY d.fetched_at DESC, d.rowid DESC
+            LIMIT 1)
         WHERE (m.joined IS NULL OR m.joined <= $session)
           AND (m.""left"" IS NULL OR m.""left"" > $session)
         ORDER BY m.index_code, m.ticker;
@@ -215,7 +231,7 @@ public sealed class MoveAnnotator : IComponent
             pair => pair.Key,
             pair => (IReadOnlyDictionary<DateOnly, decimal>)pair.Value.ToDictionary(bar => bar.SessionDate, bar => bar.Close),
             StringComparer.Ordinal);
-        var byIndex = await MembersAsync(connection, clock.SessionDateAt(clock.UtcNow), cancellation);
+        var byIndex = await MembersAsync(connection, clock.SessionDateAt(clock.UtcNow), startedAt, cancellation);
         var indexOf = byIndex
             .SelectMany(index => index.Value.Select(member => (member.Ticker, Index: index.Key)))
             .GroupBy(member => member.Ticker, StringComparer.Ordinal)
@@ -495,16 +511,18 @@ public sealed class MoveAnnotator : IComponent
         _ => "unstated",
     };
 
-    // Each index's members on the session, keyed by the index.
+    // Each index's members on the session, keyed by the index, each company fetch read as it stood when the night started.
     static async Task<IReadOnlyDictionary<string, IReadOnlyList<GroupMember>>> MembersAsync(
         SqliteConnection connection,
         DateOnly session,
+        DateTimeOffset at,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
         command.CommandText = MembersOnTheSession;
         command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$at", at.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", CultureInfo.InvariantCulture));
 
         var members = new Dictionary<string, List<GroupMember>>(StringComparer.Ordinal);
 
