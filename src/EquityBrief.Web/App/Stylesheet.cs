@@ -134,11 +134,12 @@ code{font-size:.92em}
 .m-badge[hidden]{display:none}
 .page-head{display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap;padding-top:14px}
 .night-picker .np-short{display:none}
-/* on a phone the title holds one line and the date line is the night as a short date between its arrows */
+/* on a phone the title holds one line and the date line is the night as a short date between its arrows; a stock's
+   masthead line, holding its quote, its figures and its links, wraps whole */
 @media (max-width:560px){
  .page-head .m-screen{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
  .page-head .asof-words{display:none}
- .page-head .m-asof:not(:has(.night-picker)){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .page-head .m-asof:not(:has(.night-picker)):not(:has(.m-when)){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
  .page-head .night-picker{margin-left:0}
  .night-picker .np-full{display:none}
  .night-picker .np-short{display:inline}
@@ -155,7 +156,13 @@ code{font-size:.92em}
  .m-panel .m-search{margin-left:0}
  .m-panel .m-search input{width:100%}
 }
-@media (max-width:480px){ .m-brand{display:none} }
+/* on a phone the bar holds two rows, the brand with the Menu button and then the index menu */
+@media (max-width:480px){
+ .mast .wrap{flex-wrap:wrap}
+ .m-menu{margin-left:auto}
+ .m-index{order:6;flex-basis:100%;margin-left:0}
+ .m-index:empty{display:none}
+}
 .m-brand{font:600 12px var(--sans);letter-spacing:.14em;text-transform:uppercase;text-decoration:none;color:var(--soft)}
 .m-tk{font:700 20px var(--sans);letter-spacing:.02em}
 .m-co{font:600 18px var(--serif)}

@@ -5789,3 +5789,30 @@ Mutated:    the rule, stated before the runs, for every correction of this pull 
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 19.2 - correction: a phone's bar holds the brand in two rows, and a stock's masthead line wraps whole on a phone   2026-10-21
+
+Queue:      as the 19.10 correction's entry above.
+Ruled:      by the operator on 2026-10-21, asked how the brand should stand on a phone, where one row cannot hold it, the
+            index menu and the Menu button: "Two rows on a phone (Recommended)", the brand with Menu and then the index
+            menu.
+Found:      by the phase 19 sign-off review of 2026-10-21, at a true 390 px over the operator's store: a rule hid the
+            brand under 480 px, where the bar's decision and section 15 put it on the bar at every width; and the 19.2
+            correction's one-line rule for a page's line beneath its title cut a stock's masthead line, HAS's reading
+            "Previous close 10...", its sector's link and the name page's link back to its chart page past the cut.
+Corrected:  on a phone the bar holds two rows, the brand with the Menu button and then the index menu, a page drawing no
+            index menu taking no row; the one-line rule passes over a line holding a stock's quote, which wraps whole.
+            Section 15's paragraph on the bar, the guide, the roster and the changelog.
+Tests:      none more: the bar's test reads the brand in the bar, no rule hiding it and the phone's two rows; the phone
+            test reads the one-line rule passing over a stock's line, no other rule holding a masthead's line to one, and
+            a stock's masthead line built by the one function holding its quote's words and both links.
+Measured:   read back from a scratch Release build over the operator's store on its own port at a true 390 px, writing
+            nothing but the read surface's row on the run log: Tonight's bar the brand with Menu over the index menu;
+            HAS's name page with no index menu and no empty row, its line whole with its previous close of 109.52 and Its
+            chart in view; no page wider than its screen.
+Mutated:    under the rule stated in the 19.10 correction's entry: c4 the one-line rule reaching a stock's line: red at
+            the phone test. c5 the brand hidden on a phone: red at the bar test. c6 the index menu on no row of its own:
+            red there.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.

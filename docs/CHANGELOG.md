@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - ARCHITECTURE.html - a phone's bar holds the brand in two rows, and a stock's masthead line wraps whole
+Authorised by: The bar's index menu chooses the index every page reads, each choice naming its cap and its members
+Was:
+> The bar (15): ... On a narrower screen the links, the search and the toggle drop into a panel beneath a button reading Menu, and the index menu stays in the bar. The screen's title and its date line stand beneath the bar, and on a phone the title holds one line and the date line is the night's short date between its arrows (see: ...
+Now:
+> The bar (15): ... and the index menu stays in the bar; from the 19.2 correction of 2026-10-21 a phone's bar holds two rows, the brand with the Menu button and then the index menu. The screen's title and its date line stand beneath the bar, and on a phone the title holds one line and the date line is the night's short date between its arrows, while a stock's masthead line, holding its quote and its links, wraps whole (see: ...
+Why: the stylesheet hid the brand under 480 px, where the decision puts it on the bar, and held every page's line beneath its title to one line, cutting a stock's previous close mid-figure and its links, both found by the phase 19 sign-off review of 2026-10-21; the operator chose two rows on a phone that day, "Two rows on a phone (Recommended)".
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches the brand at every width, a phone's two rows and a stock's masthead line wrapping whole
+Authorised by: The bar's index menu chooses the index every page reads, each choice naming its cap and its members
+Was:
+> read-surface: ... one a cent inside saying neither, and a stop at or over its target drawing no line |
+Now:
+> read-surface: ... and a stop at or over its target drawing no line; and from the 19.2 correction of 2026-10-21 the brand in the bar at every width with no rule hiding it, a phone's bar holding two rows, the brand with the Menu button and then the index menu, a place holding no index menu taking no row, and a stock's masthead line held to one line by no rule, its quote's words, its previous close and its links wrapping whole while a screen's date line holds one line |
+Why: the 19.2 correction of 2026-10-21 adds these assertions.
+
 ### 2026-10-21 - ARCHITECTURE.html - the trade line draws a buy that opened past its stop or its target at that end
 Authorised by: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
 Was:
