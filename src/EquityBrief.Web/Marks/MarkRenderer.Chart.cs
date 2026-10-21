@@ -62,6 +62,24 @@ public sealed partial class MarkRenderer
         return Formatted($"{sessions}: open {Price(candle.Open)}, high {Price(candle.High)}, low {Price(candle.Low)}, close {Price(candle.Close)}, volume {candle.Volume.ToString("N0", Invariant)}{change}. {lines}");
     }
 
+    // Where a label in the column starts, past the plot's right edge.
+    const int ColumnLabelAt = 9;
+
+    // The column's width: the longest of the newest close and each plan price beside its kind at the legend's measure of
+    // a character, set the label's start in from the plot and a margin past its end, and never narrower than the name
+    // page's column, so no price it names runs past the chart's edge.
+    public static int PriceColumn(decimal close, IReadOnlyList<ChartPlan> plans)
+    {
+        var longest = plans
+            .SelectMany(plan => new (string Kind, decimal? Price)[] { ("buy", plan.Buy), ("stop", plan.Stop), ("target", plan.Target) })
+            .Where(named => named.Price is not null)
+            .Select(named => Formatted($"{named.Kind} {Price(named.Price!.Value)}").Length)
+            .Append(Price(close).Length)
+            .Max();
+
+        return Math.Max(AxisWidth, (int)Math.Ceiling(ColumnLabelAt + (longest * LegendCharacter) + 4));
+    }
+
     // The chart page's chart: candles at the interval shown in neutral ink, hollow closing up and filled closing down;
     // the three averages; volume beneath in the gain's green on a candle closing up on the one before and the loss's red
     // on one closing down; the report and ex-dividend marks on the candle holding their session; the night's level bands
@@ -97,9 +115,10 @@ public sealed partial class MarkRenderer
 
         double Centre(int index) => Margin + (slot * index) + (slot / 2);
 
+        var wide = Width + PriceColumn(candles[^1].Close, plans);
         var svg = new StringBuilder();
 
-        svg.Append(Invariant, $"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {ChartWidth} {ChartHeight}\" width=\"{ChartWidth}\" height=\"{ChartHeight}\" ");
+        svg.Append(Invariant, $"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {wide} {ChartHeight}\" width=\"{wide}\" height=\"{ChartHeight}\" ");
         svg.Append(Invariant, $"role=\"img\" class=\"candle-chart\" data-ticker=\"{Escaped(ticker)}\" data-interval=\"{Escaped(interval)}\" data-candles=\"{candles.Count}\" ");
         svg.Append(Invariant, $"data-axis-low=\"{Number(axis.Low)}\" data-axis-high=\"{Number(axis.High)}\">");
         svg.Append(Invariant, $"<title>{Escaped(ticker)}, {candles.Count} {Escaped(interval)} candles from {candles[0].First:yyyy-MM-dd} to {candles[^1].Last:yyyy-MM-dd}</title>");
@@ -259,7 +278,7 @@ public sealed partial class MarkRenderer
         svg.Append(Invariant, $"<g class=\"price-column\" data-close=\"{candles[^1].Close.ToString(Invariant)}\">");
         svg.Append(Invariant, $"<line class=\"m-axisline\" x1=\"{Width + 1}\" y1=\"0\" x2=\"{Width + 1}\" y2=\"{PriceHeight}\"/>");
         svg.Append(Invariant, $"<rect class=\"m-nowtag\" x=\"{Width + 4}\" y=\"{Number(now - 11)}\" width=\"{AxisWidth - 6}\" height=\"22\" rx=\"2\"/>");
-        svg.Append(Invariant, $"<text class=\"m-nowtag-t\" x=\"{Width + 9}\" y=\"{Number(now + 5)}\">{Price(candles[^1].Close)}</text>");
+        svg.Append(Invariant, $"<text class=\"m-nowtag-t\" x=\"{Width + ColumnLabelAt}\" y=\"{Number(now + 5)}\">{Price(candles[^1].Close)}</text>");
 
         var placed = new List<double> { now };
 
@@ -271,7 +290,7 @@ public sealed partial class MarkRenderer
             }
 
             placed.Add(y);
-            svg.Append(Invariant, $"<text class=\"m-tick plan-tick-{kind}\" x=\"{Width + 9}\" y=\"{Number(y + 5)}\">{Escaped(text)}</text>");
+            svg.Append(Invariant, $"<text class=\"m-tick plan-tick-{kind}\" x=\"{Width + ColumnLabelAt}\" y=\"{Number(y + 5)}\">{Escaped(text)}</text>");
         }
 
         svg.Append("</g>");

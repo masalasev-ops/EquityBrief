@@ -5746,3 +5746,100 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    the S&P 500's groups and pages on the GICS scheme and the Financials' revenue basis, both put to the operator;
             PR 505 rebased with its migration at 104; and the phase 18 sign-off by a fresh session.
+
+### 19.10 - correction: Past picks says each trade is bought at the next session's open, and a trade line whose buy opened past its stop or its target draws the buy at that end   2026-10-21
+
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its remedies
+            and the page corrections in PR 518; in review, 20.8 with its correction, PR 505; in progress, the corrections
+            the phase 19 sign-off review found, in one pull request: this correction, the 19.2 correction of a phone's
+            bar and a stock's masthead line and the 19.11 correction of the chart page's column; next, this pull request
+            merged, the phase 19 sign-off by a fresh session over the corrected main, PR 505 rebased with its migration at
+            104, the phase 18 sign-off by a fresh session, the local lane's one text field, 21.0 once its ruling is given,
+            and pin 3's completion steps.
+Ruled:      by the operator on 2026-10-21, "Can you try to sign of phase 19"; told the review had found five defects,
+            they chose "Correct first (Recommended)": this session builds the corrections, so a fresh session signs phase
+            19 once they merge.
+Reviewed:   the phase 19 sign-off review of 2026-10-21, by this session before it committed code, over main at 67c65de3,
+            whose tree is PR 518's head's: `tools/ci.ps1` green 16:34:40 to 17:00:03 UTC, all six steps, 0 warnings, 0
+            errors, 2577 of 2577 tests, migrations 0 to 103 and none pending at 103; `tools/verify-phase.ps1` green
+            17:00:13 to 17:00:18 UTC, 60 tables, 1372 claims all passing, none out of scope or unexamined, 1383 placements
+            against a floor of 34, 43 checks run and passed. Hosted CI green on PR 518's head under both events and on
+            main's push. Read off the operator's store, read-only: the night of 2026-10-20 ran all 47 steps; every trade
+            listed before it holds a fill; eleven published factors of HAS, KO and AAPL, HAS's four insider readings and
+            its seven heading percentiles each equal to the review's own working. Swept: s1 to s13, one property of each
+            of 19.1 to 19.13, each filtered to the tests naming its file and predicted before its run, all thirteen red,
+            s4, a trade costing exactly the free cash, red where green was predicted, at the version test buying N2 with
+            the whole 5,000.
+Found:      by that review, on Past picks over the operator's store: its line beneath its heading said each trade is
+            "followed from the close it was listed at", where from 19.10 each is bought at the next session's open, as
+            the page's own last line says; and DVN's trade of 2026-09-24, bought at 47.84 under its stop of 48.12, drew no
+            line and "the stop, buy and target are not in order", the mark reading a fill past its stop as a plan out of
+            order.
+Corrected:  the line says each is bought at the open of the session after the night that listed it; a trade line draws a
+            buy at or past its stop or its target at that end with its title saying which, and only a stop at or over its
+            target draws none. The trade line's row in section 15, the roster and the changelog.
+Tests:      none more: the Past picks test reads the line, and the trade line's test buys at 95, at the stop of 96, at
+            the target of 110 and at 112, a cent inside each end reading neither, with a stop at 110 and at 111 drawing
+            none.
+Mutated:    the rule, stated before the runs, for every correction of this pull request: each property it adds, the
+            smallest edit undoing it, filtered to the tests naming it with its red predicted, made in this checkout over
+            the file's own text and restored from it, the tree's diff the same after each. c1 the line's old words: red at
+            the Past picks test. c2 a buy past either end read as out of order: red at the trade line's test. c3 a buy at
+            its stop read as inside: red there.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 19.2 - correction: a phone's bar holds the brand in two rows, and a stock's masthead line wraps whole on a phone   2026-10-21
+
+Queue:      as the 19.10 correction's entry above.
+Ruled:      by the operator on 2026-10-21, asked how the brand should stand on a phone, where one row cannot hold it, the
+            index menu and the Menu button: "Two rows on a phone (Recommended)", the brand with Menu and then the index
+            menu.
+Found:      by the phase 19 sign-off review of 2026-10-21, at a true 390 px over the operator's store: a rule hid the
+            brand under 480 px, where the bar's decision and section 15 put it on the bar at every width; and the 19.2
+            correction's one-line rule for a page's line beneath its title cut a stock's masthead line, HAS's reading
+            "Previous close 10...", its sector's link and the name page's link back to its chart page past the cut.
+Corrected:  on a phone the bar holds two rows, the brand with the Menu button and then the index menu, a page drawing no
+            index menu taking no row; the one-line rule passes over a line holding a stock's quote, which wraps whole.
+            Section 15's paragraph on the bar, the guide, the roster and the changelog.
+Tests:      none more: the bar's test reads the brand in the bar, no rule hiding it and the phone's two rows; the phone
+            test reads the one-line rule passing over a stock's line, no other rule holding a masthead's line to one, and
+            a stock's masthead line built by the one function holding its quote's words and both links.
+Measured:   read back from a scratch Release build over the operator's store on its own port at a true 390 px, writing
+            nothing but the read surface's row on the run log: Tonight's bar the brand with Menu over the index menu;
+            HAS's name page with no index menu and no empty row, its line whole with its previous close of 109.52 and Its
+            chart in view; no page wider than its screen.
+Mutated:    under the rule stated in the 19.10 correction's entry: c4 the one-line rule reaching a stock's line: red at
+            the phone test. c5 the brand hidden on a phone: red at the bar test. c6 the index menu on no row of its own:
+            red there.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 19.11 - correction: the chart page's column is as wide as the longest price it names, where a target of three digits ran past the chart's edge   2026-10-21
+
+Queue:      as the 19.10 correction's entry above.
+Found:      by the phase 19 sign-off review of 2026-10-21, on HAS's chart page at 1440 px over the operator's store: the
+            column naming the close and the plan's prices was the name page's, sized for a close alone, so "target
+            129.57" ran past the chart's edge and read "target 129.5", as every plan label of three integer digits or more
+            did.
+Corrected:  the chart page's column is as wide as the longest of the close and each plan price beside its kind, at the
+            legend's measure of a character, and never narrower than the name page's; read back on HAS's page from the
+            scratch build, "target 129.57" whole. The roster and the changelog.
+Tests:      one more, 2578 in all: a target of 129.57 and one of 1,234.56 each end inside the picture with every label,
+            and a chart naming its close alone keeps the column of 86.
+Claims:     1372, as before: no row's claim added or removed by this pull request.
+Mutated:    under the rule stated in the 19.10 correction's entry: c7 the column capped at the name page's: red at the
+            column's test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2578 of 2578 tests ran with none failed,
+            migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the S&P 500's groups and pages on the GICS scheme and the Financials' revenue basis, both put to the operator;
+            the review's judgement items put to the operator: counts written with "(s)" on phase 19's pages, the heading
+            percentiles averaging readings that point opposite ways, and the chart page's next report on the night a
+            stock reported; found beyond phase 19, the frozen S&P 400 and 600 heavyweights cards drawing their setting's
+            key as stored, owed a 20.11 correction; PR 505 rebased with its migration at 104; the phase 18 sign-off by a
+            fresh session; and the phase 19 sign-off by a fresh session over the corrected main.

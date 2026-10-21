@@ -26,6 +26,46 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches the chart page's column holding every price it names
+Corrects: the chart page's column was sized for the close alone, so a plan's label of three integer digits or more ran past the chart's edge, HAS's "target 129.57" read "target 129.5" at 1440 px, found by the phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... its quote's words, its previous close and its links wrapping whole while a screen's date line holds one line |
+Now:
+> read-surface: ... while a screen's date line holds one line; and from the 19.11 correction of 2026-10-21 the chart page's column as wide as the longest price it names beside its kind, every label ending inside the picture at the legend's measure of a character, worked at a target of 129.57 and of 1,234.56, and a chart naming its close alone keeping the name page's column of 86 |
+Why: the 19.11 correction of 2026-10-21 adds this assertion.
+
+### 2026-10-21 - ARCHITECTURE.html - a phone's bar holds the brand in two rows, and a stock's masthead line wraps whole
+Authorised by: The bar's index menu chooses the index every page reads, each choice naming its cap and its members
+Was:
+> The bar (15): ... On a narrower screen the links, the search and the toggle drop into a panel beneath a button reading Menu, and the index menu stays in the bar. The screen's title and its date line stand beneath the bar, and on a phone the title holds one line and the date line is the night's short date between its arrows (see: ...
+Now:
+> The bar (15): ... and the index menu stays in the bar; from the 19.2 correction of 2026-10-21 a phone's bar holds two rows, the brand with the Menu button and then the index menu. The screen's title and its date line stand beneath the bar, and on a phone the title holds one line and the date line is the night's short date between its arrows, while a stock's masthead line, holding its quote and its links, wraps whole (see: ...
+Why: the stylesheet hid the brand under 480 px, where the decision puts it on the bar, and held every page's line beneath its title to one line, cutting a stock's previous close mid-figure and its links, both found by the phase 19 sign-off review of 2026-10-21; the operator chose two rows on a phone that day, "Two rows on a phone (Recommended)".
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches the brand at every width, a phone's two rows and a stock's masthead line wrapping whole
+Authorised by: The bar's index menu chooses the index every page reads, each choice naming its cap and its members
+Was:
+> read-surface: ... one a cent inside saying neither, and a stop at or over its target drawing no line |
+Now:
+> read-surface: ... and a stop at or over its target drawing no line; and from the 19.2 correction of 2026-10-21 the brand in the bar at every width with no rule hiding it, a phone's bar holding two rows, the brand with the Menu button and then the index menu, a place holding no index menu taking no row, and a stock's masthead line held to one line by no rule, its quote's words, its previous close and its links wrapping whole while a screen's date line holds one line |
+Why: the 19.2 correction of 2026-10-21 adds these assertions.
+
+### 2026-10-21 - ARCHITECTURE.html - the trade line draws a buy that opened past its stop or its target at that end
+Authorised by: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+Was:
+> Trade line: ... The buy is a short neutral tick between them and the dot is the price: hollow while the trade is open and filled where it finished, with a price beyond either end sitting at that end. It is placed by the prices' ratios to the buy, ...
+Now:
+> Trade line: ... with a price beyond either end sitting at that end. From the 19.10 correction of 2026-10-21 the buy is the open the trade was bought at: a buy that opened past its stop or its target sits at that end with its title saying which. A plan whose stop is not under its target draws no line. It is placed by the prices' ratios to the buy, ...
+Why: from 19.10 the buy a trade line draws is the trade's fill, and the mark still read a fill past its stop or its target as a plan out of order: the phase 19 sign-off review of 2026-10-21 found DVN's trade of 2026-09-24, bought at 47.84 under its stop of 48.12, drawn on Past picks as "the stop, buy and target are not in order" with no line.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches Past picks' line beneath its heading and a trade line bought past its stop or its target
+Authorised by: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+Was:
+> read-surface: ... every card row and fold open before a press kept open after it redraws and the row a link names standing clear of the masthead |
+Now:
+> read-surface: ... and the row a link names standing clear of the masthead; and from the 19.10 correction of 2026-10-21 Past picks' line beneath its heading saying each trade is bought at the open of the session after the night that listed it, and a trade line whose buy opened past its stop or its target, or at either, drawn with the buy at that end and its title saying which, one a cent inside saying neither, and a stop at or over its target drawing no line |
+Why: the 19.10 correction of 2026-10-21 adds these assertions.
+
 ### 2026-10-21 - ARCHITECTURE.html - every buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
 Authorised by: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
 Was:
