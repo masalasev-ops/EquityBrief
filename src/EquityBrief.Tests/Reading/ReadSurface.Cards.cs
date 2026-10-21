@@ -121,22 +121,32 @@ public partial class ReadSurface
             ["MID breakout M1 recorded", "MID heavyweight M2 not recorded", "SML breakout S1 not recorded"],
             stored.Select(card => $"{card.Index} {card.Family} {card.Ticker} {(card.Recorded ? "recorded" : "not recorded")}"));
 
+        // S1's one band the night stored, a support from 46 to 47.5 beneath its close of 50.
+        store.Execute(
+            "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) VALUES " +
+            $"('S1', '{IndexNight}', '46', '47.5', 'support', 1, 2, 1, '[]');");
+
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
         var rows = await CardsReadBack(client, stored, IndexNight);
 
         // From the 19.2 correction of 2026-10-21 the S&P 600's buy points fold each row's plan and card beneath it, closed
-        // where the link names no row: S1's fold hidden, holding the line saying its plan is read for the S&P 500's members
-        // alone and no plan's tables, the bands the night stored for it, here none, and then its card.
+        // where the link names no row: S1's fold hidden, holding the line saying its plan is its rule's buy, stop and target
+        // and the ladder at the bands is worked for the S&P 500's members alone, and no plan's tables, the band the night
+        // stored for it beneath its close of 50, and then its card.
         var points = BuyPointsOf(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight))));
         var s1 = Assert.Single(Folds(points));
 
         Assert.Equal(("fold-breakout-s1", "S1", true), (s1.Id, s1.Ticker, s1.Hidden));
         Assert.StartsWith(
-            $"<section class=\"selected-name\" data-ticker=\"S1\" data-plan-rows=\"0\" data-bands=\"0\"><div class=\"selwrap\"><div class=\"fig\"><p class=\"degraded no-plan\" data-ticker=\"S1\" data-rows=\"0\" data-reason=\"{EquityBrief.Api.Reading.NameScreen.PlanForTheLargeIndexAlone}\">S1 has no plan to draw: {EquityBrief.Api.Reading.NameScreen.PlanForTheLargeIndexAlone}.</p>",
+            $"<section class=\"selected-name\" data-ticker=\"S1\" data-plan-rows=\"0\" data-bands=\"1\"><div class=\"selwrap\"><div class=\"fig\"><p class=\"mark-note no-ladder\" data-ticker=\"S1\" data-rows=\"0\">{EquityBrief.Api.Reading.NameScreen.LadderForTheLargeIndexAlone("S1")}</p>",
             s1.Body,
             StringComparison.Ordinal);
+        Assert.Contains("<table class=\"level-summary\" data-ticker=\"S1\" data-bands=\"1\">", s1.Body, StringComparison.Ordinal);
+        Assert.Contains("<tr class=\"close-row\" data-close=\"50\">", s1.Body, StringComparison.Ordinal);
+        Assert.Contains("<tr class=\"band\" data-low-edge=\"46\" data-high-edge=\"47.5\" data-role=\"support\"", s1.Body, StringComparison.Ordinal);
+        Assert.DoesNotContain("has no plan to draw", s1.Body, StringComparison.Ordinal);
         Assert.DoesNotContain("The plan places no tranche.", s1.Body, StringComparison.Ordinal);
         Assert.Matches("<div class=\"decision-card\" data-index=\"SML\" data-family=\"breakout\" data-ticker=\"S1\"", s1.Body);
         Assert.DoesNotContain(" class=\"sel\"", points, StringComparison.Ordinal);

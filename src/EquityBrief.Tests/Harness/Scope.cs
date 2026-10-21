@@ -3199,7 +3199,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Tonight's buy points")] = new Scoped(
             Verdict.Pass,
-            "every family's picks in one table in the one order and each family's own, tagged and numbered from one across the table; from 19.3 each row's report state, business and stories read off the row, and a row opened beneath another held inside the box the table scrolls in by the stylesheet's rule; and from the 19.2 correction of 2026-10-21 every row followed by its fold holding the stock's plan and its pick's card, hidden where the link names no row and open for the row a link names, its control the one in the row's stock cell, the S&P 500's plan worked by hand from its stored ladder and bands and the S&P 400's and 600's the bands with the line saying no plan is stored, on both kinds of index",
+            "every family's picks in one table in the one order and each family's own, tagged and numbered from one across the table; from 19.3 each row's report state, business and stories read off the row, and a row opened beneath another held inside the box the table scrolls in by the stylesheet's rule; and from the 19.2 correction of 2026-10-21 every row followed by its fold holding the stock's plan and its pick's card, hidden where the link names no row and open for the row a link names, its control the one in the row's stock cell, the S&P 500's plan worked by hand from its stored ladder and bands and the S&P 400's and 600's a stored band against its close with the line naming its rule's buy, stop and target, on both kinds of index",
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Tonight's stocks one gate short")] = new Scoped(
             Verdict.Pass,

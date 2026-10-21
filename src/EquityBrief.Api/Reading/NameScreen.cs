@@ -2222,6 +2222,12 @@ public static partial class NameScreen
     // Why a stock holds no plan where the night stored no ladder for it, the plan being worked for the S&P 500 alone.
     public const string PlanForTheLargeIndexAlone = "no plan is stored for the night, the plan being read for the S&P 500's members alone";
 
+    // What an S&P 400 or 600 buy point's fold says in the plan column's place: its plan is its rule's buy, stop and target,
+    // which its row and its card draw, and the ladder the column draws at the bands is worked for the S&P 500 alone.
+    // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
+    public static string LadderForTheLargeIndexAlone(string ticker) =>
+        ticker + "'s plan is its rule's buy, stop and target, drawn in its row and on its card beneath; the ladder of buys and sells at its bands is worked for the S&P 500's members alone, so the bands the night stored for it stand here alone.";
+
     // The plan region alone, which is what tonight's list shows for the selected
     // name and a buy point's fold holds: the plan column and the two tables it is
     // read beside. Section 15.7 says the common case of checking a plan needs no
@@ -2236,7 +2242,8 @@ public static partial class NameScreen
         IReadOnlyList<LevelRow> levels,
         double? typicalMove = null,
         bool closeStored = true,
-        string? noPlan = null)
+        string? noPlan = null,
+        string? inPlace = null)
     {
         var rows = PlanRows(ladder);
 
@@ -2261,9 +2268,11 @@ public static partial class NameScreen
         // where it belongs and where it is drawn.
         return $"<section class=\"selected-name\" data-ticker=\"{ticker}\" data-plan-rows=\"{rows.Count}\" data-bands=\"{levels.Count}\">"
             + "<div class=\"selwrap\"><div class=\"fig\">"
-            + marks.PlanColumn(ticker, close, rows, ladder is null ? noPlan : null)
+            + (ladder is null && inPlace is not null
+                ? Invariant($"<p class=\"mark-note no-ladder\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"0\">{Escaped(inPlace)}</p>")
+                : marks.PlanColumn(ticker, close, rows, ladder is null ? noPlan : null))
             + "</div><div class=\"tbl-wrap\">"
-            + (ladder is null && noPlan is not null ? string.Empty : marks.PlanTables(ticker, rows))
+            + (ladder is null && (noPlan is not null || inPlace is not null) ? string.Empty : marks.PlanTables(ticker, rows))
             + marks.LevelSummary(
                 ticker,
                 [.. levels.Select(level => new SummaryBand(

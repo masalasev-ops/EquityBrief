@@ -309,15 +309,20 @@ public partial class ReadSurface
         // A name the table does not hold opens no fold.
         Assert.All(Folds(BuyPointsOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}?name=ZZZ")))), fold => Assert.True(fold.Hidden));
 
-        // The page's script opens and closes a fold from its control or a press on its row, and keeps a pressed card's fold
-        // open when the page is drawn again; the stylesheet draws a fold as the open row was drawn.
+        // The page's script opens and closes a fold from its control or a press on its row, a fold the link names leaving
+        // the link once closed, and keeps every card row and fold open before a press open when the page is drawn again;
+        // the stylesheet draws a fold as the open row was drawn and stands the row a link names clear of the masthead.
         var shell = await client.GetStringAsync("/");
 
         Assert.Contains("const fold = row.getAttribute('data-fold');", shell, StringComparison.Ordinal);
         Assert.Contains("opened.hidden = !opened.hidden;", shell, StringComparison.Ordinal);
+        Assert.Contains("named.classList.remove('sel');", shell, StringComparison.Ordinal);
+        Assert.Contains("history.replaceState(null, '', merged('name', null));", shell, StringComparison.Ordinal);
         Assert.Contains("form.closest('tr.card-row, tr.fold-row, section.name-card')", shell, StringComparison.Ordinal);
-        Assert.Contains("again.matches('tr.card-row, tr.fold-row')", shell, StringComparison.Ordinal);
+        Assert.Contains("[...screen.querySelectorAll('tr.card-row:not([hidden]), tr.fold-row:not([hidden])')]", shell, StringComparison.Ordinal);
+        Assert.Contains("reopened.matches('tr.card-row, tr.fold-row')", shell, StringComparison.Ordinal);
         Assert.Contains(".buy-points tr.fold-row>td{white-space:normal;background:var(--plot);padding:12px}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".buy-points tr[data-fold]{scroll-margin-top:84px}", Stylesheet.Css, StringComparison.Ordinal);
         Assert.DoesNotContain("family-table", page, StringComparison.Ordinal);
         Assert.Equal(
             ["pullback F1,F2,F3,F4,F5", "breakout K1,K2"],

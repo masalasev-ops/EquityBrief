@@ -5703,19 +5703,22 @@ Found:      the first row was selected where the link named none, its plan and c
             by selecting its row, one at a time; the S&P 400's and 600's rows drew their cards alone.
 Built:      every row of tonight's buy points folds beneath it the stock's plan and its pick's card, closed where the link
             names no row: on the S&P 500 the plan region the selected name drew with its links, on the S&P 400 and 600 the
-            bands the night stored with the line saying no plan is stored and no plan's tables (see: Each buy point's row
-            folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it). The
-            control in the row's stock cell or a press on the row opens and closes its fold in the browser, any number
-            open at once; a row the link names opens with its fold open and comes into view; a pressed card's fold stays
-            open when the page is drawn again. The decision with the one it supersedes moved below, the Tonight rows, the
+            bands the night stored with the line saying its plan is its rule's buy, stop and target in its row and on its
+            card and the ladder at its bands is worked for the S&P 500's members alone, and no plan's tables (see: Each
+            buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it
+            opens it). The control in the row's stock cell or a press on the row opens and closes its fold in the
+            browser, any number open at once; a row the link names opens with its fold open and comes into view clear of
+            the masthead, and closing its fold takes its name out of the link; every card row and fold open before a
+            press on a card stays open when the page is drawn again. The decision with the one it supersedes moved below, the Tonight rows, the
             note and the figure with its key, the guide's Tonight with its figure, the stock column's words, the key and
             the guide behind its "?", the roster and the changelog.
-Tests:      none more, 2576 in all: the S&P 500's seven folds over the families' night, each hidden with no name in the
+Tests:      none more, 2577 in all: the S&P 500's seven folds over the families' night, each hidden with no name in the
             link and holding its own stock's plan and its card, each control in its stock cell naming its fold, F3's plan
             of three rows over two bands worked by hand from its stored ladder and bands and F1's holding none, F2's fold
             alone open and its row selected where the link names it and none for a name no row holds, with the page's
-            script and the stylesheet; the S&P 600's S1 folding its no-plan line and no plan's tables beside its card, S3's
-            fold alone open where the link names it; and every card read back off its fold or its holding's row.
+            script and the stylesheet; the S&P 600's S1 folding the line naming its plan, its band against its close and
+            no plan's tables beside its card, S3's fold alone open where the link names it; and every card read back off
+            its fold or its holding's row.
 Claims:     1372, as before: no row's claim added or removed.
 Mutated:    each rule stated before its run. Every fold closed where the link names no row, broken by opening the first:
             predicted red at F1's fold; result red, F1's fold open with no name in the link. Each fold its own stock's
@@ -5724,8 +5727,20 @@ Mutated:    each rule stated before its run. Every fold closed where the link na
             reason: predicted red at S1's fold; result red, the plan's empty tables drawn in the line's place. The fold a
             link names open, broken by opening none: predicted red at F2's fold; result red, no fold open. Each made on
             this branch and reverted before anything was committed, and the tests green.
+Reviewed:   before the merge, by a review of this pull request's work: an S&P 400 or 600 fold opened on a line saying no
+            plan is stored beneath the row drawing its rule's buy, stop and target and above the card drawing them in
+            money, and now names them and says the ladder is the S&P 500's alone, the line's mutation above made over the
+            line as it first stood; no test stored a band for such a fold, and S1's band is read off it now with its close;
+            a row a link names was scrolled beneath the sticky masthead, a fold a link names opened again on every redraw
+            once closed, and a press on a card closed every other open fold and put the window back at an offset taken
+            with them open, each repaired in the page's script and stylesheet and read off the shell, which the suite
+            reads as text, having no browser to run it in. Two properties are mutated, the rule stated before each run:
+            the line naming the plan, broken by handing the fold the name page's reason, predicted red at S1's fold,
+            result red, S1 has no plan to draw; and the fold's bands, broken by handing it none, predicted red at S1's
+            band, result red, no band where one. Each run filtered to the cards test, made in this checkout over the
+            file's own text and restored from it, the tree's diff the same after each.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
-            stated before that run: all six steps, 0 warnings, 0 errors, 2576 of 2576 tests ran with none failed,
+            stated before that run: all six steps, 0 warnings, 0 errors, 2577 of 2577 tests ran with none failed,
             migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
             report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.

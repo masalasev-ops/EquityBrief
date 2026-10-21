@@ -1336,7 +1336,7 @@ app.MapGet("/screens/tonight/{night?}", async (
             RuleScreen.DesignB(indexHeavyweightVariant ?? heavyweightRule, indexRegister));
 
         // Each buy point's fold holds the bands the night stored for the stock against its close, beside the line saying
-        // its plan is read for the S&P 500's members alone.
+        // its plan is its rule's buy, stop and target and the ladder at the bands is worked for the S&P 500's members alone.
         // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
         var indexUniverse = await read.UniverseAsync(reading.Code, dated);
         var indexPlans = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -1354,7 +1354,7 @@ app.MapGet("/screens/tonight/{night?}", async (
                 await read.LevelsAsync(buyPoint, dated),
                 stock?.TypicalMove,
                 stock?.Close is not null,
-                NameScreen.PlanForTheLargeIndexAlone);
+                inPlace: NameScreen.LadderForTheLargeIndexAlone(buyPoint));
         }
 
         return Results.Content(

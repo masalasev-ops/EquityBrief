@@ -786,6 +786,8 @@ public sealed partial class SinglePageApp : IComponent
           event.preventDefault();
           const holder = form.closest('tr.card-row, tr.fold-row, section.name-card');
           const open = holder ? holder.id || (holder.querySelector('.decision-card') ? 'name-card' : '') : '';
+          // Every card row and fold open before the press, opened again once the page is drawn so it stands as it stood.
+          const opens = [...screen.querySelectorAll('tr.card-row:not([hidden]), tr.fold-row:not([hidden])')].map(row => row.id).filter(id => id);
           for (const button of form.querySelectorAll('button')) { button.disabled = true; }
           const response = await fetch(form.getAttribute('action'), {
             method: 'POST',
@@ -795,13 +797,16 @@ public sealed partial class SinglePageApp : IComponent
           const said = await response.text();
           const kept = scrollY;
           await show();
+          for (const id of opens) {
+            const reopened = document.getElementById(id);
+            if (reopened && reopened.matches('tr.card-row, tr.fold-row')) {
+              reopened.hidden = false;
+              const toggle = screen.querySelector('[aria-controls="' + reopened.id + '"]');
+              if (toggle) { toggle.setAttribute('aria-expanded', 'true'); }
+            }
+          }
           scrollTo(0, kept);
           const again = open === 'name-card' ? screen.querySelector('section.name-card') : (open ? document.getElementById(open) : null);
-          if (again && again.matches('tr.card-row, tr.fold-row')) {
-            again.hidden = false;
-            const toggle = screen.querySelector('[aria-controls="' + again.id + '"]');
-            if (toggle) { toggle.setAttribute('aria-expanded', 'true'); }
-          }
           const place = again ? again.querySelector('.card-said') : screen.querySelector('.account-said');
           if (place) { place.innerHTML = said; }
         });
@@ -914,12 +919,18 @@ public sealed partial class SinglePageApp : IComponent
           }
           if (event.target.closest('a[href^="#"]')) { fresh = true; }
         });
-        // The row a control opens and closes, and the control saying which it now is.
+        // The row a control opens and closes, and the control saying which it now is. A fold the link names, once closed,
+        // leaves the link naming no row, so a redraw keeps it closed.
         function flip(toggle) {
           const opened = document.getElementById(toggle.getAttribute('aria-controls'));
           if (opened) {
             opened.hidden = !opened.hidden;
             toggle.setAttribute('aria-expanded', opened.hidden ? 'false' : 'true');
+            const named = opened.hidden && opened.matches('tr.fold-row') ? screen.querySelector('tr.sel[data-fold="' + CSS.escape(opened.id) + '"]') : null;
+            if (named) {
+              named.classList.remove('sel');
+              history.replaceState(null, '', merged('name', null));
+            }
           }
         }
         function currentTheme() {
