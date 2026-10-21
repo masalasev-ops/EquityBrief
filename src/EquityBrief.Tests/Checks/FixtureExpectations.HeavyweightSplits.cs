@@ -8,9 +8,9 @@ using EquityBrief.Worker.Indices;
 
 namespace EquityBrief.Tests.Checks;
 
-// fixture-expectations, 20.11's ruling of the evening of 2026-10-20, clause 3: a company's value reads its newest filed
-// share count adjusted by every split between the day the count was asked and the session, the splits an S&P 400 or 600
-// member's own bars carry, so a split after its newest count no longer misranks it; worked by hand over a two for one.
+// fixture-expectations, 15.1: a company's value reads its newest filed share count adjusted by every split between the
+// day the count was asked and the session, the splits an S&P 400 or 600 member's own bars carry, so a split after its
+// newest count does not misrank it; worked by hand over a two for one.
 // see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session
 public partial class FixtureExpectations
 {
@@ -38,7 +38,7 @@ public partial class FixtureExpectations
         Assert.Empty(CompanyValue.SplitsIn([new(TwoForOne.AddDays(-1), 99m, 100m), new(TwoForOne, 100m, 100m)]));
         Assert.Empty(CompanyValue.SplitsIn([new(TwoForOne.AddDays(-1), 100m, 127.2m), new(TwoForOne, 100m, 100m)]));
 
-        // A count of 150 million shares asked on 2026-06-30, before the split: the session before the split reads it at
+        // A count of 150 million shares asked before the split: the session before the split reads it at
         // its close as traded of 100, $15 billion; the split's session reads it doubled, 300 million, at 50, $15 billion
         // again, where the count at 50 alone would read $7.5 billion. The same company at the same price either side of the
         // split is worth the same.
@@ -52,12 +52,12 @@ public partial class FixtureExpectations
         Assert.Equal(150_000_000m, CompanyValue.SharesOn(counts[0], TwoForOne.AddDays(-1), splits));
     }
 
-    // Six S&P 400 members of one sector over 261 calendar days to 2026-10-01 beside IJH, as the index heavyweights' store
-    // is built: the fund rising 1 per cent and falling 0.8 on alternate days, S moving 1.5 times the fund and 0.1 per cent
-    // a day more, M1 1.1 times and 0.1 more, and M2 to M5 half the fund and 0.3 less, each close rounded to four places, a
-    // million shares a day and four profitable quarters each. Their counts were asked on 2026-06-30: M1's 300 million, M2's
-    // 900, M3's 800, M4's 700, M5's 600, and S's 150 million, S splitting two for one on 2026-09-01, its closes as traded
-    // twice the store's before the split and the same from it.
+    // Six S&P 400 members of one sector over 261 calendar days to the night beside IJH, as the index heavyweights' store is
+    // built: the fund rising 1 per cent and falling 0.8 on alternate days, S moving 1.5 times the fund and 0.1 per cent a
+    // day more, M1 1.1 times and 0.1 more, and M2 to M5 half the fund and 0.3 less, each close rounded to four places, a
+    // million shares a day and four profitable quarters each. Their counts were asked on the counts' day: M1's 300
+    // million, M2's 900, M3's 800, M4's 700, M5's 600, and S's 150 million, S splitting two for one after it, its closes
+    // as traded twice the store's before the split and the same from it.
     static (TemporaryStore Store, Dictionary<string, decimal[]> Closes, DateOnly[] Days) SplitSectorStore()
     {
         var store = new TemporaryStore().Migrated();
@@ -114,8 +114,8 @@ public partial class FixtureExpectations
     }
 
     // A frozen S&P 400 heavyweights rule reading each sector's five largest members, two leaders a sector with a beta of
-    // at least 1, over the sector above on its first night, 2026-10-01. On the night every close as traded is the store's,
-    // S's 2026-09-01 split behind it: S is worth 150 million shares doubled at its close, M1 300 million, M2 900, M3 800,
+    // at least 1, over the sector above on its first night. On the night every close as traded is the store's, S's split
+    // behind it: S is worth 150 million shares doubled at its close, M1 300 million, M2 900, M3 800,
     // M4 700 and M5 600 million at theirs, so the five largest are S, M1, M2, M3 and M4, and the two leaders over the 251
     // sessions with a beta of 1 or more are S and M1, which the rule buys. Read at the count alone, S would be worth half
     // that, under M5, and the rule would buy M1 alone.

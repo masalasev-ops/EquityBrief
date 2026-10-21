@@ -5298,3 +5298,93 @@ Carried:    the remedy `tools/remedies/2026-10-21-20.11-the-readings-before-the-
             the versions this moves them to, and the S&P 400's frozen rules' nights replayed; the member readings' year's
             high, read over the sessions a short year holds rather than none, put to the operator; PR 505 rebased with
             its migration at 104; and the phase 18 sign-off by a fresh session.
+
+### 20.11 - the remedy of the evening's clauses 2 and 3 run from main: 30 moved rules registered again and the S&P 400's frozen rules' nights replayed   2026-10-21
+
+Not a checkpoint entry: it records PR 515's merge and remedy and lands nothing.
+Gates:      `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 06fa80e7, PR 515's head, whose tree its merge
+            holds, the phase report ending at 03:06:16Z: all six steps, 0 warnings, 2564 of 2564 tests, migrations 0 to
+            103 with none pending, schema version 103; the phase report 60 tables, 1372 claims, 1372 passing, none out of
+            scope and none unexamined, 1383 placements reconciled against a floor of 34, 43 checks run and passed, each
+            the figure PR 515's newest entry stated, which the report held to the run. The four hosted runs passed.
+Ran:        PR 515 merged by the operator at 03:31:51Z on 2026-10-21 as dc36b3ee, the history read stopped at 03:33:09Z and
+            the checkout's main brought up to it; `tools/remedies/2026-10-21-20.11-the-readings-before-the-year.txt`
+            from 03:33:43Z to 03:46:47Z, both steps, with no night, off-peak run, drain, local run or monthly run writing.
+            No model call and no provider request.
+Measured:   30 rules registered again at one instant, each unchanged and named as restarting: the S&P 500's four
+            heavyweights from e2335d9e3024 to 6ab1c2b1c6a4, and on the S&P 400 and on the S&P 600 the pullback, 3 and 4,
+            from 784f41937a1b to adc4b9f11470, the breakout, 3 and 3, from 4495137feeef to acdeab81269c, the drift, 4 and
+            3, from c7b3c0232b0e to a60b29a9a6fe, and the heavyweights, 2 and 4, from 5020a72f88f2 to 33d344c490cd. The
+            S&P 400's frozen rules' nights replayed from 2019-01-02 to 2026-10-20: the pullback over 1,960 sessions, 543
+            listing, 334 stretches completed and its mark 25; the breakout over 1,960, 619, 303 and 47; the drift over
+            1,961, 702, 232 and 46.
+Read:       under pin 3 at 22,394 of 45,381 releases, 49.3 per cent, when it stopped; started again at 03:47:05Z from
+            8c5fdae2's clean copy, PR 515 moving none of the read's code, with the card at 250 W; the read surface on 5152
+            started again from main's Release.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 19.3 - correction: each setup card's funnel bar drawn as the share of the members reaching its gate that passed it, with how many passed of how many reached beside it   2026-10-21
+
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its
+            remedies, the evening's rulings in PRs 514 and 515 merged with theirs, and the 17.2 correction merged; in
+            review, 20.8 with its correction, PR 505; in progress, this correction, in one pull request; next, this pull
+            request merged at the read's daily stop, PR 505 rebased with its migration at 104, the phase 18 sign-off by a
+            fresh session, the local lane's one text field, 21.0 once its ruling is given, the phase 19 sign-off, and pin
+            3's completion steps.
+Ruled:      by the operator on 2026-10-21, in these words: "The setup cards' funnels on every index: draw each gate's bar
+            as the share of the members reaching that gate that passed it, with "passed of reaching" in words beside it
+            (as "1 of 601", then "1 of 1"), so the gate doing the cutting reads at a glance instead of every bar drawing as
+            a hairline against the index. The line naming the gate that stopped the most stays. Amend 15.7's and 15.21's
+            words for the funnel bars, keeping their reasoning. A test reading a rendered card back over a constructed
+            night where the first gate stops all but one, with one mutation. Merge only at the read's daily stop."
+            Section 15.21 is paper trading and holds no words on the funnel; the funnel bars' words stand in 15.5's mark
+            row and 15.7's card row, which this amends, as the operator was told when the ruling was given.
+Found:      each bar was drawn as its count against the first gate's, so where an early gate stopped most of the index
+            every bar after it drew as a hairline, and the gate doing the cutting could not be told from the gates passing
+            every member that reached them. The funnel the night stored held no count of the members it read, so a closed
+            market check's row could say only that none passed.
+Built:      the rule cards store with each funnel how many members the night read for the rule, each of which reached its
+            first gate: the swing filter's members holding a verdict, the members a family rule read and each index
+            family's answers. A card draws each bar as the share of the members reaching its gate that passed it, the
+            first gate reached by the members read and each later one by those the gate before passed, with how many
+            passed of how many reached it in words beside it; a funnel stored without the count says how many passed its
+            first gate alone. A gate a swing filter rule does not read, the market check where it reads none and the trend
+            where its sector's lead stands in its place, counts every member it read as passing, and the business-first
+            family counts a member its approved setting's hooks keep off at a part of its own. The words' column is wider;
+            the line naming the gate that stopped the most is unchanged. The two architecture rows and the rule cards' row,
+            SCHEMA's funnel note, the guide, the roster and the changelog.
+Reviewed:   eleven findings confirmed and fixed here: no test told the stored count from the first gate's passes or
+            carried it from the store to a drawn row, and none read the S&P 500's business-first row's; a swing variant
+            reading no market check drew every gate past a closed check as 0 of 0 beside its own picks; a member the
+            business-first family's hooks keep off stood at no part, so a bar read a short reaching figure; and SCHEMA's
+            note named no evaluated variant whose funnel the night keeps none of. Three were refuted.
+Tests:      2567, three more: a constructed S&P 400 night of three members, M1 alone passing the breakout's setup, through
+            the rule cards' stage and Tonight's page, the stored funnel carrying the three read and the card drawing the
+            setup's 1 of 3 at a third of its bar and marked, each part after it 1 of 1 and whole, and beneath them the line
+            that the setup stopped 2 of the 3 reaching it; the closed index store's night through the index families' and
+            the rule cards' stages, its breakout funnel stored with the seventeen members read while its market check
+            passes none and its card drawing 0 of 17 and then 0 of 0; and a swing variant reading no market check, one
+            reading its sector's lead and the business-first family's hooks, each funnel worked by hand. A closed market
+            check drawn passing 0 of 397, and stored without the count saying 0 alone; the variant card's bars 3 of 10, 2
+            of 3, 1 of 2 and 1 of 1; the count read off JSON as written; and the stored funnels of the night's, the tone
+            variant's and the fixture's business-first tests carrying their counts.
+Claims:     1372, as before: one part of the card's rule renamed and none added.
+Mutated:    the rule, stated before the run: each bar the share of the members reaching its gate that passed it, broken
+            by drawing every bar against the first gate's count again: predicted red at the floors' bar, 33.3 where 100
+            is worked by hand. Result: red, the floors', the profit's and the interest cover's bars at 33.3. For the
+            review's fixes, each rule stated before its run: the stored count the members read, broken by storing the
+            first gate's passes: predicted red at the closed night's funnel; result red, reached 0 where 17. The count read
+            into the card, broken by handing the card none: predicted red at the closed night's market row; result red,
+            "0" where "0 of 17". A gate a rule does not read passed, broken by handing back its answers unchanged:
+            predicted red at the market-off funnel; result red, market 0 where 3. The hooks a part of their own, broken by
+            leaving them out of the business-first parts: predicted red at its funnel; result red, market 6 where 8. Each
+            made on this branch and reverted before anything was committed, and the tests green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2567 of 2567 tests ran with none failed,
+            migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the member readings' year's high, read over the sessions a short year holds rather than none, put to the
+            operator; PR 505 rebased with its migration at 104; and the phase 18 sign-off by a fresh session.

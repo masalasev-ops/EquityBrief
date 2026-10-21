@@ -95,11 +95,13 @@ public partial class ReadSurface
         Assert.DoesNotContain("data-ticker=\"K1\"", card, StringComparison.Ordinal);
         Assert.Contains("<p class=\"rule-share\" data-shared=\"\" data-added=\"K3\" data-dropped=\"K1,K2\">Beside the live rule's passes tonight: shares none · adds K3 · drops K1, K2.</p>", card, StringComparison.Ordinal);
 
-        // Its funnel as one bar, the gate stopping the most of those reaching it marked and named: of the 10 the market
-        // passed, 3 made a new high, 7 stopped there, where the volume, the tightening and the trade stopped 1, 1 and 0; the
-        // market's row left out while the check is open.
-        Assert.Contains("<div class=\"funnel-bar\" data-gates=\"5\" data-largest-drop=\"new high\" data-market-row=\"false\"><ol class=\"rule-funnel\"><li data-gate=\"new high\" data-passed=\"3\" class=\"largest-drop\">", card, StringComparison.Ordinal);
-        Assert.Contains("<li data-gate=\"new high\" data-passed=\"3\" class=\"largest-drop\">", card, StringComparison.Ordinal);
+        // Its funnel as one bar a gate, the gate stopping the most of those reaching it marked and named: of the 10 the
+        // market passed, 3 made a new high, 7 stopped there, where the volume, the tightening and the trade stopped 1, 1 and
+        // 0; the market's row left out while the check is open.
+        Assert.Contains("<div class=\"funnel-bar\" data-gates=\"5\" data-largest-drop=\"new high\" data-market-row=\"false\"><ol class=\"rule-funnel\"><li data-gate=\"new high\" data-passed=\"3\" data-reached=\"10\" class=\"largest-drop\">", card, StringComparison.Ordinal);
+        Assert.Equal(
+            [("new high", "3", "10", true, "30", "3 of 10"), ("volume", "2", "3", false, "66.7", "2 of 3"), ("tightened", "1", "2", false, "50", "1 of 2"), ("trade", "1", "1", false, "100", "1 of 1")],
+            FunnelRows(card));
         Assert.Contains("<p class=\"funnel-drop\" data-drop=\"new high\">Most stopped at the new high gate: 7 of the 10 reaching it.</p>", card, StringComparison.Ordinal);
         Assert.Contains("<p class=\"stretch-line\" data-stretch=\"0\" data-mark=\"none\" data-flagged=\"false\" data-completed=\"2\" data-sessions=\"4\">Listed tonight, so its empty stretch is nothing; no mark yet: 2 of 30 stretches completed over 4 of 504 sessions.</p>", card, StringComparison.Ordinal);
 
@@ -177,7 +179,7 @@ public partial class ReadSurface
         // check closed.
         Assert.Contains("data-market-row=\"false\"", card, StringComparison.Ordinal);
         Assert.DoesNotContain("<li data-gate=\"market\"", card, StringComparison.Ordinal);
-        Assert.Contains("<li data-gate=\"interest cover\" data-passed=\"1\"><span class=\"fb-name\">interest cover</span>", card, StringComparison.Ordinal);
+        Assert.Contains("<li data-gate=\"interest cover\" data-passed=\"1\" data-reached=\"1\"><span class=\"fb-name\">interest cover</span>", card, StringComparison.Ordinal);
         Assert.Contains(
             card.Contains("data-folded=\"true\"", StringComparison.Ordinal) ? "most stopped at the setup gate (2 of 3)" : "<p class=\"funnel-drop\" data-drop=\"setup\">Most stopped at the setup gate: 2 of the 3 reaching it.</p>",
             card,

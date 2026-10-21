@@ -106,7 +106,8 @@ public static class RuleScreen
             large || live is not null || variants.Length > 0 ? null : NoVariantLine(indexName),
             Chips: ChipViews(liveChips, chosen.Live ? liveChips : ChipsOf(chosenRow!), !chosen.Live),
             Share: own is null ? null : ShareOf(large || live is not null, card.Passes ?? [], [.. own.Select(pick => pick.Ticker)]),
-            Words: words);
+            Words: words,
+            Reached: row?.Gates is { } stored ? RuleRows.ReachedOf(stored) : null);
     }
 
     // The live or provisional rule's tab: live where a freeze registered one, provisional otherwise, as the card's pill

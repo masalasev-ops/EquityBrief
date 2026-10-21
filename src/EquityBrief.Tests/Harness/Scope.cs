@@ -1643,7 +1643,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.5 The mark vocabulary", "Funnel bars")] = new Scoped(
             Verdict.Pass,
-            "one bar for the index and one for each check in turn with its count, read off the rendered mark; from 19.3 a card's bar a gate with its largest drop picked by hand over constructed funnels, the earlier gate taking a tie, and a first gate passing none marked so, read off the rendered card",
+            "one bar for the index and one for each check in turn with its count, read off the rendered mark; from 19.3 a card's bar a gate with its largest drop picked by hand over constructed funnels, the earlier gate taking a tie, and a first gate passing none marked so, read off the rendered card; and from the 19.3 correction of 2026-10-21 each bar's length against the members reaching its gate and its words worked by hand, read off cards the rule cards' stage drew over a constructed night whose first gate drawn stops all but one and over one whose market check closed, with a funnel stored without the count saying how many passed its first gate alone",
             ByReadSurface),
         [CheckReach.Key(LimitsTable, "Market label")] = new Scoped(
             Verdict.Pass,
@@ -3849,8 +3849,8 @@ internal static class Scope
             Verdict.Pass, "the picks a chosen variant shares, adds and drops worked by hand over a constructed night and read off the rendered card's line", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, its own picks with their plans and the family's three numbers in place of the live rule's rows")] = new Scoped(
             Verdict.Pass, "a chosen variant's own picks read off the rendered card with their plans and none of the live rule's rows, and each family's three numbers worked by hand from the ledger's readings the night stored, one stored as none drawn so", ByReadSurface),
-        [CheckReach.Key("15.7 Tonight", "A family's card's rule, the funnel drawn as one bar a gate with the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so")] = new Scoped(
-            Verdict.Pass, "the largest drop picked by hand over constructed funnels, the earlier gate taking a tie and none where no gate stops one, read off the rendered card marked and named, and a first gate passing none marked so with no line saying no gate stopped a member", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card's rule, the funnel drawn as one bar a gate as long as the share of the members reaching it that passed it with how many passed of how many reached it beside it and the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so")] = new Scoped(
+            Verdict.Pass, "each bar's length and its words worked by hand and read back off cards the rule cards' stage drew over a constructed night whose first gate drawn stops all but one and over one whose market check closed over the seventeen members it read, and off cards over a closed market check with and without the count of the members read; the largest drop picked by hand over constructed funnels, the earlier gate taking a tie and none where no gate stops one, read off the rendered card marked and named, and a first gate passing none marked so with no line saying no gate stopped a member", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, behind an expander naming the count forming")] = new Scoped(
             Verdict.Pass, "the forming rows read off the rendered breakout card inside the expander whose summary names the count forming and the rows drawn", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the choice kept in the link under the family's own key by a handler merging the key into the query the link holds")] = new Scoped(
@@ -6029,7 +6029,7 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, a chosen variant's differing chips marked")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, one line naming the picks it shares with the live rule's passes tonight and those it adds and drops")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, its own picks with their plans and the family's three numbers in place of the live rule's rows")] = "19.3",
-        [CheckReach.Key("15.7 Tonight", "A family's card's rule, the funnel drawn as one bar a gate with the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so")] = "19.3",
+        [CheckReach.Key("15.7 Tonight", "A family's card's rule, the funnel drawn as one bar a gate as long as the share of the members reaching it that passed it with how many passed of how many reached it beside it and the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, behind an expander naming the count forming")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, four tiles counting its holdings and the sectors of the eleven holding one and stating its return since the last rebalance beside the equal-weighted return of the funds of the sectors it holds over the same sessions and the sessions to the next rebalance")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, the holdings grouped by sector under each sector's heading with its fund and the fund's return over the look-back to the night")] = "19.3",
@@ -6615,7 +6615,7 @@ internal static class Scope
             "one line naming the picks it shares with the live rule's passes tonight and those it adds and drops",
             "its own picks with their plans and the family's three numbers in place of the live rule's rows",
             "the chosen rule's funnel with each gate and how many members passed it and every gate before, or that the night did not evaluate the rule",
-            "the funnel drawn as one bar a gate with the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so",
+            "the funnel drawn as one bar a gate as long as the share of the members reaching it that passed it with how many passed of how many reached it beside it and the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so",
             "behind an expander naming the count forming",
             "the stretch line saying how many nights the rule has listed nothing for against the mark its own past empty nights set and flagged past it, or how far the floors are from being met while no mark is drawn",
             "under a breakout card the breakouts forming with the count forming and the rows drawn and the nearest misses first",

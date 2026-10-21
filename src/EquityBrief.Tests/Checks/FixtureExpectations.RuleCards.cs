@@ -203,6 +203,56 @@ public partial class FixtureExpectations
 
         Assert.Equal([(RuleRows.Market, 5), (RuleRows.Setup, 4), (RuleRows.Floors, 3), (RuleRows.Profit, 2), (RuleRows.Cover, 1)], parts);
         Assert.Equal(RuleRows.ReadGates(RuleRows.GatesJson(parts)), parts);
+
+        // The count of the members reaching a stored funnel's first gate, written on the first gate and read back off the
+        // JSON as written, and none off a funnel stored without it.
+        Assert.Equal("[{\"gate\":\"market\",\"passed\":0,\"reached\":17},{\"gate\":\"setup\",\"passed\":0}]", RuleRows.GatesJson([("market", 0), ("setup", 0)], 17));
+        Assert.Equal(601, RuleRows.ReachedOf("[{\"gate\":\"market\",\"passed\":601,\"reached\":601},{\"gate\":\"setup\",\"passed\":5}]"));
+        Assert.Null(RuleRows.ReachedOf("[{\"gate\":\"market\",\"passed\":601},{\"gate\":\"setup\",\"passed\":5}]"));
+        Assert.Null(RuleRows.ReachedOf(null));
+    }
+
+    [Fact]
+    public void ASwingRulesFunnelCountsAGateItDoesNotReadAsPassedAndTheBusinessFirstFunnelCountsItsHooksAsAPartOfItsOwn()
+    {
+        // Three members of a night the market check closed: all three failing the check, two passing the trend and one
+        // every gate after it. A rule reading no market check fires without it, so its funnel counts the check passed by
+        // all three and the trend as the first cut; a rule reading the check counts none past it.
+        IReadOnlyDictionary<string, string>[] closed =
+        [
+            new Dictionary<string, string> { [SwingGates.Market] = "failed", [SwingGates.Trend] = "passed", [SwingGates.Setup] = "passed", [SwingGates.Trigger] = "passed", [SwingGates.Trade] = "passed" },
+            new Dictionary<string, string> { [SwingGates.Market] = "failed", [SwingGates.Trend] = "passed", [SwingGates.Setup] = "failed", [SwingGates.Trigger] = "passed", [SwingGates.Trade] = "passed" },
+            new Dictionary<string, string> { [SwingGates.Market] = "failed", [SwingGates.Trend] = "failed", [SwingGates.Setup] = "passed", [SwingGates.Trigger] = "passed", [SwingGates.Trade] = "passed" },
+        ];
+        Dictionary<string, double> marketOff = new(StringComparer.Ordinal) { [SwingFilterRule.MarketGateParameter] = 0 };
+        Dictionary<string, double> marketOn = new(StringComparer.Ordinal) { [SwingFilterRule.MarketGateParameter] = 1 };
+
+        Assert.Equal(
+            [(SwingGates.Market, 3), (SwingGates.Trend, 2), (SwingGates.Setup, 1), (SwingGates.Trigger, 1), (SwingGates.Trade, 1)],
+            RuleCards.Funnel(SwingGates.Order, [.. closed.Select(member => RuleCards.SwingAnswers(member, marketOff))]));
+        Assert.Equal(
+            [(SwingGates.Market, 0), (SwingGates.Trend, 0), (SwingGates.Setup, 0), (SwingGates.Trigger, 0), (SwingGates.Trade, 0)],
+            RuleCards.Funnel(SwingGates.Order, [.. closed.Select(member => RuleCards.SwingAnswers(member, marketOn))]));
+
+        // A rule reading its sector's lead in the trend and strength gate's place counts that gate passed by every member it
+        // read as well.
+        Dictionary<string, double> leads = new(StringComparer.Ordinal) { [SwingFilterRule.MarketGateParameter] = 0, [SwingFilterRule.LeaderSectorsParameter] = 3, [SwingFilterRule.LeaderShareOfParameter] = 5 };
+
+        Assert.Equal(
+            [(SwingGates.Market, 3), (SwingGates.Trend, 3), (SwingGates.Setup, 2), (SwingGates.Trigger, 2), (SwingGates.Trade, 2)],
+            RuleCards.Funnel(SwingGates.Order, [.. closed.Select(member => RuleCards.SwingAnswers(member, leads))]));
+
+        // The fundamentals-first family at an approved setting whose hooks keep two of its three passing members off: the
+        // hooks a part of their own after the trend, so the market check passes every member read and none stands at no
+        // part.
+        Assert.Equal(
+            [(RuleRows.Market, 8), (RuleRows.Setup, 3), (RuleRows.Floors, 3), (RuleRows.Readings, 3), (RuleRows.Profit, 3), (RuleRows.Revenue, 3), (RuleRows.Margin, 3), (RuleRows.Cash, 3), (RuleRows.Trend, 3), (IndexNightRead.NotByItsHooks, 1)],
+            RuleCards.IndexFunnel(
+            [
+                .. Enumerable.Repeat<(string, bool, string?)>((FundamentalsRule.Name, false, IndexNightRead.NoSetup), 5),
+                .. Enumerable.Repeat<(string, bool, string?)>((FundamentalsRule.Name, false, IndexNightRead.NotByItsHooks), 2),
+                (FundamentalsRule.Name, true, null),
+            ], FundamentalsRule.Name));
     }
 
     [Fact]
