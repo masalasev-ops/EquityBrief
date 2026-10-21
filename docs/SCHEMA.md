@@ -2501,7 +2501,7 @@ Grain: one row per ticker per quarters fetch per forward period.
 | `ticker` | TEXT | |
 | `fetched_at` | TEXT | UTC instant of the quarters fetch, the one its `reported_quarter` rows carry |
 | `period` | TEXT | `0q`, `+1q`, `0y` or `+1y`: the current and the next quarter and fiscal year, as the answer names them |
-| `period_end` | TEXT | the end of that period, the newest the answer files under its word |
+| `period_end` | TEXT | the end of that period, the newest the answer files under its word; a quarter ending its company's fiscal year is filed under the year alone, the answer keeping one entry an end |
 | `eps_average`, `eps_low`, `eps_high`, `eps_year_ago` | TEXT | decimal in code, the consensus earnings a share, its range and the year-earlier figure, each null where the answer files none |
 | `eps_analysts` | INTEGER | how many analysts make the earnings estimate, null where none is filed |
 | `revenue_average`, `revenue_low`, `revenue_high`, `revenue_year_ago` | TEXT | decimal in code, the consensus revenue, its range and the year-earlier figure, each null where none is filed |
@@ -2511,7 +2511,7 @@ Grain: one row per ticker per quarters fetch per forward period.
 
 Primary key: `ticker`, `fetched_at`, `period`.
 
-**The analysts' earnings trend each quarters fetch carries, kept by the quarter fetcher in the write that stores its quarters** (see: The quarters fetch keeps the gross profit and cash flow lines, the estimate trend and the analysts' mean and target its answer carries). A period the answer files no entry for is not stored, and nothing updates or deletes a row. The name page reads the newest fetch on or before its night for the analysts' region and the growth tile, and the newest fetch made before a quarter's report for that quarter's revenue estimate; no rule, list or gate reads the table, and no figure in it reaches a facts file (see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one).
+**The analysts' earnings trend each quarters fetch carries, kept by the quarter fetcher in the write that stores its quarters** (see: The quarters fetch keeps the gross profit and cash flow lines, the estimate trend and the analysts' mean and target its answer carries). A period the answer files no entry for is not stored, and nothing updates or deletes a row. The name page reads the newest fetch on or before its night for the analysts' region and the growth tile, and the newest fetch made before a quarter's report for that quarter's revenue estimate; from the 18.2 correction of 2026-10-21 that is the newest fetch made before the instant the calendar's timing on the report date places the release in New York, its current quarter's revenue estimate or, for a quarter ending its fiscal year, the year's, and the stock's first fetch gives the day its estimates are kept from (see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters); no rule, list or gate reads the table, and no figure in it reaches a facts file (see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one).
 
 ### news_pulse
 Grain: one row per ticker per date.

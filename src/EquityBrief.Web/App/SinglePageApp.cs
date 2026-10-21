@@ -1782,17 +1782,17 @@ public sealed partial class SinglePageApp : IComponent
                 region: "news"));
         }
 
-        // The latest quarter, which section 4 lists after the card: each line against the estimate kept before the report
+        // The latest quarter, which section 4 lists after the card: each line against the estimate kept before the release
         // and the same quarter a year earlier, the eight newest quarters' growth, and what the numbers say with every figure
         // from the filing folded beneath. The numbers arrive already written, for the reason the event book does: what they
         // hold is stored figures and the sentences that state an absence, rather than a mark.
-        // see: The latest quarter is read line by line against the estimate kept before its report and the same quarter a year earlier
+        // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
         var quarterBody = new StringBuilder();
 
         quarterBody.Append(report is null ? string.Empty : marks.QuarterTable(ticker, report));
         quarterBody.Append(report is null ? string.Empty : Cards.Key(
             "How to read it.",
-            "Each line of the newest quarter the company reported: what it reported, the analysts' average estimate kept before the report where one was, the difference in the line's own unit and in per cent of the estimate, the same quarter a year earlier and the change on it, and for gross, operating and net income their margin on revenue then and a year earlier. A rise is drawn in green and a fall in red, with its sign always written.",
+            "Each line of the newest quarter the company reported: what it reported, the analysts' average estimate kept before the results were released where one was, the difference in the line's own unit and in per cent of the estimate, the same quarter a year earlier and the change on it, and for gross, operating and net income their margin on revenue then and a year earlier. Analysts publish estimates for revenue and earnings a share alone, so the other lines say none published. A company's fiscal fourth quarter has no quarterly revenue estimate of its own, so its revenue is read against the year's estimate less the year's three earlier quarters as reported, marked implied and worked out beneath the table. A revenue estimate missing for a report released before EquityBrief began keeping the stock's estimates says the day they are kept from. A rise is drawn in green and a fall in red, with its sign always written.",
             "A line beating its estimate says the quarter came in ahead of what was expected, and the change on a year says whether the business grew; neither moves the plan, which is read from the price."));
         quarterBody.Append(report is null ? string.Empty : "<div class=\"sub\">Growth on a year, the eight newest quarters</div><div class=\"fig\">" + marks.GrowthBars(ticker, report.Growth) + "</div>" + Cards.Key(
             "How to read it.",
@@ -1806,7 +1806,7 @@ public sealed partial class SinglePageApp : IComponent
             filedOn,
             quarterBody + Cards.Key(
                 "Where these come from.",
-                "Each figure is from the company's own filing, dated as the filing is, as the newest fetch of its quarters stored it. The estimate is the analysts' average before the report.",
+                "Each figure is from the company's own filing, dated as the filing is, as the newest fetch of its quarters stored it. The estimate is the analysts' average kept before the results were released, placed by the calendar's report time: before the open, after the close, or the start of the report day where no time is stated.",
                 "These are the company's reported results. Nothing in the plan is computed from them."),
             title: report?.Quarter is { } latest ? "The quarter to " + Cards.Day(latest.Quarter) + ", line by line" : "The latest quarter, line by line",
             filed: true,

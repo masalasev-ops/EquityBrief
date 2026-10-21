@@ -247,11 +247,16 @@ public static class ChartScreen
         var perShare = quarter?.Lines.FirstOrDefault(line => line.PerShare);
         var revenue = quarter?.Lines.FirstOrDefault(line => !line.PerShare);
 
+        // A figure against the estimate the report page reads it against, an implied one named so, and where none is read
+        // the report page's words for why.
+        // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
         static GridFigure AgainstItsEstimate(string label, EquityBrief.Core.Report.QuarterLine? line, Func<decimal, string> shown) =>
             line?.Reported is { } reported
                 ? new GridFigure(
                     label,
-                    shown(reported) + (line.Estimate is { } estimate ? FormattableString.Invariant($" against an estimate of {shown(estimate)}") : ", no estimate filed"),
+                    shown(reported) + (line.Estimate is { } estimate
+                        ? FormattableString.Invariant($" against {(line.Implied is null ? "an" : "an implied")} estimate of {shown(estimate)}")
+                        : ", its estimate " + (line.EstimateAbsent ?? EquityBrief.Core.Report.QuarterLines.NonePublished)),
                     reported.ToString(CultureInfo.InvariantCulture))
                 : Missing(label);
 

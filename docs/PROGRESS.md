@@ -5576,3 +5576,59 @@ Mutated:    each rule stated before its run. A company paying none read as one, 
             1 payment. Each made on this branch and reverted before anything was committed, and the tests green.
 Verified:   as the newest entry of this pull request.
 Carried:    none of its own.
+
+### 18.2 - correction: the latest quarter is read against the estimates kept before its release, a fiscal fourth quarter's revenue against its year's estimate less three quarters marked implied, and a line reading no estimate says why   2026-10-21
+
+Queue:      as the 15.1 correction of this pull request.
+Ruled:      by the operator on 2026-10-21, on the report's quarter table, in these words: "Once again i am seeing on report
+            things like "none kept". WHat hasnt been kept. Is the information not getting fetched during report
+            generation. Thats a bug". The fixes put to them, the fourth "The quarter table says "none published" for lines
+            no analyst estimates. For a revenue estimate missing because the report came before 2026-10-11, it says "not
+            kept: estimates kept from 2026-10-11"." and the fifth "The report-day check compares the fetch's time with the
+            release's time, not just the dates.", were answered "Yes, one PR now (Recommended)"; asked what a fiscal fourth
+            quarter's revenue should be read against, they answered "Implied estimate (Recommended)", the year's estimate
+            kept before the report less the three quarters reported, labelled implied.
+Found:      nothing went unfetched: the provider publishes no analyst estimate for gross profit, operating income, net
+            income and the two cash flows, and the store keeps the analysts' revenue estimates from the stock's first
+            estimate fetch, 2026-10-11 for most, so a report released before then has none kept; the cell said none kept
+            for all of them. The check refused a fetch by its date alone, so seven members fetched in the early hours of
+            2026-10-14 before their release before the open read none. A quarter ending its fiscal year has no quarterly
+            estimate at all, none of the 1,589 fetches stored by 2026-10-20 holding a quarter's row ending on its year's.
+            The year-earlier column said none kept on 8 pages, and the chart page said no estimate filed for revenue.
+Built:      a fetch counts as kept before the release where it was made before the instant the calendar's timing on the
+            report date places the release in New York, the open, the close or the day's start; a fiscal fourth quarter's
+            revenue is read against the year's estimate kept before its release less the three earlier quarters as
+            reported, drawn as implied with what it was worked from beneath the table, only where all three hold a revenue
+            and it stands above nought; and each line reading no estimate says why, none published, not filed, not kept
+            with the day the stock's estimates are kept from, not filed before the report or not read with the reason
+            (see: The latest quarter is read line by line against the estimates kept before its release and the quarter
+            a year earlier, a fiscal fourth quarter against its year's estimate less three quarters). A year-earlier
+            figure missing says no quarter is held a year earlier or not filed, and the chart page names an implied
+            estimate so and gives the report's words where none is read. The decision with the one it supersedes moved
+            below, six architecture rows and the figure's part, SCHEMA's estimate trend notes, the guide's quarter, the
+            report's key, the roster and the changelog.
+Tests:      two more, the suite's total in the newest entry of this pull request: the release placed before the open at
+            13:30Z, after the close at 20:00Z and with no time at 04:00Z on 2026-10-14, at the winter's offset at 14:30Z
+            on 2026-11-02 and on the early close of 2026-11-27 at 18:00Z; a year to 2026-08-31 of 10,000 less 2,300, 2,400
+            and 2,500 implying 2,800 against 2,940 reported, 140 and 5% above it, the quarter's own 2,850 read in its
+            place, a quarter holding no revenue implying none, 7,200 implying nought and none and 7,201 implying 1; and
+            each reason worked by hand, a fetch at the release not kept and a millisecond before it kept. Over a
+            constructed store EST's fetch a millisecond before the open read at 110, its fetch at the open read at 120
+            for a release after the close, none read with no time stated or no calendar row and the day 2026-10-14 said,
+            and FY4's year ending 2026-09-07 read and implying 2,800 while one ending 2026-09-08 is not read. The quarter
+            table draws CMC's implied estimate and its working beneath it and says none published, not kept and no
+            quarter held a year earlier, and none kept nowhere.
+Claims:     as the newest entry of this pull request.
+Mutated:    each rule stated before its run. An estimate kept before the release's instant, broken by reading the date
+            alone again: predicted red at EST's release before the open; result red, none read where 110. A release before
+            the open at the open, broken by placing it at the day's start: predicted red at the hand-worked 13:30Z; result
+            red, 00:00 in New York, and EST reading none. The implied estimate the year less all three earlier quarters,
+            broken by subtracting two: predicted red at 2,800; result red, 5,100, and FY4's the same. An implied estimate
+            read only above nought, broken by drawing one of nought: predicted red at the year of 7,200; result red, no
+            reason given. A revenue estimate not kept saying the day the stock's estimates are kept from, broken by saying
+            none is kept yet: predicted red at the reason worked by hand; result red there and at EST's day. Each made on
+            this branch and reverted before anything was committed, and the tests green.
+Verified:   as the newest entry of this pull request.
+Carried:    the Financials whose revenue basis differs from the analysts' estimates, 21 of the 41 kept quarterly estimates
+            more than a fifth off their reported revenue on the night of 2026-10-20, all Financials, put to the operator,
+            since an implied fourth quarter for such a company carries the same difference.

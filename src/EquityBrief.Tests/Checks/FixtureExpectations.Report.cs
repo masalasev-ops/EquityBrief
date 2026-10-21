@@ -17,7 +17,7 @@ namespace EquityBrief.Tests.Checks;
 // the fixture's captured segment reports; the estimate trend read off an answer; the Treasury's table read as it sends it
 // and kept a session a row; the dividends kept from the night's answer and from the history run; the release before the
 // newest handed to what management said alone; and the replay keeping each of them as the captures file it.
-// see: The latest quarter is read line by line against the estimate kept before its report and the same quarter a year earlier
+// see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
 // see: The segment table is the segments whose revenue sums to the company's total within rounding, and the raw table where none do
 public partial class FixtureExpectations
 {
@@ -37,6 +37,11 @@ public partial class FixtureExpectations
     const string KeysightCik = "0001601046";
 
     static readonly DateTimeOffset ReportFetchedAt = new(2026, 9, 8, 21, 10, 0, TimeSpan.Zero);
+
+    // The quarter of `Filed` reported 2026-07-30, released at that day's open, and estimates kept from a fetch before it.
+    static readonly DateTimeOffset KeptFrom = new(2026, 7, 15, 22, 0, 0, TimeSpan.Zero);
+
+    static readonly DateTimeOffset Released = new(2026, 7, 30, 13, 30, 0, TimeSpan.Zero);
 
     // A quarter of one fetch as the quarter's regions read it, every line read unless said otherwise.
     static QuarterRow Filed(
@@ -74,7 +79,7 @@ public partial class FixtureExpectations
             Filed(yearEarlier, 900m, 495m, 180m, 135m, 270m, 225m, 1.60m, 1.55m),
         ];
 
-        var latest = QuarterLines.Latest(quarters, new RevenueEstimate(1050m, new DateOnly(2026, 7, 15)))!;
+        var latest = QuarterLines.Latest(quarters, new KeptEstimates(new RevenueEstimate(1050m, new DateOnly(2026, 7, 15)), null, KeptFrom, Released))!;
 
         Assert.Equal((newest, yearEarlier), (latest.Quarter, latest.YearEarlier!.Value));
         Assert.Equal(
@@ -100,6 +105,7 @@ public partial class FixtureExpectations
             Assert.Equal(before, lines[line].MarginYearEarlier!.Value, 9);
             Assert.Equal(onTheYear, lines[line].OnTheYear!.Value, 4);
             Assert.Null(lines[line].Estimate);
+            Assert.Equal(QuarterLines.NonePublished, lines[line].EstimateAbsent);
         }
 
         Income(QuarterLines.GrossProfit, 60.0, 55.0, 33.3333);
@@ -120,9 +126,14 @@ public partial class FixtureExpectations
         Assert.Equal(22.2222, lines[QuarterLines.OperatingCashFlow].OnTheYear!.Value, 4);
         Assert.Equal(27.1111, lines[QuarterLines.FreeCashFlow].OnTheYear!.Value, 4);
         Assert.Null(lines[QuarterLines.FreeCashFlow].Estimate);
+        Assert.Equal([QuarterLines.NonePublished, QuarterLines.NonePublished], new[] { QuarterLines.OperatingCashFlow, QuarterLines.FreeCashFlow }.Select(line => lines[line].EstimateAbsent));
+        Assert.Null(revenue.EstimateAbsent);
+        Assert.Null(revenue.Implied);
+        Assert.Null(eps.EstimateAbsent);
 
         // No revenue estimate kept before the report reads none, and a change is read only against a figure above nought.
         Assert.Null(QuarterLines.Latest(quarters)!.Lines[0].Estimate);
+        Assert.Equal(QuarterLines.NoneKeptYet, QuarterLines.Latest(quarters)!.Lines[0].EstimateAbsent);
         Assert.Null(QuarterLines.Latest([quarters[0], quarters[4] with { NetIncome = -5m }])!.Lines.Single(line => line.Line == QuarterLines.NetIncome).OnTheYear);
 
         // A quarter stored before the fetch kept the gross profit and the cash flow lines reads those lines as not read,
@@ -137,6 +148,80 @@ public partial class FixtureExpectations
 
         // A fetch holding no quarter with a revenue or reported earnings reads no latest quarter.
         Assert.Null(QuarterLines.Latest([Filed(newest, null)]));
+    }
+
+    // From the 18.2 correction of 2026-10-21: the release the estimates are kept before, placed by the calendar's timing on
+    // the report date in New York, a fiscal fourth quarter's revenue read against its year's estimate less its three earlier
+    // quarters, and the words a line reading no estimate says, each worked by hand.
+    [Fact]
+    public void AQuartersRevenueIsReadAgainstTheEstimateKeptBeforeItsReleaseAndAFiscalFourthQuarterAgainstItsYearsLessThreeQuarters()
+    {
+        var zone = SessionZones.ResolveSessionZone(SessionZones.UnitedStates);
+
+        // Before the open at 09:30, after the close at 16:00 and the start of the day where no time is stated, at the
+        // summer's offset of four hours and the winter's of five, an early close at 13:00, and a Saturday at the regular
+        // hours.
+        Assert.Equal(new DateTimeOffset(2026, 10, 14, 13, 30, 0, TimeSpan.Zero), QuarterLines.ReleasedAt(new DateOnly(2026, 10, 14), QuarterLines.BeforeTheOpen, zone));
+        Assert.Equal(new DateTimeOffset(2026, 10, 14, 20, 0, 0, TimeSpan.Zero), QuarterLines.ReleasedAt(new DateOnly(2026, 10, 14), QuarterLines.AfterTheClose, zone));
+        Assert.Equal(new DateTimeOffset(2026, 10, 14, 4, 0, 0, TimeSpan.Zero), QuarterLines.ReleasedAt(new DateOnly(2026, 10, 14), "unstated", zone));
+        Assert.Equal(new DateTimeOffset(2026, 10, 14, 4, 0, 0, TimeSpan.Zero), QuarterLines.ReleasedAt(new DateOnly(2026, 10, 14), null, zone));
+        Assert.Equal(new DateTimeOffset(2026, 11, 2, 14, 30, 0, TimeSpan.Zero), QuarterLines.ReleasedAt(new DateOnly(2026, 11, 2), QuarterLines.BeforeTheOpen, zone));
+        Assert.Equal(new DateTimeOffset(2026, 11, 27, 18, 0, 0, TimeSpan.Zero), QuarterLines.ReleasedAt(new DateOnly(2026, 11, 27), QuarterLines.AfterTheClose, zone));
+        Assert.Equal(new DateTimeOffset(2026, 10, 17, 13, 30, 0, TimeSpan.Zero), QuarterLines.ReleasedAt(new DateOnly(2026, 10, 17), QuarterLines.BeforeTheOpen, zone));
+
+        // A fiscal year to 2026-08-31 whose fourth quarter has no estimate of its own: the year's 10,000 kept on 2026-10-11
+        // less its three earlier quarters as reported, 2,300 + 2,400 + 2,500 = 7,200, implies 2,800; the 2,940 reported
+        // stands 140 above it, 140 / 2,800 = 5%, and 940 / 2,000 = 47% above the quarter a year earlier.
+        QuarterRow[] year =
+        [
+            Filed(new DateOnly(2025, 8, 31), 2000m),
+            Filed(new DateOnly(2025, 11, 30), 2300m),
+            Filed(new DateOnly(2026, 2, 28), 2400m),
+            Filed(new DateOnly(2026, 5, 31), 2500m),
+            Filed(new DateOnly(2026, 8, 31), 2940m),
+        ];
+        var released = new DateTimeOffset(2026, 10, 15, 13, 30, 0, TimeSpan.Zero);
+
+        KeptEstimates Kept(decimal? own, decimal? annual) => new(
+            own is { } quarter ? new RevenueEstimate(quarter, new DateOnly(2026, 10, 11)) : null,
+            annual is { } whole ? new YearEstimate(whole, new DateOnly(2026, 8, 31), new DateOnly(2026, 10, 11)) : null,
+            new DateTimeOffset(2026, 10, 11, 1, 27, 22, 778, TimeSpan.Zero),
+            released);
+
+        var implied = QuarterLines.Latest(year, Kept(null, 10_000m))!.Lines.ToDictionary(line => line.Line);
+        var revenue = implied[QuarterLines.Revenue];
+
+        Assert.Equal((2940m, 2800m, 140m), (revenue.Reported!.Value, revenue.Estimate!.Value, revenue.Difference!.Value));
+        Assert.Equal(5.0, revenue.AgainstEstimate!.Value, 9);
+        Assert.Equal(47.0, revenue.OnTheYear!.Value, 9);
+        Assert.Equal(new ImpliedEstimate(10_000m, new DateOnly(2026, 8, 31), new DateOnly(2026, 10, 11), 7200m), revenue.Implied);
+        Assert.Null(revenue.EstimateAbsent);
+        Assert.Equal(QuarterLines.NotFiled, implied[QuarterLines.Eps].EstimateAbsent);
+
+        // The quarter's own estimate is read where one was kept, and the year's is then not read.
+        var own = QuarterLines.Latest(year, Kept(2850m, 10_000m))!.Lines[0];
+
+        Assert.Equal(2850m, own.Estimate);
+        Assert.Null(own.Implied);
+
+        // A quarter of the year holding no revenue implies nothing, and a year its three quarters leave nought of implies
+        // nothing while one they leave 1 of implies 1.
+        Assert.Equal(QuarterLines.QuarterNotHeld, QuarterLines.Latest([.. year[..2], year[2] with { Revenue = null }, .. year[3..]], Kept(null, 10_000m))!.Lines[0].EstimateAbsent);
+        Assert.Equal(QuarterLines.QuarterNotHeld, QuarterLines.Latest([year[0], .. year[2..]], Kept(null, 10_000m))!.Lines[0].EstimateAbsent);
+        Assert.Equal(QuarterLines.NotAboveNought, QuarterLines.Latest(year, Kept(null, 7200m))!.Lines[0].EstimateAbsent);
+        Assert.Equal(1m, QuarterLines.Latest(year, Kept(null, 7201m))!.Lines[0].Estimate);
+
+        // Where neither was kept, why: no report date stored, no estimate kept for the stock, its estimates kept from a fetch
+        // at the release or after it with that fetch's day, and a fetch a millisecond before the release that filed none.
+        string? Absent(DateTimeOffset? keptFrom, DateTimeOffset? release) =>
+            QuarterLines.Latest(year, new KeptEstimates(null, null, keptFrom, release))!.Lines[0].EstimateAbsent;
+
+        Assert.Equal(QuarterLines.NoReportDate, Absent(released.AddDays(-4), null));
+        Assert.Equal(QuarterLines.NoReportDate, QuarterLines.Latest([.. year[..4], year[4] with { ReportDate = null }], Kept(null, null))!.Lines[0].EstimateAbsent);
+        Assert.Equal(QuarterLines.NoneKeptYet, Absent(null, released));
+        Assert.Equal("not kept: estimates kept from 2026-10-15", Absent(released, released));
+        Assert.Equal("not kept: estimates kept from 2026-10-16", Absent(released.AddHours(12), released));
+        Assert.Equal(QuarterLines.NotFiledBefore, Absent(released.AddMilliseconds(-1), released));
     }
 
     [Fact]

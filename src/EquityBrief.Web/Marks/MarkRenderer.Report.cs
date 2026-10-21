@@ -62,8 +62,10 @@ public sealed partial class MarkRenderer
 
     // ---- the latest quarter ----
 
-    // The latest quarter's lines: what was reported, the estimate kept before the report, the difference, the same quarter
-    // a year earlier and the change on it, and each income line's margin, every change coloured by its sign.
+    // The latest quarter's lines: what was reported, the estimate kept before the release or the one its year implies, the
+    // difference, the same quarter a year earlier and the change on it, and each income line's margin, every change
+    // coloured by its sign; a line reading no estimate says why, and an implied one is marked and worked out beneath.
+    // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
     public string QuarterTable(string ticker, ReportView view)
     {
         if (view.Quarter is not { } quarter)
@@ -79,18 +81,18 @@ public sealed partial class MarkRenderer
 
         foreach (var line in quarter.Lines)
         {
-            string Amount(decimal? value, string name) =>
+            string Amount(decimal? value, string name, string absent, string mark = "") =>
                 value is { } held
-                    ? Formatted($"<td class=\"num\" data-{name}=\"{held.ToString(Invariant)}\">{(line.PerShare ? Figures.PerShare(held) : Figures.Money(held, view.Currency))}</td>")
-                    : Formatted($"<td class=\"num degraded\" data-{name}=\"absent\">{(name == "reported" ? Escaped(line.NotRead ?? QuarterLines.NotFiled) : "none kept")}</td>");
+                    ? Formatted($"<td class=\"num\" data-{name}=\"{held.ToString(Invariant)}\"{(mark.Length > 0 ? " data-implied=\"yes\"" : string.Empty)}>{(line.PerShare ? Figures.PerShare(held) : Figures.Money(held, view.Currency))}{mark}</td>")
+                    : Formatted($"<td class=\"num degraded\" data-{name}=\"absent\">{Escaped(absent)}</td>");
 
             table.Append(Formatted($"<tr data-line=\"{Escaped(line.Line)}\"{(line.Line == QuarterLines.Eps ? " class=\"key-row\"" : string.Empty)}><td>{Escaped(line.Line)}</td>"));
-            table.Append(Amount(line.Reported, "reported"));
-            table.Append(Amount(line.Estimate, "estimate"));
+            table.Append(Amount(line.Reported, "reported", line.NotRead ?? QuarterLines.NotFiled));
+            table.Append(Amount(line.Estimate, "estimate", line.EstimateAbsent ?? QuarterLines.NonePublished, line.Implied is null ? string.Empty : " implied"));
             table.Append(line.Difference is { } difference
                 ? "<td class=\"num\">" + SignedAmount(difference, line.PerShare, view.Currency, "difference") + (line.AgainstEstimate is { } against ? " (" + Signed(against, "against") + ")" : string.Empty) + "</td>"
                 : "<td class=\"num degraded\" data-difference=\"absent\">none</td>");
-            table.Append(Amount(line.YearEarlier, "year-earlier"));
+            table.Append(Amount(line.YearEarlier, "year-earlier", quarter.YearEarlier is null ? QuarterLines.NoYearEarlier : QuarterLines.NotFiled));
             table.Append(line.OnTheYear is { } year ? "<td class=\"num\">" + Signed(year, "on-the-year") + "</td>" : "<td class=\"num degraded\" data-on-the-year=\"absent\">none</td>");
             table.Append(line.Margin is { } margin
                 ? Formatted($"<td class=\"num\" data-margin=\"{margin.ToString(Invariant)}\">{Tenth(margin)}%{(line.MarginYearEarlier is { } then ? Formatted($", <span data-margin-year-earlier=\"{then.ToString(Invariant)}\">{Tenth(then)}%</span>") : string.Empty)}</td>")
@@ -98,7 +100,19 @@ public sealed partial class MarkRenderer
             table.Append("</tr>");
         }
 
-        return table.Append("</table></div>").ToString();
+        table.Append("</table></div>");
+
+        // What an implied estimate was worked from, each figure whole on its element.
+        foreach (var line in quarter.Lines.Where(line => line.Implied is not null))
+        {
+            var implied = line.Implied!;
+
+            table.Append(Formatted($"<p class=\"mark-note\" data-implied=\"{Escaped(line.Line)}\">{Escaped(line.Line)}'s estimate is implied: the analysts' estimate for the fiscal year to {DayOf(implied.YearEnds)}, "));
+            table.Append(Formatted($"<span data-year-estimate=\"{implied.Year.ToString(Invariant)}\">{Figures.Money(implied.Year, view.Currency)}</span> as kept on {DayOf(implied.FetchedOn)}, less its three earlier quarters as reported, "));
+            table.Append(Formatted($"<span data-earlier-quarters=\"{implied.EarlierQuarters.ToString(Invariant)}\">{Figures.Money(implied.EarlierQuarters, view.Currency)}</span>.</p>"));
+        }
+
+        return table.ToString();
     }
 
     // A difference in its own unit with its sign always written, green or red by that sign.
