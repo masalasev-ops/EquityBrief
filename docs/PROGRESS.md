@@ -5924,3 +5924,24 @@ Mutated:    under the rule stated in the 19.2 correction's entry: m4 the form's 
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 19.7 - correction: a date in a table's cell is drawn whole, and the Watch list and Researched scroll on a phone rather than squeeze their words   2026-10-21
+
+Queue:      as the 19.2 correction's entry above.
+Ruled:      among the smaller items the operator chose on 2026-10-21 to correct in this pull request, "Tall phone rows".
+Found:      by the second phase 19 sign-off review of 2026-10-21 over the operator's store: the Watch list's Added and
+            Researched's Written dates broke at a hyphen at 1440 px, "2026-10-" above "21", the columns 19.7 added leaving
+            them too little room, and Past picks' night listed did at 390 px, "2026-" above "10-20"; and on a phone the two
+            tables 19.7 built squeezed their words into the screen's width, the Watch list's rows about 270 px tall with a
+            gate's pill, "3 short: trend and strength", in four lines, and Researched's TRV row about 460 px.
+Corrected:  a date in those three tables' cells is drawn whole, and on a phone the Watch list's and Researched's tables keep
+            a width their words read at and scroll sideways in their box, as the lists' tables do, the pill on one line.
+            The roster and the changelog.
+Tests:      one more: the rules keeping those dates whole and the two tables' widths, the pill's line and the box's scroll,
+            and a Past picks table's first cell its night as a figure with the stock's column and without.
+Mutated:    under the rule stated in the 19.2 correction's entry: m5 the dates left free to break: red at the dates' test.
+            m6 the Watch list's width taken back to the phone's: red there. m7 a name page's Past picks table drawing its
+            night in a cell the rule does not reach: red there.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.

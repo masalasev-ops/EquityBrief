@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches dates drawn whole in three tables and two tables scrolling on a phone
+Corrects: the Watch list's Added and Researched's Written dates broke at a hyphen at 1440 px and Past picks' night listed at 390 px, and on a phone the Watch list and Researched squeezed their words into rows of 270 to 460 px, found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... standing one beneath another on a phone with the words whole above the box, by a rule outranking the one every posted form is drawn inline by |
+Now:
+> read-surface: ... standing one beneath another on a phone with the words whole above the box, by a rule outranking the one every posted form is drawn inline by; and from the 19.7 correction of 2026-10-21 a date in a cell of Past picks', the Watch list's or Researched's table drawn whole, a Past picks table's first cell its night as a figure with the stock's column and without, and on a phone the Watch list's and Researched's tables scrolling sideways in their box at a width their words read at, a gate's pill held to one line |
+Why: the 19.7 correction of 2026-10-21 adds these assertions.
+
 ### 2026-10-21 - .claude/rules/checks.md - read-surface reaches the account form standing each setting above the next on a phone
 Corrects: on a phone the account form ran its three settings as one paragraph, breaking "Risk a trade, per cent" across two lines away from its box, found by the second phase 19 sign-off review of 2026-10-21 on paper trading.
 Was:

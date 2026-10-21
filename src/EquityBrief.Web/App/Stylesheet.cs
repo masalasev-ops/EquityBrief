@@ -199,6 +199,12 @@ form.name-watch[method='post'] button:hover{color:var(--ink);border-color:var(--
 .watch-table td.listed{color:var(--ink);font-weight:700}
 .watch-table td.stopped{color:var(--soft)}
 .watch-table .btn-2{padding:0 8px;line-height:20px}
+/* a date in these tables' cells is never broken at its hyphens, and on a phone the two tables scroll sideways in their
+   box rather than squeeze their words into columns a few letters wide */
+.picks-table td.num:first-child,.watch-table td.num,.researched-table td.num{white-space:nowrap}
+.watch-table{min-width:1040px}
+.watch-table .chip{white-space:nowrap}
+.researched-table{min-width:900px}
 .level-summary td.strength{white-space:nowrap}
 .level-summary .str-bar{display:inline-block;height:8px;margin-right:6px;vertical-align:middle;border-radius:2px;background:var(--ink-2);opacity:.45}
 .level-summary tr.close-row td{border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);font-weight:600;color:var(--ink)}

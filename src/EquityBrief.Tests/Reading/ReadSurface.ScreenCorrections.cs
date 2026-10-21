@@ -126,6 +126,30 @@ public partial class ReadSurface
         Assert.EndsWith("<a href=\"#/universe?sector=Industrials\">Industrials</a>, Machinery · <a class=\"m-chart\" href=\"#/chart/AAA\">Its chart</a>", line, StringComparison.Ordinal);
     }
 
+    // The 19.7 correction of 2026-10-21: a date in a cell of Past picks', the Watch list's or Researched's table is drawn
+    // whole, where each broke at a hyphen, "2026-10-" above "21", the Watch list's and Researched's even at 1440 px; and on
+    // a phone those two tables scroll sideways in their box at a width their words read at, where they squeezed a gate's
+    // pill into four lines and a row to 460 px, the pill held to one line.
+    [Fact]
+    public void ADateInATablesCellIsDrawnWholeAndTheWatchListAndResearchedScrollOnAPhone()
+    {
+        var css = Stylesheet.Css;
+
+        Assert.Contains(".picks-table td.num:first-child,.watch-table td.num,.researched-table td.num{white-space:nowrap}", css, StringComparison.Ordinal);
+        Assert.Contains(".watch-table{min-width:1040px}", css, StringComparison.Ordinal);
+        Assert.Contains(".watch-table .chip{white-space:nowrap}", css, StringComparison.Ordinal);
+        Assert.Contains(".researched-table{min-width:900px}", css, StringComparison.Ordinal);
+        Assert.Contains(".tbl-wrap{overflow-x:auto}", css, StringComparison.Ordinal);
+
+        // The first cell of a Past picks table, with the stock's column and without, is the night listed as a figure.
+        var pick = new PickCell("AAA", "Alpha Inc", new DateOnly(2026, 10, 12), "swing", 100m, 96m, 110m, PickStatus.Open, 2, null, 1.02, null, null, new DateOnly(2026, 10, 14), 102m, 0.3);
+
+        foreach (var named in new[] { true, false })
+        {
+            Assert.Matches("<tbody><tr [^>]*><td class=\"num\">(?:<a [^>]*>)?2026-10-12(?:</a>)?</td>", new MarkRenderer().PicksTable([pick], named));
+        }
+    }
+
     // The 16.2 correction of 2026-10-21: on a phone the account form, which paper trading and the account page both open
     // with, stands each setting's words whole above its box, one setting beneath another, where it ran as one paragraph and
     // broke "Risk a trade, per cent" across two lines; each label holds its words and its box, and the form's rule there
