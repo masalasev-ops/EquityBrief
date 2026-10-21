@@ -5242,11 +5242,12 @@ Queue:      as the 20.11 rulings' entries of the evening above.
 Built:      on the operator's ruling of the evening of 2026-10-20, clause 2 as amended (see: A night's reading needing more
             closes than the store's year holds reads the sessions before it from the pulled history at the store's
             scale). On a night whose store's year holds fewer sessions than the night's longest readings read, 252 to the
-            night, the index families read each S&P 400 and 600 member's sessions before its first stored one, as many as
-            it falls short by, from the newest pull holding that session at the store's scale, a day the exchange's table
-            holds no session on passed over; the breakout's year's high and the forming list's read over them, and the
-            index books' returns and betas; the S&P 500's heavyweights book reads its members' the same way; and a book
-            waits only where the store's year and the pull together hold too few. A member the pull holds too few for
+            night, the index families read the sessions the year falls short by before its first session, for each S&P
+            400 and 600 member the store holds from that session, from the newest pull holding it at the store's scale, a
+            day the exchange's table holds no session on passed over, a member starting later or missing a session inside
+            the year reading no more than its own; the breakout's year's high and the forming list's read over them, and
+            the index books' returns and betas; the S&P 500's heavyweights book reads its members' the same way; and a
+            book waits only where the store's year and the pull together hold too few. A member the pull holds too few for
             reads none of those readings, and the index families' row and the heavyweights' row name it beside the
             sessions the year holds. Tonight's heavyweights cards read whether the pull reaches before the year, for the
             next rebalance, and no price of it. The hard rule on pulled history is narrowed for these readings alone, its
@@ -5255,24 +5256,40 @@ Built:      on the operator's ruling of the evening of 2026-10-20, clause 2 as a
             first session of each month whose stored year and the pulled history before it hold the closes their
             readings need), and the new decision narrows the pulled history's and the bar store's without superseding
             them. Nothing of the 260-session store was built, so nothing is reverted.
-Tests:      2561, two more: over a night holding 251 sessions, three S&P 400 members pulled at twice the store's prices,
+Reviewed:   four findings confirmed and fixed here: the rule cards' read of the pull handed its commands no transaction,
+            so a night whose year holds 251 sessions would leave the S&P 400's and 600's rule rows not computed; the read
+            was sized by each member's own bars, reaching across a hole in a member's year; and SCHEMA's two heavyweights
+            tables and three architecture rows stated the reads as before. A fifth, a book selling a holding the pull
+            holds too few for, was refuted as the ruled design.
+Tests:      2564, five more: over a night holding 251 sessions, three S&P 400 members pulled at twice the store's prices,
             IA's pulled high of 203 read at the store's 101.5 under its close of 102 breaking out at the frozen
             251-session high, IB's 206 read at 103 not, and ID, the pull holding none of it, reading none and named on
-            the night's row; and the S&P 500's heavyweights on Monday 2026-11-02, the store's year holding 251 sessions,
-            reading W1's and W2's close of 2025-10-31 from the pull and rebalancing in place of waiting, W1's return of
-            0.2407 worked by hand from its two closes, and W3, the pull holding none of it, reading no return and named;
-            and the wait tests' words and the empty card's sentence as they now read.
+            the night's row; the rule cards over the same night, IB alone forming under its pulled high of 103 with the
+            S&P 400's rows computed; IG, its year missing its hundredth session, reading the one session the year falls
+            short by and not two, and IL, starting on the year's eleventh, reading none; the S&P 500's heavyweights on
+            Monday 2026-11-02, the store's year holding 251 sessions, reading W1's and W2's close of 2025-10-31 from the
+            pull and rebalancing in place of waiting, W1's return of 0.2407 worked by hand from its two closes, and W3,
+            the pull holding none of it, reading no return and named; and the same night with W2's year missing its
+            session of 2026-03-02, W2 reading one close from the pull and no return; and the wait tests' words and the
+            empty card's sentence as they now read.
 Claims:     1372, as before.
-Pins:       the S&P 500 heavyweights' evaluator from 02c47d5f62d1 to 686497c5822b, its book reading the pull through a read
+Pins:       the S&P 500 heavyweights' evaluator from 02c47d5f62d1 to 6ab1c2b1c6a4, its book reading the pull through a read
             of its own, so it pins no index file, and only where the store's year holds fewer sessions than the settings
-            of the books it keeps need; on the S&P 400 and 600 the pullback from ddd98f127cf5 to a13f39e63733, the breakout d66df3088314 to b8c3b69a5c95, the
-            drift 600c88d7f647 to 578b61cd85bb and the heavyweights dccd1de3ea09 to c0afc6691dcc.
+            of the books it keeps need; on the S&P 400 and 600 the pullback from ddd98f127cf5 to adc4b9f11470, the
+            breakout d66df3088314 to acdeab81269c, the drift 600c88d7f647 to a60b29a9a6fe and the heavyweights
+            dccd1de3ea09 to 33d344c490cd.
 Mutated:    the rule, stated before the run: the sessions before the store's year read at the store's scale, broken by
             reading them at the pull's own prices: predicted red at IA's breakout and W1's return. Result: red, IA listing
             nothing and W1 reading -0.3797 where 0.2407 is worked by hand. Made on this branch and reverted before
-            anything was committed, and the tests green.
+            anything was committed, and the tests green. For the review's fixes, each rule stated before its run: the
+            read inside the rule cards' transaction, broken by handing its first command the null transaction again:
+            predicted red at the S&P 400's rule rows; result red, "InvalidOperationException: Execute requires the
+            command to have a transaction object". The read sized by the year's shortfall, broken on the S&P 400 by
+            sizing it by each member's own bars from any first session: predicted red at IG and IL; result red, IG
+            reading 2 and IL 11; and on the S&P 500 by sizing it by W2's own bars: predicted red at W2's return; result
+            red, W2's return read across its hole. Each made on this branch and reverted before anything was committed.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
-            stated before that run: all six steps, 0 warnings, 0 errors, 2561 of 2561 tests ran with none failed,
+            stated before that run: all six steps, 0 warnings, 0 errors, 2564 of 2564 tests ran with none failed,
             migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
             report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.

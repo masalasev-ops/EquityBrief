@@ -980,18 +980,17 @@ public sealed class IndexFamilies : IComponent
             income[ticker] = quarters;
         }
 
-        // On a night whose store's year holds fewer sessions than the night's longest readings read, each S&P 400 and 600
-        // member's sessions before its first stored one, as many as it falls short by, from the pulled history.
+        // On a night whose store's year holds fewer sessions than the night's longest readings read, the sessions the year
+        // falls short by from the pulled history, before the year's first session and for each S&P 400 and 600 member the
+        // store holds from it; a member starting later, or missing a session inside the year, reads no more than its own.
         // see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
-        if (index != LargeIndex && HeldTo(names, night) < SessionsReadTo)
+        if (index != LargeIndex && YearOf(names, night) is var (held, first) && held < SessionsReadTo)
         {
             for (var at = 0; at < names.Count; at++)
             {
-                var own = names[at].Bars.Count(bar => bar.Session <= night);
-
-                if (own > 0 && own < SessionsReadTo)
+                if (names[at].Bars is [var oldest, ..] && oldest.Session == first)
                 {
-                    names[at] = names[at] with { Before = await BeforeTheYearAsync(connection, null, names[at].Ticker, names[at].Bars[0], SessionsReadTo - own, cancellation) };
+                    names[at] = names[at] with { Before = await BeforeTheYearAsync(connection, null, names[at].Ticker, oldest, SessionsReadTo - held, cancellation) };
                 }
             }
         }
@@ -1007,14 +1006,19 @@ public sealed class IndexFamilies : IComponent
     // the read passes over, does not leave it short.
     const int StrayDays = 5;
 
-    // The sessions the members' stored bars hold to the night, which is the store's year to it.
-    static int HeldTo(IReadOnlyList<SweepName> names, DateOnly night) =>
-        names.SelectMany(name => name.Bars).Select(bar => bar.Session).Where(session => session <= night).Distinct().Count();
+    // The sessions the members' stored bars hold to the night, which is the store's year to it, and its first session.
+    static (int Held, DateOnly? First) YearOf(IReadOnlyList<SweepName> names, DateOnly night)
+    {
+        var sessions = names.SelectMany(name => name.Bars).Select(bar => bar.Session).Where(session => session <= night).Distinct().ToArray();
+
+        return (sessions.Length, sessions.Length > 0 ? sessions.Min() : null);
+    }
 
     // A member's sessions before its first stored one that the newest pull holding that session holds, the newest of them
     // up to the count asked and oldest first, each price brought to the store's scale by the ratio of the stored close to
     // the pulled one on that first session and its close as traded as the pull holds it, a day the exchange's table holds
-    // no session on passed over; none where no pull holds the first session.
+    // no session on passed over; none where no pull holds the first session. A read handed no transaction runs in the one
+    // the connection holds, which a command takes as it is made, so a step reading inside its own transaction reads here.
     // see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
     public static async Task<SweepBar[]> BeforeTheYearAsync(SqliteConnection connection, SqliteTransaction? transaction, string ticker, SweepBar first, int count, CancellationToken cancellation)
     {
@@ -1023,7 +1027,11 @@ public sealed class IndexFamilies : IComponent
 
         await using (var holding = connection.CreateCommand())
         {
-            holding.Transaction = transaction;
+            if (transaction is not null)
+            {
+                holding.Transaction = transaction;
+            }
+
             holding.CommandText = PullHoldingFirst;
             holding.Parameters.AddWithValue("$ticker", ticker);
             holding.Parameters.AddWithValue("$first", Stamp(first.Session));
@@ -1047,7 +1055,11 @@ public sealed class IndexFamilies : IComponent
 
         await using (var sessions = connection.CreateCommand())
         {
-            sessions.Transaction = transaction;
+            if (transaction is not null)
+            {
+                sessions.Transaction = transaction;
+            }
+
             sessions.CommandText = PulledBefore;
             sessions.Parameters.AddWithValue("$ticker", ticker);
             sessions.Parameters.AddWithValue("$pull", pull);
@@ -1086,7 +1098,7 @@ public sealed class IndexFamilies : IComponent
     // for, and each member it holds too few sessions for, which reads none of those readings.
     public static string? BeforeTheYear(IReadOnlyList<SweepName> names, DateOnly night)
     {
-        var held = HeldTo(names, night);
+        var (held, first) = YearOf(names, night);
 
         if (held >= SessionsReadTo)
         {
@@ -1095,7 +1107,7 @@ public sealed class IndexFamilies : IComponent
 
         var read = names.Count(name => name.Before is { Length: > 0 });
         var few = names
-            .Where(name => name.Bars.Count(bar => bar.Session <= night) is var own and > 0 && own + (name.Before?.Length ?? 0) < SessionsReadTo)
+            .Where(name => name.Bars is [var oldest, ..] && oldest.Session == first && (name.Before?.Length ?? 0) < SessionsReadTo - held)
             .Select(name => name.Ticker)
             .ToArray();
 

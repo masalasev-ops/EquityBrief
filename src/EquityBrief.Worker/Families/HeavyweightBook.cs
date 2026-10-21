@@ -296,7 +296,7 @@ public sealed class HeavyweightBook : IComponent
                 : 0)
             .Append(HeavyweightRule.SessionsNeeded(page))
             .Max();
-        var (pulled, beforeTheYear) = await BeforeTheYearAsync(connection, transaction, members, bars, sessions.Count, need, night, cancellation);
+        var (pulled, beforeTheYear) = await BeforeTheYearAsync(connection, transaction, members, bars, sessions.Count, Day(sessions[0]), need, cancellation);
         var averages = await AveragesAsync(connection, transaction, night, cancellation);
         var series = await SeriesAsync(connection, transaction, night, cancellation);
         IReadOnlyList<Valued>? valued = null;
@@ -686,10 +686,10 @@ public sealed class HeavyweightBook : IComponent
     }
 
     // On a night whose store's year holds fewer sessions than the books it keeps read, the most any of their settings
-    // needs, each member's sessions before its first stored one, as many as it falls short by, read from the pulled history
-    // at the store's scale into its bars: how many sessions the pulled history added before the year, and what the night
-    // says of them, how many members it was read for and each it holds too few for, which reads no return and no beta;
-    // none on any other night.
+    // needs, the sessions the year falls short by, read from the pulled history at the store's scale into the bars of each
+    // member the store holds from the year's first session: how many sessions the pulled history added before the year,
+    // and what the night says of them, how many members it was read for and each it holds too few for, which reads no
+    // return and no beta; none on any other night.
     // see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
     static async Task<(int Sessions, string? Said)> BeforeTheYearAsync(
         SqliteConnection connection,
@@ -697,8 +697,8 @@ public sealed class HeavyweightBook : IComponent
         IReadOnlySet<string> members,
         IReadOnlyDictionary<string, SortedDictionary<DateOnly, Bar>> bars,
         int held,
+        DateOnly first,
         int need,
-        DateOnly night,
         CancellationToken cancellation)
     {
         if (held >= need)
@@ -706,25 +706,21 @@ public sealed class HeavyweightBook : IComponent
             return (0, null);
         }
 
+        // The sessions the year falls short by, read before its first session alone, and for the members the store holds
+        // from it; a member starting later, or missing a session inside the year, reads no more than its own.
+        var shortfall = need - held;
         var added = new HashSet<DateOnly>();
         var read = 0;
         var few = new List<string>();
 
         foreach (var ticker in members.Order(StringComparer.Ordinal))
         {
-            if (!bars.TryGetValue(ticker, out var series) || series.Count == 0)
+            if (!bars.TryGetValue(ticker, out var series) || series.Count == 0 || series.First().Key != first)
             {
                 continue;
             }
 
-            var own = series.Keys.Count(session => session <= night);
-
-            if (own >= need)
-            {
-                continue;
-            }
-
-            var earlier = await PulledAsync(connection, transaction, ticker, series.First().Value, need - own, cancellation);
+            var earlier = await PulledAsync(connection, transaction, ticker, series.First().Value, shortfall, cancellation);
 
             foreach (var bar in earlier)
             {
@@ -734,7 +730,7 @@ public sealed class HeavyweightBook : IComponent
 
             read += earlier.Count > 0 ? 1 : 0;
 
-            if (own + earlier.Count < need)
+            if (earlier.Count < shortfall)
             {
                 few.Add(ticker);
             }
