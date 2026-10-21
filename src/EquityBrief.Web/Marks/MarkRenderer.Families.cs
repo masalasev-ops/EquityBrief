@@ -83,8 +83,9 @@ public sealed record FormingListView(IReadOnlyList<FormingRowView> Rows, int For
 
 // The rule a card draws: the choice made, every choice, the chosen rule's words in clauses, a variant's own picks, the
 // funnel, the stretch line, the forming list, whether the night evaluated the rule, the line an index with no variant
-// carries, and, for a book registered before its family's freeze, how the tester judged its design with the adjusted p
-// it stored.
+// carries, for a book registered before its family's freeze how the tester judged its design with the adjusted p it
+// stored, and how many members the night read for the rule where its funnel holds the count, each of which reached its
+// first gate.
 // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
 public sealed record RuleView(
     RuleChoiceView Chosen,
@@ -99,7 +100,8 @@ public sealed record RuleView(
     UntestedLineView? Untested = null,
     IReadOnlyList<RuleChipView>? Chips = null,
     RuleShareView? Share = null,
-    string? Words = null);
+    string? Words = null,
+    int? Reached = null);
 
 // The line beside a book registered before its family's freeze: the line itself and the adjusted p it states, as the
 // tester's newest run stored it.
@@ -893,11 +895,13 @@ public sealed partial class MarkRenderer
         return body.ToString();
     }
 
-    // The rule's funnel as one bar: each gate's segment as wide as the members reaching it against those reaching the
-    // first, its count written on it, and the gate that stopped the most of those reaching it marked and named; a first
-    // gate passing no member, as a closed market check, is the one marked, since the funnel holds no count before it.
-    // A rule's funnel as one bar a gate, the gate that stopped the most marked and, where the card does not say it
-    // already, named beneath; the market check's row left out while it is open, since it then passes every member read.
+    // A rule's funnel as one bar a gate, each as long as the share of the members reaching the gate that passed it, with
+    // how many passed of how many reached it beside it: the first gate reached by the members the night read for the
+    // rule, and each gate after it by those the gate before passed. The gate that stopped the most of those reaching it is
+    // marked and, where the card does not say it already, named beneath; a first gate passing no member, as a closed
+    // market check, is the one marked, since the funnel holds no fall before it. The market check's row is left out while
+    // it is open, since it then passes every member read, and a first gate whose funnel holds no count of the members read
+    // says how many passed it alone.
     static string FunnelBar(RuleView rule, bool said = true)
     {
         if (rule.Funnel is not { Count: > 0 } funnel)
@@ -905,7 +909,6 @@ public sealed partial class MarkRenderer
             return rule.Evaluated ? string.Empty : "<p class=\"degraded rule-unevaluated\" data-evaluated=\"false\">The night did not evaluate this rule.</p>";
         }
 
-        var top = Math.Max(1, funnel[0].Passed);
         var drop = EquityBrief.Core.Cards.RuleFunnelDrop.Largest(funnel);
         var shut = funnel[0].Passed == 0 ? funnel[0].Gate : null;
         var openMarket = funnel[0].Gate == EquityBrief.Core.Families.FamilyRule.Market && funnel[0].Passed > 0;
@@ -921,10 +924,12 @@ public sealed partial class MarkRenderer
                 continue;
             }
 
-            var share = Math.Clamp(1.0 * passed / top, 0, 1);
+            var reached = at > 0 ? funnel[at - 1].Passed : rule.Reached;
+            var share = reached is > 0 ? Math.Clamp(1.0 * passed / reached.Value, 0, 1) : 0;
             var marked = drop is not null ? drop.Gate == gate : shut is not null && at == 0;
+            var words = reached is { } of ? Formatted($"{passed} of {of}") : passed.ToString(Invariant);
 
-            body.Append(Invariant, $"<li data-gate=\"{Escaped(gate)}\" data-passed=\"{passed}\"{(marked ? " class=\"largest-drop\"" : string.Empty)}><span class=\"fb-name\">{Escaped(gate)}</span><span class=\"fb-bar\"><span class=\"fb-fill\" style=\"width:{(share * 100).ToString("0.#", Invariant)}%\"></span></span><b class=\"fb-count\">{passed}</b></li>");
+            body.Append(Invariant, $"<li data-gate=\"{Escaped(gate)}\" data-passed=\"{passed}\" data-reached=\"{(reached is { } count ? count.ToString(Invariant) : "none")}\"{(marked ? " class=\"largest-drop\"" : string.Empty)}><span class=\"fb-name\">{Escaped(gate)}</span><span class=\"fb-bar\"><span class=\"fb-fill\" style=\"width:{(share * 100).ToString("0.#", Invariant)}%\"></span></span><b class=\"fb-count\">{words}</b></li>");
         }
 
         body.Append("</ol>");

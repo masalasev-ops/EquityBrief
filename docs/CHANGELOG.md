@@ -26,6 +26,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - ARCHITECTURE.html - each funnel bar the share of the members reaching its gate that passed it, with how many passed of how many reached beside it
+Corrects: a setup card drew each funnel bar as its count against the first gate's, so every bar after a gate stopping most of the index drew as a hairline and the gate doing the cutting could not be told at a glance; ruled by the operator on 2026-10-21 reading the setup cards.
+Was:
+> Funnel bars: One bar for the whole index and one for the members through each of the swing filter's checks in turn, each as long as its count against the index and named in words with its count beside it. From 19.3 a setup card draws its chosen rule's funnel the same way: a bar a gate of the rule as long as its count against its first gate's. The gate that stopped the most of those reaching it is marked and named beneath, the earlier gate taking a tie; a first gate passing no member is marked as passing none.
+>
+> A family's card's rule: ... the funnel drawn as one bar a gate with the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so; ...
+Now:
+> Funnel bars: One bar for the whole index and one for the members through each of the swing filter's checks in turn, each as long as its count against the index and named in words with its count beside it. From 19.3 a setup card draws its chosen rule's funnel as a bar a gate of the rule. From the 19.3 correction of 2026-10-21 each bar is as long as the share of the members reaching its gate that passed it, with how many passed of how many reached it in words beside it; the gate doing the cutting then reads at a glance, where a bar against the first gate's count drew every gate after a narrow one as a hairline. The first gate is reached by the members the night read for the rule and each later gate by those the gate before it passed; a funnel stored without the count of the members read says how many passed its first gate alone. The gate that stopped the most of those reaching it is marked and named beneath, the earlier gate taking a tie; a first gate passing no member is marked as passing none.
+>
+> A family's card's rule: ... the funnel drawn as one bar a gate as long as the share of the members reaching it that passed it with how many passed of how many reached it beside it and the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so; ...
+Why: the operator's ruling of 2026-10-21: "draw each gate's bar as the share of the members reaching that gate that passed it, with "passed of reaching" in words beside it". The line naming the gate that stopped the most stands, and the rows' reasoning with it.
+
+### 2026-10-21 - SCHEMA.md - a rule's stored funnel carries how many members reached its first gate
+Corrects: the funnel the rule cards store held no count of the members its night read, so a page could not say how many reached a rule's first gate; ruled by the operator on 2026-10-21 with each bar drawn against the members reaching its gate.
+Was:
+> `gates` | TEXT | JSON: each gate or part of the rule in its order with how many members passed it and every one before; null where the night did not evaluate the rule, for a sector heavyweights rule, and on a replayed row
+Now:
+> `gates` | TEXT | JSON: each gate or part of the rule in its order with how many members passed it and every one before, and from the 19.3 correction of 2026-10-21 the first with how many members the night read for the rule, which reached it; null where the night did not evaluate the rule, for a sector heavyweights rule, and on a replayed row
+Why: a card's first gate is drawn against the members the night read for its rule, which only the night counts.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface and fixture-expectations reach the funnel bars drawn against the members reaching each gate
+Corrects: the rows named no assertion on a funnel bar's length or on the count reaching a rule's first gate, which the 19.3 correction of 2026-10-21 adds.
+Was:
+> read-surface: ... an entry kept drawing no such sentence |
+>
+> fixture-expectations: ... and on the S&P 400 one starting after the year's first session reading none |
+Now:
+> read-surface: ... an entry kept drawing no such sentence; and from the 19.3 correction of 2026-10-21 each setup card's funnel bar the share of the members reaching its gate that passed it with how many passed of how many reached it beside it, read back off a card the rule cards' stage drew over a constructed night whose first gate drawn stops all but one, a closed market check's row passing none of every member read and each part after it none of none, and a funnel stored without that count saying how many passed its first gate alone |
+>
+> fixture-expectations: ... and on the S&P 400 one starting after the year's first session reading none; and from the 19.3 correction of 2026-10-21 each funnel the rule cards store carrying how many members the night read for the rule, which reached its first gate, on the S&P 500 and on an index alike |
+Why: each roster row says what its check asserts, and the correction's tests extend both.
+
 ### 2026-10-21 - SCHEMA.md - the pulled bars read for what the year falls short by, and a heavyweights rebalance waiting only where the pull holds too few as well
 Corrects: the pulled bars' paragraph read each member's sessions before the year as many as its own bars fell short by, which reads a member whose year misses a session across that hole and a member starting after the year's first session inside the year, and the heavyweights' two tables still said a rebalance waits wherever the store's year alone holds too few; found by the review of the second pull request of the operator's rulings of the evening of 2026-10-20.
 Was:

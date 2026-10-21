@@ -1,11 +1,15 @@
+using System.Net;
 using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Cards;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
+using EquityBrief.Core.Time;
+using EquityBrief.Tests.Harness;
 using EquityBrief.Web.Marks;
 using EquityBrief.Worker.Candidates;
+using EquityBrief.Worker.Cards;
 
 namespace EquityBrief.Tests.Reading;
 
@@ -38,7 +42,7 @@ public partial class ReadSurface
             "a chosen variant's differing chips marked",
             "one line naming the picks it shares with the live rule's passes tonight and those it adds and drops",
             "its own picks with their plans and the family's three numbers in place of the live rule's rows",
-            "the funnel drawn as one bar a gate with the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so",
+            "the funnel drawn as one bar a gate as long as the share of the members reaching it that passed it with how many passed of how many reached it beside it and the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so",
             "behind an expander naming the count forming",
         }.Select(part => Harness.CheckReach.Key("15.7 Tonight", "A family's card's rule, " + part)),
         .. new[]
@@ -176,10 +180,10 @@ public partial class ReadSurface
 
     // A card listing nothing tonight, its funnel the volume gate stopping 8 of the 9 reaching it unless another is given,
     // at a stretch given.
-    static string EmptyCard(StretchLineView stretch, string? empty = "No stock passed this setup tonight.", IReadOnlyList<(string Gate, int Passed)>? funnel = null)
+    static string EmptyCard(StretchLineView stretch, string? empty = "No stock passed this setup tonight.", IReadOnlyList<(string Gate, int Passed)>? funnel = null, int? reached = null)
     {
         var live = new RuleChoiceView("the live breakout rule", RuleScreenWords.LiveSlug, null, true, "Live");
-        var rule = new RuleView(live, [live], [new RulePartView("A stock closes above its high", false)], null, funnel ?? [("market", 9), ("new high", 9), ("volume", 1), ("trade", 1)], stretch, null, true, null);
+        var rule = new RuleView(live, [live], [new RulePartView("A stock closes above its high", false)], null, funnel ?? [("market", 9), ("new high", 9), ("volume", 1), ("trade", 1)], stretch, null, true, null, Reached: reached);
 
         return new MarkRenderer().FamilyCard(new FamilyCardView("breakout", "Breakout", "Breakouts to a new high", "Breakout from a base", "A stock closes above its high.", 2, 3, new DateOnly(2026, 1, 2), 0, [], [], empty, RuleChoice: rule));
     }
@@ -222,13 +226,16 @@ public partial class ReadSurface
         Assert.Contains("data-market-row=\"false\"><ol class=\"rule-funnel\"><li data-gate=\"new high\"", card, StringComparison.Ordinal);
         Assert.DoesNotContain("<li data-gate=\"market\"", card, StringComparison.Ordinal);
 
-        // A night the market check closed: the line says the check closed, its breadth and floor standing in the market line
-        // above, and names no gate from the funnel, which holds no count before its first gate, and the funnel draws the
-        // market's row as passing no member.
+        // A night the market check closed over the 397 members its night read: the line says the check closed, its breadth
+        // and floor standing in the market line above, and names no gate from the funnel, which holds no fall before its
+        // first gate; the funnel draws the market's row as passing none of the 397 reaching it, an empty bar, and each part
+        // after it as passing none of the none reaching it.
+        IReadOnlyList<(string Gate, int Passed)> closed = [("market", 0), ("setup", 0), ("floors", 0)];
         var shut = EmptyCard(
             new StretchLineView(18, 58, false, 30, 600),
             "The market check closed every list of the S&P 400 tonight: the S&P 400's breadth was 43.8% of its members closing above their 200-day average, below its floor of 45%.",
-            [("market", 0), ("setup", 0), ("floors", 0)]);
+            closed,
+            397);
 
         Assert.Contains(
             "<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">nothing tonight · the market check closed · empty 18 nights, its usual longest 58</span>",
@@ -236,9 +243,24 @@ public partial class ReadSurface
             StringComparison.Ordinal);
         Assert.DoesNotContain("degraded family-empty", shut, StringComparison.Ordinal);
         Assert.Contains("data-largest-drop=\"market\" data-market-row=\"true\"", shut, StringComparison.Ordinal);
-        Assert.Contains("<li data-gate=\"market\" data-passed=\"0\" class=\"largest-drop\">", shut, StringComparison.Ordinal);
+        Assert.Equal(
+            [("market", "0", "397", true, "0", "0 of 397"), ("setup", "0", "0", false, "0", "0 of 0"), ("floors", "0", "0", false, "0", "0 of 0")],
+            FunnelRows(shut));
         Assert.DoesNotContain("No gate stopped", shut, StringComparison.Ordinal);
+
+        // A funnel stored without the count of the members its night read says how many passed its first gate alone.
+        Assert.Equal(
+            [("market", "0", "none", true, "0", "0"), ("setup", "0", "0", false, "0", "0 of 0"), ("floors", "0", "0", false, "0", "0 of 0")],
+            FunnelRows(EmptyCard(new StretchLineView(18, 58, false, 30, 600), "The market check closed every list tonight.", closed)));
     }
+
+    // A rendered card's funnel rows in order: each gate, how many passed it, how many reached it, whether it is marked as
+    // stopping the most, its bar's width in per cent and the words beside it.
+    static IReadOnlyList<(string Gate, string Passed, string Reached, bool Marked, string Width, string Words)> FunnelRows(string card) =>
+    [
+        .. Regex.Matches(card, "<li data-gate=\"([^\"]+)\" data-passed=\"([^\"]+)\" data-reached=\"([^\"]+)\"( class=\"largest-drop\")?><span class=\"fb-name\">[^<]*</span><span class=\"fb-bar\"><span class=\"fb-fill\" style=\"width:([^%]+)%\"></span></span><b class=\"fb-count\">([^<]+)</b></li>")
+            .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value, match.Groups[4].Success, match.Groups[5].Value, match.Groups[6].Value)),
+    ];
 
     // A card with a pick, or with a variant chosen, is drawn open under its header and its full card, never folded; its
     // funnel says beneath the bars which gate stopped the most, the one place the card says it.
@@ -255,6 +277,35 @@ public partial class ReadSurface
         Assert.Contains("data-folded=\"false\"><header class=\"fam-head\"", card, StringComparison.Ordinal);
         Assert.DoesNotContain("fam-fold", card, StringComparison.Ordinal);
         Assert.Contains("<p class=\"funnel-drop\" data-drop=\"volume\">Most stopped at the volume gate: 8 of the 9 reaching it.</p>", card, StringComparison.Ordinal);
+    }
+
+    // A constructed S&P 400 night whose first gate drawn stops all but one: its three members read with the market check
+    // open, M1 alone passing the breakout's setup and every part after it. The rule cards store the funnel with the three
+    // the night read, and the card draws each bar as the share of the members reaching its gate that passed it, with how
+    // many passed of how many reached it beside it: the setup's 1 of 3 a third of its bar and marked, each part after it 1
+    // of 1 and whole, and the line naming the gate that stopped the most standing beneath them.
+    [Fact]
+    public async Task EachFunnelBarIsTheShareOfTheMembersReachingItsGateThatPassedIt()
+    {
+        using var store = UniversesStore();
+
+        var cards = await new RuleCards(FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 50, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile)
+            .RunAsync("night-funnel", [], new DateTimeOffset(2026, 10, 2, 23, 0, 0, TimeSpan.Zero));
+
+        Assert.Null(cards.Indices.Single(index => index.Index == "MID").Fault);
+        Assert.Equal(
+            RuleRows.GatesJson([(RuleRows.Market, 3), (RuleRows.Setup, 1), (RuleRows.Floors, 1), (RuleRows.Profit, 1), (RuleRows.Cover, 1)], 3),
+            Text(store, $"SELECT gates FROM rule_night WHERE index_code = 'MID' AND session_date = '{IndexNight}' AND family = 'breakout';"));
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var card = Section(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")), "breakout");
+
+        Assert.Equal(
+            [("setup", "1", "3", true, "33.3", "1 of 3"), ("floors", "1", "1", false, "100", "1 of 1"), ("profit", "1", "1", false, "100", "1 of 1"), ("interest cover", "1", "1", false, "100", "1 of 1")],
+            FunnelRows(card));
+        Assert.Contains("<p class=\"funnel-drop\" data-drop=\"setup\">Most stopped at the setup gate: 2 of the 3 reaching it.</p>", card, StringComparison.Ordinal);
     }
 
     [Fact]

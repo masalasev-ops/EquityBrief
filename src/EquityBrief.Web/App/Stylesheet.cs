@@ -603,7 +603,7 @@ p.no-variant{margin:0 0 8px;font-size:12.5px;color:var(--soft)}
 .hw-empty-list .hw-why{color:var(--soft)}
 .funnel-bar{margin:10px 0}
 .funnel-bar .rule-funnel{list-style:none;margin:0;padding:0;display:grid;gap:3px}
-.funnel-bar li{display:grid;grid-template-columns:minmax(90px,150px) 1fr 44px;align-items:center;gap:8px;font-size:12px;color:var(--ink-2)}
+.funnel-bar li{display:grid;grid-template-columns:minmax(90px,150px) 1fr 76px;align-items:center;gap:8px;font-size:12px;color:var(--ink-2)}
 .funnel-bar .fb-bar{height:8px;background:var(--hair);border-radius:2px;overflow:hidden}
 .funnel-bar .fb-fill{display:block;height:100%;background:var(--s3)}
 .funnel-bar li.largest-drop .fb-name{font-weight:600;color:var(--ink)}
@@ -624,7 +624,7 @@ details.expander>*:not(summary){margin:10px 12px}
 .hw-fill{display:block;height:100%}
 .hw-fill.gain{background:var(--up)} .hw-fill.loss{background:var(--down)}
 .hw-pill{display:inline-block;font:600 11px var(--sans);border:1px solid var(--hair-2);border-radius:999px;padding:1px 8px;color:var(--ink-2);white-space:nowrap}
-@media (max-width:700px){ .hw-tiles{grid-template-columns:repeat(2,minmax(0,1fr))} .funnel-bar li{grid-template-columns:minmax(70px,100px) 1fr 36px} }
+@media (max-width:700px){ .hw-tiles{grid-template-columns:repeat(2,minmax(0,1fr))} .funnel-bar li{grid-template-columns:minmax(70px,100px) 1fr 66px} }
 .family-note{margin:8px 0 0;padding-top:8px;border-top:1px solid var(--hair-2);font-size:13px;color:var(--soft)}
 .family-table td.why-tonight{font-size:13px;max-width:340px;white-space:normal}
 .family-table td.plan-stop{color:var(--down)}

@@ -260,7 +260,7 @@ public partial class FixtureExpectations
         Assert.Equal(RuleCards.Ok, Text(store, "SELECT outcome FROM run_log WHERE run_id = 'night-tone-cards';"));
 
         Assert.Equal(
-            RuleRows.GatesJson([("market", 6), ("print", 4), ("beat", 2), ("reaction", 2), ("volume", 2), ("held", 2), ("trade", 2), (ReleaseTone.ReadStep, 0), (ReleaseTone.Gate, 0)]),
+            RuleRows.GatesJson([("market", 6), ("print", 4), ("beat", 2), ("reaction", 2), ("volume", 2), ("held", 2), ("trade", 2), (ReleaseTone.ReadStep, 0), (ReleaseTone.Gate, 0)], 6),
             Text(store, $"SELECT gates FROM rule_night WHERE session_date = '{BreakoutNight}' AND rule = '{quoted}';"));
     }
 
@@ -392,7 +392,7 @@ public partial class FixtureExpectations
             await new RuleCards(clock, store.DatabaseFile).RunAsync("cards-tone", register, at.AddHours(1));
 
             Assert.Equal(
-                RuleRows.GatesJson([(RuleRows.Market, 7), (RuleRows.Setup, 7), (RuleRows.Floors, 7), (RuleRows.Profit, 7), (RuleRows.Cover, 7), (ReleaseTone.ReadStep, 4), (ReleaseTone.Gate, 2)]),
+                RuleRows.GatesJson([(RuleRows.Market, 7), (RuleRows.Setup, 7), (RuleRows.Floors, 7), (RuleRows.Profit, 7), (RuleRows.Cover, 7), (ReleaseTone.ReadStep, 4), (ReleaseTone.Gate, 2)], 7),
                 Text(store, $"SELECT gates FROM rule_night WHERE index_code = '{index}' AND rule = '{variant}';"));
 
             store.Execute("UPDATE reading_pin SET history_completed_at = NULL WHERE id = 1;");
@@ -411,7 +411,7 @@ public partial class FixtureExpectations
             await new RuleCards(clock, store.DatabaseFile).RunAsync("cards-tone-open", register, at.AddHours(1));
 
             Assert.Equal(
-                RuleRows.GatesJson([(RuleRows.Market, 7), (RuleRows.Setup, 7), (RuleRows.Floors, 7), (RuleRows.Profit, 7), (RuleRows.Cover, 7), (ReleaseTone.ReadStep, 0), (ReleaseTone.Gate, 0)]),
+                RuleRows.GatesJson([(RuleRows.Market, 7), (RuleRows.Setup, 7), (RuleRows.Floors, 7), (RuleRows.Profit, 7), (RuleRows.Cover, 7), (ReleaseTone.ReadStep, 0), (ReleaseTone.Gate, 0)], 7),
                 Text(store, $"SELECT gates FROM rule_night WHERE index_code = '{index}' AND rule = '{variant}';"));
         }
     }

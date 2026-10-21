@@ -98,19 +98,20 @@ public partial class NightlyRun
         Assert.Equal(new DateOnly(2026, 10, 7), outcome.Session);
         Assert.Equal([("GSPC", 2, 1, 0, false), ("MID", 5, 0, 0, false), ("SML", 0, 0, 0, false)], outcome.Indices.Select(index => (index.Index, index.Rules, index.Picks, index.Forming, index.Fault is not null)));
 
-        // The live filter's row counts the page's list and its funnel the shadow's gates; the variant's its own pick; and
+        // The live filter's row counts the page's list and its funnel the shadow's gates, each funnel with the three members
+        // the night read for the rule, which reached its first gate; the variant's its own pick; and
         // from 17.8 the S&P 400's fundamentals-first family, which listed nothing.
         Assert.Equal(
             [$"GSPC|pullback|{LiveFilter}|1|1|0", $"GSPC|pullback|{FilterVariant}|1|1|0", "MID|breakout|provisional|1|1|0", "MID|drift|provisional|1|0|1", "MID|fundamentals|provisional|1|0|1", "MID|heavyweight|provisional|1|0|", "MID|pullback|provisional|1|0|1"],
             Texts(store, $"SELECT index_code || '|' || family || '|' || rule || '|' || evaluated || '|' || listed || '|' || COALESCE(stretch, '') FROM rule_night WHERE session_date = '{RuleNight}' ORDER BY index_code, family, rule;"));
         Assert.Equal(
-            RuleRows.GatesJson([("market", 3), ("trend and strength", 3), ("setup", 1), ("trigger", 1), ("trade", 1)]),
+            RuleRows.GatesJson([("market", 3), ("trend and strength", 3), ("setup", 1), ("trigger", 1), ("trade", 1)], 3),
             Texts(store, $"SELECT gates FROM rule_night WHERE session_date = '{RuleNight}' AND rule = '{LiveFilter}';").Single());
         Assert.Equal(
-            RuleRows.GatesJson([("market", 3), ("trend and strength", 3), ("setup", 3), ("trigger", 2), ("trade", 2)]),
+            RuleRows.GatesJson([("market", 3), ("trend and strength", 3), ("setup", 3), ("trigger", 2), ("trade", 2)], 3),
             Texts(store, $"SELECT gates FROM rule_night WHERE session_date = '{RuleNight}' AND rule = '{FilterVariant}';").Single());
         Assert.Equal(
-            RuleRows.GatesJson([(RuleRows.Market, 3), (RuleRows.Setup, 2), (RuleRows.Floors, 1), (RuleRows.Profit, 1), (RuleRows.Cover, 1)]),
+            RuleRows.GatesJson([(RuleRows.Market, 3), (RuleRows.Setup, 2), (RuleRows.Floors, 1), (RuleRows.Profit, 1), (RuleRows.Cover, 1)], 3),
             Texts(store, $"SELECT gates FROM rule_night WHERE session_date = '{RuleNight}' AND index_code = 'MID' AND family = 'breakout';").Single());
 
         // The S&P 400 breakout's night reads its stretch over the replayed history and tonight: listed tonight, so no
