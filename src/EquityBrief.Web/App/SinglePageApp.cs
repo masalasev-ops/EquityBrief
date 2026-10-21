@@ -341,13 +341,13 @@ public sealed partial class SinglePageApp : IComponent
 
     // Tonight's buy points as a card of their own, the table across every setup with its key, each row folding its plan
     // and its card beneath it, the one the link names open; on a night no setup lists one, a line saying so with how many
-    // members stand one gate short, from 19.8 a link opening the card of them, its guide behind its "?".
+    // members stand one gate short, from 19.8 a link opening the card of them where any does, its guide behind its "?".
     // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
     static string BuyPointsCard(MarkRenderer marks, IReadOnlyList<BuyPointView> points, string? open, IReadOnlyDictionary<string, string>? plans, DateOnly night, int? oneShort = null, string? closeHref = null) =>
         points.Count == 0
             ? LineCard(
                 "buy-points",
-                Invariant($"<p class=\"buy-points-none\" data-buy-points=\"0\" data-one-short=\"{(oneShort is { } stated ? stated.ToString(CultureInfo.InvariantCulture) : "none")}\">No buy points tonight{(oneShort is not { } shortOf ? string.Empty : closeHref is { } href ? Invariant($" · <a class=\"close-open\" href=\"{Escaped(href)}\">{shortOf} one gate short</a>") : Invariant($" · {shortOf} one gate short"))}</p>"),
+                Invariant($"<p class=\"buy-points-none\" data-buy-points=\"0\" data-one-short=\"{(oneShort is { } stated ? stated.ToString(CultureInfo.InvariantCulture) : "none")}\">No buy points tonight{(oneShort is not { } shortOf ? string.Empty : closeHref is { } href && shortOf > 0 ? Invariant($" · <a class=\"close-open\" href=\"{Escaped(href)}\">{shortOf} one gate short</a>") : Invariant($" · {shortOf} one gate short"))}</p>"),
                 BuyPointsGuide)
             : Cards.Computed(
                 "Buy points",
@@ -1760,7 +1760,7 @@ public sealed partial class SinglePageApp : IComponent
                 Invariant($"On the list before: the nights the live list picked {Escaped(ticker)} before"),
                 marks.OnTheListBefore(ticker, picked) + Cards.Key(
                     "How to read it.",
-                    Invariant($"Each row is a night the live list picked {Escaped(ticker)} before this one, on the plan that night's rule traded: planned at that night's close, bought at the next session's open and followed to its target, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions. The line runs from the stop in green to the target in orange with the buy between them, and the dot is where the price stood on the night this page draws, hollow while the trade was open and filled where it finished. A result is what the trade made in multiples of what it risked."),
+                    Invariant($"Each row is a night the live list picked {Escaped(ticker)} before this one, on the plan that night's rule traded: planned at that night's close, bought at the next session's open and followed to its target, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions. The line runs from the stop in red to the target in orange with the buy between them, and the dot is where the price stood on the night this page draws, hollow while the trade was open and filled where it finished. A result is what the trade made in multiples of what it risked."),
                     "What these trades did is a record of the list's picks, not a forecast for this one, and nothing on the page is decided by it. How every pick has done is on the Past picks screen.")));
         }
 
@@ -3861,7 +3861,7 @@ public sealed partial class SinglePageApp : IComponent
             : marks.PicksTable(shown, named: true));
         body.Append(Cards.Key(
             "How to read the trade line.",
-            "The line runs from the stop on the left, in green, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished, and a price past either end sits at that end. A setup that trails its stop names no target, so its row draws no line and its result is what it made in multiples of what it risked.",
+            "The line runs from the stop on the left, in red, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished, and a price past either end sits at that end. A setup that trails its stop names no target, so its row draws no line and its result is what it made in multiples of what it risked.",
             "The lists' trades appear here, each under the setup that listed it. A registered variant's own trades are its account's trade log, chosen above, beside its test years verdict and apart from it; none ever appears on Tonight."));
 
         region.Append(Cards.Computed(

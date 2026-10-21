@@ -5843,3 +5843,158 @@ Carried:    the S&P 500's groups and pages on the GICS scheme and the Financials
             stock reported; found beyond phase 19, the frozen S&P 400 and 600 heavyweights cards drawing their setting's
             key as stored, owed a 20.11 correction; PR 505 rebased with its migration at 104; the phase 18 sign-off by a
             fresh session; and the phase 19 sign-off by a fresh session over the corrected main.
+
+### 19.2 - correction: the trade line's stop is named the red it is drawn in, and every date line drawing no arrows wraps whole on a phone   2026-10-21
+
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its remedies,
+            the page corrections in PR 518 and the first phase 19 sign-off review's corrections in PR 519; in review, 20.8
+            with its correction, PR 505; in progress, the corrections the second phase 19 sign-off review found, in one
+            pull request: this correction, the 19.4 correction of Past picks' sentences, the 16.2 correction of the account
+            form on a phone, the 19.7 correction of the dates and the phone's rows, the 19.8 correction of the empty card
+            and the 13.1 correction of the Run page's funnel words; next, this pull request merged, the phase 19 sign-off by
+            a fresh session over the corrected main, PR 505 rebased with its migration at 104, the phase 18 sign-off by a
+            fresh session, the local lane's one text field, 21.0 once its ruling is given, and pin 3's completion steps.
+Ruled:      by the operator on 2026-10-21, told the second review had found four defects and signed nothing: "Correct
+            first (Recommended)", and of the smaller items found beside them all four in the same pull request, "Tall phone
+            rows, Paper form on a phone, Run page funnel words, Empty one-gate-short card": this session builds the
+            corrections, so a fresh session signs phase 19 once they merge.
+Reviewed:   the second phase 19 sign-off review of 2026-10-21, by this session before it committed code, over main at
+            54af3d00, whose tree is PR 519's head's: `tools/ci.ps1` green 18:34:36 to 19:00:06 UTC, all six steps, 0
+            warnings, 0 errors, 2578 of 2578 tests, migrations 0 to 103 and none pending at 103; `tools/verify-phase.ps1`
+            green 19:01:11 to 19:01:16 UTC, 60 tables, 1372 claims all passing, none out of scope or unexamined, 1383
+            placements against a floor of 34, 43 checks run and passed. Hosted CI green on PR 519's head under both events
+            and on main's push. The night of 2026-10-20 ran all 47 steps; 116 obligations, 83 discharged and 33 operating,
+            none open. Swept: the first review's s1 to s13, PR 519's c1 to c7 and r1 to r11, one property each of what its
+            three corrections added, each filtered to the tests naming its file and predicted before its run, all
+            thirty-one red as predicted. Read back at 1440 px and a true 390 px in both palettes over the operator's store,
+            the chart page's labels measured at 7.17 a character at most against the 7.2 its column is sized by.
+Found:      by that review: Past picks' key for the trade line, the Trade heading's tip, a name page's key for the nights
+            the list picked it before and section 15's row for the mark named the stop green, where the stylesheet has
+            drawn it in the loss's red since 19.2 on 2026-10-12 as the colour decision rules; and on a phone the one-line
+            rule beneath a screen's title cut Paper trading's and Loop's lines on every index and the S&P 500's Past picks
+            line before their dates, where section 15 says the phone's date line is the night's short date.
+Corrected:  the two keys and the tip say the stop is drawn in red and the row a red tick; no rule holds a date line to one
+            line or cuts it, so a line drawing no arrows wraps whole on a phone while the night picker's line stays its
+            short date between its arrows. Section 15's two passages, the roster and the changelog.
+Tests:      none more: the Past picks test reads its key's red, the two ends' rules in the stylesheet and no key calling the
+            stop green, the name page's test its own key the same, the headings' test the tip, and the phone test no rule
+            holding a date line to one line or cutting it.
+Mutated:    the rule, stated before the runs, for every correction of this pull request: each property it adds, the
+            smallest edit undoing it, filtered to the tests naming it with its red predicted, made in this checkout over
+            the file's own text and restored from it, the tree's diff the same after each. m1 the Past picks key's stop
+            green again: red at the Past picks test. m2 the one-line rule back for a line holding no night picker: red at
+            the phone test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 19.4 - correction: Past picks' line for each family keeps its too-few words inside its sentence   2026-10-21
+
+Queue:      as the 19.2 correction's entry above.
+Found:      by the second phase 19 sign-off review of 2026-10-21, on Past picks at 1440 px and 390 px in both palettes over
+            the operator's store: each family's line beside the lists' trades broke into three lines, "Since registered: 9
+            trade(s)," then "too few trades (5 of 300)" on a line of its own and then ", from 2026-10-05, counting the
+            version", the rule setting those words on a line beneath a count in paper trading's table reaching the
+            sentence, which the trade log's own line had been taken back from and this one had not; it stood in the first
+            review's own screenshot too.
+Corrected:  the words stand inside the sentence, the table's rule taken back to its flow there as in the trade log's line.
+            The roster and the changelog.
+Tests:      none more: the paper trading test reads each line's too-few words between its count and its start, the table's
+            rule and the rule taking both sentences back to their flow.
+Mutated:    under the rule stated in the 19.2 correction's entry: m3 the lists' line left out of the rule taking a sentence
+            back to its flow: red at the paper trading test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 16.2 - correction: the account form stands each setting's words whole above its box on a phone   2026-10-21
+
+Queue:      as the 19.2 correction's entry above.
+Ruled:      among the smaller items the operator chose on 2026-10-21 to correct in this pull request, "Paper form on a
+            phone".
+Found:      by the second phase 19 sign-off review of 2026-10-21, on paper trading at a true 390 px over the operator's
+            store: the account form 16.2 built, which paper trading opens with from 19.4, ran its three settings as one
+            paragraph, "Risk a" ending one line and "trade, per cent" opening the next beside its box.
+Corrected:  on a phone each setting stands beneath the one before, its words whole above its box, by a rule on the form
+            that outranks the one every posted form is drawn inline by. The roster and the changelog.
+Tests:      one more: the form's three labels each holding its words and its box, and the phone's rules for the form, its
+            labels and its boxes.
+Mutated:    under the rule stated in the 19.2 correction's entry: m4 the form's rule on a phone one the posted forms'
+            inline rule outranks: red at the form's test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 19.7 - correction: a date in a table's cell is drawn whole, and the Watch list and Researched scroll on a phone rather than squeeze their words   2026-10-21
+
+Queue:      as the 19.2 correction's entry above.
+Ruled:      among the smaller items the operator chose on 2026-10-21 to correct in this pull request, "Tall phone rows".
+Found:      by the second phase 19 sign-off review of 2026-10-21 over the operator's store: the Watch list's Added and
+            Researched's Written dates broke at a hyphen at 1440 px, "2026-10-" above "21", the columns 19.7 added leaving
+            them too little room, and Past picks' night listed did at 390 px, "2026-" above "10-20"; and on a phone the two
+            tables 19.7 built squeezed their words into the screen's width, the Watch list's rows about 270 px tall with a
+            gate's pill, "3 short: trend and strength", in four lines, and Researched's TRV row about 460 px.
+Corrected:  a date in those three tables' cells is drawn whole, and on a phone the Watch list's and Researched's tables keep
+            a width their words read at and scroll sideways in their box, as the lists' tables do, the pill on one line.
+            The roster and the changelog.
+Tests:      one more: the rules keeping those dates whole and the two tables' widths, the pill's line and the box's scroll,
+            and a Past picks table's first cell its night as a figure with the stock's column and without.
+Mutated:    under the rule stated in the 19.2 correction's entry: m5 the dates left free to break: red at the dates' test.
+            m6 the Watch list's width taken back to the phone's: red there. m7 a name page's Past picks table drawing its
+            night in a cell the rule does not reach: red there.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 19.8 - correction: a night with no stock one gate short draws no card of them, and its counts read nought with no link   2026-10-21
+
+Queue:      as the 19.2 correction's entry above.
+Ruled:      among the smaller items the operator chose on 2026-10-21 to correct in this pull request, "Empty one-gate-short
+            card".
+Found:      by the second phase 19 sign-off review of 2026-10-21, on the S&P 400's Tonight over the operator's store: beneath
+            "No buy points tonight · 0 one gate short" the card 19.8 built stood holding nothing but "0 stocks one gate short
+            of a buy point", and the line's count and the market line's "0 close to a buy point" each linked to it.
+Corrected:  a night reading no stock one gate short draws no card of them, and both counts read nought with no link, while a
+            night reading some links both to the card. Section 15's row, the roster and the changelog.
+Tests:      none more: the buy points line's test reads a night reading none drawing no card and neither count linked, the
+            card's own call drawing nothing for no rows, and a night reading some linking both.
+Mutated:    under the rule stated in the 19.2 correction's entry: m8 the card drawn for no row: red at the buy points line's
+            test. m9 the market line's nought linked: red there. m10 the buy points line's nought linked: red there.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 13.1 - correction: the Run page's funnel names its count as the swing filter's, where it called it the night's list   2026-10-21
+
+Queue:      as the 19.2 correction's entry above.
+Ruled:      among the smaller items the operator chose on 2026-10-21 to correct in this pull request, "Run page funnel
+            words".
+Found:      by the second phase 19 sign-off review of 2026-10-21, on the Run page for the night of 2026-10-20 over the
+            operator's store: the funnel's closing line said "0 stock(s) on this night's list" on a night Tonight listed five
+            buy points and the same page counted five names new that evening. The line 12.3 wrote counts the members passing
+            every one of the swing filter's checks, which was the night's list until 13.1's framework drew the page's list
+            from the setup families.
+Corrected:  the line says how many stocks passed every one of the swing filter's checks that night, its link opening
+            tonight's list. Section 15's row, the roster and the changelog.
+Tests:      none more: the Run page test reads the line's words and no line calling the count the night's list.
+Measured:   read back from a scratch Release build of this pull request's tree over the operator's store on its own port at
+            1440 px and a true 390 px in both palettes, writing nothing but the read surface's row on the run log: Past
+            picks' five lines each one sentence with its too-few words inside it; the Watch list's and Researched's dates
+            whole at 1440 px; on a phone the Watch list 1,084 px tall where it was 1,853 with each pill on one line,
+            Researched 2,228 where it was 3,354, Paper trading's, Loop's and Past picks' date lines wrapping whole with their
+            dates and the account form a setting beneath another; the S&P 400's Tonight drawing no card of the stocks one
+            gate short with both counts reading nought unlinked; the Run page's funnel line in its new words; no page wider
+            than its screen.
+Claims:     1372, as before: no row's claim added or removed by this pull request.
+Mutated:    under the rule stated in the 19.2 correction's entry: m11 the line's old words: red at the Run page test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2580 of 2580 tests ran with none failed,
+            migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the review's judgement items put to the operator on 2026-10-21 and still theirs: counts written with "(s)" on
+            phase 19's pages, the heading percentiles averaging readings that point opposite ways, and the chart page's next
+            report on the night a stock reported; found beyond phase 19, the frozen S&P 400 and 600 heavyweights cards
+            drawing their setting's key as stored, owed a 20.11 correction; the S&P 500's groups and pages on the GICS
+            scheme and the Financials' revenue basis, both put to the operator; PR 505 rebased with its migration at 104;
+            the phase 18 sign-off by a fresh session; and the phase 19 sign-off by a fresh session over the corrected main.

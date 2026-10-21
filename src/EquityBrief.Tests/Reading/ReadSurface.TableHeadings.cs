@@ -122,7 +122,7 @@ public partial class ReadSurface
             ("Buy", "r tipped", "Buy", "The open it was bought at, the session after its night. A trade whose next session is not stored yet says it buys at the next open."),
             ("Stop", "r tipped", "Stop", "The price the plan sells at to cut the loss, or the first level of a stop that trails the price."),
             ("Target", "r tipped", "Target", "The price the plan takes its gain at. A setup that trails its stop names none."),
-            ("Trade", "tipped", "Trade", "The line runs from the stop on the left, in green, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished."),
+            ("Trade", "tipped", "Trade", "The line runs from the stop on the left, in red, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished."),
             ("Status", "tipped", "Status", "What became of the trade: open, reached target, stopped out, or ran out of time where its holding limit passed before either."),
             ("Sessions held", "r tipped", "Sessions held", "Trading sessions from the night listed to the session it finished on, or to the night drawn while it is still open."),
             ("Result", "r tipped", "Result", "What the trade came to from its buy in multiples of the risk its plan put up, the fall from the evening's close to the stop: +2.00 made twice that risk and -1.00 lost it, and a close through the stop can read below -1. Open while the trade runs."),

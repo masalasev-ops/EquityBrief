@@ -299,7 +299,14 @@ public partial class ReadSurface
 
         // Both keys, each closing on what to take from it.
         Assert.Contains("<b>How to read it.</b> A trade is listed on the night the live list drew it", page, StringComparison.Ordinal);
-        Assert.Contains("<b>How to read the trade line.</b> The line runs from the stop on the left, in green, to the target on the right, in orange, with the buy marked between them.", page, StringComparison.Ordinal);
+        Assert.Contains("<b>How to read the trade line.</b> The line runs from the stop on the left, in red, to the target on the right, in orange, with the buy marked between them.", page, StringComparison.Ordinal);
+
+        // The words name the hues the stylesheet draws the line's two ends in, the stop the loss's red and the target the
+        // resistance orange, and no page's words call the stop green.
+        // see: Green means support or a gain and red a stop or a loss, with orange for resistance
+        Assert.Contains(".tl-stop{stroke:var(--fail);", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".tl-target{stroke:var(--res);", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.DoesNotMatch(@"stop[^.<]{0,40}\bin green\b", page);
         Assert.Contains("<p class=\"take\"><b>What to take from it.</b> The lists' trades appear here, each under the setup that listed it. A registered variant's own trades are its account's trade log, chosen above, beside its test years verdict and apart from it; none ever appears on Tonight.</p>", page, StringComparison.Ordinal);
         Assert.Contains($"<span class=\"stamp computed\">Computed for {PicksNewest}</span>", page, StringComparison.Ordinal);
 
@@ -428,6 +435,10 @@ public partial class ReadSurface
         Assert.Contains("<td class=\"status\">Reached target</td>", row, StringComparison.Ordinal);
         Assert.Contains("+2.50 ×</td>", row, StringComparison.Ordinal);
         Assert.Contains("<p class=\"take\"><b>What to take from it.</b>", region, StringComparison.Ordinal);
+
+        // Its key names the hues the trade line's ends are drawn in, the stop's red and the target's orange.
+        Assert.Contains("The line runs from the stop in red to the target in orange with the buy between them", region, StringComparison.Ordinal);
+        Assert.DoesNotMatch(@"stop[^.<]{0,40}\bin green\b", region);
 
         // It is folded inside the plan, after the plan's own tables and before the next region, and has no entry of
         // its own in the contents.

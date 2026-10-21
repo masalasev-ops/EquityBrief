@@ -134,12 +134,12 @@ code{font-size:.92em}
 .m-badge[hidden]{display:none}
 .page-head{display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap;padding-top:14px}
 .night-picker .np-short{display:none}
-/* on a phone the title holds one line and the date line is the night as a short date between its arrows; a stock's
-   masthead line, holding its quote, its figures and its links, wraps whole */
+/* on a phone the title holds one line and the date line is the night as a short date between its arrows; a date line
+   drawing no arrows, a screen's sentence ending on its date and a stock's masthead line with its quote and its links
+   among them, wraps whole */
 @media (max-width:560px){
  .page-head .m-screen{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
  .page-head .asof-words{display:none}
- .page-head .m-asof:not(:has(.night-picker)):not(:has(.m-when)){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
  .page-head .night-picker{margin-left:0}
  .night-picker .np-full{display:none}
  .night-picker .np-short{display:inline}
@@ -199,6 +199,12 @@ form.name-watch[method='post'] button:hover{color:var(--ink);border-color:var(--
 .watch-table td.listed{color:var(--ink);font-weight:700}
 .watch-table td.stopped{color:var(--soft)}
 .watch-table .btn-2{padding:0 8px;line-height:20px}
+/* a date in these tables' cells is never broken at its hyphens, and on a phone the two tables scroll sideways in their
+   box rather than squeeze their words into columns a few letters wide */
+.picks-table td.num:first-child,.watch-table td.num,.researched-table td.num{white-space:nowrap}
+.watch-table{min-width:1040px}
+.watch-table .chip{white-space:nowrap}
+.researched-table{min-width:900px}
 .level-summary td.strength{white-space:nowrap}
 .level-summary .str-bar{display:inline-block;height:8px;margin-right:6px;vertical-align:middle;border-radius:2px;background:var(--ink-2);opacity:.45}
 .level-summary tr.close-row td{border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);font-weight:600;color:var(--ink)}
@@ -475,7 +481,13 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-heads ul{margin:6px 0 0;padding-left:18px;font-size:13px}
 .paper-heads li{margin:3px 0}
 .account-pick{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0;max-width:min(100%,560px)}
-.paper-log-since .too-few{display:inline}
+/* on a phone the account form stands each setting's words whole above its box, one setting beneath another */
+@media (max-width:560px){
+ form.account-control{display:block;margin-right:0}
+ .account-control label{display:block;margin:0 0 10px}
+ .account-control input{display:block;width:100%;margin-top:4px}
+}
+.paper-log-since .too-few,.paper-heads .too-few{display:inline}
 .paper-log-table td:nth-child(-n+5){white-space:nowrap}
 .paper-running{margin:0 0 12px;max-width:420px}
 .paper-running figcaption{font-size:12.5px;color:var(--ink-2)}

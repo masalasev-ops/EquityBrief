@@ -6065,7 +6065,7 @@ public sealed partial class MarkRenderer : IComponent
         ("Buy", "The open it was bought at, the session after its night. A trade whose next session is not stored yet says it buys at the next open."),
         ("Stop", "The price the plan sells at to cut the loss, or the first level of a stop that trails the price."),
         ("Target", "The price the plan takes its gain at. A setup that trails its stop names none."),
-        ("Trade", "The line runs from the stop on the left, in green, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished."),
+        ("Trade", "The line runs from the stop on the left, in red, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished."),
         ("Status", "What became of the trade: open, reached target, stopped out, or ran out of time where its holding limit passed before either."),
         ("Sessions held", "Trading sessions from the night listed to the session it finished on, or to the night drawn while it is still open."),
         ("Result", "What the trade came to from its buy in multiples of the risk its plan put up, the fall from the evening's close to the stop: +2.00 made twice that risk and -1.00 lost it, and a close through the stop can read below -1. Open while the trade runs."),
@@ -6715,8 +6715,8 @@ public sealed partial class MarkRenderer : IComponent
 
     // The trade line, section 15.5's eighth mark: one trade from its stop at the left to its target at the
     // right, the buy a short tick between them, and a dot for the price, hollow while the trade is open and
-    // filled where it finished. The stop and the target keep the two hues a level below and above the price
-    // own, and nothing else on the mark uses them; a price past either end sits at that end rather than off
+    // filled where it finished. The stop is drawn in the loss's red and the target in the resistance orange,
+    // and every page's words name those two hues; a price past either end sits at that end rather than off
     // the line. It is placed by ratios to the buy, so a split since the listing moves no part of it.
     //
     // A buy is the open the trade was bought at, so one that opened past its stop or its target sits at that
@@ -7575,7 +7575,7 @@ public sealed partial class MarkRenderer : IComponent
         picture.Append("</svg>");
         picture.Append(Invariant, $"<p class=\"fp-listed\"><b>{funnel.Passing}</b> ");
         picture.Append(funnel.Rule == ListRules.Filter
-            ? Formatted($"stock(s) on this night's list. <a class=\"fp-open\" href=\"{Escaped(tonight)}\">Open the list &#8594;</a></p>")
+            ? Formatted($"stock(s) passed every one of the swing filter's checks this night. <a class=\"fp-open\" href=\"{Escaped(tonight)}\">Open tonight's list &#8594;</a></p>")
             : Formatted($"stock(s) passed, and the six reasons drew this evening's list. <a class=\"fp-open\" href=\"{Escaped(tonight)}\">Open the list &#8594;</a></p>"));
         picture.Append("</div>");
 

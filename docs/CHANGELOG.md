@@ -26,6 +26,86 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches the Run page's funnel naming its count as the swing filter's
+Corrects: the Run page's funnel said "0 stock(s) on this night's list" on a night Tonight listed five buy points, found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... the market line's count and the line's in the buy points' place reading nought with no link, and a night reading some linking both to the card |
+Now:
+> read-surface: ... the market line's count and the line's in the buy points' place reading nought with no link, and a night reading some linking both to the card; and from the 13.1 correction of 2026-10-21 the Run page's funnel naming its count as the stocks that passed every one of the swing filter's checks that night, and never the night's list |
+Why: the 13.1 correction of 2026-10-21 adds these assertions.
+
+### 2026-10-21 - ARCHITECTURE.html - the Run page's funnel names its count as the swing filter's
+Corrects: the row drew the funnel's count as the count listed, which it was until 13.1 drew the page's list from the setup families, so the Run page called the swing filter's passing names the night's list on a night the families listed others, found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> From the index to tonight's list (15): a funnel of how many members passed each of the filter's checks in turn down to those left after the exclusions; the count listed with a link opening tonight's list
+Now:
+> From the index to tonight's list (15): a funnel of how many members passed each of the filter's checks in turn down to those left after the exclusions; the count listed with a link opening tonight's list, from the 13.1 correction of 2026-10-21 the count named as the swing filter's since the setup families draw tonight's list
+Why: the operator chose on 2026-10-21 to correct it with the review's other findings, "Run page funnel words".
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches a night with no stock one gate short drawing no card
+Corrects: a night reading no stock one gate short drew a card holding only the line "0 stocks one gate short of a buy point", its counts above linking to it, found on the S&P 400's Tonight by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... and on a phone the Watch list's and Researched's tables scrolling sideways in their box at a width their words read at, a gate's pill held to one line |
+Now:
+> read-surface: ... and on a phone the Watch list's and Researched's tables scrolling sideways in their box at a width their words read at, a gate's pill held to one line; and from the 19.8 correction of 2026-10-21 a night reading no stock one gate short drawing no card of them, the market line's count and the line's in the buy points' place reading nought with no link, and a night reading some linking both to the card |
+Why: the 19.8 correction of 2026-10-21 adds these assertions.
+
+### 2026-10-21 - ARCHITECTURE.html - a night with no stock one gate short draws no card of them
+Corrects: the card was drawn on a night reading no stock one gate short, holding nothing but its count of nought beneath a line already saying so, found on the S&P 400's Tonight by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> Tonight's stocks one gate short (15): ... A night stored before them holds only the first part each member failed and says in the card's line that it reads no stock as one gate short. Each family's card keeps its own stocks one gate short behind its expander ...
+Now:
+> Tonight's stocks one gate short (15): ... A night stored before them holds only the first part each member failed and says in the card's line that it reads no stock as one gate short. From the 19.8 correction of 2026-10-21 a night reading no stock one gate short draws no card, and the market line's count and the count on the line in the buy points' place read nought with no link. Each family's card keeps its own stocks one gate short behind its expander ...
+Why: the operator chose on 2026-10-21 to correct it with the review's other findings, "Empty one-gate-short card".
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches dates drawn whole in three tables and two tables scrolling on a phone
+Corrects: the Watch list's Added and Researched's Written dates broke at a hyphen at 1440 px and Past picks' night listed at 390 px, and on a phone the Watch list and Researched squeezed their words into rows of 270 to 460 px, found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... standing one beneath another on a phone with the words whole above the box, by a rule outranking the one every posted form is drawn inline by |
+Now:
+> read-surface: ... standing one beneath another on a phone with the words whole above the box, by a rule outranking the one every posted form is drawn inline by; and from the 19.7 correction of 2026-10-21 a date in a cell of Past picks', the Watch list's or Researched's table drawn whole, a Past picks table's first cell its night as a figure with the stock's column and without, and on a phone the Watch list's and Researched's tables scrolling sideways in their box at a width their words read at, a gate's pill held to one line |
+Why: the 19.7 correction of 2026-10-21 adds these assertions.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches the account form standing each setting above the next on a phone
+Corrects: on a phone the account form ran its three settings as one paragraph, breaking "Risk a trade, per cent" across two lines away from its box, found by the second phase 19 sign-off review of 2026-10-21 on paper trading.
+Was:
+> read-surface: ... the rule that sets them on a line of their own in paper trading's table taken back to the sentence's flow there as in a trade log's line |
+Now:
+> read-surface: ... the rule that sets them on a line of their own in paper trading's table taken back to the sentence's flow there as in a trade log's line; and from the 16.2 correction of 2026-10-21 the account form's three settings each a label holding its words and its box, standing one beneath another on a phone with the words whole above the box, by a rule outranking the one every posted form is drawn inline by |
+Why: the 16.2 correction of 2026-10-21 adds these assertions.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches Past picks' lines for each family keeping their too-few words inside their sentences
+Corrects: on Past picks each family's line beside the lists' trades broke into three lines, its too-few words on a line of their own and the rest of its sentence opening on a comma, found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... and the trade line's two keys and its heading's tip naming the stop's red and the target's orange the stylesheet draws them in, no words of either key calling the stop green |
+Now:
+> read-surface: ... and the trade line's two keys and its heading's tip naming the stop's red and the target's orange the stylesheet draws them in, no words of either key calling the stop green; and from the 19.4 correction of 2026-10-21 each family's line beside the lists' trades keeping its too-few words inside its sentence, between its count and where its record starts, the rule that sets them on a line of their own in paper trading's table taken back to the sentence's flow there as in a trade log's line |
+Why: the 19.4 correction of 2026-10-21 adds these assertions.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches every date line wrapping whole on a phone and the trade line's words naming the hues it is drawn in
+Corrects: the phone's one-line rule cut a screen's date line before its date, and the trade line's keys named its stop green where it is drawn red, both found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... and a stock's masthead line held to one line by no rule, its quote's words, its previous close and its links wrapping whole while a screen's date line holds one line; and from the 19.11 correction of 2026-10-21 ... and a chart naming its close alone keeping the name page's column of 86 |
+Now:
+> read-surface: ... and a stock's masthead line held to one line by no rule, its quote's words, its previous close and its links wrapping whole; and from the 19.11 correction of 2026-10-21 ... and a chart naming its close alone keeping the name page's column of 86; and from the third 19.2 correction of 2026-10-21 no rule holding a date line to one line or cutting it, a screen's sentence ending on its date wrapping whole on a phone, and the trade line's two keys and its heading's tip naming the stop's red and the target's orange the stylesheet draws them in, no words of either key calling the stop green |
+Why: the third 19.2 correction of 2026-10-21 takes away the rule a screen's date line was held to and adds these assertions.
+
+### 2026-10-21 - ARCHITECTURE.html - every date line drawing no arrows wraps whole on a phone
+Corrects: on a phone the one-line rule cut the line beneath a screen's title before its date, Paper trading's "as of the close of 20..." and Loop's "the run for 2026-10 t..." on every index and the S&P 500's Past picks among them, where this paragraph says the phone's date line is the night's short date, found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> The bar (15): ... and on a phone the title holds one line and the date line is the night's short date between its arrows, while a stock's masthead line, holding its quote and its links, wraps whole (see: The bar's index menu chooses the index every page reads, each choice naming its cap and its members).
+Now:
+> The bar (15): ... and on a phone the title holds one line and the date line is the night's short date between its arrows, while a stock's masthead line, holding its quote and its links, wraps whole; from the third 19.2 correction of 2026-10-21 every date line drawing no arrows wraps whole on a phone, so a screen's sentence ending on its date keeps its date (see: The bar's index menu chooses the index every page reads, each choice naming its cap and its members).
+Why: a line whose last words are its date said nothing of when on a phone once cut, and wrapping it costs a line.
+
+### 2026-10-21 - ARCHITECTURE.html - the trade line's stop is named the red it is drawn in
+Corrects: the row named the stop a green tick where 19.2 drew it in the loss's red on 2026-10-12, as the page's two keys and the Trade heading's tip did, found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> Trade line (15): One trade the live list recommended, drawn from its stop at the left as a green tick to its target at the right as an orange tick.
+Now:
+> Trade line (15): One trade the live list recommended, drawn from its stop at the left as a red tick to its target at the right as an orange tick.
+Why: the colour decision draws a stop in the red, and the stylesheet has drawn it so since 19.2.
+
 ### 2026-10-21 - .claude/rules/checks.md - read-surface reaches the chart page's column holding every price it names
 Corrects: the chart page's column was sized for the close alone, so a plan's label of three integer digits or more ran past the chart's edge, HAS's "target 129.57" read "target 129.5" at 1440 px, found by the phase 19 sign-off review of 2026-10-21.
 Was:
