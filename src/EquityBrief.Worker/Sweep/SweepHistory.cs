@@ -14,7 +14,10 @@ public sealed record SweepSurprise(DateOnly EventDate, bool After, double Percen
 // One member of the index on any session of the history, with its series, the spans the index held it for, the
 // earnings dates on file for it, the sector it carries as filed today, and its surprises as filed. A survivor is a name
 // the wider universe adds from today's S&P 400 and 600 members alone, read as a member on every session since nothing
-// says when it joined, which flatters the wider universe.
+// says when it joined, which flatters the wider universe. On a night whose store's year holds fewer sessions than a
+// reading needs, the sessions before its first stored one that the pulled history holds, at the store's scale, read by
+// those readings alone; none on every other night and in the history.
+// see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
 public sealed record SweepName(
     string Ticker,
     SweepBar[] Bars,
@@ -22,7 +25,8 @@ public sealed record SweepName(
     DateOnly[] Prints,
     string? Sector = null,
     IReadOnlyList<SweepSurprise>? SurprisesFiled = null,
-    bool Survivor = false)
+    bool Survivor = false,
+    SweepBar[]? Before = null)
 {
     public IReadOnlyList<SweepSurprise> Surprises => SurprisesFiled ?? [];
 

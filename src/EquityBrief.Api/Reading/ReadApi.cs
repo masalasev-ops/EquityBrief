@@ -608,7 +608,7 @@ public sealed record IndexHoldingRow(string Index, string Ticker, DateOnly Enter
 // One sector heavyweight holding as the book stored it as of a night: the stock, the session it was bought on, its
 // sector and company, its buy close, and where it had ended by the night, its sale close, why, its result and its
 // size cut's return over the same sessions, each none for a holding still open on the night.
-// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
 public sealed record HeavyweightHoldingRow(
     string Ticker,
     DateOnly EnteredOn,
@@ -3915,6 +3915,22 @@ public sealed partial class ReadApi : IComponent
         return await command.ExecuteScalarAsync() is string last ? DateOnly.ParseExact(last, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
     }
 
+    const string PulledBeforeTheYear = "SELECT EXISTS (SELECT 1 FROM pulled_bar WHERE session_date < $oldest);";
+
+    // Whether the pulled history holds a session before the oldest day the store's year to a night keeps, which the night
+    // reads the closes its year falls short by from.
+    // see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
+    public async Task<bool> PulledBeforeTheYearAsync(DateOnly night)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = PulledBeforeTheYear;
+        command.Parameters.AddWithValue("$oldest", night.AddYears(-EquityBrief.Core.Bars.BarRetention.Years).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return await command.ExecuteScalarAsync() is long held && held == 1;
+    }
+
     const string RuleNightsOn = @"
         SELECT index_code, session_date, family, rule, evaluated, listed, gates, stretch, mark, flagged, completed, sessions, source
         FROM rule_night
@@ -4506,7 +4522,7 @@ public sealed partial class ReadApi : IComponent
     ";
 
     // The sector heavyweights' holdings as of a night, which tonight's card, a name's page and Past picks read.
-    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
+    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
     // A registered heavyweights rule's own book as of a night, read as the page's book is, which its card draws when the
     // card's selector chooses it.
     // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight

@@ -12,7 +12,7 @@ namespace EquityBrief.Tests.Checks;
 // a holiday and after a night not run, the night's value on its count's basis, and the book over four constructed
 // nights: what it buys at the rank as it stood, what it carries, what it sells and why, a night run again and an
 // earlier night.
-// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
 // see: A heavyweight is bought where it leads its sector above nothing and passes the trend gate, and sold where the rule would not buy it
 // see: A sector's return is the mean of its members' own returns over the look-back
 // see: A heavyweight leaving the index is sold at its last session's close as a member

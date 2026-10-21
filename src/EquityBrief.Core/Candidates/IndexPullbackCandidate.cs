@@ -19,7 +19,7 @@ public sealed class IndexPullbackCandidate(string index) : IndexRuleCandidate(in
     public const string MarketParameter = "market";
     public const string BandParameter = "band";
 
-    public override string Version => "ddd98f127cf5";
+    public override string Version => "a13f39e63733";
 
     public override string SetupFamily => SetupFamilies.Pullback;
 

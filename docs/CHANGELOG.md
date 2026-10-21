@@ -26,6 +26,46 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - ARCHITECTURE.html - the heavyweights' and the breakout's longest readings read the sessions before the store's year from the pulled history
+Authorised by: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
+Was:
+> Heavyweight book: ... membership, bar store, market series, indicators, reported quarters, ...
+>
+> Index families: ... membership, bar store, market series, calendar, companies, ...
+>
+> Rule cards: ... membership, bar store, market series, calendar, indicators, ...
+>
+> The read and write matrix: Heavyweight book, Index families and Rule cards each with no read under Pulled history.
+>
+> (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need), at each of its twelve citations
+Now:
+> Heavyweight book: ... membership, bar store, pulled bars, market series, indicators, reported quarters, ...
+>
+> Index families: ... membership, bar store, pulled bars, market series, calendar, companies, ...
+>
+> Rule cards: ... membership, bar store, pulled bars, market series, calendar, indicators, ...
+>
+> The read and write matrix: Heavyweight book, Index families and Rule cards each with R under Pulled history.
+>
+> (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need), at each of its twelve citations
+Why: on the operator's ruling of the evening of 2026-10-20 as amended, a night whose store's year holds fewer sessions than the S&P 400's and 600's breakout's year's high or the sector heavyweights' closes read reads the sessions before it from the pulled history at the store's scale, so the three components read the pulled bars, and the rotation decision citing the store's year alone is superseded.
+
+### 2026-10-21 - SCHEMA.md - the rotation decision's citation renamed
+Authorised by: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
+Was:
+> (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need)
+Now:
+> (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need)
+Why: the decision the citation named is superseded on the operator's ruling of the evening of 2026-10-20 as amended.
+
+### 2026-10-21 - RUNBOOK.md - the rotation decision's citation renamed
+Authorised by: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
+Was:
+> **The sector heavyweights' rules registered again, from the 14.6 correction of 2026-10-07.** ... (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need) ...
+Now:
+> **The sector heavyweights' rules registered again, from the 14.6 correction of 2026-10-07.** ... (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need) ...
+Why: the decision the citation named is superseded on the operator's ruling of the evening of 2026-10-20 as amended.
+
 ### 2026-10-21 - SCHEMA.md - a company's value brought across a split after its count was asked
 Authorised by: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session
 Was:

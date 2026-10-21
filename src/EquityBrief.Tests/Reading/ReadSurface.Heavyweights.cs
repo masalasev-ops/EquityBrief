@@ -11,7 +11,7 @@ namespace EquityBrief.Tests.Reading;
 // rebalance bought, what was sold at it or since, and the next rebalance; drawn on a night the market check closed
 // the lists, and saying why where it holds nothing. Past picks draws each holding in percent beside its size cut, and
 // a name's page says the heavyweights hold it.
-// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
 // see: The market check closes every swing family's list together, and the sector heavyweights read none
 // see: A sector heavyweight's trade is scored by its percent return less the equal-weighted return of the size cut it was chosen from
 public partial class ReadSurface
@@ -219,7 +219,7 @@ public partial class ReadSurface
         var none = HeavyweightCardOf(WebUtility.HtmlDecode(await emptyClient.GetStringAsync($"/screens/tonight/{TheSwitch}")));
 
         Assert.Contains("data-holdings=\"0\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-last-rebalance=\"none\"", none, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"degraded family-empty\" data-holdings=\"0\">No rebalance has been read yet. The book reads its first on the next night the store holds that night's closes of the index and of each sector's fund and the 252 sessions its readings need, ranking each member by the company and share counts the quarters fetch stores from the answer it already asks for.</p>", none, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"degraded family-empty\" data-holdings=\"0\">No rebalance has been read yet. The book reads its first on the next night the store holds that night's closes of the index and of each sector's fund, and the store's year with the pulled history before it the 252 sessions its readings need, ranking each member by the company and share counts the quarters fetch stores from the answer it already asks for.</p>", none, StringComparison.Ordinal);
         Assert.DoesNotContain("heavyweight-table", none, StringComparison.Ordinal);
     }
 
