@@ -5462,3 +5462,32 @@ Carried:    the remedy run from main after the merge, every standing S&P 400 and
             heavyweights registered again at the versions this moves them to, with each record's length stated before it
             restarts; the year's high of a member whose bars start after the year's first session put to the operator;
             PR 505 rebased with its migration at 104; and the phase 18 sign-off by a fresh session.
+
+### 20.11 - the remedy of the year's-high ruling run from main: 30 moved rules registered again, each record's length stated before it restarted   2026-10-21
+
+Not a checkpoint entry: it records PR 517's merge and remedy and lands nothing.
+Gates:      `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 1eb551ff, PR 517's head, whose tree its merge
+            holds, the phase report ending at 07:39:38Z: all six steps, 0 warnings, 2571 of 2571 tests, migrations 0 to
+            103 with none pending, schema version 103; the phase report 60 tables, 1372 claims, 1372 passing, none out of
+            scope and none unexamined, 1383 placements reconciled against a floor of 34, 43 checks run and passed, each
+            the figure PR 517's newest entry stated, which the report held to the run. The hosted runs on its push and its
+            pull request passed.
+Ran:        PR 517 merged at 07:40:33Z on 2026-10-21 as 46e7ec5b, the history read stopped at 07:40:27Z and the
+            checkout's main brought up to it; `tools/remedies/2026-10-21-20.11-the-year-high-before-the-year.txt` from
+            07:41:11Z to 07:41:38Z, its one step, with no night, off-peak run, drain, local run or monthly run writing. No
+            model call and no provider request.
+Measured:   before the remedy, each of the 30 rules it registered again stood registered at 03:34:01Z by PR 515's
+            remedy with no night run since, so each record it restarted held no night and no trade; the cards' replayed
+            records stand under the rules' words, the S&P 400's from 2019-01-02 to 2026-10-20 with the pullback's 720
+            trades, the breakout's 1,033, the drift's 1,807 and the heavyweights' 335, and the S&P 600's to 2026-10-19
+            with 548, 957, 1,021 and 304. The 30 registered again at 07:41:35Z, each unchanged and named as restarting: on
+            the S&P 400 and on the S&P 600 the pullback, 3 and 4, from adc4b9f11470 to 61634e51e013, the breakout, 3 and
+            3, from acdeab81269c to fa012e2fbaba, the drift, 4 and 3, from a60b29a9a6fe to a0aac8d3d390, and the
+            heavyweights, 2 and 4, from 33d344c490cd to 4aa690bef133; and the S&P 500's four heavyweights from
+            6ab1c2b1c6a4 to d78f1ca30465.
+Read:       under pin 3 at 24,911 of 45,381 releases, 54.9 per cent, when it stopped; started again at 07:41:50Z from
+            8c5fdae2's clean copy, PR 517 moving none of the read's code, with the card at 250 W; the read surface on 5152
+            started again from main's Release.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
