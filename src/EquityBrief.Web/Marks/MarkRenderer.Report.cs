@@ -7,8 +7,9 @@ namespace EquityBrief.Web.Marks;
 // What the name page's quarter, segments, margins, analysts, dividend and valuation regions draw, each worked by the core's
 // one function for it from stored figures: the latest quarter line by line with the growth of the eight newest quarters,
 // the fetch they came from and the currency they are in; the twelve newest quarters' margins; the segment table the rule
-// made of the filing's; the analysts' figures; the dividend's safety; and the valuation, the night's multiple against its
-// own quarters' and the stock's industry's members'.
+// made of the filing's; the analysts' figures; the dividend's safety, or whether the company pays none with what it paid in
+// the whole year before the night's; and the valuation, the night's multiple against its own quarters' and the stock's
+// industry's members'.
 public sealed record ReportView(
     LatestQuarter? Quarter,
     IReadOnlyList<QuarterGrowth> Growth,
@@ -20,7 +21,9 @@ public sealed record ReportView(
     DividendSafetyReading? Dividend,
     ValuationView? Valuation,
     EquityBrief.Core.Insiders.InsiderView? Insiders = null,
-    ReleaseReadingView? Release = null);
+    ReleaseReadingView? Release = null,
+    bool PaysNone = false,
+    DividendYear? PaidLastYear = null);
 
 // From 20.3 the newest results release's reading a name's page draws under what management said: the day the SEC accepted
 // it in New York, its four words, and the reading version and the model it was read under.

@@ -36,14 +36,16 @@ public sealed record QuoteSession(DateTimeOffset Open, DateTimeOffset Close, boo
 // day a written one was written.
 public sealed record HeadlineView(string Sentence, bool Written, DateOnly? WrittenOn = null);
 
-// The four tiles under the headline, worked at the price the masthead draws, and whether that price is the quote.
+// The four tiles under the headline, worked at the price the masthead draws, whether that price is the quote, and whether
+// the company pays no dividend.
 public sealed record TilesView(
     EquityBrief.Core.Tiles.EarningsTile? Earnings,
     EquityBrief.Core.Tiles.GrowthTile? Growth,
     EquityBrief.Core.Tiles.YieldTile? Yield,
     EquityBrief.Core.Tiles.HighTile? High,
     decimal? Price,
-    bool Live);
+    bool Live,
+    bool PaysNone = false);
 
 // The quotes stored in one session and the quote job's runs over it by what each came to, against the day's cap, with
 // how many asks the name pages wrote in it and each ask no run of the job answered: the Run page's row for the quote runs.

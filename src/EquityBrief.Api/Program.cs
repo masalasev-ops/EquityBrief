@@ -723,13 +723,15 @@ app.MapGet(SinglePageApp.QuoteRoute + "{ticker}", async (string ticker, ReadApi 
     var year = await read.YearExtremesAsync(named, null);
     var today = clock.SessionDateAt(now);
     var inputs = await read.ReportInputsAsync(named, null, today);
+    var forwardRate = await read.ForwardRateAsync(named, null);
     var tiles = new TilesView(
         EquityBrief.Core.Tiles.NameTiles.Earnings(quarters),
         EquityBrief.Core.Tiles.NameTiles.Growth(inputs.Trend, inputs.TrendFetchedOn, quarters),
-        EquityBrief.Core.Tiles.NameTiles.YieldBeside(await read.ForwardRateAsync(named, null), quote.Price, inputs.TenYears, today),
+        EquityBrief.Core.Tiles.NameTiles.YieldBeside(forwardRate, quote.Price, inputs.TenYears, today),
         year is { } extremes ? EquityBrief.Core.Tiles.NameTiles.High(quote.Price, extremes.High, extremes.HighOn, extremes.Low, extremes.LowOn) : null,
         quote.Price,
-        Live: true);
+        Live: true,
+        PaysNone: EquityBrief.Core.Report.DividendSafety.PaysNone(forwardRate, inputs.Dividends, today));
 
     return Results.Json(new
     {

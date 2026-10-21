@@ -546,7 +546,9 @@ public static partial class NameScreen
             EquityBrief.Core.Insiders.InsiderView.Of(inputs.Insiders ?? [], inputs.InsiderSpans ?? EquityBrief.Core.Insiders.InsiderCoverage.None, night),
             inputs.Release is { } release && inputs.ReleaseModel is { } model
                 ? new ReleaseReadingView(DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(release.Accepted, EquityBrief.Core.Time.SessionZones.ResolveSessionZone(EquityBrief.Core.Time.SessionZones.UnitedStates)).DateTime), release.Answer, release.Pin, model)
-                : null);
+                : null,
+            EquityBrief.Core.Report.DividendSafety.PaysNone(forwardRate, inputs.Dividends, night),
+            EquityBrief.Core.Report.DividendSafety.LastWholeYear(inputs.Dividends, night));
     }
 
     // The figures a reader wants first, a figure to a row in two columns: the newest quarter's
@@ -1351,7 +1353,8 @@ public static partial class NameScreen
             shownPrice is { } yieldAt ? EquityBrief.Core.Tiles.NameTiles.YieldBeside(forwardRate, yieldAt, reportInputs?.TenYears ?? [], tilesNight) : null,
             shownPrice is { } highAt && year is { } extremes ? EquityBrief.Core.Tiles.NameTiles.High(highAt, extremes.High, extremes.HighOn, extremes.Low, extremes.LowOn) : null,
             shownPrice,
-            live is not null);
+            live is not null,
+            EquityBrief.Core.Report.DividendSafety.PaysNone(forwardRate, reportInputs?.Dividends ?? [], tilesNight));
 
         return page.NameRegion(
             marks,

@@ -32,7 +32,7 @@ public sealed partial class MarkRenderer
         Formatted($"<div class=\"lead-tiles\" data-live=\"{(tiles.Live ? "yes" : "no")}\">")
         + EarningsTile(tiles.Earnings)
         + GrowthTile(tiles.Growth)
-        + YieldTile(tiles.Yield, tiles.Price, tiles.Live)
+        + YieldTile(tiles.Yield, tiles.Price, tiles.Live, tiles.PaysNone)
         + HighTile(tiles.High, tiles.Live)
         + "</div>";
 
@@ -66,9 +66,11 @@ public sealed partial class MarkRenderer
                 "through the quarter to " + DayOf(tile.Through) + ", from its filings"),
         };
 
-    static string YieldTile(EquityBrief.Core.Tiles.YieldTile? yield, decimal? price, bool live) =>
+    // A company paying none says so, and a company storing no rate says none is stored.
+    // see: A company filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing neither as not stored
+    static string YieldTile(EquityBrief.Core.Tiles.YieldTile? yield, decimal? price, bool live, bool paysNone) =>
         yield is not { } tile
-            ? LeadTile("yield", "Dividend yield", "<span class=\"v none\">none</span>", "No dividend is stored for it.")
+            ? LeadTile("yield", "Dividend yield", "<span class=\"v none\">none</span>", paysNone ? "It pays none: its fetch files a dividend rate of nought and none is kept in the year." : "No dividend is stored for it.")
             : LeadTile(
                 "yield",
                 "Dividend yield",

@@ -193,7 +193,7 @@ public sealed partial class SinglePageApp
         grid.Append("</div>");
         grid.Append(Cards.Key(
             "How to read it.",
-            "Every figure is read from what the store holds for the stock, worked by the same function the stock's report page uses for it. A figure EquityBrief fetches and holds none of for this stock says not stored. The returns are the newest close over the close the span reaches back to, over the stored year and, for the longer spans, the month-end closes of the history pulled before it.",
+            "Every figure is read from what the store holds for the stock, worked by the same function the stock's report page uses for it. A figure EquityBrief fetches and holds none of for this stock says not stored, and each dividend figure says pays none where the company's fetch files a dividend rate of nought and no dividend is kept in the year. The returns are the newest close over the close the span reaches back to, over the stored year and, for the longer spans, the month-end closes of the history pulled before it.",
             "A figure here is context for the chart and no rule reads it from this page."));
 
         region.Append(Cards.Computed("The figures", grid.ToString(), title: "The stock in figures", stamp: Cards.Night(last), id: "figures", region: "chart-page-figures"));
@@ -204,6 +204,10 @@ public sealed partial class SinglePageApp
 
     // What a figure EquityBrief fetches and holds none of for a stock says.
     public const string NotStored = "not stored";
+
+    // What each dividend figure says for a company paying none.
+    // see: A company filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing neither as not stored
+    public const string PaysNone = "pays none";
 
     // A figure's text with each date in it held on one line, since a browser breaks a line at a date's hyphens.
     static string Whole(string escaped) =>

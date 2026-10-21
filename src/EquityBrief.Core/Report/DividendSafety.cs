@@ -60,7 +60,7 @@ public static class DividendSafety
         IReadOnlyList<(DateOnly Session, decimal Close)> closes,
         DateOnly night)
     {
-        var lastYear = kept.Where(paid => paid.ExDate <= night && paid.ExDate > night.AddDays(-TrailingDays)).ToArray();
+        var lastYear = InTheYear(kept, night);
         var forward = forwardRate is > 0m;
 
         if (!forward && lastYear.Length == 0)
@@ -78,7 +78,7 @@ public static class DividendSafety
         decimal? paidOut = cashRead ? four.Sum(quarter => Math.Abs(quarter.DividendsPaid!.Value)) : null;
         decimal? freeCash = cashRead ? four.Sum(quarter => quarter.FreeCashFlow!.Value) : null;
 
-        var years = Years(kept.Where(paid => paid.ExDate <= night).ToArray(), night);
+        var years = PaidTo(kept, night);
 
         return new DividendSafetyReading(
             rate,
@@ -96,6 +96,25 @@ public static class DividendSafety
             InARow(years),
             Series(kept, tenYears, closes));
     }
+
+    // A company paying none: its fetch files a forward rate of nought and no dividend is kept in the year to the night. One
+    // whose fetch files no rate is not one, whatever it kept before the year, since no stored figure says it pays none.
+    // see: A company filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing neither as not stored
+    public static bool PaysNone(decimal? forwardRate, IReadOnlyList<KeptDividend> kept, DateOnly night) =>
+        forwardRate == 0m && InTheYear(kept, night).Length == 0;
+
+    // The kept dividends whose ex-dividend date falls in the year to the night.
+    static KeptDividend[] InTheYear(IReadOnlyList<KeptDividend> kept, DateOnly night) =>
+        [.. kept.Where(paid => paid.ExDate <= night && paid.ExDate > night.AddDays(-TrailingDays))];
+
+    // Every year the dividends kept to the night fall in.
+    static IReadOnlyList<DividendYear> PaidTo(IReadOnlyList<KeptDividend> kept, DateOnly night) =>
+        Years([.. kept.Where(paid => paid.ExDate <= night)], night);
+
+    // What a company paid in the whole year before the night's, none where it kept no dividend in it, read for a company
+    // paying none whose last payments may fall in that year.
+    public static DividendYear? LastWholeYear(IReadOnlyList<KeptDividend> kept, DateOnly night) =>
+        PaidTo(kept, night).SingleOrDefault(year => year.Year == night.Year - 1);
 
     // Every year the kept dividends fall in, oldest first: the night's own year not whole, and a whole year raised where its
     // total stands above the whole year before's and both paid as many times, since a fifth payment in a year is no raise.

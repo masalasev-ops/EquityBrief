@@ -26,6 +26,26 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - ARCHITECTURE.html - a company paying none says so in the chart page's dividend figures and the report's yield tile
+Authorised by: A company filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing neither as not stored
+Was:
+> The figures: ... the dividend: its yield; its last whole year; its payout of earnings; its years raised in a row over the whole years kept and not stored where fewer than two are kept; the technicals: ...
+>
+> Tiles: ... and the distance from the year's high with the range bar; a tile whose figures are not stored saying so (see: Four tiles under the headline are worked by code from stored figures at the price the page draws)
+Now:
+> The figures: ... its years raised in a row over the whole years kept and not stored where fewer than two are kept; from the 19.11 correction of 2026-10-21 each of the four saying pays none for a company whose fetch files a dividend rate of nought with no dividend kept in the year to the night (see: A company filing ...); its last whole year still drawn where it paid in it; not stored left for a company storing neither a rate nor a dividend; the technicals: ...
+>
+> Tiles: ... a tile whose figures are not stored saying so; from the 19.11 correction of 2026-10-21 the yield's tile saying a company paying none pays none (see: Four tiles under the headline ...) (see: A company filing ...)
+Why: the operator's words of 2026-10-21 on DGII's chart page, "Just saying not stored is not a good way to communicate", and their approval of the fix, "Yes, one PR now (Recommended)": 496 members paying none drew not stored in all four figures.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches a company paying none on the chart page and the yield tile
+Authorised by: A company filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing neither as not stored
+Was:
+> read-surface: ... and a group neither the member's row nor its company fetch names saying both |
+Now:
+> read-surface: ... and a group neither the member's row nor its company fetch names saying both; and from the 19.11 correction of 2026-10-21 the chart page's four dividend figures pays none for a company whose fetch files a dividend rate of nought with no dividend kept in the year to the night, ... and the report's yield tile saying a company paying none pays none |
+Why: the row named no assertion on a company paying none, which the 19.11 correction of 2026-10-21 adds.
+
 ### 2026-10-21 - ARCHITECTURE.html - a member whose membership row names no industry is named and grouped by the GICS industry and sector its company fetch files
 Authorised by: A member whose membership row names no industry is named and grouped by the GICS industry and sector its company fetch files
 Was:

@@ -5542,3 +5542,37 @@ Verified:   as the newest entry of this pull request.
 Carried:    the S&P 500's groups and the industry its pages name moved to the GICS scheme put to the operator with its
             cost: the group facts every recorded section prompt carries move with them, about 45 of the 68 paid
             recordings to be recorded again or answered as constructed.
+
+### 19.11 - correction: a company whose fetch files a dividend rate of nought with no dividend kept in the year says pays none in the chart page's dividend figures and the report's yield tile, and not stored only where it stores neither   2026-10-21
+
+Queue:      as the 15.1 correction of this pull request.
+Ruled:      by the operator on 2026-10-21, on the chart page of DGII they showed, in these words: "There has to be better
+            way to represent this. Does the stock DIGI have no dividends ?Just saying not stored is not a good way to
+            communicate ." The first of the five fixes put to them, "Dividend rows say "pays none" where the stored rate is
+            0, and "not stored" only where nothing is stored.", was answered "Yes, one PR now (Recommended)".
+Found:      DGII pays none and the store knew it, every fetch filing a forward rate of nought; the grid read the dividend's
+            safety, which reads a payer alone, so 496 of the 1,505 members on the night of 2026-10-20 drew not stored in
+            all four dividend figures where 2 stored neither a rate nor a dividend. The yield tile said none was stored for
+            each of them. Two figures also wrote "1 payments" and "1 years".
+Built:      one function in the core reads a company paying none, its fetch filing a dividend rate of nought with no
+            dividend kept in the year to the night (see: A company filing a dividend rate of nought with no dividend kept
+            in the year is drawn as paying none, and one storing neither as not stored); the chart page's four dividend
+            figures say pays none for it, its last whole year drawn where it paid in the whole year before the night's,
+            and the report's yield tile says it pays none under the pointer; not stored is left for a company storing
+            neither. A count of one takes its noun's singular. The decision, the chart page's figures row and the tiles
+            row, the guide's chart page, the roster and the changelog.
+Tests:      one more, the suite's total in the newest entry of this pull request: a rate of nought with nothing kept, and
+            with a dividend a whole year before the night, paying none, and one a day inside the year paying; over the
+            universes' store S1 drawing pays none in all four figures, M1, which paid in 2025, drawing 0.50 in 2025, 1
+            payment, among them, M2 a payer on its year's payments at 1.00% of 0.50 and 2 payments, and M3 not stored in
+            all four; and S1's report's yield tile saying it pays none where M3's says none is stored.
+Claims:     as the newest entry of this pull request.
+Mutated:    each rule stated before its run. A company paying none read as one, broken by reading none as paying none:
+            predicted red at S1's figures; result red at the first hand-worked reading, and with the page alone told
+            none pays none, red at S1's four figures, not stored where pays none. The year's window ending a whole year
+            back, broken by reading a dividend exactly a year back inside it: predicted red at the year's edge; result
+            red, M1's dividend of 2025-10-02 read inside the year. A company paying none drawing the year it last paid
+            in, broken by drawing none: predicted red at M1's last whole year; result red, pays none where 0.50 in 2025,
+            1 payment. Each made on this branch and reverted before anything was committed, and the tests green.
+Verified:   as the newest entry of this pull request.
+Carried:    none of its own.
