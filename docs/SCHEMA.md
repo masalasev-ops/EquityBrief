@@ -434,7 +434,7 @@ Grain: one row per ticker per quarter a companies pull answered with a count and
 
 Primary key: `ticker`, `period_end`.
 
-**The counts a company's value on a session is read from, read by no night** (see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis). A session reads the count of the latest quarter among the sheets filed before it, times the session's unadjusted close divided by every split in `pulled_split` after the session and on or before `basis_session`. A balance sheet carrying no count or no filing date cannot be read as it stood and stores no row; the pull counts them on its row. Removed whole with its pull, and a second pull adds only the quarters no earlier pull holds.
+**The counts a company's value on a session is read from, read by no night** (see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session). A session reads the count of the latest quarter among the sheets filed before it, times the session's unadjusted close divided by every split in `pulled_split` after the session and on or before `basis_session`. A balance sheet carrying no count or no filing date cannot be read as it stood and stores no row; the pull counts them on its row. Removed whole with its pull, and a second pull adds only the quarters no earlier pull holds.
 
 ### pulled_split
 Grain: one row per ticker per split a splits pull answered over its span.
@@ -449,7 +449,7 @@ Grain: one row per ticker per split a splits pull answered over its span.
 
 Primary key: `ticker`, `ex_date`.
 
-**The splits a session's close is put on a count's basis by, read by no night.** The operator's `history-pull --splits --from <date>` asks the per-name splits endpoint once for every name the index held over the span and stores each split from the date to the night it ran, a ratio kept as its two numbers rather than as their quotient, which a split of one for three would round. The provider files a spin-off's and a merger's price adjustment as a split too, 1,281 for 1,000 at GE HealthCare's spin-off, and they are stored as sent: a value reads a plain split as a change of shares and the rest as none, told apart by the ratio (see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis). Removed whole with its pull, and a second pull adds only the splits no earlier pull holds.
+**The splits a session's close is put on a count's basis by, read by no night.** The operator's `history-pull --splits --from <date>` asks the per-name splits endpoint once for every name the index held over the span and stores each split from the date to the night it ran, a ratio kept as its two numbers rather than as their quotient, which a split of one for three would round. The provider files a spin-off's and a merger's price adjustment as a split too, 1,281 for 1,000 at GE HealthCare's spin-off, and they are stored as sent: a value reads a plain split as a change of shares and the rest as none, told apart by the ratio (see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session). Removed whole with its pull, and a second pull adds only the splits no earlier pull holds.
 
 ### pulled_revenue
 Grain: one row per filer per revenue concept per period per filing stating it.

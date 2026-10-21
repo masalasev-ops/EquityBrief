@@ -5151,3 +5151,39 @@ Carried:    the gates' run over main after the merge, recorded with the remedy's
             2 and 3 in the second pull request; the member readings' year's high, read over the sessions a short year
             holds rather than none, put to the operator; PR 505 rebased with its migration at 104; and the phase 18
             sign-off by a fresh session.
+
+### 15.1 - correction: an S&P 400 or 600 sector heavyweights book values a company across a split after its newest count was asked, reading the split off the member's own bars, where it read the count alone and a two for one halved the company   2026-10-21
+
+Queue:      as the 20.11 rulings' entries of the evening above.
+Found:      by 20.11 over the heavyweights' books and put to the operator, who ruled on the evening of 2026-10-20 as
+            clause 3: "a company's value reads its newest filed share count adjusted by every split stored between that
+            count's date and the session, so a split after the last count no longer misranks it." The index books laid
+            the sweep's tape with no split, so a session after the day a count was asked read the count at a close the
+            split had divided.
+Corrected:  a session after the day its count was asked reads the count multiplied by every plain split after that day
+            and on or before the session, and the S&P 400's and 600's books read the splits each member's own bars carry,
+            a session whose close over its close as traded stands at a plain ratio to the session before's. The choice
+            between the bars' steps, a table kept of the night's splits and the pulled splits, put to the operator on
+            2026-10-20, went unanswered, and the bars' steps, the default named then, are read: over the store on
+            2026-10-21 they took 40 steps past five per cent among 379,432 bars, the 23 plain ones each within a millionth
+            of its ratio and the other 17, spin-offs and special dividends, at none. A split on the session a dividend
+            goes ex reads as none. The S&P 500's book already read tonight's close on its fetch's basis by the fetch's own
+            close. The decision is superseded and moved under Previously decided with its reasoning (see: A company's
+            value on a session is the newest share count filed before it times the session's close, the two on one basis
+            by every plain split between the count's day and the session).
+Tests:      2559, two more beside the evening remedy's register test recorded with the remedy's run: a two for one read
+            off a listing's bars on its session, a dividend's step and a spin-off's none, and a count of 150 million asked
+            before it worth $15 billion either side of it at 100 and 50, where the count alone reads $7.5 billion; and
+            six S&P 400 members of one sector whose counts were asked before S's two for one, a frozen rule reading the
+            five largest buying S and M1, the two leaders, where S at its count alone would stand sixth under M5.
+Claims:     1372, as before.
+Pins:       the S&P 500 heavyweights' evaluator from e2335d9e3024 to 02c47d5f62d1, the value's source moving; on the S&P
+            400 and 600 the pullback from 784f41937a1b to ddd98f127cf5, the breakout 4495137feeef to d66df3088314, the
+            drift c7b3c0232b0e to 600c88d7f647 and the heavyweights 5020a72f88f2 to dccd1de3ea09, the index night's file
+            among those every index rule pins.
+Mutated:    the rule, stated before the run: a member's count brought across the split its bars carry, broken by handing
+            the index books no split as before: predicted red at the frozen rule's buys. Result: red, M1 bought alone.
+            Made on this branch and reverted before anything was committed, and the tests green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.

@@ -470,7 +470,7 @@ public sealed class SweepHistory : IComponent
     // pull asked for it, each sector fund's closes through the history's end, and the readings the night's book stored
     // through it; each none where the store holds no table for it.
     // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
-    // see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis
+    // see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session
     // Each pulled company's GICS industry as the companies pull filed it, the newest pull's where two filed one, none for
     // a company filing none; the heavyweights' second design reads an industry's lead off it.
     public async Task<IReadOnlyDictionary<string, string>> IndustriesAsync(CancellationToken cancellation = default)

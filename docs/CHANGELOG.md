@@ -26,6 +26,30 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - SCHEMA.md - a company's value brought across a split after its count was asked
+Authorised by: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session
+Was:
+> **The counts a company's value on a session is read from, read by no night** (see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis). ... a value reads a plain split as a change of shares and the rest as none, told apart by the ratio (see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis).
+Now:
+> **The counts a company's value on a session is read from, read by no night** (see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session). ... a value reads a plain split as a change of shares and the rest as none, told apart by the ratio (see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session).
+Why: on the operator's ruling of the evening of 2026-10-20 a company's value reads its newest count adjusted by every split between the day it was asked and the session, which supersedes the decision the two citations named.
+
+### 2026-10-21 - ARCHITECTURE.html - a company's value brought across a split after its count was asked
+Authorised by: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session
+Was:
+> Company value: ... times the session's unadjusted close divided by what one share became at every plain split after the session and on or before the session the count was asked on, a plain split's ratio within a ten-thousandth of whole shares for one, ... none where no count was filed before the session (see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis) ... fixture-expectations, ... and each kind of plain split read as one and the provider's spin-off adjustments as none
+>
+> A company filing no sector, no count with its date or no CIK: ... (see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis)
+>
+> A spin-off or a merger the provider files as a split: ... the residue of the provider's counts (see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis)
+Now:
+> Company value: ... times the session's unadjusted close divided by what one share became at every plain split after the session and on or before the session the count was asked on, and on a session after that one the count multiplied by what one share became at every plain split after it and on or before the session, an S&amp;P 400 or 600 member's splits on the night read off its own bars as each session whose close over its close as traded stands at a plain ratio to the session before's, a plain split's ratio within a ten-thousandth of whole shares for one, ... none where no count was filed before the session (see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session) ... fixture-expectations, ... and each kind of plain split read as one and the provider's spin-off adjustments as none, and a two for one after the count was asked read off a member's bars and bringing its count across it, worked by hand over an S&amp;P 400 book's five largest
+>
+> A company filing no sector, no count with its date or no CIK: ... (see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session)
+>
+> A spin-off or a merger the provider files as a split: ... the residue of the provider's counts (see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session)
+Why: on the operator's ruling of the evening of 2026-10-20 a company's value reads its newest count adjusted by every split between the day it was asked and the session, the S&P 400's and 600's books reading the splits their members' bars carry, so a split after the newest count no longer misranks a company.
+
 ### 2026-10-20 - ARCHITECTURE.html - the S&P 400 drift frozen at the setting the operator ruled
 Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
 Was:

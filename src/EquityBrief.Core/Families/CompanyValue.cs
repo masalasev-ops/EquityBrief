@@ -54,16 +54,18 @@ public sealed record FiledSplit(DateOnly ExDate, decimal NewShares, decimal OldS
 public sealed record SessionClose(DateOnly Session, decimal Close, decimal RawClose);
 
 // A company's value on a session: the share count of the newest balance sheet filed before the session, times the
-// session's close on the count's split basis.
+// session's close, the two brought to one split basis.
 //
 // The provider restates every count to the split basis of the day it is asked, so a count filed in 2019 is stated
 // in today's shares, forty times NVDA's count then. The close it is multiplied by is the session's unadjusted close
 // divided by every plain split between the session and that day, which puts the two on one basis; a spin-off the
-// provider files as a split divides nothing, since it changed no shares. The close the bars store adjusted is not
-// that close: it takes out the dividends paid since as well, and would value a company paying four per cent a year
-// at about a quarter less over 2019's sessions than one paying none. A split the provider did not restate its counts
-// for reads the company at the split's fraction before it, which is the residue of the provider's counts.
-// see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis
+// provider files as a split divides nothing, since it changed no shares. A session after that day reads the count
+// multiplied by every plain split after the day and on or before the session instead, so a split after the newest
+// count was asked moves no value. The close the bars store adjusted is not that close: it takes out the dividends
+// paid since as well, and would value a company paying four per cent a year at about a quarter less over 2019's
+// sessions than one paying none. A split the provider did not restate its counts for reads the company at the split's
+// fraction before it, which is the residue of the provider's counts.
+// see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session
 public static class CompanyValue
 {
     // The count a session reads: of the balance sheets filed before the session, the one closing the latest quarter.
@@ -93,10 +95,46 @@ public static class CompanyValue
             ? count.Shares * close * basisClose / now
             : null;
 
+    // A count's shares on the split basis of a later session: multiplied by what one share became at every plain split
+    // after the day the count was asked and on or before that session.
+    public static decimal SharesOn(FiledCount count, DateOnly session, IEnumerable<FiledSplit> splits) =>
+        splits
+            .Where(split => split.Plain && split.ExDate > count.Basis && split.ExDate <= session)
+            .Aggregate(count.Shares, (shares, split) => shares * split.NewShares / split.OldShares);
+
     // The company's value on a session, from the session's unadjusted close and never its adjusted one, none where no
     // count was filed before it.
-    public static decimal? On(SessionClose close, IEnumerable<FiledCount> counts, IEnumerable<FiledSplit> splits) =>
+    public static decimal? On(SessionClose close, IEnumerable<FiledCount> counts, IReadOnlyList<FiledSplit> splits) =>
         CountOn(close.Session, counts) is { } count
-            ? count.Shares * OnBasis(close.Session, close.RawClose, count.Basis, splits)
+            ? SharesOn(count, close.Session, splits) * OnBasis(close.Session, close.RawClose, count.Basis, splits)
             : null;
+
+    // The plain splits a listing's bars carry, each on the first session on its new basis: a session whose close over
+    // its unadjusted close stands at a plain ratio to the session before's, as the provider restates a year at a split,
+    // a dividend's step and a spin-off's reading as none. A split on a session a dividend goes ex reads as none as
+    // well, its step off the plain ratio by the dividend.
+    public static IReadOnlyList<FiledSplit> SplitsIn(IReadOnlyList<SessionClose> closes)
+    {
+        var splits = new List<FiledSplit>();
+
+        for (var at = 1; at < closes.Count; at++)
+        {
+            var (before, after) = (closes[at - 1], closes[at]);
+
+            if (before.Close <= 0m || before.RawClose <= 0m || after.Close <= 0m || after.RawClose <= 0m)
+            {
+                continue;
+            }
+
+            var step = after.Close / after.RawClose / (before.Close / before.RawClose);
+            var split = new FiledSplit(after.Session, step, 1m);
+
+            if (Math.Abs(step - 1m) > FiledSplit.PlainWithin && split.Plain)
+            {
+                splits.Add(split);
+            }
+        }
+
+        return splits;
+    }
 }

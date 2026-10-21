@@ -1418,7 +1418,8 @@ public static class IndexHeavyweights
 
     // The leaders a rebalance on the night buys within the index at a setting, each with its sector and the size cut it
     // was chosen from, and the lead of every company ranked in a sector's size cut: the sweep's tape laid over the
-    // members' year with each company's value from the newest count filed before the session, a beta against the index's
+    // members' year with each company's value from the newest count filed before the session, brought to the session's
+    // basis by the splits the member's bars carry, a beta against the index's
     // fund, and the members failing the floors or the quality read by none, each member's return over the look-back or,
     // where the setting reads it, its twelve months' strength skipping the latest month; or why the rebalance waits, the
     // members holding no close for the night, fewer sessions to it than the setting's readings need, or reading no lead,
@@ -1476,7 +1477,7 @@ public static class IndexHeavyweights
         var history = new HeavyweightHistory(
             companies,
             counts.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<FiledCount>)pair.Value, StringComparer.Ordinal),
-            new Dictionary<string, IReadOnlyList<FiledSplit>>(StringComparer.Ordinal),
+            names.ToDictionary(name => name.Ticker, name => CompanyValue.SplitsIn([.. name.Bars.Select(bar => new SessionClose(bar.Session, bar.Close, bar.RawClose))]), StringComparer.Ordinal),
             [],
             []);
         var (tape, sessions) = HeavyweightSweep.Lay(inputs, history, fund.Count > 0 ? new SweepMarketSeries(IndexSweepFunds[index], fund, string.Empty) : null, new HashSet<int> { at }, 0);
