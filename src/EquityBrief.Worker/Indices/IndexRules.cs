@@ -70,6 +70,9 @@ public static class IndexRules
 
     public const string HighNotAsStated = "its year's high not as recent as its rule states";
 
+    // The words a check on the year's high fails with where the night read no year's high for the member.
+    public const string NoYearHigh = "not read: no year's high tonight";
+
     public const string VolumeUnder = "volume under its rule's multiple";
 
     public const string PeersNotAbove = "its peers' surprise not above nothing";
@@ -969,18 +972,23 @@ public static class IndexRules
         if (rule.Evaluator is IndexBreakoutCandidate)
         {
             var bar = IndexNightRead.BarOf(inputs.Series[name], inputs.At);
-            var (high, since) = MemberReadings.YearHigh(inputs.Series[name].Bars, bar) is { } found
-                ? (Statistic.FromPrice(found.High), found.Since)
-                : (double.NaN, int.MaxValue);
+
+            // The year's high over the sessions the night read before the store's year as well, where it read them, as the
+            // breakout's own high and the member readings read it; a member it reads none for fails each check on it.
+            // see: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does
+            var year = MemberReadings.YearHigh(inputs.Series[name].Name.Before, inputs.Series[name].Bars, bar);
 
             if (p[IndexBreakoutCandidate.NearnessParameter] is var near and > 0)
             {
-                parts.Add(trade is { } listed ? new(NotNearItsHigh, Statistic.FromPrice(listed.Entry) / high >= near) : new(NotNearItsHigh, false, IndexNightRead.NotReadWithoutASetup));
+                parts.Add(trade is not { } listed ? new(NotNearItsHigh, false, IndexNightRead.NotReadWithoutASetup)
+                    : year is not { } nearest ? new(NotNearItsHigh, false, NoYearHigh)
+                    : new(NotNearItsHigh, Statistic.FromPrice(listed.Entry) / Statistic.FromPrice(nearest.High) >= near));
             }
 
             if (p[IndexBreakoutCandidate.RecencyParameter] is var recency and not 0)
             {
-                parts.Add(new(HighNotAsStated, recency > 0 ? since <= IndexSweepRunner.RecentHighSessions : since > IndexSweepRunner.RecentHighSessions));
+                parts.Add(year is not { } made ? new(HighNotAsStated, false, NoYearHigh)
+                    : new(HighNotAsStated, recency > 0 ? made.Since <= IndexSweepRunner.RecentHighSessions : made.Since > IndexSweepRunner.RecentHighSessions));
             }
 
             if (p[IndexBreakoutCandidate.HighVolumeParameter] is var volume and > 0)

@@ -6536,7 +6536,7 @@ public sealed partial class MarkRenderer : IComponent
             Formatted($"Highest high of the {MemberReadings.YearSessions} sessions before the night"),
             Stored(view.YearHigh),
             view.YearHigh is { } high && view.SinceHigh is { } since ? Formatted($"{Price(high)}, made {Counted(since, "session", "sessions")} before the night")
-                : barred ? Short("not available: no session before the night held") : noBar);
+                : barred ? Short("not available: too few sessions before the night held") : noBar);
         Row(
             "nearness",
             "The close against that high",

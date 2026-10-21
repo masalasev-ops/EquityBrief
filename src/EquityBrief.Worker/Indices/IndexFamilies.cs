@@ -1017,8 +1017,9 @@ public sealed class IndexFamilies : IComponent
     // A member's sessions before its first stored one that the newest pull holding that session holds, the newest of them
     // up to the count asked and oldest first, each price brought to the store's scale by the ratio of the stored close to
     // the pulled one on that first session and its close as traded as the pull holds it, a day the exchange's table holds
-    // no session on passed over; none where no pull holds the first session. A read handed no transaction runs in the one
-    // the connection holds, which a command takes as it is made, so a step reading inside its own transaction reads here.
+    // no session on passed over and a session the pull is missing ending the read, so no reading reaches across a hole
+    // the pull holds; none where no pull holds the first session. A read handed no transaction runs in the one the
+    // connection holds, which a command takes as it is made, so a step reading inside its own transaction reads here.
     // see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
     public static async Task<SweepBar[]> BeforeTheYearAsync(SqliteConnection connection, SqliteTransaction? transaction, string ticker, SweepBar first, int count, CancellationToken cancellation)
     {
@@ -1067,16 +1068,24 @@ public sealed class IndexFamilies : IComponent
             sessions.Parameters.AddWithValue("$count", count + StrayDays);
 
             await using var reader = await sessions.ExecuteReaderAsync(cancellation);
+            var after = first.Session;
 
             while (before.Count < count && await reader.ReadAsync(cancellation))
             {
                 var day = Date(reader.GetString(0));
+                var covered = day >= Core.Bars.ExchangeClosures.CoveredFrom && day <= Core.Bars.ExchangeClosures.CoveredThrough;
 
-                if (day >= Core.Bars.ExchangeClosures.CoveredFrom && day <= Core.Bars.ExchangeClosures.CoveredThrough && !Core.Bars.ExchangeClosures.IsSession(day))
+                if (covered && !Core.Bars.ExchangeClosures.IsSession(day))
                 {
                     continue;
                 }
 
+                if (covered && Core.Bars.ExchangeClosures.SessionsBetween(day, after).Count != 0)
+                {
+                    break;
+                }
+
+                after = day;
                 before.Add(new SweepBar(
                     day,
                     Money.FromStorage(reader.GetString(1)) * ratio,
