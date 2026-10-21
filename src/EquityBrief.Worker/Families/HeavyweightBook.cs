@@ -290,7 +290,13 @@ public sealed class HeavyweightBook : IComponent
 
         var members = (await ColumnAsync(connection, MembersOn, [("$index", indexCode), ("$session", Stamp(night))], cancellation, transaction)).ToHashSet(StringComparer.Ordinal);
         var bars = await BarsAsync(connection, transaction, cancellation);
-        var (pulled, beforeTheYear) = await BeforeTheYearAsync(connection, transaction, members, bars, sessions.Count, night, cancellation);
+        var need = (rules ?? [])
+            .Select(rule => CandidateEvaluators.Find(rule.Evaluator) is BookEvaluator evaluator && evaluator.Version == rule.EvaluatorVersion
+                ? HeavyweightRule.SessionsNeeded(evaluator.SettingsOf(CandidateEvaluator.Read(rule.Parameters)))
+                : 0)
+            .Append(HeavyweightRule.SessionsNeeded(page))
+            .Max();
+        var (pulled, beforeTheYear) = await BeforeTheYearAsync(connection, transaction, members, bars, sessions.Count, need, night, cancellation);
         var averages = await AveragesAsync(connection, transaction, night, cancellation);
         var series = await SeriesAsync(connection, transaction, night, cancellation);
         IReadOnlyList<Valued>? valued = null;
@@ -679,10 +685,11 @@ public sealed class HeavyweightBook : IComponent
         return read;
     }
 
-    // On a night whose store's year holds fewer sessions than the books' readings need, each member's sessions before its
-    // first stored one, as many as it falls short by, read from the pulled history at the store's scale into its bars:
-    // how many sessions the pulled history added before the year, and what the night says of them, how many members it
-    // was read for and each it holds too few for, which reads no return and no beta; none on any other night.
+    // On a night whose store's year holds fewer sessions than the books it keeps read, the most any of their settings
+    // needs, each member's sessions before its first stored one, as many as it falls short by, read from the pulled history
+    // at the store's scale into its bars: how many sessions the pulled history added before the year, and what the night
+    // says of them, how many members it was read for and each it holds too few for, which reads no return and no beta;
+    // none on any other night.
     // see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
     static async Task<(int Sessions, string? Said)> BeforeTheYearAsync(
         SqliteConnection connection,
@@ -690,11 +697,10 @@ public sealed class HeavyweightBook : IComponent
         IReadOnlySet<string> members,
         IReadOnlyDictionary<string, SortedDictionary<DateOnly, Bar>> bars,
         int held,
+        int need,
         DateOnly night,
         CancellationToken cancellation)
     {
-        var need = HeavyweightRule.BetaReturns + 1;
-
         if (held >= need)
         {
             return (0, null);

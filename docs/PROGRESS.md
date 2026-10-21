@@ -5263,8 +5263,9 @@ Tests:      2561, two more: over a night holding 251 sessions, three S&P 400 mem
             0.2407 worked by hand from its two closes, and W3, the pull holding none of it, reading no return and named;
             and the wait tests' words and the empty card's sentence as they now read.
 Claims:     1372, as before.
-Pins:       the S&P 500 heavyweights' evaluator from 02c47d5f62d1 to 447e2bbffb26, its book reading the pull through a read
-            of its own, so it pins no index file; on the S&P 400 and 600 the pullback from ddd98f127cf5 to a13f39e63733, the breakout d66df3088314 to b8c3b69a5c95, the
+Pins:       the S&P 500 heavyweights' evaluator from 02c47d5f62d1 to 686497c5822b, its book reading the pull through a read
+            of its own, so it pins no index file, and only where the store's year holds fewer sessions than the settings
+            of the books it keeps need; on the S&P 400 and 600 the pullback from ddd98f127cf5 to a13f39e63733, the breakout d66df3088314 to b8c3b69a5c95, the
             drift 600c88d7f647 to 578b61cd85bb and the heavyweights dccd1de3ea09 to c0afc6691dcc.
 Mutated:    the rule, stated before the run: the sessions before the store's year read at the store's scale, broken by
             reading them at the pull's own prices: predicted red at IA's breakout and W1's return. Result: red, IA listing
