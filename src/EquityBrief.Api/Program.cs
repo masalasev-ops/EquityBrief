@@ -1262,6 +1262,7 @@ app.MapGet("/screens/tonight/{night?}", async (
         var heavyweightRule = TonightScreen.IndexLiveRule(reading.Code, EquityBrief.Core.Families.HeavyweightRule.Name, indexRegister, indexNight);
         var boughtCards = await read.BoughtCardsAsync(reading.Code, dated);
         var bookRows = heavyweightRule is null ? await read.IndexHoldingsAsync(reading.Code, dated) : await read.IndexRuleHoldingsAsync(heavyweightRule, dated);
+        var readsBefore = await read.PulledBeforeTheYearAsync(dated);
         var heavyweightCard = heavyweightRule is null
             ? TonightScreen.IndexHeavyweights(
                 reading,
@@ -1269,7 +1270,8 @@ app.MapGet("/screens/tonight/{night?}", async (
                 bookRows,
                 await read.IndexLastRebalanceAsync(reading.Code, dated),
                 await read.IndexHoldingClosesAsync(reading.Code, dated),
-                members)
+                members,
+                readsBefore)
             : TonightScreen.WithIndexHeavyweightFreeze(
                 TonightScreen.IndexHeavyweights(
                     reading,
@@ -1277,10 +1279,12 @@ app.MapGet("/screens/tonight/{night?}", async (
                     bookRows,
                     await read.IndexRuleLastRebalanceAsync(heavyweightRule, dated),
                     await read.IndexRuleHoldingClosesAsync(heavyweightRule, dated),
-                    members),
+                    members,
+                    readsBefore),
                 reading,
                 indexRegister,
-                indexNight);
+                indexNight,
+                readsBefore);
 
         // The card's selector, as the S&P 500's: the provisional or live rule first and each registered variant after
         // it, a chosen variant's own book drawn under the band.
@@ -1306,7 +1310,8 @@ app.MapGet("/screens/tonight/{night?}", async (
                 bookRows,
                 await read.IndexRuleLastRebalanceAsync(chosenBook, dated),
                 await read.IndexRuleHoldingClosesAsync(chosenBook, dated),
-                members);
+                members,
+                readsBefore);
         }
 
         heavyweightCard = heavyweightCard with
@@ -1613,7 +1618,7 @@ app.MapGet("/screens/tonight/{night?}", async (
         ? null
         : CardScreen.WithCards(
             TonightScreen.WithSweepLine(
-                TonightScreen.Heavyweights(dated, heavyweightHoldings, heavyweightRead, await read.HeavyweightClosesAsync(dated, heavyweightVariant), cells, register),
+                TonightScreen.Heavyweights(dated, heavyweightHoldings, heavyweightRead, await read.HeavyweightClosesAsync(dated, heavyweightVariant), cells, register, await read.PulledBeforeTheYearAsync(dated)),
                 answers,
                 TonightScreen.FreezesOf(EquityBrief.Core.Families.HeavyweightRule.Name, register, dated)) with
             {

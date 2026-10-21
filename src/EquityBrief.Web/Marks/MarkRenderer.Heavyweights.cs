@@ -5,7 +5,7 @@ namespace EquityBrief.Web.Marks;
 // One holding on the sector heavyweights' card: the stock and its company, its sector, the session it was bought on,
 // its lead over its sector at the last rebalance that read it, or the words saying why none is drawn, and tonight's close
 // beside its 200-session average with whether the book's own rule reads the close as under it.
-// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
 public sealed record HeavyweightHoldingCell(
     string Ticker,
     string? Company,
@@ -102,7 +102,7 @@ public sealed partial class MarkRenderer
     // The sector heavyweights' card: its header, the rule's tabs and chips, a chosen book's band, the four tiles, its
     // holdings grouped by sector under each fund's return with why an empty sector holds none, what the last rebalance
     // bought and what ended, and the next rebalance.
-    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
+    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
     // see: The market check closes every swing family's list together, and the sector heavyweights read none
     // see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
     public string HeavyweightCard(HeavyweightCardView card)

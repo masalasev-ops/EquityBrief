@@ -55,6 +55,7 @@ public sealed class RuleCards : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
@@ -539,8 +540,10 @@ public sealed class RuleCards : IComponent
 
     // The members forming a breakout on the S&P 400 or 600 under the rule drawing its list: those passing the index's
     // floors and profit gate as the provisional rule applies them, read through the breakout rule's own gates over the
-    // member's year of bars, the market check the one the rule drawing the list read on the night, as the night stored it
+    // member's year of bars, with the sessions before it the night read from the pulled history where the year holds fewer
+    // than its high reads, the market check the one the rule drawing the list read on the night, as the night stored it
     // among each member's parts, and the index's own check on a night that stored none.
+    // see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
     // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
     async Task<int> IndexFormingAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, string rule, RegisterRow? live, bool open, CancellationToken cancellation)
     {
@@ -571,7 +574,7 @@ public sealed class RuleCards : IComponent
 
             var one = inputs.Series[name];
             var bar = IndexNightRead.BarOf(one, inputs.At);
-            var bars = one.Bars.Take(bar + 1).Select(day => new FamilyBar(day.Session, day.High, day.Low, day.Close, day.Volume)).ToArray();
+            var bars = (one.Name.Before ?? []).Concat(one.Bars.Take(bar + 1)).Select(day => new FamilyBar(day.Session, day.High, day.Low, day.Close, day.Volume)).ToArray();
             var window = bars.Length > 1 ? bars[Math.Max(0, bars.Length - 1 - MemberReadings.DollarVolumeSessions)..(bars.Length - 1)] : [];
             double? average = window.Length == MemberReadings.DollarVolumeSessions ? window.Average(day => Statistic.FromVolume(day.Volume)) : null;
             var breakout = new BreakoutInputs(one.Name.Ticker, market, bars, average, one.Atr[bar] > 0 ? one.Atr[bar] : null, []);

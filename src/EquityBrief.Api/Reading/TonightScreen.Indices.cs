@@ -229,7 +229,7 @@ public static partial class TonightScreen
     // keys and its rows that it reads no lead over a sector.
     // see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
     // see: An S&P 400 or 600 heavyweights holding keeps the lead it was bought on
-    public static HeavyweightCardView WithIndexHeavyweightFreeze(HeavyweightCardView card, UniverseChoice universe, IReadOnlyList<CandidateRow> register, IndexNightRow night)
+    public static HeavyweightCardView WithIndexHeavyweightFreeze(HeavyweightCardView card, UniverseChoice universe, IReadOnlyList<CandidateRow> register, IndexNightRow night, bool readsBefore = false)
     {
         if (!ReadByLiveRule(night, HeavyweightRule.Name) || StandingRows(IndexRuleCandidate.FamilyOn(HeavyweightRule.Name, universe.Code), register, ReadAsOf(night, night.Session)) is not { Live: { } live } standing)
         {
@@ -240,7 +240,7 @@ public static partial class TonightScreen
         var followers = dials[IndexHeavyweightCandidate.DesignParameter] == IndexHeavyweightCandidate.DesignB;
         var lookBack = (int)(followers ? dials[IndexHeavyweightCandidate.WindowParameter] : dials[IndexHeavyweightCandidate.LookBackParameter]);
         var reading = new HeavyweightSettings(1, lookBack, 1, HighBeta: !followers && dials[IndexHeavyweightCandidate.BetaParameter] == 1);
-        var next = HeavyweightRule.NextRebalance(night.Session, card.LastRebalance, reading);
+        var next = HeavyweightRule.NextRebalance(night.Session, card.LastRebalance, reading, readsBefore);
 
         return card with
         {
@@ -394,7 +394,8 @@ public static partial class TonightScreen
         IReadOnlyList<IndexHoldingRow> holdings,
         DateOnly? last,
         IReadOnlyList<HeavyweightCloseRow> closes,
-        IReadOnlyList<(string Ticker, string? Company, decimal? Close)> members)
+        IReadOnlyList<(string Ticker, string? Company, decimal? Close)> members,
+        bool readsBefore = false)
     {
         var words = SetupFamilies.SectorHeavyweights;
         var settings = IndexRuleSettings.Read(night.Settings);
@@ -454,7 +455,7 @@ public static partial class TonightScreen
 
         // The book's look-back and beta as its night stored them, which the sessions its rebalance needs are read from.
         var reading = new HeavyweightSettings(HeavyweightRule.Largest, lookBack, HeavyweightRule.Leaders, HighBeta: settings.Heavyweights.GetValueOrDefault("beta") is not (null or "off"));
-        var next = HeavyweightRule.NextRebalance(night.Session, last, reading);
+        var next = HeavyweightRule.NextRebalance(night.Session, last, reading, readsBefore);
 
         return new HeavyweightCardView(
             words.Heading,

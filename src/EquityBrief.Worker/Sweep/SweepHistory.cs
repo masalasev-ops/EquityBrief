@@ -14,7 +14,10 @@ public sealed record SweepSurprise(DateOnly EventDate, bool After, double Percen
 // One member of the index on any session of the history, with its series, the spans the index held it for, the
 // earnings dates on file for it, the sector it carries as filed today, and its surprises as filed. A survivor is a name
 // the wider universe adds from today's S&P 400 and 600 members alone, read as a member on every session since nothing
-// says when it joined, which flatters the wider universe.
+// says when it joined, which flatters the wider universe. On a night whose store's year holds fewer sessions than a
+// reading needs, the sessions before its first stored one that the pulled history holds, at the store's scale, read by
+// those readings alone; none on every other night and in the history.
+// see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
 public sealed record SweepName(
     string Ticker,
     SweepBar[] Bars,
@@ -22,7 +25,8 @@ public sealed record SweepName(
     DateOnly[] Prints,
     string? Sector = null,
     IReadOnlyList<SweepSurprise>? SurprisesFiled = null,
-    bool Survivor = false)
+    bool Survivor = false,
+    SweepBar[]? Before = null)
 {
     public IReadOnlyList<SweepSurprise> Surprises => SurprisesFiled ?? [];
 
@@ -470,7 +474,7 @@ public sealed class SweepHistory : IComponent
     // pull asked for it, each sector fund's closes through the history's end, and the readings the night's book stored
     // through it; each none where the store holds no table for it.
     // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
-    // see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis
+    // see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session
     // Each pulled company's GICS industry as the companies pull filed it, the newest pull's where two filed one, none for
     // a company filing none; the heavyweights' second design reads an industry's lead off it.
     public async Task<IReadOnlyDictionary<string, string>> IndustriesAsync(CancellationToken cancellation = default)
