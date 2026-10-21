@@ -511,4 +511,154 @@ public partial class FixtureExpectations
         // And every rule standing is one the night reads, none skipped and none refused.
         Assert.Empty(IndexFamilies.StandingRules([.. standing], at.AddMinutes(1)).Skipped);
     }
+
+    // The operator's register as it stood on the evening of 2026-10-20 after the morning's remedy, each row as the store
+    // holds it: the S&P 500's four sector heavyweights and the S&P 400's and 600's twenty-five rules, at the versions the
+    // code carried before the evening's rulings moved them.
+    static readonly (int Id, string Evaluator, string Version, string Registered, string Name, string Parameters)[] OperatorsRegisterOfTheEvening =
+    [
+        (348, "heavyweight", "161a4d9d9dce", "2026-10-18T04:37:57Z",
+            "the live sector heavyweights rule at the 10 largest, 251 sessions against the sector's fund, 2 leaders, a beta of at least 1, monthly, sold on no longer leading",
+            "{\"fundReturn\": 1, \"highBeta\": 1, \"largest\": 10, \"leaders\": 2, \"lookBack\": 251, \"soldOnLeading\": 1, \"soldUnderAverage\": 0, \"weekly\": 0}"),
+        (349, "heavyweight", "161a4d9d9dce", "2026-10-18T04:37:57Z",
+            "the sector heavyweights rule at every company, 251 sessions against the sector's fund, 2 leaders, a beta of at least 1, monthly, sold on no longer leading",
+            "{\"fundReturn\": 1, \"highBeta\": 1, \"largest\": 0, \"leaders\": 2, \"lookBack\": 251, \"soldOnLeading\": 1, \"soldUnderAverage\": 0, \"weekly\": 0}"),
+        (350, "heavyweight", "161a4d9d9dce", "2026-10-18T04:37:57Z",
+            "the sector heavyweights rule at the 10 largest, 251 sessions against the sector's fund, 2 leaders, a beta of at least 1, monthly, sold on no longer leading or a close under the 200-day average",
+            "{\"fundReturn\": 1, \"highBeta\": 1, \"largest\": 10, \"leaders\": 2, \"lookBack\": 251, \"soldOnLeading\": 1, \"soldUnderAverage\": 1, \"weekly\": 0}"),
+        (351, "heavyweight", "161a4d9d9dce", "2026-10-18T04:37:57Z",
+            "the sector heavyweights rule at the 10 largest, 251 sessions against the sector's members, 2 leaders, a beta of at least 1, monthly, sold on no longer leading",
+            "{\"fundReturn\": 0, \"highBeta\": 1, \"largest\": 10, \"leaders\": 2, \"lookBack\": 251, \"soldOnLeading\": 1, \"soldUnderAverage\": 0, \"weekly\": 0}"),
+        (408, "heavyweight-600", "7e11d1133547", "2026-10-20T18:37:08Z",
+            "the S&P 600 heavyweights rule of each sector's 10 largest members leading it on twelve months' strength skipping the latest month, from 251 sessions back to 21, 2 leader(s) a sector with a beta of at least 1, sold on no longer leading, the profit gate",
+            "{\"design\": 0, \"floors\": 1, \"highBeta\": 1, \"industries\": 0, \"largest\": 10, \"leaders\": 2, \"lookBack\": 251, \"members\": 0, \"quality\": 1, \"soldOnLeading\": 1, \"soldUnderAverage\": 0, \"twelveOne\": 1, \"window\": 0}"),
+        (409, "heavyweight-600", "7e11d1133547", "2026-10-20T18:37:08Z",
+            "the S&P 600 heavyweights rule of each sector's 10 largest members leading it over 251 sessions, 2 leader(s) a sector with a beta of at least 1, sold on no longer leading, the profit gate and the interest cover",
+            "{\"design\": 0, \"floors\": 1, \"highBeta\": 1, \"industries\": 0, \"largest\": 10, \"leaders\": 2, \"lookBack\": 251, \"members\": 0, \"quality\": 2, \"soldOnLeading\": 1, \"soldUnderAverage\": 0, \"twelveOne\": 0, \"window\": 0}"),
+        (410, "pullback-400", "51c963c077f7", "2026-10-20T18:37:09Z",
+            "the live S&P 400 pullback rule at a strength of 0.75, 1 to 3 typical moves deep, a dry-up under 1.5, fresh within 8, 2 times the risk, the stop 0.5 to 4 moves, its own market floor off and band strength 6, the profit gate and the interest cover, its market check on the index's own breadth at 35%",
+            "{\"band\": 6, \"breadthFloor\": 0.35, \"creditAverage\": 0, \"creditChange\": 0, \"depthHigh\": 3, \"depthLow\": 1, \"dryUp\": 1.5, \"floors\": 1, \"freshness\": 8, \"fundOverSpy\": 0, \"hold\": 0, \"industryFall\": 0, \"largeBreadth\": 0, \"lowestClose\": 5, \"market\": 0, \"quality\": 2, \"rewardToRisk\": 2, \"stopHigh\": 4, \"stopLow\": 0.5, \"strength\": 0.75}"),
+        (411, "pullback-400", "51c963c077f7", "2026-10-20T18:37:09Z",
+            "the S&P 400 pullback rule at a strength of 0.75, 1 to 3 typical moves deep, a dry-up under 1.5, fresh within 8, 2 times the risk, the stop 0.5 to 4 moves, its own market floor off and band strength 6, the profit gate and the interest cover, the market check off",
+            "{\"band\": 6, \"breadthFloor\": 0, \"creditAverage\": 0, \"creditChange\": 0, \"depthHigh\": 3, \"depthLow\": 1, \"dryUp\": 1.5, \"floors\": 1, \"freshness\": 8, \"fundOverSpy\": 0, \"hold\": 0, \"industryFall\": 0, \"largeBreadth\": 2, \"lowestClose\": 5, \"market\": 0, \"quality\": 2, \"rewardToRisk\": 2, \"stopHigh\": 4, \"stopLow\": 0.5, \"strength\": 0.75}"),
+        (412, "pullback-400", "51c963c077f7", "2026-10-20T18:37:09Z",
+            "the background S&P 400 pullback rule at a strength of 0.5, 1 to 5 typical moves deep, a dry-up under 1.5, fresh within 3, 2 times the risk, the stop 0.5 to 4 moves, the market at 0.45 and band strength 0, the profit gate",
+            "{\"band\": 0, \"breadthFloor\": 0.45, \"creditAverage\": 0, \"creditChange\": 0, \"depthHigh\": 5, \"depthLow\": 1, \"dryUp\": 1.5, \"floors\": 1, \"freshness\": 3, \"fundOverSpy\": 0, \"hold\": 0, \"industryFall\": 0, \"largeBreadth\": 0, \"lowestClose\": 5, \"market\": 0.45, \"quality\": 1, \"rewardToRisk\": 2, \"stopHigh\": 4, \"stopLow\": 0.5, \"strength\": 0.5}"),
+        (413, "breakout-400", "c8bbfa8055e9", "2026-10-20T18:37:10Z",
+            "the live S&P 400 breakout rule at a 251-session high, 1.5 times the volume, ranges at 1 and the stop 3 typical moves beneath, the profit gate, its market check on the S&P 500's breadth",
+            "{\"breadthFloor\": 0.45, \"creditAverage\": 0, \"creditChange\": 0, \"floors\": 1, \"fundOverSpy\": 0, \"highSessions\": 251, \"highVolume\": 0, \"hold\": 0, \"industryFall\": 0, \"largeBreadth\": 1, \"lowestClose\": 5, \"nearness\": 0, \"quality\": 1, \"rangeCeiling\": 1, \"recency\": 0, \"stopMoves\": 3, \"volumeMultiple\": 1.5}"),
+        (414, "breakout-400", "c8bbfa8055e9", "2026-10-20T18:37:10Z",
+            "the S&P 400 breakout rule at a 251-session high, 1.5 times the volume, ranges at 1 and the stop 3 typical moves beneath, the profit gate, the market check off",
+            "{\"breadthFloor\": 0, \"creditAverage\": 0, \"creditChange\": 0, \"floors\": 1, \"fundOverSpy\": 0, \"highSessions\": 251, \"highVolume\": 0, \"hold\": 0, \"industryFall\": 0, \"largeBreadth\": 2, \"lowestClose\": 5, \"nearness\": 0, \"quality\": 1, \"rangeCeiling\": 1, \"recency\": 0, \"stopMoves\": 3, \"volumeMultiple\": 1.5}"),
+        (415, "breakout-400", "c8bbfa8055e9", "2026-10-20T18:37:10Z",
+            "the background S&P 400 breakout rule at a 126-session high, 1.5 times the volume, ranges at 0.85 and the stop 1.5 typical moves beneath, the profit gate",
+            "{\"breadthFloor\": 0.45, \"creditAverage\": 0, \"creditChange\": 0, \"floors\": 1, \"fundOverSpy\": 0, \"highSessions\": 126, \"highVolume\": 0, \"hold\": 0, \"industryFall\": 0, \"largeBreadth\": 0, \"lowestClose\": 5, \"nearness\": 0, \"quality\": 1, \"rangeCeiling\": 0.85, \"recency\": 0, \"stopMoves\": 1.5, \"volumeMultiple\": 1.5}"),
+        (416, "drift-400", "b1770e2c06a5", "2026-10-20T18:37:11Z",
+            "the live S&P 400 drift rule within 3 sessions, up 1.5 typical moves on 2 times the volume, the target at 2 times the risk, the stop at least 1 typical move beneath, the profit gate, its market check on the index's own breadth at 50%",
+            "{\"breadthFloor\": 0.5, \"creditAverage\": 0, \"creditChange\": 0, \"entry\": 0, \"floors\": 1, \"fundOverSpy\": 0, \"hold\": 0, \"industryFall\": 0, \"largeBreadth\": 0, \"lowestClose\": 5, \"peers\": 0, \"quality\": 1, \"reactionMoves\": 1.5, \"revenueGrew\": 0, \"stopFloor\": 1, \"targetMultiple\": 2, \"volumeMultiple\": 2, \"wideWindow\": 0, \"windowSessions\": 3}"),
+        (417, "drift-400", "b1770e2c06a5", "2026-10-20T18:37:11Z",
+            "the S&P 400 drift rule within 3 sessions, up 1.5 typical moves on 2 times the volume, the target at 2 times the risk, the stop at least 1 typical move beneath, the profit gate, the market check off",
+            "{\"breadthFloor\": 0, \"creditAverage\": 0, \"creditChange\": 0, \"entry\": 0, \"floors\": 1, \"fundOverSpy\": 0, \"hold\": 0, \"industryFall\": 0, \"largeBreadth\": 2, \"lowestClose\": 5, \"peers\": 0, \"quality\": 1, \"reactionMoves\": 1.5, \"revenueGrew\": 0, \"stopFloor\": 1, \"targetMultiple\": 2, \"volumeMultiple\": 2, \"wideWindow\": 0, \"windowSessions\": 3}"),
+        (418, "drift-400", "b1770e2c06a5", "2026-10-20T18:37:11Z",
+            "the background S&P 400 drift rule within 3 sessions, up 0.5 typical moves on 2 times the volume, the target at 2.5 times the risk, the profit gate",
+            "{\"breadthFloor\": 0.45, \"creditAverage\": 0, \"creditChange\": 0, \"entry\": 0, \"floors\": 1, \"fundOverSpy\": 0, \"hold\": 0, \"industryFall\": 0, \"largeBreadth\": 0, \"lowestClose\": 5, \"peers\": 0, \"quality\": 1, \"reactionMoves\": 0.5, \"revenueGrew\": 0, \"stopFloor\": 0, \"targetMultiple\": 2.5, \"volumeMultiple\": 2, \"wideWindow\": 0, \"windowSessions\": 3}"),
+        (419, "heavyweight-400", "7e11d1133547", "2026-10-20T18:37:12Z",
+            "the live S&P 400 heavyweights rule of each sector's 10 largest members leading it over 251 sessions, 2 leader(s) a sector with a beta of at least 1, sold under its 200-day average, no quality gate",
+            "{\"design\": 0, \"floors\": 1, \"highBeta\": 1, \"industries\": 0, \"largest\": 10, \"leaders\": 2, \"lookBack\": 251, \"members\": 0, \"quality\": 0, \"soldOnLeading\": 0, \"soldUnderAverage\": 1, \"twelveOne\": 0, \"window\": 0}"),
+        (420, "heavyweight-400", "7e11d1133547", "2026-10-20T18:37:12Z",
+            "the background S&P 400 heavyweights rule of each sector's 10 largest members leading it over 251 sessions, 2 leader(s) a sector with a beta of at least 1, sold on no longer leading, the profit gate",
+            "{\"design\": 0, \"floors\": 1, \"highBeta\": 1, \"industries\": 0, \"largest\": 10, \"leaders\": 2, \"lookBack\": 251, \"members\": 0, \"quality\": 1, \"soldOnLeading\": 1, \"soldUnderAverage\": 0, \"twelveOne\": 0, \"window\": 0}"),
+        (421, "pullback-600", "51c963c077f7", "2026-10-20T18:37:13Z",
+            "the live S&P 600 pullback rule at a strength of 0.75, 1 to 4 typical moves deep, a dry-up under 1, fresh within 8, 2.5 times the risk, the stop 0.5 to 2.5 moves, its own market floor off and band strength 2, the profit gate and the interest cover, the market check off",
+            "{\"band\": 2, \"breadthFloor\": 0, \"creditAverage\": 0, \"creditChange\": 0, \"depthHigh\": 4, \"depthLow\": 1, \"dryUp\": 1, \"floors\": 1, \"freshness\": 8, \"fundOverSpy\": 0, \"hold\": 0, \"industryFall\": 0, \"largeBreadth\": 2, \"lowestClose\": 5, \"market\": 0, \"quality\": 2, \"rewardToRisk\": 2.5, \"stopHigh\": 2.5, \"stopLow\": 0.5, \"strength\": 0.75}"),
+        (422, "pullback-600", "51c963c077f7", "2026-10-20T18:37:13Z",
+            "the S&P 600 pullback rule at a strength of 0.75, 1 to 4 typical moves deep, a dry-up under 1, fresh within 8, 2.5 times the risk, the stop 0.5 to 2.5 moves, its own market floor off and band strength 2, the profit gate and the interest cover, its market check on the index's own breadth at 35%",
+            "{\"band\": 2, \"breadthFloor\": 0.35, \"creditAverage\": 0, \"creditChange\": 0, \"depthHigh\": 4, \"depthLow\": 1, \"dryUp\": 1, \"floors\": 1, \"freshness\": 8, \"fundOverSpy\": 0, \"hold\": 0, \"industryFall\": 0, \"largeBreadth\": 0, \"lowestClose\": 5, \"market\": 0, \"quality\": 2, \"rewardToRisk\": 2.5, \"stopHigh\": 2.5, \"stopLow\": 0.5, \"strength\": 0.75}"),
+        (423, "pullback-600", "51c963c077f7", "2026-10-20T18:37:13Z",
+            "the S&P 600 pullback rule at a strength of 0.75, 1 to 4 typical moves deep, a dry-up under 1, fresh within 8, 2.5 times the risk, the stop 0.5 to 4 moves, its own market floor off and band strength 0, the profit gate and the interest cover, the market check off",
+            "{\"band\": 0, \"breadthFloor\": 0, \"creditAverage\": 0, \"creditChange\": 0, \"depthHigh\": 4, \"depthLow\": 1, \"dryUp\": 1, \"floors\": 1, \"freshness\": 8, \"fundOverSpy\": 0, \"hold\": 0, \"industryFall\": 0, \"largeBreadth\": 2, \"lowestClose\": 5, \"market\": 0, \"quality\": 2, \"rewardToRisk\": 2.5, \"stopHigh\": 4, \"stopLow\": 0.5, \"strength\": 0.75}"),
+        (424, "pullback-600", "51c963c077f7", "2026-10-20T18:37:13Z",
+            "the background S&P 600 pullback rule at a strength of 0.5, 1 to 5 typical moves deep, a dry-up under 1.5, fresh within 3, 2 times the risk, the stop 0.5 to 4 moves, the market at 0.45 and band strength 0, the profit gate",
+            "{\"band\": 0, \"breadthFloor\": 0.45, \"creditAverage\": 0, \"creditChange\": 0, \"depthHigh\": 5, \"depthLow\": 1, \"dryUp\": 1.5, \"floors\": 1, \"freshness\": 3, \"fundOverSpy\": 0, \"hold\": 0, \"industryFall\": 0, \"largeBreadth\": 0, \"lowestClose\": 5, \"market\": 0.45, \"quality\": 1, \"rewardToRisk\": 2, \"stopHigh\": 4, \"stopLow\": 0.5, \"strength\": 0.5}"),
+        (425, "breakout-600", "c8bbfa8055e9", "2026-10-20T18:37:14Z",
+            "the live S&P 600 breakout rule at a 126-session high, 1.25 times the volume, ranges at 0.85 and the stop 3 typical moves beneath, the profit gate, its market check on the index's own breadth at 40%",
+            "{\"breadthFloor\": 0.4, \"creditAverage\": 0, \"creditChange\": 0, \"floors\": 1, \"fundOverSpy\": 0, \"highSessions\": 126, \"highVolume\": 0, \"hold\": 0, \"industryFall\": 0, \"largeBreadth\": 0, \"lowestClose\": 5, \"nearness\": 0, \"quality\": 1, \"rangeCeiling\": 0.85, \"recency\": 0, \"stopMoves\": 3, \"volumeMultiple\": 1.25}"),
+        (426, "breakout-600", "c8bbfa8055e9", "2026-10-20T18:37:14Z",
+            "the S&P 600 breakout rule at a 126-session high, 1.25 times the volume, ranges at 0.85 and the stop 3 typical moves beneath, the profit gate, the market check off",
+            "{\"breadthFloor\": 0, \"creditAverage\": 0, \"creditChange\": 0, \"floors\": 1, \"fundOverSpy\": 0, \"highSessions\": 126, \"highVolume\": 0, \"hold\": 0, \"industryFall\": 0, \"largeBreadth\": 2, \"lowestClose\": 5, \"nearness\": 0, \"quality\": 1, \"rangeCeiling\": 0.85, \"recency\": 0, \"stopMoves\": 3, \"volumeMultiple\": 1.25}"),
+        (427, "breakout-600", "c8bbfa8055e9", "2026-10-20T18:37:14Z",
+            "the background S&P 600 breakout rule at a 126-session high, 1.5 times the volume, ranges at 0.85 and the stop 1.5 typical moves beneath, the profit gate",
+            "{\"breadthFloor\": 0.45, \"creditAverage\": 0, \"creditChange\": 0, \"floors\": 1, \"fundOverSpy\": 0, \"highSessions\": 126, \"highVolume\": 0, \"hold\": 0, \"industryFall\": 0, \"largeBreadth\": 0, \"lowestClose\": 5, \"nearness\": 0, \"quality\": 1, \"rangeCeiling\": 0.85, \"recency\": 0, \"stopMoves\": 1.5, \"volumeMultiple\": 1.5}"),
+        (428, "drift-600", "b1770e2c06a5", "2026-10-20T18:37:15Z",
+            "the live S&P 600 drift rule within 3 sessions, up 0.5 typical moves on 1.25 times the volume, the target at 2.5 times the risk, the stop at least 1 typical move beneath, the profit gate, held 63 sessions, the market check off, its print's quarter's revenue above the same quarter's a year before, both as first filed and stored before the night",
+            "{\"breadthFloor\": 0, \"creditAverage\": 0, \"creditChange\": 0, \"entry\": 0, \"floors\": 1, \"fundOverSpy\": 0, \"hold\": 63, \"industryFall\": 0, \"largeBreadth\": 2, \"lowestClose\": 5, \"peers\": 0, \"quality\": 1, \"reactionMoves\": 0.5, \"revenueGrew\": 1, \"stopFloor\": 1, \"targetMultiple\": 2.5, \"volumeMultiple\": 1.25, \"wideWindow\": 0, \"windowSessions\": 3}"),
+        (429, "drift-600", "b1770e2c06a5", "2026-10-20T18:37:15Z",
+            "the S&P 600 drift rule within 3 sessions, up 0.5 typical moves on 1.25 times the volume, the target at 2.5 times the risk, the stop at least 1 typical move beneath, the profit gate, held 63 sessions, its market check on the index's own breadth at 40%, its print's quarter's revenue above the same quarter's a year before, both as first filed and stored before the night",
+            "{\"breadthFloor\": 0.4, \"creditAverage\": 0, \"creditChange\": 0, \"entry\": 0, \"floors\": 1, \"fundOverSpy\": 0, \"hold\": 63, \"industryFall\": 0, \"largeBreadth\": 0, \"lowestClose\": 5, \"peers\": 0, \"quality\": 1, \"reactionMoves\": 0.5, \"revenueGrew\": 1, \"stopFloor\": 1, \"targetMultiple\": 2.5, \"volumeMultiple\": 1.25, \"wideWindow\": 0, \"windowSessions\": 3}"),
+        (430, "drift-600", "b1770e2c06a5", "2026-10-20T18:37:15Z",
+            "the background S&P 600 drift rule within 3 sessions, up 0.5 typical moves on 2 times the volume, the target at 2.5 times the risk, the profit gate",
+            "{\"breadthFloor\": 0.45, \"creditAverage\": 0, \"creditChange\": 0, \"entry\": 0, \"floors\": 1, \"fundOverSpy\": 0, \"hold\": 0, \"industryFall\": 0, \"largeBreadth\": 0, \"lowestClose\": 5, \"peers\": 0, \"quality\": 1, \"reactionMoves\": 0.5, \"revenueGrew\": 0, \"stopFloor\": 0, \"targetMultiple\": 2.5, \"volumeMultiple\": 2, \"wideWindow\": 0, \"windowSessions\": 3}"),
+        (431, "heavyweight-600", "7e11d1133547", "2026-10-20T18:37:16Z",
+            "the live S&P 600 heavyweights rule of each sector's 10 largest members leading it over 63 sessions, 1 leader(s) a sector with a beta of at least 1, sold under its 200-day average, no quality gate",
+            "{\"design\": 0, \"floors\": 1, \"highBeta\": 1, \"industries\": 0, \"largest\": 10, \"leaders\": 1, \"lookBack\": 63, \"members\": 0, \"quality\": 0, \"soldOnLeading\": 0, \"soldUnderAverage\": 1, \"twelveOne\": 0, \"window\": 0}"),
+        (432, "heavyweight-600", "7e11d1133547", "2026-10-20T18:37:16Z",
+            "the background S&P 600 heavyweights rule of each sector's 10 largest members leading it over 251 sessions, 2 leader(s) a sector with a beta of at least 1, sold on no longer leading, the profit gate",
+            "{\"design\": 0, \"floors\": 1, \"highBeta\": 1, \"industries\": 0, \"largest\": 10, \"leaders\": 2, \"lookBack\": 251, \"members\": 0, \"quality\": 1, \"soldOnLeading\": 1, \"soldUnderAverage\": 0, \"twelveOne\": 0, \"window\": 0}"),
+    ];
+
+    // The evening's remedy's register lines over that register, in their order a second apart: the S&P 400 drift's
+    // strongest and its market variant retired, every rule whose evaluator moved registered again, and the drift frozen at
+    // the setting the operator ruled in the strongest's place. Each line is written; standing after them is every rule that
+    // stood but those two, the ruled setting live with its market variant, and the strongest in the background at its own
+    // settings beside the rule of the day before, every rule at the version the code carries and none of the index rules
+    // skipped by the night.
+    [Fact]
+    public async Task TheEveningsRemedyFreezesTheSAndP400DriftAtTheRuledSettingOverARegisterShapedAsTheOperatorsStood()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        foreach (var (id, evaluator, version, registered, name, parameters) in OperatorsRegisterOfTheEvening)
+        {
+            store.Execute(
+                "INSERT INTO candidate_register (id, candidate, rule, test, evaluator, parameters, evaluator_version, event, retires, registered_at, evidence) " +
+                $"VALUES ({id}, '{name.Replace("'", "''", StringComparison.Ordinal)}', 'the rule', 'the test', '{evaluator}', '{parameters}', '{version}', 'registered', NULL, '{registered}', NULL);");
+        }
+
+        var remedy = File.ReadAllLines(Path.Combine(Repository.Root, "tools", "remedies", "2026-10-20-20.11-the-evening-rulings.txt"))
+            .Where(line => line.StartsWith("register ", StringComparison.Ordinal))
+            .ToArray();
+        var at = new DateTimeOffset(2026, 10, 21, 11, 15, 0, TimeSpan.Zero);
+
+        Assert.Equal(4, remedy.Length);
+
+        foreach (var (line, place) in remedy.Select((line, place) => (line, place)))
+        {
+            var (code, said) = await RegisterVerbAt(store, at.AddSeconds(place), Arguments(line)[1..]);
+
+            Assert.True(code == 0, $"{line[..Math.Min(80, line.Length)]}: {said}");
+        }
+
+        var drift = IndexEvaluator("drift-400");
+        var freeze = Arguments(remedy[^1]);
+        var ruled = FrozenParameters(freeze[Array.IndexOf(freeze, "--parameters") + 1]);
+        var strongest = CandidateEvaluator.Read(OperatorsRegisterOfTheEvening.Single(row => row.Id == 416).Parameters);
+        var background = FamilyRecords.BackgroundPrefix + "S&P 400 " + IndexRules.Words(drift, strongest);
+        var standing = CandidateFamily.Standing(await new CandidateRegistrar(FixedClock.At(at.AddMinutes(1), SessionZones.UnitedStates), store.DatabaseFile).RowsAsync(), at.AddMinutes(1));
+
+        Assert.Equal(
+            OperatorsRegisterOfTheEvening
+                .Where(row => row.Id is not (416 or 417))
+                .Select(row => row.Name)
+                .Concat(
+                [
+                    FamilyRecords.LivePrefix + "S&P 400 " + IndexRules.Words(drift, ruled),
+                    "the S&P 400 " + IndexRules.Words(drift, FrozenMoved(ruled, (IndexRuleCandidate.LargeBreadthParameter, IndexRuleCandidate.NoMarketCheck), (IndexRuleCandidate.BreadthFloorParameter, 0))),
+                    background,
+                ])
+                .Order(StringComparer.Ordinal),
+            standing.Select(row => row.Candidate).Order(StringComparer.Ordinal));
+        Assert.Equal(strongest, CandidateEvaluator.Read(standing.Single(row => row.Candidate == background).Parameters));
+        Assert.All(standing, row => Assert.Equal(CandidateEvaluators.Find(row.Evaluator)!.Version, row.EvaluatorVersion));
+        Assert.Empty(IndexFamilies.StandingRules([.. standing], at.AddMinutes(1)).Skipped);
+    }
 }
