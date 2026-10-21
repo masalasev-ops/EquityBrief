@@ -134,12 +134,12 @@ code{font-size:.92em}
 .m-badge[hidden]{display:none}
 .page-head{display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap;padding-top:14px}
 .night-picker .np-short{display:none}
-/* on a phone the title holds one line and the date line is the night as a short date between its arrows; a stock's
-   masthead line, holding its quote, its figures and its links, wraps whole */
+/* on a phone the title holds one line and the date line is the night as a short date between its arrows; a date line
+   drawing no arrows, a screen's sentence ending on its date and a stock's masthead line with its quote and its links
+   among them, wraps whole */
 @media (max-width:560px){
  .page-head .m-screen{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
  .page-head .asof-words{display:none}
- .page-head .m-asof:not(:has(.night-picker)):not(:has(.m-when)){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
  .page-head .night-picker{margin-left:0}
  .night-picker .np-full{display:none}
  .night-picker .np-short{display:inline}

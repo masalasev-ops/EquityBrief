@@ -100,14 +100,14 @@ public partial class ReadSurface
         Assert.Contains(".night-picker .np-short{display:none}", css, StringComparison.Ordinal);
         Assert.Contains(" .page-head .m-screen{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}", block, StringComparison.Ordinal);
         Assert.Contains(" .page-head .asof-words{display:none}", block, StringComparison.Ordinal);
-        Assert.Contains(" .page-head .m-asof:not(:has(.night-picker)):not(:has(.m-when)){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}", block, StringComparison.Ordinal);
         Assert.Contains(" .night-picker .np-full{display:none}", block, StringComparison.Ordinal);
         Assert.Contains(" .night-picker .np-short{display:inline}", block, StringComparison.Ordinal);
 
-        // No other rule holds a masthead's line to one line, so the one-line rule reaches a screen's date line alone: a
-        // stock's masthead line holds its quote's words, so it wraps whole with its previous close, its sector's link and
-        // the name page's link back to its chart page, while a screen's date line holds none and stays one line.
-        Assert.Single(Regex.Matches(css, @"\.m-asof[^{]*\{[^}]*nowrap"));
+        // No rule holds a masthead's date line to one line or cuts it: the night picker's line is one line by its short
+        // date, and every line drawing no arrows wraps whole, a screen's sentence ending on its date, as Paper trading's
+        // "as of the close of 2026-10-20", and a stock's masthead line with its previous close, its sector's link and the
+        // name page's link back to its chart page among them.
+        Assert.Empty(Regex.Matches(css, @"\.m-asof[^{]*\{[^}]*(nowrap|overflow:hidden|text-overflow)"));
 
         var stock = SinglePageApp.Masthead(
             "AAA",
@@ -124,7 +124,6 @@ public partial class ReadSurface
 
         Assert.StartsWith("<span class=\"m-when\">As of the close of 2026-10-12", line, StringComparison.Ordinal);
         Assert.EndsWith("<a href=\"#/universe?sector=Industrials\">Industrials</a>, Machinery · <a class=\"m-chart\" href=\"#/chart/AAA\">Its chart</a>", line, StringComparison.Ordinal);
-        Assert.DoesNotContain("m-when", Cards.Masthead("Universe", "<span class=\"m-screen\">Universe</span>", "Every member on the night of 2026-10-12"), StringComparison.Ordinal);
     }
 
     [Fact]

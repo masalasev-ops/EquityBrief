@@ -5843,3 +5843,47 @@ Carried:    the S&P 500's groups and pages on the GICS scheme and the Financials
             stock reported; found beyond phase 19, the frozen S&P 400 and 600 heavyweights cards drawing their setting's
             key as stored, owed a 20.11 correction; PR 505 rebased with its migration at 104; the phase 18 sign-off by a
             fresh session; and the phase 19 sign-off by a fresh session over the corrected main.
+
+### 19.2 - correction: the trade line's stop is named the red it is drawn in, and every date line drawing no arrows wraps whole on a phone   2026-10-21
+
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its remedies,
+            the page corrections in PR 518 and the first phase 19 sign-off review's corrections in PR 519; in review, 20.8
+            with its correction, PR 505; in progress, the corrections the second phase 19 sign-off review found, in one
+            pull request: this correction, the 19.4 correction of Past picks' sentences, the 16.2 correction of the account
+            form on a phone, the 19.7 correction of the dates and the phone's rows, the 19.8 correction of the empty card
+            and the 13.1 correction of the Run page's funnel words; next, this pull request merged, the phase 19 sign-off by
+            a fresh session over the corrected main, PR 505 rebased with its migration at 104, the phase 18 sign-off by a
+            fresh session, the local lane's one text field, 21.0 once its ruling is given, and pin 3's completion steps.
+Ruled:      by the operator on 2026-10-21, told the second review had found four defects and signed nothing: "Correct
+            first (Recommended)", and of the smaller items found beside them all four in the same pull request, "Tall phone
+            rows, Paper form on a phone, Run page funnel words, Empty one-gate-short card": this session builds the
+            corrections, so a fresh session signs phase 19 once they merge.
+Reviewed:   the second phase 19 sign-off review of 2026-10-21, by this session before it committed code, over main at
+            54af3d00, whose tree is PR 519's head's: `tools/ci.ps1` green 18:34:36 to 19:00:06 UTC, all six steps, 0
+            warnings, 0 errors, 2578 of 2578 tests, migrations 0 to 103 and none pending at 103; `tools/verify-phase.ps1`
+            green 19:01:11 to 19:01:16 UTC, 60 tables, 1372 claims all passing, none out of scope or unexamined, 1383
+            placements against a floor of 34, 43 checks run and passed. Hosted CI green on PR 519's head under both events
+            and on main's push. The night of 2026-10-20 ran all 47 steps; 116 obligations, 83 discharged and 33 operating,
+            none open. Swept: the first review's s1 to s13, PR 519's c1 to c7 and r1 to r11, one property each of what its
+            three corrections added, each filtered to the tests naming its file and predicted before its run, all
+            thirty-one red as predicted. Read back at 1440 px and a true 390 px in both palettes over the operator's store,
+            the chart page's labels measured at 7.17 a character at most against the 7.2 its column is sized by.
+Found:      by that review: Past picks' key for the trade line, the Trade heading's tip, a name page's key for the nights
+            the list picked it before and section 15's row for the mark named the stop green, where the stylesheet has
+            drawn it in the loss's red since 19.2 on 2026-10-12 as the colour decision rules; and on a phone the one-line
+            rule beneath a screen's title cut Paper trading's and Loop's lines on every index and the S&P 500's Past picks
+            line before their dates, where section 15 says the phone's date line is the night's short date.
+Corrected:  the two keys and the tip say the stop is drawn in red and the row a red tick; no rule holds a date line to one
+            line or cuts it, so a line drawing no arrows wraps whole on a phone while the night picker's line stays its
+            short date between its arrows. Section 15's two passages, the roster and the changelog.
+Tests:      none more: the Past picks test reads its key's red, the two ends' rules in the stylesheet and no key calling the
+            stop green, the name page's test its own key the same, the headings' test the tip, and the phone test no rule
+            holding a date line to one line or cutting it.
+Mutated:    the rule, stated before the runs, for every correction of this pull request: each property it adds, the
+            smallest edit undoing it, filtered to the tests naming it with its red predicted, made in this checkout over
+            the file's own text and restored from it, the tree's diff the same after each. m1 the Past picks key's stop
+            green again: red at the Past picks test. m2 the one-line rule back for a line holding no night picker: red at
+            the phone test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.

@@ -26,6 +26,30 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches every date line wrapping whole on a phone and the trade line's words naming the hues it is drawn in
+Corrects: the phone's one-line rule cut a screen's date line before its date, and the trade line's keys named its stop green where it is drawn red, both found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... and a stock's masthead line held to one line by no rule, its quote's words, its previous close and its links wrapping whole while a screen's date line holds one line; and from the 19.11 correction of 2026-10-21 ... and a chart naming its close alone keeping the name page's column of 86 |
+Now:
+> read-surface: ... and a stock's masthead line held to one line by no rule, its quote's words, its previous close and its links wrapping whole; and from the 19.11 correction of 2026-10-21 ... and a chart naming its close alone keeping the name page's column of 86; and from the third 19.2 correction of 2026-10-21 no rule holding a date line to one line or cutting it, a screen's sentence ending on its date wrapping whole on a phone, and the trade line's two keys and its heading's tip naming the stop's red and the target's orange the stylesheet draws them in, no words of either key calling the stop green |
+Why: the third 19.2 correction of 2026-10-21 takes away the rule a screen's date line was held to and adds these assertions.
+
+### 2026-10-21 - ARCHITECTURE.html - every date line drawing no arrows wraps whole on a phone
+Corrects: on a phone the one-line rule cut the line beneath a screen's title before its date, Paper trading's "as of the close of 20..." and Loop's "the run for 2026-10 t..." on every index and the S&P 500's Past picks among them, where this paragraph says the phone's date line is the night's short date, found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> The bar (15): ... and on a phone the title holds one line and the date line is the night's short date between its arrows, while a stock's masthead line, holding its quote and its links, wraps whole (see: The bar's index menu chooses the index every page reads, each choice naming its cap and its members).
+Now:
+> The bar (15): ... and on a phone the title holds one line and the date line is the night's short date between its arrows, while a stock's masthead line, holding its quote and its links, wraps whole; from the third 19.2 correction of 2026-10-21 every date line drawing no arrows wraps whole on a phone, so a screen's sentence ending on its date keeps its date (see: The bar's index menu chooses the index every page reads, each choice naming its cap and its members).
+Why: a line whose last words are its date said nothing of when on a phone once cut, and wrapping it costs a line.
+
+### 2026-10-21 - ARCHITECTURE.html - the trade line's stop is named the red it is drawn in
+Corrects: the row named the stop a green tick where 19.2 drew it in the loss's red on 2026-10-12, as the page's two keys and the Trade heading's tip did, found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> Trade line (15): One trade the live list recommended, drawn from its stop at the left as a green tick to its target at the right as an orange tick.
+Now:
+> Trade line (15): One trade the live list recommended, drawn from its stop at the left as a red tick to its target at the right as an orange tick.
+Why: the colour decision draws a stop in the red, and the stylesheet has drawn it so since 19.2.
+
 ### 2026-10-21 - .claude/rules/checks.md - read-surface reaches the chart page's column holding every price it names
 Corrects: the chart page's column was sized for the close alone, so a plan's label of three integer digits or more ran past the chart's edge, HAS's "target 129.57" read "target 129.5" at 1440 px, found by the phase 19 sign-off review of 2026-10-21.
 Was:
