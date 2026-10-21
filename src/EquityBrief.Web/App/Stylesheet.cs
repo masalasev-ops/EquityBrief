@@ -475,6 +475,12 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-heads ul{margin:6px 0 0;padding-left:18px;font-size:13px}
 .paper-heads li{margin:3px 0}
 .account-pick{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0;max-width:min(100%,560px)}
+/* on a phone the account form stands each setting's words whole above its box, one setting beneath another */
+@media (max-width:560px){
+ form.account-control{display:block;margin-right:0}
+ .account-control label{display:block;margin:0 0 10px}
+ .account-control input{display:block;width:100%;margin-top:4px}
+}
 .paper-log-since .too-few,.paper-heads .too-few{display:inline}
 .paper-log-table td:nth-child(-n+5){white-space:nowrap}
 .paper-running{margin:0 0 12px;max-width:420px}

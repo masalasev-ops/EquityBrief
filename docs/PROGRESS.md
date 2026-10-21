@@ -5906,3 +5906,21 @@ Mutated:    under the rule stated in the 19.2 correction's entry: m3 the lists' 
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 16.2 - correction: the account form stands each setting's words whole above its box on a phone   2026-10-21
+
+Queue:      as the 19.2 correction's entry above.
+Ruled:      among the smaller items the operator chose on 2026-10-21 to correct in this pull request, "Paper form on a
+            phone".
+Found:      by the second phase 19 sign-off review of 2026-10-21, on paper trading at a true 390 px over the operator's
+            store: the account form 16.2 built, which paper trading opens with from 19.4, ran its three settings as one
+            paragraph, "Risk a" ending one line and "trade, per cent" opening the next beside its box.
+Corrected:  on a phone each setting stands beneath the one before, its words whole above its box, by a rule on the form
+            that outranks the one every posted form is drawn inline by. The roster and the changelog.
+Tests:      one more: the form's three labels each holding its words and its box, and the phone's rules for the form, its
+            labels and its boxes.
+Mutated:    under the rule stated in the 19.2 correction's entry: m4 the form's rule on a phone one the posted forms'
+            inline rule outranks: red at the form's test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.

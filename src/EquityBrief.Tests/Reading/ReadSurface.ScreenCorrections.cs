@@ -126,6 +126,30 @@ public partial class ReadSurface
         Assert.EndsWith("<a href=\"#/universe?sector=Industrials\">Industrials</a>, Machinery · <a class=\"m-chart\" href=\"#/chart/AAA\">Its chart</a>", line, StringComparison.Ordinal);
     }
 
+    // The 16.2 correction of 2026-10-21: on a phone the account form, which paper trading and the account page both open
+    // with, stands each setting's words whole above its box, one setting beneath another, where it ran as one paragraph and
+    // broke "Risk a trade, per cent" across two lines; each label holds its words and its box, and the form's rule there
+    // outranks the one every posted form is drawn inline by.
+    [Fact]
+    public void OnAPhoneTheAccountFormStandsEachSettingsWordsWholeAboveItsBox()
+    {
+        var form = SinglePageApp.AccountForm(null, null, null, 0.2m);
+
+        Assert.Equal(
+            ["Account size", "Risk a trade, per cent", "Position cap, share of the account"],
+            Regex.Matches(form, "<label>([^<]+) <input name=\"(?:size|risk|cap)\"").Select(match => match.Groups[1].Value));
+
+        var css = Stylesheet.Css;
+        var block = css[css.IndexOf("@media (max-width:560px){\n form.account-control", StringComparison.Ordinal)..];
+
+        block = block[..(block.IndexOf("\n}", StringComparison.Ordinal) + 2)];
+
+        Assert.Contains(" form.account-control{display:block;margin-right:0}", block, StringComparison.Ordinal);
+        Assert.Contains(" .account-control label{display:block;margin:0 0 10px}", block, StringComparison.Ordinal);
+        Assert.Contains(" .account-control input{display:block;width:100%;margin-top:4px}", block, StringComparison.Ordinal);
+        Assert.Contains("form[method='post']{display:inline-block;", css, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task TonightsDateLineWordsStandApartFromItsPickerSoAPhoneDrawsThePickerAlone()
     {
