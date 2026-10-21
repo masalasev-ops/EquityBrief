@@ -26,6 +26,162 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - ARCHITECTURE.html - every buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
+Authorised by: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
+Was:
+> Tonight's buy points (15.7): ... whose cards draw their own picks as rows. A row selected draws its plan and its pick's card in a row beneath it, and the first row is selected where the link names none. From 19.3 every other pick's card stands hidden in a row beneath its own and is opened by a control in its row, and a row so opened is held inside the box the table scrolls in. From the 19.2 correction of 2026-10-13 ... (see: Selecting a row draws its plan and its card beneath the row and is no navigation) (see: A setup's card draws its live picks as rows of its own, each ticker opening its chart page)
+>
+> The note under 15.7: ... Selecting a row, anywhere on it but its links, draws its plan beneath the list and brings it into view, and from 19.2 a row of tonight's buy points draws its plan and its pick's card in a row beneath it; its ticker is a link opening the name's own page (see: Selecting a row draws its plan and its card beneath the row and is no navigation). ...
+>
+> Tonight's figure: <desc>Tonight from its bar to a selected buy point: ... and the selected row's plan and card beneath it, ...</desc>; ABC selected: its plan and its card, in a row beneath its own
+>
+> Its key, part 5: Tonight's buy points: one table across every setup, each row tagged with its setup and numbered from one, with the price it buys at, its stop, its target and its reward to risk; on a night no setup lists one, ...
+>
+> Its key, part 6: The row selected, the first where the link names none: its plan and its pick's card in a row beneath it, the card ending on what is behind the stock, ...
+Now:
+> Tonight's buy points (15.7): ... whose cards draw their own picks as rows. From the 19.2 correction of 2026-10-21 every row folds beneath it a row of its own holding the stock's plan and its pick's card: on the S&amp;P 500 the plan column and the plan's tables and the level summary the night stored for the stock with the links the plan region carries; on the S&amp;P 400 and 600 the bands the night stored for the stock with one line saying its plan is its rule's buy, stop and target in its row and on its card and the ladder at its bands is worked for the S&amp;P 500's members alone. Every fold is closed where the link names no row and the fold of the row the link names is open; the control in the row's stock cell or a press anywhere else on the row opens and closes that row's fold alone so any number stand open at once; a fold so opened is held inside the box the table scrolls in. From the 19.2 correction of 2026-10-13 ... (see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it) (see: A setup's card draws ...)
+>
+> The note under 15.7: ... Selecting a row of the list, anywhere on it but its links, draws its plan beneath the list and brings it into view, and from the 19.2 correction of 2026-10-21 each row of tonight's buy points folds its plan and its pick's card beneath it, closed until a press on the row or a link naming it opens it; its ticker is a link opening the stock's chart page (see: Each buy point's row folds ...) (see: Every link that opens a stock opens its chart page first, and the chart page links to its report). ...
+>
+> Tonight's figure: <desc>Tonight from its bar to a buy point's fold: ... and one row's fold opened beneath it holding its plan and card, ...</desc>; ABC's fold, opened by its control: its plan and its card beneath its row
+>
+> Its key, part 5: ... with the price it buys at, its stop, its target and its reward to risk, and in its stock cell the control opening its fold; on a night no setup lists one, ...
+>
+> Its key, part 6: A row's fold, opened by the control in its stock cell, by a press on the row or by a link naming the row and closed otherwise, any number open at once: its plan, or where the night builds no ladder the bands with the line naming the plan its row and card draw, and its pick's card, the card ending on what is behind the stock, ...
+Why: the operator's words of 2026-10-21 on Tonight's buy points, "This section should be collabsible , otherwise there is a large gap between the first stock and the next few stocks.", and their approval of the fix, "Yes, one PR now (Recommended)". The note's ticker opened the chart page from 19.11 and said the name's page, corrected in the sentence rewritten.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches every buy point's fold
+Authorised by: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
+Was:
+> read-surface: ... its buy points in one table numbered across it with a selected row's plan and card beneath that row, ... and where none is read the report's words for why |
+Now:
+> read-surface: ... its buy points in one table numbered across it, ... and where none is read the report's words for why; and from the 19.2 correction of 2026-10-21 every buy point's row on every index followed by its fold, every fold hidden where the link names no row and the one a link names open with its row selected, ... and the page's script opening and closing a fold from its control and a press on its row and keeping a pressed card's fold open after it redraws |
+Why: the row named a selected row's plan and card, which the 19.2 correction of 2026-10-21 replaces with a fold a row.
+
+### 2026-10-21 - ARCHITECTURE.html - the latest quarter is read against the estimates kept before its release, a fiscal fourth quarter against its year's estimate less three quarters
+Authorised by: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
+Was:
+> The latest quarter (section 4): ... each against the analysts' estimate kept before the report where one was and against the same quarter a year earlier, the three income lines ... (see: The latest quarter is read line by line against the estimate kept before its report and the same quarter a year earlier). ... | The lines, their margins and the growth worked by one function in the core from the newest fetch's quarters the quarter fetcher stored and the revenue estimate a fetch made before the report kept; ...
+>
+> Margins (section 4), Growth bars (15.5) and Report windows (section 17): ... (see: The latest quarter is read line by line against the estimate kept before its report and the same quarter a year earlier)
+>
+> The latest quarter (15.9): ... a line the fetch did not read saying so, apart from one not filed; the growth bars beneath; ... (see: The latest quarter is read line by line against the estimate kept before its report and the same quarter a year earlier)
+>
+> Figure part 7: The latest quarter: each line of the newest quarter against the estimate kept before its report and the same quarter a year earlier, from the filing and the provider's fetch, with eight quarters' growth.
+>
+> The figures (15.22): ... earnings: the latest quarter's earnings a share and revenue against their estimates; the surprise; ...
+>
+> Estimate trends: ... and for a quarter's revenue estimate the newest fetch made before its report (see: The quarters fetch keeps ...)
+Now:
+> The latest quarter (section 4): ... each against the analysts' estimate kept before the results were released where one was and against the same quarter a year earlier, a fiscal fourth quarter's revenue against its year's estimate less its three earlier quarters marked implied, a line reading no estimate saying why, the three income lines ... (see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters). ... | ... and the revenue estimates fetches made before the quarter's release kept, the release placed by the calendar's timing on the report date in New York; ...
+>
+> Margins, Growth bars and Report windows: ... (see: The latest quarter is read line by line against the estimates kept before its release ...)
+>
+> The latest quarter (15.9): ... apart from one not filed; from the 18.2 correction of 2026-10-21 the estimate the one kept before the results were released; a fiscal fourth quarter's revenue read against its year's estimate less its three earlier quarters and drawn as implied with what it was worked from beneath the table; a line reading no estimate saying why; the year earlier's column saying a line its fetch did not read is not read as the quarter's column does; the growth bars beneath; ... (see: The latest quarter is read line by line against the estimates kept before its release ...)
+>
+> Figure part 7: The latest quarter: each line of the newest quarter against the estimate kept before its release and the same quarter a year earlier, a fiscal fourth quarter's revenue against its year's estimate less three quarters marked implied, from the filing and the provider's fetch, with eight quarters' growth.
+>
+> The figures (15.22): ... against their estimates; from the 18.2 correction of 2026-10-21 revenue against an implied estimate named so and where none is read the report's words for why; the surprise; ...
+>
+> Estimate trends: ... and for a quarter's revenue estimate the newest fetch made before its release as the calendar's timing places it in New York, the quarter's own, filed as the current quarter or the next, or for a quarter ending its fiscal year the year's, and the stock's first fetch on or before the page's night for the day its estimates are kept from (see: The quarters fetch keeps ...) (see: The latest quarter is read line by line against the estimates kept before its release ...)
+Why: the operator's words of 2026-10-21 on the report's quarter table, "Once again i am seeing on report things like "none kept". WHat hasnt been kept.", and their approval of the fixes, "Yes, one PR now (Recommended)", and of a fiscal fourth quarter's estimate, "Implied estimate (Recommended)".
+
+### 2026-10-21 - SCHEMA.md - the estimate trend read before a quarter's release, a fiscal fourth quarter's in the year's row
+Authorised by: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
+Was:
+> estimate_trend, `period_end`: the end of that period, the newest the answer files under its word
+>
+> estimate_trend: ... and the newest fetch made before a quarter's report for that quarter's revenue estimate; no rule, list or gate reads the table, ...
+Now:
+> estimate_trend, `period_end`: the end of that period, the newest the answer files under its word; a quarter ending its company's fiscal year is filed under the year alone, the answer keeping one entry an end
+>
+> estimate_trend: ... and the newest fetch made before a quarter's report for that quarter's revenue estimate; from the 18.2 correction of 2026-10-21 that is the newest fetch made before the instant the calendar's timing on the report date places the release in New York, the quarter's own revenue estimate, filed under the current quarter's word or the next's, or, for a quarter ending its fiscal year, the year's, and the stock's first fetch on or before the page's night gives the day its estimates are kept from (see: The latest quarter is read line by line against the estimates kept before its release ...); no rule, list or gate reads the table, ...
+Why: as the architecture's entry above; none of the 1,589 fetches stored by 2026-10-20 holds a quarter's row ending on its year's.
+
+### 2026-10-21 - .claude/rules/checks.md - fixture-expectations and read-surface reach the estimates kept before a release and a fiscal fourth quarter's implied estimate
+Authorised by: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
+Was:
+> fixture-expectations: ... worked by hand over a constructed store of the three indices |
+>
+> read-surface: ... and reading a payer whose fetch files nought on its year's payments |
+Now:
+> fixture-expectations: ... worked by hand over a constructed store of the three indices; and from the 18.2 correction of 2026-10-21 the release a quarter's estimates are kept before placed by the calendar's timing in New York at the open, at the close and at the start of the day, ... and each reason a line reads no estimate for worked by hand at a fetch a millisecond before the release and at it, and the quarter a year earlier saying a line its fetch did not read is not read, one the provider filed none for not filed and none held a year earlier so, each worked by hand |
+>
+> read-surface: ... and reading a payer whose fetch files nought on its year's payments; and from the 18.2 correction of 2026-10-21 the report's revenue estimates read over a constructed store, ... a line reading no estimate saying why and one with no quarter a year earlier saying so, none kept drawn nowhere, and the chart page's revenue against an implied estimate named so, against its own estimate and where none is read the report's words for why |
+Why: the rows named no assertion on the release's instant, an implied estimate, the words a line reading no estimate says or the chart page's revenue against its estimate, which the 18.2 correction of 2026-10-21 adds.
+
+### 2026-10-21 - ARCHITECTURE.html - a company paying none says so in the chart page's dividend figures and the report's yield tile
+Authorised by: A company filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing neither as not stored
+Was:
+> The figures: ... the dividend: its yield; its last whole year; its payout of earnings; its years raised in a row over the whole years kept and not stored where fewer than two are kept; the technicals: ...
+>
+> Tiles: ... and the distance from the year's high with the range bar; a tile whose figures are not stored saying so (see: Four tiles under the headline are worked by code from stored figures at the price the page draws)
+Now:
+> The figures: ... its years raised in a row over the whole years kept and not stored where fewer than two are kept; from the 19.11 correction of 2026-10-21 each of the four saying pays none for a company with no dividend kept in the year to the night whose fetch files a dividend rate of nought or no rate beside dividends kept from before the year (see: A company filing ...); its last whole year still drawn where it paid in it; a company whose fetch files no rate above nought and that paid in the year read on its year's payments; not stored left for a company storing neither a rate nor a dividend; the technicals: ...
+>
+> Tiles: ... a tile whose figures are not stored saying so; from the 19.11 correction of 2026-10-21 the yield's tile saying a company paying none pays none and reading a payer whose fetch files no rate above nought on its year's payments as the dividend's safety reads it (see: Four tiles under the headline ...) (see: A company filing ...)
+Why: the operator's words of 2026-10-21 on DGII's chart page, "Just saying not stored is not a good way to communicate", and their approval of the fix, "Yes, one PR now (Recommended)": 498 members drew not stored in all four figures, 496 of them paying none, and the yield tile said none was stored for 7 payers whose fetch files a rate of nought.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches a company paying none on the chart page and the yield tile
+Authorised by: A company filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing neither as not stored
+Was:
+> read-surface: ... and a group the night read no name for saying so |
+Now:
+> read-surface: ... and a group the night read no name for saying so; and from the 19.11 correction of 2026-10-21 the chart page's four dividend figures pays none for a company with no dividend kept in the year to the night whose fetch files a dividend rate of nought or no rate beside a dividend kept from before the year, ... and the report's yield tile, on the page and at the quote, saying a company paying none pays none and reading a payer whose fetch files nought on its year's payments |
+Why: the row named no assertion on a company paying none, which the 19.11 correction of 2026-10-21 adds.
+
+### 2026-10-21 - ARCHITECTURE.html - a member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
+Authorised by: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
+Was:
+> Move annotator: reads membership, bar store, calendar; ... and writes each print's earnings reaction over the calendar's year behind
+>
+> How it got here, its source: ... each move's group median computed by the move annotator from the bars and the membership (see: A large move is shown beside its group's median move over the same sessions); ...
+>
+> Its group, by price, its source: The peers' two readings and the members chosen, computed by the move annotator from the bars and the membership (see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely)
+>
+> The figures: ... the company: its index and sector and industry; the provider's market value; ...
+>
+> The read and write matrix's Move annotator row: no mark under Fundamentals.
+Now:
+> Move annotator: reads membership, companies, bar store, calendar; ... and writes each print's earnings reaction over the calendar's year behind; a group is read among the name's own index's members by the industry and sector each one's membership row names, or from the 15.1 correction of 2026-10-21 where the row names neither a sector nor an industry by the GICS industry and sector its newest company fetch before the night files (see: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files)
+>
+> How it got here, its source: ... each move's group median computed by the move annotator from the bars and the membership, a member whose row names neither a sector nor an industry grouped by its company fetch (see: A large move ...) (see: A member whose membership row names neither a sector nor an industry ...); ...
+>
+> Its group, by price, its source: The peers' two readings and the members chosen, computed by the move annotator from the bars and the membership with a member whose row names neither a sector nor an industry grouped by its company fetch; the group's other members as the annotator counted them (see: Peers are shown by price alone ...) (see: A member whose membership row names neither a sector nor an industry ...)
+>
+> The figures: ... the company: its index and sector and industry; from the 15.1 correction of 2026-10-21 its industry the one its membership row names and where the row names neither a sector nor an industry the GICS industry its newest company fetch files (see: A member whose membership row names neither a sector nor an industry ...); the provider's market value; ...
+>
+> The read and write matrix's Move annotator row: R under Fundamentals, which holds the companies.
+Why: the operator approved on 2026-10-21, in the words "Yes, one PR now (Recommended)", reading a member's industry and its group from the company record as its sector already is: no S&P 400 or 600 membership row names an industry, so their chart pages drew it not stored and their moves had no group.
+
+### 2026-10-21 - SCHEMA.md - the move annotator reads a member's group off its company fetch where its membership row names neither a sector nor an industry
+Authorised by: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
+Was:
+> move and peer_reading, `group_name`: the industry or sector the membership row names, null where it names none
+>
+> The group columns are the annotator's: ... read off the membership, so the annotator reads the membership as well as the bars (see: ...) (see: A large move is shown beside its group's median move over the same sessions).
+>
+> company: ... and `membership.sector` is the index snapshot's own scheme and is not read for it.
+Now:
+> move and peer_reading, `group_name`: the industry or sector the membership row names, or where it names neither the GICS one the name's newest company fetch made before the night files; null where neither names one
+>
+> The group columns are the annotator's: ... (see: A large move is shown beside its group's median move over the same sessions). From the 15.1 correction of 2026-10-21 a member whose membership row names neither a sector nor an industry, which is every S&P 400 and 600 member, is read by the GICS industry and sector its newest `company` row fetched before the night started files, both from that one row, so the annotator reads the companies as well; a member whose row names either is read by its row (see: A member whose membership row names neither a sector nor an industry ...).
+>
+> company: ... is not read for it. From the 15.1 correction of 2026-10-21 the move annotator reads a member's newest row fetched before the night started for the industry and sector its group is read by, where its membership row names neither, and the pages name such a member's industry by its newest row's (see: A member whose membership row names neither a sector nor an industry ...).
+Why: as the architecture's entry above; the schema states what the annotator now reads.
+
+### 2026-10-21 - .claude/rules/checks.md - fixture-expectations and read-surface reach a member's industry and group read off its company fetch
+Authorised by: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
+Was:
+> fixture-expectations: ... and none for a bar the series does not hold however many sessions were read before it |
+>
+> read-surface: ... a member holding a bar on the night and no year's high saying its year's high is not available and not that it holds no bar |
+Now:
+> fixture-expectations: ... and none for a bar the series does not hold however many sessions were read before it; and from the 15.1 correction of 2026-10-21 a member whose membership row names neither a sector nor an industry grouped among its own index's members by the GICS industry and sector its newest company fetch made before the night started files, ... worked by hand over a constructed store of the three indices |
+>
+> read-surface: ... and not that it holds no bar; and from the 15.1 correction of 2026-10-21 a member's industry on the chart page's grid and its masthead the one its membership row names, and where it names neither a sector nor an industry the GICS industry its newest company fetch files, ... and a group the night read no name for saying so |
+Why: the two rows named no assertion on a group or an industry read off the company fetch, which the 15.1 correction of 2026-10-21 adds.
+
 ### 2026-10-21 - CLAUDE.md - the hard rule on pulled history names the member readings' year's high and a breakout rule's checks on it
 Authorised by: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does
 Was:

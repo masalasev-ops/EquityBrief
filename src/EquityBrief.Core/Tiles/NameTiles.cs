@@ -21,9 +21,10 @@ public sealed record GrowthTile(string Basis, double Percent, DateOnly Through, 
     public const string Consensus = "consensus";
 }
 
-// The forward annual rate a share and the yield it is at the price the page draws, in per cent, and the Treasury's 10-year
-// par yield beside it with the session it was read for, where the store holds one.
-public sealed record YieldTile(decimal Rate, double Percent, double? TenYear = null, DateOnly? TenYearOn = null);
+// The annual rate a share and the yield it is at the price the page draws, in per cent, and the Treasury's 10-year par
+// yield beside it with the session it was read for, where the store holds one; the rate is the forward rate, or the
+// dividends paid in the year to the night where the fetch files none above nought.
+public sealed record YieldTile(decimal Rate, double Percent, double? TenYear = null, DateOnly? TenYearOn = null, bool OnTheYear = false);
 
 // The price against the year's high and low with the sessions they were made on: how far under the high it is in per cent
 // of the high, and where it sits from the low at nought to the high at one.

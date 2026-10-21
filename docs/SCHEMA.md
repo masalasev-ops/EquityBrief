@@ -680,14 +680,14 @@ Grain: one row per ticker and session selected as a large move.
 | `change_pct` | REAL | |
 | `rank` | INTEGER | position within the window by absolute size |
 | `group_kind` | TEXT | `industry` or `sector`, the group the move is read against; null on a row written before 11.5 |
-| `group_name` | TEXT | the industry or sector the membership row names, null where it names none |
+| `group_name` | TEXT | the industry or sector the membership row names, or where it names neither the GICS one the name's newest company fetch made before the night files; null where neither names one |
 | `group_members` | INTEGER | how many other members the group holds on the session, the name never among them |
 | `group_counted` | INTEGER | how many of them held a close on both of the move's sessions |
 | `group_median` | REAL | the median of those members' moves over the same sessions, in per cent; null where none held both closes |
 
 Primary key: `ticker`, `session_date`.
 
-**The group columns are the annotator's, written with the move they sit beside.** The group is the industry where at least five other members share it on the night's session and the sector otherwise, read off the membership, so the annotator reads the membership as well as the bars (see: A name's group is its industry where at least five other members share it on the session, and its sector otherwise, and every surface that uses it says which and how many) (see: A large move is shown beside its group's median move over the same sessions).
+**The group columns are the annotator's, written with the move they sit beside.** The group is the industry where at least five other members share it on the night's session and the sector otherwise, read off the membership, so the annotator reads the membership as well as the bars (see: A name's group is its industry where at least five other members share it on the session, and its sector otherwise, and every surface that uses it says which and how many) (see: A large move is shown beside its group's median move over the same sessions). From the 15.1 correction of 2026-10-21 a member whose membership row names neither a sector nor an industry, which is every S&P 400 and 600 member, is read by the GICS industry and sector its newest `company` row fetched before the night started files, both from that one row, so the annotator reads the companies as well; a member whose row names either is read by its row (see: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files).
 
 **`sessions` is what makes the catalogue row true, and it was added at 5.0.** The annotator selects the largest single-day and multi-day moves of the stored year, and a table keyed on one session with no span could carry only the first of those. `session_date` is the session the move ended on, so a five-day run and a one-day gap on the same date are one row and the longer span wins, which is the reading that keeps the primary key.
 
@@ -701,7 +701,7 @@ Grain: one row per ticker, the newest night's.
 | `ticker` | TEXT | |
 | `session_date` | TEXT | the name's newest stored session, which the readings are taken at |
 | `group_kind` | TEXT | `industry` or `sector`, the group the name's moves are read against |
-| `group_name` | TEXT | the industry or sector the membership row names, null where it names none |
+| `group_name` | TEXT | the industry or sector the membership row names, or where it names neither the GICS one the name's newest company fetch made before the night files; null where neither names one |
 | `year_high` | TEXT | decimal in code: the highest high among the bars the store holds for the name |
 | `below_high_pct` | REAL | how far the newest close sits below `year_high`, in per cent of it |
 | `return_pct` | REAL | the newest close against the close sixty sessions before it, in per cent; null where the name holds fewer bars than that and the one it is measured from |
@@ -2411,7 +2411,7 @@ Grain: one row per ticker per storing fetch.
 
 Primary key: `ticker`, `fetched_at`.
 
-Kept forever, never updated and never deleted. Each fetch the quarters step stores writes one row in the same write as its quarters, from the answer it already asked for and with no request of its own, and `quarters --companies` asks every member no fetch has stored one for, once, so the sector heavyweights read every member from their first night. The heavyweights read each member's newest row: the CIK ranks a company once whatever classes it lists (see: Companies are ranked by CIK with one listing held, the class that traded the more dollars over fifty sessions), and the sector places it, with the fourteen moves of 2023-03-17 read by date (see: A company's sector on a session is the GICS sector the provider files, with the fourteen moves of 2023-03-17 read by date). The provider files the classification as of its last update with no dated history, which is why the moves are a committed table, and `membership.sector` is the index snapshot's own scheme and is not read for it.
+Kept forever, never updated and never deleted. Each fetch the quarters step stores writes one row in the same write as its quarters, from the answer it already asked for and with no request of its own, and `quarters --companies` asks every member no fetch has stored one for, once, so the sector heavyweights read every member from their first night. The heavyweights read each member's newest row: the CIK ranks a company once whatever classes it lists (see: Companies are ranked by CIK with one listing held, the class that traded the more dollars over fifty sessions), and the sector places it, with the fourteen moves of 2023-03-17 read by date (see: A company's sector on a session is the GICS sector the provider files, with the fourteen moves of 2023-03-17 read by date). The provider files the classification as of its last update with no dated history, which is why the moves are a committed table, and `membership.sector` is the index snapshot's own scheme and is not read for it. From the 15.1 correction of 2026-10-21 the move annotator reads a member's newest row fetched before the night started for the industry and sector its group is read by, where its membership row names neither, and the pages name such a member's industry by its newest row's (see: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files).
 
 ### fundamental_reading
 Grain: one row per ticker per night.
@@ -2501,7 +2501,7 @@ Grain: one row per ticker per quarters fetch per forward period.
 | `ticker` | TEXT | |
 | `fetched_at` | TEXT | UTC instant of the quarters fetch, the one its `reported_quarter` rows carry |
 | `period` | TEXT | `0q`, `+1q`, `0y` or `+1y`: the current and the next quarter and fiscal year, as the answer names them |
-| `period_end` | TEXT | the end of that period, the newest the answer files under its word |
+| `period_end` | TEXT | the end of that period, the newest the answer files under its word; a quarter ending its company's fiscal year is filed under the year alone, the answer keeping one entry an end |
 | `eps_average`, `eps_low`, `eps_high`, `eps_year_ago` | TEXT | decimal in code, the consensus earnings a share, its range and the year-earlier figure, each null where the answer files none |
 | `eps_analysts` | INTEGER | how many analysts make the earnings estimate, null where none is filed |
 | `revenue_average`, `revenue_low`, `revenue_high`, `revenue_year_ago` | TEXT | decimal in code, the consensus revenue, its range and the year-earlier figure, each null where none is filed |
@@ -2511,7 +2511,7 @@ Grain: one row per ticker per quarters fetch per forward period.
 
 Primary key: `ticker`, `fetched_at`, `period`.
 
-**The analysts' earnings trend each quarters fetch carries, kept by the quarter fetcher in the write that stores its quarters** (see: The quarters fetch keeps the gross profit and cash flow lines, the estimate trend and the analysts' mean and target its answer carries). A period the answer files no entry for is not stored, and nothing updates or deletes a row. The name page reads the newest fetch on or before its night for the analysts' region and the growth tile, and the newest fetch made before a quarter's report for that quarter's revenue estimate; no rule, list or gate reads the table, and no figure in it reaches a facts file (see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one).
+**The analysts' earnings trend each quarters fetch carries, kept by the quarter fetcher in the write that stores its quarters** (see: The quarters fetch keeps the gross profit and cash flow lines, the estimate trend and the analysts' mean and target its answer carries). A period the answer files no entry for is not stored, and nothing updates or deletes a row. The name page reads the newest fetch on or before its night for the analysts' region and the growth tile, and the newest fetch made before a quarter's report for that quarter's revenue estimate; from the 18.2 correction of 2026-10-21 that is the newest fetch made before the instant the calendar's timing on the report date places the release in New York, the quarter's own revenue estimate, filed under the current quarter's word or the next's, or, for a quarter ending its fiscal year, the year's, and the stock's first fetch on or before the page's night gives the day its estimates are kept from (see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters); no rule, list or gate reads the table, and no figure in it reaches a facts file (see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one).
 
 ### news_pulse
 Grain: one row per ticker per date.

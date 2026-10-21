@@ -100,13 +100,13 @@ public partial class ReadSurface
         // F1, which both families passed, is drawn once in tonight's buy points tagged with the pullback, with the
         // breakout's label and the pullback's own trade, and from the 19.3 correction of 2026-10-17 once as a row of the
         // pullback's card and of no other card; the breakout's card names it in a note.
-        var points = Regex.Match(page, "<table class=\"list-table buy-points\".*?</table>", RegexOptions.Singleline).Value;
+        var points = Regex.Match(page, "<table class=\"list-table buy-points\".*?</table></div><p class=\"buys-next\">", RegexOptions.Singleline).Value;
         var shared = PickRowOf(page, "F1");
 
         Assert.Single(Regex.Matches(page.Replace(points, string.Empty, StringComparison.Ordinal), "<tr data-ticker=\"F1\""));
         Assert.Contains("F1", CardPicksOf(FamilyCardOf(page, SetupFamilies.Pullback)));
         Assert.Single(Regex.Matches(points, "<tr data-ticker=\"F1\" data-family=\"pullback\""));
-        Assert.DoesNotContain("data-family=\"breakout\" data-selects=\"F1\"", points, StringComparison.Ordinal);
+        Assert.DoesNotContain("<tr data-ticker=\"F1\" data-family=\"breakout\"", points, StringComparison.Ordinal);
         Assert.Contains("<span class=\"also-family\" data-also=\"Breakout\">also a breakout</span>", shared, StringComparison.Ordinal);
         Assert.Contains("data-target=\"110\">110.00</td>", shared, StringComparison.Ordinal);
         Assert.DoesNotContain("also-family", PickRowOf(page, "F2"), StringComparison.Ordinal);

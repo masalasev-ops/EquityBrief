@@ -530,18 +530,18 @@ public partial class ReadSurface
             $"('{ticker}', '2026-10-0{(exited ? 1 : 2)}T14:00:00Z', '{index}', 'breakout', '2026-09-30', '{sector}', '50', '2026-10-01', 0, 1, '47', NULL, '3', 63, " +
             $"{(exited ? "'52', '2026-10-02'" : "NULL, NULL")}, NULL);");
 
-    // A card off its index's Tonight, decoded: its row of its own, hidden beneath its pick's, or from 19.3 the plan's row
-    // of the buy point selected, which draws its card open.
+    // A card off its index's Tonight, decoded: a holding's from its row of its own, hidden beneath the holding's, and from
+    // the 19.2 correction of 2026-10-21 a buy point's from its fold, read from the card to the fold's end.
     static async Task<string> CardRowOf(HttpClient client, string index, string family, string ticker, string night = IndexNight)
     {
         var page = WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf(index, night)));
         var id = $"card-{index}-{family}-{ticker}".ToLowerInvariant();
         var row = Regex.Match(page, $"<tr class=\"card-row\" id=\"{id}\" hidden><td colspan=\"\\d+\">(.*?)</td></tr>", RegexOptions.Singleline);
-        var open = Regex.Match(page, $"<tr class=\"plan-row\" data-plan-for=\"{Regex.Escape(ticker)}\"><td colspan=\"\\d+\">.*?(<div class=\"decision-card\" data-index=\"{index}\" data-family=\"{family}\" data-ticker=\"{Regex.Escape(ticker)}\".*?)(?=<tr data-ticker=|</tbody>)", RegexOptions.Singleline);
+        var fold = Regex.Match(page, $"<tr class=\"fold-row\" id=\"{MarkRenderer.FoldId(family, ticker)}\" data-fold-for=\"{Regex.Escape(ticker)}\"(?: hidden)?><td colspan=\"\\d+\">.*?(<div class=\"decision-card\" data-index=\"{index}\" data-family=\"{family}\" data-ticker=\"{Regex.Escape(ticker)}\".*?)(?=<tr data-ticker=|</tbody></table></div><p class=\"buys-next\">)", RegexOptions.Singleline);
 
-        Assert.True(row.Success || open.Success, $"The {index} page draws no card row for {ticker}'s {family}, drawing {string.Join(", ", Regex.Matches(page, "<tr class=\"card-row\" id=\"([^\"]+)\"").Select(match => match.Groups[1].Value))}.");
+        Assert.True(row.Success || fold.Success, $"The {index} page draws no card for {ticker}'s {family}, drawing {string.Join(", ", Regex.Matches(page, "<tr class=\"(?:card|fold)-row\" id=\"([^\"]+)\"").Select(match => match.Groups[1].Value))}.");
 
-        return row.Success ? row.Groups[1].Value : open.Groups[1].Value;
+        return row.Success ? row.Groups[1].Value : fold.Groups[1].Value;
     }
 
     // The management a card states, step by step.

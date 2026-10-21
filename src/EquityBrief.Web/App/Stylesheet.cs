@@ -386,7 +386,8 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .setup-tile .tile-counted{font-size:12.5px;color:var(--ink-2)}
 .setup-tile .tile-state{font-size:12.5px;color:var(--ink-2)}
 .buy-points td.setup{white-space:nowrap}
-.buy-points tr.plan-row>td{white-space:normal;background:var(--plot);padding:12px}
+.buy-points tr.fold-row>td{white-space:normal;background:var(--plot);padding:12px}
+.buy-points tr[data-fold]{scroll-margin-top:84px}
 .selwrap{display:grid;grid-template-columns:minmax(0,390px) minmax(0,1fr);gap:24px;align-items:start}
 .sel-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 .sel-unwritten{margin:14px 0 0;font-size:13.5px;color:var(--ink-2)}

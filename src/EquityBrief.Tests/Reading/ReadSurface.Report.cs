@@ -350,10 +350,10 @@ public partial class ReadSurface
             new DateOnly(2026, 7, 30),
             new DateOnly(2025, 6, 30),
             [
-                new QuarterLine(QuarterLines.Revenue, 1_100_000_000m, 1_050_000_000m, 50_000_000m, 4.7619, 900_000_000m, 22.2222, null, null, false, null),
-                new QuarterLine(QuarterLines.GrossProfit, null, null, null, null, 495_000_000m, null, null, 55.0, false, QuarterLines.FetchedBefore),
-                new QuarterLine(QuarterLines.NetIncome, null, null, null, null, 135_000_000m, null, null, 15.0, false, QuarterLines.NotFiled),
-                new QuarterLine(QuarterLines.Eps, 2.20m, 2.30m, -0.10m, -4.3478, 1.60m, 37.5, null, null, true, null),
+                new QuarterLine(QuarterLines.Revenue, 1_100_000_000m, 1_050_000_000m, 50_000_000m, 4.7619, 900_000_000m, 22.2222, null, null, false, null, null, null),
+                new QuarterLine(QuarterLines.GrossProfit, null, null, null, null, 495_000_000m, null, null, 55.0, false, QuarterLines.FetchedBefore, QuarterLines.NonePublished, null),
+                new QuarterLine(QuarterLines.NetIncome, null, null, null, null, 135_000_000m, null, null, 15.0, false, QuarterLines.NotFiled, QuarterLines.NonePublished, null),
+                new QuarterLine(QuarterLines.Eps, 2.20m, 2.30m, -0.10m, -4.3478, 1.60m, 37.5, null, null, true, null, null, null),
             ]);
         var quarter = marks.QuarterTable("CVX", new ReportView(latest, [], new DateOnly(2026, 9, 8), "USD", [], null, null, null, null));
 
@@ -368,8 +368,31 @@ public partial class ReadSurface
             "<td class=\"num\"><span class=\"loss\" data-difference=\"-0.10\">-0.10</span> (<span class=\"loss\" data-against=\"-4.3478\">-4.3%</span>)</td>",
             quarter,
             StringComparison.Ordinal);
-        Assert.Contains($"<td class=\"num degraded\" data-reported=\"absent\">{QuarterLines.FetchedBefore}</td><td class=\"num degraded\" data-estimate=\"absent\">none kept</td>", quarter, StringComparison.Ordinal);
+        Assert.Contains($"<td class=\"num degraded\" data-reported=\"absent\">{QuarterLines.FetchedBefore}</td><td class=\"num degraded\" data-estimate=\"absent\">none published</td>", quarter, StringComparison.Ordinal);
         Assert.Contains("<tr data-line=\"Net income\"><td>Net income</td><td class=\"num degraded\" data-reported=\"absent\">not filed</td>", quarter, StringComparison.Ordinal);
+        Assert.DoesNotContain("none kept", quarter, StringComparison.Ordinal);
+
+        // From the 18.2 correction of 2026-10-21 an implied estimate drawn with its mark and worked out beneath the table,
+        // each figure whole on its element; an estimate not kept saying from which day the stock's estimates are kept; and a
+        // line with no quarter held a year earlier saying so.
+        LatestQuarter fourth = new(
+            new DateOnly(2026, 8, 31),
+            new DateOnly(2026, 10, 15),
+            null,
+            [
+                new QuarterLine(QuarterLines.Revenue, 2_658_334_000m, 2_552_717_880m, 105_616_120m, 4.1374, null, null, null, null, false, null, null, new ImpliedEstimate(9_288_287_880m, new DateOnly(2026, 8, 31), new DateOnly(2026, 10, 11), 6_735_570_000m)),
+                new QuarterLine(QuarterLines.Eps, 1.84m, null, null, null, null, null, null, null, true, null, QuarterLines.NotKept(new DateOnly(2026, 10, 14)), null),
+            ]);
+        var implied = marks.QuarterTable("CMC", new ReportView(fourth, [], new DateOnly(2026, 10, 20), "USD", [], null, null, null, null));
+
+        Assert.Contains("<td class=\"num\" data-estimate=\"2552717880\" data-implied=\"yes\">$2.6B implied</td>", implied, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"num degraded\" data-estimate=\"absent\">not kept: estimates kept from 2026-10-14</td>", implied, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"num degraded\" data-year-earlier=\"absent\">no quarter held a year earlier</td>", implied, StringComparison.Ordinal);
+        Assert.EndsWith(
+            "</table></div><p class=\"mark-note\" data-implied=\"Revenue\">Revenue's estimate is implied: the analysts' estimate for the fiscal year to 2026-08-31, "
+            + "<span data-year-estimate=\"9288287880\">$9.3B</span> as kept on 2026-10-11, less its three earlier quarters as reported, <span data-earlier-quarters=\"6735570000\">$6.7B</span>.</p>",
+            implied,
+            StringComparison.Ordinal);
         Assert.Equal(
             "<p class=\"degraded\" data-absent=\"quarter\" data-ticker=\"CVX\">No reported quarter is stored for CVX yet, so no line is read.</p>",
             marks.QuarterTable("CVX", new ReportView(null, [], null, "USD", [], null, null, null, null)));

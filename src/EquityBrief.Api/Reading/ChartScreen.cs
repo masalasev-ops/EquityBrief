@@ -247,11 +247,16 @@ public static class ChartScreen
         var perShare = quarter?.Lines.FirstOrDefault(line => line.PerShare);
         var revenue = quarter?.Lines.FirstOrDefault(line => !line.PerShare);
 
+        // A figure against the estimate the report page reads it against, an implied one named so, and where none is read
+        // the report page's words for why.
+        // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
         static GridFigure AgainstItsEstimate(string label, EquityBrief.Core.Report.QuarterLine? line, Func<decimal, string> shown) =>
             line?.Reported is { } reported
                 ? new GridFigure(
                     label,
-                    shown(reported) + (line.Estimate is { } estimate ? FormattableString.Invariant($" against an estimate of {shown(estimate)}") : ", no estimate filed"),
+                    shown(reported) + (line.Estimate is { } estimate
+                        ? FormattableString.Invariant($" against {(line.Implied is null ? "an" : "an implied")} estimate of {shown(estimate)}")
+                        : ", its estimate " + (line.EstimateAbsent ?? EquityBrief.Core.Report.QuarterLines.NonePublished)),
                     reported.ToString(CultureInfo.InvariantCulture))
                 : Missing(label);
 
@@ -277,22 +282,27 @@ public static class ChartScreen
     static GridGroup Dividend(ChartInputs inputs)
     {
         var dividend = inputs.Report.Dividend;
-        var year = dividend?.Years.LastOrDefault(paid => paid.Whole);
+        var year = dividend?.Years.LastOrDefault(paid => paid.Whole) ?? (inputs.Report.PaysNone ? inputs.Report.PaidLastYear : null);
+
+        // A company paying none says so in each figure, the year it last paid in still drawn where it is the last whole one,
+        // and not stored is left for one storing neither a rate nor a dividend.
+        // see: A company filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing neither as not stored
+        GridFigure Unpaid(string label) => inputs.Report.PaysNone ? new GridFigure(label, SinglePageApp.PaysNone) : Missing(label);
 
         return new GridGroup("dividend", "Dividend",
         [
             dividend?.Yield is { } yield
                 ? new GridFigure("Yield", FormattableString.Invariant($"{yield:0.00}% on {(dividend.RateIsForward ? "the forward rate" : "the last year's payments")} of {Figures.PerShare(dividend.Rate)}"), yield.ToString(CultureInfo.InvariantCulture))
-                : Missing("Yield"),
+                : Unpaid("Yield"),
             year is { } whole
-                ? new GridFigure("Paid in its last whole year", FormattableString.Invariant($"{Figures.PerShare(whole.Total)} in {whole.Year}, {whole.Payments} payments"), whole.Total.ToString(CultureInfo.InvariantCulture))
-                : Missing("Paid in its last whole year"),
+                ? new GridFigure("Paid in its last whole year", FormattableString.Invariant($"{Figures.PerShare(whole.Total)} in {whole.Year}, {whole.Payments} {(whole.Payments == 1 ? "payment" : "payments")}"), whole.Total.ToString(CultureInfo.InvariantCulture))
+                : Unpaid("Paid in its last whole year"),
             dividend?.PayoutOnEarnings is { } payout
                 ? new GridFigure("Paid out of earnings", FormattableString.Invariant($"{payout:0.0}%"), payout.ToString(CultureInfo.InvariantCulture))
-                : Missing("Paid out of earnings"),
+                : Unpaid("Paid out of earnings"),
             dividend?.RaisedInARow is { } raised
-                ? new GridFigure("Raised in a row", FormattableString.Invariant($"{raised} years"), raised.ToString(CultureInfo.InvariantCulture))
-                : Missing("Raised in a row"),
+                ? new GridFigure("Raised in a row", FormattableString.Invariant($"{raised} {(raised == 1 ? "year" : "years")}"), raised.ToString(CultureInfo.InvariantCulture))
+                : Unpaid("Raised in a row"),
         ]);
     }
 

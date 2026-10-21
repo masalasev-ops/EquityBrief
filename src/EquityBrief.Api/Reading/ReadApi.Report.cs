@@ -10,14 +10,15 @@ using Microsoft.Data.Sqlite;
 namespace EquityBrief.Api.Reading;
 
 // What the name page's quarter, margins, analysts, dividend and valuation regions read, as the store holds it on or before
-// the page's night: the newest fetch's quarters, the revenue estimate a fetch kept before the newest quarter's report, the
-// newest fetch's estimate trend, every fetch's rating counts, mean and target, every dividend kept, the Treasury's
-// 10-year over the year, and the night's readings of the stock's industry's S&P 500 members; from 19.13 its filer's
-// insiders' transactions filed in the year to the night and the spans the store's insider history holds.
+// the page's night: the newest fetch's quarters, the revenue estimates fetches kept before the newest quarter's release with
+// the instant it was released and the instant the stock's estimates are kept from, the newest fetch's estimate trend, every
+// fetch's rating counts, mean and target, every dividend kept, the Treasury's 10-year over the year, and the night's
+// readings of the stock's industry's S&P 500 members; from 19.13 its filer's insiders' transactions filed in the year to
+// the night and the spans the store's insider history holds.
 public sealed record ReportInputs(
     IReadOnlyList<QuarterRow> Quarters,
     DateOnly? FetchedOn,
-    RevenueEstimate? RevenueEstimate,
+    KeptEstimates? Estimates,
     IReadOnlyList<EstimatePeriod> Trend,
     DateOnly? TrendFetchedOn,
     IReadOnlyList<RatingFetch> Ratings,
@@ -44,13 +45,23 @@ public sealed partial class ReadApi
         ORDER BY period_end;
     ";
 
-    // The current quarter's revenue estimates kept by fetches made before a report, newest first, for a quarter ending
-    // within a week of the one reported.
+    // The revenue estimates kept by fetches made before a quarter's release, newest first, each for a period ending within a
+    // week of the quarter reported: a quarter's, filed as the current or the next quarter as the answer had rolled its words
+    // or not when it was fetched, and the fiscal year's, which the answer files in a quarter's place where the quarter ends
+    // the year.
+    // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
     const string RevenueEstimatesOf = @"
-        SELECT revenue_average, fetched_at FROM estimate_trend
-        WHERE ticker = $ticker AND period = '0q' AND period_end >= $from AND period_end <= $to AND substr(fetched_at, 1, 10) < $reported
+        SELECT period, period_end, revenue_average, fetched_at FROM estimate_trend
+        WHERE ticker = $ticker AND period IN ('0q', '+1q', '0y', '+1y') AND period_end >= $from AND period_end <= $to AND fetched_at < $released
         ORDER BY fetched_at DESC;
     ";
+
+    // The calendar's timing for the stock's report on the day its quarter was reported.
+    const string ReleaseTimingOf = "SELECT timing FROM calendar WHERE ticker = $ticker AND event_date = $reported AND kind = 'earnings';";
+
+    // The instant the stock's first estimate fetch on or before the page's night was made, from which its estimates are
+    // kept as the store stood that night.
+    const string EstimatesKeptFromOf = "SELECT MIN(fetched_at) FROM estimate_trend WHERE ticker = $ticker AND substr(fetched_at, 1, 10) <= $on;";
 
     const string TrendOf = @"
         SELECT period, period_end, eps_average, eps_low, eps_high, eps_year_ago, eps_analysts,
@@ -129,28 +140,73 @@ public sealed partial class ReadApi
             }
         }
 
-        // The newest quarter's revenue estimate, kept by a fetch made before its report.
-        RevenueEstimate? estimate = null;
+        // The newest quarter's revenue estimates, kept by fetches made before its release as the calendar's timing on its
+        // report date places it, and the instant the stock's estimates are kept from.
+        KeptEstimates? estimates = null;
 
-        if (quarters.Where(quarter => quarter.Revenue is not null || quarter.EpsActual is not null).MaxBy(quarter => quarter.PeriodEnd) is { ReportDate: { } reported } newest)
+        if (quarters.Where(quarter => quarter.Revenue is not null || quarter.EpsActual is not null).MaxBy(quarter => quarter.PeriodEnd) is { } newest)
         {
-            await using var command = connection.CreateCommand();
+            DateTimeOffset? keptFrom = null;
+            DateTimeOffset? released = null;
+            RevenueEstimate? own = null;
+            YearEstimate? year = null;
 
-            command.CommandText = RevenueEstimatesOf;
-            command.Parameters.AddWithValue("$ticker", ticker);
-            command.Parameters.AddWithValue("$from", Day(newest.PeriodEnd.AddDays(-QuarterFetch.NearDays)));
-            command.Parameters.AddWithValue("$to", Day(newest.PeriodEnd.AddDays(QuarterFetch.NearDays)));
-            command.Parameters.AddWithValue("$reported", Day(reported));
-
-            await using var reader = await command.ExecuteReaderAsync();
-
-            while (estimate is null && await reader.ReadAsync())
+            await using (var command = connection.CreateCommand())
             {
-                if (!reader.IsDBNull(0))
+                command.CommandText = EstimatesKeptFromOf;
+                command.Parameters.AddWithValue("$ticker", ticker);
+                command.Parameters.AddWithValue("$on", day);
+
+                if (await command.ExecuteScalarAsync() is string first)
                 {
-                    estimate = new RevenueEstimate(Money.FromStorage(reader.GetString(0)), Parse(reader.GetString(1)[..10]));
+                    keptFrom = DateTimeOffset.Parse(first, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
                 }
             }
+
+            if (newest.ReportDate is { } reported)
+            {
+                await using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = ReleaseTimingOf;
+                    command.Parameters.AddWithValue("$ticker", ticker);
+                    command.Parameters.AddWithValue("$reported", Day(reported));
+
+                    released = QuarterLines.ReleasedAt(reported, await command.ExecuteScalarAsync() as string, clock.SessionZone);
+                }
+
+                await using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = RevenueEstimatesOf;
+                    command.Parameters.AddWithValue("$ticker", ticker);
+                    command.Parameters.AddWithValue("$from", Day(newest.PeriodEnd.AddDays(-QuarterFetch.NearDays)));
+                    command.Parameters.AddWithValue("$to", Day(newest.PeriodEnd.AddDays(QuarterFetch.NearDays)));
+                    command.Parameters.AddWithValue("$released", released.Value.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", CultureInfo.InvariantCulture));
+
+                    await using var reader = await command.ExecuteReaderAsync();
+
+                    while (await reader.ReadAsync())
+                    {
+                        if (reader.IsDBNull(2))
+                        {
+                            continue;
+                        }
+
+                        var average = Money.FromStorage(reader.GetString(2));
+                        var keptOn = Parse(reader.GetString(3)[..10]);
+
+                        if (reader.GetString(0) is EstimatePeriod.CurrentQuarter or EstimatePeriod.NextQuarter)
+                        {
+                            own ??= new RevenueEstimate(average, keptOn);
+                        }
+                        else
+                        {
+                            year ??= new YearEstimate(average, Parse(reader.GetString(1)), keptOn);
+                        }
+                    }
+                }
+            }
+
+            estimates = new KeptEstimates(own, year, keptFrom, released);
         }
 
         var trend = new List<EstimatePeriod>();
@@ -291,7 +347,7 @@ public sealed partial class ReadApi
         var (insiders, spans) = await InsidersAsync(connection, ticker, night);
         var (release, model) = await ReleaseReadingAsync(connection, ticker, night);
 
-        return new ReportInputs(quarters, fetchedOn, estimate, trend, trendOn, ratings, dividends, tenYears, industry, peers, insiders, spans, release, model);
+        return new ReportInputs(quarters, fetchedOn, estimates, trend, trendOn, ratings, dividends, tenYears, industry, peers, insiders, spans, release, model);
     }
 
     // From 20.3 the newest results release of the stock's filer the night may read, as the local model read it under the

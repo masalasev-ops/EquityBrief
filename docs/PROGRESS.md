@@ -5462,3 +5462,287 @@ Carried:    the remedy run from main after the merge, every standing S&P 400 and
             heavyweights registered again at the versions this moves them to, with each record's length stated before it
             restarts; the year's high of a member whose bars start after the year's first session put to the operator;
             PR 505 rebased with its migration at 104; and the phase 18 sign-off by a fresh session.
+
+### 20.11 - the remedy of the year's-high ruling run from main: 30 moved rules registered again, each record's length stated before it restarted   2026-10-21
+
+Not a checkpoint entry: it records PR 517's merge and remedy and lands nothing.
+Gates:      `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 1eb551ff, PR 517's head, whose tree its merge
+            holds, the phase report ending at 07:39:38Z: all six steps, 0 warnings, 2571 of 2571 tests, migrations 0 to
+            103 with none pending, schema version 103; the phase report 60 tables, 1372 claims, 1372 passing, none out of
+            scope and none unexamined, 1383 placements reconciled against a floor of 34, 43 checks run and passed, each
+            the figure PR 517's newest entry stated, which the report held to the run. The hosted runs on its push and its
+            pull request passed.
+Ran:        PR 517 merged at 07:40:33Z on 2026-10-21 as 46e7ec5b, the history read stopped at 07:40:27Z and the
+            checkout's main brought up to it; `tools/remedies/2026-10-21-20.11-the-year-high-before-the-year.txt` from
+            07:41:11Z to 07:41:38Z, its one step, with no night, off-peak run, drain, local run or monthly run writing. No
+            model call and no provider request.
+Measured:   before the remedy, each of the 30 rules it registered again stood registered at 03:34:01Z by PR 515's
+            remedy with no night run since, so each record it restarted held no night and no trade; the cards' replayed
+            records stand under the rules' words, the S&P 400's from 2019-01-02 to 2026-10-20 with the pullback's 720
+            trades, the breakout's 1,033, the drift's 1,807 and the heavyweights' 335, and the S&P 600's to 2026-10-19
+            with 548, 957, 1,021 and 304. The 30 registered again at 07:41:35Z, each unchanged and named as restarting: on
+            the S&P 400 and on the S&P 600 the pullback, 3 and 4, from adc4b9f11470 to 61634e51e013, the breakout, 3 and
+            3, from acdeab81269c to fa012e2fbaba, the drift, 4 and 3, from a60b29a9a6fe to a0aac8d3d390, and the
+            heavyweights, 2 and 4, from 33d344c490cd to 4aa690bef133; and the S&P 500's four heavyweights from
+            6ab1c2b1c6a4 to d78f1ca30465.
+Read:       under pin 3 at 24,911 of 45,381 releases, 54.9 per cent, when it stopped; started again at 07:41:50Z from
+            8c5fdae2's clean copy, PR 517 moving none of the read's code, with the card at 250 W; the read surface on 5152
+            started again from main's Release.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 15.1 - correction: a member whose membership row names no industry is named and grouped by the GICS industry and sector its company fetch files, and the peers table draws its group's other members as the night counted them   2026-10-21
+
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its
+            remedies, the evening's rulings in PRs 514 and 515, the 19.3 correction in PR 516 and the year's-high ruling
+            in PR 517 merged with theirs; in review, 20.8 with its correction, PR 505; in progress, the page corrections
+            in one pull request: this correction, the 19.11 correction of the chart page's dividend figures, the 18.2
+            correction of the report's estimates and the 19.2 correction of Tonight's buy points; next, this pull request
+            merged, PR 505 rebased with its migration at 104, the phase 18 sign-off by a fresh session, the local lane's
+            one text field, 21.0 once its ruling is given, the phase 19 sign-off, and pin 3's completion steps.
+Ruled:      by the operator on 2026-10-21, on the chart page of DGII they showed, in these words: "There has to be better
+            way to represent this. Does the stock DIGI have no dividends ?Just saying not stored is not a good way to
+            communicate ." The fixes were put to them as five, the second and third "Industry is read from the company
+            record, as the sector already is." and "Peers are grouped by the company record's sector and industry.", and
+            they answered "Yes, one PR now (Recommended)".
+Found:      no S&P 400 or 600 membership row names an industry or a sector, their funds' holdings files naming neither,
+            so the chart page's Industry figure said not stored for all 1,002 of them and none stood in a group, its moves
+            beside no median; and the name page's peers table counted its group's other members again over the sectors
+            the universe's rows name, which are GICS while an S&P 500 group is its row's, so 183 of the 503 S&P 500 tables
+            drew a wrong count on the night of 2026-10-20, AAPL's 10 where its group holds 86.
+Built:      a member whose membership row names neither a sector nor an industry, every S&P 400 and 600 member, is named
+            on every page by the GICS industry its newest company fetch files, and the move annotator reads its group
+            among its own index's members by the GICS industry and sector its newest company fetch made before the night
+            started files, both from that fetch; a member whose row names either, every S&P 500 member, keeps its row's
+            (see: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS
+            industry and sector its company fetch files). The peers table draws its group's other members as the
+            annotator counted them, a name whose moves hold no count counted over the rows as before, and a group the
+            night read no name for says so. The decision, the move annotator's catalogue and matrix rows, section 4's two
+            rows and the chart page's figures row, SCHEMA's group columns and companies note, the roster and the
+            changelog.
+Tests:      two more, the suite's total in the newest entry of this pull request: a constructed store of the three
+            indices whose night is 2026-09-08, G1 grouped by its row's industry with five others beside its fetch's GICS
+            one, G7 alone in its row's industry and so in its row's sector with seven, G9, whose row names its sector and
+            no industry, by that sector with seven and not by its fetch's, M1 by its newest fetch's Machinery with five
+            and not its older Banks, M7 alone in Building Products and so in its fetch's sector with six, its Machinery
+            fetched after the night started not read, M8 and S1 in no group, and G1's and M1's medians +3.0 worked by
+            hand from the members' closes; and the chart page over the universes' store, M1 named by its newer fetch's
+            industry on the grid and its masthead, AAA by its row's over its fetch's, BBB, naming its sector alone, and
+            M3 not stored. The peers table's count read as stored, 7 where the universe's sectors count 3, and 3 over the
+            rows where the moves hold none; AAPL's rendered table counting the 9 its moves stored; and a group the night
+            read no name for saying so.
+Claims:     as the newest entry of this pull request.
+Mutated:    each rule stated before its run. A member whose row names no industry grouped by its company fetch, broken by
+            reading the row's sector and industry alone: predicted red at M1; result red, M1 "sector none 0" where
+            "industry Machinery 5". A fetch made after the night started not read, broken by reading every fetch:
+            predicted red at M1's group, M7's later Machinery joining it; result red, "industry Machinery 6" where 5. The
+            peers table's count the annotator's, broken by counting the universe's sectors again: predicted red at the
+            peers count; result red, 3 where 7. The pages' industry the company fetch's where the row names none, broken
+            by naming the row's alone: predicted red at M1's chart page; result red, not stored where "Oil, Gas &
+            Consumable Fuels". Each made on this branch and reverted before anything was committed, and the tests green.
+Reviewed:   before the merge, by a review of this pull request's work: the rule read the company fetch for a row naming no
+            industry, which would have moved an S&P 500 row naming its sector alone out of that sector's group into the
+            other scheme, and is keyed now on a row naming neither; a name whose moves hold no count, one holding a single
+            bar, drew its picks as its group's size, and is counted over the rows as before; the words for a group naming
+            no sector said neither the row nor the fetch names one, false of the groups an earlier night read until the
+            night rewrites them, and say the night read no name for it now; and no test read the count off a rendered
+            page, which one does now. Each is repaired above, and the rendered count is mutated, the rule stated before
+            its run: broken by handing the table no stored count, predicted red at AAPL's 9; result red, no count of 9
+            drawn. Run filtered to the test reading the fixture's peers tables, made in this checkout over the file's own
+            text and restored from it, the tree's diff the same after.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    the S&P 500's groups and the industry its pages name moved to the GICS scheme put to the operator with its
+            cost: the group facts every recorded section prompt carries move with them, about 45 of the 68 paid
+            recordings to be recorded again or answered as constructed.
+
+### 19.11 - correction: a company whose fetch files a dividend rate of nought with no dividend kept in the year says pays none in the chart page's dividend figures and the report's yield tile, and not stored only where it stores neither   2026-10-21
+
+Queue:      as the 15.1 correction of this pull request.
+Ruled:      by the operator on 2026-10-21, on the chart page of DGII they showed, in these words: "There has to be better
+            way to represent this. Does the stock DIGI have no dividends ?Just saying not stored is not a good way to
+            communicate ." The first of the five fixes put to them, "Dividend rows say "pays none" where the stored rate is
+            0, and "not stored" only where nothing is stored.", was answered "Yes, one PR now (Recommended)".
+Found:      DGII pays none and the store knew it, every fetch filing a forward rate of nought; the grid read the dividend's
+            safety, which reads a payer alone, so 498 of the 1,505 members on the night of 2026-10-20 drew not stored in
+            all four dividend figures, 496 of them paying none and 2 storing neither a rate nor a dividend. The yield tile
+            said none was stored for each of them. Two figures also wrote "1 payments" and "1 years".
+Built:      one function in the core reads a company paying none, with no dividend kept in the year to the night and its
+            fetch filing a dividend rate of nought, or no rate beside dividends kept from before the year (see: A company
+            filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing
+            neither as not stored); the chart page's four dividend figures say pays none for it, its last whole year drawn
+            where it paid in the whole year before the night's, and the report's yield tile says it pays none under the
+            pointer; not stored is left for a company storing neither. One function reads the rate a yield is read at, the
+            forward rate or the year's payments, for the dividend's safety and for the yield tile on the page and at the
+            quote, the tile saying which. A count of one takes its noun's singular. The decision, the chart page's figures
+            row and the tiles row, the guide's chart page, the roster and the changelog.
+Tests:      one more, the suite's total in the newest entry of this pull request: a rate of nought with nothing kept, and
+            with a dividend a whole year before the night, paying none, and one a day inside the year paying, no rate
+            beside a dividend before the year paying none and no rate beside nothing, or beside a dividend after the night
+            alone, not, and the rate a yield is read at worked by hand; over the universes' store S1 drawing pays none in
+            all four figures, M1, which paid in 2025, drawing 0.50 in 2025, 1 payment, among them, S2, filing no rate, the
+            same with 0.40, M2 a payer on its year's payments at 1.00% of 0.50 and 2 payments, AAA raised in the one year
+            after its first drawing 1 year, and M3 not stored in all four; and the report's yield tile saying S1 and S2 pay
+            none, M3 that none is stored and M2 1.00% on 0.50 paid in the last year, and at the quote inside the session
+            S1 paying none and M2 0.50% on its one dividend still inside that day's year.
+Claims:     as the newest entry of this pull request.
+Mutated:    each rule stated before its run. A company paying none read as one, broken by reading none as paying none:
+            predicted red at S1's figures; result red at the first hand-worked reading, and with the page alone told
+            none pays none, red at S1's four figures, not stored where pays none. The year's window ending a whole year
+            back, broken by reading a dividend exactly a year back inside it: predicted red at the year's edge; result
+            red, M1's dividend of 2025-10-02 read inside the year. A company paying none drawing the year it last paid
+            in, broken by drawing none: predicted red at M1's last whole year; result red, pays none where 0.50 in 2025,
+            1 payment. Each made on this branch and reverted before anything was committed, and the tests green.
+Reviewed:   before the merge, by a review of this pull request's work: the yield tile said none was stored for the 7
+            members on the night of 2026-10-20 whose fetch files a rate of nought and that paid in the year, SWKS among
+            them, where the chart page read them as payers; a company filing no rate beside dividends kept from before the
+            year drew not stored, latent on that night; the chart page's key and the guide said every dividend figure says
+            pays none, where the last whole year's draws what was paid; and the count drawing not stored was 498 where this
+            entry said 496. Each is repaired above, and each property the review added is mutated, the rule stated before
+            its run: the tile read on the year's payments, broken by reading the forward rate alone, predicted red at M2's
+            tile, result red, none and no dividend stored; no rate beside a dividend before the year paying none, broken by
+            reading a rate of nought alone, predicted red at the case worked by hand, result red there; a raise in one year
+            written as a year, broken by writing years, predicted red at AAA, result red, 1 years; and the tile at the
+            quote told a company pays none, broken by telling it none does, predicted red at S1's tile at the quote,
+            result red, no dividend stored. Each run filtered to the chart figures test, made in this checkout over the
+            file's own text and restored from it, the tree's diff the same after each.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    none of its own.
+
+### 18.2 - correction: the latest quarter is read against the estimates kept before its release, a fiscal fourth quarter's revenue against its year's estimate less three quarters marked implied, and a line reading no estimate says why   2026-10-21
+
+Queue:      as the 15.1 correction of this pull request.
+Ruled:      by the operator on 2026-10-21, on the report's quarter table, in these words: "Once again i am seeing on report
+            things like "none kept". WHat hasnt been kept. Is the information not getting fetched during report
+            generation. Thats a bug". The fixes put to them, the fourth "The quarter table says "none published" for lines
+            no analyst estimates. For a revenue estimate missing because the report came before 2026-10-11, it says "not
+            kept: estimates kept from 2026-10-11"." and the fifth "The report-day check compares the fetch's time with the
+            release's time, not just the dates.", were answered "Yes, one PR now (Recommended)"; asked what a fiscal fourth
+            quarter's revenue should be read against, they answered "Implied estimate (Recommended)", the year's estimate
+            kept before the report less the three quarters reported, labelled implied.
+Found:      nothing went unfetched: the provider publishes no analyst estimate for gross profit, operating income, net
+            income and the two cash flows, and the store keeps each stock's revenue estimates from its own first estimate
+            fetch, made for the 1,505 members on the night of 2026-10-20 on 2026-10-11 for 454, 2026-10-12 for 409 and
+            2026-10-14 for 640, the S&P 500's 61 on the first and 441 on the last, 2 holding none, so a report released
+            before a stock's first fetch has none kept; the cell said none kept for all of them. The check refused a fetch by its date alone, so seven members fetched in the early hours of
+            2026-10-14 before their release before the open read none. A quarter ending its fiscal year has no quarterly
+            estimate at all, none of the 1,589 fetches stored by 2026-10-20 holding a quarter's row ending on its year's.
+            The year-earlier column said none kept on 8 pages, and the chart page said no estimate filed for revenue.
+Built:      a fetch counts as kept before the release where it was made before the instant the calendar's timing on the
+            report date places the release in New York, the open, the close or the day's start; a fiscal fourth quarter's
+            revenue is read against the year's estimate kept before its release less the three earlier quarters as
+            reported, drawn as implied with what it was worked from beneath the table, only where all three hold a revenue
+            and it stands above nought; and each line reading no estimate says why, none published, not filed, not kept
+            with the day the stock's estimates are kept from, not filed before the report or not read with the reason
+            (see: The latest quarter is read line by line against the estimates kept before its release and the quarter
+            a year earlier, a fiscal fourth quarter against its year's estimate less three quarters). A year-earlier
+            figure missing says no quarter is held a year earlier or not filed, and the chart page names an implied
+            estimate so and gives the report's words where none is read. The decision with the one it supersedes moved
+            below, seven architecture rows and the figure's part, SCHEMA's estimate trend notes, the guide's quarter, the
+            report's key, the roster and the changelog.
+Tests:      three more, the suite's total in the newest entry of this pull request: the release placed before the open at
+            13:30Z, after the close at 20:00Z and with no time at 04:00Z on 2026-10-14, at the winter's offset at 14:30Z
+            on 2026-11-02 and on the early close of 2026-11-27 at 18:00Z; a year to 2026-08-31 of 10,000 less 2,300, 2,400
+            and 2,500 implying 2,800 against 2,940 reported, 140 and 5% above it, the quarter's own 2,850 read in its
+            place, a quarter holding no revenue implying none, 7,200 implying nought and none and 7,201 implying 1; and
+            each reason worked by hand, a fetch at the release not kept and a millisecond before it kept. Over a
+            constructed store EST's fetch a millisecond before the open read at 110, its fetch at the open read at 120
+            for a release after the close, none read with no time stated or no calendar row and the day 2026-10-14 said,
+            and FY4's year ending 2026-09-07 read and implying 2,800 while one ending 2026-09-08 is not read. The quarter
+            table draws CMC's implied estimate and its working beneath it and says none published, not kept and no
+            quarter held a year earlier, and none kept nowhere. The quarter a year earlier says not read where its fetch
+            did not read the line, not filed where the provider filed none and no quarter held where none is; NXQ's
+            quarter filed as the next is read at 300; KFN's day is said as 2026-10-14 tonight and none kept yet on the
+            page of 2026-10-09; and the chart page reads $2,940 against an implied estimate of $2,800, $520 against an
+            estimate of $500 and $75 with none kept yet.
+Claims:     as the newest entry of this pull request.
+Mutated:    each rule stated before its run. An estimate kept before the release's instant, broken by reading the date
+            alone again: predicted red at EST's release before the open; result red, none read where 110. A release before
+            the open at the open, broken by placing it at the day's start: predicted red at the hand-worked 13:30Z; result
+            red, 00:00 in New York, and EST reading none. The implied estimate the year less all three earlier quarters,
+            broken by subtracting two: predicted red at 2,800; result red, 5,100, and FY4's the same. An implied estimate
+            read only above nought, broken by drawing one of nought: predicted red at the year of 7,200; result red, no
+            reason given. A revenue estimate not kept saying the day the stock's estimates are kept from, broken by saying
+            none is kept yet: predicted red at the reason worked by hand; result red there and at EST's day. Each made on
+            this branch and reverted before anything was committed, and the tests green.
+Reviewed:   before the merge, by a review of this pull request's work: a quarter's own estimate the provider files as
+            the next quarter, where a fetch made soon after the quarter before's report has not rolled its words, was not
+            read, and is read now; the year earlier's column said not filed for a gross profit or a free cash flow its
+            fetch did not read, the quarter's column saying not read, and says not read now; the day the estimates are
+            kept from was read across every fetch where a page for an earlier night reads the store as it stood, and is
+            read now to the page's night; the decision and this entry said the estimates were kept from 2026-10-11 for
+            most, where the day differs by stock as Found states; the key and the guide said a fiscal fourth quarter has
+            no quarterly estimate, where the provider files none apart from the year's; the decision's reasons left out
+            none kept yet; and this entry counted six architecture rows. Each is repaired above, with one more test, the
+            chart page's revenue against an implied estimate, its own and none, and each property the review added is
+            mutated, the rule stated before its run: the next quarter's word read, broken by reading the current
+            quarter's alone, predicted red at NXQ's 300, result red, no estimate of its own read; the day the estimates
+            are kept from read to the page's night, broken by reading every fetch, predicted red at KFN's earlier page,
+            result red, a day read there; the year earlier not read where its fetch did not read the line, broken by
+            saying not filed, predicted red at the case worked by hand, result red there; and the chart page's implied
+            estimate named so, broken by dropping the word, predicted red at M1, result red, an estimate of $2,800. Each
+            run filtered to its own test, made in this checkout over the file's own text and restored from it, the
+            tree's diff the same after each.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    the Financials whose revenue basis differs from the analysts' estimates, 21 of the 41 kept quarterly estimates
+            more than a fifth off their reported revenue on the night of 2026-10-20, all Financials, put to the operator,
+            since an implied fourth quarter for such a company carries the same difference.
+
+### 19.2 - correction: every buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it   2026-10-21
+
+Queue:      as the 15.1 correction of this pull request.
+Ruled:      by the operator on 2026-10-21, on Tonight's buy points of the S&P 500, in these words: "This section should
+            be collabsible , otherwise there is a large gap between the first stock and the next few stocks.  And each of
+            the stock in the table should show all these data if its in buy point." The fix put to them, every buy point's
+            plan and card in its own fold closed by default, was answered "Yes, one PR now (Recommended)".
+Found:      the first row was selected where the link named none, its plan and card drawn open beneath it, so HAS's plan
+            stood between it and the four rows after it on the night of 2026-10-20, and a stock's plan could be read only
+            by selecting its row, one at a time; the S&P 400's and 600's rows drew their cards alone.
+Built:      every row of tonight's buy points folds beneath it the stock's plan and its pick's card, closed where the link
+            names no row: on the S&P 500 the plan region the selected name drew with its links, on the S&P 400 and 600 the
+            bands the night stored with the line saying its plan is its rule's buy, stop and target in its row and on its
+            card and the ladder at its bands is worked for the S&P 500's members alone, and no plan's tables (see: Each
+            buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it
+            opens it). The control in the row's stock cell or a press on the row opens and closes its fold in the
+            browser, any number open at once; a row the link names opens with its fold open and comes into view clear of
+            the masthead, and closing its fold takes its name out of the link; every card row and fold open before a
+            press on a card stays open when the page is drawn again. The decision with the one it supersedes moved below, the Tonight rows, the
+            note and the figure with its key, the guide's Tonight with its figure, the stock column's words, the key and
+            the guide behind its "?", the roster and the changelog.
+Tests:      none more, 2577 in all: the S&P 500's seven folds over the families' night, each hidden with no name in the
+            link and holding its own stock's plan and its card, each control in its stock cell naming its fold, F3's plan
+            of three rows over two bands worked by hand from its stored ladder and bands and F1's holding none, F2's fold
+            alone open and its row selected where the link names it and none for a name no row holds, with the page's
+            script and the stylesheet; the S&P 600's S1 folding the line naming its plan, its band against its close and
+            no plan's tables beside its card, S3's fold alone open where the link names it; and every card read back off
+            its fold or its holding's row.
+Claims:     1372, as before: no row's claim added or removed.
+Mutated:    each rule stated before its run. Every fold closed where the link names no row, broken by opening the first:
+            predicted red at F1's fold; result red, F1's fold open with no name in the link. Each fold its own stock's
+            plan, broken by drawing the first row's in every fold: predicted red at the folds' tickers; result red, 6 of
+            the 7 folds holding F1's plan. An S&P 400 or 600 fold saying no plan is stored, broken by handing it no
+            reason: predicted red at S1's fold; result red, the plan's empty tables drawn in the line's place. The fold a
+            link names open, broken by opening none: predicted red at F2's fold; result red, no fold open. Each made on
+            this branch and reverted before anything was committed, and the tests green.
+Reviewed:   before the merge, by a review of this pull request's work: an S&P 400 or 600 fold opened on a line saying no
+            plan is stored beneath the row drawing its rule's buy, stop and target and above the card drawing them in
+            money, and now names them and says the ladder is the S&P 500's alone, the line's mutation above made over the
+            line as it first stood; no test stored a band for such a fold, and S1's band is read off it now with its close;
+            a row a link names was scrolled beneath the sticky masthead, a fold a link names opened again on every redraw
+            once closed, and a press on a card closed every other open fold and put the window back at an offset taken
+            with them open, each repaired in the page's script and stylesheet and read off the shell, which the suite
+            reads as text, having no browser to run it in. Two properties are mutated, the rule stated before each run:
+            the line naming the plan, broken by handing the fold the name page's reason, predicted red at S1's fold,
+            result red, S1 has no plan to draw; and the fold's bands, broken by handing it none, predicted red at S1's
+            band, result red, no band where one. Each run filtered to the cards test, made in this checkout over the
+            file's own text and restored from it, the tree's diff the same after each.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2577 of 2577 tests ran with none failed,
+            migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the S&P 500's groups and pages on the GICS scheme and the Financials' revenue basis, both put to the operator;
+            PR 505 rebased with its migration at 104; and the phase 18 sign-off by a fresh session.
