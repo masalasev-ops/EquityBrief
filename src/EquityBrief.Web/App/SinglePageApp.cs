@@ -3836,7 +3836,7 @@ public sealed partial class SinglePageApp : IComponent
                 Invariant($"A trade is listed on the night the live list drew it and stays open until a close reaches its target, a close falls through its stop, or {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions pass. A result is what the trade made in multiples of what it risked, so <span class=\"loss\">-1</span> is a full stop-out and <span class=\"gain\">+2</span> a target twice as far away as the stop."),
                 "Each trade is a fact and is always shown. A share over a handful of trades looks like evidence and is not, so it waits for the minimums, and it never appears without the share the trades needed to break even beside it."),
             title: "How the list's picks have done",
-            lede: Invariant($"Every name the live list recommended from the swing filter's first night, each followed from the close it was listed at to its target, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions."),
+            lede: Invariant($"Every name the live list recommended from the swing filter's first night, each bought at the open of the session after the night that listed it and followed to its target, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions."),
             stamp: Cards.Night(night),
             region: "picks-summary"));
 

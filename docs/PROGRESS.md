@@ -5746,3 +5746,46 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    the S&P 500's groups and pages on the GICS scheme and the Financials' revenue basis, both put to the operator;
             PR 505 rebased with its migration at 104; and the phase 18 sign-off by a fresh session.
+
+### 19.10 - correction: Past picks says each trade is bought at the next session's open, and a trade line whose buy opened past its stop or its target draws the buy at that end   2026-10-21
+
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its remedies
+            and the page corrections in PR 518; in review, 20.8 with its correction, PR 505; in progress, the corrections
+            the phase 19 sign-off review found, in one pull request: this correction, the 19.2 correction of a phone's
+            bar and a stock's masthead line and the 19.11 correction of the chart page's column; next, this pull request
+            merged, the phase 19 sign-off by a fresh session over the corrected main, PR 505 rebased with its migration at
+            104, the phase 18 sign-off by a fresh session, the local lane's one text field, 21.0 once its ruling is given,
+            and pin 3's completion steps.
+Ruled:      by the operator on 2026-10-21, "Can you try to sign of phase 19"; told the review had found five defects,
+            they chose "Correct first (Recommended)": this session builds the corrections, so a fresh session signs phase
+            19 once they merge.
+Reviewed:   the phase 19 sign-off review of 2026-10-21, by this session before it committed code, over main at 67c65de3,
+            whose tree is PR 518's head's: `tools/ci.ps1` green 16:34:40 to 17:00:03 UTC, all six steps, 0 warnings, 0
+            errors, 2577 of 2577 tests, migrations 0 to 103 and none pending at 103; `tools/verify-phase.ps1` green
+            17:00:13 to 17:00:18 UTC, 60 tables, 1372 claims all passing, none out of scope or unexamined, 1383 placements
+            against a floor of 34, 43 checks run and passed. Hosted CI green on PR 518's head under both events and on
+            main's push. Read off the operator's store, read-only: the night of 2026-10-20 ran all 47 steps; every trade
+            listed before it holds a fill; eleven published factors of HAS, KO and AAPL, HAS's four insider readings and
+            its seven heading percentiles each equal to the review's own working. Swept: s1 to s13, one property of each
+            of 19.1 to 19.13, each filtered to the tests naming its file and predicted before its run, all thirteen red,
+            s4, a trade costing exactly the free cash, red where green was predicted, at the version test buying N2 with
+            the whole 5,000.
+Found:      by that review, on Past picks over the operator's store: its line beneath its heading said each trade is
+            "followed from the close it was listed at", where from 19.10 each is bought at the next session's open, as
+            the page's own last line says; and DVN's trade of 2026-09-24, bought at 47.84 under its stop of 48.12, drew no
+            line and "the stop, buy and target are not in order", the mark reading a fill past its stop as a plan out of
+            order.
+Corrected:  the line says each is bought at the open of the session after the night that listed it; a trade line draws a
+            buy at or past its stop or its target at that end with its title saying which, and only a stop at or over its
+            target draws none. The trade line's row in section 15, the roster and the changelog.
+Tests:      none more: the Past picks test reads the line, and the trade line's test buys at 95, at the stop of 96, at
+            the target of 110 and at 112, a cent inside each end reading neither, with a stop at 110 and at 111 drawing
+            none.
+Mutated:    the rule, stated before the runs, for every correction of this pull request: each property it adds, the
+            smallest edit undoing it, filtered to the tests naming it with its red predicted, made in this checkout over
+            the file's own text and restored from it, the tree's diff the same after each. c1 the line's old words: red at
+            the Past picks test. c2 a buy past either end read as out of order: red at the trade line's test. c3 a buy at
+            its stop read as inside: red there.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.

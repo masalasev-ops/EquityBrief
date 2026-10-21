@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - ARCHITECTURE.html - the trade line draws a buy that opened past its stop or its target at that end
+Authorised by: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+Was:
+> Trade line: ... The buy is a short neutral tick between them and the dot is the price: hollow while the trade is open and filled where it finished, with a price beyond either end sitting at that end. It is placed by the prices' ratios to the buy, ...
+Now:
+> Trade line: ... with a price beyond either end sitting at that end. From the 19.10 correction of 2026-10-21 the buy is the open the trade was bought at: a buy that opened past its stop or its target sits at that end with its title saying which. A plan whose stop is not under its target draws no line. It is placed by the prices' ratios to the buy, ...
+Why: from 19.10 the buy a trade line draws is the trade's fill, and the mark still read a fill past its stop or its target as a plan out of order: the phase 19 sign-off review of 2026-10-21 found DVN's trade of 2026-09-24, bought at 47.84 under its stop of 48.12, drawn on Past picks as "the stop, buy and target are not in order" with no line.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches Past picks' line beneath its heading and a trade line bought past its stop or its target
+Authorised by: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+Was:
+> read-surface: ... every card row and fold open before a press kept open after it redraws and the row a link names standing clear of the masthead |
+Now:
+> read-surface: ... and the row a link names standing clear of the masthead; and from the 19.10 correction of 2026-10-21 Past picks' line beneath its heading saying each trade is bought at the open of the session after the night that listed it, and a trade line whose buy opened past its stop or its target, or at either, drawn with the buy at that end and its title saying which, one a cent inside saying neither, and a stop at or over its target drawing no line |
+Why: the 19.10 correction of 2026-10-21 adds these assertions.
+
 ### 2026-10-21 - ARCHITECTURE.html - every buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
 Authorised by: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
 Was:

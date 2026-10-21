@@ -6719,11 +6719,13 @@ public sealed partial class MarkRenderer : IComponent
     // own, and nothing else on the mark uses them; a price past either end sits at that end rather than off
     // the line. It is placed by ratios to the buy, so a split since the listing moves no part of it.
     //
-    // It degrades by saying what it has: a plan missing a price, or whose prices are out of order, draws no
-    // line, and a trade whose outcome row is missing or an open one with no close to place draws the line
-    // and no dot, each saying why.
+    // A buy is the open the trade was bought at, so one that opened past its stop or its target sits at that
+    // end and its title says which. It degrades by saying what it has: a plan missing a price, or whose stop is
+    // not under its target, draws no line, and a trade whose outcome row is missing or an open one with no
+    // close to place draws the line and no dot, each saying why.
     // see: Green means support or a gain and red a stop or a loss, with orange for resistance
     // see: Marks are defined once and every screen draws from that list
+    // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
     public string TradeLine(PickCell pick)
     {
         const double Left = 10;
@@ -6738,7 +6740,7 @@ public sealed partial class MarkRenderer : IComponent
         mark.Append(Invariant, $"data-ticker=\"{Escaped(pick.Ticker)}\" data-night=\"{DayOf(pick.Night)}\" data-status=\"{pick.Status}\" ");
         mark.Append(Invariant, $"data-buy=\"{StoredPrice(pick.Buy)}\" data-stop=\"{StoredPrice(pick.Stop)}\" data-target=\"{StoredPrice(pick.Target)}\" data-along=\"{Whole(pick.Along)}\"");
 
-        if (pick.Buy is not { } buy || pick.Stop is not { } stop || pick.Target is not { } target || stop >= buy || buy >= target)
+        if (pick.Buy is not { } buy || pick.Stop is not { } stop || pick.Target is not { } target || stop >= target)
         {
             var missing = pick.Stop is null
                 ? "no stop stored"
@@ -6763,13 +6765,15 @@ public sealed partial class MarkRenderer : IComponent
             ? "none"
             : pick.Status == PickStatus.Open ? "open" : "filled";
 
-        mark.Append(Invariant, $" data-dot=\"{dot}\">");
+        var past = buy <= stop ? "stop" : buy >= target ? "target" : null;
+
+        mark.Append(Invariant, $"{(past is null ? string.Empty : $" data-past=\"{past}\"")} data-dot=\"{dot}\">");
         mark.Append(Invariant, $"<line class=\"tl-track\" x1=\"{Left}\" y1=\"{Middle}\" x2=\"{Right}\" y2=\"{Middle}\"/>");
         mark.Append(Invariant, $"<line class=\"tl-stop\" x1=\"{Left}\" y1=\"6\" x2=\"{Left}\" y2=\"24\"/>");
         mark.Append(Invariant, $"<line class=\"tl-target\" x1=\"{Right}\" y1=\"6\" x2=\"{Right}\" y2=\"24\"/>");
         mark.Append(Invariant, $"<line class=\"tl-buy\" x1=\"{Number(At(1))}\" y1=\"10\" x2=\"{Number(At(1))}\" y2=\"20\"/>");
 
-        var plan = Formatted($"Stop {Price(stop)}, buy {Price(buy)}, target {Price(target)}");
+        var plan = Formatted($"Stop {Price(stop)}, buy {Price(buy)}, target {Price(target)}") + (past is null ? string.Empty : $", bought at an open past its {past}");
 
         switch (dot)
         {
