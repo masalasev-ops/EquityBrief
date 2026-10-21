@@ -92,7 +92,7 @@ public sealed partial class MarkRenderer
             table.Append(line.Difference is { } difference
                 ? "<td class=\"num\">" + SignedAmount(difference, line.PerShare, view.Currency, "difference") + (line.AgainstEstimate is { } against ? " (" + Signed(against, "against") + ")" : string.Empty) + "</td>"
                 : "<td class=\"num degraded\" data-difference=\"absent\">none</td>");
-            table.Append(Amount(line.YearEarlier, "year-earlier", quarter.YearEarlier is null ? QuarterLines.NoYearEarlier : QuarterLines.NotFiled));
+            table.Append(Amount(line.YearEarlier, "year-earlier", line.YearEarlierAbsent ?? (quarter.YearEarlier is null ? QuarterLines.NoYearEarlier : QuarterLines.NotFiled)));
             table.Append(line.OnTheYear is { } year ? "<td class=\"num\">" + Signed(year, "on-the-year") + "</td>" : "<td class=\"num degraded\" data-on-the-year=\"absent\">none</td>");
             table.Append(line.Margin is { } margin
                 ? Formatted($"<td class=\"num\" data-margin=\"{margin.ToString(Invariant)}\">{Tenth(margin)}%{(line.MarginYearEarlier is { } then ? Formatted($", <span data-margin-year-earlier=\"{then.ToString(Invariant)}\">{Tenth(then)}%</span>") : string.Empty)}</td>")

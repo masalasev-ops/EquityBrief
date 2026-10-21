@@ -45,21 +45,23 @@ public sealed partial class ReadApi
         ORDER BY period_end;
     ";
 
-    // The revenue estimates kept by fetches made before a quarter's release, newest first: the current quarter's, and the
-    // fiscal year's, which the answer files in a quarter's place where the quarter ends the year, each for a period ending
-    // within a week of the quarter reported.
+    // The revenue estimates kept by fetches made before a quarter's release, newest first, each for a period ending within a
+    // week of the quarter reported: a quarter's, filed as the current or the next quarter as the answer had rolled its words
+    // or not when it was fetched, and the fiscal year's, which the answer files in a quarter's place where the quarter ends
+    // the year.
     // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
     const string RevenueEstimatesOf = @"
         SELECT period, period_end, revenue_average, fetched_at FROM estimate_trend
-        WHERE ticker = $ticker AND period IN ('0q', '0y', '+1y') AND period_end >= $from AND period_end <= $to AND fetched_at < $released
+        WHERE ticker = $ticker AND period IN ('0q', '+1q', '0y', '+1y') AND period_end >= $from AND period_end <= $to AND fetched_at < $released
         ORDER BY fetched_at DESC;
     ";
 
     // The calendar's timing for the stock's report on the day its quarter was reported.
     const string ReleaseTimingOf = "SELECT timing FROM calendar WHERE ticker = $ticker AND event_date = $reported AND kind = 'earnings';";
 
-    // The instant the stock's first estimate fetch was made, from which its estimates are kept.
-    const string EstimatesKeptFromOf = "SELECT MIN(fetched_at) FROM estimate_trend WHERE ticker = $ticker;";
+    // The instant the stock's first estimate fetch on or before the page's night was made, from which its estimates are
+    // kept as the store stood that night.
+    const string EstimatesKeptFromOf = "SELECT MIN(fetched_at) FROM estimate_trend WHERE ticker = $ticker AND substr(fetched_at, 1, 10) <= $on;";
 
     const string TrendOf = @"
         SELECT period, period_end, eps_average, eps_low, eps_high, eps_year_ago, eps_analysts,
@@ -153,6 +155,7 @@ public sealed partial class ReadApi
             {
                 command.CommandText = EstimatesKeptFromOf;
                 command.Parameters.AddWithValue("$ticker", ticker);
+                command.Parameters.AddWithValue("$on", day);
 
                 if (await command.ExecuteScalarAsync() is string first)
                 {
@@ -191,7 +194,7 @@ public sealed partial class ReadApi
                         var average = Money.FromStorage(reader.GetString(2));
                         var keptOn = Parse(reader.GetString(3)[..10]);
 
-                        if (reader.GetString(0) == EstimatePeriod.CurrentQuarter)
+                        if (reader.GetString(0) is EstimatePeriod.CurrentQuarter or EstimatePeriod.NextQuarter)
                         {
                             own ??= new RevenueEstimate(average, keptOn);
                         }

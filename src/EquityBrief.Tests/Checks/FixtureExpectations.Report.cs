@@ -146,6 +146,18 @@ public partial class FixtureExpectations
         Assert.Null(before[QuarterLines.Revenue].NotRead);
         Assert.Equal(QuarterLines.NotFiled, filedNone[QuarterLines.GrossProfit].NotRead);
 
+        // From the 18.2 correction of 2026-10-21 the quarter a year earlier, read from the same fetch, says the same of its
+        // own lines: not read where that fetch did not read them, not filed where it read them and the provider filed none,
+        // nothing where it holds the figure, and no quarter held where the fetch holds none a year earlier.
+        var earlierBefore = QuarterLines.Latest([quarters[0] with { GrossProfit = null, LinesRead = false }, quarters[4] with { GrossProfit = null, FreeCashFlow = null, LinesRead = false }])!.Lines.ToDictionary(line => line.Line);
+        var earlierFiledNone = QuarterLines.Latest([quarters[0], quarters[4] with { GrossProfit = null }])!.Lines.ToDictionary(line => line.Line);
+
+        Assert.Equal([QuarterLines.FetchedBefore, QuarterLines.FetchedBefore], new[] { QuarterLines.GrossProfit, QuarterLines.FreeCashFlow }.Select(line => earlierBefore[line].YearEarlierAbsent));
+        Assert.Null(earlierBefore[QuarterLines.Revenue].YearEarlierAbsent);
+        Assert.Equal(QuarterLines.NotFiled, earlierFiledNone[QuarterLines.GrossProfit].YearEarlierAbsent);
+        Assert.Equal(QuarterLines.NotFiled, QuarterLines.Latest([quarters[0], quarters[4] with { NetIncome = null, LinesRead = false }])!.Lines.Single(line => line.Line == QuarterLines.NetIncome).YearEarlierAbsent);
+        Assert.Equal(QuarterLines.NoYearEarlier, QuarterLines.Latest([quarters[0]])!.Lines[0].YearEarlierAbsent);
+
         // A fetch holding no quarter with a revenue or reported earnings reads no latest quarter.
         Assert.Null(QuarterLines.Latest([Filed(newest, null)]));
     }

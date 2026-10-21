@@ -77,13 +77,13 @@ Now:
 >
 > Margins, Growth bars and Report windows: ... (see: The latest quarter is read line by line against the estimates kept before its release ...)
 >
-> The latest quarter (15.9): ... apart from one not filed; from the 18.2 correction of 2026-10-21 the estimate the one kept before the results were released; a fiscal fourth quarter's revenue read against its year's estimate less its three earlier quarters and drawn as implied with what it was worked from beneath the table; a line reading no estimate saying why; the growth bars beneath; ... (see: The latest quarter is read line by line against the estimates kept before its release ...)
+> The latest quarter (15.9): ... apart from one not filed; from the 18.2 correction of 2026-10-21 the estimate the one kept before the results were released; a fiscal fourth quarter's revenue read against its year's estimate less its three earlier quarters and drawn as implied with what it was worked from beneath the table; a line reading no estimate saying why; the year earlier's column saying a line its fetch did not read is not read as the quarter's column does; the growth bars beneath; ... (see: The latest quarter is read line by line against the estimates kept before its release ...)
 >
 > Figure part 7: The latest quarter: each line of the newest quarter against the estimate kept before its release and the same quarter a year earlier, a fiscal fourth quarter's revenue against its year's estimate less three quarters marked implied, from the filing and the provider's fetch, with eight quarters' growth.
 >
 > The figures (15.22): ... against their estimates; from the 18.2 correction of 2026-10-21 revenue against an implied estimate named so and where none is read the report's words for why; the surprise; ...
 >
-> Estimate trends: ... and for a quarter's revenue estimate the newest fetch made before its release as the calendar's timing places it in New York, the current quarter's or for a quarter ending its fiscal year the year's, and the stock's first fetch for the day its estimates are kept from (see: The quarters fetch keeps ...) (see: The latest quarter is read line by line against the estimates kept before its release ...)
+> Estimate trends: ... and for a quarter's revenue estimate the newest fetch made before its release as the calendar's timing places it in New York, the quarter's own, filed as the current quarter or the next, or for a quarter ending its fiscal year the year's, and the stock's first fetch on or before the page's night for the day its estimates are kept from (see: The quarters fetch keeps ...) (see: The latest quarter is read line by line against the estimates kept before its release ...)
 Why: the operator's words of 2026-10-21 on the report's quarter table, "Once again i am seeing on report things like "none kept". WHat hasnt been kept.", and their approval of the fixes, "Yes, one PR now (Recommended)", and of a fiscal fourth quarter's estimate, "Implied estimate (Recommended)".
 
 ### 2026-10-21 - SCHEMA.md - the estimate trend read before a quarter's release, a fiscal fourth quarter's in the year's row
@@ -95,7 +95,7 @@ Was:
 Now:
 > estimate_trend, `period_end`: the end of that period, the newest the answer files under its word; a quarter ending its company's fiscal year is filed under the year alone, the answer keeping one entry an end
 >
-> estimate_trend: ... and the newest fetch made before a quarter's report for that quarter's revenue estimate; from the 18.2 correction of 2026-10-21 that is the newest fetch made before the instant the calendar's timing on the report date places the release in New York, its current quarter's revenue estimate or, for a quarter ending its fiscal year, the year's, and the stock's first fetch gives the day its estimates are kept from (see: The latest quarter is read line by line against the estimates kept before its release ...); no rule, list or gate reads the table, ...
+> estimate_trend: ... and the newest fetch made before a quarter's report for that quarter's revenue estimate; from the 18.2 correction of 2026-10-21 that is the newest fetch made before the instant the calendar's timing on the report date places the release in New York, the quarter's own revenue estimate, filed under the current quarter's word or the next's, or, for a quarter ending its fiscal year, the year's, and the stock's first fetch on or before the page's night gives the day its estimates are kept from (see: The latest quarter is read line by line against the estimates kept before its release ...); no rule, list or gate reads the table, ...
 Why: as the architecture's entry above; none of the 1,589 fetches stored by 2026-10-20 holds a quarter's row ending on its year's.
 
 ### 2026-10-21 - .claude/rules/checks.md - fixture-expectations and read-surface reach the estimates kept before a release and a fiscal fourth quarter's implied estimate
@@ -103,12 +103,12 @@ Authorised by: The latest quarter is read line by line against the estimates kep
 Was:
 > fixture-expectations: ... worked by hand over a constructed store of the three indices |
 >
-> read-surface: ... and the report's yield tile saying a company paying none pays none |
+> read-surface: ... and reading a payer whose fetch files nought on its year's payments |
 Now:
-> fixture-expectations: ... worked by hand over a constructed store of the three indices; and from the 18.2 correction of 2026-10-21 the release a quarter's estimates are kept before placed by the calendar's timing in New York at the open, at the close and at the start of the day, ... and each reason a line reads no estimate for worked by hand at a fetch a millisecond before the release and at it |
+> fixture-expectations: ... worked by hand over a constructed store of the three indices; and from the 18.2 correction of 2026-10-21 the release a quarter's estimates are kept before placed by the calendar's timing in New York at the open, at the close and at the start of the day, ... and each reason a line reads no estimate for worked by hand at a fetch a millisecond before the release and at it, and the quarter a year earlier saying a line its fetch did not read is not read, one the provider filed none for not filed and none held a year earlier so, each worked by hand |
 >
-> read-surface: ... and the report's yield tile saying a company paying none pays none; and from the 18.2 correction of 2026-10-21 the report's revenue estimates read over a constructed store, ... a line reading no estimate saying why and one with no quarter a year earlier saying so, none kept drawn nowhere |
-Why: the rows named no assertion on the release's instant, an implied estimate or the words a line reading no estimate says, which the 18.2 correction of 2026-10-21 adds.
+> read-surface: ... and reading a payer whose fetch files nought on its year's payments; and from the 18.2 correction of 2026-10-21 the report's revenue estimates read over a constructed store, ... a line reading no estimate saying why and one with no quarter a year earlier saying so, none kept drawn nowhere, and the chart page's revenue against an implied estimate named so, against its own estimate and where none is read the report's words for why |
+Why: the rows named no assertion on the release's instant, an implied estimate, the words a line reading no estimate says or the chart page's revenue against its estimate, which the 18.2 correction of 2026-10-21 adds.
 
 ### 2026-10-21 - ARCHITECTURE.html - a company paying none says so in the chart page's dividend figures and the report's yield tile
 Authorised by: A company filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing neither as not stored

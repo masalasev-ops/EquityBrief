@@ -42,7 +42,8 @@ public sealed record ImpliedEstimate(decimal Year, DateOnly YearEnds, DateOnly F
 // One line of the latest quarter: what was reported, the estimate before the release where one was kept or its year's
 // implies one, the difference and it in per cent of the estimate, the same quarter a year earlier and the change on it in
 // per cent, and for the three income lines their margin on revenue then and a year earlier, in per cent; why a line reads
-// nothing where it does, why it reads no estimate where it reads none, and what an implied estimate was worked from.
+// nothing where it does, why it reads no estimate where it reads none, what an implied estimate was worked from, and why
+// it reads nothing a year earlier where it does.
 public sealed record QuarterLine(
     string Line,
     decimal? Reported,
@@ -56,7 +57,8 @@ public sealed record QuarterLine(
     bool PerShare,
     string? NotRead,
     string? EstimateAbsent,
-    ImpliedEstimate? Implied);
+    ImpliedEstimate? Implied,
+    string? YearEarlierAbsent = null);
 
 // The latest quarter: its end, the day it was reported, the quarter a year earlier it is read against, and its lines.
 public sealed record LatestQuarter(DateOnly Quarter, DateOnly? Reported, DateOnly? YearEarlier, IReadOnlyList<QuarterLine> Lines);
@@ -163,6 +165,7 @@ public static class QuarterLines
             var reported = read(newest);
             var before = earlier is null ? null : read(earlier);
             var notRead = reported is not null ? null : kept && !newest.LinesRead ? FetchedBefore : NotFiled;
+            var earlierAbsent = before is not null ? null : earlier is null ? NoYearEarlier : kept && !earlier.LinesRead ? FetchedBefore : NotFiled;
 
             return new QuarterLine(
                 line,
@@ -177,7 +180,8 @@ public static class QuarterLines
                 perShare,
                 notRead,
                 estimate is null ? absent : null,
-                implied);
+                implied,
+                earlierAbsent);
         }
 
         return new LatestQuarter(

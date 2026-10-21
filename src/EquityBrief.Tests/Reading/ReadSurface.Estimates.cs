@@ -1,3 +1,5 @@
+using System.Net;
+using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Report;
 using EquityBrief.Core.Time;
@@ -5,9 +7,10 @@ using EquityBrief.Core.Time;
 namespace EquityBrief.Tests.Reading;
 
 // read-surface, from the 18.2 correction of 2026-10-21: the revenue estimates the report reads, each kept by a fetch made
-// before the quarter's release as the calendar's timing on its report date places it in New York, the fiscal year's read in
-// the quarter's place within a week of its end, and the instant the stock's estimates are kept from, read over a
-// constructed store.
+// before the quarter's release as the calendar's timing on its report date places it in New York, the quarter's own read
+// under either of the provider's words for it, the fiscal year's read in the quarter's place within a week of its end, and
+// the instant the stock's estimates are kept from as the store stood on the page's night, read over a constructed store;
+// and the chart page's revenue against the estimate the report reads, an implied one named so and why where none is read.
 // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
 public partial class ReadSurface
 {
@@ -34,7 +37,7 @@ public partial class ReadSurface
 
             if (timing is not null)
             {
-                store.Execute($"INSERT INTO calendar (ticker, event_date, kind, timing, detail, observed_at) VALUES ('{ticker}', '{reported:yyyy-MM-dd}', 'earnings', '{timing}', '{{}}', '2026-10-01T21:00:00Z');");
+                store.Execute(FormattableString.Invariant($"INSERT INTO calendar (ticker, event_date, kind, timing, detail, observed_at) VALUES ('{ticker}', '{reported:yyyy-MM-dd}', 'earnings', '{timing}', '{{}}', '2026-10-01T21:00:00Z');"));
             }
 
             return await read.ReportInputsAsync(ticker, null, EstimatesNight);
@@ -86,5 +89,64 @@ public partial class ReadSurface
         store.Execute("UPDATE estimate_trend SET period_end = '2026-09-08' WHERE ticker = 'FY4' AND period = '0y';");
 
         Assert.Null((await Timed("FY4", new DateOnly(2026, 10, 15), "before")).Estimates!.Year);
+
+        // NXQ's quarter to 2026-09-30 was fetched before the provider rolled its words, so its one fetch files the quarter as
+        // the next one, at 300, beside the quarter before as the current one: the quarter's own estimate is read under
+        // either word, and the current quarter's row, ending a quarter before, is not.
+        store.Execute("INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, report_date, revenue) VALUES ('NXQ', '2026-10-16T23:00:00.000Z', '2026-10-16', '2026-09-30', '2026-10-16', '310');");
+        store.Execute(
+            "INSERT INTO estimate_trend (ticker, fetched_at, period, period_end, revenue_average) VALUES "
+            + "('NXQ', '2026-10-01T04:00:00.000Z', '0q', '2026-06-30', '280'), "
+            + "('NXQ', '2026-10-01T04:00:00.000Z', '+1q', '2026-09-30', '300');");
+
+        Assert.Equal(new RevenueEstimate(300m, new DateOnly(2026, 10, 1)), (await Timed("NXQ", new DateOnly(2026, 10, 16), "before")).Estimates!.Quarter);
+
+        // The day the stock's estimates are kept from is read as the store stood on the page's night: KFN's quarter to
+        // 2026-06-30, reported on 2026-07-20 and fetched on 2026-10-09, with its first estimate fetch on 2026-10-14, says
+        // its estimates are kept from 2026-10-14 tonight and that none is kept for it yet on 2026-10-09's page.
+        store.Execute("INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, report_date, revenue) VALUES ('KFN', '2026-10-09T23:00:00.000Z', '2026-10-09', '2026-06-30', '2026-07-20', '90');");
+        store.Execute("INSERT INTO estimate_trend (ticker, fetched_at, period, period_end, revenue_average) VALUES ('KFN', '2026-10-14T04:40:57.322Z', '0q', '2026-09-30', '95');");
+
+        var tonight = await read.ReportInputsAsync("KFN", null, EstimatesNight);
+        var earlier = await read.ReportInputsAsync("KFN", new DateOnly(2026, 10, 9), new DateOnly(2026, 10, 9));
+
+        Assert.Equal("not kept: estimates kept from 2026-10-14", QuarterLines.Latest(tonight.Quarters, tonight.Estimates)!.Lines[0].EstimateAbsent);
+        Assert.Null(earlier.Estimates!.KeptFrom);
+        Assert.Equal(QuarterLines.NoneKeptYet, QuarterLines.Latest(earlier.Quarters, earlier.Estimates)!.Lines[0].EstimateAbsent);
+    }
+
+    [Fact]
+    public async Task TheChartPageReadsRevenueAgainstTheEstimateTheReportReadsAnImpliedOneNamedSoAndWhyWhereItReadsNone()
+    {
+        using var store = UniversesStore();
+
+        // M1's quarter to 2026-08-31 ends its fiscal year: the year's 10,000 kept on 2026-09-10 less 2,300, 2,400 and 2,500
+        // reported implies 2,800 against 2,940; M2's quarter to 2026-06-30 holds its own estimate of 500 against 520; M3's
+        // holds no estimate fetch at all.
+        store.Execute(
+            "INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, report_date, revenue) VALUES "
+            + "('M1', '2026-10-01T23:00:00.000Z', '2026-10-01', '2025-11-30', '2025-12-18', '2300'), "
+            + "('M1', '2026-10-01T23:00:00.000Z', '2026-10-01', '2026-02-28', '2026-03-19', '2400'), "
+            + "('M1', '2026-10-01T23:00:00.000Z', '2026-10-01', '2026-05-31', '2026-06-18', '2500'), "
+            + "('M1', '2026-10-01T23:00:00.000Z', '2026-10-01', '2026-08-31', '2026-09-24', '2940'), "
+            + "('M2', '2026-10-01T23:00:00.000Z', '2026-10-01', '2026-06-30', '2026-07-28', '520'), "
+            + "('M3', '2026-10-01T23:00:00.000Z', '2026-10-01', '2026-06-30', '2026-07-28', '75');");
+        store.Execute(
+            "INSERT INTO estimate_trend (ticker, fetched_at, period, period_end, revenue_average) VALUES "
+            + "('M1', '2026-09-10T04:00:00.000Z', '0y', '2026-08-31', '10000'), "
+            + "('M2', '2026-07-01T04:00:00.000Z', '0q', '2026-06-30', '500');");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        async Task<string> Revenue(string ticker) =>
+            Regex.Match(
+                WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/chart/{ticker}")),
+                "<section class=\"grid-group\" data-group=\"earnings\">.*?<dt>Revenue</dt><dd[^>]*>(.*?)</dd>",
+                RegexOptions.Singleline).Groups[1].Value;
+
+        Assert.Equal("$2,940 against an implied estimate of $2,800", await Revenue("M1"));
+        Assert.Equal("$520 against an estimate of $500", await Revenue("M2"));
+        Assert.Equal("$75, its estimate " + QuarterLines.NoneKeptYet, await Revenue("M3"));
     }
 }
