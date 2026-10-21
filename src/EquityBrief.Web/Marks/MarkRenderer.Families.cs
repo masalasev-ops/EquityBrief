@@ -1025,9 +1025,9 @@ public sealed partial class MarkRenderer
     static string Count(int count, string noun) => Formatted($"{count} {noun}{(count == 1 ? string.Empty : "s")}");
 
     // A pick's name cell as tonight's buy points draw it, carrying what a list row's does: the other setups it qualified
-    // under, its card's control where its card is not drawn open, the report it holds or the control asking for one, what
-    // the queue holds for it, the company and a suspect series.
-    string PickNameCell(FamilyPickCell pick, bool toggle)
+    // under, the control opening its fold, the report it holds or the control asking for one, what the queue holds for it,
+    // the company and a suspect series.
+    string PickNameCell(FamilyPickCell pick, string control)
     {
         var row = pick.Row;
         var cells = new StringBuilder();
@@ -1039,10 +1039,7 @@ public sealed partial class MarkRenderer
             cells.Append(Invariant, $" <span class=\"also-family\" data-also=\"{Escaped(also)}\">also {Escaped(Article(also))}</span>");
         }
 
-        if (toggle && pick.Card is { } decision)
-        {
-            cells.Append(CardToggle(decision));
-        }
+        cells.Append(control);
 
         var researched = row.ResearchedOn is not null;
 

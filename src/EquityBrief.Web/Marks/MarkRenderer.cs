@@ -3242,7 +3242,7 @@ public sealed partial class MarkRenderer : IComponent
             // region is for whichever row is selected, and a row a reader cannot select is a row the
             // region can never be about. The address it selects carries the night as well as the name,
             // so a selected view of an earlier night is a link like every other view.
-            // see: Selecting a row draws its plan and its card beneath the row and is no navigation
+            // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
             list.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-fired-count=\"{row.FiredCount}\" data-strength=\"{row.Strength}\" ");
             list.Append(Invariant, $"data-day-change=\"{Change(row.DayChangePct)}\" data-trend-state=\"{Escaped(row.TrendState ?? NotClassified)}\" ");
             list.Append(Invariant, $"data-selects=\"{Escaped(row.Ticker)}\" data-select-href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}\"{(row.RepeatOf is { } again ? Formatted($" data-repeat-of=\"{DayOf(again)}\"") : string.Empty)}>");

@@ -126,19 +126,27 @@ public partial class ReadSurface
 
         var rows = await CardsReadBack(client, stored, IndexNight);
 
-        // From 19.2 the S&P 600's buy points select their first row where the link names none, drawing S1's card beneath
-        // it, and each row's link keeps the index.
-        var points = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight))), "<table class=\"list-table buy-points\".*?</table>"));
+        // From the 19.2 correction of 2026-10-21 the S&P 600's buy points fold each row's plan and card beneath it, closed
+        // where the link names no row: S1's fold hidden, holding the line saying its plan is read for the S&P 500's members
+        // alone and no plan's tables, the bands the night stored for it, here none, and then its card.
+        var points = BuyPointsOf(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight))));
+        var s1 = Assert.Single(Folds(points));
 
-        Assert.Contains($"data-select-href=\"#/night/{IndexNight}?name=S1&universe=600\" class=\"sel\" aria-selected=\"true\">", points, StringComparison.Ordinal);
-        Assert.Matches("<tr class=\"plan-row\" data-plan-for=\"S1\"><td colspan=\"9\"><div class=\"row-open\"><div class=\"decision-card\" data-index=\"SML\" data-family=\"breakout\" data-ticker=\"S1\"", points);
+        Assert.Equal(("fold-breakout-s1", "S1", true), (s1.Id, s1.Ticker, s1.Hidden));
+        Assert.StartsWith(
+            $"<section class=\"selected-name\" data-ticker=\"S1\" data-plan-rows=\"0\" data-bands=\"0\"><div class=\"selwrap\"><div class=\"fig\"><p class=\"degraded no-plan\" data-ticker=\"S1\" data-rows=\"0\" data-reason=\"{EquityBrief.Api.Reading.NameScreen.PlanForTheLargeIndexAlone}\">S1 has no plan to draw: {EquityBrief.Api.Reading.NameScreen.PlanForTheLargeIndexAlone}.</p>",
+            s1.Body,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("The plan places no tranche.", s1.Body, StringComparison.Ordinal);
+        Assert.Matches("<div class=\"decision-card\" data-index=\"SML\" data-family=\"breakout\" data-ticker=\"S1\"", s1.Body);
+        Assert.DoesNotContain(" class=\"sel\"", points, StringComparison.Ordinal);
 
         // From 19.11 the row's stock opens its chart page, and its report link the report.
         Assert.Contains("<a class=\"name-link\" href=\"#/chart/S1\">S1</a>", points, StringComparison.Ordinal);
         Assert.Matches("<a class=\"open[^\"]*\" href=\"#/name/S1\"", points);
 
-        // With S3 listed second, a link naming S3 selects its row and draws its plan's row beneath it and no other, and a
-        // link naming a stock no row holds selects the first.
+        // With S3 listed second, a link naming S3 opens its fold and no other, its row selected, and a link naming a stock no
+        // row holds opens none.
         store.Execute(
             "INSERT INTO index_family_result (index_code, session_date, ticker, family, passed, place, entry, stop, target, trail, cap, order_by, reason) VALUES " +
             $"('SML', '{IndexNight}', 'S3', 'breakout', 1, 2, '40', '38', NULL, '2', 63, 1.9, NULL);");
@@ -146,14 +154,15 @@ public partial class ReadSurface
             "INSERT INTO index_family_pick (index_code, session_date, ticker, family, state, place, also, held_index, held_family, held_night) VALUES " +
             $"('SML', '{IndexNight}', 'S3', 'breakout', 'listed', 2, '[]', NULL, NULL, NULL);");
 
-        var named = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight) + "&name=S3")), "<table class=\"list-table buy-points\".*?</table>"));
+        var named = BuyPointsOf(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight) + "&name=S3")));
 
-        Assert.Contains($"data-select-href=\"#/night/{IndexNight}?name=S3&universe=600\" class=\"sel\" aria-selected=\"true\">", named, StringComparison.Ordinal);
-        Assert.Equal(["S3"], Regex.Matches(named, "<tr class=\"plan-row\" data-plan-for=\"([^\"]+)\">").Select(match => match.Groups[1].Value));
+        Assert.Equal(["S3"], Folds(named).Where(fold => !fold.Hidden).Select(fold => fold.Ticker));
+        Assert.Contains("<tr data-ticker=\"S3\" data-family=\"breakout\" data-fold=\"fold-breakout-s3\" class=\"sel\">", named, StringComparison.Ordinal);
 
-        var unnamed = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight) + "&name=ZZZ")), "<table class=\"list-table buy-points\".*?</table>"));
+        var unnamed = BuyPointsOf(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight) + "&name=ZZZ")));
 
-        Assert.Equal(["S1"], Regex.Matches(unnamed, "<tr class=\"plan-row\" data-plan-for=\"([^\"]+)\">").Select(match => match.Groups[1].Value));
+        Assert.All(Folds(unnamed), fold => Assert.True(fold.Hidden, $"{fold.Ticker}'s fold is open for a name no row holds."));
+        Assert.Equal(2, Folds(unnamed).Count);
 
         // M1's chart names its index and places it alone among its members, level with itself; no score on the S&P 400.
         Assert.Contains("<section class=\"behind-it\" data-index=\"S&P 400\" data-push=\"none\">", rows["M1"], StringComparison.Ordinal);
@@ -194,13 +203,13 @@ public partial class ReadSurface
         Assert.Contains(".card-line{display:grid;grid-template-columns:24px 150px minmax(0,1fr);", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains(".decision-card{position:sticky;left:0;max-width:min(860px,calc(100vw - 2*var(--gutter) - 24px));", Stylesheet.Css, StringComparison.Ordinal);
 
-        // From 19.3 a row a table opens beneath one of its rows, the buy points' plan and card and a heavyweight's card, is
-        // held inside the box the table scrolls in, read off that box's own width, whatever padding the card around the
-        // table carries: the vw rule above measured the screen and ran a card past the box by the section's own padding.
+        // From 19.3 a row a table opens beneath one of its rows, a buy point's fold and a heavyweight's card, is held inside
+        // the box the table scrolls in, read off that box's own width, whatever padding the card around the table carries:
+        // the vw rule above measured the screen and ran a card past the box by the section's own padding.
         Assert.Contains(".tbl-wrap.opens-rows{container-type:inline-size}", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains(".opens-rows .row-open{position:sticky;left:12px;max-width:calc(100cqw - 24px)}", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains(".list-table tr.card-row>td{white-space:normal;background:var(--plot);padding:12px}", Stylesheet.Css, StringComparison.Ordinal);
-        Assert.Contains(".buy-points tr.plan-row>td{white-space:normal;background:var(--plot);padding:12px}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".buy-points tr.fold-row>td{white-space:normal;background:var(--plot);padding:12px}", Stylesheet.Css, StringComparison.Ordinal);
 
         var marks = new MarkRenderer();
         var card = new DecisionCardView("GSPC", new DateOnly(2026, 10, 1), "pullback", "F1", "the pullback", 50m, 47.3m, 55.4m, [], null);
@@ -254,10 +263,10 @@ public partial class ReadSurface
         _ => $"/screens/tonight/{night}",
     };
 
-    // Each stored card read back off its index's Tonight and off its stock's page on the night: its control once in its
-    // pick's row and its card in a row of its own after it, hidden until opened, holding each line the night stored with
-    // its verdict, name and words in the order stored; each index's page drawing its own cards and no other index's; and
-    // the stock's page opening with the card. The card rows by ticker.
+    // Each stored card read back off its index's Tonight and off its stock's page on the night: a buy point's in its fold
+    // and a holding's in a row of its own after the holding's, each hidden until its control in the row before opens it,
+    // holding each line the night stored with its verdict, name and words in the order stored; each index's page drawing
+    // its own cards and no other index's; and the stock's page opening with the card. The cards' rows by ticker.
     static async Task<IReadOnlyDictionary<string, string>> CardsReadBack(HttpClient client, IReadOnlyList<StoredCard> stored, string night)
     {
         var rows = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -265,27 +274,31 @@ public partial class ReadSurface
         foreach (var index in stored.GroupBy(card => card.Index))
         {
             var page = WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf(index.Key, night)));
-            var open = new List<string>();
+            var folded = new List<string>();
 
             foreach (var card in index)
             {
-                var control = Regex.Matches(page, $"<button type=\"button\" class=\"card-toggle\" aria-expanded=\"false\" aria-controls=\"{card.Id}\"");
+                // From the 19.2 correction of 2026-10-21 a buy point's card stands in its fold after its plan, the control
+                // in its row's stock cell naming the fold; a holding's stands in a card row with its control in its row.
+                var foldId = MarkRenderer.FoldId(card.Family, card.Ticker);
+                var fold = Regex.Match(page, $"<tr class=\"fold-row\" id=\"{foldId}\" data-fold-for=\"{Regex.Escape(card.Ticker)}\" hidden><td colspan=\"\\d+\">(.*?)(?=<tr data-ticker=|</tbody></table></div><p class=\"buys-next\">)", RegexOptions.Singleline);
                 var row = Regex.Match(page, $"<tr class=\"card-row\" id=\"{card.Id}\" hidden><td colspan=\"\\d+\">(.*?)</td></tr>", RegexOptions.Singleline);
-
-                // From 19.3 the buy point selected, the first where the link names none, draws its card open in its plan's
-                // row beneath it with no control; every other card stands hidden beneath its row with its control in it.
-                var plan = Regex.Match(page, $"<tr class=\"plan-row\" data-plan-for=\"{Regex.Escape(card.Ticker)}\"><td colspan=\"\\d+\">(.*?)(?=<tr data-ticker=|</tbody>)", RegexOptions.Singleline);
                 string body;
 
-                if (plan.Success && plan.Groups[1].Value.Contains($"<div class=\"decision-card\" data-index=\"{card.Index}\" data-family=\"{card.Family}\" data-ticker=\"{card.Ticker}\"", StringComparison.Ordinal))
+                if (fold.Success && fold.Groups[1].Value.Contains($"<div class=\"decision-card\" data-index=\"{card.Index}\" data-family=\"{card.Family}\" data-ticker=\"{card.Ticker}\"", StringComparison.Ordinal))
                 {
-                    Assert.True(control.Count == 0, $"The {index.Key} page draws a control for {card.Ticker}'s card, open in its plan's row.");
+                    var control = Regex.Matches(page, $"<button type=\"button\" class=\"card-toggle fold-toggle\" aria-expanded=\"false\" aria-controls=\"{foldId}\"");
+
+                    Assert.True(control.Count == 1, $"The {index.Key} page draws {control.Count} controls for {card.Ticker}'s fold.");
+                    Assert.True(control[0].Index < fold.Index, $"{card.Ticker}'s fold stands before the control opening it.");
                     Assert.False(row.Success, $"The {index.Key} page draws {card.Ticker}'s card twice.");
-                    open.Add(card.Id);
-                    body = plan.Groups[1].Value;
+                    folded.Add(card.Id);
+                    body = fold.Groups[1].Value;
                 }
                 else
                 {
+                    var control = Regex.Matches(page, $"<button type=\"button\" class=\"card-toggle\" aria-expanded=\"false\" aria-controls=\"{card.Id}\"");
+
                     Assert.True(control.Count == 1, $"The {index.Key} page draws {control.Count} controls for {card.Ticker}'s card.");
                     Assert.True(row.Success, $"The {index.Key} page draws no card row for {card.Ticker}.");
                     Assert.True(control[0].Index < row.Index, $"{card.Ticker}'s card row stands before the control opening it.");
@@ -305,10 +318,11 @@ public partial class ReadSurface
                 rows[card.Ticker] = body;
             }
 
+            // Every card no fold holds stands in a card row, and with no name in the link no fold is open.
             Assert.Equal(
-                index.Select(card => card.Id).Where(id => !open.Contains(id)).Order(StringComparer.Ordinal),
+                index.Select(card => card.Id).Where(id => !folded.Contains(id)).Order(StringComparer.Ordinal),
                 Regex.Matches(page, "<tr class=\"card-row\" id=\"([^\"]+)\"").Select(match => match.Groups[1].Value).Order(StringComparer.Ordinal));
-            Assert.True(open.Count <= 1, $"The {index.Key} page opens {open.Count} cards.");
+            Assert.DoesNotMatch("<tr class=\"fold-row\" id=\"[^\"]+\" data-fold-for=\"[^\"]+\"><td", page);
         }
 
         foreach (var card in stored)

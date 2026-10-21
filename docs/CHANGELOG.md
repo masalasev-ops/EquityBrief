@@ -26,6 +26,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - ARCHITECTURE.html - every buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
+Authorised by: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
+Was:
+> Tonight's buy points (15.7): ... whose cards draw their own picks as rows. A row selected draws its plan and its pick's card in a row beneath it, and the first row is selected where the link names none. From 19.3 every other pick's card stands hidden in a row beneath its own and is opened by a control in its row, and a row so opened is held inside the box the table scrolls in. From the 19.2 correction of 2026-10-13 ... (see: Selecting a row draws its plan and its card beneath the row and is no navigation) (see: A setup's card draws its live picks as rows of its own, each ticker opening its chart page)
+>
+> The note under 15.7: ... Selecting a row, anywhere on it but its links, draws its plan beneath the list and brings it into view, and from 19.2 a row of tonight's buy points draws its plan and its pick's card in a row beneath it; its ticker is a link opening the name's own page (see: Selecting a row draws its plan and its card beneath the row and is no navigation). ...
+>
+> Tonight's figure: <desc>Tonight from its bar to a selected buy point: ... and the selected row's plan and card beneath it, ...</desc>; ABC selected: its plan and its card, in a row beneath its own
+>
+> Its key, part 5: Tonight's buy points: one table across every setup, each row tagged with its setup and numbered from one, with the price it buys at, its stop, its target and its reward to risk; on a night no setup lists one, ...
+>
+> Its key, part 6: The row selected, the first where the link names none: its plan and its pick's card in a row beneath it, the card ending on what is behind the stock, ...
+Now:
+> Tonight's buy points (15.7): ... whose cards draw their own picks as rows. From the 19.2 correction of 2026-10-21 every row folds beneath it a row of its own holding the stock's plan and its pick's card: on the S&amp;P 500 the plan column and the plan's tables and the level summary the night stored for the stock with the links the plan region carries; on the S&amp;P 400 and 600 the bands the night stored for the stock with one line saying no plan is stored since the plan is read for the S&amp;P 500's members alone. Every fold is closed where the link names no row and the fold of the row the link names is open; the control in the row's stock cell or a press anywhere else on the row opens and closes that row's fold alone so any number stand open at once; a fold so opened is held inside the box the table scrolls in. From the 19.2 correction of 2026-10-13 ... (see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it) (see: A setup's card draws ...)
+>
+> The note under 15.7: ... Selecting a row of the list, anywhere on it but its links, draws its plan beneath the list and brings it into view, and from the 19.2 correction of 2026-10-21 each row of tonight's buy points folds its plan and its pick's card beneath it, closed until a press on the row or a link naming it opens it; its ticker is a link opening the stock's chart page (see: Each buy point's row folds ...) (see: Every link that opens a stock opens its chart page first, and the chart page links to its report). ...
+>
+> Tonight's figure: <desc>Tonight from its bar to a buy point's fold: ... and one row's fold opened beneath it holding its plan and card, ...</desc>; ABC's fold, opened by its control: its plan and its card beneath its row
+>
+> Its key, part 5: ... with the price it buys at, its stop, its target and its reward to risk, and in its stock cell the control opening its fold; on a night no setup lists one, ...
+>
+> Its key, part 6: A row's fold, opened by the control in its stock cell, by a press on the row or by a link naming the row and closed otherwise, any number open at once: its plan, or where the night builds none the bands with the line saying why, and its pick's card, the card ending on what is behind the stock, ...
+Why: the operator's words of 2026-10-21 on Tonight's buy points, "This section should be collabsible , otherwise there is a large gap between the first stock and the next few stocks.", and their approval of the fix, "Yes, one PR now (Recommended)". The note's ticker opened the chart page from 19.11 and said the name's page, corrected in the sentence rewritten.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches every buy point's fold
+Authorised by: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
+Was:
+> read-surface: ... its buy points in one table numbered across it with a selected row's plan and card beneath that row, ... a line reading no estimate saying why and one with no quarter a year earlier saying so, none kept drawn nowhere |
+Now:
+> read-surface: ... its buy points in one table numbered across it, ... none kept drawn nowhere; and from the 19.2 correction of 2026-10-21 every buy point's row on every index followed by its fold, every fold hidden where the link names no row and the one a link names open with its row selected, ... and the page's script opening and closing a fold from its control and a press on its row and keeping a pressed card's fold open after it redraws |
+Why: the row named a selected row's plan and card, which the 19.2 correction of 2026-10-21 replaces with a fold a row.
+
 ### 2026-10-21 - ARCHITECTURE.html - the latest quarter is read against the estimates kept before its release, a fiscal fourth quarter against its year's estimate less three quarters
 Authorised by: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
 Was:

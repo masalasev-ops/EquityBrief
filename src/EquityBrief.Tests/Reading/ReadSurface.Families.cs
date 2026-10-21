@@ -226,11 +226,13 @@ public partial class ReadSurface
         // The key the card repeated is gone, its guide in its place.
         Assert.DoesNotContain("<b>How to read the card.</b>", page, StringComparison.Ordinal);
 
-        // The row selects as a list's row does, and carries the control asking for a report it does not hold.
-        Assert.Contains($"data-selects=\"F1\" data-select-href=\"#/night/{TheSwitch}?name=F1\"", first, StringComparison.Ordinal);
+        // From the 19.2 correction of 2026-10-21 the row opens its fold rather than selecting itself, and carries the control
+        // asking for a report it does not hold; with no name in the link no row is selected.
+        Assert.Contains("data-fold=\"fold-pullback-f1\"", first, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-select-href", first, StringComparison.Ordinal);
         Assert.Contains("data-report-state=\"unwritten\" data-researched=\"false\"", first, StringComparison.Ordinal);
         Assert.Contains("data-kind=\"ask\" data-asks=\"F1\"", first, StringComparison.Ordinal);
-        Assert.Contains("data-selected=\"F1\"", page, StringComparison.Ordinal);
+        Assert.Contains("data-selected=\"none\"", page, StringComparison.Ordinal);
 
         // The notes: the stock held back by its open trade, naming the night that trade was listed on, and
         // the two past the five, named.

@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Returns;
 using EquityBrief.Tests.Harness;
+using EquityBrief.Web.App;
 
 namespace EquityBrief.Tests.Reading;
 
@@ -191,17 +192,39 @@ public partial class ReadSurface
         CheckReach.Key("15.10 Run", "Reason totals"),
     ];
 
-    // 19.2: Tonight opens on a tile a setup in the one family order and one table of tonight's buy points across every
-    // setup, each tile's count and state worked by hand off the night the lister drew, and a row selected drawing its plan
-    // and its pick's card in a row beneath it.
-    // see: Selecting a row draws its plan and its card beneath the row and is no navigation
+    // Each fold of a buy points table in its order: its id, the row it is for, whether it is hidden, and what it holds,
+    // read to the next row or to the line beneath the table, since a fold's plan holds tables of its own.
+    static IReadOnlyList<(string Id, string Ticker, bool Hidden, string Body)> Folds(string points) =>
+    [
+        .. Regex.Matches(points, "<tr class=\"fold-row\" id=\"([^\"]+)\" data-fold-for=\"([^\"]+)\"( hidden)?><td colspan=\"9\"><div class=\"row-open\">(.*?)</div></td></tr>(?=<tr data-ticker=|</tbody></table></div><p class=\"buys-next\">)", RegexOptions.Singleline)
+            .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Success, match.Groups[4].Value)),
+    ];
+
+    // The buy points table whole, to the line beneath it.
+    static string BuyPointsOf(string page) =>
+        Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table></div><p class=\"buys-next\">"));
+
+    // 19.2, and from the 19.2 correction of 2026-10-21: Tonight opens on a tile a setup in the one family order and one
+    // table of tonight's buy points across every setup, each tile's count and state worked by hand off the night the lister
+    // drew, and every row folding beneath it the stock's plan and its pick's card, each fold closed where the link names no
+    // row and the one a link names open, opened and closed by the control in its row's stock cell.
+    // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
     // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word
     [Fact]
-    public async Task TonightOpensOnATileASetupAndOneTableOfBuyPointsWhoseSelectedRowDrawsItsPlanAndCardBeneathIt()
+    public async Task TonightOpensOnATileASetupAndOneTableOfBuyPointsEachFoldingItsPlanAndCardBeneathIt()
     {
         using var store = await FamilyPagesStore();
 
         await new EquityBrief.Worker.Cards.DecisionCards(new WaitedClock(new DateTimeOffset(2026, 10, 2, 23, 50, 0, TimeSpan.Zero)), store.DatabaseFile).RunAsync("cards");
+
+        // F3's plan as the night stored it: one tranche from 95.5 to 97.25 stopped at 94, the whole position wrong under 94,
+        // and one exit from 110 to 112, three rows of a plan over a band beneath the price and one above it.
+        store.Execute(
+            "INSERT INTO ladder (ticker, as_of, trend_state, plan) VALUES " +
+            $"('F3', '{TheSwitch}', 'uptrend', '{{\"tranches\":[{{\"lowEdge\":\"95.5\",\"highEdge\":\"97.25\",\"condition\":\"ReachesTheZone\",\"stop\":\"94\"}}],\"exits\":[{{\"lowEdge\":\"110\",\"highEdge\":\"112\",\"traded\":true,\"trailing\":false,\"fraction\":\"1/1\",\"reason\":null}}],\"invalidation\":\"94\"}}');");
+        store.Execute(
+            "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) VALUES " +
+            $"('F3', '{TheSwitch}', '95.5', '97.25', 'support', 1, 3, 1, '[]'), ('F3', '{TheSwitch}', '110', '112', 'resistance', 1, 2, 1, '[]');");
 
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
@@ -232,34 +255,69 @@ public partial class ReadSurface
 
         // The buy points: the pullback's five in its own order, then the breakout's two, each tagged with its setup and
         // numbered from one across the table.
-        var points = Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>"));
+        var points = BuyPointsOf(page);
 
         Assert.Equal(
             ["pullback F1 1", "pullback F2 2", "pullback F3 3", "pullback F4 4", "pullback F5 5", "breakout K1 6", "breakout K2 7"],
             Regex.Matches(points, "<tr data-ticker=\"([^\"]+)\" data-family=\"([^\"]+)\".*?<td class=\"place\" data-place=\"(\\d+)\">", RegexOptions.Singleline)
                 .Select(match => $"{match.Groups[2].Value} {match.Groups[1].Value} {match.Groups[3].Value}"));
 
-        // With no name in the link the first row is the one selected, and its plan's row the only one drawn.
-        Assert.Equal(["F1"], Regex.Matches(points, "<tr class=\"plan-row\" data-plan-for=\"([^\"]+)\">").Select(match => match.Groups[1].Value));
+        // With no name in the link every row is followed by its fold, hidden, holding the stock's plan and then its pick's
+        // card, the night's seven cards one a fold; no row is selected, and no row leaves the page.
+        var folds = Folds(points);
 
-        // F2 selected: its row marked, and straight after it a row drawing its plan and its card, before F3's row.
-        var chosen = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}?name=F2")), "<table class=\"list-table buy-points\".*?</table>"));
-        var row = Regex.Match(chosen, "<tr data-ticker=\"F2\" data-family=\"pullback\"[^>]* class=\"sel\" aria-selected=\"true\">.*?</tr><tr class=\"plan-row\" data-plan-for=\"F2\"><td colspan=\"9\">(.*?)</td></tr><tr data-ticker=\"F3\"", RegexOptions.Singleline);
+        Assert.Equal(["F1", "F2", "F3", "F4", "F5", "K1", "K2"], folds.Select(fold => fold.Ticker));
+        Assert.All(folds, fold => Assert.True(fold.Hidden, $"{fold.Ticker}'s fold is open with no name in the link."));
+        Assert.All(folds, fold => Assert.StartsWith($"<section class=\"selected-name\" data-ticker=\"{fold.Ticker}\"", fold.Body, StringComparison.Ordinal));
+        Assert.All(folds, fold => Assert.Matches($"<div class=\"decision-card\" data-index=\"GSPC\" data-family=\"[a-z]+\" data-ticker=\"{fold.Ticker}\"", fold.Body));
+        Assert.Equal(7, Strings(store, $"SELECT COUNT(*) FROM decision_card WHERE session_date = '{TheSwitch}';").Select(int.Parse).Single());
+        Assert.Contains("data-selected=\"none\"", page, StringComparison.Ordinal);
+        Assert.DoesNotContain(" class=\"sel\"", points, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-select-href", points, StringComparison.Ordinal);
+        Assert.DoesNotContain("card-row", points, StringComparison.Ordinal);
 
-        Assert.True(row.Success, "F2's row is not followed by its plan's row before F3's.");
-        Assert.StartsWith("<div class=\"row-open\"><section class=\"selected-name\" data-ticker=\"F2\"", row.Groups[1].Value, StringComparison.Ordinal);
-        Assert.Contains("<div class=\"decision-card\" data-index=\"GSPC\" data-family=\"pullback\" data-ticker=\"F2\"", row.Groups[1].Value, StringComparison.Ordinal);
-        Assert.Single(Regex.Matches(chosen, "class=\"plan-row\""));
-
-        // From 19.3 every other pick's card stands hidden beneath its row with its control in the row, the cards of the
-        // night's seven picks less F2's, open in its plan's row; and no setup's card draws a pick's row of its own.
-        var stored = Strings(store, $"SELECT index_code || '-' || family || '-' || ticker FROM decision_card WHERE session_date = '{TheSwitch}' AND ticker <> 'F2' ORDER BY ticker;");
-
-        Assert.Equal(6, stored.Count);
+        // Each row names its fold, and the control in its stock cell opens it, closed while it is.
         Assert.Equal(
-            Regex.Matches(chosen, "<tr class=\"card-row\" id=\"([^\"]+)\" hidden>").Select(match => match.Groups[1].Value),
-            Regex.Matches(chosen, "class=\"card-toggle\" aria-expanded=\"false\" aria-controls=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
-        Assert.Equal(6, Regex.Matches(chosen, "<tr class=\"card-row\"").Count);
+            folds.Select(fold => fold.Id),
+            Regex.Matches(points, "<tr data-ticker=\"[^\"]+\" data-family=\"[^\"]+\" data-fold=\"([^\"]+)\">").Select(match => match.Groups[1].Value));
+        Assert.Equal(
+            folds.Select(fold => fold.Id),
+            Regex.Matches(points, "<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/[^\"]+\">[^<]+</a>(?: <span class=\"also-family\"[^>]*>[^<]*</span>)* <button type=\"button\" class=\"card-toggle fold-toggle\" aria-expanded=\"false\" aria-controls=\"([^\"]+)\"")
+                .Select(match => match.Groups[1].Value));
+        Assert.Equal("fold-pullback-f2", folds[1].Id);
+
+        // F3's fold draws its plan worked by hand: three rows over two bands, its tranche stopped where the whole position is
+        // wrong; F1's, whose night stored no plan, draws none.
+        var planned = folds.Single(fold => fold.Ticker == "F3").Body;
+
+        Assert.StartsWith("<section class=\"selected-name\" data-ticker=\"F3\" data-plan-rows=\"3\" data-bands=\"2\">", planned, StringComparison.Ordinal);
+        Assert.Contains("a daily close below 94.00, where the whole position is wrong", planned, StringComparison.Ordinal);
+        Assert.StartsWith("<section class=\"selected-name\" data-ticker=\"F1\" data-plan-rows=\"0\" data-bands=\"0\">", folds[0].Body, StringComparison.Ordinal);
+
+        // F2 named in the link: its fold alone open, straight after its row and before F3's, its row selected and its
+        // control saying it is open, every other control closed.
+        var named = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}?name=F2"));
+        var chosen = BuyPointsOf(named);
+
+        Assert.Equal(["F2"], Folds(chosen).Where(fold => !fold.Hidden).Select(fold => fold.Ticker));
+        Assert.Matches("<tr data-ticker=\"F2\" data-family=\"pullback\" data-fold=\"fold-pullback-f2\" class=\"sel\">.*?</tr><tr class=\"fold-row\" id=\"fold-pullback-f2\" data-fold-for=\"F2\"><td colspan=\"9\">.*?</td></tr><tr data-ticker=\"F3\"", chosen);
+        Assert.Equal(["fold-pullback-f2"], Regex.Matches(chosen, "aria-expanded=\"true\" aria-controls=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Equal(6, Regex.Matches(chosen, "class=\"card-toggle fold-toggle\" aria-expanded=\"false\"").Count);
+        Assert.Contains("data-selected=\"F2\"", named, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-card=\"selected\"", named, StringComparison.Ordinal);
+
+        // A name the table does not hold opens no fold.
+        Assert.All(Folds(BuyPointsOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}?name=ZZZ")))), fold => Assert.True(fold.Hidden));
+
+        // The page's script opens and closes a fold from its control or a press on its row, and keeps a pressed card's fold
+        // open when the page is drawn again; the stylesheet draws a fold as the open row was drawn.
+        var shell = await client.GetStringAsync("/");
+
+        Assert.Contains("const fold = row.getAttribute('data-fold');", shell, StringComparison.Ordinal);
+        Assert.Contains("opened.hidden = !opened.hidden;", shell, StringComparison.Ordinal);
+        Assert.Contains("form.closest('tr.card-row, tr.fold-row, section.name-card')", shell, StringComparison.Ordinal);
+        Assert.Contains("again.matches('tr.card-row, tr.fold-row')", shell, StringComparison.Ordinal);
+        Assert.Contains(".buy-points tr.fold-row>td{white-space:normal;background:var(--plot);padding:12px}", Stylesheet.Css, StringComparison.Ordinal);
         Assert.DoesNotContain("family-table", page, StringComparison.Ordinal);
         Assert.Equal(
             ["pullback F1,F2,F3,F4,F5", "breakout K1,K2"],

@@ -2214,9 +2214,14 @@ public static partial class NameScreen
             .Select(section => new LeftOutSection(string.Empty, section.Section, Refused(section.Reason ?? string.Empty))),
     ];
 
+    // Why a stock holds no plan where the night stored no ladder for it, the plan being worked for the S&P 500 alone.
+    public const string PlanForTheLargeIndexAlone = "no plan is stored for the night, the plan being read for the S&P 500's members alone";
+
     // The plan region alone, which is what tonight's list shows for the selected
-    // name: the plan column and the two tables it is read beside. Section 15.7
-    // says the common case of checking a plan needs no navigation.
+    // name and a buy point's fold holds: the plan column and the two tables it is
+    // read beside. Section 15.7 says the common case of checking a plan needs no
+    // navigation. Where no ladder is stored and a reason is given, the column
+    // says why and the plan's two tables are left out.
     public static string PlanRegion(
         SinglePageApp page,
         MarkRenderer marks,
@@ -2225,7 +2230,8 @@ public static partial class NameScreen
         decimal close,
         IReadOnlyList<LevelRow> levels,
         double? typicalMove = null,
-        bool closeStored = true)
+        bool closeStored = true,
+        string? noPlan = null)
     {
         var rows = PlanRows(ladder);
 
@@ -2250,9 +2256,9 @@ public static partial class NameScreen
         // where it belongs and where it is drawn.
         return $"<section class=\"selected-name\" data-ticker=\"{ticker}\" data-plan-rows=\"{rows.Count}\" data-bands=\"{levels.Count}\">"
             + "<div class=\"selwrap\"><div class=\"fig\">"
-            + marks.PlanColumn(ticker, close, rows)
+            + marks.PlanColumn(ticker, close, rows, ladder is null ? noPlan : null)
             + "</div><div class=\"tbl-wrap\">"
-            + marks.PlanTables(ticker, rows)
+            + (ladder is null && noPlan is not null ? string.Empty : marks.PlanTables(ticker, rows))
             + marks.LevelSummary(
                 ticker,
                 [.. levels.Select(level => new SummaryBand(

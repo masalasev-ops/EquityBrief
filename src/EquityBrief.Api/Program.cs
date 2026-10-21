@@ -1335,6 +1335,28 @@ app.MapGet("/screens/tonight/{night?}", async (
             _ => TonightScreen.StoresNoSectorReading,
             RuleScreen.DesignB(indexHeavyweightVariant ?? heavyweightRule, indexRegister));
 
+        // Each buy point's fold holds the bands the night stored for the stock against its close, beside the line saying
+        // its plan is read for the S&P 500's members alone.
+        // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
+        var indexUniverse = await read.UniverseAsync(reading.Code, dated);
+        var indexPlans = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var buyPoint in indexCards.SelectMany(card => card.Picks).Select(pick => pick.Row.Ticker).Distinct(StringComparer.Ordinal))
+        {
+            var stock = indexUniverse.FirstOrDefault(row => row.Ticker == buyPoint);
+
+            indexPlans[buyPoint] = NameScreen.PlanRegion(
+                page,
+                marks,
+                buyPoint,
+                null,
+                stock?.Close ?? 0m,
+                await read.LevelsAsync(buyPoint, dated),
+                stock?.TypicalMove,
+                stock?.Close is not null,
+                NameScreen.PlanForTheLargeIndexAlone);
+        }
+
         return Results.Content(
             notice + page.IndexTonightRegion(
                 marks,
@@ -1355,7 +1377,8 @@ app.MapGet("/screens/tonight/{night?}", async (
                 due,
                 request.Query["name"].FirstOrDefault(),
                 indexClose is null ? null : TonightScreen.IndexCloseToBuy(indexClose, await NextEventsAsync(read, dated), dated),
-                request.Query[MarkRenderer.CloseToBuyKey].FirstOrDefault() == MarkRenderer.CloseToBuyOpen),
+                request.Query[MarkRenderer.CloseToBuyKey].FirstOrDefault() == MarkRenderer.CloseToBuyOpen,
+                indexPlans),
             "text/html; charset=utf-8");
     }
 
@@ -1493,27 +1516,6 @@ app.MapGet("/screens/tonight/{night?}", async (
     IReadOnlyList<EquityBrief.Web.Marks.ListingCell> rows = [.. listed.Select(row => states.TryGetValue(row.Ticker, out var state) ? row with { Queue = state } : row)];
     IReadOnlyList<EquityBrief.Web.Marks.ListingCell>? nearRows = near is null ? null : [.. near.Select(row => states.TryGetValue(row.Ticker, out var state) ? row with { Queue = state } : row)];
 
-    // Whichever row the reader selected, from the hash, and the first row when
-    // they have selected none. Section 15.7's region is for whichever row is
-    // selected, and a composition fixed at the first answers a question nobody
-    // asked. Its plan and its bands are the ones the night shown stored, drawn
-    // against that night's close. A row of either list can be selected.
-    var asked = request.Query["name"].FirstOrDefault();
-    var selection = TonightScreen.Selected(rows, asked, nearRows);
-
-    var member = selection is { } picked ? universe.FirstOrDefault(row => row.Ticker == picked.Ticker) : null;
-    var selected = selection is { } chosen
-        ? NameScreen.PlanRegion(
-            page,
-            marks,
-            chosen.Ticker,
-            await read.LadderAsync(chosen.Ticker, dated),
-            member?.Close ?? 0m,
-            await read.LevelsAsync(chosen.Ticker, dated),
-            member?.TypicalMove,
-            member?.Close is not null)
-        : string.Empty;
-
     // The record beside each reason and the evening's own totals, which are
     // 15.7's two halves that need a reason to have a history. The record is
     // over every night the store holds rather than over this one, for the
@@ -1601,6 +1603,42 @@ app.MapGet("/screens/tonight/{night?}", async (
         cards = await WithNumbersAsync(read, cards, reading, dated, closeAcross);
     }
 
+    // A plan and its bands as the night shown stored them, drawn against that night's close.
+    async Task<string> PlanOf(string ticker)
+    {
+        var member = universe.FirstOrDefault(row => row.Ticker == ticker);
+
+        return NameScreen.PlanRegion(
+            page,
+            marks,
+            ticker,
+            await read.LadderAsync(ticker, dated),
+            member?.Close ?? 0m,
+            await read.LevelsAsync(ticker, dated),
+            member?.TypicalMove,
+            member?.Close is not null);
+    }
+
+    // On a night the families drew the list, every buy point folds its plan beneath its row, the one the hash names open,
+    // and no row is selected where it names none; a name the table does not hold, from the rows close to a buy point, is
+    // drawn beneath the list. On a night before them, whichever row the reader selected, and the first row where they
+    // selected none: section 15.7's region is for whichever row is selected, and a row of either list can be selected.
+    // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
+    var asked = request.Query["name"].FirstOrDefault();
+    var pointed = cards is null ? [] : cards.SelectMany(card => card.Picks).Select(pick => pick.Row.Ticker).Distinct(StringComparer.Ordinal).ToArray();
+    var opened = asked is { } named && pointed.Contains(named, StringComparer.Ordinal) ? named : null;
+    var selection = cards is null
+        ? TonightScreen.Selected(rows, asked, nearRows)
+        : opened is null && asked is { } other ? nearRows?.FirstOrDefault(row => row.Ticker == other) : null;
+    var plans = new Dictionary<string, string>(StringComparer.Ordinal);
+
+    foreach (var ticker in pointed)
+    {
+        plans[ticker] = await PlanOf(ticker);
+    }
+
+    var selected = selection is { } chosen ? await PlanOf(chosen.Ticker) : string.Empty;
+
     // The sector heavyweights' card, drawn after the swing families' on a night they drew the page, whatever the
     // market check read.
     // see: The market check closes every swing family's list together, and the sector heavyweights read none
@@ -1680,7 +1718,7 @@ app.MapGet("/screens/tonight/{night?}", async (
             rows,
             watchedNames.Count,
             selected,
-            selection?.Ticker,
+            opened ?? selection?.Ticker,
             records,
             TonightScreen.WrittenBeforeTheCorrection(listings),
             RunScreen.Market(market),
@@ -1698,7 +1736,8 @@ app.MapGet("/screens/tonight/{night?}", async (
             closeToBuy: closeToBuy,
             closeOpen: request.Query[MarkRenderer.CloseToBuyKey].FirstOrDefault() == MarkRenderer.CloseToBuyOpen,
             newest: await read.NewestNightAsync() == dated,
-            closeHref: closeToBuy is null ? null : MarkRenderer.CloseToBuyHref(night is { Length: > 0 } ? SinglePageApp.NightRoute + night : "#/", reading.Word)),
+            closeHref: closeToBuy is null ? null : MarkRenderer.CloseToBuyHref(night is { Length: > 0 } ? SinglePageApp.NightRoute + night : "#/", reading.Word),
+            plans: plans),
         "text/html; charset=utf-8");
 });
 

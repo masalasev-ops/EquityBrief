@@ -5632,3 +5632,44 @@ Verified:   as the newest entry of this pull request.
 Carried:    the Financials whose revenue basis differs from the analysts' estimates, 21 of the 41 kept quarterly estimates
             more than a fifth off their reported revenue on the night of 2026-10-20, all Financials, put to the operator,
             since an implied fourth quarter for such a company carries the same difference.
+
+### 19.2 - correction: every buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it   2026-10-21
+
+Queue:      as the 15.1 correction of this pull request.
+Ruled:      by the operator on 2026-10-21, on Tonight's buy points of the S&P 500, in these words: "This section should
+            be collabsible , otherwise there is a large gap between the first stock and the next few stocks.  And each of
+            the stock in the table should show all these data if its in buy point." The fix put to them, every buy point's
+            plan and card in its own fold closed by default, was answered "Yes, one PR now (Recommended)".
+Found:      the first row was selected where the link named none, its plan and card drawn open beneath it, so HAS's plan
+            stood between it and the four rows after it on the night of 2026-10-20, and a stock's plan could be read only
+            by selecting its row, one at a time; the S&P 400's and 600's rows drew their cards alone.
+Built:      every row of tonight's buy points folds beneath it the stock's plan and its pick's card, closed where the link
+            names no row: on the S&P 500 the plan region the selected name drew with its links, on the S&P 400 and 600 the
+            bands the night stored with the line saying no plan is stored and no plan's tables (see: Each buy point's row
+            folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it). The
+            control in the row's stock cell or a press on the row opens and closes its fold in the browser, any number
+            open at once; a row the link names opens with its fold open and comes into view; a pressed card's fold stays
+            open when the page is drawn again. The decision with the one it supersedes moved below, the Tonight rows, the
+            note and the figure with its key, the guide's Tonight with its figure, the stock column's words, the key and
+            the guide behind its "?", the roster and the changelog.
+Tests:      none more, 2576 in all: the S&P 500's seven folds over the families' night, each hidden with no name in the
+            link and holding its own stock's plan and its card, each control in its stock cell naming its fold, F3's plan
+            of three rows over two bands worked by hand from its stored ladder and bands and F1's holding none, F2's fold
+            alone open and its row selected where the link names it and none for a name no row holds, with the page's
+            script and the stylesheet; the S&P 600's S1 folding its no-plan line and no plan's tables beside its card, S3's
+            fold alone open where the link names it; and every card read back off its fold or its holding's row.
+Claims:     1372, as before: no row's claim added or removed.
+Mutated:    each rule stated before its run. Every fold closed where the link names no row, broken by opening the first:
+            predicted red at F1's fold; result red, F1's fold open with no name in the link. Each fold its own stock's
+            plan, broken by drawing the first row's in every fold: predicted red at the folds' tickers; result red, 6 of
+            the 7 folds holding F1's plan. An S&P 400 or 600 fold saying no plan is stored, broken by handing it no
+            reason: predicted red at S1's fold; result red, the plan's empty tables drawn in the line's place. The fold a
+            link names open, broken by opening none: predicted red at F2's fold; result red, no fold open. Each made on
+            this branch and reverted before anything was committed, and the tests green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2576 of 2576 tests ran with none failed,
+            migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the S&P 500's groups and pages on the GICS scheme and the Financials' revenue basis, both put to the operator;
+            PR 505 rebased with its migration at 104; and the phase 18 sign-off by a fresh session.

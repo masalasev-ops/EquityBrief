@@ -337,12 +337,13 @@ public sealed partial class SinglePageApp : IComponent
 
     // How tonight's buy points are read, written once for the table and for the line drawn in its place.
     public const string BuyPointsGuide =
-        "Each row is one stock a setup lists tonight, tagged with its setup in the setup's hue, its plan set at the evening's close and bought at the next session's open. The stop is the price that says the plan was wrong and the target the price that says it was right. Select a row to draw its plan and its card just beneath it. A stock is listed once, under the first setup it qualified for in the page's order, and never while a trade for it is still open. The reward to risk is a fact about the chart and not a chance of anything.";
+        "Each row is one stock a setup lists tonight, tagged with its setup in the setup's hue, its plan set at the evening's close and bought at the next session's open. The stop is the price that says the plan was wrong and the target the price that says it was right. Press a row, or plan beside its stock, to open its plan and its card just beneath it, and again to fold them; any number may be open at once. A stock is listed once, under the first setup it qualified for in the page's order, and never while a trade for it is still open. The reward to risk is a fact about the chart and not a chance of anything.";
 
-    // Tonight's buy points as a card of their own, the table across every setup with its key; on a night no setup lists
-    // one, a line saying so with how many members stand one gate short, from 19.8 a link opening the card of them, its
-    // guide behind its "?".
-    static string BuyPointsCard(MarkRenderer marks, IReadOnlyList<BuyPointView> points, string? selected, string plan, DateOnly night, string query = "", int? oneShort = null, string? closeHref = null) =>
+    // Tonight's buy points as a card of their own, the table across every setup with its key, each row folding its plan
+    // and its card beneath it, the one the link names open; on a night no setup lists one, a line saying so with how many
+    // members stand one gate short, from 19.8 a link opening the card of them, its guide behind its "?".
+    // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
+    static string BuyPointsCard(MarkRenderer marks, IReadOnlyList<BuyPointView> points, string? open, IReadOnlyDictionary<string, string>? plans, DateOnly night, int? oneShort = null, string? closeHref = null) =>
         points.Count == 0
             ? LineCard(
                 "buy-points",
@@ -350,9 +351,9 @@ public sealed partial class SinglePageApp : IComponent
                 BuyPointsGuide)
             : Cards.Computed(
                 "Buy points",
-                marks.BuyPoints(points, selected, plan, query) + Cards.Key(
+                marks.BuyPoints(points, open, plans) + Cards.Key(
                     "How to read the table.",
-                    "Each row is one stock a setup lists tonight, tagged with its setup in the setup's hue, its plan set at the evening's close and bought at the next session's open. The stop is the price that says the plan was wrong and the target the price that says it was right. Select a row to draw its plan and its card just beneath it.",
+                    "Each row is one stock a setup lists tonight, tagged with its setup in the setup's hue, its plan set at the evening's close and bought at the next session's open. The stop is the price that says the plan was wrong and the target the price that says it was right. Press a row, or plan beside its stock, to open its plan and its card just beneath it, and again to fold them; any number may be open at once.",
                     "A stock is listed once, under the first setup it qualified for in the page's order, and never while a trade for it is still open. The reward to risk is a fact about the chart and not a chance of anything."),
                 title: "Tonight's buy points",
                 lede: Invariant($"{points.Count} across every setup tonight."),
@@ -581,6 +582,7 @@ public sealed partial class SinglePageApp : IComponent
           if (placedCard) { scrollTo(0, placedCard.getBoundingClientRect().top + scrollY - keptPlace.top); }
           else if (!fresh && scrolls[hash] != null) { scrollTo(0, scrolls[hash]); }
           else if (query.get('name') && document.getElementById('selected')) { document.getElementById('selected').scrollIntoView({ block: 'start' }); }
+          else if (query.get('name') && screen.querySelector('.buy-points tr.sel[data-fold]')) { screen.querySelector('.buy-points tr.sel[data-fold]').scrollIntoView({ block: 'start' }); }
           else if (reasonRow) { reasonRow.scrollIntoView({ block: 'center' }); }
           else { scrollTo(0, 0); }
           keptPlace = null;
@@ -782,7 +784,7 @@ public sealed partial class SinglePageApp : IComponent
           const form = event.target;
           if (!(form instanceof HTMLFormElement) || !(form.classList.contains('card-press') || form.classList.contains('account-control'))) { return; }
           event.preventDefault();
-          const holder = form.closest('tr.card-row, section.name-card');
+          const holder = form.closest('tr.card-row, tr.fold-row, section.name-card');
           const open = holder ? holder.id || (holder.querySelector('.decision-card') ? 'name-card' : '') : '';
           for (const button of form.querySelectorAll('button')) { button.disabled = true; }
           const response = await fetch(form.getAttribute('action'), {
@@ -795,7 +797,7 @@ public sealed partial class SinglePageApp : IComponent
           await show();
           scrollTo(0, kept);
           const again = open === 'name-card' ? screen.querySelector('section.name-card') : (open ? document.getElementById(open) : null);
-          if (again && again.matches('tr.card-row')) {
+          if (again && again.matches('tr.card-row, tr.fold-row')) {
             again.hidden = false;
             const toggle = screen.querySelector('[aria-controls="' + again.id + '"]');
             if (toggle) { toggle.setAttribute('aria-expanded', 'true'); }
@@ -894,24 +896,32 @@ public sealed partial class SinglePageApp : IComponent
             paintTheme();
             return;
           }
-          // A pick's card opens and closes in place beneath its row, and the row is not picked for it.
+          // A pick's card, or a buy point's fold, opens and closes in place beneath its row, and the row is not picked for it.
           const toggle = event.target.closest('.card-toggle');
           if (toggle) {
-            const card = document.getElementById(toggle.getAttribute('aria-controls'));
-            if (card) {
-              card.hidden = !card.hidden;
-              toggle.setAttribute('aria-expanded', card.hidden ? 'false' : 'true');
-            }
+            flip(toggle);
             return;
           }
           const row = event.target.closest('.list-table tr[data-ticker]');
           if (row && !event.target.closest('a, button, form')) {
+            // A buy point's row opens and closes its fold as the control in its stock cell does.
+            const fold = row.getAttribute('data-fold');
+            const control = fold ? row.querySelector('.card-toggle[aria-controls="' + CSS.escape(fold) + '"]') : null;
+            if (control) { flip(control); return; }
             const pick = row.getAttribute('data-select-href');
             if (pick) { fresh = true; location.hash = mergedInto(pick); }
             return;
           }
           if (event.target.closest('a[href^="#"]')) { fresh = true; }
         });
+        // The row a control opens and closes, and the control saying which it now is.
+        function flip(toggle) {
+          const opened = document.getElementById(toggle.getAttribute('aria-controls'));
+          if (opened) {
+            opened.hidden = !opened.hidden;
+            toggle.setAttribute('aria-expanded', opened.hidden ? 'false' : 'true');
+          }
+        }
         function currentTheme() {
           const own = document.documentElement.getAttribute('data-eb-theme');
           if (own) { return own; }
@@ -2560,7 +2570,8 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyList<CloseToBuyRow>? closeToBuy = null,
         bool closeOpen = false,
         bool newest = true,
-        string? closeHref = null)
+        string? closeHref = null,
+        IReadOnlyDictionary<string, string>? plans = null)
     {
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
@@ -2619,16 +2630,20 @@ public sealed partial class SinglePageApp : IComponent
                 region.Append(marks.MarketLine(line with { RunHref = Invariant($"{RunRoute}{night:yyyy-MM-dd}"), Watching = watching, CloseHref = closeHref }));
             }
 
-            // Tonight's top: a tile a setup, then one table of tonight's buy points across every setup, the row selected
-            // drawing its plan and its card beneath it.
-            // see: Selecting a row draws its plan and its card beneath the row and is no navigation
+            // Tonight's top: a tile a setup, then one table of tonight's buy points across every setup, each row folding
+            // beneath it the stock's plan with the links the selected name's region carries and its pick's card, the row the
+            // link names open.
+            // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
             var (tiles, points) = TopOf(families, heavyweights, line?.Open ?? true, night);
-            var plan = selectedName.Length > 0 && selectedTicker is { } planned
-                ? selectedName + SelectedLinks(planned, rows.Concat(close ?? []).FirstOrDefault(row => row.Ticker == planned))
-                : string.Empty;
+            var folded = points
+                .GroupBy(point => point.Pick.Row.Ticker, StringComparer.Ordinal)
+                .ToDictionary(
+                    point => point.Key,
+                    point => (plans?.GetValueOrDefault(point.Key) ?? string.Empty) + SelectedLinks(point.Key, point.First().Pick.Row),
+                    StringComparer.Ordinal);
 
             region.Append(marks.SetupTiles(tiles));
-            region.Append(BuyPointsCard(marks, points, selectedTicker, plan, night, oneShort: line is { CloseRead: true } read ? read.Close : null, closeHref: closeHref));
+            region.Append(BuyPointsCard(marks, points, selectedTicker, folded, night, oneShort: line is { CloseRead: true } read ? read.Close : null, closeHref: closeHref));
 
             // From 19.8 the stocks one gate short across every setup in one card beneath the buy points, folded to its line.
             // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
@@ -2721,8 +2736,8 @@ public sealed partial class SinglePageApp : IComponent
         // The selected name's plan and level summary, which is what section 15.7
         // means by the common case needing no navigation: selecting a row draws its
         // plan beneath the list, on the same page, and brings it into view. On a night the families drew the list, a buy
-        // point's plan is drawn beneath its row in the table instead, and this region draws any other name selected.
-        // see: Selecting a row draws its plan and its card beneath the row and is no navigation
+        // point's plan is folded beneath its row in the table instead, and this region draws any other name selected.
+        // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
         var inTheTable = families is not null && selectedTicker is { } asked && families.Any(card => card.Picks.Any(pick => pick.Row.Ticker == asked));
 
         if (!inTheTable && selectedName.Length > 0 && selectedTicker is { } chosen)
@@ -2772,7 +2787,8 @@ public sealed partial class SinglePageApp : IComponent
         string due = "",
         string? selectedTicker = null,
         IReadOnlyList<CloseToBuyRow>? closeToBuy = null,
-        bool closeOpen = false)
+        bool closeOpen = false,
+        IReadOnlyDictionary<string, string>? plans = null)
     {
         var region = new StringBuilder();
         var heading = "Tonight: " + universe.Titled;
@@ -2800,14 +2816,15 @@ public sealed partial class SinglePageApp : IComponent
             ? $"<p class=\"degraded\" data-index-night=\"not-computed\">{Escaped(said)}</p>"
             : marks.MarketLine(line with { RunHref = Invariant($"{RunRoute}{night:yyyy-MM-dd}{query}") }));
 
-        // Tonight's top, as the S&P 500's: a tile a setup and one table of the index's buy points across every setup, the row
-        // selected, the first where the link names none, drawing its pick's card beneath it, and every row's link keeping
-        // the index.
+        // Tonight's top, as the S&P 500's: a tile a setup and one table of the index's buy points across every setup, each
+        // row folding beneath it the bands the night stored for the stock, with the line saying its plan is read for the
+        // S&P 500's members alone, and its pick's card, the row the link names open.
+        // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
         var (tiles, points) = TopOf(families, heavyweights, line.Open, night, line.Checks);
-        var chosen = points.Any(point => point.Pick.Row.Ticker == selectedTicker) ? selectedTicker : points.FirstOrDefault()?.Pick.Row.Ticker;
+        var open = points.Any(point => point.Pick.Row.Ticker == selectedTicker) ? selectedTicker : null;
 
         region.Append(marks.SetupTiles(tiles));
-        region.Append(BuyPointsCard(marks, points, chosen, string.Empty, night, "&" + Universes.Query + "=" + universe.Word, line.CloseRead ? line.Close : null, line.CloseHref));
+        region.Append(BuyPointsCard(marks, points, open, plans, night, line.CloseRead ? line.Close : null, line.CloseHref));
 
         // From 19.8 the card of the stocks one gate short, read from 20.11 off every part's answer the night stored, with no
         // Watch press since the watch list holds the S&P 500's names alone; a night storing only the first part each member
