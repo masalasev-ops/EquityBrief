@@ -969,7 +969,11 @@ public static class IndexRules
         if (rule.Evaluator is IndexBreakoutCandidate)
         {
             var bar = IndexNightRead.BarOf(inputs.Series[name], inputs.At);
-            var (high, since) = MemberReadings.YearHigh(inputs.Series[name].Bars, bar) is { } found
+
+            // The year's high over the sessions the night read before the store's year as well, where it read them, as the
+            // breakout's own high and the member readings read it.
+            // see: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does
+            var (high, since) = MemberReadings.YearHigh(inputs.Series[name].Name.Before, inputs.Series[name].Bars, bar) is { } found
                 ? (Statistic.FromPrice(found.High), found.Since)
                 : (double.NaN, int.MaxValue);
 

@@ -1,0 +1,8 @@
+# The remedy of the operator's ruling of 2026-10-21 on the year's high, as its PROGRESS entry prints it. On a night whose
+# store's year holds fewer sessions than it reads, the member readings' year's high and a breakout rule's checks on it
+# read the sessions before the year from the pulled history at the store's scale, as the breakout's own high does, which
+# moves every S&P 400 and 600 rule's version: each standing rule whose evaluator moved is registered again unchanged, each
+# named as not replayed and restarting. The cards' replayed records are kept under the rule's words and stand. No request
+# to the provider and no model call. Run from main after the merge, when no night, local run, drain, labeller or monthly
+# run is writing; read the output for "remedy done".
+register --moved --evidence "the operator's ruling of 2026-10-21: the member readings' year's high and a breakout rule's checks on it read the sessions before a short year from the pulled history at the store's scale, as the breakout's own high does; each is registered again unchanged"

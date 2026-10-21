@@ -98,6 +98,15 @@ public static class MemberReadings
         return best is { } found ? (found.High, bar - found.At) : null;
     }
 
+    // The same where a night read sessions before the store's year for the member, over them laid before its bars, and
+    // none where the two hold fewer than the 251 sessions before the bar, as the breakout's own year's high reads them;
+    // over its bars alone where the night read none for it.
+    // see: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does
+    public static (decimal High, int Since)? YearHigh(IReadOnlyList<Sweep.SweepBar>? before, IReadOnlyList<Sweep.SweepBar> bars, int bar) =>
+        before is null ? YearHigh(bars, bar)
+            : bar >= 0 && before.Count + bar >= YearSessions ? YearHigh([.. before, .. bars], before.Count + bar)
+            : null;
+
     // A session's volume over the mean of the 50 sessions' volumes the indicator engine stores for it; none where the
     // mean is not held or is nothing.
     public static double? VolumeRatio(long volume, double? average) =>

@@ -5388,3 +5388,56 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    the member readings' year's high, read over the sessions a short year holds rather than none, put to the
             operator; PR 505 rebased with its migration at 104; and the phase 18 sign-off by a fresh session.
+
+### 20.11 - the member readings' year's high and a breakout rule's checks on it read the session before a short year from the pulled history, as the breakout's own high does   2026-10-21
+
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its
+            remedies, the evening's rulings in PRs 514 and 515 and the 19.3 correction in PR 516 merged; in review, 20.8
+            with its correction, PR 505; in progress, this ruling, in one pull request; next, this pull request merged
+            with the read paused and its remedy run, PR 505 rebased with its migration at 104, the phase 18 sign-off by a
+            fresh session, the local lane's one text field, 21.0 once its ruling is given, the phase 19 sign-off, and
+            pin 3's completion steps.
+Ruled:      by the operator on 2026-10-21, on the finding the 19.3 correction carried, in these words: "Read the missing
+            session from the pull for both: the member readings' year's high and the "near its high" and "recent high"
+            checks a registered S&P 400/600 breakout rule reads, so all three readings of the year's high agree on every
+            night. Run the small remedy for the versions it moves, and state each record's length before it restarts."
+Built:      on a night whose store's year holds fewer sessions than the year's high reads, the member readings read the
+            sessions the year falls short by for each member of the three indices holding a bar on the night that the
+            store holds from the year's first session, from the newest pull holding that session at the store's scale,
+            and a registered S&P 400 or 600 breakout rule's nearness and recency checks read the year's high over the
+            sessions the index families read; both through one function, none where the pulled and stored sessions hold
+            fewer than the high reads, as the breakout's own high reads none (see: The member readings' year's high and a
+            breakout rule's checks on it read the sessions before a short year as the breakout's own high does). The
+            member readings' row names a member the pull holds too few for, and the name page says such a member's high
+            is not available rather than that it holds no bar. The decision, the hard rule with its prior wording in the
+            changelog, five architecture rows and the matrix, SCHEMA's pulled bars and year's high notes, the roster, and
+            the remedy `tools/remedies/2026-10-21-20.11-the-year-high-before-the-year.txt`.
+Pins:       every S&P 400 and 600 evaluator, which pins the index night's files and the member readings' file: the
+            pullback from adc4b9f11470 to 99df0e0c03e3, the breakout from acdeab81269c to 0fcd512afa81, the drift from
+            a60b29a9a6fe to 5e3cf4aa0f7f and the heavyweights from 33d344c490cd to db2781a85e6f; no S&P 500 version.
+Tests:      2569, two more: over the night holding 251 sessions, the member readings' year's high read off the pull's
+            session before the year at the store's scale, IA's 203 reading 101.5 and IB's 206 reading 103, each made 251
+            sessions back where the store's own 101 was made 21 back, with their nearness, and ID, which the pull holds
+            none of, reading none and named on the step's row; and the S&P 400's breakout registered reading its year's
+            high within 63 sessions, which keeps IA off, a variant reading it older, which keeps IA, and a variant at a
+            126-session high reading the close at its year's high or above, which keeps IA alone where the rule kept in
+            the background reading no check keeps all three. The shared function at its edges; a member holding a bar
+            and no year's high drawn as not available; and the member readings' worked test on a store holding the
+            year's 252 sessions, its 70 falling 182 short under the ruling.
+Claims:     1372, as before.
+Mutated:    each rule stated before its run. The member readings' high read over the pulled sessions, broken by handing
+            it none: predicted red at IA; result red, IA reading 101 made 21 back where 101.5 made 251 back. A breakout
+            rule's checks read over them, broken by handing the checks the store's bars alone: predicted red at IA under
+            the rule reading its high within 63 sessions; result red, IA passing where it is kept off. A member the pull
+            holds too few for reading none, broken by reading the high of the sessions held: predicted red at ID; result
+            red, ID reading 101 where none, the 126-session variant keeping ID beside IA, and the shared function reading
+            a high one session short. Each made on this branch and reverted before anything was committed, and the tests
+            green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2569 of 2569 tests ran with none failed,
+            migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the remedy run from main after the merge, every standing S&P 400 and 600 rule registered again at the
+            version this moves it to, with each record's length stated before it restarts; PR 505 rebased with its
+            migration at 104; and the phase 18 sign-off by a fresh session.

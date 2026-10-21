@@ -26,6 +26,66 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - CLAUDE.md - the hard rule on pulled history names the member readings' year's high and a breakout rule's checks on it
+Authorised by: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does
+Was:
+> and the readings a night needs more closes for than the store's year holds, the S&P 400's and 600's breakout's year's high and the forming list's and the sector heavyweights' returns and betas, which on such a night read the sessions before the year at the store's scale from the newest pull holding a member's first stored session, a member it holds too few for reading none of them and named on the night's row, on the operator's ruling of 2026-10-20; ... (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale). The sessions the fetcher drops
+Now:
+> and the readings a night needs more closes for than the store's year holds, the S&P 400's and 600's breakout's year's high and the forming list's and the sector heavyweights' returns and betas, on the operator's ruling of 2026-10-20, and the member readings' year's high and a breakout rule's checks on it, on their ruling of 2026-10-21, which on such a night read the sessions before the year at the store's scale from the newest pull holding a member's first stored session, a member it holds too few for reading none of them and named on the night's row; ... (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale) (see: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does). The sessions the fetcher drops
+Why: the operator's ruling of 2026-10-21: "Read the missing session from the pull for both: the member readings' year's high and the "near its high" and "recent high" checks a registered S&P 400/600 breakout rule reads, so all three readings of the year's high agree on every night." The rule is narrowed for those two readings alone, and its reasoning stands.
+
+### 2026-10-21 - ARCHITECTURE.html - the member readings' year's high and a breakout rule's checks on it read the sessions before a short year from the pulled history
+Authorised by: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does
+Was:
+> Member reader: reads membership, bar store, market series, calendar, indicators, reported quarters, companies, fundamental readings; ... HYG against its average and its change; makes no request, and a night run again replaces its own session's rows ...
+>
+> Index families: ... its levels read off the member readings, the switches and the S&amp;P 500's market reading the night stored, each keeping its own list, ...
+>
+> History pull: ... read the pulled bars before the year for the S&amp;P 400's and 600's breakout's year's high, the forming list's high and the heavyweights' closes, and a purge removes one pull's rows whole (see: ...) (see: ...) (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale); ...
+>
+> Pulled history: ... the forming list's high and the heavyweights' closes (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale), so removing one ...
+>
+> Member readings: ... its year's high with the sessions since it and the close's nearness to it, its volume over its average, ...
+>
+> The read and write matrix's Member reader row: no mark under Pulled history.
+Now:
+> Member reader: reads membership, bar store, pulled bars, market series, calendar, indicators, reported quarters, companies, fundamental readings; ... HYG against its average and its change; from the operator's ruling of 2026-10-21 reads the year's high, on a night whose store's year holds fewer sessions than it reads, over the ones before the year from the pulled history at the store's scale as the breakout's own high reads them, a member the pull holds too few for reading none and named on the step's row (see: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does); makes no request, ...
+>
+> Index families: ... its levels read off the member readings, the switches and the S&amp;P 500's market reading the night stored, a breakout rule's nearness to its year's high and recency of it read on a night whose store's year holds too few sessions over the ones before it from the pulled history as the breakout's own high reads them (see: ...), each keeping its own list, ...
+>
+> History pull: ... and the heavyweights' closes, and from the operator's ruling of 2026-10-21 the member readings' step and the index families for the member readings' year's high and a breakout rule's checks on it, and a purge removes one pull's rows whole ... (see: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does); ...
+>
+> Pulled history: ... (see: A night's reading ...), and from the operator's ruling of 2026-10-21 the member readings' step and the index families for the member readings' year's high and a breakout rule's checks on it (see: ...), so removing one ...
+>
+> Member readings: ... its year's high with the sessions since it and the close's nearness to it, on a night whose store's year holds too few sessions read over the ones before it from the pulled history and none for a member the pull holds too few for, its volume over its average, ...
+>
+> The read and write matrix's Member reader row: R under Pulled history.
+Why: the operator's ruling of 2026-10-21, that the member readings' year's high and a breakout rule's checks on it read the session a short year misses from the pull as the breakout's own high does, so the three readings agree on every night.
+
+### 2026-10-21 - SCHEMA.md - pulled_bar read for the member readings' year's high and a breakout rule's checks on it
+Authorised by: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does
+Was:
+> pulled_bar: ... reading no more than its own (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale). From 19.11 ...
+>
+> `year_high` | TEXT | decimal in code, the highest high of the 251 sessions before the session, null on a member's first bar
+Now:
+> pulled_bar: ... reading no more than its own (see: ...). From the operator's ruling of 2026-10-21 the member readings step reads them the same way for the year's high of each member of the three indices holding a bar on the night, and the index families for a breakout rule's nearness to its year's high and recency of it, a member the pull holds too few for reading no year's high (see: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does). From 19.11 ...
+>
+> `year_high` | TEXT | decimal in code, the highest high of the 251 sessions before the session, read on a night whose store's year holds fewer over the ones before it from `pulled_bar` at the store's scale; null on a member's first bar and, on such a night, for a member the pull holds too few for
+Why: the member readings step reads `pulled_bar` from the ruling, and the column's note says what a short year's high reads and where it stores none.
+
+### 2026-10-21 - .claude/rules/checks.md - fixture-expectations and read-surface reach the year's high read before a short year by the member readings and a breakout rule's checks
+Authorised by: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does
+Was:
+> fixture-expectations: ... and the business-first family's counting a member its approved setting's hooks keep off at a part of its own |
+>
+> read-surface: ... and a funnel stored without that count saying how many passed its first gate alone |
+Now:
+> fixture-expectations: ... and the business-first family's counting a member its approved setting's hooks keep off at a part of its own; and from 20.11's ruling of 2026-10-21, over the same night, the member readings' year's high read over the session before the year from the pulled history at the store's scale, ... and the one function both read the high through worked by hand at its edges, ... |
+>
+> read-surface: ... and a funnel stored without that count saying how many passed its first gate alone; and from 20.11's ruling of 2026-10-21 a member holding a bar on the night and no year's high saying its year's high is not available and not that it holds no bar |
+Why: the ruling's tests are named where the roster reads them.
+
 ### 2026-10-21 - ARCHITECTURE.html - each funnel bar the share of the members reaching its gate that passed it, with how many passed of how many reached beside it
 Corrects: a setup card drew each funnel bar as its count against the first gate's, so every bar after a gate stopping most of the index drew as a hairline and the gate doing the cutting could not be told at a glance; ruled by the operator on 2026-10-21 reading the setup cards.
 Was:
