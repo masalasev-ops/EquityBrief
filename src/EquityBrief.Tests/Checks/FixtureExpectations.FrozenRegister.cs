@@ -512,10 +512,9 @@ public partial class FixtureExpectations
         Assert.Empty(IndexFamilies.StandingRules([.. standing], at.AddMinutes(1)).Skipped);
     }
 
-    // The operator's register as it stood on the evening of 2026-10-20 after the morning's remedy, each row as the store
-    // holds it: the S&P 500's four sector heavyweights and the S&P 400's and 600's twenty-five rules, at the versions the
-    // code carried before the evening's rulings moved them.
-    static readonly (int Id, string Evaluator, string Version, string Registered, string Name, string Parameters)[] OperatorsRegisterOfTheEvening =
+    // A register shaped as the operator's stood before the remedy below, each row as the store holds it: the S&P 500's four
+    // sector heavyweights and the S&P 400's and 600's twenty-five rules, at versions the code no longer carries.
+    static readonly (int Id, string Evaluator, string Version, string Registered, string Name, string Parameters)[] OperatorsRegisterBeforeTheRemedy =
     [
         (348, "heavyweight", "161a4d9d9dce", "2026-10-18T04:37:57Z",
             "the live sector heavyweights rule at the 10 largest, 251 sessions against the sector's fund, 2 leaders, a beta of at least 1, monthly, sold on no longer leading",
@@ -606,18 +605,18 @@ public partial class FixtureExpectations
             "{\"design\": 0, \"floors\": 1, \"highBeta\": 1, \"industries\": 0, \"largest\": 10, \"leaders\": 2, \"lookBack\": 251, \"members\": 0, \"quality\": 1, \"soldOnLeading\": 1, \"soldUnderAverage\": 0, \"twelveOne\": 0, \"window\": 0}"),
     ];
 
-    // The evening's remedy's register lines over that register, in their order a second apart: the S&P 400 drift's
-    // strongest and its market variant retired, every rule whose evaluator moved registered again, and the drift frozen at
-    // the setting the operator ruled in the strongest's place. Each line is written; standing after them is every rule that
-    // stood but those two, the ruled setting live with its market variant, and the strongest in the background at its own
-    // settings beside the rule of the day before, every rule at the version the code carries and none of the index rules
-    // skipped by the night.
+    // The remedy's register lines over that register, in their order a second apart: the S&P 400 drift's strongest and its
+    // market variant retired, every rule whose evaluator moved registered again, and the drift frozen at the setting the
+    // operator ruled in the strongest's place. Each line is written; standing after them is every rule that stood but
+    // those two, the ruled setting live with its market variant, and the strongest in the background at its own settings
+    // beside the rule of the day before, every rule at the version the code carries and none of the index rules skipped by
+    // the night.
     [Fact]
-    public async Task TheEveningsRemedyFreezesTheSAndP400DriftAtTheRuledSettingOverARegisterShapedAsTheOperatorsStood()
+    public async Task TheRemedyFreezesTheSAndP400DriftAtTheRuledSettingOverARegisterShapedAsTheOperatorsStood()
     {
         using var store = new TemporaryStore().Migrated();
 
-        foreach (var (id, evaluator, version, registered, name, parameters) in OperatorsRegisterOfTheEvening)
+        foreach (var (id, evaluator, version, registered, name, parameters) in OperatorsRegisterBeforeTheRemedy)
         {
             store.Execute(
                 "INSERT INTO candidate_register (id, candidate, rule, test, evaluator, parameters, evaluator_version, event, retires, registered_at, evidence) " +
@@ -641,12 +640,12 @@ public partial class FixtureExpectations
         var drift = IndexEvaluator("drift-400");
         var freeze = Arguments(remedy[^1]);
         var ruled = FrozenParameters(freeze[Array.IndexOf(freeze, "--parameters") + 1]);
-        var strongest = CandidateEvaluator.Read(OperatorsRegisterOfTheEvening.Single(row => row.Id == 416).Parameters);
+        var strongest = CandidateEvaluator.Read(OperatorsRegisterBeforeTheRemedy.Single(row => row.Id == 416).Parameters);
         var background = FamilyRecords.BackgroundPrefix + "S&P 400 " + IndexRules.Words(drift, strongest);
         var standing = CandidateFamily.Standing(await new CandidateRegistrar(FixedClock.At(at.AddMinutes(1), SessionZones.UnitedStates), store.DatabaseFile).RowsAsync(), at.AddMinutes(1));
 
         Assert.Equal(
-            OperatorsRegisterOfTheEvening
+            OperatorsRegisterBeforeTheRemedy
                 .Where(row => row.Id is not (416 or 417))
                 .Select(row => row.Name)
                 .Concat(

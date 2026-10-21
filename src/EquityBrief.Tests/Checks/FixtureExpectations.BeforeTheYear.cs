@@ -13,11 +13,10 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Tests.Checks;
 
-// fixture-expectations, 20.11's ruling of the evening of 2026-10-20, clause 2 as amended: on a night whose store's year
-// holds fewer sessions than a reading needs, the S&P 400 breakout's year's high and the sector heavyweights' closes read
-// the sessions before the year from the pulled history at the store's scale, the forming list reading that high inside
-// the rule cards' own transaction, and a member the pulled history holds no session for reads none and is named; each
-// worked by hand over a night holding 251 sessions.
+// fixture-expectations, 20.11: on a night whose store's year holds fewer sessions than a reading needs, the S&P 400
+// breakout's year's high and the sector heavyweights' closes read the sessions the year falls short by from the pulled
+// history at the store's scale, the forming list reading that high inside the rule cards' own transaction, and a member
+// the pulled history holds no session for reads none and is named; each worked by hand over a night holding 251 sessions.
 // see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
 public partial class FixtureExpectations
 {
@@ -43,7 +42,7 @@ public partial class FixtureExpectations
 
     static readonly DateTimeOffset BeforeFrozenAt = new(2026, 10, 1, 12, 0, 0, TimeSpan.Zero);
 
-    // Three S&P 400 members over the 251 sessions to 2026-10-02 the store's year holds, the session before it held by the
+    // Three S&P 400 members over the 251 sessions to the night the store's year holds, the session before it held by the
     // pull alone, each with four profitable quarters, and the S&P 500's breadth of a half on the night. The pull holds IA's
     // and IB's bars at twice the store's prices, the first stored session at a close of 198 against the store's 99, and
     // the session before it at highs of 203 and 206; ID it holds none of. The S&P 400's breakout stands frozen.
@@ -162,9 +161,9 @@ public partial class FixtureExpectations
         Assert.Equal((sessions[2], 99m), (read["IG"].Before![0].Session, read["IG"].Before![0].Close));
     }
 
-    // The S&P 500's heavyweights over the store the wait reads, its year to Monday 2026-11-02 holding 251 sessions from
-    // 2025-11-03, one short of the 252 the twelve-month return reads: the pull holds W1's and W2's closes at twice the
-    // store's on 2025-11-03 and on 2025-10-31, the session before it, and none of W3's.
+    // The S&P 500's heavyweights over the store the wait reads, its year to a month's first session on a Monday holding
+    // 251 sessions, one short of the 252 the twelve-month return reads: the pull holds W1's and W2's closes at twice the
+    // store's on the year's first session and on the session before it, and none of W3's.
     [Fact]
     public async Task TheSAndP500sHeavyweightsReadTheCloseBeforeAYearOf251SessionsFromThePulledHistoryAndRebalanceInPlaceOfWaiting()
     {
@@ -188,15 +187,15 @@ public partial class FixtureExpectations
 
         var (cut, read) = await WaitNight(store, monday, "night-before-the-year");
 
-        // The store keeps 251 sessions from 2025-11-03; the book reads W1's and W2's close of 2025-10-31 from the pull at the
+        // The store keeps 251 sessions; the book reads W1's and W2's close of the session before them from the pull at the
         // store's scale and rebalances on the month's first session in place of waiting, W1 its leader and held.
         Assert.Equal(Day(firstStored), Text(store, "SELECT MIN(session_date) FROM bar;"));
         Assert.Equal(251, Scalar(store, "SELECT COUNT(DISTINCT session_date) FROM bar;"));
         Assert.Equal((true, 0, 0, 1), (read.Rebalanced, read.Entered.Count, read.Ended.Count, read.Held));
 
-        // W1's return over the 251 sessions worked by hand, its close on the night over its close on 2025-10-31: the pull's
-        // twice its close brought back by the store's close over the pull's on 2025-11-03, a half. W2 flat at 100 returns
-        // nothing, and W3, which the pull holds no close for, reads none.
+        // W1's return over the 251 sessions worked by hand, its close on the night over its close on the session before the
+        // year: the pull's twice its close brought back by the store's close over the pull's on the year's first session, a
+        // half. W2 flat at 100 returns nothing, and W3, which the pull holds no close for, reads none.
         var w1 = Statistic.FromRatio(WaitClose("W1", monday) / WaitClose("W1", before)) - 1.0;
 
         Assert.Equal(w1, double.Parse(Text(store, $"SELECT printf('%.12f', look_back) FROM heavyweight_night WHERE session_date = '{Day(monday)}' AND ticker = 'W1';"), CultureInfo.InvariantCulture), 9);
@@ -208,9 +207,9 @@ public partial class FixtureExpectations
             StringComparison.Ordinal);
     }
 
-    // The S&P 500's heavyweights over the same store with W2's year missing its session of 2026-03-02, the pull holding
-    // W2's closes on the two sessions before the year: W2 reads the one close the year falls short by and not the two its
-    // own bars fall short by, so its return reaches across no hole and it reads none, as on a night whose year holds 252.
+    // The S&P 500's heavyweights over the same store with W2's year missing a session inside it, the pull holding W2's
+    // closes on the two sessions before the year: W2 reads the one close the year falls short by and not the two its own
+    // bars fall short by, so its return reaches across no hole and it reads none, as on a night whose year holds 252.
     [Fact]
     public async Task TheSAndP500sHeavyweightsReadNoMoreBeforeTheYearThanItFallsShortByForAMemberMissingASessionInsideIt()
     {
