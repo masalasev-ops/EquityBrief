@@ -243,6 +243,15 @@ public partial class ReadSurface
             Regex.Matches(options, "<option value=\"([^\"]*)\"").Select(match => match.Groups[1].Value));
         Assert.Contains($"<li data-family=\"breakout\" data-verdict=\"{RuleVerdict.Passed}\">", lists, StringComparison.Ordinal);
 
+        // From the 19.4 correction of 2026-10-21 each family's line keeps its too-few words inside its sentence, between
+        // its count and where its record starts: the rule setting them on a line of their own beneath a count in paper
+        // trading's table is taken back to the sentence's flow in every sentence holding them, this one and a trade log's.
+        var heads = Assert.Single(Blocks(lists, "<div class=\"paper-heads\">.*?</div>"));
+
+        Assert.Matches("Since registered: \\d+ trade\\(s\\), <span class=\"too-few\">too few (trades|months) \\(\\d+ of \\d+\\)</span>, ", heads);
+        Assert.Contains(".paper-table .verdict-chosen,.too-few{display:block;", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".paper-log-since .too-few,.paper-heads .too-few{display:inline}", Stylesheet.Css, StringComparison.Ordinal);
+
         // The settings are in no byte of the store, no run log row and no exported report.
         Assert.DoesNotContain("98765", await client.GetStringAsync("/exports/name/T6"), StringComparison.Ordinal);
 

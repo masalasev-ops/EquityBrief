@@ -5887,3 +5887,22 @@ Mutated:    the rule, stated before the runs, for every correction of this pull 
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 19.4 - correction: Past picks' line for each family keeps its too-few words inside its sentence   2026-10-21
+
+Queue:      as the 19.2 correction's entry above.
+Found:      by the second phase 19 sign-off review of 2026-10-21, on Past picks at 1440 px and 390 px in both palettes over
+            the operator's store: each family's line beside the lists' trades broke into three lines, "Since registered: 9
+            trade(s)," then "too few trades (5 of 300)" on a line of its own and then ", from 2026-10-05, counting the
+            version", the rule setting those words on a line beneath a count in paper trading's table reaching the
+            sentence, which the trade log's own line had been taken back from and this one had not; it stood in the first
+            review's own screenshot too.
+Corrected:  the words stand inside the sentence, the table's rule taken back to its flow there as in the trade log's line.
+            The roster and the changelog.
+Tests:      none more: the paper trading test reads each line's too-few words between its count and its start, the table's
+            rule and the rule taking both sentences back to their flow.
+Mutated:    under the rule stated in the 19.2 correction's entry: m3 the lists' line left out of the rule taking a sentence
+            back to its flow: red at the paper trading test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.

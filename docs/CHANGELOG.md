@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches Past picks' lines for each family keeping their too-few words inside their sentences
+Corrects: on Past picks each family's line beside the lists' trades broke into three lines, its too-few words on a line of their own and the rest of its sentence opening on a comma, found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... and the trade line's two keys and its heading's tip naming the stop's red and the target's orange the stylesheet draws them in, no words of either key calling the stop green |
+Now:
+> read-surface: ... and the trade line's two keys and its heading's tip naming the stop's red and the target's orange the stylesheet draws them in, no words of either key calling the stop green; and from the 19.4 correction of 2026-10-21 each family's line beside the lists' trades keeping its too-few words inside its sentence, between its count and where its record starts, the rule that sets them on a line of their own in paper trading's table taken back to the sentence's flow there as in a trade log's line |
+Why: the 19.4 correction of 2026-10-21 adds these assertions.
+
 ### 2026-10-21 - .claude/rules/checks.md - read-surface reaches every date line wrapping whole on a phone and the trade line's words naming the hues it is drawn in
 Corrects: the phone's one-line rule cut a screen's date line before its date, and the trade line's keys named its stop green where it is drawn red, both found by the second phase 19 sign-off review of 2026-10-21.
 Was:

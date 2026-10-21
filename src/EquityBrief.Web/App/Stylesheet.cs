@@ -475,7 +475,7 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-heads ul{margin:6px 0 0;padding-left:18px;font-size:13px}
 .paper-heads li{margin:3px 0}
 .account-pick{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0;max-width:min(100%,560px)}
-.paper-log-since .too-few{display:inline}
+.paper-log-since .too-few,.paper-heads .too-few{display:inline}
 .paper-log-table td:nth-child(-n+5){white-space:nowrap}
 .paper-running{margin:0 0 12px;max-width:420px}
 .paper-running figcaption{font-size:12.5px;color:var(--ink-2)}
