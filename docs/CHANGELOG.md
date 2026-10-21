@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches the Run page's funnel naming its count as the swing filter's
+Corrects: the Run page's funnel said "0 stock(s) on this night's list" on a night Tonight listed five buy points, found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... the market line's count and the line's in the buy points' place reading nought with no link, and a night reading some linking both to the card |
+Now:
+> read-surface: ... the market line's count and the line's in the buy points' place reading nought with no link, and a night reading some linking both to the card; and from the 13.1 correction of 2026-10-21 the Run page's funnel naming its count as the stocks that passed every one of the swing filter's checks that night, and never the night's list |
+Why: the 13.1 correction of 2026-10-21 adds these assertions.
+
+### 2026-10-21 - ARCHITECTURE.html - the Run page's funnel names its count as the swing filter's
+Corrects: the row drew the funnel's count as the count listed, which it was until 13.1 drew the page's list from the setup families, so the Run page called the swing filter's passing names the night's list on a night the families listed others, found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> From the index to tonight's list (15): a funnel of how many members passed each of the filter's checks in turn down to those left after the exclusions; the count listed with a link opening tonight's list
+Now:
+> From the index to tonight's list (15): a funnel of how many members passed each of the filter's checks in turn down to those left after the exclusions; the count listed with a link opening tonight's list, from the 13.1 correction of 2026-10-21 the count named as the swing filter's since the setup families draw tonight's list
+Why: the operator chose on 2026-10-21 to correct it with the review's other findings, "Run page funnel words".
+
 ### 2026-10-21 - .claude/rules/checks.md - read-surface reaches a night with no stock one gate short drawing no card
 Corrects: a night reading no stock one gate short drew a card holding only the line "0 stocks one gate short of a buy point", its counts above linking to it, found on the S&P 400's Tonight by the second phase 19 sign-off review of 2026-10-21.
 Was:

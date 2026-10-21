@@ -340,7 +340,11 @@ public partial class ReadSurface
         Assert.Equal(
             [("members", "5"), ("market", "5"), ("trend and strength", "4"), ("setup", "3"), ("trigger", "2"), ("trade", "2"), ("excluded", "1")],
             Regex.Matches(funnel, "<g data-step=\"([^\"]+)\" data-count=\"(\\d+)\">").Select(match => (match.Groups[1].Value, match.Groups[2].Value)));
-        Assert.Contains("<b>1</b> stock(s) on this night's list. <a class=\"fp-open\" href=\"#/night/2026-09-10\">", funnel, StringComparison.Ordinal);
+        Assert.Contains("<b>1</b> stock(s) passed every one of the swing filter's checks this night. <a class=\"fp-open\" href=\"#/night/2026-09-10\">Open tonight's list", funnel, StringComparison.Ordinal);
+
+        // From the 13.1 correction of 2026-10-21 the count is named as the swing filter's, since from 13.1 the setup
+        // families draw tonight's list and a night can list picks the filter passed none of.
+        Assert.DoesNotContain("on this night's list", page, StringComparison.Ordinal);
 
         // Every table the page drew before sits whole in a folded section beneath the pictures.
         var detail = page[At("<section class=\"run-detail\">")..];

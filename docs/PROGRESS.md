@@ -5963,3 +5963,38 @@ Mutated:    under the rule stated in the 19.2 correction's entry: m8 the card dr
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 13.1 - correction: the Run page's funnel names its count as the swing filter's, where it called it the night's list   2026-10-21
+
+Queue:      as the 19.2 correction's entry above.
+Ruled:      among the smaller items the operator chose on 2026-10-21 to correct in this pull request, "Run page funnel
+            words".
+Found:      by the second phase 19 sign-off review of 2026-10-21, on the Run page for the night of 2026-10-20 over the
+            operator's store: the funnel's closing line said "0 stock(s) on this night's list" on a night Tonight listed five
+            buy points and the same page counted five names new that evening. The line 12.3 wrote counts the members passing
+            every one of the swing filter's checks, which was the night's list until 13.1's framework drew the page's list
+            from the setup families.
+Corrected:  the line says how many stocks passed every one of the swing filter's checks that night, its link opening
+            tonight's list. Section 15's row, the roster and the changelog.
+Tests:      none more: the Run page test reads the line's words and no line calling the count the night's list.
+Measured:   read back from a scratch Release build of this pull request's tree over the operator's store on its own port at
+            1440 px and a true 390 px in both palettes, writing nothing but the read surface's row on the run log: Past
+            picks' five lines each one sentence with its too-few words inside it; the Watch list's and Researched's dates
+            whole at 1440 px; on a phone the Watch list 1,084 px tall where it was 1,853 with each pill on one line,
+            Researched 2,228 where it was 3,354, Paper trading's, Loop's and Past picks' date lines wrapping whole with their
+            dates and the account form a setting beneath another; the S&P 400's Tonight drawing no card of the stocks one
+            gate short with both counts reading nought unlinked; the Run page's funnel line in its new words; no page wider
+            than its screen.
+Claims:     1372, as before: no row's claim added or removed by this pull request.
+Mutated:    under the rule stated in the 19.2 correction's entry: m11 the line's old words: red at the Run page test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2580 of 2580 tests ran with none failed,
+            migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the review's judgement items put to the operator on 2026-10-21 and still theirs: counts written with "(s)" on
+            phase 19's pages, the heading percentiles averaging readings that point opposite ways, and the chart page's next
+            report on the night a stock reported; found beyond phase 19, the frozen S&P 400 and 600 heavyweights cards
+            drawing their setting's key as stored, owed a 20.11 correction; the S&P 500's groups and pages on the GICS
+            scheme and the Financials' revenue basis, both put to the operator; PR 505 rebased with its migration at 104;
+            the phase 18 sign-off by a fresh session; and the phase 19 sign-off by a fresh session over the corrected main.

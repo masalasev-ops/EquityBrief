@@ -7575,7 +7575,7 @@ public sealed partial class MarkRenderer : IComponent
         picture.Append("</svg>");
         picture.Append(Invariant, $"<p class=\"fp-listed\"><b>{funnel.Passing}</b> ");
         picture.Append(funnel.Rule == ListRules.Filter
-            ? Formatted($"stock(s) on this night's list. <a class=\"fp-open\" href=\"{Escaped(tonight)}\">Open the list &#8594;</a></p>")
+            ? Formatted($"stock(s) passed every one of the swing filter's checks this night. <a class=\"fp-open\" href=\"{Escaped(tonight)}\">Open tonight's list &#8594;</a></p>")
             : Formatted($"stock(s) passed, and the six reasons drew this evening's list. <a class=\"fp-open\" href=\"{Escaped(tonight)}\">Open the list &#8594;</a></p>"));
         picture.Append("</div>");
 
