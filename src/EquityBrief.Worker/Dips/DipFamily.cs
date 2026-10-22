@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Bars;
+using EquityBrief.Core.Components;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Ledger;
@@ -32,8 +33,31 @@ public sealed record DipOutcome(DateOnly? Night, IReadOnlyList<DipIndexOutcome> 
 // failure in it leaves none of its writes and is named on its row while the other indices go on.
 // see: The short-term dip family is built as phase 22 ahead of the hold on new work, and phase 20's sign-off waits on none of it
 // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
-public sealed class DipNight
+public sealed class DipFamily : IComponent
 {
+    // The members and their year through the index families' loader, the other families' lists and open trades through
+    // their own readers, the company's value for a trade's cost, and its own four tables, which it alone writes.
+    public static ComponentAccess Access => new(
+        Stores:
+        [
+            new StoreTouch(Store.Membership, Touch.Read),
+            new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.PulledBar, Touch.Read),
+            new StoreTouch(Store.Calendar, Touch.Read),
+            new StoreTouch(Store.ReportedQuarter, Touch.Read),
+            new StoreTouch(Store.FamilyPick, Touch.Read),
+            new StoreTouch(Store.ForwardReturn, Touch.Read),
+            new StoreTouch(Store.IndexFamilyPick, Touch.Read),
+            new StoreTouch(Store.IndexFamilyTrade, Touch.Read),
+            new StoreTouch(Store.MemberReading, Touch.Read),
+            new StoreTouch(Store.DipNight, Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.DipResult, Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.DipPick, Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.DipTrade, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
+            new StoreTouch(Store.RunLog, Touch.Insert),
+        ],
+        Feeds: []);
+
     public const string Stage = "dip-family";
 
     public const string Ok = "ok";
@@ -129,7 +153,7 @@ public sealed class DipNight
     readonly IClock clock;
     readonly string databaseFile;
 
-    public DipNight(IClock clock, string databaseFile)
+    public DipFamily(IClock clock, string databaseFile)
     {
         this.clock = clock;
         this.databaseFile = databaseFile;

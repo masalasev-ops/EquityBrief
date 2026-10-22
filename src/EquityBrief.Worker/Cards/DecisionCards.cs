@@ -60,6 +60,8 @@ public sealed class DecisionCards : IComponent
             new StoreTouch(Store.IndexFamilyNight, Touch.Read),
             new StoreTouch(Store.IndexFamilyResult, Touch.Read),
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
+            new StoreTouch(Store.DipResult, Touch.Read),
+            new StoreTouch(Store.DipPick, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightRuleHolding, Touch.Read),
             new StoreTouch(Store.CandidateRegister, Touch.Read),
@@ -113,6 +115,14 @@ public sealed class DecisionCards : IComponent
         WHERE index_code = $index AND session_date = $night AND place IS NOT NULL
         ORDER BY place, ticker;
     ";
+
+    const string DipPicks = @"
+        SELECT ticker, 'dip', place FROM dip_pick
+        WHERE index_code = $index AND session_date = $night AND state = 'listed' AND place IS NOT NULL
+        ORDER BY place, ticker;
+    ";
+
+    const string DipRow = "SELECT entry, stop, time_limit, rsi FROM dip_result WHERE index_code = $index AND session_date = $night AND ticker = $ticker;";
 
     const string LargeHeavyweights = @"
         SELECT ticker, sector, entry_close FROM heavyweight_holding
@@ -354,7 +364,11 @@ public sealed class DecisionCards : IComponent
         // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
         var indexPicks = large ? await PicksAsync(connection, transaction, IndexPicks, index, night, cancellation) : [];
 
-        if (picks.Count == 0 && bought.Count == 0 && indexPicks.Count == 0)
+        // The short-term dip's picks on every index, which its own step lists last among the swing families.
+        // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+        var dipPicks = await PicksAsync(connection, transaction, DipPicks, index, night, cancellation);
+
+        if (picks.Count == 0 && bought.Count == 0 && indexPicks.Count == 0 && dipPicks.Count == 0)
         {
             return 0;
         }
@@ -403,6 +417,17 @@ public sealed class DecisionCards : IComponent
             var score = await ScorePartAsync(connection, transaction, index, pick.Family, pick.Ticker, scores, cancellation);
 
             written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, new MarketReading(breadth, floor, true), sectors, ranks, null, cancellation, score);
+        }
+
+        // The dip's picks, each on its own plan at the listing close with its stop and its time limit, the gates its rule
+        // reads in its words, and its own market setting, none while it is provisional, in place of the swing families'
+        // check.
+        foreach (var pick in dipPicks)
+        {
+            var plan = await DipPlanAsync(connection, transaction, index, pick, night, cancellation);
+            var score = await ScorePartAsync(connection, transaction, index, pick.Family, pick.Ticker, scores, cancellation);
+
+            written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, new MarketReading(null, 0, false), sectors, ranks, null, cancellation, score);
         }
 
         var place = 0;
@@ -979,6 +1004,28 @@ public sealed class DecisionCards : IComponent
 
     // An S&P 400 or 600 pick's plan off its index's row, and its gates as the night's settings state its rule: the floors,
     // the profit gate, the market check and the family's own setting, since those rows store the rule and not its values.
+    // A dip pick's plan as its step stored it: bought on the listing close's plan at the next open, its stop that many
+    // typical moves under, no target, held to its time limit; and the gates its rule reads, in its own words.
+    static async Task<Plan> DipPlanAsync(SqliteConnection connection, SqliteTransaction transaction, string index, Pick pick, DateOnly night, CancellationToken cancellation)
+    {
+        var setting = DipRule.Provisional;
+        IReadOnlyList<string> gates =
+        [
+            "floors, those the index families read on its index",
+            FormattableString.Invariant($"trend, the close above its {DipRule.TrendSessions}-session average"),
+            FormattableString.Invariant($"drop, its {DipRule.RsiSessions}-session RSI under {setting.RsiUnder:0.##}"),
+            FormattableString.Invariant($"report, none on the {setting.DropSessions} sessions to the listing nor due before its {setting.TimeLimit} sessions end"),
+            "market, its own setting, none while it is provisional",
+        ];
+
+        await using var command = Command(connection, transaction, DipRow, [("$index", index), ("$night", Stamp(night)), ("$ticker", pick.Ticker)]);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        return await reader.ReadAsync(cancellation)
+            ? new Plan(MoneyOrNone(reader, 0), MoneyOrNone(reader, 1), null, reader.IsDBNull(2) ? null : reader.GetInt32(2), gates)
+            : new Plan(null, null, null, null, gates);
+    }
+
     static async Task<Plan> IndexPlanAsync(SqliteConnection connection, SqliteTransaction transaction, string index, Pick pick, DateOnly night, JsonElement? settings, CancellationToken cancellation)
     {
         await using var command = Command(connection, transaction, IndexFamilyRow, [("$index", index), ("$night", Stamp(night)), ("$ticker", pick.Ticker), ("$family", pick.Family)]);

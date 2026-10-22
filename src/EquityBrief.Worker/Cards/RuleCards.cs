@@ -79,6 +79,9 @@ public sealed class RuleCards : IComponent
             new StoreTouch(Store.IndexRuleTrade, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightRuleHolding, Touch.Read),
+            new StoreTouch(Store.DipNight, Touch.Read),
+            new StoreTouch(Store.DipResult, Touch.Read),
+            new StoreTouch(Store.DipPick, Touch.Read),
             new StoreTouch(Store.RuleNight, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RulePick, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.FormingRow, Touch.Insert | Touch.Delete),
@@ -110,6 +113,12 @@ public sealed class RuleCards : IComponent
     ";
 
     const string ClearTheHistory = "DELETE FROM rule_night WHERE index_code = $index AND family = $family AND rule = $rule AND source = 'history';";
+
+    const string DipNightOn = "SELECT fault FROM dip_night WHERE index_code = $index AND session_date = $night;";
+
+    const string DipAnswers = "SELECT passed, reason FROM dip_result WHERE index_code = $index AND session_date = $night;";
+
+    const string DipListed = "SELECT COUNT(*) FROM dip_pick WHERE index_code = $index AND session_date = $night AND state = 'listed';";
 
     // The replay's row of a rule on the night's own session, which the night's own row stands in place of.
     const string ClearTheReplayedNight = "DELETE FROM rule_night WHERE index_code = $index AND session_date = $night AND family = $family AND rule = $rule AND source = 'history';";
@@ -246,9 +255,10 @@ public sealed class RuleCards : IComponent
                     var one = index == IndexFamilies.LargeIndex
                         ? await LargeAsync(connection, transaction, night, standing, cancellation)
                         : await IndexAsync(connection, transaction, index, night, standing, cancellation);
+                    var dip = await DipAsync(connection, transaction, index, night, cancellation);
 
                     await transaction.CommitAsync(cancellation);
-                    written.Add(one);
+                    written.Add(one with { Rules = one.Rules + dip });
                 }
                 catch (Exception failure) when (!cancellation.IsCancellationRequested)
                 {
@@ -654,6 +664,52 @@ public sealed class RuleCards : IComponent
 
     // The members passing each gate and every gate before it, in the rule's order, read off each member's answers by
     // gate name.
+    // The short-term dip's provisional rule on the index, from its own rows: what it listed and its funnel off the gate
+    // each member failed first, its row not evaluated where its part of the night failed, and none where its step did not
+    // read the night.
+    // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+    async Task<int> DipAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, CancellationToken cancellation)
+    {
+        // No row where the step did not read the night, and a stored fault where its part failed.
+        if (await ScalarAsync(connection, DipNightOn, [("$index", index), ("$night", Stamp(night))], cancellation, transaction) is not { } fault)
+        {
+            return 0;
+        }
+
+        var computed = fault is DBNull;
+        var answers = new List<(bool Passed, string? Reason)>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText = DipAnswers;
+            command.Parameters.AddWithValue("$index", index);
+            command.Parameters.AddWithValue("$night", Stamp(night));
+
+            await using var rows = await command.ExecuteReaderAsync(cancellation);
+
+            while (await rows.ReadAsync(cancellation))
+            {
+                answers.Add((rows.GetInt64(0) == 1, rows.IsDBNull(1) ? null : rows.GetString(1)));
+            }
+        }
+
+        var listed = Convert.ToInt32(await ScalarAsync(connection, DipListed, [("$index", index), ("$night", Stamp(night))], cancellation, transaction), CultureInfo.InvariantCulture);
+
+        await InsertNightsAsync(connection, transaction, index, night, [new RuleNightRow(index, DipRule.Name, ProvisionalRule, computed, listed, computed ? DipFunnel(answers) : null, null, computed ? answers.Count : null)], cancellation);
+
+        return 1;
+    }
+
+    // The members passing each of the dip's gates and every gate before it, read off the gate each failed first and
+    // named as the gate.
+    public static IReadOnlyList<(string Gate, int Passed)> DipFunnel(IReadOnlyList<(bool Passed, string? Reason)> answers)
+    {
+        string[] reasons = [DipRule.MarketClosed, DipRule.UnderTheFloors, DipRule.ShortHistory, DipRule.NoTrend, DipRule.NoDrop, DipRule.ReportNear, DipRule.NoMove];
+
+        return [.. reasons.Select((reason, at) => (DipRule.Gates[at], answers.Count(answer => answer.Passed || (answer.Reason is { } failed && Array.IndexOf(reasons, failed) > at))))];
+    }
+
     public static IReadOnlyList<(string Gate, int Passed)> Funnel(IReadOnlyList<string> order, IReadOnlyList<IReadOnlyDictionary<string, string>> answers)
     {
         var counts = new List<(string, int)>();

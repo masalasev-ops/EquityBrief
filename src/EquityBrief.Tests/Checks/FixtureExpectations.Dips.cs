@@ -104,7 +104,7 @@ public partial class FixtureExpectations
         // session on or after it.
         var night = new DateOnly(2026, 10, 2);
         DateOnly[] calendar = [new(2026, 9, 28), new(2026, 9, 29), new(2026, 9, 30), new(2026, 10, 1), night];
-        var (reports, next) = DipNight.ReportsOf([new(2026, 9, 27), night, new(2026, 10, 16), new(2026, 10, 19)], calendar, calendar.Length - 1, night);
+        var (reports, next) = DipFamily.ReportsOf([new(2026, 9, 27), night, new(2026, 10, 16), new(2026, 10, 19)], calendar, calendar.Length - 1, night);
 
         // 2026-09-27 is a Sunday, read at the Monday after, four sessions back; 2026-10-16 is the tenth session after
         // Friday 2026-10-02 and 2026-10-19 the eleventh.
@@ -211,7 +211,7 @@ public partial class FixtureExpectations
     {
         using var store = DipStore();
         var clock = FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates);
-        var outcome = await new DipNight(clock, store.DatabaseFile).RunAsync("night-dip");
+        var outcome = await new DipFamily(clock, store.DatabaseFile).RunAsync("night-dip");
         var mid = outcome.Indices.Single(index => index.Index == "MID");
 
         // Ten members read, eight passing: every one but DR, whose report falls on the night, and DN, which did not fall.
@@ -237,7 +237,7 @@ public partial class FixtureExpectations
         // ten sessions, each stop four typical moves under the close.
         Assert.Equal(
             ["DA|1|10|4", "DB|2|10|4", "DC|3|10|4", "DD|4|10|4", "DE|5|10|4"],
-            FamilyRows(store, $"SELECT ticker, place, time_limit, risk_moves FROM dip_trade WHERE rule = '{DipNight.ProvisionalRule}' AND index_code = 'MID' ORDER BY ticker;"));
+            FamilyRows(store, $"SELECT ticker, place, time_limit, risk_moves FROM dip_trade WHERE rule = '{DipFamily.ProvisionalRule}' AND index_code = 'MID' ORDER BY ticker;"));
         Assert.Equal((5, 1, 1), (mid.Listed, mid.HeldByATrade, mid.UnderAnother));
         Assert.All(
             FamilyRows(store, "SELECT entry, stop, end_reason FROM dip_trade WHERE index_code = 'MID';"),
@@ -246,5 +246,30 @@ public partial class FixtureExpectations
         // No other family's row is written: the families' own tables hold what the store was given and nothing more.
         Assert.Equal(["1"], FamilyRows(store, "SELECT COUNT(*) FROM index_family_pick;"));
         Assert.Equal(["0"], FamilyRows(store, "SELECT COUNT(*) FROM index_family_trade;"));
+    }
+
+    [Fact]
+    public async Task TheDipsPicksGetACardEachAndItsRuleItsNightsRowWithItsFunnelOffTheGateEachMemberFailedFirst()
+    {
+        using var store = DipStore();
+        var clock = FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        await new DipFamily(clock, store.DatabaseFile).RunAsync("night-dip");
+        await new EquityBrief.Worker.Cards.DecisionCards(clock, store.DatabaseFile).RunAsync("night-dip-cards");
+        await new EquityBrief.Worker.Cards.RuleCards(clock, store.DatabaseFile).RunAsync("night-dip-rules", [], new DateTimeOffset(2026, 10, 2, 23, 0, 0, TimeSpan.Zero));
+
+        // A card for each of the five the dip listed, under its own word, and none for a stock it held back.
+        Assert.Equal(
+            ["DA|dip|1", "DB|dip|2", "DC|dip|3", "DD|dip|4", "DE|dip|5"],
+            FamilyRows(store, "SELECT ticker, family, place FROM decision_card WHERE index_code = 'MID' AND family = 'dip' ORDER BY place;"));
+
+        // Its provisional rule's night: five listed, the ten members read reaching the market setting, which every one
+        // passes, then the floors, the history and the trend, which every one passes; DN stopping at the drop and DR at the
+        // report, so eight pass every gate.
+        Assert.Equal(["provisional|1|5"], FamilyRows(store, "SELECT rule, evaluated, listed FROM rule_night WHERE index_code = 'MID' AND family = 'dip';"));
+        Assert.Equal(
+            [("market", 10), ("floors", 10), ("history", 10), ("trend", 10), ("drop", 9), ("report", 8), ("typical move", 8)],
+            EquityBrief.Core.Cards.RuleRows.ReadGates(FamilyRows(store, "SELECT gates FROM rule_night WHERE index_code = 'MID' AND family = 'dip';").Single()));
+        Assert.Equal(10, EquityBrief.Core.Cards.RuleRows.ReachedOf(FamilyRows(store, "SELECT gates FROM rule_night WHERE index_code = 'MID' AND family = 'dip';").Single()));
     }
 }

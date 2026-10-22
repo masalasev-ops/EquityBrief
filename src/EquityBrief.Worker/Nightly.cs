@@ -538,7 +538,7 @@ public static class Nightly
                 // list and open trade, and before the cards, which read its picks. A failure in an index's part is named on
                 // the step's row, and the step goes on.
                 // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
-                var dips = await new EquityBrief.Worker.Dips.DipNight(clock, store.DatabaseFile).RunAsync(runId, night.Token);
+                var dips = await new EquityBrief.Worker.Dips.DipFamily(clock, store.DatabaseFile).RunAsync(runId, night.Token);
 
                 // A card for each stock every index's families listed and each its books bought, read from the rows the
                 // stages above stored. A failure in an index's cards is named on their own row, and the step goes on.
@@ -592,7 +592,7 @@ public static class Nightly
                     (ruleCards.Indices.Any(one => one.Fault is not null) ? ", " + string.Join(", ", ruleCards.Indices.Where(one => one.Fault is not null).Select(one => $"the {one.Index} rule rows not computed tonight")) : string.Empty) +
                     $"; {alarmed}" +
                     (takenFollowed.Fault is null ? $"; {takenFollowed.Followed} taken trade(s) followed" : "; the taken trades not followed tonight");
-            }, [EquityBrief.Worker.Loop.LoopApply.Stage, SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, IndexFamilies.Stage, EquityBrief.Worker.Dips.DipNight.Stage, DecisionCards.Stage, RuleCards.Stage, EquityBrief.Worker.Loop.LiveAlarmReader.Stage, TakenFollower.Stage]),
+            }, [EquityBrief.Worker.Loop.LoopApply.Stage, SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, IndexFamilies.Stage, EquityBrief.Worker.Dips.DipFamily.Stage, DecisionCards.Stage, RuleCards.Stage, EquityBrief.Worker.Loop.LiveAlarmReader.Stage, TakenFollower.Stage]),
             // Section 14's step 17. The setup ledger, after the families have drawn every index's list, since it
             // stores the live rule's own pass and the night's pick beside each setup. It appends tonight's setups
             // on each index and closes the windows of the setups stored before that ended on tonight's close. A

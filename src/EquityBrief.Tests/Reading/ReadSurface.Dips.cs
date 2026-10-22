@@ -26,7 +26,7 @@ public partial class ReadSurface
     {
         store.Execute(
             "INSERT INTO dip_night (index_code, session_date, members, market, market_open, settings, passed, listed, fault) VALUES " +
-            $"('MID', '{IndexNight}', 3, 'off', 1, '{DipNight.Settings(DipRule.Provisional)}', 3, 1, NULL);");
+            $"('MID', '{IndexNight}', 3, 'off', 1, '{DipFamily.Settings(DipRule.Provisional)}', 3, 1, NULL);");
         store.Execute(
             "INSERT INTO dip_result (index_code, session_date, ticker, passed, place, entry, stop, time_limit, rsi, reason, gates) VALUES " +
             $"('MID', '{IndexNight}', 'M2', 1, 1, '50', '44', 10, 3.5, NULL, '{DipGatesPassed()}'), " +
