@@ -98,6 +98,19 @@ public static class SetupFamilies
     // The families every index's page draws in its order: the page's own and, after them, the fundamentals-first family.
     public static IReadOnlyList<SetupFamily> OnEveryIndex { get; } = [.. InPageOrder, FundamentalsFirst];
 
+    // The short-term dip, read on every index by a step of its own after every other family's and scored on rows of its
+    // own: in no list a pinned step reads, its card drawn after the fundamentals-first family's on every index, and on no
+    // page that waits for its freeze, paper trading and the Loop among them, until its freeze.
+    // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+    public static SetupFamily Dips { get; } = new(
+        DipRule.Name,
+        "Short-term dip",
+        "Short dips in an uptrend",
+        "Sharp drop in an uptrend",
+        DipRule.Provisional.Words,
+        DipRule.Name,
+        DipRule.Provisional.TimeLimit);
+
     // The sector heavyweights, the page's fourth card: a rotation held while it leads, with a book of its own in place
     // of a list of the night's buy points, so it is drawn after the swing families and stands in none of their
     // orders, horizons or caps. A stock it holds is free for any swing family, each card keeping its own one trade a
@@ -115,18 +128,22 @@ public static class SetupFamilies
     // fundamentals-first family after them and the sector heavyweights last, by the word the store keeps each under.
     public static IReadOnlyList<string> Order { get; } = [.. OnEveryIndex.Select(family => family.Name), HeavyweightRule.Name];
 
-    // Where a family stands in the one order, counted from one, and past every family for a word it does not hold.
+    // The order every card and row is drawn in, Tonight's: the one order with the short-term dip after the
+    // fundamentals-first family and before the sector heavyweights.
+    public static IReadOnlyList<string> PageOrder { get; } = [.. OnEveryIndex.Select(family => family.Name), DipRule.Name, HeavyweightRule.Name];
+
+    // Where a family stands in the page's order, counted from one, and past every family for a word it does not hold.
     public static int OrderOf(string name)
     {
-        for (var at = 0; at < Order.Count; at++)
+        for (var at = 0; at < PageOrder.Count; at++)
         {
-            if (string.Equals(Order[at], name, StringComparison.Ordinal))
+            if (string.Equals(PageOrder[at], name, StringComparison.Ordinal))
             {
                 return at + 1;
             }
         }
 
-        return Order.Count + 1;
+        return PageOrder.Count + 1;
     }
 
     // The families the page drew once and draws no longer, kept so a pick one listed is still named and scored.
@@ -141,7 +158,7 @@ public static class SetupFamilies
     public static IReadOnlyList<SetupFamily> Evaluated { get; } = [.. InPageOrder.Where(family => family.Name != Pullback)];
 
     public static SetupFamily? Named(string name) =>
-        OnEveryIndex.Concat(Former).FirstOrDefault(family => string.Equals(family.Name, name, StringComparison.Ordinal));
+        OnEveryIndex.Append(Dips).Concat(Former).FirstOrDefault(family => string.Equals(family.Name, name, StringComparison.Ordinal));
 
     // Where a family stands in the page's order, counted from one, and past every family for a name the
     // page does not draw.

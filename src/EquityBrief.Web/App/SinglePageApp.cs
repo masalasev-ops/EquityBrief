@@ -279,7 +279,8 @@ public sealed partial class SinglePageApp : IComponent
         HeavyweightCardView? heavyweights,
         bool marketOpen,
         DateOnly night,
-        IReadOnlyList<MarketCheckView>? checks = null)
+        IReadOnlyList<MarketCheckView>? checks = null,
+        bool? dipOpen = null)
     {
         var tiles = new List<SetupTileView>();
         var points = new List<BuyPointView>();
@@ -289,7 +290,11 @@ public sealed partial class SinglePageApp : IComponent
         foreach (var card in families.OrderBy(card => EquityBrief.Core.Families.SetupFamilies.OrderOf(card.Family)))
         {
             var forming = card.RuleChoice?.Forming?.Forming ?? 0;
-            var open = checks?.FirstOrDefault(check => check.Family == card.Family) is { } own ? own.Open : marketOpen;
+
+            // The short-term dip's tile reads its own market setting and never the swing families' check.
+            // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+            var open = card.Family == EquityBrief.Core.Families.DipRule.Name ? dipOpen ?? true
+                : checks?.FirstOrDefault(check => check.Family == card.Family) is { } own ? own.Open : marketOpen;
             var state = card.Picks.Count > 0
                 ? card.HeldBack > 0 ? HeldBack(card.HeldBack) : "listing tonight"
                 : !open ? "the market check closed"
@@ -2651,7 +2656,7 @@ public sealed partial class SinglePageApp : IComponent
             // beneath it the stock's plan with the links the selected name's region carries and its pick's card, the row the
             // link names open.
             // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
-            var (tiles, points) = TopOf(families, heavyweights, line?.Open ?? true, night);
+            var (tiles, points) = TopOf(families, heavyweights, line?.Open ?? true, night, dipOpen: line?.DipOpen);
             var folded = points
                 .GroupBy(point => point.Pick.Row.Ticker, StringComparer.Ordinal)
                 .ToDictionary(
@@ -2837,7 +2842,7 @@ public sealed partial class SinglePageApp : IComponent
         // row folding beneath it the bands the night stored for the stock, with the line saying its plan is read for the
         // S&P 500's members alone, and its pick's card, the row the link names open.
         // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
-        var (tiles, points) = TopOf(families, heavyweights, line.Open, night, line.Checks);
+        var (tiles, points) = TopOf(families, heavyweights, line.Open, night, line.Checks, line.DipOpen);
         var open = points.Any(point => point.Pick.Row.Ticker == selectedTicker) ? selectedTicker : null;
 
         region.Append(marks.SetupTiles(tiles));

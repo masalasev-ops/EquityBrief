@@ -110,7 +110,8 @@ public sealed record UntestedLineView(string Line, double? Adjusted);
 // The line tonight's page opens on, on a night the families drew its list: the index it is over, whether the
 // market check left the lists open, the breadth it read against its floor, how many of the index's members a
 // setup passed, the buy points the page lists and how many of the setups list one, the stocks a single gate
-// short of one where the night read them, and the trades still open.
+// short of one where the night read them, and the trades still open; and from 22.1 the short-term dip's own market
+// setting in words with whether it left the dip's list open, none on a night the dip's step did not read.
 // see: The market check closes every swing family's list together, and the sector heavyweights read none
 // see: Every page reads one index at a time chosen under Universe, and every figure names its index
 public sealed record MarketLineView(
@@ -130,7 +131,9 @@ public sealed record MarketLineView(
     string? RunHref = null,
     int? Watching = null,
     string? CloseHref = null,
-    IReadOnlyList<MarketCheckView>? Checks = null);
+    IReadOnlyList<MarketCheckView>? Checks = null,
+    string? Dip = null,
+    bool DipOpen = false);
 
 // One setup's own market check on an S&P 400 or 600 night, as its rule's first stored part read it for every member: the
 // family, its label, whether it left the family's list open, the check's words, and the breadth and floor it read, none
@@ -392,8 +395,15 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<p class=\"market-line\" data-index=\"{Escaped(line.Index)}\" data-open=\"{Flag(line.Open)}\" data-breadth=\"{(line.Breadth is { } held ? held.ToString("R", Invariant) : "none")}\" data-floor=\"{(line.Floor is { } bar ? bar.ToString("R", Invariant) : "none")}\" ");
         body.Append(Invariant, $"data-passed=\"{(line.Passed is { } passed ? passed.ToString(Invariant) : "none")}\" data-members=\"{(line.Members is { } members ? members.ToString(Invariant) : "none")}\" ");
         body.Append(Invariant, $"data-buy-points=\"{line.BuyPoints}\" data-setups-listing=\"{line.SetupsListing}\" data-setups=\"{line.Setups}\" data-close=\"{(line.CloseRead ? line.Close.ToString(Invariant) : "none")}\" data-open-trades=\"{line.OpenTrades}\"");
+        body.Append(line.Dip is null ? string.Empty : Formatted($" data-dip=\"{(line.DipOpen ? "open" : "closed")}\""));
         body.Append(line.Checks is { } closing ? Formatted($" data-closed=\"{Escaped(string.Join(" ", closing.Where(one => !one.Open).Select(one => one.Family)))}\">") : ">");
-        body.Append(Invariant, $"<b class=\"market-{(line.Open ? "open" : "closed")}\">{(line.Open ? "The lists are open" : "The lists are closed")}</b>: {Escaped(check)}. ");
+
+        // The short-term dip reads its own market setting, so a night the check closed the swing lists says the dip's is
+        // still open where its own setting left it so, and every night says which setting the dip read.
+        // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+        var headline = line.Open ? "The lists are open" : line.Dip is not null && line.DipOpen ? "The lists are closed but the short-term dip's" : "The lists are closed";
+
+        body.Append(Invariant, $"<b class=\"market-{(line.Open ? "open" : "closed")}\">{headline}</b>: {Escaped(check + (line.Dip is { } dip ? "; " + dip : string.Empty))}. ");
         body.Append("<span class=\"market-counts\">");
 
         if (line.Passed is { } through && line.Members is { } of)
