@@ -427,27 +427,80 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-key-mark[data-standing='variant']{border-top-style:dashed}
 .paper-key-mark[data-family='pullback']{border-top-color:var(--fam-pullback)} .paper-key-mark[data-family='breakout']{border-top-color:var(--fam-breakout)} .paper-key-mark[data-family='drift']{border-top-color:var(--fam-drift)}
 .paper-key-mark[data-family='fundamentals']{border-top-color:var(--fam-fundamentals)} .paper-key-mark[data-family='heavyweight']{border-top-color:var(--fam-heavyweight)}
-.paper-table{min-width:760px}
-.paper-table td{vertical-align:top}
-.paper-table .paper-verdict{min-width:170px}
-.paper-table .paper-since{min-width:170px}
-.paper-since .day{white-space:nowrap}
-.paper-table .paper-name{white-space:normal;min-width:180px}
-.paper-table .paper-log{display:block;font-size:12px;margin-top:4px}
-.paper-table .verdict-word{display:block;font-weight:600}
-.paper-table .verdict-chosen,.too-few{display:block;font-size:12px;color:var(--soft)}
-.too-few.met{color:var(--ink-2)}
-.paper-table .paper-p{display:block;font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
-.paper-yearbars{display:block;margin:6px 0 2px}
-.paper-yearbars .yb-axis{stroke:var(--hair-2);stroke-width:1}
-.paper-yearbars .yb-this{fill:var(--ink-2)}
-.paper-yearbars .yb-that{fill:var(--soft);opacity:.55}
-.paper-yearbars .yb-year{font:10px var(--sans);fill:var(--soft)}
-.paper-table .paper-count{display:block;font-variant-numeric:tabular-nums}
-.paper-table .paper-walked{display:block;font-size:12px;color:var(--soft)}
-.paper-years summary{font-size:12px;color:var(--ink-2);cursor:pointer}
-.paper-years table{font-size:12px;margin-top:4px}
-.paper-adopted,.paper-entry{font-size:13px;color:var(--ink-2);margin:10px 0 0}
+/* paper trading's parts: what the page is and the account's line with the form behind its press; a tile a family's live
+   or provisional account beside the fund's, stacking on a phone; the open and closed tabs and the family chips, wrapping;
+   the trades, the variants and the scorecard's variants each in a table its box scrolls; a rule's scorecard in two halves,
+   side by side and one beneath the other on a phone, its test years as boxes, its scale of luck in three zones and its
+   progress as a bar */
+.paper-what{font-size:14.5px;color:var(--ink-2);margin:0 0 10px;max-width:78ch}
+.paper-line{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;margin:0 0 8px;font-size:14px;color:var(--ink-2)}
+.paper-line b{color:var(--ink);font-variant-numeric:tabular-nums}
+.paper-change>summary{display:inline-block;cursor:pointer;font:600 13.5px var(--sans);color:var(--ink);text-decoration:underline;text-underline-offset:3px;padding:6px 0;min-height:32px}
+.paper-change[open]>summary{margin-bottom:8px}
+.paper-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin:0 0 14px}
+.paper-tile{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border:1px solid var(--hair-2);border-radius:8px;background:var(--surface);min-width:0}
+.paper-tile.fund{background:var(--plot)}
+.paper-tile .pt-name{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font:600 13px var(--sans);color:var(--ink)}
+.paper-tile .pt-figure{font:600 22px var(--sans);font-variant-numeric:tabular-nums}
+.paper-tile .pt-sub{font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.paper .day,.paper-variants .too-few{white-space:nowrap}
+.paper-tabs,.paper-chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 10px}
+.paper-bought,.paper-variants,.paper-only,.score-table{min-width:720px}
+.paper-bought td,.paper-variants td,.paper-only td,.score-table td{vertical-align:top}
+.pb-stock a{font-weight:600}
+.pb-co,.pb-day{display:block;font-size:12px;color:var(--soft);font-weight:400}
+.pb-also{display:block;font-size:12px;color:var(--ink-2)}
+.pb-day{white-space:nowrap}
+.pb-standing{font-weight:600}
+.pb-standing.near-target,.pb-standing.leading{color:var(--up)}
+.pb-standing.near-stop,.pb-standing.opened-under,.pb-standing.below-average{color:var(--down)}
+.pb-standing.opened-over,.pb-standing.lost-lead{color:var(--warn)}
+.paper-unbought,.paper-adopted,.paper-entry{font-size:13px;color:var(--ink-2);margin:10px 0 0}
+.paper-unbought .pu-reason{margin-right:6px}
+.paper-pick{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 12px;max-width:min(100%,560px)}
+.paper-pick select{min-height:36px;padding:0 8px;border-radius:6px;font:500 13.5px var(--sans)}
+.pv-rule .paper-log{font-weight:600}
+.pv-verdict{display:block;font-size:12px;color:var(--soft)}
+.pv-only-h{font-size:15px;margin:16px 0 6px}
+.too-few{display:block;font-size:12px;color:var(--soft)}
+.score{border:1px solid var(--hair-2);border-radius:8px;background:var(--surface)}
+.score-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:12px 14px;border-bottom:1px solid var(--hair)}
+.score-h h3{font-size:17px}
+.score-rule{font-size:13px;color:var(--ink-2);flex:1 1 240px;min-width:0}
+.score-halves{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:1px;background:var(--hair)}
+.score-half{padding:12px 14px;min-width:0;background:var(--surface)}
+.sh-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-bottom:4px}
+.sh-lbl{font:600 11.5px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+.score-half h4{font:600 14.5px var(--sans);margin:12px 0 4px}
+.sh-line{font-size:13.5px;color:var(--ink-2);margin:6px 0}
+.sh-count{font-size:14px;color:var(--ink);font-weight:600;margin:6px 0}
+.sh-years{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.sy{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:68px;padding:5px 8px;border:1px solid var(--hair-2);border-radius:8px;font-variant-numeric:tabular-nums}
+.sy.better{background:var(--up-fill);border-color:var(--up)}
+.sy.worse{background:var(--down-fill);border-color:var(--down)}
+.sy .sy-y{font-size:11.5px;color:var(--soft)}
+.sy b{font-size:13px}
+.sy .sy-e{font-size:12px}
+.luck{margin:6px 0 0;max-width:420px}
+.luck-scale{width:100%;height:auto;display:block}
+.luck-scale .ls-easily{fill:var(--down-fill);stroke:var(--down);stroke-width:1}
+.luck-scale .ls-maybe{fill:var(--warn-fill);stroke:var(--warn);stroke-width:1}
+.luck-scale .ls-real{fill:var(--up-fill);stroke:var(--up);stroke-width:1}
+.luck-scale .ls-mark{fill:var(--ink);stroke:var(--surface);stroke-width:2.5}
+.luck-scale .ls-word{font:11px var(--sans);fill:var(--soft)}
+.sh-warn{font-size:13px;color:var(--warn);background:var(--warn-fill);border-radius:6px;padding:6px 9px;margin:8px 0 0}
+.sh-progress{width:100%;max-width:420px;height:10px;display:block;margin:6px 0 4px}
+.sh-progress .sp-track{fill:var(--s1)}
+.sh-progress .sp-fill{fill:var(--ink-2)}
+.sh-ends{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;max-width:420px;font-size:12px;color:var(--soft)}
+.score-variants{padding:6px 14px 12px;border-top:1px solid var(--hair)}
+.score-variants>summary{cursor:pointer;font:600 13.5px var(--sans);padding:8px 0;min-height:32px}
+.score-none{padding:8px 14px;margin:0}
+.paper-yours p{margin:4px 0;font-size:14px}
+.paper-yours .paper-count{font-variant-numeric:tabular-nums;font-weight:600}
+@media (max-width:560px){
+ .paper-tiles{grid-template-columns:1fr}
+}
 /* from 19.7 the remaining screens: the Run page's two headings, its trades line and the monthly run; the Loop page's
    summary, its p meter and its proposal rows with their paired year bars; the Ledger's edge bars, decile strip and tabs;
    the Researched page's two orders */

@@ -6262,3 +6262,84 @@ Carried:    the phase 19 sign-off by a fresh session over the corrected main; th
             and the swing filter's sector standings with the sweeps' history, put to the operator; the paid report's route
             taking a filing's first EX-99 exhibit as its release, put to the operator; the long releases' fixes of the 20.3
             ruling; 20.12; PR 505 rebased with its migration at 104; the phase 18 sign-off by a fresh session.
+
+### 19.4 ruling - the Paper trading page redesigned top to bottom from the mockup the operator approved, every figure it adds worked in the core beside the accounts' walk   2026-10-22
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-22 near 05:00 UTC, as a correction to 19.4 built now, ahead of 21.0 and after the
+            branch in progress merged, whole in `prompts/`: the page redesigned, as phase 19's redesign left it hard to
+            read, from the mockup they approved, whose figures were placeholders, every figure read from the store and
+            every new one added to the core's one function that works out the accounts. Top to bottom for the index chosen:
+            a sentence on what the page is and the account line, "Change the account" opening the form; a tile a family's
+            live or provisional rule with its return, its open and closed counts and the day it counts from, and the
+            index's fund over the same days, the chart beneath; "What the system bought", Open and Closed tabs over the live
+            and provisional rules' trades newest first with family chips, an open trade's standing in words, a closed
+            trade's ending and edge, the stocks not bought counted, earlier versions folded and the entry line; "What the
+            variants did differently", one family at a time in the link; the "Rule scorecard", one rule at a time in the
+            link, its history and its record since it went live as two halves never added together, its variants folding
+            out; and your own trades as now. Adjusted p values, version codes and registration dates under the pointer;
+            on a phone the tiles stack, the dropdowns and tabs wrap and every table scrolls in its own box; both palettes.
+Plan:       section 15.21 amended in place, its every-account table's row retired and seven rows added for the parts
+            above; Figure 15.6 and the guide's figure redrawn with their keys; the decision that an account draws its two
+            parts apart superseded by one naming the scorecard's two halves; the screen paragraph's paper figures, the
+            runbook and the guide's section 11; tests reading each part back over a constructed store and the fixture's
+            night, and a mutation a new figure.
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its remedies,
+            the phase 19 sign-off reviews' corrections in PRs 519, 520 and 522, the GICS groups in PR 521 and the report's
+            buttons in PR 523; in review, 20.8 with its correction, PR 505; in progress, this ruling with its correction;
+            next, the phase 19 sign-off's fourth review by session equitybrief-1e over the corrected main, paused for this,
+            then the long releases' fixes, 20.12, PR 505 rebased with its migration at 104, the phase 18 sign-off by a
+            fresh session, the local lane's one text field, 21.0 once its ruling is given, and pin 3's completion steps.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 19.4 - correction: the Paper trading page redrawn from the top a part a card from the mockup the operator approved, every figure it adds worked in the core beside the accounts' walk   2026-10-22
+
+Queue:      as the 19.4 ruling's entry above.
+Ruled:      as that entry states.
+Corrected:  paper trading drawn from the top, a part a card: the account's line with Change the account opening the
+            form; a tile a family's live or provisional rule beside the index's fund, the chart beneath; what the system
+            bought under Open and Closed tabs and a chip a family, each open trade's stop tonight, close, sessions held,
+            result so far and standing in words, each closed trade's ending and edge, the stocks not bought, earlier
+            versions folded; what one family's variants did differently with the trades only a variant took; a rule's
+            scorecard, its test years and the scale of luck beside its record since it went live, two halves never added
+            together, its variants folded beneath; and your own trades. Each choice kept in the link, the selects keeping
+            their card's place. Every new figure worked by the core's one function beside the walk, the page computing
+            none. Section 15.21's rows and paragraphs, Figure 15.6 and its key, the screen paragraph, 15.17's row, the
+            decision superseded and moved, the runbook, the guide's section 11 and its figure, the roster and the changelog.
+Tests:      fourteen more: the core's figures worked by hand at their edges, and each part read back off the rendered page
+            over constructed S&P 400 and S&P 500 stores with the choices kept in the link. The two page tests, the
+            fixture's expectation and the frozen cards', example account's and palette's tests read the new parts.
+Measured:   read back from a scratch Debug build of this tree over the operator's store on a port of its own, at 1440 and a
+            true 390 in both palettes: every part in its order, nothing wider than the screen at 390 and each table
+            scrolling in its own box; a tile's date broke at its hyphen and the variants' too-few words wrapped, each now
+            held whole by a rule a test reads, and the earlier versions' fold named each version's day and code in its
+            text, now under the pointer.
+Claims:     1378, from 1372: paper trading's seven rows for its parts less its table of every account.
+Mutated:    the rule, stated before the runs: for each figure the correction adds to the core's one function, the smallest
+            edit undoing the property it is named for, run over the paper page's fourteen tests with its red predicted and
+            nowhere else read over that filter alone, made in this checkout and restored from the file's own text, the
+            tree's diff the same after each. Each went red at the tests predicted and no other: r1 a close one typical move
+            from its stop read on track, and r2 a tie read near the target, at the open trade's; r3 the trailing stop
+            lowered with the closes, at the open trade's and what the system bought's; r4 the risk read over the buy and not
+            the plan's close, at the open trade's; r5 the move left as the closes' ratio, at the open trade's, what the
+            system bought's and the variants'; r6 the sessions held counted from the buy, at the open trade's; r7 a trailing
+            plan at its cap read as under its trailing stop, at the closed trade's; r8 the reasons not bought fewest first,
+            at the stocks not bought's; r9 a trade shared by its stock on any night, and r10 a variant's trade ended on the
+            night still held, at the overlap's; r11 a year's edge not over its units, at the test years' and the
+            scorecard's; r12 the level itself read as maybe luck, and r14 the real zone read from one, at the scale's; r13
+            one in so many said in hundreds, and r15 the count to beat the level's reciprocal, at the scale's and the
+            scorecard's; r16 a book's months read as its trades, r17 a share past the whole, and r18 a trade ended on the
+            night read as neither open nor closed, at the progress test; r19 the fund's return inverted, at the fund's and
+            the tiles'; and r20, for the plain words the ruling asks, an earlier version's day and code written back into
+            the fold's text, at what the system bought's.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2601 of 2601 tests ran with none failed,
+            migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
+            report 60 tables, 1378 claims, 1378 passing, none out of scope and none unexamined, 1389 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the phase 19 sign-off by a fresh session over the corrected main; the theme an industry's research is read for
+            and the swing filter's sector standings with the sweeps' history, put to the operator; the paid report's route
+            taking a filing's first EX-99 exhibit as its release, put to the operator; the long releases' fixes of the 20.3
+            ruling; 20.12; PR 505 rebased with its migration at 104; the phase 18 sign-off by a fresh session.

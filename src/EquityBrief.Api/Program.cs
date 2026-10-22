@@ -1836,7 +1836,8 @@ app.MapGet("/screens/account", (SinglePageApp page, StoreLocation store) =>
 });
 
 // Paper trading, section 15.21: every account on the index the link names, walked from the account settings by the
-// core's one function as the page is read, with each one's test years verdict beside its record since registration.
+// core's one function as the page is read, and every figure each part draws beside the walk worked in the core with it,
+// each part's choice kept in the link.
 // see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
 app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page, StoreLocation store) =>
 {
@@ -1845,16 +1846,44 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
     var held = EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot);
     var walkedOn = held ?? EquityBrief.Core.Cards.AccountSettings.Example;
     var paper = night is { } on ? await PaperAccountsAsync(read, reading, on, walkedOn) : null;
-    var family = request.Query[PaperScreen.FamilyQuery].FirstOrDefault();
     var selector = night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.PaperRoute) : string.Empty;
+
+    // A family a key names, none where it names no family.
+    string? Family(string key) => request.Query[key].FirstOrDefault() is { } named && EquityBrief.Core.Families.SetupFamilies.Order.Contains(named) ? named : null;
+
+    var link = new PaperLink(
+        reading.Word,
+        Family(PaperLink.FamilyKey),
+        request.Query[PaperLink.BoughtKey].FirstOrDefault() == PaperLink.ClosedValue,
+        Family(PaperLink.ShowKey),
+        Family(PaperLink.VariantsKey),
+        Family(PaperLink.RuleKey));
+    var variants = link.Variants ?? EquityBrief.Core.Families.SetupFamilies.Order[0];
+    var rule = link.Rule ?? EquityBrief.Core.Families.SetupFamilies.Order[0];
+    var drawn = paper is { } accounts && night is { } walked
+        ? PaperScreen.Page(
+            accounts.Sources,
+            accounts.Views,
+            walked,
+            accounts.Sessions ?? [],
+            accounts.Close,
+            accounts.Stocks ?? new Dictionary<string, PaperStockRow>(StringComparer.Ordinal),
+            ticker => accounts.Standings?.GetValueOrDefault(ticker),
+            link.Show,
+            variants,
+            PaperScreen.Fund(reading.Code),
+            accounts.Fund ?? (_ => null))
+        : new PaperPageView([], [], [], [], new EquityBrief.Core.Cards.PaperNotBought([]), [], null);
 
     return Results.Content(
         page.PaperRegion(
             marks,
             reading,
             night,
-            paper?.Views ?? [],
-            family is { } named && EquityBrief.Core.Families.SetupFamilies.Order.Contains(named) ? named : null,
+            drawn,
+            link,
+            variants,
+            rule,
             held is { } settings ? (settings.Size, settings.RiskPercent, settings.PositionCap) : null,
             EquityBrief.Core.Cards.AccountSettings.ProposedCap,
             selector,
@@ -1862,32 +1891,103 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
         "text/html; charset=utf-8");
 });
 
-// An index's paper accounts as of a night: its stored trades in one shape, each costed, walked and judged.
+// An index's paper accounts as of a night: its stored trades in one shape, each costed, walked and judged, with the
+// sessions they were walked over, each stock's company and night readings, the fund's closes and each open holding's
+// standing tonight.
 async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice reading, DateOnly night, EquityBrief.Core.Cards.AccountSettings? settings)
 {
     var large = reading == Universes.Large;
     var rows = await read.PaperRowsAsync(reading.Code);
     var cells = large ? PicksScreen.Cells(await read.PicksAsync(night), night) : [];
-    var indexNight = large ? null : await read.IndexNightAsync(reading.Code, night);
+    var indexNight = await read.IndexNightAsync(reading.Code, night);
     var provisional = indexNight is null ? null : IndexRuleSettings.Read(indexNight.Settings);
+    var register = await read.RegisteredCandidatesAsync();
     // The register read as the night's page reads it, as of the instant a night run again read it at.
     // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
-    var sources = PaperScreen.Accounts(large, reading.Name, night, await read.RegisteredCandidatesAsync(), provisional, rows, cells, PaperScreen.Yours(await read.TakenTradesAsync(), reading.Code), large ? await read.FamilyReplaysAsync() : [], large ? null : TonightScreen.ReadAsOf(indexNight, night));
+    var sources = PaperScreen.Accounts(large, reading.Name, night, register, provisional, rows, cells, PaperScreen.Yours(await read.TakenTradesAsync(), reading.Code), large ? await read.FamilyReplaysAsync() : [], large ? null : TonightScreen.ReadAsOf(indexNight, night));
     (string Ticker, DateOnly Session)[] bought = [.. sources.SelectMany(account => account.Trades.Select(one => (one.Trade.Ticker, one.Trade.Bought))).Distinct()];
 
     // The trades an account leaves out are read for their trade log's result so far, and walked by nothing.
     (string Ticker, DateOnly Session)[] earlier = [.. sources.SelectMany(account => (account.Earlier ?? []).Select(one => (one.Trade.Ticker, one.Trade.Bought))).Distinct()];
     var from = sources.Select(account => account.Since).OfType<DateOnly>().Concat(bought.Select(one => one.Session)).DefaultIfEmpty(night).Min();
-    var closes = await read.ClosesAsync([.. bought.Concat(earlier).Select(one => one.Ticker).Distinct(StringComparer.Ordinal)], earlier.Select(one => one.Session).Append(from).Min());
+    var earliest = earlier.Select(one => one.Session).Append(from).Min();
+    var tickers = bought.Concat(earlier).Select(one => one.Ticker).Distinct(StringComparer.Ordinal).ToArray();
+    var closes = await read.ClosesAsync(tickers, earliest);
 
     sources = PaperScreen.Costed(sources, rows, await read.MemberCostsAsync(reading.Code, bought), closes);
 
     var fund = await read.FundClosesAsync(PaperScreen.Fund(reading.Code), from);
     var (tests, years) = await read.RuleTestsAsync(reading.Code);
+    var sessions = await read.SessionsFromAsync(earliest);
+    var stocks = await read.PaperStocksAsync(tickers, night);
 
     decimal? Close(string ticker, DateOnly session) => closes.TryGetValue((ticker, session), out var close) ? close : null;
 
-    return new PaperAccounts(sources, PaperScreen.Views(sources, tests, years, settings, await read.SessionsFromAsync(from), night, Close, session => fund.TryGetValue(session, out var close) ? close : null), Close);
+    decimal? Fund(DateOnly session) => fund.TryGetValue(session, out var close) ? close : null;
+
+    return new PaperAccounts(
+        sources,
+        PaperScreen.Views(sources, tests, years, settings, sessions, night, Close, Fund),
+        Close,
+        sessions,
+        stocks,
+        Fund,
+        await HoldingStandingsAsync(read, reading, night, sources, rows, register, provisional, stocks));
+}
+
+// The standing tonight of each holding the family's live or provisional heavyweights account holds open, worked by the
+// rule's own functions off tonight's closes as the heavyweights card works it: its return over the book's look-back
+// against its sector's, the sector's fund's on the S&P 500 and the index's members' mean on the S&P 400 and 600, and its
+// close against its 200-session average; a design (b) book read for no lead of its own.
+// see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
+static async Task<IReadOnlyDictionary<string, string>> HoldingStandingsAsync(
+    ReadApi read,
+    UniverseChoice reading,
+    DateOnly night,
+    IReadOnlyList<PaperAccountSource> sources,
+    IReadOnlyList<PaperRow> rows,
+    IReadOnlyList<CandidateRow> register,
+    IndexRuleSettings? provisional,
+    IReadOnlyDictionary<string, PaperStockRow> stocks)
+{
+    var large = reading == Universes.Large;
+    var head = sources.FirstOrDefault(account => account.Family == EquityBrief.Core.Families.HeavyweightRule.Name && account.Standing is PaperAccountView.Live or PaperAccountView.Provisional);
+    var open = head is null ? [] : head.Trades.Where(one => one.Trade.Ended is null).Select(one => one.Trade.Ticker).Distinct(StringComparer.Ordinal).ToArray();
+
+    if (head is null || open.Length == 0)
+    {
+        return new Dictionary<string, string>(StringComparer.Ordinal);
+    }
+
+    var settings = large ? null : RuleScreen.HeavyweightSettingsOf(head.Listed, register);
+    var lookBack = large
+        ? EquityBrief.Core.Families.HeavyweightRule.Live.LookBack
+        : settings?.LookBack ?? (provisional is not null && int.TryParse(provisional.Heavyweights.GetValueOrDefault("look-back"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var sessions) ? sessions : EquityBrief.Core.Families.HeavyweightRule.LookBack);
+    var fundReturn = large && EquityBrief.Core.Families.HeavyweightRule.Live.FundReturn;
+    var designB = !large && RuleScreen.DesignB(head.Listed, register);
+    var funds = await read.FundStandingClosesAsync([.. EquityBrief.Core.Families.GicsSectors.Funds.Values], night, lookBack, null);
+    var members = fundReturn || designB ? new Dictionary<string, string?>(StringComparer.Ordinal) : await read.MemberSectorsAsync(reading.Code, night);
+    var closes = await read.StockStandingClosesAsync([.. open.Concat(members.Keys).Distinct(StringComparer.Ordinal)], night, lookBack, null);
+
+    double? SectorReturn(string? sector) =>
+        sector is null ? null
+        : fundReturn
+            ? EquityBrief.Core.Families.GicsSectors.Funds.TryGetValue(sector, out var fund) && funds.TryGetValue(fund, out var held) ? TonightScreen.ReturnOf(held) : null
+            : EquityBrief.Core.Families.HeavyweightStandings.MembersMean(members.Where(member => member.Value == sector).Select(member => closes.TryGetValue(member.Key, out var held) ? TonightScreen.ReturnOf(held) : null));
+
+    return open.ToDictionary(
+        ticker => ticker,
+        ticker =>
+        {
+            var held = closes.GetValueOrDefault(ticker) ?? new StandingCloses(null, null, null);
+            var sector = rows.Where(row => row.Book && row.Ticker == ticker && head.Keeps(row) && row.Ended is null).Select(row => row.Sector).FirstOrDefault();
+            var average = stocks.TryGetValue(ticker, out var stock) ? stock.Average200 : null;
+
+            return designB
+                ? EquityBrief.Core.Families.HeavyweightStandings.NotForThisDesign
+                : EquityBrief.Core.Families.HeavyweightStandings.Of(held.Now is { } now ? EquityBrief.Core.Prices.Statistic.FromPrice(now) : null, held.Back is { } back ? EquityBrief.Core.Prices.Statistic.FromPrice(back) : null, average, SectorReturn(sector)).Word;
+        },
+        StringComparer.Ordinal);
 }
 
 app.MapPost(SinglePageApp.AccountPostRoute, async (HttpRequest request, StoreLocation store) =>
@@ -2194,7 +2294,7 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
     // Each paper account's trade log, chosen in the link: a live or provisional rule's, a variant's or yours, the trades
     // it counts with its verdict and its record's label beside them and those it leaves out folded beneath; the page's
     // lists where the link names none, with each family's verdict beside them.
-    // see: A paper account draws its test years verdict and its record since registration apart, and never merges them
+    // see: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together
     var paper = night is { } walkedOn ? await PaperAccountsAsync(read, reading, walkedOn, EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot) ?? EquityBrief.Core.Cards.AccountSettings.Example) : null;
     var askedAccount = request.Query[PaperScreen.AccountQuery].FirstOrDefault();
 

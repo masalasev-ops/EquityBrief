@@ -712,8 +712,11 @@ public sealed partial class SinglePageApp : IComponent
           if (chosen) { location.hash = chosen.getAttribute('data-compare') + '?version=' + encodeURIComponent(chosen.value); }
           const universe = event.target.closest ? event.target.closest('select[data-universe-route]') : null;
           if (universe) { location.hash = universe.getAttribute('data-universe-route') + '?{{{Universes.Query}}}=' + encodeURIComponent(universe.value); }
-          // A choice kept in the link under its own key with every other key kept, its first choice the key's absence.
+          // A choice kept in the link under its own key with every other key kept, its first choice the key's absence, a
+          // choice inside a card keeping that card where it stood.
           const kept = event.target.closest ? event.target.closest('select[data-merge-key]') : null;
+          const keptCard = kept ? kept.closest('section.card[data-card]') : null;
+          if (keptCard) { keepPlace(kept, 'section.card[data-card="' + CSS.escape(keptCard.getAttribute('data-card')) + '"]'); }
           if (kept) { fresh = true; location.hash = merged(kept.getAttribute('data-merge-key'), kept.value === '' ? null : kept.value); }
         });
         // Words searched for kept in the link under the box's key with every other key kept, none where the box is
@@ -809,6 +812,9 @@ public sealed partial class SinglePageApp : IComponent
           const again = open === 'name-card' ? screen.querySelector('section.name-card') : (open ? document.getElementById(open) : null);
           const place = again ? again.querySelector('.card-said') : screen.querySelector('.account-said');
           if (place) { place.innerHTML = said; }
+          // The account's form behind a press is opened again so its line is read.
+          const fold = place ? place.closest('details') : null;
+          if (fold) { fold.open = true; }
         });
         // The press running the rest of a night left unfinished: sent with the page's own header, and what the
         // surface said put beside it, the press kept disabled once the rest has started.

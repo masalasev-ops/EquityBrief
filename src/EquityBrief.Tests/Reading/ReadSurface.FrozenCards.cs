@@ -264,12 +264,16 @@ public partial class ReadSurface
         Assert.DoesNotContain(background, page, StringComparison.Ordinal);
         Assert.DoesNotContain("data-no-variant", card, StringComparison.Ordinal);
 
-        // Paper trading: the live rule's account and the variant's, none for the rule before the freeze.
-        var paper = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?universe=400"));
+        // Paper trading: the live rule's account and the variant's among the breakout's, each rule's words under the
+        // pointer, none for the rule before the freeze.
+        var paper = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?universe=400&variants=breakout"));
+        var accounts = Assert.Single(Blocks(paper, "<table class=\"paper-variants\".*?</table>"));
 
-        Assert.Contains(registrations[0].Candidate, paper, StringComparison.Ordinal);
-        Assert.Contains(registrations[1].Candidate, paper, StringComparison.Ordinal);
-        Assert.DoesNotContain(background, paper, StringComparison.Ordinal);
+        Assert.Equal(["list-breakout", RunScreen.Slug(registrations[1].Candidate)], Regex.Matches(accounts, "<tr data-account=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Contains(registrations[0].Candidate, paper, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(registrations[1].Candidate, paper, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(background, paper, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(RunScreen.Slug(background), paper, StringComparison.Ordinal);
 
         // The Run page: its record's row named as the rule before the freeze kept 63 sessions beside it, read by no test;
         // the family's setup row counting the one variant.

@@ -120,7 +120,7 @@ public partial class ArchitectureConformance
         var keys = Report().Claims.Select(claim => CheckReach.Key(claim.Table, claim.Subject)).ToArray();
 
         Assert.All(TakenOutAfterPhaseSeventeen, taken => Assert.DoesNotContain(keys, key => key == taken || key.StartsWith(taken + " ", StringComparison.Ordinal)));
-        Assert.All(AfterPhaseSeventeen, added => Assert.Contains(added, keys));
+        Assert.All(AfterPhaseSeventeen.Except(TakenOutAfterPhaseSeventeen), added => Assert.Contains(added, keys));
         Assert.Equal(1149 + AfterPhaseSeventeen.Length - TakenOutAfterPhaseSeventeen.Length, keys.Length);
     }
 

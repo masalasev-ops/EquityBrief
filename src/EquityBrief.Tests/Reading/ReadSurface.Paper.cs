@@ -16,7 +16,7 @@ namespace EquityBrief.Tests.Reading;
 // page and the trade log are read back off the rendered markup over a constructed store, the test years verdict and the
 // record since registration apart, with the account's settings in no byte of the store or the run log.
 // see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
-// see: A paper account draws its test years verdict and its record since registration apart, and never merges them
+// see: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together
 public partial class ReadSurface
 {
     // The rows 19.4 adds that this check reaches: paper trading's seven and the trade log's two.
@@ -150,57 +150,52 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper"));
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?variants=breakout&rule=breakout"));
         var variantKey = RunScreen.Slug(ProvisionalBreakout);
 
-        // The form holds the settings, and the page walks the accounts from them.
+        // The account's line and the form folded beneath its press hold the settings, and the page walks the accounts
+        // from them.
         Assert.Contains($"<section class=\"paper\" data-universe=\"500\" data-night=\"{TheSwitch}\"", page, StringComparison.Ordinal);
         Assert.Contains("data-walked=\"true\"", page, StringComparison.Ordinal);
+        Assert.Contains("<span>Account <b>$98,765</b></span><span>Risk a trade <b>1.37%</b></span><span>Most in one stock <b>23%</b></span><span>Each rule trades its own copy of this account.</span>", page, StringComparison.Ordinal);
+        Assert.Contains("<summary>Change the account</summary>", page, StringComparison.Ordinal);
         Assert.Contains("value=\"98765.43\"", page, StringComparison.Ordinal);
 
-        // Every account in the one family order: the pullback's live list and its two standing variants, none tested yet;
-        // within the breakout the live rule that passed before the variant within luck; the drift's, the fundamentals-first
-        // family's provisional list and the heavyweights' book; and the operator's own last, its verdict saying the test
-        // does not read it.
-        var rows = Regex.Matches(page, "<tr data-account=\"([^\"]+)\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\" data-verdict=\"([^\"]+)\"").Select(match => (Key: match.Groups[1].Value, Family: match.Groups[2].Value, Standing: match.Groups[3].Value, Verdict: match.Groups[4].Value)).ToArray();
-
-        Assert.Equal(["pullback", "breakout", "drift", "fundamentals", "heavyweight", "you"], rows.Select(row => row.Family).Distinct());
+        // A tile a family's live or provisional rule in the one family order, the fundamentals-first family's provisional;
+        // every family's accounts in that order on the variants' select and the scorecard's, the pullback's two standing
+        // variants counted beside its rule.
         Assert.Equal(
-            [("list-pullback", "live"), (RunScreen.Slug("the swing filter with one-session arrival, from version 1"), "variant"), (RunScreen.Slug("the swing filter with the market gate off, from version 1"), "variant")],
-            rows.Where(row => row.Family == "pullback").Select(row => (row.Key, row.Standing)).OrderBy(row => row.Standing, StringComparer.Ordinal).ThenBy(row => row.Key, StringComparer.Ordinal));
-        Assert.All(rows.Where(row => row.Family == "pullback"), row => Assert.Equal(RuleVerdict.NotTested, row.Verdict));
-
-        // Holding one verdict, the pullback's accounts stand by their return, the variants holding no trade at nothing
-        // above the live list, whose open trades have paid half their round trips.
-        double[] returns = [.. rows.Where(row => row.Family == "pullback").Select(row => double.Parse(Regex.Match(AccountRowOf(page, row.Key), "data-return=\"([^\"]+)\"").Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture))];
-
-        Assert.Equal(returns.OrderByDescending(one => one), returns);
-        Assert.Equal("list-pullback", rows.Last(row => row.Family == "pullback").Key);
-        Assert.True(returns[^1] < 0);
+            [("pullback", "live"), ("breakout", "live"), ("drift", "live"), ("fundamentals", "provisional"), ("heavyweight", "live")],
+            Regex.Matches(page, "<div class=\"paper-tile\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\"").Select(match => (match.Groups[1].Value, match.Groups[2].Value)));
+        Assert.Contains("<option value=\"\">Pullback · live rule and 2 variants</option>", page, StringComparison.Ordinal);
         Assert.Equal(
-            [("list-breakout", "breakout", "live", RuleVerdict.Passed), (variantKey, "breakout", "variant", RuleVerdict.WithinLuck)],
-            rows.Where(row => row.Family == "breakout"));
-        Assert.Equal(("list-fundamentals", "provisional"), rows.Where(row => row.Family == "fundamentals").Select(row => (row.Key, row.Standing)).Single());
-        Assert.Equal(("you", "you", "you", RuleVerdict.Yours), rows[^1]);
+            ["", "breakout", "drift", "fundamentals", "heavyweight"],
+            Regex.Matches(Regex.Match(page, "<select data-merge-key=\"rule\".*?</select>", RegexOptions.Singleline).Value, "<option value=\"([^\"]*)\"").Select(match => match.Groups[1].Value));
 
-        // The live rule's verdict carries that it was chosen on these years and its test year behind a press; the
-        // variant's record since registration is too few, 2 of 300, beside its figures and never in its verdict's cell.
+        // Within the breakout the live rule that passed and the variant within luck, each beside its own name; the
+        // variant's record since registration too few, 2 of 300, beside its return and never in its verdict.
         var live = AccountRowOf(page, "list-breakout");
         var variant = AccountRowOf(page, variantKey);
 
-        Assert.Contains(RuleVerdict.Chosen, live, StringComparison.Ordinal);
-        Assert.Contains("<tr data-year=\"2025\" data-complete=\"true\"><td>2025</td>", live, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"paper-since\" data-too-few=\"too few trades (2 of 300)\"><span class=\"paper-count\">3 trades · 2 decided of 300</span>", variant, StringComparison.Ordinal);
-        Assert.DoesNotContain("too few", Regex.Match(variant, "<td class=\"paper-verdict\">.*?</td>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
+        Assert.Contains($"<span class=\"pv-verdict\" data-verdict=\"{RuleVerdict.Passed}\">{RuleVerdict.Passed}</span>", live, StringComparison.Ordinal);
+        Assert.Contains($"<span class=\"pv-verdict\" data-verdict=\"{RuleVerdict.WithinLuck}\">{RuleVerdict.WithinLuck}</span>", variant, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"too-few\">too few trades (2 of 300)</span>", variant, StringComparison.Ordinal);
+        Assert.DoesNotContain("too few", Regex.Match(variant, "<span class=\"pv-verdict\".*?</span>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
 
-        // From the 19.4 correction of 2026-10-13 the figures behind each verdict's words: its adjusted p against the bar,
-        // and each test year as a pair of bars on one scale, the live rule's 12.5 risks over 2025 the whole half-width
-        // beside its benchmark's nothing.
-        Assert.Contains($"<span class=\"paper-p\" data-adjusted=\"0.001\" data-bar=\"{LoopGate.Bar.ToString("R", System.Globalization.CultureInfo.InvariantCulture)}\">adjusted p 0.001 against the bar {LoopGate.Bar.ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture)}</span>", live, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"paper-p\" data-adjusted=\"0.3\"", variant, StringComparison.Ordinal);
-        Assert.Contains("<g data-year=\"2025\" data-total=\"12.5\" data-compared=\"0\"><title>2025: this rule made 12.5 risks over 140, its benchmark made 0.0 over 140</title><text class=\"yb-year\" x=\"0\" y=\"10\">2025</text><rect class=\"yb-this\" x=\"117\" y=\"2\" width=\"81\" height=\"5\"/><rect class=\"yb-that\" x=\"117\" y=\"7\" width=\"0\" height=\"5\"/></g>", live, StringComparison.Ordinal);
+        // The live rule's scorecard: its verdict with its adjusted p against the bar under the pointer, its one test year as
+        // a box, the live rule's 12.5 risks over 140 trades against its benchmark's nothing, and the warning that its
+        // settings were tuned on these years.
+        var score = Regex.Match(page, "<div class=\"score\" .*?</details>", RegexOptions.Singleline).Value;
+
+        Assert.Contains($"<span class=\"pill verdict\" data-verdict=\"{RuleVerdict.Passed}\" title=\"adjusted p 0.0010 against the bar {LoopGate.Bar.ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture)}\">", score, StringComparison.Ordinal);
+        Assert.Contains($"<div class=\"sy better\" data-year=\"2025\" data-word=\"Better\" data-edge=\"{(12.5 / 140).ToString("R", System.Globalization.CultureInfo.InvariantCulture)}\" title=\"2025: 140 trades, a total of +12.50 risks against 0.00 risks\">", score, StringComparison.Ordinal);
+        Assert.Contains(MarkRenderer.TunedLine, score, StringComparison.Ordinal);
+        Assert.Contains($"<td><span class=\"pill\" title=\"adjusted p 0.3000 against the bar {LoopGate.Bar.ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture)}\">{RuleVerdict.WithinLuck}</span></td>", score, StringComparison.Ordinal);
+
+        // Each opens its own trade log on the index.
         Assert.Contains($"href=\"#/picks?universe=500&account={Uri.EscapeDataString(variantKey)}\"", variant, StringComparison.Ordinal);
         Assert.Contains("href=\"#/picks?universe=500&account=list-breakout\"", live, StringComparison.Ordinal);
+        Assert.Contains("<a class=\"paper-log\" href=\"#/picks?universe=500&account=list-breakout\">trade log</a>", score, StringComparison.Ordinal);
 
         // The chart draws the heads and yours by default and no variant; the breakout chosen in the hash adds the
         // variant's line dashed, each line with a key whose press the shell's script toggles.
@@ -212,7 +207,7 @@ public partial class ReadSurface
         Assert.Contains($"<button type=\"button\" class=\"paper-key\" data-line=\"{variantKey}\"", chosen, StringComparison.Ordinal);
         Assert.Contains(".paper-key[data-line]", new SinglePageApp().Shell("EquityBrief"), StringComparison.Ordinal);
 
-        // The two lines beneath the table.
+        // The two lines beneath what the system bought and the variants' table.
         Assert.Contains(MarkRenderer.AdoptedLine, page, StringComparison.Ordinal);
         Assert.Contains(MarkRenderer.EntryPriceLine, page, StringComparison.Ordinal);
 
@@ -244,12 +239,13 @@ public partial class ReadSurface
         Assert.Contains($"<li data-family=\"breakout\" data-verdict=\"{RuleVerdict.Passed}\">", lists, StringComparison.Ordinal);
 
         // From the 19.4 correction of 2026-10-21 each family's line keeps its too-few words inside its sentence, between
-        // its count and where its record starts: the rule setting them on a line of their own beneath a count in paper
-        // trading's table is taken back to the sentence's flow in every sentence holding them, this one and a trade log's.
+        // its count and where its record starts: the rule setting them on a line of their own beneath a return in paper
+        // trading's variants table is taken back to the sentence's flow in every sentence holding them, this one and a
+        // trade log's.
         var heads = Assert.Single(Blocks(lists, "<div class=\"paper-heads\">.*?</div>"));
 
         Assert.Matches("Since registered: \\d+ trade\\(s\\), <span class=\"too-few\">too few (trades|months) \\(\\d+ of \\d+\\)</span>, ", heads);
-        Assert.Contains(".paper-table .verdict-chosen,.too-few{display:block;", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".too-few{display:block;font-size:12px;color:var(--soft)}", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains(".paper-log-since .too-few,.paper-heads .too-few{display:inline}", Stylesheet.Css, StringComparison.Ordinal);
 
         // The settings are in no byte of the store, no run log row and no exported report.
@@ -308,20 +304,22 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper"));
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?variants=breakout&rule=breakout"));
         var key = RunScreen.Slug(ProvisionalBreakout);
         var row = AccountRowOf(page, key);
 
         // A risk of 150, one and a half per cent of 10,000, over 3 a share buys 50 shares. 09-29: N1 for 5,000, valued at
         // 10,000. 09-30: N2 for 5,000 off a worth of 10,000, the cash at nothing, N1 at 102 over 100, 10,100. 10-01: N1
         // sold at 106, 5,300 in cash, N2 at 98 over 100, 4,900: 10,200. The night: N2 sold at 97, 4,850: 10,150. Its
-        // return 0.015 and its worst drop 50 under the high of 10,200. E1 and E2 are in none of it.
-        Assert.Contains("data-trades=\"2\" data-ended=\"2\"", row, StringComparison.Ordinal);
-        Assert.Contains("data-return=\"0.015\"", row, StringComparison.Ordinal);
-        Assert.Equal(50.0 / 10_200, double.Parse(Regex.Match(row, "data-worst=\"([^\"]+)\"").Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture), 12);
-        Assert.Contains("<span class=\"paper-count\">2 trades · 2 decided of 300</span>", row, StringComparison.Ordinal);
-        Assert.Contains("from <span class=\"day\">2026-09-29</span>", row, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"paper-version\" data-earlier=\"2\">counts the version registered 2026-09-29, code v; 2 trade(s) of earlier versions left out</span>", row, StringComparison.Ordinal);
+        // return 0.015, over its two trades, both decided, the live rule's list taking neither. E1 and E2 are in none of it.
+        Assert.StartsWith($"<tr data-account=\"{key}\" data-standing=\"variant\" data-trades=\"2\" data-shared=\"0\" data-only=\"2\">", row, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\" data-return=\"0.015\">", row, StringComparison.Ordinal);
+        Assert.Contains($"<tr data-account=\"{key}\" data-verdict=\"{RuleVerdict.NotTested}\" data-better=\"none\">", page, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\">2 of 300 decided</td>", page, StringComparison.Ordinal);
+
+        // It starts on 2026-09-29 and counts the second registration, named under the pointer with no trade of the first's
+        // in any figure of it.
+        Assert.Contains($"title=\"{char.ToUpperInvariant(ProvisionalBreakout[0])}{ProvisionalBreakout[1..]}; counts the version registered 2026-09-29, code v; from 2026-09-29\">", row, StringComparison.Ordinal);
 
         // Its trade log counts N1 and N2, and folds E1 and E2 beneath, each named by the version that listed it, E2's
         // result so far 1 risk at 103 over 100 on a risk of 3.
@@ -330,6 +328,7 @@ public partial class ReadSurface
         var counted = log[..log.IndexOf("<details class=\"paper-earlier\"", StringComparison.Ordinal)];
 
         Assert.Contains("<p class=\"paper-log-start\" data-since=\"2026-09-29\"><b>Counts from.</b> 2026-09-29", log, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"paper-version\" data-earlier=\"2\">counts the version registered 2026-09-29, code v; 2 trade(s) of earlier versions left out</span>", log, StringComparison.Ordinal);
         Assert.Equal(["N2", "N1"], Regex.Matches(counted, "<tr data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
         Assert.Equal(
             [("E2", "the version registered 2026-09-21, code v"), ("E1", "the version registered 2026-09-21, code v")],
@@ -337,9 +336,11 @@ public partial class ReadSurface
         Assert.Matches("<tr data-ticker=\"E2\".*?<span class=\"gain\">\\+1\\.00</span> risks <span class=\"degraded\">so far</span>", folded);
         Assert.Contains("<figure class=\"paper-running\" data-total=\"1\" data-ended=\"2\">", counted, StringComparison.Ordinal);
 
-        // The breakout's live account, registered once on 2026-01-02, leaves nothing out, and reading the pages deleted
-        // no stored trade and no registration.
-        Assert.Contains("<span class=\"paper-version\" data-earlier=\"0\">counts the version registered 2026-01-02, code v</span>", AccountRowOf(page, "list-breakout"), StringComparison.Ordinal);
+        // The breakout's live account, registered once on 2026-01-02, counts that version on its tile and leaves nothing
+        // out, so nothing is folded beneath what the system bought; and reading the pages deleted no stored trade and no
+        // registration.
+        Assert.Contains("; counts the version registered 2026-01-02, code v\">", Regex.Match(page, "<div class=\"paper-tile\" data-family=\"breakout\"[^>]*>").Value, StringComparison.Ordinal);
+        Assert.DoesNotContain("<details class=\"paper-earlier\"", page, StringComparison.Ordinal);
         Assert.Equal(trades, Strings(store, "SELECT ticker || session_date FROM family_trade ORDER BY rowid;"));
         Assert.Equal(register, Strings(store, "SELECT id || event FROM candidate_register ORDER BY id;"));
         Assert.Equal(4, trades.Count);
@@ -391,16 +392,13 @@ public partial class ReadSurface
         Assert.Null(PaperAccount.RoundTripOf(30m, 28m, null, null, null, closes.ContainsKey(("NONE", new DateOnly(2026, 10, 7))), null));
     }
 
-    // An account's row of the paper accounts' table, from its opening tag to the next account's or the table's end, since
-    // a row holds its test years' own table.
+    // An account's row of the variants' table, from its opening tag to its close.
     static string AccountRowOf(string page, string account)
     {
         var at = page.IndexOf($"<tr data-account=\"{account}\"", StringComparison.Ordinal);
 
         Assert.True(at >= 0, $"no row for the account {account}");
 
-        var next = page.IndexOf("<tr data-account=", at + 1, StringComparison.Ordinal);
-
-        return page[at..(next > 0 ? next : page.IndexOf("</tbody>", at, StringComparison.Ordinal))];
+        return page[at..(page.IndexOf("</tr>", at, StringComparison.Ordinal) + 5)];
     }
 }

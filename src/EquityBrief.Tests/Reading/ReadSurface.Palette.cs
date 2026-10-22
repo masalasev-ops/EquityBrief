@@ -179,9 +179,9 @@ public partial class ReadSurface
     }
 
     // Every pill style a page draws has a rule of its own, read off each place a pill is drawn in every state it draws:
-    // a setup card live, provisional and on a variant, paper trading's accounts by their standing, a researched report
-    // standing and stale, and the monthly run held and stopped. A stale report and a stopped run are drawn in the
-    // failure's red, the accent's ink on it as on the live rule's slate.
+    // a setup card live, provisional and on a variant, paper trading's tiles and a scorecard's head by their standing, a
+    // researched report standing and stale, and the monthly run held and stopped. A stale report and a stopped run are
+    // drawn in the failure's red, the accent's ink on it as on the live rule's slate.
     // see: Status is drawn in blues with amber for a wait and red for a failure alone
     [Fact]
     public void EveryPillStyleAPageDrawsHasARuleOfItsOwnAndAFailedOneIsDrawnInTheRed()
@@ -195,8 +195,11 @@ public partial class ReadSurface
         string Card(DateOnly? liveSince, RuleView? rule) =>
             renderer.FamilyCard(new FamilyCardView("breakout", "Breakout", "Breakouts to a new high", "Breakout from a base", "A stock closes above its high.", 2, 3, liveSince, 1, [], [], "No stock passed this setup tonight.", RuleChoice: rule));
 
-        PaperAccountView Account(string standing) =>
-            new(standing, "pullback", standing, "An account", "A rule.", standing == PaperAccountView.You ? RuleVerdict.Yours : RuleVerdict.NotTested, null, "R", [], null, 0, 0, null, null);
+        PaperAccountView Account(string standing, string family) =>
+            new(standing, family, standing, "An account", "A rule.", standing == PaperAccountView.You ? RuleVerdict.Yours : RuleVerdict.NotTested, null, "R", [], null, 0, 0, null, null);
+
+        PaperAccountView[] accounts = [Account(PaperAccountView.Live, "pullback"), Account(PaperAccountView.Variant, "pullback"), Account(PaperAccountView.Provisional, "breakout"), Account(PaperAccountView.You, "you")];
+        var page = new PaperPageView(accounts, [], [], [], new EquityBrief.Core.Cards.PaperNotBought([]), [], null);
 
         string Monthly(string state) =>
             renderer.MonthlyRunRegion(new MonthlyRunView(new DateTimeOffset(since.ToDateTime(new TimeOnly(14, 0)), TimeSpan.Zero), state, state == WorryItem.Held ? null : "its history step did not hold", "2026-01", [], 0, 60, null), "#/loop", "#/paper");
@@ -206,7 +209,8 @@ public partial class ReadSurface
             ("a live card", Card(since, null), ["live"]),
             ("a provisional card", Card(null, null), ["provisional"]),
             ("a card on a variant", Card(since, chosen), ["variant"]),
-            ("paper trading's accounts", renderer.PaperTable([.. new[] { PaperAccountView.Live, PaperAccountView.Provisional, PaperAccountView.Variant, PaperAccountView.You }.Select(Account)], walked: false), ["live", "provisional", "variant", "variant"]),
+            ("paper trading's tiles", renderer.PaperTiles(accounts, null), ["live", "provisional"]),
+            ("paper trading's scorecard", renderer.PaperScorecard(page, new PaperLink("500"), "breakout"), ["provisional"]),
             ("the researched list", new SinglePageApp().ResearchedRegion([new ResearchedCell("AAA", null, null, since, 1, true), new ResearchedCell("BBB", null, null, since, 1, false)]), ["failed", "live"]),
             ("a monthly run held", Monthly(WorryItem.Held), ["live"]),
             ("a monthly run stopped", Monthly(WorryItem.Failed), ["failed"]),
