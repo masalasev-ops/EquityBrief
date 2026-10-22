@@ -83,7 +83,7 @@ public partial class FixtureExpectations
         }
 
         // Each ruled family's line as the file works it, the dip's from 22.1 its own.
-        string LineOf(string family) => expected.GetProperty(family == Core.Families.DipRule.Name ? "dipLine" : "ruledLine").GetString()!;
+        string LineOf(string family) => (family == Core.Families.DipRule.Name ? expected.GetProperty("dipLine") : expected.GetProperty("ruledLine")).GetString()!;
 
         Assert.All(rows, row => Assert.Equal(LineOf(row[0]), Line(row[1], int.Parse(row[2], System.Globalization.CultureInfo.InvariantCulture))));
         Assert.Equal(30, RuleStretch.CompletedStretchesFloor);
