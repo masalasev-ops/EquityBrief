@@ -150,17 +150,16 @@ public partial class ReadSurface
         Assert.Equal("$75, its estimate " + QuarterLines.NoneKeptYet, await Revenue("M3"));
     }
 
-    // From the second 18.2 correction of 2026-10-21: a company whose newest company fetch on or before the page's night files
-    // the sector Financials reads its revenue against no estimate on the report's quarter table and the chart page alike,
-    // each saying the estimate and the filing measure it on different bases, and a fetch made after the page's night is not
-    // read, over the universes' store.
+    // A company whose newest company fetch on or before the page's night files the sector Financials reads its revenue
+    // against no estimate on the report's quarter table and the chart page alike, each saying the estimate and the filing
+    // measure it on different bases, and a fetch made after the page's night is not read, over the universes' store.
     [Fact]
     public async Task AFinancialCompanysRevenueIsDrawnAgainstNoEstimateOnTheReportAndTheChartPage()
     {
         using var store = UniversesStore();
 
-        // M1 and M2 each report 520 for the quarter to 2026-06-30 against its own estimate of 500. M2 files the sector
-        // Financials from 2026-09-15; M1 files Energy then and Financials only from a fetch on 2026-10-03.
+        // M1 and M2 each report 520 for the quarter against its own estimate of 500. M2 files the sector Financials from its
+        // first fetch; M1 files Energy then and Financials only from a fetch after the earlier page's night.
         store.Execute(
             "INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, report_date, revenue) VALUES "
             + "('M1', '2026-10-01T23:00:00.000Z', '2026-10-01', '2026-06-30', '2026-07-28', '520'), "
@@ -173,8 +172,8 @@ public partial class ReadSurface
             + "('M2', '2026-09-15T23:00:00.000Z', 'Financials', 'Banks'), "
             + "('M1', '2026-09-15T23:00:00.000Z', 'Energy', 'Oil, Gas & Consumable Fuels'), ('M1', '2026-10-03T23:00:00.000Z', 'Financials', 'Banks');");
 
-        // The page of 2026-10-01 reads M1's fetch of 2026-09-15 and not the later one, so its revenue is read against 500;
-        // tonight's reads the later one and none.
+        // The earlier page reads M1's first fetch and not the later one, so its revenue is read against 500; the newest
+        // night's page reads the later one and none.
         var read = new ReadApi(store.DatabaseFile, FixedClock.At(new DateTimeOffset(2026, 10, 21, 12, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates));
         var earlier = await read.ReportInputsAsync("M1", new DateOnly(2026, 10, 1), new DateOnly(2026, 10, 1));
         var tonight = await read.ReportInputsAsync("M1", null, EstimatesNight);

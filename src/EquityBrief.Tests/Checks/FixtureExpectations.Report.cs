@@ -236,10 +236,9 @@ public partial class FixtureExpectations
         Assert.Equal(QuarterLines.NotFiledBefore, Absent(released.AddMilliseconds(-1), released));
     }
 
-    // From the second 18.2 correction of 2026-10-21: a company whose sector is Financials reads its revenue against no
-    // estimate, its quarter's own or the one its year's implies, the line saying the estimate and the filing measure revenue
-    // on different bases, while its earnings a share is read against its estimate and every other sector reads both, worked
-    // by hand over the fiscal year of the test before.
+    // A company whose sector is Financials reads its revenue against no estimate, its quarter's own or the one its year's
+    // implies, the line saying the estimate and the filing measure revenue on different bases, while its earnings a share is
+    // read against its estimate and every other sector reads both, worked by hand over the fiscal year of the test before.
     [Fact]
     public void AFinancialCompanysRevenueIsReadAgainstNoEstimateAndTheLineSaysTheTwoMeasureItOnDifferentBases()
     {
