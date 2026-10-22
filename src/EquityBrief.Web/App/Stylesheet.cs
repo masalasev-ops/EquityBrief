@@ -491,7 +491,7 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .sh-warn{font-size:13px;color:var(--warn);background:var(--warn-fill);border-radius:6px;padding:6px 9px;margin:8px 0 0}
 .sh-progress{width:100%;max-width:420px;height:10px;display:block;margin:6px 0 4px}
 .sh-progress .sp-track{fill:var(--s1)}
-.sh-progress .sp-fill{fill:var(--stat)}
+.sh-progress .sp-fill{fill:var(--ink-2)}
 .sh-ends{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;max-width:420px;font-size:12px;color:var(--soft)}
 .score-variants{padding:6px 14px 12px;border-top:1px solid var(--hair)}
 .score-variants>summary{cursor:pointer;font:600 13.5px var(--sans);padding:8px 0;min-height:32px}
