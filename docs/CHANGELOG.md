@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-22 - .claude/rules/checks.md - read-surface reaches no report standing on a page for an earlier night
+Corrects: no test read a page for an earlier night over a researched store, so a route reading the staleness verdict for an earlier night survived every read-surface test; found by the fourth phase 19 sign-off review's mutation m5.
+Was:
+> read-surface: ... none on the day a pass ran or while the cap has paused research and no standing where none is written, read over the researched fixture's store, ...
+Now:
+> read-surface: ... none on the day a pass ran or while the cap has paused research and no standing where none is written, nor on a page for an earlier night where tonight's draws one, read over the researched fixture's store, ...
+Why: the test this correction adds holds that a page for an earlier night draws no standing, as the decision on such a page states.
+
 ### 2026-10-22 - .claude/rules/checks.md - fixture-expectations reaches a reading taken only at its pin's window
 Authorised by: A reading is taken only at the window its pin names, and the model is loaded again at it wherever it is held at another
 Was:

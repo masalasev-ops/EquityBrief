@@ -107,6 +107,30 @@ public partial class ReadSurface
         Assert.DoesNotContain("report-standing", none, StringComparison.Ordinal);
     }
 
+    // A page about an earlier night carries no staleness verdict, since staleness is the application asking about the
+    // company now, so it draws no standing and no control, where tonight's page over the same store draws both.
+    // see: A name's page for an earlier night draws what the store held that night and nothing it learned after
+    [Fact]
+    public async Task ANamePageForAnEarlierNightDrawsNoReportStandingWhereTonightsDrawsOne()
+    {
+        using var store = await FixtureReplay.ResearchedAsync();
+
+        var earlier = SessionWithoutAnEvening(store, "KEYS", NightIn(store));
+
+        store.Execute($"INSERT INTO listing (ticker, session_date, reasons, fired_count, plan_at_listing, shadow_reasons) VALUES ('KEYS', '{earlier}', '[]', 0, '[]', '[]');");
+
+        using var host = new PassHost(store.Root) { Clock = FixedClock.At(AWeekLater, SessionZones.UnitedStates) };
+        using var client = host.CreateClient();
+
+        var tonight = await client.GetStringAsync("/screens/name/KEYS");
+        var then = await client.GetStringAsync($"/screens/name/KEYS/{earlier}");
+
+        Assert.Contains("<div class=\"report-standing\" data-ticker=\"KEYS\" data-state=\"stands\"", tonight, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"notice earlier-night\" data-night=\"{earlier}\"", then, StringComparison.Ordinal);
+        Assert.DoesNotContain("report-standing", then, StringComparison.Ordinal);
+        Assert.Empty(KindsIn(then));
+    }
+
     // A press from a report's standing is confirmed with the cost its own block states, and the pass it starts is watched
     // for the stock its form names, which on the chart page is not the one the name page's route would read.
     [Fact]
