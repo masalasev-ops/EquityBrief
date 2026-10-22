@@ -154,7 +154,7 @@ public partial class ArchitectureConformance
 
         Assert.Equal(rows.Length, rows.Distinct(StringComparer.Ordinal).Count());
         Assert.All(rows, key => Assert.Equal(Verdict.Pass, Assert.Single(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key).Verdict));
-        Assert.All(AfterPhaseEighteen, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+        Assert.All(AfterPhaseEighteen.Except(TakenOutAfterPhaseEighteen), key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
         Assert.Equal(
             (total, 0, 0, total),
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));

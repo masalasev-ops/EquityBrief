@@ -254,13 +254,15 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper"));
 
-        // No settings are kept, so the page names the example at its top, walks the accounts on it and draws the chart and
-        // the table, the form left empty for the operator's own.
-        Assert.Contains("data-walked=\"true\" data-example=\"true\">", page, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"notice paper-example\" data-example=\"true\"><b>Example account</b>: 100,000 dollars, 1 per cent of it a trade and at most 20 per cent of it in one position. Save your own below and every account is walked on yours.</p>", page, StringComparison.Ordinal);
+        // No settings are kept, so the page names the example at its top, walks the accounts on it and draws the account's
+        // line, the tiles and the chart, the form folded beneath Change the account and left empty for the operator's own.
+        Assert.Contains("data-walked=\"true\" data-example=\"true\"", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"notice paper-example\" data-example=\"true\"><b>Example account</b>: 100,000 dollars, 1 per cent of it a trade and at most 20 per cent of it in one position. Change the account to save your own, and every account is walked on yours.</p>", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"paper-line\" data-size=\"example\"><span>Account <b>$100,000</b></span><span>Risk a trade <b>1%</b></span><span>Most in one stock <b>20%</b></span><span>Each rule trades its own copy of this account.</span></p>", page, StringComparison.Ordinal);
+        Assert.Contains("<details class=\"paper-change\"><summary>Change the account</summary>", page, StringComparison.Ordinal);
         Assert.DoesNotContain("data-paper-chart=\"unset\"", page, StringComparison.Ordinal);
         Assert.Contains("class=\"paper-chart\"", page, StringComparison.Ordinal);
-        Assert.Contains("data-walked=\"true\"><thead>", page, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"paper-tile\" data-family=\"pullback\" data-standing=\"live\"", page, StringComparison.Ordinal);
         Assert.DoesNotContain("set your account to walk it", page, StringComparison.Ordinal);
         Assert.DoesNotContain("value=\"100000\"", page, StringComparison.Ordinal);
 
@@ -277,7 +279,8 @@ public partial class ReadSurface
 
         var saved = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper"));
 
-        Assert.Contains("data-walked=\"true\" data-example=\"false\">", saved, StringComparison.Ordinal);
+        Assert.Contains("data-walked=\"true\" data-example=\"false\"", saved, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"paper-line\" data-size=\"kept\"><span>Account <b>$50,000</b></span><span>Risk a trade <b>0.5%</b></span><span>Most in one stock <b>10%</b></span>", saved, StringComparison.Ordinal);
         Assert.DoesNotContain("paper-example", saved, StringComparison.Ordinal);
     }
 

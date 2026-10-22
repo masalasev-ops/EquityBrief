@@ -3773,21 +3773,33 @@ internal static class Scope
             "a rule reading the analysts' estimates, one at the nearest bands and a variant whose head cannot be walked each stored with the reading it lacks and no figure over a constructed ledger, the rules beside them judged as they stand",
             ByExpectations),
         [CheckReach.Key("15.21 Paper trading", "Your account")] = new Scoped(
-            Verdict.Pass, "the form read back off the rendered page with the settings kept and the line asking for them where none is kept, and distinctive settings found in no byte of the store or the run log", ByReadSurface),
+            Verdict.Pass, "the sentence on what the page is, the account's line of the settings kept or the example's and the form behind Change the account read back off the rendered page, and distinctive settings found in no byte of the store or the run log", ByReadSurface),
+        [CheckReach.Key("15.21 Paper trading", "The tiles")] = new Scoped(
+            Verdict.Pass, "each live or provisional account's tile read back off the rendered page over a constructed store, its return worked by hand from the walk with a skip under the cash, its trades open and closed and its day, and the fund's tile over the same days worked by hand from its closes", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", "The chart")] = new Scoped(
             Verdict.Pass, "the lines read off the rendered chart over a constructed store: each family's head and yours by default, a chosen family's variants added dashed, and each line's points worked by hand from the walk", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", "The chart's key")] = new Scoped(
             Verdict.Pass, "a key a line read off the rendered chart, every line the hash names drawn in the markup, and the toggle read off the shell's script", ByReadSurface),
-        [CheckReach.Key("15.21 Paper trading", "Every account")] = new Scoped(
-            Verdict.Pass, "every account read off the rendered table in the one family order and within a family by its verdict and its return, each named by its card's tab with its trade log's link", ByReadSurface),
-        [CheckReach.Key("15.21 Paper trading", "An account's test years verdict")] = new Scoped(
-            Verdict.Pass, "each verdict worked by hand from constructed test rows on both sides of each screen, not testable and not tested yet among them, the head's chosen label and yours, and the test years read back off the page", ByReadSurface),
-        [CheckReach.Key("15.21 Paper trading", "An account's record since registration")] = new Scoped(
-            Verdict.Pass, "each account walked by hand with a skip and an uncosted trade, its label at 299 and 300 trades and at 35 and 36 months, and its return, worst drop and fund difference read back off the page beside its verdict and never in it", ByReadSurface),
+        [CheckReach.Key("15.21 Paper trading", "What the system bought")] = new Scoped(
+            Verdict.Pass, "the live and provisional rules' trades read back off the rendered page newest first under each tab and each chip with the links keeping every other key, the stocks not bought worked by hand a reason at a time each linking to its chart, and the earlier versions folded", ByReadSurface),
+        [CheckReach.Key("15.21 Paper trading", "An open trade")] = new Scoped(
+            Verdict.Pass, "each open trade's standing worked by hand at one typical move from its target and its stop and a hundredth past, the nearer of two and a tie, from its fill and a holding's words, its trailing stop raised and its result so far through a split, and each read back off the rendered row", ByReadSurface),
+        [CheckReach.Key("15.21 Paper trading", "A closed trade")] = new Scoped(
+            Verdict.Pass, "each ending worked by hand at its target, its stop, its trailing stop and its cap, a holding's reason and a page list's outcome, its result and its edge read back off the rendered row and one with no benchmark saying so", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", "An account's start and the version it counts")] = new Scoped(
-            Verdict.Pass, "a variant registered again read off the rendered row from its new registration's first session with its version and the two earlier trades it leaves out, its walk worked by hand over the trades after it alone, the live account leaving none out, and the start carried to a reproducing replay's session with the words saying so", ByReadSurface),
+            Verdict.Pass, "a variant registered again read off its rendered row from its new registration's first session with its version under the pointer and the two earlier trades it leaves out, its walk worked by hand over the trades after it alone, the live account leaving none out, and the start carried to a reproducing replay's session with the words saying so", ByReadSurface),
+        [CheckReach.Key("15.21 Paper trading", "What the variants did differently")] = new Scoped(
+            Verdict.Pass, "the family chosen in the link read back off the rendered page with its select, a row a rule with what it changes and its trades shared and alone worked by hand, its return with its label and its verdict beside it, the trades only a variant took beneath, and a family with no variant saying so", ByReadSurface),
+        [CheckReach.Key("15.21 Paper trading", "Rule scorecard")] = new Scoped(
+            Verdict.Pass, "the rule chosen in the link read back off the rendered page with its select, its two halves apart and its variants folding out beneath with their verdicts, their years better and their progress", ByReadSurface),
+        [CheckReach.Key("15.21 Paper trading", "An account's test years verdict")] = new Scoped(
+            Verdict.Pass, "each verdict worked by hand from constructed test rows on both sides of each screen, each test year's word and edge worked by hand, an adjusted p placed on the scale of luck at each zone's edge with its words, and the half read back off the rendered scorecard with the warning on a rule chosen on its years", ByReadSurface),
+        [CheckReach.Key("15.21 Paper trading", "An account's record since registration")] = new Scoped(
+            Verdict.Pass, "each account walked by hand with a skip and an uncosted trade, its progress worked by hand toward the count with its mean edge, its label at 299 and 300 trades and at 35 and 36 months, and the half read back off the rendered scorecard apart from its verdict, a provisional rule's saying it keeps no record", ByReadSurface),
+        [CheckReach.Key("15.21 Paper trading", "Your own trades")] = new Scoped(
+            Verdict.Pass, "the operator's own trades read back off the rendered page with their count, their return and their trade log's link, and the line where none is taken", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", "The lines beneath")] = new Scoped(
-            Verdict.Pass, "both lines read off the rendered page beneath the table", ByReadSurface),
+            Verdict.Pass, "the entry's line beneath what the system bought and the adoption's beneath the variants' table read off the rendered page", ByReadSurface),
         [CheckReach.Key("15.17 Past picks", "The trade log's account")] = new Scoped(
             Verdict.Pass, "the selector read off the rendered page with the lists first, each family's live or provisional account before its variants in the one family order and You last, each family's verdict and label beside the lists' trades and the entry line beneath them", ByReadSurface),
         [CheckReach.Key("15.17 Past picks", "An account's trade log")] = new Scoped(
@@ -6037,11 +6049,17 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, its return since bought")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, a pill saying whether it is still leading or lost its lead or is below its 200-day average read off tonight's closes by the rule's own functions and marked as information only")] = "19.3",
 
-        // 19.4's: paper trading's rows and the trade log's two.
+        // 19.4's: paper trading's rows, its parts standing in the place of the table of every account, and the trade log's two.
         [CheckReach.Key("15.21 Paper trading", "Your account")] = "19.4",
+        [CheckReach.Key("15.21 Paper trading", "The tiles")] = "19.4",
         [CheckReach.Key("15.21 Paper trading", "The chart")] = "19.4",
         [CheckReach.Key("15.21 Paper trading", "The chart's key")] = "19.4",
-        [CheckReach.Key("15.21 Paper trading", "Every account")] = "19.4",
+        [CheckReach.Key("15.21 Paper trading", "What the system bought")] = "19.4",
+        [CheckReach.Key("15.21 Paper trading", "An open trade")] = "19.4",
+        [CheckReach.Key("15.21 Paper trading", "A closed trade")] = "19.4",
+        [CheckReach.Key("15.21 Paper trading", "What the variants did differently")] = "19.4",
+        [CheckReach.Key("15.21 Paper trading", "Rule scorecard")] = "19.4",
+        [CheckReach.Key("15.21 Paper trading", "Your own trades")] = "19.4",
         [CheckReach.Key("15.21 Paper trading", "An account's test years verdict")] = "19.4",
         [CheckReach.Key("15.21 Paper trading", "An account's record since registration")] = "19.4",
         [CheckReach.Key("15.21 Paper trading", "An account's start and the version it counts")] = "19.4",

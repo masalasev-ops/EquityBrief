@@ -269,6 +269,7 @@ public static class PicksScreen
             Past: row.Past,
             Unfilled: row.Unfilled,
             Waiting: row.OutcomeStored && row.Fill is null && row.Unfilled is null,
-            FilledOn: row.FilledOn);
+            FilledOn: row.FilledOn,
+            Cap: CapOf(row));
     }
 }

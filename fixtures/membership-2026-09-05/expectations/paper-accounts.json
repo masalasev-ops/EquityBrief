@@ -1,17 +1,16 @@
 {
  "stage": "paper-accounts",
  "derivation": "derived",
- "derivedFrom": "section 15.21's rows on every account, the decision that a paper account draws its test years verdict and its record since registration apart, and section 11's arrival rule, not a run. The fixture's night of 2026-09-08 is the first its store runs the swing filter over, so the trigger every buy point needs reads its arrival off gate rows stored for the sessions before the night, finds none and fails for every member, as setup-cards.json derives: no list and no book keeps a trade, and the store holds no taken trade. No rule stands registered on the S&P 500 in the fixture's store, so each family has its page's list as its one account and no variant; the pullback, the breakout, the drift and the sector heavyweights are drawn by the S&P 500's live rules, and the fundamentals-first family by its provisional one. A night runs no monthly per-rule test, so no account's rule has a verdict and each reads not tested yet, and the operator's own reads that the test does not read it. With no trade an account's record since registration holds none: a swing account reads too few trades, none of the 300 the count screen judges a swing family on, and the book too few months, none of 36, and no account has a session to draw. The suite reads every member's stored gate result on the night failing its trigger and reads each account back off the page the whole night draws with an account's settings kept. It names the gate results the derivation rests on, which the replay the other checks read writes.",
+ "derivedFrom": "section 15.21's rows on the tiles, what the variants did differently, the rule scorecard and your own trades, the decision that a rule's scorecard draws its test years and its record since it went live as two halves and never adds them together, and section 11's arrival rule, not a run. The fixture's night of 2026-09-08 is the first its store runs the swing filter over, so the trigger every buy point needs reads its arrival off gate rows stored for the sessions before the night, finds none and fails for every member, as setup-cards.json derives: no list and no book keeps a trade, and the store holds no taken trade. No rule stands registered on the S&P 500 in the fixture's store, so each family has its page's list as its one account and no variant; the pullback, the breakout, the drift and the sector heavyweights are drawn by the S&P 500's live rules, and the fundamentals-first family by its provisional one. With no trade no account has a day to count from, so each family's tile reads no return, none open and none closed, and no account has a session to draw. A night runs no monthly per-rule test, so each rule reads not tested yet and its scorecard holds no test year. Its record since it went live holds no trade: a live swing rule reads none of the 300 decided trades the count screen judges a swing family on, the book none of its 36 months, and the provisional rule that it keeps no record; on its row among its family's accounts, with no variant beside it, a swing account reads too few trades and the book too few months. The operator's own trades say none is taken. The suite reads every member's stored gate result on the night failing its trigger and reads each part back off the page the whole night draws with an account's settings kept, a family at a time. It names the gate results the derivation rests on, which the replay the other checks read writes.",
  "tables": ["gate_result"],
  "paperNight": "2026-09-08",
  "paperAccounts": [
-  { "key": "list-pullback", "standing": "live", "tooFew": "too few trades (0 of 300)" },
-  { "key": "list-breakout", "standing": "live", "tooFew": "too few trades (0 of 300)" },
-  { "key": "list-drift", "standing": "live", "tooFew": "too few trades (0 of 300)" },
-  { "key": "list-fundamentals", "standing": "provisional", "tooFew": "too few trades (0 of 300)" },
-  { "key": "list-heavyweight", "standing": "live", "tooFew": "too few months (0 of 36)" },
-  { "key": "you", "standing": "you", "tooFew": null }
+  { "family": "pullback", "key": "list-pullback", "standing": "live", "tooFew": "too few trades (0 of 300)", "sinceLive": "0 of 300 trades decided" },
+  { "family": "breakout", "key": "list-breakout", "standing": "live", "tooFew": "too few trades (0 of 300)", "sinceLive": "0 of 300 trades decided" },
+  { "family": "drift", "key": "list-drift", "standing": "live", "tooFew": "too few trades (0 of 300)", "sinceLive": "0 of 300 trades decided" },
+  { "family": "fundamentals", "key": "list-fundamentals", "standing": "provisional", "tooFew": "too few trades (0 of 300)", "sinceLive": null },
+  { "family": "heavyweight", "key": "list-heavyweight", "standing": "live", "tooFew": "too few months (0 of 36)", "sinceLive": "0 of 36 months held" }
  ],
  "headVerdict": "not tested yet",
- "yourVerdict": "your own trades, which the test does not read"
+ "yours": "none"
 }

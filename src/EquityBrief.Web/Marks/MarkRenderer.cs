@@ -223,7 +223,9 @@ public sealed record PickCell(
     string? Past = null,
     string? Unfilled = null,
     bool Waiting = false,
-    DateOnly? FilledOn = null);
+    DateOnly? FilledOn = null,
+    // The sessions the trade is given, which paper trading draws an open trade's sessions held against.
+    int? Cap = null);
 
 // One stock the swing filter passed on a night while a trade the live list recommended for it on an
 // earlier night is still open, with that trade as Past picks draws it as of the night.

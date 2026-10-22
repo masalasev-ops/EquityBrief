@@ -382,9 +382,10 @@ public partial class ArchitectureConformance
         // the three stores of the releases' filers, readings and probes, section 17's row and section 18's, and 1364 from
         // 20.4, the tone variant's card row in 15.7 and section 17's window row, and 1366 from 20.5, the local comparison's
         // catalogue and matrix rows, and 1372 from 20.9, the idea generator's catalogue and matrix rows, its store, the Loop
-        // page's row and section 18's two.
+        // page's row and section 18's two, and 1378 from the 19.4 correction of 2026-10-22, paper trading's seven rows for
+        // its parts less its table of every account.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1372),
+            (789, 853, 6, 4, 855, 876, 1378),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

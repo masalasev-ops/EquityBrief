@@ -130,8 +130,10 @@ public partial class ReadSurface
             // 19.3, every setup card built one way and the heavyweights card's tiles, sectors and standing.
             .. SetupCardRows,
 
-            // 19.4, paper trading and each account's trade log.
-            .. PaperRows,
+            // 19.4, paper trading and each account's trade log, less the table of every account its correction retired, and
+            // that correction's parts.
+            .. PaperRows.Except(RetiredPaperRows),
+            .. PaperPageRows,
 
             // 19.5, Universe's tiles, search, sorting, rows a page, chips, bars, phone cards and corrections, and the two
             // section 17 rows they read.
