@@ -6715,3 +6715,29 @@ Verified:   `tools/ci.ps1` green over main at b6cb98dc as the 19.11 correction's
             176 of 176 passed.
 Carried:    the sign-offs of phases 18, 19 and 20, each owed by a fresh session and discharged by no checkpoint of
             phase 22; the operator's answer on the way one trade a stock runs, before 22.1 is built.
+
+### 22.0 ruling - the dip gives way to every other family's list and open trades and stands after the fundamentals-first family on every index, and 22.1 is built in a worktree of its own from the plan's branch   2026-10-22
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-22 at about 19:45 UTC through the question tool, on the questions the planning
+            entry above put to them, word for word in `prompts/2026-10-22-22.0-operator-answers.md`: asked whether the
+            older families stop listing a stock the dip holds, "Dip gives way (Recommended)"; asked where the dip's card
+            sits on the S&P 500's page, "After fundamentals-first (Recommended)"; and asked when 22.1 is built: "Start
+            22.1 now. Build it in a separate git worktree on a branch taken from the plan's branch (PR 530), so the
+            reviewer's checkout on main and the night's build stay untouched. Keep heavy build and test runs out of the
+            night's way once it starts at 7 pm ET. Nothing merges until the night and every other writer have finished,
+            as the standing rule says."
+Plan:       the dip lists no stock another family listed that night on its index or holds an open trade on, on any
+            index, and no other family's list reads its trades; its card stands after the fundamentals-first family's
+            on every index (see: The dip lists last among the swing families on every index and gives way to every
+            other family's list and open trades). The build plan's 22.1 says so, its prior text in the changelog. 22.1
+            is built in a git worktree beside the repository, `EquityBrief-dip`, on a branch taken from this pull
+            request's, which departs on the operator's word, for this build alone, from the merge section's one
+            checkout: the checkout and its build stay on main for the phase 19 sign-off's gates and the night, no heavy
+            build or test runs from 23:00 UTC while the night runs, and nothing merges until the night and every other
+            writer have finished.
+Queue:      as the planning entry above, its question answered; in progress, 22.1.
+Verified:   `tools/ci.ps1` green over main at b6cb98dc as the 19.11 correction's entry above records; documents alone
+            change, so the checks reading them run filtered over the tree carrying this entry, 176 of 176 passed.
+Carried:    the sign-offs of phases 18, 19 and 20, each owed by a fresh session and discharged by no checkpoint of
+            phase 22.

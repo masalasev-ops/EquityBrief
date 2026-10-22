@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-22 - docs/BUILD_PLAN.md - phase 22's dip gives way to every other family's list and stands after the fundamentals-first family, as the operator ruled
+Authorised by: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+Was:
+> Where it lands: ... one order on every page is kept, the S&P 500's place after the drift standing on the operator's word.
+> What has no route: ... A live rule's page list is its paper account, so whichever way is ruled changes which trades the older accounts take from the merge on and restarts none. This is put to the operator before anything is built, as the ruling's limit asks.
+> **What is the operator's.** The way one trade a stock runs that has no route, before 22.1 is built. Each index's sweep answer, ... Any cut to the grid and any dial dropped from it. The S&P 500's place right after the drift in place of after the fundamentals-first family. A report request for a dip pick, ...
+> 22.1: ... and the other families' lists hold back a stock it holds as the operator rules on what 22.0 found has no route.
+> 22.1's done condition: ... a stock the pullback and the dip both pass is listed under the first in the page's order with the other's label, and a stock another family holds is held back by the dip, the other way holding as the operator ruled; ...
+Now:
+> Where it lands: ... one order on every page is kept, as the operator ruled (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades).
+> What has no route: ... A live rule's page list is its paper account, so an older list holding back a stock the dip holds would change which trades its account takes from the merge on, restarting none. Put to the operator before anything was built, as the ruling's limit asks, they ruled that the dip gives way and no other family's list reads its trades.
+> **What is the operator's.** Each index's sweep answer, ... Any cut to the grid and any dial dropped from it. A report request for a dip pick, ...
+> 22.1: ... and no other family's list reads its trades (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades).
+> 22.1's done condition: ... a stock the pullback and the dip both pass is listed under the first in the page's order with the other's label, a stock another family holds is held back by the dip, and a stock the dip holds is listed by an older family as before; ...
+Why: the operator answered the two questions 22.0's planning pass put to them, "Dip gives way" and "After fundamentals-first", and the finding's sentence on the accounts read as if every answer changed them, where the one ruled changes none.
+
 ### 2026-10-22 - .claude/rules/checks.md - read-surface reaches no report standing on a page for an earlier night
 Corrects: no test read a page for an earlier night over a researched store, so a route reading the staleness verdict for an earlier night survived every read-surface test; found by the fourth phase 19 sign-off review's mutation m5.
 Was:
