@@ -6138,3 +6138,29 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the theme an industry's research is read for and the swing filter's sector standings with the sweeps' history,
             put to the operator; the long releases' fixes of the 20.3 ruling above; 20.12; PR 505 rebased with its migration
             at 104; the phase 18 and phase 19 sign-offs by fresh sessions.
+
+### 16.2 - correction: the account form's rule on a phone is held to stand after the inline rule every posted form is drawn by   2026-10-22
+
+Queue:      ruled by the operator on 2026-10-22 through the question tool, "Phase 19 fix first (Recommended)": done,
+            phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its remedies, the page
+            corrections and the first two phase 19 sign-off reviews' corrections in PRs 518 to 520, and the GICS groups and
+            the Financials' revenue in PR 521; in review, 20.8 with its correction, PR 505; in progress, this pull request,
+            the third phase 19 sign-off review's corrections; next, the phase 19 sign-off by a fresh session over the
+            corrected main beside the long releases' fixes, then 20.12, PR 505 rebased with its migration at 104, the phase
+            18 sign-off by a fresh session, the local lane's one text field, 21.0 once its ruling is given, and pin 3's
+            completion steps.
+Ruled:      "Correct first", the operator's answer after the night of 2026-10-21 to the third phase 19 sign-off review.
+Found:      by that review over main at 2042951e: the account form's rule on a phone, which stands each of its settings
+            beneath the one before, outranked the inline rule every posted form is drawn by only by standing after it, the
+            two selectors weighing the same, and no test held that order.
+Corrected:  the form's test holds the phone's rule after every rule drawing a posted form inline. The roster and the
+            changelog.
+Tests:      none more: the form's test reads the order.
+Mutated:    the rule, stated before the runs, for every correction of this pull request: each property it adds, the
+            smallest edit undoing it, filtered to the tests naming it with its red predicted, made in this checkout over the
+            file's own text and restored from it, the tree's diff the same after each. m1 a second inline rule for the
+            posted forms standing after the phone's: predicted red at the form's test; result red, the phone's rule
+            standing before it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.

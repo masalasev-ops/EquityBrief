@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-22 - .claude/rules/checks.md - read-surface reaches the account form's rule on a phone standing after the posted forms' inline rule
+Corrects: the account form's rule on a phone outranked the inline rule every posted form is drawn by only by standing after it, the two selectors weighing the same, and no test held that order, found by the third phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... the sector read off the newest company fetch on or before the page's night and a fetch made after it not read, over the universes' store |
+Now:
+> read-surface: ... a fetch made after it not read, over the universes' store; and from the 16.2 correction of 2026-10-22 the account form's rule on a phone standing after the inline rule every posted form is drawn by, the two weighing the same |
+Why: the 16.2 correction of 2026-10-22 adds this assertion.
+
 ### 2026-10-21 - .claude/rules/checks.md - fixture-expectations and read-surface reach a financial company's revenue read against no estimate
 Authorised by: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
 Was:
