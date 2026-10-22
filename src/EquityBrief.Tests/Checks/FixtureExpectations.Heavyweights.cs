@@ -128,7 +128,16 @@ public partial class FixtureExpectations
                 .. expected.GetProperty("names").EnumerateObject().Select(name =>
                     $"{name.Name}|{name.Value.GetProperty("cik").GetString()}|{name.Value.GetProperty("sector").GetString()}|{name.Value.GetProperty("group").GetString()}|{name.Value.GetProperty("industry").GetString()}|{name.Value.GetProperty("subIndustry").GetString()}"),
             ],
-            Query(store, "SELECT ticker, cik, sector, industry_group, industry, sub_industry FROM company ORDER BY ticker;"));
+            Query(store, $"SELECT ticker, cik, sector, industry_group, industry, sub_industry FROM company WHERE fetched_at > '{FixtureReplay.CompaniesFetchedAt}' ORDER BY ticker;"));
+
+        // Beside it the earlier night's fetch the replay holds for each name, its classification alone, from 15.1's second
+        // correction of 2026-10-21, the same as the night's.
+        Assert.Equal(
+            [
+                .. expected.GetProperty("names").EnumerateObject().Select(name =>
+                    $"{name.Name}|null|{name.Value.GetProperty("sector").GetString()}|{name.Value.GetProperty("group").GetString()}|{name.Value.GetProperty("industry").GetString()}|{name.Value.GetProperty("subIndustry").GetString()}"),
+            ],
+            Query(store, $"SELECT ticker, cik, sector, industry_group, industry, sub_industry FROM company WHERE fetched_at = '{FixtureReplay.CompaniesFetchedAt}' ORDER BY ticker;"));
         Assert.Equal(
             ["1"],
             Query(store, "SELECT COUNT(DISTINCT c.fetched_at) FROM company c JOIN reported_quarter r ON r.ticker = c.ticker AND r.fetched_at = c.fetched_at GROUP BY c.ticker;").Distinct());

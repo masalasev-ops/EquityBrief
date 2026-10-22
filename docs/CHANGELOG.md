@@ -26,6 +26,54 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - .claude/rules/checks.md - fixture-expectations and read-surface reach every member named and grouped by its company fetch
+Authorised by: Every member is named and grouped by the GICS industry and sector its company fetch files
+Was:
+> fixture-expectations: ... and from the 15.1 correction of 2026-10-21 a member whose membership row names neither a sector nor an industry grouped among its own index's members by the GICS industry and sector its newest company fetch made before the night started files, both from that one fetch, its older fetch and one made after the night started not read, a member whose row names an industry grouped by its row whatever its fetch files and one naming its sector alone by that sector, and one whose row and fetch name neither in no group, worked by hand over a constructed store of the three indices; ... none held a year earlier so, each worked by hand |
+>
+> read-surface: ... and from the 15.1 correction of 2026-10-21 a member's industry on the chart page's grid and its masthead the one its membership row names, and where it names neither a sector nor an industry the GICS industry its newest company fetch files, read over a constructed store of the three indices, ... and never the night's list |
+Now:
+> fixture-expectations: ... its older fetch and one made after the night started not read, and one whose fetch names neither in no group, worked by hand over a constructed store of the three indices; ... none held a year earlier so, each worked by hand; and from the second 15.1 correction of 2026-10-21 every member of every index grouped by the GICS industry and sector its newest company fetch made before the night started files whatever its membership row names, an S&P 500 member whose row names an industry and which has no fetch in no group, worked by hand over a constructed store of the three indices, and the fixture's AAPL, MSFT and KEYS in the Information Technology sector their captured answers file with NFLX beside nobody |
+>
+> read-surface: ... and from the 15.1 correction of 2026-10-21 a member whose membership row names neither a sector nor an industry named on the chart page's grid and its masthead by the GICS industry its newest company fetch files, read over a constructed store of the three indices, ... and never the night's list; and from the second 15.1 correction of 2026-10-21 a member's industry on the chart page's grid and its masthead the GICS industry its newest company fetch files on every index, a membership row's own words drawn by no page |
+Why: the second 15.1 correction of 2026-10-21 reads every member's group and industry off its company fetch, so the clauses naming a member read by its row no longer hold and the new assertions are named.
+
+### 2026-10-21 - ARCHITECTURE.html - every member is named and grouped by the GICS industry and sector its company fetch files
+Authorised by: Every member is named and grouped by the GICS industry and sector its company fetch files
+Was:
+> How it got here, its source: ... each move's group median computed by the move annotator from the bars and the membership, a member whose row names neither a sector nor an industry grouped by its company fetch (see: A large move ...) (see: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files); ...
+>
+> Its group, by price, its source: The peers' two readings and the members chosen, computed by the move annotator from the bars and the membership with a member whose row names neither a sector nor an industry grouped by its company fetch; the group's other members as the annotator counted them (see: Peers are shown by price alone ...) (see: A member whose membership row names neither a sector nor an industry ...)
+>
+> Move annotator: ... a group is read among the name's own index's members by the industry and sector each one's membership row names, or from the 15.1 correction of 2026-10-21 where the row names neither a sector nor an industry by the GICS industry and sector its newest company fetch before the night files (see: A member whose membership row names neither a sector nor an industry ...)
+>
+> The figures: ... the company: its index and sector and industry; from the 15.1 correction of 2026-10-21 its industry the one its membership row names and where the row names neither a sector nor an industry the GICS industry its newest company fetch files (see: A member whose membership row names neither a sector nor an industry ...); the provider's market value; ...
+Now:
+> How it got here, its source: ... each move's group median computed by the move annotator from the bars and the membership with every member grouped by the GICS industry and sector its company fetch files (see: A large move ...) (see: Every member is named and grouped by the GICS industry and sector its company fetch files); ...
+>
+> Its group, by price, its source: The peers' two readings and the members chosen, computed by the move annotator from the bars and the membership with every member grouped by the GICS industry and sector its company fetch files; the group's other members as the annotator counted them (see: Peers are shown by price alone ...) (see: Every member is named ...)
+>
+> Move annotator: ... a group is read among the name's own index's members by the GICS industry and sector each one's newest company fetch before the night files, from the second 15.1 correction of 2026-10-21 on every index whatever its membership row names (see: Every member is named ...)
+>
+> The figures: ... the company: its index and sector and industry; from the second 15.1 correction of 2026-10-21 its industry the GICS industry its newest company fetch files on every index (see: Every member is named ...); the provider's market value; ...
+Why: the operator ruled on the evening of 2026-10-21 that the S&P 500's groups and the industry its pages name move to the GICS scheme, so every index, the heavyweights and the ledger read one scheme.
+
+### 2026-10-21 - SCHEMA.md - every member's group read off its company fetch
+Authorised by: Every member is named and grouped by the GICS industry and sector its company fetch files
+Was:
+> move and peer_reading, `group_name`: the industry or sector the membership row names, or where it names neither the GICS one the name's newest company fetch made before the night files; null where neither names one
+>
+> The group columns are the annotator's: ... and its sector otherwise, read off the membership, so the annotator reads the membership as well as the bars (see: ...) (see: ...). From the 15.1 correction of 2026-10-21 a member whose membership row names neither a sector nor an industry, which is every S&P 400 and 600 member, is read by the GICS industry and sector its newest `company` row fetched before the night started files, both from that one row, so the annotator reads the companies as well; a member whose row names either is read by its row (see: A member whose membership row names neither a sector nor an industry ...).
+>
+> company: ... From the 15.1 correction of 2026-10-21 the move annotator reads a member's newest row fetched before the night started for the industry and sector its group is read by, where its membership row names neither, and the pages name such a member's industry by its newest row's (see: A member whose membership row names neither a sector nor an industry ...).
+Now:
+> move and peer_reading, `group_name`: the GICS industry or sector the name's newest company fetch made before the night files; null where it files neither
+>
+> The group columns are the annotator's: ... and its sector otherwise, read among the members the membership holds on the session by the GICS industry and sector each one's newest `company` row fetched before the night started files, both from that one row, so the annotator reads the membership, the companies and the bars (see: ...) (see: ...). From the second 15.1 correction of 2026-10-21 every member of every index is read so, whatever its membership row names (see: Every member is named and grouped by the GICS industry and sector its company fetch files).
+>
+> company: ... From the second 15.1 correction of 2026-10-21 the move annotator reads every member's newest row fetched before the night started for the industry and sector its group is read by, and every page names a member's industry by its newest row's (see: Every member is named ...).
+Why: as the architecture's entry above; the schema states what the annotator now reads.
+
 ### 2026-10-21 - .claude/rules/checks.md - read-surface reaches the Run page's funnel naming its count as the swing filter's
 Corrects: the Run page's funnel said "0 stock(s) on this night's list" on a night Tonight listed five buy points, found by the second phase 19 sign-off review of 2026-10-21.
 Was:

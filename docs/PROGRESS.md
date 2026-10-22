@@ -6055,3 +6055,48 @@ Queue:      as the 15.1 ruling's entry above.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    the long releases' fixes, in the order ruled.
+
+### 15.1 - correction: every member is named and grouped by the GICS industry and sector its company fetch files, the fixture's replay holding each member's classification from an earlier night's fetch and the recorded answers its group's new name moves re-keyed with no paid call   2026-10-21
+
+Queue:      as the 15.1 ruling's entry above.
+Ruled:      the first item of the operator's rulings of the evening of 2026-10-21, word for word in the 15.1 ruling's entry
+            above.
+Found:      every S&P 500 member was grouped and named by the words its index snapshot names, Technology and Consumer
+            Electronics among them, while its sector on every page, the heavyweights, the sector funds and the ledger read
+            the GICS classification its company fetch files; on 2026-10-21 three of the S&P 500's 503 members, SKYD, VMRK and
+            VYLR, and two of the S&P 600's 602 filed no GICS classification in their newest fetch.
+Corrected:  the move annotator reads every member's group by the GICS industry and sector its newest company fetch made
+            before the night started files, and every page names a member's industry by its newest fetch's, the words a
+            membership row names read by neither (see: Every member is named and grouped by the GICS industry and sector its
+            company fetch files). The fixture's replay and the expectations' chain hold each of the four members'
+            classification as fetched on 2026-09-04, before either night, since a night's own fetch comes after its groups
+            are read, so AAPL, MSFT and KEYS stand in Information Technology where the snapshot named Technology. The 55
+            recorded answers whose requests the group's new name moved answer them re-keyed whole with no paid call: the 13
+            paid answers, each already constructed, renamed with a sentence in its note naming the file it was, and the 42
+            local recordings, 25 in the fixture's folder and 17 in the comparison's, renamed with their manifest entries
+            naming the key each was recorded under. The decision superseded and moved, the move annotator's catalogue row,
+            section 4's two rows and the chart page's figures row, SCHEMA's group columns and companies note, the roster and
+            the changelog.
+Tests:      one more and two rewritten, the suite's total in the newest entry of this pull request: a constructed store of
+            the three indices worked by hand again, G1 grouped by its newest fetch's Semiconductors with five others and not
+            by its older Banks or its row's words, G7 and G9 in their fetches' Information Technology with seven, G8 alone in
+            Industrials and G10, naming an industry with no fetch behind it, in no group; the chart page over the universes'
+            store, AAA named by its fetch's industry and not its row's and BBB, with no fetch, not stored; the fixture's
+            groups and facts in Information Technology; and each answer the group's name moved re-keyed whole, 13 paid and
+            42 local, none standing beside the file it was.
+Measured:   the 55 moved requests found by putting the snapshot's word back into each request the suite made that no
+            recording answered and reading the key it gives, all 55 matching a recording the fixture held, through a hook on
+            the two recorded feeds made in this checkout for one run and taken out before anything was committed; two further
+            requests, one for the key under each figure and one for the two cases, held no recording under either name, and
+            the suite passes without them, so neither was a recording the change moved.
+Claims:     1372, as before: no row's claim added or removed by this pull request.
+Mutated:    each rule stated before its run. G2 the night's groups read the words a membership row names where it names
+            any: predicted red at the constructed store's G1, grouped by its row's Snapshot Chips; result red, "industry
+            Snapshot Chips 6" where "industry Semiconductors & Semiconductor Equipment 5". G3 the pages' industry the row's
+            where it names one: predicted red at AAA, named Oil & Gas Integrated; result red, "Oil & Gas Integrated" where
+            "Oil, Gas & Consumable Fuels". Each made in this checkout over the file's own text and restored from it, the
+            tree's diff the same after.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    the theme an industry's research is read for and the swing filter's sector standings with the sweeps' history,
+            each on the index's own words and put to the operator, as the 15.1 ruling's entry above says.

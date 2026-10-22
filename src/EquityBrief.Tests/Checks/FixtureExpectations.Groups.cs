@@ -47,19 +47,17 @@ public partial class FixtureExpectations
         Assert.All(members, member => Assert.DoesNotContain(member.Ticker, Groups.Of(member.Ticker, members).Members));
     }
 
-    // From the 15.1 correction of 2026-10-21: a member whose membership row names neither a sector nor an industry, which
-    // is every S&P 400 and 600 member, is grouped by the GICS industry and sector its newest company fetch made before the
-    // night started files, both from that fetch, while a member whose row names either is grouped by its row, each within
-    // its own index, worked by hand over a constructed store whose night is 2026-09-08.
-    // see: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
+    // From the second 15.1 correction of 2026-10-21: every member of every index is grouped by the GICS industry and sector
+    // its newest company fetch made before the night started files, both from that fetch, whatever its membership row
+    // names, each within its own index, worked by hand over a constructed store whose night is 2026-09-08.
+    // see: Every member is named and grouped by the GICS industry and sector its company fetch files
     [Fact]
-    public async Task AMemberWhoseMembershipRowNamesNoIndustryIsGroupedByTheIndustryAndSectorItsNewestCompanyFetchBeforeTheNightFiles()
+    public async Task EveryMemberIsGroupedByTheIndustryAndSectorItsNewestCompanyFetchBeforeTheNightFilesWhateverItsRowNames()
     {
         using var store = new TemporaryStore().Migrated();
 
-        // The S&P 500's G1 to G6 in one industry its rows name, G7 alone in another of the same sector, G8 in a sector of its
-        // own and G9 naming the sector and no industry, each with a company fetch filing another scheme the rows stand over;
-        // the S&P 400's M1 to M8 and the S&P 600's S1 naming neither.
+        // The S&P 500's G1 to G9 rows naming the index snapshot's words, G9 its sector alone and G10 an industry with no fetch
+        // behind it; the S&P 400's M1 to M8 and the S&P 600's S1 naming neither.
         string[] chips = ["G1", "G2", "G3", "G4", "G5", "G6"];
         string[] machinery = ["M1", "M2", "M3", "M4", "M5", "M6"];
 
@@ -67,23 +65,26 @@ public partial class FixtureExpectations
             "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at, sector, industry) VALUES " +
             string.Join(", ", chips.Select(ticker => $"('GSPC', '{ticker}', NULL, NULL, '2026-09-08T21:00:00Z', 'Technology', 'Snapshot Chips')")) +
             ", ('GSPC', 'G7', NULL, NULL, '2026-09-08T21:00:00Z', 'Technology', 'Snapshot Software'), ('GSPC', 'G8', NULL, NULL, '2026-09-08T21:00:00Z', 'Industrials', 'Snapshot Machinery'), " +
-            "('GSPC', 'G9', NULL, NULL, '2026-09-08T21:00:00Z', 'Technology', NULL), " +
+            "('GSPC', 'G9', NULL, NULL, '2026-09-08T21:00:00Z', 'Technology', NULL), ('GSPC', 'G10', NULL, NULL, '2026-09-08T21:00:00Z', 'Technology', 'Snapshot Chips'), " +
             string.Join(", ", machinery.Append("M7").Append("M8").Select(ticker => $"('MID', '{ticker}', NULL, NULL, '2026-09-08T21:00:00Z', NULL, NULL)")) +
             ", ('SML', 'S1', NULL, NULL, '2026-09-08T21:00:00Z', NULL, NULL);");
 
-        // M1 to M6 file Machinery, M1 over an older fetch filing Banks; M7 files Building Products, and Machinery in a fetch
-        // made after the night started, which the night does not read; M8 files no sector and no industry; S1 has no fetch.
+        // G1 to G6 file Semiconductors, G1 over an older fetch filing Banks; G7 and G9 file Software and G8 Machinery; M1 to
+        // M6 file Machinery, M1 over an older fetch filing Banks; M7 files Building Products, and Machinery in a fetch made
+        // after the night started, which the night does not read; M8 files no sector and no industry; G10 and S1 have no
+        // fetch.
         store.Execute(
             "INSERT INTO company (ticker, fetched_at, sector, industry) VALUES " +
+            string.Join(", ", chips.Select(ticker => $"('{ticker}', '2026-09-01T00:00:00.000Z', 'Information Technology', 'Semiconductors & Semiconductor Equipment')")) +
+            ", ('G1', '2026-06-01T00:00:00.000Z', 'Financials', 'Banks'), ('G7', '2026-09-01T00:00:00.000Z', 'Information Technology', 'Software')" +
+            ", ('G8', '2026-09-01T00:00:00.000Z', 'Industrials', 'Machinery'), ('G9', '2026-09-01T00:00:00.000Z', 'Information Technology', 'Software'), " +
             string.Join(", ", machinery.Select(ticker => $"('{ticker}', '2026-09-01T00:00:00.000Z', 'Industrials', 'Machinery')")) +
             ", ('M1', '2026-06-01T00:00:00.000Z', 'Financials', 'Banks'), ('M7', '2026-09-01T00:00:00.000Z', 'Industrials', 'Building Products')" +
-            ", ('M7', '2026-09-09T01:00:00.000Z', 'Industrials', 'Machinery'), ('M8', '2026-09-01T00:00:00.000Z', NULL, NULL)" +
-            ", ('G1', '2026-09-01T00:00:00.000Z', 'Information Technology', 'Semiconductors & Semiconductor Equipment')" +
-            ", ('G9', '2026-09-01T00:00:00.000Z', 'Information Technology', 'Software');");
+            ", ('M7', '2026-09-09T01:00:00.000Z', 'Industrials', 'Machinery'), ('M8', '2026-09-01T00:00:00.000Z', NULL, NULL);");
 
         // Every close 100 on 2026-09-03 and 2026-09-04, and on 2026-09-08, the session after Labor Day: G1 120, G2 to G6
-        // 101 to 105, M1 130, M2 to M6 101 to 105, G7 90, G8 95, G9 98, M7 80, M8 and S1 99.
-        var night = new Dictionary<string, int>(StringComparer.Ordinal) { ["G1"] = 120, ["M1"] = 130, ["G7"] = 90, ["G8"] = 95, ["G9"] = 98, ["M7"] = 80, ["M8"] = 99, ["S1"] = 99 };
+        // 101 to 105, M1 130, M2 to M6 101 to 105, G7 90, G8 95, G9 98, G10 97, M7 80, M8 and S1 99.
+        var night = new Dictionary<string, int>(StringComparer.Ordinal) { ["G1"] = 120, ["M1"] = 130, ["G7"] = 90, ["G8"] = 95, ["G9"] = 98, ["G10"] = 97, ["M7"] = 80, ["M8"] = 99, ["S1"] = 99 };
 
         foreach (var (ticker, at) in chips.Skip(1).Select((ticker, at) => (ticker, at)).Concat(machinery.Skip(1).Select((ticker, at) => (ticker, at))))
         {
@@ -103,13 +104,14 @@ public partial class FixtureExpectations
 
         string Group(string ticker) => Query(store, $"SELECT group_kind || ' ' || IFNULL(group_name, 'none') || ' ' || group_members FROM move WHERE ticker = '{ticker}' AND session_date = '2026-09-08';").Single();
 
-        // G1 by its row's industry, five others; G7 alone in its industry, so its row's sector with G1 to G6 and G9; G8 alone
-        // in its sector, the S&P 400's Industrials in another index; and G9, whose row names its sector and no industry, by
-        // that sector with G1 to G7 and not by its fetch's Information Technology, which no other S&P 500 member reads.
-        Assert.Equal("industry Snapshot Chips 5", Group("G1"));
-        Assert.Equal("sector Technology 7", Group("G7"));
+        // G1 by its newest fetch's industry, five others, and not by its older Banks or its row's words; G7 and G9 one short
+        // of an industry, so their fetches' sector with G1 to G6 and each other; G8 alone in its sector, the S&P 400's
+        // Industrials in another index; and G10, whose row names an industry and which has no fetch, in no group.
+        Assert.Equal("industry Semiconductors & Semiconductor Equipment 5", Group("G1"));
+        Assert.Equal("sector Information Technology 7", Group("G7"));
         Assert.Equal("sector Industrials 0", Group("G8"));
-        Assert.Equal("sector Technology 7", Group("G9"));
+        Assert.Equal("sector Information Technology 7", Group("G9"));
+        Assert.Equal("sector none 0", Group("G10"));
 
         // M1 by its newest fetch's Machinery, five others, and not by its older Banks; M7 alone in Building Products, so its
         // fetch's sector with M1 to M6, its Machinery fetched after the night started not read; M8 and S1 in no group.

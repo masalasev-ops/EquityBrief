@@ -1,5 +1,5 @@
 {
- "constructed": "DeepSeek's answer to What the company sells, its first draft, in this pass as the pass asked it before 18.4 split the facts by the region of the page drawing them, recorded as research-call-b3b362e1d7fdb395c5dd4500abce6532.json, its content and usage as recorded and nothing else changed; no paid call was made, by the operator's ruling of 2026-10-09 (R7).",
+ "constructed": "DeepSeek's answer to What the company sells, its first draft, in this pass as the pass asked it before 18.4 split the facts by the region of the page drawing them, recorded as research-call-b3b362e1d7fdb395c5dd4500abce6532.json, its content and usage as recorded and nothing else changed; no paid call was made, by the operator's ruling of 2026-10-09 (R7). From the second 15.1 correction of 2026-10-21 re-keyed whole, from research-call-0c164e78ce5dd5975910c0ae8bf63abc.json to the key of the request the replay now makes, which differs from the one this answered only in the group's GICS name, Information Technology where it was Technology; no paid call was made, by the operator's ruling of 2026-10-21.",
  "id": "d28bc169-1f9b-40c6-a762-65e12ad3d850",
  "object": "chat.completion",
  "created": 1790764340,

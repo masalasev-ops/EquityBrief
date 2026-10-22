@@ -42,12 +42,13 @@ public partial class FixtureExpectations
                 fact => (Value: fact.GetProperty("value").GetString()!, Source: fact.GetProperty("source").GetString()!),
                 StringComparer.Ordinal);
 
-            // The group, worked by hand from the membership: each Technology name's group is its
-            // sector with the other two in it, and NFLX's is its sector holding nobody, since no
-            // industry the fixture holds has five members.
+            // The group, worked by hand from the GICS classification each member's company fetch
+            // before the night files: each Information Technology name's group is its sector with
+            // the other two in it, and NFLX's is its sector holding nobody, since no industry the
+            // fixture holds has five members.
             var technology = name != "NFLX";
 
-            Assert.Equal((technology ? "Technology" : "Communication Services", FactsAssembler.FromMoves), facts["group"]);
+            Assert.Equal((technology ? "Information Technology" : "Communication Services", FactsAssembler.FromMoves), facts["group"]);
             Assert.Equal(("sector", FactsAssembler.FromMoves), facts["group kind"]);
             Assert.Equal((technology ? "2" : "0", FactsAssembler.FromMoves), facts["group members"]);
 

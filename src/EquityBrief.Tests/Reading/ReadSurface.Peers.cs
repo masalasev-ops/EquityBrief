@@ -302,7 +302,7 @@ public partial class ReadSurface
         // the name's moves: AAPL's moves made to hold 9, its page draws its 2 members of the 9.
         store.Execute("UPDATE move SET group_members = 9 WHERE ticker = 'AAPL';");
 
-        Assert.Contains("AAPL and 2 of the 9 other members of the Technology sector", WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/AAPL")), StringComparison.Ordinal);
+        Assert.Contains("AAPL and 2 of the 9 other members of the Information Technology sector", WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/AAPL")), StringComparison.Ordinal);
     }
 
     // A name the index does not hold on the night keeps its bars, moves and readings, stored as the

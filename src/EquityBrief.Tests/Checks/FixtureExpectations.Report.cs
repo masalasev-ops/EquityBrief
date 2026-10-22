@@ -989,10 +989,10 @@ public partial class FixtureExpectations
             Assert.Equal("1", lines[4]);
             Assert.Equal(["0"], Query(store, $"SELECT COUNT(*) FROM reported_quarter WHERE ticker = '{ticker}' AND lines_read = 0;"));
 
-            // The analysts' mean and target on the company row.
+            // The analysts' mean and target on the company row the night's fetch stored.
             Assert.Equal(
                 [FormattableString.Invariant($"{stated.GetProperty("ratingMean").GetDouble():0.0000}|{stated.GetProperty("target").GetString()}")],
-                Query(store, $"SELECT printf('%.4f', rating_mean), target_price FROM company WHERE ticker = '{ticker}';"));
+                Query(store, $"SELECT printf('%.4f', rating_mean), target_price FROM company WHERE ticker = '{ticker}' AND fetched_at > '{FixtureReplay.CompaniesFetchedAt}';"));
 
             // Each period of the trend the answer files, a row a period, each figure and count as filed.
             var trend = Query(

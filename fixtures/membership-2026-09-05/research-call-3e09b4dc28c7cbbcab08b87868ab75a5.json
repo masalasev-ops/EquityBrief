@@ -1,5 +1,5 @@
 {
- "constructed": "deepseek-flash's answer to The two cases, its first draft, as research-call-be4a34e3516103957e4876247a3f32af.json gave it before the ask held each case to six sentences, each case of more than six cut by hand to its first five sentences and its closing one and nothing else changed; no paid call was made, by the operator's ruling of 2026-10-09 (R7) and the bug hunt's of 2026-10-11.",
+ "constructed": "deepseek-flash's answer to The two cases, its first draft, as research-call-be4a34e3516103957e4876247a3f32af.json gave it before the ask held each case to six sentences, each case of more than six cut by hand to its first five sentences and its closing one and nothing else changed; no paid call was made, by the operator's ruling of 2026-10-09 (R7) and the bug hunt's of 2026-10-11. From the second 15.1 correction of 2026-10-21 re-keyed whole, from research-call-4d7a745396343e7b4639395be315bab7.json to the key of the request the replay now makes, which differs from the one this answered only in the group's GICS name, Information Technology where it was Technology; no paid call was made, by the operator's ruling of 2026-10-21.",
  "id": "478d40e8-d659-4cb9-b2ff-925993824acd",
  "object": "chat.completion",
  "created": 1790764108,

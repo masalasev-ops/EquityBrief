@@ -1709,8 +1709,8 @@ public static partial class NameScreen
 
         // How many other members the group holds, as the annotator counted them when it read the name's group, of which the
         // table draws the ones it chose. A name whose moves hold no count, one holding too few bars for a move, is counted
-        // again over the universe's rows, which read an S&P 500 sector group short since the rows' sectors are GICS.
-        // see: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
+        // again over the universe's rows, whose sectors and industries are the GICS ones its group was read by.
+        // see: Every member is named and grouped by the GICS industry and sector its company fetch files
         string? GroupOf(UniverseRow row) =>
             string.Equals(own.GroupKind, EquityBrief.Core.Moves.Group.Industry, StringComparison.Ordinal) ? row.Industry : row.Sector;
 

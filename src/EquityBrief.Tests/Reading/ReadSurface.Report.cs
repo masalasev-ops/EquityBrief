@@ -555,7 +555,7 @@ public partial class ReadSurface
             Regex.Matches(page, "<tr data-period=\"([^\"]+)\" data-period-end=\"([^\"]+)\"><td>[^<]+</td><td class=\"num\" data-eps=\"([^\"]+)\">")
                 .Select(match => (match.Groups[1].Value, match.Groups[2].Value, Held(match.Groups[3].Value))));
 
-        var company = Rows(store, "SELECT target_price, strong_buy, buy, hold, sell, strong_sell, substr(fetched_at, 1, 7) FROM company WHERE ticker = 'MSFT';").Single();
+        var company = Rows(store, "SELECT target_price, strong_buy, buy, hold, sell, strong_sell, substr(fetched_at, 1, 7) FROM company WHERE ticker = 'MSFT' ORDER BY fetched_at DESC LIMIT 1;").Single();
 
         Assert.Contains($"<p class=\"analyst-target\" data-target=\"{company[0]}\">", page, StringComparison.Ordinal);
         Assert.Equal(

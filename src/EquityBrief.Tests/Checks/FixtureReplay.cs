@@ -72,6 +72,8 @@ public class FixtureReplay
             backfill,
             store.DatabaseFile).LoadAsync(Index, "replay-membership");
 
+        await CompaniesBeforeTheNightAsync(store);
+
         await new Backfill(
             RecordedHistoricalBarFeed.FromFolder(Folder()),
             backfill,
@@ -224,6 +226,29 @@ public class FixtureReplay
         await RuleVersionsScored.ReplayVersionCommandsAsync(store);
 
         return store;
+    }
+
+    // The company each member's fetch on an earlier night stored, as the quarters step keeps one for every member from its
+    // first nights, its GICS classification alone off the fixture's captured answer, fetched on the night before the
+    // backfill and so before either chain's night, which is what the night's groups read; the quarters step on the night
+    // asks by the quarters it holds and so asks as it did with none stored.
+    // see: Every member is named and grouped by the GICS industry and sector its company fetch files
+    internal const string CompaniesFetchedAt = "2026-09-04T21:10:00.000Z";
+
+    internal static async Task CompaniesBeforeTheNightAsync(TemporaryStore store)
+    {
+        static string Text(string? value) => value is null ? "NULL" : "'" + value.Replace("'", "''", StringComparison.Ordinal) + "'";
+
+        var fundamentals = RecordedFundamentalsFeed.FromFolder(Folder());
+
+        foreach (var ticker in fundamentals.Names)
+        {
+            var filed = (await fundamentals.FundamentalsAsync(ticker)).Classification;
+
+            store.Execute(
+                "INSERT INTO company (ticker, fetched_at, sector, industry_group, industry, sub_industry) VALUES " +
+                $"({Text(ticker)}, '{CompaniesFetchedAt}', {Text(filed?.Sector)}, {Text(filed?.IndustryGroup)}, {Text(filed?.Industry)}, {Text(filed?.SubIndustry)});");
+        }
     }
 
     // A whole night over the fixture, as the scheduler runs one.
