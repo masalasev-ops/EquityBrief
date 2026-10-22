@@ -761,7 +761,7 @@ public sealed partial class LocalRun(
             check = ReadingPins.WholeHash;
         }
 
-        if (ReadingPins.Differs(pin, settings.Model, sha, facts.Size, facts.Modified, promptVersion ?? pin.PromptVersion) is { } part)
+        if (ReadingPins.Differs(pin, settings.Model, sha, facts.Size, facts.Modified, promptVersion ?? pin.PromptVersion, settings.ContextTokens) is { } part)
         {
             return (pin, check, hashSeconds, Ended(string.Empty, PinRefused, $"{part} is not pin {pin.Id}'s") with { Pin = pin, FileCheck = check, HashSeconds = hashSeconds, Structured = guarded }, guarded);
         }

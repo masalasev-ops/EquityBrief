@@ -6498,3 +6498,43 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    the 20.3 correction's remedy, pin 4 under the newest runtime and the history read under it; 20.3's record;
             the tone variant at pin 4; PR 505; 20.10; the phase 19 and 18 sign-offs.
+
+### 20.3 - correction: a reading is taken only at the window its pin names, the window compared before a run, read before each release and loaded again where LM Studio left it at another, and a refusal past another window ending the run   2026-10-22
+
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7, 20.9 and 20.12 merged with their records, 20.11 merged with its
+            remedies, the 20.3 correction in PR 526 with its migration run; in review, 20.8 with its correction, PR 505;
+            in progress, this correction and the check of the exhibits; next, pin 4 under the newest runtime and the
+            history read under it, 20.3's record, the tone variant registered at pin 4, PR 505 rebased with its migration
+            at 105 and its remedy run, 20.10, and the phase 19 and 18 sign-offs by fresh sessions.
+Found:      reading the pin's parts before pin 4's history read: the pin names the window the model is loaded at, 50,176
+            tokens, and nothing held a reading to it. A run's check compared the model, its file and the instruction; the
+            reading feed kept a model held at that window or a larger one and read the runtime's list once, as the run
+            began; and the fit cut to the window a refusal named. At 04:30 UTC LM Studio had loaded the model itself at its
+            own saved window, 59,136, after updating its runtime, no report pass calling the local model between 04:00 and
+            11:00; the read ended then only because the runtime's version changed. Read-only on the store: pin 3 read
+            releases of up to 216,965 characters whole and the runtime refused ones from 99,601, which tokens and not
+            characters bound, so the store neither shows nor rules out a reading of pin 3 at another window; pin 4 reads
+            every release again.
+Corrected:  the window its profile loads the model at is a part the pin's check compares after the instruction; the reading
+            feed keeps a model only where the runtime's list holds it once at the profile's window, or at one the list does
+            not state, and unloads and loads it again at that window otherwise; the history read and a slot read the list
+            before each release; and a refusal naming a window other than the pin's ends the run as the pin refused, nothing
+            stored for its release and nothing cut. The decision, section 12.3's paragraph, section 18's row, the runbook,
+            the roster's row and the changelog.
+Tests:      4 new and 1 amended, 2620 in all: the window part in its order; the feed over the captured list at the pin's
+            window, at none stated, at 59,136, at 32,000, a token under and twice; the history read over a constructed
+            store loading the model again before the second of three releases after LM Studio's own reload; a refusal at
+            32,000 ending the run after one request with nothing stored; and the pin's parts' test given the window.
+Claims:     1383, none new: section 18's row and section 12.3's paragraph gain words.
+Mutated:    the rule, stated before the runs: one mutation a property the correction adds, the smallest edit undoing it
+            alone, each run over the four window tests with its red predicted, made in this checkout and reverted with the
+            editor. Each went red at the test predicted and no other: W1 the window not compared, at the window part's; W2 a
+            larger window kept, at the feed's and the history read's; W3 the list read once a run, at the history read's;
+            W4 a refusal past another window cut to it, at the refusal's; W5 two instances kept, at the feed's.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2620 of 2620 tests ran with none failed,
+            migrations 0 to 104 with none pending, schema version 104, against `data-ci` and never `data`; the phase
+            report 60 tables, 1383 claims, 1383 passing, none out of scope and none unexamined, 1394 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    no remedy: no migration, and pin 4's requests unchanged; pin 4 under the newest runtime and the history read
+            under it; 20.3's record; the tone variant at pin 4; PR 505; 20.10; the phase 19 and 18 sign-offs.
