@@ -56,11 +56,13 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "Reading pins"),
     ];
 
-    // 20.2's two: the members' results releases and the days the fetch read for them.
+    // 20.2's two: the members' results releases and the days the fetch read for them; and from the 20.3 correction of
+    // 2026-10-22 the stored filings' checks of the exhibit each page names as the release.
     internal static string[] ReleaseStoreRows =>
     [
         CheckReach.Key(Scope.StoresTable, "Release documents"),
         CheckReach.Key(Scope.StoresTable, "Release days"),
+        CheckReach.Key(Scope.StoresTable, "Release checks"),
     ];
 
     // 20.3's three: the releases' filers, the readings and the probes.

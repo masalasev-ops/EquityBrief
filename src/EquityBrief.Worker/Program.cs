@@ -245,7 +245,9 @@ static int NoVerb()
         "both reviews kept or both changed to a file under the data root, writing nothing to the store, and " +
         "'releases --history --from <yyyy-MM-dd>' fetches every ledger filer's results releases from the one before its " +
         "first session in the ledger from that day through its last, with '--until <HH:mm>' stopping cleanly at that " +
-        "time in New York, and goes on from where an earlier run stopped. '--live' " +
+        "time in New York, and goes on from where an earlier run stopped, and 'releases --exhibits' reads each stored " +
+        "filing's page once for the exhibit it names as the release and stores that one in the place of the one " +
+        "stored where they differ. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -2041,21 +2043,24 @@ static async Task<int> LocalRunVerb(string[] args)
 // under its contact. From 20.3 '--names', with '--again', each filer's names from its submissions; '--read --history'
 // with '--until', every release no reading under the newest pin holds, oldest first; '--probe <kind>', one probe over
 // its sample; '--reference --out <folder>', the reference set's releases written out as the model reads them; and
-// '--accuracy', with '--labels <file>', every accuracy figure printed and nothing written.
+// '--accuracy', with '--labels <file>', every accuracy figure printed and nothing written. From the 20.3 correction of
+// 2026-10-22 '--exhibits', with '--until', each stored filing's page read once for the exhibit it names as the release,
+// the one stored replaced where another is.
 // see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it
 // see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
+// see: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so
 static async Task<int> ReleasesVerb(string[] args)
 {
     var configuration = Configuration();
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
     IClock clock = SystemClock.ForUnitedStatesSessions();
 
-    var forms = new[] { "--history", "--names", "--probe", "--reference", "--accuracy" }.Count(form => args.Contains(form, StringComparer.Ordinal));
+    var forms = new[] { "--history", "--names", "--exhibits", "--probe", "--reference", "--accuracy" }.Count(form => args.Contains(form, StringComparer.Ordinal));
     var reading = args.Contains("--read", StringComparer.Ordinal);
 
     if (forms != 1 || reading && !args.Contains("--history", StringComparer.Ordinal))
     {
-        Console.Error.WriteLine("releases: name one form, '--history --from <yyyy-MM-dd>', '--names', '--read --history', '--probe <kind>', '--reference --out <folder>' or '--accuracy', '--until <HH:mm>' in New York's time stopping a history.");
+        Console.Error.WriteLine("releases: name one form, '--history --from <yyyy-MM-dd>', '--names', '--exhibits', '--read --history', '--probe <kind>', '--reference --out <folder>' or '--accuracy', '--until <HH:mm>' in New York's time stopping a history or a check of the exhibits.");
 
         return 1;
     }
@@ -2149,6 +2154,18 @@ static async Task<int> ReleasesVerb(string[] args)
         var named = await feed.NamesAsync(args.Contains("--again", StringComparer.Ordinal), FormattableString.Invariant($"release-names-{clock.UtcNow:yyyyMMddTHHmmss.fffffffZ}"), Console.Out);
 
         return named.Refusal is null ? 0 : 1;
+    }
+
+    if (args.Contains("--exhibits", StringComparer.Ordinal))
+    {
+        if (Until(args, clock) is not (true, var stop))
+        {
+            return 1;
+        }
+
+        var exhibits = await feed.ExhibitsAsync(stop, FormattableString.Invariant($"release-exhibits-{clock.UtcNow:yyyyMMddTHHmmss.fffffffZ}"), Console.Out);
+
+        return exhibits.Refusal is null ? 0 : 1;
     }
 
     if (Argument(args, "--from") is not { } fromText

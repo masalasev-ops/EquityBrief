@@ -6386,3 +6386,54 @@ Carried:    the phase 19 sign-off by a fresh session over the corrected main; th
             and the swing filter's sector standings with the sweeps' history, put to the operator; the paid report's route
             taking a filing's first EX-99 exhibit as its release, put to the operator; the long releases' fixes of the 20.3
             ruling; 20.12; PR 505 rebased with its migration at 104; the phase 18 sign-off by a fresh session.
+
+### 20.3 - correction: a results release is the exhibit its filing's page names, a release longer than the model's window is read from its opening that fits, and pin 4 carries each reading whose request it would send unchanged   2026-10-22
+
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its remedies,
+            the phase 19 sign-off reviews' corrections in PRs 519, 520, 522 and 525, the GICS groups in PR 521, the
+            report's buttons in PR 523, paper trading's redesign in PR 524, and pin 3's history read, complete at 11:58 UTC;
+            in review, 20.8 with its correction, PR 505; in progress, this correction; next, its operations in the order
+            RUNBOOK states with 20.12 built while pin 4 reads, 20.3's record, the tone variant registered at pin 4, PR 505
+            rebased with its migration at 105 and its remedy run, 20.10, and the phase 19 and 18 sign-offs by fresh sessions.
+Ruled:      the 20.3 ruling entry of 2026-10-21 above; on 2026-10-22 after pin 3's read completed, through the question
+            tool, "Keep the ruled order (Recommended)", and for pin 4's carry, whole: "Same inputs, closing the caveat: also
+            re-read every release whose filer gained a name the anonymiser removes (an insider from a Form 4, a former
+            name) after pin 3 read that release, judged by when each name was stored. Carry every other release whose
+            text, instruction, anonymiser, model file, runtime and settings match pin 3's. From pin 4 on, store each
+            request's hash. State how many readings were carried, how many were re-read for a changed document or length,
+            and how many for a newly learned name."
+Found:      the pages captured on 2026-10-22: BXP's results page of 2025-07-29 describes its two EX-99 exhibits by type
+            alone and names the supplement and the press release in their file names, the supplement first; DLR's of
+            2026-02-05 names neither, its supplement carrying the earnings release and its second exhibit slides; of 59
+            filers' pages read at random 14 held more than one EX-99, the lowest the release in each, and a description
+            named a release on 8, so the ruled description alone reaches none of BXP's 31. Read-only on the store: pin 3's
+            45,452 readings, 45,076 read, 219 refused for a word not listed and 157 by the runtime, from 99,629 to 1,595,801
+            characters; 2,168 readings of 109 filers whose row of names the late slots wrote again after the reading.
+Corrected:  the release fetch takes the exhibit a filing's page names a press, earnings or news release in its description
+            or its file name, the lowest where none is, keeping each filing's check, and `releases --exhibits` checks the
+            filings stored before; migration 104 rebuilds the release documents and readings with the exhibit in their
+            keys and creates the release checks; every reader reads the exhibit a filing holds as its release; a release
+            the runtime refuses past the window is cut on its count and asked again, up to three cuts; each reading keeps
+            its cut and its request's hash; the fit's rule joins the prompt's version; a new version's pin carries the
+            version before's reading of each release whose request it would send unchanged and counts the rest by why.
+            Three decisions, section 12.3, 7's, 16's, 17's and 18's rows, SCHEMA, RUNBOOK, the guide, the roster.
+Tests:      eight more and three amended: the exhibit named off BXP's and DLR's captured pages, the refusal's counts, a
+            cut by hand, a reading cut and asked again, the check of the exhibits, the migration, the carry over a
+            constructed store and the carry's parts; a slot's check row, the readings' exhibit and the prompt's version.
+Claims:     1379: the release checks' store.
+Mutated:    the rule, stated before the runs: each property the correction adds, the smallest edit undoing it, run over
+            the release and local run tests, sixty-four, with its red predicted, made in this checkout and restored from
+            the file's own text. Each went red at the tests predicted and no other: s1 the file name naming no release, at
+            the exhibit test, the check of the exhibits and the early slot's; s2 the readers' join dropping the exhibit,
+            at the check of the exhibits; s3 the fit never asking again and s4 no request's hash kept, at the cut reading's;
+            s5 the carry blind to a name stored since and s6 to a row of names written since, at the carry's; s7 the carry
+            blind to the version before's prompt, at its parts'; s8 the replaced exhibit left the release, at the check's.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2611 of 2611 tests ran with none failed,
+            migrations 0 to 104 with none pending, schema version 104, against `data-ci` and never `data`; the phase
+            report 60 tables, 1379 claims, 1379 passing, none out of scope and none unexamined, 1390 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the correction's remedy, `tools/remedies/2026-10-22-20.3-correction-the-exhibits-and-pin-4.txt`: the migration,
+            `releases --exhibits`, pin 4 with its counts and the history read under it; a filer's row of names written
+            again with no earlier copy kept, so pin 4 reads again every reading under one; the paid report's route taking a filing's first EX-99 exhibit, put to the operator; 20.12; 20.3's
+            record; the tone variant at pin 4; PR 505; 20.10; the phase 19 and 18 sign-offs.

@@ -46,8 +46,8 @@ public partial class ReadSurface
                 var four = words.Split('|');
 
                 store.Execute(
-                    "INSERT INTO release_reading (accession, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, run_id) "
-                    + $"VALUES ('{accession}', {pin}, 'read', NULL, '{four[0]}', '{four[1]}', '{four[2]}', '{four[3]}', 3.0, 5000, '2026-09-08T22:00:00Z', 'constructed');");
+                    "INSERT INTO release_reading (accession, exhibit, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, run_id) "
+                    + $"VALUES ('{accession}', 'ex99.htm', {pin}, 'read', NULL, '{four[0]}', '{four[1]}', '{four[2]}', '{four[3]}', 3.0, 5000, '2026-09-08T22:00:00Z', 'constructed');");
             }
         }
 

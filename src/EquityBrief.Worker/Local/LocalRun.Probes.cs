@@ -13,9 +13,10 @@ public sealed partial class LocalRun
 {
     public const string Probing = "probe";
 
-    const string StoredRelease = "SELECT cik, text_gzip, text_sha256 FROM release_document WHERE accession = $accession;";
+    // From the 20.3 correction of 2026-10-22 a filing's release is the exhibit marked so, and a filing is drawn once.
+    const string StoredRelease = "SELECT cik, text_gzip, text_sha256 FROM release_document WHERE accession = $accession AND release = 1;";
 
-    const string Candidates = "SELECT accession, cik, accepted_at FROM release_document ORDER BY accession;";
+    const string Candidates = "SELECT accession, cik, accepted_at FROM release_document WHERE release = 1 ORDER BY accession;";
 
     const string TickersByFiler = @"
         SELECT cik, ticker FROM company WHERE cik IS NOT NULL AND fetched_at < $before

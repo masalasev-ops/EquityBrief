@@ -26,6 +26,66 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-22 - .claude/rules/checks.md - fixture-expectations reaches the exhibit a filing names, a release past the model's window and pin 4's carry
+Authorised by: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so
+Was:
+> fixture-expectations: ... its line saying the estimate and the filing measure it on different bases while its earnings a share is read against its estimate and another sector's revenue against both, worked by hand |
+Now:
+> fixture-expectations: ... against both, worked by hand; and from the 20.3 correction of 2026-10-22 a filing's release the exhibit its page names a press, earnings or news release in its description or its file name, read off BXP's and DLR's captured pages, ... the migration keeping every release as its filing's release and every reading as of the exhibit its filing held; and pin 4's carry over a constructed store, ... counted by why, each carried reading keeping the instant the version before read it and the hash of its request, and a version carrying only from one differing in the fit's rule alone |
+Why: the 20.3 correction of 2026-10-22 adds these assertions, under the two decisions beside this one: A release longer than the model's window is read from its opening that fits, with a marker where it was cut, and A new reading version carries each reading whose request it would send unchanged and reads the rest.
+
+### 2026-10-22 - SCHEMA.md - a release document keyed by its exhibit and marked whether it is its filing's release, the release checks, and each reading's exhibit, cut, request and carry
+Authorised by: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so
+Was:
+> | `release_document` | ReleaseFetch | none | none |
+> release_document: Grain: one row per member's results release, from 20.2, the EX-99 exhibit of an 8-K or 8-K/A carrying item 2.02. ... | `run_id` | TEXT | the run that stored it, a slot's or the history's | ... Primary key: `accession`. ... Insert only, by the release fetch in the local run's slots and its history by hand and never by the night; a release is stored once and never asked for again, and a reading reads its text back to the hash it was stored with (see: ...).
+> release_reading: Grain: one row per results release and reading version, from 20.3. ... | `read_at` | TEXT | UTC instant | | `run_id` | TEXT | the run that read it, a slot's or the history read's | Primary key: `accession`, `pin`. Insert only, by the local run's slots and its history read by hand and never by the night; ... The name page reads ...
+Now:
+> | `release_document` | ReleaseFetch | ReleaseFetch | none |, and `release_check` inserted by ReleaseFetch alone
+> release_document: one row per exhibit stored as a member's results release, a second where a check of its filing's page put the exhibit it names in the place of the one stored first; `release` 1 where the exhibit is the filing's release; primary key `accession`, `exhibit`; insert by the slots, the history and the check of the exhibits, and update of `release` alone, by that check
+> release_check: one row per stored filing whose page the release fetch read for the exhibit it names as the release, inserted once
+> release_reading: one row per exhibit and reading version, with `exhibit`, `cut_at`, `request_sha256` and `carried_from`; primary key `accession`, `exhibit`, `pin`; insert by the slots, the history read and from the correction the pin's carry
+Why: a filing can hold two exhibits once a check stores the one its page names beside the one stored first, so the exhibit joins the keys, and the readings say which text they read, where it was cut, what they asked and where they came from.
+
+### 2026-10-22 - ARCHITECTURE.html - a filing's release is the exhibit its page names, and the release fetch checks the filings stored before
+Authorised by: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so
+Was:
+> 7's Release fetch row: reads membership, companies, pulled companies, setups, release documents, release days, release filers, filings archive; writes release documents, release days, release filers, run log; ... so the anonymiser replaces each name the filer has filed under (see: ...)
+> 7's Release accuracy row: reads reading pins, release readings, release documents, release probes, ...; ... (see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn)
+> 12.3's paragraph from 20.2: ... and the night makes none of them (see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it).
+> 12.3's paragraph from 20.3: Each reading is kept under the version with its four words or the cause it was refused for, a stored text that no longer hashes to what was stored refused unread, ...
+> 16's Release documents row: from 20.2, one row per member's results release: ... and the run that stored it | forever, append-only, a release stored once by its accession and never asked or stored again, written by the release fetch in the local run's slots and its history by hand (see: ...)
+Now:
+> 7's Release fetch row reads and writes the release checks as well, and adds that a filing's release is the EX-99 exhibit its page names a press, earnings or news release, the lowest only where none is, and that `releases --exhibits` reads by hand the page of every stored filing no check holds, storing the exhibit it names in the place of the one stored first
+> 7's Release accuracy row reads the release checks and leaves out and counts a reference label given on an exhibit a check has since replaced
+> 12.3's paragraph from 20.2 adds the exhibit taken and the check by hand; the paragraph from 20.3 says a reading answers for its filing only where it read the exhibit the filing holds as its release
+> 16's Release documents row is one row per exhibit stored as a filing's release, with whether it is the release now, and a Release checks row follows it
+Why: a filer filing a long supplement first beside its press release had the supplement stored as its release, and the filing's own page names the press release.
+
+### 2026-10-22 - ARCHITECTURE.html - a release longer than the model's window is read from its opening that fits
+Authorised by: A release longer than the model's window is read from its opening that fits, with a marker where it was cut
+Was:
+> 12.3's paragraph from 20.1: ... an answer empty, cut off at its budget, not one object, missing an answer or holding a word its question does not list is asked once more and then counted refused with its cause, never stored as a reading. Reading the stored results releases twice ...
+> 17's Local reading's settings: ... the late slot's start (see: A release reading is readable from the first night whose late slot starts after the release was accepted) | ... so a moved schedule moves no history | fixture-expectations, the request a reading sends and the local run over a constructed store
+> 18's An answer the local run cannot read, or one the runtime refuses: ... and it is read again only under a new version | the region counts each run's refused answers by cause
+Now:
+> 12.3's paragraph from 20.1 adds that a release the runtime refuses as longer than the window is cut to the opening the window holds, on the request's tokens and the window the refusal names, back to a line's end and marked where it was cut, and asked again, up to three cuts, the reading keeping the characters it kept and every reading the hash of the request it sent
+> 17's Local reading's settings adds the margin of 1,024 tokens and the 3 cuts, why the margin, and a cut worked by hand among what checks it
+> 18's row adds that such a release is cut and asked again and stands refused only after the third cut
+Why: 157 of pin 3's readings were refused by the runtime as longer than its 50,176 tokens and stood refused, where the opening of each holds what the four questions ask.
+
+### 2026-10-22 - ARCHITECTURE.html - a new reading version carries each reading whose request it would send unchanged
+Authorised by: A new reading version carries each reading whose request it would send unchanged and reads the rest
+Was:
+> 7's Local run row: ... and it writes the reference set out as the model reads it, calling no model and writing no row (see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept)
+> 12.3's paragraph from 20.1: ... A new pin is written by hand, a new reading version read again over all history before any rule reads it, and two versions are never mixed in one figure. The instruction asks ...
+> 16's Release readings row: from 20.3, one row per results release and reading version: ... and when and by which run it was read | forever, append-only, a release read once under a version, written by the local run's slots and its history read by hand, and read by the name page ... (see: The release reading asks four closed questions written before any release is read, and code turns each answer into a reading)
+Now:
+> 7's Local run row adds that it reads the exhibit each filing holds as its release, keeps the request's hash, fits a release past the window, and carries at a new version's pin the version before's reading of each release whose request it would send unchanged, saying how many it carried and left for each reason
+> 12.3's paragraph from 20.1 adds the carry where a new version differs from the one before in the fit's rule alone
+> 16's Release readings row is one row per exhibit and version, with the cut, the request's hash and the version it was carried from, written by the pin as well
+Why: the operator ruled on 2026-10-21 that pin 4 carry pin 3's readings of every request left the same, and on 2026-10-22 how a name stored since is judged, rather than reading every release again for the few the fit and the exhibits change.
+
 ### 2026-10-22 - .claude/rules/checks.md - read-surface reaches a closed trade's ending replayed by its own exit and paper trading's text holding no adjusted p
 Corrects: paper trading read every trailing trade that ended on its cap's session as reaching its time limit though its walk sells a close under its trail there, and no test held the scorecard's adjusted p out of the page's text, a mutation writing it into the verdict's pill surviving every read-surface test; both found by the fourth phase 19 sign-off review of 2026-10-22.
 Was:

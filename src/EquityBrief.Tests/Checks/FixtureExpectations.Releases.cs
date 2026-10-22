@@ -148,6 +148,11 @@ public partial class FixtureExpectations
             Query(store, "SELECT accession, cik, form, filed, accepted_at, exhibit, url, text_sha256, text_length, run_id FROM release_document;"));
         Assert.Equal(text, ResultsReleases.Decompressed(Blob(store, "SELECT text_gzip FROM release_document;")));
 
+        // From the 20.3 correction of 2026-10-22 the filing's release, the exhibit its page names a press release in its
+        // file name, stored as its release with the page's check, so no check of the exhibits asks the page again.
+        Assert.Equal([$"{KeysAugust}|{KeysExhibit}|1"], Query(store, "SELECT accession, exhibit, release FROM release_document;"));
+        Assert.Equal([$"{KeysAugust}|{KeysExhibit}|1|0|early-constructed"], Query(store, "SELECT accession, exhibit, named, replaced, run_id FROM release_check;"));
+
         // The day's row: posted, five requests, two members' announcements, one carrying results, one stored.
         Assert.Equal(["2026-08-18|1|5|2|1|1"], Query(store, "SELECT day, posted, requests, announcements, results, stored FROM release_day WHERE day = '2026-08-18';"));
 

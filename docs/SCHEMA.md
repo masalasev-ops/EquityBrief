@@ -116,7 +116,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `insider_read` | InsiderTrades | none | none |
 | `sec_ticker` | SecTickers | none | none |
 | `reading_pin` | LocalRun | LocalRun | none |
-| `release_document` | ReleaseFetch | none | none |
+| `release_document` | ReleaseFetch | ReleaseFetch | none |
+| `release_check` | ReleaseFetch | none | none |
 | `release_day` | ReleaseFetch | ReleaseFetch | none |
 | `release_filer` | ReleaseFetch | ReleaseFetch | none |
 | `release_reading` | LocalRun | none | none |
@@ -2001,7 +2002,7 @@ Primary key: `id`.
 Insert by the local run's pin by hand and never by the night or a slot; the newest row is the pin every run compares before it reads, and a run whose model, file or instruction differs from it refuses, as does an answer from a model or runtime it does not name (see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin). From 20.3 update by the local run's history read alone, which writes `history_completed_at` once, where it is null, as it finds no stored release left unread under the version.
 
 ### release_document
-Grain: one row per member's results release, from 20.2, the EX-99 exhibit of an 8-K or 8-K/A carrying item 2.02.
+Grain: one row per exhibit stored as a member's results release, from 20.2, the EX-99 exhibit of an 8-K or 8-K/A carrying item 2.02; from the 20.3 correction of 2026-10-22 a filing holds a second where a check of its page put the exhibit it names as the release in the place of the one stored first.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -2015,11 +2016,28 @@ Grain: one row per member's results release, from 20.2, the EX-99 exhibit of an 
 | `text_gzip` | BLOB | the exhibit's text as the archive's reader makes it, gzip-compressed |
 | `text_sha256` | TEXT | the SHA-256 of the text's UTF-8 bytes, lower-case hex |
 | `text_length` | INTEGER | the text's length in characters |
-| `run_id` | TEXT | the run that stored it, a slot's or the history's |
+| `run_id` | TEXT | the run that stored it, a slot's, the history's or a check's of the exhibits |
+| `release` | INTEGER | 1 where the exhibit is the filing's release, 0 where a check stored another in its place; every row stored before the correction 1 |
 
-Primary key: `accession`. Index `release_document_by_cik` on (`cik`, `accepted_at`), the order a reader takes a filer's releases in.
+Primary key: `accession`, `exhibit`. Index `release_document_by_cik` on (`cik`, `accepted_at`), the order a reader takes a filer's releases in.
 
-Insert only, by the release fetch in the local run's slots and its history by hand and never by the night; a release is stored once and never asked for again, and a reading reads its text back to the hash it was stored with (see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it).
+Insert by the release fetch in the local run's slots, its history and its check of the exhibits by hand, and never by the night; an exhibit is stored once and never asked for again, and a reading reads its text back to the hash it was stored with (see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it). From the 20.3 correction of 2026-10-22 update of `release` alone, by the check of the exhibits, to 0 on the exhibit stored first where the filing's page names another the release, in the write that stores that one; every reader of a release reads the rows holding 1, one a filing (see: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so).
+
+### release_check
+Grain: one row per stored filing whose index page the release fetch has read for the exhibit it names as the release, from the 20.3 correction of 2026-10-22.
+
+| Column | Type | Notes |
+|---|---|---|
+| `accession` | TEXT | the filing's accession number |
+| `exhibit` | TEXT | the exhibit the page gave as the release, its file name, null where the page lists no EX-99 exhibit |
+| `named` | INTEGER | 1 where the page names that exhibit a press, earnings or news release in its description or its file name, 0 where it was taken as the lowest |
+| `replaced` | INTEGER | 1 where it was stored in the place of the exhibit stored before, 0 where that one stands |
+| `checked_at` | TEXT | UTC instant of the check |
+| `run_id` | TEXT | the run that checked it, a slot's, the history's or a check's of the exhibits |
+
+Primary key: `accession`.
+
+Insert only, by the release fetch, in the write that stores what it found: a slot and the history keep the check of each filing they store a release of, and `releases --exhibits` the check of every stored filing no check holds, oldest first, a page or an exhibit the archive does not answer left for the next run; a filing is checked once (see: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so). The accuracy report reads it for the reference labels given on an exhibit a check has since replaced.
 
 ### release_day
 Grain: one row per day and source the release fetch read, from 20.2.
@@ -2056,11 +2074,12 @@ Primary key: `cik`.
 Insert and update by the release fetch alone: a slot names a filer once as it stores the filer's first release, the history as it reads the filer's submissions, and `releases --names` every filer of a stored release no read has named, or every filer with `--again`, a filer's row written again where its names are read again; the local run reads it for the names the anonymiser replaces (see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept).
 
 ### release_reading
-Grain: one row per results release and reading version, from 20.3.
+Grain: one row per results release and reading version, from 20.3; from the 20.3 correction of 2026-10-22 one per exhibit and reading version, a filing's release read again where a check put another exhibit in its place.
 
 | Column | Type | Notes |
 |---|---|---|
 | `accession` | TEXT | the release's accession, as `release_document` holds it |
+| `exhibit` | TEXT | the exhibit it read, as `release_document` holds it; a reading stored before the correction the one exhibit its filing then held |
 | `pin` | INTEGER | the reading version it was read under, `reading_pin`'s `id` |
 | `outcome` | TEXT | `read` or `refused` |
 | `cause` | TEXT | why it was refused, one of the causes an answer is refused for or that its stored text is not its hash, null where read |
@@ -2070,12 +2089,15 @@ Grain: one row per results release and reading version, from 20.3.
 | `demand` | TEXT | the word the model answered, null where refused |
 | `seconds` | REAL | the time the reading took, its second ask included, null where nothing was asked |
 | `prompt_tokens` | INTEGER | the prompt's tokens as the runtime counted them, null where it stated none |
-| `read_at` | TEXT | UTC instant |
-| `run_id` | TEXT | the run that read it, a slot's or the history read's |
+| `cut_at` | INTEGER | from the 20.3 correction of 2026-10-22, the characters of the release kept where it was cut to the model's window, the last cut where it still stood refused; null where it was sent whole |
+| `request_sha256` | TEXT | from the 20.3 correction of 2026-10-22, the SHA-256 of the last request's body as it was sent, lower-case hex, and for a carried reading the request it would send; null on every row stored before |
+| `carried_from` | INTEGER | from the 20.3 correction of 2026-10-22, the reading version it was carried from where no request was sent under its own, null where it was read |
+| `read_at` | TEXT | UTC instant, for a carried reading the instant the version it came from read it |
+| `run_id` | TEXT | the run that read it, a slot's or the history read's, or that carried it, the new version's |
 
-Primary key: `accession`, `pin`.
+Primary key: `accession`, `exhibit`, `pin`.
 
-Insert only, by the local run's slots and its history read by hand and never by the night; a release is read once under a version, a refused one kept refused with its cause and read again only under a new version, and code turns each word into a reading where a reader reads it (see: The release reading asks four closed questions written before any release is read, and code turns each answer into a reading). The name page reads a stock's newest release a night may read under the newest version (see: A release reading is readable from the first night whose late slot starts after the release was accepted), and the accuracy report reads every row under it.
+Insert only, by the local run's slots, its history read and its pin by hand and never by the night; a release is read once under a version, a refused one kept refused with its cause and read again only under a new version, and code turns each word into a reading where a reader reads it (see: The release reading asks four closed questions written before any release is read, and code turns each answer into a reading). From the 20.3 correction of 2026-10-22 a reading answers for its filing only where it read the exhibit the filing holds as its release, a release past the model's window is read from its opening that fits (see: A release longer than the model's window is read from its opening that fits, with a marker where it was cut), and a new version's pin carries the version before's reading of each release whose request it would send unchanged in the write that writes the version (see: A new reading version carries each reading whose request it would send unchanged and reads the rest). The name page reads a stock's newest release a night may read under the newest version (see: A release reading is readable from the first night whose late slot starts after the release was accepted), and the accuracy report reads every row under it.
 
 ### release_probe
 Grain: one row per probe, release and reading version, from 20.3.

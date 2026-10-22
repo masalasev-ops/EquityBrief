@@ -1317,6 +1317,20 @@
       "trimmedTo": "the filing's own header block as sent, from its form name to the end of its Items, of a page of 209 lines: Apple's 8-K/A of 2026-09-01, an amendment whose one item is 5.02 and carries no results. The page's navigation and its tables of documents and data files are cut."
     },
     {
+      "file": "filing-page-0001656423-25-000043.htm",
+      "endpoint": "Archives/edgar/data/1037540/000165642325000043/0001656423-25-000043-index.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/1037540/000165642325000043/0001656423-25-000043-index.htm",
+      "fetchedAt": "2026-10-22T13:38:59Z",
+      "trimmedTo": "the filing's own header block and its table of documents as sent, of a page of 297 lines, with the white space at each line's end taken off: BXP's results 8-K of 2025-07-29, whose items are 2.02 and 9.01. Its table describes its two EX-99 exhibits by their types alone and names them in their file names, the supplemental data package q22025supplemental.htm at sequence 2 and the press release q22025pressrelease.htm at sequence 3. The page's navigation, its series button, its table of data files and its filers' addresses are cut."
+    },
+    {
+      "file": "filing-page-0001104659-26-010887.htm",
+      "endpoint": "Archives/edgar/data/1297996/000110465926010887/0001104659-26-010887-index.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/1297996/000110465926010887/0001104659-26-010887-index.htm",
+      "fetchedAt": "2026-10-22T13:38:24Z",
+      "trimmedTo": "the filing's own header block and its table of documents as sent, of a page of 400 lines, with the white space at each line's end taken off and the table kept to its 8-K, its two EX-99 exhibits, its first graphic and the complete submission's row, its 25 other graphics cut: DLR's results 8-K of 2026-02-05, whose items are 2.02, 7.01 and 9.01. Its table describes and names its exhibits by their types alone, the financial supplement dlr-20260205xex99d1.htm at sequence 2, which carries the earnings release inside it, and the results presentation dlr-20260205xex99d2.htm at sequence 3. The page's navigation, its series button, its table of data files and its filer's address are cut."
+    },
+    {
       "file": "previous-filing-types-AAPL-8k.htm",
       "endpoint": "Archives/edgar/data/320193/000032019326000011/0000320193-26-000011-index.htm",
       "query": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/0000320193-26-000011-index.htm",
