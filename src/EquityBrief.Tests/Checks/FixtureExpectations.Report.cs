@@ -17,7 +17,7 @@ namespace EquityBrief.Tests.Checks;
 // the fixture's captured segment reports; the estimate trend read off an answer; the Treasury's table read as it sends it
 // and kept a session a row; the dividends kept from the night's answer and from the history run; the release before the
 // newest handed to what management said alone; and the replay keeping each of them as the captures file it.
-// see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
+// see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
 // see: The segment table is the segments whose revenue sums to the company's total within rounding, and the raw table where none do
 public partial class FixtureExpectations
 {
@@ -234,6 +234,51 @@ public partial class FixtureExpectations
         Assert.Equal("not kept: estimates kept from 2026-10-15", Absent(released, released));
         Assert.Equal("not kept: estimates kept from 2026-10-16", Absent(released.AddHours(12), released));
         Assert.Equal(QuarterLines.NotFiledBefore, Absent(released.AddMilliseconds(-1), released));
+    }
+
+    // From the second 18.2 correction of 2026-10-21: a company whose sector is Financials reads its revenue against no
+    // estimate, its quarter's own or the one its year's implies, the line saying the estimate and the filing measure revenue
+    // on different bases, while its earnings a share is read against its estimate and every other sector reads both, worked
+    // by hand over the fiscal year of the test before.
+    [Fact]
+    public void AFinancialCompanysRevenueIsReadAgainstNoEstimateAndTheLineSaysTheTwoMeasureItOnDifferentBases()
+    {
+        QuarterRow[] year =
+        [
+            Filed(new DateOnly(2025, 8, 31), 2000m),
+            Filed(new DateOnly(2025, 11, 30), 2300m),
+            Filed(new DateOnly(2026, 2, 28), 2400m),
+            Filed(new DateOnly(2026, 5, 31), 2500m),
+            Filed(new DateOnly(2026, 8, 31), 2940m) with { EpsActual = 1.20m, EpsEstimate = 1.10m },
+        ];
+        var kept = new KeptEstimates(
+            new RevenueEstimate(2850m, new DateOnly(2026, 10, 11)),
+            new YearEstimate(10_000m, new DateOnly(2026, 8, 31), new DateOnly(2026, 10, 11)),
+            new DateTimeOffset(2026, 10, 11, 1, 27, 22, 778, TimeSpan.Zero),
+            new DateTimeOffset(2026, 10, 15, 13, 30, 0, TimeSpan.Zero));
+
+        // A bank or an insurer: its quarter's own 2,850 and the 2,800 its year's 10,000 implies both kept and neither read,
+        // so no difference, no change on it and nothing implied, the line saying why.
+        var financial = QuarterLines.Latest(year, kept, QuarterLines.FinancialsSector)!.Lines.ToDictionary(line => line.Line);
+        var revenue = financial[QuarterLines.Revenue];
+
+        Assert.Equal(2940m, revenue.Reported);
+        Assert.Equal(((decimal?)null, (decimal?)null, (double?)null, (ImpliedEstimate?)null), (revenue.Estimate, revenue.Difference, revenue.AgainstEstimate, revenue.Implied));
+        Assert.Equal(QuarterLines.OtherBasis, revenue.EstimateAbsent);
+
+        // Its earnings a share against the 1.10 the earnings history filed, 0.10 above it, as any company's.
+        Assert.Equal((1.10m, 0.10m), (financial[QuarterLines.Eps].Estimate!.Value, financial[QuarterLines.Eps].Difference!.Value));
+
+        // The same quarter of another sector, and of a company whose fetch files none, read against its own 2,850.
+        Assert.Equal(2850m, QuarterLines.Latest(year, kept, "Information Technology")!.Lines[0].Estimate);
+        Assert.Equal(2850m, QuarterLines.Latest(year, kept)!.Lines[0].Estimate);
+
+        // Its own estimate not kept: the implied 2,800 for another sector, and still none for a financial company.
+        var yearAlone = kept with { Quarter = null };
+
+        Assert.Equal(2800m, QuarterLines.Latest(year, yearAlone, "Industrials")!.Lines[0].Estimate);
+        Assert.Equal(QuarterLines.OtherBasis, QuarterLines.Latest(year, yearAlone, QuarterLines.FinancialsSector)!.Lines[0].EstimateAbsent);
+        Assert.Null(QuarterLines.Latest(year, yearAlone, QuarterLines.FinancialsSector)!.Lines[0].Implied);
     }
 
     [Fact]
@@ -989,10 +1034,10 @@ public partial class FixtureExpectations
             Assert.Equal("1", lines[4]);
             Assert.Equal(["0"], Query(store, $"SELECT COUNT(*) FROM reported_quarter WHERE ticker = '{ticker}' AND lines_read = 0;"));
 
-            // The analysts' mean and target on the company row.
+            // The analysts' mean and target on the company row the night's fetch stored.
             Assert.Equal(
                 [FormattableString.Invariant($"{stated.GetProperty("ratingMean").GetDouble():0.0000}|{stated.GetProperty("target").GetString()}")],
-                Query(store, $"SELECT printf('%.4f', rating_mean), target_price FROM company WHERE ticker = '{ticker}';"));
+                Query(store, $"SELECT printf('%.4f', rating_mean), target_price FROM company WHERE ticker = '{ticker}' AND fetched_at > '{FixtureReplay.CompaniesFetchedAt}';"));
 
             // Each period of the trend the answer files, a row a period, each figure and count as filed.
             var trend = Query(

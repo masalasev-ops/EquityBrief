@@ -461,6 +461,8 @@ public partial class FixtureExpectations
             clock,
             store.DatabaseFile).LoadAsync(Index, "replay-0");
 
+        await FixtureReplay.CompaniesBeforeTheNightAsync(store);
+
         await new Backfill(
             RecordedHistoricalBarFeed.FromFolder(Folder()),
             clock,

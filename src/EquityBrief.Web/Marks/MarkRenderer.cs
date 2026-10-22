@@ -5574,8 +5574,8 @@ public sealed partial class MarkRenderer : IComponent
     }
 
     // What a group the night read no name for says, true of a group read before the company fetch was read for it as of one
-    // read after it from a row and a fetch naming none.
-    // see: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
+    // read after it from a fetch naming none.
+    // see: Every member is named and grouped by the GICS industry and sector its company fetch files
     public const string UnnamedGroup = "the night read no name for";
 
     // Section 2's peers table: the name's own row, marked, then the members of its group the night

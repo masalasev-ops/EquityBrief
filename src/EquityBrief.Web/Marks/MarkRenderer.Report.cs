@@ -65,7 +65,7 @@ public sealed partial class MarkRenderer
     // The latest quarter's lines: what was reported, the estimate kept before the release or the one its year implies, the
     // difference, the same quarter a year earlier and the change on it, and each income line's margin, every change
     // coloured by its sign; a line reading no estimate says why, and an implied one is marked and worked out beneath.
-    // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
+    // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
     public string QuarterTable(string ticker, ReportView view)
     {
         if (view.Quarter is not { } quarter)

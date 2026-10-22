@@ -16,9 +16,8 @@ public sealed record MoveOutcome(int NamesExamined, int RowsWritten, int RowsDro
 // writes the largest single-day and multi-day moves of the stored year, which
 // become the rows of the how-it-got-here table, each beside its group's median
 // move over the same sessions, read among its index's members on the night's
-// session by the sector and industry each one's membership row names, or where
-// the row names neither by those its newest company fetch before the night
-// files.
+// session by the GICS sector and industry each one's newest company fetch
+// before the night files.
 // Over the same bars it writes each name's two readings for the peers table,
 // beside the group its moves are read against, and each print's earnings
 // reaction off the calendar.
@@ -132,22 +131,23 @@ public sealed class MoveAnnotator : IComponent
     ";
 
     // The members on the night's session, being joined by it where the join date is known
-    // and not left by it, with the sector and the industry each one's row names, which is
-    // what a name's group is read from.
+    // and not left by it, with the sector and the industry each one's company fetch files,
+    // which is what a name's group is read from.
     // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
     //
     // A name's group is read among the members of its own index, so the S&P 500's groups hold the 500's members alone
     // and a 400 or 600 member's group is its own index's.
     // see: The universe is the S&P 1500's three indices with each member tagged by its index, and membership is fetched
     //
-    // A member whose row names neither a sector nor an industry, which is every S&P 400 and 600 member, is read by the GICS
-    // sector and industry its newest company fetch made before the night started files, both from that one fetch; a row
-    // naming either keeps its own, so no S&P 500 member is read in the other scheme from its index's members.
-    // see: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
+    // Every member of every index is read by the GICS sector and industry its newest company fetch made before the night
+    // started files, both from that one fetch, and never by the words its membership row names, so the three indices'
+    // groups stand in the one scheme the heavyweights and the ledger read; a member whose fetch files neither stands in no
+    // group.
+    // see: Every member is named and grouped by the GICS industry and sector its company fetch files
     const string MembersOnTheSession = @"
         SELECT m.ticker,
-               CASE WHEN m.sector IS NULL AND m.industry IS NULL THEN c.sector ELSE m.sector END,
-               CASE WHEN m.sector IS NULL AND m.industry IS NULL THEN c.industry ELSE m.industry END,
+               c.sector,
+               c.industry,
                m.index_code
         FROM membership m
         LEFT JOIN company c ON c.rowid = (

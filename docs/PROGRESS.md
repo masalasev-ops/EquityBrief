@@ -5998,3 +5998,143 @@ Carried:    the review's judgement items put to the operator on 2026-10-21 and s
             drawing their setting's key as stored, owed a 20.11 correction; the S&P 500's groups and pages on the GICS
             scheme and the Financials' revenue basis, both put to the operator; PR 505 rebased with its migration at 104;
             the phase 18 sign-off by a fresh session; and the phase 19 sign-off by a fresh session over the corrected main.
+
+### 15.1 ruling - the S&P 500's groups and the industry its pages name read on the GICS scheme with the section answers it moves constructed, a financial company's pages drawing no beat or miss of revenue against the analysts' estimate, and the chart page's earnings and analyst graphs   2026-10-21
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-21 in the evening, on the two items the page corrections' entries put to them and
+            the chart page's graphs they had asked for that afternoon, in these words, kept whole in `prompts/`: "The S&P
+            500's groups and the industry its pages name move to the GICS scheme, so every index, the heavyweights and
+            the ledger read one scheme. The section recordings it moves are answered as constructed, not recorded again:
+            no paid call. Financials: where a company's sector is Financials, its pages draw no beat or miss of revenue
+            against the analysts' estimate, the implied fourth quarter included, and say the estimate and the filing
+            measure revenue on different bases. No rule reads that comparison, so no rule moves. Yes also do the chart
+            phase graphs".
+Plan:       in the order ruled, the first two in this pull request: the S&P 500's groups and the industry every page
+            names read from the company fetch's GICS classification as a second 15.1 correction, the fixture's replay
+            holding each member's classification as an earlier night's fetch stored it and every recorded section request
+            the group's name moves answered by its recorded answer re-keyed, constructed with no paid call; and a
+            financial company's revenue read against no estimate as a second 18.2 correction, its line saying the estimate
+            and the filing measure revenue on different bases. Then the long releases' fixes the 20.3 ruling below orders,
+            then the chart page's graphs, added to phase 20's plan as 20.12 and built in a pull request of their own:
+            earnings a share against the estimate a quarter, revenue against net income with the net margin, and the
+            analysts' mean target and their ratings by month, from the figures the report reads.
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its remedies,
+            the page corrections in PR 518 and the phase 19 sign-off reviews' corrections in PRs 519 and 520; in review,
+            20.8 with its correction, PR 505; in progress, this ruling with the second 15.1 and 18.2 corrections it
+            orders; next, this pull request merged, the long releases' fixes, 20.12, the phase 19 sign-off by a fresh
+            session, PR 505 rebased with its migration at 104, the phase 18 sign-off by a fresh session, the local lane's
+            one text field, 21.0 once its ruling is given, and pin 3's completion steps.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    the theme an industry's research is read for, the industry the index names, and the swing filter's sector
+            standings and the sweeps' history, which read the sector the membership names for the retired sector leaders'
+            variant, each left as it stands and put to the operator, since moving a theme re-keys every stored theme and
+            moving the filter's read moves its pin.
+
+### 20.3 ruling - a results release longer than the local model's window is mostly a supplement stored in the release's place: the exhibit described as the press release fetched, a release still too long fitted to the window, and pin 4 carrying pin 3's readings of every request left the same   2026-10-21
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-21 near midnight, having asked "So what are we going to do about such cases where
+            release is too long for context window ? It is a real world situation and we need a solution to handle this",
+            through the question tool, whole in `prompts/` with the figures put to them: "Both fixes, carry pin 3
+            (Recommended)" and, for the order, "After GICS, before graphs (Recommended)".
+Found:      read-only on the operator's store at about 23:40 UTC, pin 3's history read at 36,694 of 45,452 releases: 127
+            refused by the runtime, each longer than the model's window of 50,176 tokens, a median of 192,349 characters
+            against 28,922 for those read; 84 of them supplemental data packages a filer files as the first EX-99 exhibit
+            of its results 8-K beside its press release, the fetch taking the lower sequence, from 13 filers, DLR's stored
+            documents 32 of 33 supplements, BXP's 31 of 32 and SPG's 31 of 31; a sample of 1,500 stored documents held 27,
+            about 800 over the history; and ARE and JBGS file a release and its supplement as one document.
+Plan:       the release fetch takes the EX-99 exhibit the filing's index page describes as a press, earnings or news
+            release, the lower sequence where none is described so, and fetches each affected filing's release again,
+            stored beside the document stored before, which a migration marks as no release; a release still longer than
+            the window is read from its opening that fits with a marker where it was cut; pin 4 carries pin 3's reading of
+            every document whose request to the model is byte for byte the same and reads only the changed ones; all after
+            this pull request, before 20.12 and before the drift's tone variant is registered.
+Queue:      as the 15.1 ruling's entry above.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    the long releases' fixes, in the order ruled.
+
+### 15.1 - correction: every member is named and grouped by the GICS industry and sector its company fetch files, the fixture's replay holding each member's classification from an earlier night's fetch and the recorded answers its group's new name moves re-keyed with no paid call   2026-10-21
+
+Queue:      as the 15.1 ruling's entry above.
+Ruled:      the first item of the operator's rulings of the evening of 2026-10-21, word for word in the 15.1 ruling's entry
+            above.
+Found:      every S&P 500 member was grouped and named by the words its index snapshot names, Technology and Consumer
+            Electronics among them, while its sector on every page, the heavyweights, the sector funds and the ledger read
+            the GICS classification its company fetch files; on 2026-10-21 three of the S&P 500's 503 members, SKYD, VMRK and
+            VYLR, and two of the S&P 600's 602 filed no GICS classification in their newest fetch.
+Corrected:  the move annotator reads every member's group by the GICS industry and sector its newest company fetch made
+            before the night started files, and every page names a member's industry by its newest fetch's, the words a
+            membership row names read by neither (see: Every member is named and grouped by the GICS industry and sector its
+            company fetch files). The fixture's replay and the expectations' chain hold each of the four members'
+            classification as fetched on 2026-09-04, before either night, since a night's own fetch comes after its groups
+            are read, so AAPL, MSFT and KEYS stand in Information Technology where the snapshot named Technology. The 55
+            recorded answers whose requests the group's new name moved answer them re-keyed whole with no paid call: the 13
+            paid answers, each already constructed, renamed with a sentence in its note naming the file it was, and the 42
+            local recordings, 25 in the fixture's folder and 17 in the comparison's, renamed with their manifest entries
+            naming the key each was recorded under. The decision superseded and moved, the move annotator's catalogue row,
+            section 4's two rows and the chart page's figures row, SCHEMA's group columns and companies note, the roster and
+            the changelog.
+Tests:      one more and two rewritten, the suite's total in the newest entry of this pull request: a constructed store of
+            the three indices worked by hand again, G1 grouped by its newest fetch's Semiconductors with five others and not
+            by its older Banks or its row's words, G7 and G9 in their fetches' Information Technology with seven, G8 alone in
+            Industrials and G10, naming an industry with no fetch behind it, in no group; the chart page over the universes'
+            store, AAA named by its fetch's industry and not its row's and BBB, with no fetch, not stored; the fixture's
+            groups and facts in Information Technology; and each answer the group's name moved re-keyed whole, 13 paid and
+            42 local, none standing beside the file it was.
+Measured:   the 55 moved requests found by putting the snapshot's word back into each request the suite made that no
+            recording answered and reading the key it gives, all 55 matching a recording the fixture held, through a hook on
+            the two recorded feeds made in this checkout for one run and taken out before anything was committed; two further
+            requests, one for the key under each figure and one for the two cases, held no recording under either name, and
+            the suite passes without them, so neither was a recording the change moved.
+Claims:     1372, as before: no row's claim added or removed by this pull request.
+Mutated:    each rule stated before its run. G2 the night's groups read the words a membership row names where it names
+            any: predicted red at the constructed store's G1, grouped by its row's Snapshot Chips; result red, "industry
+            Snapshot Chips 6" where "industry Semiconductors & Semiconductor Equipment 5". G3 the pages' industry the row's
+            where it names one: predicted red at AAA, named Oil & Gas Integrated; result red, "Oil & Gas Integrated" where
+            "Oil, Gas & Consumable Fuels". Each made in this checkout over the file's own text and restored from it, the
+            tree's diff the same after.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    the theme an industry's research is read for and the swing filter's sector standings with the sweeps' history,
+            each on the index's own words and put to the operator, as the 15.1 ruling's entry above says.
+
+### 18.2 - correction: a financial company's revenue is read against no estimate, its line saying the estimate and the filing measure it on different bases   2026-10-21
+
+Queue:      as the 15.1 ruling's entry above.
+Ruled:      the second item of the operator's rulings of the evening of 2026-10-21, word for word in the 15.1 ruling's entry
+            above.
+Found:      of the 41 quarterly revenue estimates kept before a release by the night of 2026-10-20, 21 stood more than a fifth
+            from the revenue the filing reports, every one a financial company's: the analysts estimate a bank's or an
+            insurer's revenue on another basis than the one its filing's revenue line reports, so the report's quarter table
+            and the chart page drew a large miss or beat that was a difference of basis.
+Corrected:  a company whose newest company fetch on or before the page's night files the GICS sector Financials reads its
+            revenue against no estimate, its quarter's own or the one its year's implies, its line saying the analysts'
+            estimate and the filing measure a financial company's revenue on different bases, on the report's quarter table
+            and the chart page alike, its earnings a share read against its estimate as any company's; the quarter table's
+            key says so (see: The latest quarter is read line by line against the estimates kept before its release and the
+            quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its
+            year's estimate less three quarters). No rule reads the comparison, so no rule moves. The decision superseded
+            and moved, section 4's and 15.9's rows of the latest quarter, the chart page's figures row, the six citations of
+            the decision and SCHEMA's, the roster, the guide's latest quarter and the changelog.
+Tests:      two more: the latest quarter worked by hand for a financial company, its own estimate and its year's implied one
+            both kept and neither read, its line's words, its earnings a share against its estimate, and another sector's and
+            a company filing none read against both; and the report's quarter table and the chart page over the universes'
+            store, M2 filing Financials and M1 Financials only from a fetch after the page of 2026-10-01, which reads M1's
+            Energy and its estimate of 500.
+Claims:     1372, as before: no row's claim added or removed by this pull request.
+Mutated:    each rule stated before its run. N1 the sector read by no line: predicted red at both tests; result red at
+            both, the revenue read against 2,850 with a difference of 90 where it reads none. N2 the sector read from the
+            newest fetch whatever the page's night: predicted red at the page test's 2026-10-01 page, Financials where
+            Energy; result red, ("Financials", "Financials") where ("Energy", "Financials"). Each made in this checkout over
+            the file's own text and restored from it, the tree's diff the same after.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2583 of 2583 tests ran with none failed,
+            migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the theme an industry's research is read for and the swing filter's sector standings with the sweeps' history,
+            put to the operator; the long releases' fixes of the 20.3 ruling above; 20.12; PR 505 rebased with its migration
+            at 104; the phase 18 and phase 19 sign-offs by fresh sessions.

@@ -11,7 +11,7 @@ namespace EquityBrief.Tests.Reading;
 // under either of the provider's words for it, the fiscal year's read in the quarter's place within a week of its end, and
 // the instant the stock's estimates are kept from as the store stood on the page's night, read over a constructed store;
 // and the chart page's revenue against the estimate the report reads, an implied one named so and why where none is read.
-// see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
+// see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
 public partial class ReadSurface
 {
     static readonly DateOnly EstimatesNight = new(2026, 10, 20);
@@ -148,5 +148,55 @@ public partial class ReadSurface
         Assert.Equal("$2,940 against an implied estimate of $2,800", await Revenue("M1"));
         Assert.Equal("$520 against an estimate of $500", await Revenue("M2"));
         Assert.Equal("$75, its estimate " + QuarterLines.NoneKeptYet, await Revenue("M3"));
+    }
+
+    // From the second 18.2 correction of 2026-10-21: a company whose newest company fetch on or before the page's night files
+    // the sector Financials reads its revenue against no estimate on the report's quarter table and the chart page alike,
+    // each saying the estimate and the filing measure it on different bases, and a fetch made after the page's night is not
+    // read, over the universes' store.
+    [Fact]
+    public async Task AFinancialCompanysRevenueIsDrawnAgainstNoEstimateOnTheReportAndTheChartPage()
+    {
+        using var store = UniversesStore();
+
+        // M1 and M2 each report 520 for the quarter to 2026-06-30 against its own estimate of 500. M2 files the sector
+        // Financials from 2026-09-15; M1 files Energy then and Financials only from a fetch on 2026-10-03.
+        store.Execute(
+            "INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, report_date, revenue) VALUES "
+            + "('M1', '2026-10-01T23:00:00.000Z', '2026-10-01', '2026-06-30', '2026-07-28', '520'), "
+            + "('M2', '2026-10-01T23:00:00.000Z', '2026-10-01', '2026-06-30', '2026-07-28', '520');");
+        store.Execute(
+            "INSERT INTO estimate_trend (ticker, fetched_at, period, period_end, revenue_average) VALUES "
+            + "('M1', '2026-07-01T04:00:00.000Z', '0q', '2026-06-30', '500'), ('M2', '2026-07-01T04:00:00.000Z', '0q', '2026-06-30', '500');");
+        store.Execute(
+            "INSERT INTO company (ticker, fetched_at, sector, industry) VALUES "
+            + "('M2', '2026-09-15T23:00:00.000Z', 'Financials', 'Banks'), "
+            + "('M1', '2026-09-15T23:00:00.000Z', 'Energy', 'Oil, Gas & Consumable Fuels'), ('M1', '2026-10-03T23:00:00.000Z', 'Financials', 'Banks');");
+
+        // The page of 2026-10-01 reads M1's fetch of 2026-09-15 and not the later one, so its revenue is read against 500;
+        // tonight's reads the later one and none.
+        var read = new ReadApi(store.DatabaseFile, FixedClock.At(new DateTimeOffset(2026, 10, 21, 12, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates));
+        var earlier = await read.ReportInputsAsync("M1", new DateOnly(2026, 10, 1), new DateOnly(2026, 10, 1));
+        var tonight = await read.ReportInputsAsync("M1", null, EstimatesNight);
+
+        Assert.Equal(("Energy", "Financials"), (earlier.Sector, tonight.Sector));
+        Assert.Equal(500m, QuarterLines.Latest(earlier.Quarters, earlier.Estimates, earlier.Sector)!.Lines[0].Estimate);
+        Assert.Equal(QuarterLines.OtherBasis, QuarterLines.Latest(tonight.Quarters, tonight.Estimates, tonight.Sector)!.Lines[0].EstimateAbsent);
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        foreach (var ticker in new[] { "M1", "M2" })
+        {
+            var chart = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/chart/{ticker}"));
+            var name = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{ticker}"));
+
+            Assert.Equal(
+                "$520, its estimate " + QuarterLines.OtherBasis,
+                Regex.Match(chart, "<section class=\"grid-group\" data-group=\"earnings\">.*?<dt>Revenue</dt><dd[^>]*>(.*?)</dd>", RegexOptions.Singleline).Groups[1].Value);
+            Assert.Equal(
+                QuarterLines.OtherBasis,
+                Regex.Match(name, "<tr data-line=\"Revenue\">.*?data-estimate=\"absent\">([^<]*)</td>", RegexOptions.Singleline).Groups[1].Value);
+        }
     }
 }

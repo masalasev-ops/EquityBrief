@@ -29,7 +29,8 @@ public sealed record ReportInputs(
     IReadOnlyList<InsiderRow>? Insiders = null,
     InsiderCoverage? InsiderSpans = null,
     NewestReading? Release = null,
-    string? ReleaseModel = null);
+    string? ReleaseModel = null,
+    string? Sector = null);
 
 // The reads of the regions phase 18 added between the card and the earnings reactions. The page draws what they return
 // through the core's functions and computes none of it.
@@ -49,7 +50,7 @@ public sealed partial class ReadApi
     // week of the quarter reported: a quarter's, filed as the current or the next quarter as the answer had rolled its words
     // or not when it was fetched, and the fiscal year's, which the answer files in a quarter's place where the quarter ends
     // the year.
-    // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
+    // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
     const string RevenueEstimatesOf = @"
         SELECT period, period_end, revenue_average, fetched_at FROM estimate_trend
         WHERE ticker = $ticker AND period IN ('0q', '+1q', '0y', '+1y') AND period_end >= $from AND period_end <= $to AND fetched_at < $released
@@ -79,6 +80,11 @@ public sealed partial class ReadApi
         FROM company WHERE ticker = $ticker AND substr(fetched_at, 1, 10) <= $on
         ORDER BY fetched_at;
     ";
+
+    // The GICS sector the stock's newest company fetch on or before the page's night files, which says whether its revenue
+    // is read against the analysts' estimate.
+    // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
+    const string SectorOf = "SELECT sector FROM company WHERE ticker = $ticker AND substr(fetched_at, 1, 10) <= $on ORDER BY fetched_at DESC, rowid DESC LIMIT 1;";
 
     const string KeptDividendsOf = "SELECT ex_date, amount FROM dividend_event WHERE ticker = $ticker ORDER BY ex_date;";
 
@@ -276,6 +282,17 @@ public sealed partial class ReadApi
             }
         }
 
+        string? sector;
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = SectorOf;
+            command.Parameters.AddWithValue("$ticker", ticker);
+            command.Parameters.AddWithValue("$on", day);
+
+            sector = await command.ExecuteScalarAsync() as string;
+        }
+
         var dividends = new List<KeptDividend>();
 
         await using (var command = connection.CreateCommand())
@@ -347,7 +364,7 @@ public sealed partial class ReadApi
         var (insiders, spans) = await InsidersAsync(connection, ticker, night);
         var (release, model) = await ReleaseReadingAsync(connection, ticker, night);
 
-        return new ReportInputs(quarters, fetchedOn, estimates, trend, trendOn, ratings, dividends, tenYears, industry, peers, insiders, spans, release, model);
+        return new ReportInputs(quarters, fetchedOn, estimates, trend, trendOn, ratings, dividends, tenYears, industry, peers, insiders, spans, release, model, sector);
     }
 
     // From 20.3 the newest results release of the stock's filer the night may read, as the local model read it under the

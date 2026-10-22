@@ -1593,13 +1593,11 @@ public sealed partial class ReadApi : IComponent
         ORDER BY m.ticker;
     ";
 
-    // A member's industry as every page names it: the one its membership row names, and for a member whose row names
-    // neither a sector nor an industry, which is every S&P 400 and 600 member, the GICS industry its newest company fetch
-    // filed, read over a row aliased m holding its ticker.
-    // see: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
-    const string NamedIndustry = @"CASE WHEN m.sector IS NULL AND m.industry IS NULL
-                THEN (SELECT c.industry FROM company c WHERE c.ticker = m.ticker ORDER BY c.fetched_at DESC, c.rowid DESC LIMIT 1)
-                ELSE m.industry END";
+    // A member's industry as every page names it, on every index: the GICS industry its newest company fetch filed, read
+    // over a row aliased m holding its ticker, and never the words its membership row names.
+    // see: Every member is named and grouped by the GICS industry and sector its company fetch files
+    const string NamedIndustry = @"(SELECT c.industry FROM company c WHERE c.ticker = m.ticker
+                ORDER BY c.fetched_at DESC, c.rowid DESC LIMIT 1)";
 
     // The bands the universe screen states, which are the immediate ones the
     // level builder already marked, at each name's latest as-of date at or

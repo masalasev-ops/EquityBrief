@@ -69,11 +69,14 @@ public partial class NightlyRun
     {
         // The fixture's night with the S&P 400's fund holding AA, XRAY and AAPL and the S&P 600's holding AAL, four
         // names the night's bulk file carries. AAPL is an S&P 500 member, so it is read as the 500's alone. AA has
-        // been the 400's since the first of the month under the S&P 500's Technology label, so a group read across the
+        // been the 400's since the first of the month, its row naming the snapshot's Technology, which no group reads, and
+        // its company fetch before the night filing the S&P 500 three's Information Technology, so a group read across the
         // indices would put it beside AAPL, KEYS and MSFT.
         using var store = new TemporaryStore().Migrated();
 
         store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", sector, observed_at) VALUES ('MID', 'AA', '2026-09-01', NULL, 'Technology', '2026-09-01T21:10:00Z');");
+        await FixtureReplay.CompaniesBeforeTheNightAsync(store);
+        store.Execute($"INSERT INTO company (ticker, fetched_at, sector, industry) VALUES ('AA', '{FixtureReplay.CompaniesFetchedAt}', 'Information Technology', 'Software');");
 
         var feeds = WithFunds(Funds(Holdings("Mid-Cap", "Sep 04, 2026", "AA", "XRAY", "AAPL"), Holdings("Small-Cap", "Sep 04, 2026", "AAL")));
 
@@ -114,7 +117,7 @@ public partial class NightlyRun
         Assert.Equal(4, Count(store, "SELECT COUNT(DISTINCT ticker) FROM ladder;"));
 
         // A name's group is read among its own index's members: the fixture's groups as the S&P 500 alone gives them,
-        // each Technology name beside the other two and NFLX beside nobody, AA's label reaching none of them.
+        // each Information Technology name beside the other two and NFLX beside nobody, AA's sector reaching none of them.
         Assert.Equal(["2"], Texts(store, "SELECT DISTINCT CAST(group_members AS TEXT) FROM move WHERE ticker = 'AAPL';"));
         Assert.Equal(["0"], Texts(store, "SELECT DISTINCT CAST(group_members AS TEXT) FROM move WHERE ticker = 'NFLX';"));
 
