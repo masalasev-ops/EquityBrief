@@ -358,6 +358,27 @@ public partial class FixtureExpectations
         Assert.Contains("no report on file in the stored calendar", FamilyRows(store, "SELECT lines FROM decision_card WHERE index_code = 'MID' AND family = 'dip' AND ticker = 'DA';").Single(), StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task AStockTheDipHoldsIsListedByAnOlderFamilyAsBeforeAndNoOtherListReadsTheDipsTrades()
+    {
+        // IA, which the S&P 400's breakout lists first on the constructed night, holding an open dip trade from 2026-09-30.
+        using var store = IndexStore();
+
+        store.Execute("INSERT INTO dip_trade (rule, index_code, ticker, session_date, place, entry, stop, time_limit, exit_average, risk_moves, end_reason) VALUES ('provisional', 'MID', 'IA', '2026-09-30', 1, '100', '94', 10, 5, 4.0, 'open');");
+
+        var clock = FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        await new IndexFamilies(clock, store.DatabaseFile).RunAsync("night-test");
+
+        Assert.Contains($"IA|{FamilyList.Listed}|1", FamilyRows(store, "SELECT ticker, state, place FROM index_family_pick WHERE index_code = 'MID' AND family = 'breakout';"));
+
+        // The S&P 500's lister reads no dip trade as one holding the stock.
+        await using var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={store.DatabaseFile}");
+        await connection.OpenAsync();
+
+        Assert.Empty(await FamilyLister.OpenTradesAsync(connection, new DateOnly(2026, 10, 2), ["IA"], CancellationToken.None));
+    }
+
     // Section 18's four rows for the dip, each induced.
 
     [Fact]
