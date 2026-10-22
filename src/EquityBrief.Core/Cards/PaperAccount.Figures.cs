@@ -65,6 +65,8 @@ public static partial class PaperAccount
 
     public const string TimeLimit = "reached its time limit";
 
+    public const string TimeExit = "sold at its time exit";
+
     public const string NoResult = "ended with no result read";
 
     public const string Waiting = "waits on the next session's open";
@@ -150,28 +152,86 @@ public static partial class PaperAccount
     }
 
     // A trade that ended: its sale and its result in risks, a holding's in its fraction alone; how it ended, a holding's
-    // the reason its book sold it, a page list's trade the words its stored outcome reads as, handed in, and otherwise read
-    // off where it was sold, at or over its target reached it, a trailing plan's before its cap under its trailing stop, a
-    // fixed plan's at or under its stop under its stop, and at its cap its time limit; the sessions from its listing night
-    // to its end; and its edge.
-    public static PaperEnded Ended(PaperTrade trade, double? result)
+    // the reason its book sold it, a page list's trade the words its stored outcome reads as, handed in, and otherwise why
+    // the walk that ended it sold it there, its own exit replayed over its closes to the session it ended; where its closes
+    // do not reach that session, read off where it was sold as the walks sell, at or over its target reached it, under its
+    // stop under its stop, a trailing plan's before its cap under its trailing stop and at its cap its time limit; the
+    // sessions from its listing night to its end; and its edge.
+    public static PaperEnded Ended(PaperTrade trade, double? result, IReadOnlyList<DateOnly>? sessions = null, Func<string, DateOnly, decimal?>? close = null)
     {
         var held = trade.Ended is { } end ? ExchangeClosures.SessionsUntil(trade.ListedOn, end) : null;
         var book = trade.Stop is null;
         double? fraction = trade.Sale is { } sale && trade.Buy > 0m ? Statistic.FromRatio((sale / trade.Buy) - 1m) : book ? result : null;
 
-        return new PaperEnded(trade.Sale, book ? null : result, fraction, Ending(trade, held), held, trade.Edge);
+        return new PaperEnded(trade.Sale, book ? null : result, fraction, Ending(trade, held, Replayed(trade, held, sessions, close)), held, trade.Edge);
     }
 
-    static string Ending(PaperTrade trade, int? held) =>
+    static string Ending(PaperTrade trade, int? held, string? replayed) =>
         trade.Stop is null ? trade.Outcome is { } reason ? "sold: " + reason : "sold"
             : trade.Outcome is { } said ? said
             : trade.Sale is not { } sale ? NoResult
-            : trade.Target is { } target && sale >= target ? ReachedTarget
+            : replayed is { } walked ? walked
+            : trade.Trail is null && trade.Target is { } target && sale >= target ? ReachedTarget
+            : trade.Stop is { } stop && sale < stop ? UnderStop
             : trade.Trail is not null ? held is { } trailed && trade.Cap is { } trailCap && trailed >= trailCap ? TimeLimit : UnderTrail
-            : trade.Stop is { } stop && sale <= stop ? UnderStop
             : held is { } kept && trade.Cap is { } cap && kept >= cap ? TimeLimit
             : UnderStop;
+
+    // Why the walk that ended a swing trade sold it where it did: the exit it is walked under, its rule's own or the
+    // menu's its table names, replayed over its stock's closes from its listing night to the session it ended, at the
+    // trade's own scale as its position is marked; none where a close or a session is missing, or where the replay does
+    // not end on that session, so the closes the store holds now do not reproduce its end.
+    static string? Replayed(PaperTrade trade, int? held, IReadOnlyList<DateOnly>? sessions, Func<string, DateOnly, decimal?>? close)
+    {
+        if (sessions is null || close is null || trade.Stop is not { } stop || trade.Ended is not { } end || held is not > 0 || trade.Cap is not { } cap
+            || (trade.MarkedFrom ?? close(trade.Ticker, trade.Bought)) is not { } then || then <= 0m)
+        {
+            return null;
+        }
+
+        var after = sessions.Where(session => session > trade.ListedOn && session <= end).ToArray();
+
+        if (after.Length != held)
+        {
+            return null;
+        }
+
+        var scale = trade.Buy / then;
+        var entry = trade.Planned ?? trade.Buy;
+        var closes = new double[after.Length + 1];
+
+        closes[0] = Statistic.FromPrice(entry);
+
+        for (var at = 0; at < after.Length; at++)
+        {
+            if (close(trade.Ticker, after[at]) is not { } stored)
+            {
+                return null;
+            }
+
+            closes[at + 1] = Statistic.FromPrice(stored * scale);
+        }
+
+        var anchor = new SetupAnchor(
+            trade.ListedOn,
+            closes[0],
+            Statistic.FromPrice(stop),
+            trade.Target is { } target ? Statistic.FromPrice(target) : null,
+            trade.Trail is { } trail ? Statistic.FromPrice(trail) : null,
+            cap,
+            trade.RiskMoves);
+        var outcome = ExitMenu.Replay(closes, 0, anchor, trade.RiskMoves is > 0 ? anchor.Risk / trade.RiskMoves.Value : 0, ExitMenu.Of(trade.Exit ?? 0));
+
+        return outcome.Sessions != after.Length ? null : outcome.End switch
+        {
+            SetupEnds.Target => ReachedTarget,
+            SetupEnds.Stop => UnderStop,
+            SetupEnds.Trail => UnderTrail,
+            SetupEnds.Time => TimeExit,
+            SetupEnds.Cap => TimeLimit,
+            _ => null,
+        };
+    }
 
     // The listed stocks the accounts given did not buy: those each walk skipped, each for the reason the walk gave, and
     // those no fill bought, waiting on their next session's open or holding none for the reason stored; a reason at a time,

@@ -268,7 +268,9 @@ public static class PaperScreen
             row.Cap,
             row.Past,
             row.Edge,
-            row.Book ? row.Reason : null), row.Result)),
+            row.Book ? row.Reason : null,
+            row.Exit,
+            row.RiskMoves), row.Result)),
     ];
 
     // The stocks a list or a book kept that no fill bought: waiting on their next session's open, or holding none for the
@@ -489,7 +491,7 @@ public static class PaperScreen
             trade.Ended is null || trade.Ended > night ? PaperAccount.Position(trade, night, sessions, close, Move(trade.Ticker), trade.Stop is null ? standing(trade.Ticker) : null) : null;
 
         PaperEnded? Shut(PaperTrade trade, double? result) =>
-            trade.Ended is { } end && end <= night ? PaperAccount.Ended(trade, result) : null;
+            trade.Ended is { } end && end <= night ? PaperAccount.Ended(trade, result, sessions, close) : null;
 
         IReadOnlyList<(string Name, IReadOnlyList<PaperTrade> Trades)> VariantsOf(string family) =>
         [

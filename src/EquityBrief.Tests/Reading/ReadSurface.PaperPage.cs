@@ -120,9 +120,11 @@ public partial class ReadSurface
         // Sold at its target of 120 two risks up, three sessions after its listing, its edge as its fill stored it.
         Assert.Equal(new PaperEnded(120m, 2.0, 0.2, PaperAccount.ReachedTarget, 3, 1.25), PaperAccount.Ended(fixedPlan with { Sale = 120m, Edge = 1.25 }, 2.0));
 
-        // At its stop of 90, under its stop; at its cap of three sessions between the two, its time limit.
-        Assert.Equal(PaperAccount.UnderStop, PaperAccount.Ended(fixedPlan with { Sale = 90m }, -1.0).Ending);
+        // Under its stop of 90, under its stop; at its cap of three sessions between the two, its time limit, and on its
+        // stop at its cap its time limit too, the walks selling only under a stop.
+        Assert.Equal(PaperAccount.UnderStop, PaperAccount.Ended(fixedPlan with { Sale = 89m }, -1.1).Ending);
         Assert.Equal(PaperAccount.TimeLimit, PaperAccount.Ended(fixedPlan with { Sale = 104m, Cap = 3 }, 0.4).Ending);
+        Assert.Equal(PaperAccount.TimeLimit, PaperAccount.Ended(fixedPlan with { Sale = 90m, Cap = 3 }, -1.0).Ending);
 
         // A trailing plan sold before its cap closed under its trailing stop, at a gain or a loss, and at its cap its time
         // limit.
@@ -142,6 +144,68 @@ public partial class ReadSurface
 
         // A trade whose result was not read was sold at no price the page can name.
         Assert.Equal(PaperAccount.NoResult, PaperAccount.Ended(fixedPlan, null).Ending);
+    }
+
+    [Fact]
+    public void AClosedTradesEndingIsItsOwnExitReplayedOverItsClosesToTheSessionItEnded()
+    {
+        Func<string, DateOnly, decimal?> Closes(params decimal?[] after) =>
+            (_, session) => session == Filled.AddDays(-1) ? 100m : Array.IndexOf(Week, session) is var at and > 0 && at <= after.Length ? after[at - 1] : null;
+
+        // Trailing 10 under the highest close from a stop of 90, given three sessions: closes of 108 and 112 raise its
+        // stop to 102, so a close of 101 on its third and last session falls through it, and the walk sells it there under
+        // its trailing stop; the sale alone, on its cap's session, reads its time limit. A close of 103 there holds, and
+        // the cap's close ends it at its time limit.
+        var trailing = Planned with { Target = null, Trail = 10m, Cap = 3, Ended = Week[3], Sale = 101m };
+
+        Assert.Equal(PaperAccount.TimeLimit, PaperAccount.Ended(trailing, 0.1).Ending);
+        Assert.Equal(PaperAccount.UnderTrail, PaperAccount.Ended(trailing, 0.1, Week, Closes(108m, 112m, 101m)).Ending);
+        Assert.Equal(PaperAccount.TimeLimit, PaperAccount.Ended(trailing with { Sale = 103m }, 0.3, Week, Closes(108m, 112m, 103m)).Ending);
+
+        // A fixed plan whose last close stands on its stop of 90 is sold at its cap, the walks selling only under a stop.
+        Assert.Equal(PaperAccount.TimeLimit, PaperAccount.Ended(Planned with { Cap = 3, Ended = Week[3], Sale = 90m }, -1.0, Week, Closes(95m, 92m, 90m)).Ending);
+
+        // Under the menu's time exit ten sessions in unless it is above its buy: ten closes of 98, under its buy of 100 and
+        // clear of its stop and its target, sell it on the tenth at that exit, where its sale alone reads under its stop.
+        var time = ExitMenu.Swing.Single(choice => choice is { Kind: ExitKind.Time, N: 10, X: 0 });
+        DateOnly[] fortnight = [.. Week, new(2026, 10, 5), new(2026, 10, 6), new(2026, 10, 7), new(2026, 10, 8), new(2026, 10, 9), new(2026, 10, 12)];
+        var timed = Planned with { Exit = time.Number, Ended = fortnight[^1], Sale = 98m };
+
+        Assert.Equal(PaperAccount.UnderStop, PaperAccount.Ended(timed, -0.2).Ending);
+        Assert.Equal(PaperAccount.TimeExit, PaperAccount.Ended(timed, -0.2, fortnight, (_, session) => session == Filled.AddDays(-1) || session == Filled ? 100m : 98m).Ending);
+
+        // Where a close is missing, or the closes the store holds would have ended it on another session, its sale is read.
+        Assert.Equal(PaperAccount.TimeLimit, PaperAccount.Ended(trailing, 0.1, Week, Closes(108m, null, 101m)).Ending);
+        Assert.Equal(PaperAccount.TimeLimit, PaperAccount.Ended(trailing, 0.1, Week, Closes(85m, 112m, 101m)).Ending);
+    }
+
+    [Fact]
+    public async Task ATradeTheMenusExitSoldIsReadOffTheStoreUnderThatExit()
+    {
+        using var store = await FamilyPagesStore();
+
+        // The S&P 400's drift kept TX on 2026-09-18 at 100 over a stop of 90 for a target of 120, given twenty sessions,
+        // under the menu's time exit ten sessions in unless it is above its buy: ten closes of 98 sell it on the tenth, the
+        // night, a fifth of a risk down, where its sale alone would read under its stop.
+        var time = ExitMenu.Swing.Single(choice => choice is { Kind: ExitKind.Time, N: 10, X: 0 });
+
+        store.Execute(
+            "INSERT INTO index_family_trade (index_code, family, ticker, session_date, place, entry, stop, target, trail, cap, ended_on, result, cost, benchmark, members, exit, risk_moves) VALUES " +
+            $"('MID', 'drift', 'TX', '2026-09-18', 1, '100', '90', '120', NULL, 20, '{TheSwitch}', -0.2, 0, NULL, NULL, {time.Number}, 2);");
+        FillAtTheirOwnBuy(store);
+        PickBar(store, "TX", "2026-09-18", "100");
+
+        foreach (var session in new[] { "2026-09-21", "2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25", "2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01", TheSwitch })
+        {
+            PickBar(store, "TX", session, "98");
+        }
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var closed = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?universe=400&bought=closed&show=drift"));
+
+        Assert.Contains("<td>Sold at its time exit<span class=\"pb-day\">held 10 sessions</span></td>", PaperRowOf(closed, "<tr data-ticker=\"TX\""), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -270,7 +334,8 @@ public partial class ReadSurface
     }
 
     // The S&P 400's page lists over a constructed week, each of their figures worked by hand. The pullback's list: C1 and
-    // C2 on Monday, C1 sold at its target of 24 on Thursday two risks up and C2 at its stop of 27 on Wednesday; O1 on
+    // C2 on Monday, C1 sold at its target of 24 on Thursday two risks up and C2 at 26.40 under its stop of 27 on Wednesday,
+    // 1.2 risks down, as their walks sell them; O1 on
     // Tuesday at 100 over a stop at 90 for a target of 120; S1 the same night at 100 over a stop a dime under; O2 on
     // Wednesday at 50 over 46 for 60; and U1 on Friday, the night, with no fill yet. The breakout's list: O3 on Tuesday at 40
     // over a stop of 36 trailing by 4. Each is bought at its own close, with no round trip.
@@ -284,7 +349,7 @@ public partial class ReadSurface
                 $"('MID', '{family}', '{ticker}', '{session}', {place}, '{entry}', '{stop}', {Quoted(target)}, {Quoted(trail)}, 20, {Quoted(ended)}, {Number(result)}, 0, {Number(benchmark)}, {(benchmark is null ? "NULL" : "400")});");
 
         Trade("pullback", "C1", "2026-09-28", 1, "20", "18", "24", null, "2026-10-01", 2.0, 0.5);
-        Trade("pullback", "C2", "2026-09-28", 2, "30", "27", "36", null, "2026-09-30", -1.0, null);
+        Trade("pullback", "C2", "2026-09-28", 2, "30", "27", "36", null, "2026-09-30", -1.2, null);
         Trade("pullback", "O1", "2026-09-29", 1, "100", "90", "120", null, null, null, null);
         Trade("pullback", "S1", "2026-09-29", 2, "100", "99.9", "110", null, null, null, null);
         Trade("pullback", "O2", "2026-09-30", 1, "50", "46", "60", null, null, null, null);
@@ -295,7 +360,7 @@ public partial class ReadSurface
         foreach (var (ticker, closes) in new (string, string[])[]
         {
             ("C1", ["2026-09-28:20", "2026-09-29:21", "2026-09-30:22", "2026-10-01:24"]),
-            ("C2", ["2026-09-28:30", "2026-09-29:29", "2026-09-30:27"]),
+            ("C2", ["2026-09-28:30", "2026-09-29:29", "2026-09-30:26.4"]),
             ("O1", ["2026-09-29:100", "2026-09-30:105", "2026-10-01:110", "2026-10-02:117"]),
             ("O2", ["2026-09-30:50", "2026-10-01:48", "2026-10-02:46.8"]),
             ("O3", ["2026-09-29:40", "2026-09-30:44", "2026-10-01:47", "2026-10-02:46"]),
@@ -338,9 +403,10 @@ public partial class ReadSurface
 
         // The pullback's account of 10,000 at one per cent: Monday C1 50 shares at 20 and C2 33 at 30, 8,010 left; Tuesday O1
         // 10 at 100, 7,010 left, and S1, its stop a dime under 100, sized at the cap's 100 shares for 10,000, over the free
-        // cash and skipped; Wednesday C2 sold at 27 first, 7,901, then O2 24 at 50 off a worth of 9,901, 6,701 left; Thursday
-        // C1 sold at 24, 7,901; Friday O1 at 117 and O2 at 46.8: 7,901 and 1,170 and 1,123.2, 10,194.2, a return of 0.01942.
-        Assert.Contains("<div class=\"paper-tile\" data-family=\"pullback\" data-standing=\"provisional\" data-return=\"0.01942\" data-open=\"2\" data-closed=\"2\" data-since=\"2026-09-28\"", page, StringComparison.Ordinal);
+        // cash and skipped; Wednesday C2 sold at 26.40 first, 7,881.2, then O2 24 at 50 off a worth of 9,881.2, 6,681.2 left;
+        // Thursday C1 sold at 24, 7,881.2; Friday O1 at 117 and O2 at 46.8: 7,881.2 and 1,170 and 1,123.2, 10,174.4, a return
+        // of 0.01744.
+        Assert.Contains("<div class=\"paper-tile\" data-family=\"pullback\" data-standing=\"provisional\" data-return=\"0.01744\" data-open=\"2\" data-closed=\"2\" data-since=\"2026-09-28\"", page, StringComparison.Ordinal);
 
         // The breakout's: O3 25 shares at 40 over its risk of 4, at 46 on Friday, 10,150, a return of 0.015.
         Assert.Contains("<div class=\"paper-tile\" data-family=\"breakout\" data-standing=\"provisional\" data-return=\"0.015\" data-open=\"1\" data-closed=\"0\" data-since=\"2026-09-29\"", page, StringComparison.Ordinal);
@@ -409,7 +475,8 @@ public partial class ReadSurface
         Assert.Contains($"<p class=\"paper-entry\">{MarkRenderer.EntryPriceLine}</p>", page, StringComparison.Ordinal);
 
         // Closed: C1 sold at its target of 24 on Thursday, held three sessions, two risks and twenty per cent, its edge 1.5
-        // over its benchmark of half a risk; C2 at its stop of 27, held two, its benchmark not written and its edge not read.
+        // over its benchmark of half a risk; C2 at 26.40 under its stop of 27, held two, 1.2 risks and twelve per cent down,
+        // its benchmark not written and its edge not read; each ending its own walk replayed over its closes.
         var closed = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?universe=400&bought=closed"));
         var target = PaperRowOf(closed, "<tr data-ticker=\"C1\"");
         var stop = PaperRowOf(closed, "<tr data-ticker=\"C2\"");
@@ -418,7 +485,8 @@ public partial class ReadSurface
         Assert.Contains("<td class=\"r num\">24.00<span class=\"pb-day\">2026-10-01</span></td><td>Reached its target<span class=\"pb-day\">held 3 sessions</span></td>", target, StringComparison.Ordinal);
         Assert.Contains("<span class=\"gain\">+2.00</span> risks<span class=\"pb-day\"><span class=\"gain\">+20.0%</span></span>", target, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\"><span class=\"gain\">+1.50</span> risks</td>", target, StringComparison.Ordinal);
-        Assert.Contains("<td>Closed under its stop<span class=\"pb-day\">held 2 sessions</span></td>", stop, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\">26.40<span class=\"pb-day\">2026-09-30</span></td><td>Closed under its stop<span class=\"pb-day\">held 2 sessions</span></td>", stop, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"loss\">-1.20</span> risks<span class=\"pb-day\"><span class=\"loss\">-12.0%</span></span>", stop, StringComparison.Ordinal);
         Assert.Contains("<span class=\"degraded\">not read yet</span>", stop, StringComparison.Ordinal);
         Assert.Contains("aria-pressed=\"true\">Closed · 2</a>", closed, StringComparison.Ordinal);
 
@@ -552,6 +620,17 @@ public partial class ReadSurface
         var since = card[live..card.IndexOf("<details class=\"score-variants\"", StringComparison.Ordinal)];
 
         Assert.StartsWith($"<div class=\"score\" data-family=\"breakout\" data-standing=\"live\" data-verdict=\"{RuleVerdict.Passed}\">", card, StringComparison.Ordinal);
+
+        // Adjusted p values, version codes and registration days stand under the pointer and nowhere in the page's text, a
+        // heading's tip being under the pointer too.
+        var shown = Regex.Replace(page, "<span class=\"head-tip\"[^>]*>.*?</span></th>", "</th>", RegexOptions.Singleline);
+        var text = Regex.Replace(Regex.Replace(shown, "<(script|style)\\b.*?</\\1>", " ", RegexOptions.Singleline), "<[^>]+>", " ");
+
+        Assert.Contains("adjusted p 0.0010 against the bar", page, StringComparison.Ordinal);
+        Assert.Contains("; counts the version registered 2026-01-02, code v", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("adjusted p", text, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotMatch(", code \\w", text);
+        Assert.DoesNotMatch("registered \\d{4}-\\d{2}-\\d{2}", text);
         Assert.Contains("<select data-merge-key=\"rule\" aria-label=\"The rule whose scorecard is drawn\"><option value=\"\">Pullback · live rule</option><option value=\"breakout\" selected>Breakout · live rule</option>", page, StringComparison.Ordinal);
 
         // On history, 2024 to 2026: better in three of three complete years as the test counted, and a box a year, 2024's

@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-22 - .claude/rules/checks.md - read-surface reaches a closed trade's ending replayed by its own exit and paper trading's text holding no adjusted p
+Corrects: paper trading read every trailing trade that ended on its cap's session as reaching its time limit though its walk sells a close under its trail there, and no test held the scorecard's adjusted p out of the page's text, a mutation writing it into the verdict's pill surviving every read-surface test; both found by the fourth phase 19 sign-off review of 2026-10-22.
+Was:
+> read-surface: ... every choice kept in the link with every other and a select keeping its card's place, read off the shell's script |
+Now:
+> read-surface: ... read off the shell's script; and from the second 19.4 correction of 2026-10-22 a closed trade's ending its own exit or the menu's replayed over its closes to the session it ended, a trailing trade whose cap session's close fell through its trail ending under its trailing stop, a close on its stop at its cap its time limit and the menu's time exit named as one, its sale read only where its closes are missing or end it elsewhere, each worked by hand, and no adjusted p, version code or registration day in the page's text, each standing under the pointer |
+Why: the second 19.4 correction of 2026-10-22 adds these assertions.
+
+### 2026-10-22 - ARCHITECTURE.html - a closed trade's ending on paper trading is its own exit replayed over its closes
+Corrects: a trailing trade sold on its cap's session at a close under the trail its earlier closes set was named as reaching its time limit, the ending read off where the trade was sold and whether it ended on its cap's session rather than off the walk that sold it; found by the fourth phase 19 sign-off review of 2026-10-22, with no such trade yet ended in the store.
+Was:
+> 15.21's paragraph from the 19.4 correction of 2026-10-22: ... a closed trade's ending, read off where it was sold against its plan, or as its stored outcome on the S&amp;P 500's page list or its book's reason for a holding; ...
+Now:
+> 15.21's paragraph from the 19.4 correction of 2026-10-22: ... a closed trade's ending, from the second 19.4 correction of 2026-10-22 its own exit or the menu's it is walked under replayed over its closes to the session it ended, as the walk that ended it reads them, so a trailing trade whose last close fell through its trail ends under its trailing stop though it ended on its cap's session, and read off where it was sold, as the walks sell, only where its closes do not reproduce that end; or as its stored outcome on the S&amp;P 500's page list or its book's reason for a holding; ...
+Why: the walks sell at the first close under a stop or a trail, on the cap's session as on any other, so only the walk replayed says why a trade ended where it did.
+
 ### 2026-10-22 - .claude/rules/checks.md - read-surface and architecture-conformance reach paper trading drawn from the top a part a card
 Authorised by: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together
 Was:
