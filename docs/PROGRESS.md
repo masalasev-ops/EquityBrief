@@ -6343,3 +6343,46 @@ Carried:    the phase 19 sign-off by a fresh session over the corrected main; th
             and the swing filter's sector standings with the sweeps' history, put to the operator; the paid report's route
             taking a filing's first EX-99 exhibit as its release, put to the operator; the long releases' fixes of the 20.3
             ruling; 20.12; PR 505 rebased with its migration at 104; the phase 18 sign-off by a fresh session.
+
+### 19.4 - correction: a closed trade's ending on paper trading is its own exit replayed over its closes, and the page's text holds no adjusted p, version code or registration day   2026-10-22
+
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its remedies,
+            the phase 19 sign-off reviews' corrections in PRs 519, 520 and 522, the GICS groups in PR 521, the report's
+            buttons in PR 523 and paper trading's redesign in PR 524; in review, 20.8 with its correction, PR 505; in
+            progress, this correction; next, the phase 19 sign-off by a fresh session over the corrected main, then the
+            long releases' fixes, 20.12, PR 505 rebased with its migration at 104, the phase 18 sign-off by a fresh
+            session, the local lane's one text field, 21.0 once its ruling is given, and pin 3's completion steps.
+Ruled:      "Build it now" by the operator on 2026-10-22 near 11:55 UTC, asked whether to build the fix of the two findings
+            below at once, leave it to the sign-off's corrections or carry it.
+Found:      by the fourth phase 19 sign-off review over main at b79169f9: paper trading read every trailing trade that ended
+            on its cap's session as reaching its time limit, where the walk the S&P 400's and 600's recorders run sells
+            a trade there at a close under the trail its earlier closes set, with no such trade yet ended in the store;
+            and no test held the scorecard's adjusted p out of the page's text, a mutation writing it into the verdict's
+            pill surviving all 670 read-surface tests.
+Corrected:  a closed trade's ending is its own exit, or the menu's its table names, replayed by the core over its closes
+            to the session it ended at the trade's own scale, read off where it was sold, as the walks sell, only where
+            its closes do not reproduce its end, so a close on its stop is no stop-out; the paper reads load each trade's
+            exit and its stop's distance in typical moves; the S&P 400 test store's C2 sells under its stop as its walk
+            would, not on it. Section 15.21's paragraph, the roster and the changelog.
+Tests:      two more: a trailing trade's last close under its trail and over it on its cap's session, a close on its stop
+            at its cap, the menu's time exit, a missing close and closes ending it elsewhere, each worked by hand with and
+            without its closes; and a trade stored under the menu's time exit read back off the rendered page. The
+            scorecard's test reads the page's text, headings' tips aside, for no adjusted p, version code or registration
+            day, each found under the pointer.
+Claims:     1378, as before: no row's claim added or removed by this pull request.
+Mutated:    the rule, stated before the runs: each property the correction adds, the smallest edit undoing it, run over
+            the paper page's sixteen tests with its red predicted and nowhere else read over that filter alone, made in
+            this checkout and restored from the file's own text, the tree's diff the same after each. Each went red at the
+            tests predicted and no other: s1 the replay's end ignored, every ending read off its sale, at the replay's test
+            and the stored exit's; s2 the sale read as a stop-out on its stop, at the closed trade's; s3 the stored exit
+            left out of the trade, at the stored exit's; s4 the adjusted p written into the scorecard's verdict pill, at
+            the scorecard's.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2603 of 2603 tests ran with none failed,
+            migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
+            report 60 tables, 1378 claims, 1378 passing, none out of scope and none unexamined, 1389 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the phase 19 sign-off by a fresh session over the corrected main; the theme an industry's research is read for
+            and the swing filter's sector standings with the sweeps' history, put to the operator; the paid report's route
+            taking a filing's first EX-99 exhibit as its release, put to the operator; the long releases' fixes of the 20.3
+            ruling; 20.12; PR 505 rebased with its migration at 104; the phase 18 sign-off by a fresh session.

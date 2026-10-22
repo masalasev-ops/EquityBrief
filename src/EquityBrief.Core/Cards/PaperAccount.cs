@@ -9,7 +9,8 @@ namespace EquityBrief.Core.Cards;
 // before, and the price the bar store holds now for its buy, which an open position is marked from. Paper trading's page
 // reads besides its target, the distance its stop trails where it trails, the sessions it is given, which end of its plan
 // its fill opened past, its edge over the same plan on every member or a holding's over its size cut as its fill stored
-// it, and how a page list's trade ended or why a holding was sold, as stored.
+// it, how a page list's trade ended or why a holding was sold, as stored, and the exit of the menu it is walked under by
+// its number, none for its rule's own, with its stop's distance in the night's typical moves, which a trail is counted in.
 // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
 public sealed record PaperTrade(
     string Ticker,
@@ -29,7 +30,9 @@ public sealed record PaperTrade(
     int? Cap = null,
     string? Past = null,
     double? Edge = null,
-    string? Outcome = null)
+    string? Outcome = null,
+    int? Exit = null,
+    double? RiskMoves = null)
 {
     // The price the trade is sized from: the close its plan was set at where it was set the night before.
     public decimal SizedAt => Planned ?? Buy;
