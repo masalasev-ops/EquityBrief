@@ -3367,7 +3367,7 @@ internal static class Scope
             ByMigration),
         [CheckReach.Key(LimitsTable, "Local reading's settings")] = new Scoped(
             Verdict.Pass,
-            "the request a reading sends read off its body at temperature 0, the seed, the answer's budget and reasoning off, the pin written with them over a constructed store, and an answer that cannot be read asked once more and then read; and from 20.3 over constructed stores a slot reading the releases accepted from the start of the seventh day before its own, newest first, one accepted a second before that left to the history read, and a release a second either side of the late slot's start read on the night it was accepted before and from the next session's otherwise; the figures read off the document against the constants",
+            "the request a reading sends read off its body at temperature 0, the seed, the answer's budget and reasoning off, the pin written with them over a constructed store, and an answer that cannot be read asked once more and then read; and from 20.3 over constructed stores a slot reading the releases accepted from the start of the seventh day before its own, newest first, one accepted a second before that left to the history read, and a release a second either side of the late slot's start read on the night it was accepted before and from the next session's otherwise; and from the 20.3 correction of 2026-10-22 a cut worked by hand with the margin and the answer's budget, and over a constructed store a release refused past the window cut and asked again, and one refused on every request standing refused after the third cut; the figures read off the document against the constants",
             ByExpectations),
         [CheckReach.Key(FailureTable, "LM Studio is not running when a local run starts")] = new Scoped(
             Verdict.Pass,
@@ -3383,7 +3383,7 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(FailureTable, "An answer the local run cannot read, or one the runtime refuses")] = new Scoped(
             Verdict.Pass,
-            "each cause of an answer that cannot be read worked by hand, and over a constructed store an answer that cannot be read asked once more and then read, and the runtime's refusal of a prompt past its context, read as captured, counted refused at once with no second ask",
+            "each cause of an answer that cannot be read worked by hand, and over a constructed store an answer that cannot be read asked once more and then read, and the runtime's refusal of a prompt past its context, read as captured, counted refused at once with no second ask; and from the 20.3 correction of 2026-10-22 a release that refusal names the request's tokens and the window for cut and asked again, read on the second request, and one refused on every request standing refused after the third cut",
             ByExpectations),
         [CheckReach.Key("15.10 Run", "The local model's runs")] = new Scoped(
             Verdict.Pass,
@@ -3392,7 +3392,7 @@ internal static class Scope
         // 20.2, the release fetch: its catalogue and matrix rows, its two stores, section 17's row and section 18's row.
         [CheckReach.Key(CatalogueTable, "Release fetch")] = new Scoped(
             Verdict.Pass,
-            "the class declares the membership, the companies, the pulled companies, the setups, the release documents, the release days and from 20.3 the release filers it reads, the release documents, the release days, the release filers and the run log it writes and the filings archive among its feeds, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            "the class declares the membership, the companies, the pulled companies, the setups, the release documents, the release days and from 20.3 the release filers it reads, the release documents, the release days, the release filers and the run log it writes, and from the 20.3 correction of 2026-10-22 the release checks it reads and writes, and the filings archive among its feeds, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Release fetch")] = new Scoped(
             Verdict.Pass,
@@ -3403,6 +3403,10 @@ internal static class Scope
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
         [CheckReach.Key(StoresTable, "Release days")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Release checks")] = new Scoped(
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
@@ -3418,7 +3422,7 @@ internal static class Scope
         // and section 18's row.
         [CheckReach.Key(CatalogueTable, "Release accuracy")] = new Scoped(
             Verdict.Pass,
-            "the class declares the reading pins, the release readings, the release documents, the release probes, the companies, the pulled companies, the earnings reactions, the pulled surprises, the facts, the setups and the setup nights it reads and nothing it writes, with no feed, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            "the class declares the reading pins, the release readings, the release documents, the release probes, the companies, the pulled companies, the earnings reactions, the pulled surprises, the facts, the setups and the setup nights and from the 20.3 correction of 2026-10-22 the release checks it reads and nothing it writes, with no feed, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Release accuracy")] = new Scoped(
             Verdict.Pass,

@@ -91,6 +91,7 @@ public enum Store
     SecTicker,
     ReadingPin,
     ReleaseDocument,
+    ReleaseCheck,
     ReleaseDay,
     ReleaseFiler,
     ReleaseReading,

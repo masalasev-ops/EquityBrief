@@ -407,9 +407,19 @@ public partial class FixtureExpectations
 
         Assert.Equal(ReleaseAnonymiser.Version, SourcePin.Of([source], ReleaseAnonymiser.VersionDeclaration));
         Assert.NotEqual(ReleaseAnonymiser.Version, SourcePin.Of([source + "\ninternal static class Moved { }"], ReleaseAnonymiser.VersionDeclaration));
+
+        // From the 20.3 correction of 2026-10-22 the fit's rule is the pin of its own file and the prompt's third line, and
+        // the version every reading before it was asked under is the instruction's and the anonymiser's alone.
+        var fit = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Core", "Releases", "ReleaseFit.cs"));
+
+        Assert.Equal(ReleaseFit.Version, SourcePin.Of([fit], ReleaseFit.VersionDeclaration));
+        Assert.NotEqual(ReleaseFit.Version, SourcePin.Of([fit.Replace("public const int Cuts = 3;", "public const int Cuts = 4;", StringComparison.Ordinal)], ReleaseFit.VersionDeclaration));
+        Assert.Equal(
+            Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(ReleaseQuestions.Instruction + "\n" + ReleaseAnonymiser.Version + "\n" + ReleaseFit.Version)))[..12],
+            ReleaseQuestions.Version);
         Assert.Equal(
             Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(ReleaseQuestions.Instruction + "\n" + ReleaseAnonymiser.Version)))[..12],
-            ReleaseQuestions.Version);
+            ReleaseQuestions.VersionBeforeTheFit);
     }
 
     [Fact]
@@ -423,7 +433,7 @@ public partial class FixtureExpectations
         // no print of October's.
         KeepRelease(store, "0001601046-26-000040", KeysCik, Utc(2026, 7, 15, 20, 0, 0), "an earlier quarter");
         KeepRelease(store, "0001601046-26-000041", KeysCik, Utc(2026, 10, 15, 21, 39, 59), "a second before the late slot");
-        store.Execute("INSERT INTO release_reading (accession, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, run_id) VALUES ('0001601046-26-000041', 1, 'read', NULL, 'better', 'kept', 'neutral', 'steady', 3.1, 5000, '2026-10-15T21:41:00Z', 'constructed');");
+        store.Execute("INSERT INTO release_reading (accession, exhibit, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, run_id) VALUES ('0001601046-26-000041', 'ex99.htm', 1, 'read', NULL, 'better', 'kept', 'neutral', 'steady', 3.1, 5000, '2026-10-15T21:41:00Z', 'constructed');");
 
         using var connection = store.Open();
 
@@ -443,7 +453,7 @@ public partial class FixtureExpectations
         Assert.Equal(("0001601046-26-000043", (ReleaseAnswer?)null, ReleaseReadings.NotRead), (monday.Accession, monday.Answer, monday.Why));
 
         // A refused reading says so with its cause, and a print whose window holds no release says that.
-        store.Execute("INSERT INTO release_reading (accession, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, run_id) VALUES ('0001601046-26-000043', 1, 'refused', 'a word not listed', NULL, NULL, NULL, NULL, NULL, NULL, '2026-10-17T12:06:00Z', 'constructed');");
+        store.Execute("INSERT INTO release_reading (accession, exhibit, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, run_id) VALUES ('0001601046-26-000043', 'ex99.htm', 1, 'refused', 'a word not listed', NULL, NULL, NULL, NULL, NULL, NULL, '2026-10-17T12:06:00Z', 'constructed');");
 
         var refused = await ReleaseReadings.ForPrintAsync(connection, KeysCik, new DateOnly(2026, 10, 16), new DateOnly(2026, 10, 19), 1, ReleaseCalendar.Exchange, zone);
         var none = await ReleaseReadings.ForPrintAsync(connection, KeysCik, new DateOnly(2026, 9, 1), new DateOnly(2026, 9, 1), 1, ReleaseCalendar.Exchange, zone);
@@ -742,9 +752,9 @@ public partial class FixtureExpectations
         store.Execute("INSERT INTO reading_pin (model, model_file, sha256, size, modified, runtime_name, runtime_version, prompt_version, temperature, seed, answer_tokens, context, cutoff, written_at, history_completed_at, run_id) VALUES ('m', 'f', 'h', 1, '2026-10-18T00:00:00.0000000Z', 'r', 'v', 'p', 0, 1, 1, 1, '2025-01-31', '2026-10-18T00:00:00Z', NULL, 'constructed');");
         KeepRelease(store, "0001601046-24-000010", KeysCik, Utc(2024, 8, 20, 20, 5, 0), "a release before the cutoff");
         KeepRelease(store, "0001601046-25-000020", KeysCik, Utc(2025, 8, 19, 20, 5, 0), "a release after it");
-        store.Execute("INSERT INTO release_reading (accession, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, run_id) VALUES " +
-            "('0001601046-24-000010', 1, 'read', NULL, 'better', 'raised', 'confident', 'stronger', 3, 5000, '2026-10-19T02:00:00Z', 'constructed'), " +
-            "('0001601046-25-000020', 1, 'read', NULL, 'better', 'lowered or withdrawn', 'cautious', 'weaker', 3, 5000, '2026-10-18T01:00:00Z', 'constructed');");
+        store.Execute("INSERT INTO release_reading (accession, exhibit, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, run_id) VALUES " +
+            "('0001601046-24-000010', 'ex99.htm', 1, 'read', NULL, 'better', 'raised', 'confident', 'stronger', 3, 5000, '2026-10-19T02:00:00Z', 'constructed'), " +
+            "('0001601046-25-000020', 'ex99.htm', 1, 'read', NULL, 'better', 'lowered or withdrawn', 'cautious', 'weaker', 3, 5000, '2026-10-18T01:00:00Z', 'constructed');");
         store.Execute("INSERT INTO earnings_reaction (ticker, report_date, timing, reaction_session, estimate, actual, surprise_pct, move_pct) VALUES " +
             "('KEYS', '2024-08-20', 'after', '2024-08-21', '1.0', '1.2', 20.0, 3.0), ('KEYS', '2025-08-19', 'after', '2025-08-20', '1.0', '0.9', -10.0, -4.0);");
 
@@ -778,7 +788,7 @@ public partial class FixtureExpectations
         // demand both; the tone variant keeps the earlier setup and fails the later on its outlook.
         Assert.Contains("accuracy under pin 1: 2 release(s) read or refused, 2 read; before the cutoff 2025-01-31 and after it", report, StringComparison.Ordinal);
         Assert.Contains("results against the surprise's sign: before 1 of 1 agree (100.0 per cent), 0 apart; after 0 of 1 agree (0.0 per cent), 0 apart; 1 print(s) of a read filer the calendar cannot place left out", report, StringComparison.Ordinal);
-        Assert.Contains("reference set: 2 label(s) written by 2026-10-18T12:00:00Z, 2 read under the pin, 1 read before its label", report, StringComparison.Ordinal);
+        Assert.Contains("reference set: 2 label(s) written by 2026-10-18T12:00:00Z, 0 given on an exhibit a check has since replaced and left out, 2 read under the pin, 1 read before its label", report, StringComparison.Ordinal);
         Assert.Contains("results against the reference set: before 1 of 1 agree (100.0 per cent), 0 apart; after 0 of 1 agree (0.0 per cent), 0 apart", report, StringComparison.Ordinal);
         Assert.Contains("outlook against the reference set: before 1 of 1 agree (100.0 per cent), 0 apart; after 1 of 1 agree (100.0 per cent), 0 apart", report, StringComparison.Ordinal);
         Assert.Contains("tone against the reference set: before 0 of 1 agree (0.0 per cent), 0 apart; after 1 of 1 agree (100.0 per cent), 0 apart", report, StringComparison.Ordinal);

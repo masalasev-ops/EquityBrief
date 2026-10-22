@@ -242,9 +242,10 @@ public class StoreNeverDeleted
         var migrations = File.ReadAllText(shipped.Single(file => Path.GetFileName(file) == "SchemaMigrations.cs"));
         var dropped = Regex.Matches(migrations, @"DROP TABLE\s+(?:IF EXISTS\s+)?(\w+)").Select(match => match.Groups[1].Value).ToArray();
 
-        // Three, each a rebuild SQLite forces where a constraint a table was created with has to change, the loop's models
-        // from 17.15 gaining their kind in their primary key.
-        Assert.Equal(["loop_model", "research_request", "membership"], dropped);
+        // Five, each a rebuild SQLite forces where a constraint a table was created with has to change, the loop's models
+        // from 17.15 gaining their kind in their primary key, and from the 20.3 correction of 2026-10-22 the results
+        // releases and their readings gaining the exhibit in theirs.
+        Assert.Equal(["release_document", "release_reading", "loop_model", "research_request", "membership"], dropped);
 
         foreach (var table in dropped)
         {

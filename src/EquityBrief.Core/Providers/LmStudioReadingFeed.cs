@@ -25,10 +25,15 @@ public sealed record ReadingReply(
     double Seconds);
 
 // A reading the runtime refused, or did not answer in time: the cause the answer is stored as refused with and the
-// runtime's own words. Not the runtime gone, which ends the run.
-public sealed class ReadingRefused(string cause, string message) : Exception(message)
+// runtime's own words; from the 20.3 correction of 2026-10-22, where it refused a request past the loaded context, the
+// request's tokens and the context as its answer counts them. Not the runtime gone, which ends the run.
+public sealed class ReadingRefused(string cause, string message, int? promptTokens = null, int? context = null) : Exception(message)
 {
     public string Cause { get; } = cause;
+
+    public int? PromptTokens { get; } = promptTokens;
+
+    public int? Context { get; } = context;
 }
 
 // The runtime gone for the run: LM Studio not running, the model it names not held, or the model not loaded, each
@@ -149,9 +154,11 @@ public sealed class LmStudioReadingFeed(HttpClient client, LocalModelSettings se
             using var response = await client.PostAsync(ChatPath, content, limit.Token).ConfigureAwait(false);
             var text = await response.Content.ReadAsStringAsync(limit.Token).ConfigureAwait(false);
 
+            var (promptTokens, context) = PastTheContext(text);
+
             return response.IsSuccessStatusCode
                 ? Parse(text, watch.Elapsed.TotalSeconds)
-                : throw new ReadingRefused(ReleaseAnswers.RuntimeRefused, OpenAiCompatibleModelFeed.Refused("the reading", (int)response.StatusCode, text));
+                : throw new ReadingRefused(ReleaseAnswers.RuntimeRefused, OpenAiCompatibleModelFeed.Refused("the reading", (int)response.StatusCode, text), promptTokens, context);
         }
         catch (HttpRequestException unreachable)
         {
@@ -181,6 +188,11 @@ public sealed class LmStudioReadingFeed(HttpClient client, LocalModelSettings se
             reasoning_effort = "none",
         });
 
+    // From the 20.3 correction of 2026-10-22 the request a reading keeps: the SHA-256 of the body's UTF-8 bytes as it is
+    // sent, in lower-case hex.
+    public static string BodyHash(ReadingRequest request) =>
+        Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(Body(request))));
+
     // The native answer as the captures show it arrives: the answering model at the top, the answer's text and its
     // finish reason in the first choice, the tokens under the usage, and the runtime's name and version.
     public static ReadingReply Parse(string json, double seconds)
@@ -207,6 +219,29 @@ public sealed class LmStudioReadingFeed(HttpClient client, LocalModelSettings se
             Text(runtime, "version"),
             seconds);
     }
+
+    // The request's tokens and the loaded context where the runtime refused a request past that context, as the captured
+    // refusal states them inside the error it passes on; none for any other answer.
+    public static (int? PromptTokens, int? Context) PastTheContext(string answer)
+    {
+        if (!answer.Contains(ExceedsTheContext, StringComparison.Ordinal))
+        {
+            return (null, null);
+        }
+
+        var tokens = PromptTokensOf.Match(answer);
+        var context = ContextOf.Match(answer);
+
+        return tokens.Success && context.Success
+            ? (int.Parse(tokens.Groups["n"].Value, CultureInfo.InvariantCulture), int.Parse(context.Groups["n"].Value, CultureInfo.InvariantCulture))
+            : (null, null);
+    }
+
+    const string ExceedsTheContext = "exceed_context_size_error";
+
+    static readonly System.Text.RegularExpressions.Regex PromptTokensOf = new(@"n_prompt_tokens\\?""\s*:\s*(?<n>\d+)", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+    static readonly System.Text.RegularExpressions.Regex ContextOf = new(@"n_ctx\\?""\s*:\s*(?<n>\d+)", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
 
     static int Tokens(JsonElement holder, string name) =>
         holder.ValueKind == JsonValueKind.Object && holder.TryGetProperty(name, out var count) && count.ValueKind == JsonValueKind.Number ? count.GetInt32() : 0;

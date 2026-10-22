@@ -46,8 +46,8 @@ public partial class FixtureExpectations
     // A release's reading under a version, read with its four words.
     static void ReadRelease(TemporaryStore store, string accession, long pin, ReleaseAnswer answer) =>
         store.Execute(
-            "INSERT INTO release_reading (accession, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, run_id) " +
-            FormattableString.Invariant($"VALUES ('{accession}', {pin}, 'read', NULL, '{answer.Results}', '{answer.Outlook}', '{answer.Tone}', '{answer.Demand}', 3.0, 5000, '2026-10-18T06:00:00Z', 'constructed');"));
+            "INSERT INTO release_reading (accession, exhibit, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, run_id) " +
+            FormattableString.Invariant($"VALUES ('{accession}', 'ex99.htm', {pin}, 'read', NULL, '{answer.Results}', '{answer.Outlook}', '{answer.Tone}', '{answer.Demand}', 3.0, 5000, '2026-10-18T06:00:00Z', 'constructed');"));
 
     [Fact]
     public void TheToneConditionListsOnlyAReleaseReadBetterWithItsOutlookNotCutAndSaysWhyOtherwise()

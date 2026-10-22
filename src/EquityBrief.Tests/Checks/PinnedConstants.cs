@@ -300,6 +300,9 @@ public class PinnedConstants
             new("Local reading's settings", "7", Worker.Local.LocalRun.SlotReadsDays, "LocalRun.SlotReadsDays"),
             new("Local reading's settings", "21", Core.Releases.LocalSlots.LateStart.Hour, "LocalSlots.LateStart's hour"),
             new("Local reading's settings", "40", Core.Releases.LocalSlots.LateStart.Minute, "LocalSlots.LateStart's minute"),
+            // From the 20.3 correction of 2026-10-22 the fit of a release past the model's window.
+            new("Local reading's settings", "1,024", Core.Releases.ReleaseFit.Margin, "ReleaseFit.Margin"),
+            new("Local reading's settings", "3", Core.Releases.ReleaseFit.Cuts, "ReleaseFit.Cuts"),
             // The release fetch's settings, 20.2.
             new("Release fetch's settings", "10", Worker.Local.ReleaseFetch.DaysASlot, "ReleaseFetch.DaysASlot"),
             new("Release fetch's settings", "7", Worker.Local.ReleaseFetch.FirstLookBack, "ReleaseFetch.FirstLookBack"),

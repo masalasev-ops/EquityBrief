@@ -68,6 +68,7 @@ public sealed class ReleaseAccuracy(IClock clock, string databaseFile) : ICompon
             new StoreTouch(Store.ReadingPin, Touch.Read),
             new StoreTouch(Store.ReleaseReading, Touch.Read),
             new StoreTouch(Store.ReleaseDocument, Touch.Read),
+            new StoreTouch(Store.ReleaseCheck, Touch.Read),
             new StoreTouch(Store.ReleaseProbe, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.PulledCompany, Touch.Read),
@@ -81,11 +82,15 @@ public sealed class ReleaseAccuracy(IClock clock, string databaseFile) : ICompon
 
     const string NewestPin = "SELECT id, cutoff FROM reading_pin ORDER BY id DESC LIMIT 1;";
 
+    // From the 20.3 correction of 2026-10-22 a reading of the exhibit its filing holds as its release, and the filings
+    // whose release a check replaced, whose reference label was given on the exhibit replaced.
     const string Readings = @"
         SELECT r.accession, d.cik, d.accepted_at, r.outcome, r.results, r.outlook, r.tone, r.demand, r.read_at
-        FROM release_reading r JOIN release_document d ON d.accession = r.accession
+        FROM release_reading r JOIN release_document d ON d.accession = r.accession AND d.exhibit = r.exhibit AND d.release = 1
         WHERE r.pin = $pin;
     ";
+
+    const string Replaced = "SELECT accession FROM release_check WHERE replaced = 1;";
 
     const string FilersByTicker = @"
         SELECT ticker, cik FROM company WHERE cik IS NOT NULL
@@ -224,21 +229,37 @@ public sealed class ReleaseAccuracy(IClock clock, string databaseFile) : ICompon
 
         report.Add(Against("outlook against the guided figures", outlook));
 
-        // All four against the reference set, a reading written before its label named.
+        // All four against the reference set, a reading written before its label named, and from the 20.3 correction of
+        // 2026-10-22 a label given on an exhibit a check has since replaced left out and counted.
         if (reference is null)
         {
             report.Add("reference set: none named, so no answer is measured against it");
         }
         else
         {
-            var byAccession = readings.ToDictionary(reading => reading.Accession, StringComparer.Ordinal);
-            var early = reference.Labels.Count(label => byAccession.TryGetValue(label.Accession, out var reading) && reading.ReadAt <= reference.LabelledAt);
+            var replaced = new HashSet<string>(StringComparer.Ordinal);
 
-            report.Add(FormattableString.Invariant($"reference set: {reference.Labels.Count} label(s) written by {reference.LabelledAt:yyyy-MM-ddTHH:mm:ssZ}, {reference.Labels.Count(label => byAccession.ContainsKey(label.Accession))} read under the pin, {early} read before its label"));
+            await using (var command = connection.CreateCommand())
+            {
+                command.CommandText = Replaced;
+
+                await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+                while (await reader.ReadAsync(cancellation))
+                {
+                    replaced.Add(reader.GetString(0));
+                }
+            }
+
+            var labels = reference.Labels.Where(label => !replaced.Contains(label.Accession)).ToArray();
+            var byAccession = readings.ToDictionary(reading => reading.Accession, StringComparer.Ordinal);
+            var early = labels.Count(label => byAccession.TryGetValue(label.Accession, out var reading) && reading.ReadAt <= reference.LabelledAt);
+
+            report.Add(FormattableString.Invariant($"reference set: {reference.Labels.Count} label(s) written by {reference.LabelledAt:yyyy-MM-ddTHH:mm:ssZ}, {reference.Labels.Count - labels.Length} given on an exhibit a check has since replaced and left out, {labels.Count(label => byAccession.ContainsKey(label.Accession))} read under the pin, {early} read before its label"));
 
             foreach (var question in ReleaseQuestions.All)
             {
-                var rows = reference.Labels.Select(label =>
+                var rows = labels.Select(label =>
                 {
                     byAccession.TryGetValue(label.Accession, out var reading);
 

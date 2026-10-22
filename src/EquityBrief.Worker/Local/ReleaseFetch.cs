@@ -27,6 +27,19 @@ public sealed record ReleaseFetchOutcome(
     string? Refusal,
     IReadOnlyList<string> Unread);
 
+// What one check of the stored filings' exhibits did, from the 20.3 correction of 2026-10-22: the filings no check had
+// read, those whose page it read, those whose page names an exhibit as the release, those whose release it replaced,
+// those the archive did not answer for, the documents asked for, and where and why it stopped short.
+public sealed record ExhibitsChecked(
+    int Unchecked,
+    int Checked,
+    int Named,
+    int Replaced,
+    int Unread,
+    int Requests,
+    string? Stopped,
+    string? Refusal);
+
 // The release fetch, from 20.2. A member's results release is the EX-99 exhibit of an 8-K or 8-K/A its filer filed
 // carrying item 2.02, stored once by its accession with its text compressed and the instant the SEC accepted it. The
 // early slot reads the archive's index for each weekday from the day after the newest it read through the day before
@@ -53,16 +66,19 @@ public sealed class ReleaseFetch(
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.PulledCompany, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read),
-            new StoreTouch(Store.ReleaseDocument, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.ReleaseDocument, Touch.Read | Touch.Insert | Touch.Update),
+            new StoreTouch(Store.ReleaseCheck, Touch.Read | Touch.Insert),
             new StoreTouch(Store.ReleaseDay, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.ReleaseFiler, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: [Feed.FilingsArchive]);
 
-    // The history's own row on the run log, and from 20.3 the filers' names' own.
+    // The history's own row on the run log, from 20.3 the filers' names' own, and from the 20.3 correction of 2026-10-22
+    // the stored filings' check of the exhibit each page names as its release.
     public const string HistoryStage = "release-history";
     public const string NamesStage = "release-names";
+    public const string ExhibitsStage = "release-exhibits";
 
     // The two sources a day is read from.
     public const string DailyIndexSource = "daily index";
@@ -117,8 +133,26 @@ public sealed class ReleaseFetch(
     const string InsertRelease = @"
         INSERT INTO release_document (accession, cik, form, filed, accepted_at, exhibit, url, text_gzip, text_sha256, text_length, run_id)
         VALUES ($accession, $cik, $form, $filed, $accepted_at, $exhibit, $url, $text_gzip, $text_sha256, $text_length, $run_id)
+        ON CONFLICT (accession, exhibit) DO NOTHING;
+    ";
+
+    // From the 20.3 correction of 2026-10-22: each stored filing no check has read the page of, oldest first, with the
+    // exhibit it holds as its release; a check of what a filing's page names as its release, kept once; and the
+    // exhibit stored before marked no release where the one named replaces it.
+    const string Unchecked = @"
+        SELECT d.accession, d.cik, d.form, d.filed, d.accepted_at, d.exhibit
+        FROM release_document d
+        WHERE d.release = 1 AND NOT EXISTS (SELECT 1 FROM release_check c WHERE c.accession = d.accession)
+        ORDER BY d.accepted_at, d.accession;
+    ";
+
+    const string InsertCheck = @"
+        INSERT INTO release_check (accession, exhibit, named, replaced, checked_at, run_id)
+        VALUES ($accession, $exhibit, $named, $replaced, $checked_at, $run_id)
         ON CONFLICT (accession) DO NOTHING;
     ";
+
+    const string MarkNoRelease = "UPDATE release_document SET release = 0 WHERE accession = $accession AND exhibit = $exhibit;";
 
     const string RecordDay = @"
         INSERT INTO release_day (day, source, posted, requests, announcements, results, stored, read_at, run_id)
@@ -556,6 +590,138 @@ public sealed class ReleaseFetch(
         return (ciks.Count, named, requests, refusal);
     }
 
+    // From the 20.3 correction of 2026-10-22, by hand: each stored filing's page read again, oldest first and once, for
+    // the exhibit it names as the release. Where that is another exhibit than the one stored, the one named is fetched and
+    // stored as the filing's release beside the one before, which is marked no release, in one write with the check; each
+    // check is kept, a page or an exhibit the archive does not answer left for the next run, pausing as the history
+    // pauses, stopping cleanly at the instant given and named on a row of its own.
+    // see: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so
+    public async Task<ExhibitsChecked> ExhibitsAsync(DateTimeOffset? until, string runId, TextWriter output, CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+        var filings = new List<(ReleaseFiling Filing, string Exhibit)>();
+
+        await using (var connection = await OpenAsync(cancellation))
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = Unchecked;
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                filings.Add((
+                    new ReleaseFiling(
+                        reader.GetString(1),
+                        reader.GetString(0),
+                        reader.GetString(2),
+                        DateOnly.ParseExact(reader.GetString(3), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                        DateTimeOffset.ParseExact(reader.GetString(4), "yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
+                        []),
+                    reader.GetString(5)));
+            }
+        }
+
+        await output.WriteLineAsync(FormattableString.Invariant($"releases: {filings.Count} stored filing(s) whose page no check has read"));
+
+        var before = feed.Documents;
+        var (checkedPages, named, replaced, unread) = (0, 0, 0, 0);
+        string? stopped = null;
+        string? refusal = null;
+
+        try
+        {
+            foreach (var (filing, stored) in filings)
+            {
+                if (until is { } end && clock.UtcNow >= end)
+                {
+                    stopped = FormattableString.Invariant($"stopped at {end:yyyy-MM-ddTHH:mm:ssZ} as asked, {checkedPages} of {filings.Count} filing(s) checked");
+
+                    break;
+                }
+
+                await PauseAsync(output, cancellation);
+
+                if (await AskAsync(token => feed.FilingPageAsync(filing.Cik, filing.Accession, token), cancellation) is not { } page)
+                {
+                    unread++;
+
+                    continue;
+                }
+
+                var chosen = SecEdgarArchive.NamedRelease(SecEdgarArchive.Documents(page));
+                var replacing = chosen is not null && !string.Equals(chosen.FileName, stored, StringComparison.OrdinalIgnoreCase);
+                string? exhibit = null;
+
+                if (replacing && (exhibit = await AskAsync(token => feed.ExhibitAsync(filing.Cik, filing.Accession, chosen!.FileName, token), cancellation)) is null)
+                {
+                    unread++;
+
+                    continue;
+                }
+
+                await using var connection = await OpenAsync(cancellation);
+
+                await WaitToWriteAsync(output, cancellation);
+
+                await using (var transaction = await connection.BeginTransactionAsync(cancellation))
+                {
+                    if (replacing)
+                    {
+                        await InsertReleaseAsync(connection, filing, chosen!.FileName, exhibit!, runId, cancellation);
+
+                        await using var mark = connection.CreateCommand();
+
+                        mark.CommandText = MarkNoRelease;
+                        mark.Parameters.AddWithValue("$accession", filing.Accession);
+                        mark.Parameters.AddWithValue("$exhibit", stored);
+
+                        await mark.ExecuteNonQueryAsync(cancellation);
+                    }
+
+                    await InsertCheckAsync(connection, filing.Accession, chosen, replacing, runId, cancellation);
+                    await transaction.CommitAsync(cancellation);
+                }
+
+                checkedPages++;
+                named += chosen is not null && SecEdgarArchive.NamesTheRelease(chosen) ? 1 : 0;
+                replaced += replacing ? 1 : 0;
+            }
+        }
+        catch (Exception refused) when (refused is ProviderRefusal or FormatException)
+        {
+            refusal = refused.Message;
+        }
+
+        var outcome = new ExhibitsChecked(filings.Count, checkedPages, named, replaced, unread, feed.Documents - before, stopped, refusal);
+
+        await using (var connection = await OpenAsync(cancellation))
+        {
+            await WaitToWriteAsync(output, cancellation);
+
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = AppendRun;
+            command.Parameters.AddWithValue("$run_id", runId);
+            command.Parameters.AddWithValue("$stage", ExhibitsStage);
+            command.Parameters.AddWithValue("$started_at", Instant(startedAt));
+            command.Parameters.AddWithValue("$ended_at", Instant(clock.UtcNow));
+            command.Parameters.AddWithValue("$outcome", refusal is not null ? "refused" : stopped is not null ? "stopped" : "ok");
+            command.Parameters.AddWithValue("$rows_written", checkedPages + replaced);
+            command.Parameters.AddWithValue("$network_requests", outcome.Requests);
+            command.Parameters.AddWithValue("$detail", JsonSerializer.Serialize(new { filings = outcome.Unchecked, @checked = checkedPages, named, replaced, unread, requests = outcome.Requests, stopped, refusal }));
+
+            await command.ExecuteNonQueryAsync(cancellation);
+        }
+
+        await output.WriteLineAsync(FormattableString.Invariant(
+            $"releases: {checkedPages} of {filings.Count} filing(s) checked, {named} naming an exhibit the release, {replaced} replaced, {unread} not answered, {outcome.Requests} request(s)")
+            + (stopped is { } why ? "; " + why : string.Empty)
+            + (refusal is { } refused2 ? "; stopped by the archive: " + refused2 : string.Empty));
+
+        return outcome;
+    }
+
     // A filer's names read from its submissions once a slot, where the slot stored a release of its.
     async Task NameOnceAsync(SqliteConnection connection, string cik, HashSet<string> named, string runId, CancellationToken cancellation)
     {
@@ -607,12 +773,13 @@ public sealed class ReleaseFetch(
         ];
     }
 
-    // The release a filing's page names, fetched and stored: the exhibit the archive's reader finds, its text as the reader
-    // makes it text, compressed, under the instant the filing was accepted. False where the page names no release or the
-    // archive holds no such exhibit.
+    // The release a filing's page names, fetched and stored: from the 20.3 correction of 2026-10-22 the exhibit the page
+    // names as the release, the lowest exhibit only where none is named so, its text as the archive's reader makes it text,
+    // compressed, under the instant the filing was accepted, with the filing's check kept beside it so no later check asks
+    // its page again. False where the page names no release or the archive holds no such exhibit.
     async Task<bool> StoreFromPageAsync(SqliteConnection connection, ReleaseFiling filing, string page, string runId, CancellationToken cancellation)
     {
-        if (SecEdgarArchive.Release(SecEdgarArchive.Documents(page)) is not { } release)
+        if (SecEdgarArchive.NamedRelease(SecEdgarArchive.Documents(page)) is not { } release)
         {
             return false;
         }
@@ -624,10 +791,21 @@ public sealed class ReleaseFetch(
             return false;
         }
 
-        var text = ResultsReleases.Compressed(SecEdgarArchive.Plain(exhibit));
-        var url = SecEdgarArchive.Address(SecEdgarArchive.Request(ArchiveDocument.ReleaseExhibit, filing.Cik, filing.Accession, release.FileName));
-
         await WaitToWriteAsync(TextWriter.Null, cancellation);
+
+        await using var transaction = await connection.BeginTransactionAsync(cancellation);
+
+        var stored = await InsertReleaseAsync(connection, filing, release.FileName, exhibit, runId, cancellation) == 1;
+
+        await InsertCheckAsync(connection, filing.Accession, release, replaced: false, runId, cancellation);
+        await transaction.CommitAsync(cancellation);
+
+        return stored;
+    }
+
+    async Task<int> InsertReleaseAsync(SqliteConnection connection, ReleaseFiling filing, string file, string exhibit, string runId, CancellationToken cancellation)
+    {
+        var text = ResultsReleases.Compressed(SecEdgarArchive.Plain(exhibit));
 
         await using var command = connection.CreateCommand();
 
@@ -637,14 +815,29 @@ public sealed class ReleaseFetch(
         command.Parameters.AddWithValue("$form", filing.Form);
         command.Parameters.AddWithValue("$filed", Stamp(filing.Filed));
         command.Parameters.AddWithValue("$accepted_at", Instant(filing.Accepted));
-        command.Parameters.AddWithValue("$exhibit", release.FileName);
-        command.Parameters.AddWithValue("$url", url);
+        command.Parameters.AddWithValue("$exhibit", file);
+        command.Parameters.AddWithValue("$url", SecEdgarArchive.Address(SecEdgarArchive.Request(ArchiveDocument.ReleaseExhibit, filing.Cik, filing.Accession, file)));
         command.Parameters.AddWithValue("$text_gzip", text.Gzip);
         command.Parameters.AddWithValue("$text_sha256", text.Sha256);
         command.Parameters.AddWithValue("$text_length", text.Length);
         command.Parameters.AddWithValue("$run_id", runId);
 
-        return await command.ExecuteNonQueryAsync(cancellation) == 1;
+        return await command.ExecuteNonQueryAsync(cancellation);
+    }
+
+    async Task InsertCheckAsync(SqliteConnection connection, string accession, FiledDocument? chosen, bool replaced, string runId, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = InsertCheck;
+        command.Parameters.AddWithValue("$accession", accession);
+        command.Parameters.AddWithValue("$exhibit", (object?)chosen?.FileName ?? DBNull.Value);
+        command.Parameters.AddWithValue("$named", chosen is not null && SecEdgarArchive.NamesTheRelease(chosen) ? 1 : 0);
+        command.Parameters.AddWithValue("$replaced", replaced ? 1 : 0);
+        command.Parameters.AddWithValue("$checked_at", Instant(clock.UtcNow));
+        command.Parameters.AddWithValue("$run_id", runId);
+
+        await command.ExecuteNonQueryAsync(cancellation);
     }
 
     // One document asked of the archive, at its pace.

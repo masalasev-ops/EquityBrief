@@ -60,7 +60,13 @@ public static class ReleaseQuestions
 
     // The prompt's version: the first twelve hex characters of the SHA-256 of the instruction's bytes and, from 20.3, the
     // anonymiser's own version after it on a line of its own, so a word, a question or a rule of what a release is read
-    // without moved is another version, which a pin refuses until a new one is written.
+    // without moved is another version, which a pin refuses until a new one is written; from the 20.3 correction of
+    // 2026-10-22 the fit's rule on a line after them, so a release cut to the window is read under a version of its own.
     public static string Version { get; } =
+        Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(Instruction + "\n" + ReleaseAnonymiser.Version + "\n" + ReleaseFit.Version)))[..12];
+
+    // The version as every reading before the fit's rule was asked under, the instruction and the anonymiser alone: a pin
+    // whose version this is asked each release it read with the instruction and the anonymiser of today.
+    public static string VersionBeforeTheFit { get; } =
         Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(Instruction + "\n" + ReleaseAnonymiser.Version)))[..12];
 }
