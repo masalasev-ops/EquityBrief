@@ -38,7 +38,7 @@ public sealed record ChartInputs(
 // The chart page's figures, worked when the page is read from what the store holds: the candles at the interval shown,
 // rolled up in the core, each with the averages the name page draws at its last session; and the grid, every figure
 // the one the name page's function works for it, so the two pages never disagree.
-// see: Every link that opens a stock opens its chart page first, and the chart page links to its report
+// see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
 // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
 public static class ChartScreen
 {

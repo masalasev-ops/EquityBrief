@@ -26,6 +26,30 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-22 - .claude/rules/checks.md - read-surface reaches a written report's standing and the controls that write it again on the name page and the chart page
+Authorised by: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
+Was:
+> read-surface: ... and the Watch list's and Researched's tables each drawn in the box that scrolls it |
+Now:
+> read-surface: ... in the box that scrolls it; and from the 19.11 correction of 2026-10-22 a written report's standing, standing or stale in the failure's red with the triggers that fired, drawn under the name page's masthead with the day its newest section was written and on the chart page's report line after its link, with the controls that rewrite its stale sections and regenerate it after their cost, none on the day a pass ran or while the cap has paused research and no standing where none is written, read over the researched fixture's store, and a press from either confirmed with the cost its own block states and watched for the stock its form names, read off the shell's script |
+Why: the 19.11 correction of 2026-10-22 adds these assertions.
+
+### 2026-10-22 - ARCHITECTURE.html - the chart page's report line and the name page under its masthead draw a written report's standing with the controls that write it again
+Authorised by: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
+Was:
+> 15.9's Regenerate Report: ... a request reaching it for a name a pass already wrote that day starting nothing and fetching nothing (see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day)
+>
+> 15.22's The report line: Open the report to the name page with the day its newest section was written; or that none is written, with the request the list offers and so no new way to start a report
+>
+> Four citations of: Every link that opens a stock opens its chart page first, and the chart page links to its report
+Now:
+> 15.9's Regenerate Report: ... once a name a day); from the 19.11 correction of 2026-10-22 drawn as well under the masthead beside the report's standing and the control rewriting its stale sections, with what research has cost stated before them as the chart page's report line draws them (see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again)
+>
+> 15.22's The report line: Open the report to the name page with the day its newest section was written; from the 19.11 correction of 2026-10-22 the report's standing with the triggers that fired and in the failure's red where it is stale, and the controls that rewrite its stale sections and regenerate it with what research has cost stated before them; or that none is written, with the request the list offers (see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again)
+>
+> The four citations name: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
+Why: the operator ruled on 2026-10-22, reading a stale report's chart page and finding no way there to have it written again, that a written report's standing and the controls that write it again stand under the name page's masthead and on the chart page's report line as well as at the name page's foot.
+
 ### 2026-10-22 - .claude/rules/checks.md - read-surface reaches every pill style ruled, a failed pill drawn in the red and the Watch list's and Researched's tables each in its box
 Corrects: a researched report gone stale and a monthly run that stopped drew their pill with no rule, bare text beside the slate pills of reports that stand, and the Watch list's and Researched's tables fitted a phone only by the box that scrolls each with no test holding it, found by the third phase 19 sign-off review of 2026-10-21.
 Was:

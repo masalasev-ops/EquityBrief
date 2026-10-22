@@ -1145,6 +1145,11 @@ public sealed record ResearchPassLine(string Outcome, DateOnly AsOf, string Line
 // A control that starts a research pass for the name, and what it asks for.
 public sealed record ResearchControl(string Kind, string Label, bool Refresh, bool PaidForLocal);
 
+// A written report's standing as the chart page's report line and the name page under its masthead draw it: stands or
+// stale, the day its newest section was written, what made a stale one so, the controls that rewrite its stale sections
+// and regenerate it, and what research has cost, stated before them.
+public sealed record ReportStandingView(string State, DateOnly? Written, IReadOnlyList<string> Why, IReadOnlyList<ResearchControl> Controls, ResearchCost? Cost);
+
 // Where a pass the page started stands: starting before its first row lands, running while it
 // works with the step it is on in the reader's words, and ended when its own row lands, with
 // the count of sections the name holds so the page knows when one more has arrived.
@@ -4029,17 +4034,65 @@ public sealed partial class MarkRenderer : IComponent
 
         foreach (var control in offered)
         {
-            region.Append(Invariant, $"<form class=\"research-control\" method=\"post\" action=\"/passes/{Uri.EscapeDataString(ticker)}\" ");
-            region.Append(Invariant, $"data-kind=\"{Escaped(control.Kind)}\" data-refresh=\"{Flag(control.Refresh)}\" data-paid-for-local=\"{Flag(control.PaidForLocal)}\">");
-            region.Append(Invariant, $"<input type=\"hidden\" name=\"refresh\" value=\"{Flag(control.Refresh)}\">");
-            region.Append(Invariant, $"<input type=\"hidden\" name=\"paidForLocal\" value=\"{Flag(control.PaidForLocal)}\">");
-            region.Append(Invariant, $"<button type=\"submit\">{Escaped(control.Label)}</button></form>");
+            region.Append(ControlForm(ticker, control));
         }
 
         region.Append("</section>");
 
         return region.ToString();
     }
+
+    // A control as a form the page's own script sends, with what it asks for on the form.
+    static string ControlForm(string ticker, ResearchControl control) =>
+        Formatted($"<form class=\"research-control\" method=\"post\" action=\"/passes/{Uri.EscapeDataString(ticker)}\" data-kind=\"{Escaped(control.Kind)}\" data-refresh=\"{Flag(control.Refresh)}\" data-paid-for-local=\"{Flag(control.PaidForLocal)}\"><input type=\"hidden\" name=\"refresh\" value=\"{Flag(control.Refresh)}\"><input type=\"hidden\" name=\"paidForLocal\" value=\"{Flag(control.PaidForLocal)}\"><button type=\"submit\">{Escaped(control.Label)}</button></form>");
+
+    // A written report's standing, as the chart page's report line and the name page under its masthead draw it: stands,
+    // or stale in the failure's red with what made it so, then what research has cost and the controls that rewrite its
+    // stale sections and regenerate it, which the research region at the page's foot draws as well. A control is drawn
+    // only with its cost, as there, and a report not written draws no standing.
+    // see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
+    public string ReportStanding(string ticker, ReportStandingView? standing, bool namesTheDay)
+    {
+        if (standing is null)
+        {
+            return string.Empty;
+        }
+
+        var offered = standing.Cost is null ? [] : standing.Controls;
+        var stale = string.Equals(standing.State, StaleStanding, StringComparison.Ordinal);
+        var drawn = new StringBuilder();
+
+        drawn.Append(Invariant, $"<div class=\"report-standing\" data-ticker=\"{Escaped(ticker)}\" data-state=\"{Escaped(standing.State)}\" data-written=\"{(standing.Written is { } day ? DayOf(day) : "none")}\" data-controls=\"{offered.Count}\"><p class=\"rs-line\">");
+        drawn.Append(namesTheDay && standing.Written is { } written ? Formatted($"<span class=\"rs-written\">The report was written {DayOf(written)}</span> ") : string.Empty);
+        drawn.Append(stale ? "<span class=\"status-pill failed\">stale</span>" : "<span class=\"status-pill live\">stands</span>");
+        drawn.Append(stale && standing.Why.Count > 0 ? Formatted($" <span class=\"rs-why\">{Escaped(string.Join("; ", standing.Why))}</span>") : string.Empty);
+        drawn.Append("</p>");
+
+        if (offered.Count > 0 && standing.Cost is { } cost)
+        {
+            drawn.Append(Invariant, $"<p class=\"research-cost\" data-passes=\"{cost.Passes}\" data-spend=\"{cost.Total}\" data-most=\"{cost.Most}\">{Escaped(ShortCostLine(cost))}</p><div class=\"rs-controls\">");
+
+            foreach (var control in offered)
+            {
+                drawn.Append(ControlForm(ticker, control));
+            }
+
+            drawn.Append("</div>");
+        }
+
+        drawn.Append("</div>");
+
+        return drawn.ToString();
+    }
+
+    // The standing a stale report's verdict names, the other being that it stands.
+    public const string StaleStanding = "stale";
+
+    // What research has cost, in short, before the controls a report's standing draws: the most one pass came to and where
+    // spend stands against the caps.
+    // see: The spend cap is a stop, not an allowance
+    public static string ShortCostLine(ResearchCost cost) =>
+        (cost.Passes == 0 ? "No research pass has a recorded cost yet. " : Formatted($"The most a research pass has cost is {SpendVerdict.Money(cost.Most)}. ")) + Capitalised(cost.Verdict) + ".";
 
     // What research has cost, in one sentence. Every figure is the run log's: the passes
     // it priced and what they came to. A pass's price is known only once it has been

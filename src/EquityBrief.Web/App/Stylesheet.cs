@@ -989,6 +989,10 @@ th.tipped:hover .head-tip,th.tipped:focus-within .head-tip{display:block}
 .chart-reading{font-variant-numeric:tabular-nums;margin:4px 0 8px;min-height:1.4em}
 .report-line{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:8px 0 14px}
 .report-line .open-report{display:inline-flex;align-items:center;text-decoration:none}
+.report-standing{margin:0 0 14px}
+.report-standing .rs-line{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0}
+.report-standing .rs-why{color:var(--ink-2)}
+.report-standing .rs-line+p{margin:6px 0 0;color:var(--soft);font-size:13px}
 .chart-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
 .grid-group h3{font-size:13px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2)}
 .grid-group dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:3px 10px;margin:0}

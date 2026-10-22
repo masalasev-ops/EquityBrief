@@ -16,7 +16,7 @@ public sealed record ChartPlan(string Rule, decimal Buy, decimal? Stop, decimal?
 public sealed partial class MarkRenderer
 {
     // The chart page's route, which every link that opens a stock opens first.
-    // see: Every link that opens a stock opens its chart page first, and the chart page links to its report
+    // see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
     public const string ChartRoute = "#/chart/";
 
     // A link opening a stock's chart page.

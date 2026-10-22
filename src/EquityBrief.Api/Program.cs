@@ -255,8 +255,8 @@ app.MapGet("/screens/name/{ticker}/{date}", async (string ticker, string date, R
 // A stock's chart page, section 15.22, which every link that opens a stock opens first: the name page's masthead, the
 // chart at the interval the link names and the grid of stored figures, each read as tonight's page reads it so the two
 // pages draw one figure alike. Only the interval shown is read, so the daily chart reads no pulled bar.
-// see: Every link that opens a stock opens its chart page first, and the chart page links to its report
-app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, string? universe, ReadApi read, MarkRenderer marks, SinglePageApp page, IClock clock) =>
+// see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
+app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, string? universe, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock) =>
 {
     var shown = EquityBrief.Core.Chart.ChartSeries.Read(interval);
     var today = clock.SessionDateAt(clock.UtcNow);
@@ -302,6 +302,12 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
         await read.NextEventAsync(ticker, bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue),
         member?.Researched,
         await read.ProviderSharesAsync(ticker)));
+
+    // A written report's standing with the controls that write it again, read as the name page reads them.
+    if (view.ReportWritten is { } written)
+    {
+        view = view with { Standing = NameScreen.Standing(await read.StalenessAsync(ticker), NameScreen.Pass(await read.NewestPassAsync(ticker)), await SpendNow(read, caps, clock), await read.PaidCallSpendsAsync(), today, written) };
+    }
 
     var mast = new NameMast(member?.Name, member?.Sector, member?.Industry, NameScreen.DayChange(ticker, bars), Universes.ByCode(indexCode ?? string.Empty)?.Name);
     var drawn = bars.Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume)).ToArray();

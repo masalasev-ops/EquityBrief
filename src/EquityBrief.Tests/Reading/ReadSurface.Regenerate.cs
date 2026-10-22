@@ -23,15 +23,21 @@ public partial class ReadSurface
         using var store = await FixtureReplay.ResearchedAsync();
 
         // A week after the pass that wrote it, with the research standing and no trigger fired: the
-        // one control is Regenerate Report, with the cost of research so far stated before it.
+        // one control is Regenerate Report, with the cost of research so far stated before it, drawn
+        // under the masthead beside the report's standing and again in the research region at the foot.
         var standing = await ResearchedPage(store, "KEYS", AWeekLater);
-        var offer = Regex.Match(standing, Regex.Escape(RegenerateControl) + ".*?<button type=\"submit\">([^<]*)</button>", RegexOptions.Singleline);
+        var offers = Regex.Matches(standing, Regex.Escape(RegenerateControl) + ".*?<button type=\"submit\">([^<]*)</button>", RegexOptions.Singleline);
 
         Assert.Contains("<p class=\"research-state\" data-state=\"stands\">", standing, StringComparison.Ordinal);
-        Assert.True(offer.Success, "A standing report is not offered Regenerate Report.");
-        Assert.Equal("Regenerate Report", offer.Groups[1].Value);
-        Assert.True(standing.IndexOf("class=\"research-cost\"", StringComparison.Ordinal) < offer.Index, "the cost is not stated before the control");
-        Assert.Single(Regex.Matches(standing, "<form class=\"research-control\""));
+        Assert.Equal(["Regenerate Report", "Regenerate Report"], offers.Select(offer => offer.Groups[1].Value));
+        Assert.Equal(2, Regex.Matches(standing, "<form class=\"research-control\"").Count);
+
+        foreach (var (offer, holder) in offers.Zip(["<div class=\"report-standing\"", "<section class=\"research\""]))
+        {
+            var held = standing.LastIndexOf(holder, offer.Index, StringComparison.Ordinal);
+
+            Assert.True(held >= 0 && standing.IndexOf("class=\"research-cost\"", held, StringComparison.Ordinal) is var cost && cost > held && cost < offer.Index, $"the cost is not stated before the control in {holder}");
+        }
 
         // On the day the pass ran it is not offered, so the report written that day is not paid for
         // twice by a second press.

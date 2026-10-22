@@ -1031,7 +1031,7 @@ public sealed partial class SinglePageApp : IComponent
           // stands against the caps stated in the question.
           if (form.dataset.confirmed !== 'yes') {
             for (const open of screen.querySelectorAll('.confirm')) { open.remove(); }
-            const cost = screen.querySelector('.research-cost');
+            const cost = (form.closest('.report-standing, section.research') || screen).querySelector('.research-cost');
             const box = document.createElement('div');
             box.className = 'confirm key';
             const line = document.createElement('p');
@@ -1058,7 +1058,7 @@ public sealed partial class SinglePageApp : IComponent
           form.insertAdjacentHTML('afterend', await response.text());
           const said = form.nextElementSibling;
           if (said && said.getAttribute('data-started') === 'true') {
-            watch(said.getAttribute('data-watch-from'));
+            watch(said.getAttribute('data-watch-from'), decodeURIComponent(form.getAttribute('action').slice('{{{PassRoute}}}'.length)));
           }
         });
         // Taking a report out of the queue. Asked once, since a press cannot be undone by
@@ -1153,9 +1153,8 @@ public sealed partial class SinglePageApp : IComponent
         // few seconds and drawn beside the control, and the page is drawn again each time one
         // more section has landed, so the sections arrive as they are written rather than on
         // the next visit. Nothing here writes, and the reader's place on the page is kept.
-        async function watch(from) {
+        async function watch(from, ticker) {
           const hash = location.hash;
-          const ticker = tickerIn(hash);
           let written = null;
           for (let tick = 0; tick < {{{PassTicks}}}; tick++) {
             await new Promise((wait) => setTimeout(wait, {{{PassTickMillis}}}));
@@ -1191,11 +1190,6 @@ public sealed partial class SinglePageApp : IComponent
           if (said) { said.after(line); return; }
           const research = screen.querySelector('section.research');
           if (research) { research.prepend(line); }
-        }
-        function tickerIn(hash) {
-          const asked = hash.slice('{{{NameRoute}}}'.length);
-          const cut = asked.indexOf('/');
-          return cut < 0 ? asked : asked.slice(0, cut);
         }
         // The masthead's search, over every current member by its ticker or its company's name.
         // Its list is read after the first screen, so the first screen never waits on it, and a
@@ -1342,7 +1336,9 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyList<EquityBrief.Core.Report.FigureConflict>? figuresChecked = null,
         bool filedFactsHeld = false,
         // The chart of what is behind the stock, from 19.2.
-        BehindItView? behind = null)
+        BehindItView? behind = null,
+        // A written report's standing with the controls that write it again, drawn under the masthead.
+        ReportStandingView? standing = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -1417,8 +1413,12 @@ public sealed partial class SinglePageApp : IComponent
             : string.Empty);
 
         // The masthead the chart page draws as well, with a link back to the stock's chart from 19.11.
-        // see: Every link that opens a stock opens its chart page first, and the chart page links to its report
+        // see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
         region.Append(Masthead(ticker, bars, mast, quote, quoteSession, asksForQuotes, night, suspect, watched, Invariant($" · <a class=\"m-chart\" href=\"{ChartRoute}{Uri.EscapeDataString(ticker)}\">Its chart</a>")));
+
+        // The report's standing and the controls that write it again, under the masthead where a reader opening the
+        // report meets them, as well as in the research region at the page's foot.
+        region.Append(marks.ReportStanding(ticker, standing, namesTheDay: true));
 
         // The headline and the four tiles under the masthead, before the contents: one sentence carrying no figure, and the
         // quarter's earnings, the year's growth, the yield and the distance from the year's high, each worked from stored

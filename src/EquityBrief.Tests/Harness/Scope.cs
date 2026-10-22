@@ -1018,7 +1018,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Regenerate Report")] = new Scoped(
             Verdict.Pass,
-            "the control is offered where research stands or has gone stale and no pass has run on the day the page is read, and not on the day one ran, nor where none is written, nor while the cap has paused research; a press carrying it writes a request holding the ask, read back off the store by a query of the test's own, and the drain hands that request's pass the rewrite, read off the verb it runs",
+            "the control is offered where research stands or has gone stale and no pass has run on the day the page is read, and not on the day one ran, nor where none is written, nor while the cap has paused research, under the masthead beside the report's standing and in the research region at the foot, each after the cost; a press carrying it writes a request holding the ask, read back off the store by a query of the test's own, and the drain hands that request's pass the rewrite, read off the verb it runs",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Fact strip, close")] = new Scoped(
             Verdict.Pass,
@@ -3210,7 +3210,7 @@ internal static class Scope
         [CheckReach.Key("15.22 Chart", "Masthead")] = new Scoped(
             Verdict.Pass, "the chart page's masthead drawn by the one function the name page's is, read back off the fixture's chart page, and the name page's masthead linking back to the chart", ByReadSurface),
         [CheckReach.Key("15.22 Chart", "The report line")] = new Scoped(
-            Verdict.Pass, "Open the report to the name page or that none is written with the list's own request, read off the fixture's chart page", ByReadSurface),
+            Verdict.Pass, "Open the report to the name page, followed by the written report's standing and the controls that write it again after their cost, standing and stale over the researched fixture's store, or that none is written with the list's own request, read off the fixture's chart page", ByReadSurface),
         [CheckReach.Key("15.22 Chart", "The interval and the levels")] = new Scoped(
             Verdict.Pass, "the daily, weekly and monthly charts read over the fixture's store by the interval the link names, the daily where it names none or one unknown, and the levels' toggle read off the shell's script", ByReadSurface),
         [CheckReach.Key("15.22 Chart", "The chart")] = new Scoped(
