@@ -6262,3 +6262,34 @@ Carried:    the phase 19 sign-off by a fresh session over the corrected main; th
             and the swing filter's sector standings with the sweeps' history, put to the operator; the paid report's route
             taking a filing's first EX-99 exhibit as its release, put to the operator; the long releases' fixes of the 20.3
             ruling; 20.12; PR 505 rebased with its migration at 104; the phase 18 sign-off by a fresh session.
+
+### 19.4 ruling - the Paper trading page redesigned top to bottom from the mockup the operator approved, every figure it adds worked in the core beside the accounts' walk   2026-10-22
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-22 near 05:00 UTC, as a correction to 19.4 built now, ahead of 21.0 and after the
+            branch in progress merged, whole in `prompts/`: the page redesigned, as phase 19's redesign left it hard to
+            read, from the mockup they approved, whose figures were placeholders, every figure read from the store and
+            every new one added to the core's one function that works out the accounts. Top to bottom for the index chosen:
+            a sentence on what the page is and the account line, "Change the account" opening the form; a tile a family's
+            live or provisional rule with its return, its open and closed counts and the day it counts from, and the
+            index's fund over the same days, the chart beneath; "What the system bought", Open and Closed tabs over the live
+            and provisional rules' trades newest first with family chips, an open trade's standing in words, a closed
+            trade's ending and edge, the stocks not bought counted, earlier versions folded and the entry line; "What the
+            variants did differently", one family at a time in the link; the "Rule scorecard", one rule at a time in the
+            link, its history and its record since it went live as two halves never added together, its variants folding
+            out; and your own trades as now. Adjusted p values, version codes and registration dates under the pointer;
+            on a phone the tiles stack, the dropdowns and tabs wrap and every table scrolls in its own box; both palettes.
+Plan:       section 15.21 amended in place, its every-account table's row retired and seven rows added for the parts
+            above; Figure 15.6 and the guide's figure redrawn with their keys; the decision that an account draws its two
+            parts apart superseded by one naming the scorecard's two halves; the screen paragraph's paper figures, the
+            runbook and the guide's section 11; tests reading each part back over a constructed store and the fixture's
+            night, and a mutation a new figure.
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its remedies,
+            the phase 19 sign-off reviews' corrections in PRs 519, 520 and 522, the GICS groups in PR 521 and the report's
+            buttons in PR 523; in review, 20.8 with its correction, PR 505; in progress, this ruling with its correction;
+            next, the phase 19 sign-off's fourth review by session equitybrief-1e over the corrected main, paused for this,
+            then the long releases' fixes, 20.12, PR 505 rebased with its migration at 104, the phase 18 sign-off by a
+            fresh session, the local lane's one text field, 21.0 once its ruling is given, and pin 3's completion steps.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
