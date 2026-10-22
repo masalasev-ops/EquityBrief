@@ -32,7 +32,8 @@ public static class Stylesheet
                  of counts. Two steps of one blue. Never a level and never a pill.
    --wait, --wait-fill   Waiting: a night not run yet and a provisional rule's pill, in the amber.
    --fail, --fail-fill   The RED: a night that stopped, was left unfinished or never ran, a loss and a stop. The night's
-                 state is always in words beside it.
+                 state is always in words beside it. The pill of a report gone stale or a monthly run that stopped is
+                 the accent's ink on solid red, its word inside it.
    --fam-<family>, --fam-<family>-tint   A setup family's own hue, drawn as a MARK alone, a card's or a tile's edge, a
                  tag's swatch or an account's line, at 3 to 1 or more on every ground and 15 or more in OKLab times a
                  hundred from the green, the orange, the red and each other; and its tint behind ink text on its tags,
@@ -265,6 +266,7 @@ main{padding-block:8px 64px}
 .status-pill.live{background:var(--accent);color:var(--accent-ink)}
 .status-pill.provisional{background:var(--wait-fill);border-color:var(--wait);color:var(--wait)}
 .status-pill.variant{border:1.3px dashed var(--accent);color:var(--ink-2)}
+.status-pill.failed{background:var(--fail);color:var(--accent-ink)}
 /* a setup family: its word in ink on its tint, beside a swatch of its hue; and its hue as the edge of its tile or card */
 .fam-tag{display:inline-flex;align-items:center;gap:6px;font:600 12px var(--sans);color:var(--ink);border-radius:5px;padding:1px 8px 1px 6px;white-space:nowrap}
 .fam-swatch{display:inline-block;width:10px;height:10px;border-radius:2px;flex:none}

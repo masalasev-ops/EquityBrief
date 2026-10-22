@@ -3,9 +3,8 @@ using System.Text.RegularExpressions;
 
 namespace EquityBrief.Tests.Reading;
 
-// read-surface, from the second 15.1 correction of 2026-10-21: a member's industry on the chart page's grid and its
-// masthead is the GICS industry its newest company fetch files, on every index and whatever its membership row names, read
-// over the universes' store.
+// read-surface: a member's industry on the chart page's grid and its masthead is the GICS industry its newest company fetch
+// files, on every index and whatever its membership row names, read over the universes' store.
 // see: Every member is named and grouped by the GICS industry and sector its company fetch files
 public partial class ReadSurface
 {

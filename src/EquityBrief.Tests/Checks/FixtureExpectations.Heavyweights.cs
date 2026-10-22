@@ -130,8 +130,8 @@ public partial class FixtureExpectations
             ],
             Query(store, $"SELECT ticker, cik, sector, industry_group, industry, sub_industry FROM company WHERE fetched_at > '{FixtureReplay.CompaniesFetchedAt}' ORDER BY ticker;"));
 
-        // Beside it the earlier night's fetch the replay holds for each name, its classification alone, from 15.1's second
-        // correction of 2026-10-21, the same as the night's.
+        // Beside it the earlier night's fetch the replay holds for each name, its classification alone, the same as the
+        // night's.
         Assert.Equal(
             [
                 .. expected.GetProperty("names").EnumerateObject().Select(name =>

@@ -47,9 +47,9 @@ public partial class FixtureExpectations
         Assert.All(members, member => Assert.DoesNotContain(member.Ticker, Groups.Of(member.Ticker, members).Members));
     }
 
-    // From the second 15.1 correction of 2026-10-21: every member of every index is grouped by the GICS industry and sector
-    // its newest company fetch made before the night started files, both from that fetch, whatever its membership row
-    // names, each within its own index, worked by hand over a constructed store whose night is 2026-09-08.
+    // Every member of every index is grouped by the GICS industry and sector its newest company fetch made before the night
+    // started files, both from that fetch, whatever its membership row names, each within its own index, worked by hand
+    // over a constructed store.
     // see: Every member is named and grouped by the GICS industry and sector its company fetch files
     [Fact]
     public async Task EveryMemberIsGroupedByTheIndustryAndSectorItsNewestCompanyFetchBeforeTheNightFilesWhateverItsRowNames()

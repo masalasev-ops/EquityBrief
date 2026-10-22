@@ -156,6 +156,14 @@ public partial class ReadSurface
         Assert.Contains(".researched-table{min-width:900px}", css, StringComparison.Ordinal);
         Assert.Contains(".tbl-wrap{overflow-x:auto}", css, StringComparison.Ordinal);
 
+        // Each of the two tables is drawn in the box that scrolls it, so its width moves the box and not the page.
+        var night = new DateOnly(2026, 10, 9);
+        var watch = new SinglePageApp().WatchRegion(night, [new WatchCell(new ListingCell("AAA", night, 0, 0, 10m, []), "Alpha", night, "stopped", false, new NearestSetup("breakout", 1, "volume", "volume under 1.5 times its average"), null)], 20, new MarkRenderer());
+        var researched = new SinglePageApp().ResearchedRegion([new ResearchedCell("AAA", "Alpha", "Industrials", night, 8, true, ["a filing arrived after it was written"], 0.052, 10)]);
+
+        Assert.Contains("<div class=\"tbl-wrap\"><table class=\"watch-table\">", watch, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"tbl-wrap\"><table class=\"researched-table\">", researched, StringComparison.Ordinal);
+
         // The first cell of a Past picks table, with the stock's column and without, is the night listed as a figure.
         var pick = new PickCell("AAA", "Alpha Inc", new DateOnly(2026, 10, 12), "swing", 100m, 96m, 110m, PickStatus.Open, 2, null, 1.02, null, null, new DateOnly(2026, 10, 14), 102m, 0.3);
 
@@ -187,6 +195,12 @@ public partial class ReadSurface
         Assert.Contains(" .account-control label{display:block;margin:0 0 10px}", block, StringComparison.Ordinal);
         Assert.Contains(" .account-control input{display:block;width:100%;margin-top:4px}", block, StringComparison.Ordinal);
         Assert.Contains("form[method='post']{display:inline-block;", css, StringComparison.Ordinal);
+
+        // The two selectors weigh the same, a class or an attribute on a form, so the phone's rule outranks the posted
+        // forms' inline rule only by standing after every rule stating it.
+        Assert.True(
+            css.IndexOf("@media (max-width:560px){\n form.account-control{display:block", StringComparison.Ordinal) > css.LastIndexOf("form[method='post']{display:inline-block;", StringComparison.Ordinal),
+            "The account form's rule on a phone stands before a posted forms' inline rule, which then draws the form inline.");
     }
 
     [Fact]
