@@ -6031,3 +6031,27 @@ Carried:    the theme an industry's research is read for, the industry the index
             standings and the sweeps' history, which read the sector the membership names for the retired sector leaders'
             variant, each left as it stands and put to the operator, since moving a theme re-keys every stored theme and
             moving the filter's read moves its pin.
+
+### 20.3 ruling - a results release longer than the local model's window is mostly a supplement stored in the release's place: the exhibit described as the press release fetched, a release still too long fitted to the window, and pin 4 carrying pin 3's readings of every request left the same   2026-10-21
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-21 near midnight, having asked "So what are we going to do about such cases where
+            release is too long for context window ? It is a real world situation and we need a solution to handle this",
+            through the question tool, whole in `prompts/` with the figures put to them: "Both fixes, carry pin 3
+            (Recommended)" and, for the order, "After GICS, before graphs (Recommended)".
+Found:      read-only on the operator's store at about 23:40 UTC, pin 3's history read at 36,694 of 45,452 releases: 127
+            refused by the runtime, each longer than the model's window of 50,176 tokens, a median of 192,349 characters
+            against 28,922 for those read; 84 of them supplemental data packages a filer files as the first EX-99 exhibit
+            of its results 8-K beside its press release, the fetch taking the lower sequence, from 13 filers, DLR's stored
+            documents 32 of 33 supplements, BXP's 31 of 32 and SPG's 31 of 31; a sample of 1,500 stored documents held 27,
+            about 800 over the history; and ARE and JBGS file a release and its supplement as one document.
+Plan:       the release fetch takes the EX-99 exhibit the filing's index page describes as a press, earnings or news
+            release, the lower sequence where none is described so, and fetches each affected filing's release again,
+            stored beside the document stored before, which a migration marks as no release; a release still longer than
+            the window is read from its opening that fits with a marker where it was cut; pin 4 carries pin 3's reading of
+            every document whose request to the model is byte for byte the same and reads only the changed ones; all after
+            this pull request, before 20.12 and before the drift's tone variant is registered.
+Queue:      as the 15.1 ruling's entry above.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    the long releases' fixes, in the order ruled.
