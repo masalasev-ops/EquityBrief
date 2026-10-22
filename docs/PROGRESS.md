@@ -6437,3 +6437,22 @@ Carried:    the correction's remedy, `tools/remedies/2026-10-22-20.3-correction-
             `releases --exhibits`, pin 4 with its counts and the history read under it; a filer's row of names written
             again with no earlier copy kept, so pin 4 reads again every reading under one; the paid report's route taking a filing's first EX-99 exhibit, put to the operator; 20.12; 20.3's
             record; the tone variant at pin 4; PR 505; 20.10; the phase 19 and 18 sign-offs.
+
+### 20.3 ruling - pin 4 written under LM Studio's newest runtime, so it carries none of pin 3's readings and the history is read whole   2026-10-22
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-22, after the correction above merged in PR 526, in these words: "I need lm studio
+            read to be done on latest runtime..is that a problem?" Answered that it is not, at a cost: a version carries
+            a reading only from one whose runtime it shares, so pin 4 under the CUDA 12 runtime 2.62.1 carries none of
+            pin 3's readings, taken under 2.56.0, and the history is read whole, about three days at 250 W.
+Plan:       once the check of the exhibits ends, LM Studio's runtime 2.62.1 selected in 2.56.0's place and the model
+            unloaded; `tools/localrun.ps1 --pin` writes pin 4 naming it, its carry counting every release left to the
+            history read for the runtime; and the history read started under it at 250 W with the temperature guard.
+            Nothing in the code or the remedy moves.
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its remedies,
+            the 20.3 correction in PR 526 with its migration run; in review, 20.8 with its correction, PR 505; in progress,
+            the correction's check of the exhibits and 20.12 in this pull request; next, pin 4 and the history read under
+            it, 20.3's record, the tone variant registered at pin 4, PR 505 rebased with its migration at 105 and its
+            remedy run, 20.10, and the phase 19 and 18 sign-offs by fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.

@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-22 - RUNBOOK.md - pin 4 written under LM Studio's newest runtime carries none of pin 3's readings
+Authorised by: A new reading version carries each reading whose request it would send unchanged and reads the rest
+Was:
+> ... `--pin` then writes pin 4, and since pin 3 differs from it in the fit's rule alone it carries, in the same write, pin 3's reading of every release ... Its row on the run log under `local-run` carries the same counts.
+Now:
+> ... `--pin` then writes pin 4, and where pin 3 differs from it in the fit's rule alone it carries, in the same write, pin 3's reading of every release ... Its row on the run log under `local-run` carries the same counts. On the operator's ruling of 2026-10-22 pin 4 is written under LM Studio's newest runtime, the CUDA 12 runtime 2.62.1 selected in the place of pin 3's 2.56.0 with `lms runtime select` and the model unloaded before `--pin`, so pin 4 carries none of pin 3's readings and prints no counts, and the history read reads every release under it, about three days at 250 W.
+Why: the operator ruled on 2026-10-22 that the history read runs on LM Studio's newest runtime, and a version carries a reading only from one whose runtime it shares.
+
 ### 2026-10-22 - .claude/rules/checks.md - fixture-expectations reaches the exhibit a filing names, a release past the model's window and pin 4's carry
 Authorised by: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so
 Was:
