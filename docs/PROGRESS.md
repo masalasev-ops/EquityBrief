@@ -6437,3 +6437,64 @@ Carried:    the correction's remedy, `tools/remedies/2026-10-22-20.3-correction-
             `releases --exhibits`, pin 4 with its counts and the history read under it; a filer's row of names written
             again with no earlier copy kept, so pin 4 reads again every reading under one; the paid report's route taking a filing's first EX-99 exhibit, put to the operator; 20.12; 20.3's
             record; the tone variant at pin 4; PR 505; 20.10; the phase 19 and 18 sign-offs.
+
+### 20.3 ruling - pin 4 written under LM Studio's newest runtime, so it carries none of pin 3's readings and the history is read whole   2026-10-22
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-22, after the correction above merged in PR 526, in these words: "I need lm studio
+            read to be done on latest runtime..is that a problem?" Answered that it is not, at a cost: a version carries
+            a reading only from one whose runtime it shares, so pin 4 under the CUDA 12 runtime 2.62.1 carries none of
+            pin 3's readings, taken under 2.56.0, and the history is read whole, about three days at 250 W.
+Plan:       once the check of the exhibits ends, LM Studio's runtime 2.62.1 selected in 2.56.0's place and the model
+            unloaded; `tools/localrun.ps1 --pin` writes pin 4 naming it, its carry counting every release left to the
+            history read for the runtime; and the history read started under it at 250 W with the temperature guard.
+            Nothing in the code or the remedy moves.
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its remedies,
+            the 20.3 correction in PR 526 with its migration run; in review, 20.8 with its correction, PR 505; in progress,
+            the correction's check of the exhibits and 20.12 in this pull request; next, pin 4 and the history read under
+            it, 20.3's record, the tone variant registered at pin 4, PR 505 rebased with its migration at 105 and its
+            remedy run, 20.10, and the phase 19 and 18 sign-offs by fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 20.12 - the chart page's graphs: earnings a share against the estimate, revenue against net income with the net margin, and the analysts' mean target beside their ratings   2026-10-22
+
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its remedies,
+            the 20.3 correction in PR 526 with its migration run; in review, 20.8 with its correction, PR 505; in progress,
+            this checkpoint and the correction's check of the exhibits; next, pin 4 under the newest runtime and the
+            history read under it, 20.3's record, the tone variant registered at pin 4, PR 505 rebased with its migration
+            at 105 and its remedy run, 20.10, and the phase 19 and 18 sign-offs by fresh sessions.
+Ruled:      the 15.1 ruling entry of 2026-10-21 above: "Yes also do the chart phase graphs".
+Built:      the chart page draws, in a card beneath its chart and above its figures, three marks over figures the report
+            reads: the earnings dots over each print the reaction record holds, with the consensus for the quarter to
+            report next only where the newest trend files the current quarter ending after the newest print; the income
+            bars over the newest quarters fetch's twelve quarters with the net margin the margins read; and the target
+            marker against the price the page draws, beside the report's rating bars. Each draws stored figures with a
+            title on every element and says what it lacks; the core reads the prints and the quarters once for both
+            pages. The build plan's section and done condition were committed on their own before the build. The
+            decision, section 15.5's three rows and count, 15.22's row and reads, section 20's phase 20 row naming 20.11
+            and 20.12, the guide, the roster's row and the changelog.
+Measured:   the four fixture names' chart pages, MSFT's and KEYS's screenshotted at 1440 pixels: MSFT's four beats and
+            twelve quarters with its mean target 16.0 per cent above its close; KEYS's loss quarter hanging below the zero
+            rule and no quarter to report next, its current quarter ending its fiscal year.
+Tests:      5 new, 2616 in all: the prints oldest first with the quarter to report next only where it ends after the
+            newest print; the earnings dots over a beat, a miss and a print filing no estimate, each place worked by hand,
+            and one print saying the dots need two; the income bars over the twelve newest of thirteen quarters with their
+            margins, a loss hanging from the zero rule, quarters filing no net income and one quarter; the target marker
+            above and below the price placed by hand and each of its three lacks; and every fixture name's chart page read
+            back against the store.
+Claims:     1383, 4 new: section 15.5's earnings dots, income bars and target marker, and 15.22's graphs.
+Mutated:    the rule, stated before the runs: one mutation a property the checkpoint adds, the smallest edit undoing it
+            alone, each run filtered to the tests naming the property with its red predicted, made in this checkout and
+            reverted with the editor. Each went red at the tests predicted and no other: G1 the next quarter read whatever
+            its end, at the prints test; G2 the prints newest first, at the prints test and the fixture's read-back; G3 a
+            beat in the loss's class and a miss in the gain's, at the dots test and the signed figures over every page;
+            G4 a loss drawn from its own value and not the zero rule, and G5 the twelve oldest quarters, each at the income
+            test; G6 the target against the oldest close, and G7 no graphs handed to the page, each at the read-back.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2616 of 2616 tests ran with none failed,
+            migrations 0 to 104 with none pending, schema version 104, against `data-ci` and never `data`; the phase
+            report 60 tables, 1383 claims, 1383 passing, none out of scope and none unexamined, 1394 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the 20.3 correction's remedy, pin 4 under the newest runtime and the history read under it; 20.3's record;
+            the tone variant at pin 4; PR 505; 20.10; the phase 19 and 18 sign-offs.

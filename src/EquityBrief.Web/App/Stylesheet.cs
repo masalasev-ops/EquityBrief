@@ -1050,6 +1050,23 @@ th.tipped:hover .head-tip,th.tipped:focus-within .head-tip{display:block}
 .grid-group h3{font-size:13px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2)}
 .grid-group dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:3px 10px;margin:0}
 .grid-group dt{color:var(--ink-2)} .grid-group dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+/* From 20.12 the chart page's graphs beneath its chart: a print's estimate a hollow dot and its reported figure filled in
+   the rise or the fall hue by its beat or its miss, the quarter to report next dashed, revenue a neutral bar beside net
+   income in the rise or the fall hue by its sign with the net margin a line in ink, the price an ink dot against the
+   analysts' mean target, and the analysts' ratings the report's own ramp. */
+.chart-graphs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,560px),1fr));gap:18px}
+.chart-graph h3{font-size:13px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2)}
+.chart-graph .fig+.fig{margin-top:10px}
+.mark-note{font-size:13px;color:var(--soft);margin:6px 0 0}
+.ed-estimate{fill:var(--surface);stroke:var(--ink-2);stroke-width:1.5}
+.ed-actual,.lg-swatch.ed-actual{fill:var(--ink-2)} .chart-graphs .ed-actual-up{fill:var(--up)} .chart-graphs .ed-actual-down{fill:var(--down)}
+.ed-next{fill:none;stroke:var(--dash-ink);stroke-width:1.5;stroke-dasharray:3 2}
+.ed-result{font-size:11px;font-weight:600} .ed-result.flat{fill:var(--ink-2)}
+.ib-revenue{fill:var(--s3)} .lg-swatch.ib-income{fill:var(--ink-2)} .chart-graphs .ib-income-up{fill:var(--up)} .chart-graphs .ib-income-down{fill:var(--down)}
+.ib-margin{fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round} .ib-margin-dot,.lg-swatch.ib-margin{fill:var(--ink);stroke:none}
+.tm-price{fill:var(--ink)} .tm-target{fill:var(--surface);stroke:var(--ink-2);stroke-width:2}
+.tm-against{font-size:13px;font-weight:700}
+.chart-graphs .rt-strong-buy{fill:var(--up)} .chart-graphs .rt-buy{fill:var(--up);fill-opacity:.5} .chart-graphs .rt-sell{fill:var(--down);fill-opacity:.5} .chart-graphs .rt-strong-sell{fill:var(--down)}
 .route-times code{font-size:12.5px}
 .m-barlab-in{font-size:11px;font-weight:600;fill:var(--surface);font-variant-numeric:tabular-nums} .m-barlab-out{font-size:11px;font-weight:600;fill:var(--ink);font-variant-numeric:tabular-nums}
 .sw{display:inline-block;width:12px;height:10px;margin-right:6px;vertical-align:-1px}

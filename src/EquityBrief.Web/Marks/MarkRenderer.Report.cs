@@ -23,7 +23,8 @@ public sealed record ReportView(
     EquityBrief.Core.Insiders.InsiderView? Insiders = null,
     ReleaseReadingView? Release = null,
     bool PaysNone = false,
-    DividendYear? PaidLastYear = null);
+    DividendYear? PaidLastYear = null,
+    IReadOnlyList<QuarterIncome>? Income = null);
 
 // From 20.3 the newest results release's reading a name's page draws under what management said: the day the SEC accepted
 // it in New York, its four words, and the reading version and the model it was read under.

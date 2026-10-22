@@ -548,7 +548,8 @@ public static partial class NameScreen
                 ? new ReleaseReadingView(DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(release.Accepted, EquityBrief.Core.Time.SessionZones.ResolveSessionZone(EquityBrief.Core.Time.SessionZones.UnitedStates)).DateTime), release.Answer, release.Pin, model)
                 : null,
             EquityBrief.Core.Report.DividendSafety.PaysNone(forwardRate, inputs.Dividends, night),
-            EquityBrief.Core.Report.DividendSafety.LastWholeYear(inputs.Dividends, night));
+            EquityBrief.Core.Report.DividendSafety.LastWholeYear(inputs.Dividends, night),
+            EquityBrief.Core.Report.QuarterLines.Income(inputs.Quarters));
     }
 
     // The figures a reader wants first, a figure to a row in two columns: the newest quarter's

@@ -72,6 +72,17 @@ public sealed record QuarterMargins(DateOnly Quarter, double? Gross, double? Ope
 // One quarter's multiple: the close after its report over its four quarters' earnings a share, both from the one fetch.
 public sealed record QuarterMultiple(DateOnly Quarter, decimal Multiple);
 
+// From 20.12 one quarter's revenue and net income as the fetch filed them, and its net margin on the revenue in per
+// cent, the figures the margins read.
+public sealed record QuarterIncome(DateOnly Quarter, decimal? Revenue, decimal? NetIncome, double? Net);
+
+// From 20.12 one print's earnings a share against the estimate filed before it, as the calendar's answer kept them, and
+// the difference where both are filed.
+public sealed record EarningsPrint(DateOnly ReportDate, decimal? Estimate, decimal? Actual)
+{
+    public decimal? Difference => Estimate is { } estimate && Actual is { } actual ? actual - estimate : null;
+}
+
 // The latest quarter line by line, the growth of the eight newest quarters and the margins of the twelve newest, each
 // worked by one function over the newest fetch's quarters, so the page and its file read one arithmetic.
 // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
@@ -272,6 +283,36 @@ public static class QuarterLines
                     Percents.FromFraction(QuarterFetch.Margined(quarter.OperatingIncome, quarter.Revenue)),
                     Percents.FromFraction(QuarterFetch.Margined(quarter.NetIncome, quarter.Revenue)))),
         ];
+
+    // From 20.12 the twelve newest quarters' revenue and net income as filed, oldest first, with the net margin the
+    // margins read, so the chart page's bars and the name page's lines draw one figure.
+    public static IReadOnlyList<QuarterIncome> Income(IReadOnlyList<QuarterRow> quarters) =>
+        [
+            .. quarters
+                .OrderByDescending(quarter => quarter.PeriodEnd)
+                .Take(MarginQuarters)
+                .OrderBy(quarter => quarter.PeriodEnd)
+                .Select(quarter => new QuarterIncome(
+                    quarter.PeriodEnd,
+                    quarter.Revenue,
+                    quarter.NetIncome,
+                    Percents.FromFraction(QuarterFetch.Margined(quarter.NetIncome, quarter.Revenue)))),
+        ];
+
+    // From 20.12 the prints a stock's earnings dots draw, every one the reaction record holds oldest first, each with its
+    // estimate and its actual as filed, and the analysts' consensus for the quarter to report next where the newest fetch
+    // files one ending after the newest print's report date, so a quarter already reported is never drawn as the next.
+    public static (IReadOnlyList<EarningsPrint> Prints, (DateOnly Ends, decimal Eps)? Next) Earnings(IEnumerable<EarningsPrint> prints, IEnumerable<(string Period, DateOnly Ends, decimal? Eps)> consensus)
+    {
+        var drawn = prints.OrderBy(print => print.ReportDate).ToArray();
+        var newest = drawn.Length > 0 ? drawn[^1].ReportDate : DateOnly.MinValue;
+        var next = consensus
+            .Where(period => period.Period == EquityBrief.Core.Quarters.EstimatePeriod.CurrentQuarter && period.Eps is not null && period.Ends > newest)
+            .Select(period => ((DateOnly Ends, decimal Eps)?)(period.Ends, period.Eps!.Value))
+            .FirstOrDefault();
+
+        return (drawn, next);
+    }
 
     // Each quarter's own multiple, oldest first: the close after its report over its four quarters' earnings a share, read
     // only where both are held and the earnings are above nought, rounded as the valuation reading rounds it, which is the

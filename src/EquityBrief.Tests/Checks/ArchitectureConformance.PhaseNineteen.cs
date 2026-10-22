@@ -156,8 +156,9 @@ public partial class ArchitectureConformance
     // report's catalogue and matrix rows, the three stores of the releases' filers, readings and probes, section 17's row
     // and section 18's, and 20.4's two, the tone variant's card row in 15.7 and section 17's window row, and 20.5's two,
     // the local comparison's catalogue and matrix rows, and 20.9's six, the idea generator's catalogue and matrix rows,
-    // its store, the Loop page's row and section 18's two, which phase 20's own pair counts once its report is written;
-    // and the seven parts paper trading's redesign draws in the place of its table of every account.
+    // its store, the Loop page's row and section 18's two, and 20.12's four, the chart page's graphs and their three
+    // marks, which phase 20's own pair counts once its report is written; and the seven parts paper trading's redesign
+    // draws in the place of its table of every account.
     internal static string[] AfterPhaseNineteen =>
     [
         .. FixtureExpectations.TradeFillRows,
@@ -187,6 +188,7 @@ public partial class ArchitectureConformance
         .. SchemaColumns.LoopIdeaStoreRows,
         .. Reading.ReadSurface.LoopIdeaClaims,
         .. FixtureExpectations.IdeaGeneratorClaims,
+        .. Reading.ReadSurface.ChartGraphRows,
         .. Reading.ReadSurface.PaperPageRows,
     ];
 

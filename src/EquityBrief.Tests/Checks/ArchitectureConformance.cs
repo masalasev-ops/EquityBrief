@@ -1440,7 +1440,8 @@ public partial class ArchitectureConformance
         // 236 at 20.9: the Loop page's row for the idea generator's proposals.
         // 242 at the 19.4 correction of 2026-10-22: paper trading's seven rows for its parts in the place of its table of
         // every account.
-        Assert.Equal(242, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 246 at 20.12: the mark vocabulary's earnings dots, income bars and target marker, and the chart page's graphs.
+        Assert.Equal(246, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1593,7 +1594,8 @@ public partial class ArchitectureConformance
         // 637 at 20.9: the Loop page's row for the idea generator's proposals.
         // 643 at the 19.4 correction of 2026-10-22: paper trading's seven rows for its parts less its table of every
         // account.
-        Assert.Equal(643, inDocument.Length);
+        // 647 at 20.12: the mark vocabulary's earnings dots, income bars and target marker, and the chart page's graphs.
+        Assert.Equal(647, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
