@@ -390,15 +390,14 @@ public partial class FixtureExpectations
         }
     }
 
-    // An answer re-keyed by the second 15.1 correction of 2026-10-21 says so where its provenance is written: a paid answer
-    // in its own note, naming the file it was, and a local recording in its manifest entry, naming the key it was recorded
-    // under.
+    // An answer re-keyed for the group's GICS name says so where its provenance is written: a paid answer in its own note,
+    // naming the file it was, and a local recording in its manifest entry, naming the key it was recorded under.
     const string ReKeyedForGics = "From the second 15.1 correction of 2026-10-21 re-keyed whole, from ";
 
-    // From the second 15.1 correction of 2026-10-21: the answers to the requests the group's GICS name moved, re-keyed whole
-    // with no paid call. Stated in advance: thirteen paid answers, each naming the file it was in its note and each still the
-    // answer its older note names, which the groups above hold it to; and forty-two local recordings, twenty-five in the
-    // fixture's folder and seventeen in the comparison's, each naming in its manifest entry the key it was recorded under.
+    // The answers to the requests the group's GICS name moved, re-keyed whole with no paid call. Stated in advance:
+    // thirteen paid answers, each naming the file it was in its note and each still the answer its older note names, which
+    // the groups above hold it to; and forty-two local recordings, twenty-five in the fixture's folder and seventeen in the
+    // comparison's, each naming in its manifest entry the key it was recorded under.
     // No answer re-keyed stands beside the file it was, since each folder holds the answers its passes ask and no other.
     // see: Every member is named and grouped by the GICS industry and sector its company fetch files
     [Fact]
