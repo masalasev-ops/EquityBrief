@@ -6538,3 +6538,31 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    no remedy: no migration, and pin 4's requests unchanged; pin 4 under the newest runtime and the history read
             under it; 20.3's record; the tone variant at pin 4; PR 505; 20.10; the phase 19 and 18 sign-offs.
+
+### 19.11 - correction: a page for an earlier night drawing no report standing, held by a test over a researched store   2026-10-22
+
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7, 20.9 and 20.12 merged with their records, 20.11 merged with its
+            remedies, the 20.3 corrections in PRs 526 and 528; in review, 20.8 with its correction, PR 505; in progress,
+            this correction and the check of the exhibits; next, the phase 19 sign-off by a fresh session over the corrected
+            main, pin 4 under the newest runtime and the history read under it, 20.3's record, the tone variant at pin 4,
+            PR 505 rebased with its migration at 105 and its remedy run, 20.10, and the phase 18 sign-off.
+Found:      by the fourth phase 19 sign-off review over b79169f9, its finding F2 and mutation m5: no test read a page for
+            an earlier night over a researched store, so the name route reading the staleness verdict for an earlier night
+            survived all 670 read-surface tests, as the review predicted; the two findings beside it were corrected in PR
+            525, and this one was left open.
+Corrected:  a test reads KEYS's page for an earlier night through the route over the researched fixture's store, drawing
+            no standing and no control, where tonight's page over the same store draws its standing (see: A name's page
+            for an earlier night draws what the store held that night and nothing it learned after). No shipped source
+            changed. The roster's row and the changelog.
+Tests:      1 new, 2621 in all.
+Claims:     1383, none new.
+Mutated:    the rule, stated before the run: the review's own m5, the route reading the staleness verdict for an earlier
+            night, run over the four standing and earlier night tests with its red predicted at the new test; it went red
+            there and nowhere else, and was reverted with the editor.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2621 of 2621 tests ran with none failed,
+            migrations 0 to 104 with none pending, schema version 104, against `data-ci` and never `data`; the phase
+            report 60 tables, 1383 claims, 1383 passing, none out of scope and none unexamined, 1394 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the phase 19 sign-off by a fresh session over the corrected main; pin 4 under the newest runtime and the
+            history read under it; 20.3's record; the tone variant at pin 4; PR 505; 20.10; the phase 18 sign-off.
