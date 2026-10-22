@@ -112,7 +112,7 @@ public sealed record UntestedLineView(string Line, double? Adjusted);
 // setup passed, the buy points the page lists and how many of the setups list one, the stocks a single gate
 // short of one where the night read them, and the trades still open; and from 22.1 the short-term dip's own market
 // setting in words with whether it left the dip's list open, none on a night the dip's step did not read.
-// see: The market check closes every swing family's list together, and the sector heavyweights read none
+// see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none
 // see: Every page reads one index at a time chosen under Universe, and every figure names its index
 public sealed record MarketLineView(
     bool Open,

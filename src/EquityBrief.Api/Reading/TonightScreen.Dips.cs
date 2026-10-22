@@ -201,6 +201,50 @@ public static partial class TonightScreen
         ];
     }
 
+    // An index's setups on its Run page with the dip's row after every swing family's and before the sector heavyweights',
+    // what it listed on the night and every trade its list has kept, provisional with its record waiting for its freeze;
+    // the rows as they were on a night the dip did not read and before it kept a trade.
+    public static IReadOnlyList<FamilyRunRow> WithDipRun(IReadOnlyList<FamilyRunRow> rows, DipNightRow? night, IReadOnlyList<DipPickRow> picks, IReadOnlyList<IndexTradeRow> trades)
+    {
+        if (night is null && trades.Count == 0)
+        {
+            return rows;
+        }
+
+        var dip = new FamilyRunRow(
+            DipRule.Name,
+            SetupFamilies.Dips.Heading,
+            null,
+            0,
+            picks.Count(pick => pick.State == FamilyList.Listed),
+            trades.Count,
+            trades.Count(trade => trade.EndedOn is null),
+            trades.Count(trade => trade.EndedOn is not null),
+            SetupFamilies.Provisional);
+        var at = rows.Select((row, place) => (row, place)).FirstOrDefault(one => one.row.Family == HeavyweightRule.Name).place;
+
+        return rows.Any(row => row.Family == HeavyweightRule.Name) ? [.. rows.Take(at), dip, .. rows.Skip(at)] : [.. rows, dip];
+    }
+
+    // A stock's rows on the night's lists with the dip's beside them, which the name page's listed-under line reads: a dip
+    // pick listed, held back for a trade still open or past its five as a family's own row, and one the dip gave way to as
+    // its label on the row of the family that listed it.
+    public static IReadOnlyList<FamilyPickRow> WithDipPicks(IReadOnlyList<FamilyPickRow> picks, IReadOnlyList<DipPickRow> dips, string ticker)
+    {
+        var own = dips.Where(pick => pick.Ticker == ticker).ToArray();
+        var under = own.Where(pick => pick.State == FamilyList.UnderAnother).Select(pick => pick.ListedUnder).OfType<string>().ToHashSet(StringComparer.Ordinal);
+
+        return
+        [
+            .. picks.Select(pick => pick.Ticker == ticker && pick.State == FamilyList.Listed && under.Contains(pick.Family) && !pick.Also.Contains(DipRule.Name)
+                ? pick with { Also = [.. pick.Also, DipRule.Name] }
+                : pick),
+            .. own
+                .Where(pick => pick.State is FamilyList.Listed or FamilyList.OpenTrade or FamilyList.PastFive)
+                .Select(pick => new FamilyPickRow(pick.Session, pick.Ticker, DipRule.Name, pick.State, pick.Place, [], pick.HeldFamily, pick.HeldNight, pick.HeldIndex)),
+        ];
+    }
+
     // The stocks one gate short of the dip's buy point: each member whose stored answer failed exactly one gate, the
     // history of its average read, by ticker, with that gate and its words; none where the night stored no answer.
     // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing

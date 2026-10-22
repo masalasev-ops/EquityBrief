@@ -7083,6 +7083,31 @@ public sealed partial class MarkRenderer : IComponent
         return counts.ToString();
     }
 
+    // Past picks' chips of the setups the page listed a trade under, each with its trades, and all setups, where the page
+    // has drawn more than one; nothing where it has drawn one or none.
+    public string SetupChips(string? setup, IReadOnlyList<(string Family, string Label, int Trades)>? setups)
+    {
+        if (setups is not { Count: > 1 })
+        {
+            return string.Empty;
+        }
+
+        var chosen = setup is { } named && setups.Any(one => one.Family == named) ? named : null;
+        var chips = new StringBuilder();
+
+        chips.Append("<nav class=\"universe-filters picks-filters picks-setups\" aria-label=\"Filter the trades by setup\"><span class=\"chips-label\">Setup</span>");
+        chips.Append(Invariant, $"<a class=\"chip\" data-filter=\"setup\" data-value=\"all\" aria-pressed=\"{Flag(chosen is null)}\" href=\"#/picks\">All setups<span class=\"n\">{setups.Sum(one => one.Trades)}</span></a>");
+
+        foreach (var (family, label, trades) in setups)
+        {
+            chips.Append(Invariant, $"<a class=\"chip\" data-filter=\"setup\" data-value=\"{Escaped(family)}\" aria-pressed=\"{Flag(family == chosen)}\" href=\"#/picks?setup={Uri.EscapeDataString(family)}\">{Escaped(label)}<span class=\"n\">{trades}</span></a>");
+        }
+
+        chips.Append("</nav>");
+
+        return chips.ToString();
+    }
+
     // The Past picks screen's filters: one chip a setup with the trades the page listed under it, where the
     // page has drawn more than one, then one chip a status with the trades it holds under the setup
     // chosen, and all. A status chip keeps the setup chosen, and a setup chip starts from every status.
@@ -7092,18 +7117,7 @@ public sealed partial class MarkRenderer : IComponent
         var lit = status is { } asked && PickStatus.Filters.Contains(asked, StringComparer.Ordinal) ? asked : null;
         var chosen = setup is { } named && (setups ?? []).Any(one => one.Family == named) ? named : null;
 
-        if (setups is { Count: > 1 })
-        {
-            filters.Append("<nav class=\"universe-filters picks-filters picks-setups\" aria-label=\"Filter the trades by setup\"><span class=\"chips-label\">Setup</span>");
-            filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"setup\" data-value=\"all\" aria-pressed=\"{Flag(chosen is null)}\" href=\"#/picks\">All setups<span class=\"n\">{setups.Sum(one => one.Trades)}</span></a>");
-
-            foreach (var (family, label, trades) in setups)
-            {
-                filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"setup\" data-value=\"{Escaped(family)}\" aria-pressed=\"{Flag(family == chosen)}\" href=\"#/picks?setup={Uri.EscapeDataString(family)}\">{Escaped(label)}<span class=\"n\">{trades}</span></a>");
-            }
-
-            filters.Append("</nav>");
-        }
+        filters.Append(SetupChips(setup, setups));
 
         var kept = chosen is null ? string.Empty : "setup=" + Uri.EscapeDataString(chosen);
 

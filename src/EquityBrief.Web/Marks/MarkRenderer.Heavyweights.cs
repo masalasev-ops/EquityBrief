@@ -103,7 +103,7 @@ public sealed partial class MarkRenderer
     // holdings grouped by sector under each fund's return with why an empty sector holds none, what the last rebalance
     // bought and what ended, and the next rebalance.
     // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
-    // see: The market check closes every swing family's list together, and the sector heavyweights read none
+    // see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none
     // see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
     public string HeavyweightCard(HeavyweightCardView card)
     {

@@ -2646,7 +2646,7 @@ public sealed partial class SinglePageApp : IComponent
         {
             // The line the page opens its setups on: whether the market check left the lists open, and the
             // night's counts across every setup.
-            // see: The market check closes every swing family's list together, and the sector heavyweights read none
+            // see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none
             if (line is not null)
             {
                 region.Append(marks.MarketLine(line with { RunHref = Invariant($"{RunRoute}{night:yyyy-MM-dd}"), Watching = watching, CloseHref = closeHref }));
@@ -2684,7 +2684,7 @@ public sealed partial class SinglePageApp : IComponent
             // The sector heavyweights' card after the swing families', its holdings, its last rebalance and its
             // next, drawn whatever the market check read.
             // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
-            // see: The market check closes every swing family's list together, and the sector heavyweights read none
+            // see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none
             if (heavyweights is not null)
             {
                 region.Append(Cards.Computed(
@@ -3811,7 +3811,7 @@ public sealed partial class SinglePageApp : IComponent
     // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
     // The counts and the rows are those of the setup the hash names, where it names one, and of every setup
     // where it names none; the setups are the ones the page has listed a trade under, each with its trades.
-    public string PicksRegion(MarkRenderer marks, DateOnly? night, PicksSummary summary, IReadOnlyList<PickCell> shown, string? status, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null, IReadOnlyList<HeavyweightPickCell>? heavyweights = null, string selector = "", IReadOnlyList<IndexTradeCell>? businessFirst = null)
+    public string PicksRegion(MarkRenderer marks, DateOnly? night, PicksSummary summary, IReadOnlyList<PickCell> shown, string? status, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null, IReadOnlyList<HeavyweightPickCell>? heavyweights = null, string selector = "", IReadOnlyList<IndexTradeCell>? businessFirst = null, IReadOnlyList<IndexTradeCell>? dips = null)
     {
         var region = new StringBuilder();
         var drawn = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
@@ -3825,6 +3825,24 @@ public sealed partial class SinglePageApp : IComponent
             night is null ? "No night is stored yet" : Invariant($"Every trade the {Universes.Large.Possessive} lists recommended, as of the close of {drawn}")));
         region.Append(selector);
 
+        // The short-term dip chosen under the setups: its own trades alone beneath the chips, since its step keeps them
+        // apart from the swing families' and a filter leaves out every other setup's.
+        // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+        if (setup == EquityBrief.Core.Families.DipRule.Name && dips is { Count: > 0 })
+        {
+            region.Append(Cards.Computed(
+                "Past picks",
+                marks.SetupChips(setup, setups),
+                title: "Every trade, newest first",
+                lede: "Filters live in the address, so a filtered view is a link you can keep.",
+                stamp: Cards.Night(night),
+                region: "picks"));
+            region.Append(DipPicksCard(marks, night, Universes.Large, dips));
+            region.Append("</section>");
+
+            return region.ToString();
+        }
+
         if (summary.Listed == 0)
         {
             region.Append(Cards.Computed(
@@ -3834,6 +3852,7 @@ public sealed partial class SinglePageApp : IComponent
                 stamp: Cards.Night(night),
                 region: "picks-summary"));
             region.Append(BusinessFirstPicksCard(marks, night, businessFirst));
+            region.Append(DipPicksCard(marks, night, Universes.Large, dips));
             region.Append(HeavyweightPicksCard(marks, night, heavyweights));
             region.Append("</section>");
 
@@ -3883,11 +3902,41 @@ public sealed partial class SinglePageApp : IComponent
             stamp: Cards.Night(night),
             region: "picks"));
         region.Append(BusinessFirstPicksCard(marks, night, businessFirst));
+        region.Append(DipPicksCard(marks, night, Universes.Large, dips));
         region.Append(HeavyweightPicksCard(marks, night, heavyweights));
         region.Append("</section>");
 
         return region.ToString();
     }
+
+    // Past picks' card of the short-term dip's trades on an index, which its own step keeps apart from every other
+    // family's, each under its label and named with its index, and nothing where its list has kept none.
+    // see: The dip buys at the next session's open and sells at the next open after its exit's close or its stop's, and at its last session's close
+    static string DipPicksCard(MarkRenderer marks, DateOnly? night, UniverseChoice universe, IReadOnlyList<IndexTradeCell>? trades)
+    {
+        if (trades is not { Count: > 0 } kept)
+        {
+            return string.Empty;
+        }
+
+        var open = kept.Count(trade => trade.EndedOn is null);
+
+        return Cards.Computed(
+            "Past picks",
+            Invariant($"<p class=\"list-count\" data-dip=\"{kept.Count}\" data-open=\"{open}\">{kept.Count} {Escaped(universe.Name)} short-term dip trade{(kept.Count == 1 ? string.Empty : "s")}, {open} open</p>")
+                + marks.IndexTrades(kept, universe.Name)
+                + Cards.Key(
+                    "How to read it.",
+                    DipTradesKey,
+                    "The setup is provisional: followed, and in no record until its freeze."),
+            title: Invariant($"The {universe.Possessive} short-term dip trades, newest first"),
+            lede: "Each listed by the short-term dip on its provisional settings, named with its index.",
+            stamp: Cards.Night(night),
+            region: "dip-picks");
+    }
+
+    // How a short-term dip trade is bought and sold, which its Past picks card and an index's key say.
+    static string DipTradesKey => Invariant($"A short-term dip trade is bought at the open of the session after the night that listed it and sold at the open after the first close above its {EquityBrief.Core.Families.DipRule.Provisional.ExitAverage}-session average of closes or under its stop, or at the close of its last session where neither came. Its result is what it made in multiples of what it risked at the listing close; its cost is its round trip at the published spread for its size and price, in the same units.");
 
     // Past picks' card of the fundamentals-first family's S&P 500 trades, which the index families' step lists and keeps
     // under the S&P 500 apart from its own families, each named with its index as the S&P 400's and 600's are, and
@@ -4032,13 +4081,22 @@ public sealed partial class SinglePageApp : IComponent
     // provisional.
     // see: Every page reads one index at a time chosen under Universe, and every figure names its index
     // see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
-    public string IndexPicksRegion(MarkRenderer marks, DateOnly? night, UniverseChoice universe, string selector, IReadOnlyList<IndexTradeCell> trades, IReadOnlyList<HeavyweightPickCell> holdings, IReadOnlyList<(string Family, string Heading, DateOnly Since)>? frozen = null)
+    public string IndexPicksRegion(MarkRenderer marks, DateOnly? night, UniverseChoice universe, string selector, IReadOnlyList<IndexTradeCell> trades, IReadOnlyList<HeavyweightPickCell> holdings, IReadOnlyList<(string Family, string Heading, DateOnly Since)>? frozen = null, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null)
     {
         frozen ??= [];
 
+        // The setups the page kept a trade under, and whether the short-term dip is among them, whose trades are bought and
+        // sold as no other setup's are.
+        var all = setups is { Count: > 0 } ? setups.Sum(one => one.Trades) : trades.Count;
+        var dipKept = (setups ?? []).Any(one => one.Family == EquityBrief.Core.Families.DipRule.Name) || trades.Any(trade => trade.Family == EquityBrief.Core.Families.DipRule.Name);
+
         var frozenSwing = frozen.Where(one => one.Family != EquityBrief.Core.Families.HeavyweightRule.Name).ToArray();
         var heavyweightsFrozen = frozen.Any(one => one.Family == EquityBrief.Core.Families.HeavyweightRule.Name);
-        var provisionalSwing = EquityBrief.Core.Families.SetupFamilies.OnEveryIndex.Where(family => frozenSwing.All(one => one.Family != family.Name)).Select(family => family.Heading).ToArray();
+        string[] provisionalSwing =
+        [
+            .. EquityBrief.Core.Families.SetupFamilies.OnEveryIndex.Where(family => frozenSwing.All(one => one.Family != family.Name)).Select(family => family.Heading),
+            .. dipKept ? [EquityBrief.Core.Families.SetupFamilies.Dips.Heading] : Array.Empty<string>(),
+        ];
 
         static string Listed(IReadOnlyList<string> names) =>
             names.Count <= 1 ? string.Concat(names) : string.Join(", ", names.Take(names.Count - 1)) + " and " + names[^1];
@@ -4048,7 +4106,7 @@ public sealed partial class SinglePageApp : IComponent
         var heading = "Past picks: " + universe.Titled;
         var open = trades.Count(trade => trade.EndedOn is null);
 
-        region.Append(Invariant($"<section class=\"picks\" data-night=\"{drawn}\" data-universe=\"{universe.Word}\" data-trades=\"{trades.Count}\" data-shown=\"{trades.Count}\" data-status=\"all\">"));
+        region.Append(Invariant($"<section class=\"picks\" data-night=\"{drawn}\" data-universe=\"{universe.Word}\" data-trades=\"{all}\" data-shown=\"{trades.Count}\" data-status=\"all\">"));
         region.Append(Cards.Masthead(
             heading,
             $"<span class=\"m-screen\">{Escaped(heading)}</span>",
@@ -4057,13 +4115,15 @@ public sealed partial class SinglePageApp : IComponent
 
         var body = new StringBuilder();
 
-        body.Append(Invariant($"<p class=\"list-count\" data-shown=\"{trades.Count}\" data-trades=\"{trades.Count}\" data-open=\"{open}\">Showing {trades.Count} of {trades.Count} {Escaped(universe.Name)} trade{(trades.Count == 1 ? string.Empty : "s")}, {open} open</p>"));
+        body.Append(marks.SetupChips(setup, setups));
+        body.Append(Invariant($"<p class=\"list-count\" data-shown=\"{trades.Count}\" data-trades=\"{all}\" data-open=\"{open}\">Showing {trades.Count} of {all} {Escaped(universe.Name)} trade{(all == 1 ? string.Empty : "s")}, {open} open</p>"));
         body.Append(trades.Count == 0
             ? Invariant($"<p class=\"degraded\" data-picks=\"none\">No trade has been listed on the {Escaped(universe.Possessive)} lists yet. Each night its families pass a stock, the first five a setup are listed and followed here from that close on.</p>")
             : marks.IndexTrades(trades, universe.Name));
         body.Append(Cards.Key(
             "How to read it.",
-            "A trade is listed on the night its list drew it and stays open until a close reaches its target, a close falls through its stop or trailing stop, or its sessions run out. Its result is what it made in multiples of what it risked; its cost is its round trip at the published spread for its size and price, in the same units, and the result after cost is what the index's tests read.",
+            "A trade is listed on the night its list drew it and stays open until a close reaches its target, a close falls through its stop or trailing stop, or its sessions run out. Its result is what it made in multiples of what it risked; its cost is its round trip at the published spread for its size and price, in the same units, and the result after cost is what the index's tests read."
+                + (dipKept ? " " + DipTradesKey : string.Empty),
             frozenSwing.Length == 0
                 ? "Every rule of this index is provisional, so no share and no average is drawn: each trade is a fact and is followed, and none counts toward a rule's record until its freeze."
                 : Invariant($"{Listed([.. frozenSwing.Select(one => one.Heading)])} {(frozenSwing.Length == 1 ? "is" : "are")} frozen, listing by {(frozenSwing.Length == 1 ? "its" : "each one's")} live rule from the night of {(frozenSwing.Length == 1 ? "its" : "each")} freeze, {string.Join(", ", frozenSwing.Select(one => Invariant($"{one.Since:yyyy-MM-dd}")))}, {(frozenSwing.Length == 1 ? "its" : "each")} live rule's record read on the Run page")

@@ -54,13 +54,27 @@ public static class PicksScreen
             : cells;
 
     // The setups the page has listed a trade under, in the page's order, each with its trades, a listing
-    // that repeated a trade still open counted in none.
-    public static IReadOnlyList<(string Family, string Label, int Trades)> Setups(IReadOnlyList<PickCell> cells) =>
+    // that repeated a trade still open counted in none, and the short-term dip's after them where its list has kept one.
+    public static IReadOnlyList<(string Family, string Label, int Trades)> Setups(IReadOnlyList<PickCell> cells, int dips = 0) =>
     [
         .. SetupFamilies.InPageOrder
             .Select(family => (family.Name, family.Label, cells.Count(cell => cell.Family == family.Name && cell.RepeatOf is null)))
             .Where(setup => setup.Item3 > 0),
+        .. dips > 0 ? [(SetupFamilies.Dips.Name, SetupFamilies.Dips.Label, dips)] : Array.Empty<(string, string, int)>(),
     ];
+
+    // The setups an index's trades were kept under, in the page's order, each with its trades.
+    public static IReadOnlyList<(string Family, string Label, int Trades)> IndexSetups(IReadOnlyList<IndexTradeCell> trades) =>
+    [
+        .. trades
+            .GroupBy(trade => trade.Family, StringComparer.Ordinal)
+            .OrderBy(group => SetupFamilies.OrderOf(group.Key))
+            .Select(group => (group.Key, group.First().Setup, group.Count())),
+    ];
+
+    // An index's trades the setup the hash names keeps, and every trade where it names none or one no trade was kept under.
+    public static IReadOnlyList<IndexTradeCell> OfIndexSetup(IReadOnlyList<IndexTradeCell> trades, string? setup) =>
+        setup is { } asked && trades.Any(trade => trade.Family == asked) ? [.. trades.Where(trade => trade.Family == asked)] : trades;
 
     // The sector heavyweights' holdings as of a night, newest buy first and its sectors in order, each ended one with
     // its result, its size cut's return and the edge between them as the rule reads it, an open one with none.

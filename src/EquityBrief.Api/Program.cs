@@ -537,8 +537,14 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         news: night is { } storied
             ? NewsScreen.Build(ticker, storied, stories, gate is not null && gate.SessionDate == storied && gate.Passed, NewsScreen.RunFor(await read.LabellerRunsAsync(), storied))
             : null,
-        // The name's rows on the page's list for the night, where the setup families drew it.
-        familyPicks: night is { } drawnOn ? await read.FamilyPicksAsync(drawnOn) : null,
+        // The name's rows on the page's list for the night, where the setup families drew it, and the short-term dip's on
+        // the name's own index beside them.
+        familyPicks: night is { } drawnOn
+            ? TonightScreen.WithDipPicks(
+                await read.FamilyPicksAsync(drawnOn),
+                await read.IndexOfAsync(ticker, drawnOn) is { } dipIndex ? await read.DipPicksAsync(dipIndex, drawnOn) : [],
+                ticker)
+            : null,
         // The sector heavyweights' holdings as of the night, which say whether they hold the name.
         heavyweights: night is { } heldOn ? await read.HeavyweightHoldingsAsync(heldOn) : null,
         // The name's member readings for the page's night, or its newest where the page is tonight's, and its company's
@@ -1694,7 +1700,7 @@ app.MapGet("/screens/tonight/{night?}", async (
 
     // The sector heavyweights' card, drawn after the swing families' on a night they drew the page, whatever the
     // market check read.
-    // see: The market check closes every swing family's list together, and the sector heavyweights read none
+    // see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none
     // The card drawn by the rule its selector chooses, a registered variant's own book under the band where one is.
     // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
     var (heavyweightChoice, heavyweightVariant) = RuleScreen.Heavyweights(
@@ -2371,15 +2377,25 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
         // see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
         var frozenOn = night is { } frozenNight ? TonightScreen.FrozenOn(reading, await read.RegisteredCandidatesAsync(), await read.IndexNightAsync(reading.Code, frozenNight)) : [];
 
+        // Every trade the index's lists kept with the short-term dip's among them, each under its setup's label, and the
+        // setup the hash names keeping its own.
+        // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+        var keptTrades = night is { } through
+            ? PicksScreen.IndexTrades([.. await read.IndexTradesAsync(reading.Code, through), .. await read.DipTradesAsync(reading.Code, through)], companies)
+            : [];
+        var keptUnder = request.Query["setup"].FirstOrDefault();
+
         return Results.Content(
             page.IndexPicksRegion(
                 marks,
                 night,
                 reading,
                 selector,
-                night is { } through ? PicksScreen.IndexTrades(await read.IndexTradesAsync(reading.Code, through), companies) : [],
+                PicksScreen.OfIndexSetup(keptTrades, keptUnder),
                 night is { } kept ? PicksScreen.IndexHeavyweights(await read.IndexHoldingsAsync(reading.Code, kept)) : [],
-                frozenOn) +
+                frozenOn,
+                keptUnder,
+                PicksScreen.IndexSetups(keptTrades)) +
             page.YourTradesRegion(reading.Name, PicksScreen.YourTrades(await read.TakenTradesAsync(), reading.Code)),
             "text/html; charset=utf-8");
     }
@@ -2394,7 +2410,16 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
     // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
     var setup = request.Query["setup"].FirstOrDefault();
     var under = PicksScreen.OfSetup(cells, setup);
-    var setups = PicksScreen.Setups(cells);
+
+    // The short-term dip's S&P 500 trades, which its own step keeps apart from every other family's, and its chip among
+    // the setups.
+    // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+    var dipTrades = night is { } dipOn
+        ? PicksScreen.IndexTrades(
+            await read.DipTradesAsync(Universes.Large.Code, dipOn),
+            (await read.IndexMembersAsync(Universes.Large.Code, dipOn)).ToDictionary(member => member.Ticker, member => member.Company, StringComparer.Ordinal))
+        : [];
+    var setups = PicksScreen.Setups(cells, dipTrades.Count);
 
     // The sector heavyweights' holdings, in percent, beneath the swing trades.
     // see: A sector heavyweight's trade is scored by its percent return less the equal-weighted return of the size cut it was chosen from
@@ -2410,7 +2435,7 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
         : [];
 
     return Results.Content(
-        page.PicksRegion(marks, night, PicksScreen.Summary(under), PicksScreen.Filtered(under, status), status, setup, setups, heavyweights, selector, businessFirst) +
+        page.PicksRegion(marks, night, PicksScreen.Summary(under), PicksScreen.Filtered(under, status), status, setup, setups, heavyweights, selector, businessFirst, dipTrades) +
         page.YourTradesRegion(reading.Name, PicksScreen.YourTrades(await read.TakenTradesAsync(), reading.Code)),
         "text/html; charset=utf-8");
 });
@@ -2725,7 +2750,11 @@ app.MapGet("/screens/run/{night?}", async (
                 selector,
                 await read.IndexNightsAsync(reading.Code),
                 indexNight is null ? null : TonightScreen.IndexRun(indexNight, indexPicks, await read.IndexResultsAsync(reading.Code, dated), indexTrades, indexHoldings),
-                TonightScreen.WithIndexFreezes(TonightScreen.IndexFamilyRun(indexPicks, indexTrades, indexHoldings), reading, indexRegister, indexRecords, indexNight, dated),
+                TonightScreen.WithDipRun(
+                    TonightScreen.WithIndexFreezes(TonightScreen.IndexFamilyRun(indexPicks, indexTrades, indexHoldings), reading, indexRegister, indexRecords, indexNight, dated),
+                    await read.DipNightAsync(reading.Code, dated),
+                    await read.DipPicksAsync(reading.Code, dated),
+                    await read.DipTradesAsync(reading.Code, dated)),
                 indexRecords,
                 RuleScreen.Flagged(await read.RuleNightsAsync(reading.Code, dated), dated, indexRegister, indexAsOf)),
             "text/html; charset=utf-8");
@@ -2881,16 +2910,20 @@ app.MapGet("/screens/run/{night?}", async (
             // of a new setup read over its own trades.
             setupFamilies: await read.FamilyNightAsync(dated) is null
                 ? null
-                : TonightScreen.WithBusinessFirst(
-                    TonightScreen.FamilyRun(
-                        dated,
-                        await read.FamilyPicksAsync(dated),
-                        PicksScreen.Cells(await read.PicksAsync(dated), dated),
-                        await read.RegisteredCandidatesAsync(),
-                        await read.FamilyTradesAsync(dated),
-                        await read.FamilyReplaysAsync()),
-                    await read.IndexPicksAsync(Universes.Large.Code, dated),
-                    await read.IndexTradesAsync(Universes.Large.Code, dated)),
+                : TonightScreen.WithDipRun(
+                    TonightScreen.WithBusinessFirst(
+                        TonightScreen.FamilyRun(
+                            dated,
+                            await read.FamilyPicksAsync(dated),
+                            PicksScreen.Cells(await read.PicksAsync(dated), dated),
+                            await read.RegisteredCandidatesAsync(),
+                            await read.FamilyTradesAsync(dated),
+                            await read.FamilyReplaysAsync()),
+                        await read.IndexPicksAsync(Universes.Large.Code, dated),
+                        await read.IndexTradesAsync(Universes.Large.Code, dated)),
+                    await read.DipNightAsync(Universes.Large.Code, dated),
+                    await read.DipPicksAsync(Universes.Large.Code, dated),
+                    await read.DipTradesAsync(Universes.Large.Code, dated)),
             familyRecords: RunScreen.Named(
                 TonightScreen.FamilyRecordRows(await read.RegisteredCandidatesAsync(), await read.FamilyTradesAsync(dated), dated, await read.FamilyReplaysAsync()),
                 await read.RegisteredCandidatesAsync(),

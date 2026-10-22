@@ -1082,7 +1082,7 @@ public static class RunScreen
         ("Prices and calendar", ["migrate", "membership", "backfill", "fetch", "market-series", "actions", "dividends", "calendar"]),
         ("Indicators and levels", ["indicators", "chart-averages", "page-history", "swings", "volume-profile", "levels"]),
         ("Plans and moves", ["ladders", "moves"]),
-        ("Readings and the list", ["swing-readings", "fundamental-readings", "member-readings", "listings", "swing-filter", "estimates", "family-rules", "families", "family-records", "heavyweights", "loop-apply", "index-families", "decision-cards", "rule-cards", "live-alarm", "taken-follower", "ledger", "shape-proposal"]),
+        ("Readings and the list", ["swing-readings", "fundamental-readings", "member-readings", "listings", "swing-filter", "estimates", "family-rules", "families", "family-records", "heavyweights", "loop-apply", "index-families", "dip-family", "decision-cards", "rule-cards", "live-alarm", "taken-follower", "ledger", "shape-proposal"]),
         ("Records", ["facts", "changes", "forward-returns", "fills", "news-pulse", "rule-versions", "close"]),
         ("After the close", ["quarters", "filings", "treasury", QueueStage, "report", "label-news", "backup"]),
     ];

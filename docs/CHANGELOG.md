@@ -26,6 +26,90 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-22 - .claude/rules/checks.md - fixture-expectations and read-surface reach the short-term dip
+Authorised by: The short-term dip buys a stock in an uptrend after a sharp drop no report caused and sells the bounce within days
+Was:
+> fixture-expectations: ... and a refusal naming a window other than the pin's ending the run with nothing stored for its release and no cut, each over a constructed store and the captured list and refusal |
+> read-surface: ... its prints, its quarters and its mean target against its newest close read back against the store |
+Now:
+> fixture-expectations: ... each over a constructed store and the captured list and refusal; and from 22.1 the short-term dip's 2-session RSI, each gate on both sides of its threshold and exactly at it, the report window's edges, its exits at the next open and its time limit's close, its 5-session average and its order, each worked by hand over constructed bars and read against the fixture's derived figures, its night over a constructed S&P 400 storing every member's answer and giving way to every other family's list and open trades, its cards and its rule's night with its funnel, its four failure rows each induced, and no source a rule's version pins naming it |
+> read-surface: ... read back against the store; and from 22.1 the short-term dip's card on a constructed S&P 400 night the market check closed, listing on its own setting after every swing family's, the market line saying so, its tile and its label on the row of the stock it gave way on, its trades on Past picks under its label with the setup chips and the dip chosen keeping its own on the S&P 400 and in a card of its own on the S&P 500, its row on the Run page, its line on the name page, and its night's stage in one of the Run page's groups |
+Why: 22.1 adds these assertions with the family.
+
+### 2026-10-22 - ARCHITECTURE.html - the market check closes every swing family's list but the short-term dip's, which reads its own setting, and its citations repointed
+Authorised by: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none
+Was:
+> 7 Family evaluator: ... (see: The market check closes every swing family's list together, and the sector heavyweights read none) ...
+> 11.4: ... One market check, the swing filter's, is read by every swing family, so a night it closes lists nobody under any of them, and the sector heavyweights read none (see: The market check closes every swing family's list together, and the sector heavyweights read none). One open trade rule holds a stock to one trade across every swing family, and one page lists the swing families in its order, ...
+> 14, the swing filter's step: ... with the exit it names beside each pick (see: The market check closes every swing family's list together, and the sector heavyweights read none), and from 20.4 handing ...
+> 15.7 The market line: ... and the trades still open linking to Past picks; from the 19.2 correction of 2026-10-13 ... (see: The market check closes every swing family's list together, and the sector heavyweights read none)
+> 15.7 The sector heavyweights' card: ... (see: The market check closes every swing family's list together, and the sector heavyweights read none) ...
+Now:
+> 7 Family evaluator: ... (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none) ...
+> 11.4: ... One market check, the swing filter's, is read by every swing family but the short-term dip, which reads a setting of its own, so a night it closes lists nobody under any of them but the dip, and the sector heavyweights read none (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none). One open trade rule holds a stock to one trade across every swing family, the dip giving way to every other family's list and open trades while no other family's list reads the dip's (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades), and one page lists the swing families in its order, ...
+> 14, the swing filter's step: ... with the exit it names beside each pick (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none), and from 20.4 handing ...
+> 15.7 The market line: ... and the trades still open linking to Past picks; from 22.1 the words saying the short-term dip reads its own setting and whether that left its list open; from the 19.2 correction of 2026-10-13 ... (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none)
+> 15.7 The sector heavyweights' card: ... (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none) ...
+Why: the operator ruled on 2026-10-22 that the dip reads its own market setting on every index, chosen by its sweep, and that the decision closing every swing family's list together be amended to name it, its reasoning kept and every citation repointed.
+
+### 2026-10-22 - ARCHITECTURE.html - the short-term dip on every index: its step, its rule and research, its card, its trades, its stores, its settings, its failures and its sources
+Authorised by: The short-term dip buys a stock in an uptrend after a sharp drop no report caused and sells the bounce within days
+Was:
+> 7 Decision cards, reads: ... index family results, index family picks, index heavyweight holdings, ...
+> 7 Rule cards, reads: ... index family results, index family picks, index rule trades, ...
+> 14, the swing filter's step: ... (see: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits); then write a card for each stock every index's families listed ...
+> 15.9 The setup the page lists the name under: ... and a sentence for a setup that passed it and holds it back (see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order)
+> 15.10 The setup families: ... or the words saying it starts at the freeze (see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint). Beneath it, once a new setup's freeze ...
+> 23 Jegadeesh (1990): ...; read as a Federal Reserve Bank of New York staff report on short-term reversal gives it ... the trend versions
+> 23 Lehmann (1990): ...; read as the same staff report gives it ... the trend versions
+> 23 Nagel (2012): Nagel (2012), Evaporating liquidity, Review of Financial Studies 25(7) ... the market check read against off on the pullback
+Now:
+> 7 Decision cards, reads: ... index family results, index family picks, dip results, dip picks, index heavyweight holdings, ...
+> 7 Rule cards, reads: ... index family results, index family picks, dip nights, dip results, dip picks, index rule trades, ...
+> 14, the swing filter's step: ... a swing rule's trades walked to their own exits); then read the short-term dip over every member of the S&P 500, 400 and 600 holding a bar on the night, by its own functions over their stored bars and at its own market setting, ... and keeping its trades and walking each to its exit at the next open, a failure in an index's part named on its own row while the night goes on (see: ...) (see: ...) (see: ...); then write a card for each stock every index's families listed ...
+> 15.9 The setup the page lists the name under: ... (see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order); from 22.1 the short-term dip's answer on the name's own index among them listing it at its place or holding it back; and its label among the setups the name qualified under where the dip gave way on it (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades)
+> 15.10 The setup families: ... (see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint); from 22.1 on a night the dip read or once its list has kept a trade the short-term dip's row on every index after the swing families' and before the sector heavyweights' on the S&P 400 and 600; provisional with what it lists on the night and the trades its list has kept (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades). Beneath it, once a new setup's freeze ...
+> 23 Jegadeesh (1990): ...; read as a Federal Reserve Bank of New York staff report on short-term reversal gives it, and from 22.1 its abstract as RePEc lists it ... the trend versions and the short-term dip
+> 23 Lehmann (1990): ...; read as the same staff report gives it, and from 22.1 its abstract on the NBER's page of its working paper 2533 ... the trend versions and the short-term dip
+> 23 Nagel (2012): Nagel (2012), Evaporating liquidity, Review of Financial Studies 25(7); from 22.1 also the passages of its NBER working paper on the reversal strategies it forms, their sample and their returns against the VIX ... the market check read against off on the pullback, and the short-term dip's market setting of its own
+> 7: a catalogue row and a matrix row for the dip family, after the index families'.
+> 11.4: a paragraph for the short-term dip after the earnings drift's, its rule, its exits, its place, its market setting, its evidence and its judgement.
+> 15.7: a row for the short-term dip's card after the fundamentals-first family's.
+> 15.17: a row for the short-term dip's trades before the sector heavyweights' holdings.
+> 16: rows for dip nights, dip results, dip picks and dip trades before index rule trades.
+> 17: a row for the short-term dip before the stretch mark.
+> 18: four rows for the dip before a member no filed fact reaches: a member short of the dip's 200 sessions, a dip member with no typical move, a dip member with no report date on file, and no next session stored for a dip trade.
+> 23: rows for Chan (2003) and Connors and Alvarez (2008) before Novy-Marx (2015).
+Why: the operator ruled on 2026-10-22 a short-term dip family on all three indices at provisional settings, built at 22.1, and asked that section 11 carry its rule and research with each source read before it is written, section 15 its card and pages, section 16 its stores, section 17 its settings marked provisional, section 18 its four failure rows and section 23 its sources.
+
+### 2026-10-22 - SCHEMA.md - the dip's four tables and their writer, and the market check's citations repointed
+Authorised by: The short-term dip buys a stock in an uptrend after a sharp drop no report caused and sells the bounce within days
+Was:
+> family_result: ... so no family passes a member on a night it closed (see: The market check closes every swing family's list together, and the sector heavyweights read none). ...
+> heavyweight_holding: ... nor any swing family's for it (see: The market check closes every swing family's list together, and the sector heavyweights read none) ...
+Now:
+> family_result: ... so no family passes a member on a night it closed (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none). ...
+> heavyweight_holding: ... nor any swing family's for it (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none) ...
+> The ownership table: rows for dip_night, dip_result, dip_pick and dip_trade, each written by the dip family.
+> Sections for dip_night, dip_result, dip_pick and dip_trade before decision_card.
+Why: 22.1 creates the four tables its step alone writes, and the decision closing every swing family's list together was amended on 2026-10-22 to name the dip as reading its own setting, every citation repointed (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none).
+
+### 2026-10-22 - BUILD_PLAN.md - phase 13's citation of the market check repointed
+Authorised by: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none
+Was:
+> Phase 13, what this phase is for: ... (see: The market check closes every swing family's list together, and the sector heavyweights read none).
+Now:
+> Phase 13, what this phase is for: ... (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none).
+Why: the decision was amended on 2026-10-22 to name the dip as reading its own setting, and the ruling asked for every citation of it to be repointed.
+
+### 2026-10-22 - BUILD_PLAN.md - 22.1 reads the stored bars alone, a member short of 200 stored sessions refused by its history gate
+Corrects: 22.1's text had the dip's night read the history pulled before the store's year where that year falls short, which the hard rule on bars allows only the night steps it names, the dip not among them; found when the suite's check of the pulled tables' readers refused the step naming them, and a read of the store found the 8 of the 1,504 members holding a bar on 2026-10-21 that hold fewer than 201 stored sessions each a recent listing no pull holds earlier sessions for.
+Was:
+> 22.1: ... reading every member of the three indices holding a bar on the night through its own functions over the stored bars, and over the history pulled before the store's year, at the store's scale, where that year falls short. ...
+Now:
+> 22.1: ... reading every member of the three indices holding a bar on the night through its own functions over the stored bars alone, since the hard rule on bars names the night's readers of the history pulled before the store's year and the dip is not one, so a member holding fewer than 200 stored sessions is refused by its history gate and named on its row. ...
+Why: the night keeps inside the hard rule on bars with no ruling moving it, and its section 18 row for a member short of 200 sessions already said the rule does not read such a member and its row names it.
+
 ### 2026-10-22 - docs/BUILD_PLAN.md - phase 22's dip gives way to every other family's list and stands after the fundamentals-first family, as the operator ruled
 Authorised by: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
 Was:

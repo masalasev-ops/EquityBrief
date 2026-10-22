@@ -163,6 +163,8 @@ public partial class FixtureExpectations
             .. ToneVariantClaims,
             // 20.9, the idea generator: section 18's two rows.
             .. IdeaGeneratorClaims,
+            // 22.1, the short-term dip: section 17's row and section 18's four.
+            .. DipClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

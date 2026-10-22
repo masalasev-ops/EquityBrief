@@ -122,7 +122,7 @@ public sealed class DecisionCards : IComponent
         ORDER BY place, ticker;
     ";
 
-    const string DipRow = "SELECT entry, stop, time_limit, rsi FROM dip_result WHERE index_code = $index AND session_date = $night AND ticker = $ticker;";
+    const string DipRow = "SELECT entry, stop, time_limit, rsi, gates FROM dip_result WHERE index_code = $index AND session_date = $night AND ticker = $ticker;";
 
     const string LargeHeavyweights = @"
         SELECT ticker, sector, entry_close FROM heavyweight_holding
@@ -1005,25 +1005,33 @@ public sealed class DecisionCards : IComponent
     // An S&P 400 or 600 pick's plan off its index's row, and its gates as the night's settings state its rule: the floors,
     // the profit gate, the market check and the family's own setting, since those rows store the rule and not its values.
     // A dip pick's plan as its step stored it: bought on the listing close's plan at the next open, its stop that many
-    // typical moves under, no target, held to its time limit; and the gates its rule reads, in its own words.
+    // typical moves under, no target, held to its time limit; and the gates its rule reads, in its own words, the report's
+    // naming the next date on file or saying the stored calendar holds none.
     static async Task<Plan> DipPlanAsync(SqliteConnection connection, SqliteTransaction transaction, string index, Pick pick, DateOnly night, CancellationToken cancellation)
     {
         var setting = DipRule.Provisional;
-        IReadOnlyList<string> gates =
+
+        IReadOnlyList<string> Gates(string? next) =>
         [
             "floors, those the index families read on its index",
             FormattableString.Invariant($"trend, the close above its {DipRule.TrendSessions}-session average"),
             FormattableString.Invariant($"drop, its {DipRule.RsiSessions}-session RSI under {setting.RsiUnder:0.##}"),
-            FormattableString.Invariant($"report, none on the {setting.DropSessions} sessions to the listing nor due before its {setting.TimeLimit} sessions end"),
+            FormattableString.Invariant($"report, none on the {setting.DropSessions} sessions to the listing nor due before its {setting.TimeLimit} sessions end")
+                + (next is null or DipRule.NoReportOnFile ? ", no report on file in the stored calendar" : $", the next on file on {next}"),
             "market, its own setting, none while it is provisional",
         ];
 
         await using var command = Command(connection, transaction, DipRow, [("$index", index), ("$night", Stamp(night)), ("$ticker", pick.Ticker)]);
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
-        return await reader.ReadAsync(cancellation)
-            ? new Plan(MoneyOrNone(reader, 0), MoneyOrNone(reader, 1), null, reader.IsDBNull(2) ? null : reader.GetInt32(2), gates)
-            : new Plan(null, null, null, null, gates);
+        if (!await reader.ReadAsync(cancellation))
+        {
+            return new Plan(null, null, null, null, Gates(null));
+        }
+
+        var next = FamilyRule.GatesOf(reader.GetString(4)).FirstOrDefault(gate => gate.Name == DipRule.ReportGate)?.Values.GetValueOrDefault("next");
+
+        return new Plan(MoneyOrNone(reader, 0), MoneyOrNone(reader, 1), null, reader.IsDBNull(2) ? null : reader.GetInt32(2), Gates(next));
     }
 
     static async Task<Plan> IndexPlanAsync(SqliteConnection connection, SqliteTransaction transaction, string index, Pick pick, DateOnly night, JsonElement? settings, CancellationToken cancellation)

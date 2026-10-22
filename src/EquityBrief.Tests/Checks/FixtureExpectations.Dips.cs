@@ -2,6 +2,7 @@ using System.Globalization;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Time;
+using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Dips;
 using EquityBrief.Worker.Families;
 using EquityBrief.Worker.Indices;
@@ -15,6 +16,16 @@ namespace EquityBrief.Tests.Checks;
 // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
 public partial class FixtureExpectations
 {
+    // The rows 22.1 adds that this check reaches: section 17's settings and section 18's four.
+    internal static readonly string[] DipClaims =
+    [
+        CheckReach.Key(Scope.LimitsTable, "The short-term dip"),
+        CheckReach.Key(Scope.FailureTable, "A member short of the dip's 200 sessions"),
+        CheckReach.Key(Scope.FailureTable, "A dip member with no typical move"),
+        CheckReach.Key(Scope.FailureTable, "A dip member with no report date on file"),
+        CheckReach.Key(Scope.FailureTable, "No next session stored for a dip trade"),
+    ];
+
     [Fact]
     public void TheDipsTwoSessionRsiIsWildersWorkedByHand()
     {
@@ -27,6 +38,30 @@ public partial class FixtureExpectations
         Assert.Equal(100 - (100 / 3.0), rsi[2]!.Value, 9);
         Assert.Equal(40.0, rsi[3]!.Value, 9);
         Assert.Equal(100 - (100 / (1 + (0.125 / 0.6875))), rsi[4]!.Value, 9);
+
+        // The same worked figures as the fixture states them, derived by hand and not from a run.
+        var expected = Expected("dips");
+
+        Assert.Equal("derived", expected.GetProperty("derivation").GetString());
+        Assert.StartsWith("22.1's rule and walk worked by hand", expected.GetProperty("derivedFrom").GetString(), StringComparison.Ordinal);
+
+        var worked = expected.GetProperty("rsi");
+        var read = DipRule.Rsi([.. worked.GetProperty("closes").EnumerateArray().Select(close => close.GetDouble())]);
+        var stated = worked.GetProperty("values").EnumerateArray().ToArray();
+
+        Assert.Equal(stated.Length, read.Length);
+
+        for (var at = 0; at < stated.Length; at++)
+        {
+            if (stated[at].ValueKind == System.Text.Json.JsonValueKind.Null)
+            {
+                Assert.Null(read[at]);
+            }
+            else
+            {
+                Assert.Equal(stated[at].GetDouble(), read[at]!.Value, 9);
+            }
+        }
 
         // A run no loss has touched reads 100, and a run too short for the window reads none.
         Assert.Equal(100.0, DipRule.Rsi([1, 2, 3])[2]);
@@ -97,6 +132,12 @@ public partial class FixtureExpectations
         Assert.True(Refused(1));
         Assert.True(Refused(10));
         Assert.False(Refused(11));
+
+        // The edges as the fixture states them.
+        var edges = Expected("dips").GetProperty("reportEdges");
+
+        Assert.All(edges.GetProperty("refused").EnumerateArray(), offset => Assert.True(Refused(offset.GetInt32()), offset.ToString()));
+        Assert.All(edges.GetProperty("passed").EnumerateArray(), offset => Assert.False(Refused(offset.GetInt32()), offset.ToString()));
         Assert.Equal(DipRule.ReportNear, DipRule.Read(Member(FlatThen(101), reports: [0]), setting).Reason);
 
         // On the night, a report dated tonight counts nought sessions, one dated the session before the time limit ends
@@ -139,6 +180,14 @@ public partial class FixtureExpectations
         var waiting = DipRule.Walk(100, 96, 10, [Day(5, 99, 98, 99), Day(6, 98.5, 101, 99.6)]);
         Assert.Equal((DipEnd.Open, (DateOnly?)null, 2), (waiting.End, waiting.EndedOn, waiting.Sessions));
         Assert.Equal((DipEnd.Open, (DateOnly?)null), (DipRule.Walk(100, 96, 10, []).End, DipRule.Walk(100, 96, 10, []).BoughtOn));
+
+        // The results and the time limit's sale as the fixture states them.
+        var exits = Expected("dips").GetProperty("exits");
+
+        Assert.Equal(exits.GetProperty("exit").GetDouble(), exit.ResultAtClose.Value, 9);
+        Assert.Equal(exits.GetProperty("exitAtOpen").GetDouble(), TradeFillsAtOpen(exit.ResultAtClose.Value, 100, 4, 99), 9);
+        Assert.Equal(exits.GetProperty("stop").GetDouble(), stop.ResultAtClose.Value, 9);
+        Assert.Equal(exits.GetProperty("limitSale").GetDouble(), limit.Sale!.Value, 9);
     }
 
     static double TradeFillsAtOpen(double atClose, double close, double risk, double open) =>
@@ -161,6 +210,34 @@ public partial class FixtureExpectations
         static DipAnswer Passing(string ticker, double rsi) => new(ticker, [], 10m, 9m, 10, rsi, null);
 
         Assert.Equal(["C", "A", "B"], DipRule.Ranked([Passing("B", 5), Passing("C", 3), Passing("A", 5), new DipAnswer("D", [], null, null, null, 1, DipRule.NoDrop)]).Select(answer => answer.Ticker));
+    }
+
+    [Fact]
+    public void NoSourceARulesVersionPinsNamesTheDipSoNoExistingRulesVersionMovesBecauseOfIt()
+    {
+        // The dip's code and its tables: its rule, its step, its four tables and its words among the families.
+        string[] dip = ["DipRule", "DipFamily", "dip_night", "dip_result", "dip_pick", "dip_trade", "SetupFamilies.Dips", "PageOrder"];
+
+        // Every source an evaluator pins, its own and the shared evaluation's, and the hooks'.
+        var pinned = EquityBrief.Core.Candidates.CandidateEvaluators.All
+            .SelectMany(evaluator => evaluator.OwnSources)
+            .Concat(EquityBrief.Core.Candidates.CandidateEvaluator.EvaluationSources)
+            .Concat(EquityBrief.Core.Loop.RuleHooks.Sources)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(pinned.Length >= 30, $"Read {pinned.Length} pinned source(s), expected at least 30.");
+        Assert.Contains("src/EquityBrief.Worker/Indices/IndexFamilies.cs", pinned);
+        Assert.Contains("src/EquityBrief.Worker/Families/FamilyEvaluator.cs", pinned);
+
+        var naming = pinned
+            .Where(path => dip.Any(word => File.ReadAllText(Path.Combine(Repository.Root, path)).Contains(word, StringComparison.Ordinal)))
+            .ToArray();
+
+        Assert.Empty(naming);
+
+        // The reader is shown to find a pinned source naming the dip.
+        Assert.Contains(dip, word => "var ranked = DipRule.Ranked(answers);".Contains(word, StringComparison.Ordinal));
     }
 
     const string DipNightSession = "2026-10-02";
@@ -271,5 +348,96 @@ public partial class FixtureExpectations
             [("market", 10), ("floors", 10), ("history", 10), ("trend", 10), ("drop", 9), ("report", 8), ("typical move", 8)],
             EquityBrief.Core.Cards.RuleRows.ReadGates(FamilyRows(store, "SELECT gates FROM rule_night WHERE index_code = 'MID' AND family = 'dip';").Single()));
         Assert.Equal(10, EquityBrief.Core.Cards.RuleRows.ReachedOf(FamilyRows(store, "SELECT gates FROM rule_night WHERE index_code = 'MID' AND family = 'dip';").Single()));
+
+        // The funnel as the fixture states it.
+        Assert.Equal(
+            [.. Expected("dips").GetProperty("funnel").EnumerateArray().Select(step => (step[0].GetString()!, step[1].GetInt32()))],
+            EquityBrief.Core.Cards.RuleRows.ReadGates(FamilyRows(store, "SELECT gates FROM rule_night WHERE index_code = 'MID' AND family = 'dip';").Single()));
+
+        // DA's card holds no report on file, since the stored calendar holds none for it, and says so in its checklist.
+        Assert.Contains("no report on file in the stored calendar", FamilyRows(store, "SELECT lines FROM decision_card WHERE index_code = 'MID' AND family = 'dip' AND ticker = 'DA';").Single(), StringComparison.Ordinal);
+    }
+
+    // Section 18's four rows for the dip, each induced.
+
+    [Fact]
+    public async Task ADipMemberHoldingFewerThanItsAveragesSessionsIsNotReadAndItsRowNamesTheSessionsStored()
+    {
+        // DS holds the last 150 of a falling year, so its 200-session average reads nothing on the night.
+        using var store = DipStore();
+
+        StoreYear(store, "DS", [.. DipYear(4).Skip(102)]);
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('MID', 'DS', '2024-01-02', NULL, '2024-01-02T00:00:00Z');");
+
+        var clock = FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        await new DipFamily(clock, store.DatabaseFile).RunAsync("night-dip");
+        await new EquityBrief.Worker.Cards.RuleCards(clock, store.DatabaseFile).RunAsync("night-dip-rules", [], new DateTimeOffset(2026, 10, 2, 23, 0, 0, TimeSpan.Zero));
+
+        Assert.Equal([$"DS|0|{DipRule.ShortHistory}"], FamilyRows(store, "SELECT ticker, passed, reason FROM dip_result WHERE index_code = 'MID' AND ticker = 'DS';"));
+
+        var history = FamilyRule.GatesOf(FamilyRows(store, "SELECT gates FROM dip_result WHERE index_code = 'MID' AND ticker = 'DS';").Single()).Single(gate => gate.Name == DipRule.HistoryGate);
+
+        Assert.Equal((false, "150 sessions stored, fewer than the 200 its average reads", "150"), (history.Passed, history.Reason, history.Values["sessions"]));
+
+        // The funnel counts it at the history gate: eleven reach the market setting and the floors, ten the history.
+        var funnel = EquityBrief.Core.Cards.RuleRows.ReadGates(FamilyRows(store, "SELECT gates FROM rule_night WHERE index_code = 'MID' AND family = 'dip';").Single());
+
+        Assert.Equal([("market", 11), ("floors", 11), ("history", 10)], funnel.Take(3));
+    }
+
+    [Fact]
+    public void ADipMemberWithNoTypicalMovePlacesNoStopAndIsNotListed()
+    {
+        var any = DipRule.Provisional with { RsiUnder = 101 };
+
+        foreach (double? move in new double?[] { null, 0 })
+        {
+            var answer = DipRule.Read(Member(FlatThen(101), move: move), any);
+
+            Assert.Equal((DipRule.NoMove, (decimal?)null, (decimal?)null), (answer.Reason, answer.Entry, answer.Stop));
+            Assert.Empty(DipRule.Ranked([answer]));
+            Assert.All(answer.Gates.Where(gate => gate.Name != DipRule.MoveGate), gate => Assert.True(gate.Passed, gate.Name));
+        }
+    }
+
+    [Fact]
+    public async Task ADipMemberWithNoReportDateOnFilePassesItsReportGateAndItsCardSaysNoneIsOnFile()
+    {
+        using var store = DipStore();
+        var clock = FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        await new DipFamily(clock, store.DatabaseFile).RunAsync("night-dip");
+        await new EquityBrief.Worker.Cards.DecisionCards(clock, store.DatabaseFile).RunAsync("night-dip-cards");
+
+        // DA has no date in the stored calendar: its report gate passes on no report, the next none on file.
+        var report = FamilyRule.GatesOf(FamilyRows(store, "SELECT gates FROM dip_result WHERE index_code = 'MID' AND ticker = 'DA';").Single()).Single(gate => gate.Name == DipRule.ReportGate);
+
+        Assert.Equal((true, string.Empty, DipRule.NoReportOnFile), (report.Passed, report.Values["reports"], report.Values["next"]));
+        Assert.Contains("no report on file in the stored calendar", FamilyRows(store, "SELECT lines FROM decision_card WHERE index_code = 'MID' AND family = 'dip' AND ticker = 'DA';").Single(), StringComparison.Ordinal);
+
+        // DR's date is on file on the night itself, which the gate reads and refuses.
+        var refused = FamilyRule.GatesOf(FamilyRows(store, "SELECT gates FROM dip_result WHERE index_code = 'MID' AND ticker = 'DR';").Single()).Single(gate => gate.Name == DipRule.ReportGate);
+
+        Assert.Equal((false, "0"), (refused.Passed, refused.Values["reports"]));
+    }
+
+    [Fact]
+    public async Task ADipBuyOrSaleWhoseNextSessionIsNotStoredWaitsForIt()
+    {
+        // On the night the five listed are kept unbought, since the store holds no session after the night.
+        using var store = DipStore();
+        var clock = FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        await new DipFamily(clock, store.DatabaseFile).RunAsync("night-dip");
+
+        Assert.All(
+            FamilyRows(store, "SELECT bought_on, fill, end_reason, sessions FROM dip_trade WHERE index_code = 'MID';"),
+            row => Assert.Equal($"null|null|{DipEnd.Open}|null", row));
+
+        // A sale its trigger set on the last stored session waits for the next session's open, the trade held.
+        var held = DipRule.Walk(100, 96, 10, [Day(5, 99, 95.9, 99)]);
+
+        Assert.Equal((DipEnd.Open, (DateOnly?)null, (double?)null), (held.End, held.EndedOn, held.Sale));
     }
 }

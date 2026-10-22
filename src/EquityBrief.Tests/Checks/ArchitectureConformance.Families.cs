@@ -384,9 +384,11 @@ public partial class ArchitectureConformance
         // catalogue and matrix rows, and 1372 from 20.9, the idea generator's catalogue and matrix rows, its store, the Loop
         // page's row and section 18's two, and 1378 from the 19.4 correction of 2026-10-22, paper trading's seven rows for
         // its parts less its table of every account, and 1379 from the 20.3 correction of the same day, the release
-        // checks' store, and 1383 from 20.12, the chart page's graphs and their three marks.
+        // checks' store, and 1383 from 20.12, the chart page's graphs and their three marks, and 1396 from 22.1, the dip
+        // family's catalogue and matrix rows, its four stores, section 17's row, section 18's four, its card on Tonight and
+        // its trades on Past picks.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1383),
+            (789, 853, 6, 4, 855, 876, 1396),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

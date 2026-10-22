@@ -87,7 +87,7 @@ public readonly record struct DipSession(DateOnly Session, double Open, double C
 // the index reads; a history of the sessions its average reads; the close above that average; the drop; no report in
 // the drop or before the time limit ends; and a typical move to place the stop by. A gate a member cannot be read on
 // for want of a figure fails, its reason saying what it lacked, and a member failing passes nothing after it.
-// see: The short-term dip family is built as phase 22 ahead of the hold on new work, and phase 20's sign-off waits on none of it
+// see: The short-term dip buys a stock in an uptrend after a sharp drop no report caused and sells the bounce within days
 public static class DipRule
 {
     public const string Name = "dip";
@@ -101,6 +101,9 @@ public static class DipRule
 
     // The market setting's word where the family reads none.
     public const string MarketOff = "off";
+
+    // The report gate's word for the next report where the stored calendar holds none ahead of the night.
+    public const string NoReportOnFile = "none";
 
     // The provisional setting, Connors and Alvarez's: the close above its 200-session average, the 2-session RSI under
     // 10, no report in the three sessions to the listing nor before the time limit, the stop 4 typical moves under the
@@ -213,7 +216,7 @@ public static class DipRule
     {
         var gates = new List<Gate> { member.Market };
         var night = member.Closes.Count - 1;
-        var close = night >= 0 ? member.Closes[night] : (double?)null;
+        double? close = night >= 0 ? member.Closes[night] : null;
         var average = night >= 0 ? Average(member.Closes, night, TrendSessions) : null;
         var fifty = night >= 0 ? Average(member.Closes, night, FiftySessions) : null;
         var rsi = night >= 0 ? Rsi(member.Closes)[night] : null;
@@ -247,9 +250,9 @@ public static class DipRule
             ReportGate,
             !reported,
             reported ? ReportWords(member.Reports, setting) : string.Empty,
-            FamilyRule.Values(("reports", string.Join(",", member.Reports.Select(sessions => FamilyRule.Whole(sessions)))), ("next", member.NextReport?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "none"))));
+            FamilyRule.Values(("reports", string.Join(",", member.Reports.Select(sessions => FamilyRule.Whole(sessions)))), ("next", member.NextReport?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? NoReportOnFile))));
 
-        var move = member.TypicalMove is { } typical && typical > 0 ? typical : (double?)null;
+        double? move = member.TypicalMove is { } typical && typical > 0 ? typical : null;
 
         gates.Add(new Gate(
             MoveGate,
@@ -308,7 +311,7 @@ public static class DipRule
     // and the last session its time limit holds sells at its close where neither came on it. A trigger on the last
     // session's close still sells at the next open, since the rule sells on its trigger. The path waits where a session
     // it needs is not stored: none bought before the first, and held where the sale's next session is not stored.
-    // see: The short-term dip family is built as phase 22 ahead of the hold on new work, and phase 20's sign-off waits on none of it
+    // see: The dip buys at the next session's open and sells at the next open after its exit's close or its stop's, and at its last session's close
     public static DipPath Walk(double listingClose, double stop, int timeLimit, IReadOnlyList<DipSession> after)
     {
         if (after.Count == 0 || !(after[0].Open > 0))

@@ -79,6 +79,15 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "Loop ideas"),
     ];
 
+    // 22.1's four: the short-term dip's nights, answers, picks and trades.
+    internal static string[] DipStoreRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Dip nights"),
+        CheckReach.Key(Scope.StoresTable, "Dip results"),
+        CheckReach.Key(Scope.StoresTable, "Dip picks"),
+        CheckReach.Key(Scope.StoresTable, "Dip trades"),
+    ];
+
     internal static CheckReach Reach => new(
         "schema-columns",
         ["docs/SCHEMA.md"],
@@ -190,6 +199,9 @@ public class SchemaColumns
 
             // 20.9, the idea generator's stored answers.
             .. LoopIdeaStoreRows,
+
+            // 22.1, the short-term dip's four tables.
+            .. DipStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

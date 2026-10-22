@@ -27,12 +27,13 @@ public sealed record DipOutcome(DateOnly? Night, IReadOnlyList<DipIndexOutcome> 
 // The short-term dip's part of the night, a step of its own after the index families' and before the setup ledger's,
 // over every member of the S&P 500, 400 and 600 holding a bar on the night: every member's answer stored with the
 // values that decided it, the family's list drawn last among the swing families, its trades kept and each open one
-// walked to its exit at the next open. It reads the members, their bars and the pulled history before the store's year
-// through the index families' own loader, and every other family's list and open trades through their own readers, and
+// walked to its exit at the next open. It reads the members and their stored year through the index families' own
+// loader, none of the sessions that loader reads before the year, and every other family's list and open trades through their own readers, and
 // writes only its own tables, so no other family's code, list or row moves. Each index's part is one transaction, so a
 // failure in it leaves none of its writes and is named on its row while the other indices go on.
-// see: The short-term dip family is built as phase 22 ahead of the hold on new work, and phase 20's sign-off waits on none of it
+// see: The short-term dip buys a stock in an uptrend after a sharp drop no report caused and sells the bounce within days
 // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+// see: The dip buys at the next session's open and sells at the next open after its exit's close or its stop's, and at its last session's close
 public sealed class DipFamily : IComponent
 {
     // The members and their year through the index families' loader, the other families' lists and open trades through
@@ -42,7 +43,6 @@ public sealed class DipFamily : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
-            new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
             new StoreTouch(Store.FamilyPick, Touch.Read),
@@ -355,8 +355,8 @@ public sealed class DipFamily : IComponent
         return (outcome, 1 + answers.Count + picks.Count + kept + ended);
     }
 
-    // Each member holding a bar on the night read under the dip at a setting: its closes to the night with the pulled
-    // history's before the store's year, its typical move on the night, the floors the index families read on it, and
+    // Each member holding a bar on the night read under the dip at a setting: its stored closes to the night and none
+    // before the store's year, its typical move on the night, the floors the index families read on it, and
     // each report on file by the sessions it falls from the night, the night's own sessions counted back and the
     // exchange's counted ahead.
     public static IReadOnlyList<DipAnswer> Answers(IndexNightInputs inputs, DipSetting setting)
@@ -367,11 +367,7 @@ public sealed class DipFamily : IComponent
         {
             var series = inputs.Series[name];
             var bar = IndexNightRead.BarOf(series, inputs.At);
-            var closes = (series.Name.Before ?? [])
-                .Where(before => before.Session < series.Bars[0].Session)
-                .Select(before => Statistic.FromPrice(before.Close))
-                .Concat(series.Bars[..(bar + 1)].Select(day => Statistic.FromPrice(day.Close)))
-                .ToArray();
+            var closes = series.Bars[..(bar + 1)].Select(day => Statistic.FromPrice(day.Close)).ToArray();
             var move = series.Atr[bar];
             var floors = IndexNightRead.PartsOn(inputs, name, 1m, MemberReadings.LowestPrice, IndexQuality.Off)[0];
             var (reports, next) = ReportsOf(series.Name.Prints, inputs.Calendar, inputs.At, inputs.Night);

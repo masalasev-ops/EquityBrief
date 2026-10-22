@@ -61,7 +61,7 @@ public sealed record HeavyweightRuleOutcome(
 // see: A heavyweight is bought where it leads its sector above nothing and passes the trend gate, and sold where the rule would not buy it
 // see: A heavyweight leaving the index is sold at its last session's close as a member
 // see: A heavyweight's result is the product of its daily close ratios since its buy, carried each night
-// see: The market check closes every swing family's list together, and the sector heavyweights read none
+// see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none
 // see: The sector heavyweights freeze at their sweep's proposal, the proposal's three passing neighbours registered beside them as variants
 // see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut
 // see: The nightly run is arithmetic only

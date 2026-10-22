@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
+using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Dips;
 using Xunit;
 
@@ -12,6 +13,13 @@ namespace EquityBrief.Tests.Reading;
 // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
 public partial class ReadSurface
 {
+    // The rows 22.1 adds that this check reaches: the dip's card on Tonight and its trades on Past picks.
+    internal static readonly string[] DipPageRows =
+    [
+        CheckReach.Key("15.7 Tonight", "The short-term dip's card"),
+        CheckReach.Key("15.17 Past picks", "The short-term dip's trades"),
+    ];
+
     // A dip answer's gates as its step stores them, every one passed.
     static string DipGatesPassed() => FamilyRule.GatesJson(
     [
@@ -92,5 +100,94 @@ public partial class ReadSurface
 
         Assert.Contains("<span class=\"also-family\" data-also=\"Short-term dip\">", m1, StringComparison.Ordinal);
         Assert.Contains("data-family=\"breakout\"", m1, StringComparison.Ordinal);
+    }
+
+    // The dip's trades as its step keeps them: on the S&P 400 M2 listed tonight and not bought yet, and M1 listed on
+    // 2026-09-24, bought at 48.5 the session after and sold at 51 on 2026-09-30 after its exit's close, 0.5 risks before
+    // its cost of 0.02; on the S&P 500 AAA listed on 2026-09-29 and held.
+    static void DipTradesOn(TemporaryStore store)
+    {
+        store.Execute(
+            "INSERT INTO dip_trade (rule, index_code, ticker, session_date, place, entry, stop, time_limit, exit_average, risk_moves, bought_on, fill, past, ended_on, sale, end_reason, sessions, result, cost) VALUES " +
+            $"('provisional', 'MID', 'M2', '{IndexNight}', 1, '50', '44', 10, 5, 4.0, NULL, NULL, NULL, NULL, NULL, 'open', NULL, NULL, NULL), " +
+            "('provisional', 'MID', 'M1', '2026-09-24', 1, '48', '42', 10, 5, 4.0, '2026-09-25', '48.5', NULL, '2026-09-30', '51', 'exit', 4, 0.5, 0.02), " +
+            "('provisional', 'GSPC', 'AAA', '2026-09-29', 1, '49', '45', 10, 5, 4.0, '2026-09-30', '49.2', NULL, NULL, NULL, 'open', 2, NULL, NULL);");
+    }
+
+    [Fact]
+    public async Task TheDipsTradesStandOnPastPicksUnderItsLabelAndFilterItsRunRowAndItsNamePageLineReadBackOffThePages()
+    {
+        using var store = UniversesStore();
+
+        DipNightOn(store);
+        DipTradesOn(store);
+
+        // AAA listed tonight under the S&P 500's pullback, which the dip passed and gave way to.
+        store.Execute(
+            "INSERT INTO family_pick (session_date, ticker, family, state, place, also, held_family, held_night) VALUES " +
+            $"('{IndexNight}', 'AAA', 'pullback', 'listed', 1, '[]', NULL, NULL);");
+        store.Execute(
+            "INSERT INTO dip_pick (index_code, session_date, ticker, state, place, listed_under, held_index, held_family, held_night) VALUES " +
+            $"('GSPC', '{IndexNight}', 'AAA', 'under another', NULL, 'pullback', NULL, NULL, NULL);");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        // The S&P 400's Past picks: the dip's two trades among the index's, each under its label with the index, the setup
+        // chips counting each setup's trades in the page's order, and the key saying how a dip trade is bought and sold.
+        var picks = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks?universe=400"));
+
+        Assert.Equal(
+            [("pullback", "1"), ("breakout", "1"), ("dip", "2")],
+            Regex.Matches(Assert.Single(Blocks(picks, "<nav class=\"universe-filters picks-filters picks-setups\".*?</nav>")), "data-value=\"([a-z]+)\"[^>]*>[^<]+<span class=\"n\">([0-9]+)</span>")
+                .Where(match => match.Groups[1].Value != "all")
+                .Select(match => (match.Groups[1].Value, match.Groups[2].Value)));
+        Assert.Contains("Showing 4 of 4 S&P 400 trades, 2 open", picks, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"setup\" data-setup=\"dip\">Short-term dip · S&P 400</td>", Assert.Single(Blocks(picks, "<tr data-ticker=\"M2\" data-index=\"S&P 400\" data-family=\"dip\".*?</tr>")), StringComparison.Ordinal);
+        Assert.Contains("data-ended=\"2026-09-30\"", Assert.Single(Blocks(picks, "<tr data-ticker=\"M1\" data-index=\"S&P 400\" data-family=\"dip\".*?</tr>")), StringComparison.Ordinal);
+        Assert.Contains("A short-term dip trade is bought at the open of the session after the night that listed it and sold at the open after the first close above its 5-session average of closes or under its stop", picks, StringComparison.Ordinal);
+
+        // The dip chosen keeps its trades alone, the count saying how many of the index's are shown.
+        var dipsOnly = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks?universe=400&setup=dip"));
+
+        Assert.Equal(["M2", "M1"], Regex.Matches(Assert.Single(Blocks(dipsOnly, "<table class=\"list-table index-trades\".*?</table>")), "<tr data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Contains("Showing 2 of 4 S&P 400 trades, 1 open", dipsOnly, StringComparison.Ordinal);
+
+        // The S&P 500's: the dip's card beneath the lists' trades with AAA held, and the dip chosen drawing that card alone.
+        var large = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks"));
+        var card = Assert.Single(Blocks(large, "<section class=\"card\"[^>]*data-card=\"dip-picks\".*?</section>"));
+
+        Assert.Contains("<p class=\"list-count\" data-dip=\"1\" data-open=\"1\">1 S&P 500 short-term dip trade, 1 open</p>", card, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"setup\" data-setup=\"dip\">Short-term dip · S&P 500</td>", card, StringComparison.Ordinal);
+
+        var largeDips = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks?setup=dip"));
+
+        Assert.Single(Blocks(largeDips, "<section class=\"card\"[^>]*data-card=\"dip-picks\".*?</section>"));
+        Assert.DoesNotContain("data-card=\"picks-summary\"", largeDips, StringComparison.Ordinal);
+        Assert.Contains("data-card=\"picks-summary\"", large, StringComparison.Ordinal);
+
+        // The S&P 400's Run page: the dip's row after every swing family's and before the sector heavyweights', listing one
+        // tonight with its two trades, one open and one finished, provisional.
+        var run = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{IndexNight}?universe=400"));
+        var rows = Regex.Matches(Assert.Single(Blocks(run, "<table class=\"list-table family-run\".*?</table>")), "<tr data-family=\"([^\"]+)\" data-state=\"([^\"]+)\"[^>]*data-listed=\"([0-9]+)\"").Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value)).ToArray();
+
+        Assert.Equal(["pullback", "breakout", "drift", "fundamentals", "dip", "heavyweight"], rows.Select(row => row.Item1));
+        Assert.Equal(("dip", "provisional", "1"), rows.Single(row => row.Item1 == "dip"));
+
+        // The name pages: M2 listed under the dip at its place, M3 held back by its pullback trade, and AAA, listed under the
+        // S&P 500's pullback, saying it also qualified as a short-term dip.
+        var m2 = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M2/{IndexNight}"));
+
+        Assert.Contains("<p class=\"listed-under\" data-night=\"2026-10-02\" data-family=\"dip\" data-place=\"1\" data-also=\"\">On the page's list for 2026-10-02 under <b>Short dips in an uptrend</b>, at place 1.</p>", m2, StringComparison.Ordinal);
+
+        var m3 = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M3/{IndexNight}"));
+
+        Assert.Contains("Short dips in an uptrend passed it on 2026-10-02 and does not list it: its trade from 2026-09-30 is still open.", m3, StringComparison.Ordinal);
+
+        var aaa = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/AAA/{IndexNight}"));
+        var listedUnder = Assert.Single(Blocks(aaa, "<p class=\"listed-under\".*?</p>"));
+
+        Assert.Contains("data-family=\"pullback\" data-place=\"1\" data-also=\"Short-term dip\"", listedUnder, StringComparison.Ordinal);
+        Assert.Contains("it also qualified as a short-term dip.", listedUnder, StringComparison.Ordinal);
     }
 }
