@@ -6314,7 +6314,8 @@ Tests:      fourteen more: the core's figures worked by hand at their edges, and
 Measured:   read back from a scratch Debug build of this tree over the operator's store on a port of its own, at 1440 and a
             true 390 in both palettes: every part in its order, nothing wider than the screen at 390 and each table
             scrolling in its own box; a tile's date broke at its hyphen and the variants' too-few words wrapped, each now
-            held whole by a rule a test reads.
+            held whole by a rule a test reads, and the earlier versions' fold named each version's day and code in its
+            text, now under the pointer.
 Claims:     1378, from 1372: paper trading's seven rows for its parts less its table of every account.
 Mutated:    the rule, stated before the runs: for each figure the correction adds to the core's one function, the smallest
             edit undoing the property it is named for, run over the paper page's fourteen tests with its red predicted and
@@ -6331,7 +6332,8 @@ Mutated:    the rule, stated before the runs: for each figure the correction add
             one in so many said in hundreds, and r15 the count to beat the level's reciprocal, at the scale's and the
             scorecard's; r16 a book's months read as its trades, r17 a share past the whole, and r18 a trade ended on the
             night read as neither open nor closed, at the progress test; r19 the fund's return inverted, at the fund's and
-            the tiles'.
+            the tiles'; and r20, for the plain words the ruling asks, an earlier version's day and code written back into
+            the fold's text, at what the system bought's.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
             stated before that run: all six steps, 0 warnings, 0 errors, 2601 of 2601 tests ran with none failed,
             migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase

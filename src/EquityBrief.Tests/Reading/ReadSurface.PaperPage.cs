@@ -430,6 +430,16 @@ public partial class ReadSurface
         Assert.Contains("<a class=\"chip\" data-filter=\"show\" data-family=\"breakout\" href=\"#/paper?universe=400&bought=closed&show=breakout\" aria-pressed=\"true\">", breakout, StringComparison.Ordinal);
         Assert.Contains("<p class=\"paper-unbought\" data-unbought=\"0\">Every stock these rules listed was bought.</p>", breakout, StringComparison.Ordinal);
 
+        // A trade a rule's earlier version listed is folded beneath, that version's day and code under the pointer and not
+        // in the text.
+        var earlier = new MarkRenderer().PaperBought(
+            new PaperPageView([], [], [], [new PaperBoughtView("list-pullback", "pullback", "E1", null, Listed, Filled, 100m, 90m, 120m, false, 20, null, null, null, [], null, "the version registered 2026-09-21, code v")], new PaperNotBought([]), [], null),
+            new PaperLink("400"));
+
+        Assert.Contains("<details class=\"paper-earlier\" data-earlier=\"1\">", earlier, StringComparison.Ordinal);
+        Assert.Contains("<td><span title=\"the version registered 2026-09-21, code v\">an earlier version</span></td>", earlier, StringComparison.Ordinal);
+        Assert.DoesNotContain(">the version registered", earlier, StringComparison.Ordinal);
+
         // Each tab, chip and select in a card keeps the card where it stood, and the tabs and chips wrap.
         Assert.Contains("const keeper = event.target.closest('a.chip[data-filter], a.sector-tile, a.sort');", new SinglePageApp().Shell("EquityBrief"), StringComparison.Ordinal);
         Assert.Contains(".paper-tabs,.paper-chips{display:flex;flex-wrap:wrap;", Stylesheet.Css, StringComparison.Ordinal);

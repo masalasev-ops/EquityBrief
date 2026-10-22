@@ -307,7 +307,7 @@ public sealed partial class MarkRenderer
                 html.Append(Invariant, $"<tr data-ticker=\"{Escaped(trade.Ticker)}\" data-bought=\"{DayOf(trade.Bought)}\" data-version=\"{Escaped(trade.Version ?? string.Empty)}\">");
                 html.Append(StockCell(trade.Ticker, trade.Company, null));
                 html.Append(FamilyCell(trade.Family));
-                html.Append(Invariant, $"<td>{Escaped(trade.Version ?? string.Empty)}</td>");
+                html.Append(Invariant, $"<td><span title=\"{Escaped(trade.Version ?? string.Empty)}\">an earlier version</span></td>");
                 html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}<span class=\"pb-day\">{DayOf(trade.Bought)}</span></td>");
                 html.Append(trade.Closed is { } ended ? Formatted($"<td>{Escaped(Capitalised(ended.Ending))}</td>") : "<td><span class=\"pill\">open</span></td>");
                 html.Append(Invariant, $"<td class=\"r num\">{Result(trade.Stop is null, trade.Closed is { } shut ? (shut.Risks, shut.Fraction) : (trade.Open?.Risks, trade.Open?.Fraction))}</td></tr>");
