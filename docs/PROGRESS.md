@@ -6566,3 +6566,123 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    the phase 19 sign-off by a fresh session over the corrected main; pin 4 under the newest runtime and the
             history read under it; 20.3's record; the tone variant at pin 4; PR 505; 20.10; the phase 18 sign-off.
+
+### Phase 19 sign-off                                                        2026-10-22
+Signed by a session that has committed no code to this repository. Its only commit is this entry, which is a document,
+            so the fresh session rule permits it. This is the fifth review of phase 19. The first four signed nothing:
+            over 67c65de3 five display defects, corrected in PR 519; over 54af3d00 four, with four smaller items the
+            operator added, corrected in PR 520; over 2042951e three, corrected in PR 522; and over b79169f9 three, F1 a
+            trailing trade ended on its cap's session read as its time limit and F3 no test holding the adjusted p out of
+            the page's text, corrected in PR 525, and F2 no test reading a page for an earlier night over a researched
+            store, corrected in PR 529. This review read b79169f9..b6cb98dc, 61 files, +3313 -191, 27 of them shipped
+            source, +1391 -110: PR 525's 4, +92 -21, PR 527's 8 for 19.11's chart page, +336 -10, and the rest phase
+            20's, and signs over b6cb98dc.
+Verified:   by re-running both gates on `main` at b6cb98dc before this entry: `tools/ci.ps1` green end to end,
+            20:28:02 to 20:55:15 UTC, all six steps, 0 warnings, 0 errors, 2621 of 2621 tests passing inside it,
+            migrations 0 to 104 applied against `data-ci/` and then none pending at schema version 104, exit 0;
+            `tools/verify-phase.ps1` green, 20:55:25 to 20:55:30 UTC, reading that run's suite result over the same
+            commit and a clean tree, at 60 tables, 1383 claims, 1383 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1394
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT with 2 captured over 6
+            constituents and 4 names, 43 checks on the roster, 43 carried and 43 passed, none failed or unrun, the
+            record line holding the 19.11 correction's stated figures. Over the tree carrying this entry, a record
+            entry alone, the checks that read the record ran filtered in place of the full script, on the operator's
+            standing ruling: 163 of 163 tests passing.
+            Hosted CI for PRs 525 to 529 and main's pushes from 1bd9b301 to b6cb98dc: 19 runs, every pushed head under
+            both events and five pushes, 38 jobs, case-sensitivity and macOS on each. Every PR's final head is green
+            under its pull request, and every main push green, b6cb98dc's among them. Two runs are red: PR 526's first
+            head, e8b5e6ca, on both jobs at `HistoryPullTests`' test of the shipped sources naming the pulled tables,
+            which its next head, ba4fbb8d, made green; and PR 529's push run on macOS alone, at
+            `FixtureExpectations.ASweepReadNeverFailsAWriteAndAStatementHeldOpenPastTheWritersWaitWould`, a 12.5 test
+            PR 529 does not touch, its writer refused by a locked store inside the 2 seconds the test gives it, the
+            first such red among the 40 newest failed runs, the same tree green under PR 529's pull request and on
+            main's push of b6cb98dc.
+Plan:       checkpoints 19.0 to 19.14 are in `BUILD_PLAN.md` and recorded above with their rulings, records and
+            corrections, the last the 19.11 correction of 2026-10-22 in PR 529. The carried obligations hold 116 rows,
+            83 discharged, 33 operating and none open; phase 19 opened none, as 19.8's entry states.
+Read:       F1 to F3 against the corrected code and their two entries, and 19.11's page under PR 527. F1: a closed
+            swing trade's ending is its own exit, or the menu's its table names, replayed by `ExitMenu.Replay` over its
+            closes from its listing night at the trade's own scale, the scale its open position is marked by, through
+            the walks the recorders sell by, `FamilyWalks` under its rule's own exit and the menu's walk under one of
+            its exits, so a trailing trade whose cap-session close falls through its trail ends under its trailing
+            stop; a trailing family's trade whose table stores no trail is handed the distance its recorder trails,
+            its close less its stop; and the sale is read only where a close or a session is missing or the replay
+            ends elsewhere, under its stop only below it, as section 15.21's paragraph states. The paper reads load the
+            exit and the stop's distance in typical moves ahead of the fill's six columns, and the S&P 400 test store's
+            C2, sold at 26.40 under its stop of 27, works by hand to its tile's return of 0.01744. F3: the scorecard's
+            test reads the page's text, headings' tips aside, for no adjusted p, version code or registration day. F2:
+            the name route reads no staleness, pass, spend or priced calls for an earlier night, and the chart page has
+            no earlier night's route, so the name page is the one place a standing could reach; PR 529's test reads
+            KEYS's page for an earlier night over the researched store with none, beside tonight's drawing one. PR 527
+            draws the graphs' card between the chart's and the figures', held on every fixture name by the read-back's
+            order; it adds no read of the store, its graphs drawn from the reactions, quarters and analysts' figures
+            the page already read, and changes no figure of the name page. PRs 526 and 528 touch no file of the read
+            surface or the cards.
+Store:      read-only, schema 104, newest session 2026-10-21. The 20 closed swing trades, 7 in `family_trade`, 9 in
+            `index_family_trade` and 4 in `index_rule_trade`, none trailing and none under a menu's exit, each replayed
+            over the stored closes from its listing night: all 20 end on their stored session, 11 at their target and 9
+            under their stop, so paper trading reads each from its replay. The night of 2026-10-21 ran all 47 steps
+            ok, 23:00:09 UTC to 00:16:53 UTC.
+Screens:    on 5152, the Release build of 5c701e7f, whose shipped source is main's, PR 529 changing none, read through
+            the DevTools protocol at 1440 pixels and a true 390 in both palettes, writing nothing. The chart page of
+            DHR, a drift pick of 2026-10-21 whose report the off-peak run wrote, and of OKTA, an S&P 400 pullback pick:
+            the masthead, the report line, then the chart, the graphs' card and the figures, in that order at both
+            widths, the chart the column's width above them, 1,400 pixels at 1440 and 362 at 390 like the cards
+            beneath it; at 390 the page no wider than its screen, the chart and each of the four graphs scrolling
+            sideways in its own box, 328 pixels of 560, as 19.11's chart does. DHR's report line and its name page draw
+            the standing "stands" with no control, its pass having written it that day; its name page for 2026-10-20
+            draws the earlier night's notice and no standing or control. Paper trading on all three indices: the S&P
+            500's closed trades read their endings in words, its page list's as their stored outcomes; the S&P 400's
+            and 600's live rules, frozen at 20.11, count from 2026-10-21 and hold no closed trade yet, their earlier
+            versions' trades folded; no page's text holds an adjusted p, a version code or a registration day; at 390
+            nothing outside a table's box is wider than the screen.
+Swept:      20 mutations, each predicted before its run, made on this branch in this checkout over the file's own text
+            and restored from its own bytes, the tree's diff the same after each as before, each filtered to the tests
+            of the property it breaks, after those 44 ran green over the clean tree. PR 525's, each the smallest edit
+            undoing one case the handoff names: (p1) a trailing trade's cap-session close under its trail read as its
+            time limit, and (p2) one over its trail read under it: red at the replay's test alone. (p3a) the sale read
+            as a stop-out on its stop at its cap: red at the closed trade's words test alone. (p3b) the replay's stop a
+            cent higher, so a close on it falls through: red at the replay's test alone. (p4) the menu's exit left out
+            of the replay: red there and at the store's trade under the menu's time exit. (p5a) a missing close left at
+            nought in the replay, and (p5b) read as the close before it: green, as predicted, over the paper page's 16
+            tests, and p5a again over 685, the read surface's 678 and the fixture's seven paper and fill tests, p5b's
+            wider run stopped for the night's window; the finding below. (p6) the scorecard's rule words given its
+            version: red at the scorecard's test alone. The fourth review's m1 to m11 again: (m1) the standing's
+            controls offered on the pass's own day and (m2) its cost drawn with no control: red at the name page's
+            standing test; (m3) an export reading what research cost: red at the two export tests reading its
+            controls; (m4) the control's two hidden inputs swapped: green, as predicted; (m5) an earlier night's page
+            reading the staleness verdict: red at PR 529's test alone, where the fourth review saw it survive; (m6) the
+            failed pill in ink and (m7) its rule removed: red at the pill test, m6 at the text colours' too; (m8)
+            easily luck read only over the level: red at the scale's test; (m9) a trade ended on the night read as
+            held: red at the variants' test; (m10) a level year read better: red at the test year's; (m11) the adjusted
+            p in the verdict pill's text: red at the scorecard's test alone, where the fourth review saw it survive.
+            PR 527's on 19.11's page: (g1) the graphs' card drawn before the chart: red at the graphs' read-back alone.
+            Pinned sources, the walks' among them, were not edited.
+Judged:     the handoff's three judgement calls stand. m4 is equivalent: the shell posts a control's fields as
+            `new URLSearchParams(new FormData(form))` and the passes route binds them by name, so the inputs' order
+            changes the page's bytes and nothing a press does. PR 525 reading the sale where the closes do not
+            reproduce an end is what section 15.21 states, "read off where it was sold, as the walks sell, only where
+            its closes do not reproduce that end", and the store's 20 closed trades all reproduce. PR 529 holding the
+            earlier night with a test and no source changed: the name route already read no staleness, pass, spend or
+            priced calls for an earlier night, the gap was the test, and m5 now reddens it.
+Found:      no defect in shipped code. One test defect, carried below: (p5) is a missing property. The replay hands a
+            closed trade's ending to its sale where a close from its listing to its end is missing, and the test's
+            missing close stands mid-trade, where a replay over a nought or a filled close ends a session early and the
+            session check reads the sale as well. No test holds a close missing on the session the trade ended, where
+            the guard alone decides, and there a replay over a nought reads a trade that reached its target as closed
+            under its stop. The code is right; the close of the session a trade ended on goes missing only where a year
+            refetched whole comes back without it, a session the provider cannot serve, and none of the store's 20
+            closed trades lacks one. Asked at about 21:22 UTC on 2026-10-22 whether to sign with it carried or have it
+            corrected first, the operator ruled: "Sign now, gap carried (Recommended)".
+Carried:    (p5), the replay's test of a close missing on the session a trade ended, one sold at its target and one
+            under its stop on its cap's session, owed by the next change to a closed trade's ending. Phase 19 opened no
+            operating row, and the 33 operating rows carry as before. Put to the operator on 2026-10-21 and still
+            theirs: counts written with "(s)" on phase 19's pages, the heading percentiles averaging readings that point
+            opposite ways, and the chart page's next report on the night a stock reported. Owed by phase 20 and not 19:
+            the frozen S&P 400 and 600 heavyweights cards drawing their setting's key as stored, a 20.11 correction.
+            Put to the operator: the theme an industry's research is read for and the swing filter's sector standings
+            with the sweeps' history (15.1), and the paid report's route taking a filing's first EX-99 exhibit (20.3).
+            From phase 17's sign-off, (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.
+            The paper reads of a trailing trade ended on its cap's session and of a trade under a menu's exit, held by
+            the suite alone, are read on the first night one ends on the store. Phase 18's sign-off is owed by its own
+            fresh session, and phase 20 is in progress.
+Signed:     phase 19, over b6cb98dc.
