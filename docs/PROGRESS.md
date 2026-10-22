@@ -6221,3 +6221,44 @@ Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their 
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 19.11 - correction: a written report's standing and the controls that write it again are drawn under the name page's masthead and on the chart page's report line   2026-10-22
+
+Queue:      as the 19.11 ruling's entry above.
+Ruled:      as that entry states.
+Corrected:  a written report's standing, a slate "stands" or a red "stale" with the triggers that fired, is drawn under the
+            name page's masthead with the day its newest section was written and on the chart page's report line after
+            Open the report, with the controls that rewrite its stale sections and regenerate it after a line of what
+            research has cost; each control offered on the research region's own terms, so none on a day a pass already
+            wrote the report, while the cap has paused research or on a page about an earlier night, and no standing where
+            none is written; a press from either confirmed with the cost its own block states and watched for the stock
+            its form names (see: Every link that opens a stock opens its chart page first, and the chart page links to its
+            report with the controls that write it again). The decision superseded and moved, section 15.9's Regenerate
+            Report row and 15.22's report line, the four citations, the roster and the changelog.
+Tests:      three more: the name page's standing over the researched fixture standing, stale, on the day its pass ran,
+            paused and unwritten; the chart page's report line followed by the standing, standing and stale, and a stock
+            with no report keeping the list's own request; and the shell's script confirming a press with its block's own
+            cost and watching its form's stock. The regenerate test reads its control twice, each after its cost.
+Measured:   read back from a scratch Debug build of this tree over the operator's store on a port of its own, writing
+            nothing to the store: TRV's chart page and name page each drawing its red stale pill with the news pulse that
+            made it stale, the cost and both controls.
+Claims:     1372, as before: no row's claim added or removed by this pull request.
+Mutated:    the rule, stated before the runs: each property the correction adds, the smallest edit undoing it, filtered to
+            the tests naming it with its red predicted, made in this checkout over the file's own text and restored from
+            it, the tree's diff the same after each. r1 the standing left off the name page: predicted red at the name
+            page's standing test and the regenerate test; result red at both. r2 the chart page's report line drawing no
+            standing: predicted red at the chart page's test; result red. r3 the controls drawn before their cost:
+            predicted red at the name page's standing test and the regenerate test; result red at both and at the chart
+            page's test. r4 the standing's controls offered whatever the day its pass ran: predicted red at the name page's
+            standing test; result red, two controls on the pass's own day. r5 a press confirmed with the page's first cost
+            line: predicted red at the script's test; result red. r6 the pass watched for the stock the route names:
+            predicted red there; result red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2587 of 2587 tests ran with none failed,
+            migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the phase 19 sign-off by a fresh session over the corrected main; the theme an industry's research is read for
+            and the swing filter's sector standings with the sweeps' history, put to the operator; the paid report's route
+            taking a filing's first EX-99 exhibit as its release, put to the operator; the long releases' fixes of the 20.3
+            ruling; 20.12; PR 505 rebased with its migration at 104; the phase 18 sign-off by a fresh session.

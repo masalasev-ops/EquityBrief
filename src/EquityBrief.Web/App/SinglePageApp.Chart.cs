@@ -20,8 +20,8 @@ public sealed record ChartGap(DateOnly After, DateOnly Before);
 
 // The chart page as the shell draws it: the stock, the interval shown, its candles with the averages at each, the night's
 // bands, a listing rule's plan as lines, the report and ex-dividend marks, the stretches holding no daily row, the line
-// naming what the weekly and monthly charts read before the store's year, the grid's groups, and the day the stock's
-// report was written, none where none is.
+// naming what the weekly and monthly charts read before the store's year, the grid's groups, the day the stock's
+// report was written, none where none is, and the written report's standing with the controls that write it again.
 public sealed record ChartPageView(
     string Ticker,
     string Interval,
@@ -32,10 +32,11 @@ public sealed record ChartPageView(
     IReadOnlyList<ChartGap> Gaps,
     string? Before,
     IReadOnlyList<GridGroup> Grid,
-    DateOnly? ReportWritten);
+    DateOnly? ReportWritten,
+    ReportStandingView? Standing = null);
 
 // The chart page, which every link opening a stock opens first, and the masthead it shares with the name page.
-// see: Every link that opens a stock opens its chart page first, and the chart page links to its report
+// see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
 public sealed partial class SinglePageApp
 {
     public const string ChartRoute = MarkRenderer.ChartRoute;
@@ -125,9 +126,10 @@ public sealed partial class SinglePageApp
         region.Append(marks.PricesSuspect(ticker, suspect));
         region.Append(Masthead(ticker, bars, mast, quote, quoteSession, asksForQuotes: true, night: null, suspect, watched, string.Empty));
 
-        // The report: a link to it with the day it was written, or that none is written and the name page's request.
+        // The report: a link to it with the day it was written, its standing and the controls that write it again, or that
+        // none is written and the name page's request.
         region.Append(view.ReportWritten is { } written
-            ? FormattableString.Invariant($"<p class=\"report-line\" data-report=\"written\" data-written=\"{written:yyyy-MM-dd}\"><a class=\"btn open-report\" href=\"{NameRoute}{Uri.EscapeDataString(ticker)}\">Open the report</a> <span class=\"muted\">written {written:yyyy-MM-dd}</span></p>")
+            ? FormattableString.Invariant($"<p class=\"report-line\" data-report=\"written\" data-written=\"{written:yyyy-MM-dd}\"><a class=\"btn open-report\" href=\"{NameRoute}{Uri.EscapeDataString(ticker)}\">Open the report</a> <span class=\"muted\">written {written:yyyy-MM-dd}</span></p>") + marks.ReportStanding(ticker, view.Standing, namesTheDay: false)
             : FormattableString.Invariant($"<div class=\"report-line\" data-report=\"none\"><p>No report is written yet for {Escaped(ticker)}. <a href=\"{NameRoute}{Uri.EscapeDataString(ticker)}\">Its page</a> holds every computed figure meanwhile.</p>{MarkRenderer.AskForAReport(ticker)}</div>"));
 
         var chart = new StringBuilder();

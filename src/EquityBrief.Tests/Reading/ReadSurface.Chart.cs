@@ -14,7 +14,7 @@ namespace EquityBrief.Tests.Reading;
 // read-surface, 19.11: the chart page every link that opens a stock opens first, its candles rolled up in the core and
 // worked by hand, its averages and returns as the name page's figures, the daily chart reading no pulled bar, the page
 // asking for nothing but the delayed quote, and every page's time kept in memory and drawn on the Run page.
-// see: Every link that opens a stock opens its chart page first, and the chart page links to its report
+// see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
 // see: Each request's route and server time is kept in memory for the read surface's life and drawn on the Run page, and no store holds it
 public partial class ReadSurface
 {

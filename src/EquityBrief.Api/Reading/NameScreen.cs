@@ -1440,7 +1440,8 @@ public static partial class NameScreen
                 : null,
             figuresChecked: checkedFigures.Conflicts,
             filedFactsHeld: checkedFigures.Compared > 0,
-            behind: behind);
+            behind: behind,
+            standing: Standing(staleness, newest, spend, priced, today, accepted.Count > 0 ? accepted.Max(section => section.AsOf) : null));
     }
 
     // The ninety days after the night the page draws: the company's next results, its next ex-dividend date, declared or
@@ -1924,7 +1925,7 @@ public static partial class NameScreen
 
         if (!ranToday && staleness?.State == Core.Research.ResearchState.Stale)
         {
-            controls.Add(new ResearchControl("rewrite", "Rewrite the stale sections", Refresh: false, PaidForLocal: false));
+            controls.Add(new ResearchControl(RewriteKind, "Rewrite the stale sections", Refresh: false, PaidForLocal: false));
         }
 
         // The operator's own ask, which the rule that nothing expires on a timer names beside the
@@ -1933,7 +1934,7 @@ public static partial class NameScreen
         // see: Nothing expires on a timer
         if (!ranToday && staleness?.State is Core.Research.ResearchState.Stands or Core.Research.ResearchState.Stale)
         {
-            controls.Add(new ResearchControl("refresh", "Regenerate Report", Refresh: true, PaidForLocal: false));
+            controls.Add(new ResearchControl(RefreshKind, "Regenerate Report", Refresh: true, PaidForLocal: false));
         }
 
         if (notWritten.Any(line => line.Reason.StartsWith(LocalUnavailable, StringComparison.Ordinal) || line.Reason.StartsWith(CannotHold, StringComparison.Ordinal)))
@@ -1943,6 +1944,31 @@ public static partial class NameScreen
 
         return controls;
     }
+
+    // The two controls that write a written report again: its stale sections, and every section.
+    public const string RewriteKind = "rewrite";
+    public const string RefreshKind = "refresh";
+
+    // A written report's standing as the chart page's report line and the name page under its masthead draw it: the
+    // verdict's own state, what made a stale one so, the day its newest section was written, and of the controls the
+    // research region offers the two that write a written report again, beside what research has cost. None where no
+    // report is written, and none for a page about an earlier night, which judges nothing.
+    // see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
+    public static ReportStandingView? Standing(
+        StalenessVerdict? staleness,
+        PassRecord? pass,
+        SpendVerdict? spend,
+        IReadOnlyList<(string RunId, decimal Spend)>? priced,
+        DateOnly? today,
+        DateOnly? written) =>
+        staleness is { State: Core.Research.ResearchState.Stands or Core.Research.ResearchState.Stale } judged
+            ? new ReportStandingView(
+                ResearchState(judged).State,
+                written,
+                [.. judged.Fired.Select(fired => fired.Line)],
+                [.. Controls(judged, pass, [], spend, priced, today).Where(control => control.Kind is RewriteKind or RefreshKind)],
+                spend is null || priced is null ? null : Cost(priced, spend))
+            : null;
 
     // What research has cost, from the priced calls the run log carries: the passes they
     // were made in, what they came to, and the most one pass came to, beside the line the
