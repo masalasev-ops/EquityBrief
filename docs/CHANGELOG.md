@@ -26,6 +26,34 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-22 - .claude/rules/checks.md - fixture-expectations reaches a reading taken only at its pin's window
+Authorised by: A reading is taken only at the window its pin names, and the model is loaded again at it wherever it is held at another
+Was:
+> fixture-expectations: ... and a version carrying only from one differing in the fit's rule alone |
+Now:
+> fixture-expectations: ... and a version carrying only from one differing in the fit's rule alone; and from the second 20.3 correction of 2026-10-22 a run refusing where its profile's window is not the pin's, ... and a refusal naming a window other than the pin's ending the run with nothing stored for its release and no cut, each over a constructed store and the captured list and refusal |
+Why: the correction adds these assertions.
+
+### 2026-10-22 - RUNBOOK.md - the window is a part of the pin a run compares and holds
+Authorised by: A reading is taken only at the window its pin names, and the model is loaded again at it wherever it is held at another
+Was:
+> ... an answer whose model or runtime is not the pin's ends the run the same way. A refusal after a deliberate update is answered by `--pin`. From 20.2 a slot first fetches ...
+Now:
+> ... A refusal after a deliberate update is answered by `--pin`. From the second 20.3 correction of 2026-10-22 the window the profile loads the model at is compared too, the run reads LM Studio's list before each release and loads the model again at the pin's window wherever LM Studio holds it at another, ... and a refusal past another window ends the run naming both windows, its release left unread for the next run (see: ...). From 20.2 a slot first fetches ...
+Why: a reading could be taken at a window the pin does not name, found before pin 4's history read.
+
+### 2026-10-22 - ARCHITECTURE.html - a reading is taken only at the window its pin names
+Authorised by: A reading is taken only at the window its pin names, and the model is loaded again at it wherever it is held at another
+Was:
+> 12.3: ... and an answer whose model or runtime is not the pin's ends it, since the runtime answers a request naming a model it does not hold with whatever model it has loaded. From the 20.1 correction of 2026-10-19, ...
+> 12.3: ... is cut to the opening the window holds, on the request's tokens and the window the refusal names, back to a line's end ...
+> 18, the model, its file, the runtime or the prompt is not the pin's: ... (see: The local run refuses to start where LM Studio's saved structured output for the model differs from the one its history read started under)</td>
+Now:
+> 12.3: ... with whatever model it has loaded. From the second 20.3 correction of 2026-10-22 the window its profile loads the model at is a part compared after the instruction's version; before each release a run reads the runtime's list of its models, keeping the model only where the list holds it once at the pin's window or at one it does not state and loading it again at the pin's window otherwise, since LM Studio loads it itself at a window of its own saved settings; and a refusal naming a window other than the pin's ends the run as such an answer does (see: ...). From the 20.1 correction of 2026-10-19, ...
+> 12.3: ... on the request's tokens and the window the refusal names, the pin's from the second 20.3 correction of that day, back to a line's end ...
+> 18, the same row: ...; from the second 20.3 correction of 2026-10-22 the run refuses as well where its profile's window differs from the pin's, reads the runtime's list before each release and loads the model again at the pin's window wherever the list holds it at another or more than once, and ends at a refusal naming another window, storing nothing for that release and cutting nothing (see: ...)</td>
+Why: the pin names the window the model is loaded at, and nothing held a reading to it; LM Studio reloads the model itself at its own saved window.
+
 ### 2026-10-22 - RUNBOOK.md - pin 4 written under LM Studio's newest runtime carries none of pin 3's readings
 Authorised by: A new reading version carries each reading whose request it would send unchanged and reads the rest
 Was:

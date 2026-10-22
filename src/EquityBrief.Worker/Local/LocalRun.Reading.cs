@@ -231,11 +231,11 @@ public sealed partial class LocalRun
                         }
                     }
 
-                    if (!prepared)
-                    {
-                        loaded = await feed.PrepareAsync(cancellation);
-                        prepared = true;
-                    }
+                    // The runtime's list is read before each release, since LM Studio may have loaded the model again
+                    // at a window of its own since the release before.
+                    // see: A reading is taken only at the window its pin names, and the model is loaded again at it wherever it is held at another
+                    loaded |= await feed.PrepareAsync(cancellation);
+                    prepared = true;
 
                     var taken = await ReadReleaseAsync(pin, release, filers, cancellation);
 
@@ -405,6 +405,10 @@ public sealed partial class LocalRun
             try
             {
                 reply = await feed.AskAsync(request, cancellation);
+            }
+            catch (ReadingRefused refused) when (refused.Context is { } window && window != pin.Context)
+            {
+                throw new PinBroken(FormattableString.Invariant($"the runtime refused a release past a window of {window} tokens where the pin names {pin.Context}"));
             }
             catch (ReadingRefused refused)
             {

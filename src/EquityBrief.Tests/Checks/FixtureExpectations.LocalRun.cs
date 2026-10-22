@@ -204,14 +204,15 @@ public partial class FixtureExpectations
         var modified = pin.Modified;
 
         // Each part compared before a run asks anything, in order: the model, the file by its hash where hashed whole and
-        // by its size and modified instant otherwise, and the instruction's version.
-        Assert.Null(ReadingPins.Differs(pin, Gemma, pin.Sha256, pin.Size, modified, ReleaseQuestions.Version));
-        Assert.Null(ReadingPins.Differs(pin, Gemma, null, pin.Size, modified, ReleaseQuestions.Version));
-        Assert.Equal(ReadingPins.ModelPart, ReadingPins.Differs(pin, Qwen, pin.Sha256, pin.Size, modified, ReleaseQuestions.Version));
-        Assert.Equal(ReadingPins.FilePart, ReadingPins.Differs(pin, Gemma, new string('0', 64), pin.Size, modified, ReleaseQuestions.Version));
-        Assert.Equal(ReadingPins.FilePart, ReadingPins.Differs(pin, Gemma, null, pin.Size + 1, modified, ReleaseQuestions.Version));
-        Assert.Equal(ReadingPins.FilePart, ReadingPins.Differs(pin, Gemma, null, pin.Size, modified.AddTicks(1), ReleaseQuestions.Version));
-        Assert.Equal(ReadingPins.PromptPart, ReadingPins.Differs(pin, Gemma, pin.Sha256, pin.Size, modified, "000000000000"));
+        // by its size and modified instant otherwise, the instruction's version, and from the second 20.3 correction of
+        // 2026-10-22 the profile's window.
+        Assert.Null(ReadingPins.Differs(pin, Gemma, pin.Sha256, pin.Size, modified, ReleaseQuestions.Version, 50176));
+        Assert.Null(ReadingPins.Differs(pin, Gemma, null, pin.Size, modified, ReleaseQuestions.Version, 50176));
+        Assert.Equal(ReadingPins.ModelPart, ReadingPins.Differs(pin, Qwen, pin.Sha256, pin.Size, modified, ReleaseQuestions.Version, 50176));
+        Assert.Equal(ReadingPins.FilePart, ReadingPins.Differs(pin, Gemma, new string('0', 64), pin.Size, modified, ReleaseQuestions.Version, 50176));
+        Assert.Equal(ReadingPins.FilePart, ReadingPins.Differs(pin, Gemma, null, pin.Size + 1, modified, ReleaseQuestions.Version, 50176));
+        Assert.Equal(ReadingPins.FilePart, ReadingPins.Differs(pin, Gemma, null, pin.Size, modified.AddTicks(1), ReleaseQuestions.Version, 50176));
+        Assert.Equal(ReadingPins.PromptPart, ReadingPins.Differs(pin, Gemma, pin.Sha256, pin.Size, modified, "000000000000", 50176));
 
         // Hashed whole where the size or the modified instant differs from the pin's, and on a run in an ISO week of UTC
         // no run hashed it whole in: Sunday 2026-10-18 and Monday 2026-10-19 sit in two weeks.

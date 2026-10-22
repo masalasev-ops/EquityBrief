@@ -68,8 +68,8 @@ public interface IReadingModelFeed
 // reasoning token and stated its runtime; a request naming a model the runtime does not hold is answered by whatever
 // model it has loaded, which is why the answering model is read rather than assumed; and a prompt past the loaded
 // context is refused with a 400 naming the context. The model is listed, loaded and unloaded through LM Studio's own
-// interface as the report lane's is, at its profile's context and one model at a time, and unloaded at the end only
-// where this feed loaded it.
+// interface as the report lane's is, one model at a time, and unloaded at the end only where this feed loaded it; where
+// the report lane keeps a model held at a larger context, this feed keeps it only held once at its profile's.
 public sealed class LmStudioReadingFeed(HttpClient client, LocalModelSettings settings) : IReadingModelFeed
 {
     // The native chat answer, beside the OpenAI-compatible address the profile names.
@@ -100,7 +100,11 @@ public sealed class LmStudioReadingFeed(HttpClient client, LocalModelSettings se
             throw new ReadingRuntimeUnavailable(ReadingRuntimeUnavailable.ModelNotHeld, $"LM Studio holds no model named {settings.Model}, which the local profile {settings.Profile} names.");
         }
 
-        if (held.Loaded && (held.Context is not { } context || context >= settings.ContextTokens))
+        // A reading is taken at its pin's window alone, so a model is kept only where the runtime holds it once at the
+        // profile's window, or at one its list does not state; LM Studio loads it itself at a window of its own saved
+        // settings, larger or smaller, after an update or on a request with nothing loaded.
+        // see: A reading is taken only at the window its pin names, and the model is loaded again at it wherever it is held at another
+        if (held.Instances.Count == 1 && (held.Context is not { } context || context == settings.ContextTokens))
         {
             return false;
         }
