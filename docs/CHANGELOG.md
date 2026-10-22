@@ -26,6 +26,46 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-21 - .claude/rules/checks.md - fixture-expectations and read-surface reach a financial company's revenue read against no estimate
+Authorised by: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
+Was:
+> fixture-expectations: ... and from the second 15.1 correction of 2026-10-21 ... and the fixture's AAPL, MSFT and KEYS in the Information Technology sector their captured answers file with NFLX beside nobody |
+>
+> read-surface: ... and from the second 15.1 correction of 2026-10-21 a member's industry on the chart page's grid and its masthead the GICS industry its newest company fetch files on every index, a membership row's own words drawn by no page |
+Now:
+> fixture-expectations: ... with NFLX beside nobody; and from the second 18.2 correction of 2026-10-21 a financial company's revenue read against no estimate, its quarter's own or the one its year's implies, its line saying the estimate and the filing measure it on different bases while its earnings a share is read against its estimate and another sector's revenue against both, worked by hand |
+>
+> read-surface: ... a membership row's own words drawn by no page; and from the second 18.2 correction of 2026-10-21 a financial company's revenue drawn against no estimate on the report's quarter table and the chart page with the words saying the estimate and the filing measure it on different bases, the sector read off the newest company fetch on or before the page's night and a fetch made after it not read, over the universes' store |
+Why: the second 18.2 correction of 2026-10-21 adds these assertions.
+
+### 2026-10-21 - ARCHITECTURE.html - a financial company's revenue is read against no estimate
+Authorised by: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
+Was:
+> The latest quarter, section 4: ... a fiscal fourth quarter's revenue against its year's estimate less its three earlier quarters marked implied, a line reading no estimate saying why, ...
+>
+> 15.9's The latest quarter: ... drawn as implied with what it was worked from beneath the table; a line reading no estimate saying why; ...
+>
+> 15.22's The figures: ... from the 18.2 correction of 2026-10-21 revenue against an implied estimate named so and where none is read the report's words for why; the surprise; ...
+>
+> Six citations of: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
+Now:
+> The latest quarter, section 4: ... marked implied, a financial company's revenue against none, a line reading no estimate saying why, ...
+>
+> 15.9's The latest quarter: ... beneath the table; from the second 18.2 correction of 2026-10-21 a financial company's revenue read against no estimate and its line saying the estimate and the filing measure it on different bases; a line reading no estimate saying why; ...
+>
+> 15.22's The figures: ... and where none is read the report's words for why; from the second 18.2 correction of 2026-10-21 a financial company's revenue against none with the report's words for why; the surprise; ...
+>
+> The six citations name: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
+Why: the operator ruled on the evening of 2026-10-21 that a financial company's pages draw no beat or miss of revenue against the analysts' estimate, the implied fourth quarter included, and say the two measure revenue on different bases.
+
+### 2026-10-21 - SCHEMA.md - the latest quarter's decision cited by its new name
+Authorised by: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
+Was:
+> estimate_trend: ... (see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters)
+Now:
+> estimate_trend: ... (see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters)
+Why: as the architecture's entry above; the decision it cited was superseded.
+
 ### 2026-10-21 - .claude/rules/checks.md - fixture-expectations and read-surface reach every member named and grouped by its company fetch
 Authorised by: Every member is named and grouped by the GICS industry and sector its company fetch files
 Was:

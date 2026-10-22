@@ -6100,3 +6100,41 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             request, with the figures it states.
 Carried:    the theme an industry's research is read for and the swing filter's sector standings with the sweeps' history,
             each on the index's own words and put to the operator, as the 15.1 ruling's entry above says.
+
+### 18.2 - correction: a financial company's revenue is read against no estimate, its line saying the estimate and the filing measure it on different bases   2026-10-21
+
+Queue:      as the 15.1 ruling's entry above.
+Ruled:      the second item of the operator's rulings of the evening of 2026-10-21, word for word in the 15.1 ruling's entry
+            above.
+Found:      of the 41 quarterly revenue estimates kept before a release by the night of 2026-10-20, 21 stood more than a fifth
+            from the revenue the filing reports, every one a financial company's: the analysts estimate a bank's or an
+            insurer's revenue on another basis than the one its filing's revenue line reports, so the report's quarter table
+            and the chart page drew a large miss or beat that was a difference of basis.
+Corrected:  a company whose newest company fetch on or before the page's night files the GICS sector Financials reads its
+            revenue against no estimate, its quarter's own or the one its year's implies, its line saying the analysts'
+            estimate and the filing measure a financial company's revenue on different bases, on the report's quarter table
+            and the chart page alike, its earnings a share read against its estimate as any company's; the quarter table's
+            key says so (see: The latest quarter is read line by line against the estimates kept before its release and the
+            quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its
+            year's estimate less three quarters). No rule reads the comparison, so no rule moves. The decision superseded
+            and moved, section 4's and 15.9's rows of the latest quarter, the chart page's figures row, the six citations of
+            the decision and SCHEMA's, the roster, the guide's latest quarter and the changelog.
+Tests:      two more: the latest quarter worked by hand for a financial company, its own estimate and its year's implied one
+            both kept and neither read, its line's words, its earnings a share against its estimate, and another sector's and
+            a company filing none read against both; and the report's quarter table and the chart page over the universes'
+            store, M2 filing Financials and M1 Financials only from a fetch after the page of 2026-10-01, which reads M1's
+            Energy and its estimate of 500.
+Claims:     1372, as before: no row's claim added or removed by this pull request.
+Mutated:    each rule stated before its run. N1 the sector read by no line: predicted red at both tests; result red at
+            both, the revenue read against 2,850 with a difference of 90 where it reads none. N2 the sector read from the
+            newest fetch whatever the page's night: predicted red at the page test's 2026-10-01 page, Financials where
+            Energy; result red, ("Financials", "Financials") where ("Energy", "Financials"). Each made in this checkout over
+            the file's own text and restored from it, the tree's diff the same after.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2583 of 2583 tests ran with none failed,
+            migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the theme an industry's research is read for and the swing filter's sector standings with the sweeps' history,
+            put to the operator; the long releases' fixes of the 20.3 ruling above; 20.12; PR 505 rebased with its migration
+            at 104; the phase 18 and phase 19 sign-offs by fresh sessions.

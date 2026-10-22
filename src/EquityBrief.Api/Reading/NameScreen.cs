@@ -519,7 +519,7 @@ public static partial class NameScreen
         var peers = inputs.Industry is { } industry ? EquityBrief.Core.Report.PeerValuation.Of(industry, ticker, inputs.Peers) : null;
 
         return new ReportView(
-            EquityBrief.Core.Report.QuarterLines.Latest(inputs.Quarters, inputs.Estimates),
+            EquityBrief.Core.Report.QuarterLines.Latest(inputs.Quarters, inputs.Estimates, inputs.Sector),
             EquityBrief.Core.Report.QuarterLines.Growth(inputs.Quarters),
             inputs.FetchedOn,
             currency,

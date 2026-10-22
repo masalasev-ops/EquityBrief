@@ -74,7 +74,7 @@ public sealed record QuarterMultiple(DateOnly Quarter, decimal Multiple);
 
 // The latest quarter line by line, the growth of the eight newest quarters and the margins of the twelve newest, each
 // worked by one function over the newest fetch's quarters, so the page and its file read one arithmetic.
-// see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
+// see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
 public static class QuarterLines
 {
     public const int GrowthQuarters = 8;
@@ -115,6 +115,12 @@ public static class QuarterLines
 
     public static string NotKept(DateOnly from) => FormattableString.Invariant($"not kept: estimates kept from {from:yyyy-MM-dd}");
 
+    // A financial company's revenue is read against no estimate, its quarter's own or the one its year's implies: the
+    // analysts estimate a bank's or an insurer's revenue on another basis than the one its filing reports.
+    public const string FinancialsSector = "Financials";
+
+    public const string OtherBasis = "not compared: the analysts' estimate and the filing measure a financial company's revenue on different bases";
+
     // The calendar's words for a report released before the session opens and after it closes.
     public const string BeforeTheOpen = "before";
 
@@ -149,8 +155,8 @@ public static class QuarterLines
     // against the quarter ending within a week of a year before it; none where no quarter holds either. Revenue is read
     // against the quarter's own estimate, and where none was kept against the one its fiscal year's estimate implies: the
     // year's less its three earlier quarters as reported, read only where all three hold a revenue and it stands above
-    // nought.
-    public static LatestQuarter? Latest(IReadOnlyList<QuarterRow> quarters, KeptEstimates? estimates = null)
+    // nought. A company whose sector is Financials reads its revenue against neither.
+    public static LatestQuarter? Latest(IReadOnlyList<QuarterRow> quarters, KeptEstimates? estimates = null, string? sector = null)
     {
         if (quarters.Where(quarter => quarter.Revenue is not null || quarter.EpsActual is not null).MaxBy(quarter => quarter.PeriodEnd) is not { } newest)
         {
@@ -158,7 +164,9 @@ public static class QuarterLines
         }
 
         var earlier = Near(quarters, newest.PeriodEnd.AddYears(-1));
-        var (revenueEstimate, revenueAbsent, revenueImplied) = RevenueAgainst(quarters, newest, estimates);
+        var (revenueEstimate, revenueAbsent, revenueImplied) = string.Equals(sector, FinancialsSector, StringComparison.Ordinal)
+            ? (null, OtherBasis, null)
+            : RevenueAgainst(quarters, newest, estimates);
 
         QuarterLine Line(string line, Func<QuarterRow, decimal?> read, string absent, bool perShare = false, bool kept = false, decimal? estimate = null, bool margin = false, ImpliedEstimate? implied = null)
         {

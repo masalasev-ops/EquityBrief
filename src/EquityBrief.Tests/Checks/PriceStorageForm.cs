@@ -212,7 +212,7 @@ public class PriceStorageForm
         // `Percents.FromFraction` joined it at 18.2: a fraction worked as a decimal from money, a change, a margin or a
         // share, out as a percentage, through `Statistic.FromRatio`, which every figure of the name page's quarter, segments,
         // margins and analysts in per cent is read through.
-        // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
+        // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
         //
         // `ValuationReading.Yield` joined it at 17.12: four quarters' net income and a filed share count in, the
         // earnings over the value at a close out, the count brought to the store's scale by the close as traded on

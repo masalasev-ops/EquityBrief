@@ -249,7 +249,7 @@ public static class ChartScreen
 
         // A figure against the estimate the report page reads it against, an implied one named so, and where none is read
         // the report page's words for why.
-        // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
+        // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
         static GridFigure AgainstItsEstimate(string label, EquityBrief.Core.Report.QuarterLine? line, Func<decimal, string> shown) =>
             line?.Reported is { } reported
                 ? new GridFigure(
