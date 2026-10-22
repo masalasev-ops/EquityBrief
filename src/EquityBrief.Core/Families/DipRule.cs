@@ -11,7 +11,40 @@ public sealed record DipSetting(double RsiUnder, bool FiftyOverLong, int DropSes
 {
     // The setting as a card's gates and an approval's words state it, each dial and its level.
     public string Short => FormattableString.Invariant(
-        $"rsi {RsiUnder:0.##}|trend {(FiftyOverLong ? "fifty" : "long")}|stop {StopMoves:0.##}|exit {ExitAverage}|limit {TimeLimit}|market {Market}");
+        $"rsi {RsiUnder:0.##}|drop {DropSessions}|trend {(FiftyOverLong ? "fifty" : "long")}|stop {StopMoves:0.##}|exit {ExitAverage}|limit {TimeLimit}|market {Market}");
+
+    // The setting as the chips a card draws beneath its heading, each dial in a few words, the floors its index reads
+    // first: the dollar volume floor where the index holds one, and the least close on every index.
+    public IReadOnlyList<string> ChipsOn(string index) =>
+    [
+        .. Readings.MemberReadings.DollarVolumeFloor(index) is not null ? ["dollar floor 1 times"] : Array.Empty<string>(),
+        FormattableString.Invariant($"close at least ${Readings.MemberReadings.LowestPrice:0.##}"),
+        FormattableString.Invariant($"above its {DipRule.TrendSessions}-session average"),
+        .. FiftyOverLong ? [FormattableString.Invariant($"its {DipRule.FiftySessions}-session above it")] : Array.Empty<string>(),
+        FormattableString.Invariant($"{DipRule.RsiSessions}-session RSI under {RsiUnder:0.##}"),
+        FormattableString.Invariant($"no report in {DropSessions} sessions or ahead"),
+        FormattableString.Invariant($"stop {StopMoves:0.##} moves"),
+        FormattableString.Invariant($"sold over its {ExitAverage}-session average"),
+        FormattableString.Invariant($"{TimeLimit} sessions at most"),
+        Market == DipRule.MarketOff ? "market setting off" : FormattableString.Invariant($"market setting {Market}"),
+    ];
+
+    // A setting read back from its short form, none where the form does not state every dial.
+    public static DipSetting? FromShort(string stated)
+    {
+        var dials = stated.Split('|', StringSplitOptions.TrimEntries)
+            .Select(part => part.Split(' ', 2))
+            .Where(part => part.Length == 2)
+            .ToDictionary(part => part[0], part => part[1], StringComparer.Ordinal);
+
+        static double? Number(IReadOnlyDictionary<string, string> dials, string name) =>
+            dials.TryGetValue(name, out var value) && double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number) ? number : null;
+
+        return Number(dials, "rsi") is { } rsi && Number(dials, "drop") is { } drop && dials.TryGetValue("trend", out var trend)
+            && Number(dials, "stop") is { } stop && Number(dials, "exit") is { } exit && Number(dials, "limit") is { } limit && dials.TryGetValue("market", out var market)
+            ? new DipSetting(rsi, trend == "fifty", (int)drop, stop, (int)exit, (int)limit, market)
+            : null;
+    }
 
     // The setting in words, as a card states the rule.
     public string Words =>
@@ -20,8 +53,8 @@ public sealed record DipSetting(double RsiUnder, bool FiftyOverLong, int DropSes
         + FormattableString.Invariant($" whose {DipRule.RsiSessions}-session relative strength index closes under {RsiUnder:0.##} after a sharp drop, with no report on any of the {DropSessions} sessions to the listing nor one due before its time limit ends. Bought at the next session's open, its stop {StopMoves:0.##} typical moves under the listing close and no target; sold at the next open after the first close above its {ExitAverage}-session average of closes or a close under its stop, and at the close of its {TimeLimit}th session where neither came.");
 }
 
-// One member as the dip reads it on one night: its closes to the night, oldest first, with the pulled history's before
-// the store's year where the night reads them; its typical move on the night; whether it clears the floors every
+// One member as the dip reads it on one night: its stored closes to the night, oldest first; its typical move on the
+// night; whether it clears the floors every
 // family on its index reads, with the words its row says where it does not; each report on file, by the sessions it
 // falls from the night, nought the night itself, a session back negative and one ahead positive; the date of the next
 // report ahead, none where the calendar holds none; and the market setting's answer on the night.

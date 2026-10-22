@@ -26,6 +26,18 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-22 - ARCHITECTURE.html - the short-term dip carries a hue of its own beside the five families', and the hue decision's citations repointed
+Authorised by: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them
+Was:
+> 15.5 Family tag: ... a word the palette holds no hue for keeps the tag's own ground (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word).
+> 15.6: <p>The pullback, the breakout, the drift, the fundamentals-first family and the sector heavyweights each carry a hue drawn as a mark, ... in both palettes. (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word)</p>
+> 15.7 Tonight's setups: ... (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word) ...
+Now:
+> 15.5 Family tag: ... a word the palette holds no hue for keeps the tag's own ground (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them).
+> 15.6: <p>The pullback, the breakout, the drift, the fundamentals-first family, from 22.1 the short-term dip, and the sector heavyweights each carry a hue drawn as a mark, ... in both palettes. (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them)</p>
+> 15.7 Tonight's setups: ... (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them) ...
+Why: 22.1 draws the dip's card the 19.3 way, its tag, tile and card header in a hue of its own held to the bounds the five before it hold, and the read-back at 1440 and 390 pixels found the card drawn with none.
+
 ### 2026-10-22 - .claude/rules/checks.md - fixture-expectations and read-surface reach the short-term dip
 Authorised by: The short-term dip buys a stock in an uptrend after a sharp drop no report caused and sells the bounce within days
 Was:

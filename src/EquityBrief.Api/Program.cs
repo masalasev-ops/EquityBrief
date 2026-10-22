@@ -1282,7 +1282,7 @@ app.MapGet("/screens/tonight/{night?}", async (
 
         indexCards = await WithBehindAsync(read, indexCards, reading, dated);
         indexCards = await WithNumbersAsync(read, indexCards, reading, dated, indexClose);
-        indexCards = TonightScreen.WithDipLabels(indexCards, indexDipPicks);
+        indexCards = TonightScreen.WithDipChips(TonightScreen.WithDipLabels(indexCards, indexDipPicks), indexDipNight, reading.Code);
         var indexOpen = (await read.IndexTradesAsync(reading.Code, dated)).Count(trade => trade.Listed < dated && trade.EndedOn is null)
             + (await read.DipTradesAsync(reading.Code, dated)).Count(trade => trade.Listed < dated && trade.EndedOn is null);
 
@@ -1650,7 +1650,7 @@ app.MapGet("/screens/tonight/{night?}", async (
             await read.FormingRowsAsync(reading.Code, dated),
             dipNight.MarketOpen);
 
-        cards = TonightScreen.WithDip(cards, dips[0]);
+        cards = TonightScreen.WithDip(cards, TonightScreen.WithDipChips(dips, dipNight, reading.Code)[0]);
     }
 
     IReadOnlyList<EquityBrief.Web.Marks.CloseToBuyCell>? closeAcross = cards is null ? null : TonightScreen.CloseAcross(onThePage!, nearRows, familyResults, cells) is { } swingClose ? [.. swingClose, .. TonightScreen.DipCloseAcross(dipResults, dipMembers)] : null;

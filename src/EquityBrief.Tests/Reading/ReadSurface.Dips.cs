@@ -79,6 +79,18 @@ public partial class ReadSurface
         var dip = FamilyCardOf(page, DipRule.Name);
 
         Assert.Equal(["M2"], CardPicksOf(dip));
+
+        // Its settings as chips beneath its heading, the S&P 400's dollar floor and least close first, and its tag in its
+        // own hue.
+        Assert.Equal(
+            ["dollar floor 1 times", "close at least $5", "above its 200-session average", "2-session RSI under 10", "no report in 3 sessions or ahead", "stop 4 moves", "sold over its 5-session average", "10 sessions at most", "market setting off"],
+            Regex.Matches(Assert.Single(Blocks(dip, "<ul class=\"rule-chips\".*?</ul>")), "<li class=\"rule-chip\">([^<]+)</li>").Select(match => match.Groups[1].Value));
+        Assert.Contains(Blocks(dip, "<span class=\"fam-tag\"[^>]*>"), tag => tag.Contains("data-family=\"dip\"", StringComparison.Ordinal));
+        // Its pick's exit in words where a target would stand, its reward to risk open, as a trailing pick's is.
+        var m2 = Assert.Single(Blocks(dip, "<tr data-ticker=\"M2\" data-card-pick=\"true\">.*?</tr>"));
+
+        Assert.Contains("<td class=\"r num plan-target\" data-target=\"none\">over its 5-session average</td>", m2, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">open</td>", m2, StringComparison.Ordinal);
         Assert.Contains(SetupFamilies.ProvisionalStatus, dip, StringComparison.Ordinal);
         Assert.Contains("M1 also qualified here tonight and is shown once, under Breakouts to a new high, with both labels. One stock is one trade.", dip, StringComparison.Ordinal);
         Assert.Contains("M3 qualified tonight but its pullback trade from 2026-09-30 on the S&P 500's list is still open, so it is not listed. One stock, one trade.", dip, StringComparison.Ordinal);

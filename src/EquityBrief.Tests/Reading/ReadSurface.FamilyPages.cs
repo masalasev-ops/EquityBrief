@@ -209,7 +209,7 @@ public partial class ReadSurface
     // drew, and every row folding beneath it the stock's plan and its pick's card, each fold closed where the link names no
     // row and the one a link names open, opened and closed by the control in its row's stock cell.
     // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
-    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word
+    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them
     [Fact]
     public async Task TonightOpensOnATileASetupAndOneTableOfBuyPointsEachFoldingItsPlanAndCardBeneathIt()
     {

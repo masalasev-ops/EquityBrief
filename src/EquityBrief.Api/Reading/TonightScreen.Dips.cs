@@ -19,6 +19,34 @@ public static partial class TonightScreen
             ? "the short-term dip reads its own market setting, none while it is provisional, and its list is open"
             : $"the short-term dip reads its own market setting, {night.Market}, which {(night.MarketOpen ? "left its list open" : "closed its list")}";
 
+    // The setting a dip night ran on and its rule in words, read off the settings its step stored, the provisional
+    // setting's where a night stored none it can read.
+    public static (DipSetting Setting, string Words) SettingOf(DipNightRow night)
+    {
+        try
+        {
+            using var stored = System.Text.Json.JsonDocument.Parse(night.Settings);
+            var root = stored.RootElement;
+            var setting = root.TryGetProperty("setting", out var shortForm) && shortForm.GetString() is { } stated ? DipSetting.FromShort(stated) : null;
+            var words = root.TryGetProperty("words", out var rule) ? rule.GetString() : null;
+
+            return (setting ?? DipRule.Provisional, words ?? (setting ?? DipRule.Provisional).Words);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return (DipRule.Provisional, DipRule.Provisional.Words);
+        }
+    }
+
+    // The cards with the dip's settings as chips beneath its heading, read off its night as its rule in words is, since
+    // no registration states them before its freeze.
+    public static IReadOnlyList<FamilyCardView> WithDipChips(IReadOnlyList<FamilyCardView> cards, DipNightRow? night, string index) =>
+        night is null
+            ? cards
+            : [.. cards.Select(card => card.Family == DipRule.Name && card.RuleChoice is { } rule
+                ? card with { RuleChoice = rule with { Chips = [.. SettingOf(night).Setting.ChipsOn(index).Select(words => new RuleChipView(words, false))] } }
+                : card)];
+
     // The dip's own market check as the page's top reads each family's, so its tile and the line say its own and never
     // the swing families' check.
     public static MarketCheckView DipCheck(DipNightRow night) =>
@@ -64,7 +92,9 @@ public static partial class TonightScreen
                         ResearchedOn: writtenOn.TryGetValue(pick.Ticker, out var written) ? written : null,
                         Queue: queue.GetValueOrDefault(pick.Ticker));
 
-                    return new FamilyPickCell(row, pick.Place ?? 0, answer.Entry, answer.Stop, null, false, null, DipWhy(answer, universe.Name), []);
+                    var setting = SettingOf(night).Setting;
+
+                    return new FamilyPickCell(row, pick.Place ?? 0, answer.Entry, answer.Stop, null, false, null, DipWhy(answer, universe.Name, setting), [], Exit: ExitWords(setting));
                 }),
         ];
 
@@ -73,7 +103,7 @@ public static partial class TonightScreen
             family.Label,
             family.Heading,
             family.Eyebrow,
-            family.Rule,
+            SettingOf(night).Words,
             0,
             0,
             null,
@@ -85,11 +115,17 @@ public static partial class TonightScreen
             Passes: [.. picks.OrderBy(pick => pick.Place ?? int.MaxValue).ThenBy(pick => pick.Ticker, StringComparer.Ordinal).Select(pick => pick.Ticker)]);
     }
 
-    // Why the dip lists a stock tonight: its 2-session RSI as the night stored it and the rule that passed it.
-    static string DipWhy(IndexResultRow answer, string index) =>
-        answer.OrderBy is { } rsi
-            ? string.Create(CultureInfo.InvariantCulture, $"Its 2-session RSI closed at {rsi:0.0} after a sharp drop, above its 200-session average with no report in the drop or before its time limit, every gate of the short-term dip passing on the {index}'s provisional setting.")
-            : $"Every gate of the short-term dip passed on the {index}'s provisional setting tonight.";
+    // The exit a dip pick sells on, in the words its row draws where a target would stand.
+    public static string ExitWords(DipSetting setting) =>
+        FormattableString.Invariant($"over its {setting.ExitAverage}-session average");
+
+    // Why the dip lists a stock tonight, its 2-session RSI as the night stored it and the rule that passed it, and how
+    // the trade is sold in words, since it has no target to draw.
+    static string DipWhy(IndexResultRow answer, string index, DipSetting setting) =>
+        (answer.OrderBy is { } rsi
+            ? string.Create(CultureInfo.InvariantCulture, $"Its {DipRule.RsiSessions}-session RSI closed at {rsi:0.0} after a sharp drop, above its {DipRule.TrendSessions}-session average with no report in the drop or before its time limit, every gate of the short-term dip passing on the {index}'s provisional setting.")
+            : $"Every gate of the short-term dip passed on the {index}'s provisional setting tonight.")
+        + string.Create(CultureInfo.InvariantCulture, $" Bought at the next open, it is sold at the next open after a close above its {setting.ExitAverage}-session average of closes or under its stop, or at the close of its {answer.Cap ?? setting.TimeLimit}th session where neither came.");
 
     // The notes beneath the dip's picks: each stock it passed that a trade still open holds back, each one another family
     // listed tonight, which that family's row draws with the dip's label, and how many it passed beyond its five.

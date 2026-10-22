@@ -12,7 +12,7 @@ public sealed record BuyPointView(string Family, string Label, FamilyPickCell Pi
 // Tonight's top: a tile a setup and one table of tonight's buy points across every setup, each row tagged with its
 // setup and folding beneath it the stock's plan and its pick's card.
 // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
-// see: Each setup family has a hue of its own drawn as a mark and a tint beside its word
+// see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them
 public sealed partial class MarkRenderer
 {
     // What each column of the buy points table holds, in the order the columns are drawn.
@@ -93,7 +93,7 @@ public sealed partial class MarkRenderer
             body.Append(PickBusinessCell(pick));
             body.Append(PriceCell("buy", pick.Buy, null));
             body.Append(PriceCell("stop", pick.Stop, null));
-            body.Append(PriceCell("target", pick.Target, pick.Trailing ? "trailing" : null));
+            body.Append(PriceCell("target", pick.Target, pick.Trailing ? "trailing" : pick.Exit));
             body.Append(RewardCell(pick));
             body.Append(PickNewsCell(pick));
             body.Append("</tr>");
@@ -121,9 +121,9 @@ public sealed partial class MarkRenderer
     static string FoldToggle(string fold, bool opened) =>
         Formatted($" <button type=\"button\" class=\"card-toggle fold-toggle\" aria-expanded=\"{(opened ? "true" : "false")}\" aria-controls=\"{Escaped(fold)}\" title=\"open this stock's plan and its pick's card\">plan</button>");
 
-    // A pick's reward to risk as its plan states it, open where the plan trails its stop.
+    // A pick's reward to risk as its plan states it, open where the plan trails its stop or sells on an exit in words.
     static string RewardCell(FamilyPickCell pick) =>
         pick.RewardToRisk is { } ratio
             ? Formatted($"<td class=\"r num\" data-reward-to-risk=\"{ratio.ToString(Invariant)}\">{Figures.Ratio(ratio)}</td>")
-            : $"<td class=\"r num\" data-reward-to-risk=\"none\">{(pick.Trailing ? "open" : pick.Stop is not null && pick.Target is not null ? "<span class=\"degraded\">not stored</span>" : "<span class=\"degraded\">none</span>")}</td>";
+            : $"<td class=\"r num\" data-reward-to-risk=\"none\">{(pick.Trailing || pick.Exit is not null ? "open" : pick.Stop is not null && pick.Target is not null ? "<span class=\"degraded\">not stored</span>" : "<span class=\"degraded\">none</span>")}</td>";
 }

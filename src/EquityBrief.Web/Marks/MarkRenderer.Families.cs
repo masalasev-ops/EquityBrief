@@ -17,7 +17,8 @@ public sealed record FamilyPickCell(
     decimal? RewardToRisk,
     string Why,
     IReadOnlyList<string> Also,
-    DecisionCardView? Card = null);
+    DecisionCardView? Card = null,
+    string? Exit = null);
 
 // One family's card on a night: the family's words, where it stands in the page's order, the day its
 // rule went live or nothing while it runs on provisional settings, how many variants are scored beside
@@ -558,7 +559,7 @@ public sealed partial class MarkRenderer
 
     // A card's header: the setup's word in its tint beside its swatch, its standing as a pill, tonight's count, and the
     // "?" opening the guide its kind of card is read by.
-    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word
+    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them
     static string CardHead(string family, string heading, string pill, string pillClass, string? pillTitle, string count, string guide) =>
         $"<header class=\"fam-head\" data-family=\"{Escaped(family)}\"><span class=\"fam-tag\" data-family=\"{Escaped(family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(family)}\"></span>{Escaped(heading)}</span>"
         + $" <span class=\"status-pill {pillClass}\"{(pillTitle is null ? string.Empty : $" title=\"{Escaped(pillTitle)}\"")}>{Escaped(pill)}</span>"
@@ -701,7 +702,7 @@ public sealed partial class MarkRenderer
             body.Append(PickBusinessCell(pick));
             body.Append(PriceCell("buy", pick.Buy, null));
             body.Append(PriceCell("stop", pick.Stop, null));
-            body.Append(PriceCell("target", pick.Target, pick.Trailing ? "trailing" : null));
+            body.Append(PriceCell("target", pick.Target, pick.Trailing ? "trailing" : pick.Exit));
             body.Append(RewardCell(pick));
             body.Append("</tr>");
         }
