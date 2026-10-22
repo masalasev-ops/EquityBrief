@@ -6433,7 +6433,7 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             migrations 0 to 104 with none pending, schema version 104, against `data-ci` and never `data`; the phase
             report 60 tables, 1379 claims, 1379 passing, none out of scope and none unexamined, 1390 placements and
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
-Carried:    the correction's operations, the migration, `releases --exhibits`, pin 4 with its counts and the history read
-            under it; a filer's row of names written again with no earlier copy kept, so pin 4 reads again every reading
-            under one; the paid report's route taking a filing's first EX-99 exhibit, put to the operator; 20.12; 20.3's
+Carried:    the correction's remedy, `tools/remedies/2026-10-22-20.3-correction-the-exhibits-and-pin-4.txt`: the migration,
+            `releases --exhibits`, pin 4 with its counts and the history read under it; a filer's row of names written
+            again with no earlier copy kept, so pin 4 reads again every reading under one; the paid report's route taking a filing's first EX-99 exhibit, put to the operator; 20.12; 20.3's
             record; the tone variant at pin 4; PR 505; 20.10; the phase 19 and 18 sign-offs.
