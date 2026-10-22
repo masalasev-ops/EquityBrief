@@ -5998,3 +5998,36 @@ Carried:    the review's judgement items put to the operator on 2026-10-21 and s
             drawing their setting's key as stored, owed a 20.11 correction; the S&P 500's groups and pages on the GICS
             scheme and the Financials' revenue basis, both put to the operator; PR 505 rebased with its migration at 104;
             the phase 18 sign-off by a fresh session; and the phase 19 sign-off by a fresh session over the corrected main.
+
+### 15.1 ruling - the S&P 500's groups and the industry its pages name read on the GICS scheme with the section answers it moves constructed, a financial company's pages drawing no beat or miss of revenue against the analysts' estimate, and the chart page's earnings and analyst graphs   2026-10-21
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-21 in the evening, on the two items the page corrections' entries put to them and
+            the chart page's graphs they had asked for that afternoon, in these words, kept whole in `prompts/`: "The S&P
+            500's groups and the industry its pages name move to the GICS scheme, so every index, the heavyweights and
+            the ledger read one scheme. The section recordings it moves are answered as constructed, not recorded again:
+            no paid call. Financials: where a company's sector is Financials, its pages draw no beat or miss of revenue
+            against the analysts' estimate, the implied fourth quarter included, and say the estimate and the filing
+            measure revenue on different bases. No rule reads that comparison, so no rule moves. Yes also do the chart
+            phase graphs".
+Plan:       in the order ruled, the first two in this pull request: the S&P 500's groups and the industry every page
+            names read from the company fetch's GICS classification as a second 15.1 correction, the fixture's replay
+            holding each member's classification as an earlier night's fetch stored it and every recorded section request
+            the group's name moves answered by its recorded answer re-keyed, constructed with no paid call; and a
+            financial company's revenue read against no estimate as a second 18.2 correction, its line saying the estimate
+            and the filing measure revenue on different bases. Then the long releases' fixes the 20.3 ruling below orders,
+            then the chart page's graphs, added to phase 20's plan as 20.12 and built in a pull request of their own:
+            earnings a share against the estimate a quarter, revenue against net income with the net margin, and the
+            analysts' mean target and their ratings by month, from the figures the report reads.
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its remedies,
+            the page corrections in PR 518 and the phase 19 sign-off reviews' corrections in PRs 519 and 520; in review,
+            20.8 with its correction, PR 505; in progress, this ruling with the second 15.1 and 18.2 corrections it
+            orders; next, this pull request merged, the long releases' fixes, 20.12, the phase 19 sign-off by a fresh
+            session, PR 505 rebased with its migration at 104, the phase 18 sign-off by a fresh session, the local lane's
+            one text field, 21.0 once its ruling is given, and pin 3's completion steps.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    the theme an industry's research is read for, the industry the index names, and the swing filter's sector
+            standings and the sweeps' history, which read the sector the membership names for the retired sector leaders'
+            variant, each left as it stands and put to the operator, since moving a theme re-keys every stored theme and
+            moving the filter's read moves its pin.
