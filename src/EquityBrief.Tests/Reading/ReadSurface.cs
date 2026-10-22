@@ -162,6 +162,9 @@ public partial class ReadSurface
             // 20.1, the Run page's local model region.
             .. LocalModelRows,
 
+            // 20.12, the chart page's graphs and their three marks.
+            .. ChartGraphRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 

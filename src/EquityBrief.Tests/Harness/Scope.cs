@@ -3491,6 +3491,23 @@ internal static class Scope
             Verdict.Pass,
             "a release accepted at the second its print's window opens in New York handed under its version over a constructed store and one accepted a second before answering for no print, on the S&P 500's reader and on each index's night, and a version whose history read is not complete handing none",
             ByExpectations),
+        // 20.12, on the operator's ruling of 2026-10-21: the chart page's graphs and their three marks.
+        [CheckReach.Key("15.5 The mark vocabulary", "Earnings dots")] = new Scoped(
+            Verdict.Pass,
+            "a beat, a miss and a print filing no estimate each drawn with its figures whole and a title, the difference beneath with its sign in the gain's or the loss's class, the quarter to report next dashed, each dot's place worked by hand, and one print holding its reported figure saying the dots need two; the prints oldest first and the next quarter read only where the current quarter ends after the newest print, worked by hand",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Income bars")] = new Scoped(
+            Verdict.Pass,
+            "each quarter's revenue and net income whole with a title in its scale, a profit standing on the zero rule and a loss hanging from it, the net margin's points whole with a title and none where no net income is filed, quarters filing none drawing no margin and saying so, and one quarter holding a revenue saying the bars need two; the twelve newest quarters and their net margins worked by hand",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Target marker")] = new Scoped(
+            Verdict.Pass,
+            "a mean target above the price and one below it, each named with its distance and its sign in the gain's or the loss's class and placed by hand, the line that the provider files no low or high target, and no reading, a fetch filing no target and no price each saying which it lacks",
+            ByReadSurface),
+        [CheckReach.Key("15.22 Chart", "The graphs")] = new Scoped(
+            Verdict.Pass,
+            "every fixture name's chart page drawing the graphs' card between the chart's and the figures', its prints, the quarter to report next, its quarters' revenue, net income and net margins and its mean target against the newest close each read back against the store by the suite's own queries",
+            ByReadSurface),
         // 17.3, the Ledger page: its six parts and its summary's store.
         [CheckReach.Key(StoresTable, "Ledger summaries")] = new Scoped(
             Verdict.Pass,
@@ -6178,6 +6195,10 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "The local model's runs")] = "20.1",
         [CheckReach.Key("15.7 Tonight", "The drift's tone variant")] = "20.4",
         [CheckReach.Key(LoopPage, "The idea generator's proposals")] = "20.9",
+        [CheckReach.Key("15.5 The mark vocabulary", "Earnings dots")] = "20.12",
+        [CheckReach.Key("15.5 The mark vocabulary", "Income bars")] = "20.12",
+        [CheckReach.Key("15.5 The mark vocabulary", "Target marker")] = "20.12",
+        [CheckReach.Key("15.22 Chart", "The graphs")] = "20.12",
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks, a bar for each of the last twenty evenings split into the names new that evening and those the evening before also listed")] = "12.3",
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks, the night's split in words")] = "12.3",
         [CheckReach.Key("15.10 Run", "Research and spend, the month's spend against the month cap")] = "12.3",

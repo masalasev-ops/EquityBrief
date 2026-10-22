@@ -271,12 +271,14 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
     var live = quoteSession is { IsOpen: true } ? quote : null;
     var reportInputs = await read.ReportInputsAsync(ticker, null, through);
     var fundamentals = await read.FundamentalsAsync(ticker);
+    var reactions = await read.ReactionsAsync(ticker);
+    var priceDrawn = live?.Price ?? (bars.Count > 0 ? bars[^1].Close : null);
     var report = NameScreen.Report(
         ticker,
         reportInputs,
         fundamentals,
         await read.FundamentalReadingAsync(ticker),
-        live?.Price ?? (bars.Count > 0 ? bars[^1].Close : null),
+        priceDrawn,
         await read.ForwardRateAsync(ticker, null),
         bars,
         night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue));
@@ -290,7 +292,7 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
         shown != EquityBrief.Core.Chart.ChartInterval.Daily && bars.Count > 0 ? await read.PulledSeriesAsync(ticker, bars[0].SessionDate) : null,
         await read.LevelsAsync(ticker),
         night is { } listed ? await read.DecisionCardsOfAsync(ticker, listed) : [],
-        NameScreen.Events(bars, await read.ReactionsAsync(ticker), reportInputs.Dividends, await read.RawClosesAsync(ticker)),
+        NameScreen.Events(bars, reactions, reportInputs.Dividends, await read.RawClosesAsync(ticker)),
         member,
         Universes.ByCode(indexCode ?? string.Empty)?.Name,
         fundamentals,
@@ -301,7 +303,9 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
         NameScreen.PickedPeers(ticker, await read.PeerReadingsAsync()),
         await read.NextEventAsync(ticker, bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue),
         member?.Researched,
-        await read.ProviderSharesAsync(ticker)));
+        await read.ProviderSharesAsync(ticker),
+        reactions,
+        priceDrawn));
 
     // A written report's standing with the controls that write it again, read as the name page reads them.
     if (view.ReportWritten is { } written)

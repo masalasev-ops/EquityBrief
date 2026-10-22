@@ -34,6 +34,37 @@ Now:
 > ... `--pin` then writes pin 4, and where pin 3 differs from it in the fit's rule alone it carries, in the same write, pin 3's reading of every release ... Its row on the run log under `local-run` carries the same counts. On the operator's ruling of 2026-10-22 pin 4 is written under LM Studio's newest runtime, the CUDA 12 runtime 2.62.1 selected in the place of pin 3's 2.56.0 with `lms runtime select` and the model unloaded before `--pin`, so pin 4 carries none of pin 3's readings and prints no counts, and the history read reads every release under it, about three days at 250 W.
 Why: the operator ruled on 2026-10-22 that the history read runs on LM Studio's newest runtime, and a version carries a reading only from one whose runtime it shares.
 
+### 2026-10-22 - .claude/rules/checks.md - read-surface holds forty-one marks and reaches the chart page's graphs
+Authorised by: The chart page graphs the report's earnings and revenue and the analysts' figures beneath its chart, and no rule reads them from it
+Was:
+> read-surface: ... each of the thirty-eight marks is asserted over a full input and over the input it degrades on ...
+> read-surface: ... and no adjusted p, version code or registration day in the page's text, each standing under the pointer |
+Now:
+> read-surface: ... each of the forty-one marks is asserted over a full input and over the input it degrades on ...
+> read-surface: ... each standing under the pointer; and from 20.12 the chart page's earnings dots, income bars and target marker each worked by hand over a full input ... and every fixture name's chart page drawing the graphs' card between the chart's and the figures', its prints, its quarters and its mean target against its newest close read back against the store |
+Why: 20.12 adds the earnings dots, the income bars and the target marker to section 15.5 and the graphs to the chart page, and its tests extend read-surface's.
+
+### 2026-10-22 - ARCHITECTURE.html - the mark vocabulary's three graphs and the chart page's graphs beneath its chart
+Authorised by: The chart page graphs the report's earnings and revenue and the analysts' figures beneath its chart, and no rule reads them from it
+Was:
+> 15.5: <p>Thirty-eight marks. They are defined once and every screen draws from this list. ...
+> 15.5 Rating bars: ... (see: Not yet measured is drawn as a dashed outline, never as a pale value).</td><td>Name</td></tr>
+> 15.22 Reads: ... its long view's month-end closes, its peers and its next dated event; and the newest delayed quote inside the regular session.
+Now:
+> 15.5: <p>Forty-one marks. They are defined once and every screen draws from this list. ...; with rows for the earnings dots, the income bars and the target marker.
+> 15.5 Rating bars: ... (see: Not yet measured is drawn as a dashed outline, never as a pale value).</td><td>Name, from 20.12 Chart</td></tr>
+> 15.22 Reads: ... its peers and its next dated event; its earnings reactions, which its marks read and from 20.12 its earnings dots; and the newest delayed quote inside the regular session.
+> 15.22: a row for the graphs after Under the pointer.
+Why: the operator ruled on 2026-10-21 that the chart page draws earnings a share against the estimate, revenue against net income with the net margin, and the analysts' mean target and ratings by month, from the figures the report reads.
+
+### 2026-10-22 - ARCHITECTURE.html - section 20's phase 20 row names 20.11 and 20.12
+Authorised by: The chart page graphs the report's earnings and revenue and the analysts' figures beneath its chart, and no rule reads them from it
+Was:
+> the build plan's phase 20 checkpoints, 20.0 to 20.10
+Now:
+> the build plan's phase 20 checkpoints, 20.0 to 20.12
+Why: 20.11, on the operator's ruling of 2026-10-19, and 20.12, on their ruling of 2026-10-21, are each added to phase 20 after 20.10 and built before its report, and the row named neither.
+
 ### 2026-10-22 - .claude/rules/checks.md - fixture-expectations reaches the exhibit a filing names, a release past the model's window and pin 4's carry
 Authorised by: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so
 Was:

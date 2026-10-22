@@ -12,7 +12,8 @@ namespace EquityBrief.Api.Reading;
 // What the chart page reads, each as the read API handed it: the stored bars and indicator rows, the chart's averages
 // before the store's year, the pulled sessions a weekly or monthly chart reads, the night's bands and cards, the chart's
 // marks, the stock's membership row and index, its filings and facts, the name page's report figures and year's
-// extremes, its long view, its peers, its next dated event, and the day its newest report section was written.
+// extremes, its long view, its peers, its next dated event, and the day its newest report section was written; and from
+// 20.12 its earnings reactions and the price the report's figures were read at, which its graphs draw.
 public sealed record ChartInputs(
     string Ticker,
     ChartInterval Interval,
@@ -33,7 +34,9 @@ public sealed record ChartInputs(
     IReadOnlyList<StoredPick> Peers,
     CalendarRow? NextEvent,
     DateOnly? ReportWritten,
-    (DateOnly Quarter, decimal Shares)? ProviderShares = null);
+    (DateOnly Quarter, decimal Shares)? ProviderShares = null,
+    IReadOnlyList<ReactionRow>? Reactions = null,
+    decimal? PriceDrawn = null);
 
 // The chart page's figures, worked when the page is read from what the store holds: the candles at the interval shown,
 // rolled up in the core, each with the averages the name page draws at its last session; and the grid, every figure
@@ -90,8 +93,25 @@ public static class ChartScreen
             [.. ChartSeries.Holes(candles, inputs.Interval).Select(hole => new ChartGap(hole.After, hole.Before))],
             BeforeLine(inputs, stored),
             Grid(inputs, stored),
-            inputs.ReportWritten);
+            inputs.ReportWritten,
+            Graphs: Graphs(inputs));
     }
+
+    // From 20.12 the graphs' figures, each the report's own: the stored reactions' estimates and reported earnings a share
+    // with the consensus for the quarter to report next, the quarters' revenue and net income, and the analysts' figures
+    // with the price the report read them at.
+    // see: The chart page graphs the report's earnings and revenue and the analysts' figures beneath its chart, and no rule reads them from it
+    static ChartGraphs Graphs(ChartInputs inputs)
+    {
+        var analysts = inputs.Report.Analysts;
+        var (prints, next) = EquityBrief.Core.Report.QuarterLines.Earnings(
+            (inputs.Reactions ?? []).Select(row => new EquityBrief.Core.Report.EarningsPrint(row.ReportDate, Stored(row.Estimate), Stored(row.Actual))),
+            analysts?.Consensus.Select(row => (row.Period, row.PeriodEnd, row.Eps)) ?? []);
+
+        return new ChartGraphs(prints, next, inputs.Report.Income ?? [], inputs.Report.Currency, analysts, inputs.PriceDrawn);
+    }
+
+    static decimal? Stored(string? text) => text is { } held ? EquityBrief.Data.Money.FromStorage(held) : null;
 
     // The averages the name page draws at each session: the indicator rows, and where they are empty the chart's
     // averages the night read through the sessions before the store's year.
