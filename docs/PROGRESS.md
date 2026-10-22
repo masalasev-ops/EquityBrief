@@ -6196,3 +6196,28 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the phase 19 sign-off by a fresh session over the corrected main; the theme an industry's research is read for
             and the swing filter's sector standings with the sweeps' history, put to the operator; the long releases' fixes
             of the 20.3 ruling; 20.12; PR 505 rebased with its migration at 104; the phase 18 sign-off by a fresh session.
+
+### 19.11 ruling - a written report's standing and the controls that write it again drawn under the name page's masthead and on the chart page's report line, built before the long releases' fixes   2026-10-22
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-22 near 03:40 UTC, having asked beside a screenshot of TRV's chart page "i dont know
+            how i should rewrite the report again for any stock once it has been generated . it only allows me to open a
+            stale report", through the question tool, whole in `prompts/`: "Top of report and chart page", and for when,
+            "Now, before long releases (Recommended)"; and while it was built, "remember that one should not be able to
+            regenerate the report if it was generated on that day itself already once".
+Found:      the name page drew "Rewrite the stale sections" and "Regenerate Report" in its last card, after the sources,
+            and the chart page's report line offered no way to write a report again, as section 15.22 and the chart
+            page's decision stated.
+Plan:       a written report's standing, standing or stale in the failure's red with the triggers that fired, and the two
+            controls after what research has cost, drawn under the name page's masthead and on the chart page's report
+            line as well as in the research region, offered on the research region's own terms, so none on a day a pass
+            already wrote the report; the chart page's decision superseded.
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7 and 20.9 merged with their records, 20.11 merged with its remedies,
+            the page corrections and the phase 19 sign-off reviews' corrections in PRs 518 to 520 and 522, and the GICS
+            groups and the Financials' revenue in PR 521; in review, 20.8 with its correction, PR 505; in progress, this
+            ruling with its correction; next, the phase 19 sign-off by a fresh session over the corrected main beside the
+            long releases' fixes, then 20.12, PR 505 rebased with its migration at 104, the phase 18 sign-off by a fresh
+            session, the local lane's one text field, 21.0 once its ruling is given, and pin 3's completion steps.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
