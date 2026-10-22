@@ -6164,3 +6164,35 @@ Mutated:    the rule, stated before the runs, for every correction of this pull 
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 19.7 - correction: a report gone stale and a monthly run that stopped draw their pill in the red, every pill style a page draws has a rule, and the Watch list's and Researched's tables are held in their box   2026-10-22
+
+Queue:      as the 16.2 correction's entry above.
+Ruled:      "Correct first", as that entry states.
+Found:      by the third phase 19 sign-off review over main at 2042951e: the pill marking a researched report stale had no
+            rule in the stylesheet, so it drew as bare text beside the slate pills of the reports that stand, on four
+            reports of the operator's store, and the Run page's pill for a monthly run that stopped had the same gap; and
+            the Watch list's and Researched's tables fitted a phone's screen only by the box that scrolls each, which no
+            test held.
+Corrected:  the two pills draw in the failure's red, the accent's ink on solid red in both palettes, as the colour decision
+            rules a thing gone wrong with its word beside it (see: Status is drawn in blues with amber for a wait and red
+            for a failure alone), and the stylesheet's colour key names them. The roster and the changelog.
+Tests:      one more: every pill style a page draws, read off each place a pill is drawn in every state it draws, a setup
+            card live, provisional and on a variant, paper trading's accounts, the researched list and the monthly run held
+            and stopped, each style ruled once and the failed one ink on solid red. The Run page's colour test admits the
+            failed pill among the red's users, and the 19.7 test reads the Watch list's and Researched's tables each in
+            its box.
+Claims:     1372, as before: no row's claim added or removed by this pull request.
+Mutated:    under the rule stated in the 16.2 correction's entry: m2 the failed pill's rule taken out: predicted red at the
+            pill test; result red, the failed pill holding no rule. m3 the monthly run's stopped pill drawn under a style
+            no rule colours: predicted red there; result red, the stopped run drawing a "stopped" pill. m4 the Watch list's
+            table drawn outside its box: predicted red at the 19.7 test; result red there. m5 Researched's table drawn
+            outside its box: predicted red there; result red there.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2584 of 2584 tests ran with none failed,
+            migrations 0 to 103 with none pending, schema version 103, against `data-ci` and never `data`; the phase
+            report 60 tables, 1372 claims, 1372 passing, none out of scope and none unexamined, 1383 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the phase 19 sign-off by a fresh session over the corrected main; the theme an industry's research is read for
+            and the swing filter's sector standings with the sweeps' history, put to the operator; the long releases' fixes
+            of the 20.3 ruling; 20.12; PR 505 rebased with its migration at 104; the phase 18 sign-off by a fresh session.

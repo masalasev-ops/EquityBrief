@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-22 - .claude/rules/checks.md - read-surface reaches every pill style ruled, a failed pill drawn in the red and the Watch list's and Researched's tables each in its box
+Corrects: a researched report gone stale and a monthly run that stopped drew their pill with no rule, bare text beside the slate pills of reports that stand, and the Watch list's and Researched's tables fitted a phone only by the box that scrolls each with no test holding it, found by the third phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... and from the 16.2 correction of 2026-10-22 the account form's rule on a phone standing after the inline rule every posted form is drawn by, the two weighing the same |
+Now:
+> read-surface: ... the two weighing the same; and from the 19.7 correction of 2026-10-22 every pill style a page draws given one rule of its own, read off each place a pill is drawn in every state it draws, a report gone stale and a monthly run that stopped drawn in the accent's ink on solid red, and the Watch list's and Researched's tables each drawn in the box that scrolls it |
+Why: the 19.7 correction of 2026-10-22 adds these assertions.
+
 ### 2026-10-22 - .claude/rules/checks.md - read-surface reaches the account form's rule on a phone standing after the posted forms' inline rule
 Corrects: the account form's rule on a phone outranked the inline rule every posted form is drawn by only by standing after it, the two selectors weighing the same, and no test held that order, found by the third phase 19 sign-off review of 2026-10-21.
 Was:

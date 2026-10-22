@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using EquityBrief.Core.Loop;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
@@ -175,6 +176,63 @@ public partial class ReadSurface
         // is the only one under the ratio, in both palettes.
         Assert.True(read >= 240, $"Read {read} selector(s) stating a text colour, expected at least 240.");
         Assert.Equal([DisabledDay], under.Select(line => line[..line.IndexOf(" in --", StringComparison.Ordinal)]).Distinct());
+    }
+
+    // Every pill style a page draws has a rule of its own, read off each place a pill is drawn in every state it draws:
+    // a setup card live, provisional and on a variant, paper trading's accounts by their standing, a researched report
+    // standing and stale, and the monthly run held and stopped. A stale report and a stopped run are drawn in the
+    // failure's red, the accent's ink on it as on the live rule's slate.
+    // see: Status is drawn in blues with amber for a wait and red for a failure alone
+    [Fact]
+    public void EveryPillStyleAPageDrawsHasARuleOfItsOwnAndAFailedOneIsDrawnInTheRed()
+    {
+        var renderer = new MarkRenderer();
+        var since = new DateOnly(2026, 1, 2);
+        var live = new RuleChoiceView("the live breakout rule", RuleScreenWords.LiveSlug, null, true, "Live");
+        var variant = new RuleChoiceView("the breakout rule at a volume of 1.25 times", "v1", 1, false, "V1 · volume 1.25 times");
+        var chosen = new RuleView(variant, [live, variant], [new RulePartView("A stock closes above its high", false)], [], [("market", 9), ("new high", 9), ("volume", 1), ("trade", 1)], new StretchLineView(1, 48, false, 30, 600), null, true, null);
+
+        string Card(DateOnly? liveSince, RuleView? rule) =>
+            renderer.FamilyCard(new FamilyCardView("breakout", "Breakout", "Breakouts to a new high", "Breakout from a base", "A stock closes above its high.", 2, 3, liveSince, 1, [], [], "No stock passed this setup tonight.", RuleChoice: rule));
+
+        PaperAccountView Account(string standing) =>
+            new(standing, "pullback", standing, "An account", "A rule.", standing == PaperAccountView.You ? RuleVerdict.Yours : RuleVerdict.NotTested, null, "R", [], null, 0, 0, null, null);
+
+        string Monthly(string state) =>
+            renderer.MonthlyRunRegion(new MonthlyRunView(new DateTimeOffset(since.ToDateTime(new TimeOnly(14, 0)), TimeSpan.Zero), state, state == WorryItem.Held ? null : "its history step did not hold", "2026-01", [], 0, 60, null), "#/loop", "#/paper");
+
+        (string Drawing, string Markup, string[] Styles)[] drawn =
+        [
+            ("a live card", Card(since, null), ["live"]),
+            ("a provisional card", Card(null, null), ["provisional"]),
+            ("a card on a variant", Card(since, chosen), ["variant"]),
+            ("paper trading's accounts", renderer.PaperTable([.. new[] { PaperAccountView.Live, PaperAccountView.Provisional, PaperAccountView.Variant, PaperAccountView.You }.Select(Account)], walked: false), ["live", "provisional", "variant", "variant"]),
+            ("the researched list", new SinglePageApp().ResearchedRegion([new ResearchedCell("AAA", null, null, since, 1, true), new ResearchedCell("BBB", null, null, since, 1, false)]), ["failed", "live"]),
+            ("a monthly run held", Monthly(WorryItem.Held), ["live"]),
+            ("a monthly run stopped", Monthly(WorryItem.Failed), ["failed"]),
+        ];
+
+        foreach (var (drawing, markup, styles) in drawn)
+        {
+            Assert.True(
+                styles.SequenceEqual(Regex.Matches(markup, "class=\"status-pill ([a-z-]+)\"").Select(pill => pill.Groups[1].Value), StringComparer.Ordinal),
+                $"{drawing} draws its pills as {string.Join(", ", Regex.Matches(markup, "class=\"status-pill ([a-z-]+)\"").Select(pill => pill.Groups[1].Value))}, not {string.Join(", ", styles)}.");
+        }
+
+        // Each of the four styles has one rule of its own that colours it.
+        var rules = StyleRules();
+        var used = drawn.SelectMany(one => one.Styles).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+
+        Assert.Equal(["failed", "live", "provisional", "variant"], used);
+
+        foreach (var style in used)
+        {
+            var own = rules.Where(rule => rule.Selectors.Split(',').Any(one => one.Trim() == ".status-pill." + style)).ToArray();
+
+            Assert.True(own.Length == 1 && Regex.IsMatch(own[0].Body, @"(?<![\w-])(?:background|border|color)\s*:"), $"The {style} pill has {own.Length} rule(s) of its own colouring it, not one.");
+        }
+
+        Assert.Equal("background:var(--fail);color:var(--accent-ink)", rules.Single(rule => rule.Selectors == ".status-pill.failed").Body);
     }
 
     // Six digits read back as an opaque colour.
