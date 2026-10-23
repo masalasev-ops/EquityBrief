@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-23 - BUILD_PLAN.md - 20.13's done condition names a stock's TipRanks wait as its 15-day wait
+Corrects: `done-condition-producible` read "15 days" in the clause the 15-day correction wrote as a wait on the calendar, red in `tools/ci.ps1` over 77990489, the tree PR 538 merged
+Was:
+> **Done when** ... and from the operator's word of 2026-10-23 at 17:49 UTC none for a stock TipRanks answered for in the 15 days before, at the 15th day and a second before it, and a failure's words carrying a key planted in them reach no row, console line or reply; ...
+Now:
+> **Done when** ... and from the operator's word of 2026-10-23 at 17:49 UTC none for a stock TipRanks answered for inside its 15-day wait, at the wait's end and a second before it, and a failure's words carrying a key planted in them reach no row, console line or reply; ...
+Why: the clause is worked over constructed instants and waits on nothing, and now names them in the form the check reads as producible.
+
 ### 2026-10-23 - ARCHITECTURE.html - the masthead's search offers every member of the S&P 500, 400 and 600 on the newest night
 Corrects: the search offered the S&P 500's members alone after 15.1 drew the S&P 400's and 600's on pages of their own, found by the operator when OKTA, an S&P 400 member, matched no name
 Was:

@@ -7585,3 +7585,18 @@ Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.9 and 20.
             22.2 on the operator's word.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
+
+### 20.13 - correction: 20.13's done condition names a stock's TipRanks wait as its 15-day wait, as done-condition-producible found   2026-10-23
+
+Queue:      as the ruling entry above, this correction in progress.
+Found:      `tools/ci.ps1` over 77990489, the tree the operator merged at 18:18 UTC as 95aa8d11 while it ran, red at its
+            suite: done-condition-producible read "15 days" in 20.13's done condition, as the 20.13 correction of the
+            press's wait amended it, as a wait on the calendar. The clause is worked over constructed instants and waits
+            on nothing. The suite's other 2673 tests passed, and `tools/verify-phase.ps1` did not run behind it.
+Corrected:  the clause names the same instants as the stock's 15-day wait, its end and a second before it. The changelog.
+Tests:      none new.
+Claims:     1418, none new.
+Mutated:    none: the run over 77990489 is the check red over the words this replaces.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the ruling entry above.
