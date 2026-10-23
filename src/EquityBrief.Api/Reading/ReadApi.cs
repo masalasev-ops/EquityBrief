@@ -2868,7 +2868,7 @@ public sealed partial class ReadApi : IComponent
     }
 
     // The local run's own rows, newest first.
-    // see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+    // see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
     public async Task<IReadOnlyList<LocalRunRow>> LocalRunsAsync()
     {
         await using var connection = Open();

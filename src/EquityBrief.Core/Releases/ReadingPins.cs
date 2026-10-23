@@ -3,9 +3,10 @@ using System.Globalization;
 namespace EquityBrief.Core.Releases;
 
 // One reading version as the pin's store holds it: the model, its file by its path under LM Studio's models folder,
-// the file's SHA-256, size and last-modified instant, the runtime's name and version an answer stated, the
-// instruction's version, the seed, the answer's budget and the context the model is loaded at, the model's cutoff, the
-// instant the version was written and the instant its history read completed, none until it has.
+// the file's SHA-256, size and last-modified instant, the runtime's name and version the probe's answer stated as the
+// version was written, kept as a record and compared with nothing, the instruction's version, the seed, the answer's
+// budget and the context the model is loaded at, the model's cutoff, the instant the version was written and the
+// instant its history read completed, none until it has.
 public sealed record ReadingPin(
     long Id,
     string Model,
@@ -39,13 +40,12 @@ public static class ReadingSettings
 
 // What a run compares with the newest pin before it reads, how it checks the model's file, and what it compares on
 // each answer.
-// see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+// see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
 public static class ReadingPins
 {
     // The parts a refusal names, in the order a run compares them.
     public const string ModelPart = "the model";
     public const string FilePart = "the model's file";
-    public const string RuntimePart = "the runtime";
     public const string PromptPart = "the prompt";
     public const string WindowPart = "the model's window";
 
@@ -94,9 +94,8 @@ public static class ReadingPins
     }
 
     // The part an answer differs from the pin in, or none: the model that answered, since the runtime answers a request
-    // naming a model it does not hold with whatever model it has loaded, and the runtime's name and version.
-    public static string? AnswerDiffers(ReadingPin pin, string? model, string? runtimeName, string? runtimeVersion) =>
-        !string.Equals(model, pin.Model, StringComparison.Ordinal) ? ModelPart
-            : !string.Equals(runtimeName, pin.RuntimeName, StringComparison.Ordinal) || !string.Equals(runtimeVersion, pin.RuntimeVersion, StringComparison.Ordinal) ? RuntimePart
-            : null;
+    // naming a model it does not hold with whatever model it has loaded. The runtime that served the answer is no part,
+    // since LM Studio updates it by itself and an update leaves the model's file, which the pin hashes, as it was.
+    public static string? AnswerDiffers(ReadingPin pin, string? model) =>
+        string.Equals(model, pin.Model, StringComparison.Ordinal) ? null : ModelPart;
 }

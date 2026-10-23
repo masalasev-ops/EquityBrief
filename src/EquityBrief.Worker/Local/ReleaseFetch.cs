@@ -51,7 +51,7 @@ public sealed record ExhibitsChecked(
 // night, the drain or the monthly run holds its lock, and the history pauses for the night's window and while a slot
 // runs.
 // see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it
-// see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+// see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
 public sealed class ReleaseFetch(
     IReleaseArchiveFeed feed,
     IClock clock,

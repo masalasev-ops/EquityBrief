@@ -20,7 +20,7 @@ namespace EquityBrief.Worker.Local;
 // with its one run log row, under the local run's stage, with the drain's lock held as it writes. It hands the tester
 // nothing but the stored answers.
 // see: The idea generator proposes conditions in the winners' grammar by closed labels code turns into levels, judged as a procedure inside each fold
-// see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+// see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
 public sealed class IdeaGenerator(
     IReadingModelFeed feed,
     LocalModelSettings settings,
@@ -180,7 +180,7 @@ public sealed class IdeaGenerator(
 
             seconds.Add(reply.Seconds);
 
-            if (ReadingPins.AnswerDiffers(pin, reply.Model, reply.RuntimeName, reply.RuntimeVersion) is { } part)
+            if (ReadingPins.AnswerDiffers(pin, reply.Model) is { } part)
             {
                 throw new PinBroken($"an answer came from {part} the pin does not name: {reply.Model ?? "no model"} on {reply.RuntimeName ?? "no runtime"} {reply.RuntimeVersion}");
             }

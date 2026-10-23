@@ -23,7 +23,7 @@ public sealed record LocalRunView(
 public sealed partial class MarkRenderer
 {
     // The local model's region: one row a run, newest first, or one line where the local model has not run.
-    // see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+    // see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
     public string LocalModelRegion(IReadOnlyList<LocalRunView> runs)
     {
         if (runs.Count == 0)

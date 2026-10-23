@@ -3377,9 +3377,9 @@ internal static class Scope
             Verdict.Pass,
             "over a constructed store a runtime listing no such model and a profile naming a file the models folder does not hold each end the run with the model not held, nothing asked of the runtime where the file is missing",
             ByExpectations),
-        [CheckReach.Key(FailureTable, "The model, its file, the runtime or the prompt is not the pin's")] = new Scoped(
+        [CheckReach.Key(FailureTable, "The model, its file, the prompt or the window is not the pin's")] = new Scoped(
             Verdict.Pass,
-            "each of the pin's parts refusing on its own, and over a constructed store a model's file written again refusing a slot named as the model's file, a profile naming another model refusing named as the model, and an answer stating a runtime the pin does not name ending the run with nothing compared",
+            "each of the pin's parts refusing on its own, and over a constructed store a model's file written again refusing a slot named as the model's file, a profile naming another model refusing named as the model, an answer stating a model the pin does not name ending the run with nothing compared, and one under a runtime of another version read as the pin's and a pin written again under it written as none",
             ByExpectations),
         [CheckReach.Key(FailureTable, "An answer the local run cannot read, or one the runtime refuses")] = new Scoped(
             Verdict.Pass,

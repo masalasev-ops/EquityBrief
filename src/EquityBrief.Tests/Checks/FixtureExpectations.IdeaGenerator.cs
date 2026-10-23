@@ -355,7 +355,7 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task APinThatDoesNotMatchRefusesTheGeneratorAndAnAnswerUnderAnotherRuntimeEndsIt()
+    public async Task APinThatDoesNotMatchRefusesTheGeneratorAndAnAnswerFromAnotherModelEndsItWhereOneUnderAnotherRuntimeIsKept()
     {
         using var store = new TemporaryStore().Migrated();
         using var models = new ModelsFolder();
@@ -375,18 +375,27 @@ public partial class FixtureExpectations
         Assert.Equal((LocalRun.PinRefused, "the model is not pin 1's", 0), (refused.Outcome, refused.Why, unasked.Requests));
         Assert.Equal(0L, Scalar(store, "SELECT COUNT(*) FROM loop_idea;"));
 
-        // The second prompt answered under another runtime's version: the run ends refused, keeping the first answer, which
-        // the pin's runtime gave.
+        // The second prompt answered by another model: the run ends refused, keeping the first answer, which the pin's
+        // model gave.
         var feed = new IdeaAnsweringFeed(ReadingFeedOver(AnsweringRuntime(loaded: true, chat: _ => throw new InvalidOperationException("the answers are the test's own")), settings), request =>
-            request.Text == "prompt D" ? Reply(idea) : Reply(idea) with { RuntimeVersion = "2.57.0" });
+            request.Text == "prompt D" ? Reply(idea) : Reply(idea) with { Model = Qwen });
         var broken = await new IdeaGenerator(feed, settings, clock, store.DatabaseFile, store.Root, NoWait).RunAsync("SML", asks, TextWriter.Null);
 
         Assert.Equal(LocalRun.PinRefused, broken.Outcome);
-        Assert.Contains("an answer came from the runtime the pin does not name", broken.Why, StringComparison.Ordinal);
+        Assert.Contains("an answer came from the model the pin does not name", broken.Why, StringComparison.Ordinal);
         Assert.Equal(["kd"], Query(store, "SELECT prompt_key FROM loop_idea;"));
         Assert.Equal(
             ["pin refused|0", "pin refused|1"],
             Query(store, "SELECT outcome || '|' || rows_written FROM run_log WHERE run_id LIKE 'local-run-%-ideas-SML-%' ORDER BY rowid;"));
+
+        // The pin's model answering under a runtime LM Studio updated by itself is the pin's: the run asks the prompt left
+        // and keeps its answer.
+        var updated = new IdeaAnsweringFeed(ReadingFeedOver(AnsweringRuntime(loaded: true, chat: _ => throw new InvalidOperationException("the answers are the test's own")), settings), _ =>
+            Reply(idea) with { RuntimeVersion = "2.57.0" });
+        var kept = await new IdeaGenerator(updated, settings, clock, store.DatabaseFile, store.Root, NoWait).RunAsync("SML", asks, TextWriter.Null);
+
+        Assert.Equal((LocalRun.Finished, 1), (kept.Outcome, updated.Requests));
+        Assert.Equal(["kd", "ke"], Query(store, "SELECT prompt_key FROM loop_idea ORDER BY prompt_key;"));
     }
 
     [Fact]

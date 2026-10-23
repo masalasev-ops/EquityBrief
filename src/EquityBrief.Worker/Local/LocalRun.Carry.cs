@@ -8,17 +8,18 @@ namespace EquityBrief.Worker.Local;
 
 // What a new reading version carried from the one before it: the readings carried, and the releases left to be read
 // again by why: the filing's release is an exhibit the version before did not read, the version before was refused by
-// the runtime or not answered in time, a name the anonymiser removes from the release was stored after it was read, its
-// filer's names were written again after it was read, and the filings the version before read nothing of.
-public sealed record CarryCounts(long From, int Carried, int Replaced, int Runtime, int Named, int NamesWritten, int Unread);
+// the runtime or not answered in time, the release was cut to fit or its answer had less than its budget's room at
+// either version's window, the request the new version would send is not the one the reading was asked, its filer's
+// names were written again after it was read, and the filings the version before read nothing of.
+public sealed record CarryCounts(long From, int Carried, int Replaced, int Runtime, int Cut, int Named, int NamesWritten, int Unread);
 
 // From the 20.3 correction of 2026-10-22, as a new version is written: the version before's readings carried into it
 // where the new version would send each release the request the version before sent, so only what changed is read again.
-// see: A new reading version carries each reading whose request and model file are unchanged under any version of the runtime, and reads the rest
+// see: A new reading version carries each reading whose request and model file are unchanged at any window under any runtime, and reads the rest
 public sealed partial class LocalRun
 {
     const string ReadingsBefore = @"
-        SELECT accession, exhibit, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at
+        SELECT accession, exhibit, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, cut_at, request_sha256
         FROM release_reading WHERE pin = $pin;
     ";
 
@@ -43,8 +44,9 @@ public sealed partial class LocalRun
         GROUP BY i.owners;
     ";
 
-    // A reading under the version before, as the carry copies it.
-    sealed record ReadingBefore(string Outcome, string? Cause, string? Results, string? Outlook, string? Tone, string? Demand, double? Seconds, long? PromptTokens, string ReadAt);
+    // A reading under the version before, as the carry copies it, with where its release was cut and the hash of the
+    // request it was asked, none for a reading taken before readings kept either.
+    sealed record ReadingBefore(string Outcome, string? Cause, string? Results, string? Outlook, string? Tone, string? Demand, double? Seconds, long? PromptTokens, string ReadAt, long? CutAt, string? RequestSha256);
 
     sealed record CarriedReading(string Accession, string Exhibit, ReadingBefore Reading, string RequestSha256);
 
@@ -58,27 +60,34 @@ public sealed partial class LocalRun
         [ReleaseAnswers.Empty, ReleaseAnswers.CutOff, ReleaseAnswers.NotOneObject, ReleaseAnswers.MissingAnAnswer, ReleaseAnswers.WordNotListed],
         StringComparer.Ordinal);
 
-    // Whether a new version carries the readings of the one before: the same model, its file by its hash, the same
-    // runtime by its name at whatever version, since LM Studio updates its runtime by itself and an update leaves the
-    // file the hash reads as it was, and the same seed, answer's budget and context, the version before asked with
-    // today's instruction and anonymiser and the new one adding the fit's rule alone, which asks nothing of a release the
-    // runtime reads whole.
+    // Whether a new version carries the readings of the one before: the same model, its file by its hash, the same seed
+    // and the same answer's budget. The runtime is no part, since LM Studio updates it by itself and an update leaves the
+    // file the hash reads as it was; nor are the window and the prompt's version, since each reading is judged by the
+    // request it was asked and the room its answer had.
     public static bool Carries(ReadingPin before, ReadingPin pin) =>
         string.Equals(before.Model, pin.Model, StringComparison.Ordinal)
         && string.Equals(before.File, pin.File, StringComparison.Ordinal)
         && string.Equals(before.Sha256, pin.Sha256, StringComparison.Ordinal)
-        && string.Equals(before.RuntimeName, pin.RuntimeName, StringComparison.Ordinal)
         && before.Seed == pin.Seed
-        && before.AnswerTokens == pin.AnswerTokens
-        && before.Context == pin.Context
-        && string.Equals(before.PromptVersion, ReleaseQuestions.VersionBeforeTheFit, StringComparison.Ordinal)
-        && string.Equals(pin.PromptVersion, ReleaseQuestions.Version, StringComparison.Ordinal);
+        && before.AnswerTokens == pin.AnswerTokens;
+
+    // Whether a reading's answer could be another under the new version's window: a release cut to fit, which the window
+    // and the fit's rule cut; and a request whose tokens the runtime did not count, or counted past either window less
+    // the answer's budget, so the answer had less than its room where it was read or would be cut where it is read now.
+    static bool WindowDecides(ReadingBefore reading, ReadingPin before, ReadingPin pin) =>
+        reading.CutAt is not null
+        || reading.PromptTokens is not { } tokens
+        || ReleaseFit.Overran((int)tokens, before.Context, before.AnswerTokens)
+        || ReleaseFit.Overran((int)tokens, pin.Context, pin.AnswerTokens);
 
     // Each filing's release judged alone: carried where the version before read the exhibit the filing holds as its
-    // release now, read it or was refused for what its answer said, and no name the anonymiser removes from it was stored
-    // after it was read, the filer read as the store held it at that instant and the text made from it the text made now;
-    // a filer whose names were written again after the reading left to be read again, since the store keeps no earlier
-    // copy of them. Each carried reading keeps the instant it was read and the hash of the request it stands for.
+    // release now, read it whole or was refused for what its answer said, with its answer's room under both windows, and
+    // the request the new version would send is the one it was asked, by the hash the reading keeps. A reading that keeps
+    // none, taken before readings kept it, is judged only from a version asked with today's instruction and anonymiser,
+    // by whether a name the anonymiser removes from it was stored after it was read, the filer read as the store held it
+    // at that instant and the text made from it the text made now; a filer whose names were written again after such a
+    // reading left to be read again, since the store keeps no earlier copy of them. Each carried reading keeps the
+    // instant it was read and the hash of the request it stands for.
     async Task<(CarryCounts Counts, List<CarriedReading> Rows)> CarryAsync(ReadingPin before, ReadingPin pin, TextWriter output, CancellationToken cancellation)
     {
         await using var connection = await OpenAsync(cancellation);
@@ -104,7 +113,9 @@ public sealed partial class LocalRun
                     Text(reader, 7),
                     reader.IsDBNull(8) ? null : reader.GetDouble(8),
                     reader.IsDBNull(9) ? null : reader.GetInt64(9),
-                    reader.GetString(10));
+                    reader.GetString(10),
+                    reader.IsDBNull(11) ? null : reader.GetInt64(11),
+                    Text(reader, 12));
                 readFilings.Add(reader.GetString(0));
             }
         }
@@ -131,7 +142,8 @@ public sealed partial class LocalRun
         var owners = new Dictionary<string, Dictionary<string, DateTimeOffset?>>(StringComparer.Ordinal);
         var filers = new Dictionary<string, ReleaseFiler>(StringComparer.Ordinal);
         var rows = new List<CarriedReading>();
-        var (carried, replaced, runtime, named, written, unread) = (0, 0, 0, 0, 0, 0);
+        var (carried, replaced, runtime, cut, named, written, unread) = (0, 0, 0, 0, 0, 0, 0);
+        var bridged = string.Equals(before.PromptVersion, ReleaseQuestions.VersionBeforeTheFit, StringComparison.Ordinal);
 
         await using (var command = connection.CreateCommand())
         {
@@ -157,10 +169,24 @@ public sealed partial class LocalRun
                     continue;
                 }
 
+                if (WindowDecides(reading, before, pin))
+                {
+                    cut++;
+
+                    continue;
+                }
+
                 var readAt = Parsed(reading.ReadAt)!.Value;
                 var row = filerRows.GetValueOrDefault(cik);
 
-                if (row is not null && row.WrittenAt > readAt)
+                if (reading.RequestSha256 is null && !bridged)
+                {
+                    named++;
+
+                    continue;
+                }
+
+                if (reading.RequestSha256 is null && row is not null && row.WrittenAt > readAt)
                 {
                     written++;
 
@@ -182,28 +208,41 @@ public sealed partial class LocalRun
                     filers[cik] = filer;
                 }
 
-                if (!owners.TryGetValue(cik, out var people))
-                {
-                    people = await OwnersFirstStoredAsync(connection, cik, cancellation);
-                    owners[cik] = people;
-                }
-
                 var now = ReleaseAnonymiser.Anonymise(text, filer);
+                var request = LmStudioReadingFeed.BodyHash(new ReadingRequest(pin.Model, ReleaseQuestions.Instruction, now, pin.Seed, pin.AnswerTokens));
 
-                if (StoredAfter(filer, row, cik, readAt, titles, tickers, people)
-                    && !string.Equals(ReleaseAnonymiser.Anonymise(text, AsOf(filer, row, cik, readAt, titles, tickers, people)), now, StringComparison.Ordinal))
+                if (reading.RequestSha256 is { } asked)
                 {
-                    named++;
+                    if (!string.Equals(asked, request, StringComparison.Ordinal))
+                    {
+                        named++;
 
-                    continue;
+                        continue;
+                    }
+                }
+                else
+                {
+                    if (!owners.TryGetValue(cik, out var people))
+                    {
+                        people = await OwnersFirstStoredAsync(connection, cik, cancellation);
+                        owners[cik] = people;
+                    }
+
+                    if (StoredAfter(filer, row, cik, readAt, titles, tickers, people)
+                        && !string.Equals(ReleaseAnonymiser.Anonymise(text, AsOf(filer, row, cik, readAt, titles, tickers, people)), now, StringComparison.Ordinal))
+                    {
+                        named++;
+
+                        continue;
+                    }
                 }
 
-                rows.Add(new CarriedReading(accession, exhibit, reading, LmStudioReadingFeed.BodyHash(new ReadingRequest(pin.Model, ReleaseQuestions.Instruction, now, pin.Seed, pin.AnswerTokens))));
+                rows.Add(new CarriedReading(accession, exhibit, reading, request));
                 carried++;
             }
         }
 
-        var counts = new CarryCounts(before.Id, carried, replaced, runtime, named, written, unread);
+        var counts = new CarryCounts(before.Id, carried, replaced, runtime, cut, named, written, unread);
 
         await output.WriteLineAsync(Carried(counts));
 
@@ -212,7 +251,7 @@ public sealed partial class LocalRun
 
     public static string Carried(CarryCounts counts) =>
         FormattableString.Invariant(
-            $"{Stage}: carried {counts.Carried} reading(s) from pin {counts.From}; to read again, {counts.Replaced + counts.Runtime} for a changed document or the runtime's refusal of its length ({counts.Replaced} an exhibit pin {counts.From} did not read, {counts.Runtime} refused by the runtime), {counts.Named + counts.NamesWritten} for a name stored after the reading ({counts.Named} changing the text it reads, {counts.NamesWritten} whose filer's names were written again after it), and {counts.Unread} filing(s) pin {counts.From} read nothing of");
+            $"{Stage}: carried {counts.Carried} reading(s) from pin {counts.From}; to read again, {counts.Replaced + counts.Runtime} for a changed document or the runtime's refusal of its length ({counts.Replaced} an exhibit pin {counts.From} did not read, {counts.Runtime} refused by the runtime), {counts.Cut} cut to fit or with less than its answer's room at either window, {counts.Named + counts.NamesWritten} for a request changed since the reading ({counts.Named} whose text or instruction differs, {counts.NamesWritten} whose filer's names were written again after it), and {counts.Unread} filing(s) pin {counts.From} read nothing of");
 
     // Whether a name or ticker the anonymiser reads for the filer from outside its own row, or an insider, was first
     // stored after the instant, or at an instant the store does not hold; the caller has found the row written by then.

@@ -54,7 +54,7 @@ public partial class FixtureExpectations
         var flagged = LocalLane.Settings(shipped);
 
         Assert.Equal(("gemma-4", "http://127.0.0.1:1234/v1/", Gemma), (flagged.Profile, flagged.BaseAddress, flagged.Model));
-        Assert.Equal((TimeSpan.FromSeconds(300), 50176, TimeSpan.FromSeconds(600)), (flagged.Timeout, flagged.ContextTokens, flagged.Load));
+        Assert.Equal((TimeSpan.FromSeconds(300), 60160, TimeSpan.FromSeconds(600)), (flagged.Timeout, flagged.ContextTokens, flagged.Load));
         Assert.Equal(["gemma-4", "qwen-3.5"], shipped.GetSection(LocalModelSettings.ProfilesKey).GetChildren().Select(profile => profile.Key).Order(StringComparer.Ordinal));
 
         // Moving the flag moves the model, and a profile with no flag is not the default.

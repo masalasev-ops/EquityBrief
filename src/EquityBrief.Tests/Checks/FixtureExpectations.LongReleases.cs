@@ -18,10 +18,11 @@ namespace EquityBrief.Tests.Checks;
 // runtime's refusal past the window read for the request's tokens and the context; a cut worked by hand; a reading cut
 // and asked again with where it was cut and the request it sent kept; the check of the stored filings' exhibits over a
 // recorded archive; the migration keeping every release and reading; and pin 4's carry over a constructed store, each
-// release judged alone and counted by why it is read again, across an update of the runtime.
+// release judged alone and counted by why it is read again, across an update of the runtime; and a carry across a
+// wider window and another runtime by each reading's own request, and an answer cut off past its room cut again.
 // see: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so
 // see: A release longer than the model's window is read from its opening that fits, with a marker where it was cut
-// see: A new reading version carries each reading whose request and model file are unchanged under any version of the runtime, and reads the rest
+// see: A new reading version carries each reading whose request and model file are unchanged at any window under any runtime, and reads the rest
 public partial class FixtureExpectations
 {
     const string BxpCik = "0001037540";
@@ -366,11 +367,11 @@ public partial class FixtureExpectations
         // stored after it is no name its text holds. Read again: the third the runtime refused, the fourth's replacing
         // exhibit, the seventh whose text names the insider stored after it, the sixth whose filer's names were written
         // again after it, and the fifth pin 1 read nothing of.
-        Assert.Equal(new CarryCounts(1, 3, 1, 1, 1, 1, 1), pinned.Carry);
-        Assert.Contains(LocalRun.Carried(new CarryCounts(1, 3, 1, 1, 1, 1, 1)), output.ToString(), StringComparison.Ordinal);
+        Assert.Equal(new CarryCounts(1, 3, 1, 1, 0, 1, 1, 1), pinned.Carry);
+        Assert.Contains(LocalRun.Carried(new CarryCounts(1, 3, 1, 1, 0, 1, 1, 1)), output.ToString(), StringComparison.Ordinal);
         Assert.Equal(
-            "carried 3 reading(s) from pin 1; to read again, 2 for a changed document or the runtime's refusal of its length (1 an exhibit pin 1 did not read, 1 refused by the runtime), 2 for a name stored after the reading (1 changing the text it reads, 1 whose filer's names were written again after it), and 1 filing(s) pin 1 read nothing of",
-            LocalRun.Carried(new CarryCounts(1, 3, 1, 1, 1, 1, 1))[(LocalRun.Stage.Length + 2)..]);
+            "carried 3 reading(s) from pin 1; to read again, 2 for a changed document or the runtime's refusal of its length (1 an exhibit pin 1 did not read, 1 refused by the runtime), 0 cut to fit or with less than its answer's room at either window, 2 for a request changed since the reading (1 whose text or instruction differs, 1 whose filer's names were written again after it), and 1 filing(s) pin 1 read nothing of",
+            LocalRun.Carried(new CarryCounts(1, 3, 1, 1, 0, 1, 1, 1))[(LocalRun.Stage.Length + 2)..]);
 
         // Each carried reading as pin 1 kept it, under pin 2 with the instant pin 1 read it, the version it came from and
         // the hash of the request pin 2 would send, the suite's own over the body the text and the filer make.
@@ -390,7 +391,7 @@ public partial class FixtureExpectations
         // The pin's row counts the version and the three carried, and names what it carried.
         var detail = JsonDocument.Parse(Query(store, $"SELECT detail FROM run_log WHERE stage = '{LocalRun.Stage}' AND json_extract(detail, '$.kind') = '{LocalRun.Pinning}' ORDER BY started_at DESC LIMIT 1;").Single()).RootElement.GetProperty("carry");
 
-        Assert.Equal((1, 3, 1, 1, 1, 1, 1), (detail.GetProperty("from").GetInt32(), detail.GetProperty("carried").GetInt32(), detail.GetProperty("replaced").GetInt32(), detail.GetProperty("runtime").GetInt32(), detail.GetProperty("named").GetInt32(), detail.GetProperty("namesWritten").GetInt32(), detail.GetProperty("unread").GetInt32()));
+        Assert.Equal((1, 3, 1, 1, 0, 1, 1, 1), (detail.GetProperty("from").GetInt32(), detail.GetProperty("carried").GetInt32(), detail.GetProperty("replaced").GetInt32(), detail.GetProperty("runtime").GetInt32(), detail.GetProperty("cut").GetInt32(), detail.GetProperty("named").GetInt32(), detail.GetProperty("namesWritten").GetInt32(), detail.GetProperty("unread").GetInt32()));
         Assert.Equal(["4"], Query(store, $"SELECT rows_written FROM run_log WHERE stage = '{LocalRun.Stage}' AND json_extract(detail, '$.kind') = '{LocalRun.Pinning}' ORDER BY started_at DESC LIMIT 1;"));
 
         // The history read under pin 2 asks the five left and none of the three carried.
@@ -406,7 +407,7 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public void AVersionCarriesFromTheOneBeforeOnlyWhereTheyDifferInTheFitsRuleAndTheRuntimesVersionAlone()
+    public void AVersionCarriesFromTheOneBeforeWhereTheyHoldOneModelFileSeedAndBudgetWhateverTheirRuntimeWindowOrPrompt()
     {
         var before = Pinned() with { PromptVersion = ReleaseQuestions.VersionBeforeTheFit };
         var pin = Pinned() with { Id = 2, PromptVersion = ReleaseQuestions.Version };
@@ -417,21 +418,176 @@ public partial class FixtureExpectations
         // a request sends.
         Assert.True(LocalRun.Carries(before, pin with { Size = 2048, Modified = pin.Modified.AddDays(1), Cutoff = new DateOnly(2025, 6, 30), WrittenAt = pin.WrittenAt.AddDays(4) }));
 
-        // Nor is the runtime's version: an update LM Studio makes by itself carries where the model's file hashes the same,
-        // and one that changed the file carries nothing.
-        Assert.True(LocalRun.Carries(before, pin with { RuntimeVersion = "2.62.1" }));
-        Assert.False(LocalRun.Carries(before, pin with { RuntimeVersion = "2.62.1", Sha256 = new string('b', 64) }));
+        // Nor is the runtime, by its version or its name, which LM Studio changes by itself, nor the window or the prompt's
+        // version, each reading judged by the request it was asked and its answer's room: a version carries across each
+        // where the model's file hashes the same, and one that changed the file carries nothing.
+        Assert.True(LocalRun.Carries(before, pin with { RuntimeVersion = "2.63.0" }));
+        Assert.True(LocalRun.Carries(before, pin with { RuntimeName = "llama.cpp-cuda" }));
+        Assert.True(LocalRun.Carries(before, pin with { Context = 60160 }));
+        Assert.True(LocalRun.Carries(before with { PromptVersion = ReleaseQuestions.Version }, pin));
+        Assert.True(LocalRun.Carries(before, pin with { PromptVersion = "000000000000" }));
+        Assert.False(LocalRun.Carries(before, pin with { RuntimeVersion = "2.63.0", Context = 60160, Sha256 = new string('b', 64) }));
 
         // Each other part refuses the carry alone.
         Assert.False(LocalRun.Carries(before, pin with { Model = Qwen }));
         Assert.False(LocalRun.Carries(before, pin with { File = "pub/model/n.gguf" }));
         Assert.False(LocalRun.Carries(before, pin with { Sha256 = new string('b', 64) }));
-        Assert.False(LocalRun.Carries(before, pin with { RuntimeName = "llama.cpp-cuda" }));
         Assert.False(LocalRun.Carries(before, pin with { Seed = 1 }));
         Assert.False(LocalRun.Carries(before, pin with { AnswerTokens = 512 }));
-        Assert.False(LocalRun.Carries(before, pin with { Context = 65536 }));
-        Assert.False(LocalRun.Carries(before with { PromptVersion = ReleaseQuestions.Version }, pin));
-        Assert.False(LocalRun.Carries(before, pin with { PromptVersion = "000000000000" }));
+    }
+
+    [Fact]
+    public async Task AVersionAtAWiderWindowUnderAnotherRuntimeCarriesEachReadingWhoseRequestHashesTheSameAndReadsAgainWhatTheWindowDecides()
+    {
+        using var store = ReleaseStore();
+        using var models = new ModelsFolder();
+        var settings = ReadingProfile(models.Root);
+        var clock = FixedClock.At(Utc(2026, 10, 22, 9, 0, 0), SessionZones.UnitedStates);
+
+        // Pin 1 at the profile's window of 50,176 under the captured runtime, after the fit's rule.
+        await new LocalRun(ReadingFeedOver(AnsweringRuntime(loaded: true, chat: _ => Runtime("local-reading-probe-answered.json")), settings), settings, clock, store.DatabaseFile, store.Root, NoWait).PinAsync(TextWriter.Null);
+        store.Execute($"INSERT INTO release_filer (cik, names, tickers, read_at, run_id) VALUES ('{KeysCik}', '[\"Keysight Technologies, Inc.\"]', '[\"KEYS\"]', '2026-10-19T08:00:00Z', 'names');");
+
+        // The hash of the request a release's text makes, the suite's own over the body the text and the filer make.
+        var keysight = new ReleaseFiler(["Keysight Technologies, Inc."], ["KEYS"], []);
+
+        string RequestHash(string text) =>
+            Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(LmStudioReadingFeed.Body(new ReadingRequest(Gemma, ReleaseQuestions.Instruction, ReleaseAnonymiser.Anonymise(text, keysight), ReadingSettings.Seed, ReadingSettings.AnswerTokens)))));
+
+        var plain = "Results were better than expected and the outlook was raised.";
+        var releases = new (string Accession, string Text, string? Outcome, string? Cause, int? Tokens, int? CutAt, string? Asked)[]
+        {
+            // Read whole, its request the one pin 2 would send.
+            ("0001601046-26-000301", plain, "read", null, 5000, null, RequestHash(plain)),
+            // Refused for a word its answer gave, its request the same.
+            ("0001601046-26-000302", plain + " Two.", "refused", ReleaseAnswers.WordNotListed, 5000, null, RequestHash(plain + " Two.")),
+            // Cut to fit pin 1's window, which the window and the fit decide.
+            ("0001601046-26-000303", plain + " Three.", "read", null, 48000, 30479, RequestHash(plain + " Three, cut.")),
+            // Its answer cut off with its request counted past 50,176 less the answer's budget of 256.
+            ("0001601046-26-000304", plain + " Four.", "refused", ReleaseAnswers.CutOff, 50000, null, RequestHash(plain + " Four.")),
+            // Read whole under a request whose text has changed since.
+            ("0001601046-26-000305", plain + " Five.", "read", null, 5000, null, RequestHash(plain + " Five, as it stood.")),
+            // Refused by the runtime.
+            ("0001601046-26-000306", plain + " Six.", "refused", ReleaseAnswers.RuntimeRefused, null, null, RequestHash(plain + " Six.")),
+            // Kept with no hash of its request under a version after the fit, its request not known.
+            ("0001601046-26-000307", plain + " Seven.", "read", null, 5000, null, null),
+            // Read by no version.
+            ("0001601046-26-000308", plain + " Eight.", null, null, null, null, null),
+        };
+
+        foreach (var (accession, text, outcome, cause, tokens, cutAt, asked) in releases)
+        {
+            KeepRelease(store, accession, KeysCik, Utc(2026, 8, 18, 20, 9, 53), text);
+
+            if (outcome is not null)
+            {
+                var words = outcome == "read" ? "'better', 'raised', 'confident', 'stronger'" : "NULL, NULL, NULL, NULL";
+
+                store.Execute($"INSERT INTO release_reading (accession, exhibit, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, cut_at, request_sha256, read_at, run_id) VALUES ('{accession}', 'ex99.htm', 1, '{outcome}', {(cause is null ? "NULL" : $"'{cause}'")}, {words}, 3.5, {tokens?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "NULL"}, {cutAt?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "NULL"}, {(asked is null ? "NULL" : $"'{asked}'")}, '2026-10-21T10:00:00Z', 'history-1');");
+            }
+        }
+
+        // Pin 2 at a window of 60,160 after LM Studio updated its runtime by itself, the model's file the same.
+        var wider = new LocalModelSettings("gemma-4", "http://127.0.0.1:1234/v1/", Gemma, 30, 60160, 30) { ModelFile = ModelsFolder.File, ModelsFolder = models.Root, KnowledgeCutoff = new DateOnly(2025, 1, 31) };
+
+        static string Updated(string file) => Runtime(file).Replace("\"2.56.0\"", "\"2.63.0\"", StringComparison.Ordinal);
+
+        var output = new StringWriter();
+        var pinned = await new LocalRun(ReadingFeedOver(AnsweringRuntime(loaded: true, chat: _ => Updated("local-reading-probe-answered.json")), wider), wider, FixedClock.At(Utc(2026, 10, 23, 16, 0, 0), SessionZones.UnitedStates), store.DatabaseFile, store.Root, NoWait).PinAsync(output);
+
+        Assert.Equal(["1|50176|2.56.0", "2|60160|2.63.0"], Query(store, "SELECT id, context, runtime_version FROM reading_pin ORDER BY id;"));
+
+        // Carried: the first and the second. Read again: the sixth the runtime refused, the third cut to fit and the fourth
+        // with less than its answer's room, the fifth whose request changed and the seventh whose request is not known, and
+        // the eighth pin 1 read nothing of.
+        Assert.Equal(new CarryCounts(1, 2, 0, 1, 2, 2, 0, 1), pinned.Carry);
+        Assert.Contains(LocalRun.Carried(new CarryCounts(1, 2, 0, 1, 2, 2, 0, 1)), output.ToString(), StringComparison.Ordinal);
+        Assert.Equal(
+            [$"0001601046-26-000301|read|null|5000|{RequestHash(plain)}|1|2026-10-21T10:00:00Z",
+             $"0001601046-26-000302|refused|{ReleaseAnswers.WordNotListed}|5000|{RequestHash(plain + " Two.")}|1|2026-10-21T10:00:00Z"],
+            Query(store, "SELECT accession, outcome, cause, prompt_tokens, request_sha256, carried_from, read_at FROM release_reading WHERE pin = 2 ORDER BY accession;"));
+
+        // The history read under pin 2, answered under yet another version of the runtime, asks the six left and neither
+        // carried.
+        var reading = AnsweringRuntime(loaded: true, chat: _ => Runtime("local-reading-KEYS-anonymised.json").Replace("\"2.56.0\"", "\"2.64.0\"", StringComparison.Ordinal));
+        var history = await new LocalRun(ReadingFeedOver(reading, wider), wider, FixedClock.At(Utc(2026, 10, 23, 17, 0, 0), SessionZones.UnitedStates), store.DatabaseFile, store.Root, NoWait).ReadHistoryAsync(null, TextWriter.Null);
+
+        Assert.Equal((6, 6), (Chats(reading).Count, history.Read));
+        Assert.Equal(
+            ["0001601046-26-000303", "0001601046-26-000304", "0001601046-26-000305", "0001601046-26-000306", "0001601046-26-000307", "0001601046-26-000308"],
+            Query(store, "SELECT accession FROM release_reading WHERE pin = 2 AND carried_from IS NULL ORDER BY accession;"));
+
+        // Pin 3 back at 50,176: a reading pin 2 asked at 60,160 whose request it counted at 55,000 tokens would be cut at
+        // 50,176, so it is read again, and the seven others carry, each request the one pin 3 would send.
+        store.Execute("UPDATE release_reading SET prompt_tokens = 55000 WHERE pin = 2 AND accession = '0001601046-26-000305';");
+
+        var narrower = await new LocalRun(ReadingFeedOver(AnsweringRuntime(loaded: true, chat: _ => Updated("local-reading-probe-answered.json")), settings), settings, FixedClock.At(Utc(2026, 10, 23, 18, 0, 0), SessionZones.UnitedStates), store.DatabaseFile, store.Root, NoWait).PinAsync(TextWriter.Null);
+
+        Assert.Equal(new CarryCounts(2, 7, 0, 0, 1, 0, 0, 0), narrower.Carry);
+    }
+
+    [Fact]
+    public async Task AnAnswerCutOffWithItsRequestCountedPastItsRoomIsCutAgainOnThatCountAndOneGivenItsRoomStandsCutOff()
+    {
+        using var store = ReleaseStore();
+        using var models = new ModelsFolder();
+        var settings = ReadingProfile(models.Root);
+        var clock = FixedClock.At(Utc(2026, 10, 23, 9, 0, 0), SessionZones.UnitedStates);
+
+        await new LocalRun(ReadingFeedOver(AnsweringRuntime(loaded: true, chat: _ => Runtime("local-reading-probe-answered.json")), settings), settings, clock, store.DatabaseFile, store.Root, NoWait).PinAsync(TextWriter.Null);
+
+        // The cut's own release, 40,000 characters no name or date in it, 40,676 sent with the instruction.
+        var text = string.Concat(Enumerable.Repeat("revenue grew and margins held steady ok\n", 1000));
+
+        KeepRelease(store, "0001601046-26-000401", KeysCik, Utc(2026, 8, 18, 20, 9, 53), text);
+
+        // The captured answer as one cut off at its budget, its request counted at the tokens given.
+        static string CutOffAt(int tokens) => Runtime("local-reading-KEYS-anonymised.json")
+            .Replace("\"finish_reason\": \"stop\"", "\"finish_reason\": \"length\"", StringComparison.Ordinal)
+            .Replace("\"prompt_tokens\": 5761", FormattableString.Invariant($"\"prompt_tokens\": {tokens}"), StringComparison.Ordinal);
+
+        // The runtime answers the whole release cut off, counting it at 50,100 tokens, past 50,176 less the budget of 256,
+        // and answers the cut.
+        var chats = 0;
+        var runtime = new ScriptedRuntime((path, _) => Task.FromResult(path switch
+        {
+            "/api/v1/models" => Answered(HttpStatusCode.OK, Runtime("local-runtime-models-gemma-loaded.json")),
+            "/api/v0/chat/completions" => Answered(HttpStatusCode.OK, ++chats == 1 ? CutOffAt(50100) : Runtime("local-reading-KEYS-anonymised.json")),
+            _ => Answered(HttpStatusCode.NotFound, "{}"),
+        }));
+
+        var read = await new LocalRun(ReadingFeedOver(runtime, settings), settings, clock, store.DatabaseFile, store.Root, NoWait).ReadHistoryAsync(null, TextWriter.Null);
+
+        // Worked by hand: the room is 50,176 less 256 and 1,024, 48,896 tokens; 40,676 times 48,896 over 50,100 is 39,698
+        // characters, less 676 and 87, 38,935; the newline at or before it is at index 38,919, so the second request sends
+        // the first 38,919 characters and the marker, and the reading keeps 38,919 and that request's hash.
+        var bodies = Chats(runtime);
+
+        Assert.Equal((LocalRun.Finished, 1, 2), (read.Outcome, read.Read, bodies.Count));
+        Assert.Equal(text, UserText(bodies[0]));
+        Assert.Equal(text[..38919] + "\n\n" + ReleaseFit.Marker, UserText(bodies[1]));
+        Assert.Equal(
+            [$"0001601046-26-000401|read|38919|{Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(bodies[1])))}"],
+            Query(store, "SELECT accession, outcome, cut_at, request_sha256 FROM release_reading;"));
+
+        // An answer cut off where its request, counted at the captured 5,761 tokens, left it its room: asked once more and
+        // refused cut off, uncut.
+        KeepRelease(store, "0001601046-26-000402", KeysCik, Utc(2026, 8, 19, 20, 9, 53), "Results were better than expected.");
+        store.Execute("UPDATE reading_pin SET history_completed_at = NULL;");
+
+        var rambling = AnsweringRuntime(loaded: true, chat: _ => CutOffAt(5761));
+
+        await new LocalRun(ReadingFeedOver(rambling, settings), settings, clock, store.DatabaseFile, store.Root, NoWait).ReadHistoryAsync(null, TextWriter.Null);
+
+        Assert.Equal(2, Chats(rambling).Count);
+        Assert.Equal(
+            [$"0001601046-26-000402|refused|{ReleaseAnswers.CutOff}|null"],
+            Query(store, "SELECT accession, outcome, cause, cut_at FROM release_reading WHERE accession = '0001601046-26-000402';"));
+
+        // At the edge: a request counted at the context less the budget leaves the answer its room, and one a token past it
+        // does not.
+        Assert.False(ReleaseFit.Overran(49920, 50176, 256));
+        Assert.True(ReleaseFit.Overran(49921, 50176, 256));
     }
 
     // ---- the correction's own helpers ----

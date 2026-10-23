@@ -4,7 +4,10 @@ namespace EquityBrief.Core.Releases;
 // request's tokens as it refuses it, so the text is cut to the share of its characters that the context, less the
 // answer's budget and a margin, holds at the density the refused request was counted at, back to the last line's end in
 // its last tenth, with a marker where it was cut; a cut the runtime refuses again is cut again on its own count, up to a
-// number of times, and a release still refused after them stands refused. A release that fits is read whole as before.
+// number of times, and a release still refused after them stands refused. A request the runtime answers but counts past
+// the context less the answer's budget, so its answer is cut off for want of room, is cut again on that count within the
+// same number, since a cut held to the density of the release as a whole can keep an opening denser than it. A release
+// that fits is read whole as before.
 // The version is the pin of this file, and it is part of the reading's prompt version, so a changed rule of the fit is a
 // new reading version.
 // see: A release longer than the model's window is read from its opening that fits, with a marker where it was cut
@@ -12,7 +15,7 @@ public static class ReleaseFit
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "615c0ef1b06a";
+    public const string Version = "a2c0158a0eff";
 
     // The words set where a release was cut.
     public const string Marker = "[The release continues past this point. It was cut here to fit the reading's window.]";
@@ -60,4 +63,8 @@ public static class ReleaseFit
 
     // The characters of the release a cut keeps, before the marker.
     public static int Kept(string cut) => cut.Length - Separator.Length - Marker.Length;
+
+    // Whether a request the runtime answered left its answer less than the answer's budget: its tokens, as the runtime
+    // counted them, past the context less that budget.
+    public static bool Overran(int promptTokens, int context, int answerTokens) => promptTokens > context - answerTokens;
 }

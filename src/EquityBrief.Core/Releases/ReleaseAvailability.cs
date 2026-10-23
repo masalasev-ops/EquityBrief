@@ -3,7 +3,7 @@ namespace EquityBrief.Core.Releases;
 // The two slots the local run reads at each day, in UTC: the early one after the second off-peak run, and the late
 // one ending before the night's window, so a release filed after the close is read before the night that reads it.
 // Each slot asks nothing past its own last instant, and the late one writes its row before the night starts.
-// see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+// see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
 public static class LocalSlots
 {
     // The stage every local run's row is written under, which the Run page reads.

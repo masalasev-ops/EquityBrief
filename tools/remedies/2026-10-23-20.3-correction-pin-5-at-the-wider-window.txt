@@ -1,0 +1,9 @@
+# The remedy of the second 20.3 correction of 2026-10-23, as its PROGRESS entry prints it: pin 5 written at the window of
+# 60,160 tokens the gemma-4 profile names from that correction, the model's file hashed whole, carrying pin 4's reading of
+# every release pin 4 read whole whose request it would send unchanged, and printing how many it carried and left to read
+# again by why; then every release left read under it, oldest first, its pin's history marked complete once none is left.
+# The local model alone, with LM Studio running and holding the model and the card held at 250 W; no provider request, no
+# SEC request and no paid call. Run from main after the merge, outside the night, with pin 4's history read stopped by
+# hand first; each keeps clear of each slot and of the night's window.
+local-run --pin
+releases --read --history

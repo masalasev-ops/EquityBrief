@@ -15,7 +15,7 @@ namespace EquityBrief.Tests.Reading;
 // seconds a call, the pin it read by its model, its file's hash, the runtime and the prompt, the check of the model's file
 // it made and what it came to with why, each from the detail the run's own writer writes; a row whose detail cannot be
 // read drawn by its outcome alone, and a row under another stage drawn by none.
-// see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+// see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
 public partial class ReadSurface
 {
     // The rows 20.1 adds that this check reaches: section 15.10's region.

@@ -1041,7 +1041,7 @@ public static class SchemaMigrations
     // model, its file by its path under LM Studio's models folder and the file's hash, size and modified instant, the
     // runtime as an answer stated it, the instruction's version and the settings, with the instant its history read
     // completed, none until it has. Created empty, nothing copied and nothing dropped.
-    // see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+    // see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
     const string CreateReadingPins = @"
         CREATE TABLE reading_pin (
             id                    INTEGER PRIMARY KEY,

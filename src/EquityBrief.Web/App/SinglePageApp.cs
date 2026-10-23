@@ -3093,7 +3093,7 @@ public sealed partial class SinglePageApp : IComponent
         }
 
         // From 20.1 the local model's runs under Research, newest first, each with the pin it read.
-        // see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+        // see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
         if (localRuns is { } runs)
         {
             region.Append(Cards.Computed(

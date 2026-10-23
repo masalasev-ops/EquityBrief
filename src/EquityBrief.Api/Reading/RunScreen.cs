@@ -2185,7 +2185,7 @@ public static class RunScreen
     // The local run's rows as the Run page draws them, newest first: each row's kind, start and end, its counts, its
     // refused answers by cause, its times a call, the pin it read and the check of the model's file it made, and what it
     // came to with why. A row whose detail cannot be read is drawn by its outcome alone.
-    // see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+    // see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
     public static IReadOnlyList<LocalRunView> LocalRuns(IReadOnlyList<LocalRunRow> rows) =>
     [
         .. rows.Select(row =>
