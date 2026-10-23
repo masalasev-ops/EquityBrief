@@ -14,7 +14,7 @@ public sealed record CarryCounts(long From, int Carried, int Replaced, int Runti
 
 // From the 20.3 correction of 2026-10-22, as a new version is written: the version before's readings carried into it
 // where the new version would send each release the request the version before sent, so only what changed is read again.
-// see: A new reading version carries each reading whose request it would send unchanged and reads the rest
+// see: A new reading version carries each reading whose request and model file are unchanged under any version of the runtime, and reads the rest
 public sealed partial class LocalRun
 {
     const string ReadingsBefore = @"
@@ -59,14 +59,15 @@ public sealed partial class LocalRun
         StringComparer.Ordinal);
 
     // Whether a new version carries the readings of the one before: the same model, its file by its hash, the same
-    // runtime and the same seed, answer's budget and context, the version before asked with today's instruction and
-    // anonymiser and the new one adding the fit's rule alone, which asks nothing of a release the runtime reads whole.
+    // runtime by its name at whatever version, since LM Studio updates its runtime by itself and an update leaves the
+    // file the hash reads as it was, and the same seed, answer's budget and context, the version before asked with
+    // today's instruction and anonymiser and the new one adding the fit's rule alone, which asks nothing of a release the
+    // runtime reads whole.
     public static bool Carries(ReadingPin before, ReadingPin pin) =>
         string.Equals(before.Model, pin.Model, StringComparison.Ordinal)
         && string.Equals(before.File, pin.File, StringComparison.Ordinal)
         && string.Equals(before.Sha256, pin.Sha256, StringComparison.Ordinal)
         && string.Equals(before.RuntimeName, pin.RuntimeName, StringComparison.Ordinal)
-        && string.Equals(before.RuntimeVersion, pin.RuntimeVersion, StringComparison.Ordinal)
         && before.Seed == pin.Seed
         && before.AnswerTokens == pin.AnswerTokens
         && before.Context == pin.Context

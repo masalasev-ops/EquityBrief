@@ -18,10 +18,10 @@ namespace EquityBrief.Tests.Checks;
 // runtime's refusal past the window read for the request's tokens and the context; a cut worked by hand; a reading cut
 // and asked again with where it was cut and the request it sent kept; the check of the stored filings' exhibits over a
 // recorded archive; the migration keeping every release and reading; and pin 4's carry over a constructed store, each
-// release judged alone and counted by why it is read again.
+// release judged alone and counted by why it is read again, across an update of the runtime.
 // see: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so
 // see: A release longer than the model's window is read from its opening that fits, with a marker where it was cut
-// see: A new reading version carries each reading whose request it would send unchanged and reads the rest
+// see: A new reading version carries each reading whose request and model file are unchanged under any version of the runtime, and reads the rest
 public partial class FixtureExpectations
 {
     const string BxpCik = "0001037540";
@@ -353,9 +353,14 @@ public partial class FixtureExpectations
         KeepExhibit(store, "0001601046-26-000104", KeysCik, Utc(2026, 8, 18, 20, 9, 53), "press.htm", plain + " Four, the press release.");
         store.Execute("UPDATE release_document SET release = 0 WHERE accession = '0001601046-26-000104' AND exhibit = 'ex99.htm';");
 
-        // Pin 2 written with the fit's rule, everything else the same.
+        // Pin 2 written with the fit's rule after LM Studio updated its runtime by itself, the model's file and everything
+        // else the same.
+        static string Updated(string file) => Runtime(file).Replace("\"2.56.0\"", "\"2.62.1\"", StringComparison.Ordinal);
+
         var output = new StringWriter();
-        var pinned = await new LocalRun(ReadingFeedOver(probe, settings), settings, FixedClock.At(Utc(2026, 10, 22, 16, 0, 0), SessionZones.UnitedStates), store.DatabaseFile, store.Root, NoWait).PinAsync(output);
+        var pinned = await new LocalRun(ReadingFeedOver(AnsweringRuntime(loaded: true, chat: _ => Updated("local-reading-probe-answered.json")), settings), settings, FixedClock.At(Utc(2026, 10, 22, 16, 0, 0), SessionZones.UnitedStates), store.DatabaseFile, store.Root, NoWait).PinAsync(output);
+
+        Assert.Equal(["1|2.56.0", "2|2.62.1"], Query(store, "SELECT id, runtime_version FROM reading_pin ORDER BY id;"));
 
         // Carried: the first read, the second refused for what its answer said, and the eighth, whose filer's insider
         // stored after it is no name its text holds. Read again: the third the runtime refused, the fourth's replacing
@@ -389,7 +394,7 @@ public partial class FixtureExpectations
         Assert.Equal(["4"], Query(store, $"SELECT rows_written FROM run_log WHERE stage = '{LocalRun.Stage}' AND json_extract(detail, '$.kind') = '{LocalRun.Pinning}' ORDER BY started_at DESC LIMIT 1;"));
 
         // The history read under pin 2 asks the five left and none of the three carried.
-        var reading = AnsweringRuntime(loaded: true, chat: _ => Runtime("local-reading-KEYS-anonymised.json"));
+        var reading = AnsweringRuntime(loaded: true, chat: _ => Updated("local-reading-KEYS-anonymised.json"));
         var history = await new LocalRun(ReadingFeedOver(reading, settings), settings, FixedClock.At(Utc(2026, 10, 22, 17, 0, 0), SessionZones.UnitedStates), store.DatabaseFile, store.Root, NoWait).ReadHistoryAsync(null, TextWriter.Null);
 
         Assert.Equal(5, Chats(reading).Count);
@@ -401,7 +406,7 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public void AVersionCarriesFromTheOneBeforeOnlyWhereTheyDifferInTheFitsRuleAlone()
+    public void AVersionCarriesFromTheOneBeforeOnlyWhereTheyDifferInTheFitsRuleAndTheRuntimesVersionAlone()
     {
         var before = Pinned() with { PromptVersion = ReleaseQuestions.VersionBeforeTheFit };
         var pin = Pinned() with { Id = 2, PromptVersion = ReleaseQuestions.Version };
@@ -412,12 +417,16 @@ public partial class FixtureExpectations
         // a request sends.
         Assert.True(LocalRun.Carries(before, pin with { Size = 2048, Modified = pin.Modified.AddDays(1), Cutoff = new DateOnly(2025, 6, 30), WrittenAt = pin.WrittenAt.AddDays(4) }));
 
+        // Nor is the runtime's version: an update LM Studio makes by itself carries where the model's file hashes the same,
+        // and one that changed the file carries nothing.
+        Assert.True(LocalRun.Carries(before, pin with { RuntimeVersion = "2.62.1" }));
+        Assert.False(LocalRun.Carries(before, pin with { RuntimeVersion = "2.62.1", Sha256 = new string('b', 64) }));
+
         // Each other part refuses the carry alone.
         Assert.False(LocalRun.Carries(before, pin with { Model = Qwen }));
         Assert.False(LocalRun.Carries(before, pin with { File = "pub/model/n.gguf" }));
         Assert.False(LocalRun.Carries(before, pin with { Sha256 = new string('b', 64) }));
         Assert.False(LocalRun.Carries(before, pin with { RuntimeName = "llama.cpp-cuda" }));
-        Assert.False(LocalRun.Carries(before, pin with { RuntimeVersion = "2.62.1" }));
         Assert.False(LocalRun.Carries(before, pin with { Seed = 1 }));
         Assert.False(LocalRun.Carries(before, pin with { AnswerTokens = 512 }));
         Assert.False(LocalRun.Carries(before, pin with { Context = 65536 }));

@@ -6971,3 +6971,55 @@ Verified:   `tools/ci.ps1` green over main at 5e8acba4, whose tree is aebbf431's
             this entry, 176 of 176 passed.
 Carried:    as 22.1's entry, the night run again done here; 22.2; PR 505's migration at 106; the sign-offs of phases
             18 and 20.
+
+### 20.3 ruling - pin 4 carries pin 3's readings across LM Studio's update of its runtime where Gemma 4's file hashes the same, and only the releases that changed are read   2026-10-23
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-23 at about 03:20 UTC, told that pin 4 written under LM Studio's newest runtime
+            would carry none of pin 3's readings and the history would be read whole, in these words: "What do you mean
+            full history read ? Why do we need to do a full read all over again", then "THe LM studio software will
+            update every so often, just because runtime changed does not mean GEmma 4 got updated. We do not need a full
+            history read", and "you can check the gemma 4 model version and see if it got updated as part of your
+            check. I am sure you only need 3000 changed reads". This replaces the plan of the 20.3 ruling entry of
+            2026-10-22 for the carry and keeps its runtime: pin 4 is still written under 2.62.1.
+Plan:       the carry decision superseded so a version carries from one written under another version of the same
+            runtime where the model's file hashes the same, in the correction below; once it merges, LM Studio's
+            runtime 2.62.1 selected and the model unloaded, `tools/localrun.ps1 --pin` writing pin 4, its hash of Gemma
+            4's file read beside pin 3's and its carry counts reported to the operator, and the history read started
+            under it at 250 W with the temperature guard over the releases left to it.
+Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.7, 20.9, 20.11 and 20.12 merged with their
+            records, 22.0 planned and ruled, 22.1 merged and the night of 2026-10-22 run again under it; in review,
+            20.8 with its correction, PR 505; in progress, the correction below; next, pin 4 and the history read of
+            the releases it leaves, the report line's written date and the Regenerate rule as the operator answered on
+            2026-10-22, 22.2, 20.3's record, the tone variant at pin 4, PR 505 rebased with its migration at 106,
+            20.10, and the sign-offs of phases 18 and 20 by fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 20.3 - correction: a new reading version carries across an update of the runtime where the model's file hashes the same   2026-10-23
+
+Queue:      as the ruling entry above, this correction in progress.
+Ruled:      the 20.3 ruling entry above.
+Corrected:  a version carries from the one before at whatever version of the same runtime, the runtime's name, the
+            model's file by its hash and every other part compared as before, so a runtime of another name and a file
+            an update changed carry nothing. The carry decision superseded, the old one under Previously decided and its
+            citations repointed, 2 in code and 5 in the specs; sections 7, 12.3 and 16, SCHEMA.md, the runbook, the
+            guide, the roster's row and the changelog.
+Tests:      2 amended, 2645 in all: the carry over the constructed store with pin 2 written under runtime 2.62.1 over
+            pin 1's 2.56.0 and its history read answered under 2.62.1, carrying the same three and asking the same
+            five; and the parts' test carrying across the runtime's version alone and nothing across it where the
+            file's hash differs, or across the runtime's name.
+Claims:     1396, none new: two rows and section 12.3's paragraph gain words.
+Mutated:    the rule, stated before the runs: one mutation a property the correction changes or keeps at the edge of
+            the ruling, the smallest edit undoing it alone, each run over the two carry tests with its red predicted,
+            made in this checkout and reverted with the editor. Each went red where predicted and nowhere else: C1 the
+            runtime's version compared again, at both tests; C2 the runtime's name no longer compared, at the parts'
+            test alone, the constructed store's two pins sharing a name.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2645 of 2645 tests ran with none failed,
+            migrations 0 to 105 with none pending, schema version 105, against `data-ci` and never `data`; the phase
+            report 60 tables, 1396 claims, 1396 passing, none out of scope and none unexamined, 1407 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    no remedy: no migration and no request changed; pin 4 under 2.62.1 with its file's hash read beside pin
+            3's and its carry counts, then the history read of the releases it leaves; 20.3's record; the tone variant
+            at pin 4; PR 505; 20.10; the sign-offs of phases 18 and 20.
