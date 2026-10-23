@@ -7567,3 +7567,21 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    no remedy; once merged, the live press for PG the operator asked for, one of the month's calls; 20.8's
             remedy; 22.2; 20.3's record; the tone variant at the newest complete version; 20.10; the sign-offs of phases
             18 and 20.
+
+### 20.10 ruling - phase 20 is finished for its sign-off before phase 22 goes on, 22.2 waiting until the operator says   2026-10-23
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-23 at about 18:41 UTC, told what phase 20 and phase 22 still hold: "i dont think
+            you need to do phase 22 at the moment. I need you to finish everything in phase 20 so it can be signed off".
+Plan:       phase 20's remaining work in the order its dependencies set: the corrections of this pull request; 20.8's
+            remedy with its three builds, checks and readings' steps; the three probes under pin 5 and 20.3's record
+            stating the accuracy report; 20.4's second remedy, the tone variants registered at pin 5, the newest version
+            whose history read is complete; and 20.10, the phase report; then phase 20's sign-off by a fresh session.
+            22.2 waits until the operator says it goes on.
+Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.9 and 20.11 to 20.13 merged with their records,
+            PR 538's three corrections merged, the live press for PG answered, pin 5's history read complete at 18:39:57
+            UTC, 22.0 planned and ruled, 22.1 merged; in progress, this pull request; next, 20.8's remedy, the probes and
+            20.3's record, the tone variants at pin 5, 20.10, and the sign-offs of phases 20 and 18 by fresh sessions;
+            22.2 on the operator's word.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
