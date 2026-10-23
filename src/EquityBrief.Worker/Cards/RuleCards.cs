@@ -662,8 +662,6 @@ public sealed class RuleCards : IComponent
         return read;
     }
 
-    // The members passing each gate and every gate before it, in the rule's order, read off each member's answers by
-    // gate name.
     // The short-term dip's provisional rule on the index, from its own rows: what it listed and its funnel off the gate
     // each member failed first, its row not evaluated where its part of the night failed, and none where its step did not
     // read the night.
@@ -703,13 +701,11 @@ public sealed class RuleCards : IComponent
 
     // The members passing each of the dip's gates and every gate before it, read off the gate each failed first and
     // named as the gate.
-    public static IReadOnlyList<(string Gate, int Passed)> DipFunnel(IReadOnlyList<(bool Passed, string? Reason)> answers)
-    {
-        string[] reasons = [DipRule.MarketClosed, DipRule.UnderTheFloors, DipRule.ShortHistory, DipRule.NoTrend, DipRule.NoDrop, DipRule.ReportNear, DipRule.NoMove];
+    public static IReadOnlyList<(string Gate, int Passed)> DipFunnel(IReadOnlyList<(bool Passed, string? Reason)> answers) =>
+        [.. DipRule.Gates.Select((gate, at) => (gate, answers.Count(answer => answer.Passed || (answer.Reason is { } failed && DipRule.GateOf(failed) > at))))];
 
-        return [.. reasons.Select((reason, at) => (DipRule.Gates[at], answers.Count(answer => answer.Passed || (answer.Reason is { } failed && Array.IndexOf(reasons, failed) > at))))];
-    }
-
+    // The members passing each gate and every gate before it, in the rule's order, read off each member's answers by
+    // gate name.
     public static IReadOnlyList<(string Gate, int Passed)> Funnel(IReadOnlyList<string> order, IReadOnlyList<IReadOnlyDictionary<string, string>> answers)
     {
         var counts = new List<(string, int)>();

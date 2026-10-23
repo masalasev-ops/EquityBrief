@@ -3719,7 +3719,7 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(FailureTable, "A member short of the dip's 200 sessions")] = new Scoped(
             Verdict.Pass,
-            "a member holding 150 stored sessions on the constructed night failing the history gate with its row naming the sessions stored, and the funnel counting it there",
+            "a member holding 150 stored sessions on the constructed night failing the history gate with its row naming the sessions stored, a member missing one session of its stored year and one whose series is marked suspect failing it with nothing read from their closes and their rows naming the session and the mark, and the funnel counting all three there",
             ByExpectations),
         [CheckReach.Key(FailureTable, "A dip member with no typical move")] = new Scoped(
             Verdict.Pass,
@@ -3731,15 +3731,15 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(FailureTable, "No next session stored for a dip trade")] = new Scoped(
             Verdict.Pass,
-            "the night's picks kept unbought while the store holds no session after the night, and a sale set on the last stored session waiting with the trade held",
+            "the night's picks kept unbought while the store holds no session after the night, a sale set on the last stored session waiting with the trade held, and a stored trade whose stock's bars skip the session after its listing kept unbought on the night, a walk stopping at a skipped session",
             ByExpectations),
         [CheckReach.Key("15.7 Tonight", "The short-term dip's card")] = new Scoped(
             Verdict.Pass,
-            "read back off the rendered page over a constructed S&P 400 night the market check closed: the dip's card last of the swing families and numbered among them, listing on its own setting with its provisional marker and its notes on a stock held by a trade and one it gave way on, its tile, the market line saying it reads its own setting, and the dip's label on the row of the stock it gave way on",
+            "read back off the rendered page over a constructed S&P 400 night the market check closed: the dip's card last of the swing families and numbered among them, listing on its own setting with its provisional marker and its notes on a stock held by a trade and one it gave way on, its tile, the market line saying it reads its own setting and counting the members it passed, a pick's card wording its plan by the dip's own exits, and the dip's label on the row of the stock it gave way on; a stock one gate short of it only where it dropped and missed one other gate that is not its report, and its tile saying its part was not computed on a night it failed",
             ByReadSurface),
         [CheckReach.Key("15.17 Past picks", "The short-term dip's trades")] = new Scoped(
             Verdict.Pass,
-            "read back off the rendered pages over a constructed store: on the S&P 400 the dip's trades among the index's under its label with the setup chips counting each setup's trades and the dip chosen keeping its own, and on the S&P 500 its card of its own with its chosen view drawing that card alone",
+            "read back off the rendered pages over a constructed store: on the S&P 400 the dip's trades among the index's under its label with the setup chips counting each setup's trades, each chip's link keeping the index, and the dip chosen keeping its own, and on the S&P 500 its card of its own with its chosen view drawing that card alone",
             ByReadSurface),
         // 17.9, approval and the live alarm: the apply step's and the alarm's catalogue and matrix rows, five stores,
         // section 17's alarm and setting, section 18's two rows, the Loop page's three regions, Tonight's line and the

@@ -1,5 +1,6 @@
 using EquityBrief.Core.Components;
 using EquityBrief.Worker.Candidates;
+using EquityBrief.Worker.Dips;
 using EquityBrief.Worker.Families;
 using EquityBrief.Worker.Filter;
 using EquityBrief.Worker.Indicators;
@@ -48,13 +49,16 @@ public partial class RulesChooseTheStocks
         (nameof(CandidateRegistrar), CandidateRegistrar.Access),
         (nameof(SweepHistory), SweepHistory.Access),
         (nameof(SweepPointInTime), SweepPointInTime.Access),
+        (nameof(DipFamily), DipFamily.Access),
     ];
 
-    // The folders the deciding components' code runs through, in the core and in the worker.
+    // The folders the deciding components' code runs through, in the core and in the worker, and the worker's folder of
+    // the short-term dip's step, whose rule sits among the core's families.
     internal static readonly string[] Folders =
     [
         .. new[] { "Candidates", "Families", "Filter", "Indicators", "Ladders", "Ledger", "Levels", "Loop", "Quarters", "Returns", "Rules", "Shortlist", "Sweep", "Swings", "Volume" }
             .SelectMany(folder => new[] { $"src/EquityBrief.Core/{folder}", $"src/EquityBrief.Worker/{folder}" }),
+        "src/EquityBrief.Worker/Dips",
     ];
 
     // Where a model's output is stored, by the store an access declaration names and by the table a query names.

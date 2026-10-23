@@ -537,9 +537,10 @@ static async Task<int> MembersRun(string[] args)
 }
 
 // The night's index families step by hand, over the newest session the store holds and under a run of its own: the S&P
-// 400's and 600's provisional rules read by the sweep's own code into their tables as the night reads them, asking the
-// provider for nothing.
+// 400's and 600's provisional rules read by the sweep's own code into their tables as the night reads them, and then the
+// short-term dip's step, which gives way to the lists they drew, asking the provider for nothing.
 // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+// see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
 static async Task<int> IndexFamiliesRun(string[] args)
 {
     var configuration = Configuration();
@@ -569,6 +570,13 @@ static async Task<int> IndexFamiliesRun(string[] args)
     Console.Out.WriteLine(outcome.Session is { } session
         ? FormattableString.Invariant($"index-families: {session:yyyy-MM-dd} read under {runId}: {IndexFamilies.Detail(outcome.Nights)}")
         : "index-families: the store holds no bar, so nothing was read.");
+
+    if (outcome.Session is not null)
+    {
+        var dips = await new EquityBrief.Worker.Dips.DipFamily(clock, store.DatabaseFile).RunAsync(runId);
+
+        Console.Out.WriteLine("index-families: the short-term dip drawn again after them: " + EquityBrief.Worker.Dips.DipFamily.Detail(dips.Indices));
+    }
 
     return 0;
 }

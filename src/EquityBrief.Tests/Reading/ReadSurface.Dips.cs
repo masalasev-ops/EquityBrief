@@ -58,11 +58,26 @@ public partial class ReadSurface
         store.Execute("DELETE FROM index_family_pick WHERE index_code = 'MID' AND family = 'pullback';");
         DipNightOn(store);
 
+        // M2's card as the night stored it: its stop, no target and its time limit as its cap.
+        store.Execute(
+            "INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, cap) VALUES " +
+            $"('MID', '{IndexNight}', 'dip', 'M2', 1, '50', '44', NULL, 'The short-term dip on the S&P 400', '{{}}', '[]', NULL, 10);");
+
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
         var line = Assert.Single(Blocks(page, "<p class=\"market-line\".*?</p>"));
+
+        // The line counts every member a setup passed, the three the dip passed among them, beside its buy points.
+        Assert.Contains("data-passed=\"3\" data-members=\"3\"", line, StringComparison.Ordinal);
+
+        // M2's card words its plan by the dip's own exits: sold at the next open after a close under its stop or above
+        // its 5-session average, and at its 10th session's close.
+        Assert.Contains("Sell at the next session's open after a session that closes below 44.00.", page, StringComparison.Ordinal);
+        Assert.Contains("Sell at the next session's open after a session that closes above its 5-session average of closes.", page, StringComparison.Ordinal);
+        Assert.Contains("Otherwise sell at the close 10 sessions after the buy.", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("Sell at the close of a session that closes below 44.00.", page, StringComparison.Ordinal);
 
         // The line names the check that closed the swing lists and says the dip read its own setting, which left its list
         // open.
@@ -114,6 +129,57 @@ public partial class ReadSurface
         Assert.Contains("data-family=\"breakout\"", m1, StringComparison.Ordinal);
     }
 
+    // A dip answer stored with the named gates failed and every other passed, at a 2-session RSI.
+    static EquityBrief.Api.Reading.IndexResultRow DipAnswer(string ticker, double rsi, params string[] failed) => new(
+        ticker,
+        DipRule.Name,
+        false,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        rsi,
+        "a gate",
+        FamilyRule.GatesJson([.. DipRule.Gates.Select(gate => new Gate(gate, !failed.Contains(gate), failed.Contains(gate) ? $"{gate} missed" : string.Empty, FamilyRule.Values()))]));
+
+    [Fact]
+    public void AStockOneGateShortOfTheDipPassedItsDropAndMissedExactlyOneOtherGateThatIsNoReportNearestFirst()
+    {
+        var cells = EquityBrief.Api.Reading.TonightScreen.DipCloseAcross(
+            [
+                // KS did not drop at all, its 2-session RSI 96.7: it has no setup, so it is not close to a buy point.
+                DipAnswer("KS", 96.7, DipRule.DropGate),
+                // TM dropped and lacked a typical move; TR dropped and closed under its 200-session average, at a lower RSI.
+                DipAnswer("TM", 8, DipRule.MoveGate),
+                DipAnswer("TR", 5, DipRule.TrendGate),
+                // RP dropped with a report inside its window, an exclusion and no gate narrowly missed.
+                DipAnswer("RP", 3, DipRule.ReportGate),
+                // TW dropped and missed two gates.
+                DipAnswer("TW", 4, DipRule.TrendGate, DipRule.MoveGate),
+            ],
+            []);
+
+        Assert.Equal([("TR", DipRule.TrendGate), ("TM", DipRule.MoveGate)], cells.Select(cell => (cell.Ticker, cell.Gate)));
+    }
+
+    [Fact]
+    public void ANightTheDipsPartFailedSaysItWasNotComputedOnItsLineAndItsTileAndTheLineCountsTheDipsPasses()
+    {
+        var failed = new EquityBrief.Api.Reading.DipNightRow("MID", new DateOnly(2026, 10, 2), 0, DipRule.MarketOff, false, DipFamily.Settings(DipRule.Provisional), 0, 0, "InvalidOperationException: the store refused");
+
+        Assert.Equal("the short-term dip's part of the night failed, so it lists nothing tonight and the Run page names the cause", EquityBrief.Api.Reading.TonightScreen.DipSettingWords(failed));
+
+        var card = new EquityBrief.Web.Marks.FamilyCardView(DipRule.Name, SetupFamilies.Dips.Label, SetupFamilies.Dips.Heading, SetupFamilies.Dips.Eyebrow, "the rule", 5, 5, null, 0, [], [], "Not computed tonight", NotComputed: true);
+        var (tiles, _) = EquityBrief.Web.App.SinglePageApp.TopOf([card], null, true, new DateOnly(2026, 10, 2), dipOpen: false);
+
+        Assert.Equal("not computed tonight", Assert.Single(tiles).State);
+
+        // The members a setup passed, each counted once whichever passed it.
+        Assert.Equal(3, EquityBrief.Api.Reading.TonightScreen.PassedWithDip(["M1", "M3"], [DipAnswer("M2", 3) with { Passed = true }, DipAnswer("M1", 4) with { Passed = true }, DipAnswer("M4", 99)]));
+    }
+
     // The dip's trades as its step keeps them: on the S&P 400 M2 listed tonight and not bought yet, and M1 listed on
     // 2026-09-24, bought at 48.5 the session after and sold at 51 on 2026-09-30 after its exit's close, 0.5 risks before
     // its cost of 0.02; on the S&P 500 AAA listed on 2026-09-29 and held.
@@ -155,6 +221,11 @@ public partial class ReadSurface
                 .Where(match => match.Groups[1].Value != "all")
                 .Select(match => (match.Groups[1].Value, match.Groups[2].Value)));
         Assert.Contains("Showing 4 of 4 S&P 400 trades, 2 open", picks, StringComparison.Ordinal);
+
+        // Each chip keeps the S&P 400 in its link, so a press filters this index's trades and not the S&P 500's.
+        Assert.Equal(
+            ["#/picks?universe=400", "#/picks?setup=pullback&universe=400", "#/picks?setup=breakout&universe=400", "#/picks?setup=dip&universe=400"],
+            Regex.Matches(Assert.Single(Blocks(picks, "<nav class=\"universe-filters picks-filters picks-setups\".*?</nav>")), "data-filter=\"setup\"[^>]*href=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
         Assert.Contains("<td class=\"setup\" data-setup=\"dip\">Short-term dip · S&P 400</td>", Assert.Single(Blocks(picks, "<tr data-ticker=\"M2\" data-index=\"S&P 400\" data-family=\"dip\".*?</tr>")), StringComparison.Ordinal);
         Assert.Contains("data-ended=\"2026-09-30\"", Assert.Single(Blocks(picks, "<tr data-ticker=\"M1\" data-index=\"S&P 400\" data-family=\"dip\".*?</tr>")), StringComparison.Ordinal);
         Assert.Contains("A short-term dip trade is bought at the open of the session after the night that listed it and sold at the open after the first close above its 5-session average of closes or under its stop", picks, StringComparison.Ordinal);
@@ -186,11 +257,21 @@ public partial class ReadSurface
         Assert.Equal(["pullback", "breakout", "drift", "fundamentals", "dip", "heavyweight"], rows.Select(row => row.Item1));
         Assert.Equal(("dip", "provisional", "1"), rows.Single(row => row.Item1 == "dip"));
 
+        // How the night went counts the dip's part beside the index families': every member a setup passed, the dip's
+        // listing of M2 and its trade kept tonight.
+        var listedHere = int.Parse(Text(store, $"SELECT COUNT(*) FROM index_family_pick WHERE index_code = 'MID' AND session_date = '{IndexNight}' AND state = 'listed';"), System.Globalization.CultureInfo.InvariantCulture);
+        var keptHere = int.Parse(Text(store, $"SELECT COUNT(*) FROM index_family_trade WHERE index_code = 'MID' AND session_date = '{IndexNight}';"), System.Globalization.CultureInfo.InvariantCulture);
+        var night = Assert.Single(Blocks(run, "<ul class=\"index-night\"[^>]*>"));
+
+        Assert.Contains("data-passed=\"3\"", night, StringComparison.Ordinal);
+        Assert.Contains($"data-listed=\"{listedHere + 1}\"", night, StringComparison.Ordinal);
+        Assert.Contains($"data-kept=\"{keptHere + 1}\"", night, StringComparison.Ordinal);
+
         // The name pages: M2 listed under the dip at its place, M3 held back by its pullback trade, and AAA, listed under the
         // S&P 500's pullback, saying it also qualified as a short-term dip.
         var m2 = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M2/{IndexNight}"));
 
-        Assert.Contains("<p class=\"listed-under\" data-night=\"2026-10-02\" data-family=\"dip\" data-place=\"1\" data-also=\"\">On the page's list for 2026-10-02 under <b>Short dips in an uptrend</b>, at place 1.</p>", m2, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"listed-under\" data-night=\"2026-10-02\" data-family=\"dip\" data-place=\"1\" data-also=\"\">On the page's list for 2026-10-02 under <b>Short dips in an uptrend</b>, at place 1 among its own picks.</p>", m2, StringComparison.Ordinal);
 
         var m3 = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M3/{IndexNight}"));
 

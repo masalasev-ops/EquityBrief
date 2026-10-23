@@ -7,6 +7,7 @@ using EquityBrief.Core.Filter;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Readings;
+using EquityBrief.Core.Sweep;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using EquityBrief.Worker.Families;
@@ -27,8 +28,8 @@ public sealed record DipOutcome(DateOnly? Night, IReadOnlyList<DipIndexOutcome> 
 // The short-term dip's part of the night, a step of its own after the index families' and before the setup ledger's,
 // over every member of the S&P 500, 400 and 600 holding a bar on the night: every member's answer stored with the
 // values that decided it, the family's list drawn last among the swing families, its trades kept and each open one
-// walked to its exit at the next open. It reads the members and their stored year through the index families' own
-// loader, none of the sessions that loader reads before the year, and every other family's list and open trades through their own readers, and
+// walked to its exit at the next open. It reads the members and their stored year with its own loader, none of the
+// history pulled before the year, and every other family's list and open trades through their own readers, and
 // writes only its own tables, so no other family's code, list or row moves. Each index's part is one transaction, so a
 // failure in it leaves none of its writes and is named on its row while the other indices go on.
 // see: The short-term dip buys a stock in an uptrend after a sharp drop no report caused and sells the bounce within days
@@ -36,15 +37,19 @@ public sealed record DipOutcome(DateOnly? Night, IReadOnlyList<DipIndexOutcome> 
 // see: The dip buys at the next session's open and sells at the next open after its exit's close or its stop's, and at its last session's close
 public sealed class DipFamily : IComponent
 {
-    // The members and their year through the index families' loader, the other families' lists and open trades through
-    // their own readers, the company's value for a trade's cost, and its own four tables, which it alone writes.
+    // The members and their stored year through its own loader, which series are marked suspect, the other families'
+    // lists and open trades through their own readers, the company's value for a trade's cost, and its own four tables,
+    // which it alone writes.
     public static ComponentAccess Access => new(
         Stores:
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
-            new StoreTouch(Store.ReportedQuarter, Touch.Read),
+            new StoreTouch(Store.SeriesState, Touch.Read),
+            new StoreTouch(Store.GateResult, Touch.Read),
+            new StoreTouch(Store.FilterVersion, Touch.Read),
+            new StoreTouch(Store.ListRule, Touch.Read),
             new StoreTouch(Store.FamilyPick, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
@@ -138,6 +143,26 @@ public sealed class DipFamily : IComponent
         SELECT session_date, open, close, raw_close FROM bar
         WHERE ticker = $ticker AND session_date <= $night ORDER BY session_date;
     ";
+
+    // The members of the index on the night, each one's spans in it, its stored year to the night and its report dates,
+    // as the index families' loader reads them and none of the history pulled before the year.
+    const string MembersOn = @"
+        SELECT DISTINCT ticker FROM membership
+        WHERE index_code = $index AND (joined IS NULL OR joined <= $night) AND (""left"" IS NULL OR ""left"" > $night)
+        ORDER BY ticker;
+    ";
+
+    const string SpansOf = @"SELECT joined, ""left"" FROM membership WHERE index_code = $index AND ticker = $ticker;";
+
+    const string YearOf = @"
+        SELECT session_date, high, low, close, volume, open, raw_close FROM bar
+        WHERE ticker = $ticker AND session_date <= $night ORDER BY session_date;
+    ";
+
+    const string ReportsOn = "SELECT event_date FROM calendar WHERE ticker = $ticker AND kind = 'earnings' ORDER BY event_date;";
+
+    // The series a corporate action's refetch has not repaired, which the swing filter refuses too.
+    const string Suspects = "SELECT ticker FROM series_state WHERE state = 'suspect';";
 
     const string ValueOn = "SELECT company_value FROM member_reading WHERE index_code = $index AND session_date = $session AND ticker = $ticker;";
 
@@ -256,14 +281,21 @@ public sealed class DipFamily : IComponent
     async Task<(DipIndexOutcome Outcome, int Rows)> IndexNightAsync(SqliteConnection connection, string index, DateOnly night, CancellationToken cancellation)
     {
         var setting = DipRule.Provisional;
-        var (names, income) = await IndexFamilies.InputsAsync(connection, index, night, cancellation);
-        var inputs = IndexNightRead.Prepare(index, night, names, income);
-        var answers = inputs is null ? [] : Answers(inputs, setting);
+        var names = await NamesAsync(connection, index, night, cancellation);
+        var inputs = IndexNightRead.Prepare(index, night, names, new Dictionary<string, IReadOnlyList<FiledIncome>>(StringComparer.Ordinal));
+        var suspects = new HashSet<string>(StringComparer.Ordinal);
+
+        await foreach (var row in RowsAsync(connection, null, Suspects, [], cancellation))
+        {
+            suspects.Add(row.GetString(0));
+        }
+
+        var answers = inputs is null ? [] : Answers(inputs, setting, suspects);
         var ranked = DipRule.Ranked(answers);
         var tickers = ranked.Select(answer => answer.Ticker).ToArray();
 
         // Every trade a stock still holds on any card of any index: the S&P 500's own lists', the index families' lists',
-        // and the dip's own on every index.
+        // and the dip's own on every index, read after tonight's walk so a trade it ends before the night frees its stock.
         var (indexTrades, heldIn) = await IndexFamilies.OpenIndexTradesAsync(connection, night, tickers, cancellation);
         var open = new Dictionary<string, (HeldTrade Trade, string Index)>(StringComparer.Ordinal);
 
@@ -277,11 +309,6 @@ public sealed class DipFamily : IComponent
             open.TryAdd(ticker, (held, heldIn[ticker]));
         }
 
-        await foreach (var row in RowsAsync(connection, null, DipTradesHeld, [("$rule", ProvisionalRule), ("$night", Stamp(night))], cancellation))
-        {
-            open.TryAdd(row.GetString(1), (new HeldTrade(DipRule.Name, Date(row.GetString(2))), row.GetString(0)));
-        }
-
         var listedTonight = new Dictionary<string, string>(StringComparer.Ordinal);
 
         await foreach (var row in RowsAsync(connection, null, index == IndexFamilies.LargeIndex ? LargeListedTonight : IndexListedTonight, [("$index", index), ("$night", Stamp(night))], cancellation))
@@ -289,13 +316,18 @@ public sealed class DipFamily : IComponent
             listedTonight.TryAdd(row.GetString(0), row.GetString(1));
         }
 
-        var picks = Draw(ranked, open, listedTonight);
-
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
         await ExecuteAsync(connection, transaction, ClearTheNight, [("$index", index), ("$night", Stamp(night)), ("$rule", ProvisionalRule)], cancellation);
 
-        var ended = await WalkAsync(connection, transaction, index, night, cancellation);
+        var ended = await WalkAsync(connection, transaction, index, night, inputs?.Calendar ?? [], cancellation);
+
+        await foreach (var row in RowsAsync(connection, transaction, DipTradesHeld, [("$rule", ProvisionalRule), ("$night", Stamp(night))], cancellation))
+        {
+            open.TryAdd(row.GetString(1), (new HeldTrade(DipRule.Name, Date(row.GetString(2))), row.GetString(0)));
+        }
+
+        var picks = Draw(ranked, open, listedTonight);
         var places = ranked.Select((answer, place) => (answer.Ticker, Place: place + 1)).ToDictionary(pair => pair.Ticker, pair => pair.Place, StringComparer.Ordinal);
 
         await ExecuteAsync(connection, transaction, InsertNight,
@@ -355,11 +387,60 @@ public sealed class DipFamily : IComponent
         return (outcome, 1 + answers.Count + picks.Count + kept + ended);
     }
 
+    // The index's members on the night, each with its spans in the index, its stored year to the night and its report
+    // dates, read as the index families' loader reads them and with none of the history pulled before the year.
+    static async Task<IReadOnlyList<SweepName>> NamesAsync(SqliteConnection connection, string index, DateOnly night, CancellationToken cancellation)
+    {
+        var tickers = new List<string>();
+
+        await foreach (var row in RowsAsync(connection, null, MembersOn, [("$index", index), ("$night", Stamp(night))], cancellation))
+        {
+            tickers.Add(row.GetString(0));
+        }
+
+        var names = new List<SweepName>();
+
+        foreach (var ticker in tickers)
+        {
+            var spans = new List<(DateOnly?, DateOnly?)>();
+            var bars = new List<SweepBar>();
+            var prints = new List<DateOnly>();
+
+            await foreach (var row in RowsAsync(connection, null, SpansOf, [("$index", index), ("$ticker", ticker)], cancellation))
+            {
+                spans.Add((row.IsDBNull(0) ? null : Date(row.GetString(0)), row.IsDBNull(1) ? null : Date(row.GetString(1))));
+            }
+
+            await foreach (var row in RowsAsync(connection, null, YearOf, [("$ticker", ticker), ("$night", Stamp(night))], cancellation))
+            {
+                bars.Add(new SweepBar(
+                    Date(row.GetString(0)),
+                    Money.FromStorage(row.GetString(1)),
+                    Money.FromStorage(row.GetString(2)),
+                    Money.FromStorage(row.GetString(3)),
+                    row.GetInt64(4),
+                    Money.FromStorage(row.GetString(5)),
+                    row.IsDBNull(6) ? 0m : Money.FromStorage(row.GetString(6))));
+            }
+
+            await foreach (var row in RowsAsync(connection, null, ReportsOn, [("$ticker", ticker)], cancellation))
+            {
+                prints.Add(Date(row.GetString(0)));
+            }
+
+            names.Add(new SweepName(ticker, [.. bars], spans, [.. prints]));
+        }
+
+        return names;
+    }
+
     // Each member holding a bar on the night read under the dip at a setting: its stored closes to the night and none
-    // before the store's year, its typical move on the night, the floors the index families read on it, and
-    // each report on file by the sessions it falls from the night, the night's own sessions counted back and the
-    // exchange's counted ahead.
-    public static IReadOnlyList<DipAnswer> Answers(IndexNightInputs inputs, DipSetting setting)
+    // before the store's year, its typical move on the night, the floors the index families read on it, each report on
+    // file by the sessions it falls from the night, the night's own sessions counted back and the exchange's counted
+    // ahead, the first session of the year behind the night its stored series misses, and whether its series is marked
+    // suspect.
+    // see: Bars are never interpolated
+    public static IReadOnlyList<DipAnswer> Answers(IndexNightInputs inputs, DipSetting setting, IReadOnlySet<string> suspects)
     {
         var answers = new List<DipAnswer>();
 
@@ -373,16 +454,46 @@ public sealed class DipFamily : IComponent
             var (reports, next) = ReportsOf(series.Name.Prints, inputs.Calendar, inputs.At, inputs.Night);
 
             answers.Add(DipRule.Read(
-                new DipMember(series.Name.Ticker, closes, double.IsNaN(move) ? null : move, floors.Passed, floors.Words ?? floors.Reason, reports, next, DipRule.NoMarket),
+                new DipMember(
+                    series.Name.Ticker, closes, double.IsNaN(move) ? null : move, floors.Passed, floors.Words ?? floors.Reason, reports, next, DipRule.NoMarket,
+                    series.Gap[bar] ? Missing(series, bar, inputs.Calendar) : null,
+                    suspects.Contains(series.Name.Ticker)),
                 setting));
         }
 
         return answers;
     }
 
+    // The first session of the year behind a bar, from the series' own first session on, that the series does not
+    // hold, as the sweep's columns mark a gap; the year's first session where the mark stands and none is found.
+    public static DateOnly Missing(SweepSeries series, int bar, IReadOnlyList<DateOnly> calendar)
+    {
+        var start = Math.Max(series.SessionAt[0], series.SessionAt[bar] - SweepColumns.GapSessions + 1);
+        var expected = start;
+
+        for (var at = 0; at <= bar; at++)
+        {
+            if (series.SessionAt[at] < start)
+            {
+                continue;
+            }
+
+            if (series.SessionAt[at] > expected)
+            {
+                return calendar[expected];
+            }
+
+            expected = series.SessionAt[at] + 1;
+        }
+
+        return calendar[start];
+    }
+
     // Each report date on file by the sessions it falls from the night: one on or before it at the first session of the
-    // calendar on or after it, counted back from the night, and one after it counted ahead on the exchange's own calendar,
-    // none where that calendar does not reach it; and the next report ahead, none where none is on file.
+    // calendar on or after it, counted back from the night, and one after it at the first session of the exchange's own
+    // calendar on or after it, counted ahead, so a report dated on a day the exchange is closed falls on the session
+    // after it on either side of the night, none where that calendar does not reach it; and the next report ahead, none
+    // where none is on file.
     public static (IReadOnlyList<int> Reports, DateOnly? Next) ReportsOf(IReadOnlyList<DateOnly> prints, IReadOnlyList<DateOnly> calendar, int at, DateOnly night)
     {
         var reports = new List<int>();
@@ -409,7 +520,7 @@ public sealed class DipFamily : IComponent
 
             if (ExchangeClosures.SessionsUntil(night, print) is { } ahead)
             {
-                reports.Add(ahead);
+                reports.Add(ExchangeClosures.IsSession(print) ? ahead : ahead + 1);
             }
         }
 
@@ -475,8 +586,9 @@ public sealed class DipFamily : IComponent
 
     // Each of the index's dip trades not yet ended, walked over its stock's bars since its listing at the scale the
     // series has now: bought at the next session's open through the core's one pricing function, and sold at the next
-    // open after its exit's close or its stop's, or at its last session's close; the count ended.
-    async Task<int> WalkAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, CancellationToken cancellation)
+    // open after its exit's close or its stop's, or at its last session's close; a buy or a sale waiting where the
+    // stock's bars skip a session of the index's calendar or the store holds none yet; the count ended.
+    async Task<int> WalkAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, IReadOnlyList<DateOnly> calendar, CancellationToken cancellation)
     {
         var trades = new List<(string Rule, string Ticker, DateOnly Session, decimal Entry, decimal Stop, int Limit, int Average)>();
 
@@ -509,7 +621,7 @@ public sealed class DipFamily : IComponent
             var scale = bars[listing].Close / Statistic.FromPrice(trade.Entry);
             var close0 = bars[listing].Close;
             var stop = Statistic.FromPrice(trade.Stop) * scale;
-            var path = DipRule.Walk(close0, stop, trade.Limit, DipRule.Sessions([.. bars.Select(bar => (bar.Session, bar.Open, bar.Close))], listing, trade.Average));
+            var path = DipRule.Walk(close0, stop, trade.Limit, DipRule.Sessions([.. bars.Select(bar => (bar.Session, bar.Open, bar.Close))], listing, trade.Average, calendar));
 
             if (path.BoughtOn is null)
             {

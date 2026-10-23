@@ -7084,8 +7084,10 @@ public sealed partial class MarkRenderer : IComponent
     }
 
     // Past picks' chips of the setups the page listed a trade under, each with its trades, and all setups, where the page
-    // has drawn more than one; nothing where it has drawn one or none.
-    public string SetupChips(string? setup, IReadOnlyList<(string Family, string Label, int Trades)>? setups)
+    // has drawn more than one; nothing where it has drawn one or none. Each link names the index the page reads where it
+    // is not the S&P 500, which a link naming none reads.
+    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+    public string SetupChips(string? setup, IReadOnlyList<(string Family, string Label, int Trades)>? setups, string? universe = null)
     {
         if (setups is not { Count: > 1 })
         {
@@ -7094,13 +7096,14 @@ public sealed partial class MarkRenderer : IComponent
 
         var chosen = setup is { } named && setups.Any(one => one.Family == named) ? named : null;
         var chips = new StringBuilder();
+        var index = universe is { } word ? Uri.EscapeDataString(word) : null;
 
         chips.Append("<nav class=\"universe-filters picks-filters picks-setups\" aria-label=\"Filter the trades by setup\"><span class=\"chips-label\">Setup</span>");
-        chips.Append(Invariant, $"<a class=\"chip\" data-filter=\"setup\" data-value=\"all\" aria-pressed=\"{Flag(chosen is null)}\" href=\"#/picks\">All setups<span class=\"n\">{setups.Sum(one => one.Trades)}</span></a>");
+        chips.Append(Invariant, $"<a class=\"chip\" data-filter=\"setup\" data-value=\"all\" aria-pressed=\"{Flag(chosen is null)}\" href=\"#/picks{(index is null ? string.Empty : "?universe=" + index)}\">All setups<span class=\"n\">{setups.Sum(one => one.Trades)}</span></a>");
 
         foreach (var (family, label, trades) in setups)
         {
-            chips.Append(Invariant, $"<a class=\"chip\" data-filter=\"setup\" data-value=\"{Escaped(family)}\" aria-pressed=\"{Flag(family == chosen)}\" href=\"#/picks?setup={Uri.EscapeDataString(family)}\">{Escaped(label)}<span class=\"n\">{trades}</span></a>");
+            chips.Append(Invariant, $"<a class=\"chip\" data-filter=\"setup\" data-value=\"{Escaped(family)}\" aria-pressed=\"{Flag(family == chosen)}\" href=\"#/picks?setup={Uri.EscapeDataString(family)}{(index is null ? string.Empty : "&amp;universe=" + index)}\">{Escaped(label)}<span class=\"n\">{trades}</span></a>");
         }
 
         chips.Append("</nav>");

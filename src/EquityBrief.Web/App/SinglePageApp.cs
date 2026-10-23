@@ -291,12 +291,14 @@ public sealed partial class SinglePageApp : IComponent
         {
             var forming = card.RuleChoice?.Forming?.Forming ?? 0;
 
-            // The short-term dip's tile reads its own market setting and never the swing families' check.
+            // The short-term dip's tile reads its own market setting and never the swing families' check, and says its part
+            // of the night was not computed where it failed.
             // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
             var open = card.Family == EquityBrief.Core.Families.DipRule.Name ? dipOpen ?? true
                 : checks?.FirstOrDefault(check => check.Family == card.Family) is { } own ? own.Open : marketOpen;
             var state = card.Picks.Count > 0
                 ? card.HeldBack > 0 ? HeldBack(card.HeldBack) : "listing tonight"
+                : card.NotComputed ? "not computed tonight"
                 : !open ? "the market check closed"
                 : card.HeldBack > 0 ? HeldBack(card.HeldBack)
                 : forming > 0 ? Invariant($"{forming} forming")
@@ -4115,7 +4117,7 @@ public sealed partial class SinglePageApp : IComponent
 
         var body = new StringBuilder();
 
-        body.Append(marks.SetupChips(setup, setups));
+        body.Append(marks.SetupChips(setup, setups, universe.Word));
         body.Append(Invariant($"<p class=\"list-count\" data-shown=\"{trades.Count}\" data-trades=\"{all}\" data-open=\"{open}\">Showing {trades.Count} of {all} {Escaped(universe.Name)} trade{(all == 1 ? string.Empty : "s")}, {open} open</p>"));
         body.Append(trades.Count == 0
             ? Invariant($"<p class=\"degraded\" data-picks=\"none\">No trade has been listed on the {Escaped(universe.Possessive)} lists yet. Each night its families pass a stock, the first five a setup are listed and followed here from that close on.</p>")

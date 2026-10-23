@@ -13,11 +13,30 @@ namespace EquityBrief.Api.Reading;
 // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
 public static partial class TonightScreen
 {
-    // The dip's market setting in words, which its own check and the market line read.
+    // The dip's market setting in words, which its own check and the market line read, and on a night its part failed
+    // that it lists nothing for that.
     public static string DipSettingWords(DipNightRow night) =>
-        night.Market == DipRule.MarketOff
-            ? "the short-term dip reads its own market setting, none while it is provisional, and its list is open"
-            : $"the short-term dip reads its own market setting, {night.Market}, which {(night.MarketOpen ? "left its list open" : "closed its list")}";
+        night.Fault is not null
+            ? "the short-term dip's part of the night failed, so it lists nothing tonight and the Run page names the cause"
+            : night.Market == DipRule.MarketOff
+                ? "the short-term dip reads its own market setting, none while it is provisional, and its list is open"
+                : $"the short-term dip reads its own market setting, {night.Market}, which {(night.MarketOpen ? "left its list open" : "closed its list")}";
+
+    // How many members a setup passed on the night, the dip's passes among them, each member counted once.
+    public static int PassedWithDip(IEnumerable<string> passed, IReadOnlyList<IndexResultRow> dips) =>
+        passed.Concat(dips.Where(result => result.Passed).Select(result => result.Ticker)).Distinct(StringComparer.Ordinal).Count();
+
+    // How an S&P 400's or 600's night went with the dip's part of it: the members a setup passed, the dip's among them,
+    // and what it listed, held back for a trade still open, kept and ended that night beside the index families' own.
+    public static IndexRunView WithDipSummary(IndexRunView run, IReadOnlyList<IndexResultRow> results, IReadOnlyList<IndexResultRow> dips, IReadOnlyList<DipPickRow> picks, IReadOnlyList<IndexTradeRow> trades, DateOnly session) =>
+        run with
+        {
+            Passed = PassedWithDip(results.Where(result => result.Passed).Select(result => result.Ticker), dips),
+            Listed = run.Listed + picks.Count(pick => pick.State == FamilyList.Listed),
+            HeldBack = run.HeldBack + picks.Count(pick => pick.State == FamilyList.OpenTrade),
+            Kept = run.Kept + trades.Count(trade => trade.Listed == session),
+            Ended = run.Ended + trades.Count(trade => trade.EndedOn == session),
+        };
 
     // The setting a dip night ran on and its rule in words, read off the settings its step stored, the provisional
     // setting's where a night stored none it can read.
@@ -52,7 +71,8 @@ public static partial class TonightScreen
     public static MarketCheckView DipCheck(DipNightRow night) =>
         new(DipRule.Name, SetupFamilies.Dips.Label, night.MarketOpen, DipSettingWords(night));
 
-    // The dip's card on an index's night, none where its step did not read the night.
+    // The dip's card on an index's night, none where its step did not read the night, each pick's business state as the
+    // night stored it.
     public static FamilyCardView? DipCard(
         UniverseChoice universe,
         DipNightRow? night,
@@ -60,7 +80,8 @@ public static partial class TonightScreen
         IReadOnlyList<IndexResultRow> results,
         IReadOnlyList<(string Ticker, string? Company, decimal? Close)> members,
         IReadOnlyList<ResearchedRow> researched,
-        IReadOnlyDictionary<string, QueueState> queue)
+        IReadOnlyDictionary<string, QueueState> queue,
+        IReadOnlyList<FundamentalReadingRow>? readings = null)
     {
         if (night is null)
         {
@@ -68,6 +89,7 @@ public static partial class TonightScreen
         }
 
         var family = SetupFamilies.Dips;
+        var readingBy = (readings ?? []).ToDictionary(row => row.Ticker, StringComparer.Ordinal);
         var memberBy = members.ToDictionary(member => member.Ticker, StringComparer.Ordinal);
         var writtenOn = researched.ToDictionary(row => row.Ticker, row => row.Written, StringComparer.Ordinal);
         var passedBy = results.Where(result => result.Passed).ToDictionary(result => result.Ticker, StringComparer.Ordinal);
@@ -90,7 +112,8 @@ public static partial class TonightScreen
                         [],
                         Distance: new UniverseCell(pick.Ticker, string.Empty, member.Close, null, null, null, null, null, null, Name: member.Company),
                         ResearchedOn: writtenOn.TryGetValue(pick.Ticker, out var written) ? written : null,
-                        Queue: queue.GetValueOrDefault(pick.Ticker));
+                        Queue: queue.GetValueOrDefault(pick.Ticker),
+                        Business: Business(readingBy.GetValueOrDefault(pick.Ticker)));
 
                     var setting = SettingOf(night).Setting;
 
@@ -112,7 +135,8 @@ public static partial class TonightScreen
             DipNotes(picks),
             listed.Length > 0 ? null : DipEmpty(universe, night, picks, results),
             HeldBack: picks.Count(pick => pick.State == FamilyList.OpenTrade),
-            Passes: [.. picks.OrderBy(pick => pick.Place ?? int.MaxValue).ThenBy(pick => pick.Ticker, StringComparer.Ordinal).Select(pick => pick.Ticker)]);
+            Passes: [.. picks.OrderBy(pick => pick.Place ?? int.MaxValue).ThenBy(pick => pick.Ticker, StringComparer.Ordinal).Select(pick => pick.Ticker)],
+            NotComputed: night.Fault is not null);
     }
 
     // The exit a dip pick sells on, in the words its row draws where a target would stand.
@@ -281,22 +305,23 @@ public static partial class TonightScreen
         ];
     }
 
-    // The stocks one gate short of the dip's buy point: each member whose stored answer failed exactly one gate, the
-    // history of its average read, by ticker, with that gate and its words; none where the night stored no answer.
+    // The stocks one gate short of the dip's buy point: each member whose stored answer passed the drop, the dip's setup,
+    // and failed exactly one other gate, a report inside the window being an exclusion and never a gate narrowly missed,
+    // in the family's order, the lowest 2-session RSI first and then the ticker, with that gate and its words; none where
+    // the night stored no answer. A member whose stored year misses a session reads no drop, so none is drawn.
     // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
     public static IReadOnlyList<CloseToBuyCell> DipCloseAcross(IReadOnlyList<IndexResultRow> results, IReadOnlyList<(string Ticker, string? Company, decimal? Close)> members)
     {
         var companies = members.ToDictionary(member => member.Ticker, member => member.Company, StringComparer.Ordinal);
         var cells = new List<CloseToBuyCell>();
 
-        foreach (var result in results.Where(result => !result.Passed && result.Gates is not null).OrderBy(result => result.Ticker, StringComparer.Ordinal))
+        foreach (var result in results.Where(result => !result.Passed && result.Gates is not null).OrderBy(result => result.OrderBy ?? double.MaxValue).ThenBy(result => result.Ticker, StringComparer.Ordinal))
         {
             var gates = FamilyRule.GatesOf(result.Gates!);
+            var failed = gates.Where(gate => !gate.Passed).ToArray();
 
-            if (gates.Any(gate => gate.Name == DipRule.HistoryGate && gate.Passed) && gates.Count(gate => !gate.Passed) == 1)
+            if (gates.Any(gate => gate.Name == DipRule.DropGate && gate.Passed) && failed is [{ Name: not DipRule.ReportGate } missed])
             {
-                var missed = gates.First(gate => !gate.Passed);
-
                 cells.Add(new CloseToBuyCell(result.Ticker, companies.GetValueOrDefault(result.Ticker), DipRule.Name, SetupFamilies.Dips.Label, missed.Name, missed.Reason));
             }
         }

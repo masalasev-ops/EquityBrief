@@ -6884,15 +6884,25 @@ Built:      the dip's rule in the core, Wilder's 2-session RSI, its seven gates 
             decided and its citations repointed, 22 and 9; sections 7, 11, 14, 15, 16, 17, 18 and 23, SCHEMA.md, the
             guide, the roster's rows and the changelog. This checkpoint amends its own done condition's text: 22.1 read
             the history pulled before the store's year where that year falls short, which the hard rule on bars names
-            the dip no reader of, and it reads the stored bars alone.
+            the dip no reader of, and it reads the stored bars alone; and its first and last failure rows now name a
+            member missing a session or with a suspect series and a session a trade's bars skip.
+Reviewed:   two reviews of the pull request before its merge, each finding checked by a skeptic, found a member read
+            across a session missing from its stored year and a walk reading past one, the hard rule on bars broken;
+            every member that did not drop drawn one gate short; a pick's card worded and a taken trade followed by
+            the swing exits; no dip pass in the line's or the Run summary's count; the S&P 400's and 600's setup
+            chips dropping the index; and smaller faults. Each corrected here with a test: the history gate refusing a
+            gap or a suspect series with nothing read, the walk waiting on a skipped session, the dip's own loader and
+            access, the one gate short rule, its plan's own exits, a taken dip trade ending where the dip's own did,
+            the counts, the chips, the tile on a failed night, the cards' breadth, a weekend report, a stop at or under
+            nothing, its held trades read after the walk, and the by-hand index families' verb drawing the dip again.
 Measured:   read-only on the operator's store, 8 of the 1,504 members holding a bar on 2026-10-21 held fewer than 201
             stored sessions, each a recent listing the pull holds nothing earlier for. The card read back on Tonight
             for each index at 1440 and 390 pixels over constructed stores, the S&P 400's in both palettes, no page wider
             than its screen; the first read-back drew the card with no hue and no chips, both added before this entry.
             The dip's hue searched over the colour cube by the palette check's arithmetic, #e000e8 on the light ground
             and #d8009c on the dark, its nearest other hue 24.7 and 17.2 apart.
-Tests:      16 new, 2637 in all: the RSI, each gate on both sides of its threshold and at it, the report window's
-            edges, the exits, the 5-session average and the order worked by hand and read against the fixture's derived
+Tests:      24 new, 2645 in all, 8 of them the reviews': the RSI, each gate on both sides of its threshold and at
+            it, the report window's edges, the exits, the 5-session average and the order worked by hand and read against the fixture's derived
             figures; the night over a constructed S&P 400 giving way to every other family, and a stock the dip holds
             listed by an older family as before; its cards and its rule's night; the four failure rows each induced;
             its card, line, tile, chips and label read back off Tonight; its Past picks, Run row and name-page line;
@@ -6910,11 +6920,16 @@ Mutated:    the rule, stated before the runs: one mutation a property the checkp
             index families' pinned file, red at the pinned sources test; D7 the dip's chip left out of the S&P 400's
             setups, red at the Past picks read-back; D8 the market line's dip words dropped, red at the Tonight
             read-back. Not mutated: the order, the average's window, the card's report line, the Run row, the
-            name-page line and the four tables' columns.
+            name-page line, the four tables' columns, and the reviews' corrections, whose tests were written after
+            them and are not shown red here.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
-            stated before that run: all six steps, 0 warnings, 0 errors, 2637 of 2637 tests ran with none failed,
+            stated before that run: all six steps, 0 warnings, 0 errors, 2645 of 2645 tests ran with none failed,
             migrations 0 to 105 with none pending, schema version 105, against `data-ci` and never `data`; the phase
             report 60 tables, 1396 claims, 1396 passing, none out of scope and none unexamined, 1407 placements and
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    the night of 2026-10-22 run again under the dip from main after the merge; 22.2; PR 505's migration at 106
-            behind this one's 105; the sign-offs of phases 18 and 20.
+            behind this one's 105; the sign-offs of phases 18 and 20; from the reviews, the name page's label on a stock
+            the dip gave way to an S&P 400 or 600 family or the S&P 500's fundamentals-first family, which that page
+            does not read, the least close of $5 the dip reads on the S&P 500 where the documents state no floor
+            there, and the S&P 500 line's count leaving out the fundamentals-first family's passes, which predates
+            the dip.

@@ -57,7 +57,9 @@ public sealed record DipSetting(double RsiUnder, bool FiftyOverLong, int DropSes
 // night; whether it clears the floors every
 // family on its index reads, with the words its row says where it does not; each report on file, by the sessions it
 // falls from the night, nought the night itself, a session back negative and one ahead positive; the date of the next
-// report ahead, none where the calendar holds none; and the market setting's answer on the night.
+// report ahead, none where the calendar holds none; the market setting's answer on the night; the first session of
+// the year behind the night its stored series misses, none where it misses none; and whether its series is marked
+// suspect, its corporate action's refetch not stored.
 public sealed record DipMember(
     string Ticker,
     IReadOnlyList<double> Closes,
@@ -66,7 +68,9 @@ public sealed record DipMember(
     string FloorWords,
     IReadOnlyList<int> Reports,
     DateOnly? NextReport,
-    Gate Market);
+    Gate Market,
+    DateOnly? Gap = null,
+    bool Suspect = false);
 
 // A member's answer under the dip on one night: its gates in the rule's order, each with the values that decided it,
 // the plan it is bought on where one could be placed, the figure the family orders by, and the first gate it failed.
@@ -117,10 +121,14 @@ public readonly record struct DipSession(DateOnly Session, double Open, double C
 // drop no report caused, bought at the next session's open and sold on the bounce within days. Every part is read by
 // code from the stored bars, the stored calendar and, over the history, the pulled history, and no model reads any of
 // it. Its gates are read in order: the market setting, which the provisional rule holds off; the floors every family on
-// the index reads; a history of the sessions its average reads; the close above that average; the drop; no report in
-// the drop or before the time limit ends; and a typical move to place the stop by. A gate a member cannot be read on
-// for want of a figure fails, its reason saying what it lacked, and a member failing passes nothing after it.
+// the index reads; a whole history of the sessions its average reads, no session of its stored year missing and its
+// series not suspect; the close above that average; the drop; no report in the drop or before the time limit ends; and
+// a typical move to place the stop by. A gate a member cannot be read on for want of a figure fails, its reason saying
+// what it lacked; every gate is stored, and the first a member fails names it. A member whose history is not whole has
+// nothing read from its closes, so no figure is computed across a missing session.
 // see: The short-term dip buys a stock in an uptrend after a sharp drop no report caused and sells the bounce within days
+// see: Bars are never interpolated
+// see: Adjusted history is re-fetched after a corporate action
 public static class DipRule
 {
     public const string Name = "dip";
@@ -168,6 +176,10 @@ public static class DipRule
 
     public const string ShortHistory = "fewer than 200 sessions stored";
 
+    public const string Gapped = "a session missing from its stored year";
+
+    public const string SuspectSeries = "its series marked suspect";
+
     public const string NoTrend = "not above its 200-session average";
 
     public const string NoDrop = "the 2-session RSI not under its floor";
@@ -175,6 +187,8 @@ public static class DipRule
     public const string ReportNear = "a report in the drop or before the time limit";
 
     public const string NoMove = "no typical move to place its stop by";
+
+    public const string StopUnderNothing = "its stop at or under nothing";
 
     // The market setting when the family reads none, which every member passes.
     public static Gate NoMarket { get; } = new(MarketGate, true, "the dip reads no market setting", FamilyRule.Values(("setting", MarketOff)));
@@ -245,14 +259,17 @@ public static class DipRule
 
     // A member's answer at a setting: each gate in order with the values that decided it, the first failed naming the
     // member, and where every gate passes the plan at the listing close, its stop the setting's typical moves under it.
+    // A member whose stored year misses a session or whose series is suspect has no average, relative strength index
+    // or typical move read from its closes, its history gate failing with the session or the mark named.
     public static DipAnswer Read(DipMember member, DipSetting setting)
     {
         var gates = new List<Gate> { member.Market };
         var night = member.Closes.Count - 1;
+        var whole = member.Gap is null && !member.Suspect;
         double? close = night >= 0 ? member.Closes[night] : null;
-        var average = night >= 0 ? Average(member.Closes, night, TrendSessions) : null;
-        var fifty = night >= 0 ? Average(member.Closes, night, FiftySessions) : null;
-        var rsi = night >= 0 ? Rsi(member.Closes)[night] : null;
+        var average = whole && night >= 0 ? Average(member.Closes, night, TrendSessions) : null;
+        var fifty = whole && night >= 0 ? Average(member.Closes, night, FiftySessions) : null;
+        var rsi = whole && night >= 0 ? Rsi(member.Closes)[night] : null;
         var reported = ReportInside(member.Reports, setting);
 
         gates.Add(new Gate(FloorsGate, member.ClearsTheFloors, member.ClearsTheFloors ? string.Empty : member.FloorWords, FamilyRule.Values()));
@@ -260,8 +277,12 @@ public static class DipRule
         gates.Add(new Gate(
             HistoryGate,
             average is not null,
-            average is not null ? string.Empty : FamilyRule.Invariant($"{member.Closes.Count} sessions stored, fewer than the {TrendSessions} its average reads"),
-            FamilyRule.Values(("sessions", FamilyRule.Whole(member.Closes.Count)))));
+            average is not null ? string.Empty : HistoryWords(member),
+            member.Gap is { } missing
+                ? FamilyRule.Values(("sessions", FamilyRule.Whole(member.Closes.Count)), ("gap", missing.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)))
+                : member.Suspect
+                    ? FamilyRule.Values(("sessions", FamilyRule.Whole(member.Closes.Count)), ("suspect", "yes"))
+                    : FamilyRule.Values(("sessions", FamilyRule.Whole(member.Closes.Count)))));
 
         var trend = close is { } last && average is { } mean && last > mean && (!setting.FiftyOverLong || (fifty is { } short50 && short50 > mean));
 
@@ -285,19 +306,24 @@ public static class DipRule
             reported ? ReportWords(member.Reports, setting) : string.Empty,
             FamilyRule.Values(("reports", string.Join(",", member.Reports.Select(sessions => FamilyRule.Whole(sessions)))), ("next", member.NextReport?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? NoReportOnFile))));
 
-        double? move = member.TypicalMove is { } typical && typical > 0 ? typical : null;
+        double? move = whole && member.TypicalMove is { } typical && typical > 0 ? typical : null;
+
+        // A stop the setting's typical moves would place at or under nothing is no stop a trade can be sized on.
+        var above = move is { } reach && close is { } at && at - (setting.StopMoves * reach) > 0;
 
         gates.Add(new Gate(
             MoveGate,
-            move is not null,
-            move is not null ? string.Empty : NoMove,
-            FamilyRule.Values(("move", FamilyRule.Figure(member.TypicalMove)))));
+            above,
+            above ? string.Empty
+                : move is not null ? FamilyRule.Invariant($"a stop {setting.StopMoves:0.##} typical moves of {move:0.##} under its close of {close:0.##} falls at or under nothing")
+                : whole ? NoMove : "its typical move not read",
+            FamilyRule.Values(("move", FamilyRule.Figure(whole ? member.TypicalMove : null)))));
 
         var failed = gates.FirstOrDefault(gate => !gate.Passed);
 
-        if (failed is not null || close is not { } entry || move is not { } placed)
+        if (failed is not null || close is not { } entry || move is not { } placed || !above)
         {
-            return new DipAnswer(member.Ticker, gates, null, null, null, rsi, ReasonOf(failed));
+            return new DipAnswer(member.Ticker, gates, null, null, null, rsi, failed?.Name == MoveGate && move is not null ? StopUnderNothing : ReasonOf(failed, member));
         }
 
         var buy = Prices.Statistic.ToPrice(entry);
@@ -305,13 +331,36 @@ public static class DipRule
         return new DipAnswer(member.Ticker, gates, buy, Prices.Statistic.ToPrice(entry - (setting.StopMoves * placed)), setting.TimeLimit, rsi, null);
     }
 
+    // The place in the rule's order of the gate a reason names, the history gate's for each of its three reasons and the
+    // typical move's for both of its own, and none for a reason the rule does not give.
+    public static int GateOf(string reason) => reason switch
+    {
+        MarketClosed => 0,
+        UnderTheFloors => 1,
+        ShortHistory or Gapped or SuspectSeries => 2,
+        NoTrend => 3,
+        NoDrop => 4,
+        ReportNear => 5,
+        NoMove or StopUnderNothing => 6,
+        _ => -1,
+    };
+
+    // Why a member's history gate failed: the session its stored year misses, its series marked suspect, or the
+    // sessions it holds against those its average reads.
+    static string HistoryWords(DipMember member) =>
+        member.Gap is { } missing
+            ? FamilyRule.Invariant($"its stored year missing the session of {missing:yyyy-MM-dd}, so nothing is read across it")
+            : member.Suspect
+                ? "its series marked suspect, its corporate action's refetch not stored, so nothing is read from it"
+                : FamilyRule.Invariant($"{member.Closes.Count} sessions stored, fewer than the {TrendSessions} its average reads");
+
     // The reason a failed gate names the member by.
-    static string? ReasonOf(Gate? failed) => failed?.Name switch
+    static string? ReasonOf(Gate? failed, DipMember member) => failed?.Name switch
     {
         null => null,
         MarketGate => MarketClosed,
         FloorsGate => UnderTheFloors,
-        HistoryGate => ShortHistory,
+        HistoryGate => member.Gap is not null ? Gapped : member.Suspect ? SuspectSeries : ShortHistory,
         TrendGate => NoTrend,
         DropGate => NoDrop,
         ReportGate => ReportNear,
@@ -388,17 +437,46 @@ public static class DipRule
     }
 
     // Each session after a listing as the walk reads it, the exit's average over the closes to it, the listing's and
-    // the closes before it among them.
-    public static IReadOnlyList<DipSession> Sessions(IReadOnlyList<(DateOnly Session, double Open, double Close)> bars, int listing, int exitAverage)
+    // the closes before it among them; none from the first session of the exchange's calendar the stock's bars skip,
+    // so a trade waits for a missing session where it would otherwise read past it.
+    public static IReadOnlyList<DipSession> Sessions(IReadOnlyList<(DateOnly Session, double Open, double Close)> bars, int listing, int exitAverage, IReadOnlyList<DateOnly> calendar)
     {
         var closes = bars.Select(bar => bar.Close).ToArray();
         var sessions = new List<DipSession>();
 
         for (var at = listing + 1; at < bars.Count; at++)
         {
+            if (Skipped(calendar, bars[at - 1].Session, bars[at].Session))
+            {
+                break;
+            }
+
             sessions.Add(new DipSession(bars[at].Session, bars[at].Open, bars[at].Close, Average(closes, at, exitAverage)));
         }
 
         return sessions;
+    }
+
+    // Whether the calendar holds a session strictly between two of a stock's stored sessions, one its bars skip.
+    static bool Skipped(IReadOnlyList<DateOnly> calendar, DateOnly from, DateOnly to)
+    {
+        var low = 0;
+        var high = calendar.Count;
+
+        while (low < high)
+        {
+            var middle = (low + high) / 2;
+
+            if (calendar[middle] <= from)
+            {
+                low = middle + 1;
+            }
+            else
+            {
+                high = middle;
+            }
+        }
+
+        return low < calendar.Count && calendar[low] < to;
     }
 }

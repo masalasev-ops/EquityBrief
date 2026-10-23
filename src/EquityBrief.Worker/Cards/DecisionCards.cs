@@ -420,14 +420,17 @@ public sealed class DecisionCards : IComponent
         }
 
         // The dip's picks, each on its own plan at the listing close with its stop and its time limit, the gates its rule
-        // reads in its words, and its own market setting, none while it is provisional, in place of the swing families'
-        // check.
+        // reads in its words, and the index's breadth against its floor as the night read it, a check the dip does not
+        // read, its own market setting being none while it is provisional.
         foreach (var pick in dipPicks)
         {
             var plan = await DipPlanAsync(connection, transaction, index, pick, night, cancellation);
             var score = await ScorePartAsync(connection, transaction, index, pick.Family, pick.Ticker, scores, cancellation);
+            var market = large
+                ? await LargeMarketAsync(connection, transaction, pick.Ticker, night, false, cancellation)
+                : new MarketReading(breadth, floor, false);
 
-            written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, new MarketReading(null, 0, false), sectors, ranks, null, cancellation, score);
+            written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, market, sectors, ranks, null, cancellation, score);
         }
 
         var place = 0;
@@ -1002,8 +1005,6 @@ public sealed class DecisionCards : IComponent
         return new Plan(null, null, null, cap, []);
     }
 
-    // An S&P 400 or 600 pick's plan off its index's row, and its gates as the night's settings state its rule: the floors,
-    // the profit gate, the market check and the family's own setting, since those rows store the rule and not its values.
     // A dip pick's plan as its step stored it: bought on the listing close's plan at the next open, its stop that many
     // typical moves under, no target, held to its time limit; and the gates its rule reads, in its own words, the report's
     // naming the next date on file or saying the stored calendar holds none.
@@ -1034,6 +1035,8 @@ public sealed class DecisionCards : IComponent
         return new Plan(MoneyOrNone(reader, 0), MoneyOrNone(reader, 1), null, reader.IsDBNull(2) ? null : reader.GetInt32(2), Gates(next));
     }
 
+    // An S&P 400 or 600 pick's plan off its index's row, and its gates as the night's settings state its rule: the floors,
+    // the profit gate, the market check and the family's own setting, since those rows store the rule and not its values.
     static async Task<Plan> IndexPlanAsync(SqliteConnection connection, SqliteTransaction transaction, string index, Pick pick, DateOnly night, JsonElement? settings, CancellationToken cancellation)
     {
         await using var command = Command(connection, transaction, IndexFamilyRow, [("$index", index), ("$night", Stamp(night)), ("$ticker", pick.Ticker), ("$family", pick.Family)]);

@@ -151,6 +151,12 @@ public partial class FixtureExpectations
         // Friday 2026-10-02 and 2026-10-19 the eleventh.
         Assert.Equal([-4, 0, 10, 11], reports);
         Assert.Equal(new DateOnly(2026, 10, 16), next);
+
+        // Ahead of the night a report dated on a day the exchange is closed is read at the session after it too: Saturday
+        // 2026-10-17 at Monday 10-19, the eleventh, which the gate passes, and Saturday 2026-10-03 at Monday 10-05, the
+        // first, never as the night.
+        Assert.Equal([11, 1], DipFamily.ReportsOf([new(2026, 10, 17), new(2026, 10, 3)], calendar, calendar.Length - 1, night).Reports);
+        Assert.False(Refused(11));
     }
 
     static DipSession Day(int day, double open, double close, double? average) => new(new DateOnly(2026, 10, day), open, close, average);
@@ -199,9 +205,70 @@ public partial class FixtureExpectations
         // Closes 10, 11, 12, 13, 14, 15 and 9: after a listing on the third, the fourth session's average is (10 + 11 + 12 +
         // 13) / 4 short of five and none, the fifth's (10 + 11 + 12 + 13 + 14) / 5 = 12, the sixth's 13 and the seventh's 12.6.
         var bars = new (DateOnly, double, double)[] { (new(2026, 10, 1), 10, 10), (new(2026, 10, 2), 11, 11), (new(2026, 10, 3), 12, 12), (new(2026, 10, 4), 13, 13), (new(2026, 10, 5), 14, 14), (new(2026, 10, 6), 15, 15), (new(2026, 10, 7), 9, 9) };
-        var sessions = DipRule.Sessions(bars, 2, 5);
+        var sessions = DipRule.Sessions(bars, 2, 5, [.. bars.Select(bar => bar.Item1)]);
 
         Assert.Equal([null, 12.0, 13.0, 12.6], sessions.Select(session => session.Average));
+    }
+
+    [Fact]
+    public void ADipTradeWaitsWhereItsStocksBarsSkipASessionTheIndexTraded()
+    {
+        // The index traded every day from 2026-10-01 to 10-07; the stock was listed on 10-02.
+        DateOnly[] calendar = [.. Enumerable.Range(1, 7).Select(day => new DateOnly(2026, 10, day))];
+        (DateOnly, double, double) Bar(int day, double close) => (new DateOnly(2026, 10, day), close, close);
+
+        // Its bars skip 10-03, the session after its listing: the walk reads no session, so the trade is not bought on
+        // 10-04's open, which reading the next stored bar would do.
+        Assert.Empty(DipRule.Sessions([Bar(1, 10), Bar(2, 9), Bar(4, 9.5), Bar(5, 10)], 1, 5, calendar));
+        Assert.Null(DipRule.Walk(9, 8, 10, DipRule.Sessions([Bar(1, 10), Bar(2, 9), Bar(4, 9.5), Bar(5, 10)], 1, 5, calendar)).BoughtOn);
+
+        // Its bars skip 10-05: the walk reads 10-03 and 10-04 and stops there, so the close of 11 above its 2-session
+        // average of 9.95 on 10-04 waits for 10-05's open rather than selling at 10-06's, 10-03's close of 8.9 under its
+        // average of 8.95 and over the stop of 8 having sold nothing.
+        var skipped = DipRule.Sessions([Bar(1, 10), Bar(2, 9), Bar(3, 8.9), Bar(4, 11), Bar(6, 11.5), Bar(7, 12)], 1, 2, calendar);
+
+        Assert.Equal([new DateOnly(2026, 10, 3), new DateOnly(2026, 10, 4)], skipped.Select(session => session.Session));
+
+        var held = DipRule.Walk(9, 8, 10, skipped);
+
+        Assert.Equal((new DateOnly(2026, 10, 3), DipEnd.Open, (DateOnly?)null), (held.BoughtOn, held.End, held.EndedOn));
+
+        // A calendar the stock's bars hold every session of reads each of them, and the same trade sells at 10-05's open.
+        var whole = DipRule.Sessions([Bar(1, 10), Bar(2, 9), Bar(3, 8.9), Bar(4, 11), Bar(5, 11.5), Bar(6, 11), Bar(7, 12)], 1, 2, calendar);
+
+        Assert.Equal(5, whole.Count);
+        Assert.Equal((new DateOnly(2026, 10, 5), DipEnd.Exit), (DipRule.Walk(9, 8, 10, whole).EndedOn, DipRule.Walk(9, 8, 10, whole).End));
+    }
+
+    [Fact]
+    public void ADipMemberMissingASessionOrWhoseSeriesIsSuspectHasNothingReadFromItsClosesAndItsRowNamesWhy()
+    {
+        var any = DipRule.Provisional with { RsiUnder = 101 };
+
+        // A member every gate passes on whole closes is refused at its history once its stored year misses a session:
+        // no average, no relative strength index and no typical move read, so no stop is placed.
+        Assert.True(DipRule.Read(Member(FlatThen(101)), any).Passed);
+
+        var gapped = DipRule.Read(Member(FlatThen(101)) with { Gap = new DateOnly(2026, 9, 30) }, any);
+        var history = gapped.Gates.Single(gate => gate.Name == DipRule.HistoryGate);
+
+        Assert.Equal((false, DipRule.Gapped, (double?)null, (decimal?)null, (decimal?)null), (gapped.Passed, gapped.Reason, gapped.Rsi, gapped.Entry, gapped.Stop));
+        Assert.Equal((false, "its stored year missing the session of 2026-09-30, so nothing is read across it", "2026-09-30"), (history.Passed, history.Reason, history.Values["gap"]));
+        Assert.Equal(
+            [(DipRule.TrendGate, "its average not read"), (DipRule.DropGate, "its 2-session RSI not read"), (DipRule.MoveGate, "its typical move not read")],
+            gapped.Gates.Where(gate => !gate.Passed && gate.Name != DipRule.HistoryGate).Select(gate => (gate.Name, gate.Reason)));
+
+        // A series marked suspect is refused the same way, its row naming the mark.
+        var suspect = DipRule.Read(Member(FlatThen(101)) with { Suspect = true }, any);
+
+        Assert.Equal((false, DipRule.SuspectSeries, "yes"), (suspect.Passed, suspect.Reason, suspect.Gates.Single(gate => gate.Name == DipRule.HistoryGate).Values["suspect"]));
+        Assert.Null(suspect.Rsi);
+
+        // Each history reason is the history gate's, so the funnel counts a gapped or suspect member there.
+        Assert.Equal([2, 2, 2], new[] { DipRule.ShortHistory, DipRule.Gapped, DipRule.SuspectSeries }.Select(DipRule.GateOf));
+        Assert.Equal(
+            [("market", 3), ("floors", 3), ("history", 1), ("trend", 1), ("drop", 1), ("report", 1), ("typical move", 1)],
+            EquityBrief.Worker.Cards.RuleCards.DipFunnel([(true, null), (false, DipRule.Gapped), (false, DipRule.SuspectSeries)]));
     }
 
     [Fact]
@@ -326,10 +393,91 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task TheDipWalksAStoredTradeToItsBuyAndItsExitAndGivesWayToAnIndexFamilysAndItsOwnOpenTrades()
+    {
+        using var store = DipStore();
+        var clock = FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        // DN, rising 0.16 a session, listed on 2026-09-28 at its close of 119.52 with its stop at 113.52: bought at
+        // 09-29's open of 119.68, whose close of 119.68 is above its 5-session average of 119.36, so it sells at 09-30's
+        // open of 119.84, one session held, (119.84 - 119.68) / 6 risks restated at the fill.
+        store.Execute("INSERT INTO dip_trade (rule, index_code, ticker, session_date, place, entry, stop, time_limit, exit_average, risk_moves, end_reason) VALUES ('provisional', 'MID', 'DN', '2026-09-28', 1, '119.52', '113.52', 10, 5, 4.0, 'open');");
+        // DC, listed on 09-30 at 119.84 with its stop at 114: bought at 10-01's open of 116.84, its close of 113.84 on 10-02
+        // under the stop selling at an open the store does not hold yet, so it stays open and holds DC back tonight.
+        store.Execute("INSERT INTO dip_trade (rule, index_code, ticker, session_date, place, entry, stop, time_limit, exit_average, risk_moves, end_reason) VALUES ('provisional', 'MID', 'DC', '2026-09-30', 1, '119.84', '114', 10, 5, 4.0, 'open');");
+        // DB holds an open trade under the S&P 400's pullback from 09-30.
+        store.Execute("INSERT INTO index_family_trade (index_code, family, ticker, session_date, place, entry, stop, target, trail, cap) VALUES ('MID', 'pullback', 'DB', '2026-09-30', 1, '119.84', '114', '130', NULL, 63);");
+
+        await new DipFamily(clock, store.DatabaseFile).RunAsync("night-dip");
+
+        Assert.Equal(
+            ["2026-09-29|119.68|2026-09-30|119.84|exit|1"],
+            FamilyRows(store, "SELECT bought_on, fill, ended_on, sale, end_reason, sessions FROM dip_trade WHERE ticker = 'DN';"));
+        Assert.Equal((119.84 - 119.68) / 6, double.Parse(Assert.Single(FamilyRows(store, "SELECT result FROM dip_trade WHERE ticker = 'DN';")), CultureInfo.InvariantCulture), 6);
+        Assert.NotEqual(["null"], FamilyRows(store, "SELECT cost FROM dip_trade WHERE ticker = 'DN';"));
+        Assert.Equal(["2026-10-01|116.84|null|open"], FamilyRows(store, "SELECT bought_on, fill, ended_on, end_reason FROM dip_trade WHERE ticker = 'DC';"));
+
+        // DB held back by the pullback's trade on its index and DC by the dip's own, each naming its holder.
+        Assert.Equal(
+            [$"DB|{FamilyList.OpenTrade}|pullback|MID|2026-09-30", $"DC|{FamilyList.OpenTrade}|dip|MID|2026-09-30"],
+            FamilyRows(store, "SELECT ticker, state, held_family, held_index, held_night FROM dip_pick WHERE index_code = 'MID' AND ticker IN ('DB', 'DC') ORDER BY ticker;"));
+
+        // Run again, the night stores the same walk and the same list.
+        var first = FamilyRows(store, "SELECT ticker, state, place FROM dip_pick WHERE index_code = 'MID' ORDER BY ticker;");
+
+        await new DipFamily(clock, store.DatabaseFile).RunAsync("night-dip-again");
+
+        Assert.Equal(first, FamilyRows(store, "SELECT ticker, state, place FROM dip_pick WHERE index_code = 'MID' ORDER BY ticker;"));
+        Assert.Equal(["2026-09-29|119.68|2026-09-30|119.84|exit|1"], FamilyRows(store, "SELECT bought_on, fill, ended_on, sale, end_reason, sessions FROM dip_trade WHERE ticker = 'DN';"));
+    }
+
+    [Fact]
+    public async Task AFailureInOneIndexsPartOfTheDipIsNamedOnItsRowAndTheOtherIndicesGoOn()
+    {
+        // The S&P 600's one member holds a bar whose close the store cannot read, so the S&P 600's part fails.
+        using var store = DipStore();
+
+        StoreYear(store, "SX", DipYear(4));
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('SML', 'SX', '2024-01-02', NULL, '2024-01-02T00:00:00Z');");
+        store.Execute($"UPDATE bar SET close = 'unreadable' WHERE ticker = 'SX' AND session_date = '{DipNightSession}';");
+
+        var clock = FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+        var outcome = await new DipFamily(clock, store.DatabaseFile).RunAsync("night-dip");
+
+        Assert.NotNull(outcome.Indices.Single(index => index.Index == "SML").Fault);
+        Assert.Null(outcome.Indices.Single(index => index.Index == "MID").Fault);
+
+        // Its night row names the failure and holds no answer, while the S&P 400's part stored its eight passes.
+        Assert.Equal(["SML|0|0|0"], FamilyRows(store, "SELECT index_code, members, passed, fault IS NULL FROM dip_night WHERE index_code = 'SML';"));
+        Assert.Empty(FamilyRows(store, "SELECT ticker FROM dip_result WHERE index_code = 'SML';"));
+        Assert.Equal(["MID|10|8|1"], FamilyRows(store, "SELECT index_code, members, passed, fault IS NULL FROM dip_night WHERE index_code = 'MID';"));
+
+        // The stage's row is not computed, naming the index's failure, and the night goes on.
+        Assert.Equal([DipFamily.NotComputed], FamilyRows(store, $"SELECT outcome FROM run_log WHERE stage = '{DipFamily.Stage}';"));
+        Assert.Contains("SML: not computed tonight", Assert.Single(FamilyRows(store, $"SELECT detail FROM run_log WHERE stage = '{DipFamily.Stage}';")), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ADipStopTheTypicalMovesWouldPlaceAtOrUnderNothingIsRefusedAtTheTypicalMove()
+    {
+        var any = DipRule.Provisional with { RsiUnder = 101 };
+
+        // A close of 101 with a typical move of 25.25 puts the stop four moves under at nought, and one of 25.24 at 0.04.
+        var nought = DipRule.Read(Member(FlatThen(101), move: 25.25), any);
+
+        Assert.Equal((false, DipRule.StopUnderNothing, (decimal?)null), (nought.Passed, nought.Reason, nought.Stop));
+        Assert.Equal(6, DipRule.GateOf(DipRule.StopUnderNothing));
+        Assert.True(DipRule.Read(Member(FlatThen(101), move: 25.24), any).Passed);
+    }
+
+    [Fact]
     public async Task TheDipsPicksGetACardEachAndItsRuleItsNightsRowWithItsFunnelOffTheGateEachMemberFailedFirst()
     {
         using var store = DipStore();
         var clock = FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        // The S&P 400's night as the index families stored it, its breadth of 42 per cent under the floor.
+        store.Execute($"INSERT INTO index_family_night (index_code, session_date, members, breadth, market_open, settings, rebalanced) VALUES ('MID', '{DipNightSession}', 10, 0.42, 0, '{IndexFamilies.Settings("MID")}', 0);");
 
         await new DipFamily(clock, store.DatabaseFile).RunAsync("night-dip");
         await new EquityBrief.Worker.Cards.DecisionCards(clock, store.DatabaseFile).RunAsync("night-dip-cards");
@@ -339,6 +487,19 @@ public partial class FixtureExpectations
         Assert.Equal(
             ["DA|dip|1", "DB|dip|2", "DC|dip|3", "DD|dip|4", "DE|dip|5"],
             FamilyRows(store, "SELECT ticker, family, place FROM decision_card WHERE index_code = 'MID' AND family = 'dip' ORDER BY place;"));
+
+        // Each card's market line states the index's breadth the night read, a check the dip does not read.
+        Assert.All(
+            FamilyRows(store, "SELECT lines FROM decision_card WHERE index_code = 'MID' AND family = 'dip';"),
+            lines =>
+            {
+                using var stored = System.Text.Json.JsonDocument.Parse(lines);
+                var market = Assert.Single(stored.RootElement.EnumerateArray(), line => line.GetProperty("name").GetString() == EquityBrief.Core.Cards.CardLines.MarketName).GetProperty("words").GetString()!;
+
+                Assert.Contains("the S&P 400's breadth is 42", market, StringComparison.Ordinal);
+                Assert.Contains("a check this rule does not read", market, StringComparison.Ordinal);
+                Assert.DoesNotContain("breadth was not read", market, StringComparison.Ordinal);
+            });
 
         // Its provisional rule's night: five listed, the ten members read reaching the market setting, which every one
         // passes, then the floors, the history and the trend, which every one passes; DN stopping at the drop and DR at the
@@ -384,11 +545,15 @@ public partial class FixtureExpectations
     [Fact]
     public async Task ADipMemberHoldingFewerThanItsAveragesSessionsIsNotReadAndItsRowNamesTheSessionsStored()
     {
-        // DS holds the last 150 of a falling year, so its 200-session average reads nothing on the night.
+        // DS holds the last 150 of a falling year, so its 200-session average reads nothing on the night. DG falls as DA
+        // does but its stored year misses 2026-09-26, a session every other member holds, and DB's series is marked suspect.
         using var store = DipStore();
 
         StoreYear(store, "DS", [.. DipYear(4).Skip(102)]);
         store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('MID', 'DS', '2024-01-02', NULL, '2024-01-02T00:00:00Z');");
+        StoreYear(store, "DG", [.. DipYear(4).Where((bar, at) => at != 245)]);
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('MID', 'DG', '2024-01-02', NULL, '2024-01-02T00:00:00Z');");
+        store.Execute("INSERT INTO series_state (ticker, state, reason, checked_at) VALUES ('DB', 'suspect', 'its refetch failed', '2026-10-02T23:00:00Z');");
 
         var clock = FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates);
 
@@ -401,10 +566,21 @@ public partial class FixtureExpectations
 
         Assert.Equal((false, "150 sessions stored, fewer than the 200 its average reads", "150"), (history.Passed, history.Reason, history.Values["sessions"]));
 
-        // The funnel counts it at the history gate: eleven reach the market setting and the floors, ten the history.
+        // DG is refused at its history with the session named and no 2-session RSI stored, so it is neither listed nor kept;
+        // DB is refused naming its mark.
+        Assert.Equal(
+            [$"DB|0|null|{DipRule.SuspectSeries}", $"DG|0|null|{DipRule.Gapped}"],
+            FamilyRows(store, "SELECT ticker, passed, rsi, reason FROM dip_result WHERE index_code = 'MID' AND ticker IN ('DB', 'DG') ORDER BY ticker;"));
+        Assert.Equal(
+            "its stored year missing the session of 2026-09-26, so nothing is read across it",
+            FamilyRule.GatesOf(FamilyRows(store, "SELECT gates FROM dip_result WHERE index_code = 'MID' AND ticker = 'DG';").Single()).Single(gate => gate.Name == DipRule.HistoryGate).Reason);
+        Assert.Empty(FamilyRows(store, "SELECT ticker FROM dip_pick WHERE index_code = 'MID' AND ticker IN ('DB', 'DG');"));
+        Assert.Empty(FamilyRows(store, "SELECT ticker FROM dip_trade WHERE index_code = 'MID' AND ticker IN ('DB', 'DG');"));
+
+        // The funnel counts all three at the history gate: twelve reach the market setting and the floors, nine the history.
         var funnel = EquityBrief.Core.Cards.RuleRows.ReadGates(FamilyRows(store, "SELECT gates FROM rule_night WHERE index_code = 'MID' AND family = 'dip';").Single());
 
-        Assert.Equal([("market", 11), ("floors", 11), ("history", 10)], funnel.Take(3));
+        Assert.Equal([("market", 12), ("floors", 12), ("history", 9)], funnel.Take(3));
     }
 
     [Fact]
@@ -460,5 +636,17 @@ public partial class FixtureExpectations
         var held = DipRule.Walk(100, 96, 10, [Day(5, 99, 95.9, 99)]);
 
         Assert.Equal((DipEnd.Open, (DateOnly?)null, (double?)null), (held.End, held.EndedOn, held.Sale));
+
+        // DW, listed on 2026-09-30, holds no bar for 2026-10-01, a session every other member of the index holds: its
+        // trade waits unbought on the night of 2026-10-02 rather than buying at that night's open.
+        using var skipping = DipStore();
+
+        StoreYear(skipping, "DW", [.. DipYear(-0.16).Where((bar, at) => at != 250)]);
+        skipping.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('MID', 'DW', '2024-01-02', NULL, '2024-01-02T00:00:00Z');");
+        skipping.Execute("INSERT INTO dip_trade (rule, index_code, ticker, session_date, place, entry, stop, time_limit, exit_average, risk_moves, end_reason) VALUES ('provisional', 'MID', 'DW', '2026-09-30', 1, '119.84', '114', 10, 5, 4.0, 'open');");
+
+        await new DipFamily(clock, skipping.DatabaseFile).RunAsync("night-dip");
+
+        Assert.Equal(["null|null|open"], FamilyRows(skipping, "SELECT bought_on, fill, end_reason FROM dip_trade WHERE index_code = 'MID' AND ticker = 'DW';"));
     }
 }
