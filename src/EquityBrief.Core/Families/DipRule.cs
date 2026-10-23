@@ -349,7 +349,7 @@ public static class DipRule
     // sessions it holds against those its average reads.
     static string HistoryWords(DipMember member) =>
         member.Gap is { } missing
-            ? FamilyRule.Invariant($"its stored year missing the session of {missing:yyyy-MM-dd}, so nothing is read across it")
+            ? "its stored year missing the session of " + missing.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ", so nothing is read across it"
             : member.Suspect
                 ? "its series marked suspect, its corporate action's refetch not stored, so nothing is read from it"
                 : FamilyRule.Invariant($"{member.Closes.Count} sessions stored, fewer than the {TrendSessions} its average reads");

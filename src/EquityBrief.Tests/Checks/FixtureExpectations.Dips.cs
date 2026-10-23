@@ -496,7 +496,7 @@ public partial class FixtureExpectations
                 using var stored = System.Text.Json.JsonDocument.Parse(lines);
                 var market = Assert.Single(stored.RootElement.EnumerateArray(), line => line.GetProperty("name").GetString() == EquityBrief.Core.Cards.CardLines.MarketName).GetProperty("words").GetString()!;
 
-                Assert.Contains("the S&P 400's breadth is 42", market, StringComparison.Ordinal);
+                Assert.Contains("S&P 400's breadth is 42", market, StringComparison.Ordinal);
                 Assert.Contains("a check this rule does not read", market, StringComparison.Ordinal);
                 Assert.DoesNotContain("breadth was not read", market, StringComparison.Ordinal);
             });

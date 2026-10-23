@@ -2315,9 +2315,11 @@ public partial class NightlyRun
         // and from 20.2 the release fetch reads the three indices' members on its
         // slot's session, whose filers' results releases it asks for; and from 20.3
         // the local run's samples count each index's members on the day before the
-        // samples' day, which share a sample among the indices.
+        // samples' day, which share a sample among the indices; and from 22.1 the
+        // short-term dip reads each index's members on the session with its own
+        // loader.
         Assert.Equal(
-            ["CalendarFetcher", "DecisionCards", "DividendKeeper", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "HeavyweightBook", "IndexFamilies", "LadderBuilder", "LocalRun.Probes", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi.Standing", "ReleaseFetch", "SecTickers", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower"],
+            ["CalendarFetcher", "DecisionCards", "DipFamily", "DividendKeeper", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "HeavyweightBook", "IndexFamilies", "LadderBuilder", "LocalRun.Probes", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi.Standing", "ReleaseFetch", "SecTickers", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower"],
             member.Order(StringComparer.Ordinal));
 
         // And the span form, read by nothing a night runs.

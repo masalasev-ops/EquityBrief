@@ -148,7 +148,7 @@ public sealed class DipFamily : IComponent
     // as the index families' loader reads them and none of the history pulled before the year.
     const string MembersOn = @"
         SELECT DISTINCT ticker FROM membership
-        WHERE index_code = $index AND (joined IS NULL OR joined <= $night) AND (""left"" IS NULL OR ""left"" > $night)
+        WHERE index_code = $index AND (joined IS NULL OR joined <= $session) AND (""left"" IS NULL OR ""left"" > $session)
         ORDER BY ticker;
     ";
 
@@ -393,7 +393,7 @@ public sealed class DipFamily : IComponent
     {
         var tickers = new List<string>();
 
-        await foreach (var row in RowsAsync(connection, null, MembersOn, [("$index", index), ("$night", Stamp(night))], cancellation))
+        await foreach (var row in RowsAsync(connection, null, MembersOn, [("$index", index), ("$session", Stamp(night))], cancellation))
         {
             tickers.Add(row.GetString(0));
         }
