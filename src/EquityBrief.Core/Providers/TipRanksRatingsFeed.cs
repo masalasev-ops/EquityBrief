@@ -11,7 +11,7 @@ namespace EquityBrief.Core.Providers;
 // session's opening and the count are tried once more on a transient failure; the ratings are asked once and never
 // again, since a request the server counted and whose answer was lost would spend a second call. The parsers are
 // `TipRanksAnswers`'.
-// see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+// see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
 public sealed class TipRanksRatingsFeed(HttpClient client, TipRanksCredentials credentials, ProviderRequest? request = null, ProviderRequest? once = null) : IAnalystRatingsFeed
 {
     public const string Address = "https://mcp.tipranks.com/mcp/";

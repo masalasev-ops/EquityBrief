@@ -26,6 +26,64 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-23 - ARCHITECTURE.html - a stock's TipRanks press waits 15 days after TipRanks last answered for it, drawn closed until then
+Authorised by: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
+Was:
+> Ratings job: ... asks nothing for a stock answered on its New York day; ... (see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit)
+> Read API: ... and TipRanks' unless an answer of the stock's New York day stands or the newest count the ratings job read says the month's calls are spent ...
+> The analysts by name: ...; no answer stored saying a press spends one of the month's calls; and a press refused over an answer of the stock's New York day or a spent month saying which beside the press (see: ...)
+> Analyst requests: forever, append-only; an ask over an answer of the stock's New York day, inside the 10 minutes of Yahoo's last ask or over a spent month of TipRanks' calls is not written (see: ...)
+> Analyst ratings: ... the chart page draws the newest, and a press over one of the stock's New York day asks nothing (see: ...)
+> and the old decision's name wherever the document cited it, in nine places
+Now:
+> Ratings job: ... asks nothing for a stock TipRanks answered for in the 15 days before; ...
+> Read API: ... and TipRanks' unless TipRanks answered for the stock in the 15 days before or the newest count the ratings job read says the month's calls are spent ...
+> The analysts by name: ...; no answer stored saying a press spends one of the month's calls; the press drawn closed for 15 days after TipRanks answered for the stock with the day it opens again; and a press refused inside those days or over a spent month saying which beside the press (see: ...)
+> Analyst requests: forever, append-only; Yahoo's ask over an answer of the stock's New York day or inside the 10 minutes of its last ask, and TipRanks' inside the 15 days after it last answered for the stock or over a spent month of its calls, is not written (see: ...)
+> Analyst ratings: ... the chart page draws the newest, and a press inside the 15 days after it asks nothing (see: ...)
+> section 17 gains the row TipRanks press wait, 15 days; and the new decision's name in the nine places
+Why: the operator ruled on 2026-10-23 that a stock's press stays closed at least 15 days once TipRanks has answered for it.
+
+### 2026-10-23 - SCHEMA.md - the analyst requests and the analyst ratings name the 15 days a stock's TipRanks press waits
+Authorised by: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
+Was:
+> analyst_request: ... and TipRanks' none where an answer of the stock's New York day is stored in `analyst_rating` or the ratings job's newest run says the month's calls are spent ...
+> analyst_rating: ... a press over an answer of the stock's New York day, one at the month's limit, ... store nothing ...
+> and the old decision's name, in three places
+Now:
+> analyst_request: ... and TipRanks' none where `analyst_rating` holds an answer to a press made in the 15 days before or the ratings job's newest run says the month's calls are spent ...
+> analyst_rating: ... a press inside the 15 days after TipRanks last answered for the stock, one at the month's limit, ... store nothing ...
+> and the new decision's name in the three places
+Why: the same ruling.
+
+### 2026-10-23 - RUNBOOK.md - the TipRanks press waits 15 days after an answer, and the ratings verb prints waiting
+Authorised by: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
+Was:
+> ... (see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit). The read surface refuses the press where an answer of the stock's New York day is stored, and while the newest count ...
+> It asks nothing for a stock answered on its New York day; ... It stores the answer in `analyst_rating` and prints answered, asked today, limit reached, no ratings, or failed with why.
+Now:
+> ... (see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer). Once TipRanks has answered for a stock the press is drawn closed for 15 days with the day it opens again. The read surface refuses the press inside those 15 days, and while the newest count ...
+> It asks nothing for a stock TipRanks answered for in the 15 days before; ... A press that reached no answer starts no wait. It stores the answer in `analyst_rating` and prints answered, waiting, limit reached, no ratings, or failed with why.
+Why: the same ruling.
+
+### 2026-10-23 - .claude/rules/checks.md - fixture-expectations and read-surface reach the 15 days a stock's TipRanks press waits
+Authorised by: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
+Was:
+> fixture-expectations: ... asking nothing for a stock answered on its New York day, no ratings at the limit and ratings one under it ...
+> read-surface: ... and its press for TipRanks' ratings refused over an answer of the stock's New York day and over a spent month a second before the count starts again and let through at its instant; ...
+Now:
+> fixture-expectations: ... asking nothing inside the 15 days after TipRanks answered for a stock, half an hour after and a second before the 15th day's instant, and asking at it, a press that reached no answer starting no wait, no ratings at the limit and ratings one under it ...
+> read-surface: ... and its press for TipRanks' ratings refused inside the 15 days after TipRanks answered for the stock and over a spent month, each a second before it ends, and let through at its instant, the press drawn closed with the day it opens again; ...
+Why: each roster row says what its check asserts, and the correction's tests change both.
+
+### 2026-10-23 - BUILD_PLAN.md - 20.13's press waits 15 days after TipRanks last answered for a stock
+Authorised by: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
+Was:
+> **Done when** ... and none for a stock answered on its New York day, and a failure's words carrying a key planted in them reach no row, console line or reply; ...
+Now:
+> **Done when** ... and from the operator's word of 2026-10-23 at 17:49 UTC none for a stock TipRanks answered for in the 15 days before, at the 15th day and a second before it, and a failure's words carrying a key planted in them reach no row, console line or reply; ...
+Why: the operator ruled that a stock's press waits at least 15 days once TipRanks has answered for it, and the checkpoint's done condition is amended to the rule built.
+
 ### 2026-10-23 - .claude/rules/checks.md - fixture-expectations reaches the TipRanks feed past a notice's body the server never ends
 Corrects: the first live call of the ratings job, for PG on 2026-10-23, waited past its bound on TipRanks' answer to the notice that the session is open, which the server sends with no length and holds open on a connection kept alive, and asked for no ratings.
 Was:

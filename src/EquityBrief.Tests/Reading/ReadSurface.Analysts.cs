@@ -19,7 +19,7 @@ namespace EquityBrief.Tests.Reading;
 // provider's own figures where Yahoo answered nothing, saying so; the ratings drawn with the month's calls used and
 // left; and the routes reading each answer back as the section the page swaps in.
 // see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
-// see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+// see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
 public partial class ReadSurface
 {
     // The rows 20.13 adds that this check reaches: section 15.5's target range, section 15.22's firm actions and the
@@ -106,7 +106,7 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task ARatingsPressIsRefusedOverAnAnswerOfTheDayAndOverASpentMonthUntilItsCountStartsAgain()
+    public async Task ARatingsPressIsRefusedInsideAStocksFifteenDaysAndOverASpentMonthUntilEachEnds()
     {
         using var store = await FixtureExpectations.WithListings();
 
@@ -127,13 +127,13 @@ public partial class ReadSurface
         Assert.Equal([$"{names[0]}|tipranks"], Rows(store, "SELECT ticker, source FROM analyst_request;").Select(row => string.Join("|", row)));
         Assert.Equal((names[0], ChartOpened), launcher.Ratings.Single());
 
-        // An answer of the stock's New York day stands, and no call is made over it.
+        // An answer TipRanks gave for the stock stands for 15 days from the press it answered, and no call is made over it.
         store.Execute($"INSERT INTO analyst_rating (ticker, asked_at, answered_at, as_of, total, counts, ratings) VALUES ('{names[0]}', '2026-10-23T15:00:00Z', '2026-10-23T15:00:06Z', '2026-10-23', 0, '[]', '[]');");
 
         var again = await Press(names[0], ChartOpened.AddMinutes(5));
 
         Assert.Equal(HttpStatusCode.Conflict, again.Status);
-        Assert.Contains($"TipRanks answered for {names[0]} at 2026-10-23T15:00:00Z, on this New York day, so no call was made.", again.Body, StringComparison.Ordinal);
+        Assert.Contains($"TipRanks answered for {names[0]} at 2026-10-23T15:00:00Z, and its press opens again at 2026-11-07T15:00:00Z, so no call was made.", again.Body, StringComparison.Ordinal);
 
         // The month's 100 calls spent as the newest run read them: refused for any stock until the count starts again on
         // 2026-11-01, a second before it refused and at it asked.
@@ -147,6 +147,11 @@ public partial class ReadSurface
         Assert.Equal((1L, 1), (Asks(), launcher.Ratings.Count));
         Assert.Equal(HttpStatusCode.Accepted, (await Press(names[1], new DateTimeOffset(2026, 11, 1, 0, 0, 0, TimeSpan.Zero))).Status);
         Assert.Equal((2L, 2), (Asks(), launcher.Ratings.Count));
+
+        // The first stock's press opens at the 15th day's instant and not a second before.
+        Assert.Equal(HttpStatusCode.Conflict, (await Press(names[0], new DateTimeOffset(2026, 11, 7, 14, 59, 59, TimeSpan.Zero))).Status);
+        Assert.Equal(HttpStatusCode.Accepted, (await Press(names[0], new DateTimeOffset(2026, 11, 7, 15, 0, 0, TimeSpan.Zero))).Status);
+        Assert.Equal((3L, 3), (Asks(), launcher.Ratings.Count));
 
         foreach (var host in hosts.Values)
         {
@@ -195,7 +200,7 @@ public partial class ReadSurface
             Assert.Contains("data-mark=\"target-marker\"", page, StringComparison.Ordinal);
             Assert.Contains($"<p class=\"mark-note analysts-said\" data-yahoo=\"asking\">Yahoo is asked for {name}'s targets, counts by month and firm actions as the page opens, and they are drawn here once it answers.</p>", WebUtility.HtmlDecode(page), StringComparison.Ordinal);
             Assert.Contains($"<section class=\"chart-graph\" data-graph=\"ratings\" data-ratings-route=\"{SinglePageApp.RatingsRoute}{name}\"><h3>The analysts by name</h3>", page, StringComparison.Ordinal);
-            Assert.Contains("<span class=\"ratings-calls\" data-calls=\"none\">TipRanks: no call read yet this month</span>", page, StringComparison.Ordinal);
+            Assert.Contains("<button type=\"submit\" class=\"btn-2\">Get analyst ratings</button> <span class=\"ratings-calls\" data-calls=\"none\">TipRanks: no call read yet this month</span>", page, StringComparison.Ordinal);
             Assert.Contains($"No TipRanks rating is stored for {name}. A press asks TipRanks once, which spends one of the month's calls.", page, StringComparison.Ordinal);
             Assert.DoesNotContain("data-mark=\"target-range\"", page, StringComparison.Ordinal);
 
@@ -240,6 +245,9 @@ public partial class ReadSurface
 
             // TipRanks' sixteen ratings with the calls used and left as the newest run read them.
             Assert.Contains("<span class=\"ratings-calls\" data-used=\"3\" data-left=\"97\" data-limit=\"100\">TipRanks: 3 used, 97 left this month, starting again on 2026-11-01</span>", page, StringComparison.Ordinal);
+
+            // TipRanks answered for the stock at 14:30 UTC, so its press is drawn closed with the day it opens again.
+            Assert.Contains("<button type=\"submit\" class=\"btn-2\" disabled data-opens=\"2026-11-07T14:30:00Z\">Get analyst ratings</button> <span class=\"ratings-wait\">TipRanks answered on 2026-10-23; the press opens again on 2026-11-07.</span>", page, StringComparison.Ordinal);
             Assert.Contains("<div class=\"tipranks-ratings\" data-mark=\"tipranks-ratings\" data-asked=\"2026-10-23\" data-ratings=\"16\">", page, StringComparison.Ordinal);
             Assert.Contains("<span data-span=\"last90Days\" data-analysts=\"13\">90 days: 13 analysts, 1 buy, 7 hold, 5 sell</span>", page, StringComparison.Ordinal);
             Assert.Contains("<td class=\"r num\">4.4</td><td class=\"r num\">65.7%</td><td class=\"r num gain\">+27.6%</td>", page, StringComparison.Ordinal);

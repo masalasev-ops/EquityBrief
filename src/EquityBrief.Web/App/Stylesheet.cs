@@ -1071,7 +1071,7 @@ th.tipped:hover .head-tip,th.tipped:focus-within .head-tip{display:block}
 .firm-actions .muted,.tipranks-ratings .muted{font-size:13px;margin:4px 0 6px}
 .more-actions summary{cursor:pointer;font-size:13px;margin:6px 0}
 .ratings-press{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 8px}
-.ratings-calls,.ratings-said{font-size:13px;color:var(--soft)}
+.ratings-calls,.ratings-said,.ratings-wait{font-size:13px;color:var(--soft)}
 .tr-article{display:block;font-size:12px}
 .chart-graphs .rt-strong-buy{fill:var(--up)} .chart-graphs .rt-buy{fill:var(--up);fill-opacity:.5} .chart-graphs .rt-sell{fill:var(--down);fill-opacity:.5} .chart-graphs .rt-strong-sell{fill:var(--down)}
 .route-times code{font-size:12.5px}

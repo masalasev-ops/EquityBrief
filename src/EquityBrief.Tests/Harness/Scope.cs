@@ -3537,7 +3537,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.22 Chart", "The analysts by name")] = new Scoped(
             Verdict.Pass,
-            "the press with the calls used and left the newest run read beside it, the sixteen ratings TipRanks answered for HPQ drawn with their records and the counts over the three spans, and no answer stored saying a press spends a call; the press refused over an answer of the stock's New York day and over a spent month a second before the count starts again and let through at its instant",
+            "the press with the calls used and left the newest run read beside it, the sixteen ratings TipRanks answered for HPQ drawn with their records and the counts over the three spans, the press drawn closed with the day it opens again, and no answer stored saying a press spends a call; the press refused inside the 15 days after an answer and over a spent month, each a second before it ends, and let through at its instant",
             ByReadSurface),
         [CheckReach.Key(CatalogueTable, "Analyst job")] = new Scoped(
             Verdict.Pass,
@@ -3578,6 +3578,10 @@ internal static class Scope
         [CheckReach.Key(LimitsTable, "TipRanks calls a month")] = new Scoped(
             Verdict.Pass,
             "at the limit no ratings are asked and one under it they are, the secrets file's limit and TipRanks' own each the lesser, over constructed counts",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "TipRanks press wait")] = new Scoped(
+            Verdict.Pass,
+            "a stock's press half an hour after TipRanks answered for it and a second before the 15th day's instant asks nothing and the press at that instant asks, and a press that reached no answer starting no wait, over a constructed store; the figure read off the document against the constant",
             ByExpectations),
         [CheckReach.Key(FailureTable, "Yahoo answers a stock's analysts with none, or does not answer")] = new Scoped(
             Verdict.Pass,
@@ -7788,6 +7792,7 @@ internal static class Scope
         ["Analyst asks a day"] = "20.13",
         ["Analyst ask interval"] = "20.13",
         ["TipRanks calls a month"] = "20.13",
+        ["TipRanks press wait"] = "20.13",
         // 18.2's two, which the plan names as the eight quarters, the twelve and the pull of the dividends' history.
         ["Report windows"] = "18.2",
         ["Dividend history run"] = "18.2",

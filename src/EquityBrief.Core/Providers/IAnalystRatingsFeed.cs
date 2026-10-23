@@ -36,7 +36,7 @@ public sealed record TipRanksUsage(int Used, int Limit, DateTimeOffset ResetsAt)
 
 // TipRanks' server on the operator's key: its count of the month's calls, which costs none, and a stock's recent ratings,
 // which cost one, each asked by the ratings job alone.
-// see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+// see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
 public interface IAnalystRatingsFeed
 {
     // How many network requests this feed has made.

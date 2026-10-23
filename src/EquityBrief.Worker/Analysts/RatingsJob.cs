@@ -11,12 +11,12 @@ using Microsoft.Data.Sqlite;
 namespace EquityBrief.Worker.Analysts;
 
 // The ratings job. A chart page's press asks TipRanks for its stock's recent ratings, and the read surface writes the ask
-// and starts this as a process of its own. It asks nothing where the stock was answered on its New York day already;
+// and starts this as a process of its own. It asks nothing where TipRanks answered for the stock in the 15 days before;
 // otherwise it asks TipRanks' own count of the month's calls, which costs none, asks nothing more where the calls used
 // reach the limit the secrets file states or TipRanks' own, whichever is less, and otherwise asks once for the ratings,
 // the one call a press spends, and stores them. Every run's row carries the month's calls as last read, which the page
 // draws as the calls used and left, and every word a failure carries is redacted of the key before it is written.
-// see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+// see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
 public sealed class RatingsJob(IClock clock, string databaseFile, IAnalystRatingsFeed feed, int? limit, Func<string, string> redact) : IComponent
 {
     public static ComponentAccess Access => new(
@@ -32,7 +32,7 @@ public sealed class RatingsJob(IClock clock, string databaseFile, IAnalystRating
     // The run log's words for what a run came to.
     public const string Answered = "answered";
 
-    public const string AskedToday = "asked today";
+    public const string Waiting = "waiting";
 
     public const string AtTheLimit = "limit reached";
 
@@ -40,7 +40,7 @@ public sealed class RatingsJob(IClock clock, string databaseFile, IAnalystRating
 
     public const string Failed = "failed";
 
-    const string AnsweredInTheDay = "SELECT COUNT(*) FROM analyst_rating WHERE ticker = $ticker AND asked_at >= $from AND asked_at < $to;";
+    const string NewestAnswer = "SELECT MAX(asked_at) FROM analyst_rating WHERE ticker = $ticker;";
 
     const string InsertRating = @"
         INSERT INTO analyst_rating (ticker, asked_at, answered_at, as_of, total, counts, ratings)
@@ -68,18 +68,16 @@ public sealed class RatingsJob(IClock clock, string databaseFile, IAnalystRating
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        var (from, to) = AnalystLimits.DayOf(started, clock.SessionZone);
-
-        await using (var counting = connection.CreateCommand())
+        await using (var newest = connection.CreateCommand())
         {
-            counting.CommandText = AnsweredInTheDay;
-            counting.Parameters.AddWithValue("$ticker", ticker);
-            counting.Parameters.AddWithValue("$from", Instant(from));
-            counting.Parameters.AddWithValue("$to", Instant(to));
+            newest.CommandText = NewestAnswer;
+            newest.Parameters.AddWithValue("$ticker", ticker);
 
-            if (Convert.ToInt32(await counting.ExecuteScalarAsync(cancellation), CultureInfo.InvariantCulture) > 0)
+            if (await newest.ExecuteScalarAsync(cancellation) is string stamp
+                && DateTimeOffset.TryParseExact(stamp, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var answered)
+                && started < AnalystLimits.RatingsOpenAt(answered))
             {
-                return await EndAsync(connection, runId, started, ticker, askedAt, AskedToday, $"TipRanks answered for {ticker} already this New York day, so no call was made", null, 0, cancellation);
+                return await EndAsync(connection, runId, started, ticker, askedAt, Waiting, $"TipRanks answered for {ticker} at {stamp}, and its press opens again at {Instant(AnalystLimits.RatingsOpenAt(answered))}, so no call was made", null, 0, cancellation);
             }
         }
 

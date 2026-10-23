@@ -735,7 +735,7 @@ public static class SchemaMigrations
     // month and every firm's action as lists; and TipRanks' answer, the counts over each span and each analyst's
     // rating as lists. Prices are text, which is the storage form money takes, inside the lists as in the columns.
     // see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
-    // see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+    // see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
     const string CreateAnalysts = @"
         CREATE TABLE analyst_request (
             ticker    TEXT NOT NULL,

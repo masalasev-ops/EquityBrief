@@ -13,7 +13,7 @@ namespace EquityBrief.Tests.Checks;
 // the analyst job asking Yahoo once under the New York day's cap; and the ratings job asking TipRanks' count first and
 // never past the month's limit, each worked over a constructed store.
 // see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
-// see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+// see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
 public partial class FixtureExpectations
 {
     // The rows 20.13 adds that this check reaches: section 17's two limits on the asks and the calls and section 18's four
@@ -22,6 +22,7 @@ public partial class FixtureExpectations
     [
         CheckReach.Key(Scope.LimitsTable, "Analyst asks a day"),
         CheckReach.Key(Scope.LimitsTable, "TipRanks calls a month"),
+        CheckReach.Key(Scope.LimitsTable, "TipRanks press wait"),
         CheckReach.Key(Scope.FailureTable, "Yahoo answers a stock's analysts with none, or does not answer"),
         CheckReach.Key(Scope.FailureTable, "The day's asks of Yahoo reach their cap"),
         CheckReach.Key(Scope.FailureTable, "The month's TipRanks calls are spent"),
@@ -238,14 +239,14 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task TheRatingsJobAsksTheCountFirstAndAsksNothingPastTheMonthsLimitOrTwiceAStockADay()
+    public async Task TheRatingsJobAsksTheCountFirstAndAsksNothingPastTheMonthsLimitOrInsideAStocksFifteenDays()
     {
         using var store = new TemporaryStore().Migrated();
 
         var hpq = TipRanksAnswers.Ratings(AnalystCapture("analysts-tipranks-HPQ.json"))!;
         var redact = new TipRanksCredentials(PlantedKey).Redact;
 
-        async Task<(AnalystOutcome Outcome, ConstructedRatingsFeed Feed)> Run(string ticker, int used, int tipranks, int? stated, int minutes, Exception? failure = null)
+        async Task<(AnalystOutcome Outcome, ConstructedRatingsFeed Feed)> Run(string ticker, int used, int tipranks, int? stated, double minutes, Exception? failure = null)
         {
             var feed = new ConstructedRatingsFeed(used, tipranks, hpq, failure);
 
@@ -260,10 +261,20 @@ public partial class FixtureExpectations
         Assert.Equal(hpq.Ratings, EquityBrief.Data.Analysts.StoredAnalysts.RatingsOf(Query(store, "SELECT ratings FROM analyst_rating;").Single()));
         Assert.Equal(["answered|4|100|2026-11-01T00:00:00Z"], Query(store, $"SELECT outcome, json_extract(detail, '$.used'), json_extract(detail, '$.limit'), json_extract(detail, '$.resetsAt') FROM run_log WHERE stage = '{RatingsJob.Stage}';"));
 
-        // The same stock again on its New York day asks nothing at all.
+        // The same stock inside the 15 days after the press TipRanks answered asks nothing at all, half an hour after it and
+        // a second before the 15th day's instant, and at that instant it asks again.
         var (again, twice) = await Run("HPQ", 4, 100, 100, 30);
 
-        Assert.Equal((RatingsJob.AskedToday, 0, 0), (again.Outcome, twice.UsageCalls, twice.RatingsCalls));
+        Assert.Equal((RatingsJob.Waiting, 0, 0), (again.Outcome, twice.UsageCalls, twice.RatingsCalls));
+        Assert.Equal("TipRanks answered for HPQ at 2026-10-23T15:00:00Z, and its press opens again at 2026-11-07T15:00:00Z, so no call was made", again.Detail);
+
+        var (justBefore, notYet) = await Run("HPQ", 4, 100, 100, (AnalystLimits.RatingsWaitDays * 24 * 60) - (1 / 60d));
+
+        Assert.Equal((RatingsJob.Waiting, 0), (justBefore.Outcome, notYet.RatingsCalls));
+
+        var (opened, asked) = await Run("HPQ", 4, 100, 100, AnalystLimits.RatingsWaitDays * 24 * 60);
+
+        Assert.Equal((RatingsJob.Answered, 1), (opened.Outcome, asked.RatingsCalls));
 
         // At the limit no ratings are asked, and one under it they are: 100 of 100 against 99, the secrets file's 50 the
         // lesser at 50 against 49, and TipRanks' own 40 the lesser at 40 against 39.
@@ -289,6 +300,11 @@ public partial class FixtureExpectations
 
         Assert.Equal(RatingsJob.Failed, (await new RatingsJob(new FixedClock(AnalystsAsked.AddMinutes(3), NewYork), store.DatabaseFile, unread, 100, redact).RunAsync("NFLX", AnalystsAsked.AddMinutes(3))).Outcome);
         Assert.Equal(0, unread.RatingsCalls);
+
+        // And having reached no answer it starts no wait: NFLX's next press asks a minute later.
+        var (afterNone, askedAgain) = await Run("NFLX", 10, 100, 100, 4);
+
+        Assert.Equal((RatingsJob.Answered, 1), (afterNone.Outcome, askedAgain.RatingsCalls));
     }
 
     static string ToolAnswer(string tool) =>

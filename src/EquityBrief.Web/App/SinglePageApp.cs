@@ -687,7 +687,7 @@ public sealed partial class SinglePageApp : IComponent
         }
         // The press asking TipRanks for a stock's ratings: sent with the page's own header, what the surface said put beside
         // it, and the section drawn again once the ratings job has stored an answer newer than the press.
-        // see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+        // see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
         document.addEventListener('submit', async (event) => {
           const form = event.target;
           if (!(form instanceof HTMLFormElement) || !form.classList.contains('ratings-press')) { return; }

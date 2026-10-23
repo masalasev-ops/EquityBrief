@@ -860,10 +860,10 @@ app.MapGet(SinglePageApp.AnalystsRoute + "{ticker}", async (string ticker, ReadA
 });
 
 // A chart page's press asking TipRanks for its stock's ratings: refused without the page's own header and for a stock no
-// index the night reads holds, writing nothing either way. An answer of the stock's New York day or a spent month writes
-// nothing and starts nothing, saying which, and otherwise the ask is written and the ratings job started as a process of
-// its own.
-// see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+// index the night reads holds, writing nothing either way. An answer TipRanks gave for the stock in the 15 days before or a
+// spent month writes nothing and starts nothing, saying which, and otherwise the ask is written and the ratings job started
+// as a process of its own.
+// see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
 app.MapPost(SinglePageApp.RatingsRoute + "{ticker}", async (string ticker, HttpRequest request, ReadApi read, IClock clock, IDrainLauncher launcher) =>
 {
     var named = ticker.ToUpperInvariant();
@@ -897,7 +897,7 @@ app.MapPost(SinglePageApp.RatingsRoute + "{ticker}", async (string ticker, HttpR
 // The newest answer TipRanks gave for the stock drawn as the chart page's ratings section with the month's calls used
 // and left, which the page's script swaps in once it is newer than its press; and the newest run of the ratings job for
 // the stock, which the page states where it stored nothing.
-// see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+// see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
 app.MapGet(SinglePageApp.RatingsRoute + "{ticker}", async (string ticker, ReadApi read, MarkRenderer marks, IClock clock) =>
 {
     var named = ticker.ToUpperInvariant();

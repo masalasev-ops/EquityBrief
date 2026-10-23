@@ -7515,3 +7515,30 @@ Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.9 and 20.
             variant at the newest complete version, 20.10, and the sign-offs of phases 18 and 20 by fresh sessions.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
+
+### 20.13 - correction: a stock's TipRanks press waits 15 days after TipRanks last answered for it and is drawn closed until then, as the operator ruled   2026-10-23
+
+Queue:      as the ruling entry above, this correction in progress.
+Ruled:      the 20.13 ruling entry above of 17:49 UTC.
+Corrected:  the read surface refuses a stock's press, and the ratings job asks nothing, through the 15 days after the
+            press TipRanks last answered for it, each saying when the press opens again, the job's outcome named
+            waiting; the chart page draws the press closed through them with the day it answered and the day it opens
+            again; a press that reached no answer starts no wait. The TipRanks decision superseded, the old one under
+            Previously decided and its citations repointed, 17 in code and 13 in the specs; section 17's row for the wait
+            pinned to its constant; sections 7, 15.22 and 16, SCHEMA.md, the runbook, the guide, the roster's two rows,
+            and the changelog. This correction amends 20.13's done condition: none for a stock answered on its New York
+            day becomes none for a stock TipRanks answered for in the 15 days before, at the 15th day and a second
+            before it.
+Tests:      3 amended: the ratings job half an hour after an answer and a second before the 15th day's instant asking
+            nothing and at it asking, and a press that reached no answer starting no wait; the press refused inside the
+            15 days and let through at their end; and the chart page drawing the press closed with its two days, and
+            open where no answer is stored.
+Claims:     1418, 1 new: section 17's TipRanks press wait.
+Mutated:    the rule, stated before the runs: one mutation each place the wait is held, the smallest edit undoing it, each
+            run over the tests naming it with its red predicted, made in this checkout and reverted with the editor. P1
+            the job asking inside the 15 days, red at the ratings job's test; P2 the press refused at the 15th day's
+            instant, red at the press's; P3 the press drawn open inside the wait, red at the chart page's.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    no remedy; the live press for PG; 20.8's remedy; 22.2; 20.3's record; the tone variant at the newest complete
+            version; 20.10; the sign-offs of phases 18 and 20.
