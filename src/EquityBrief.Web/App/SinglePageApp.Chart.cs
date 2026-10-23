@@ -203,7 +203,7 @@ public sealed partial class SinglePageApp
             drawn.Append("</div>");
             drawn.Append(Cards.Key(
                 "How to read it.",
-                "Each print's estimate before its report is the hollow dot and the earnings a share it reported the filled one, green where it beat the estimate and red where it missed, with the difference beneath; the dashed dot after them is the analysts' consensus for the quarter to report next. The bars are each quarter's revenue and net income as filed, net income green where it was a profit and red where it was a loss, and the line is the net margin, read on the axis at the right. The analysts' targets are drawn as Yahoo answered when the page was opened, once a New York day: the band runs from the lowest target to the highest, the bar is their mean and the diamond their median, set against the price drawn with how far the mean stands above or below it; until Yahoo answers, the provider's mean target alone is drawn. Beneath it the analysts' rating counts are stacked a month at a time, Yahoo's four months where it answered and the provider's twelve where it did not, a month no fetch fell in dashed, and each firm's rating action follows, newest first. The press asks TipRanks for each analyst's newest rating with the analyst's record, one of the month's calls, at most once a stock a New York day.",
+                "Each print's estimate before its report is the hollow dot and the earnings a share it reported the filled one, green where it beat the estimate and red where it missed, with the difference beneath; the dashed dot after them is the analysts' consensus for the quarter to report next. The bars are each quarter's revenue and net income as filed, net income green where it was a profit and red where it was a loss, and the line is the net margin, read on the axis at the right. The analysts' targets are drawn as Yahoo answered when the page was opened, once a New York day: the band runs from the lowest target to the highest, the bar is their mean and the diamond their median, set against the price drawn with how far the mean stands above or below it; until Yahoo answers, the provider's mean target alone is drawn. Beneath it the analysts' rating counts are stacked a month at a time, Yahoo's four months where it answered and the provider's twelve where it did not, a month no fetch fell in dashed, and each firm's rating action follows, newest first. The press asks TipRanks for each analyst's newest rating with the analyst's record, one of the month's calls, and closes for 15 days once TipRanks has answered for the stock.",
                 "These are the report's own figures and the analysts' as Yahoo and TipRanks answered, drawn as pictures and tables, and no rule reads them from this page."));
 
             region.Append(Cards.Computed("The earnings and the analysts", drawn.ToString(), title: "Earnings, revenue and the analysts", stamp: Cards.Night(last), id: "graphs", region: "chart-page-graphs"));
@@ -286,17 +286,23 @@ public sealed partial class SinglePageApp
         return section.Append("</section>").ToString();
     }
 
-    // TipRanks' graph of the chart page: the press asking TipRanks for each analyst's newest rating, the month's calls used
-    // and left beside it, and the newest answer stored for the stock beneath; the route's own reply is this section drawn
-    // again.
-    // see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+    // TipRanks' graph of the chart page: the press asking TipRanks for each analyst's newest rating, closed with the day it
+    // opens again for 15 days after TipRanks last answered for the stock, the month's calls used and left beside it, and the
+    // newest answer stored for the stock beneath; the route's own reply is this section drawn again.
+    // see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
     public static string RatingsSection(MarkRenderer marks, string ticker, EquityBrief.Core.Analysts.TipRanksView? tipranks, EquityBrief.Core.Analysts.TipRanksCalls? calls, DateTimeOffset now)
     {
         var route = RatingsRoute + Uri.EscapeDataString(ticker);
         var section = new StringBuilder();
+        var opens = tipranks is { } answered && now < EquityBrief.Core.Analysts.AnalystLimits.RatingsOpenAt(answered.AskedAt)
+            ? EquityBrief.Core.Analysts.AnalystLimits.RatingsOpenAt(answered.AskedAt)
+            : (DateTimeOffset?)null;
+        var press = opens is { } open
+            ? FormattableString.Invariant($"<button type=\"submit\" class=\"btn-2\" disabled data-opens=\"{open.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}\">Get analyst ratings</button> <span class=\"ratings-wait\">TipRanks answered on {tipranks!.AskedAt.UtcDateTime:yyyy-MM-dd}; the press opens again on {open.UtcDateTime:yyyy-MM-dd}.</span> ")
+            : "<button type=\"submit\" class=\"btn-2\">Get analyst ratings</button> ";
 
         section.Append(FormattableString.Invariant($"<section class=\"chart-graph\" data-graph=\"ratings\" data-ratings-route=\"{route}\"{(tipranks is { } held ? FormattableString.Invariant($" data-answered=\"{held.AskedAt.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}\"") : string.Empty)}><h3>The analysts by name</h3>"));
-        section.Append(FormattableString.Invariant($"<form class=\"ratings-press\" action=\"{route}\" method=\"post\"><button type=\"submit\" class=\"btn-2\">Get analyst ratings</button> {MarkRenderer.TipRanksCallsLine(calls, now)}<span class=\"ratings-said\" aria-live=\"polite\"></span></form>"));
+        section.Append(FormattableString.Invariant($"<form class=\"ratings-press\" action=\"{route}\" method=\"post\">{press}{MarkRenderer.TipRanksCallsLine(calls, now)}<span class=\"ratings-said\" aria-live=\"polite\"></span></form>"));
         section.Append(marks.TipRanksRatings(ticker, tipranks));
 
         return section.Append("</section>").ToString();

@@ -26,6 +26,88 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-23 - ARCHITECTURE.html - the masthead's search offers every member of the S&P 500, 400 and 600 on the newest night
+Corrects: the search offered the S&P 500's members alone after 15.1 drew the S&P 400's and 600's on pages of their own, found by the operator when OKTA, an S&P 400 member, matched no name
+Was:
+> Any name is found from a search box in the header of every screen, in its menu from 19.2, by its ticker or its company's name, and a name found is opened on its chart page from 19.11. Text matching no name says so rather than opening an empty page.
+Now:
+> Any name is found ... on its chart page from 19.11. From the 15.1 correction of 2026-10-23 the search offers every member of the S&P 500, 400 and 600 on the newest night whichever index the page reads, a ticker two of them hold once. Text matching no name says so rather than opening an empty page.
+Why: a stock the tool draws a chart page and a report for is one the search finds.
+
+### 2026-10-23 - .claude/rules/checks.md - read-surface reaches the masthead's search over the S&P 500, 400 and 600
+Corrects: the search offered the S&P 500's members alone after 15.1 drew the S&P 400's and 600's on pages of their own, found by the operator when OKTA, an S&P 400 member, matched no name
+Was:
+> read-surface: ... with Yahoo's labels read as the months they name, oldest first |
+Now:
+> read-surface: ... with Yahoo's labels read as the months they name, oldest first; and from the 15.1 correction of 2026-10-23 the masthead's search offering every current member of the S&P 500, 400 and 600 once in the order of their tickers whichever index the page reads, a ticker two of them hold under its S&P 500 name and one an index let go before the night not at all, read over a constructed store of the three indices, and saying so over the three where text matches none |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
+### 2026-10-23 - ARCHITECTURE.html - a stock's TipRanks press waits 15 days after TipRanks last answered for it, drawn closed until then
+Authorised by: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
+Was:
+> Ratings job: ... asks nothing for a stock answered on its New York day; ... (see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit)
+> Read API: ... and TipRanks' unless an answer of the stock's New York day stands or the newest count the ratings job read says the month's calls are spent ...
+> The analysts by name: ...; no answer stored saying a press spends one of the month's calls; and a press refused over an answer of the stock's New York day or a spent month saying which beside the press (see: ...)
+> Analyst requests: forever, append-only; an ask over an answer of the stock's New York day, inside the 10 minutes of Yahoo's last ask or over a spent month of TipRanks' calls is not written (see: ...)
+> Analyst ratings: ... the chart page draws the newest, and a press over one of the stock's New York day asks nothing (see: ...)
+> and the old decision's name wherever the document cited it, in nine places
+Now:
+> Ratings job: ... asks nothing for a stock TipRanks answered for in the 15 days before; ...
+> Read API: ... and TipRanks' unless TipRanks answered for the stock in the 15 days before or the newest count the ratings job read says the month's calls are spent ...
+> The analysts by name: ...; no answer stored saying a press spends one of the month's calls; the press drawn closed for 15 days after TipRanks answered for the stock with the day it opens again; and a press refused inside those days or over a spent month saying which beside the press (see: ...)
+> Analyst requests: forever, append-only; Yahoo's ask over an answer of the stock's New York day or inside the 10 minutes of its last ask, and TipRanks' inside the 15 days after it last answered for the stock or over a spent month of its calls, is not written (see: ...)
+> Analyst ratings: ... the chart page draws the newest, and a press inside the 15 days after it asks nothing (see: ...)
+> section 17 gains the row TipRanks press wait, 15 days; and the new decision's name in the nine places
+Why: the operator ruled on 2026-10-23 that a stock's press stays closed at least 15 days once TipRanks has answered for it.
+
+### 2026-10-23 - SCHEMA.md - the analyst requests and the analyst ratings name the 15 days a stock's TipRanks press waits
+Authorised by: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
+Was:
+> analyst_request: ... and TipRanks' none where an answer of the stock's New York day is stored in `analyst_rating` or the ratings job's newest run says the month's calls are spent ...
+> analyst_rating: ... a press over an answer of the stock's New York day, one at the month's limit, ... store nothing ...
+> and the old decision's name, in three places
+Now:
+> analyst_request: ... and TipRanks' none where `analyst_rating` holds an answer to a press made in the 15 days before or the ratings job's newest run says the month's calls are spent ...
+> analyst_rating: ... a press inside the 15 days after TipRanks last answered for the stock, one at the month's limit, ... store nothing ...
+> and the new decision's name in the three places
+Why: the same ruling.
+
+### 2026-10-23 - RUNBOOK.md - the TipRanks press waits 15 days after an answer, and the ratings verb prints waiting
+Authorised by: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
+Was:
+> ... (see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit). The read surface refuses the press where an answer of the stock's New York day is stored, and while the newest count ...
+> It asks nothing for a stock answered on its New York day; ... It stores the answer in `analyst_rating` and prints answered, asked today, limit reached, no ratings, or failed with why.
+Now:
+> ... (see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer). Once TipRanks has answered for a stock the press is drawn closed for 15 days with the day it opens again. The read surface refuses the press inside those 15 days, and while the newest count ...
+> It asks nothing for a stock TipRanks answered for in the 15 days before; ... A press that reached no answer starts no wait. It stores the answer in `analyst_rating` and prints answered, waiting, limit reached, no ratings, or failed with why.
+Why: the same ruling.
+
+### 2026-10-23 - .claude/rules/checks.md - fixture-expectations and read-surface reach the 15 days a stock's TipRanks press waits
+Authorised by: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
+Was:
+> fixture-expectations: ... asking nothing for a stock answered on its New York day, no ratings at the limit and ratings one under it ...
+> read-surface: ... and its press for TipRanks' ratings refused over an answer of the stock's New York day and over a spent month a second before the count starts again and let through at its instant; ...
+Now:
+> fixture-expectations: ... asking nothing inside the 15 days after TipRanks answered for a stock, half an hour after and a second before the 15th day's instant, and asking at it, a press that reached no answer starting no wait, no ratings at the limit and ratings one under it ...
+> read-surface: ... and its press for TipRanks' ratings refused inside the 15 days after TipRanks answered for the stock and over a spent month, each a second before it ends, and let through at its instant, the press drawn closed with the day it opens again; ...
+Why: each roster row says what its check asserts, and the correction's tests change both.
+
+### 2026-10-23 - BUILD_PLAN.md - 20.13's press waits 15 days after TipRanks last answered for a stock
+Authorised by: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
+Was:
+> **Done when** ... and none for a stock answered on its New York day, and a failure's words carrying a key planted in them reach no row, console line or reply; ...
+Now:
+> **Done when** ... and from the operator's word of 2026-10-23 at 17:49 UTC none for a stock TipRanks answered for in the 15 days before, at the 15th day and a second before it, and a failure's words carrying a key planted in them reach no row, console line or reply; ...
+Why: the operator ruled that a stock's press waits at least 15 days once TipRanks has answered for it, and the checkpoint's done condition is amended to the rule built.
+
+### 2026-10-23 - .claude/rules/checks.md - fixture-expectations reaches the TipRanks feed past a notice's body the server never ends
+Corrects: the first live call of the ratings job, for PG on 2026-10-23, waited past its bound on TipRanks' answer to the notice that the session is open, which the server sends with no length and holds open on a connection kept alive, and asked for no ratings.
+Was:
+> fixture-expectations: ... and a failure carrying the key and an address reaching no row or line with either |
+Now:
+> fixture-expectations: ... and a failure carrying the key and an address reaching no row or line with either; and from the 20.13 correction of 2026-10-23 the feed reading the count where the server answers the notice that the session is open with a body it never ends, against a bound of two seconds, and every request asking for its connection to be closed |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
 ### 2026-10-23 - ARCHITECTURE.html - the chart page asks Yahoo for its analysts as it opens and carries a press asking TipRanks for each analyst's rating
 Authorised by: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
 Was:

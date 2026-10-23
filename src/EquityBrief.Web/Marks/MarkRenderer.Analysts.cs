@@ -13,7 +13,7 @@ namespace EquityBrief.Web.Marks;
 // the answer stored and dated by the ask, and none is worked out here.
 // see: Marks are defined once and every screen draws from that list
 // see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
-// see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+// see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
 public sealed partial class MarkRenderer
 {
     // Target range: the analysts' low and high targets as a band on one line of prices, their mean and median ticked on

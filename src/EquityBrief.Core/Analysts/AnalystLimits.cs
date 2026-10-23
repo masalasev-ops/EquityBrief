@@ -17,6 +17,13 @@ public static class AnalystLimits
     // The firm actions the page shows before its control opens the rest.
     public const int ActionsShown = 10;
 
+    // The days a stock's TipRanks press waits after TipRanks last answered for it, counted from the press it answered.
+    // see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
+    public const int RatingsWaitDays = 15;
+
+    // The instant a stock's press opens again after an answer to the press made at the instant given.
+    public static DateTimeOffset RatingsOpenAt(DateTimeOffset answeredPress) => answeredPress.AddDays(RatingsWaitDays);
+
     // The run log's stages of the analyst job and the ratings job, which the read surface reads the month's calls from.
     public const string AnalystsStage = "analysts";
 
@@ -46,7 +53,7 @@ public sealed record TipRanksView(DateTimeOffset AskedAt, TipRanksAnswer Answer)
 
 // The month's TipRanks calls as the ratings job last read them: how many were used, how many the operator's limit and
 // TipRanks' own allow, the lesser of the two, when the count starts again and when it was read.
-// see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+// see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
 public sealed record TipRanksCalls(int Used, int Limit, DateTimeOffset ResetsAt, DateTimeOffset ReadAt)
 {
     // The calls left at an instant: none past the limit, and the whole limit once the count has started again.

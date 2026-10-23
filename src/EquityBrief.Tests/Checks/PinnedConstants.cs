@@ -333,6 +333,7 @@ public class PinnedConstants
             // The analysts' asks of Yahoo, 20.13.
             new("Analyst asks a day", "100", Core.Analysts.AnalystLimits.DailyCap, "AnalystLimits.DailyCap"),
             new("Analyst ask interval", "10", Core.Analysts.AnalystLimits.AskAgainMinutes, "AnalystLimits.AskAgainMinutes"),
+            new("TipRanks press wait", "15", Core.Analysts.AnalystLimits.RatingsWaitDays, "AnalystLimits.RatingsWaitDays"),
             new("Report windows", "8", Core.Report.QuarterLines.GrowthQuarters, "QuarterLines.GrowthQuarters"),
             new("Report windows", "12", Core.Report.QuarterLines.MarginQuarters, "QuarterLines.MarginQuarters"),
             new("Report windows", "12", Core.Report.AnalystView.Months, "AnalystView.Months"),

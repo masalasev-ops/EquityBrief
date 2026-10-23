@@ -233,7 +233,7 @@ static int NoVerb()
         "New York day's cap and stores the targets, the counts by month and every firm's action, as a chart page opened " +
         "starts it, and " +
         "'analyst-ratings --ticker <TICKER> --asked <yyyy-MM-ddTHH:mm:ssZ>' asks TipRanks' count of the month's calls and, " +
-        "under the limit and once a stock a New York day, the stock's recent ratings, and stores them, as a chart page's " +
+        "under the limit and only 15 days after TipRanks last answered for the stock, its recent ratings, and stores them, as a chart page's " +
         "press starts it, and " +
         "'dividends --history --from <yyyy-MM-dd>' asks each member the index holds today for its dividends from that date, " +
         "one request a member, stating its asks and their weighted calls before the first request, and keeps each beside " +
@@ -2012,7 +2012,7 @@ static async Task<int> AnalystsRun(string[] args)
 
 // A chart page's press asking TipRanks for its stock's ratings, which the read surface starts once the ask is written.
 // The key is read here and handed to the feed and to the redaction alone, and no line this prints carries it.
-// see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+// see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
 static async Task<int> AnalystRatingsRun(string[] args)
 {
     var configuration = Configuration();

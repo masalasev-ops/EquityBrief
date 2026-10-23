@@ -687,7 +687,7 @@ public sealed partial class SinglePageApp : IComponent
         }
         // The press asking TipRanks for a stock's ratings: sent with the page's own header, what the surface said put beside
         // it, and the section drawn again once the ratings job has stored an answer newer than the press.
-        // see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+        // see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
         document.addEventListener('submit', async (event) => {
           const form = event.target;
           if (!(form instanceof HTMLFormElement) || !form.classList.contains('ratings-press')) { return; }
@@ -1253,7 +1253,7 @@ public sealed partial class SinglePageApp : IComponent
           const research = screen.querySelector('section.research');
           if (research) { research.prepend(line); }
         }
-        // The masthead's search, over every current member by its ticker or its company's name.
+        // The masthead's search, over every current member of the three indices by its ticker or its company's name.
         // Its list is read after the first screen, so the first screen never waits on it, and a
         // name picked from the list goes straight to its page.
         const find = document.getElementById('find');
@@ -1297,7 +1297,7 @@ public sealed partial class SinglePageApp : IComponent
           line.className = 'notice';
           line.setAttribute('role', 'status');
           line.setAttribute('data-not-found', text.trim());
-          line.textContent = 'No name in the index matches ' + text.trim() + '.';
+          line.textContent = 'No stock in the S&P 500, 400 or 600 matches ' + text.trim() + '.';
           screen.prepend(line);
         }
         document.getElementById('search').addEventListener('submit', (event) => { event.preventDefault(); go(find.value); });
@@ -2355,8 +2355,8 @@ public sealed partial class SinglePageApp : IComponent
         return region.ToString();
     }
 
-    // The masthead search's list: every current member by its ticker, labelled with its
-    // company's name and the day its research was written where it holds any.
+    // The masthead search's list: every current member of the three indices by its ticker, labelled
+    // with its company's name and the day its research was written where it holds any.
     public string FindOptions(IReadOnlyList<Findable> names)
     {
         var options = new StringBuilder();

@@ -7462,3 +7462,108 @@ Carried:    the remedy, `tools/remedies/2026-10-23-20.13-the-analysts-tables.txt
             stock's chart page to see TipRanks answer end to end, one of the month's calls, put to the operator first;
             20.8's remedy; 22.2; 20.3's record; the tone variant at the newest complete version; 20.10; the sign-offs
             of phases 18 and 20.
+
+### 20.13 - correction: the TipRanks feed reads no body from a notice the server accepts and closes each connection, as the first live call found   2026-10-23
+
+Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.9 and 20.11 to 20.13 merged with their records,
+            20.13's remedy run, 22.0 planned and ruled, 22.1 merged, the 19.11 and 20.3 corrections merged; in progress,
+            the history read of the releases pin 5 leaves, and this correction; next, the live press for PG the operator
+            asked for, 20.8's remedy once pin 5 has read its history whole, 22.2, 20.3's record, the tone variant at the
+            newest complete version, 20.10, and the sign-offs of phases 18 and 20 by fresh sessions.
+Found:      asked at about 17:40 UTC by the operator for one live press, "yes do it for PG which is on the tonight list",
+            the ratings job run by hand from main's build ended "failed, TipRanks' count of the month's calls could not
+            be read, so no call was made: TipRanks did not answer in time", no call spent. TipRanks' server answers the
+            notice that the session is open 202 with an empty body sent with no length, which on a connection kept
+            alive it never ends, and the feed buffered every answer before reading it, so it waited past its bound of 30
+            seconds on each of its two tries; the probe of the night before had closed each connection, so its answers
+            ended. Read by a script replaying the three messages over one kept connection, free and printing no key:
+            the opening ended in 0.6 seconds and the notice's body was still open after 10.
+Corrected:  each request asks for its connection to be closed, an answer is taken once its headers arrive, and a 202 is
+            read as no message with its body never read. The roster's row and the changelog.
+Tests:      1 new, 2673 in all: a server answering the notice with a body it never ends, against a bound of two seconds,
+            the count read and every request asking for its connection to be closed.
+Claims:     1417, none new.
+Mutated:    the rule, stated before the runs: one mutation each part of the correction, the smallest edit undoing it,
+            each run over the test naming it with its red predicted, made in this checkout and reverted with the editor.
+            N1 the notice's body read again, red at the new test past its bound; N2 connections kept alive, red at the
+            new test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    no remedy; once merged, the live press for PG the operator asked for, one of the month's calls; 20.8's
+            remedy; 22.2; 20.3's record; the tone variant at the newest complete version; 20.10; the sign-offs of
+            phases 18 and 20.
+
+### 20.13 ruling - TipRanks is asked again for a stock only 15 days after it last answered for it, the press drawn closed until then, and the fixes found while this pull request is open land in it as commits of their own   2026-10-23
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-23 at 17:49 UTC, with a screenshot of PG's chart page offering its press: "The get
+            analyst rating is still available even after it was fetched once. I think it should be disabled for at
+            least 15 days on one stock after it was pressed.", and in the same message, of the masthead's search: "There
+            is also a secondary problem. The search bar is saying OKTA is not available even though OKTA is part of
+            SP400". Told that PG's press had reached no TipRanks call, the feed waiting on the notice past its bound,
+            and offered the wait and the search's fix as pull requests of their own after this one, at 17:51 UTC: "just
+            do them all in this PR in separate commits. How many PRs do we need for small fixes".
+Plan:       the 20.13 correction below: a press for a stock TipRanks answered for in the 15 days before refused by the
+            read surface and asked nothing by the ratings job, and the press drawn closed with the day it opens again;
+            a press that reached no answer starts no wait. The TipRanks decision superseded, its citations repointed.
+            Then a 15.1 correction in this pull request: the masthead's search reading every current member of the S&P
+            500, 400 and 600.
+Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.9 and 20.11 to 20.13 merged with their records,
+            20.13's remedy run, 22.0 planned and ruled, 22.1 merged, the 19.11 and 20.3 corrections merged; in progress,
+            the history read of the releases pin 5 leaves, and this pull request; next, the live press for PG the
+            operator asked for, 20.8's remedy once pin 5 has read its history whole, 22.2, 20.3's record, the tone
+            variant at the newest complete version, 20.10, and the sign-offs of phases 18 and 20 by fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 20.13 - correction: a stock's TipRanks press waits 15 days after TipRanks last answered for it and is drawn closed until then, as the operator ruled   2026-10-23
+
+Queue:      as the ruling entry above, this correction in progress.
+Ruled:      the 20.13 ruling entry above of 17:49 UTC.
+Corrected:  the read surface refuses a stock's press, and the ratings job asks nothing, through the 15 days after the
+            press TipRanks last answered for it, each saying when the press opens again, the job's outcome named
+            waiting; the chart page draws the press closed through them with the day it answered and the day it opens
+            again; a press that reached no answer starts no wait. The TipRanks decision superseded, the old one under
+            Previously decided and its citations repointed, 17 in code and 13 in the specs; section 17's row for the wait
+            pinned to its constant; sections 7, 15.22 and 16, SCHEMA.md, the runbook, the guide, the roster's two rows,
+            and the changelog. This correction amends 20.13's done condition: none for a stock answered on its New York
+            day becomes none for a stock TipRanks answered for in the 15 days before, at the 15th day and a second
+            before it.
+Tests:      3 amended: the ratings job half an hour after an answer and a second before the 15th day's instant asking
+            nothing and at it asking, and a press that reached no answer starting no wait; the press refused inside the
+            15 days and let through at their end; and the chart page drawing the press closed with its two days, and
+            open where no answer is stored.
+Claims:     1418, 1 new: section 17's TipRanks press wait.
+Mutated:    the rule, stated before the runs: one mutation each place the wait is held, the smallest edit undoing it, each
+            run over the tests naming it with its red predicted, made in this checkout and reverted with the editor. P1
+            the job asking inside the 15 days, red at the ratings job's test; P2 the press refused at the 15th day's
+            instant, red at the press's; P3 the press drawn open inside the wait, red at the chart page's.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    no remedy; the live press for PG; 20.8's remedy; 22.2; 20.3's record; the tone variant at the newest complete
+            version; 20.10; the sign-offs of phases 18 and 20.
+
+### 15.1 - correction: the masthead's search offers every current member of the S&P 500, 400 and 600, as the operator found   2026-10-23
+
+Queue:      as the 20.13 ruling entry above, this correction in progress, the last of this pull request.
+Found:      by the operator on 2026-10-23 at 17:49 UTC, the 20.13 ruling entry above quoting them: the search said OKTA, an
+            S&P 400 member, matched no name. Its list read the S&P 500's members alone, while from 15.1 the S&P 400's and
+            600's members are drawn on pages of their own, OKTA's chart page and report among them.
+Corrected:  the list reads every current member of the S&P 500, 400 and 600 on the newest night whichever index the page
+            reads, once a ticker in the order of the tickers, a ticker two of them hold under its S&P 500 name; text
+            matching none says so over the three. Section 15.13's line, the roster's read-surface row and the changelog.
+Tests:      1 new, 2674 in all: the list over a store of the three indices, a member of two offered once and one let go
+            before the night not at all; and 1 amended, the shell's line where text matches none.
+Claims:     1418, none new.
+Mutated:    the rule, stated before the runs: one mutation each part of the correction, the smallest edit undoing it, each
+            run over the new test with its red predicted, made in this checkout and reverted with the editor. S1 the list
+            reading the S&P 500 alone, red; S2 a ticker two indices hold read under the last of them, red; S3 the list
+            left in the indices' order, red, an S&P 600 ticker sorting before the S&P 500's added so the order is seen.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2674 of 2674 tests ran with none failed,
+            migrations 0 to 107 with none pending, schema version 107, against `data-ci` and never `data`; the phase
+            report 60 tables, 1418 claims, 1418 passing, none out of scope and none unexamined, 1429 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    no remedy; once merged, the live press for PG the operator asked for, one of the month's calls; 20.8's
+            remedy; 22.2; 20.3's record; the tone variant at the newest complete version; 20.10; the sign-offs of phases
+            18 and 20.

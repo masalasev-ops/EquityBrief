@@ -8,7 +8,7 @@ namespace EquityBrief.Data.Analysts;
 // each span's counts and each analyst's rating as a JSON object, its prices as text in the store's own form so no figure
 // passes through a double, its instants and days as the store writes them.
 // see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
-// see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+// see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
 public static class StoredAnalysts
 {
     const string Instant = "yyyy-MM-ddTHH:mm:ssZ";

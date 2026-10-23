@@ -11,7 +11,7 @@ namespace EquityBrief.Core.Providers;
 // session's opening and the count are tried once more on a transient failure; the ratings are asked once and never
 // again, since a request the server counted and whose answer was lost would spend a second call. The parsers are
 // `TipRanksAnswers`'.
-// see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+// see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
 public sealed class TipRanksRatingsFeed(HttpClient client, TipRanksCredentials credentials, ProviderRequest? request = null, ProviderRequest? once = null) : IAnalystRatingsFeed
 {
     public const string Address = "https://mcp.tipranks.com/mcp/";
@@ -128,16 +128,27 @@ public sealed class TipRanksRatingsFeed(HttpClient client, TipRanksCredentials c
                         post.Headers.Accept.ParseAdd("text/event-stream");
                         post.Headers.TryAddWithoutValidation("MCP-Protocol-Version", Protocol);
 
+                        // Each request on a connection of its own, which the server closes once it has answered: an
+                        // answer it sends with no length ends there, and none waits on a connection kept open.
+                        post.Headers.ConnectionClose = true;
+
                         if (session is { } named)
                         {
                             post.Headers.TryAddWithoutValidation(SessionHeader, named);
                         }
 
-                        using var response = await client.SendAsync(post, token).ConfigureAwait(false);
+                        using var response = await client.SendAsync(post, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
 
                         if (response.Headers.TryGetValues(SessionHeader, out var sessions) && sessions.FirstOrDefault() is { Length: > 0 } given)
                         {
                             session = given;
+                        }
+
+                        // A notice the server accepts is answered 202 with no message, and its body, sent with no length,
+                        // is never read.
+                        if (response.StatusCode == System.Net.HttpStatusCode.Accepted)
+                        {
+                            return string.Empty;
                         }
 
                         return response.IsSuccessStatusCode

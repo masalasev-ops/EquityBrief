@@ -389,9 +389,10 @@ public partial class ArchitectureConformance
         // its trades on Past picks, and 1400 from 20.8, merged after them, the usefulness store, the Ledger page's and the
         // Loop page's rows and section 17's window row, and 1417 from 20.13, the analyst job's and the ratings job's
         // catalogue and matrix rows, their three stores, section 17's three rows, section 18's four, the target range and
-        // the chart page's firm actions and analysts by name.
+        // the chart page's firm actions and analysts by name, and 1418 from the 20.13 correction of 2026-10-23, section
+        // 17's row for the 15 days a stock's TipRanks press waits.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1417),
+            (789, 853, 6, 4, 855, 876, 1418),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

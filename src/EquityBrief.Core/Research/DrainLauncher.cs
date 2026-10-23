@@ -50,7 +50,7 @@ public interface IDrainLauncher
 
     // The ratings job for one stock's TipRanks ratings, which a chart page's press starts as a process of its own once its
     // ask is written.
-    // see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+    // see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
     DrainStart StartTheRatings(string ticker, DateTimeOffset askedAt) =>
         new(false, "TipRanks was not asked, because this surface holds no way to start the worker.");
 

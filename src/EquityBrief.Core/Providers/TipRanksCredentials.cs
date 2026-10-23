@@ -8,7 +8,7 @@ namespace EquityBrief.Core.Providers;
 // Both live in the worker's appsettings.Secrets.json beside the provider's key, gitignored and never committed. The
 // key goes to TipRanks alone, in the request's header and in no address, and anything about to be written down passes
 // through `Redact` first, so a failure's words reach a row, the console or the page with the key taken out.
-// see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+// see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
 public sealed class TipRanksCredentials(string apiKey)
 {
     public const string ApiKeyName = "EquityBrief:Providers:TipRanks:ApiKey";

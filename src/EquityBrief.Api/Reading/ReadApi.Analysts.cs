@@ -17,7 +17,7 @@ public sealed record AnalystAsk(bool Written, DateTimeOffset AskedAt, string Lin
 // from Yahoo; the page's press asks for TipRanks' ratings the same way and the ratings job answers it. The page draws the
 // newest answer stored for the stock, and the month's TipRanks calls as the ratings job last read them off its run.
 // see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
-// see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+// see: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
 public sealed partial class ReadApi
 {
     public const string FromYahoo = "yahoo";
@@ -72,7 +72,7 @@ public sealed partial class ReadApi
         return await WriteAskAsync(connection, ticker, FromYahoo, now, $"Yahoo is being asked for {ticker}'s analysts.");
     }
 
-    // Writes TipRanks' ask unless an answer stored on the stock's New York day stands or the newest count of the month's
+    // Writes TipRanks' ask unless TipRanks answered for the stock in the 15 days before or the newest count of the month's
     // calls says they are spent, and says which.
     public async Task<AnalystAsk> AskRatingsAsync(string ticker)
     {
@@ -80,9 +80,9 @@ public sealed partial class ReadApi
 
         await using var connection = Open();
 
-        if (await NewestRatingAsync(connection, ticker) is { } stored && stored.AskedAt >= AnalystLimits.DayOf(now, clock.SessionZone).From)
+        if (await NewestRatingAsync(connection, ticker) is { } stored && now < AnalystLimits.RatingsOpenAt(stored.AskedAt))
         {
-            return new AnalystAsk(false, stored.AskedAt, $"TipRanks answered for {ticker} at {AskStamp(stored.AskedAt)}, on this New York day, so no call was made.");
+            return new AnalystAsk(false, stored.AskedAt, $"TipRanks answered for {ticker} at {AskStamp(stored.AskedAt)}, and its press opens again at {AskStamp(AnalystLimits.RatingsOpenAt(stored.AskedAt))}, so no call was made.");
         }
 
         if (await CallsAsync(connection) is { } calls && calls.Spent(now))
