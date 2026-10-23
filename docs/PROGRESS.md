@@ -7258,3 +7258,37 @@ Carried:    the page reads the newest pass for the name and the drain every pass
             refuses, and a pass the connection cut holds Regenerate on the page where the drain lets it through, as it
             did before this correction; the analyst panels; 20.8's remedy; 22.2; 20.3's record; the tone variant at
             pin 4; 20.10; the sign-offs of phases 18 and 20.
+
+### 20.3 ruling - the pins stop comparing LM Studio's runtime, and the model is loaded at 60,160 tokens, pin 4's read going on at 50,176 until a version at the wider window carries its readings   2026-10-23
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-23 at about 12:30 UTC, after LM Studio had updated its runtime by itself to
+            2.63.0 overnight and the machine had restarted: "THen stop depending on LM studio version to make the pins.
+            THe only thing that should be of concern is the model change or update". At about 12:39 UTC, seeing the
+            model loaded at 50,176 tokens: "THe model was also loaded with 50k context instead of 58k which i have no
+            idea why. So pause it and reload. This is probably why things are getting refused again", and once pin 4's
+            history read was stopped at 12:40:43 UTC: "The model was at 56k when pin 3 was read and i dont know why it
+            was reset to 50k .Make it 60k and start the read". Told that LM Studio's own log showed every load the read
+            made and every refusal past the window at 50,176 from 2026-10-19 on, the loads at 55,040 to 60,160 they had
+            seen each one LM Studio made by itself, after its update, after the restart and after its engine crashed
+            under a request at 12:38:12 UTC, each put back to 50,176 by the read within a minute; that of pin 4's 15
+            refusals that day 11 were a word the questions do not list, 3 Alexandria Real Estate Equities supplements
+            whose cut left their answers no room and 1 that crash; and that a version at another window carries none
+            of its readings under the code as it stood, so every release would be read again over about three days,
+            they chose "50k until 60k lands (Recommended)": "Restart the read now on pin 4 at 50,176. Its readings
+            carry over to the 60k version. I build the carry change with the window at 60,160, and the read switches
+            to 60k when it merges, about 3 to 4 hours."
+Plan:       the local run's and the carry's decisions superseded in the correction below, the runtime kept on the pin
+            as a record and compared with nothing, the gemma-4 profile loading the model at 60,160 tokens, the window
+            LM Studio itself loaded it at, a version carrying by each reading's own request and room whatever runtime
+            and window each was written under, and the fit cutting again an answer cut off past its room; pin 4's
+            history read restarted at 50,176 from main at 12:53 UTC; once the correction merges, pin 4's read stopped by
+            hand and its remedy run, pin 5 written at 60,160 carrying pin 4's readings and its counts reported to the
+            operator, and the history read under it at 250 W with the temperature guard.
+Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.9, 20.11 and 20.12 merged with their records,
+            22.0 planned and ruled, 22.1 merged, the 19.11 correction merged, PR 535; in progress, the correction
+            below; next, pin 5 and the history read of the releases it leaves, 20.8's remedy once a version after pin
+            3 has read its history whole, the analyst panels, 22.2, 20.3's record, the tone variant at the newest
+            complete version, 20.10, and the sign-offs of phases 18 and 20 by fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
