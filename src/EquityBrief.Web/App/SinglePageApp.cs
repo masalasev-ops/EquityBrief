@@ -1253,7 +1253,7 @@ public sealed partial class SinglePageApp : IComponent
           const research = screen.querySelector('section.research');
           if (research) { research.prepend(line); }
         }
-        // The masthead's search, over every current member by its ticker or its company's name.
+        // The masthead's search, over every current member of the three indices by its ticker or its company's name.
         // Its list is read after the first screen, so the first screen never waits on it, and a
         // name picked from the list goes straight to its page.
         const find = document.getElementById('find');
@@ -1297,7 +1297,7 @@ public sealed partial class SinglePageApp : IComponent
           line.className = 'notice';
           line.setAttribute('role', 'status');
           line.setAttribute('data-not-found', text.trim());
-          line.textContent = 'No name in the index matches ' + text.trim() + '.';
+          line.textContent = 'No stock in the S&P 500, 400 or 600 matches ' + text.trim() + '.';
           screen.prepend(line);
         }
         document.getElementById('search').addEventListener('submit', (event) => { event.preventDefault(); go(find.value); });
@@ -2355,8 +2355,8 @@ public sealed partial class SinglePageApp : IComponent
         return region.ToString();
     }
 
-    // The masthead search's list: every current member by its ticker, labelled with its
-    // company's name and the day its research was written where it holds any.
+    // The masthead search's list: every current member of the three indices by its ticker, labelled
+    // with its company's name and the day its research was written where it holds any.
     public string FindOptions(IReadOnlyList<Findable> names)
     {
         var options = new StringBuilder();

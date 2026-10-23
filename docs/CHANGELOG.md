@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-23 - ARCHITECTURE.html - the masthead's search offers every member of the S&P 500, 400 and 600 on the newest night
+Corrects: the search offered the S&P 500's members alone after 15.1 drew the S&P 400's and 600's on pages of their own, found by the operator when OKTA, an S&P 400 member, matched no name
+Was:
+> Any name is found from a search box in the header of every screen, in its menu from 19.2, by its ticker or its company's name, and a name found is opened on its chart page from 19.11. Text matching no name says so rather than opening an empty page.
+Now:
+> Any name is found ... on its chart page from 19.11. From the 15.1 correction of 2026-10-23 the search offers every member of the S&P 500, 400 and 600 on the newest night whichever index the page reads, a ticker two of them hold once. Text matching no name says so rather than opening an empty page.
+Why: a stock the tool draws a chart page and a report for is one the search finds.
+
+### 2026-10-23 - .claude/rules/checks.md - read-surface reaches the masthead's search over the S&P 500, 400 and 600
+Corrects: the search offered the S&P 500's members alone after 15.1 drew the S&P 400's and 600's on pages of their own, found by the operator when OKTA, an S&P 400 member, matched no name
+Was:
+> read-surface: ... with Yahoo's labels read as the months they name, oldest first |
+Now:
+> read-surface: ... with Yahoo's labels read as the months they name, oldest first; and from the 15.1 correction of 2026-10-23 the masthead's search offering every current member of the S&P 500, 400 and 600 once in the order of their tickers whichever index the page reads, a ticker two of them hold under its S&P 500 name and one an index let go before the night not at all, read over a constructed store of the three indices, and saying so over the three where text matches none |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
 ### 2026-10-23 - ARCHITECTURE.html - a stock's TipRanks press waits 15 days after TipRanks last answered for it, drawn closed until then
 Authorised by: TipRanks' analyst ratings are asked only on a press and never past the month's limit, a stock again only 15 days after its last answer
 Was:

@@ -5182,30 +5182,35 @@ public sealed partial class ReadApi : IComponent
         return rows;
     }
 
-    // Every current member as the masthead's search offers it.
-    public async Task<IReadOnlyList<FindableRow>> FindableAsync(string indexCode, DateOnly? night = null)
+    // Every current member of the indices named as the masthead's search offers it, once a ticker by its ticker, a ticker
+    // two of them hold read under the first named.
+    public async Task<IReadOnlyList<FindableRow>> FindableAsync(IReadOnlyList<string> indexCodes, DateOnly? night = null)
     {
         await using var connection = Open();
-        await using var command = connection.CreateCommand();
 
-        command.CommandText = Findable;
-        command.Parameters.AddWithValue("$index_code", indexCode);
-        command.Parameters.AddWithValue("$session", OnNight(night));
-        command.Parameters.AddWithValue("$retired", ClaimRules.RetiredKey);
+        var rows = new Dictionary<string, FindableRow>(StringComparer.Ordinal);
 
-        var rows = new List<FindableRow>();
-
-        await using var reader = await command.ExecuteReaderAsync();
-
-        while (await reader.ReadAsync())
+        foreach (var indexCode in indexCodes)
         {
-            rows.Add(new FindableRow(
-                reader.GetString(0),
-                reader.IsDBNull(1) ? null : reader.GetString(1),
-                reader.IsDBNull(2) ? null : Day(reader.GetString(2))));
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = Findable;
+            command.Parameters.AddWithValue("$index_code", indexCode);
+            command.Parameters.AddWithValue("$session", OnNight(night));
+            command.Parameters.AddWithValue("$retired", ClaimRules.RetiredKey);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                rows.TryAdd(reader.GetString(0), new FindableRow(
+                    reader.GetString(0),
+                    reader.IsDBNull(1) ? null : reader.GetString(1),
+                    reader.IsDBNull(2) ? null : Day(reader.GetString(2))));
+            }
         }
 
-        return rows;
+        return [.. rows.Values.OrderBy(row => row.Ticker, StringComparer.Ordinal)];
     }
 
     // From 19.7 every request a pass wrote, which the researched list reads why a report was written from: the stock, the

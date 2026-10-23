@@ -2497,12 +2497,13 @@ app.MapGet("/screens/universe", async (
         "text/html; charset=utf-8");
 });
 
-// The masthead search's list, section 15.13: every current member of the index by its
-// ticker, with its company's name and the day its research was written.
+// The masthead search's list, section 15.13: every current member of the S&P 500, 400 and 600
+// by its ticker, whichever index the page reads, with its company's name and the day its
+// research was written.
 app.MapGet("/screens/find", async (ReadApi read, SinglePageApp page) =>
 {
-    var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
-    var names = await read.FindableAsync(index, await read.NewestNightAsync());
+    var indices = Universes.Offered.Select(choice => choice == Universes.Large ? builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC" : choice.Code).ToList();
+    var names = await read.FindableAsync(indices, await read.NewestNightAsync());
 
     return Results.Content(
         page.FindOptions([.. names.Select(name => new Findable(name.Ticker, name.Name, name.Researched))]),

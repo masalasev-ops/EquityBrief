@@ -7542,3 +7542,28 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             request, with the figures it states.
 Carried:    no remedy; the live press for PG; 20.8's remedy; 22.2; 20.3's record; the tone variant at the newest complete
             version; 20.10; the sign-offs of phases 18 and 20.
+
+### 15.1 - correction: the masthead's search offers every current member of the S&P 500, 400 and 600, as the operator found   2026-10-23
+
+Queue:      as the 20.13 ruling entry above, this correction in progress, the last of this pull request.
+Found:      by the operator on 2026-10-23 at 17:49 UTC, the 20.13 ruling entry above quoting them: the search said OKTA, an
+            S&P 400 member, matched no name. Its list read the S&P 500's members alone, while from 15.1 the S&P 400's and
+            600's members are drawn on pages of their own, OKTA's chart page and report among them.
+Corrected:  the list reads every current member of the S&P 500, 400 and 600 on the newest night whichever index the page
+            reads, once a ticker in the order of the tickers, a ticker two of them hold under its S&P 500 name; text
+            matching none says so over the three. Section 15.13's line, the roster's read-surface row and the changelog.
+Tests:      1 new, 2674 in all: the list over a store of the three indices, a member of two offered once and one let go
+            before the night not at all; and 1 amended, the shell's line where text matches none.
+Claims:     1418, none new.
+Mutated:    the rule, stated before the runs: one mutation each part of the correction, the smallest edit undoing it, each
+            run over the new test with its red predicted, made in this checkout and reverted with the editor. S1 the list
+            reading the S&P 500 alone, red; S2 a ticker two indices hold read under the last of them, red; S3 the list
+            left in the indices' order, red, an S&P 600 ticker sorting before the S&P 500's added so the order is seen.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2674 of 2674 tests ran with none failed,
+            migrations 0 to 107 with none pending, schema version 107, against `data-ci` and never `data`; the phase
+            report 60 tables, 1418 claims, 1418 passing, none out of scope and none unexamined, 1429 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    no remedy; once merged, the live press for PG the operator asked for, one of the month's calls; 20.8's
+            remedy; 22.2; 20.3's record; the tone variant at the newest complete version; 20.10; the sign-offs of phases
+            18 and 20.

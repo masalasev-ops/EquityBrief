@@ -312,6 +312,33 @@ public partial class ReadSurface
         Assert.Equal(["AAA"], Regex.Matches(large, "<tr data-ticker=\"([^\"]+)\" data-written").Select(match => match.Groups[1].Value));
     }
 
+    // The masthead's search offers every current member of the three indices once, in the order of their tickers, whichever
+    // index the page reads: the S&P 500's two, the S&P 400's three and the S&P 600's three, AB among them before the S&P
+    // 500's BBB, BBB, which the S&P 600 holds as well, once under its S&P 500 name, and GONE, which the S&P 400 let go
+    // before the night, not at all.
+    [Fact]
+    public async Task TheMastheadsSearchOffersEveryCurrentMemberOfTheThreeIndicesOnce()
+    {
+        using var store = UniversesStore();
+
+        store.Execute(
+            "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at, sector, name) VALUES " +
+            "('SML', 'AB', NULL, NULL, '2026-10-02T21:00:00Z', 'Energy', 'Ay Bee'), ('SML', 'BBB', NULL, NULL, '2026-10-02T21:00:00Z', 'Energy', 'Double B small'), " +
+            "('MID', 'GONE', '2026-01-02', '2026-09-30', '2026-10-02T21:00:00Z', 'Energy', 'Gone Inc');");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var find = await client.GetStringAsync("/screens/find");
+
+        Assert.Equal(
+            [("AAA", "Triple A, researched 2026-10-02"), ("AB", "Ay Bee"), ("BBB", "Double B"), ("M1", "Mid One, researched 2026-10-02"), ("M2", "Mid Two"), ("M3", "Mid Three"), ("S1", "Small One"), ("S2", "Small Two")],
+            Regex.Matches(find, "<option value=\"([^\"]+)\">([^<]+)</option>").Select(match => (match.Groups[1].Value, match.Groups[2].Value)));
+
+        // Text matching none of them says so over the three.
+        Assert.Contains("'No stock in the S&P 500, 400 or 600 matches '", await client.GetStringAsync("/"), StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task TheSAndP500sCardNamesTheIndexWhoseOpenTradeHoldsAStockBack()
     {

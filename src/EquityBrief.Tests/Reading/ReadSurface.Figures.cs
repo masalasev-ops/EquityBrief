@@ -218,7 +218,7 @@ public partial class ReadSurface
         Assert.Contains($"<a href=\"{SinglePageApp.ResearchedRoute}\" data-view=\"researched\">Researched</a>", shell, StringComparison.Ordinal);
         Assert.Contains("fetch('/screens/researched' + (query ? '?' + query : ''))", shell, StringComparison.Ordinal);
         Assert.Contains("show().then(() => fetch('/screens/find'))", shell, StringComparison.Ordinal);
-        Assert.Contains("'No name in the index matches '", shell, StringComparison.Ordinal);
+        Assert.Contains("'No stock in the S&P 500, 400 or 600 matches '", shell, StringComparison.Ordinal);
 
         // With nothing researched the list says so rather than drawing an empty table.
         Assert.Contains("data-researched=\"none\"", new SinglePageApp().ResearchedRegion([]), StringComparison.Ordinal);
