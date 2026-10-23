@@ -7723,3 +7723,27 @@ Found:      `loop-links` was first run with `--print`, which prints the figures 
             21:27:55Z; it was run again without it, writing the runs above, before the local run's late slot.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
+
+### 20.4 - the second remedy run from main: the drift's tone variant registered at reading version 5 on every index   2026-10-23
+
+Not a checkpoint entry: it records 20.4's second remedy and lands nothing.
+Ran:        from main's 69a84aa1, the merge of PR 540: `tools/remedies/2026-10-18-20.4-the-tone-variants.txt` between
+            20:54:59Z and 20:55:43Z, its build included, after 20.8's three builds ended and with no night, local run,
+            drain, labeller or monthly run writing, reading version 5's history read complete since 18:39:57Z. No
+            request and no model call.
+Registered: the S&P 500's drift again whole at 20:55:40Z, its 8 standing rules retired and 9 registered as the
+            register's 612 to 628, the ninth the tone variant reading version 5; on the S&P 400 the frozen drift's
+            market variant stated again beside the tone variant, 629 to 631, and on the S&P 600 the same, 632 to 634,
+            each pair named as not replayed on its index and restarting, the live rule and the rule kept in the
+            background standing on.
+Replayed:   of the S&P 500's eight, the variant switched on the VIX reproduced its 2 trades over 14 nights from
+            2026-10-05 and carries its record on; the live rule and the other six restart their records at 20:55:40Z,
+            the replay over the 4 nights from 2026-10-19 placing EFX fifth on 2026-10-20 where the record places it
+            fourth, and HAL for the variant at 1.5 times the volume.
+Found:      why: MMM's print of 2026-10-20, which that night read at a surprise of 2.07 per cent and placed seventh among
+            the drift's passes, reads 4.17 per cent in the earnings reactions from the night of 2026-10-21 on, an
+            actual of 2.50 against an estimate of 2.40, since the move annotator writes each print's row again from each
+            night's calendar; the replay orders MMM fourth. A replay over a night whose print the provider has answered
+            again since reads the newer answer and restarts the record, saying what differed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
