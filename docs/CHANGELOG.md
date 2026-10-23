@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-23 - .claude/rules/checks.md - architecture-conformance reads phase 20's pair
+Authorised by: Phase 20 is built whole in the order its dependencies set with the sign-offs of phases 18 and 19 after it, spending no money and retiring nothing on a result
+Was:
+> architecture-conformance: ... and paper trading's figure's key naming the six parts the redrawn figure draws, in the architecture and in the guide |
+Now:
+> architecture-conformance: ... and paper trading's figure's key naming the six parts the redrawn figure draws, in the architecture and in the guide; and from 20.10 phase 20's pair is read off the plan and checked the same way, each row the phase added reached once and passing and the row paper trading's correction took out reached by no claim, its actual inside the range and past the pair by the net of what each part landed fewer or more than its count, each named with what it landed, 20.11 to 20.13's rows, added on the operator's rulings after the plan stated its pair, among them, and the rows after its report named beside it |
+Why: the roster row says what its check asserts, and 20.10's pair test extends it.
+
 ### 2026-10-23 - .claude/rules/checks.md - fixture-expectations reaches each probe's line in its own words
 Corrects: each probe's line on the console said how many releases were answered alike when read twice, the re-identification probe's count of filers named and the distraction probe's of answers alike with the names in among them, found when the three probes ran under pin 5
 Was:
