@@ -7161,8 +7161,10 @@ Corrected:  main at cbcf43d9 and then at bf6c3dc8 merged into 20.8's branch, 28 
             holds it with 20.8's edits applied to it again, each checked word by word against 20.8's own copy, nothing of
             main's removed but the words 20.8 replaced. The ledger's reader reads only the exhibit each filing holds as
             its release and a reading only of that exhibit, as main's readers do, and 20.8's two constructed stores write
-            each reading's exhibit. The migration named 106 in the build plan's 20.8 and 20.11, the runbook and the
-            remedy file, with the changelog.
+            each reading's exhibit. The ledger readings' version moves from main's f858ebd1ac63 to e964b3be3453, where
+            20.8 alone moved it to a6a6ce340e21, since the release reader its pin reads changed with main's 20.3
+            correction and with this one; the remedy's history builds write every setup again under it. The migration
+            named 106 in the build plan's 20.8 and 20.11, the runbook and the remedy file, with the changelog.
 Tests:      1 new, 2659 in all: 20.8's 13 beside main's 2645, and the ledger's reader over a constructed store holding
             two filings whose supplements were read and replaced, one press release read since and one not, reading the
             first's press release and none for the second.
