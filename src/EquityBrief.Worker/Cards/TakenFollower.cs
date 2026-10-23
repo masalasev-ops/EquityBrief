@@ -13,13 +13,15 @@ namespace EquityBrief.Worker.Cards;
 // The taken trades' follower. After the night's cards, each trade the operator took and no night has ended is followed
 // over the stored closes from its fill's session to the night under its rule's own management: a provisional fill is
 // replaced by its session's stored open once that bar is stored; the trade ends at its stop, its target or its cap, at
-// the book's own sale for a sector heavyweight, at an exit the operator recorded, or at its last close as a member where
-// the stock has left every index, whichever comes first. Every price is read at the series' scale as stored tonight, each
+// the book's own sale for a sector heavyweight, where the dip's own trade on the pick was sold for a short-term dip pick,
+// at an exit the operator recorded, or at its last close as a member where the stock has left every index, whichever
+// comes first. Every price is read at the series' scale as stored tonight, each
 // day's own price taken there by that day's adjustment, so a split inside a trade ends nothing. Then the operator's
 // record, one row an index and family over every trade taken, is written again. It reads stored rows alone, with no
 // request and no model, and nothing that makes a pick reads what it writes.
 // see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then
 // see: The operator's own record states its average result once twenty of its trades in a family and index have ended
+// see: The dip buys at the next session's open and sells at the next open after its exit's close or its stop's, and at its last session's close
 // see: The nightly run is arithmetic only
 public sealed class TakenFollower : IComponent
 {
@@ -31,6 +33,7 @@ public sealed class TakenFollower : IComponent
             new StoreTouch(Store.HeavyweightHolding, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightRuleHolding, Touch.Read),
+            new StoreTouch(Store.DipTrade, Touch.Read),
             new StoreTouch(Store.IndexFamilyNight, Touch.Read),
             new StoreTouch(Store.DecisionCard, Touch.Read),
             new StoreTouch(Store.TakenTrade, Touch.Read | Touch.Update),
@@ -76,6 +79,13 @@ public sealed class TakenFollower : IComponent
     const string LiveSale = @"
         SELECT ended_on FROM index_heavyweight_rule_holding
         WHERE index_code = $index AND candidate = $candidate AND ticker = $ticker AND entered_on = $night AND ended_on IS NOT NULL;
+    ";
+
+    // The sale of the trade the dip's own list kept on a pick, at the scale its night stored the trade at.
+    const string DipSale = @"
+        SELECT ended_on, sale, end_reason FROM dip_trade
+        WHERE index_code = $index AND ticker = $ticker AND session_date = $night AND ended_on IS NOT NULL AND sale IS NOT NULL
+        ORDER BY rule LIMIT 1;
     ";
 
     const string IndexNightSettings = "SELECT settings FROM index_family_night WHERE index_code = $index AND session_date = $night;";
@@ -226,7 +236,7 @@ public sealed class TakenFollower : IComponent
         var entry = fill * bought.Factor;
         var stop = Scaled(trade.Stop);
         var held = sessions.Where(session => session.Day >= trade.FillDate).ToArray();
-        var walked = trade.Family == HeavyweightRule.Name
+        var walked = trade.Family is HeavyweightRule.Name or DipRule.Name
             ? null
             : TakenWalk.Follow([.. held.Select(session => session.Close)], stop, Scaled(trade.Target), Scaled(trade.Trail), trade.Cap);
 
@@ -242,6 +252,15 @@ public sealed class TakenFollower : IComponent
         if (trade.Family == HeavyweightRule.Name && await SoldAsync(connection, transaction, trade, cancellation) is { } sold && at.TryGetValue(sold, out var sale))
         {
             ends.Add((sold, TakenWalk.Sold, sale.Close, sale.Close / sale.Factor));
+        }
+
+        // A dip pick ends where the dip's own trade on it was sold, at the next open after its exit's close or its stop's
+        // or at its last session's close, so the one walk the rule has decides both and the two differ by the fill alone.
+        if (trade.Family == DipRule.Name && await DipSoldAsync(connection, transaction, trade, cancellation) is { } dip && at.TryGetValue(dip.On, out var dipped))
+        {
+            var price = dip.Price * listed.Factor;
+
+            ends.Add((dip.On, dip.Reason, price, dipped.Factor > 0m ? price / dipped.Factor : price));
         }
 
         if (trade.ExitDate is { } exited && trade.ExitPrice is { } exitPrice && exited <= night)
@@ -272,6 +291,18 @@ public sealed class TakenFollower : IComponent
         return new Followed(fill, provisional, first.On, PriceForm.Round(first.Raw), first.Reason, result);
     }
 
+    // The sale of the trade the dip's own list kept on the pick: its session, its price at the scale the night stored the
+    // trade at, and why it ended; none while that trade stands.
+    static async Task<(DateOnly On, decimal Price, string Reason)?> DipSoldAsync(SqliteConnection connection, SqliteTransaction transaction, Taken trade, CancellationToken cancellation)
+    {
+        await using var command = Command(connection, transaction, DipSale, [("$index", trade.Index), ("$ticker", trade.Ticker), ("$night", Stamp(trade.Night))]);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        return await reader.ReadAsync(cancellation)
+            ? (Date(reader.GetString(0)), Money(reader.GetString(1)), reader.GetString(2))
+            : null;
+    }
+
     // A heavyweight's sale by the book its card's night drew: on the S&P 400 or 600, the live rule's own book where the
     // night read the family by one, and the index's own book otherwise.
     async Task<DateOnly?> SoldAsync(SqliteConnection connection, SqliteTransaction transaction, Taken trade, CancellationToken cancellation)
@@ -289,7 +320,8 @@ public sealed class TakenFollower : IComponent
     }
 
     // The operator's record over every trade taken, one row an index and family: a rule with a target counts its trades
-    // won at the target and lost at the stop, a trailing rule and the sector heavyweights each trade ended, and every rule
+    // won at the target and lost at the stop, a trailing rule, the short-term dip, which sets no target, and the sector
+    // heavyweights each trade ended, and every rule
     // its open trades; the average result over the ended once there are enough of them to read. Beside it the same counts
     // over the rule's own picks listed on the nights the operator took one, each bought at the next session's open as a
     // taken trade's fill is, which separates the operator's choices and fills from the market of those weeks.
@@ -313,7 +345,7 @@ public sealed class TakenFollower : IComponent
         foreach (var group in trades.GroupBy(trade => (trade.Index, trade.Family)))
         {
             var rule = SetupFamilies.Named(group.Key.Family);
-            var scored = group.Key.Family != HeavyweightRule.Name && rule is { Trails: false };
+            var scored = group.Key.Family is not HeavyweightRule.Name and not DipRule.Name && rule is { Trails: false };
             var ended = group.Where(trade => trade.Reason is not null).Select(trade => (trade.Reason, trade.Result)).ToArray();
             var nights = group.Select(trade => trade.Night).Distinct().Order().ToArray();
             var listed = new List<(string? Reason, double? Result)>();

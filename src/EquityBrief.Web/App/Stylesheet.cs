@@ -8,7 +8,7 @@ namespace EquityBrief.Web.App;
 // The marks draw with the tokens' names rather than with values, so both palettes restyle
 // every picture without a mark knowing which one is showing.
 // see: Green means support or a gain and red a stop or a loss, with orange for resistance
-// see: Each setup family has a hue of its own drawn as a mark and a tint beside its word
+// see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them
 // see: Not yet measured is drawn as a dashed outline, never as a pale value
 public static class Stylesheet
 {
@@ -51,7 +51,7 @@ public static class Stylesheet
  --wait:#6e5a00; --wait-fill:rgba(110,90,0,.12); --fail:#b23a34; --fail-fill:rgba(178,58,52,.1);
  --fam-pullback:#084e6c; --fam-pullback-tint:rgba(8,78,108,.16); --fam-breakout:#70639e; --fam-breakout-tint:rgba(112,99,158,.16);
  --fam-drift:#663d05; --fam-drift-tint:rgba(102,61,5,.16); --fam-fundamentals:#274fe7; --fam-fundamentals-tint:rgba(39,79,231,.16);
- --fam-heavyweight:#851473; --fam-heavyweight-tint:rgba(133,20,115,.16);
+ --fam-heavyweight:#851473; --fam-heavyweight-tint:rgba(133,20,115,.16); --fam-dip:#e000e8; --fam-dip-tint:rgba(224,0,232,.16);
  --serif:Charter,"Iowan Old Style",Georgia,"Times New Roman",serif;
  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
  /* The column, at its widest: the widest picture a screen draws, with the card's side padding
@@ -72,7 +72,7 @@ public static class Stylesheet
  --wait:#efe08a; --wait-fill:rgba(239,224,138,.13); --fail:#e5534b; --fail-fill:rgba(229,83,75,.14);
  --fam-pullback:#4097bd; --fam-pullback-tint:rgba(64,151,189,.18); --fam-breakout:#9d58e9; --fam-breakout-tint:rgba(157,88,233,.18);
  --fam-drift:#90693e; --fam-drift-tint:rgba(144,105,62,.18); --fam-fundamentals:#8ec4fc; --fam-fundamentals-tint:rgba(142,196,252,.18);
- --fam-heavyweight:#f478dc; --fam-heavyweight-tint:rgba(244,120,220,.18);
+ --fam-heavyweight:#f478dc; --fam-heavyweight-tint:rgba(244,120,220,.18); --fam-dip:#d8009c; --fam-dip-tint:rgba(216,0,156,.18);
 }}
 :root[data-theme='dark']:not([data-eb-theme='light']),:root[data-eb-theme='dark']{
  --page:#121416; --surface:#1a1d20; --plot:#16191b; --ink:#e8e5dd; --ink-2:#c3c0b8; --soft:#9ea3a9; --hair:#2d3237; --hair-2:#3d434a;
@@ -86,7 +86,7 @@ public static class Stylesheet
  --wait:#efe08a; --wait-fill:rgba(239,224,138,.13); --fail:#e5534b; --fail-fill:rgba(229,83,75,.14);
  --fam-pullback:#4097bd; --fam-pullback-tint:rgba(64,151,189,.18); --fam-breakout:#9d58e9; --fam-breakout-tint:rgba(157,88,233,.18);
  --fam-drift:#90693e; --fam-drift-tint:rgba(144,105,62,.18); --fam-fundamentals:#8ec4fc; --fam-fundamentals-tint:rgba(142,196,252,.18);
- --fam-heavyweight:#f478dc; --fam-heavyweight-tint:rgba(244,120,220,.18);
+ --fam-heavyweight:#f478dc; --fam-heavyweight-tint:rgba(244,120,220,.18); --fam-dip:#d8009c; --fam-dip-tint:rgba(216,0,156,.18);
 }
 /* The names the marks draw with, each the token of the same kind, so every mark follows the palette. */
 :root{ --muted:var(--soft); --rule:var(--hair); --panel:var(--plot); --support:var(--sup); --resistance:var(--res); }
@@ -275,6 +275,7 @@ main{padding-block:8px 64px}
 .fam-tag[data-family='drift']{background:var(--fam-drift-tint)} .fam-swatch[data-family='drift']{background:var(--fam-drift)} .fam-edge[data-family='drift']{border-left-color:var(--fam-drift)}
 .fam-tag[data-family='fundamentals']{background:var(--fam-fundamentals-tint)} .fam-swatch[data-family='fundamentals']{background:var(--fam-fundamentals)} .fam-edge[data-family='fundamentals']{border-left-color:var(--fam-fundamentals)}
 .fam-tag[data-family='heavyweight']{background:var(--fam-heavyweight-tint)} .fam-swatch[data-family='heavyweight']{background:var(--fam-heavyweight)} .fam-edge[data-family='heavyweight']{border-left-color:var(--fam-heavyweight)}
+.fam-tag[data-family='dip']{background:var(--fam-dip-tint)} .fam-swatch[data-family='dip']{background:var(--fam-dip)} .fam-edge[data-family='dip']{border-left-color:var(--fam-dip)}
 .fam-edge{border-left:4px solid var(--s3)}
 /* a signed figure: a rise in the green and a fall in the red, on every page, its sign always written beside it */
 .gain{color:var(--up)} .loss{color:var(--down)}
@@ -419,14 +420,14 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-line{fill:none;stroke:var(--ink);stroke-width:1.8;stroke-linejoin:round}
 .paper-line.dashed{stroke-dasharray:5 4;stroke-width:1.4}
 .paper-line[data-family='pullback']{stroke:var(--fam-pullback)} .paper-line[data-family='breakout']{stroke:var(--fam-breakout)} .paper-line[data-family='drift']{stroke:var(--fam-drift)}
-.paper-line[data-family='fundamentals']{stroke:var(--fam-fundamentals)} .paper-line[data-family='heavyweight']{stroke:var(--fam-heavyweight)}
+.paper-line[data-family='fundamentals']{stroke:var(--fam-fundamentals)} .paper-line[data-family='heavyweight']{stroke:var(--fam-heavyweight)} .paper-line[data-family='dip']{stroke:var(--fam-dip)}
 .paper-keys{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .paper-key{display:inline-flex;align-items:center;gap:6px;font:12px var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--hair);border-radius:999px;padding:2px 10px;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .paper-key[aria-pressed='false']{opacity:.45;text-decoration:line-through}
 .paper-key-mark{display:inline-block;width:16px;height:0;border-top:2.5px solid var(--ink);flex:none}
 .paper-key-mark[data-standing='variant']{border-top-style:dashed}
 .paper-key-mark[data-family='pullback']{border-top-color:var(--fam-pullback)} .paper-key-mark[data-family='breakout']{border-top-color:var(--fam-breakout)} .paper-key-mark[data-family='drift']{border-top-color:var(--fam-drift)}
-.paper-key-mark[data-family='fundamentals']{border-top-color:var(--fam-fundamentals)} .paper-key-mark[data-family='heavyweight']{border-top-color:var(--fam-heavyweight)}
+.paper-key-mark[data-family='fundamentals']{border-top-color:var(--fam-fundamentals)} .paper-key-mark[data-family='heavyweight']{border-top-color:var(--fam-heavyweight)} .paper-key-mark[data-family='dip']{border-top-color:var(--fam-dip)}
 /* paper trading's parts: what the page is and the account's line with the form behind its press; a tile a family's live
    or provisional account beside the fund's, stacking on a phone; the open and closed tabs and the family chips, wrapping;
    the trades, the variants and the scorecard's variants each in a table its box scrolls; a rule's scorecard in two halves,

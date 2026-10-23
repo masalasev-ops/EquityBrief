@@ -45,7 +45,7 @@ public partial class FixtureExpectations
 
     // The trade as the follower left it: its fill, whether still provisional, where it ended, at what price, why and its
     // result.
-    static async Task<string> Followed(TakenCase trade, IReadOnlyList<(string Session, string Open, string Close, string Raw)> bars, string? left = null, string? sold = null)
+    static async Task<string> Followed(TakenCase trade, IReadOnlyList<(string Session, string Open, string Close, string Raw)> bars, string? left = null, string? sold = null, (string On, string Sale, string Reason)? dipSold = null)
     {
         using var store = new TemporaryStore().Migrated();
 
@@ -75,6 +75,14 @@ public partial class FixtureExpectations
                 $"('T', '{TakenNight}', 'Energy', 'T Co', '60', 1.0, '[]', '{sold}', '{sold}', '63', 'no longer the leader', 0.05, 0.01);");
         }
 
+        // The dip's own trade on the pick, bought at the open after the card's night and sold where the case says.
+        if (dipSold is { } dip)
+        {
+            store.Execute(
+                "INSERT INTO dip_trade (rule, index_code, ticker, session_date, place, entry, stop, time_limit, exit_average, risk_moves, bought_on, fill, ended_on, sale, end_reason, sessions, result, cost) VALUES " +
+                $"('provisional', 'GSPC', 'T', '{TakenNight}', 1, '50', '47', 10, 5, 4.0, '{TakenSessions[0]}', '50.40', '{dip.On}', '{dip.Sale}', '{dip.Reason}', 3, 0.5, 0.01);");
+        }
+
         await new TakenFollower(new SweepClock(new DateTimeOffset(2026, 10, 7, 23, 50, 0, TimeSpan.Zero)), store.DatabaseFile).RunAsync("night-follow");
 
         using var connection = store.Open();
@@ -87,8 +95,23 @@ public partial class FixtureExpectations
         Assert.True(reader.Read());
 
         var result = reader.IsDBNull(5) ? "-" : reader.GetDouble(5).ToString("0.0000", CultureInfo.InvariantCulture);
+        var line = $"{Cents(reader.GetString(0))} {reader.GetInt64(1)} {reader.GetString(2)} {Cents(reader.GetString(3))} {reader.GetString(4)} {result} {reader.GetString(6)}";
 
-        return $"{Cents(reader.GetString(0))} {reader.GetInt64(1)} {reader.GetString(2)} {Cents(reader.GetString(3))} {reader.GetString(4)} {result} {reader.GetString(6)}";
+        // A dip case reads its record beside it: its won, its lost and its ended.
+        if (trade.Family == DipRule.Name)
+        {
+            using var record = connection.CreateCommand();
+
+            record.CommandText = "SELECT won, lost, ended FROM taken_record WHERE index_code = 'GSPC' AND family = 'dip';";
+
+            using var counts = record.ExecuteReader();
+
+            Assert.True(counts.Read());
+
+            line += $" record {counts.GetInt64(0)} {counts.GetInt64(1)} {counts.GetInt64(2)}";
+        }
+
+        return line;
 
         static string Text(string? value) => value is null ? "NULL" : $"'{value}'";
 
@@ -133,6 +156,29 @@ public partial class FixtureExpectations
         Assert.Equal(
             "50.00 0 2026-10-07 51.00 stop 0.3333 2026-10-07",
             await Followed(new TakenCase(Family: "breakout", Fill: "50.00", Target: null, Trail: "3"), Sessions("50.40", "52.00", "55.00", "53.00", "51.00")));
+    }
+
+    [Fact]
+    public async Task ATakenDipTradeEndsWhereTheDipsOwnTradeOnThePickWasSoldAndItsRecordCountsNoWinOrLoss()
+    {
+        var dip = new TakenCase(Family: DipRule.Name, Target: null, Cap: 10);
+
+        // The dip's own trade sold at 2026-10-06's open of 51.50 after a close above its 5-session average: the taken trade
+        // ends there and then, though that session's close of 46.90 is under its stop, (51.50 - 50.40) / 3.40, 0.3235; the
+        // dip sets no target, so its record counts the trade ended and neither won nor lost.
+        Assert.Equal(
+            "50.40 0 2026-10-06 51.50 exit 0.3235 2026-10-06 record 0 0 1",
+            await Followed(dip, Sessions("50.40", "49.00", "47.00", "46.90"), dipSold: ("2026-10-06", "51.50", DipEnd.Exit)));
+
+        // Sold at its stop, at the next open after the close under it, which the record does not count as lost either:
+        // (46.00 - 50.40) / 3.40, -1.2941.
+        Assert.Equal(
+            "50.40 0 2026-10-07 46.00 stop -1.2941 2026-10-07 record 0 0 1",
+            await Followed(dip, Sessions("50.40", "49.00", "47.00", "46.90", "46.50"), dipSold: ("2026-10-07", "46.00", DipEnd.Stop)));
+
+        // While the dip's own trade stands, a close under the stop ends nothing: the dip sells at the next open, which its
+        // own trade records once that session is stored.
+        Assert.Equal("50.40 0 - - - - 2026-10-06 record 0 0 0", await Followed(dip, Sessions("50.40", "49.00", "47.00", "46.90")));
     }
 
     [Fact]

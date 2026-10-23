@@ -17,11 +17,13 @@ public sealed record FamilyPickCell(
     decimal? RewardToRisk,
     string Why,
     IReadOnlyList<string> Also,
-    DecisionCardView? Card = null);
+    DecisionCardView? Card = null,
+    string? Exit = null);
 
 // One family's card on a night: the family's words, where it stands in the page's order, the day its
 // rule went live or nothing while it runs on provisional settings, how many variants are scored beside
-// it, its picks in the page's order, the notes beneath them, and why it lists nothing where it lists none.
+// it, its picks in the page's order, the notes beneath them, why it lists nothing where it lists none, and
+// whether its part of the night failed, which its tile says in place of its market check.
 // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
 // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
 public sealed record FamilyCardView(
@@ -44,7 +46,8 @@ public sealed record FamilyCardView(
     IReadOnlyList<CloseToBuyCell>? Close = null,
     IReadOnlyDictionary<string, IReadOnlyList<double?>>? Numbers = null,
     IReadOnlyList<int>? SweepLost = null,
-    FrozenSweepView? Frozen = null);
+    FrozenSweepView? Frozen = null,
+    bool NotComputed = false);
 
 // What a frozen card states of the sweep its freeze followed: the day it was frozen, the run and the answer it stated,
 // the figures that run stated for its family's setting, and whether its edge is drawn in points, the sector
@@ -110,8 +113,9 @@ public sealed record UntestedLineView(string Line, double? Adjusted);
 // The line tonight's page opens on, on a night the families drew its list: the index it is over, whether the
 // market check left the lists open, the breadth it read against its floor, how many of the index's members a
 // setup passed, the buy points the page lists and how many of the setups list one, the stocks a single gate
-// short of one where the night read them, and the trades still open.
-// see: The market check closes every swing family's list together, and the sector heavyweights read none
+// short of one where the night read them, and the trades still open; and from 22.1 the short-term dip's own market
+// setting in words with whether it left the dip's list open, none on a night the dip's step did not read.
+// see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none
 // see: Every page reads one index at a time chosen under Universe, and every figure names its index
 public sealed record MarketLineView(
     bool Open,
@@ -130,7 +134,9 @@ public sealed record MarketLineView(
     string? RunHref = null,
     int? Watching = null,
     string? CloseHref = null,
-    IReadOnlyList<MarketCheckView>? Checks = null);
+    IReadOnlyList<MarketCheckView>? Checks = null,
+    string? Dip = null,
+    bool DipOpen = false);
 
 // One setup's own market check on an S&P 400 or 600 night, as its rule's first stored part read it for every member: the
 // family, its label, whether it left the family's list open, the check's words, and the breadth and floor it read, none
@@ -332,7 +338,8 @@ public sealed partial class MarkRenderer
         return body.ToString();
     }
 
-    // A name's line on the page's list for its night.
+    // A name's line on the page's list for its night, a short-term dip pick's place read among the dip's own picks, which
+    // its step numbers apart from every other family's place down the page.
     public string ListedUnder(ListedUnderView view)
     {
         var body = new StringBuilder();
@@ -341,7 +348,7 @@ public sealed partial class MarkRenderer
 
         if (view.Family is not null)
         {
-            body.Append(Invariant, $"On the page's list for {DayOf(view.Night)} under <b>{Escaped(view.Heading ?? view.Family)}</b>, at place {view.Place}");
+            body.Append(Invariant, $"On the page's list for {DayOf(view.Night)} under <b>{Escaped(view.Heading ?? view.Family)}</b>, at place {view.Place}{(view.Family == EquityBrief.Core.Families.DipRule.Name ? " among its own picks" : string.Empty)}");
             body.Append(view.Also.Count > 0
                 ? Formatted($"; it also qualified as {Escaped(string.Join(" and ", view.Also.Select(Article)))}.")
                 : ".");
@@ -392,8 +399,15 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<p class=\"market-line\" data-index=\"{Escaped(line.Index)}\" data-open=\"{Flag(line.Open)}\" data-breadth=\"{(line.Breadth is { } held ? held.ToString("R", Invariant) : "none")}\" data-floor=\"{(line.Floor is { } bar ? bar.ToString("R", Invariant) : "none")}\" ");
         body.Append(Invariant, $"data-passed=\"{(line.Passed is { } passed ? passed.ToString(Invariant) : "none")}\" data-members=\"{(line.Members is { } members ? members.ToString(Invariant) : "none")}\" ");
         body.Append(Invariant, $"data-buy-points=\"{line.BuyPoints}\" data-setups-listing=\"{line.SetupsListing}\" data-setups=\"{line.Setups}\" data-close=\"{(line.CloseRead ? line.Close.ToString(Invariant) : "none")}\" data-open-trades=\"{line.OpenTrades}\"");
+        body.Append(line.Dip is null ? string.Empty : Formatted($" data-dip=\"{(line.DipOpen ? "open" : "closed")}\""));
         body.Append(line.Checks is { } closing ? Formatted($" data-closed=\"{Escaped(string.Join(" ", closing.Where(one => !one.Open).Select(one => one.Family)))}\">") : ">");
-        body.Append(Invariant, $"<b class=\"market-{(line.Open ? "open" : "closed")}\">{(line.Open ? "The lists are open" : "The lists are closed")}</b>: {Escaped(check)}. ");
+
+        // The short-term dip reads its own market setting, so a night the check closed the swing lists says the dip's is
+        // still open where its own setting left it so, and every night says which setting the dip read.
+        // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+        var headline = line.Open ? "The lists are open" : line.Dip is not null && line.DipOpen ? "The lists are closed but the short-term dip's" : "The lists are closed";
+
+        body.Append(Invariant, $"<b class=\"market-{(line.Open ? "open" : "closed")}\">{headline}</b>: {Escaped(check + (line.Dip is { } dip ? "; " + dip : string.Empty))}. ");
         body.Append("<span class=\"market-counts\">");
 
         if (line.Passed is { } through && line.Members is { } of)
@@ -544,11 +558,11 @@ public sealed partial class MarkRenderer
     // How a setup card is read, written once for every setup card on every index and opened from its header's "?",
     // where each card once repeated its key.
     public const string SetupCardGuide =
-        "The header names the setup in its hue with its standing and tonight's count. The tabs choose the rule the card is drawn by: the live or provisional rule first, then each registered variant named by the settings it differs from the live rule on, the full rule in the tab's tooltip. The chips are the chosen rule's settings, the ones a variant differs on marked, and the rule in a sentence opens beneath them. The live rule's picks are drawn as rows in the card, each ticker opening the stock's chart page, as they are in tonight's buy points above; a chosen variant draws its own picks in their place under the band with what it shares with the live rule's passes tonight, adds and drops. The bar beneath is the rule's funnel, the members reaching each gate, with the gate that stopped the most named. Breakouts forming and stocks one gate short of a buy point open beneath it, and neither is a pick. A stock is listed once across every card of every index, and never while a trade for it is still open on any of them; the notes name what was held back and on which index's list. On the S&P 400 and 600 a rule runs on provisional settings until its freeze, read on its own index's members, and its record starts at the freeze. The reward to risk is a fact about the chart and not a chance of anything.";
+        "The header names the setup in its hue with its standing and tonight's count. The tabs choose the rule the card is drawn by: the live or provisional rule first, then each registered variant named by the settings it differs from the live rule on, the full rule in the tab's tooltip. The chips are the chosen rule's settings, the ones a variant differs on marked, and the rule in a sentence opens beneath them. The live rule's picks are drawn as rows in the card, each ticker opening the stock's chart page, as they are in tonight's buy points above; a chosen variant draws its own picks in their place under the band with what it shares with the live rule's passes tonight, adds and drops. The bar beneath is the rule's funnel, the members reaching each gate, with the gate that stopped the most named. Breakouts forming and stocks one gate short of a buy point open beneath it, and neither is a pick. A stock is listed once across every card of every index, and never while a trade for it is still open on any of them, though a short-term dip trade holds back no other setup's pick; the notes name what was held back and on which index's list. On the S&P 400 and 600 a rule runs on provisional settings until its freeze, read on its own index's members, and its record starts at the freeze. The reward to risk is a fact about the chart and not a chance of anything.";
 
     // A card's header: the setup's word in its tint beside its swatch, its standing as a pill, tonight's count, and the
     // "?" opening the guide its kind of card is read by.
-    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word
+    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them
     static string CardHead(string family, string heading, string pill, string pillClass, string? pillTitle, string count, string guide) =>
         $"<header class=\"fam-head\" data-family=\"{Escaped(family)}\"><span class=\"fam-tag\" data-family=\"{Escaped(family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(family)}\"></span>{Escaped(heading)}</span>"
         + $" <span class=\"status-pill {pillClass}\"{(pillTitle is null ? string.Empty : $" title=\"{Escaped(pillTitle)}\"")}>{Escaped(pill)}</span>"
@@ -691,7 +705,7 @@ public sealed partial class MarkRenderer
             body.Append(PickBusinessCell(pick));
             body.Append(PriceCell("buy", pick.Buy, null));
             body.Append(PriceCell("stop", pick.Stop, null));
-            body.Append(PriceCell("target", pick.Target, pick.Trailing ? "trailing" : null));
+            body.Append(PriceCell("target", pick.Target, pick.Trailing ? "trailing" : pick.Exit));
             body.Append(RewardCell(pick));
             body.Append("</tr>");
         }

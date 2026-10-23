@@ -82,7 +82,10 @@ public partial class FixtureExpectations
             return string.Join(" · ", parts);
         }
 
-        Assert.All(rows, row => Assert.Equal(expected.GetProperty("ruledLine").GetString(), Line(row[1], int.Parse(row[2], System.Globalization.CultureInfo.InvariantCulture))));
+        // Each ruled family's line as the file works it, the dip's from 22.1 its own.
+        string LineOf(string family) => (family == Core.Families.DipRule.Name ? expected.GetProperty("dipLine") : expected.GetProperty("ruledLine")).GetString()!;
+
+        Assert.All(rows, row => Assert.Equal(LineOf(row[0]), Line(row[1], int.Parse(row[2], System.Globalization.CultureInfo.InvariantCulture))));
         Assert.Equal(30, RuleStretch.CompletedStretchesFloor);
 
         // Each card read back off the page in the one family order, the ruled family's line the one worked above with its
@@ -107,7 +110,11 @@ public partial class FixtureExpectations
                 var row = rows.Single(stored => stored[0] == family);
 
                 Assert.Contains($"<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">{Line(row[1], int.Parse(row[2], System.Globalization.CultureInfo.InvariantCulture))}</span>", card, StringComparison.Ordinal);
-                Assert.Contains("<div class=\"funnel-bar\" data-gates=\"9\" data-largest-drop=\"setup\" data-market-row=\"false\">", card, StringComparison.Ordinal);
+                var (gates, largestDrop) = family == Core.Families.DipRule.Name
+                    ? (expected.GetProperty("dipFunnel").GetProperty("gates").GetInt32(), expected.GetProperty("dipFunnel").GetProperty("largestDrop").GetString())
+                    : (9, "setup");
+
+                Assert.Contains($"<div class=\"funnel-bar\" data-gates=\"{gates}\" data-largest-drop=\"{largestDrop}\" data-market-row=\"false\">", card, StringComparison.Ordinal);
                 Assert.Contains("<nav class=\"rule-tabs\"", card, StringComparison.Ordinal);
             }
             else

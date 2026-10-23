@@ -158,9 +158,15 @@ public partial class ArchitectureConformance
     // the local comparison's catalogue and matrix rows, and 20.9's six, the idea generator's catalogue and matrix rows,
     // its store, the Loop page's row and section 18's two, and 20.12's four, the chart page's graphs and their three
     // marks, which phase 20's own pair counts once its report is written; and the seven parts paper trading's redesign
-    // draws in the place of its table of every account.
+    // draws in the place of its table of every account; and 22.1's thirteen, the dip family's catalogue and matrix rows,
+    // its four stores, section 17's row, section 18's four, its card on Tonight and its trades on Past picks, which phase
+    // 22's own pair counts once its report is written.
     internal static string[] AfterPhaseNineteen =>
     [
+        .. ComponentAccess.DipRows,
+        .. SchemaColumns.DipStoreRows,
+        .. FixtureExpectations.DipClaims,
+        .. Reading.ReadSurface.DipPageRows,
         .. FixtureExpectations.TradeFillRows,
         .. Reading.ReadSurface.ChartRows,
         .. Reading.ReadSurface.ReadingLinkRows,

@@ -85,6 +85,10 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `index_rule_trade` | IndexFamilies | IndexFamilies | IndexFamilies |
 | `index_heavyweight_rule_night` | IndexFamilies | none | IndexFamilies |
 | `index_heavyweight_rule_holding` | IndexFamilies | IndexFamilies | IndexFamilies |
+| `dip_night` | DipFamily | none | DipFamily |
+| `dip_result` | DipFamily | none | DipFamily |
+| `dip_pick` | DipFamily | none | DipFamily |
+| `dip_trade` | DipFamily | DipFamily | DipFamily |
 | `decision_card` | DecisionCards | none | DecisionCards |
 | `rule_record` | RuleRecorder | RuleRecorder | none |
 | `rule_night` | RuleCards | none | RuleCards |
@@ -912,7 +916,7 @@ Grain: one row per session, member and setup family but the pullback.
 
 Primary key: `session_date`, `ticker`, `family`.
 
-**The family evaluator writes it in the swing filter's step and is its own deleter** (see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night) (see: Every computed table's writer is its own deleter). After the swing filter has stored its rows, it evaluates every member the filter evaluated under each family but the pullback, whose answers are the filter's own `gate_result` rows, and stores every answer, the ones that did not pass included, since a card that lists nothing says how far the members got and a name one gate short is drawn as close to a buy point. The market gate on each row is the one answer the filter stored for the night, so no family passes a member on a night it closed (see: The market check closes every swing family's list together, and the sector heavyweights read none). A night run again replaces its own rows whole. A row that passed is a trade its family's record counts and is kept; a row that did not is deleted once its session is older than the oldest bar the store holds, since nothing reads a near miss whose bars are gone.
+**The family evaluator writes it in the swing filter's step and is its own deleter** (see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night) (see: Every computed table's writer is its own deleter). After the swing filter has stored its rows, it evaluates every member the filter evaluated under each family but the pullback, whose answers are the filter's own `gate_result` rows, and stores every answer, the ones that did not pass included, since a card that lists nothing says how far the members got and a name one gate short is drawn as close to a buy point. The market gate on each row is the one answer the filter stored for the night, so no family passes a member on a night it closed (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none). A night run again replaces its own rows whole. A row that passed is a trade its family's record counts and is kept; a row that did not is deleted once its session is older than the oldest bar the store holds, since nothing reads a near miss whose bars are gone.
 
 **A passed row's trade is scored on `forward_return` under its family's horizon,** from the night's close: a breakout's under `breakout`, sold on its trailing stop (see: A breakout is a close above the year's high on heavy volume after its ranges narrowed, sold on a trailing stop with no target), and an earnings drift's under `drift`, to its target, its stop or its cap as a setup is (see: The earnings drift buys a beat with a strong reaction within five sessions, stopped under the reaction session's low). A sector leader's row, stored on a night before the sector leaders became a variant of the pullback, holds the pullback's plan as the swing filter's row stored it, and its trade is scored on that `gate_result` row, under the horizon of the plan its night's filter version read, so no outcome row is written for it here (see: The sector leaders are a variant of the pullback's starting point and not a family of their own). The prices here keep the scale the series had on the night, as a setup's plan does. From 17.13 a row carrying an `exit` is walked under that exit of the menu instead, from the night's close with its stop and its target or trail, a win at its target, a loss or trailed at a close under its stop and unresolved at the exit's time or its cap; and a member the family's own rule passed that the stored setting's hooks leave off carries their words among its `exclusions` and is no pick (see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions).
 
@@ -1018,7 +1022,7 @@ Grain: one row per stock and the session the sector heavyweights bought it on.
 
 Primary key: `ticker`, `entered_on`.
 
-**The heavyweight book writes it in the swing filter's step, after the family recorder, and is its own deleter** (see: A heavyweight's result is the product of its daily close ratios since its buy, carried each night) (see: A heavyweight leaving the index is sold at its last session's close as a member). Every night it carries each holding's growth, and its size cut's, by tonight's closes over the closes of the session each was last carried to, both read as the store holds them tonight, ends one whose stock is no longer a member at the session it was last carried to and, where the setting reads it, one closing under its 200-day average tonight, and on a rebalance ends each the rule would not buy where the setting sells on that and buys each leader it does not hold, with the sector's largest as its size cut. It reads no market check and holds no stock back for a trade a swing family holds, nor any swing family's for it (see: The market check closes every swing family's list together, and the sector heavyweights read none) (see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order). A night run again deletes what it bought that night, opens again what it ended that night, and writes the night again; a night for a session earlier than one it has read is read for nothing. The rows are never deleted otherwise: tonight's card and Past picks draw each in percent beside its size cut's return (see: A sector heavyweight's trade is scored by its percent return less the equal-weighted return of the size cut it was chosen from), and each registered rule's record is read off its own book.
+**The heavyweight book writes it in the swing filter's step, after the family recorder, and is its own deleter** (see: A heavyweight's result is the product of its daily close ratios since its buy, carried each night) (see: A heavyweight leaving the index is sold at its last session's close as a member). Every night it carries each holding's growth, and its size cut's, by tonight's closes over the closes of the session each was last carried to, both read as the store holds them tonight, ends one whose stock is no longer a member at the session it was last carried to and, where the setting reads it, one closing under its 200-day average tonight, and on a rebalance ends each the rule would not buy where the setting sells on that and buys each leader it does not hold, with the sector's largest as its size cut. It reads no market check and holds no stock back for a trade a swing family holds, nor any swing family's for it (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none) (see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order). A night run again deletes what it bought that night, opens again what it ended that night, and writes the night again; a night for a session earlier than one it has read is read for nothing. The rows are never deleted otherwise: tonight's card and Past picks draw each in percent beside its size cut's return (see: A sector heavyweight's trade is scored by its percent return less the equal-weighted return of the size cut it was chosen from), and each registered rule's record is read off its own book.
 
 ### heavyweight_rule_night
 Grain: one row per registered heavyweights rule, rebalance session, sector and place among the sector's largest companies.
@@ -1250,6 +1254,94 @@ Grain: one row per registered sector heavyweights rule of the S&P 400 or 600, st
 Primary key: `candidate`, `ticker`, `entered_on`.
 
 **The index families write it for each registered heavyweights rule and are its own deleter** (see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step). Each night they carry each rule's holdings and their size cuts by tonight's closes, sell one whose stock left the index at its last close as a member and one closing under its 200-day average where the rule reads that exit, and on the rule's rebalance sell each holding it no longer buys where it sells on that and buy each stock it buys and does not hold, a design (a) rule's each with its lead (see: An S&P 400 or 600 heavyweights holding keeps the lead it was bought on). A night run again deletes what each rule bought that night and opens again what each sold that night. The rows are never deleted otherwise: a rule's record on the index's Run page is its holdings. From the 15.5 correction of 2026-10-20, on a night that read the family by a frozen live rule, the night's cards, its report requests and the taken trades' follower read that rule's buys and sales here, as its page draws them, in the index's own book's place, and from the 17.9 correction of 2026-10-20 the live alarm reads the sales of the family's frozen live rule here in the index's own book's place.
+
+### dip_night
+Grain: one row per index and session the short-term dip's step read, from 22.1.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `session_date` | TEXT | the session read, the newest any name holds on the night |
+| `members` | INTEGER | the index's members the step read, each holding a bar on the session |
+| `market` | TEXT | the dip's own market setting as the night read it, `off` while it reads none |
+| `market_open` | INTEGER | 1 where that setting left the dip's list open, which `off` always does, 0 otherwise |
+| `settings` | TEXT | JSON: the rule the night read the dip by, `provisional` until a freeze registers one, its setting in short and in words, and its floors, the words its card's description is written from |
+| `passed` | INTEGER | how many members passed every gate |
+| `listed` | INTEGER | how many of those the dip's list listed |
+| `fault` | TEXT | null where the index's part was computed; otherwise the failure that stopped it, the row then holding 0 members, passes and listings and 0 in `market_open` |
+
+Primary key: `index_code`, `session_date`.
+
+**The dip's step writes it, after the index families' step, and is its own deleter** (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades). A night run again replaces its own rows. An index whose part failed has its writes of the night undone and a row naming the failure written where no earlier try of the night wrote one.
+
+### dip_result
+Grain: one row per index, session and member the dip's step read, from 22.1.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | the index the member was read in |
+| `session_date` | TEXT | the session read |
+| `ticker` | TEXT | |
+| `passed` | INTEGER | 1 where the member passed every gate, 0 otherwise |
+| `place` | INTEGER | its place among the members passing in the family's order, the lowest 2-session RSI first and then by ticker, null on a row that did not pass |
+| `entry` | TEXT | decimal in code, the listing close its plan is set at, null on a row that did not pass |
+| `stop` | TEXT | decimal in code, the stop the setting's typical moves under that close, null on a row that did not pass |
+| `time_limit` | INTEGER | the sessions the trade is held at most, null on a row that did not pass |
+| `rsi` | REAL | Wilder's 2-session relative strength index on the session, null where too few closes stand behind it |
+| `reason` | TEXT | on a row that did not pass, the first gate it failed in the rule's order: the market setting, the floors, fewer than 200 sessions stored, not above its 200-session average, the 2-session RSI not under its floor, a report in the drop or before the time limit, or no typical move; null on a row that passed |
+| `gates` | TEXT | JSON in the form `family_result.gates` takes: every gate in the rule's order with whether it passed, what it had where it failed and the values that decided it, the close and its averages, the RSI and its floor, each report on file by the sessions it falls from the night and the next one ahead, and the typical move |
+
+Primary key: `index_code`, `session_date`, `ticker`.
+
+**The dip's step writes it and is its own deleter** (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades). Every member the step read gets a row whether it passed or not, so the card's funnel and the stocks one gate short are read off the rows. A night run again replaces its own rows.
+
+### dip_pick
+Grain: one row per index, session and stock the dip passed, from 22.1.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | the index whose page the row is on |
+| `session_date` | TEXT | the session the list was drawn for |
+| `ticker` | TEXT | |
+| `state` | TEXT | `listed`, the dip lists the stock; `under another`, another family listed it that night on the index; `open trade`, a trade any family's list on any index made for it is still open; `past five`, the dip's five places were taken |
+| `place` | INTEGER | a listed row's place on the dip's list, counted from one; null on a row held back |
+| `listed_under` | TEXT | on an `under another` row, the family that listed the stock that night, whose row on the page draws the dip's label; null otherwise |
+| `held_index` | TEXT | on an `open trade` row, the index whose list made the trade still open; null otherwise |
+| `held_family` | TEXT | on an `open trade` row, the family that listed the trade, `dip` for the dip's own; null otherwise |
+| `held_night` | TEXT | on an `open trade` row, the session that trade was listed on; null otherwise |
+
+Primary key: `index_code`, `session_date`, `ticker`.
+
+**The dip's step writes each index's list here and is its own deleter** (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades). The list is drawn last among the swing families: a stock with a trade still open on any card of any index, the dip's own among them, is held back, one another family listed that night on the index is held back naming that family, and the first five of the rest are listed. No other family's list reads these rows, so a stock the dip holds may be listed by an older family on a later night. A night run again replaces its own rows.
+
+### dip_trade
+Grain: one row per rule, index, stock and session a dip list kept a trade on, from 22.1.
+
+| Column | Type | Notes |
+|---|---|---|
+| `rule` | TEXT | the rule whose list kept the trade, `provisional` for the page's list until a freeze registers one |
+| `index_code` | TEXT | the index whose list kept it |
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the session it was listed on, its plan set at that close and bought at the next session's open |
+| `place` | INTEGER | its place on the list that night |
+| `entry` | TEXT | decimal in code, the listing close its plan and its risk are set at |
+| `stop` | TEXT | decimal in code, its stop as the night placed it |
+| `time_limit` | INTEGER | the sessions it is held at most, the last sold at its own close |
+| `exit_average` | INTEGER | the sessions of the average of closes a close above sells on |
+| `risk_moves` | REAL | the stop's distance under the listing close in the night's typical moves |
+| `bought_on` | TEXT | the session it was bought on, the one after its listing, null until that session is stored |
+| `fill` | TEXT | decimal in code, the open it was bought at, at the trade's own scale, null until its session is stored |
+| `past` | TEXT | `stop` where that open sat at or under the stop, null otherwise |
+| `ended_on` | TEXT | the session it was sold on, null while it is held |
+| `sale` | TEXT | decimal in code, the price it was sold at, the next session's open after its trigger's close or its last session's close, at the trade's own scale, null while held |
+| `end_reason` | TEXT | `open` while held, `exit` sold after a close above its average, `stop` after a close under its stop, `limit` at its last session's close |
+| `sessions` | INTEGER | the sessions held to its sale, or held so far while open |
+| `result` | REAL | what it came to bought at the open in multiples of the risk its listing close set, before its cost, null while held |
+| `cost` | REAL | its round trip in multiples of that risk at the published table, its company valued as the member readings read it on its night, null while held |
+
+Primary key: `rule`, `index_code`, `ticker`, `session_date`.
+
+**The dip's step writes it and is its own deleter** (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades). Each night it first walks every trade not yet ended over its stock's bars since its listing at the scale the series has now, buying it at the next session's open through the core's one pricing function and selling it at the next open after a close above its average or under its stop, or at its last session's close, a sale whose next session is not stored left held; then it keeps each listed row of tonight's list. A night run again replaces the trades it kept for that night. The rows are never deleted otherwise: the dip's Past picks and its record read them.
 
 ### decision_card
 Grain: one row per index, night, family and stock the family listed or the index's sector heavyweights' book bought.

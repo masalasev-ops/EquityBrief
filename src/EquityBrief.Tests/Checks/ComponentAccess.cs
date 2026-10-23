@@ -94,6 +94,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Idea generator"),
     ];
 
+    // 22.1's one: the short-term dip's step.
+    internal static string[] DipRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Dip family"),
+        CheckReach.Key(Scope.MatrixTable, "Dip family"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -131,6 +138,9 @@ public partial class ComponentAccess
 
             // 20.9, the idea generator.
             .. IdeaGeneratorRows,
+
+            // 22.1, the short-term dip.
+            .. DipRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

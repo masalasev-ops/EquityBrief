@@ -285,7 +285,7 @@ public partial class ReadSurface
     }
 
     // The setup families' tokens, each the family's word as the store keeps it.
-    static readonly string[] Families = ["pullback", "breakout", "drift", "fundamentals", "heavyweight"];
+    static readonly string[] Families = ["pullback", "breakout", "drift", "fundamentals", "heavyweight", "dip"];
 
     // A colour in OKLab times a hundred, from its six digits over the sRGB curve.
     static (double L, double A, double B) OkLab(string hex)
@@ -318,7 +318,7 @@ public partial class ReadSurface
     // 19.2: each setup family's hue reads as a mark at 3 to 1 on every ground and stands 15 or more apart in OKLab from the
     // green, the orange, the red and each other family's, its tint holds ink at 4.5 to 1, in both palettes, and no rule
     // draws text in a family's hue.
-    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word
+    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them
     [Fact]
     public void EachFamilysHueReadsAsAMarkStandsApartAndItsTintHoldsInkInBothPalettes()
     {
@@ -352,8 +352,8 @@ public partial class ReadSurface
             }
         }
 
-        // Five families on three grounds in two palettes.
-        Assert.Equal(30, read);
+        // Six families on three grounds in two palettes.
+        Assert.Equal(36, read);
 
         // No rule draws text in a family's hue or its tint.
         Assert.DoesNotContain(rules, rule => Regex.IsMatch(rule.Body, @"(?<![\w-])color\s*:\s*var\(--fam-"));

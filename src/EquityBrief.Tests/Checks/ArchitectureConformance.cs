@@ -1441,7 +1441,8 @@ public partial class ArchitectureConformance
         // 242 at the 19.4 correction of 2026-10-22: paper trading's seven rows for its parts in the place of its table of
         // every account.
         // 246 at 20.12: the mark vocabulary's earnings dots, income bars and target marker, and the chart page's graphs.
-        Assert.Equal(246, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 248 at 22.1: Tonight's row for the short-term dip's card and Past picks' row for its trades.
+        Assert.Equal(248, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1595,7 +1596,8 @@ public partial class ArchitectureConformance
         // 643 at the 19.4 correction of 2026-10-22: paper trading's seven rows for its parts less its table of every
         // account.
         // 647 at 20.12: the mark vocabulary's earnings dots, income bars and target marker, and the chart page's graphs.
-        Assert.Equal(647, inDocument.Length);
+        // 649 at 22.1: Tonight's row for the short-term dip's card and Past picks' row for its trades.
+        Assert.Equal(649, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

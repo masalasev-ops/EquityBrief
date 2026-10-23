@@ -725,7 +725,80 @@ public static class SchemaMigrations
         new Migration(102, "add index_family_result.gates and the sweep answers' figures", AddIndexResultGates),
         new Migration(103, "add the sweep answers' ruled setting", AddSweepAnswerRuled),
         new Migration(104, "rebuild release_document and release_reading with the exhibit in their keys, mark each document whether it is its filing's release, add each reading's cut, request and carry, and create release_check", AddNamedReleases),
+        new Migration(105, "create dip_night, dip_result, dip_pick and dip_trade", CreateDips),
     ];
+
+    // The short-term dip's own rows, apart from every other family's so its step writes nothing another family's reads:
+    // what each night read on each index, every member's answer with the gates that decided it, the family's list with
+    // why a stock it passed was held back, and each trade its list kept, keyed by the rule that kept it, `provisional`
+    // until a freeze registers one, with its fill at the next open, where it ended and why, and its result and cost in
+    // the risk its listing close set. Created empty, nothing copied and nothing dropped.
+    // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+    const string CreateDips = @"
+        CREATE TABLE dip_night (
+            index_code    TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            members       INTEGER NOT NULL,
+            market        TEXT NOT NULL,
+            market_open   INTEGER NOT NULL,
+            settings      TEXT NOT NULL,
+            passed        INTEGER NOT NULL,
+            listed        INTEGER NOT NULL,
+            fault         TEXT,
+            PRIMARY KEY (index_code, session_date)
+        ) STRICT;
+
+        CREATE TABLE dip_result (
+            index_code    TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            passed        INTEGER NOT NULL,
+            place         INTEGER,
+            entry         TEXT,
+            stop          TEXT,
+            time_limit    INTEGER,
+            rsi           REAL,
+            reason        TEXT,
+            gates         TEXT NOT NULL,
+            PRIMARY KEY (index_code, session_date, ticker)
+        ) STRICT;
+
+        CREATE TABLE dip_pick (
+            index_code    TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            state         TEXT NOT NULL CHECK (state IN ('listed', 'under another', 'open trade', 'past five')),
+            place         INTEGER,
+            listed_under  TEXT,
+            held_index    TEXT,
+            held_family   TEXT,
+            held_night    TEXT,
+            PRIMARY KEY (index_code, session_date, ticker)
+        ) STRICT;
+
+        CREATE TABLE dip_trade (
+            rule          TEXT NOT NULL,
+            index_code    TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            place         INTEGER NOT NULL,
+            entry         TEXT NOT NULL,
+            stop          TEXT NOT NULL,
+            time_limit    INTEGER NOT NULL,
+            exit_average  INTEGER NOT NULL,
+            risk_moves    REAL NOT NULL,
+            bought_on     TEXT,
+            fill          TEXT,
+            past          TEXT CHECK (past IN ('stop')),
+            ended_on      TEXT,
+            sale          TEXT,
+            end_reason    TEXT NOT NULL CHECK (end_reason IN ('open', 'exit', 'stop', 'limit')),
+            sessions      INTEGER,
+            result        REAL,
+            cost          REAL,
+            PRIMARY KEY (rule, index_code, ticker, session_date)
+        ) STRICT;
+    ";
 
     // From the 20.3 correction of 2026-10-22: a filing's results release is the exhibit its index page names as the
     // release, so the one stored before stands beside it marked no release, and a reading is of one exhibit, so the

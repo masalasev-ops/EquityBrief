@@ -12,7 +12,7 @@ namespace EquityBrief.Tests.Reading;
 // the lists, and saying why where it holds nothing. Past picks draws each holding in percent beside its size cut, and
 // a name's page says the heavyweights hold it.
 // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
-// see: The market check closes every swing family's list together, and the sector heavyweights read none
+// see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none
 // see: A sector heavyweight's trade is scored by its percent return less the equal-weighted return of the size cut it was chosen from
 public partial class ReadSurface
 {
