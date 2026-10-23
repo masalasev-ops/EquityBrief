@@ -7695,3 +7695,31 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             request, with the figures it states.
 Carried:    20.8's remedy and its record; the tone variants at pin 5 and their record; 20.10; the sign-offs of phases 20
             and 18 by fresh sessions; 22.2 on the operator's word.
+
+### 20.8 - the remedy run from main: the three ledger histories built again with the release readings, each index's checks and what each answer came to   2026-10-23
+
+Not a checkpoint entry: it records 20.8's remedy and what it measured, and lands nothing.
+Ran:        from main's e5e4a2af, the merge of PR 539, once pin 5's history read was marked complete:
+            `tools/remedies/2026-10-19-20.8-the-release-readings-in-the-ledger.txt` between 19:47:38Z and 19:48:39Z
+            with no night, local run, drain, labeller or monthly run writing, the migration finding nothing pending at
+            schema 107 and the ledger's night step run by hand over the night of 2026-10-22; then the three ledger
+            builds with `--again` over 2019-01-02 to 2026-10-05 between 19:48:39Z and 20:54:24Z, each index's
+            point-in-time check between 20:56:31Z and 21:27:26Z and `loop-links` on each by 21:28:49Z, all from main's
+            clean copy of e5e4a2af, and the read surface started again after them. 20.4's second remedy ran between
+            the builds and the checks, its entry below. No request to the provider or the SEC and no model call.
+Measured:   the ledger's night step over the night of 2026-10-22 took 49 seconds with the four release readings,
+            writing the 80, 33 and 55 setups the night wrote, 11, 2 and none passing the live rule. The S&P 500's build
+            took 21 minutes 56 seconds, 92,160 setups, 9,345 passing the live rule; the S&P 400's 21 minutes 58
+            seconds, 58,483 and 5,396; the S&P 600's 21 minutes 51 seconds, 76,174 and 3,992; 65 minutes 45 seconds
+            together against 45 minutes 46 seconds for 19.13's, each setup now reading its release. Each index's
+            point-in-time check rebuilt 200 of 200 sampled history setups with every reading the same, the four release
+            readings among them, in 9 minutes 46 seconds, 8 minutes 12 seconds and 12 minutes 57 seconds. `loop-links`
+            stored on the S&P 500 59 readings going with winners, 38 with losers, 258 with no link beyond the shuffle
+            and 25 too few over five families, on the S&P 400 20, 10, 255 and 19 and on the S&P 600 17, 22, 246 and
+            19 over four, with 182, 152 and 144 rows of what each release answer came to, split at the cutoff of
+            2025-01-31. Of the release readings, demand goes with winners for the S&P 500's pullback and
+            fundamentals-first family and the S&P 600's breakout, and no other beyond the shuffle.
+Found:      `loop-links` was first run with `--print`, which prints the figures and writes nothing, between 21:27:26Z and
+            21:27:55Z; it was run again without it, writing the runs above, before the local run's late slot.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
