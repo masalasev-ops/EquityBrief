@@ -6933,3 +6933,41 @@ Carried:    the night of 2026-10-22 run again under the dip from main after the 
             does not read, the least close of $5 the dip reads on the S&P 500 where the documents state no floor
             there, and the S&P 500 line's count leaving out the fundamentals-first family's passes, which predates
             the dip.
+
+### 22.1 - the merge, migration 105 and the night of 2026-10-22 run again under the short-term dip   2026-10-23
+
+Not a checkpoint entry: it records 22.1's merge and the night run again, and lands nothing.
+Ran:        on the operator's word of 2026-10-23, "can we get this merged into main and run today's results on it as
+            well", with no night, off-peak run, drain, labeller, local run, ledger build or monthly run writing: PR 530
+            merged by the operator at 01:02Z as 685a1628, and PR 532, held for the reviews' corrections, merged by the
+            operator at 03:03Z as 5e8acba4, its tree that of aebbf431, the commit the gates ran over. From main,
+            `tools/nightly.ps1 --session 2026-10-22` from 03:04:17Z to 03:35:27Z, 2026-10-22 being the newest session
+            the store held, the store migrated 104 to 105 as it started, and the read surface on 5152 started again
+            from main's Release at 03:05Z; the operator moved the off-peak run from 04:05Z to 04:30Z to keep it clear
+            of the night. No model call; the night run again made 54 requests, 1 of them the Treasury's, and as any
+            night run again for a session it names asked for no quarters, filings or report and started no labeller.
+Measured:   no row the first run wrote for the session was written twice. Compared by key with the store's copy taken
+            after the first run, the session's rows differ only by the dip's own; its two decision cards and three
+            rule rows; HOS, the member missing a session the exchange traded, whose year the actions step asked for
+            again and whose bar for 2026-10-22 it stored, so the S&P 600 read 602 members where the first run read
+            601; and 263 news articles the feed carried after the first run. No trade or window the first run ended
+            was ended again, no forward return was written again, the one fill priced again kept its price, no rule
+            holds two open trades on one stock or bought one twice on a session, and no report was asked for.
+Night:      the run again, night-20261023T030418Z-for-2026-10-22, built from 5e8acba485ec, after
+            night-20261022T230030Z of the same session. The dip read 503, 400 and 602 members on the S&P 500, 400 and
+            600 and passed and listed 0, 2 and 0: on the S&P 400, GME first at a 2-session RSI of 3.5, its stop 20.89
+            under its close of 25.39, and ARMK second at 5.0, its stop 47.39 under 52.52, each with a trade kept to
+            buy at the next session's open. Most members it read stopped at its trend and drop gates: 201 and 294 of
+            the S&P 500's, 206 and 189 of the 400's, and 277 and 299 of the 600's. Every other family's picks stood
+            as the first run drew them: 5 on the S&P 500, all the drift's, and 2 on the S&P 400, the breakout's.
+Read:       Tonight on 5152 read back at 1440 and 390 pixels for each index, the dip's card fifth of five on each: on
+            the S&P 400 open, GME and ARMK with their buy, their stop and their target column reading over its
+            5-session average, its funnel passing 400, 400, 194, 5, 2 and 2 and the most stopped at the trend gate, 206
+            of the 400; on the S&P 500 and 600 folded, nothing tonight, the most stopped at the drop gate, 294 of 299
+            and 299 of 304; the market line on each saying the dip reads its own setting, none while it is
+            provisional, and its list is open; no page wider than its screen.
+Verified:   `tools/ci.ps1` green over main at 5e8acba4, whose tree is aebbf431's, as 22.1's entry above records, 2645
+            of 2645 tests; documents alone change, so the checks reading them run filtered over the tree carrying
+            this entry, 176 of 176 passed.
+Carried:    as 22.1's entry, the night run again done here; 22.2; PR 505's migration at 106; the sign-offs of phases
+            18 and 20.
