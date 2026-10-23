@@ -6972,6 +6972,58 @@ Verified:   `tools/ci.ps1` green over main at 5e8acba4, whose tree is aebbf431's
 Carried:    as 22.1's entry, the night run again done here; 22.2; PR 505's migration at 106; the sign-offs of phases
             18 and 20.
 
+### 20.3 ruling - pin 4 carries pin 3's readings across LM Studio's update of its runtime where Gemma 4's file hashes the same, and only the releases that changed are read   2026-10-23
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-23 at about 03:20 UTC, told that pin 4 written under LM Studio's newest runtime
+            would carry none of pin 3's readings and the history would be read whole, in these words: "What do you mean
+            full history read ? Why do we need to do a full read all over again", then "THe LM studio software will
+            update every so often, just because runtime changed does not mean GEmma 4 got updated. We do not need a full
+            history read", and "you can check the gemma 4 model version and see if it got updated as part of your
+            check. I am sure you only need 3000 changed reads". This replaces the plan of the 20.3 ruling entry of
+            2026-10-22 for the carry and keeps its runtime: pin 4 is still written under 2.62.1.
+Plan:       the carry decision superseded so a version carries from one written under another version of the same
+            runtime where the model's file hashes the same, in the correction below; once it merges, LM Studio's
+            runtime 2.62.1 selected and the model unloaded, `tools/localrun.ps1 --pin` writing pin 4, its hash of Gemma
+            4's file read beside pin 3's and its carry counts reported to the operator, and the history read started
+            under it at 250 W with the temperature guard over the releases left to it.
+Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.7, 20.9, 20.11 and 20.12 merged with their
+            records, 22.0 planned and ruled, 22.1 merged and the night of 2026-10-22 run again under it; in review,
+            20.8 with its correction, PR 505; in progress, the correction below; next, pin 4 and the history read of
+            the releases it leaves, the report line's written date and the Regenerate rule as the operator answered on
+            2026-10-22, 22.2, 20.3's record, the tone variant at pin 4, PR 505 rebased with its migration at 106,
+            20.10, and the sign-offs of phases 18 and 20 by fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 20.3 - correction: a new reading version carries across an update of the runtime where the model's file hashes the same   2026-10-23
+
+Queue:      as the ruling entry above, this correction in progress.
+Ruled:      the 20.3 ruling entry above.
+Corrected:  a version carries from the one before at whatever version of the same runtime, the runtime's name, the
+            model's file by its hash and every other part compared as before, so a runtime of another name and a file
+            an update changed carry nothing. The carry decision superseded, the old one under Previously decided and its
+            citations repointed, 2 in code and 5 in the specs; sections 7, 12.3 and 16, SCHEMA.md, the runbook, the
+            guide, the roster's row and the changelog.
+Tests:      2 amended, 2645 in all: the carry over the constructed store with pin 2 written under runtime 2.62.1 over
+            pin 1's 2.56.0 and its history read answered under 2.62.1, carrying the same three and asking the same
+            five; and the parts' test carrying across the runtime's version alone and nothing across it where the
+            file's hash differs, or across the runtime's name.
+Claims:     1396, none new: two rows and section 12.3's paragraph gain words.
+Mutated:    the rule, stated before the runs: one mutation a property the correction changes or keeps at the edge of
+            the ruling, the smallest edit undoing it alone, each run over the two carry tests with its red predicted,
+            made in this checkout and reverted with the editor. Each went red where predicted and nowhere else: C1 the
+            runtime's version compared again, at both tests; C2 the runtime's name no longer compared, at the parts'
+            test alone, the constructed store's two pins sharing a name.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2645 of 2645 tests ran with none failed,
+            migrations 0 to 105 with none pending, schema version 105, against `data-ci` and never `data`; the phase
+            report 60 tables, 1396 claims, 1396 passing, none out of scope and none unexamined, 1407 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    no remedy: no migration and no request changed; pin 4 under 2.62.1 with its file's hash read beside pin
+            3's and its carry counts, then the history read of the releases it leaves; 20.3's record; the tone variant
+            at pin 4; PR 505; 20.10; the sign-offs of phases 18 and 20.
+
 ### 20.8 - the release readings join the ledger's catalogue, and what each answer came to   2026-10-19
 
 Queue:      done, 20.5, 20.7 with its correction, 20.6 and 20.9 merged, PRs 499 to 503, and the records of 20.2, 20.5 and
@@ -7082,3 +7134,55 @@ Carried:    20.8's merge once pin 3's history read completes, as ruled, and then
             readings' steps by hand, its record stating the builds' times and the checks' results; the tone variant's
             first walk, at the monthly run of 2026-11-07; the sign-offs of phases 18 and 19, owed to fresh sessions after
             20.10; (G1), SCHEMA's `family_trade` sentence, owed by the next edit of that section.
+
+### 20.8 - correction: main merged after 22.1 and the 20.3 corrections, the migration numbered 106, the ledger's reader reading only the exhibit each filing holds as its release, and each conflict resolved on main's own code and text   2026-10-23
+
+Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.7, 20.9, 20.11 and 20.12 merged with their
+            records, 22.0 planned and ruled, 22.1 merged and the night of 2026-10-22 run again under it, the 20.3
+            correction carrying across an update of the runtime merged in PR 533 and pin 4 written under it; in progress,
+            this merge of 20.8, PR 505, and the history read of the 4,708 releases pin 4 left; next, the report line's
+            written date and the Regenerate rule as the operator answered on 2026-10-22, the analyst panels read from
+            Yahoo and the TipRanks button as the operator ruled on 2026-10-23, 22.2, 20.3's record, the tone variant at
+            pin 4, 20.8's remedy once pin 4's read completes, 20.10, and the sign-offs of phases 18 and 20 by fresh
+            sessions.
+Ruled:      by the operator on 2026-10-23: "please see to it that PR 505 gets merged and fix any merge conflicts on it as
+            you see it", and while it was merged, "If the code has errors please do not make the entire codebase revert
+            to it. Please keep in mind the latest code that is in main."
+Found:      by 20.8's own ledger test over the merged tree: main's 20.3 correction keys each release reading by its
+            exhibit and keeps a replaced exhibit beside the filing's release marked no release, while 20.8's ledger
+            reader joined readings by the filing alone over every stored document, so a filing whose supplement was
+            replaced would be read twice and a reading of the supplement could answer for it.
+Corrected:  main at cbcf43d9 and then at bf6c3dc8 merged into 20.8's branch, 28 conflicting places in 17 files and then 5
+            in 5, each resolved on main's code and text with 20.8's own added: its migration 106 after 22.1's 105; the
+            ledger's night row counting both the rows read again for their release readings and the setups of the
+            sessions before a frozen live rule bought, its index record carrying both; the per-rule test reading main's
+            four drift dials and 20.8's tone releases; 20.8's test helper renamed beside main's field of its name; and the
+            conformance counts at 1400 claims, 250 screen rows and 651 due points. Each conflicted document taken as main
+            holds it with 20.8's edits applied to it again, each checked word by word against 20.8's own copy, nothing of
+            main's removed but the words 20.8 replaced. The ledger's reader reads only the exhibit each filing holds as
+            its release and a reading only of that exhibit, as main's readers do, and 20.8's two constructed stores write
+            each reading's exhibit. The migration named 106 in the build plan's 20.8 and 20.11, the runbook and the
+            remedy file, with the changelog.
+Tests:      1 new, 2659 in all: 20.8's 13 beside main's 2645, and the ledger's reader over a constructed store holding
+            two filings whose supplements were read and replaced, one press release read since and one not, reading the
+            first's press release and none for the second.
+Claims:     1400, 20.8's 4 beside main's 1396.
+Mutated:    the rule, stated before the runs: one mutation each place the merge joined 20.8's code to main's and each
+            property the correction adds, the smallest edit undoing it alone, each run over the seven tests naming them
+            with its red predicted, made in this checkout and reverted with the editor. J1 the night row's count of rows
+            read again dropped: red at the read-again test alone. J2 its count of setups bought since dropped: red at
+            main's frozen drift test alone. J3 the index record built without the rows read again: red at the read-again
+            test alone. J5 the reader reading a replaced exhibit: red at the reader's test alone. J6 its readings joined
+            by the filing alone: red at the reader's test alone. Each as predicted. J4 the per-rule test handed no tone
+            releases, predicted red at the month's report test, survived the seven and every one of the 86 tone,
+            per-rule, monthly and walk tests: a missing property, the hand-off held by no test, 20.8's own line before
+            this merge.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2659 of 2659 tests ran with none failed,
+            migrations 0 to 106 with none pending, schema version 106, against `data-ci` and never `data`; the phase
+            report 60 tables, 1400 claims, 1400 passing, none out of scope and none unexamined, 1411 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    20.8's remedy once pin 4's history read completes, its three builds, checks and readings' steps by hand, its
+            record stating the builds' times and the checks' results; a test walking the drift's tone variant through
+            the tester's per-rule verb over a constructed history with its releases, which J4 shows no test holds; the
+            tone variant's first walk at the monthly run of 2026-11-07; the sign-offs of phases 18 and 20.
