@@ -7623,3 +7623,53 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    no remedy; the stored answer is drawn right as it stands. 20.8's remedy, the probes and 20.3's record, the tone
             variants at pin 5, 20.10, and the sign-offs of phases 20 and 18 by fresh sessions; 22.2 on the operator's
             word.
+
+### 20.3 - record: pin 5's history read complete, the three probes, and the reading's accuracy before and after the cutoff   2026-10-23
+
+Queue:      as the 20.10 ruling entry above, PR 539 merged as e5e4a2af; in progress, this record; next, 20.8's remedy, the
+            tone variants at pin 5, 20.10, and the sign-offs of phases 20 and 18 by fresh sessions; 22.2 on the
+            operator's word.
+Read:       pin 5's history read, Gemma 4 loaded at 60,160 tokens under LM Studio's runtime 2.62.1, marked complete at
+            18:39:57 UTC: 45,529 stored releases, 45,308 read and 221 refused, 43,007 carried from the versions before it
+            and 2,522 read under it. Then from a clean copy of main at 95aa8d11, the card held at 250 W, the three probes,
+            each over the 200 releases drawn at the seed, from 18:42:29 to 19:38:19 UTC, and the accuracy report, which
+            writes nothing.
+Hours:      the local model read the history for 63.9 hours over the versions, each the seconds its own readings stored
+            and a carried reading counted where it was read: 7.7 under pin 2, whose read the operator's ruling of
+            2026-10-19 stopped, 50.3 under pin 3, 2.5 under pin 4 and 3.4 under pin 5. The probes took 56 minutes.
+Accuracy:   each answer's agreement before the cutoff of 2025-01-31 and after it:
+            - results against the sign of the provider's surprise for the same print, 18,137 of 24,108 (75.2 per cent)
+              before and 5,140 of 6,458 (79.6) after; a reading of in line or not stated, or a print with no surprise,
+              counted apart, 8,277 before and 2,198 after, and 7,235 prints of a read filer the calendar cannot place
+              left out;
+            - outlook against the guided figures where both releases' figures pair by place, none before and 2 of 2
+              after;
+            - against the reference set's 99 labels read, the hundredth given on an exhibit a check has since replaced
+              and left out: results 18 of 50 (36.0) before and 16 of 49 (32.7) after; outlook 28 of 50 (56.0) and 37 of
+              49 (75.5); tone 38 of 50 (76.0) and 46 of 49 (93.9); demand 34 of 50 (68.0) and 29 of 49 (59.2); no
+              reading of a reference release made before its label.
+Probes:     twice, 190 of 200 read alike, 96 of 100 before the cutoff and 94 of 100 after; re-identification, the model
+            naming the filer of 87 of 200 releases read with their names removed, 42 of 100 before and 45 of 100 after;
+            distraction, 133 of 200 read alike with the names removed and with them in, 64 of 100 before and 69 of 100
+            after.
+Tone:       the tone variant's distinctness, the share of the drift family's settled ledger setups holding a reading that
+            pass its condition, before the cutoff and after it: on the S&P 500 2,964 of 4,497 (65.9 per cent) and 752 of
+            1,077 (69.8); on the S&P 400 2,137 of 3,221 (66.3) and 564 of 791 (71.3); on the S&P 600 2,686 of 4,083
+            (65.8) and 670 of 1,015 (66.0). Those failing it fail on results far more often than on outlook alone, 1,390
+            against 143 on the S&P 500 before the cutoff.
+Put:        to the operator, as 20.3 asks: results agreeing with the reference set about one time in three on both sides
+            of the cutoff, against three in four with the surprise's sign; results and demand each agreeing less after
+            the cutoff than before, results 36.0 to 32.7 and demand 68.0 to 59.2 per cent; the model naming the filer of
+            an anonymised release 87 times in 200; and the names moving a third of the readings. The tone variant keeps
+            about two thirds of the drift's setups and not nearly every one. No result retires a reading or a variant
+            (see: Phase 20 is built whole in the order its dependencies set with the sign-offs of phases 18 and 19 after
+            it, spending no money and retiring nothing on a result).
+Remedy:     20.4's second remedy, `tools/remedies/2026-10-18-20.4-the-tone-variants.txt`, names reading version 5 where it
+            named version 3, the runbook's form with it and the changelog; it runs from main after this merges, before
+            the night.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over d9d5a139, the tree main took at e5e4a2af, as the
+            20.13 correction's entry above records, 2675 of 2675 tests; documents and the remedy's lines alone change
+            here, so the checks reading them run filtered over the tree carrying this entry, 183 of 183 passed.
+Carried:    20.8's remedy; the tone variants at pin 5; 20.10, with the probes' console line naming each probe's own
+            count where it words every probe as a reading twice; the sign-offs of phases 20 and 18 by fresh sessions;
+            22.2 on the operator's word.

@@ -26,6 +26,16 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-23 - RUNBOOK.md - the tone variants are registered at reading version 5, the newest whose history read is complete
+Corrects: the runbook's form for the S&P 400's and 600's tone variants named reading version 3, while pin 5's history read, complete at 18:39:57 UTC, is the newest the variants are to read
+Was:
+> dotnet run --project src/EquityBrief.Worker -- register --index-variants drift --index MID --again --evidence "the drift's tone variant of 20.4" --variants "largeBreadth=2,breadthFloor=0;readingVersion=3"
+> and on the S&P 600 with `--index SML --variants "largeBreadth=0,breadthFloor=0.4;readingVersion=3"`. From the night after, ...
+Now:
+> dotnet run --project src/EquityBrief.Worker -- register --index-variants drift --index MID --again --evidence "the drift's tone variant of 20.4" --variants "largeBreadth=2,breadthFloor=0;readingVersion=5"
+> and on the S&P 600 with `--index SML --variants "largeBreadth=0,breadthFloor=0.4;readingVersion=5"`, version 5 being the newest whose history read is complete, marked so on 2026-10-23. From the night after, ...
+Why: the remedy registers the variants at the newest complete version, and the runbook's form states the one it names.
+
 ### 2026-10-23 - .claude/rules/checks.md - read-surface reaches TipRanks' words sent with an entity
 Corrects: the chart page drew an ampersand TipRanks sent as an entity as the entity's own letters, "Procter &amp; Gamble", found on PG's first answer
 Was:

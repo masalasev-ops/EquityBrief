@@ -5,10 +5,10 @@
 # rule replayed first and keeping its record where the replay reproduces it; on the S&P 400 and 600, from 20.11's
 # freezes, each frozen drift's market variant is stated again beside the tone variant, the live setting with the
 # condition, and both are named as not replayed and restart, the live rule and the rule kept in the background standing
-# on. Check the version's number on reading_pin before running: the lines name version 3, the
-# version `local-run --pin` writes after the 20.3 correction of 2026-10-19 merges, version 2's read having been stopped
-# by the operator's ruling of that day. No migration, no request to the provider and no model call. Run from main before
-# the night, when no night, local run, drain, labeller or monthly run is writing.
+# on. Check the version's number on reading_pin before running: the lines name version 5, the newest version whose
+# history read is complete, marked so on 2026-10-23 at 18:39:57 UTC, versions 3 and 4 standing beneath it. No
+# migration, no request to the provider and no model call. Run from main before the night, when no night, local run,
+# drain, labeller or monthly run is writing.
 register --family-again drift --evidence "20.4: the drift's tone variant joins the family as its ninth rule, reading the newest reading version whose history read is complete"
-register --index-variants drift --index MID --again --evidence "20.4: the drift's tone variant joins the market variant standing beside the S&P 400's frozen drift" --variants "largeBreadth=2,breadthFloor=0;readingVersion=3"
-register --index-variants drift --index SML --again --evidence "20.4: the drift's tone variant joins the market variant standing beside the S&P 600's frozen drift" --variants "largeBreadth=0,breadthFloor=0.4;readingVersion=3"
+register --index-variants drift --index MID --again --evidence "20.4: the drift's tone variant joins the market variant standing beside the S&P 400's frozen drift" --variants "largeBreadth=2,breadthFloor=0;readingVersion=5"
+register --index-variants drift --index SML --again --evidence "20.4: the drift's tone variant joins the market variant standing beside the S&P 600's frozen drift" --variants "largeBreadth=0,breadthFloor=0.4;readingVersion=5"
