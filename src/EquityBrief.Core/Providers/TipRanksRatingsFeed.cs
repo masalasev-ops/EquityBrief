@@ -128,16 +128,27 @@ public sealed class TipRanksRatingsFeed(HttpClient client, TipRanksCredentials c
                         post.Headers.Accept.ParseAdd("text/event-stream");
                         post.Headers.TryAddWithoutValidation("MCP-Protocol-Version", Protocol);
 
+                        // Each request on a connection of its own, which the server closes once it has answered: an
+                        // answer it sends with no length ends there, and none waits on a connection kept open.
+                        post.Headers.ConnectionClose = true;
+
                         if (session is { } named)
                         {
                             post.Headers.TryAddWithoutValidation(SessionHeader, named);
                         }
 
-                        using var response = await client.SendAsync(post, token).ConfigureAwait(false);
+                        using var response = await client.SendAsync(post, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
 
                         if (response.Headers.TryGetValues(SessionHeader, out var sessions) && sessions.FirstOrDefault() is { Length: > 0 } given)
                         {
                             session = given;
+                        }
+
+                        // A notice the server accepts is answered 202 with no message, and its body, sent with no length,
+                        // is never read.
+                        if (response.StatusCode == System.Net.HttpStatusCode.Accepted)
+                        {
+                            return string.Empty;
                         }
 
                         return response.IsSuccessStatusCode

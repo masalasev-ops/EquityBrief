@@ -7462,3 +7462,36 @@ Carried:    the remedy, `tools/remedies/2026-10-23-20.13-the-analysts-tables.txt
             stock's chart page to see TipRanks answer end to end, one of the month's calls, put to the operator first;
             20.8's remedy; 22.2; 20.3's record; the tone variant at the newest complete version; 20.10; the sign-offs
             of phases 18 and 20.
+
+### 20.13 - correction: the TipRanks feed reads no body from a notice the server accepts and closes each connection, as the first live call found   2026-10-23
+
+Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.9 and 20.11 to 20.13 merged with their records,
+            20.13's remedy run, 22.0 planned and ruled, 22.1 merged, the 19.11 and 20.3 corrections merged; in progress,
+            the history read of the releases pin 5 leaves, and this correction; next, the live press for PG the operator
+            asked for, 20.8's remedy once pin 5 has read its history whole, 22.2, 20.3's record, the tone variant at the
+            newest complete version, 20.10, and the sign-offs of phases 18 and 20 by fresh sessions.
+Found:      asked at about 17:40 UTC by the operator for one live press, "yes do it for PG which is on the tonight list",
+            the ratings job run by hand from main's build ended "failed, TipRanks' count of the month's calls could not
+            be read, so no call was made: TipRanks did not answer in time", no call spent. TipRanks' server answers the
+            notice that the session is open 202 with an empty body sent with no length, which on a connection kept
+            alive it never ends, and the feed buffered every answer before reading it, so it waited past its bound of 30
+            seconds on each of its two tries; the probe of the night before had closed each connection, so its answers
+            ended. Read by a script replaying the three messages over one kept connection, free and printing no key:
+            the opening ended in 0.6 seconds and the notice's body was still open after 10.
+Corrected:  each request asks for its connection to be closed, an answer is taken once its headers arrive, and a 202 is
+            read as no message with its body never read. The roster's row and the changelog.
+Tests:      1 new, 2673 in all: a server answering the notice with a body it never ends, against a bound of two seconds,
+            the count read and every request asking for its connection to be closed.
+Claims:     1417, none new.
+Mutated:    the rule, stated before the runs: one mutation each part of the correction, the smallest edit undoing it,
+            each run over the test naming it with its red predicted, made in this checkout and reverted with the editor.
+            N1 the notice's body read again, red at the new test past its bound; N2 connections kept alive, red at the
+            new test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2673 of 2673 tests ran with none failed,
+            migrations 0 to 107 with none pending, schema version 107, against `data-ci` and never `data`; the phase
+            report 60 tables, 1417 claims, 1417 passing, none out of scope and none unexamined, 1428 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    no remedy; once merged, the live press for PG the operator asked for, one of the month's calls; 20.8's
+            remedy; 22.2; 20.3's record; the tone variant at the newest complete version; 20.10; the sign-offs of
+            phases 18 and 20.

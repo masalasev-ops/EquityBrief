@@ -163,6 +163,24 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task TheTipRanksFeedReadsNoBodyFromANoticeTheServerAcceptsAndClosesEachConnection()
+    {
+        // TipRanks' server answered the notice that a session is open 202 with no message and a body sent with no length,
+        // which it held open on a connection kept alive, as the first live call of 2026-10-23 found: the feed waited on it
+        // past its bound on each try and the job asked for no ratings. A server holding that body open for good, against
+        // a bound of two seconds: the count is read, and every request asks for its connection to be closed.
+        var server = new TipRanksServer { NoticeNeverEnds = true };
+        var feed = new TipRanksRatingsFeed(
+            new HttpClient(server) { BaseAddress = new Uri(TipRanksRatingsFeed.Address) },
+            new TipRanksCredentials(PlantedKey),
+            new ProviderRequest(TipRanksRatingsFeed.Policy with { Attempts = 1, Timeout = TimeSpan.FromSeconds(2) }, (_, _) => Task.CompletedTask));
+
+        Assert.Equal(new TipRanksUsage(3, 100, new DateTimeOffset(2026, 11, 1, 0, 0, 0, TimeSpan.Zero)), await feed.UsageAsync());
+        Assert.Equal(["initialize", "notifications/initialized", "tools/call get_my_usage"], server.Asked.Select(asked => asked.Method));
+        Assert.All(server.Asked, asked => Assert.True(asked.Closes));
+    }
+
+    [Fact]
     public async Task TheAnalystJobAsksYahooOnceUnderTheNewYorkDaysCapAndStoresWhatItSent()
     {
         using var store = new TemporaryStore().Migrated();
@@ -323,9 +341,12 @@ public partial class FixtureExpectations
     // body, and each tool answered with its capture; a method named busy answered 503 the first time.
     sealed class TipRanksServer : HttpMessageHandler
     {
-        public List<(string Method, string Address, string? Authorization, string? Session)> Asked { get; } = [];
+        public List<(string Method, string Address, string? Authorization, string? Session, bool Closes)> Asked { get; } = [];
 
         public HashSet<string> BusyFor { get; init; } = [];
+
+        // The notice answered 202 with a body that never ends, as the live server held it open on a kept connection.
+        public bool NoticeNeverEnds { get; init; }
 
         readonly HashSet<string> refused = [];
 
@@ -346,7 +367,8 @@ public partial class FixtureExpectations
                 method,
                 request.RequestUri!.AbsoluteUri,
                 request.Headers.Authorization?.ToString(),
-                request.Headers.TryGetValues(TipRanksRatingsFeed.SessionHeader, out var sessions) ? sessions.Single() : null));
+                request.Headers.TryGetValues(TipRanksRatingsFeed.SessionHeader, out var sessions) ? sessions.Single() : null,
+                request.Headers.ConnectionClose == true));
 
             if (BusyFor.Contains(method) && refused.Add(method))
             {
@@ -356,7 +378,9 @@ public partial class FixtureExpectations
             var answer = method switch
             {
                 "initialize" => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("event: message\ndata: {\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"protocolVersion\":\"2025-06-18\",\"serverInfo\":{\"name\":\"TipRanksMCP\",\"version\":\"\"}}}\n\n") },
-                "notifications/initialized" => new HttpResponseMessage(HttpStatusCode.Accepted),
+                "notifications/initialized" => NoticeNeverEnds
+                    ? new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StreamContent(new EndlessStream()) }
+                    : new HttpResponseMessage(HttpStatusCode.Accepted),
                 "tools/call get_my_usage" => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(AnalystCapture("analysts-tipranks-usage.json")) },
                 _ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(AnalystCapture("analysts-tipranks-HPQ.json")) },
             };
@@ -368,6 +392,42 @@ public partial class FixtureExpectations
 
             return answer;
         }
+    }
+
+    // A body that never ends: each read waits until the request's own bound cancels it.
+    sealed class EndlessStream : Stream
+    {
+        public override bool CanRead => true;
+
+        public override bool CanSeek => false;
+
+        public override bool CanWrite => false;
+
+        public override long Length => throw new NotSupportedException();
+
+        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            await Task.Delay(Timeout.Infinite, cancellationToken);
+
+            return 0;
+        }
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
+            ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        public override void Flush()
+        {
+        }
+
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+        public override void SetLength(long value) => throw new NotSupportedException();
+
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 
     // A server that cannot be reached, its failure in the words given.

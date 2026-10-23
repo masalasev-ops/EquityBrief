@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-23 - .claude/rules/checks.md - fixture-expectations reaches the TipRanks feed past a notice's body the server never ends
+Corrects: the first live call of the ratings job, for PG on 2026-10-23, waited past its bound on TipRanks' answer to the notice that the session is open, which the server sends with no length and holds open on a connection kept alive, and asked for no ratings.
+Was:
+> fixture-expectations: ... and a failure carrying the key and an address reaching no row or line with either |
+Now:
+> fixture-expectations: ... and a failure carrying the key and an address reaching no row or line with either; and from the 20.13 correction of 2026-10-23 the feed reading the count where the server answers the notice that the session is open with a body it never ends, against a bound of two seconds, and every request asking for its connection to be closed |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
 ### 2026-10-23 - ARCHITECTURE.html - the chart page asks Yahoo for its analysts as it opens and carries a press asking TipRanks for each analyst's rating
 Authorised by: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
 Was:
