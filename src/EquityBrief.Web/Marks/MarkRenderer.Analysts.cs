@@ -201,8 +201,8 @@ public sealed partial class MarkRenderer
             {
                 var returned = rating.AverageReturn is { } excess ? excess > 0 ? "gain" : excess < 0 ? "loss" : "flat" : "flat";
 
-                html.Append(Formatted($"<tr data-analyst=\"{Escaped(rating.Analyst)}\"{(rating.Target is { } aimed ? Formatted($" data-target=\"{aimed.ToString(Invariant)}\"") : string.Empty)}>"));
-                html.Append(Formatted($"<td class=\"r num\">{at}</td><td>{Escaped(rating.Analyst)}{(rating.Article is { } article ? Formatted($"<span class=\"muted tr-article\"> {Escaped(article)}</span>") : string.Empty)}</td><td>{(rating.Firm is { } firm ? Escaped(firm) : "none stated")}</td>"));
+                html.Append(Formatted($"<tr data-analyst=\"{Sent(rating.Analyst)}\"{(rating.Target is { } aimed ? Formatted($" data-target=\"{aimed.ToString(Invariant)}\"") : string.Empty)}>"));
+                html.Append(Formatted($"<td class=\"r num\">{at}</td><td>{Sent(rating.Analyst)}{(rating.Article is { } article ? Formatted($"<span class=\"muted tr-article\"> {Sent(article)}</span>") : string.Empty)}</td><td>{(rating.Firm is { } firm ? Sent(firm) : "none stated")}</td>"));
                 html.Append(Formatted($"<td>{(rating.Rating is { } said ? Escaped(said) : "none stated")}{(rating.Action is { } action ? Formatted($" <span class=\"muted\">{Escaped(action)}</span>") : string.Empty)}</td>"));
                 html.Append(Formatted($"<td class=\"r num\">{(rating.Target is { } target ? Figures.Price(target) : "none stated")}</td><td class=\"nw\">{(rating.RatedOn is { } on ? DayOf(on) : "none stated")}</td>"));
                 html.Append(Formatted($"<td class=\"r num\">{(rating.Stars is { } stars ? stars.ToString("0.0", Invariant) : "none")}</td><td class=\"r num\">{(rating.SuccessRate is { } rate ? Figures.Share(rate) : "none")}</td><td class=\"r num {returned}\">{(rating.AverageReturn is { } average ? SignedNumber(average) + "%" : "none")}</td></tr>"));

@@ -7567,3 +7567,59 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    no remedy; once merged, the live press for PG the operator asked for, one of the month's calls; 20.8's
             remedy; 22.2; 20.3's record; the tone variant at the newest complete version; 20.10; the sign-offs of phases
             18 and 20.
+
+### 20.10 ruling - phase 20 is finished for its sign-off before phase 22 goes on, 22.2 waiting until the operator says   2026-10-23
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-23 at about 18:41 UTC, told what phase 20 and phase 22 still hold: "i dont think
+            you need to do phase 22 at the moment. I need you to finish everything in phase 20 so it can be signed off".
+Plan:       phase 20's remaining work in the order its dependencies set: the corrections of this pull request; 20.8's
+            remedy with its three builds, checks and readings' steps; the three probes under pin 5 and 20.3's record
+            stating the accuracy report; 20.4's second remedy, the tone variants registered at pin 5, the newest version
+            whose history read is complete; and 20.10, the phase report; then phase 20's sign-off by a fresh session.
+            22.2 waits until the operator says it goes on.
+Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.9 and 20.11 to 20.13 merged with their records,
+            PR 538's three corrections merged, the live press for PG answered, pin 5's history read complete at 18:39:57
+            UTC, 22.0 planned and ruled, 22.1 merged; in progress, this pull request; next, 20.8's remedy, the probes and
+            20.3's record, the tone variants at pin 5, 20.10, and the sign-offs of phases 20 and 18 by fresh sessions;
+            22.2 on the operator's word.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 20.13 - correction: 20.13's done condition names a stock's TipRanks wait as its 15-day wait, as done-condition-producible found   2026-10-23
+
+Queue:      as the ruling entry above, this correction in progress.
+Found:      `tools/ci.ps1` over 77990489, the tree the operator merged at 18:18 UTC as 95aa8d11 while it ran, red at its
+            suite: done-condition-producible read "15 days" in 20.13's done condition, as the 20.13 correction of the
+            press's wait amended it, as a wait on the calendar. The clause is worked over constructed instants and waits
+            on nothing. The suite's other 2673 tests passed, and `tools/verify-phase.ps1` did not run behind it.
+Corrected:  the clause names the same instants as the stock's 15-day wait, its end and a second before it. The changelog.
+Tests:      none new.
+Claims:     1418, none new.
+Mutated:    none: the run over 77990489 is the check red over the words this replaces.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the ruling entry above.
+
+### 20.13 - correction: TipRanks' analysts, firms and titles sent with an entity are drawn as their characters escaped once, as PG's first answer showed   2026-10-23
+
+Queue:      as the ruling entry above, this correction in progress, the last of this pull request.
+Found:      PG's first answer, stored at 18:29 UTC, drawn on its chart page: TipRanks sends some article titles with an
+            ampersand already written as an entity, "Procter &amp; Gamble upgraded to Buy", and others with it bare, and
+            the page escaped what it was sent, so the reader saw the entity's letters.
+Corrected:  the analyst, the article's title and the firm are read back as TipRanks sent their characters before the page
+            escapes them once, by the one helper the news titles are drawn through, and stored as sent. The roster's
+            read-surface row and the changelog.
+Tests:      1 new, 2675 in all: an analyst, a title and a firm sent with an entity and sent bare, each drawn escaped once.
+Claims:     1418, none new.
+Mutated:    the rule, stated before the runs: one mutation each place the words are read back, the smallest edit undoing
+            it, each run over the new test with its red predicted, made in this checkout and reverted with the editor. T1
+            the title drawn as sent, red; T2 the firm drawn as sent, red; T3 the row's analyst drawn as sent, red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2675 of 2675 tests ran with none failed,
+            migrations 0 to 107 with none pending, schema version 107, against `data-ci` and never `data`; the phase
+            report 60 tables, 1418 claims, 1418 passing, none out of scope and none unexamined, 1429 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    no remedy; the stored answer is drawn right as it stands. 20.8's remedy, the probes and 20.3's record, the tone
+            variants at pin 5, 20.10, and the sign-offs of phases 20 and 18 by fresh sessions; 22.2 on the operator's
+            word.
