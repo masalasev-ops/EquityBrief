@@ -2,8 +2,10 @@ using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Cards;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
+using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Loop;
 using EquityBrief.Core.Readings;
+using EquityBrief.Core.Releases;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Worker.Cards;
 using EquityBrief.Worker.Indices;
@@ -38,8 +40,8 @@ public sealed record RuleTested(RuleUnderTest Rule, string Against, LoopEvidence
 
 // What the per-rule test walks an index's rules over: the history as it stood, the register's rules standing when the
 // run began, the setting an approval stored for each family, the market series, the heavyweights' history laid out, the
-// ledger's readings, the stored trees, the S&P 500's open filter version with its history, the progress line, and the
-// pullback's candidates where they were read already.
+// ledger's readings, the stored trees, the S&P 500's open filter version with its history, the progress line, the
+// pullback's candidates where they were read already, and from 20.8 the release readings the drift's tone variant reads.
 public sealed record RuleTestInputs(
     LoopRead Read,
     IReadOnlyList<RegisterRow> Standing,
@@ -50,7 +52,21 @@ public sealed record RuleTestInputs(
     Func<long, TreeModel?> Trees,
     (string Version, FilterSettings Settings, LargePullback History)? Filter,
     Action<string> Progress,
-    IdeaReplay? Candidates = null);
+    IdeaReplay? Candidates = null,
+    ToneReleases? Tones = null);
+
+// From 20.8 the release readings the per-rule test walks the drift's tone variant over: for each reading version whose
+// history read is complete, each stock's results releases with their readings under it, read through the one reader of
+// the release readings, and the zone and the sessions the release rules place a print's window by.
+// see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+public sealed record ToneReleases(
+    IReadOnlyDictionary<long, IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>> Versions,
+    TimeZoneInfo Zone,
+    ReleaseCalendar Calendar)
+{
+    // A version's releases by stock, none where its history read is not complete.
+    public IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? Of(long version) => Versions.GetValueOrDefault(version);
+}
 
 // The monthly per-rule test on one index. Every family rule standing on the index is walked at its own settings and
 // hooks over the history the tester reads: the S&P 500's pullback as the swing filter at its settings, the breakout and
@@ -85,9 +101,10 @@ public static class RuleTests
 
     public const string Estimates = "the analysts' estimates, which the store keeps only from 2026-10-03";
 
-    // From 20.4 why a drift rule reading a release reading cannot be walked yet, in the operator's words.
-    // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
-    public const string ReleaseReading = "its release reading joins the tester at 20.8";
+    // From 20.8 why a drift rule reading a release reading cannot be walked: the version it names has not read its history
+    // whole, so the history holds no reading of most of its prints.
+    // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+    public const string ReleaseReading = "its reading version's history read is not complete";
 
     public const string Leadership = "sector leadership, which the history's walk does not read";
 
@@ -389,10 +406,13 @@ public static class RuleTests
         string[] dials = breakout
             ? [IndexBreakoutCandidate.NearnessParameter, IndexBreakoutCandidate.RecencyParameter, IndexBreakoutCandidate.HighVolumeParameter]
             : [IndexDriftCandidate.WideWindowParameter, IndexDriftCandidate.PeersParameter, IndexDriftCandidate.EntryParameter, IndexDriftCandidate.RevenueGrewParameter];
-        if (NotWalkedYet(family, row) is { } kept)
+        if (NotWalkedYet(family, row, inputs.Tones) is { } kept)
         {
             return kept;
         }
+
+        var version = ReleaseTone.VersionOf(p);
+        var releases = version > 0 ? inputs.Tones!.Of(version) : null;
 
         var why = (large ? null : LevelsWhy(p, dials))
             ?? (places.Any(place => place < 0) ? OffTheGrid : null)
@@ -415,18 +435,44 @@ public static class RuleTests
                 && (marketSwitches.VixLookbackSessions == 0 || switches!.Value.Vix[session]);
         }
 
-        var trades = marketSwitches.Equals(MarketSwitches.None) ? walk.Own : walk.Keeping(Open);
+        // A switched rule keeps the listings of sessions its switch stands open on, and from 20.8 the tone variant those
+        // whose print's release passes its condition, as the night reads the condition after the switches.
+        bool Kept(int at) =>
+            (marketSwitches.Equals(MarketSwitches.None) || Open(at))
+            && (releases is null || ToneHolds(inputs.Read, walk.Listings[at], releases, inputs.Tones!));
+
+        var trades = marketSwitches.Equals(MarketSwitches.None) && releases is null ? walk.Own : walk.Keeping(Kept);
 
         return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, Units(trades));
     }
 
-    // A swing rule kept with why before any walk is read: from 20.4 a drift rule reading a release reading, in the
-    // operator's words, until its reading joins the tester; none for a rule whose walk is read.
-    // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
-    public static RuleUnderTest? NotWalkedYet(string family, RegisterRow row) =>
-        Core.Releases.ReleaseTone.VersionOf(CandidateEvaluator.Read(row.Parameters)) > 0
+    // A swing rule kept with why before any walk is read: from 20.8 a drift rule reading a release reading under a version
+    // whose history read is not complete, since the history holds no reading of most of its prints; none for a rule whose
+    // walk is read.
+    // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+    public static RuleUnderTest? NotWalkedYet(string family, RegisterRow row, ToneReleases? tones) =>
+        ReleaseTone.VersionOf(CandidateEvaluator.Read(row.Parameters)) is var version and > 0 && tones?.Of(version) is null
             ? new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, 0, Why: ReleaseReading)
             : null;
+
+    // From 20.8 whether a drift listing over the history passes the tone condition: the release the night of the listing's
+    // session reads for the newest print the listing reacts to, by the one availability rule over the stock's releases
+    // under the version, read better with its outlook not lowered or withdrawn. A listing whose stock holds no release
+    // under the version, or whose release holds no reading, passes none, as on the night.
+    // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+    public static bool ToneHolds(LoopRead read, RuleListing listing, IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>> releases, ToneReleases tones)
+    {
+        var series = read.Series[listing.Name];
+
+        if (series.NewestSurprise[listing.Bar] is not (var newest and >= 0) || !releases.TryGetValue(series.Name.Ticker, out var held))
+        {
+            return false;
+        }
+
+        var release = ReleaseAvailability.ReleaseFor(held, one => one.Accepted, series.Name.Surprises[newest].EventDate, read.Calendar[listing.Session], tones.Zone, tones.Calendar);
+
+        return release?.Answer is { } answer && ReleaseTone.Passes(answer);
+    }
 
     // The fundamentals-first family's provisional rule, by its search's own walk: the pullback's base listings kept where
     // the family's parts pass at the setting an approval stored for it on the index or its provisional one, walked at the

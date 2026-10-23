@@ -9,7 +9,8 @@ public sealed record LedgerHeading(string Name, IReadOnlyList<string> Readings);
 // chart draws from them: a stock's percentile among its index's members under each heading, and each heading's push on
 // the learned score. A reading read off a market series is the same for every member of an index on a night, so it stands
 // in its heading's push and in no percentile, where every member would hold the same place on it. The insiders' four
-// readings stand from 19.13 under analyst sentiment, the nearest of the seven headings the operator ruled.
+// readings stand from 19.13 under analyst sentiment, the nearest of the seven headings the operator ruled, and from 20.8
+// the release readings beside them, what the results release itself said beside the surprise the provider filed.
 // see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
 public static class LedgerHeadings
 {
@@ -24,7 +25,7 @@ public static class LedgerHeadings
             "close_place", "overnight_less_intraday", "sector_month", "sector_quarter", "low_ratio", "streak", "alpha_one", "alpha_four",
         ]),
         new("Valuation", ["value_place"]),
-        new("Analyst sentiment", ["surprise_percent", "surprise_sessions", "earnings_sessions", "insider_net_buy", "insider_buyers", "insider_officer_buy", "insider_unplanned_sale"]),
+        new("Analyst sentiment", ["surprise_percent", "surprise_sessions", "earnings_sessions", "insider_net_buy", "insider_buyers", "insider_officer_buy", "insider_unplanned_sale", "release_results", "release_outlook", "release_tone", "release_demand"]),
         new("Volatility", ["move_share", "gap_down", "tightness", "range_ratio", "vix", "vix_change", "largest_return", "volatility_month", "residual_volatility", "beta", "skewness"]),
         new("Size and liquidity", ["liquidity", "volume_ratio", "dry_up", "volume_multiple", "up_volume_share", "price_volume_correlation", "illiquidity", "volume_slope", "alpha_two", "alpha_three", "alpha_six"]),
         new("Financial strength", ["profit", "coverage", "cash_over_income"]),

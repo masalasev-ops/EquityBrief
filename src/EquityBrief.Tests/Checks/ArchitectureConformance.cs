@@ -1442,7 +1442,9 @@ public partial class ArchitectureConformance
         // every account.
         // 246 at 20.12: the mark vocabulary's earnings dots, income bars and target marker, and the chart page's graphs.
         // 248 at 22.1: Tonight's row for the short-term dip's card and Past picks' row for its trades.
-        Assert.Equal(248, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 250 at 20.8, merged after 22.1: the Ledger page's card of what the release readings came to and the Loop page's
+        // split.
+        Assert.Equal(250, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1597,7 +1599,9 @@ public partial class ArchitectureConformance
         // account.
         // 647 at 20.12: the mark vocabulary's earnings dots, income bars and target marker, and the chart page's graphs.
         // 649 at 22.1: Tonight's row for the short-term dip's card and Past picks' row for its trades.
-        Assert.Equal(649, inDocument.Length);
+        // 651 at 20.8, merged after 22.1: the Ledger page's card of what the release readings came to and the Loop page's
+        // split.
+        Assert.Equal(651, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

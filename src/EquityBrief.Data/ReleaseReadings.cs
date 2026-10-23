@@ -1,4 +1,5 @@
 using System.Globalization;
+using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Releases;
 using Microsoft.Data.Sqlite;
 
@@ -48,6 +49,62 @@ public static class ReleaseReadings
     ";
 
     const string CompleteVersions = "SELECT id FROM reading_pin WHERE history_completed_at IS NOT NULL ORDER BY id DESC;";
+
+    const string CutoffOf = "SELECT cutoff FROM reading_pin WHERE id = $pin;";
+
+    // From 20.8 the model's cutoff a reading version states, which the usefulness table splits its releases at.
+    public static async Task<DateOnly?> CutoffAsync(SqliteConnection connection, long version, CancellationToken cancellation = default)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = CutoffOf;
+        command.Parameters.AddWithValue("$pin", version);
+
+        return await command.ExecuteScalarAsync(cancellation) is string day
+            ? DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+            : null;
+    }
+
+    // From 20.8 every stored filing's release with its reading under a version where one is held, which the ledger's
+    // release readings read: the exhibit the filing holds as its release, and a reading only of that exhibit.
+    // see: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so
+    const string ForLedger = @"
+        SELECT d.cik, d.accepted_at, r.outcome, r.results, r.outlook, r.tone, r.demand
+        FROM release_document d
+        LEFT JOIN release_reading r ON r.accession = d.accession AND r.exhibit = d.exhibit AND r.pin = $pin
+        WHERE d.release = 1;
+    ";
+
+    // From 20.8 each filer's releases as the ledger reads them, by its CIK padded to ten digits: the instant the SEC
+    // accepted each, and its four words under the version, none where its reading was refused or is not held.
+    // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+    public static async Task<IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>> ForLedgerAsync(SqliteConnection connection, long version, CancellationToken cancellation = default)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ForLedger;
+        command.Parameters.AddWithValue("$pin", version);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+        var byFiler = new Dictionary<string, List<LedgerRelease>>(StringComparer.Ordinal);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            var cik = EquityBrief.Core.Providers.SecEdgarArchive.Padded(reader.GetString(0));
+            var answer = !reader.IsDBNull(2) && reader.GetString(2) == "read"
+                ? new ReleaseAnswer(reader.GetString(3), reader.GetString(4), reader.GetString(5), reader.GetString(6))
+                : null;
+
+            if (!byFiler.TryGetValue(cik, out var releases))
+            {
+                byFiler[cik] = releases = [];
+            }
+
+            releases.Add(new LedgerRelease(Parse(reader.GetString(1)), answer));
+        }
+
+        return byFiler.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<LedgerRelease>)pair.Value, StringComparer.Ordinal);
+    }
 
     // Each stock's filer as its newest company row files it.
     const string Filers = "SELECT ticker, cik FROM company WHERE cik IS NOT NULL ORDER BY fetched_at;";

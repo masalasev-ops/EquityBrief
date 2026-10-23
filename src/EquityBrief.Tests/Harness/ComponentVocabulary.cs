@@ -74,8 +74,10 @@ internal static class ComponentVocabulary
     // answers beside the pins they are read under, each what a model wrote. From 20.4 that column is headed research and
     // readings, since the family rules read the release readings in it and the research sections stay barred to them.
     // From 20.9 it holds the idea generator's stored answers, what the local model answered over the loop's tables. From
-    // the 20.3 correction of 2026-10-22 the sources column holds each stored filing's check of the exhibit its page names
-    // as the release beside its releases, each what the SEC's page said of a filing kept.
+    // 20.8 the forward returns column holds what each release answer came to on the settled setups beside the readings'
+    // links, each a row the monthly run's readings step works from the ledger. From the 20.3 correction of 2026-10-22 the
+    // sources column holds each stored filing's check of the exhibit its page names as the release beside its releases,
+    // each what the SEC's page said of a filing kept.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
@@ -84,7 +86,7 @@ internal static class ComponentVocabulary
         ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.PulledIncome, DataStore.PulledSnapshot, DataStore.PulledHolding]),
         ("Computed tables", [DataStore.Indicator, DataStore.ChartAverage, DataStore.EarningsMove, DataStore.LongView, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult, DataStore.IndexFamilyResult, DataStore.DipResult, DataStore.MemberReading, DataStore.SwitchReading]),
         ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick, DataStore.HeavyweightNight, DataStore.HeavyweightRuleNight, DataStore.IndexFamilyNight, DataStore.IndexFamilyPick, DataStore.DipNight, DataStore.DipPick, DataStore.IndexHeavyweightRuleNight, DataStore.SweepAnswer, DataStore.DecisionCard, DataStore.RuleNight, DataStore.FormingRow]),
-        ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade, DataStore.HeavyweightHolding, DataStore.HeavyweightRuleHolding, DataStore.IndexFamilyTrade, DataStore.DipTrade, DataStore.IndexHeavyweightHolding, DataStore.IndexRuleTrade, DataStore.IndexHeavyweightRuleHolding, DataStore.RuleRecord, DataStore.RulePick, DataStore.TradeFill, DataStore.Setup, DataStore.SetupNight, DataStore.LedgerSummary, DataStore.LedgerReading, DataStore.LoopRun, DataStore.LoopProposal, DataStore.LoopTest, DataStore.LoopFinding, DataStore.LoopReading, DataStore.LoopModel, DataStore.LoopReference, DataStore.LoopRule, DataStore.LoopRuleYear, DataStore.LoopLink, DataStore.LoopApplied, DataStore.ProvisionalSetting, DataStore.LoopAlarm]),
+        ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade, DataStore.HeavyweightHolding, DataStore.HeavyweightRuleHolding, DataStore.IndexFamilyTrade, DataStore.DipTrade, DataStore.IndexHeavyweightHolding, DataStore.IndexRuleTrade, DataStore.IndexHeavyweightRuleHolding, DataStore.RuleRecord, DataStore.RulePick, DataStore.TradeFill, DataStore.Setup, DataStore.SetupNight, DataStore.LedgerSummary, DataStore.LedgerReading, DataStore.LoopRun, DataStore.LoopProposal, DataStore.LoopTest, DataStore.LoopFinding, DataStore.LoopReading, DataStore.LoopModel, DataStore.LoopReference, DataStore.LoopRule, DataStore.LoopRuleYear, DataStore.LoopLink, DataStore.ReleaseAnswerEdge, DataStore.LoopApplied, DataStore.ProvisionalSetting, DataStore.LoopAlarm]),
         ("Facts", [DataStore.Facts]),
         ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk, DataStore.Company, DataStore.EstimateReading, DataStore.DividendReading, DataStore.EstimateTrend, DataStore.DividendEvent, DataStore.FiledFact, DataStore.FiledFactPull, DataStore.FilingDay, DataStore.InsiderTrade, DataStore.InsiderRead, DataStore.SecTicker]),
         ("News", [DataStore.NewsPulse, DataStore.NewsArticle, DataStore.NewsLabel]),
@@ -260,6 +262,7 @@ internal static class ComponentVocabulary
         ["rule tests"] = DataStore.LoopRule,
         ["rule test years"] = DataStore.LoopRuleYear,
         ["reading links"] = DataStore.LoopLink,
+        ["release answer edges"] = DataStore.ReleaseAnswerEdge,
         ["loop decisions"] = DataStore.LoopDecision,
         ["loop applications"] = DataStore.LoopApplied,
         ["provisional settings"] = DataStore.ProvisionalSetting,

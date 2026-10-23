@@ -55,6 +55,10 @@ public sealed partial class ReadApi
                     AND COALESCE(q.change, '') = COALESCE(p.change, ''))
         FROM loop_proposal p WHERE p.run_id = $run_id AND p.index_code = $index AND p.family = $family;";
 
+    const string WordsOfProposal = "SELECT words FROM loop_proposal WHERE run_id = $run_id AND index_code = $index AND family = $family AND proposal = $proposal;";
+
+    const string YearsOfProposal = "SELECT year, proposed_units, proposed_total, current_total FROM loop_test WHERE run_id = $run_id AND index_code = $index AND family = $family AND proposal = $proposal ORDER BY year;";
+
     const string NewestSettingOf = "SELECT id FROM provisional_setting WHERE index_code = $index AND family = $family ORDER BY id DESC LIMIT 1;";
 
     const string NewestPeriodOf = "SELECT flagged FROM loop_alarm WHERE index_code = $index AND family = $family ORDER BY period DESC LIMIT 1;";
@@ -248,7 +252,15 @@ public sealed partial class ReadApi
             return new RequestWritten(false, "Nothing was decided: this proposal already holds your word.");
         }
 
-        var put = held.Passed && held.Change is not null ? await PutAsync(connection, transaction, run, index, family) : null;
+        // From the 20.8 correction of 2026-10-19 a proposal the local model's cutoff holds back is put to no one.
+        var cutoff = await CutoffAsync(connection, transaction);
+
+        if (held.Passed && held.Change is not null && await HeldByCutoffAsync(connection, transaction, run, index, family, proposal, cutoff) && cutoff is { } day)
+        {
+            return new RequestWritten(false, "Nothing was decided. " + LoopDecisions.HeldByCutoffWords(day));
+        }
+
+        var put = held.Passed && held.Change is not null ? await PutAsync(connection, transaction, run, index, family, cutoff) : null;
         var notPut = put is not null && put != proposal
             ? $"Nothing was decided: this run puts the family's strongest proposal that passed to you, {put}, and no other."
             : null;
@@ -377,27 +389,65 @@ public sealed partial class ReadApi
         return command;
     }
 
-    // The one proposal of a family the run puts to the operator, none where none is left.
-    static async Task<string?> PutAsync(SqliteConnection connection, SqliteTransaction transaction, string run, string index, string family)
+    // The one proposal of a family the run puts to the operator, none where none is left: one an earlier decline holds back
+    // left out, and from the 20.8 correction of 2026-10-19 one the local model's cutoff holds back.
+    static async Task<string?> PutAsync(SqliteConnection connection, SqliteTransaction transaction, string run, string index, string family, DateOnly? cutoff)
     {
+        var read = new List<(string Proposal, double? Adjusted, bool Passed, bool Changes, bool Declined)>();
+
+        await using (var command = Command(connection, transaction, FamilyOnTheRun, [("$run_id", run), ("$index", index), ("$family", family)]))
+        await using (var reader = await command.ExecuteReaderAsync())
+        {
+            while (await reader.ReadAsync())
+            {
+                var declined = reader.IsDBNull(5) ? (int?)null : reader.GetInt32(5);
+
+                read.Add((
+                    reader.GetString(0),
+                    reader.IsDBNull(1) ? null : reader.GetDouble(1),
+                    reader.GetInt64(2) == 1,
+                    reader.GetInt64(3) == 1,
+                    declined is { } blocks && !LoopDecisions.PutAgain(blocks, reader.GetInt32(4), passedNow: true)));
+            }
+        }
+
         var proposals = new List<(string, double?, bool, bool, bool)>();
 
-        await using var command = Command(connection, transaction, FamilyOnTheRun, [("$run_id", run), ("$index", index), ("$family", family)]);
-        await using var reader = await command.ExecuteReaderAsync();
-
-        while (await reader.ReadAsync())
+        foreach (var one in read)
         {
-            var declined = reader.IsDBNull(5) ? (int?)null : reader.GetInt32(5);
-
-            proposals.Add((
-                reader.GetString(0),
-                reader.IsDBNull(1) ? null : reader.GetDouble(1),
-                reader.GetInt64(2) == 1,
-                reader.GetInt64(3) == 1,
-                declined is { } blocks && !LoopDecisions.PutAgain(blocks, reader.GetInt32(4), passedNow: true)));
+            proposals.Add((one.Proposal, one.Adjusted, one.Passed, one.Changes, one.Declined || await HeldByCutoffAsync(connection, transaction, run, index, family, one.Proposal, cutoff)));
         }
 
         return LoopDecisions.PutOf(proposals);
+    }
+
+    // The local model's cutoff the newest reading version whose history read is complete states, none before one is.
+    static async Task<DateOnly?> CutoffAsync(SqliteConnection connection, SqliteTransaction transaction) =>
+        await ScalarAsync(connection, transaction, NewestCutoff, []) is string day ? DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
+
+    // Whether the local model's cutoff holds a proposal of the run back, read over its words and its own test years.
+    // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+    static async Task<bool> HeldByCutoffAsync(SqliteConnection connection, SqliteTransaction transaction, string run, string index, string family, string proposal, DateOnly? cutoff)
+    {
+        if (cutoff is null)
+        {
+            return false;
+        }
+
+        var parameters = new (string Name, object? Value)[] { ("$run_id", run), ("$index", index), ("$family", family), ("$proposal", proposal) };
+        var words = await ScalarAsync(connection, transaction, WordsOfProposal, parameters) as string;
+        var years = new List<(int, int, double, double)>();
+
+        await using (var command = Command(connection, transaction, YearsOfProposal, parameters))
+        await using (var reader = await command.ExecuteReaderAsync())
+        {
+            while (await reader.ReadAsync())
+            {
+                years.Add((reader.GetInt32(0), reader.GetInt32(1), reader.GetDouble(2), reader.GetDouble(3)));
+            }
+        }
+
+        return LoopDecisions.HeldByCutoff(words, years, cutoff);
     }
 
     static async Task<long> CountAsync(SqliteConnection connection, SqliteTransaction transaction, string sql, IReadOnlyList<(string Name, object? Value)> parameters) =>

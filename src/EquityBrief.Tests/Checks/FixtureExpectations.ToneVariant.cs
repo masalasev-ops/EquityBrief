@@ -2,6 +2,7 @@ using System.Globalization;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Cards;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Loop;
 using EquityBrief.Core.Releases;
 using EquityBrief.Core.Time;
@@ -22,7 +23,7 @@ namespace EquityBrief.Tests.Checks;
 // index; a night holding no reading lists nothing under it and says so on the stage's row and the card's funnel; the
 // S&P 500's drift registered again whole adds the variant at the newest version whose history read is complete; the
 // 17.11 form's `--again` registers an index's variants again whole and refuses as it refused before; and the per-rule
-// step keeps the variant not testable in the operator's words.
+// step keeps the variant not testable until the version it names has read its history whole, from 20.8.
 // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
 // see: An S&P 400 or 600 family's variants are registered again whole beside its provisional rule or its frozen live rule
 public partial class FixtureExpectations
@@ -490,7 +491,7 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public void TheVariantsCardChipsNameTheConditionAndThePerRuleStepKeepsItNotTestableInTheOperatorsWords()
+    public void TheVariantsCardChipsNameTheConditionAndThePerRuleStepKeepsItNotTestableUntilItsVersionsHistoryIsRead()
     {
         var tone = TheSetupFamilies.ToneVariant(2);
         var live = TheSetupFamilies.Drifts[0];
@@ -504,15 +505,21 @@ public partial class FixtureExpectations
             "V2 · release better, outlook not cut",
             RuleChips.TabWords(2, RuleChips.Differing(RuleChips.Of(RuleKind.IndexDrift, IndexRules.Provisional(IndexEvaluator("drift-400"))), RuleChips.Of(RuleKind.IndexDrift, indexTone))));
 
-        // The per-rule step keeps a rule reading a release reading with the operator's words and no figure, and reads every
-        // rule naming no version as it read it before.
+        // From 20.8 the per-rule step keeps a rule reading a release reading not testable, with no figure, while the version
+        // it names has not read its history whole, the history then holding no reading of most of its prints, and walks it
+        // once that version's history read is complete; a rule naming no version is read as it was before.
         RegisterRow Row(Registration one) => new(1, one.Candidate, one.Rule, one.Test, one.Evaluator, CandidateEvaluator.Write(one.Parameters), "v", CandidateFamily.Registered, null, FreezeAt, null);
+        ToneReleases Complete(params long[] versions) =>
+            new(versions.ToDictionary(version => version, _ => (IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>)new Dictionary<string, IReadOnlyList<LedgerRelease>>()), SessionZones.ResolveSessionZone(SessionZones.UnitedStates), ReleaseCalendar.Exchange);
 
-        var kept = RuleTests.NotWalkedYet(DriftRule.Name, Row(tone))!;
+        var kept = RuleTests.NotWalkedYet(DriftRule.Name, Row(tone), null)!;
 
         Assert.Equal(RuleTests.ReleaseReading, kept.Why);
-        Assert.Equal("not testable: its release reading joins the tester at 20.8", EquityBrief.Core.Loop.RuleVerdict.Of(false, kept.Why, null, null, null, null, null));
-        Assert.Null(RuleTests.NotWalkedYet(DriftRule.Name, Row(live)));
-        Assert.Equal(RuleTests.ReleaseReading, RuleTests.NotWalkedYet(DriftRule.Name, Row(new Registration("an index tone variant", "a rule", "a test", "drift-400", indexTone)))!.Why);
+        Assert.Equal("not testable: its reading version's history read is not complete", EquityBrief.Core.Loop.RuleVerdict.Of(false, kept.Why, null, null, null, null, null));
+        Assert.Equal(RuleTests.ReleaseReading, RuleTests.NotWalkedYet(DriftRule.Name, Row(tone), Complete(1))!.Why);
+        Assert.Null(RuleTests.NotWalkedYet(DriftRule.Name, Row(tone), Complete(1, 2)));
+        Assert.Null(RuleTests.NotWalkedYet(DriftRule.Name, Row(live), null));
+        Assert.Equal(RuleTests.ReleaseReading, RuleTests.NotWalkedYet(DriftRule.Name, Row(new Registration("an index tone variant", "a rule", "a test", "drift-400", indexTone)), Complete(1))!.Why);
+        Assert.Null(RuleTests.NotWalkedYet(DriftRule.Name, Row(new Registration("an index tone variant", "a rule", "a test", "drift-400", indexTone)), Complete(2)));
     }
 }

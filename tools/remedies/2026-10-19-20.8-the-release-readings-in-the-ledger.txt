@@ -1,0 +1,14 @@
+# The remedy of 20.8 (the release readings in the ledger's catalogue, and what each answer came to), as its PROGRESS entry
+# prints it. Run once the history read has completed and marked its reading version's history complete, since until then
+# every release reading reads none. Migration 106 adds the four readings' columns to the setups, every row kept in place,
+# and creates the table of what each answer came to. The ledger's night step then runs by hand over the newest night the
+# store holds, writing that night's setups and every member's readings again with the four. No source a rule's version
+# pins moves, so nothing is registered again. Each index's ledger history is then built again by hand with
+# tools/ledger-build.ps1 --index <GSPC, MID or SML> --from 2019-01-02 --through <the standing build's last session> --again,
+# which builds main's own commit from a clean copy and so is not a worker command this file can run, checked with
+# ledger-check --index <GSPC, MID or SML>, and worked once by hand with loop-links --index <GSPC, MID or SML> so the Ledger
+# page draws what each answer came to from the start. No request to the provider and no model call. Run from main after
+# the merge and before the night, when no night, local run, drain, labeller or monthly run is writing, and restart the read
+# surface after it.
+migrate
+ledger-night

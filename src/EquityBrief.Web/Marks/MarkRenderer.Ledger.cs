@@ -260,6 +260,54 @@ public sealed partial class MarkRenderer
         return text.ToString();
     }
 
+    // From 20.8 what each answer the local model gave of the results releases came to on the family chosen, as the
+    // walk-forward tester stored it: a row a question's answer in the order it wrote them, the setups holding it after the
+    // model's cutoff, how many won and their mean result and edge in the family's own unit, and beside them the same before
+    // the cutoff; or why no table is drawn. It draws the stored rows and works none of them.
+    // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+    public string LedgerAnswers(string family, AnswerTable? table)
+    {
+        if (table is null || table.Rows.Count == 0)
+        {
+            return "<p class=\"degraded\" data-answers=\"none\">No monthly run has worked what the release readings came to for this family on this index yet: they join the ledger once their history read is complete.</p>";
+        }
+
+        var answers = table.Rows.Select(row => (row.Question, row.Answer)).Distinct().ToArray();
+        var text = new StringBuilder();
+        var (result, edge) = (Formatted($"Result, {LedgerUnit(family)}"), family == HeavyweightRule.Name ? "Edge, points" : "Edge, risks");
+
+        string Side(AnswerEdge? row) =>
+            row is null
+                ? "<td class=\"r num\">none</td><td class=\"r num\">none</td><td class=\"r num\">none</td><td class=\"r num\">none</td>"
+                : Formatted($"<td class=\"r num\">{row.Setups:N0}</td><td class=\"r num\">{row.Winners:N0}</td><td class=\"r num\" data-result-mean=\"{row.MeanResult.ToString("R", Invariant)}\">{LedgerNumber(family, row.MeanResult)}</td><td class=\"r num\" data-edge-mean=\"{row.MeanEdge.ToString("R", Invariant)}\">{LedgerNumber(family, row.MeanEdge)}</td>");
+
+        text.Append(Invariant, $"<p class=\"ledger-answers-said\" data-run=\"{Escaped(table.RunId)}\" data-month=\"{Escaped(table.Month)}\" data-cutoff=\"{table.Cutoff:yyyy-MM-dd}\">Worked by the monthly run for {Escaped(table.Month)}, split at the local model's cutoff of {table.Cutoff:yyyy-MM-dd} by the day the SEC accepted each release.</p>");
+        text.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"ledger-answers\" data-family=\"{Escaped(family)}\" data-rows=\"{answers.Length}\"><thead><tr>");
+        text.Append(TippedHeading("Question", "what the local model was asked of the release"));
+        text.Append(TippedHeading("Answer", "the word it answered, or not read where its reading was refused or is not held"));
+        text.Append(TippedHeading("After: setups", "the settled setups whose release the SEC accepted after the cutoff", "r"));
+        text.Append(TippedHeading("Won", "of those, the ones whose edge was above nothing", "r"));
+        text.Append(TippedHeading(result, "their mean result", "r"));
+        text.Append(TippedHeading(edge, "their mean edge over their benchmark", "r"));
+        text.Append(TippedHeading("Before: setups", "the settled setups whose release the SEC accepted on or before the cutoff", "r"));
+        text.Append(TippedHeading("Won", "of those, the ones whose edge was above nothing", "r"));
+        text.Append(TippedHeading(result, "their mean result", "r"));
+        text.Append(TippedHeading(edge, "their mean edge over their benchmark", "r"));
+        text.Append("</tr></thead><tbody>");
+
+        foreach (var (question, answer) in answers)
+        {
+            var after = table.Rows.FirstOrDefault(row => row.Question == question && row.Answer == answer && row.Side == ReleaseUsefulness.After);
+            var before = table.Rows.FirstOrDefault(row => row.Question == question && row.Answer == answer && row.Side == ReleaseUsefulness.Before);
+
+            text.Append(Invariant, $"<tr data-question=\"{Escaped(question)}\" data-answer=\"{Escaped(answer)}\"><td>{Escaped(question)}</td><td>{Escaped(answer)}</td>{Side(after)}{Side(before)}</tr>");
+        }
+
+        text.Append("</tbody></table></div>");
+
+        return text.ToString();
+    }
+
     // A chosen setup's closes from ten sessions before it to where its path ended, with its buy, its stop where it holds
     // one and its target where it names one drawn across, and the session it was bought on marked.
     public string LedgerPath(LedgerPath? path)

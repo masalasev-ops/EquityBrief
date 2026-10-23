@@ -101,6 +101,7 @@ public enum Store
     ReleaseReading,
     ReleaseProbe,
     LoopIdea,
+    ReleaseAnswerEdge,
     LedgerSummary,
     LedgerReading,
     LoopRun,

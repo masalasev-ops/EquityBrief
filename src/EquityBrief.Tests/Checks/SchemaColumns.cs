@@ -79,6 +79,12 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "Loop ideas"),
     ];
 
+    // 20.8's one: what each release answer came to.
+    internal static string[] ReleaseAnswerStoreRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Release answer edges"),
+    ];
+
     // 22.1's four: the short-term dip's nights, answers, picks and trades.
     internal static string[] DipStoreRows =>
     [
@@ -200,6 +206,8 @@ public class SchemaColumns
             // 20.9, the idea generator's stored answers.
             .. LoopIdeaStoreRows,
 
+            // 20.8, what each release answer came to.
+            .. ReleaseAnswerStoreRows,
             // 22.1, the short-term dip's four tables.
             .. DipStoreRows,
 

@@ -2538,8 +2538,9 @@ app.MapGet("/screens/ledger", async (HttpRequest request, ReadApi read, MarkRend
     }
 
     var links = family is null ? null : await read.LedgerLinksAsync(reading.Code, family);
+    var answers = family is null ? null : await read.LedgerAnswersAsync(reading.Code, family);
 
-    return Results.Content(page.LedgerRegion(marks, night, reading, selector, years, family, settled, path, links), "text/html; charset=utf-8");
+    return Results.Content(page.LedgerRegion(marks, night, reading, selector, years, family, settled, path, links, answers), "text/html; charset=utf-8");
 });
 
 app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page) =>
@@ -2582,19 +2583,24 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
         },
         StringComparer.Ordinal);
 
-    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest), chips), "text/html; charset=utf-8");
+    // From 20.8 the local model's cutoff, which a proposal reading a release reading is split at, and from its correction
+    // of 2026-10-19 held back by over the run's test years.
+    var cutoff = await read.ModelCutoffAsync();
+
+    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest, cutoff, tests), chips), "text/html; charset=utf-8");
 });
 
 // The Loop's badge in the menu: the proposals each index's newest run puts to the operator that hold no word yet.
 app.MapGet(SinglePageApp.LoopPutRoute, async (ReadApi read) =>
 {
     var put = 0;
+    var cutoff = await read.ModelCutoffAsync();
 
     foreach (var index in Universes.Offered)
     {
         if ((await read.LoopMonthsAsync(index.Code)).FirstOrDefault() is { } month && await read.LoopRunAsync(index.Code, month) is { } run)
         {
-            put += SinglePageApp.PutWithoutWord(run, await read.LoopProposalsAsync(run), new EquityBrief.Web.Marks.LoopDecided(await read.LoopDecisionsAsync(index.Code), [], [], null));
+            put += SinglePageApp.PutWithoutWord(run, await read.LoopProposalsAsync(run), new EquityBrief.Web.Marks.LoopDecided(await read.LoopDecisionsAsync(index.Code), [], [], null, cutoff, await read.LoopTestsAsync(run)));
         }
     }
 
@@ -2866,6 +2872,10 @@ app.MapGet("/screens/run/{night?}", async (
     var monthlyProposals = monthlyRun is null ? [] : await read.LoopProposalsAsync(monthlyRun);
     var monthlyDecisions = await read.LoopDecisionsAsync(Universes.Large.Code);
 
+    // From the 20.8 correction of 2026-10-19 the local model's cutoff and the run's test years, which a proposal reading a
+    // release reading is held back by.
+    var monthlyHeld = new LoopDecided(monthlyDecisions, [], [], null, await read.ModelCutoffAsync(), monthlyRun is null ? [] : await read.LoopTestsAsync(monthlyRun));
+
     return Results.Content(
         page.RunRegion(
             marks,
@@ -2945,7 +2955,7 @@ app.MapGet("/screens/run/{night?}", async (
             monthly: RunScreen.Monthly(
                 await read.NewestMonthlyRunAsync(),
                 monthlyProposals,
-                one => monthlyRun is { } tested && MarkRenderer.HeldBack(tested, one, new LoopDecided(monthlyDecisions, [], [], null)),
+                one => monthlyRun is { } tested && MarkRenderer.HeldBack(tested, one, monthlyHeld),
                 (await read.RuleTestsAsync(Universes.Large.Code)).Rules,
                 shapeState),
             compare: compare,

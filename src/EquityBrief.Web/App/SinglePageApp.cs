@@ -3447,7 +3447,8 @@ public sealed partial class SinglePageApp : IComponent
         string? family,
         IReadOnlyList<EquityBrief.Core.Ledger.LedgerSetupRow> settled,
         EquityBrief.Core.Ledger.LedgerPath? path,
-        EquityBrief.Core.Ledger.LinkTable? links = null)
+        EquityBrief.Core.Ledger.LinkTable? links = null,
+        EquityBrief.Core.Ledger.AnswerTable? answers = null)
     {
         static string Named(string word) => word switch
         {
@@ -3520,6 +3521,20 @@ public sealed partial class SinglePageApp : IComponent
             title: family is null ? "Which readings go with winners" : "Which readings go with winners: " + Escaped(Named(family)),
             stamp: Cards.Night(night),
             region: "reading-links"));
+
+        // From 20.8 what each answer the local model gave of the results releases came to on the family's settled setups,
+        // after the model's cutoff and beside it before, as the monthly run stored it.
+        // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+        region.Append(Cards.Computed(
+            "Setup ledger",
+            marks.LedgerAnswers(family ?? string.Empty, answers)
+                + Cards.Key(
+                    "How to read it.",
+                    "Each row is one answer the local model gave to one of its four questions on the newest results release of each settled setup, read with the release's names and dates removed: how many setups held it, how many of them won, a winner one whose edge was above nothing, and their mean result and edge in the unit each heading names, first over the releases the SEC accepted after the model's cutoff and beside them over those before. A setup whose release holds no reading stands under not read.",
+                    "The model was trained on text up to its cutoff, so before it it may have known what followed a release: the columns after the cutoff are the ones to rely on. Nothing here changes a rule."),
+            title: family is null ? "What the release readings came to" : "What the release readings came to: " + Escaped(Named(family)),
+            stamp: Cards.Night(night),
+            region: "release-answers"));
         region.Append("</section>");
 
         return region.ToString();
@@ -3632,7 +3647,7 @@ public sealed partial class SinglePageApp : IComponent
                     decision = "<p class=\"loop-pressed-above\">Its presses stand in the summary above.</p>";
                 }
 
-                body.Append(marks.LoopProposalRow(proposal, [.. tests.Where(test => test.Family == family && test.Proposal == proposal.Proposal)], decision));
+                body.Append(marks.LoopProposalRow(proposal, [.. tests.Where(test => test.Family == family && test.Proposal == proposal.Proposal)], decision, decided?.Cutoff));
             }
 
             summary.Add(new LoopSummaryRow(
@@ -3696,9 +3711,11 @@ public sealed partial class SinglePageApp : IComponent
         "Each month the tester runs a set of procedures for each setup on the years before each test year and scores what they choose on that year against the rule today; a proposal is the procedure run on all finished data. The meter draws a proposal's adjusted p, its chance of a result this strong by luck corrected for every proposal tested beside it, on a scale from a ten-thousandth to one with the bar marked: green at or under the bar, red over it. A proposal passes only where all four parts hold, and the strongest that passes and states a change is put to you; nothing changes a rule until you approve it. Each proposal opens to its four parts and its test years drawn as a pair of bars a year, the rule today's above and the proposal's beneath. The rule today was chosen on these same test years, so a proposal reads understated against it.";
 
     // Why nothing is put to the operator for a family and when it next can be: a family the run tested nothing for or none
-    // of whose proposals passed waiting on the next monthly run, the first Saturday of the month after the run's, and a
-    // passing proposal an earlier decline holds back waiting on a later run reading a new complete block.
+    // of whose proposals passed waiting on the next monthly run, the first Saturday of the month after the run's, a
+    // passing proposal an earlier decline holds back waiting on a later run reading a new complete block, and from the 20.8
+    // correction of 2026-10-19 a passing proposal reading a release reading that the local model's cutoff holds back.
     // see: A declined proposal is put again once a new complete block has been added since the decline and it passes with that block
+    // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
     public static string LoopWaiting(string family, EquityBrief.Core.Loop.LoopRunRow run, IReadOnlyList<EquityBrief.Core.Loop.LoopProposalRow> own, LoopDecided? decided)
     {
         var next = NextMonthlyRun(run.Month);
@@ -3708,8 +3725,13 @@ public sealed partial class SinglePageApp : IComponent
             return Invariant($"Nothing was tested for this setup in the run for {run.Month}; the next monthly run is on {next:yyyy-MM-dd}.");
         }
 
-        return decided is not null && own.Any(one => one.Passed && one.Change is not null && MarkRenderer.HeldBack(run, one, decided))
-            ? "Its passing proposal was declined; it is put to you again once a later run reads a new complete block of 63 sessions and it passes with that block."
+        if (decided is not null && own.Any(one => one.Passed && one.Change is not null && MarkRenderer.Declined(run, one, decided)))
+        {
+            return "Its passing proposal was declined; it is put to you again once a later run reads a new complete block of 63 sessions and it passes with that block.";
+        }
+
+        return decided is { Cutoff: { } cutoff } && own.Any(one => one.Passed && one.Change is not null && MarkRenderer.HeldByCutoff(one, decided))
+            ? Invariant($"Its passing proposal reads a release reading. {EquityBrief.Core.Loop.LoopDecisions.HeldByCutoffWords(cutoff)} The next monthly run is on {next:yyyy-MM-dd}.")
             : Invariant($"{(own.Count == 1 ? "Its one proposal did not pass" : $"None of its {own.Count} proposals passed")} with a change to put to you; the next monthly run is on {next:yyyy-MM-dd}.");
     }
 

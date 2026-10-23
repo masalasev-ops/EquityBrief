@@ -1,4 +1,5 @@
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Ledger;
 
 namespace EquityBrief.Core.Loop;
 
@@ -73,6 +74,27 @@ public static class LoopDecisions
 
         return rows.FirstOrDefault(one => one.Proposal == put);
     }
+
+    // Whether a proposal whose change reads a release reading is held back from being put: its total less the rule's over
+    // the test years from the local model's cutoff's year is not above nothing, which the years before the cutoff, whose
+    // outcomes the model may have known, cannot make up. None is held back by it where no reading version's history read
+    // is complete, since no change then reads a release reading; nothing is retired or hidden by it.
+    // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+    public static bool HeldByCutoff(string? words, IEnumerable<(int Year, int Units, double Proposed, double Current)> years, DateOnly? cutoff)
+    {
+        if (cutoff is not { } day || !LedgerReleases.Reads(words))
+        {
+            return false;
+        }
+
+        var sides = LedgerReleases.Split(years, day);
+
+        return sides.AfterProposed - sides.AfterCurrent <= 0;
+    }
+
+    // What a proposal the cutoff holds back says, on the Loop page and in the month's report.
+    public static string HeldByCutoffWords(DateOnly cutoff) =>
+        FormattableString.Invariant($"Held back: it reads a release reading, and its total less the rule's over the test years from the cutoff's year, {cutoff.Year}, is not above nothing, so it is not put to you.");
 
     // Whether a declined proposal is put to the operator again: a later run read more complete blocks than the run it
     // was declined on, and it passed with them.

@@ -58,12 +58,12 @@ public partial class FixtureExpectations
         return readings;
     }
 
-    // Six hundred and eighty setups on an index, a hundred and seventy at each liquidity of 0, 1, 2 and 3, every other
+    // Seven hundred and twenty setups on an index, a hundred and eighty at each liquidity of 0, 1, 2 and 3, every other
     // reading the same for all, each one's edge twice its liquidity and one more on the S&P 400, at a risk of one move: more
-    // than the floor of ten rows a weight the score could fit, which the catalogue's seventy-two readings put at 670.
-    static void SixHundredEighty(ScoreRows rows, string index)
+    // than the floor of ten rows a weight the score could fit, which the catalogue's seventy-six readings put at 710.
+    static void SevenHundredTwenty(ScoreRows rows, string index)
     {
-        for (var at = 0; at < 680; at++)
+        for (var at = 0; at < 720; at++)
         {
             var liquidity = at % 4;
 
@@ -84,47 +84,47 @@ public partial class FixtureExpectations
 
         Assert.Equal((1.5, 3.0), (labels.Label(0), labels.Label(1)));
 
-        // Only liquidity moves, so it alone is weighed: its mean 1.5 and its spread the square root of 1.25 over the six
-        // hundred and eighty; in standard units its weight is twice the rows times the spread over the rows and the penalty,
-        // so on its own scale 2 x 680 / (680 + 10) = 136/69, and the intercept the labels' mean less that times the mean,
-        // 3 - 204/69 = 1/23.
+        // Only liquidity moves, so it alone is weighed: its mean 1.5 and its spread the square root of 1.25 over the seven
+        // hundred and twenty; in standard units its weight is twice the rows times the spread over the rows and the penalty,
+        // so on its own scale 2 x 720 / (720 + 10) = 144/73, and the intercept the labels' mean less that times the mean,
+        // 3 - 216/73 = 3/73.
         var rows = new ScoreRows();
 
-        SixHundredEighty(rows, "GSPC");
+        SevenHundredTwenty(rows, "GSPC");
 
         var model = Fitted(rows);
 
         Assert.Equal(["liquidity"], model.Readings.Select(reading => LedgerReadings.All[reading].Column));
         Assert.Equal(1.5, model.Means.Single(), 12);
         Assert.Equal(Math.Sqrt(1.25), model.Spreads.Single(), 12);
-        Assert.Equal(136.0 / 69.0, model.HookWeights.Single().Weight, 12);
-        Assert.Equal(1.0 / 23.0, model.Intercept, 12);
+        Assert.Equal(144.0 / 73.0, model.HookWeights.Single().Weight, 12);
+        Assert.Equal(3.0 / 73.0, model.Intercept, 12);
         Assert.Equal([0.0, 0.0], model.IndexShifts);
-        Assert.Equal((680, 0.0, 6.0), (model.Rows, model.LabelLow, model.LabelHigh));
+        Assert.Equal((720, 0.0, 6.0), (model.Rows, model.LabelLow, model.LabelHigh));
 
-        // The same six hundred and eighty again on the S&P 400, each one's edge one more: the shift is unpenalised and, the
-        // liquidity spread the same on both indices, apart from the weight, so it is one exactly, and the weight over a
-        // thousand three hundred and sixty rows is 2 x 1360 / 1370 = 272/137, the intercept 3.5 - 1.5 x 272/137 - 0.5 = 3/137.
-        SixHundredEighty(rows, "MID");
+        // The same seven hundred and twenty again on the S&P 400, each one's edge one more: the shift is unpenalised and,
+        // the liquidity spread the same on both indices, apart from the weight, so it is one exactly, and the weight over a
+        // thousand four hundred and forty rows is 2 x 1440 / 1450 = 288/145, the intercept 3.5 - 1.5 x 288/145 - 0.5 = 3/145.
+        SevenHundredTwenty(rows, "MID");
 
         var pooled = Fitted(rows);
 
-        Assert.Equal(272.0 / 137.0, pooled.HookWeights.Single().Weight, 12);
+        Assert.Equal(288.0 / 145.0, pooled.HookWeights.Single().Weight, 12);
         Assert.Equal(1.0, pooled.IndexShifts[0], 12);
         Assert.Equal(0.0, pooled.IndexShifts[1]);
-        Assert.Equal(3.0 / 137.0, pooled.Intercept, 12);
+        Assert.Equal(3.0 / 145.0, pooled.Intercept, 12);
         Assert.Equal(["GSPC", "MID"], pooled.Hundredths.Keys.Order(StringComparer.Ordinal));
     }
 
     [Fact]
     public void AReadingTooFewHoldIsNotWeighedARowMissingAWeighedOneIsLeftOutAndTheReadingThatReadsAheadNever()
     {
-        // Seven hundred setups: liquidity and the VIX each move; the relative strength index is held by 664 of them, one
-        // short of 95 per cent; the VIX is missing on ten, so they are left out; and the weekdays to the next report equal
-        // the edge, which the score never weighs since the history reads it ahead of its session.
+        // Seven hundred and forty setups: liquidity and the VIX each move; the relative strength index is held by 702 of
+        // them, one short of 95 per cent; the VIX is missing on ten, so they are left out; and the weekdays to the next
+        // report equal the edge, which the score never weighs since the history reads it ahead of its session.
         var rows = new ScoreRows();
 
-        for (var at = 0; at < 700; at++)
+        for (var at = 0; at < 740; at++)
         {
             var edge = (2.0 * (at % 4)) + (at % 5);
 
@@ -132,7 +132,7 @@ public partial class FixtureExpectations
                 "GSPC",
                 ScoreSession(at),
                 ScoreSession(at + 10),
-                Weighed(1, ("liquidity", at % 4), ("vix", at < 10 ? null : at % 5), ("rsi", at < 36 ? null : at % 3), ("earnings_sessions", edge)),
+                Weighed(1, ("liquidity", at % 4), ("vix", at < 10 ? null : at % 5), ("rsi", at < 38 ? null : at % 3), ("earnings_sessions", edge)),
                 edge,
                 1);
         }
@@ -140,7 +140,7 @@ public partial class FixtureExpectations
         var model = Fitted(rows);
 
         Assert.Equal(["liquidity", "vix"], model.Readings.Select(reading => LedgerReadings.All[reading].Column));
-        Assert.Equal(690, model.Rows);
+        Assert.Equal(730, model.Rows);
         Assert.DoesNotContain(LedgerReadings.IndexOf("earnings_sessions"), RidgeScore.Weighable);
         Assert.Equal(LedgerReadings.Count - RidgeScore.FamilyOwn.Count - RidgeScore.LookAhead.Count, RidgeScore.Weighable.Count);
 
@@ -153,8 +153,8 @@ public partial class FixtureExpectations
     {
         var rows = new ScoreRows();
 
-        SixHundredEighty(rows, "GSPC");
-        SixHundredEighty(rows, "MID");
+        SevenHundredTwenty(rows, "GSPC");
+        SevenHundredTwenty(rows, "MID");
 
         var model = Fitted(rows);
         var again = Fitted(rows);
@@ -180,12 +180,12 @@ public partial class FixtureExpectations
     {
         var rows = new ScoreRows();
 
-        SixHundredEighty(rows, "GSPC");
+        SevenHundredTwenty(rows, "GSPC");
 
         var model = Fitted(rows);
         double Score(double liquidity) => model.Score(Weighed(1, ("liquidity", liquidity)))!.Value;
 
-        // The six hundred and eighty scores are a hundred and seventy each of the intercept and 136/69, 272/69 and 408/69
+        // The seven hundred and twenty scores are a hundred and eighty each of the intercept and 144/73, 288/73 and 432/73
         // over it: the nearest rank puts hundredths 0 to 25 at the first, 26 to 50 at the second, 51 to 75 at the third and
         // 76 to 100 at the last.
         Assert.Equal(25, model.Rank("GSPC", Score(0)));

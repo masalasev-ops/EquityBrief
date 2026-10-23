@@ -386,9 +386,10 @@ public partial class ArchitectureConformance
         // its parts less its table of every account, and 1379 from the 20.3 correction of the same day, the release
         // checks' store, and 1383 from 20.12, the chart page's graphs and their three marks, and 1396 from 22.1, the dip
         // family's catalogue and matrix rows, its four stores, section 17's row, section 18's four, its card on Tonight and
-        // its trades on Past picks.
+        // its trades on Past picks, and 1400 from 20.8, merged after them, the usefulness store, the Ledger page's and the
+        // Loop page's rows and section 17's window row.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1396),
+            (789, 853, 6, 4, 855, 876, 1400),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

@@ -82,9 +82,10 @@ public partial class FixtureExpectations
         Assert.Null(LedgerReadings.Figure(double.NaN));
         Assert.Equal((1.0, 0.0), (LedgerReadings.Flag(true)!.Value, LedgerReadings.Flag(false)!.Value));
 
-        // The catalogue names each column once.
+        // The catalogue names each column once, and from 20.8 holds the four release readings at its end.
         Assert.Equal(LedgerReadings.All.Count, LedgerReadings.All.Select(reading => reading.Column).Distinct(StringComparer.Ordinal).Count());
-        Assert.Equal(72, LedgerReadings.Count);
+        Assert.Equal(76, LedgerReadings.Count);
+        Assert.Equal(LedgerReleases.Columns, LedgerReadings.All.TakeLast(4).Select(reading => reading.Column));
     }
 
     [Fact]
@@ -274,11 +275,19 @@ public partial class FixtureExpectations
         Assert.Equal(LedgerReadings.Version, SourcePin.Of(sources, LedgerReadings.VersionDeclaration));
 
         // A line of the filling source moved moves the pin, and a comment added does not; and from 17.12 a line of the
-        // valuation reading's definition moved moves it too, and from 19.13 a line of the insiders' readings.
+        // valuation reading's definition moved moves it too, from 19.13 a line of the insiders' readings, and from 20.8 a
+        // line of the release readings' window, of the availability rule or of the questions' words.
         Assert.NotEqual(LedgerReadings.Version, SourcePin.Of([sources[0], sources[1] + "\nvar moved = 1;\n", .. sources[2..]], LedgerReadings.VersionDeclaration));
         Assert.Equal(LedgerReadings.Version, SourcePin.Of([sources[0], sources[1] + "\n// a comment\n", .. sources[2..]], LedgerReadings.VersionDeclaration));
         Assert.NotEqual(LedgerReadings.Version, SourcePin.Of([.. sources[..3], sources[3] + "\nvar moved = 1;\n", .. sources[4..]], LedgerReadings.VersionDeclaration));
-        Assert.NotEqual(LedgerReadings.Version, SourcePin.Of([.. sources[..6], sources[6] + "\nvar moved = 1;\n"], LedgerReadings.VersionDeclaration));
+        Assert.NotEqual(LedgerReadings.Version, SourcePin.Of([.. sources[..6], sources[6] + "\nvar moved = 1;\n", .. sources[7..]], LedgerReadings.VersionDeclaration));
+
+        for (var at = 7; at < 10; at++)
+        {
+            Assert.NotEqual(LedgerReadings.Version, SourcePin.Of([.. sources[..at], sources[at] + "\nvar moved = 1;\n", .. sources[(at + 1)..]], LedgerReadings.VersionDeclaration));
+        }
+
+        Assert.Equal(10, sources.Length);
     }
 
     internal static IReadOnlyList<string> LedgerSources { get; } =
@@ -290,6 +299,9 @@ public partial class FixtureExpectations
         Path.Combine(Repository.Root, "src", "EquityBrief.Core", "Ledger", "FactorReadings.cs"),
         Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Ledger", "FactorRanks.cs"),
         Path.Combine(Repository.Root, "src", "EquityBrief.Core", "Insiders", "InsiderReadings.cs"),
+        Path.Combine(Repository.Root, "src", "EquityBrief.Core", "Ledger", "LedgerReleases.cs"),
+        Path.Combine(Repository.Root, "src", "EquityBrief.Core", "Releases", "ReleaseAvailability.cs"),
+        Path.Combine(Repository.Root, "src", "EquityBrief.Core", "Releases", "ReleaseQuestions.cs"),
     ];
 
     [Fact]

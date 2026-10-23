@@ -26,6 +26,18 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-23 - BUILD_PLAN.md, RUNBOOK.md - 20.8's migration named 106, merged after the migrations 20.11, the 20.3 correction and 22.1 took
+Corrects: 20.8's text named its migration 102, and the build plan's 20.11 text 103, numbers 20.11, the 20.3 correction and 22.1 took while PR 505 waited on the history read; found merging main into PR 505 on the operator's word of 2026-10-23.
+Was:
+> 20.8: ... Migration 102 adds their columns to the setups' table, every row kept in place, ...
+> 20.11: ... by a column migration 102 adds to their results, 20.8's migration moving to 103 on the operator's answer, so ...
+> The release readings in the ledger: ... The file migrates to 102, which adds the four readings' columns to `setup` with every row in place and creates `release_answer_edge`, and runs the ledger's night step over the newest night. ...
+Now:
+> 20.8: ... Migration 106, 20.11 taking 102 on the operator's answer of 2026-10-20 and 103 beside it, the 20.3 correction 104 and 22.1 105 before 20.8 merged, adds their columns to the setups' table, every row kept in place, ...
+> 20.11: ... by a column migration 102 adds to their results, 20.8's migration moving to 103 on the operator's answer and to 106 when 20.8 merged after 22.1, so ...
+> The release readings in the ledger: ... The file migrates to 106, which adds the four readings' columns to `setup` with every row in place and creates `release_answer_edge`, and runs the ledger's night step over the newest night; a night that runs first migrates the store to 106 itself, and the file's migration then finds nothing pending. ...
+Why: a migration is applied by its number in order, and 102 to 105 were taken before 20.8 merged.
+
 ### 2026-10-23 - ARCHITECTURE.html - a new reading version carries across an update of the runtime where the model's file hashes the same
 Authorised by: A new reading version carries each reading whose request and model file are unchanged under any version of the runtime, and reads the rest
 Was:
@@ -1686,6 +1698,38 @@ Now:
 > **It runs from a Release build of `main`.** ... After a merge the checkout is back on `main`, and the page is stopped and started again the same way to serve what merged. Where the merge carries a migration, the page is started again only once the store holds it: `tools/migrate` applies it while nothing writes, the history read stopped for it and started again after, since a page whose checkout reads a newer schema than the store's draws nothing.
 Why: the operator's ruling of 2026-10-19 amends the merge steps so the page is never started over a store behind its checkout.
 
+### 2026-10-19 - .claude/rules/checks.md - fixture-expectations and read-surface state the 20.8 correction's hold on the put
+Authorised by: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+Was:
+> fixture-expectations: ... and the month's report stating the split for a rule reading a release reading |
+> read-surface: ... a proposal reading none drawing no split, each read back off the rendered page over a constructed store |
+Now:
+> fixture-expectations: ... and the month's report stating the split for a rule reading a release reading; and from the 20.8 correction of 2026-10-19 a proposal reading a release reading held back where its total less the rule's over the test years from the cutoff's year is not above nothing, ... and the month's report putting the next and saying the held one is held back with both sides over a constructed store |
+> read-surface: ... each read back off the rendered page over a constructed store; and from the 20.8 correction of 2026-10-19 a passing proposal reading a release reading whose total less the rule's from the cutoff's year is not above nothing drawn held back in those words beneath its two sides and on its card, ... and an approval and a decline of the held one refused writing nothing, none held back before a reading version's history read is complete |
+Why: each roster row says what its check asserts, and the correction's tests extend both.
+
+### 2026-10-19 - BUILD_PLAN.md - 20.8's put held back by the cutoff, and its done condition
+Authorised by: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+Was:
+> ... and the month's report states the same for the proposal put and for each rule whose per-rule test reads one, the pass rule unchanged. The per-rule test walks ...
+> ... the Loop page's split and the monthly run's report are read back over a constructed store; a reading is worked by hand ...
+Now:
+> ... and the month's report states the same for the proposal put and for each rule whose per-rule test reads one, the pass rule unchanged; from the operator's ruling of 2026-10-19, before 20.8 merges, such a proposal is put only where its total less the rule's over the test years from the cutoff's year is also above nothing, one held back saying so in those words on the Loop page, in the month's report and to a press, nothing retired or hidden by it. The per-rule test walks ...
+> ... the Loop page's split and the monthly run's report are read back over a constructed store, and from the 20.8 correction of 2026-10-19 a proposal reading a release reading held back where its total less the rule's from the cutoff's year is not above nothing, worked by hand on both sides of nothing and at it, on the Loop page, its presses and the monthly run's report; a reading is worked by hand ...
+Why: the operator's ruling of 2026-10-19 puts a proposal reading a release reading only where its years from the cutoff stand above nothing.
+
+### 2026-10-19 - ARCHITECTURE.html - a proposal reading a release reading put only where its years from the cutoff stand above nothing
+Authorised by: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+Was:
+> ... the strongest that passed and states a change by its adjusted p-value, leaving out one an earlier decline holds back, or that none is put, and from 20.8 for the one put ... (the monthly run's catalogue row)
+> ... the strongest that passed and states a change by its adjusted p-value, leaving out one an earlier decline holds back, and a press writes one row ... (13's paragraph on the presses)
+> ... the month's report stating the same for the proposal put and for each rule whose per-rule test reads one (see: ...) (15.20's row for a change reading a release reading)
+Now:
+> ... leaving out one an earlier decline holds back and from the 20.8 correction of 2026-10-19 one reading a release reading whose total less the rule's over the test years from the local model's cutoff's year is not above nothing, which it names as held back, or that none is put, and from 20.8 for the one put ...
+> ... leaving out one an earlier decline holds back and from the 20.8 correction of 2026-10-19 one reading a release reading whose total less the rule's over the test years from the local model's cutoff's year is not above nothing, which says so and is refused a press (see: ...), and a press writes one row ...
+> ... the month's report stating the same for the proposal put and for each rule whose per-rule test reads one; from the 20.8 correction of 2026-10-19 such a proposal passing with a change whose total less the rule's over the years from the cutoff's year is not above nothing put to no one and saying so beneath its two sides and on its card as the month's report says it; an approval or a decline of it refused in the same words (see: ...)
+Why: the operator's ruling of 2026-10-19 puts a proposal reading a release reading only where its years from the cutoff stand above nothing, saying so where it does not, and nothing retired or hidden by it.
+
 ### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the 20.3 correction of 2026-10-19
 Authorised by: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
 Was:
@@ -1759,6 +1803,58 @@ Was:
 Now:
 > ... which the same test records anew by hand with a variable set while the history read is stopped, from the operator's ruling of 2026-10-19 through LM Studio's native chat endpoint, a request asked again in one recording answered from its first recording as the replay answers it, ...
 Why: the operator's ruling of 2026-10-19 has the local side recorded again through the native endpoint.
+
+### 2026-10-19 - ARCHITECTURE.html - the release readings join the ledger's catalogue, and what each answer came to
+Authorised by: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+Was:
+> 13.10: Every reading is defined once, in the core's catalogue, and read as it stood: the seventy-two readings of the stock, its business, its insiders and the market, the twenty-two published factors among them from 19.12 and the four insiders' from 19.13, from the bars to the session, the market series to the session's day and the quarters and insiders' filings filed before it, each through the rules' own functions or a ratio over the series' own figures. A reading the inputs do not reach is stored as none and never nought.
+> Setups store row: ... a heavyweights' setup holding no stop, the seventy-two readings as they stood, the twenty-two published factors among them from 19.12 and the four insiders' from 19.13, and the path's result, ...
+> Release readings store row: ... and read by the name page for a stock's newest release and by the accuracy report (see: ...)
+> 15.19 Reads: the ledger's summary for the index chosen, ..., the family's newest settled setups and the chosen setup's closes from the bar store and the kept bars. The page draws them and computes none
+> 15.20 Reads: ... from 17.9 the words given on the index with what the apply step did with each and the settings approvals stored and the live alarm's periods, and the months the index's runs are for. ...
+> Setup ledger catalogue row: ... and from 19.13 after the filings refresh it reads the four insider readings of every setup and member's readings of the night again (see: ...)
+> Walk-forward tester catalogue row: reads ... loop models, loop ideas, candidate register; ... running no procedure and writing nothing (see: The idea generator proposes ...)
+> Monthly run catalogue row: reads loop runs, loop proposals, loop decisions, run log; ... or that none is put; each step one row ...
+> Matrix: the setup ledger's and the tester's rows reading nothing under Research and readings or Sources beyond loop ideas, and the monthly run's nothing under Research and readings
+Now:
+> 13.10 counts seventy-six readings, the four release readings from 20.8 among them, none where the newest readable release's reading was refused or is not held or where no reading version's history read is complete, and each night reads them again in its own rows of the days a slot reads back across. The Setups row counts seventy-six. The Release readings row names the night's families from 20.4 and the setup ledger and the walk-forward tester from 20.8 as readers through the one reader. 15.19 reads what each release answer came to and gains the row What the release readings came to; 15.20 reads the model's cutoff and gains the row A change reading a release reading. The stores gain Release answer edges, section 17 gains Ledger's release readings' window. The setup ledger's, the tester's and the monthly run's catalogue rows say what each does with the release readings, the tester's reads and the monthly run's reads gaining the stores they read, and the setup ledger's and the tester's matrix rows read Research and readings and Sources, the monthly run's Research and readings.
+Why: 20.8 joins the four release readings to the ledger's catalogue and works what each answer came to, split at the model's cutoff.
+
+### 2026-10-19 - SCHEMA.md - the setup's release readings, the members' readings read again, and release_answer_edge
+Authorised by: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+Was:
+> ledger_reading: ... From 19.13 it holds the four insider readings after them, and the setup ledger is its updater too: ... every other reading left as the step wrote it (see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted).
+Now:
+> ledger_reading: the same, and from 20.8 it holds the four release readings after them, each night's step writing those of the rows of the seven days before the night again in place where they differ from what it reads now. The setup table gains release_results, release_outlook, release_tone and release_demand, and release_answer_edge is declared with its one writer, the walk-forward tester.
+Why: migration 102 adds the four columns and the table, and the night's step reads the week before again.
+
+### 2026-10-19 - RUNBOOK.md - what each release answer came to, the tone variant's walk, and 20.8's remedy
+Authorised by: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+Was:
+> ... and `--print` prints the readings beyond the shuffle and writes nothing. The monthly run works it on each index after its point-in-time checks.
+> ... and `--print` prints each rule's verdict and writes nothing. Paper trading and each account's trade log read the newest run on the index.
+Now:
+> the same, the readings' step from 20.8 working what each release answer came to into `release_answer_edge`, the per-rule test walking the tone variant with the month's report splitting each rule and proposal reading a release reading at the cutoff, and a new paragraph, The release readings in the ledger, with 20.8's remedy.
+Why: the operator runs the remedy and reads the two figures 20.8 adds.
+
+### 2026-10-19 - BUILD_PLAN.md - 20.8 as built
+Authorised by: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+Was:
+> Once the history read has completed, since a setup's reading needs its release read. The four release readings join the ledger's catalogue at its end, each the newest release readable on a setup's session and accepted within the 95 days before it, none otherwise, read as it stood. Migration 102 adds their columns to the setups' table, copying every row, and creates the usefulness store, ... Every proposal, verdict or score weight reading a text reading is drawn with its edge in the test years before the cutoff and after it, side by side, on the Loop page and in the month's report, the pass rule unchanged. The remedy runs the three history builds with `--again`, the three point-in-time checks, the registrations the readings' version moves and the usefulness table, and the per-rule test walks the tone variant from the next monthly run. Writes 13.10's count, 15.19's and 15.20's rows, the schema, the runbook, the decision naming the readings' joining and how their use is judged, the roster and the guide.
+Now:
+> the same as built: a refused newest release reading none, the night reading the week before again, the columns added with every row kept in place, the Loop page splitting a proposal reading a release reading and the month's report each such proposal put and rule, the per-rule test walking the tone variant, no rule's version pin moving so the remedy registers nothing, and the parts of the corpus it writes named in full.
+Why: the plan's text is written against what the files say after the checkpoint.
+
+### 2026-10-19 - .claude/rules/checks.md - fixture-expectations, read-surface, rules-choose-the-stocks and nightly-run state the release readings in the ledger
+Authorised by: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
+Was:
+> fixture-expectations: ... and the monthly run's steps built in the order their names state, each index's ideas after its readings' step and before its tester |
+> read-surface: ... and one naming no change drawing none, read back off the rendered page over a constructed store |
+> rules-choose-the-stocks: ... the reader shown to find a planted read of it outside the one reader and to pass the one reader and a source calling it |
+> nightly-run: ... and refuses a run naming no form and a main ahead of origin/main before any worker exists |
+Now:
+> each the same, and from 20.8: fixture-expectations the four readings worked by hand as catalogue readings, what each answer came to, the split, the tone variant's walk, the readings' step, the point-in-time check and the report; read-surface the Ledger page's card and the Loop page's split; rules-choose-the-stocks the setup ledger and the walk-forward tester reading the release readings through the one reader; nightly-run the night's step reading the week before again.
+Why: each roster row says what its check asserts, and 20.8's tests extend all four.
 
 ### 2026-10-19 - RUNBOOK.md - the release history's time as measured
 Corrects: the runbook stated the history fetch at 2.2 hours, 20.0's estimate at the archive's pace, and the fetch of 2026-10-18 took ten and a half, found by its record entry.
