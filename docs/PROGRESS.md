@@ -7354,3 +7354,38 @@ Carried:    the remedy, `tools/remedies/2026-10-23-20.3-correction-pin-5-at-the-
             next version, as GTY's release of 2020-07-22 was at 12:38:12 UTC; the probes' answer check, changed with
             the other three, is reached by no test reading a probe's answer under another runtime; 20.8's remedy; the analyst panels; 22.2;
             20.3's record; the tone variant at the newest complete version; 20.10; the sign-offs of phases 18 and 20.
+
+### 20.13 ruling - the chart page draws the analysts' targets, monthly counts and firms' actions Yahoo answers when it opens, and TipRanks' ratings on a press, at most one call a stock a day and none past the month's limit   2026-10-23
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-23, 20.12's graphs drawing the provider's mean target alone and no firm's
+            rating, after they had asked whether a TipRanks key would help with the analysts. At 04:11 UTC: "THe
+            problem with Tipranks is my subscription only allows 100 calls per month. I am not sure if that will be
+            sufficient"; at 04:15, the key written into the worker's secrets file with its limit: "Once you are done
+            with all the previous steps can you do what you suggested by doing the free yahoo and "get analyst
+            ratings" button if yahoo doesnt suffice. Measure the yahoo vs tipranks on 1-2 stocks first."; at 04:18:
+            "Be extra careful not to leak the tipranks key"; at 04:31, on the measurement below and the recommendation
+            "Yahoo covers the target range, the rating counts and each firm's actions, so build those panels on it.
+            Add the TipRanks button only for "who are the analysts and how good are they". It would use one call per
+            stock, the ratings list alone, since Yahoo already gives the summary.": "ok add your recommendation to the
+            list of things to do tonight when i go off to bed"; and at 14:51, on the plan put to them at 14:49: "Can
+            we get on working on the analyst rating stuff while the read progresses ?"
+Measured:   by scripts outside the repository that stored nothing, the key read from the secrets file and printed
+            nowhere. Yahoo's quote summary, free and keyless once a cookie and a crumb are taken, answered HPQ and ARMK
+            whole at 04:20 UTC: the low, mean, median and high targets with how many analysts set them, HPQ's 19.00,
+            27.52, 29.00 and 33.80 over 17, four months of strong buy to strong sell counts, and every firm's rating
+            action with its old and new grade and target, 378 for HPQ and 191 for ARMK. TipRanks' server answered each
+            stock's recent ratings in one call at 04:28: each analyst's name, firm, rating, target and date, stars,
+            success rate, average return and rank, with the counts of buys, holds and sells over 30 and 90 days and 12
+            months, three calls spent and its own count of the month's calls costing none. Where both list one firm's
+            action the target and the date agree. At 14:56 the count answered with the key in the request's header and
+            in no address: 3 used of 100, reset on 2026-11-01.
+Plan:       checkpoint 20.13 in the build plan, committed with this entry and built in the next commit of its pull
+            request.
+Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.9, 20.11 and 20.12 merged with their records,
+            22.0 planned and ruled, 22.1 merged, the 19.11 correction merged, the 20.3 corrections merged with pin 5
+            written at 60,160; in progress, the history read of the releases pin 5 leaves, and 20.13; next, 20.8's
+            remedy once pin 5 has read its history whole, 22.2, 20.3's record, the tone variant at the newest complete
+            version, 20.10, and the sign-offs of phases 18 and 20 by fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
