@@ -7431,7 +7431,12 @@ Tests:      9 new, 2672 in all: Yahoo's HPQ capture read as sent, its four targe
             seconds and 10 minutes and over an answer of the day to the next day's first second, and the press over an
             answer of the day and a spent month a second before its count starts again and at it; the chart page before
             and after Yahoo answers, ten of a constructed twelve actions, the ratings with the calls used and left and
-            each route's read-back; and the target range worked by hand with Yahoo's months oldest first.
+            each route's read-back; and the target range worked by hand with Yahoo's months oldest first. And 7
+            amended: the chart page's routes, the analysts' and the ratings' beside the quote's; the shipped files
+            holding a client, 26, in two tests; the vocabulary's count read as forty-two; the screens' rows at 253 and
+            their parts at 654; and the phase 13 pair's total at 1417, the first run of the checkpoint script over this
+            checkpoint finding the first of them, and a run of the whole suite the chart page's routes and a run log
+            read the read surface took by its instant, now by the order its rows were written.
 Claims:     1417, 17 new: the analyst job's and the ratings job's catalogue and matrix rows, their three stores, section
             17's three rows, section 18's four, the target range among the marks, and the chart page's firm actions
             and analysts by name.

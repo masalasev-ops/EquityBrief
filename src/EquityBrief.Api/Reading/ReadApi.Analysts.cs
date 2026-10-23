@@ -47,7 +47,7 @@ public sealed partial class ReadApi
         SELECT json_extract(detail, '$.used'), json_extract(detail, '$.limit'), json_extract(detail, '$.resetsAt'), json_extract(detail, '$.readAt')
         FROM run_log
         WHERE stage = $stage AND json_extract(detail, '$.used') IS NOT NULL
-        ORDER BY started_at DESC, run_id DESC
+        ORDER BY rowid DESC
         LIMIT 1;
     ";
 
@@ -123,7 +123,7 @@ public sealed partial class ReadApi
         SELECT started_at, outcome, json_extract(detail, '$.detail')
         FROM run_log
         WHERE stage = $stage AND json_extract(detail, '$.ticker') = $ticker
-        ORDER BY started_at DESC, run_id DESC
+        ORDER BY rowid DESC
         LIMIT 1;
     ";
 

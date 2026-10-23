@@ -291,11 +291,12 @@ public partial class ReadSurface
                 $"<dt>Shares outstanding</dt><dd data-value=\"{Regex.Escape(shares.ToString(CultureInfo.InvariantCulture))}\">[^<]+ at <span class=\"nw\">{provided[0]}</span>, the provider's balance sheet, the filer filing none</dd>",
                 daily);
 
-            // The page asks for nothing but the delayed quote: no picture or script it loads, and no route on it but the
-            // quote's, which the shell's script asks inside the session alone.
+            // The page asks for nothing but the delayed quote and from 20.13 the analysts: no picture or script it loads,
+            // and no route on it but the quote's, which the shell's script asks inside the session alone, Yahoo's and
+            // TipRanks', each asked through a worker job.
             Assert.DoesNotContain(" src=\"", daily, StringComparison.Ordinal);
             Assert.DoesNotContain("<script", daily, StringComparison.Ordinal);
-            Assert.All(Regex.Matches(daily, "data-([a-z-]+)-route=").Select(match => match.Groups[1].Value), route => Assert.Equal("quote", route));
+            Assert.Equal(["analysts", "quote", "ratings"], Regex.Matches(daily, "data-([a-z-]+)-route=").Select(match => match.Groups[1].Value).Distinct().Order(StringComparer.Ordinal));
 
             // Its figures are the name page's: the year's high and low, the market value and the relative strength.
             var name = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/AAPL"));
