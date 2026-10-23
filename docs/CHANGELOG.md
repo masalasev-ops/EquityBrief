@@ -26,6 +26,42 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-23 - ARCHITECTURE.html - a new reading version carries across an update of the runtime where the model's file hashes the same
+Authorised by: A new reading version carries each reading whose request and model file are unchanged under any version of the runtime, and reads the rest
+Was:
+> 7's Local run row: ... and a new version's pin, where the version before differs from it in the fit's rule alone, carries in the write that writes it ... (see: A new reading version carries each reading whose request it would send unchanged and reads the rest)
+> 12.3: ... and the pin's line and its row say how many it carried and how many it left for each reason (see: A new reading version carries each reading whose request it would send unchanged and reads the rest). The instruction asks ...
+> 16's Release readings row: ... (see: A new reading version carries each reading whose request it would send unchanged and reads the rest)
+Now:
+> 7's Local run row: ... and a new version's pin, where the version before differs from it in the fit's rule alone and from the operator's ruling of 2026-10-23 at most in the runtime's version as well, the model's file hashing the same, carries in the write that writes it ... (see: A new reading version carries each reading whose request and model file are unchanged under any version of the runtime, and reads the rest)
+> 12.3: ... and the pin's line and its row say how many it carried and how many it left for each reason. On the operator's ruling of 2026-10-23 the runtime's version is no part of that: a version written after LM Studio updated its runtime by itself carries from one written before it as the sentence before says, where the model's file hashes the same, a runtime of another name carrying nothing, and a carried reading names the version it came from, whose pin names the runtime it was read under (see: A new reading version carries each reading whose request and model file are unchanged under any version of the runtime, and reads the rest). The instruction asks ...
+> 16's Release readings row: ... (see: A new reading version carries each reading whose request and model file are unchanged under any version of the runtime, and reads the rest)
+Why: the operator ruled on 2026-10-23 that an update LM Studio makes to its runtime does not change the model and asks for no whole read of the history, the model's file checked by its hash.
+
+### 2026-10-23 - RUNBOOK.md - pin 4 written under LM Studio's newest runtime carries pin 3's readings where the model's file hashes the same
+Authorised by: A new reading version carries each reading whose request and model file are unchanged under any version of the runtime, and reads the rest
+Was:
+> ... `--pin` then writes pin 4, and where pin 3 differs from it in the fit's rule alone it carries, in the same write, ... (see: A new reading version carries each reading whose request it would send unchanged and reads the rest). Its row on the run log under `local-run` carries the same counts. On the operator's ruling of 2026-10-22 pin 4 is written under LM Studio's newest runtime, the CUDA 12 runtime 2.62.1 selected in the place of pin 3's 2.56.0 with `lms runtime select` and the model unloaded before `--pin`, so pin 4 carries none of pin 3's readings and prints no counts, and the history read reads every release under it, about three days at 250 W. The history read then reads the rest ...
+Now:
+> ... `--pin` then writes pin 4, and where pin 3 differs from it in the fit's rule alone, at whatever version of the same runtime, it carries, in the same write, ... (see: A new reading version carries each reading whose request and model file are unchanged under any version of the runtime, and reads the rest). Its row on the run log under `local-run` carries the same counts. On the operator's ruling of 2026-10-22 pin 4 is written under LM Studio's newest runtime, the CUDA 12 runtime 2.62.1 selected in the place of pin 3's 2.56.0 with `lms runtime select` and the model unloaded before `--pin`, and on their ruling of 2026-10-23 it still carries pin 3's readings, since an update of the runtime leaves the model's file as it was: `--pin` hashes the file whole, and where the hash in `reading_pin` is not pin 3's the update changed the file, pin 4 carries nothing and prints no counts, and the history read reads every release under it, about three days at 250 W. The history read then reads the rest ...
+Why: the operator ruled on 2026-10-23 that the runtime's update asks for no whole read of the history where the model's file is unchanged.
+
+### 2026-10-23 - SCHEMA.md - the release readings' carry holds across an update of the runtime
+Authorised by: A new reading version carries each reading whose request and model file are unchanged under any version of the runtime, and reads the rest
+Was:
+> release_reading: ... and a new version's pin carries the version before's reading of each release whose request it would send unchanged in the write that writes the version (see: A new reading version carries each reading whose request it would send unchanged and reads the rest). ...
+Now:
+> release_reading: ... and a new version's pin carries the version before's reading of each release whose request it would send unchanged in the write that writes the version, from the operator's ruling of 2026-10-23 whatever version of the same runtime each was written under where the model's file hashes the same (see: A new reading version carries each reading whose request and model file are unchanged under any version of the runtime, and reads the rest). ...
+Why: the decision the row cites was superseded on the operator's ruling of 2026-10-23.
+
+### 2026-10-23 - .claude/rules/checks.md - fixture-expectations reaches a carry across an update of the runtime
+Authorised by: A new reading version carries each reading whose request and model file are unchanged under any version of the runtime, and reads the rest
+Was:
+> fixture-expectations: ... and a version carrying only from one differing in the fit's rule alone; and from the second 20.3 correction of 2026-10-22 ...
+Now:
+> fixture-expectations: ... and a version carrying only from one differing in the fit's rule alone, from the 20.3 ruling of 2026-10-23 at whatever version of the same runtime, the carry over the constructed store written across an update of the runtime and one changing the model's file carrying nothing; and from the second 20.3 correction of 2026-10-22 ...
+Why: the correction amends these assertions.
+
 ### 2026-10-23 - ARCHITECTURE.html - the one order, the night's reports, the one-trade row, a failed run again and a trade's waiting buy say where the short-term dip stands
 Corrects: a second review of PR 532 before its merge found rows the dip changed still stating the order without it, the night's reports as taken from every family on a page, no stock listed while any trade for it is open, a failed run again's night row naming its failure, and a waiting buy drawn as waiting where Past picks draws the plan's close.
 Was:

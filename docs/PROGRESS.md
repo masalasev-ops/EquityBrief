@@ -6995,3 +6995,31 @@ Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.7, 20.9, 
             20.10, and the sign-offs of phases 18 and 20 by fresh sessions.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
+
+### 20.3 - correction: a new reading version carries across an update of the runtime where the model's file hashes the same   2026-10-23
+
+Queue:      as the ruling entry above, this correction in progress.
+Ruled:      the 20.3 ruling entry above.
+Corrected:  a version carries from the one before at whatever version of the same runtime, the runtime's name, the
+            model's file by its hash and every other part compared as before, so a runtime of another name and a file
+            an update changed carry nothing. The carry decision superseded, the old one under Previously decided and its
+            citations repointed, 2 in code and 5 in the specs; sections 7, 12.3 and 16, SCHEMA.md, the runbook, the
+            guide, the roster's row and the changelog.
+Tests:      2 amended, 2645 in all: the carry over the constructed store with pin 2 written under runtime 2.62.1 over
+            pin 1's 2.56.0 and its history read answered under 2.62.1, carrying the same three and asking the same
+            five; and the parts' test carrying across the runtime's version alone and nothing across it where the
+            file's hash differs, or across the runtime's name.
+Claims:     1396, none new: two rows and section 12.3's paragraph gain words.
+Mutated:    the rule, stated before the runs: one mutation a property the correction changes or keeps at the edge of
+            the ruling, the smallest edit undoing it alone, each run over the two carry tests with its red predicted,
+            made in this checkout and reverted with the editor. Each went red where predicted and nowhere else: C1 the
+            runtime's version compared again, at both tests; C2 the runtime's name no longer compared, at the parts'
+            test alone, the constructed store's two pins sharing a name.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2645 of 2645 tests ran with none failed,
+            migrations 0 to 105 with none pending, schema version 105, against `data-ci` and never `data`; the phase
+            report 60 tables, 1396 claims, 1396 passing, none out of scope and none unexamined, 1407 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    no remedy: no migration and no request changed; pin 4 under 2.62.1 with its file's hash read beside pin
+            3's and its carry counts, then the history read of the releases it leaves; 20.3's record; the tone variant
+            at pin 4; PR 505; 20.10; the sign-offs of phases 18 and 20.
