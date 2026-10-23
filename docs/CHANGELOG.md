@@ -26,6 +26,54 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-23 - ARCHITECTURE.html - the chart page asks Yahoo for its analysts as it opens and carries a press asking TipRanks for each analyst's rating
+Authorised by: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
+Was:
+> Read API ... writes: run log, research requests, quote requests, watch list, taken trades, loop decisions; from 18.1 a name page's ask ...
+> 15.5: Forty-one marks. ... Rating bars: ... a store holding no count in any month says so (see: Not yet measured is drawn as a dashed outline, never as a pale value). ... Earnings dots: ... say how many hold one (see: The chart page graphs the report's earnings and revenue and the analysts' figures beneath its chart, and no rule reads them from it). ... Target marker: ... A store holding no target or no price says which.
+> 15.22 Reads: ... from 20.12 its earnings dots; and the newest delayed quote inside the regular session. It asks for nothing but the delayed quote, as the name page asks for it.
+> The graphs: from 20.12 the report's own figures drawn as three graphs in a card beneath the chart and above the figures; ... the target marker against the price the page draws beside the report's rating bars by month; each mark degrading as section 15.5 states it; and a key on how to read them (see: The chart page graphs the report's earnings and revenue and the analysts' figures beneath its chart, and no rule reads them from it)
+> Reads and renders: Every number on every screen is in the facts file, the ladder, the listings, the research store, the quotes the quote job stored or the run log, ...
+> No screen fetches from a provider or calls a model. A screen can trigger two things: a research pass, ... and on a name's page for tonight open in the regular session the quote job, ...
+> the matrix's key: ... The fundamentals column holds the estimates the night asked for, which the estimates fetcher alone writes (see: ...).
+> section 20: the build plan's phase 20 checkpoints, 20.0 to 20.12
+Now:
+> Read API ... writes: run log, research requests, quote requests, analyst requests, watch list, taken trades, loop decisions; from 20.13 a chart page's ask for its analysts as it opens and its press asking TipRanks for its ratings ... write an analyst request and start the worker's analyst job or ratings job ...; from 18.1 a name page's ask ...
+> 15.5: Forty-two marks. ... Rating bars: ... From 20.13 the chart page draws Yahoo's own counts in its place where Yahoo has answered: the four months it files oldest first; each as fetched on the day it was asked. ... Earnings dots: ... (see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it). ... Target marker: ... From 20.13 drawn only where Yahoo has not answered for the stock. A new row, Target range: From 20.13 the analysts' targets as Yahoo answered them on one line of prices ...
+> 15.22 Reads: ... the newest delayed quote inside the regular session; and from 20.13 the newest answers Yahoo and TipRanks gave about the stock's analysts and the month's TipRanks calls as the ratings job last read them. It asks for the delayed quote as the name page asks for it, and from 20.13 for the stock's analysts of Yahoo as it opens ... and of TipRanks on its press, each through a worker job and never of the provider itself.
+> The graphs: from 20.12 the report's own figures drawn as graphs ...; the analysts: from 20.13 the target range with Yahoo's counts by month as the rating bars and each firm's action where Yahoo has answered; the target marker ... where it has not ...; with new rows The firm actions and The analysts by name beneath it
+> Reads and renders: ... the quotes the quote job stored, from 20.13 the analysts' answers the analyst job and the ratings job stored, or the run log, ...
+> No screen fetches from a provider or calls a model. A screen can trigger four things: a research pass ...; ... the quote job ...; from 20.13 on a chart page opened with no answer of the New York day stored the analyst job ...; and on the chart page's own press the ratings job ...
+> the matrix's key: ... From 20.13 it holds the answers Yahoo and TipRanks gave about a stock's analysts ... and the research requests column holds the chart page's asks for them beside the asks for a report ...
+> section 20: the build plan's phase 20 checkpoints, 20.0 to 20.13
+Why: the operator's ruling of 2026-10-23 adds 20.13; the provider files no low or high target and no firm's rating, which Yahoo files for nothing, and TipRanks is asked on a press for the analysts by name.
+
+### 2026-10-23 - SCHEMA.md - the read surface writes six tables, a chart page's analyst requests the sixth
+Authorised by: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+Was:
+> **`research_request`, `watch_list`, `taken_trade`, `loop_decision` and `quote_request` are the five tables the read surface writes, and the split on the first is by operation.**
+Now:
+> **`research_request`, `watch_list`, `taken_trade`, `loop_decision`, `quote_request` and `analyst_request` are the six tables the read surface writes, and the split on the first is by operation.**
+Why: 20.13's chart page writes its asks for Yahoo's analysts and TipRanks' ratings, which the analyst job and the ratings job answer in tables of their own.
+
+### 2026-10-23 - BUILD_PLAN.md - 20.12 cites the chart page's graphs under the decision that supersedes it
+Authorised by: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
+Was:
+> No rule, list, gate or plan reads any of them, so no rule's version moves (see: The chart page graphs the report's earnings and revenue and the analysts' figures beneath its chart, and no rule reads them from it).
+Now:
+> No rule, list, gate or plan reads any of them, so no rule's version moves (see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it).
+Why: a superseded decision is cited by no spec.
+
+### 2026-10-23 - .claude/rules/checks.md - fixture-expectations and read-surface reach 20.13's analysts
+Authorised by: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+Was:
+> fixture-expectations: ... and the room's edge a token either side |
+> read-surface: ... and one that wrote them withholding Regenerate with a line saying why |
+Now:
+> fixture-expectations: ... and the room's edge a token either side; and from 20.13 Yahoo's captured answer for HPQ read as it was sent, ... and a failure carrying the key and an address reaching no row or line with either |
+> read-surface: ... and one that wrote them withholding Regenerate with a line saying why; and from 20.13 a chart page's ask for its analysts written and its job started only under the page's own header ... with Yahoo's labels read as the months they name, oldest first |
+Why: each roster row says what its check asserts, and 20.13's tests extend both.
+
 ### 2026-10-23 - CLAUDE.md - the hard rule cites the local run's decision under its new name
 Authorised by: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
 Was:

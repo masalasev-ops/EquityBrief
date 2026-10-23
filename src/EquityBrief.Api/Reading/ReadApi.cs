@@ -893,6 +893,9 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.ResearchRequest, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.QuoteRequest, Touch.Read | Touch.Insert),
             new StoreTouch(Store.LiveQuote, Touch.Read),
+            new StoreTouch(Store.AnalystRequest, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.AnalystView, Touch.Read),
+            new StoreTouch(Store.AnalystRating, Touch.Read),
             new StoreTouch(Store.WatchList, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.TakenTrade, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.TakenRecord, Touch.Read),
@@ -6498,6 +6501,10 @@ public sealed partial class ReadApi : IComponent
     const string NewestQuoteAsk = "SELECT MAX(asked_at) FROM quote_request WHERE ticker = $ticker;";
 
     const string AskQuote = "INSERT INTO quote_request (ticker, asked_at) VALUES ($ticker, $asked_at);";
+
+    // From 20.13 a chart page's ask for its stock's analysts, Yahoo's or TipRanks', written by ReadApi.Analysts' checks.
+    // see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
+    const string AskAnalysts = "INSERT INTO analyst_request (ticker, asked_at, source) VALUES ($ticker, $asked_at, $source);";
 
     const string NewestQuoteOf = @"
         SELECT asked_at, quoted_at, price, previous_close, change, change_pct, night, distances

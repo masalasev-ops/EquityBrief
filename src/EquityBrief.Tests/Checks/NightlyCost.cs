@@ -135,7 +135,9 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/OpenAiCompatibleResearchFeed.cs",
         "src/EquityBrief.Core/Providers/OpenFigiMappingFeed.cs",
         "src/EquityBrief.Core/Providers/TavilySearchFeed.cs",
+        "src/EquityBrief.Core/Providers/TipRanksRatingsFeed.cs",
         "src/EquityBrief.Core/Providers/TreasuryParYieldFeed.cs",
+        "src/EquityBrief.Core/Providers/YahooAnalystFeed.cs",
         "src/EquityBrief.Core/Providers/YahooNasdaqBarFeed.cs",
     ];
 
@@ -316,11 +318,12 @@ public partial class NightlyCost
         // from 18.2, the Treasury's par yield table, one free request a night to the Treasury and none to the provider,
         // and twenty-three from the 2.1 correction that skips a refused member, Yahoo's chart and Nasdaq's quote, asked by the fetch
         // for a member whose row the provider's day file refused, and twenty-four from 20.1, the local run's readings, which
-        // its own process asks of LM Studio and no night does.
+        // its own process asks of LM Studio and no night does, and twenty-six from 20.13, Yahoo's quote summary of a stock's
+        // analysts and TipRanks' ratings, which a chart page's ask and press start and no night does.
         Assert.True(
-            MayHoldAClient.Length <= 24,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are twenty-four feed " +
-            "implementations. A twenty-fifth is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 26,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are twenty-six feed " +
+            "implementations. A twenty-seventh is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: four files, the local lane's client, the local
         // run's reading feed and the paid model's live feed in each of its two formats.

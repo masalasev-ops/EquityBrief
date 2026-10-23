@@ -8,7 +8,7 @@ namespace EquityBrief.Web.Marks;
 // a share against the estimate filed before each, the newest quarters' revenue against net income with the net margin,
 // and the analysts' mean target against the price drawn, the analysts' ratings by month being the report's own bars.
 // see: Marks are defined once and every screen draws from that list
-// see: The chart page graphs the report's earnings and revenue and the analysts' figures beneath its chart, and no rule reads them from it
+// see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
 public sealed partial class MarkRenderer
 {
     // The room beneath a graph's plot for its labels' two rows.

@@ -126,6 +126,8 @@ public enum Store
     EstimateReading,
     EstimateTrend,
     TreasuryYield,
+    AnalystView,
+    AnalystRating,
     ForwardReturn,
     Facts,
     Fundamentals,
@@ -149,6 +151,7 @@ public enum Store
     SeriesState,
     ResearchRequest,
     QuoteRequest,
+    AnalystRequest,
     WatchList,
     RunLog,
 }
@@ -182,6 +185,12 @@ public enum Feed
     // Yahoo's daily chart and Nasdaq's quote, keyless and free, asked by the bar fetcher alone for a member whose row the
     // provider's day file refused.
     SubstituteBar,
+    // Yahoo's quote summary of one stock's analysts, keyless and free, asked by the analyst job alone for a chart page
+    // opened.
+    Analyst,
+    // TipRanks' recent ratings of one stock and its count of the month's calls, on the operator's key, asked by the
+    // ratings job alone on a chart page's press.
+    AnalystRatings,
 }
 
 public readonly record struct StoreTouch(Store Store, Touch Touch);

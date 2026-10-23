@@ -77,7 +77,9 @@ internal static class ComponentVocabulary
     // 20.8 the forward returns column holds what each release answer came to on the settled setups beside the readings'
     // links, each a row the monthly run's readings step works from the ledger. From the 20.3 correction of 2026-10-22 the
     // sources column holds each stored filing's check of the exhibit its page names as the release beside its releases,
-    // each what the SEC's page said of a filing kept.
+    // each what the SEC's page said of a filing kept. From 20.13 the fundamentals column holds the answers Yahoo and
+    // TipRanks gave about a stock's analysts, each a provider's answer about a company, and the research requests column
+    // a chart page's asks for them beside the asks for a report, each a press's request the worker answers.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
@@ -88,7 +90,7 @@ internal static class ComponentVocabulary
         ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick, DataStore.HeavyweightNight, DataStore.HeavyweightRuleNight, DataStore.IndexFamilyNight, DataStore.IndexFamilyPick, DataStore.DipNight, DataStore.DipPick, DataStore.IndexHeavyweightRuleNight, DataStore.SweepAnswer, DataStore.DecisionCard, DataStore.RuleNight, DataStore.FormingRow]),
         ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade, DataStore.HeavyweightHolding, DataStore.HeavyweightRuleHolding, DataStore.IndexFamilyTrade, DataStore.DipTrade, DataStore.IndexHeavyweightHolding, DataStore.IndexRuleTrade, DataStore.IndexHeavyweightRuleHolding, DataStore.RuleRecord, DataStore.RulePick, DataStore.TradeFill, DataStore.Setup, DataStore.SetupNight, DataStore.LedgerSummary, DataStore.LedgerReading, DataStore.LoopRun, DataStore.LoopProposal, DataStore.LoopTest, DataStore.LoopFinding, DataStore.LoopReading, DataStore.LoopModel, DataStore.LoopReference, DataStore.LoopRule, DataStore.LoopRuleYear, DataStore.LoopLink, DataStore.ReleaseAnswerEdge, DataStore.LoopApplied, DataStore.ProvisionalSetting, DataStore.LoopAlarm]),
         ("Facts", [DataStore.Facts]),
-        ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk, DataStore.Company, DataStore.EstimateReading, DataStore.DividendReading, DataStore.EstimateTrend, DataStore.DividendEvent, DataStore.FiledFact, DataStore.FiledFactPull, DataStore.FilingDay, DataStore.InsiderTrade, DataStore.InsiderRead, DataStore.SecTicker]),
+        ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk, DataStore.Company, DataStore.EstimateReading, DataStore.DividendReading, DataStore.EstimateTrend, DataStore.DividendEvent, DataStore.FiledFact, DataStore.FiledFactPull, DataStore.FilingDay, DataStore.InsiderTrade, DataStore.InsiderRead, DataStore.SecTicker, DataStore.AnalystView, DataStore.AnalystRating]),
         ("News", [DataStore.NewsPulse, DataStore.NewsArticle, DataStore.NewsLabel]),
         ("Research and readings", [DataStore.ResearchSection, DataStore.ThemeSection, DataStore.ReadingPin, DataStore.ReleaseReading, DataStore.ReleaseProbe, DataStore.LoopIdea]),
         ("Sources", [DataStore.SourceDocument, DataStore.ReleaseDocument, DataStore.ReleaseCheck, DataStore.ReleaseDay, DataStore.ReleaseFiler]),
@@ -96,7 +98,7 @@ internal static class ComponentVocabulary
         ("Rule versions", [DataStore.RuleVersion]),
         ("Version scores and blocks", [DataStore.VersionScore, DataStore.VersionBlock]),
         ("Series state", [DataStore.SeriesState]),
-        ("Research requests", [DataStore.ResearchRequest, DataStore.QuoteRequest]),
+        ("Research requests", [DataStore.ResearchRequest, DataStore.QuoteRequest, DataStore.AnalystRequest]),
         ("Watch list", [DataStore.WatchList, DataStore.TakenTrade, DataStore.TakenRecord, DataStore.LoopDecision]),
         ("Run log", [DataStore.RunLog]),
     ];
@@ -179,6 +181,8 @@ internal static class ComponentVocabulary
         ["quote feed"] = Feed.Quote,
         ["Treasury yield feed"] = Feed.TreasuryYield,
         ["substitute bar feed"] = Feed.SubstituteBar,
+        ["analyst feed"] = Feed.Analyst,
+        ["ratings feed"] = Feed.AnalystRatings,
     };
 
     // Prose that names a store under a name the mechanical rule does not reach.
@@ -207,6 +211,9 @@ internal static class ComponentVocabulary
         ["long views"] = DataStore.LongView,
         ["live quotes"] = DataStore.LiveQuote,
         ["quote requests"] = DataStore.QuoteRequest,
+        ["analyst requests"] = DataStore.AnalystRequest,
+        ["analyst views"] = DataStore.AnalystView,
+        ["analyst ratings"] = DataStore.AnalystRating,
         ["swings"] = DataStore.Swing,
         ["volume profile"] = DataStore.VolumeProfile,
         ["levels"] = DataStore.Level,

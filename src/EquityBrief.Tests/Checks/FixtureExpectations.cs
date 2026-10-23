@@ -60,6 +60,9 @@ public partial class FixtureExpectations
             // 18.1, the quote job: the day's cap and its three failures.
             .. QuoteRows,
 
+            // 20.13, the analysts' asks of Yahoo a day, TipRanks' calls a month and their four failures.
+            .. AnalystRows,
+
             // 18.2, the report's windows, the dividends history run and the six failures.
             .. ReportRows,
 

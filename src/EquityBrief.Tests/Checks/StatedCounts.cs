@@ -138,7 +138,7 @@ public class StatedCounts
         ["twenty-three"] = 23, ["twenty-four"] = 24, ["twenty-five"] = 25, ["twenty-six"] = 26, ["twenty-seven"] = 27,
         ["twenty-eight"] = 28, ["twenty-nine"] = 29, ["thirty"] = 30, ["thirty-one"] = 31, ["thirty-two"] = 32,
         ["thirty-three"] = 33, ["thirty-four"] = 34, ["thirty-five"] = 35, ["thirty-six"] = 36, ["thirty-seven"] = 37,
-        ["thirty-eight"] = 38, ["thirty-nine"] = 39, ["forty"] = 40, ["forty-one"] = 41,
+        ["thirty-eight"] = 38, ["thirty-nine"] = 39, ["forty"] = 40, ["forty-one"] = 41, ["forty-two"] = 42,
     };
 
     internal static (int Stated, int Parts)? ConditionBreakdown(string text)

@@ -597,6 +597,7 @@ public sealed partial class SinglePageApp : IComponent
           drawing = false;
           paintTheme();
           quoting();
+          analysing();
           marking();
         }
         addEventListener('hashchange', show);
@@ -652,6 +653,54 @@ public sealed partial class SinglePageApp : IComponent
           tick();
           quoteTimer = setInterval(tick, 15000);
         }
+        // A chart page holding no answer of this New York day asks Yahoo for its analysts under the page's own header once,
+        // as it opens, and reads the route back every three seconds for a minute, drawing the section the reply holds once
+        // an answer newer than the one drawn is stored. A press asking TipRanks is read back the same way.
+        // see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
+        let analystTimer = null;
+        function readBack(section, attribute, after) {
+          const route = section.getAttribute(attribute);
+          let tries = 0;
+          const timer = setInterval(async () => {
+            tries++;
+            if (!document.body.contains(section) || tries > 20) { clearInterval(timer); return; }
+            const reply = await fetch(route).then((response) => response.ok ? response.json() : null).catch(() => null);
+            if (!reply) { return; }
+            if (reply.answered && Date.parse(reply.answeredAt) >= after) { clearInterval(timer); section.outerHTML = reply.html; return; }
+            // A run after the ask that stored nothing is stated where the section says what it is waiting for.
+            if (reply.run && Date.parse(reply.run.startedAt) >= after && reply.run.outcome !== 'answered') {
+              clearInterval(timer);
+              const said = section.querySelector('.analysts-said, .ratings-said');
+              if (said) { said.textContent = ' Nothing was stored: ' + reply.run.detail + '.'; said.setAttribute('data-outcome', reply.run.outcome); }
+              for (const button of section.querySelectorAll('button')) { button.disabled = false; }
+            }
+          }, 3000);
+          return timer;
+        }
+        async function analysing() {
+          if (analystTimer) { clearInterval(analystTimer); analystTimer = null; }
+          const section = screen.querySelector('section[data-analysts-route][data-ask="yes"]');
+          if (!section) { return; }
+          const asked = Date.now() - 5000;
+          await fetch(section.getAttribute('data-analysts-route'), { method: 'POST', headers: { '{{{PassHeader}}}': '{{{PassHeaderValue}}}' } }).catch(() => { });
+          analystTimer = readBack(section, 'data-analysts-route', asked);
+        }
+        // The press asking TipRanks for a stock's ratings: sent with the page's own header, what the surface said put beside
+        // it, and the section drawn again once the ratings job has stored an answer newer than the press.
+        // see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+        document.addEventListener('submit', async (event) => {
+          const form = event.target;
+          if (!(form instanceof HTMLFormElement) || !form.classList.contains('ratings-press')) { return; }
+          event.preventDefault();
+          const section = form.closest('section[data-ratings-route]');
+          for (const button of form.querySelectorAll('button')) { button.disabled = true; }
+          const pressed = Date.now() - 5000;
+          const response = await fetch(form.getAttribute('action'), { method: 'POST', headers: { '{{{PassHeader}}}': '{{{PassHeaderValue}}}' } });
+          const said = form.querySelector('.ratings-said');
+          if (said) { said.innerHTML = ' ' + await response.text(); }
+          if (response.status === 202 && section) { readBack(section, 'data-ratings-route', pressed); }
+          else { for (const button of form.querySelectorAll('button')) { button.disabled = false; } }
+        });
         // A written or filed entry of a name page's contents dated after the day this browser last opened the page is
         // marked new. The day is kept in this browser alone, so the store records no visit, and the first visit and the
         // exported file mark nothing.

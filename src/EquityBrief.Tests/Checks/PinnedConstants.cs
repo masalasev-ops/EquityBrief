@@ -330,6 +330,9 @@ public class PinnedConstants
             new("Ledger's release readings' window", "95", Core.Ledger.LedgerReleases.WindowDays, "LedgerReleases.WindowDays"),
             new("Live quotes a day", "500", Core.Quotes.QuoteLimits.DailyCap, "QuoteLimits.DailyCap"),
             new("Quote interval", "5", Core.Quotes.QuoteLimits.IntervalMinutes, "QuoteLimits.IntervalMinutes"),
+            // The analysts' asks of Yahoo, 20.13.
+            new("Analyst asks a day", "100", Core.Analysts.AnalystLimits.DailyCap, "AnalystLimits.DailyCap"),
+            new("Analyst ask interval", "10", Core.Analysts.AnalystLimits.AskAgainMinutes, "AnalystLimits.AskAgainMinutes"),
             new("Report windows", "8", Core.Report.QuarterLines.GrowthQuarters, "QuarterLines.GrowthQuarters"),
             new("Report windows", "12", Core.Report.QuarterLines.MarginQuarters, "QuarterLines.MarginQuarters"),
             new("Report windows", "12", Core.Report.AnalystView.Months, "AnalystView.Months"),

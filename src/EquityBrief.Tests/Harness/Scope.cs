@@ -3526,6 +3526,75 @@ internal static class Scope
             Verdict.Pass,
             "every fixture name's chart page drawing the graphs' card between the chart's and the figures', its prints, the quarter to report next, its quarters' revenue, net income and net margins and its mean target against the newest close each read back against the store by the suite's own queries",
             ByReadSurface),
+        // 20.13, on the operator's ruling of 2026-10-23: the analysts from Yahoo and TipRanks' ratings on a press.
+        [CheckReach.Key("15.5 The mark vocabulary", "Target range")] = new Scoped(
+            Verdict.Pass,
+            "HPQ's targets at a price of 33.76 drawn as a band from the low to the high with the mean, the median and the price each placed by hand, the mean named 18.49 per cent under the price in the loss's class, each element titled and the line beneath naming the analysts, the median and Yahoo's word; an answer holding no high and no price each saying which it lacks",
+            ByReadSurface),
+        [CheckReach.Key("15.22 Chart", "The firm actions")] = new Scoped(
+            Verdict.Pass,
+            "ten of a constructed twelve actions drawn newest first and numbered with the line saying ten of twelve and the other two behind the control, an upgrade's grade from and to and its raised target in the gain's class, and a store holding none and a firm stating no grade or target each saying so",
+            ByReadSurface),
+        [CheckReach.Key("15.22 Chart", "The analysts by name")] = new Scoped(
+            Verdict.Pass,
+            "the press with the calls used and left the newest run read beside it, the sixteen ratings TipRanks answered for HPQ drawn with their records and the counts over the three spans, and no answer stored saying a press spends a call; the press refused over an answer of the stock's New York day and over a spent month a second before the count starts again and let through at its instant",
+            ByReadSurface),
+        [CheckReach.Key(CatalogueTable, "Analyst job")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the analyst views it inserts, the run log it reads and writes and the analyst feed it asks, and the declaration matches this row, its matrix row and SCHEMA's ownership",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Analyst job")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Ratings job")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the analyst ratings it reads and inserts, the run log it writes and the ratings feed it asks, and the declaration matches this row, its matrix row and SCHEMA's ownership",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Ratings job")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Analyst requests")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Analyst views")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Analyst ratings")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Analyst asks a day")] = new Scoped(
+            Verdict.Pass,
+            "a New York day holding 99 runs that asked asks once more and one holding 100 asks nothing and says the cap was reached, a run of the evening before and one that asked nothing counting none, over a constructed store; the figure read off the document against the constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Analyst ask interval")] = new Scoped(
+            Verdict.Pass,
+            "an ask nine minutes and fifty-nine seconds after the stock's newest writes and starts nothing and one ten minutes after it writes and starts the job; the figure read off the document against the constant",
+            ByReadSurface),
+        [CheckReach.Key(LimitsTable, "TipRanks calls a month")] = new Scoped(
+            Verdict.Pass,
+            "at the limit no ratings are asked and one under it they are, the secrets file's limit and TipRanks' own each the lesser, over constructed counts",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "Yahoo answers a stock's analysts with none, or does not answer")] = new Scoped(
+            Verdict.Pass,
+            "an answer holding no analysts and a failure each storing nothing, the failure's address taken out of its run's words, over a constructed store, and Yahoo's own answer for a symbol it does not know read as none",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The day's asks of Yahoo reach their cap")] = new Scoped(
+            Verdict.Pass,
+            "the ask after the 100th of the New York day asks nothing and stores nothing, its run saying the cap was reached, and the next day's first ask asks",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The month's TipRanks calls are spent")] = new Scoped(
+            Verdict.Pass,
+            "the job asking for no ratings where the count reaches the limit and its row naming the limit, over constructed counts",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "TipRanks does not answer, or answers with an error")] = new Scoped(
+            Verdict.Pass,
+            "a failure whose words carry the key and an address storing nothing with neither reaching the run's row or its line, the count read again after it, a count that cannot be read asking no ratings, and the feed asking the ratings once on a transient refusal",
+            ByExpectations),
         // 17.3, the Ledger page: its six parts and its summary's store.
         [CheckReach.Key(StoresTable, "Ledger summaries")] = new Scoped(
             Verdict.Pass,
@@ -5816,6 +5885,10 @@ internal static class Scope
         ["Alarm periods"] = "17.9",
         // 18.1's request, which the plan names as the request the read surface writes; the live quotes derive from it.
         ["Quote requests"] = "18.1",
+        // 20.13's two the plan calls SCHEMA's tables and names no other way; its third, the analyst ratings, the plan
+        // names.
+        ["Analyst requests"] = "20.13",
+        ["Analyst views"] = "20.13",
         // 18.2's three, which the plan names as the trend the fetch keeps, the bulk dividends and the Treasury yield.
         ["Estimate trends"] = "18.2",
         ["Dividend events"] = "18.2",
@@ -6281,6 +6354,9 @@ internal static class Scope
         [CheckReach.Key("15.5 The mark vocabulary", "Income bars")] = "20.12",
         [CheckReach.Key("15.5 The mark vocabulary", "Target marker")] = "20.12",
         [CheckReach.Key("15.22 Chart", "The graphs")] = "20.12",
+        [CheckReach.Key("15.5 The mark vocabulary", "Target range")] = "20.13",
+        [CheckReach.Key("15.22 Chart", "The firm actions")] = "20.13",
+        [CheckReach.Key("15.22 Chart", "The analysts by name")] = "20.13",
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks, a bar for each of the last twenty evenings split into the names new that evening and those the evening before also listed")] = "12.3",
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks, the night's split in words")] = "12.3",
         [CheckReach.Key("15.10 Run", "Research and spend, the month's spend against the month cap")] = "12.3",
@@ -7492,6 +7568,10 @@ internal static class Scope
         ["A quote asked outside the regular session"] = "18.1",
         ["The day's quotes reach their cap"] = "18.1",
         ["The provider answers a quote with no price, or does not answer"] = "18.1",
+        ["Yahoo answers a stock's analysts with none, or does not answer"] = "20.13",
+        ["The day's asks of Yahoo reach their cap"] = "20.13",
+        ["The month's TipRanks calls are spent"] = "20.13",
+        ["TipRanks does not answer, or answers with an error"] = "20.13",
         // 18.2's six, which the plan names by the raw table drawn where none sums and the Treasury yield read once.
         ["The Treasury refuses, or answers in a form that cannot be read"] = "18.2",
         ["A segment table whose segments sum to no total"] = "18.2",
@@ -7705,6 +7785,9 @@ internal static class Scope
         // 18.1's cap and interval, which the plan names as the day's cap and the five minutes.
         ["Live quotes a day"] = "18.1",
         ["Quote interval"] = "18.1",
+        ["Analyst asks a day"] = "20.13",
+        ["Analyst ask interval"] = "20.13",
+        ["TipRanks calls a month"] = "20.13",
         // 18.2's two, which the plan names as the eight quarters, the twelve and the pull of the dividends' history.
         ["Report windows"] = "18.2",
         ["Dividend history run"] = "18.2",

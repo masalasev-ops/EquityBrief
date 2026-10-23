@@ -100,7 +100,7 @@ public static class ChartScreen
     // From 20.12 the graphs' figures, each the report's own: the stored reactions' estimates and reported earnings a share
     // with the consensus for the quarter to report next, the quarters' revenue and net income, and the analysts' figures
     // with the price the report read them at.
-    // see: The chart page graphs the report's earnings and revenue and the analysts' figures beneath its chart, and no rule reads them from it
+    // see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
     static ChartGraphs Graphs(ChartInputs inputs)
     {
         var analysts = inputs.Report.Analysts;

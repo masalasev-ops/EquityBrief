@@ -22,6 +22,14 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "Live quotes"),
     ];
 
+    // The rows 20.13 adds that this check reaches: the analyst requests, the analyst views and the analyst ratings.
+    internal static string[] AnalystStoreRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Analyst requests"),
+        CheckReach.Key(Scope.StoresTable, "Analyst views"),
+        CheckReach.Key(Scope.StoresTable, "Analyst ratings"),
+    ];
+
     // 18.2's three: the estimate trend the quarters fetch keeps, the dividends kept and the Treasury's 10-year.
     internal static string[] ReportStoreRows =>
     [
@@ -100,6 +108,9 @@ public class SchemaColumns
         [
             // 18.1, the quote's two stores.
             .. QuoteStoreRows,
+
+            // 20.13, the analysts' three stores.
+            .. AnalystStoreRows,
 
             // 18.2, the report's three stores.
             .. ReportStoreRows,

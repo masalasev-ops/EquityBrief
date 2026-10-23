@@ -1067,6 +1067,12 @@ th.tipped:hover .head-tip,th.tipped:focus-within .head-tip{display:block}
 .ib-margin{fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round} .ib-margin-dot,.lg-swatch.ib-margin{fill:var(--ink);stroke:none}
 .tm-price{fill:var(--ink)} .tm-target{fill:var(--surface);stroke:var(--ink-2);stroke-width:2}
 .tm-against{font-size:13px;font-weight:700}
+.tr-range{fill:var(--s3);stroke:var(--ink-2);stroke-width:1} .tr-mean{fill:var(--ink)} .tr-median{fill:var(--surface);stroke:var(--ink);stroke-width:1.5}
+.firm-actions .muted,.tipranks-ratings .muted{font-size:13px;margin:4px 0 6px}
+.more-actions summary{cursor:pointer;font-size:13px;margin:6px 0}
+.ratings-press{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 8px}
+.ratings-calls,.ratings-said{font-size:13px;color:var(--soft)}
+.tr-article{display:block;font-size:12px}
 .chart-graphs .rt-strong-buy{fill:var(--up)} .chart-graphs .rt-buy{fill:var(--up);fill-opacity:.5} .chart-graphs .rt-sell{fill:var(--down);fill-opacity:.5} .chart-graphs .rt-strong-sell{fill:var(--down)}
 .route-times code{font-size:12.5px}
 .m-barlab-in{font-size:11px;font-weight:600;fill:var(--surface);font-variant-numeric:tabular-nums} .m-barlab-out{font-size:11px;font-weight:600;fill:var(--ink);font-variant-numeric:tabular-nums}

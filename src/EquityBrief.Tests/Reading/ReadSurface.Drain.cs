@@ -52,6 +52,25 @@ public partial class ReadSurface
             return new DrainStart(true, Line);
         }
 
+        // Each analyst job and ratings job asked for, with the stock and the instant its page asked.
+        public List<(string Ticker, DateTimeOffset AskedAt)> Analysts { get; } = [];
+
+        public List<(string Ticker, DateTimeOffset AskedAt)> Ratings { get; } = [];
+
+        public DrainStart StartTheAnalysts(string ticker, DateTimeOffset askedAt)
+        {
+            Analysts.Add((ticker, askedAt));
+
+            return new DrainStart(true, Line);
+        }
+
+        public DrainStart StartTheRatings(string ticker, DateTimeOffset askedAt)
+        {
+            Ratings.Add((ticker, askedAt));
+
+            return new DrainStart(true, Line);
+        }
+
         // Each Write now press's drain asked for, with the name and whether at the peak price.
         public List<(string Ticker, bool AtPeak)> Now { get; } = [];
 

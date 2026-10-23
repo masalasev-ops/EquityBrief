@@ -239,6 +239,8 @@ Moving to a new machine: copy the checkout, copy the store file, write the secre
 | Claude, the key every Claude profile names | `EquityBrief:Models:Claude:ApiKey` | `EquityBrief.Worker` |
 | Claude's workspace, where the key is not scoped to one | `EquityBrief:Models:Claude:WorkspaceId` | `EquityBrief.Worker` |
 | Tavily, the search tool | `EquityBrief:Providers:Tavily:ApiKey` | `EquityBrief.Worker` |
+| TipRanks, the chart page's press for each analyst's rating, from 20.13 | `EquityBrief:Providers:TipRanks:ApiKey` | `EquityBrief.Worker` |
+| TipRanks' month's calls, the number the line opens with | `EquityBrief:Providers:TipRanks:Limit` | `EquityBrief.Worker` |
 
 **The archive's row is a contact and not a key, and it is written here for the same reason the key is.** The archive needs no key and refuses a request that names no user agent, and its fair-access policy asks that the agent carry contact details, so the setting is what a request declares about this installation rather than what authorises it. A blank one refuses at startup for the reason a blank key does. Put a dedicated address there, an alias or a plus-addressed variant rather than a personal mailbox: the value goes out in the header of every archive request for the life of the installation, and it sits in this file beside the keys, where anything identifying a person is one more thing that must never reach a captured fixture (see: The archive declares a contact in its user agent, and a blank one refuses at startup).
 
@@ -448,6 +450,28 @@ dotnet run --project src/EquityBrief.Worker -- quote --ticker CVX --asked 2026-1
 It checks the session and the day's cap of 500 quotes, read as the quotes stored inside the session, asks the provider once, at one weighted call a listing, and stores the price, its own time, the previous close, the change and each band of the name's newest night with its distance at the price in `live_quote`. It prints what it came to: quoted, session closed, cap reached, no price, or failed with why; only quoted stores a row. The quote is delayed 15 to 20 minutes, and the masthead says so with the quote's own time in New York.
 
 **Where to look.** Each run writes one row under the stage `quote` and its own run, `quote-<instant>-<TICKER>`, with its request and its weighted calls. The Run page's research and spend region draws the night's session's quotes against the cap, how long after its own time each was asked by the median and the longest, and the runs by what each came to; the cap is settled there over the first five sessions after the quote job merges (owes: The day's live quotes stay under their cap on the first five sessions).
+
+### The analysts on a stock's chart page
+
+From 20.13 a stock's chart page draws the analysts as Yahoo answers for them: the targets from low to high against the price the page draws, the strong buy to strong sell counts of the months Yahoo files, and each firm's rating action, newest first (see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it). The page's script asks once as the page opens where no answer of the stock's New York day is stored, and the read surface writes the ask to `analyst_request` and starts the worker's `analysts` verb as a process of its own, as it starts the quote job; an ask inside the 10 minutes of the stock's last writes nothing and starts nothing. Until Yahoo answers, the page draws the provider's mean target and the report's rating bars, and once it has, the script draws the answer in their place. The verb runs by hand the same way, with the stock and the instant to answer for:
+
+```
+dotnet run --project src/EquityBrief.Worker -- analysts --ticker HPQ --asked 2026-10-23T15:00:00Z
+```
+
+It checks the cap of 100 asks of Yahoo a New York day, read as its runs of the day that asked, asks Yahoo's quote summary once, free and keyless, under the cookie and the crumb Yahoo answers first, three requests in all, and stores what Yahoo sent in `analyst_view`. It prints what it came to: answered, cap reached, no analysts, or failed with why; only answered stores a row.
+
+Beside them the page carries a press, *Get analyst ratings*, which asks TipRanks for each analyst's newest rating of the stock with the analyst's record, the calls used and left this month drawn beside it (see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit). The read surface refuses the press where an answer of the stock's New York day is stored, and while the newest count the ratings job read says the month's calls are spent until the count starts again; otherwise it writes the ask and starts the worker's `analyst-ratings` verb, which runs by hand the same way:
+
+```
+dotnet run --project src/EquityBrief.Worker -- analyst-ratings --ticker HPQ --asked 2026-10-23T15:00:00Z
+```
+
+It asks nothing for a stock answered on its New York day; otherwise it asks TipRanks' own count of the month's calls, which spends none, asks nothing more where the calls used reach the limit, and otherwise asks once for the ratings, the one call a press spends, and never asks that call again on a failure. It stores the answer in `analyst_rating` and prints answered, asked today, limit reached, no ratings, or failed with why.
+
+**The key and the limit.** The ratings job reads the operator's TipRanks key and the month's calls their subscription allows from the worker's `appsettings.Secrets.json`, under `EquityBrief:Providers:TipRanks:ApiKey` and `EquityBrief:Providers:TipRanks:Limit`; the limit is read from the whole number it opens with, so `100 Calls/Month` reads as 100, and the job holds to the lesser of it and the limit TipRanks' own count states. The key is the one TipRanks' server at `mcp.tipranks.com` answers to, and goes to it alone in each request's header and in no address; every word a failure carries is redacted of it before it reaches a row, the console or the page. A missing key ends the verb with a line naming the setting and asks nothing.
+
+**Where to look.** Each run writes one row under the stage `analysts` or `analyst-ratings` and its own run, `analysts-<instant>-<TICKER>` or `analyst-ratings-<instant>-<TICKER>`, with its requests; a ratings run's detail carries the month's calls as it last read them, used, the limit, when the count starts again and when it was read, which the chart page draws beside the press. Where a run after an ask stores nothing, the chart page says so with the run's own words.
 
 ### Exporting one name's report
 

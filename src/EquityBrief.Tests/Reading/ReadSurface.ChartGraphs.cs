@@ -12,7 +12,7 @@ namespace EquityBrief.Tests.Reading;
 // prints and the quarters they read worked by hand; and the graphs read back off every fixture name's chart page against
 // the store.
 // see: Marks are defined once and every screen draws from that list
-// see: The chart page graphs the report's earnings and revenue and the analysts' figures beneath its chart, and no rule reads them from it
+// see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
 public partial class ReadSurface
 {
     // The rows 20.12 adds that this check reaches: section 15.5's three marks and section 15.22's graphs.

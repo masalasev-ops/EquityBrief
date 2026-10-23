@@ -42,6 +42,18 @@ public interface IDrainLauncher
     DrainStart StartTheQuote(string ticker, DateTimeOffset askedAt) =>
         new(false, "The quote was not asked, because this surface holds no way to start the worker.");
 
+    // The analyst job for one stock's analysts, which a chart page opened starts as a process of its own once its ask is
+    // written, handed the stock and the instant the page asked.
+    // see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
+    DrainStart StartTheAnalysts(string ticker, DateTimeOffset askedAt) =>
+        new(false, "Yahoo was not asked, because this surface holds no way to start the worker.");
+
+    // The ratings job for one stock's TipRanks ratings, which a chart page's press starts as a process of its own once its
+    // ask is written.
+    // see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+    DrainStart StartTheRatings(string ticker, DateTimeOffset askedAt) =>
+        new(false, "TipRanks was not asked, because this surface holds no way to start the worker.");
+
     // The drain writing one named request now, ahead of the queue, which the queue page's Write now press starts,
     // at the peak price where the press confirmed it.
     // see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
@@ -105,6 +117,17 @@ public sealed class WorkerDrainLauncher(
     public static IReadOnlyList<string> AskTheQuote(string ticker, DateTimeOffset askedAt) =>
         [QuoteVerb, "--ticker", ticker, "--asked", askedAt.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)];
 
+    // The verbs that ask one stock's analysts of Yahoo and its ratings of TipRanks, and their two flags.
+    public const string AnalystsVerb = "analysts";
+
+    public const string RatingsVerb = "analyst-ratings";
+
+    public static IReadOnlyList<string> AskTheAnalysts(string ticker, DateTimeOffset askedAt) =>
+        [AnalystsVerb, "--ticker", ticker, "--asked", askedAt.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)];
+
+    public static IReadOnlyList<string> AskTheRatings(string ticker, DateTimeOffset askedAt) =>
+        [RatingsVerb, "--ticker", ticker, "--asked", askedAt.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)];
+
     // The folder under the data root the copies are made in.
     public const string CopiesFolder = "drains";
 
@@ -153,6 +176,12 @@ public sealed class WorkerDrainLauncher(
 
     public DrainStart StartTheQuote(string ticker, DateTimeOffset askedAt) =>
         Launch(AskTheQuote(ticker, askedAt), "The quote has been asked as a process of its own.", "the page keeps the last stored price");
+
+    public DrainStart StartTheAnalysts(string ticker, DateTimeOffset askedAt) =>
+        Launch(AskTheAnalysts(ticker, askedAt), "Yahoo is being asked as a process of its own.", "the page keeps the analysts it drew");
+
+    public DrainStart StartTheRatings(string ticker, DateTimeOffset askedAt) =>
+        Launch(AskTheRatings(ticker, askedAt), "TipRanks is being asked as a process of its own.", "the page keeps the ratings it drew");
 
     // The flags match the worker's own, which this project cannot reference.
     public static IReadOnlyList<string> WriteNow(string ticker, bool atPeak) =>
