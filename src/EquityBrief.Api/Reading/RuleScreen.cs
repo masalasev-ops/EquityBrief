@@ -43,7 +43,8 @@ public static class RuleScreen
     public static string QueryKey(string family) => family;
 
     // Each card with the rule the link chooses for it, the live rule where the link names none or names one that
-    // does not stand, read off the register as it stood at the night's end and the rows the night stored.
+    // does not stand, read off the register as it stood at the night's end, or as of the instant given where the page
+    // reads it later, and the rows the night stored.
     public static IReadOnlyList<FamilyCardView> WithRules(
         IReadOnlyList<FamilyCardView> cards,
         string indexName,
@@ -55,11 +56,12 @@ public static class RuleScreen
         IReadOnlyList<RulePickRow> picks,
         IReadOnlyList<FormingRow> forming,
         bool marketOpen,
-        IndexRuleSettings? provisional = null) =>
+        IndexRuleSettings? provisional = null,
+        DateTimeOffset? asOf = null) =>
     [
         .. cards.Select(card => card with
         {
-            RuleChoice = Of(card, indexName, large, night, register, chosen(QueryKey(card.Family)), nights, picks, forming, marketOpen, provisional),
+            RuleChoice = Of(card, indexName, large, night, register, chosen(QueryKey(card.Family)), nights, picks, forming, marketOpen, provisional, asOf),
         }),
     ];
 
@@ -74,9 +76,10 @@ public static class RuleScreen
         IReadOnlyList<RulePickRow> picks,
         IReadOnlyList<FormingRow> forming,
         bool marketOpen,
-        IndexRuleSettings? provisional)
+        IndexRuleSettings? provisional,
+        DateTimeOffset? asOf)
     {
-        var standing = Standing(card.Family, large, indexName, register, night);
+        var standing = Standing(card.Family, large, indexName, register, night, asOf);
         var (live, variants) = LiveAndVariants(standing);
         var liveChips = live is not null ? ChipsOf(live) : !large && provisional is not null ? ProvisionalChips(card.Family, provisional) : [];
         var choices = new List<RuleChoiceView> { new(live?.Candidate ?? (large ? LiveChoice : ProvisionalChoice), RuleScreenWords.LiveSlug, null, true, LiveTab(live)) };
@@ -100,10 +103,11 @@ public static class RuleScreen
             row is { Evaluated: true, Stretch: { } stretch } && card.Family != HeavyweightRule.Name ? new StretchLineView(stretch, row.Mark, row.Flagged, row.Completed ?? 0, row.Sessions ?? 0) : null,
             card.Family == BreakoutRule.Name && row is not null ? FormingOf(forming.Where(one => one.Rule == ruleName).ToArray(), marketOpen) : null,
             row?.Evaluated ?? false,
-            large || variants.Length > 0 ? null : NoVariantLine(indexName),
+            large || live is not null || variants.Length > 0 ? null : NoVariantLine(indexName),
             Chips: ChipViews(liveChips, chosen.Live ? liveChips : ChipsOf(chosenRow!), !chosen.Live),
             Share: own is null ? null : ShareOf(large || live is not null, card.Passes ?? [], [.. own.Select(pick => pick.Ticker)]),
-            Words: words);
+            Words: words,
+            Reached: row?.Gates is { } stored ? RuleRows.ReachedOf(stored) : null);
     }
 
     // The live or provisional rule's tab: live where a freeze registered one, provisional otherwise, as the card's pill
@@ -112,9 +116,9 @@ public static class RuleScreen
 
     // A family's rules standing on an index past a night as its card names them: its live rule where one stands, and each
     // variant with its tab's words, numbered by its first registration, which paper trading names its accounts by.
-    public static (CandidateRow? Live, IReadOnlyList<(CandidateRow Row, string Tab)> Variants) Accounts(string family, bool large, string indexName, IReadOnlyList<CandidateRow> register, DateOnly night, IndexRuleSettings? provisional = null)
+    public static (CandidateRow? Live, IReadOnlyList<(CandidateRow Row, string Tab)> Variants) Accounts(string family, bool large, string indexName, IReadOnlyList<CandidateRow> register, DateOnly night, IndexRuleSettings? provisional = null, DateTimeOffset? asOf = null)
     {
-        var (live, variants) = LiveAndVariants(Standing(family, large, indexName, register, night));
+        var (live, variants) = LiveAndVariants(Standing(family, large, indexName, register, night, asOf));
         var liveChips = live is not null ? ChipsOf(live) : !large && provisional is not null ? ProvisionalChips(family, provisional) : [];
 
         return (live, [.. variants.Select((row, at) => (row, RuleChips.TabWords(at + 1, RuleChips.Differing(liveChips, ChipsOf(row)))))]);
@@ -179,8 +183,9 @@ public static class RuleScreen
 
     // An S&P 400's or 600's provisional rule's chips, read off the settings its night stored as a registration would
     // state them: its family's dials and the levels every provisional rule holds, the profit gate where the night read
-    // one, its own breadth and the dollar volume floor at one times; and the fundamentals-first family's on any index, off
-    // the setting its night stored.
+    // one, its own breadth at the floor its night stored and the dollar volume floor at one times; and the
+    // fundamentals-first family's on any index, off the setting its night stored.
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
     public static IReadOnlyList<RuleChip> ProvisionalChips(string family, IndexRuleSettings settings)
     {
         var p = new Dictionary<string, double>(StringComparer.Ordinal)
@@ -189,6 +194,7 @@ public static class RuleScreen
             [IndexRuleCandidate.LowestCloseParameter] = EquityBrief.Core.Prices.Statistic.FromPrice(settings.LowestPrice),
             [IndexRuleCandidate.QualityParameter] = settings.ProfitQuarters is null ? 0 : 1,
             [IndexRuleCandidate.LargeBreadthParameter] = 0,
+            [IndexRuleCandidate.BreadthFloorParameter] = settings.MarketFloor,
         };
 
         static double? Dial(IReadOnlyDictionary<string, string> dials, string name) =>
@@ -234,6 +240,7 @@ public static class RuleScreen
 
             case HeavyweightRule.Name:
                 p.Remove(IndexRuleCandidate.LargeBreadthParameter);
+                p.Remove(IndexRuleCandidate.BreadthFloorParameter);
                 p.Remove(IndexRuleCandidate.LowestCloseParameter);
                 p[IndexHeavyweightCandidate.DesignParameter] = IndexHeavyweightCandidate.DesignA;
                 Set(IndexHeavyweightCandidate.LargestParameter, settings.Heavyweights.GetValueOrDefault("size") == "every" ? 0 : Dial(settings.Heavyweights, "size"));
@@ -303,9 +310,9 @@ public static class RuleScreen
     // chooses under the family's own key, the live rule where it names none or one that does not stand; with the chosen
     // variant's name, whose own book the card is then drawn from.
     // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
-    public static (RuleView Rule, string? Variant) Heavyweights(string indexName, bool large, DateOnly night, IReadOnlyList<CandidateRow> register, string? asked, string liveWords, IReadOnlyList<SixSettingsVerdict>? sixSettings = null, IndexRuleSettings? provisional = null)
+    public static (RuleView Rule, string? Variant) Heavyweights(string indexName, bool large, DateOnly night, IReadOnlyList<CandidateRow> register, string? asked, string liveWords, IReadOnlyList<SixSettingsVerdict>? sixSettings = null, IndexRuleSettings? provisional = null, DateTimeOffset? asOf = null)
     {
-        var standing = Standing(HeavyweightRule.Name, large, indexName, register, night);
+        var standing = Standing(HeavyweightRule.Name, large, indexName, register, night, asOf);
         var (live, variants) = LiveAndVariants(standing);
         var liveChips = live is not null ? ChipsOf(live) : !large && provisional is not null ? ProvisionalChips(HeavyweightRule.Name, provisional) : [];
         var choices = new List<RuleChoiceView> { new(live?.Candidate ?? (large ? LiveChoice : ProvisionalChoice), RuleScreenWords.LiveSlug, null, true, LiveTab(live)) };
@@ -327,7 +334,7 @@ public static class RuleScreen
                 null,
                 null,
                 true,
-                large || variants.Length > 0 ? null : NoVariantLine(indexName),
+                large || live is not null || variants.Length > 0 ? null : NoVariantLine(indexName),
                 untested,
                 ChipViews(liveChips, chosenRow is null ? liveChips : ChipsOf(chosenRow), chosenRow is not null),
                 Words: words),
@@ -404,11 +411,14 @@ public static class RuleScreen
         return new UntestedLineView(line, verdict.Adjusted);
     }
 
-    // The rules of a family standing on an index at the night's end: on the S&P 500 the family's own evaluators' rows,
-    // and on the S&P 400 or 600 the index's rules of the family.
-    static IReadOnlyList<CandidateRow> Standing(string family, bool large, string indexName, IReadOnlyList<CandidateRow> register, DateOnly night)
+    // The rules of a family standing on an index at the night's end, or as of the instant given where the page reads the
+    // register later: on the S&P 500 the family's own evaluators' rows, and on the S&P 400 or 600 the index's rules of the
+    // family. The rule of the day before an S&P 400 or 600 freeze, kept in the background, is on no card's tabs and in no
+    // account: its record is read on the Run page alone.
+    // see: A freeze on the S&P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions
+    static IReadOnlyList<CandidateRow> Standing(string family, bool large, string indexName, IReadOnlyList<CandidateRow> register, DateOnly night, DateTimeOffset? asOf = null)
     {
-        var at = TonightScreen.PastTheNight(night);
+        var at = asOf ?? TonightScreen.PastTheNight(night);
         var rows = CandidateFamily.StandingBefore(
             [
                 .. register.Select(row => new RegisterRow(
@@ -421,7 +431,7 @@ public static class RuleScreen
         return
         [
             .. rows
-                .Where(row => CandidateEvaluators.Find(row.Evaluator) is { } evaluator && OfTheFamily(evaluator, family, large, indexName))
+                .Where(row => !FamilyRecords.IsBackground(row.Candidate) && CandidateEvaluators.Find(row.Evaluator) is { } evaluator && OfTheFamily(evaluator, family, large, indexName))
                 .Select(row => byName[row.Id]),
         ];
     }
@@ -503,8 +513,9 @@ public static class RuleScreen
     }
 
     // The live rules over their mark on the night, which the Run page carries among the things to worry about: a family's
-    // live rule as the register stood past the night, the rule an approved change replaced being a variant.
-    public static IReadOnlyList<(string Family, string Rule, int Stretch, int Mark)> Flagged(IReadOnlyList<RuleNightRow> nights, DateOnly night, IReadOnlyList<CandidateRow> register)
+    // live rule as the register stood past the night, or as of the instant given where the page reads it later, the rule
+    // an approved change replaced being a variant.
+    public static IReadOnlyList<(string Family, string Rule, int Stretch, int Mark)> Flagged(IReadOnlyList<RuleNightRow> nights, DateOnly night, IReadOnlyList<CandidateRow> register, DateTimeOffset? asOf = null)
     {
         var standing = CandidateFamily.StandingBefore(
             [
@@ -512,7 +523,7 @@ public static class RuleScreen
                     row.Id, row.Candidate, string.Empty, string.Empty, row.Evaluator,
                     row.Parameters, row.EvaluatorVersion, row.Event, row.Retires, row.RegisteredAt, row.Evidence)),
             ],
-            TonightScreen.PastTheNight(night));
+            asOf ?? TonightScreen.PastTheNight(night));
         var live = standing
             .GroupBy(row => CandidateFamily.SetupFamilyOf(row.Evaluator) + "|" + (CandidateEvaluators.Find(row.Evaluator) is IndexRuleCandidate rule ? rule.Index : string.Empty), StringComparer.Ordinal)
             .Select(family => FamilyRecords.LiveOf(family)?.Candidate)

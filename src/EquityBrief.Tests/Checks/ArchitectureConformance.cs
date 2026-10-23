@@ -1438,8 +1438,13 @@ public partial class ArchitectureConformance
         // 234 at 20.1: the Run page's local model region.
         // 235 at 20.4: Tonight's row for the drift's tone variant on its card.
         // 236 at 20.9: the Loop page's row for the idea generator's proposals.
-        // 238 at 20.8: the Ledger page's card of what the release readings came to and the Loop page's split.
-        Assert.Equal(238, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 242 at the 19.4 correction of 2026-10-22: paper trading's seven rows for its parts in the place of its table of
+        // every account.
+        // 246 at 20.12: the mark vocabulary's earnings dots, income bars and target marker, and the chart page's graphs.
+        // 248 at 22.1: Tonight's row for the short-term dip's card and Past picks' row for its trades.
+        // 250 at 20.8, merged after 22.1: the Ledger page's card of what the release readings came to and the Loop page's
+        // split.
+        Assert.Equal(250, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1590,8 +1595,13 @@ public partial class ArchitectureConformance
         // 635 at 20.1: the Run page's local model region.
         // 636 at 20.4: Tonight's row for the drift's tone variant on its card.
         // 637 at 20.9: the Loop page's row for the idea generator's proposals.
-        // 639 at 20.8: the Ledger page's card of what the release readings came to and the Loop page's split.
-        Assert.Equal(639, inDocument.Length);
+        // 643 at the 19.4 correction of 2026-10-22: paper trading's seven rows for its parts less its table of every
+        // account.
+        // 647 at 20.12: the mark vocabulary's earnings dots, income bars and target marker, and the chart page's graphs.
+        // 649 at 22.1: Tonight's row for the short-term dip's card and Past picks' row for its trades.
+        // 651 at 20.8, merged after 22.1: the Ledger page's card of what the release readings came to and the Loop page's
+        // split.
+        Assert.Equal(651, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

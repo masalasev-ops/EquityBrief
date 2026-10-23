@@ -353,6 +353,59 @@ public partial class FixtureExpectations
         Assert.Equal(["C01"], HeldBy(live));
     }
 
+    // A retired rule's book on the S&P 500, on the operator's ruling of the evening of 2026-10-20 (the 20.11 correction),
+    // kept as the S&P 400's and 600's are: every company's variant, holding C01 bought at 130 and C11 at 150 at October's
+    // rebalance, is retired at 11:00 on 2026-10-02, before that session's open; that session closes C01 at 143 and C11 where
+    // it stood, so the night of the 2nd sells both at those closes for its rule retired, C01's result 143 over 130 less one,
+    // a tenth, and C11's nothing, while the live rule's book carries C01 on. A rule retired and registered again in one
+    // second, as a moved registration writes it, stands.
+    [Fact]
+    public async Task ARetiredRulesBookOnTheSAndP500IsSoldAtTheCloseOfTheSessionItWasRetiredOn()
+    {
+        using var store = FreezeStore();
+
+        Assert.Equal(0, (await RegisterVerbAt(store, FreezeRegisteredAt, RegisterVerb.Family, HeavyweightRule.Name)).Code);
+
+        var live = TheSetupFamilies.Heavyweights[0].Candidate;
+        var every = TheSetupFamilies.Heavyweights[3].Candidate;
+        var nightAt = new DateTimeOffset(2026, 10, 1, 23, 30, 0, TimeSpan.Zero);
+        var register = await new CandidateRegistrar(FreezeClock(FreezeNight), store.DatabaseFile).RowsAsync();
+
+        await new HeavyweightBook(FreezeClock(FreezeNight), store.DatabaseFile).RunAsync("GSPC", "night-retire-1", default, HeavyweightBook.Standing(register, nightAt), HeavyweightBook.RetiredBooks(register, nightAt));
+
+        Assert.Equal(0, (await RegisterVerbAt(store, new DateTimeOffset(2026, 10, 2, 11, 0, 0, TimeSpan.Zero), "--retire", every, "--evidence", "a variant retired with its book open")).Code);
+        FreezeNextBars(store, 143m);
+
+        var nextAt = new DateTimeOffset(2026, 10, 2, 23, 30, 0, TimeSpan.Zero);
+        var later = await new CandidateRegistrar(FreezeClock(FreezeNext), store.DatabaseFile).RowsAsync();
+
+        Assert.Equal([every], HeavyweightBook.RetiredBooks(later, nextAt).Keys);
+
+        static string Quoted(string candidate) => candidate.Replace("'", "''", StringComparison.Ordinal);
+
+        IReadOnlyList<string> Sold() => TextRows(store,
+            $"SELECT ticker || '|' || IFNULL(ended_on, 'open') || '|' || IFNULL(exit_close, 'none') || '|' || IFNULL(reason, 'held') || '|' || IFNULL(printf('%.9f', result), 'none') FROM heavyweight_rule_holding WHERE candidate = '{Quoted(every)}' ORDER BY ticker;");
+
+        string[] sold = [$"C01|2026-10-02|143|{HeavyweightBook.RuleRetired}|0.100000000", $"C11|2026-10-02|150.0|{HeavyweightBook.RuleRetired}|0.000000000"];
+
+        await new HeavyweightBook(FreezeClock(FreezeNext), store.DatabaseFile).RunAsync("GSPC", "night-retire-2", default, HeavyweightBook.Standing(later, nextAt), HeavyweightBook.RetiredBooks(later, nextAt));
+
+        Assert.Equal(sold, Sold());
+        Assert.Equal(["C01|open"], TextRows(store, $"SELECT ticker || '|' || IFNULL(ended_on, 'open') FROM heavyweight_rule_holding WHERE candidate = '{Quoted(live)}';"));
+
+        // Run again, the night writes what it wrote and sells nothing twice.
+        await new HeavyweightBook(FreezeClock(FreezeNext), store.DatabaseFile).RunAsync("GSPC", "night-retire-2-again", default, HeavyweightBook.Standing(later, nextAt), HeavyweightBook.RetiredBooks(later, nextAt));
+
+        Assert.Equal(sold, Sold());
+
+        // The live rule retired and registered again in one second stands, its book no retired one.
+        var stood = later.Last(row => row.Candidate == live && row.Event == CandidateFamily.Registered);
+        var again = new DateTimeOffset(2026, 10, 3, 12, 0, 0, TimeSpan.Zero);
+        IReadOnlyList<RegisterRow> moved = [.. later, stood with { Id = 100, Event = CandidateFamily.Retired, Retires = live, RegisteredAt = again }, stood with { Id = 101, RegisteredAt = again }];
+
+        Assert.Equal([every], HeavyweightBook.RetiredBooks(moved, again.AddMinutes(1)).Keys);
+    }
+
     [Fact]
     public async Task ABetaUnderItsFloorAndALeadUnderItsFundLeaveAStockUnboughtAndBothAreReadAtTheirEdges()
     {

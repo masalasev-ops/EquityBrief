@@ -25,9 +25,12 @@ public sealed record IndexRule(string Candidate, IndexRuleCandidate Evaluator, I
 // stored them: each member's industry's return over a month and a quarter and its coverage, each member's peers'
 // surprise on each session the rows hold, the index fund against SPY over half a year and a year, the credit fund
 // against its average and its own past, and the S&P 500's breadth; and from 20.4 the release of each print a drift's
-// reaction can reach, by its ticker and report date, under each reading version a standing rule names.
+// reaction can reach, by its ticker and report date, under each reading version a standing rule names; and from 20.11
+// each member's quarters' revenue as first filed, over the facts filed before the session before the night, which are
+// those the night's filings refresh had stored, read only where a standing drift rule reads it.
 // see: A member's coverage is read on the night only over quarters whose fetch read their interest expense
 // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+// see: A drift's revenue level on the S&P 400 and 600 reads a quarter only once its filing is stored, on the night and in its sweep alike
 public sealed record IndexLevels(
     IReadOnlyDictionary<string, (double? Month, double? Quarter)> Industry,
     IReadOnlyDictionary<string, bool?> Coverage,
@@ -37,7 +40,8 @@ public sealed record IndexLevels(
     double? CreditAverage,
     double? CreditChange,
     double? LargeBreadth,
-    IReadOnlyDictionary<(string Ticker, DateOnly Report, long Version), PrintRelease>? Releases = null)
+    IReadOnlyDictionary<(string Ticker, DateOnly Report, long Version), PrintRelease>? Releases = null,
+    IReadOnlyDictionary<string, IReadOnlyList<QuarterRevenue>>? Revenue = null)
 {
     public static IndexLevels None { get; } = new(
         new Dictionary<string, (double?, double?)>(StringComparer.Ordinal),
@@ -66,6 +70,9 @@ public static class IndexRules
 
     public const string HighNotAsStated = "its year's high not as recent as its rule states";
 
+    // The words a check on the year's high fails with where the night read no year's high for the member.
+    public const string NoYearHigh = "not read: no year's high tonight";
+
     public const string VolumeUnder = "volume under its rule's multiple";
 
     public const string PeersNotAbove = "its peers' surprise not above nothing";
@@ -75,6 +82,10 @@ public static class IndexRules
     public const string ToneFailed = ReleaseTone.FailedOnTheIndex;
 
     public const string ToneNotHeld = ReleaseTone.NotHeldOnTheIndex;
+
+    // From 20.11 the reason the revenue level keeps a listed drift member off: its print's quarter's revenue not above the
+    // same quarter's a year before, or not both read as first filed and stored before the night.
+    public const string RevenueNotAbove = "its print's revenue not above the same quarter's a year before";
 
     // The most rules a family keeps a night, and the most variants a freeze registers beside its live rule.
     public const int PerNight = 5;
@@ -98,6 +109,9 @@ public static class IndexRules
         [IndexDriftCandidate.StopFloorParameter] = [0, 1],
         [IndexDriftCandidate.WideWindowParameter] = [0, IndexSweepRunner.DriftWideWindow],
         [IndexDriftCandidate.PeersParameter] = [0, 1],
+        [IndexRuleCandidate.BreadthFloorParameter] = [0, .. IndexRuleCandidate.BreadthFloors],
+        [IndexDriftCandidate.EntryParameter] = [0, 1],
+        [IndexDriftCandidate.RevenueGrewParameter] = [0, 1],
     };
 
     // Why a rule's parameters cannot be registered: a value off its dial's grid or off its level's values, the first
@@ -133,8 +147,11 @@ public static class IndexRules
 
         // The breadth the market check reads: the index's own and the S&P 500's, the two its index's sweep read, or none.
         // A pullback reading none states its own market dial off as well, since the provisional pullback's setting reads
-        // the index's breadth at the same floor inside it.
-        // see: An S&P 400 or 600 swing family may carry a variant with no market check, the check standing on its provisional rule
+        // the index's breadth at the same floor inside it. From 20.11 the floor the breadth is read against: one of the
+        // four its index's sweep read where the check reads the index's own breadth, the S&P 500 filter's own where it
+        // reads the S&P 500's, and nought where it reads none; and a pullback's own market dial, where it is on, at the
+        // floor its check reads, so the night reads one floor.
+        // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
         if (parameters.TryGetValue(IndexRuleCandidate.LargeBreadthParameter, out var breadth))
         {
             if (breadth is not (0 or 1 or IndexRuleCandidate.NoMarketCheck))
@@ -148,6 +165,26 @@ public static class IndexRules
                 && market != 0)
             {
                 return FormattableString.Invariant($"a pullback reading no market check states its own market dial off, and '{IndexPullbackCandidate.MarketParameter}' is {Number(market)}.");
+            }
+
+            if (parameters.TryGetValue(IndexRuleCandidate.BreadthFloorParameter, out var floor))
+            {
+                var wanted = breadth switch
+                {
+                    IndexRuleCandidate.NoMarketCheck => floor == 0 ? null : "0, since a rule reading no market check reads no floor",
+                    1 => floor == IndexRuleCandidate.LargeBreadthFloor ? null : FormattableString.Invariant($"{Number(IndexRuleCandidate.LargeBreadthFloor)}, the S&P 500 filter's own floor, since the rule reads the S&P 500's breadth"),
+                    _ => IndexRuleCandidate.BreadthFloors.Contains(floor) ? null : FormattableString.Invariant($"one of {string.Join(", ", IndexRuleCandidate.BreadthFloors.Select(Number))}, the floors its index's sweep read the index's own breadth at"),
+                };
+
+                if (wanted is not null)
+                {
+                    return FormattableString.Invariant($"'{IndexRuleCandidate.BreadthFloorParameter}' is {Number(floor)}, and it must be {wanted}.");
+                }
+
+                if (evaluator is IndexPullbackCandidate && parameters.TryGetValue(IndexPullbackCandidate.MarketParameter, out var dial) && dial != 0 && dial != floor)
+                {
+                    return FormattableString.Invariant($"a pullback whose own market dial is on reads it at its market check's floor, and '{IndexPullbackCandidate.MarketParameter}' is {Number(dial)} where '{IndexRuleCandidate.BreadthFloorParameter}' is {Number(floor)}.");
+                }
             }
         }
 
@@ -317,6 +354,7 @@ public static class IndexRules
             [IndexRuleCandidate.CreditAverageParameter] = 0,
             [IndexRuleCandidate.CreditChangeParameter] = 0,
             [IndexRuleCandidate.LargeBreadthParameter] = 0,
+            [IndexRuleCandidate.BreadthFloorParameter] = FamilySweep.MarketFloor,
         };
 
         switch (evaluator)
@@ -348,6 +386,8 @@ public static class IndexRules
                 levels[IndexDriftCandidate.StopFloorParameter] = 0;
                 levels[IndexDriftCandidate.WideWindowParameter] = 0;
                 levels[IndexDriftCandidate.PeersParameter] = 0;
+                levels[IndexDriftCandidate.EntryParameter] = 0;
+                levels[IndexDriftCandidate.RevenueGrewParameter] = 0;
                 break;
             }
 
@@ -379,8 +419,16 @@ public static class IndexRules
         "the family's rule on its index at every setting stated, read through the index night reader's own functions over " +
         "the index's own members: the family's sweep's grid at its four dials, or the pullback's nine, each listing held to " +
         "the index's floors at the stated multiple and the stated lowest close, the stated quality, and each level stated, " +
-        "the market check on the index's own breadth unless the S&P 500's or none is stated; a member firing where every part " +
-        "passes, the rule's own list at most five a night in the family's order, with one open trade a stock";
+        "the market check on the index's own breadth at the stated floor unless the S&P 500's at its own floor or none is stated; " +
+        "a member firing where every part passes, the rule's own list at most five a night in the family's order, with one " +
+        "open trade a stock";
+
+    // The words the test of an S&P 400's or 600's rule of the day before its freeze states: kept beside the live rule for a
+    // block and read by no look.
+    public const string BackgroundTest =
+        "Kept beside the family's live rule from the freeze for a block of 63 sessions, its record read on the Run page beside " +
+        "the live rule's and as the live rule's is read; read by no look and no monthly test, and retired by the night once " +
+        "the block has passed.";
 
     public const string Test =
         "From the freeze, each rule's record is its trades' result less each trade's own round trip at the published table " +
@@ -402,30 +450,40 @@ public static class IndexRules
         "each holding counted in the block of 63 sessions it ended in, and a checkpoint passes it where the sign-flip test " +
         "over its whole blocks falls under its level: 0.05 shared among the rules the family registers on its index.";
 
-    // A freeze's registrations: the family's live rule on its index at the settings given and each variant the live rule
-    // with the parameters it names moved, at most eight, all of them settings the index's sweep read; or why none can be
-    // written, a family on the index already standing among the reasons, since its first freeze is the one form built.
+    // A freeze's registrations: the family's live rule on its index at the settings given, each variant the live rule
+    // with the parameters it names moved, all of them settings the index's sweep read, and from 20.11 the family's rule
+    // of the day before the freeze, its provisional rule, kept in the background beside them for a block, where neither
+    // the live rule nor a variant states its settings; or why none can be written. A family whose live rule stands is
+    // refused, its next freeze following that rule's retirement; variants standing before the freeze stand on beside the
+    // rules it registers, and a setting given that one of them states is refused, as is a family past the most rules it
+    // keeps. A freeze naming the family's retired live rule it replaces keeps that rule in the background in the
+    // provisional rule's place, since the page drew it the day before.
+    // see: A freeze on the S&P 400 or 600 is refused only where the family's live rule stands, the variants standing before it kept beside it
+    // see: A freeze on the S&P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions
     public static (IReadOnlyList<Registration>? Registrations, string? Refusal) Freeze(
         string family,
         string index,
         IReadOnlyDictionary<string, double> live,
         IReadOnlyList<IReadOnlyDictionary<string, double>> variants,
         IReadOnlyList<RegisterRow> register,
-        DateTimeOffset at)
+        DateTimeOffset at,
+        string? replacing = null)
     {
         if (CandidateEvaluators.All.OfType<IndexRuleCandidate>().FirstOrDefault(evaluator => evaluator.SetupFamily == family && evaluator.Index == index) is not { } carried)
         {
             return (null, $"no rule of a family named '{family}' is carried for an index coded '{index}'; the families are {string.Join(", ", CandidateEvaluators.All.OfType<IndexRuleCandidate>().Select(evaluator => evaluator.SetupFamily).Distinct(StringComparer.Ordinal))} and the indices MID and SML.");
         }
 
-        if (variants.Count > MostVariants)
+        var standing = CandidateFamily.In(CandidateFamily.Standing(register, at), carried.Family);
+
+        if (standing.FirstOrDefault(row => FamilyRecords.IsLive(row.Candidate)) is { } standingLive)
         {
-            return (null, FormattableString.Invariant($"{variants.Count} variants were given, and a freeze registers at most {MostVariants} beside its live rule."));
+            return (null, $"the {carried.Family}'s live rule '{standingLive.Candidate}' stands registered; a family on an index is frozen again once its live rule is retired.");
         }
 
-        if (CandidateFamily.In(CandidateFamily.Standing(register, at), carried.Family).Count > 0)
+        if (variants.Count > MostVariants - standing.Count)
         {
-            return (null, $"rules of the {carried.Family} already stand registered; a family on an index is frozen once.");
+            return (null, FormattableString.Invariant($"{variants.Count} variants were given, and a freeze registers at most {MostVariants - standing.Count} beside its live rule, the family keeping {CandidateFamily.Maximum} with the {standing.Count} standing."));
         }
 
         if (Refusal(carried, live) is { } wrong)
@@ -433,7 +491,16 @@ public static class IndexRules
             return (null, "the live rule: " + wrong);
         }
 
+        static bool Same(IReadOnlyDictionary<string, double> one, IReadOnlyDictionary<string, double> other) =>
+            one.Count == other.Count && one.All(pair => other.TryGetValue(pair.Key, out var value) && value == pair.Value);
+
         var settings = new List<IReadOnlyDictionary<string, double>> { live };
+        var stood = standing.Select(row => CandidateEvaluator.Read(row.Parameters)).ToArray();
+
+        if (stood.Any(one => Same(one, live)))
+        {
+            return (null, "the live rule states the settings of a rule standing in the family.");
+        }
 
         foreach (var moved in variants)
         {
@@ -449,9 +516,14 @@ public static class IndexRules
                 return (null, FormattableString.Invariant($"variant {settings.Count}: {refused}"));
             }
 
-            if (settings.Any(one => one.Count == variant.Count && one.All(pair => variant[pair.Key] == pair.Value)))
+            if (settings.Any(one => Same(one, variant)))
             {
                 return (null, FormattableString.Invariant($"variant {settings.Count} states the settings of a rule given before it."));
+            }
+
+            if (stood.Any(one => Same(one, variant)))
+            {
+                return (null, FormattableString.Invariant($"variant {settings.Count} states the settings of a rule standing in the family."));
             }
 
             settings.Add(variant);
@@ -459,6 +531,35 @@ public static class IndexRules
 
         var named = IndexRuleCandidate.NameOf(index) + " ";
         var (rule, test) = carried is IndexHeavyweightCandidate ? (HeavyweightRuleWords, HeavyweightTest) : (RuleWords, Test);
+        var today = Provisional(carried);
+
+        if (replacing is not null)
+        {
+            var naming = register.Where(row => (row.Event == CandidateFamily.Registered ? row.Candidate : row.Retires) == replacing && row.RegisteredAt <= at)
+                .OrderBy(row => row.RegisteredAt).ThenBy(row => row.Id).ToArray();
+            var registered = naming.Where(row => row.Event == CandidateFamily.Registered).ToArray();
+
+            if (registered.Length == 0 || !FamilyRecords.IsLive(replacing) || registered.Any(row => CandidateFamily.SetupFamilyOf(row.Evaluator) != carried.Family))
+            {
+                return (null, $"'{replacing}' is no live rule the {carried.Family} registered, so the freeze cannot keep it in the background.");
+            }
+
+            if (naming[^1].Event != CandidateFamily.Retired)
+            {
+                return (null, $"'{replacing}' stands registered; retire it before the freeze that replaces it.");
+            }
+
+            today = CandidateEvaluator.Read(registered[^1].Parameters);
+        }
+
+        var background = settings.Any(one => Same(one, today)) || stood.Any(one => Same(one, today))
+            ? null
+            : new Registration(FamilyRecords.BackgroundPrefix + named + Words(carried, today), rule, BackgroundTest, carried.Name, today);
+
+        if (background is not null && settings.Count + standing.Count + 1 > CandidateFamily.Maximum)
+        {
+            return (null, FormattableString.Invariant($"{variants.Count} variants were given, and with the rule of today kept in the background the family would hold {settings.Count + standing.Count + 1}, past the {CandidateFamily.Maximum} it keeps."));
+        }
 
         return (
             [
@@ -468,6 +569,7 @@ public static class IndexRules
                     test,
                     carried.Name,
                     one)),
+                .. background is null ? [] : new[] { background },
             ],
             null);
     }
@@ -510,9 +612,12 @@ public static class IndexRules
     // From 20.4 a family's variants on its index registered again whole to add one beside its provisional rule: every
     // variant standing stated again among those given and at least one given that does not stand, each the provisional
     // setting with the parameters it names moved and refused as the form without it refuses one; or why none can be
-    // written, no rule of the family standing and its live rule standing among the reasons, since a freeze is then the
-    // form that changes it. The registrar retires the standing variants and registers those given at one instant.
-    // see: An S&P 400 or 600 family's variants are registered again whole to add one beside its provisional rule
+    // written, no rule of the family standing among the reasons. The registrar retires the standing variants and
+    // registers those given at one instant. From 20.11 the same beside a family's frozen live rule, each variant the live
+    // rule's setting with the parameters it names moved, the live rule and the rule kept in the background standing on
+    // untouched.
+    // see: An S&P 400 or 600 family's variants are registered again whole beside its provisional rule or its frozen live rule
+    // see: A freeze on the S&P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions
     public static (IReadOnlyList<Registration>? Registrations, string? Refusal) VariantsAgain(
         string family,
         string index,
@@ -525,19 +630,16 @@ public static class IndexRules
             return (null, $"no rule of a family named '{family}' is carried for an index coded '{index}'; the families are {string.Join(", ", CandidateEvaluators.All.OfType<IndexRuleCandidate>().Select(evaluator => evaluator.SetupFamily).Distinct(StringComparer.Ordinal))} and the indices MID and SML.");
         }
 
-        var standing = CandidateFamily.In(CandidateFamily.Standing(register, at), carried.Family);
+        var rows = CandidateFamily.In(CandidateFamily.Standing(register, at), carried.Family);
 
-        if (standing.Count == 0)
+        if (rows.Count == 0)
         {
             return (null, $"no rule of the {carried.Family} stands registered, so there are no variants to register again; the form without --again registers them.");
         }
 
-        if (standing.FirstOrDefault(row => FamilyRecords.IsLive(row.Candidate)) is { } live)
-        {
-            return (null, $"the {carried.Family}'s live rule '{live.Candidate}' stands, and this form registers again the variants beside a provisional rule alone.");
-        }
-
-        var (registrations, refused) = VariantsOf(carried, index, variants);
+        var live = rows.FirstOrDefault(row => FamilyRecords.IsLive(row.Candidate));
+        var standing = rows.Where(row => !FamilyRecords.IsLive(row.Candidate) && !FamilyRecords.IsBackground(row.Candidate)).ToArray();
+        var (registrations, refused) = VariantsOf(carried, index, variants, live is null ? null : CandidateEvaluator.Read(live.Parameters), rows.Count - standing.Length);
 
         if (registrations is null)
         {
@@ -552,7 +654,7 @@ public static class IndexRules
             return (null, $"'{left.Candidate}' stands and is not among the variants given; this form registers the family's variants again whole to add one, and a variant left out is retired on its own.");
         }
 
-        if (registrations.Count == standing.Count)
+        if (registrations.Count == standing.Length)
         {
             return (null, "every variant given stands already, so none would be added; this form registers the family's variants again whole to add one.");
         }
@@ -560,21 +662,24 @@ public static class IndexRules
         return (registrations, null);
     }
 
-    // A family's variants as given, each the provisional setting with the parameters it names moved, at most eight, every
-    // one at settings its index's sweep read and none stating the provisional setting itself or a setting given before it.
-    static (IReadOnlyList<Registration>? Registrations, string? Refusal) VariantsOf(IndexRuleCandidate carried, string index, IReadOnlyList<IReadOnlyDictionary<string, double>> variants)
+    // A family's variants as given, each the provisional setting, or the live rule's where one stands, with the
+    // parameters it names moved, the family keeping at most nine with the rules standing beside them, every one at
+    // settings its index's sweep read and none stating the setting moved from or a setting given before it.
+    static (IReadOnlyList<Registration>? Registrations, string? Refusal) VariantsOf(IndexRuleCandidate carried, string index, IReadOnlyList<IReadOnlyDictionary<string, double>> variants, IReadOnlyDictionary<string, double>? live = null, int keptBeside = 0)
     {
+        var movedFrom = live is null ? "the provisional rule" : "the live rule";
+
         if (variants.Count == 0)
         {
-            return (null, "no variant was given; each variant names the parameters it moves from the provisional rule.");
+            return (null, $"no variant was given; each variant names the parameters it moves from {movedFrom}.");
         }
 
-        if (variants.Count > MostVariants)
+        if (variants.Count > MostVariants - Math.Max(0, keptBeside - 1))
         {
-            return (null, FormattableString.Invariant($"{variants.Count} variants were given, and at most {MostVariants} stand beside a family's provisional rule."));
+            return (null, FormattableString.Invariant($"{variants.Count} variants were given, and at most {MostVariants - Math.Max(0, keptBeside - 1)} stand beside a family's {(live is null ? "provisional" : "live")} rule."));
         }
 
-        var provisional = Provisional(carried);
+        var provisional = live ?? Provisional(carried);
         var settings = new List<IReadOnlyDictionary<string, double>> { provisional };
 
         foreach (var moved in variants)
@@ -593,7 +698,7 @@ public static class IndexRules
 
             if (settings.Any(one => one.Count == variant.Count && one.All(pair => variant.TryGetValue(pair.Key, out var value) && value == pair.Value)))
             {
-                return (null, FormattableString.Invariant($"variant {settings.Count} states the provisional rule's settings or a variant's given before it."));
+                return (null, FormattableString.Invariant($"variant {settings.Count} states {(live is null ? "the provisional rule's" : "the live rule's")} settings or a variant's given before it."));
             }
 
             settings.Add(variant);
@@ -620,7 +725,7 @@ public static class IndexRules
             IndexHeavyweightCandidate => FormattableString.Invariant(
                 $"heavyweights rule following the S&P 500's {(p[IndexHeavyweightCandidate.IndustriesParameter] == 0 ? "every leading industry" : Number(p[IndexHeavyweightCandidate.IndustriesParameter]) + " strongest industries")} over {p[IndexHeavyweightCandidate.WindowParameter]} sessions, {p[IndexHeavyweightCandidate.MembersParameter]} member(s) an industry, sold where it is no longer bought"),
             _ => FormattableString.Invariant(
-                $"pullback rule at a strength of {Number(p[IndexPullbackCandidate.StrengthParameter])}, {Number(p[IndexPullbackCandidate.DepthLowParameter])} to {Number(p[IndexPullbackCandidate.DepthHighParameter])} typical moves deep, a dry-up {(p[IndexPullbackCandidate.DryUpParameter] == 0 ? "off" : "under " + Number(p[IndexPullbackCandidate.DryUpParameter]))}, fresh within {p[IndexPullbackCandidate.FreshnessParameter]}, {Number(p[IndexPullbackCandidate.RewardToRiskParameter])} times the risk, the stop {Number(p[IndexPullbackCandidate.StopLowParameter])} to {Number(p[IndexPullbackCandidate.StopHighParameter])} moves, the market {(p[IndexPullbackCandidate.MarketParameter] == 0 ? "off" : "at " + Number(p[IndexPullbackCandidate.MarketParameter]))} and band strength {p[IndexPullbackCandidate.BandParameter]}"),
+                $"pullback rule at a strength of {Number(p[IndexPullbackCandidate.StrengthParameter])}, {Number(p[IndexPullbackCandidate.DepthLowParameter])} to {Number(p[IndexPullbackCandidate.DepthHighParameter])} typical moves deep, a dry-up {(p[IndexPullbackCandidate.DryUpParameter] == 0 ? "off" : "under " + Number(p[IndexPullbackCandidate.DryUpParameter]))}, fresh within {p[IndexPullbackCandidate.FreshnessParameter]}, {Number(p[IndexPullbackCandidate.RewardToRiskParameter])} times the risk, the stop {Number(p[IndexPullbackCandidate.StopLowParameter])} to {Number(p[IndexPullbackCandidate.StopHighParameter])} moves, {(p[IndexPullbackCandidate.MarketParameter] == 0 ? "its own market floor off" : "the market at " + Number(p[IndexPullbackCandidate.MarketParameter]))} and band strength {p[IndexPullbackCandidate.BandParameter]}"),
         };
 
         return family + LevelWords(evaluator, p);
@@ -724,6 +829,10 @@ public static class IndexRules
         {
             words.Add("the " + IndexRuleCandidate.MarketCheckOff);
         }
+        else if (At(IndexRuleCandidate.BreadthFloorParameter, FamilySweep.MarketFloor) is var floor && floor != FamilySweep.MarketFloor)
+        {
+            words.Add(FormattableString.Invariant($"its market check on the index's own breadth at {floor * 100:0}%"));
+        }
 
         if (evaluator is IndexBreakoutCandidate)
         {
@@ -755,6 +864,16 @@ public static class IndexRules
                 words.Add("its peers' surprise before the reaction above nothing");
             }
 
+            if (At(IndexDriftCandidate.EntryParameter, 0) == 1)
+            {
+                words.Add(FormattableString.Invariant($"bought on its first close under the close before it within {DriftSweep.FirstPullbackSessions} sessions of the reaction, its stop where its listing set it"));
+            }
+
+            if (At(IndexDriftCandidate.RevenueGrewParameter, 0) == 1)
+            {
+                words.Add("its print's quarter's revenue above the same quarter's a year before, both as first filed and stored before the night");
+            }
+
             if (ReleaseTone.VersionOf(p) is var version and > 0)
             {
                 words.Add(FormattableString.Invariant($"its print's release reading better with its outlook not cut under reading version {version}"));
@@ -767,27 +886,23 @@ public static class IndexRules
     static string Number(double value) => value.ToString("0.##", CultureInfo.InvariantCulture);
 
     // A rule's read on the night: its family's listings at its settings in its own order, its market check on the
-    // index's own breadth, on the S&P 500's where it states so or open on every night where it states none, and the
-    // first part of its rule past the setup a listed member fails, the floors and the quality and then each level in its
-    // sweep's order.
+    // index's own breadth at the floor it states, on the S&P 500's at the S&P 500 filter's own floor where it states so
+    // or open on every night where it states none, and each part of its rule past the setup a member is read against,
+    // the floors and the quality and then each level in its sweep's order. From 20.11 the listings are read with the
+    // market open on every session they read, as the sweeps on each index's own history read them, so the check is read
+    // once, the rule's own part at the rule's own floor, and a night it closed lists none.
+    // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
     public static IndexFamilyRead Read(IndexNightInputs inputs, IndexRule rule, IndexLevels levels)
     {
         var p = rule.Parameters;
         var breadth = p[IndexRuleCandidate.LargeBreadthParameter];
-
-        // A rule reading no market check reads the night as every member above its average, so the check its family's
-        // listings make on the night themselves opens with its own.
-        var sessions = breadth switch
+        var sessions = rule.Evaluator is IndexDriftCandidate ? IndexNightRead.AllOpen(inputs.Sessions) : IndexNightRead.OpenOn(inputs.Sessions, inputs.At);
+        var market = breadth switch
         {
-            1 => WithBreadth(inputs.Sessions, inputs.At, levels.LargeBreadth),
-            IndexRuleCandidate.NoMarketCheck => WithBreadth(inputs.Sessions, inputs.At, 1),
-            _ => inputs.Sessions,
-        };
-        var open = breadth switch
-        {
-            1 => levels.LargeBreadth >= FamilySweep.MarketFloor,
-            IndexRuleCandidate.NoMarketCheck => true,
-            _ => inputs.Open,
+            1 => IndexNightRead.MarketGate(levels.LargeBreadth, IndexRuleCandidate.LargeBreadthFloor, IndexNightRead.LargeBreadth),
+            IndexRuleCandidate.NoMarketCheck => IndexNightRead.NoMarketGate,
+            _ => IndexNightRead.MarketGate(inputs.Breadth, p.TryGetValue(IndexRuleCandidate.BreadthFloorParameter, out var floor) ? floor : FamilySweep.MarketFloor),
         };
         var hold = (int)p[IndexRuleCandidate.HoldParameter];
         var floors = p[IndexRuleCandidate.FloorsParameter] switch { 0.5 => IndexSweepRunner.DollarVolumeHalf, 2 => 2m, _ => 1m };
@@ -795,74 +910,90 @@ public static class IndexRules
         var quality = (IndexQuality)(int)p[IndexRuleCandidate.QualityParameter];
         var backs = new Dictionary<int, int>();
 
-        IReadOnlyList<(int Name, IndexTrade Trade)> listed = rule.Evaluator switch
+        IReadOnlyList<(int Name, IndexTrade Trade)> ListedOn(IReadOnlyList<SweepColumns.Session> on)
         {
-            IndexBreakoutCandidate => IndexNightRead.Breakouts(inputs, IndexNightRead.Places(BreakoutSweep.Grid, BreakoutValues(p)), sessions),
-            IndexDriftCandidate => Drifts(inputs, p, sessions, backs),
-            _ => IndexNightRead.Pullbacks(inputs, new IdeaRule(PullbackOf(p)!.Value, IdeaExit.Base, int.MaxValue, []), IndexNightRead.PullbackCap, sessions),
-        };
+            IReadOnlyList<(int Name, IndexTrade Trade)> listed = rule.Evaluator switch
+            {
+                IndexBreakoutCandidate => IndexNightRead.Breakouts(inputs, IndexNightRead.Places(BreakoutSweep.Grid, BreakoutValues(p)), on),
+                IndexDriftCandidate => Drifts(inputs, p, on, backs),
+                _ => IndexNightRead.Pullbacks(inputs, new IdeaRule(PullbackOf(p)!.Value, IdeaExit.Base, int.MaxValue, []), IndexNightRead.PullbackCap, on),
+            };
 
-        if (hold > 0)
-        {
-            listed = [.. listed.Select(one => (one.Name, one.Trade with { Cap = hold }))];
+            return hold > 0 ? [.. listed.Select(one => (one.Name, one.Trade with { Cap = hold }))] : listed;
         }
 
-        var trades = listed.GroupBy(one => one.Name).ToDictionary(group => group.Key, group => group.First().Trade);
+        var ifOpen = ListedOn(sessions);
+        var trades = ifOpen.GroupBy(one => one.Name).ToDictionary(group => group.Key, group => group.First().Trade);
 
-        string? FailsOn(int name) =>
-            IndexNightRead.FailsOn(inputs, name, floors, lowest, quality, ticker => levels.Coverage.GetValueOrDefault(ticker))
-            ?? LevelFails(inputs, rule, levels, name, trades[name], backs);
+        IReadOnlyList<RulePart> PartsOf(int name) =>
+        [
+            .. IndexNightRead.PartsOn(inputs, name, floors, lowest, quality, ticker => levels.Coverage.GetValueOrDefault(ticker)),
+            .. LevelParts(inputs, rule, levels, name, trades.TryGetValue(name, out var trade) ? trade : null, backs),
+        ];
 
-        return new IndexFamilyRead(listed, open, FailsOn);
+        return new IndexFamilyRead(market.Passed ? ifOpen : [], market, PartsOf) { ListedIfOpen = ifOpen };
     }
 
-    // The drift's listings at its settings, noting each listing's sessions back to its reaction.
+    // The drift's listings at its settings, noting each listing's sessions back to its reaction: at its listing's close,
+    // or from 20.11 on the first pullback after its reaction where the rule states that entry.
+    // see: A drift rule on the S&P 400 or 600 stating the first pullback is bought on the night through the one function its search's entry level reads
     static IReadOnlyList<(int Name, IndexTrade Trade)> Drifts(IndexNightInputs inputs, IReadOnlyDictionary<string, double> p, IReadOnlyList<SweepColumns.Session> sessions, Dictionary<int, int> backs)
     {
         double? window = p[IndexDriftCandidate.WideWindowParameter] > 0 ? p[IndexDriftCandidate.WideWindowParameter] : null;
+        var setting = IndexNightRead.Places(DriftSweep.Grid, DriftValues(p));
+
+        if (p.TryGetValue(IndexDriftCandidate.EntryParameter, out var entry) && entry == 1)
+        {
+            return IndexNightRead.DriftPullbacks(inputs, setting, p[IndexDriftCandidate.StopFloorParameter], window, sessions, backs);
+        }
 
         foreach (var reading in new DriftSweep(inputs.Series, inputs.Members).Readings(sessions, inputs.At, window).Where(reading => reading.Session == inputs.At))
         {
             backs.TryAdd(reading.Name, reading.Back);
         }
 
-        return IndexNightRead.Drifts(inputs, IndexNightRead.Places(DriftSweep.Grid, DriftValues(p)), p[IndexDriftCandidate.StopFloorParameter], window, sessions);
+        return IndexNightRead.Drifts(inputs, setting, p[IndexDriftCandidate.StopFloorParameter], window, sessions);
     }
 
-    // The first level a listed member fails, in its sweep's order; none where it passes every level its rule states.
-    static string? LevelFails(IndexNightInputs inputs, IndexRule rule, IndexLevels levels, int name, IndexTrade trade, IReadOnlyDictionary<int, int> backs)
+    // Each level a rule states as a part of its own, in its sweep's order, a member answered on every one: a level reading
+    // the trade its setup places failed for a member no setup listed, and the tone read in its two steps, the release's
+    // reading held and then its answer.
+    static IReadOnlyList<RulePart> LevelParts(IndexNightInputs inputs, IndexRule rule, IndexLevels levels, int name, IndexTrade? trade, IReadOnlyDictionary<int, int> backs)
     {
         var p = rule.Parameters;
         var ticker = inputs.Series[name].Name.Ticker;
+        var parts = new List<RulePart>();
 
-        if (p[IndexRuleCandidate.IndustryFallParameter] is var fall and > 0
-            && levels.Industry.TryGetValue(ticker, out var industry)
-            && (fall == MemberReadings.IndustryWindows[0] ? industry.Month : industry.Quarter) is < 0)
+        if (p[IndexRuleCandidate.IndustryFallParameter] is var fall and > 0)
         {
-            return IndustryFell;
+            parts.Add(new(IndustryFell, !(levels.Industry.TryGetValue(ticker, out var industry) && (fall == MemberReadings.IndustryWindows[0] ? industry.Month : industry.Quarter) is < 0)));
         }
 
         if (rule.Evaluator is IndexBreakoutCandidate)
         {
             var bar = IndexNightRead.BarOf(inputs.Series[name], inputs.At);
-            var (high, since) = MemberReadings.YearHigh(inputs.Series[name].Bars, bar) is { } found
-                ? (Statistic.FromPrice(found.High), found.Since)
-                : (double.NaN, int.MaxValue);
 
-            if (p[IndexBreakoutCandidate.NearnessParameter] is var near and > 0 && !(Statistic.FromPrice(trade.Entry) / high >= near))
+            // The year's high over the sessions the night read before the store's year as well, where it read them, as the
+            // breakout's own high and the member readings read it; a member it reads none for fails each check on it.
+            // see: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does
+            var year = MemberReadings.YearHigh(inputs.Series[name].Name.Before, inputs.Series[name].Bars, bar);
+
+            if (p[IndexBreakoutCandidate.NearnessParameter] is var near and > 0)
             {
-                return NotNearItsHigh;
+                parts.Add(trade is not { } listed ? new(NotNearItsHigh, false, IndexNightRead.NotReadWithoutASetup)
+                    : year is not { } nearest ? new(NotNearItsHigh, false, NoYearHigh)
+                    : new(NotNearItsHigh, Statistic.FromPrice(listed.Entry) / Statistic.FromPrice(nearest.High) >= near));
             }
 
-            if ((p[IndexBreakoutCandidate.RecencyParameter] > 0 && !(since <= IndexSweepRunner.RecentHighSessions))
-                || (p[IndexBreakoutCandidate.RecencyParameter] < 0 && !(since > IndexSweepRunner.RecentHighSessions)))
+            if (p[IndexBreakoutCandidate.RecencyParameter] is var recency and not 0)
             {
-                return HighNotAsStated;
+                parts.Add(year is not { } made ? new(HighNotAsStated, false, NoYearHigh)
+                    : new(HighNotAsStated, recency > 0 ? made.Since <= IndexSweepRunner.RecentHighSessions : made.Since > IndexSweepRunner.RecentHighSessions));
             }
 
-            if (p[IndexBreakoutCandidate.HighVolumeParameter] is var volume and > 0 && !(trade.Order >= volume))
+            if (p[IndexBreakoutCandidate.HighVolumeParameter] is var volume and > 0)
             {
-                return VolumeUnder;
+                parts.Add(trade is { } listed ? new(VolumeUnder, listed.Order >= volume) : new(VolumeUnder, false, IndexNightRead.NotReadWithoutASetup));
             }
         }
 
@@ -870,23 +1001,39 @@ public static class IndexRules
         {
             var reaction = backs.TryGetValue(name, out var back) && inputs.At - back >= 0 ? inputs.Calendar[inputs.At - back] : (DateOnly?)null;
 
-            if (reaction is not { } session || levels.PeerSurprise.GetValueOrDefault((ticker, session)) is not > 0)
-            {
-                return PeersNotAbove;
-            }
+            parts.Add(new(PeersNotAbove, reaction is { } session && levels.PeerSurprise.GetValueOrDefault((ticker, session)) is > 0));
         }
 
-        // The switches last, as the second stage reads them after every other level.
-        if (p[IndexRuleCandidate.FundOverSpyParameter] is var window and > 0
-            && (window == IndexSwitches.SmallWindows[0] ? levels.FundHalfYear : levels.FundYear) is not > 1)
+        // From 20.11 the revenue level after the peers, as its sweep reads it: the quarter of the print the night's bar
+        // reads, the newest, against the same quarter a year before, both as first filed over the facts stored before
+        // the night; a member whose quarters are not both stored fails it saying so.
+        // see: A drift's revenue level on the S&P 400 and 600 reads a quarter only once its filing is stored, on the night and in its sweep alike
+        if (rule.Evaluator is IndexDriftCandidate && p.TryGetValue(IndexDriftCandidate.RevenueGrewParameter, out var grew) && grew == 1)
         {
-            return SwitchClosed;
+            var series = inputs.Series[name];
+            var bar = IndexNightRead.BarOf(series, inputs.At);
+            var report = bar >= 0 && series.NewestSurprise[bar] is var newest and >= 0 ? series.Name.Surprises[newest].EventDate : (DateOnly?)null;
+            var quarters = levels.Revenue?.GetValueOrDefault(ticker);
+            var growth = report is { } day && quarters is not null ? RevenueGrowth.Of(day, quarters) : null;
+            var words = report is null ? "no print read for tonight"
+                : quarters is null or { Count: 0 } ? "no quarter of its revenue stored as first filed before tonight"
+                : growth is null ? "its print's quarter and the same quarter a year before not both stored as first filed before tonight"
+                : FormattableString.Invariant($"revenue {growth.Growth * 100:+0.0;-0.0;0.0}% on the same quarter a year before, both as first filed");
+
+            parts.Add(new(RevenueNotAbove, growth is { Growth: > 0 }, words));
         }
 
-        if ((p[IndexRuleCandidate.CreditAverageParameter] == 1 && levels.CreditAverage is not > 1)
-            || (p[IndexRuleCandidate.CreditChangeParameter] == 1 && levels.CreditChange is not > 1))
+        // The switches last, as the second stage reads them after every other level, one part however many the rule
+        // states.
+        var window = p[IndexRuleCandidate.FundOverSpyParameter];
+        var (average, change) = (p[IndexRuleCandidate.CreditAverageParameter] == 1, p[IndexRuleCandidate.CreditChangeParameter] == 1);
+
+        if (window > 0 || average || change)
         {
-            return SwitchClosed;
+            var fund = !(window > 0 && (window == IndexSwitches.SmallWindows[0] ? levels.FundHalfYear : levels.FundYear) is not > 1);
+            var credit = !((average && levels.CreditAverage is not > 1) || (change && levels.CreditChange is not > 1));
+
+            parts.Add(new(SwitchClosed, fund && credit));
         }
 
         // The tone condition after the switches, as the S&P 500's drift reads it after its market switches: the release of
@@ -903,17 +1050,10 @@ public static class IndexRules
                 levels.Releases?.TryGetValue((ticker, series.Name.Surprises[newest].EventDate, version), out release);
             }
 
-            if (!ReleaseTone.GateOf(version, release).Passed)
-            {
-                return release?.Answer is null ? ToneNotHeld : ToneFailed;
-            }
+            parts.Add(new(ToneNotHeld, release?.Answer is not null));
+            parts.Add(new(ToneFailed, ReleaseTone.GateOf(version, release).Passed));
         }
 
-        return null;
+        return parts;
     }
-
-    // The index's sessions with the night's breadth another's: the S&P 500's, or every member's for a rule reading none.
-    static IReadOnlyList<SweepColumns.Session> WithBreadth(IReadOnlyList<SweepColumns.Session> sessions, int at, double? breadth) =>
-        [.. sessions.Select((one, place) => place == at ? one with { Breadth = breadth } : one)];
-
 }

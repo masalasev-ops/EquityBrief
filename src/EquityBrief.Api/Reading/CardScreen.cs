@@ -5,8 +5,9 @@ using EquityBrief.Web.Marks;
 namespace EquityBrief.Api.Reading;
 
 // What a page hands its cards beyond what the night stored: the operator's account where it is set, their open taken
-// trades, the trades taken from the cards drawn, and whether the page draws the card's presses. An export hands none.
-public sealed record CardContext(EquityBrief.Core.Cards.AccountSettings? Account, IReadOnlyList<TakenTradeRow> Open, IReadOnlyList<TakenTradeRow> Taken, bool Pressable, IReadOnlyList<TakenRecordRow>? Records = null)
+// trades, the trades taken from the cards drawn, whether the page draws the card's presses, and the setting the
+// short-term dip's night ran on, the provisional setting where the page hands none. An export hands none.
+public sealed record CardContext(EquityBrief.Core.Cards.AccountSettings? Account, IReadOnlyList<TakenTradeRow> Open, IReadOnlyList<TakenTradeRow> Taken, bool Pressable, IReadOnlyList<TakenRecordRow>? Records = null, EquityBrief.Core.Families.DipSetting? Dip = null)
 {
     public static CardContext None { get; } = new(null, [], [], false);
 }
@@ -43,6 +44,7 @@ public static class CardScreen
         }
 
         var heavyweights = string.Equals(row.Family, EquityBrief.Core.Families.HeavyweightRule.Name, StringComparison.Ordinal);
+        var dip = string.Equals(row.Family, EquityBrief.Core.Families.DipRule.Name, StringComparison.Ordinal);
         var money = given.Account is { } account
             ? EquityBrief.Core.Cards.PositionSize.Of(account, row.Entry, row.Stop, heavyweights ? row.BookHoldings : null, row.RoundTrip)
             : null;
@@ -58,7 +60,9 @@ public static class CardScreen
             row.Target,
             drawn,
             row.Record is { } stored ? Record(stored) : null,
-            EquityBrief.Core.Cards.Management.For(row.Stop, row.Target, row.Trail, row.Cap, heavyweights),
+            dip
+                ? EquityBrief.Core.Cards.Management.ForDip(row.Stop, (given.Dip ?? EquityBrief.Core.Families.DipRule.Provisional).ExitAverage, row.Cap)
+                : EquityBrief.Core.Cards.Management.For(row.Stop, row.Target, row.Trail, row.Cap, heavyweights),
             money is { } plan && given.Account is { } held
                 ? new CardMoneyView(plan.Shares, plan.AtRisk, plan.Value, plan.ShareOfAccount, plan.RoundTrip, plan.Capped, plan.WholeAtRisk, held.RiskPercent)
                 : null,
@@ -71,7 +75,7 @@ public static class CardScreen
             given.Pressable,
             row.Hits is { } hitsStored ? Hits(hitsStored) : null,
             given.Pressable && (given.Records ?? []).FirstOrDefault(mine => mine.Index == row.Index && mine.Family == row.Family) is { } kept
-                ? new CardOperatorRecordView(kept.Unit, kept.Won, kept.Lost, kept.Ended, kept.Open, kept.Average, EquityBrief.Core.Cards.TakenWalk.RecordMinimum, heavyweights || EquityBrief.Core.Families.SetupFamilies.Named(row.Family) is { Trails: true },
+                ? new CardOperatorRecordView(kept.Unit, kept.Won, kept.Lost, kept.Ended, kept.Open, kept.Average, EquityBrief.Core.Cards.TakenWalk.RecordMinimum, heavyweights || dip || EquityBrief.Core.Families.SetupFamilies.Named(row.Family) is { Trails: true },
                     new CardSameNightsView(kept.SameNights, kept.RuleListed, kept.RuleWon, kept.RuleLost, kept.RuleEnded, kept.RuleAverage))
                 : null,
             row.Similar is { } similar ? new CardScoreView(row.ScoreRank, EquityBrief.Core.Cards.CardSimilar.Read(similar)) : null,

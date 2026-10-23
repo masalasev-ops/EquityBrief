@@ -26,6 +26,1642 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-23 - BUILD_PLAN.md, RUNBOOK.md - 20.8's migration named 106, merged after the migrations 20.11, the 20.3 correction and 22.1 took
+Corrects: 20.8's text named its migration 102, and the build plan's 20.11 text 103, numbers 20.11, the 20.3 correction and 22.1 took while PR 505 waited on the history read; found merging main into PR 505 on the operator's word of 2026-10-23.
+Was:
+> 20.8: ... Migration 102 adds their columns to the setups' table, every row kept in place, ...
+> 20.11: ... by a column migration 102 adds to their results, 20.8's migration moving to 103 on the operator's answer, so ...
+> The release readings in the ledger: ... The file migrates to 102, which adds the four readings' columns to `setup` with every row in place and creates `release_answer_edge`, and runs the ledger's night step over the newest night. ...
+Now:
+> 20.8: ... Migration 106, 20.11 taking 102 on the operator's answer of 2026-10-20 and 103 beside it, the 20.3 correction 104 and 22.1 105 before 20.8 merged, adds their columns to the setups' table, every row kept in place, ...
+> 20.11: ... by a column migration 102 adds to their results, 20.8's migration moving to 103 on the operator's answer and to 106 when 20.8 merged after 22.1, so ...
+> The release readings in the ledger: ... The file migrates to 106, which adds the four readings' columns to `setup` with every row in place and creates `release_answer_edge`, and runs the ledger's night step over the newest night; a night that runs first migrates the store to 106 itself, and the file's migration then finds nothing pending. ...
+Why: a migration is applied by its number in order, and 102 to 105 were taken before 20.8 merged.
+
+### 2026-10-23 - ARCHITECTURE.html - the one order, the night's reports, the one-trade row, a failed run again and a trade's waiting buy say where the short-term dip stands
+Corrects: a second review of PR 532 before its merge found rows the dip changed still stating the order without it, the night's reports as taken from every family on a page, no stock listed while any trade for it is open, a failed run again's night row naming its failure, and a waiting buy drawn as waiting where Past picks draws the plan's close.
+Was:
+> 7 Dip family: ... names the failure on its night row and the stage's, the step and the night going on; ...
+> 15.7 Tonight's setups: ... which is the pullback then the breakout then the drift then the fundamentals-first family and then the sector heavyweights. ...
+> 17 Reports the night asks for: ... and each page's own order across its families, an index with no name left ...
+> 18 A stock a family passes while a trade for it is still open: ... the stock is free from the night after that trade ends | ...
+> 18 No next session stored for a dip trade: ... | Past picks drawing the trade's buy as waiting, or the trade as open | ...
+Now:
+> 7 Dip family: ... names the failure on its night row and the stage's, a night run again leaving the night row its earlier run stored and naming the failure on the stage's alone, the step and the night going on; ...
+> 15.7 Tonight's setups: ... then the fundamentals-first family then from 22.1 the short-term dip and then the sector heavyweights. ...
+> 17 Reports the night asks for: ... and each page's own order across its families, the short-term dip's picks never among them while they count toward nothing before its freeze, an index with no name left ...
+> 18 A stock a family passes while a trade for it is still open: ... the stock is free from the night after that trade ends; from 22.1 a short-term dip trade holds back the dip alone, so an older family lists a stock the dip holds as before (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades) | ...
+> 18 No next session stored for a dip trade: ... | Past picks drawing the trade's buy at its plan's close until the open it buys at is stored, and the trade as open | ...
+Why: each row states what the code does with the dip on the page and in the night, before 22.1 merges.
+
+### 2026-10-23 - ARCHITECTURE.html - the short-term dip refuses a member missing a session or with a suspect series, waits where its bars skip a session, and its card, line, chips, tile, Run summary, taken trades and sources say what the code does
+Corrects: the review of PR 532 before its merge found the dip reading a member across a session missing from its stored year, which the hard rule on bars forbids, and its walk reading past a skipped session; its one gate short drawing every member that did not drop; a dip card's plan worded by the swing exits and a taken dip trade followed by them; the line and the Run summary counting no dip pass; the setup chips on the S&P 400 and 600 dropping the index; the tile reading a failed part as a closed check; and the Nagel row marked abstract only though its passages were read.
+Was:
+> 7 Dip family, reads: membership, bar store, calendar, reported quarters, family picks, forward returns, index family picks, index family trades, member readings, dip trades
+> 7 Dip family: ... its members and their stored year read through the index families' own loader and none of the sessions it reads before that year, a member holding fewer than 200 stored sessions refused by the history gate: the floors ... or at the close of its last session, a sale whose next session is not stored left held, with its round trip ...
+> 7 Taken follower, reads: membership, bar store, heavyweight holdings, index heavyweight holdings, index heavyweight rule holdings, index family nights, decision cards, taken trades
+> 7 Taken follower: ... a frozen live rule's own where the night read the family by one (see: A rule of the S&amp;P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step)
+> 7 matrix, Dip family: Fundamentals R; Series state blank
+> 11.4 Short-term dip: ... its stored year holds the sessions its average reads, its close is above ... and a buy or a sale whose next session is not stored waits for it ...
+> 15.7 The short-term dip's card: ... each stock one gate short of it among the stocks close to a buy point with the gate it missed; and a stock it gave way on ...
+> 15.7 The market line: ... whether that left its list open; from the 19.2 correction ...
+> 15.10, the S&amp;P 400's or 600's page: ... and its sector heavyweights' rebalance and holdings; and its setups ...
+> 15.17 The short-term dip's trades: ... one chip a setup the index's lists kept a trade under; and nothing ...
+> 18 A member short of the dip's 200 sessions: ... and every other family reads it as before (see: ...) | the dip's funnel counting the member at its history gate, and its row saying how many sessions are stored | ... of which the dip is not one
+> 18 No next session stored for a dip trade: a dip pick whose next session the store does not hold is not bought, ... and a sale whose next session is not stored leaves the trade held; ...
+> 23 note: ... abstract only means the rule rests on the abstract; secondary means ...
+> 23 Jegadeesh (1990) and Lehmann (1990), where read: the New York Fed staff report alone
+> 23 Nagel (2012), read: abstract only
+Now:
+> 7 Dip family, reads: membership, bar store, calendar, series state, gate results, filter versions, list rules, family picks, forward returns, index family picks, index family trades, member readings, dip trades
+> 7 Dip family: ... its members and their stored year read by its own loader and none of the history pulled before that year, a member holding fewer than 200 stored sessions, one whose stored year misses a session the index traded and one whose series is marked suspect each refused by the history gate with nothing read from its closes (see: Bars are never interpolated): the floors ... or at the close of its last session, a buy or a sale whose next session the stock's bars skip or the store does not hold yet left waiting, with its round trip ...
+> 7 Taken follower, reads: ... index heavyweight rule holdings, dip trades, index family nights, ...
+> 7 Taken follower: ... read by the index families' step); and from 22.1 a short-term dip pick ends where the dip's own trade on it was sold, at the next open after its exit's close or its stop's or at its last session's close, its record counting each ended and none won or lost, since the dip sets no target (see: The dip buys at the next session's open and sells at the next open after its exit's close or its stop's, and at its last session's close)
+> 7 matrix, Dip family: Fundamentals blank; Series state R
+> 11.4 Short-term dip: ... its stored year holds the sessions its average reads with no session the index traded missing and its series not marked suspect, nothing read from its closes where either fails (see: Bars are never interpolated), its close is above ... and a buy or a sale whose next session the stock's bars skip or the store does not hold yet waits for it ...
+> 15.7 The short-term dip's card: ... with the gate it missed; such a stock having dropped as the rule reads it and missed exactly one other gate that is not its report, lowest RSI first; each pick's card wording its plan by the dip's own exits at the next open and its time limit's close; a trade taken from a pick followed where the dip's own trade on it was sold; its tile saying its part was not computed on a night that part failed; and a stock it gave way on ...
+> 15.7 The market line: ... whether that left its list open; from 22.1 how many members a setup passed with the short-term dip's passes among them; from the 19.2 correction ...
+> 15.10, the S&amp;P 400's or 600's page: ... and its sector heavyweights' rebalance and holdings, from 22.1 the short-term dip's part among them; and its setups ...
+> 15.17 The short-term dip's trades: ... one chip a setup the index's lists kept a trade under, each chip's link keeping the index the page reads; and nothing ...
+> 18 A member short of the dip's 200 sessions: ... and every other family reads it as before; from the same gate a member whose stored year misses a session the index traded, or whose series is marked suspect, is refused with nothing read from its closes, its row naming the session or the mark (see: ...) (see: Bars are never interpolated) | ... how many sessions are stored, which session is missing or that its series is suspect | ... of which the dip is not one; a figure read across a missing session or at a scale a failed refetch left is one the hard rule on bars forbids
+> 18 No next session stored for a dip trade: a dip pick whose next session the store does not hold for its stock, or whose stock's bars skip a session the index traded, is not bought, ... and a sale whose next session is not stored or is skipped leaves the trade held; ...
+> 23 note: ... abstract only means the rule rests on the abstract; in part means the passages the row names were read and not the whole text; secondary means ...
+> 23 Jegadeesh (1990), where read: the staff report and https://ideas.repec.org/a/bla/jfinan/v45y1990i3p881-98.html; Lehmann (1990): the staff report and https://www.nber.org/papers/w2533
+> 23 Nagel (2012), read: in part
+Why: each row states what the corrected code does, and section 23's rows what was read and where, before 22.1 merges and the newest night is run again under it.
+
+### 2026-10-23 - BUILD_PLAN.md - 22.1's failure rows name a member missing a session of its stored year, a suspect series and a session a trade's bars skip
+Corrects: 22.1's text named the history gate's refusal of a member short of 200 sessions alone and a trade waiting on a session the store does not hold, where the dip must refuse a member whose stored year misses a session and wait where a stock's bars skip one, as the hard rule on bars says; found by the review of PR 532 before its merge.
+Was:
+> 22.1: ... section 18's four failure rows, a member short of 200 sessions, which the rule does not read and its row names, ... and no next session stored, a buy or a sale waiting for it; ...
+Now:
+> 22.1: ... section 18's four failure rows, a member short of 200 sessions, or whose stored year misses a session the index traded, or whose series is marked suspect, which the rule does not read and its row names, ... and no next session stored or one the stock's bars skip, a buy or a sale waiting for it; ...
+Why: 22.1 amends its own done condition to name what its corrected gate and walk do, still four rows, the first and the last each widened.
+
+### 2026-10-23 - RUNBOOK.md - the by-hand index families' step draws the short-term dip again after them
+Corrects: the recovery an index's failed part asks for read the index families' night again and left the dip's list as it was drawn against the failed one, so a stock could be listed under the dip and another family on one index; found by the review of PR 532 before its merge.
+Was:
+> `index-families` writes under a run id the run page reads as run by hand, and a night run after it over the same session writes that session again. Each page ...
+Now:
+> `index-families` writes under a run id the run page reads as run by hand, and a night run after it over the same session writes that session again. From 22.1 it runs the short-term dip's step after them over the same session, so the dip's list gives way to the lists they drew again (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades). Each page ...
+Why: the dip gives way to every other family's list, so a list drawn again by hand redraws the dip's after it.
+
+### 2026-10-23 - .claude/rules/checks.md - fixture-expectations and read-surface state the review's corrections to the short-term dip
+Corrects: the roster's rows did not state the assertions the corrections of 22.1 add before its merge.
+Was:
+> fixture-expectations: ... its cards and its rule's night with its funnel, its four failure rows each induced, and no source a rule's version pins naming it |
+> read-surface: ... and in a card of its own on the S&P 500, its row on the Run page, its line on the name page, and its night's stage in one of the Run page's groups |
+Now:
+> fixture-expectations: ... its four failure rows each induced, a member missing a session of its stored year or whose series is marked suspect refused at its history with nothing read from its closes, a trade waiting where its stock's bars skip a session the index traded, a report dated on a closed day read at the session after it on either side of the night, each card's market line stating the index's breadth, a trade taken from a dip card ending where the dip's own trade was sold with its record counting none won or lost, and no source a rule's version pins naming it |
+> read-surface: ... and in a card of its own on the S&P 500, each chip's link keeping the index, its row on the Run page with its part counted in how the night went, its line on the name page, its night's stage in one of the Run page's groups, the market line counting the members it passed, a pick's card wording its plan by its own exits, a stock one gate short of it only where it dropped and missed one other gate that is not its report, and its tile saying its part was not computed on a night it failed |
+Why: each roster row says what its check asserts.
+
+### 2026-10-22 - ARCHITECTURE.html - the short-term dip carries a hue of its own beside the five families', and the hue decision's citations repointed
+Authorised by: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them
+Was:
+> 15.5 Family tag: ... a word the palette holds no hue for keeps the tag's own ground (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word).
+> 15.6: <p>The pullback, the breakout, the drift, the fundamentals-first family and the sector heavyweights each carry a hue drawn as a mark, ... in both palettes. (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word)</p>
+> 15.7 Tonight's setups: ... (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word) ...
+Now:
+> 15.5 Family tag: ... a word the palette holds no hue for keeps the tag's own ground (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them).
+> 15.6: <p>The pullback, the breakout, the drift, the fundamentals-first family, from 22.1 the short-term dip, and the sector heavyweights each carry a hue drawn as a mark, ... in both palettes. (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them)</p>
+> 15.7 Tonight's setups: ... (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them) ...
+Why: 22.1 draws the dip's card the 19.3 way, its tag, tile and card header in a hue of its own held to the bounds the five before it hold, and the read-back at 1440 and 390 pixels found the card drawn with none.
+
+### 2026-10-22 - .claude/rules/checks.md - fixture-expectations and read-surface reach the short-term dip
+Authorised by: The short-term dip buys a stock in an uptrend after a sharp drop no report caused and sells the bounce within days
+Was:
+> fixture-expectations: ... and a refusal naming a window other than the pin's ending the run with nothing stored for its release and no cut, each over a constructed store and the captured list and refusal |
+> read-surface: ... its prints, its quarters and its mean target against its newest close read back against the store |
+Now:
+> fixture-expectations: ... each over a constructed store and the captured list and refusal; and from 22.1 the short-term dip's 2-session RSI, each gate on both sides of its threshold and exactly at it, the report window's edges, its exits at the next open and its time limit's close, its 5-session average and its order, each worked by hand over constructed bars and read against the fixture's derived figures, its night over a constructed S&P 400 storing every member's answer and giving way to every other family's list and open trades while an older family lists a stock it holds as before, its cards and its rule's night with its funnel, its four failure rows each induced, and no source a rule's version pins naming it |
+> read-surface: ... read back against the store; and from 22.1 the short-term dip's card on a constructed S&P 400 night the market check closed, listing on its own setting after every swing family's, the market line saying so, its tile and its label on the row of the stock it gave way on, its trades on Past picks under its label with the setup chips and the dip chosen keeping its own on the S&P 400 and in a card of its own on the S&P 500, its row on the Run page, its line on the name page, and its night's stage in one of the Run page's groups |
+Why: 22.1 adds these assertions with the family.
+
+### 2026-10-22 - ARCHITECTURE.html - the market check closes every swing family's list but the short-term dip's, which reads its own setting, and its citations repointed
+Authorised by: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none
+Was:
+> 7 Family evaluator: ... (see: The market check closes every swing family's list together, and the sector heavyweights read none) ...
+> 11.4: ... One market check, the swing filter's, is read by every swing family, so a night it closes lists nobody under any of them, and the sector heavyweights read none (see: The market check closes every swing family's list together, and the sector heavyweights read none). One open trade rule holds a stock to one trade across every swing family, and one page lists the swing families in its order, ...
+> 14, the swing filter's step: ... with the exit it names beside each pick (see: The market check closes every swing family's list together, and the sector heavyweights read none), and from 20.4 handing ...
+> 15.7 The market line: ... and the trades still open linking to Past picks; from the 19.2 correction of 2026-10-13 ... (see: The market check closes every swing family's list together, and the sector heavyweights read none)
+> 15.7 The sector heavyweights' card: ... (see: The market check closes every swing family's list together, and the sector heavyweights read none) ...
+Now:
+> 7 Family evaluator: ... (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none) ...
+> 11.4: ... One market check, the swing filter's, is read by every swing family but the short-term dip, which reads a setting of its own, so a night it closes lists nobody under any of them but the dip, and the sector heavyweights read none (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none). One open trade rule holds a stock to one trade across every swing family, the dip giving way to every other family's list and open trades while no other family's list reads the dip's (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades), and one page lists the swing families in its order, ...
+> 14, the swing filter's step: ... with the exit it names beside each pick (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none), and from 20.4 handing ...
+> 15.7 The market line: ... and the trades still open linking to Past picks; from 22.1 the words saying the short-term dip reads its own setting and whether that left its list open; from the 19.2 correction of 2026-10-13 ... (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none)
+> 15.7 The sector heavyweights' card: ... (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none) ...
+Why: the operator ruled on 2026-10-22 that the dip reads its own market setting on every index, chosen by its sweep, and that the decision closing every swing family's list together be amended to name it, its reasoning kept and every citation repointed.
+
+### 2026-10-22 - ARCHITECTURE.html - the short-term dip on every index: its step, its rule and research, its card, its trades, its stores, its settings, its failures and its sources
+Authorised by: The short-term dip buys a stock in an uptrend after a sharp drop no report caused and sells the bounce within days
+Was:
+> 7 Decision cards, reads: ... index family results, index family picks, index heavyweight holdings, ...
+> 7 Rule cards, reads: ... index family results, index family picks, index rule trades, ...
+> 14, the swing filter's step: ... (see: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits); then write a card for each stock every index's families listed ...
+> 15.9 The setup the page lists the name under: ... and a sentence for a setup that passed it and holds it back (see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order)
+> 15.10 The setup families: ... or the words saying it starts at the freeze (see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint). Beneath it, once a new setup's freeze ...
+> 23 Jegadeesh (1990): ...; read as a Federal Reserve Bank of New York staff report on short-term reversal gives it ... the trend versions
+> 23 Lehmann (1990): ...; read as the same staff report gives it ... the trend versions
+> 23 Nagel (2012): Nagel (2012), Evaporating liquidity, Review of Financial Studies 25(7) ... the market check read against off on the pullback
+Now:
+> 7 Decision cards, reads: ... index family results, index family picks, dip results, dip picks, index heavyweight holdings, ...
+> 7 Rule cards, reads: ... index family results, index family picks, dip nights, dip results, dip picks, index rule trades, ...
+> 14, the swing filter's step: ... a swing rule's trades walked to their own exits); then read the short-term dip over every member of the S&P 500, 400 and 600 holding a bar on the night, by its own functions over their stored bars and at its own market setting, ... and keeping its trades and walking each to its exit at the next open, a failure in an index's part named on its own row while the night goes on (see: ...) (see: ...) (see: ...); then write a card for each stock every index's families listed ...
+> 15.9 The setup the page lists the name under: ... (see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order); from 22.1 the short-term dip's answer on the name's own index among them listing it at its place or holding it back; and its label among the setups the name qualified under where the dip gave way on it (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades)
+> 15.10 The setup families: ... (see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint); from 22.1 on a night the dip read or once its list has kept a trade the short-term dip's row on every index after the swing families' and before the sector heavyweights' on the S&P 400 and 600; provisional with what it lists on the night and the trades its list has kept (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades). Beneath it, once a new setup's freeze ...
+> 23 Jegadeesh (1990): ...; read as a Federal Reserve Bank of New York staff report on short-term reversal gives it, and from 22.1 its abstract as RePEc lists it ... the trend versions and the short-term dip
+> 23 Lehmann (1990): ...; read as the same staff report gives it, and from 22.1 its abstract on the NBER's page of its working paper 2533 ... the trend versions and the short-term dip
+> 23 Nagel (2012): Nagel (2012), Evaporating liquidity, Review of Financial Studies 25(7); from 22.1 also the passages of its NBER working paper on the reversal strategies it forms, their sample and their returns against the VIX ... the market check read against off on the pullback, and the short-term dip's market setting of its own
+> 7: a catalogue row and a matrix row for the dip family, after the index families'.
+> 11.4: a paragraph for the short-term dip after the earnings drift's, its rule, its exits, its place, its market setting, its evidence and its judgement.
+> 15.7: a row for the short-term dip's card after the fundamentals-first family's.
+> 15.17: a row for the short-term dip's trades before the sector heavyweights' holdings.
+> 16: rows for dip nights, dip results, dip picks and dip trades before index rule trades.
+> 17: a row for the short-term dip before the stretch mark.
+> 18: four rows for the dip before a member no filed fact reaches: a member short of the dip's 200 sessions, a dip member with no typical move, a dip member with no report date on file, and no next session stored for a dip trade.
+> 23: rows for Chan (2003) and Connors and Alvarez (2008) before Novy-Marx (2015).
+Why: the operator ruled on 2026-10-22 a short-term dip family on all three indices at provisional settings, built at 22.1, and asked that section 11 carry its rule and research with each source read before it is written, section 15 its card and pages, section 16 its stores, section 17 its settings marked provisional, section 18 its four failure rows and section 23 its sources.
+
+### 2026-10-22 - SCHEMA.md - the dip's four tables and their writer, and the market check's citations repointed
+Authorised by: The short-term dip buys a stock in an uptrend after a sharp drop no report caused and sells the bounce within days
+Was:
+> family_result: ... so no family passes a member on a night it closed (see: The market check closes every swing family's list together, and the sector heavyweights read none). ...
+> heavyweight_holding: ... nor any swing family's for it (see: The market check closes every swing family's list together, and the sector heavyweights read none) ...
+Now:
+> family_result: ... so no family passes a member on a night it closed (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none). ...
+> heavyweight_holding: ... nor any swing family's for it (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none) ...
+> The ownership table: rows for dip_night, dip_result, dip_pick and dip_trade, each written by the dip family.
+> Sections for dip_night, dip_result, dip_pick and dip_trade before decision_card.
+Why: 22.1 creates the four tables its step alone writes, and the decision closing every swing family's list together was amended on 2026-10-22 to name the dip as reading its own setting, every citation repointed (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none).
+
+### 2026-10-22 - BUILD_PLAN.md - phase 13's citation of the market check repointed
+Authorised by: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none
+Was:
+> Phase 13, what this phase is for: ... (see: The market check closes every swing family's list together, and the sector heavyweights read none).
+Now:
+> Phase 13, what this phase is for: ... (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none).
+Why: the decision was amended on 2026-10-22 to name the dip as reading its own setting, and the ruling asked for every citation of it to be repointed.
+
+### 2026-10-22 - BUILD_PLAN.md - 22.1 reads the stored bars alone, a member short of 200 stored sessions refused by its history gate
+Corrects: 22.1's text had the dip's night read the history pulled before the store's year where that year falls short, which the hard rule on bars allows only the night steps it names, the dip not among them; found when the suite's check of the pulled tables' readers refused the step naming them, and a read of the store found the 8 of the 1,504 members holding a bar on 2026-10-21 that hold fewer than 201 stored sessions each a recent listing no pull holds earlier sessions for.
+Was:
+> 22.1: ... reading every member of the three indices holding a bar on the night through its own functions over the stored bars, and over the history pulled before the store's year, at the store's scale, where that year falls short. ...
+Now:
+> 22.1: ... reading every member of the three indices holding a bar on the night through its own functions over the stored bars alone, since the hard rule on bars names the night's readers of the history pulled before the store's year and the dip is not one, so a member holding fewer than 200 stored sessions is refused by its history gate and named on its row. ...
+Why: the night keeps inside the hard rule on bars with no ruling moving it, and its section 18 row for a member short of 200 sessions already said the rule does not read such a member and its row names it.
+
+### 2026-10-22 - docs/BUILD_PLAN.md - phase 22's dip gives way to every other family's list and stands after the fundamentals-first family, as the operator ruled
+Authorised by: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+Was:
+> Where it lands: ... one order on every page is kept, the S&P 500's place after the drift standing on the operator's word.
+> What has no route: ... A live rule's page list is its paper account, so whichever way is ruled changes which trades the older accounts take from the merge on and restarts none. This is put to the operator before anything is built, as the ruling's limit asks.
+> **What is the operator's.** The way one trade a stock runs that has no route, before 22.1 is built. Each index's sweep answer, ... Any cut to the grid and any dial dropped from it. The S&P 500's place right after the drift in place of after the fundamentals-first family. A report request for a dip pick, ...
+> 22.1: ... and the other families' lists hold back a stock it holds as the operator rules on what 22.0 found has no route.
+> 22.1's done condition: ... a stock the pullback and the dip both pass is listed under the first in the page's order with the other's label, and a stock another family holds is held back by the dip, the other way holding as the operator ruled; ...
+Now:
+> Where it lands: ... one order on every page is kept, as the operator ruled (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades).
+> What has no route: ... A live rule's page list is its paper account, so an older list holding back a stock the dip holds would change which trades its account takes from the merge on, restarting none. Put to the operator before anything was built, as the ruling's limit asks, they ruled that the dip gives way and no other family's list reads its trades.
+> **What is the operator's.** Each index's sweep answer, ... Any cut to the grid and any dial dropped from it. A report request for a dip pick, ...
+> 22.1: ... and no other family's list reads its trades (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades).
+> 22.1's done condition: ... a stock the pullback and the dip both pass is listed under the first in the page's order with the other's label, a stock another family holds is held back by the dip, and a stock the dip holds is listed by an older family as before; ...
+Why: the operator answered the two questions 22.0's planning pass put to them, "Dip gives way" and "After fundamentals-first", and the finding's sentence on the accounts read as if every answer changed them, where the one ruled changes none.
+
+### 2026-10-22 - .claude/rules/checks.md - read-surface reaches no report standing on a page for an earlier night
+Corrects: no test read a page for an earlier night over a researched store, so a route reading the staleness verdict for an earlier night survived every read-surface test; found by the fourth phase 19 sign-off review's mutation m5.
+Was:
+> read-surface: ... none on the day a pass ran or while the cap has paused research and no standing where none is written, read over the researched fixture's store, ...
+Now:
+> read-surface: ... none on the day a pass ran or while the cap has paused research and no standing where none is written, nor on a page for an earlier night where tonight's draws one, read over the researched fixture's store, ...
+Why: the test this correction adds holds that a page for an earlier night draws no standing, as the decision on such a page states.
+
+### 2026-10-22 - .claude/rules/checks.md - fixture-expectations reaches a reading taken only at its pin's window
+Authorised by: A reading is taken only at the window its pin names, and the model is loaded again at it wherever it is held at another
+Was:
+> fixture-expectations: ... and a version carrying only from one differing in the fit's rule alone |
+Now:
+> fixture-expectations: ... and a version carrying only from one differing in the fit's rule alone; and from the second 20.3 correction of 2026-10-22 a run refusing where its profile's window is not the pin's, ... and a refusal naming a window other than the pin's ending the run with nothing stored for its release and no cut, each over a constructed store and the captured list and refusal |
+Why: the correction adds these assertions.
+
+### 2026-10-22 - RUNBOOK.md - the window is a part of the pin a run compares and holds
+Authorised by: A reading is taken only at the window its pin names, and the model is loaded again at it wherever it is held at another
+Was:
+> ... an answer whose model or runtime is not the pin's ends the run the same way. A refusal after a deliberate update is answered by `--pin`. From 20.2 a slot first fetches ...
+Now:
+> ... A refusal after a deliberate update is answered by `--pin`. From the second 20.3 correction of 2026-10-22 the window the profile loads the model at is compared too, the run reads LM Studio's list before each release and loads the model again at the pin's window wherever LM Studio holds it at another, ... and a refusal past another window ends the run naming both windows, its release left unread for the next run (see: ...). From 20.2 a slot first fetches ...
+Why: a reading could be taken at a window the pin does not name, found before pin 4's history read.
+
+### 2026-10-22 - ARCHITECTURE.html - a reading is taken only at the window its pin names
+Authorised by: A reading is taken only at the window its pin names, and the model is loaded again at it wherever it is held at another
+Was:
+> 12.3: ... and an answer whose model or runtime is not the pin's ends it, since the runtime answers a request naming a model it does not hold with whatever model it has loaded. From the 20.1 correction of 2026-10-19, ...
+> 12.3: ... is cut to the opening the window holds, on the request's tokens and the window the refusal names, back to a line's end ...
+> 18, the model, its file, the runtime or the prompt is not the pin's: ... (see: The local run refuses to start where LM Studio's saved structured output for the model differs from the one its history read started under)</td>
+Now:
+> 12.3: ... with whatever model it has loaded. From the second 20.3 correction of 2026-10-22 the window its profile loads the model at is a part compared after the instruction's version; before each release a run reads the runtime's list of its models, keeping the model only where the list holds it once at the pin's window or at one it does not state and loading it again at the pin's window otherwise, since LM Studio loads it itself at a window of its own saved settings; and a refusal naming a window other than the pin's ends the run as such an answer does (see: ...). From the 20.1 correction of 2026-10-19, ...
+> 12.3: ... on the request's tokens and the window the refusal names, the pin's from the second 20.3 correction of that day, back to a line's end ...
+> 18, the same row: ...; from the second 20.3 correction of 2026-10-22 the run refuses as well where its profile's window differs from the pin's, reads the runtime's list before each release and loads the model again at the pin's window wherever the list holds it at another or more than once, and ends at a refusal naming another window, storing nothing for that release and cutting nothing (see: ...)</td>
+Why: the pin names the window the model is loaded at, and nothing held a reading to it; LM Studio reloads the model itself at its own saved window.
+
+### 2026-10-22 - RUNBOOK.md - pin 4 written under LM Studio's newest runtime carries none of pin 3's readings
+Authorised by: A new reading version carries each reading whose request it would send unchanged and reads the rest
+Was:
+> ... `--pin` then writes pin 4, and since pin 3 differs from it in the fit's rule alone it carries, in the same write, pin 3's reading of every release ... Its row on the run log under `local-run` carries the same counts.
+Now:
+> ... `--pin` then writes pin 4, and where pin 3 differs from it in the fit's rule alone it carries, in the same write, pin 3's reading of every release ... Its row on the run log under `local-run` carries the same counts. On the operator's ruling of 2026-10-22 pin 4 is written under LM Studio's newest runtime, the CUDA 12 runtime 2.62.1 selected in the place of pin 3's 2.56.0 with `lms runtime select` and the model unloaded before `--pin`, so pin 4 carries none of pin 3's readings and prints no counts, and the history read reads every release under it, about three days at 250 W.
+Why: the operator ruled on 2026-10-22 that the history read runs on LM Studio's newest runtime, and a version carries a reading only from one whose runtime it shares.
+
+### 2026-10-22 - .claude/rules/checks.md - read-surface holds forty-one marks and reaches the chart page's graphs
+Authorised by: The chart page graphs the report's earnings and revenue and the analysts' figures beneath its chart, and no rule reads them from it
+Was:
+> read-surface: ... each of the thirty-eight marks is asserted over a full input and over the input it degrades on ...
+> read-surface: ... and no adjusted p, version code or registration day in the page's text, each standing under the pointer |
+Now:
+> read-surface: ... each of the forty-one marks is asserted over a full input and over the input it degrades on ...
+> read-surface: ... each standing under the pointer; and from 20.12 the chart page's earnings dots, income bars and target marker each worked by hand over a full input ... and every fixture name's chart page drawing the graphs' card between the chart's and the figures', its prints, its quarters and its mean target against its newest close read back against the store |
+Why: 20.12 adds the earnings dots, the income bars and the target marker to section 15.5 and the graphs to the chart page, and its tests extend read-surface's.
+
+### 2026-10-22 - ARCHITECTURE.html - the mark vocabulary's three graphs and the chart page's graphs beneath its chart
+Authorised by: The chart page graphs the report's earnings and revenue and the analysts' figures beneath its chart, and no rule reads them from it
+Was:
+> 15.5: <p>Thirty-eight marks. They are defined once and every screen draws from this list. ...
+> 15.5 Rating bars: ... (see: Not yet measured is drawn as a dashed outline, never as a pale value).</td><td>Name</td></tr>
+> 15.22 Reads: ... its long view's month-end closes, its peers and its next dated event; and the newest delayed quote inside the regular session.
+Now:
+> 15.5: <p>Forty-one marks. They are defined once and every screen draws from this list. ...; with rows for the earnings dots, the income bars and the target marker.
+> 15.5 Rating bars: ... (see: Not yet measured is drawn as a dashed outline, never as a pale value).</td><td>Name, from 20.12 Chart</td></tr>
+> 15.22 Reads: ... its peers and its next dated event; its earnings reactions, which its marks read and from 20.12 its earnings dots; and the newest delayed quote inside the regular session.
+> 15.22: a row for the graphs after Under the pointer.
+Why: the operator ruled on 2026-10-21 that the chart page draws earnings a share against the estimate, revenue against net income with the net margin, and the analysts' mean target and ratings by month, from the figures the report reads.
+
+### 2026-10-22 - ARCHITECTURE.html - section 20's phase 20 row names 20.11 and 20.12
+Authorised by: The chart page graphs the report's earnings and revenue and the analysts' figures beneath its chart, and no rule reads them from it
+Was:
+> the build plan's phase 20 checkpoints, 20.0 to 20.10
+Now:
+> the build plan's phase 20 checkpoints, 20.0 to 20.12
+Why: 20.11, on the operator's ruling of 2026-10-19, and 20.12, on their ruling of 2026-10-21, are each added to phase 20 after 20.10 and built before its report, and the row named neither.
+
+### 2026-10-22 - .claude/rules/checks.md - fixture-expectations reaches the exhibit a filing names, a release past the model's window and pin 4's carry
+Authorised by: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so
+Was:
+> fixture-expectations: ... its line saying the estimate and the filing measure it on different bases while its earnings a share is read against its estimate and another sector's revenue against both, worked by hand |
+Now:
+> fixture-expectations: ... against both, worked by hand; and from the 20.3 correction of 2026-10-22 a filing's release the exhibit its page names a press, earnings or news release in its description or its file name, read off BXP's and DLR's captured pages, ... the migration keeping every release as its filing's release and every reading as of the exhibit its filing held; and pin 4's carry over a constructed store, ... counted by why, each carried reading keeping the instant the version before read it and the hash of its request, and a version carrying only from one differing in the fit's rule alone |
+Why: the 20.3 correction of 2026-10-22 adds these assertions, under the two decisions beside this one: A release longer than the model's window is read from its opening that fits, with a marker where it was cut, and A new reading version carries each reading whose request it would send unchanged and reads the rest.
+
+### 2026-10-22 - SCHEMA.md - a release document keyed by its exhibit and marked whether it is its filing's release, the release checks, and each reading's exhibit, cut, request and carry
+Authorised by: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so
+Was:
+> | `release_document` | ReleaseFetch | none | none |
+> release_document: Grain: one row per member's results release, from 20.2, the EX-99 exhibit of an 8-K or 8-K/A carrying item 2.02. ... | `run_id` | TEXT | the run that stored it, a slot's or the history's | ... Primary key: `accession`. ... Insert only, by the release fetch in the local run's slots and its history by hand and never by the night; a release is stored once and never asked for again, and a reading reads its text back to the hash it was stored with (see: ...).
+> release_reading: Grain: one row per results release and reading version, from 20.3. ... | `read_at` | TEXT | UTC instant | | `run_id` | TEXT | the run that read it, a slot's or the history read's | Primary key: `accession`, `pin`. Insert only, by the local run's slots and its history read by hand and never by the night; ... The name page reads ...
+Now:
+> | `release_document` | ReleaseFetch | ReleaseFetch | none |, and `release_check` inserted by ReleaseFetch alone
+> release_document: one row per exhibit stored as a member's results release, a second where a check of its filing's page put the exhibit it names in the place of the one stored first; `release` 1 where the exhibit is the filing's release; primary key `accession`, `exhibit`; insert by the slots, the history and the check of the exhibits, and update of `release` alone, by that check
+> release_check: one row per stored filing whose page the release fetch read for the exhibit it names as the release, inserted once
+> release_reading: one row per exhibit and reading version, with `exhibit`, `cut_at`, `request_sha256` and `carried_from`; primary key `accession`, `exhibit`, `pin`; insert by the slots, the history read and from the correction the pin's carry
+Why: a filing can hold two exhibits once a check stores the one its page names beside the one stored first, so the exhibit joins the keys, and the readings say which text they read, where it was cut, what they asked and where they came from.
+
+### 2026-10-22 - ARCHITECTURE.html - a filing's release is the exhibit its page names, and the release fetch checks the filings stored before
+Authorised by: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so
+Was:
+> 7's Release fetch row: reads membership, companies, pulled companies, setups, release documents, release days, release filers, filings archive; writes release documents, release days, release filers, run log; ... so the anonymiser replaces each name the filer has filed under (see: ...)
+> 7's Release accuracy row: reads reading pins, release readings, release documents, release probes, ...; ... (see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn)
+> 12.3's paragraph from 20.2: ... and the night makes none of them (see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it).
+> 12.3's paragraph from 20.3: Each reading is kept under the version with its four words or the cause it was refused for, a stored text that no longer hashes to what was stored refused unread, ...
+> 16's Release documents row: from 20.2, one row per member's results release: ... and the run that stored it | forever, append-only, a release stored once by its accession and never asked or stored again, written by the release fetch in the local run's slots and its history by hand (see: ...)
+Now:
+> 7's Release fetch row reads and writes the release checks as well, and adds that a filing's release is the EX-99 exhibit its page names a press, earnings or news release, the lowest only where none is, and that `releases --exhibits` reads by hand the page of every stored filing no check holds, storing the exhibit it names in the place of the one stored first
+> 7's Release accuracy row reads the release checks and leaves out and counts a reference label given on an exhibit a check has since replaced
+> 12.3's paragraph from 20.2 adds the exhibit taken and the check by hand; the paragraph from 20.3 says a reading answers for its filing only where it read the exhibit the filing holds as its release
+> 16's Release documents row is one row per exhibit stored as a filing's release, with whether it is the release now, and a Release checks row follows it
+Why: a filer filing a long supplement first beside its press release had the supplement stored as its release, and the filing's own page names the press release.
+
+### 2026-10-22 - ARCHITECTURE.html - a release longer than the model's window is read from its opening that fits
+Authorised by: A release longer than the model's window is read from its opening that fits, with a marker where it was cut
+Was:
+> 12.3's paragraph from 20.1: ... an answer empty, cut off at its budget, not one object, missing an answer or holding a word its question does not list is asked once more and then counted refused with its cause, never stored as a reading. Reading the stored results releases twice ...
+> 17's Local reading's settings: ... the late slot's start (see: A release reading is readable from the first night whose late slot starts after the release was accepted) | ... so a moved schedule moves no history | fixture-expectations, the request a reading sends and the local run over a constructed store
+> 18's An answer the local run cannot read, or one the runtime refuses: ... and it is read again only under a new version | the region counts each run's refused answers by cause
+Now:
+> 12.3's paragraph from 20.1 adds that a release the runtime refuses as longer than the window is cut to the opening the window holds, on the request's tokens and the window the refusal names, back to a line's end and marked where it was cut, and asked again, up to three cuts, the reading keeping the characters it kept and every reading the hash of the request it sent
+> 17's Local reading's settings adds the margin of 1,024 tokens and the 3 cuts, why the margin, and a cut worked by hand among what checks it
+> 18's row adds that such a release is cut and asked again and stands refused only after the third cut
+Why: 157 of pin 3's readings were refused by the runtime as longer than its 50,176 tokens and stood refused, where the opening of each holds what the four questions ask.
+
+### 2026-10-22 - ARCHITECTURE.html - a new reading version carries each reading whose request it would send unchanged
+Authorised by: A new reading version carries each reading whose request it would send unchanged and reads the rest
+Was:
+> 7's Local run row: ... and it writes the reference set out as the model reads it, calling no model and writing no row (see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept)
+> 12.3's paragraph from 20.1: ... A new pin is written by hand, a new reading version read again over all history before any rule reads it, and two versions are never mixed in one figure. The instruction asks ...
+> 16's Release readings row: from 20.3, one row per results release and reading version: ... and when and by which run it was read | forever, append-only, a release read once under a version, written by the local run's slots and its history read by hand, and read by the name page ... (see: The release reading asks four closed questions written before any release is read, and code turns each answer into a reading)
+Now:
+> 7's Local run row adds that it reads the exhibit each filing holds as its release, keeps the request's hash, fits a release past the window, and carries at a new version's pin the version before's reading of each release whose request it would send unchanged, saying how many it carried and left for each reason
+> 12.3's paragraph from 20.1 adds the carry where a new version differs from the one before in the fit's rule alone
+> 16's Release readings row is one row per exhibit and version, with the cut, the request's hash and the version it was carried from, written by the pin as well
+Why: the operator ruled on 2026-10-21 that pin 4 carry pin 3's readings of every request left the same, and on 2026-10-22 how a name stored since is judged, rather than reading every release again for the few the fit and the exhibits change.
+
+### 2026-10-22 - .claude/rules/checks.md - read-surface reaches a closed trade's ending replayed by its own exit and paper trading's text holding no adjusted p
+Corrects: paper trading read every trailing trade that ended on its cap's session as reaching its time limit though its walk sells a close under its trail there, and no test held the scorecard's adjusted p out of the page's text, a mutation writing it into the verdict's pill surviving every read-surface test; both found by the fourth phase 19 sign-off review of 2026-10-22.
+Was:
+> read-surface: ... every choice kept in the link with every other and a select keeping its card's place, read off the shell's script |
+Now:
+> read-surface: ... read off the shell's script; and from the second 19.4 correction of 2026-10-22 a closed trade's ending its own exit or the menu's replayed over its closes to the session it ended, a trailing trade whose cap session's close fell through its trail ending under its trailing stop, a close on its stop at its cap its time limit and the menu's time exit named as one, its sale read only where its closes are missing or end it elsewhere, each worked by hand, and no adjusted p, version code or registration day in the page's text, each standing under the pointer |
+Why: the second 19.4 correction of 2026-10-22 adds these assertions.
+
+### 2026-10-22 - ARCHITECTURE.html - a closed trade's ending on paper trading is its own exit replayed over its closes
+Corrects: a trailing trade sold on its cap's session at a close under the trail its earlier closes set was named as reaching its time limit, the ending read off where the trade was sold and whether it ended on its cap's session rather than off the walk that sold it; found by the fourth phase 19 sign-off review of 2026-10-22, with no such trade yet ended in the store.
+Was:
+> 15.21's paragraph from the 19.4 correction of 2026-10-22: ... a closed trade's ending, read off where it was sold against its plan, or as its stored outcome on the S&amp;P 500's page list or its book's reason for a holding; ...
+Now:
+> 15.21's paragraph from the 19.4 correction of 2026-10-22: ... a closed trade's ending, from the second 19.4 correction of 2026-10-22 its own exit or the menu's it is walked under replayed over its closes to the session it ended, as the walk that ended it reads them, so a trailing trade whose last close fell through its trail ends under its trailing stop though it ended on its cap's session, and read off where it was sold, as the walks sell, only where its closes do not reproduce that end; or as its stored outcome on the S&amp;P 500's page list or its book's reason for a holding; ...
+Why: the walks sell at the first close under a stop or a trail, on the cap's session as on any other, so only the walk replayed says why a trade ended where it did.
+
+### 2026-10-22 - .claude/rules/checks.md - read-surface and architecture-conformance reach paper trading drawn from the top a part a card
+Authorised by: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together
+Was:
+> architecture-conformance: ... a figure one off, alone, turning it red on both surfaces it writes, and a newest entry stating no run over its own tree read for nothing |
+> read-surface: ... and a press from either confirmed with the cost its own block states and watched for the stock its form names, read off the shell's script |
+Now:
+> architecture-conformance: ... and a newest entry stating no run over its own tree read for nothing; and from the 19.4 correction of 2026-10-22 paper trading's row of every account, retired for the seven rows its redrawn parts are read by, reached by no claim, each pair from phase 17's on counting it where it landed and reading it in no claim now, and paper trading's figure's key naming the six parts the redrawn figure draws, in the architecture and in the guide |
+> read-surface: ... watched for the stock its form names, read off the shell's script; and from the 19.4 correction of 2026-10-22 paper trading drawn from the top a part a card in the place of the table of every account, its order by verdict and then return and its years' paired bars: an open trade near its target and near its stop at one typical move and not a hundredth past it at either end, the nearer where both are and the stop on a tie, opened past either from its fill, a trailing stop raised by the closes since its listing and never lowered, a holding's words as handed in, nothing read without a close or a move and a split marked by its closes' ratio, each worked by hand; a closed trade ending at its target, its stop, its trailing stop or its cap, a page list's trade by its stored words and a holding by its book's reason; the stocks not bought a reason at a time, the most first; a rule's trades against its variants', shared only off the same night, and each variant holding a stock on the night; each test year's word and its edge a unit; an adjusted p on the scale of luck in its three zones at each zone's edge and said in words, the bar's reciprocal the count to beat; a record's decided trades and a book's whole months against the test's count, never past the whole, with their mean edge; and the fund over the same days or the session its series starts; and each part read back off the rendered page over constructed stores of the S&P 400 and the S&P 500: each tile's return worked by hand beside the fund's, what the system bought under its tabs and chips with each trade's figures, the stocks not bought and the entries' line, what one family's variants did differently with the trades only a variant took and a family with no variant saying so, a rule's scorecard in two halves with its boxes, its scale, its words and its progress and a provisional rule keeping no record, and your own trades, every choice kept in the link with every other and a select keeping its card's place, read off the shell's script |
+Why: the 19.4 correction of 2026-10-22 adds these assertions and retires the table's.
+
+### 2026-10-22 - RUNBOOK.md - paper trading read from the top a part a card
+Authorised by: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together
+Was:
+> From 19.4 the same three settings walk every paper account on Paper trading, the menu's link in the Account page's place, which `#/account` still opens (see: A paper account draws its test years verdict and its record since registration apart, and never merges them). Each family's live or provisional list, each registered variant's own list or book and your own taken trades are an account each, sized as a card sizes its plan and walked a session at a time when the page is read, and nothing stores a figure of one. Each account's row carries its rule's verdict in the newest per-rule test beside its record since registration, which says too few until it holds the test's count, and Past picks draws any account's trades from its selector. With no settings kept the page asks for them and walks nothing.
+Now:
+> From 19.4 the same three settings walk every paper account on Paper trading, the menu's link in the Account page's place, which `#/account` still opens; the line at its top names them and Change the account opens their form. Each family's live or provisional list, each registered variant's own list or book and your own taken trades are an account each, sized as a card sizes its plan and walked a session at a time when the page is read, and nothing stores a figure of one. From the 19.4 correction of 2026-10-22 the page reads from the top: a tile a family's live or provisional rule with its return beside the index's fund, and the chart beneath; what those rules bought, open and closed, with where each open trade stands and the listed stocks not bought; what one family's variants did differently, the family chosen by its select; a rule's scorecard, one rule at a time, its test years and its record since it went live drawn as two halves and never added together (see: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together); and your own trades. Each choice is kept in the link, so a view is a link, and Past picks draws any account's trades from its selector. With no settings kept every account is walked on the example account the page names at its top, and saving your own replaces it.
+Why: the page the paragraph describes is redrawn, and its last sentence had said since the 19.4 correction of 2026-10-13 what the page no longer did, asking for the settings and walking nothing where every account is walked on the example account.
+
+### 2026-10-22 - ARCHITECTURE.html - the trade log's account names the variants' table and the scorecard as the rows linking its log
+Authorised by: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together
+Was:
+> 15.17's The trade log's account: ... from the 19.4 correction of 2026-10-13 each family's live or provisional account before its variants, its row on paper trading linking its own log; ... (see: A paper account draws its test years verdict and its record since registration apart, and never merges them) (see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it)
+Now:
+> 15.17's The trade log's account: ... from the 19.4 correction of 2026-10-13 each family's live or provisional account before its variants, from the 19.4 correction of 2026-10-22 its row in paper trading's variants table and its scorecard linking its own log; ... (see: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together) (see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it)
+Why: paper trading's table of every account, whose rows linked each log, is redrawn as the variants' table and the scorecard, and the decision the row cited is superseded.
+
+### 2026-10-22 - ARCHITECTURE.html - the screens read and render nothing else, paper trading's figures beside the walk named
+Authorised by: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
+Was:
+> Reads and renders, nothing else: ... its return, its worst drop and its difference from its index's fund, and on its trade log an open trade's result so far at tonight's close (see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read).
+Now:
+> Reads and renders, nothing else: ... its return, its worst drop and its difference from its index's fund, and on its trade log an open trade's result so far at tonight's close; and from the 19.4 correction of 2026-10-22 the figures paper trading draws beside the walk, an open trade's result so far and its standing within one typical day's move of its stop or its target, a closed trade's ending, the stocks not bought, a rule's trades against its variants', each test year's edge, where an adjusted p stands on the scale of luck, a record's progress toward the test's count and the fund over the days the tiles count (see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read).
+Why: the operator ruled that the page computes nothing, every new figure worked by the core's one function with the walk, so the list of what the core works for a screen names them.
+
+### 2026-10-22 - ARCHITECTURE.html - paper trading drawn from the top a part a card, and Figure 15.6 redrawn with its key
+Authorised by: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together
+Was:
+> 15.21's Answers: how each rule's trades would have done in an account of the operator's size, side by side with how the rule did on the test years, without merging the two.
+>
+> 15.21's Route: <code>#/paper</code>, from 19.2 in the account page's place in the header's menu, <code>#/account</code> still opening it, with the index and the family whose variants the chart adds in the hash so a view is a link.
+>
+> 15.21's Reads: the account's three settings from their own file under the data root; every trade the index's lists and books stored, the S&amp;P 500's page list as Past picks reads it; the register's rules standing; the operator's taken trades; each member's readings on a trade's buy session, and the reported quarters and the closes the member reader values a company from; the closes of every stock an account bought and of the index's fund; and the newest per-rule test on the index with its test years. The page works out the accounts with the core's one function and stores none of them (see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read).
+>
+> Your account: the account's size and the risk a trade in per cent and the position cap as a form whose press saves them to their own file; a line saying no store or log or export holds them; where none is kept a line asking for them before any account is walked; from the 19.4 correction of 2026-10-13 every account walked in the meantime on an example account the page names at its top: a hundred thousand dollars with one per cent of it a trade and a fifth of it at most in one position, held in the code alone and written nowhere (see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold)
+>
+> The chart: each account's return in per cent of its size session by session from its start, from the 19.4 correction of 2026-10-13 its rule's current version's or a provisional account's first trade; each family's live or provisional account always in its family's mark; the operator's own in ink; a family chosen in the hash adding its variants' lines dashed; a press marked with a question mark opening how the page is read
+>
+> Every account: a row an account grouped by family in the one order and within a family by its test years verdict and then its return; the family's tag and the account's standing as a pill with its name; a variant named by its tab's words with its rule in the pointer's tooltip; a link to its trade log
+>
+> An account's test years verdict: its rule's verdict in the newest per-rule test on the index in words as passed the test or within luck or failed one of the test's screens or not testable with the reading it lacks or not tested yet; the live or provisional rule's saying it was chosen on these years so it reads high against its variants; the operator's own saying the test does not read it; each test year behind a press with its units and total beside what it was read against; from the 19.4 correction of 2026-10-13 beneath the words the adjusted p against the bar the test reads it at and each test year as a pair of bars on one scale from one zero line with this rule's total above what it was read against, so two rules reading the same words can be told apart (see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark)
+>
+> An account's record since registration: its trades and those skipped for cash and those with no cost read and the day it starts; too few trades or too few months with its count against the test's until the count is met, from the 19.4 correction of 2026-10-13 written as its trades and those decided against the test's count of trades or a book's holdings and its months against the test's count of months in one line; its return and its worst drop and its return less its fund's or that the fund is not stored before a day; never merged with its verdict (see: A paper account draws its test years verdict and its record since registration apart, and never merges them)
+>
+> An account's start and the version it counts: from the 19.4 correction of 2026-10-13 the day the account starts and the version it counts; a registered rule's start the session the Run page's record of the rule counts from; the version it counts the registration it stands by, named by its day and its code version; words saying so where a replay that reproduced every trade carried its start back before that registration; a new start when the rule is registered again; a provisional rule's and the operator's own start their first trade, saying no registered version stands; and how many trades of earlier versions it leaves out of its figures (see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts)
+>
+> The lines beneath: that a variant is adopted only through the monthly test and the operator's approval on the Loop page; from 19.10 that each entry is bought at the open of the session after the night that listed it (see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it)
+>
+> The test years verdict and the record since registration answer different questions and are drawn apart: the verdict is the rule over the ledger's years in the newest monthly per-rule test, read as soon as one exists under that test's own screens, and the record is the account's own trades since the rule was registered, which reads nothing until it holds the count the test judges a family on. A handful of trades looks like evidence and is not, so the record carries its too-few label until then, and its return and its worst drop are drawn beside it with the label and never in the verdict's place.
+>
+> From the 19.4 correction of 2026-10-13 ... The trades of earlier versions stay stored and stay in its trade log, folded, and are in none of its figures. ...
+>
+> Figure 15.6's title and description: Paper trading, its parts numbered in the order the page draws them. Paper trading from the account's settings to the lines beneath: the form or the example account; the chart of every account's return with each family's account in its mark, the operator's in ink and a chosen family's variants dashed; the chart's key; an account's row with its tag, its pill, its verdict, its record in one line and its trade log; its test years opened on the adjusted p against the bar and a pair of bars a year; and the two lines beneath, every figure drawn as n or n.n rather than any night's.
+>
+> Its key: Paper trading as the operator opens it, top to bottom, each part numbered as the list names it. A family's account is drawn in its hue as a mark beside the family's word, since hue is never the only channel, and every signed figure is in the gain's green or the loss's red with its sign. 1. The account's three settings as a form whose press saves them to their own file, or until one is saved the line saying every account is walked on the example account the page names, which is written nowhere. 2. The chart of every account's return in per cent of its size session by session from its start, each family's live or provisional account in its family's mark, the operator's own in ink and a chosen family's variants dashed, with the press opening how the page is read. 3. The chart's key, a line an account naming its family and its account, each press hiding or showing its line in the browser alone. 4. An account's row: the family's tag, the account's standing as a pill with its name, its test years verdict in words, its record since registration in one line against the test's count, its return, worst drop and return less its fund, the day it starts and the version it counts, and the link to its trade log. 5. The same account's test years opened: the adjusted p against the bar the test reads it at, and each test year as a pair of bars on one scale from one line, this rule's total above what it was read against. 6. The two lines beneath: a variant is adopted only through the monthly test and the operator's approval on the Loop page, and each entry is bought at the next session's open.
+Now:
+> 15.21's Answers: how each rule's trades would have done in an account of the operator's size: what the live and provisional rules bought and how each trade stands, what each family's variants did differently, and how each rule did on the test years and since it went live, the two never added together.
+>
+> 15.21's Route: <code>#/paper</code>, from 19.2 in the account page's place in the header's menu, <code>#/account</code> still opening it, with the index, the family whose variants the chart adds, the tab and the family of the trades drawn, and the families the variants' part and the scorecard read in the hash so a view is a link.
+>
+> 15.21's Reads: the account's three settings from their own file under the data root; every trade the index's lists and books stored, the S&amp;P 500's page list as Past picks reads it, with each trade's target, the distance its stop trails, its cap, its fill, which end of its plan its fill opened past and its edge; the register's rules standing; the operator's taken trades; each member's readings on a trade's buy session, and the reported quarters and the closes the member reader values a company from; the closes of every stock an account bought and of the index's fund; each stock's company as its newest membership row names it, and its typical move and its long average on the night; the closes a heavyweight's standing is read off, as the heavyweights card reads them; and the newest per-rule test on the index with its test years. The page works out the accounts and every figure it draws beside them with the core's one function and stores none of them (see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read).
+>
+> Your account: one sentence on what the page is; the account's line of its size and the risk a trade in per cent and the most in one stock, saying each rule trades its own copy of the account; a press reading Change the account that opens the form whose press saves the three to their own file, with a line saying no store or log or export holds them; where none is kept every account walked on an example account the page names at its top: a hundred thousand dollars with one per cent of it a trade and a fifth of it at most in one stock, held in the code alone and written nowhere (see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold)
+>
+> The tiles: a tile a family's live or provisional rule in the one family order: its account's return on the operator's size since its record began; its trades open and closed; the day it counts from; its rule's words and the version it counts under the pointer; and beside them a tile of the index's fund over the same days from the earliest day a tile counts from or from the session its series starts where that is later; the tiles one beneath another on a phone
+>
+> The chart: beneath the tiles each account's return in per cent of its size session by session from its start; each family's live or provisional account always in its family's mark and the operator's own in ink; a family chosen in the hash adding its variants' lines dashed; a press marked with a question mark opening how the page is read
+>
+> What the system bought: the trades the live and provisional rules' walks bought, newest first; two tabs reading Open and Closed with their counts; a chip a family showing its trades alone or every family's; each choice kept in the hash with its card held in place; beneath the trades one line counting the listed stocks not bought a reason at a time with each stock linking to its chart; the trades their rules' earlier versions listed folded under one press; and on a phone the tabs and the chips wrapping and the table scrolling in its own box
+>
+> An open trade: the stock and its company linking to its chart page with the variants of its family holding it too; its family; its buy and the session it was bought on; its stop tonight, a trailing plan's raised from the plan's; its target or that it trails or none for a holding; tonight's close with the sessions held of its cap; its result so far in risks and per cent and a holding's in per cent alone; and its standing in words, near its target or near its stop within one typical move of either and on track otherwise; opened under its stop or opened over its target from its fill; a holding's still leading or lost its lead or under its average as the heavyweights card reads it
+>
+> A closed trade: the stock and its company; its family; its buy and its sale with their sessions; how it ended in words with the sessions it was held; its result in risks and per cent and a holding's in per cent alone; and its edge over the same plan on every stock or a holding's over its size cut, not read until its benchmark is written
+>
+> An account's start and the version it counts: the day a live or provisional account starts on its tile and a variant's under the pointer on its row; a registered rule's start the session the Run page's record of the rule counts from; the version it counts the registration it stands by, named by its day and its code version under the pointer; words saying so where a replay that reproduced every trade carried its start back before that registration; a new start when the rule is registered again; a provisional rule's and the operator's own start their first trade; and the trades of earlier versions folded beneath what the system bought under one press with each named by the version that listed it and left out of every figure (see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts)
+>
+> What the variants did differently: a select choosing one family at a time kept in the hash with its card held in place; a family with no variant saying so; a row its live or provisional rule and a row a variant by its number: what it changes in plain words; its trades; those it shared with the live rule and those it alone took; its return so far with its record's too-few label; its verdict beside its name with its full words under the pointer; and beneath the table the trades only a variant took: the stock and the variant and when it was bought and at what and whether it is open or how it ended with its result (see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight)
+>
+> Rule scorecard: a select choosing one rule at a time kept in the hash with its card held in place; the rule's family and its standing with its words and the version it counts under the pointer and a link to its trade log; its history and its record since it went live drawn as two halves side by side and never added together, one beneath the other on a phone; and its variants folding out beneath under one press with each one's verdict on history and the years it was better than its rule of those the test counted and its progress since it went live (see: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together)
+>
+> An account's test years verdict: the scorecard's half on history over the test years the newest per-rule test on the index read; under the question Did it beat the easy alternative the years it was better of those the test counted and a box a test year saying better or worse with that year's edge a unit, a year not yet complete marked so; under the question Could that just be luck a scale in three zones with the rule's mark on it: easily luck at an adjusted p at or over the level a run is held to; maybe luck between the bar and that level; real at or under the bar; in words how often a rule picking at random would do as well, about so many times in a hundred or under one in a hundred about one in so many; and that to count as real it needs to be rarer than one in the bar's reciprocal; the adjusted p against the bar under the pointer; for its live or provisional rule the warning that its settings were tuned on these years so it should be expected to look worse from here on; and a rule not tested yet or not testable saying so with its verdict in words (see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark)
+>
+> An account's record since registration: the scorecard's half since it went live: its decided trades against the count the test judges a swing family on or a book's months against its count of months as a line and a bar from the day it counts from; the mean edge of its decided trades whose comparison is read, labelled not evidence yet until the count is met; a provisional rule saying it keeps no record until its family is frozen or a setting is approved; its return drawn on its tile beside the index's fund and in the chart and never in its verdict's place (see: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together)
+>
+> Your own trades: the operator's own trades on the index as an account apart from the system's: their count and those decided in one line; the account's return and its worst drop and its return less its fund's; the day it starts; a link to its trade log; or that none is taken, saying how a trade is taken and that no test reads them
+>
+> The lines beneath: beneath what the system bought the line that each entry is bought at the open of the session after the night that listed it (see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it); beneath the variants' table that a variant is adopted only through the monthly test and the operator's approval on the Loop page
+>
+> The test years verdict and the record since registration answer different questions and are drawn apart, as the scorecard's two halves: the verdict is the rule over the ledger's years in the newest monthly per-rule test, read as soon as one exists under that test's own screens, and the record is the account's own trades since the rule was registered, which reads nothing until it holds the count the test judges a family on. A handful of trades looks like evidence and is not, so the record carries its not evidence yet label until then, and its return is drawn on its tile and in the chart and never in the verdict's place (see: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together).
+>
+> From the 19.4 correction of 2026-10-13 ... The trades of earlier versions stay stored, folded beneath what the system bought and in the account's trade log, and are in none of its figures. ...
+>
+> A paragraph added: From the 19.4 correction of 2026-10-22, on the operator's ruling redesigning the page from a mockup they approved as phase 19's layout had left it hard to read, the page is drawn from the top in the order its rows state, a part a card, each choice a part offers kept in the link. Every figure a part draws beside the walk is worked by the core's one function with it and the page computes none: ... Adjusted p values, version codes and registration days stand under the pointer and not in the text.
+>
+> Figure 15.6 redrawn as the page from the top in six parts: what the page is with the account's line and its press; a tile a family's live or provisional rule beside the fund's with the chart beneath; what the system bought with its tabs, its chips, a trade's row and the stocks not bought; what the variants did differently; a rule's scorecard in two halves; and your own trades, every figure drawn as n or n.n rather than any night's; its key naming each of the six as the figure draws it, its caption kept.
+Why: the operator ruled on 2026-10-22, from a mockup they approved, that paper trading be redrawn top to bottom as phase 19's redesign of the screens had left it hard to read, its figures read from the store and every new one worked by the core's one function; the table of every account, its order by verdict and then return and its years' paired bars give way to the tiles, what the system bought, the variants' part and the scorecard.
+
+### 2026-10-22 - .claude/rules/checks.md - read-surface reaches a written report's standing and the controls that write it again on the name page and the chart page
+Authorised by: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
+Was:
+> read-surface: ... and the Watch list's and Researched's tables each drawn in the box that scrolls it |
+Now:
+> read-surface: ... in the box that scrolls it; and from the 19.11 correction of 2026-10-22 a written report's standing, standing or stale in the failure's red with the triggers that fired, drawn under the name page's masthead with the day its newest section was written and on the chart page's report line after its link, with the controls that rewrite its stale sections and regenerate it after their cost, none on the day a pass ran or while the cap has paused research and no standing where none is written, read over the researched fixture's store, and a press from either confirmed with the cost its own block states and watched for the stock its form names, read off the shell's script |
+Why: the 19.11 correction of 2026-10-22 adds these assertions.
+
+### 2026-10-22 - ARCHITECTURE.html - the chart page's report line and the name page under its masthead draw a written report's standing with the controls that write it again
+Authorised by: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
+Was:
+> 15.9's Regenerate Report: ... a request reaching it for a name a pass already wrote that day starting nothing and fetching nothing (see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day)
+>
+> 15.22's The report line: Open the report to the name page with the day its newest section was written; or that none is written, with the request the list offers and so no new way to start a report
+>
+> Four citations of: Every link that opens a stock opens its chart page first, and the chart page links to its report
+Now:
+> 15.9's Regenerate Report: ... once a name a day); from the 19.11 correction of 2026-10-22 drawn as well under the masthead beside the report's standing and the control rewriting its stale sections, with what research has cost stated before them as the chart page's report line draws them (see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again)
+>
+> 15.22's The report line: Open the report to the name page with the day its newest section was written; from the 19.11 correction of 2026-10-22 the report's standing with the triggers that fired and in the failure's red where it is stale, and the controls that rewrite its stale sections and regenerate it with what research has cost stated before them; or that none is written, with the request the list offers (see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again)
+>
+> The four citations name: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
+Why: the operator ruled on 2026-10-22, reading a stale report's chart page and finding no way there to have it written again, that a written report's standing and the controls that write it again stand under the name page's masthead and on the chart page's report line as well as at the name page's foot.
+
+### 2026-10-22 - .claude/rules/checks.md - read-surface reaches every pill style ruled, a failed pill drawn in the red and the Watch list's and Researched's tables each in its box
+Corrects: a researched report gone stale and a monthly run that stopped drew their pill with no rule, bare text beside the slate pills of reports that stand, and the Watch list's and Researched's tables fitted a phone only by the box that scrolls each with no test holding it, found by the third phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... and from the 16.2 correction of 2026-10-22 the account form's rule on a phone standing after the inline rule every posted form is drawn by, the two weighing the same |
+Now:
+> read-surface: ... the two weighing the same; and from the 19.7 correction of 2026-10-22 every pill style a page draws given one rule of its own, read off each place a pill is drawn in every state it draws, a report gone stale and a monthly run that stopped drawn in the accent's ink on solid red, and the Watch list's and Researched's tables each drawn in the box that scrolls it |
+Why: the 19.7 correction of 2026-10-22 adds these assertions.
+
+### 2026-10-22 - .claude/rules/checks.md - read-surface reaches the account form's rule on a phone standing after the posted forms' inline rule
+Corrects: the account form's rule on a phone outranked the inline rule every posted form is drawn by only by standing after it, the two selectors weighing the same, and no test held that order, found by the third phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... the sector read off the newest company fetch on or before the page's night and a fetch made after it not read, over the universes' store |
+Now:
+> read-surface: ... a fetch made after it not read, over the universes' store; and from the 16.2 correction of 2026-10-22 the account form's rule on a phone standing after the inline rule every posted form is drawn by, the two weighing the same |
+Why: the 16.2 correction of 2026-10-22 adds this assertion.
+
+### 2026-10-21 - .claude/rules/checks.md - fixture-expectations and read-surface reach a financial company's revenue read against no estimate
+Authorised by: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
+Was:
+> fixture-expectations: ... and from the second 15.1 correction of 2026-10-21 ... and the fixture's AAPL, MSFT and KEYS in the Information Technology sector their captured answers file with NFLX beside nobody |
+>
+> read-surface: ... and from the second 15.1 correction of 2026-10-21 a member's industry on the chart page's grid and its masthead the GICS industry its newest company fetch files on every index, a membership row's own words drawn by no page |
+Now:
+> fixture-expectations: ... with NFLX beside nobody; and from the second 18.2 correction of 2026-10-21 a financial company's revenue read against no estimate, its quarter's own or the one its year's implies, its line saying the estimate and the filing measure it on different bases while its earnings a share is read against its estimate and another sector's revenue against both, worked by hand |
+>
+> read-surface: ... a membership row's own words drawn by no page; and from the second 18.2 correction of 2026-10-21 a financial company's revenue drawn against no estimate on the report's quarter table and the chart page with the words saying the estimate and the filing measure it on different bases, the sector read off the newest company fetch on or before the page's night and a fetch made after it not read, over the universes' store |
+Why: the second 18.2 correction of 2026-10-21 adds these assertions.
+
+### 2026-10-21 - ARCHITECTURE.html - a financial company's revenue is read against no estimate
+Authorised by: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
+Was:
+> The latest quarter, section 4: ... a fiscal fourth quarter's revenue against its year's estimate less its three earlier quarters marked implied, a line reading no estimate saying why, ...
+>
+> 15.9's The latest quarter: ... drawn as implied with what it was worked from beneath the table; a line reading no estimate saying why; ...
+>
+> 15.22's The figures: ... from the 18.2 correction of 2026-10-21 revenue against an implied estimate named so and where none is read the report's words for why; the surprise; ...
+>
+> Six citations of: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
+Now:
+> The latest quarter, section 4: ... marked implied, a financial company's revenue against none, a line reading no estimate saying why, ...
+>
+> 15.9's The latest quarter: ... beneath the table; from the second 18.2 correction of 2026-10-21 a financial company's revenue read against no estimate and its line saying the estimate and the filing measure it on different bases; a line reading no estimate saying why; ...
+>
+> 15.22's The figures: ... and where none is read the report's words for why; from the second 18.2 correction of 2026-10-21 a financial company's revenue against none with the report's words for why; the surprise; ...
+>
+> The six citations name: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
+Why: the operator ruled on the evening of 2026-10-21 that a financial company's pages draw no beat or miss of revenue against the analysts' estimate, the implied fourth quarter included, and say the two measure revenue on different bases.
+
+### 2026-10-21 - SCHEMA.md - the latest quarter's decision cited by its new name
+Authorised by: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
+Was:
+> estimate_trend: ... (see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters)
+Now:
+> estimate_trend: ... (see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters)
+Why: as the architecture's entry above; the decision it cited was superseded.
+
+### 2026-10-21 - .claude/rules/checks.md - fixture-expectations and read-surface reach every member named and grouped by its company fetch
+Authorised by: Every member is named and grouped by the GICS industry and sector its company fetch files
+Was:
+> fixture-expectations: ... and from the 15.1 correction of 2026-10-21 a member whose membership row names neither a sector nor an industry grouped among its own index's members by the GICS industry and sector its newest company fetch made before the night started files, both from that one fetch, its older fetch and one made after the night started not read, a member whose row names an industry grouped by its row whatever its fetch files and one naming its sector alone by that sector, and one whose row and fetch name neither in no group, worked by hand over a constructed store of the three indices; ... none held a year earlier so, each worked by hand |
+>
+> read-surface: ... and from the 15.1 correction of 2026-10-21 a member's industry on the chart page's grid and its masthead the one its membership row names, and where it names neither a sector nor an industry the GICS industry its newest company fetch files, read over a constructed store of the three indices, ... and never the night's list |
+Now:
+> fixture-expectations: ... its older fetch and one made after the night started not read, and one whose fetch names neither in no group, worked by hand over a constructed store of the three indices; ... none held a year earlier so, each worked by hand; and from the second 15.1 correction of 2026-10-21 every member of every index grouped by the GICS industry and sector its newest company fetch made before the night started files whatever its membership row names, an S&P 500 member whose row names an industry and which has no fetch in no group, worked by hand over a constructed store of the three indices, and the fixture's AAPL, MSFT and KEYS in the Information Technology sector their captured answers file with NFLX beside nobody |
+>
+> read-surface: ... and from the 15.1 correction of 2026-10-21 a member whose membership row names neither a sector nor an industry named on the chart page's grid and its masthead by the GICS industry its newest company fetch files, read over a constructed store of the three indices, ... and never the night's list; and from the second 15.1 correction of 2026-10-21 a member's industry on the chart page's grid and its masthead the GICS industry its newest company fetch files on every index, a membership row's own words drawn by no page |
+Why: the second 15.1 correction of 2026-10-21 reads every member's group and industry off its company fetch, so the clauses naming a member read by its row no longer hold and the new assertions are named.
+
+### 2026-10-21 - ARCHITECTURE.html - every member is named and grouped by the GICS industry and sector its company fetch files
+Authorised by: Every member is named and grouped by the GICS industry and sector its company fetch files
+Was:
+> How it got here, its source: ... each move's group median computed by the move annotator from the bars and the membership, a member whose row names neither a sector nor an industry grouped by its company fetch (see: A large move ...) (see: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files); ...
+>
+> Its group, by price, its source: The peers' two readings and the members chosen, computed by the move annotator from the bars and the membership with a member whose row names neither a sector nor an industry grouped by its company fetch; the group's other members as the annotator counted them (see: Peers are shown by price alone ...) (see: A member whose membership row names neither a sector nor an industry ...)
+>
+> Move annotator: ... a group is read among the name's own index's members by the industry and sector each one's membership row names, or from the 15.1 correction of 2026-10-21 where the row names neither a sector nor an industry by the GICS industry and sector its newest company fetch before the night files (see: A member whose membership row names neither a sector nor an industry ...)
+>
+> The figures: ... the company: its index and sector and industry; from the 15.1 correction of 2026-10-21 its industry the one its membership row names and where the row names neither a sector nor an industry the GICS industry its newest company fetch files (see: A member whose membership row names neither a sector nor an industry ...); the provider's market value; ...
+Now:
+> How it got here, its source: ... each move's group median computed by the move annotator from the bars and the membership with every member grouped by the GICS industry and sector its company fetch files (see: A large move ...) (see: Every member is named and grouped by the GICS industry and sector its company fetch files); ...
+>
+> Its group, by price, its source: The peers' two readings and the members chosen, computed by the move annotator from the bars and the membership with every member grouped by the GICS industry and sector its company fetch files; the group's other members as the annotator counted them (see: Peers are shown by price alone ...) (see: Every member is named ...)
+>
+> Move annotator: ... a group is read among the name's own index's members by the GICS industry and sector each one's newest company fetch before the night files, from the second 15.1 correction of 2026-10-21 on every index whatever its membership row names (see: Every member is named ...)
+>
+> The figures: ... the company: its index and sector and industry; from the second 15.1 correction of 2026-10-21 its industry the GICS industry its newest company fetch files on every index (see: Every member is named ...); the provider's market value; ...
+Why: the operator ruled on the evening of 2026-10-21 that the S&P 500's groups and the industry its pages name move to the GICS scheme, so every index, the heavyweights and the ledger read one scheme.
+
+### 2026-10-21 - SCHEMA.md - every member's group read off its company fetch
+Authorised by: Every member is named and grouped by the GICS industry and sector its company fetch files
+Was:
+> move and peer_reading, `group_name`: the industry or sector the membership row names, or where it names neither the GICS one the name's newest company fetch made before the night files; null where neither names one
+>
+> The group columns are the annotator's: ... and its sector otherwise, read off the membership, so the annotator reads the membership as well as the bars (see: ...) (see: ...). From the 15.1 correction of 2026-10-21 a member whose membership row names neither a sector nor an industry, which is every S&P 400 and 600 member, is read by the GICS industry and sector its newest `company` row fetched before the night started files, both from that one row, so the annotator reads the companies as well; a member whose row names either is read by its row (see: A member whose membership row names neither a sector nor an industry ...).
+>
+> company: ... From the 15.1 correction of 2026-10-21 the move annotator reads a member's newest row fetched before the night started for the industry and sector its group is read by, where its membership row names neither, and the pages name such a member's industry by its newest row's (see: A member whose membership row names neither a sector nor an industry ...).
+Now:
+> move and peer_reading, `group_name`: the GICS industry or sector the name's newest company fetch made before the night files; null where it files neither
+>
+> The group columns are the annotator's: ... and its sector otherwise, read among the members the membership holds on the session by the GICS industry and sector each one's newest `company` row fetched before the night started files, both from that one row, so the annotator reads the membership, the companies and the bars (see: ...) (see: ...). From the second 15.1 correction of 2026-10-21 every member of every index is read so, whatever its membership row names (see: Every member is named and grouped by the GICS industry and sector its company fetch files).
+>
+> company: ... From the second 15.1 correction of 2026-10-21 the move annotator reads every member's newest row fetched before the night started for the industry and sector its group is read by, and every page names a member's industry by its newest row's (see: Every member is named ...).
+Why: as the architecture's entry above; the schema states what the annotator now reads.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches the Run page's funnel naming its count as the swing filter's
+Corrects: the Run page's funnel said "0 stock(s) on this night's list" on a night Tonight listed five buy points, found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... the market line's count and the line's in the buy points' place reading nought with no link, and a night reading some linking both to the card |
+Now:
+> read-surface: ... the market line's count and the line's in the buy points' place reading nought with no link, and a night reading some linking both to the card; and from the 13.1 correction of 2026-10-21 the Run page's funnel naming its count as the stocks that passed every one of the swing filter's checks that night, and never the night's list |
+Why: the 13.1 correction of 2026-10-21 adds these assertions.
+
+### 2026-10-21 - ARCHITECTURE.html - the Run page's funnel names its count as the swing filter's
+Corrects: the row drew the funnel's count as the count listed, which it was until 13.1 drew the page's list from the setup families, so the Run page called the swing filter's passing names the night's list on a night the families listed others, found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> From the index to tonight's list (15): a funnel of how many members passed each of the filter's checks in turn down to those left after the exclusions; the count listed with a link opening tonight's list
+Now:
+> From the index to tonight's list (15): a funnel of how many members passed each of the filter's checks in turn down to those left after the exclusions; the count listed with a link opening tonight's list, from the 13.1 correction of 2026-10-21 the count named as the swing filter's since the setup families draw tonight's list
+Why: the operator chose on 2026-10-21 to correct it with the review's other findings, "Run page funnel words".
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches a night with no stock one gate short drawing no card
+Corrects: a night reading no stock one gate short drew a card holding only the line "0 stocks one gate short of a buy point", its counts above linking to it, found on the S&P 400's Tonight by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... and on a phone the Watch list's and Researched's tables scrolling sideways in their box at a width their words read at, a gate's pill held to one line |
+Now:
+> read-surface: ... and on a phone the Watch list's and Researched's tables scrolling sideways in their box at a width their words read at, a gate's pill held to one line; and from the 19.8 correction of 2026-10-21 a night reading no stock one gate short drawing no card of them, the market line's count and the line's in the buy points' place reading nought with no link, and a night reading some linking both to the card |
+Why: the 19.8 correction of 2026-10-21 adds these assertions.
+
+### 2026-10-21 - ARCHITECTURE.html - a night with no stock one gate short draws no card of them
+Corrects: the card was drawn on a night reading no stock one gate short, holding nothing but its count of nought beneath a line already saying so, found on the S&P 400's Tonight by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> Tonight's stocks one gate short (15): ... A night stored before them holds only the first part each member failed and says in the card's line that it reads no stock as one gate short. Each family's card keeps its own stocks one gate short behind its expander ...
+Now:
+> Tonight's stocks one gate short (15): ... A night stored before them holds only the first part each member failed and says in the card's line that it reads no stock as one gate short. From the 19.8 correction of 2026-10-21 a night reading no stock one gate short draws no card, and the market line's count and the count on the line in the buy points' place read nought with no link. Each family's card keeps its own stocks one gate short behind its expander ...
+Why: the operator chose on 2026-10-21 to correct it with the review's other findings, "Empty one-gate-short card".
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches dates drawn whole in three tables and two tables scrolling on a phone
+Corrects: the Watch list's Added and Researched's Written dates broke at a hyphen at 1440 px and Past picks' night listed at 390 px, and on a phone the Watch list and Researched squeezed their words into rows of 270 to 460 px, found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... standing one beneath another on a phone with the words whole above the box, by a rule outranking the one every posted form is drawn inline by |
+Now:
+> read-surface: ... standing one beneath another on a phone with the words whole above the box, by a rule outranking the one every posted form is drawn inline by; and from the 19.7 correction of 2026-10-21 a date in a cell of Past picks', the Watch list's or Researched's table drawn whole, a Past picks table's first cell its night as a figure with the stock's column and without, and on a phone the Watch list's and Researched's tables scrolling sideways in their box at a width their words read at, a gate's pill held to one line |
+Why: the 19.7 correction of 2026-10-21 adds these assertions.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches the account form standing each setting above the next on a phone
+Corrects: on a phone the account form ran its three settings as one paragraph, breaking "Risk a trade, per cent" across two lines away from its box, found by the second phase 19 sign-off review of 2026-10-21 on paper trading.
+Was:
+> read-surface: ... the rule that sets them on a line of their own in paper trading's table taken back to the sentence's flow there as in a trade log's line |
+Now:
+> read-surface: ... the rule that sets them on a line of their own in paper trading's table taken back to the sentence's flow there as in a trade log's line; and from the 16.2 correction of 2026-10-21 the account form's three settings each a label holding its words and its box, standing one beneath another on a phone with the words whole above the box, by a rule outranking the one every posted form is drawn inline by |
+Why: the 16.2 correction of 2026-10-21 adds these assertions.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches Past picks' lines for each family keeping their too-few words inside their sentences
+Corrects: on Past picks each family's line beside the lists' trades broke into three lines, its too-few words on a line of their own and the rest of its sentence opening on a comma, found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... and the trade line's two keys and its heading's tip naming the stop's red and the target's orange the stylesheet draws them in, no words of either key calling the stop green |
+Now:
+> read-surface: ... and the trade line's two keys and its heading's tip naming the stop's red and the target's orange the stylesheet draws them in, no words of either key calling the stop green; and from the 19.4 correction of 2026-10-21 each family's line beside the lists' trades keeping its too-few words inside its sentence, between its count and where its record starts, the rule that sets them on a line of their own in paper trading's table taken back to the sentence's flow there as in a trade log's line |
+Why: the 19.4 correction of 2026-10-21 adds these assertions.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches every date line wrapping whole on a phone and the trade line's words naming the hues it is drawn in
+Corrects: the phone's one-line rule cut a screen's date line before its date, and the trade line's keys named its stop green where it is drawn red, both found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... and a stock's masthead line held to one line by no rule, its quote's words, its previous close and its links wrapping whole while a screen's date line holds one line; and from the 19.11 correction of 2026-10-21 ... and a chart naming its close alone keeping the name page's column of 86 |
+Now:
+> read-surface: ... and a stock's masthead line held to one line by no rule, its quote's words, its previous close and its links wrapping whole; and from the 19.11 correction of 2026-10-21 ... and a chart naming its close alone keeping the name page's column of 86; and from the third 19.2 correction of 2026-10-21 no rule holding a date line to one line or cutting it, a screen's sentence ending on its date wrapping whole on a phone, and the trade line's two keys and its heading's tip naming the stop's red and the target's orange the stylesheet draws them in, no words of either key calling the stop green |
+Why: the third 19.2 correction of 2026-10-21 takes away the rule a screen's date line was held to and adds these assertions.
+
+### 2026-10-21 - ARCHITECTURE.html - every date line drawing no arrows wraps whole on a phone
+Corrects: on a phone the one-line rule cut the line beneath a screen's title before its date, Paper trading's "as of the close of 20..." and Loop's "the run for 2026-10 t..." on every index and the S&P 500's Past picks among them, where this paragraph says the phone's date line is the night's short date, found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> The bar (15): ... and on a phone the title holds one line and the date line is the night's short date between its arrows, while a stock's masthead line, holding its quote and its links, wraps whole (see: The bar's index menu chooses the index every page reads, each choice naming its cap and its members).
+Now:
+> The bar (15): ... and on a phone the title holds one line and the date line is the night's short date between its arrows, while a stock's masthead line, holding its quote and its links, wraps whole; from the third 19.2 correction of 2026-10-21 every date line drawing no arrows wraps whole on a phone, so a screen's sentence ending on its date keeps its date (see: The bar's index menu chooses the index every page reads, each choice naming its cap and its members).
+Why: a line whose last words are its date said nothing of when on a phone once cut, and wrapping it costs a line.
+
+### 2026-10-21 - ARCHITECTURE.html - the trade line's stop is named the red it is drawn in
+Corrects: the row named the stop a green tick where 19.2 drew it in the loss's red on 2026-10-12, as the page's two keys and the Trade heading's tip did, found by the second phase 19 sign-off review of 2026-10-21.
+Was:
+> Trade line (15): One trade the live list recommended, drawn from its stop at the left as a green tick to its target at the right as an orange tick.
+Now:
+> Trade line (15): One trade the live list recommended, drawn from its stop at the left as a red tick to its target at the right as an orange tick.
+Why: the colour decision draws a stop in the red, and the stylesheet has drawn it so since 19.2.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches the chart page's column holding every price it names
+Corrects: the chart page's column was sized for the close alone, so a plan's label of three integer digits or more ran past the chart's edge, HAS's "target 129.57" read "target 129.5" at 1440 px, found by the phase 19 sign-off review of 2026-10-21.
+Was:
+> read-surface: ... its quote's words, its previous close and its links wrapping whole while a screen's date line holds one line |
+Now:
+> read-surface: ... while a screen's date line holds one line; and from the 19.11 correction of 2026-10-21 the chart page's column as wide as the longest price it names beside its kind, every label ending inside the picture at the legend's measure of a character, worked at a target of 129.57 and of 1,234.56, and a chart naming its close alone keeping the name page's column of 86 |
+Why: the 19.11 correction of 2026-10-21 adds this assertion.
+
+### 2026-10-21 - ARCHITECTURE.html - a phone's bar holds the brand in two rows, and a stock's masthead line wraps whole
+Authorised by: The bar's index menu chooses the index every page reads, each choice naming its cap and its members
+Was:
+> The bar (15): ... On a narrower screen the links, the search and the toggle drop into a panel beneath a button reading Menu, and the index menu stays in the bar. The screen's title and its date line stand beneath the bar, and on a phone the title holds one line and the date line is the night's short date between its arrows (see: ...
+Now:
+> The bar (15): ... and the index menu stays in the bar; from the 19.2 correction of 2026-10-21 a phone's bar holds two rows, the brand with the Menu button and then the index menu. The screen's title and its date line stand beneath the bar, and on a phone the title holds one line and the date line is the night's short date between its arrows, while a stock's masthead line, holding its quote and its links, wraps whole (see: ...
+Why: the stylesheet hid the brand under 480 px, where the decision puts it on the bar, and held every page's line beneath its title to one line, cutting a stock's previous close mid-figure and its links, both found by the phase 19 sign-off review of 2026-10-21; the operator chose two rows on a phone that day, "Two rows on a phone (Recommended)".
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches the brand at every width, a phone's two rows and a stock's masthead line wrapping whole
+Authorised by: The bar's index menu chooses the index every page reads, each choice naming its cap and its members
+Was:
+> read-surface: ... one a cent inside saying neither, and a stop at or over its target drawing no line |
+Now:
+> read-surface: ... and a stop at or over its target drawing no line; and from the 19.2 correction of 2026-10-21 the brand in the bar at every width with no rule hiding it, a phone's bar holding two rows, the brand with the Menu button and then the index menu, a place holding no index menu taking no row, and a stock's masthead line held to one line by no rule, its quote's words, its previous close and its links wrapping whole while a screen's date line holds one line |
+Why: the 19.2 correction of 2026-10-21 adds these assertions.
+
+### 2026-10-21 - ARCHITECTURE.html - the trade line draws a buy that opened past its stop or its target at that end
+Authorised by: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+Was:
+> Trade line: ... The buy is a short neutral tick between them and the dot is the price: hollow while the trade is open and filled where it finished, with a price beyond either end sitting at that end. It is placed by the prices' ratios to the buy, ...
+Now:
+> Trade line: ... with a price beyond either end sitting at that end. From the 19.10 correction of 2026-10-21 the buy is the open the trade was bought at: a buy that opened past its stop or its target sits at that end with its title saying which. A plan whose stop is not under its target draws no line. It is placed by the prices' ratios to the buy, ...
+Why: from 19.10 the buy a trade line draws is the trade's fill, and the mark still read a fill past its stop or its target as a plan out of order: the phase 19 sign-off review of 2026-10-21 found DVN's trade of 2026-09-24, bought at 47.84 under its stop of 48.12, drawn on Past picks as "the stop, buy and target are not in order" with no line.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches Past picks' line beneath its heading and a trade line bought past its stop or its target
+Authorised by: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+Was:
+> read-surface: ... every card row and fold open before a press kept open after it redraws and the row a link names standing clear of the masthead |
+Now:
+> read-surface: ... and the row a link names standing clear of the masthead; and from the 19.10 correction of 2026-10-21 Past picks' line beneath its heading saying each trade is bought at the open of the session after the night that listed it, and a trade line whose buy opened past its stop or its target, or at either, drawn with the buy at that end and its title saying which, one a cent inside saying neither, and a stop at or over its target drawing no line |
+Why: the 19.10 correction of 2026-10-21 adds these assertions.
+
+### 2026-10-21 - ARCHITECTURE.html - every buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
+Authorised by: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
+Was:
+> Tonight's buy points (15.7): ... whose cards draw their own picks as rows. A row selected draws its plan and its pick's card in a row beneath it, and the first row is selected where the link names none. From 19.3 every other pick's card stands hidden in a row beneath its own and is opened by a control in its row, and a row so opened is held inside the box the table scrolls in. From the 19.2 correction of 2026-10-13 ... (see: Selecting a row draws its plan and its card beneath the row and is no navigation) (see: A setup's card draws its live picks as rows of its own, each ticker opening its chart page)
+>
+> The note under 15.7: ... Selecting a row, anywhere on it but its links, draws its plan beneath the list and brings it into view, and from 19.2 a row of tonight's buy points draws its plan and its pick's card in a row beneath it; its ticker is a link opening the name's own page (see: Selecting a row draws its plan and its card beneath the row and is no navigation). ...
+>
+> Tonight's figure: <desc>Tonight from its bar to a selected buy point: ... and the selected row's plan and card beneath it, ...</desc>; ABC selected: its plan and its card, in a row beneath its own
+>
+> Its key, part 5: Tonight's buy points: one table across every setup, each row tagged with its setup and numbered from one, with the price it buys at, its stop, its target and its reward to risk; on a night no setup lists one, ...
+>
+> Its key, part 6: The row selected, the first where the link names none: its plan and its pick's card in a row beneath it, the card ending on what is behind the stock, ...
+Now:
+> Tonight's buy points (15.7): ... whose cards draw their own picks as rows. From the 19.2 correction of 2026-10-21 every row folds beneath it a row of its own holding the stock's plan and its pick's card: on the S&amp;P 500 the plan column and the plan's tables and the level summary the night stored for the stock with the links the plan region carries; on the S&amp;P 400 and 600 the bands the night stored for the stock with one line saying its plan is its rule's buy, stop and target in its row and on its card and the ladder at its bands is worked for the S&amp;P 500's members alone. Every fold is closed where the link names no row and the fold of the row the link names is open; the control in the row's stock cell or a press anywhere else on the row opens and closes that row's fold alone so any number stand open at once; a fold so opened is held inside the box the table scrolls in. From the 19.2 correction of 2026-10-13 ... (see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it) (see: A setup's card draws ...)
+>
+> The note under 15.7: ... Selecting a row of the list, anywhere on it but its links, draws its plan beneath the list and brings it into view, and from the 19.2 correction of 2026-10-21 each row of tonight's buy points folds its plan and its pick's card beneath it, closed until a press on the row or a link naming it opens it; its ticker is a link opening the stock's chart page (see: Each buy point's row folds ...) (see: Every link that opens a stock opens its chart page first, and the chart page links to its report). ...
+>
+> Tonight's figure: <desc>Tonight from its bar to a buy point's fold: ... and one row's fold opened beneath it holding its plan and card, ...</desc>; ABC's fold, opened by its control: its plan and its card beneath its row
+>
+> Its key, part 5: ... with the price it buys at, its stop, its target and its reward to risk, and in its stock cell the control opening its fold; on a night no setup lists one, ...
+>
+> Its key, part 6: A row's fold, opened by the control in its stock cell, by a press on the row or by a link naming the row and closed otherwise, any number open at once: its plan, or where the night builds no ladder the bands with the line naming the plan its row and card draw, and its pick's card, the card ending on what is behind the stock, ...
+Why: the operator's words of 2026-10-21 on Tonight's buy points, "This section should be collabsible , otherwise there is a large gap between the first stock and the next few stocks.", and their approval of the fix, "Yes, one PR now (Recommended)". The note's ticker opened the chart page from 19.11 and said the name's page, corrected in the sentence rewritten.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches every buy point's fold
+Authorised by: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
+Was:
+> read-surface: ... its buy points in one table numbered across it with a selected row's plan and card beneath that row, ... and where none is read the report's words for why |
+Now:
+> read-surface: ... its buy points in one table numbered across it, ... and where none is read the report's words for why; and from the 19.2 correction of 2026-10-21 every buy point's row on every index followed by its fold, every fold hidden where the link names no row and the one a link names open with its row selected, ... and the page's script opening and closing a fold from its control and a press on its row and keeping a pressed card's fold open after it redraws |
+Why: the row named a selected row's plan and card, which the 19.2 correction of 2026-10-21 replaces with a fold a row.
+
+### 2026-10-21 - ARCHITECTURE.html - the latest quarter is read against the estimates kept before its release, a fiscal fourth quarter against its year's estimate less three quarters
+Authorised by: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
+Was:
+> The latest quarter (section 4): ... each against the analysts' estimate kept before the report where one was and against the same quarter a year earlier, the three income lines ... (see: The latest quarter is read line by line against the estimate kept before its report and the same quarter a year earlier). ... | The lines, their margins and the growth worked by one function in the core from the newest fetch's quarters the quarter fetcher stored and the revenue estimate a fetch made before the report kept; ...
+>
+> Margins (section 4), Growth bars (15.5) and Report windows (section 17): ... (see: The latest quarter is read line by line against the estimate kept before its report and the same quarter a year earlier)
+>
+> The latest quarter (15.9): ... a line the fetch did not read saying so, apart from one not filed; the growth bars beneath; ... (see: The latest quarter is read line by line against the estimate kept before its report and the same quarter a year earlier)
+>
+> Figure part 7: The latest quarter: each line of the newest quarter against the estimate kept before its report and the same quarter a year earlier, from the filing and the provider's fetch, with eight quarters' growth.
+>
+> The figures (15.22): ... earnings: the latest quarter's earnings a share and revenue against their estimates; the surprise; ...
+>
+> Estimate trends: ... and for a quarter's revenue estimate the newest fetch made before its report (see: The quarters fetch keeps ...)
+Now:
+> The latest quarter (section 4): ... each against the analysts' estimate kept before the results were released where one was and against the same quarter a year earlier, a fiscal fourth quarter's revenue against its year's estimate less its three earlier quarters marked implied, a line reading no estimate saying why, the three income lines ... (see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters). ... | ... and the revenue estimates fetches made before the quarter's release kept, the release placed by the calendar's timing on the report date in New York; ...
+>
+> Margins, Growth bars and Report windows: ... (see: The latest quarter is read line by line against the estimates kept before its release ...)
+>
+> The latest quarter (15.9): ... apart from one not filed; from the 18.2 correction of 2026-10-21 the estimate the one kept before the results were released; a fiscal fourth quarter's revenue read against its year's estimate less its three earlier quarters and drawn as implied with what it was worked from beneath the table; a line reading no estimate saying why; the year earlier's column saying a line its fetch did not read is not read as the quarter's column does; the growth bars beneath; ... (see: The latest quarter is read line by line against the estimates kept before its release ...)
+>
+> Figure part 7: The latest quarter: each line of the newest quarter against the estimate kept before its release and the same quarter a year earlier, a fiscal fourth quarter's revenue against its year's estimate less three quarters marked implied, from the filing and the provider's fetch, with eight quarters' growth.
+>
+> The figures (15.22): ... against their estimates; from the 18.2 correction of 2026-10-21 revenue against an implied estimate named so and where none is read the report's words for why; the surprise; ...
+>
+> Estimate trends: ... and for a quarter's revenue estimate the newest fetch made before its release as the calendar's timing places it in New York, the quarter's own, filed as the current quarter or the next, or for a quarter ending its fiscal year the year's, and the stock's first fetch on or before the page's night for the day its estimates are kept from (see: The quarters fetch keeps ...) (see: The latest quarter is read line by line against the estimates kept before its release ...)
+Why: the operator's words of 2026-10-21 on the report's quarter table, "Once again i am seeing on report things like "none kept". WHat hasnt been kept.", and their approval of the fixes, "Yes, one PR now (Recommended)", and of a fiscal fourth quarter's estimate, "Implied estimate (Recommended)".
+
+### 2026-10-21 - SCHEMA.md - the estimate trend read before a quarter's release, a fiscal fourth quarter's in the year's row
+Authorised by: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
+Was:
+> estimate_trend, `period_end`: the end of that period, the newest the answer files under its word
+>
+> estimate_trend: ... and the newest fetch made before a quarter's report for that quarter's revenue estimate; no rule, list or gate reads the table, ...
+Now:
+> estimate_trend, `period_end`: the end of that period, the newest the answer files under its word; a quarter ending its company's fiscal year is filed under the year alone, the answer keeping one entry an end
+>
+> estimate_trend: ... and the newest fetch made before a quarter's report for that quarter's revenue estimate; from the 18.2 correction of 2026-10-21 that is the newest fetch made before the instant the calendar's timing on the report date places the release in New York, the quarter's own revenue estimate, filed under the current quarter's word or the next's, or, for a quarter ending its fiscal year, the year's, and the stock's first fetch on or before the page's night gives the day its estimates are kept from (see: The latest quarter is read line by line against the estimates kept before its release ...); no rule, list or gate reads the table, ...
+Why: as the architecture's entry above; none of the 1,589 fetches stored by 2026-10-20 holds a quarter's row ending on its year's.
+
+### 2026-10-21 - .claude/rules/checks.md - fixture-expectations and read-surface reach the estimates kept before a release and a fiscal fourth quarter's implied estimate
+Authorised by: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a fiscal fourth quarter against its year's estimate less three quarters
+Was:
+> fixture-expectations: ... worked by hand over a constructed store of the three indices |
+>
+> read-surface: ... and reading a payer whose fetch files nought on its year's payments |
+Now:
+> fixture-expectations: ... worked by hand over a constructed store of the three indices; and from the 18.2 correction of 2026-10-21 the release a quarter's estimates are kept before placed by the calendar's timing in New York at the open, at the close and at the start of the day, ... and each reason a line reads no estimate for worked by hand at a fetch a millisecond before the release and at it, and the quarter a year earlier saying a line its fetch did not read is not read, one the provider filed none for not filed and none held a year earlier so, each worked by hand |
+>
+> read-surface: ... and reading a payer whose fetch files nought on its year's payments; and from the 18.2 correction of 2026-10-21 the report's revenue estimates read over a constructed store, ... a line reading no estimate saying why and one with no quarter a year earlier saying so, none kept drawn nowhere, and the chart page's revenue against an implied estimate named so, against its own estimate and where none is read the report's words for why |
+Why: the rows named no assertion on the release's instant, an implied estimate, the words a line reading no estimate says or the chart page's revenue against its estimate, which the 18.2 correction of 2026-10-21 adds.
+
+### 2026-10-21 - ARCHITECTURE.html - a company paying none says so in the chart page's dividend figures and the report's yield tile
+Authorised by: A company filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing neither as not stored
+Was:
+> The figures: ... the dividend: its yield; its last whole year; its payout of earnings; its years raised in a row over the whole years kept and not stored where fewer than two are kept; the technicals: ...
+>
+> Tiles: ... and the distance from the year's high with the range bar; a tile whose figures are not stored saying so (see: Four tiles under the headline are worked by code from stored figures at the price the page draws)
+Now:
+> The figures: ... its years raised in a row over the whole years kept and not stored where fewer than two are kept; from the 19.11 correction of 2026-10-21 each of the four saying pays none for a company with no dividend kept in the year to the night whose fetch files a dividend rate of nought or no rate beside dividends kept from before the year (see: A company filing ...); its last whole year still drawn where it paid in it; a company whose fetch files no rate above nought and that paid in the year read on its year's payments; not stored left for a company storing neither a rate nor a dividend; the technicals: ...
+>
+> Tiles: ... a tile whose figures are not stored saying so; from the 19.11 correction of 2026-10-21 the yield's tile saying a company paying none pays none and reading a payer whose fetch files no rate above nought on its year's payments as the dividend's safety reads it (see: Four tiles under the headline ...) (see: A company filing ...)
+Why: the operator's words of 2026-10-21 on DGII's chart page, "Just saying not stored is not a good way to communicate", and their approval of the fix, "Yes, one PR now (Recommended)": 498 members drew not stored in all four figures, 496 of them paying none, and the yield tile said none was stored for 7 payers whose fetch files a rate of nought.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface reaches a company paying none on the chart page and the yield tile
+Authorised by: A company filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing neither as not stored
+Was:
+> read-surface: ... and a group the night read no name for saying so |
+Now:
+> read-surface: ... and a group the night read no name for saying so; and from the 19.11 correction of 2026-10-21 the chart page's four dividend figures pays none for a company with no dividend kept in the year to the night whose fetch files a dividend rate of nought or no rate beside a dividend kept from before the year, ... and the report's yield tile, on the page and at the quote, saying a company paying none pays none and reading a payer whose fetch files nought on its year's payments |
+Why: the row named no assertion on a company paying none, which the 19.11 correction of 2026-10-21 adds.
+
+### 2026-10-21 - ARCHITECTURE.html - a member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
+Authorised by: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
+Was:
+> Move annotator: reads membership, bar store, calendar; ... and writes each print's earnings reaction over the calendar's year behind
+>
+> How it got here, its source: ... each move's group median computed by the move annotator from the bars and the membership (see: A large move is shown beside its group's median move over the same sessions); ...
+>
+> Its group, by price, its source: The peers' two readings and the members chosen, computed by the move annotator from the bars and the membership (see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely)
+>
+> The figures: ... the company: its index and sector and industry; the provider's market value; ...
+>
+> The read and write matrix's Move annotator row: no mark under Fundamentals.
+Now:
+> Move annotator: reads membership, companies, bar store, calendar; ... and writes each print's earnings reaction over the calendar's year behind; a group is read among the name's own index's members by the industry and sector each one's membership row names, or from the 15.1 correction of 2026-10-21 where the row names neither a sector nor an industry by the GICS industry and sector its newest company fetch before the night files (see: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files)
+>
+> How it got here, its source: ... each move's group median computed by the move annotator from the bars and the membership, a member whose row names neither a sector nor an industry grouped by its company fetch (see: A large move ...) (see: A member whose membership row names neither a sector nor an industry ...); ...
+>
+> Its group, by price, its source: The peers' two readings and the members chosen, computed by the move annotator from the bars and the membership with a member whose row names neither a sector nor an industry grouped by its company fetch; the group's other members as the annotator counted them (see: Peers are shown by price alone ...) (see: A member whose membership row names neither a sector nor an industry ...)
+>
+> The figures: ... the company: its index and sector and industry; from the 15.1 correction of 2026-10-21 its industry the one its membership row names and where the row names neither a sector nor an industry the GICS industry its newest company fetch files (see: A member whose membership row names neither a sector nor an industry ...); the provider's market value; ...
+>
+> The read and write matrix's Move annotator row: R under Fundamentals, which holds the companies.
+Why: the operator approved on 2026-10-21, in the words "Yes, one PR now (Recommended)", reading a member's industry and its group from the company record as its sector already is: no S&P 400 or 600 membership row names an industry, so their chart pages drew it not stored and their moves had no group.
+
+### 2026-10-21 - SCHEMA.md - the move annotator reads a member's group off its company fetch where its membership row names neither a sector nor an industry
+Authorised by: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
+Was:
+> move and peer_reading, `group_name`: the industry or sector the membership row names, null where it names none
+>
+> The group columns are the annotator's: ... read off the membership, so the annotator reads the membership as well as the bars (see: ...) (see: A large move is shown beside its group's median move over the same sessions).
+>
+> company: ... and `membership.sector` is the index snapshot's own scheme and is not read for it.
+Now:
+> move and peer_reading, `group_name`: the industry or sector the membership row names, or where it names neither the GICS one the name's newest company fetch made before the night files; null where neither names one
+>
+> The group columns are the annotator's: ... (see: A large move is shown beside its group's median move over the same sessions). From the 15.1 correction of 2026-10-21 a member whose membership row names neither a sector nor an industry, which is every S&P 400 and 600 member, is read by the GICS industry and sector its newest `company` row fetched before the night started files, both from that one row, so the annotator reads the companies as well; a member whose row names either is read by its row (see: A member whose membership row names neither a sector nor an industry ...).
+>
+> company: ... is not read for it. From the 15.1 correction of 2026-10-21 the move annotator reads a member's newest row fetched before the night started for the industry and sector its group is read by, where its membership row names neither, and the pages name such a member's industry by its newest row's (see: A member whose membership row names neither a sector nor an industry ...).
+Why: as the architecture's entry above; the schema states what the annotator now reads.
+
+### 2026-10-21 - .claude/rules/checks.md - fixture-expectations and read-surface reach a member's industry and group read off its company fetch
+Authorised by: A member whose membership row names neither a sector nor an industry is named and grouped by the GICS industry and sector its company fetch files
+Was:
+> fixture-expectations: ... and none for a bar the series does not hold however many sessions were read before it |
+>
+> read-surface: ... a member holding a bar on the night and no year's high saying its year's high is not available and not that it holds no bar |
+Now:
+> fixture-expectations: ... and none for a bar the series does not hold however many sessions were read before it; and from the 15.1 correction of 2026-10-21 a member whose membership row names neither a sector nor an industry grouped among its own index's members by the GICS industry and sector its newest company fetch made before the night started files, ... worked by hand over a constructed store of the three indices |
+>
+> read-surface: ... and not that it holds no bar; and from the 15.1 correction of 2026-10-21 a member's industry on the chart page's grid and its masthead the one its membership row names, and where it names neither a sector nor an industry the GICS industry its newest company fetch files, ... and a group the night read no name for saying so |
+Why: the two rows named no assertion on a group or an industry read off the company fetch, which the 15.1 correction of 2026-10-21 adds.
+
+### 2026-10-21 - CLAUDE.md - the hard rule on pulled history names the member readings' year's high and a breakout rule's checks on it
+Authorised by: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does
+Was:
+> and the readings a night needs more closes for than the store's year holds, the S&P 400's and 600's breakout's year's high and the forming list's and the sector heavyweights' returns and betas, which on such a night read the sessions before the year at the store's scale from the newest pull holding a member's first stored session, a member it holds too few for reading none of them and named on the night's row, on the operator's ruling of 2026-10-20; ... (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale). The sessions the fetcher drops
+Now:
+> and the readings a night needs more closes for than the store's year holds, the S&P 400's and 600's breakout's year's high and the forming list's and the sector heavyweights' returns and betas, on the operator's ruling of 2026-10-20, and the member readings' year's high and a breakout rule's checks on it, on their ruling of 2026-10-21, which on such a night read the sessions before the year at the store's scale from the newest pull holding a member's first stored session, a member it holds too few for reading none of them and named on the night's row; ... (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale) (see: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does). The sessions the fetcher drops
+Why: the operator's ruling of 2026-10-21: "Read the missing session from the pull for both: the member readings' year's high and the "near its high" and "recent high" checks a registered S&P 400/600 breakout rule reads, so all three readings of the year's high agree on every night." The rule is narrowed for those two readings alone, and its reasoning stands.
+
+### 2026-10-21 - ARCHITECTURE.html - the member readings' year's high and a breakout rule's checks on it read the sessions before a short year from the pulled history
+Authorised by: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does
+Was:
+> Member reader: reads membership, bar store, market series, calendar, indicators, reported quarters, companies, fundamental readings; ... HYG against its average and its change; makes no request, and a night run again replaces its own session's rows ...
+>
+> Index families: ... its levels read off the member readings, the switches and the S&amp;P 500's market reading the night stored, each keeping its own list, ...
+>
+> History pull: ... read the pulled bars before the year for the S&amp;P 400's and 600's breakout's year's high, the forming list's high and the heavyweights' closes, and a purge removes one pull's rows whole (see: ...) (see: ...) (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale); ...
+>
+> Pulled history: ... the forming list's high and the heavyweights' closes (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale), so removing one ...
+>
+> Member readings: ... its year's high with the sessions since it and the close's nearness to it, its volume over its average, ...
+>
+> Readings of the 400's and 600's rules: the highest high of the 251 sessions before the session, the newer of two equal, with the sessions since it; the session's volume ...
+>
+> The read and write matrix's Member reader row: no mark under Pulled history.
+Now:
+> Member reader: reads membership, bar store, pulled bars, market series, calendar, indicators, reported quarters, companies, fundamental readings; ... HYG against its average and its change; from the operator's ruling of 2026-10-21 reads the year's high, on a night whose store's year holds fewer sessions than it reads, over the ones before the year from the pulled history at the store's scale as the breakout's own high reads them, a member the pull holds too few for reading none and named on the step's row (see: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does); makes no request, ...
+>
+> Index families: ... its levels read off the member readings, the switches and the S&amp;P 500's market reading the night stored, a breakout rule's nearness to its year's high and recency of it read on a night whose store's year holds too few sessions over the ones before it from the pulled history as the breakout's own high reads them (see: ...), each keeping its own list, ...
+>
+> History pull: ... and the heavyweights' closes, and from the operator's ruling of 2026-10-21 the member readings' step and the index families for the member readings' year's high and a breakout rule's checks on it, and a purge removes one pull's rows whole ... (see: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does); ...
+>
+> Pulled history: ... (see: A night's reading ...), and from the operator's ruling of 2026-10-21 the member readings' step and the index families for the member readings' year's high and a breakout rule's checks on it (see: ...), so removing one ...
+>
+> Member readings: ... its year's high with the sessions since it and the close's nearness to it, on a night whose store's year holds too few sessions read over the ones before it from the pulled history and none for a member the pull holds too few for, its volume over its average, ...
+>
+> Readings of the 400's and 600's rules: the highest high of the 251 sessions before the session, the newer of two equal, with the sessions since it, on a night whose store's year holds fewer read over the ones before it from the pulled history at the store's scale and none for a member the pull holds too few for (see: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does); the session's volume ...
+>
+> The read and write matrix's Member reader row: R under Pulled history.
+Why: the operator's ruling of 2026-10-21, that the member readings' year's high and a breakout rule's checks on it read the session a short year misses from the pull as the breakout's own high does, so the three readings agree on every night; and the review of its pull request, which found section 17's row still saying the year's high was read on the store's sessions alone.
+
+### 2026-10-21 - SCHEMA.md - pulled_bar read for the member readings' year's high and a breakout rule's checks on it
+Authorised by: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does
+Was:
+> pulled_bar: **This is not the bar table, and no night reads it but the chart averages step, the setup ledger's step and, on a night whose store's year holds too few sessions, the index families, the rule cards and the heavyweights' book**, ... a day the exchange's table holds no session on passed over, a member whose bars start after the year's first session or miss a session inside it reading no more than its own (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale). From 19.11 ...
+>
+> `year_high` | TEXT | decimal in code, the highest high of the 251 sessions before the session, null on a member's first bar
+Now:
+> pulled_bar: **This is not the bar table, and no night reads it but the chart averages step, the setup ledger's step and, on a night whose store's year holds too few sessions, the index families, the rule cards, the heavyweights' book and the member readings step**, ... a day the exchange's table holds no session on passed over and, from the operator's ruling of 2026-10-21, a session the pull is missing ending the read, a member whose bars start after the year's first session or miss a session inside it reading no more than its own (see: ...). From the operator's ruling of 2026-10-21 the member readings step reads them the same way for the year's high of each member of the three indices holding a bar on the night, and the index families for a breakout rule's nearness to its year's high and recency of it, a member the pull holds too few for reading no year's high (see: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does). From 19.11 ...
+>
+> `year_high` | TEXT | decimal in code, the highest high of the 251 sessions before the session, read on a night whose store's year holds fewer over the ones before it from `pulled_bar` at the store's scale; null on a member's first bar and, on such a night, for a member the pull holds too few for
+Why: the member readings step reads `pulled_bar` from the ruling, and the column's note says what a short year's high reads and where it stores none; the review of the pull request found the lead still naming no read by the member readings and the read passing over a session the pull is missing.
+
+### 2026-10-21 - .claude/rules/checks.md - fixture-expectations and read-surface reach the year's high read before a short year by the member readings and a breakout rule's checks
+Authorised by: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does
+Was:
+> fixture-expectations: ... and the business-first family's counting a member its approved setting's hooks keep off at a part of its own |
+>
+> read-surface: ... and a funnel stored without that count saying how many passed its first gate alone |
+Now:
+> fixture-expectations: ... and the business-first family's counting a member its approved setting's hooks keep off at a part of its own; and from 20.11's ruling of 2026-10-21, over the same night, the member readings' year's high read over the session before the year from the pulled history at the store's scale, ... and one at that high reading it older keeping IA and IB and not the member whose high was not read, its stored part saying so; the read of the sessions before the year ending at a session the pull is missing, ... and the S&P 500's heavyweights reading such a member no return; and the one function both read the high through worked by hand at its edges, ... |
+>
+> read-surface: ... and a funnel stored without that count saying how many passed its first gate alone; and from 20.11's ruling of 2026-10-21 a member holding a bar on the night and no year's high saying its year's high is not available and not that it holds no bar |
+Why: the ruling's tests are named where the roster reads them.
+
+### 2026-10-21 - ARCHITECTURE.html - each funnel bar the share of the members reaching its gate that passed it, with how many passed of how many reached beside it
+Corrects: a setup card drew each funnel bar as its count against the first gate's, so every bar after a gate stopping most of the index drew as a hairline and the gate doing the cutting could not be told at a glance; ruled by the operator on 2026-10-21 reading the setup cards.
+Was:
+> Funnel bars: One bar for the whole index and one for the members through each of the swing filter's checks in turn, each as long as its count against the index and named in words with its count beside it. From 19.3 a setup card draws its chosen rule's funnel the same way: a bar a gate of the rule as long as its count against its first gate's. The gate that stopped the most of those reaching it is marked and named beneath, the earlier gate taking a tie; a first gate passing no member is marked as passing none.
+>
+> A family's card's rule: ... the funnel drawn as one bar a gate with the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so; ...
+>
+> Rule cards: ... from 17.8 writes the fundamentals-first family's night on every index, on the S&amp;P 500 from the rows the index families' step writes there, its funnel counted off the family's own checks after the floors; ...
+Now:
+> Funnel bars: One bar for the whole index and one for the members through each of the swing filter's checks in turn, each as long as its count against the index and named in words with its count beside it. From 19.3 a setup card draws its chosen rule's funnel as a bar a gate of the rule. From the 19.3 correction of 2026-10-21 each bar is as long as the share of the members reaching its gate that passed it, with how many passed of how many reached it in words beside it; the gate doing the cutting then reads at a glance, where a bar against the first gate's count drew every gate after a narrow one as a hairline. The first gate is reached by the members the night read for the rule and each later gate by those the gate before it passed; a funnel stored without the count of the members read says how many passed its first gate alone. A gate a rule does not read counts every member it read as passing, as a swing variant's market check where it reads none. The gate that stopped the most of those reaching it is marked and named beneath, the earlier gate taking a tie; a first gate passing no member is marked as passing none.
+>
+> A family's card's rule: ... the funnel drawn as one bar a gate as long as the share of the members reaching it that passed it with how many passed of how many reached it beside it and the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so; ...
+>
+> Rule cards: ... its funnel counted off the family's own checks after the floors and a condition its approved setting's hooks add after those; ...
+Why: the operator's ruling of 2026-10-21: "draw each gate's bar as the share of the members reaching that gate that passed it, with "passed of reaching" in words beside it". The line naming the gate that stopped the most stands, and the rows' reasoning with it. With each bar now saying how many reached it, a gate a rule does not read and a member its hooks keep off are counted where the rule reads them, the review of this pull request having found a swing variant reading no market check drawn as stopped at it and such members at no part.
+
+### 2026-10-21 - SCHEMA.md - a rule's stored funnel carries how many members reached its first gate
+Corrects: the funnel the rule cards store held no count of the members its night read, so a page could not say how many reached a rule's first gate; ruled by the operator on 2026-10-21 with each bar drawn against the members reaching its gate.
+Was:
+> `gates` | TEXT | JSON: each gate or part of the rule in its order with how many members passed it and every one before; null where the night did not evaluate the rule, for a sector heavyweights rule, and on a replayed row
+Now:
+> `gates` | TEXT | JSON: each gate or part of the rule in its order with how many members passed it and every one before, a gate a swing filter rule does not read passed by every member it read, and from the 19.3 correction of 2026-10-21 the first with how many members the night read for the rule, which reached it; null where the night did not evaluate the rule, for a sector heavyweights rule, for an S&P 400 or 600 variant naming no reading version, whose funnel the night does not keep, and on a replayed row
+Why: a card's first gate is drawn against the members the night read for its rule, which only the night counts; and the note named no case of an evaluated variant whose funnel the night keeps none of, which the review of this pull request found.
+
+### 2026-10-21 - .claude/rules/checks.md - read-surface and fixture-expectations reach the funnel bars drawn against the members reaching each gate
+Corrects: the rows named no assertion on a funnel bar's length or on the count reaching a rule's first gate, which the 19.3 correction of 2026-10-21 adds.
+Was:
+> read-surface: ... an entry kept drawing no such sentence |
+>
+> fixture-expectations: ... and on the S&P 400 one starting after the year's first session reading none |
+Now:
+> read-surface: ... an entry kept drawing no such sentence; and from the 19.3 correction of 2026-10-21 each setup card's funnel bar the share of the members reaching its gate that passed it with how many passed of how many reached it beside it, read back off cards the rule cards' stage drew over constructed nights, one whose first gate drawn stops all but one and one whose market check closed over the seventeen members it read, its funnel stored with the seventeen, the market's row passing none of them and each part after it none of none, and a funnel stored without that count saying how many passed its first gate alone |
+>
+> fixture-expectations: ... and on the S&P 400 one starting after the year's first session reading none; and from the 19.3 correction of 2026-10-21 each funnel the rule cards store carrying how many members the night read for the rule, which reached its first gate, on the S&P 500 and on an index alike, the fixture's business-first row among them; a swing filter rule's funnel counting a gate it does not read as passed by every member it read; and the business-first family's counting a member its approved setting's hooks keep off at a part of its own |
+Why: each roster row says what its check asserts, and the correction's tests extend both.
+
+### 2026-10-21 - SCHEMA.md - the pulled bars read for what the year falls short by, and a heavyweights rebalance waiting only where the pull holds too few as well
+Corrects: the pulled bars' paragraph read each member's sessions before the year as many as its own bars fell short by, which reads a member whose year misses a session across that hole and a member starting after the year's first session inside the year, and the heavyweights' two tables still said a rebalance waits wherever the store's year alone holds too few; found by the review of the second pull request of the operator's rulings of the evening of 2026-10-20.
+Was:
+> **This is not the bar table, ...** ... From the operator's ruling of 2026-10-20, on a night whose store's year holds fewer sessions than they read, the index families read each S&P 400 and 600 member's sessions before its first stored one for the breakout's year's high and the sector heavyweights' closes, the rule cards for the forming list's high, and the heavyweights' book each S&P 500 member's for its closes, as many as the member falls short by, from the newest pull holding its first stored session and at the store's scale, a day the exchange's table holds no session on passed over (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale). ...
+>
+> heavyweight_night: ... A rebalance reading the funds or the betas waits for the first night the store holds the night's close of every fund and of the index, and writes nothing until then; so does one on a night the store's year holds fewer closes than its readings need, and one reading no lead, or no beta where it reads one. ...
+>
+> heavyweight_rule_night: ... a rebalance reading the funds or the betas waits for a night the store holds their closes, as one waits on a night the store's year holds fewer closes than its readings need or it reads no lead, or no beta where it reads one; ...
+Now:
+> **This is not the bar table, ...** ... From the operator's ruling of 2026-10-20, on a night whose store's year holds fewer sessions than they read, the index families read the sessions the year falls short by before its first session, for each S&P 400 and 600 member the store holds from that session, for the breakout's year's high and the sector heavyweights' closes, the rule cards for the forming list's high and the setup ledger's step for its live passes as the night's own inputs read them, and the heavyweights' book the same for each S&P 500 member for its closes, from the newest pull holding the member's first stored session and at the store's scale, a day the exchange's table holds no session on passed over, a member whose bars start after the year's first session or miss a session inside it reading no more than its own (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale). ...
+>
+> heavyweight_night: ... and writes nothing until then; so does one on a night the store's year and the pulled history before it hold fewer closes than its readings need, and one reading no lead, or no beta where it reads one. ...
+>
+> heavyweight_rule_night: ... as one waits on a night the store's year and the pulled history before it hold fewer closes than its readings need or it reads no lead, or no beta where it reads one; ...
+Why: the code reads the sessions the year falls short by for the members the store holds from its first session, so no reading reaches across a hole the store holds (see: A gap is a session the exchange traded and the store does not hold), and a book waits only where the pull holds too few as well, as the decision states.
+
+### 2026-10-21 - ARCHITECTURE.html - every reader of the pulled bars before a short year named in the history pull's, the setup ledger's and the pulled history's rows
+Corrects: the history pull's row still named the setup ledger's valuation reading as the one read of the pulled bars beside the chart averages step, the setup ledger's row read them for the valuation reading alone though its S&amp;P 400 and 600 live passes read them through the night's own inputs, and the pulled history's row named neither those passes nor Tonight's heavyweights cards' read of whether a pull reaches before the store's year; found by the review of the second pull request of the operator's rulings of the evening of 2026-10-20.
+Was:
+> History pull: ... no night reads any of its tables but the chart averages step, which reads the pulled bars and the pulled earnings for the name page's figures, and from 17.12 the setup ledger's step, which reads the pulled bars for its valuation reading alone, and a purge removes one pull's rows whole (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull) (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years); ...
+>
+> Setup ledger: ... and on the night it reads, for the valuation reading alone, each member's closes before its first stored session that the reading reaches from the pulled bars, brought to the store's scale (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years); ...
+>
+> Pulled history: ... and from 17.12 the setup ledger's step, which reads the pulled bars for its valuation reading alone, and from the operator's ruling of 2026-10-20 the index families, the rule cards and the heavyweights' book, which on a night whose store's year holds fewer sessions than they read read the pulled bars before the year ... (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale), so removing one moves nothing a listing or a score read but through that reading where an approval sets a rule to read it and through those readings on such a night, and nothing a night or a page read but the name and chart pages' figures before the store's year, the chart's averages, the typical earnings move and the long view, and that reading, which the next night reads again from the newest pull still holding them; ...
+Now:
+> History pull: ... and from 17.12 the setup ledger's step, which reads the pulled bars for its valuation reading, and from the operator's ruling of 2026-10-20 the index families, the rule cards, the heavyweights' book and the setup ledger's live passes, which on a night whose store's year holds fewer sessions than a reading needs read the pulled bars before the year for the S&amp;P 400's and 600's breakout's year's high, the forming list's high and the heavyweights' closes, and a purge removes one pull's rows whole (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull) (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years) (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale); ...
+>
+> Setup ledger: ... and on the night it reads, for the valuation reading, each member's closes before its first stored session that the reading reaches from the pulled bars, brought to the store's scale (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years), and from the operator's ruling of 2026-10-20 a live pass on the S&amp;P 400 and 600 reads the sessions before a year holding fewer than the night's readings need from them as the night's own inputs read them (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale); ...
+>
+> Pulled history: ... and from 17.12 the setup ledger's step, which reads the pulled bars for its valuation reading, and from the operator's ruling of 2026-10-20 the index families, the rule cards, the heavyweights' book and the setup ledger's live passes, which on a night whose store's year holds fewer sessions than they read read the pulled bars before the year ... (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale), so removing one moves nothing a listing or a score read but through that reading where an approval sets a rule to read it and through those readings on such a night, and nothing a night or a page read but the name and chart pages' figures before the store's year, the chart's averages, the typical earnings move and the long view, that reading and those readings, which the next night reads again from the newest pull still holding them, and the next rebalance Tonight's heavyweights cards draw, which reads whether a pull reaches before the store's year and no price of it; ...
+Why: the setup ledger reads the S&amp;P 400's and 600's live passes through the night's own inputs, which read the pulled bars before a short year, and Tonight's heavyweights cards read whether a pull reaches before the year for the books' next rebalance, so each row names every reader.
+
+### 2026-10-21 - .claude/rules/checks.md - fixture-expectations reaches the forming list's pulled high and the pull read for what the year falls short by
+Corrects: the row named the readings before the store's year and not the rule cards' read of them inside their own transaction or what a member whose year misses a session reads, which the review of the second pull request of the operator's rulings of the evening of 2026-10-20 found faulting and reading across the hole.
+Was:
+> ... and the S&P 500's heavyweights reading a member's close before the year from the pull, its return worked by hand, and rebalancing in place of waiting, a member the pull holds none for reading no return and named |
+Now:
+> ... and the S&P 500's heavyweights reading a member's close before the year from the pull, its return worked by hand, and rebalancing in place of waiting, a member the pull holds none for reading no return and named; the rule cards' forming list reading the pulled high at the store's scale inside their own transaction; and on either index a member whose year misses a session inside it reading only the session the year falls short by, reading none of the readings that would reach across its hole, and on the S&P 400 one starting after the year's first session reading none |
+Why: each roster row says what its check asserts, and the review's three tests extend fixture-expectations.
+
+### 2026-10-21 - .claude/rules/checks.md - fixture-expectations reaches the evening remedy's register lines, a split read off the bars and the readings before the store's year
+Authorised by: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
+Was:
+> ... and the freeze form keeping the retired live rule it replaces in the background, refusing a rule named that is no live rule of the family |
+Now:
+> ... and the freeze form keeping the retired live rule it replaces in the background, refusing a rule named that is no live rule of the family; and the evening's remedy's register lines writing over a register shaped as the operator's stood, the drift frozen at the ruled setting with the strongest in the background and every rule at the version the code carries; and from the 15.1 correction of 2026-10-21 a two for one read off a listing's bars on its session, a dividend's step and a spin-off's read as none, a count asked before it worth the same either side of it, and an S&P 400 book reading the five largest buying a company that split after its count was asked, where the count alone reads it sixth; and from 20.11's amended clause 2 of 2026-10-20, over a night whose store's year holds 251 sessions, the S&P 400 breakout's year's high read over the session before the year from the pulled history at the store's scale, a pulled high under the night's close at that scale breaking out and one over it not, a member the pull holds none for reading none and named on the night's row, and the S&P 500's heavyweights reading a member's close before the year from the pull, its return worked by hand, and rebalancing in place of waiting, a member the pull holds none for reading no return and named |
+Why: the second pull request of the operator's rulings of the evening of 2026-10-20 adds the three tests, under the decisions each cites (see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session).
+
+### 2026-10-21 - CLAUDE.md - the hard rule on pulled history narrowed for the readings needing more closes than the store's year holds
+Authorised by: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
+Was:
+> History the operator pulls for the years before the store's own is not a stored bar: it sits in tables of its own that no night reads but the chart averages step, whose figures, the chart's averages and each stock's typical earnings move and long view, only the name page and the chart page draw and no rule, level, listing or gate reads, and the setup ledger's valuation reading alone, which reads its prices at the store's scale as that step does, held as they stood by the point-in-time check, on the operator's ruling of 2026-10-12; that no page reads but the chart page, which reads one stock's pulled bars at the store's scale for its weekly and monthly candles and its longer performance and hands them to no rule, level, listing or gate, on the operator's ruling of 2026-10-16; and it is removed whole by the pull that wrote it (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull) (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name and chart pages draw) (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years).
+Now:
+> History the operator pulls for the years before the store's own is not a stored bar: it sits in tables of its own that no night reads but the chart averages step, whose figures, the chart's averages and each stock's typical earnings move and long view, only the name page and the chart page draw and no rule, level, listing or gate reads, and the setup ledger's valuation reading alone, which reads its prices at the store's scale as that step does, held as they stood by the point-in-time check, on the operator's ruling of 2026-10-12; and the readings a night needs more closes for than the store's year holds, the S&P 400's and 600's breakout's year's high and the forming list's and the sector heavyweights' returns and betas, which on such a night read the sessions before the year at the store's scale from the newest pull holding a member's first stored session, a member it holds too few for reading none of them and named on the night's row, on the operator's ruling of 2026-10-20; that no page reads but the chart page, which reads one stock's pulled bars at the store's scale for its weekly and monthly candles and its longer performance and hands them to no rule, level, listing or gate, on the operator's ruling of 2026-10-16, and Tonight's heavyweights cards, which read no price of it and only whether it reaches before the store's year, for the books' next rebalance, on the operator's ruling of 2026-10-20; and it is removed whole by the pull that wrote it (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull) (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name and chart pages draw) (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years) (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale).
+Why: on the operator's ruling of the evening of 2026-10-20 as amended: "Narrow the hard rule for these readings alone, keeping its reasoning, and record its prior wording in the changelog." The rule's reasoning stands whole; it names the readings and the page's one read beside the others.
+
+### 2026-10-21 - ARCHITECTURE.html - the heavyweights' rebalance, its card, its rows and the frozen breakout's high read the sessions before the store's year from the pulled history
+Authorised by: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
+Was:
+> Sector heavyweights: ... On each month's first session, or the first after it whose stored year holds the closes its readings need, each member is placed ... and every rebalance waits for the first night the store's year holds the closes its readings need, a return or a beta over a number of sessions reading one close more than that number, which the year does not hold on a night whose date a year back was no session, and one reading no lead, or no beta where it reads one, waits the same way, so a short year sells nothing ...
+>
+> The eight families frozen on their own answers: ... the breakout at a 251-session high on 1.5 times the volume with no ceiling on its ranges and its stop 3 moves beneath, with the profit gate and the S&amp;P 500's breadth; ...
+>
+> The sector heavyweights' card names as its next rebalance the first session with no rebalance read in its month whose stored year holds the closes the live setting's readings need, so a month whose first session is a Monday names the Tuesday after it. On a night in a month whose rebalance the book has not read, a line beneath the card's standing says the rebalance waits, with the sessions the store's year holds and the sessions its readings need where it holds too few, and the session the book reads it on ...
+>
+> Pulled history: ... and from 17.12 the setup ledger's step, which reads the pulled bars for its valuation reading alone, so removing one moves nothing a listing or a score read but through that reading where an approval sets a rule to read it, ...
+>
+> Heavyweights' rebalance and exits: the first session of each month whose stored year holds the 252 closes the live setting's readings need, ...
+>
+> The store's year holds fewer closes than a heavyweights' rebalance reads, or the rebalance reads no lead or no beta: ... and it rebalances on the first night after that whose stored year holds the closes its readings need and reads a lead, and a beta where it reads one; ...
+Now:
+> Sector heavyweights: ... On each month's first session, or the first after it whose stored year and the pulled history before it hold the closes its readings need, each member is placed ... and on a night whose store's year holds fewer closes than its readings need, a return or a beta over a number of sessions reading one close more than that number, which the year does not hold on a night whose date a year back was no session, each member's sessions before the year are read from the newest pull holding its first stored session at the store's scale, a member it holds too few for reading no return and no beta and named on the book's row (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale); every rebalance waits for the first night the store's year and the pulled history before it hold the closes its readings need, and one reading no lead, or no beta where it reads one, waits the same way, so a short year sells nothing ...
+>
+> The eight families frozen on their own answers: ... the breakout at a 251-session high on 1.5 times the volume with no ceiling on its ranges and its stop 3 moves beneath, with the profit gate and the S&amp;P 500's breadth, its high read on a night whose store's year holds too few sessions over the ones before it from the pulled history at the store's scale, a member the pull holds too few for reading none and named on the night's row (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale); ...
+>
+> The sector heavyweights' card names as its next rebalance the first session with no rebalance read in its month whose stored year holds the closes the live setting's readings need, or the first such session where the pulled history reaches before the store's year, so a month whose first session is a Monday names that Monday where the pull reaches before the year and the Tuesday after it where it does not. On a night in a month whose rebalance the book has not read, a line beneath the card's standing says the rebalance waits, with the sessions the store's year holds and the sessions its readings need where it holds too few and the pull reaches no session before it, and the session the book reads it on ...
+>
+> Pulled history: ... and from 17.12 the setup ledger's step, which reads the pulled bars for its valuation reading alone, and from the operator's ruling of 2026-10-20 the index families, the rule cards and the heavyweights' book, which on a night whose store's year holds fewer sessions than they read read the pulled bars before the year for the S&amp;P 400's and 600's breakout's year's high, the forming list's high and the heavyweights' closes (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale), so removing one moves nothing a listing or a score read but through that reading where an approval sets a rule to read it and through those readings on such a night, ...
+>
+> Heavyweights' rebalance and exits: the first session of each month whose stored year and the pulled history before it hold the 252 closes the live setting's readings need, ...
+>
+> The store's year holds fewer closes than a heavyweights' rebalance reads, or the rebalance reads no lead or no beta: ... and it rebalances on the first night after that whose stored year and the pulled history before it hold the closes its readings need and reads a lead, and a beta where it reads one, a night whose year holds too few reading the sessions before it from the pulled history at the store's scale and waiting only where the pull holds too few as well; ...
+Why: on the operator's ruling of the evening of 2026-10-20 as amended, the breakout's year's high and the heavyweights' closes read the sessions before the store's year from the pulled history where the year holds too few, so a rebalance waits only where the pull holds too few as well.
+
+### 2026-10-21 - ARCHITECTURE.html - the heavyweights' and the breakout's longest readings read the sessions before the store's year from the pulled history
+Authorised by: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
+Was:
+> Heavyweight book: ... membership, bar store, market series, indicators, reported quarters, ...
+>
+> Index families: ... membership, bar store, market series, calendar, companies, ...
+>
+> Rule cards: ... membership, bar store, market series, calendar, indicators, ...
+>
+> The read and write matrix: Heavyweight book, Index families and Rule cards each with no read under Pulled history.
+>
+> (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need), at each of its twelve citations
+Now:
+> Heavyweight book: ... membership, bar store, pulled bars, market series, indicators, reported quarters, ...
+>
+> Index families: ... membership, bar store, pulled bars, market series, calendar, companies, ...
+>
+> Rule cards: ... membership, bar store, pulled bars, market series, calendar, indicators, ...
+>
+> The read and write matrix: Heavyweight book, Index families and Rule cards each with R under Pulled history.
+>
+> (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need), at each of its twelve citations
+Why: on the operator's ruling of the evening of 2026-10-20 as amended, a night whose store's year holds fewer sessions than the S&P 400's and 600's breakout's year's high or the sector heavyweights' closes read reads the sessions before it from the pulled history at the store's scale, so the three components read the pulled bars, and the rotation decision citing the store's year alone is superseded.
+
+### 2026-10-21 - SCHEMA.md - the pulled bars read on a night whose store's year holds too few sessions
+Authorised by: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
+Was:
+> **This is not the bar table, and no night reads it but the chart averages step and the setup ledger's step**, ... (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years). From 19.11 the read API reads one stock's rows by the table's key, the pull holding its first stored session and its sessions before it, when the chart page draws a weekly or monthly chart, never on a night, and brings them to the store's scale by the two closes of that session.
+Now:
+> **This is not the bar table, and no night reads it but the chart averages step, the setup ledger's step and, on a night whose store's year holds too few sessions, the index families, the rule cards and the heavyweights' book**, ... (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years). From the operator's ruling of 2026-10-20, on a night whose store's year holds fewer sessions than they read, the index families read each S&P 400 and 600 member's sessions before its first stored one for the breakout's year's high and the sector heavyweights' closes, the rule cards for the forming list's high, and the heavyweights' book each S&P 500 member's for its closes, as many as the member falls short by, from the newest pull holding its first stored session and at the store's scale, a day the exchange's table holds no session on passed over (see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale). From 19.11 the read API reads one stock's rows by the table's key, ... and brings them to the store's scale by the two closes of that session; and from the ruling of 2026-10-20 whether the table holds a session before the store's year to the night, for the heavyweights cards' next rebalance, reading no price.
+Why: on the operator's ruling of the evening of 2026-10-20 as amended, the readings needing more closes than the store's year holds read the sessions before it from the pulled history.
+
+### 2026-10-21 - SCHEMA.md - the rotation decision's citation renamed
+Authorised by: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
+Was:
+> (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need)
+Now:
+> (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need)
+Why: the decision the citation named is superseded on the operator's ruling of the evening of 2026-10-20 as amended.
+
+### 2026-10-21 - RUNBOOK.md - the rotation decision's citation renamed
+Authorised by: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
+Was:
+> **The sector heavyweights' rules registered again, from the 14.6 correction of 2026-10-07.** ... (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need) ...
+Now:
+> **The sector heavyweights' rules registered again, from the 14.6 correction of 2026-10-07.** ... (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need) ...
+Why: the decision the citation named is superseded on the operator's ruling of the evening of 2026-10-20 as amended.
+
+### 2026-10-21 - SCHEMA.md - a company's value brought across a split after its count was asked
+Authorised by: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session
+Was:
+> **The counts a company's value on a session is read from, read by no night** (see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis). ... a value reads a plain split as a change of shares and the rest as none, told apart by the ratio (see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis).
+Now:
+> **The counts a company's value on a session is read from, read by no night** (see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session). ... a value reads a plain split as a change of shares and the rest as none, told apart by the ratio (see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session).
+Why: on the operator's ruling of the evening of 2026-10-20 a company's value reads its newest count adjusted by every split between the day it was asked and the session, which supersedes the decision the two citations named.
+
+### 2026-10-21 - ARCHITECTURE.html - a company's value brought across a split after its count was asked
+Authorised by: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session
+Was:
+> Company value: ... times the session's unadjusted close divided by what one share became at every plain split after the session and on or before the session the count was asked on, a plain split's ratio within a ten-thousandth of whole shares for one, ... none where no count was filed before the session (see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis) ... fixture-expectations, ... and each kind of plain split read as one and the provider's spin-off adjustments as none
+>
+> A company filing no sector, no count with its date or no CIK: ... (see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis)
+>
+> A spin-off or a merger the provider files as a split: ... the residue of the provider's counts (see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis)
+Now:
+> Company value: ... times the session's unadjusted close divided by what one share became at every plain split after the session and on or before the session the count was asked on, and on a session after that one the count multiplied by what one share became at every plain split after it and on or before the session, the wider indices' books reading a member's splits on the night off its own bars as each session whose close over its close as traded stands at a plain ratio to the session before's, a plain split's ratio within a ten-thousandth of whole shares for one, ... none where no count was filed before the session (see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session) ... fixture-expectations, ... and each kind of plain split read as one and the provider's spin-off adjustments as none, and a two for one after the count was asked read off a member's bars and bringing its count across it, worked by hand over an S&amp;P 400 book's five largest
+>
+> A company filing no sector, no count with its date or no CIK: ... (see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session)
+>
+> A spin-off or a merger the provider files as a split: ... the residue of the provider's counts (see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session)
+Why: on the operator's ruling of the evening of 2026-10-20 a company's value reads its newest count adjusted by every split between the day it was asked and the session, the S&P 400's and 600's books reading the splits their members' bars carry, so a split after the newest count no longer misranks a company.
+
+### 2026-10-20 - ARCHITECTURE.html - the S&P 400 drift frozen at the setting the operator ruled
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
+Was:
+> 11.4 The setup families: ... (see: The S&amp;P 400's and 600's families freeze at the settings their own sweeps would run, business first alone left on the pullback's base). ... the drift within 3 sessions of a reaction of 1.5 typical moves on twice the volume, its target at twice the risk and its stop at least a typical move under the close it was listed at, with the profit gate and its own breadth at 50 per cent, the strongest its search read once corrected; ...
+Now:
+> 11.4 The setup families: ... (see: The S&amp;P 400's and 600's families freeze at the settings their own sweeps would run, the S&amp;P 400 drift at the setting the operator ruled and business first on the pullback's base). ... the drift within 10 sessions of a reaction of half a typical move on 1.25 times the volume, bought on its first pullback, its target at 3 times the risk and its stop at least a typical move under the close it was listed at, with the profit gate and its own breadth at 45 per cent, from the operator's ruling of the evening of 2026-10-20 the setting they ruled from among the strongest its search read, its entry one the search's second stage did not keep, and the strongest it replaced kept in the background for 63 sessions; ...
+Why: on the operator's ruling of the evening of 2026-10-20 the S&P 400 drift is frozen at the setting they ruled.
+
+### 2026-10-20 - RUNBOOK.md - the sweep answers command's ruled setting, a family frozen again, and the freeze decision's new name
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
+Was:
+> ... and a tester named beside a run stating no setting it would run are each refused with nothing written. A frozen family's card ... so a freeze's remedy records the answers before it freezes.
+> ... and the index's heavyweights' card draws the live rule's book.
+> **The S&P 400's and 600's freezes of 20.11** ... (see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, business first alone left on the pullback's base):
+Now:
+> ... so a freeze's remedy records the answers before it freezes. Where the operator rules a setting the run read in place of the one it states, from migration 103, `--ruled` names the day of the ruling, `--setting` the setting ... and `--entry` the entry its second stage read it at ...; a setting not among the strongest the search read and an entry the stage did not read on it are each refused with nothing written.
+> ... and the index's heavyweights' card draws the live rule's book. **A family frozen again on the S&P 400 or 600** follows its live rule's retirement: ... then freeze the family again with `--replacing` naming the retired live rule, which the form keeps in the background for 63 sessions in the provisional rule's place ...
+> **The S&P 400's and 600's freezes of 20.11** ... (see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base):
+Why: as the ARCHITECTURE.html entry above.
+
+### 2026-10-20 - BUILD_PLAN.md - 20.11's text cites the freeze decision that supersedes its first
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
+Was:
+> ... (see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, business first alone left on the pullback's base). ...
+Now:
+> ... (see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base). ...
+Why: a spec cites no decision under Previously decided.
+
+### 2026-10-20 - SCHEMA.md - the sweep answers' ruled setting from migration 103
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
+Was:
+> sweep_answer: ... | `tester_passed` | INTEGER | from migration 102, ... |
+> ... and a tester named beside a run stating no setting (see: ...). Recording a run again writes its row again, which is the update.
+Now:
+> sweep_answer: ... | `tester_passed` | ... | then `ruled_on`, from migration 103, the day the operator ruled the row's setting ..., and `entry_kept`, ... 1 where the run's second stage kept that level and 0 where it did not ...
+> ... and a tester named beside a run stating no setting (see: ...). From migration 103, on the operator's ruling of the evening of 2026-10-20, given the day of a ruling, a setting among the strongest the run's search read and the entry its second stage read it at, it records that setting's figures ... (see: ...). Recording a run again writes its row again, which is the update.
+Why: as the ARCHITECTURE.html entry above.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations and read-surface state the S&P 400 drift's ruled freeze
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
+Was:
+> fixture-expectations: ... and a rule retired and registered again in one second standing |
+> read-surface: ... and Past picks calling provisional only the families no freeze was read by |
+Now:
+> fixture-expectations: ... and a rule retired and registered again in one second standing; and from 20.11's ruling of the evening of 2026-10-20 the sweep answers command recording in a drift run's place the setting the operator ruled ..., and the freeze form keeping the retired live rule it replaces in the background, refusing a rule named that is no live rule of the family |
+> read-surface: ... and Past picks calling provisional only the families no freeze was read by; and from 20.11's ruling of the evening of 2026-10-20 a frozen card whose answer the operator ruled naming the setting as theirs with the day of the ruling, its own figures, 1,807 trades at +0.098, and the sentence that its entry did not survive the second stage before the one on luck and the tester, an entry kept drawing no such sentence |
+Why: the roster's rows say what their checks assert.
+
+### 2026-10-20 - ARCHITECTURE.html - the S&P 500's registered heavyweights books sell a retired rule's holdings
+Authorised by: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
+Was:
+> Heavyweight book: ... and reads nothing for a session earlier than one it has read, runs after the family recorder, makes no request and calls no model (see: The sector heavyweights hold ...) ...
+> 14, the swing filter's step: ... reading no market check and waiting for a night the store holds the closes a rebalance reads (see: The sector heavyweights hold ...) ... (see: A retired rule's open positions are ended, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits) ...
+> 11.4 The setup families: ... (see: A retired rule's open positions are ended, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits). ...
+Now:
+> Heavyweight book: ... and reads nothing for a session earlier than one it has read, and from the 20.11 correction of 2026-10-20 sells every holding of a retired rule's own book at the close of the session it was retired on, a rule retired and registered again in one second standing, runs after the family recorder, makes no request and calls no model (see: A retired rule's open positions are ended on every index, ...) (see: The sector heavyweights hold ...) ...
+> 14, the swing filter's step: ... reading no market check and waiting for a night the store holds the closes a rebalance reads, and sell each holding of a retired rule's own book at the close of the session it was retired on (see: The sector heavyweights hold ...) ... (see: A retired rule's open positions are ended on every index, ...) ...
+> 11.4 The setup families: ... (see: A retired rule's open positions are ended on every index, ...). ...
+Why: on the operator's ruling of the evening of 2026-10-20 the S&P 500's books end a retired rule's holdings as the S&P 400's and 600's do, and the decision citing the S&P 400 and 600 alone is superseded.
+
+### 2026-10-20 - SCHEMA.md - a registered S&P 500 heavyweights rule's holding sold for its rule retired
+Authorised by: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
+Was:
+> heavyweight_rule_holding.reason: `no longer the leader`, `a close under its 200-day average` or `left the index`, null while held
+> heavyweight_rule_holding: ... keeps its buys of the night and its sales unopened as a run of the night stored them. The rows are never deleted otherwise: ...
+Now:
+> heavyweight_rule_holding.reason: `no longer the leader`, `a close under its 200-day average` or `left the index`, and from the 20.11 correction of 2026-10-20 `its rule retired`, null while held
+> heavyweight_rule_holding: ... keeps its buys of the night and its sales unopened as a run of the night stored them. From the 20.11 correction of 2026-10-20 a retired rule's book sells every holding at its stock's close on the session it was retired on, its reason `its rule retired`, one whose stock holds no close that session at the close it was last carried to, and a night run again writes the sale again (see: ...). The rows are never deleted otherwise: ...
+Why: as the ARCHITECTURE.html entry above.
+
+### 2026-10-20 - BUILD_PLAN.md - 20.11's text cites the decision that supersedes the retired positions' first
+Authorised by: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
+Was:
+> A retired rule's open positions are ended (see: A retired rule's open positions are ended, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits).
+Now:
+> A retired rule's open positions are ended (see: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits).
+Why: a spec cites no decision under Previously decided.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states a retired S&P 500 heavyweights rule's book sold
+Authorised by: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
+Was:
+> fixture-expectations: ... and none of the index's own book's five at 0.80, worked by hand over a constructed store |
+Now:
+> fixture-expectations: ... and none of the index's own book's five at 0.80, worked by hand over a constructed store; and from the second 20.11 correction of 2026-10-20 an S&P 500 registered heavyweights rule retired before a session's open having its book's C01 sold at that session's close of 143 for a result of a tenth and its C11 at 150 for nothing, the live rule's book carrying C01 on, a night run again selling nothing twice, and a rule retired and registered again in one second standing |
+Why: the roster's row says what its check asserts.
+
+### 2026-10-20 - ARCHITECTURE.html - the live alarm reads a frozen heavyweights rule's own book on the S&P 400 and 600
+Corrects: the live alarm read the S&P 400's and 600's sector heavyweights' units off the index's own book whatever rule the page drew, so once a frozen live rule's own book drew the page its quarters were read off holdings the page no longer drew; found by 20.11's replay and put to the operator, who ruled it fixed on 2026-10-20.
+Was:
+> Live alarm reader: ... index family trades, index heavyweight holdings, trade fills | ... and on the S&amp;P 400 and 600 the page's trades since the setting the family stands at, each trade's edge ...
+Now:
+> Live alarm reader: ... index family trades, index heavyweight holdings, index heavyweight rule holdings, trade fills | ... and on the S&amp;P 400 and 600 the page's trades since the setting the family stands at and the sector heavyweights' holdings of the index's own book, from the 17.9 correction of 2026-10-20 those of the frozen live rule's own book where one stands, as the page draws them, each trade's edge ...
+Why: the alarm reads the units of the rule the page draws.
+
+### 2026-10-20 - SCHEMA.md - the live alarm reads a frozen heavyweights rule's sales off its own book
+Corrects: as the ARCHITECTURE.html entry above.
+Was:
+> index_heavyweight_rule_holding: ... read that rule's buys and sales here, as its page draws them, in the index's own book's place.
+Now:
+> index_heavyweight_rule_holding: ... read that rule's buys and sales here, as its page draws them, in the index's own book's place, and from the 17.9 correction of 2026-10-20 the live alarm reads the sales of the family's frozen live rule here in the index's own book's place.
+Why: as the ARCHITECTURE.html entry above.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states the live alarm on a frozen heavyweights rule's own book
+Corrects: as the ARCHITECTURE.html entry above.
+Was:
+> fixture-expectations: ... the frozen pullback's card drawing its own |
+Now:
+> fixture-expectations: ... the frozen pullback's card drawing its own; and from the 17.9 correction of 2026-10-20 the live alarm reading an S&P 600 quarter off its frozen heavyweights rule's own book, five holdings each an edge of nothing under a low of a half, and none of the index's own book's five at 0.80, worked by hand over a constructed store |
+Why: the roster's row says what its check asserts.
+
+### 2026-10-20 - ARCHITECTURE.html - a card drawn by a family's provisional rule draws only the provisional rule's record
+Corrects: a card an S&P 400 or 600 night drew by a family's provisional rule drew whatever record was stored, so after the family's freeze, whose remedy replays the frozen rule into the family's one row, a night reading the family by its provisional rule, one run again for a session before the freeze or one reading its frozen rule by none, drew the frozen rule's record under the provisional rule's heading; found by 20.11's replay and put to the operator, who ruled it fixed on 2026-10-20.
+Was:
+> ... From 20.11 a card of a family its S&amp;P 400 or 600 night read by its frozen live rule draws a record only where the stored record replayed that rule, named in the rule's own words, and the outline otherwise, never the provisional rule's record under its heading (see: ...).
+Now:
+> ... never the provisional rule's record under its heading, and from the 20.11 correction of 2026-10-20 a card its night drew by the family's provisional rule draws a record only where the stored record replayed the provisional rule, never a frozen rule's (see: ...).
+Why: a record is drawn only under the rule it replays.
+
+### 2026-10-20 - SCHEMA.md - a decision card's record is null where its night read the family by its provisional rule and the stored record replays another rule
+Corrects: as the ARCHITECTURE.html entry above.
+Was:
+> decision_card.record: ... null where the rule has not been replayed, and on an S&P 400 or 600 card whose family the night read by its frozen live rule where the stored record replays another rule |
+Now:
+> decision_card.record: ... null where the rule has not been replayed, and on an S&P 400 or 600 card whose family the night read by its frozen live rule where the stored record replays another rule, and from the 20.11 correction of 2026-10-20 on one whose family the night read by its provisional rule where the stored record replays another rule, a frozen rule's among them |
+Why: as the ARCHITECTURE.html entry above.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states a provisional card's record after a freeze
+Corrects: as the ARCHITECTURE.html entry above.
+Was:
+> fixture-expectations: ... and the record command's nights form refused at that Monday's 22:00 before it reads anything |
+Now:
+> fixture-expectations: ... and the record command's nights form refused at that Monday's 22:00 before it reads anything; and from the 20.11 correction of 2026-10-20 a card an S&P 400 night drew by the drift's provisional rule drawing the record stored while it replays that rule and none once it is replayed under the drift's frozen rule, the frozen pullback's card drawing its own |
+Why: the roster's row says what its check asserts.
+
+### 2026-10-20 - RUNBOOK.md - the record command's `--nights` form refuses a run ending past midnight UTC into a weekday's night window
+Corrects: the window the record command's start guard reads looked at a run's end by its time of day alone, so the `--nights` form, given two hours, was admitted from 21:01 to 22:59 UTC on a weekday with its end past midnight, though it would still be running at 23:00; found by 20.11's replay and put to the operator, who ruled it fixed on 2026-10-20.
+Was:
+> ... and refuses while the night holds the store or where a run started now would reach the night's window. 17.2's remedy ...
+Now:
+> ... and refuses while the night holds the store or where a run started now would reach the night's window, which opens at 23:00 UTC on a weekday, a run of its two hours ending past midnight UTC among them. 17.2's remedy ...
+Why: the window is read over every weekday's 23:00 inside the run, whatever day the run ends on.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states the record command's start guard across midnight UTC
+Corrects: as the RUNBOOK.md entry above.
+Was:
+> fixture-expectations: ... and the replay written again leaving that row standing and writing the 600 sessions before it |
+Now:
+> fixture-expectations: ... and the replay written again leaving that row standing and writing the 600 sessions before it; and from the second 17.2 correction of 2026-10-20 every weekday's 23:00 UTC inside a run read whatever day the run ends on, a run of two hours from 22:00 on a Monday refused with its end at midnight, one from a Sunday's 22:00 and one starting after a weekday's midnight admitted, a Saturday's run reaching Monday's 23:00 refused, and the record command's nights form refused at that Monday's 22:00 before it reads anything |
+Why: the roster's row says what its check asserts.
+
+### 2026-10-20 - SCHEMA.md - a night's own rule row stands in place of a replay's on its session, and a replay leaves a night's rows standing
+Corrects: from 17.2 a night run again cleared its own rule rows alone, so on a session the record command's `--nights` form had replayed it could not write its own row beside the replay's and its rule rows on the S&P 400 and 600 were not computed, as the night of 2026-10-19 run again found on 2026-10-20; and a replay writing over a session a night had written stopped the same way.
+Was:
+> rule_night: ... which is its own deleter: a night run again replaces its own rows, and a replay writes over the rule's history** (see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches).
+Now:
+> rule_night: ... (see: ...). From the 17.2 correction of 2026-10-20 a night's own row stands in place of a replay's on its session, the night deleting the replay's row of the rule on it, and a replay leaves standing every row a night wrote the rule on, writing its history around them.
+Why: a night's row and a replay's row of one rule and session cannot both stand, and the night's is the one the card reads.
+
+### 2026-10-20 - RUNBOOK.md - the record command's `--nights` form leaves a night's own rows standing
+Corrects: as the SCHEMA.md entry above.
+Was:
+> ... about two hours for the three indices, writing one row a rule and session over what an earlier replay wrote and a run log row; ...
+Now:
+> ... about two hours for the three indices, writing one row a rule and session over what an earlier replay wrote, a session a night already wrote the rule's own row on keeping that row, and a run log row, and a night run again afterwards for a session the replay reached writing its own row in the replay's place; ...
+Why: as the SCHEMA.md entry above.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states a night's rule row over a replay's session
+Corrects: as the SCHEMA.md entry above.
+Was:
+> fixture-expectations: ... the index's own book's buys read for none of them |
+Now:
+> fixture-expectations: ... the index's own book's buys read for none of them; and from the 17.2 correction of 2026-10-20 a replay of a rule's history reaching the night's own session, the night's own row standing in its place with its funnel when the night runs, and the replay written again leaving that row standing and writing the 600 sessions before it |
+Why: the roster's row says what its check asserts.
+
+### 2026-10-20 - ARCHITECTURE.html - a frozen pick's card draws its own rule's record, the setups like it under that rule and the check that rule reads
+Authorised by: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone
+Was:
+> Decision cards: ... and from 17.13 a card whose S&amp;P 500 breakout or drift stands at a change an approval stored carries the change's words in the record's place and no record, as an S&amp;P 400's or 600's does (see: An approved change reaches the S&amp;P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions)
+> ... and warns where the sector stands among the bottom places, since industry momentum carries much of a stock's own (Moskowitz and Grinblatt (1999)). The earnings line ...
+> ... Below the rules' minimum only the trades against it are drawn, and a rule not yet replayed draws a dashed outline saying so.
+> ... a part the night could not match names why in its place, and the card is written regardless (see: A pick's card draws the setups like it under its rule beneath the rule's record, and the score's rank only once the score passed on its index).
+Now:
+> Decision cards: ... (see: An approved change reaches ...); and from 20.11, for a family on the S&amp;P 400 or 600 the night read by its frozen live rule, the first line naming the floors and the rule in its registration's words, the market line the check that rule reads as the night stored it on the pick's row, the rule's record only where the stored record replays that rule, and the setups like the pick only where the ledger's history on the index was built under it and from the setups whose pass was read under it, the card saying they wait for that build otherwise (see: A frozen rule on the S&amp;P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone) (see: The setup ledger reads each S&amp;P 400 and 600 family's frozen live rule where one stands, and a card draws setups like a pick only once its history is built under that rule)
+> ... (Moskowitz and Grinblatt (1999)). From 20.11 a pick of an S&amp;P 400 or 600 family the night read by its frozen live rule states the check that rule reads as its night stored it on the pick's row, the index's own breadth against the rule's floor or the S&amp;P 500's breadth against its own, and the index's breadth as a check the rule does not read where the rule reads none (see: Each frozen rule on the S&amp;P 400 and 600 reads its market check at the level its own sweep chose). The earnings line ...
+> ... a rule not yet replayed draws a dashed outline saying so. From 20.11 a card of a family its S&amp;P 400 or 600 night read by its frozen live rule draws a record only where the stored record replayed that rule, named in the rule's own words, and the outline otherwise, never the provisional rule's record under its heading (see: A frozen rule on the S&amp;P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone).
+> ... and the card is written regardless (see: ...). From 20.11 a card of a family its S&amp;P 400 or 600 night read by its frozen live rule matches the setups like the pick only where the setup ledger's history on the index stands under that rule, and says in the part's place that they wait for the next ledger history build under the rule otherwise (see: The setup ledger reads each S&amp;P 400 and 600 family's frozen live rule where one stands, and a card draws setups like a pick only once its history is built under that rule).
+Why: the operator agreed on 2026-10-20 that a frozen rule's card draws no record or setups like it until those exist for that rule, and a card's lines name the rule the night read, the S&P 400 breakout's market check being the S&P 500's breadth.
+
+### 2026-10-20 - SCHEMA.md - the rule recorder replays each frozen rule by its sweep's own reading, and a frozen card's record and setups like it read that rule alone
+Authorised by: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone
+Was:
+> rule_record: It replays each family's live rule on the S&P 500 and its provisional rule on the S&P 400 and 600 at its one setting, and a freeze's remedy runs it again so the row follows the rule a card names. No row is deleted.
+> decision_card `record`: ... the history's first and last session and its membership; null where the rule has not been replayed
+> decision_card `similar`: ... their mean edge with its interval's two ends and the rule's own mean, or why none were matched; null for a family no learned score reaches and on a card written before 17.7
+Now:
+> rule_record: It replays each family's live rule on the S&P 500 at its one setting, and on the S&P 400 and 600 each family's frozen live rule at its own settings by its sweep's own reading, its `rule` the registration's words and its `settings` the sweep's key, or the family's provisional rule where no live rule stands; a live rule stating a part its sweep read at no level writes no row, says why on its run log row and leaves the row before it, which the card then does not draw (see: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone). A freeze's remedy runs it again so the row follows the rule a card names. No row is deleted.
+> decision_card `record`: ...; null where the rule has not been replayed, and on an S&P 400 or 600 card whose family the night read by its frozen live rule where the stored record replays another rule
+> decision_card `similar`: ..., or why none were matched, on an S&P 400 or 600 card read by its frozen live rule the wait for the ledger's history built under that rule among the reasons; null for a family no learned score reaches and on a card written before 17.7
+Why: the remedy of 20.11 replays the eight frozen rules for their cards, and a frozen card draws no record or setups another rule took.
+
+### 2026-10-20 - RUNBOOK.md - the rule recorder's replay of the frozen rules and its time, and 20.11's second remedy for their nights
+Authorised by: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone
+Was:
+> It reads the store's pulled history read-only, writes one row an index and family over what an earlier run wrote and a run log row, asks for nothing and calls no model. It refuses ...
+> ... the swing filter's variants and a variant off the grid or reading a switch start their history at their registration. It reads the store read-only but for those rows, ... 17.2's remedy runs it once after the merge, and a freeze's remedy runs it again for the index frozen.
+> **The S&P 400's and 600's freezes of 20.11** are written by one remedy, run from main after the merge and before the newest night is run again, ...
+> ... and replays the frozen rules' records for their cards; it asks the provider for nothing and calls no model. ... As any night run again for a named session, it asks for no report, no quarters and no filings and calls no model.
+Now:
+> ... asks for nothing and calls no model. From 20.11 each S&P 400 and 600 family whose frozen live rule stands is replayed at that rule's own settings by its sweep's own reading, the pullback's candidates read over the index's whole history, which took about twenty minutes for the S&P 400 and thirty for the S&P 600 on a constructed store of their size; a live rule stating a part its sweep read at no level writes no row and says why, and its card draws no record until one is written under its words (see: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone). It refuses ...
+> ... start their history at their registration. From 20.11 an S&P 400 or 600 family's frozen live rule is replayed at its own settings by its sweep's own reading and written under its name, every other rule on those indices starting its history at its registration. ... a freeze's remedy runs it again for the index frozen; 20.11's second remedy runs it for the S&P 400 and 600 after the newest night is run again, so that run ends before the open.
+> **The S&P 400's and 600's freezes of 20.11** are written by two remedies, the first run from main after the merge and before the newest night is run again, ...
+> ... and replays the frozen rules' records for their cards, about an hour in all; ... calls no model. Last, the second remedy writes the frozen rules' stretch lines, about an hour, started more than two hours before the night's window: `tools/remedy.ps1 tools/remedies/2026-10-20-20.11-the-frozen-rules-stretch-lines.txt`
+Why: the frozen rules are replayed by their sweeps' own reading, which takes longer than the provisional replay, so the stretch lines' replay runs after the newest night is run again and that run ends before the open.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states the frozen rules' replay and cards, and read-surface the rule of the day before as no trial
+Authorised by: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone
+Was:
+> fixture-expectations: ... the history build writing the same rule and passes, and a live rule stating a part the ledger reads on no session leaving its family provisional and named |
+> read-surface: ... the rule of the day before on no tab, in no paper account and named on the Run page, a frozen family ...
+Now:
+> fixture-expectations: ... leaving its family provisional and named; and a frozen rule's record its own sweep's reading of its registered settings, each trade bought at the next open after its cost at its market check's own level, ...; a frozen family's card naming its rule's gates and the check it reads, the S&P 500's breadth where it reads that, drawing a record only where the record replays the rule and the setups like it only where the ledger's history stands under the rule and from the setups passed under it alone; the forming list reading the check of the rule drawing it; and the funnel counting a level the rule reads as a part of its own after the cover |
+> read-surface: ... the rule of the day before on no tab, in no paper account, named on the Run page and no trial of its family's, a frozen family ...
+Why: each roster row says what its check asserts, and the frozen rules' replay, their cards and the rule of the day before's place in its family's level are now asserted.
+
+### 2026-10-20 - ARCHITECTURE.html - each frozen rule on the S&P 400 and 600 reads its market check at its own level, the rule of the day before kept in the background, and a retired rule's positions ended
+Authorised by: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
+Was:
+> ... and read each rule registered on an index at its own settings the same way, a drift rule naming a reading version handed its setups' releases as the S&amp;P 500's are, a family's live rule drawing its list in the provisional rule's place, each swing rule keeping its own list and trades and each heavyweights rule its own book (see: ...) (see: Each index's market check closes its own swing lists together on its own breadth) (see: ...) (see: ...);
+> ... the S&amp;P 400's and 600's swing lists close on their own breadth at the floor the live filter reads, copied from the S&amp;P 500 and never tested on either index, and beside each family's provisional rule there a variant reads no market check, so its own list shows what the check costs (see: An S&amp;P 400 or 600 swing family may carry a variant with no market check, the check standing on its provisional rule)
+> ... on the S&amp;P 400 or 600 a variant reading no market check listed after the provisional rule by its registration's words, which end on the market check off as its tab does (see: ...) (see: An S&amp;P 400 or 600 swing family may carry a variant with no market check, the check standing on its provisional rule)
+> ... and through <code>register --index-variants</code> with <code>--again</code> retires an S&amp;P 400's or 600's family's standing variants and registers them again with the ones given at one instant or none (see: An S&amp;P 400 or 600 family's variants are registered again whole to add one beside its provisional rule)
+> ... and from 20.4 an S&amp;P 400's or 600's rule is not replayed either, its row saying the same (see: An S&amp;P 400 or 600 family's variants are registered again whole to add one beside its provisional rule); ...
+Now:
+> ... and read each rule registered on an index at its own settings the same way, its list closed on the breadth and at the floor it states, ..., a drift rule stating the entry bought on its first close below the close before it within ten sessions of its reaction and one stating the revenue level reading its quarters as first filed before the session before the night, a family's live rule drawing its list in the provisional rule's place and the rule its freeze kept in the background drawing none, ..., a retired rule's open trades walked to their own exits and a retired book's holdings sold at the close of the session it was retired on (see: ...) (see: Each frozen rule on the S&amp;P 400 and 600 reads its market check at the level its own sweep chose) (see: ...) (see: ...) (see: A retired rule's open positions are ended, ...);
+> ... the S&amp;P 400's and 600's swing lists with no freeze standing close on their own breadth at the floor the live filter reads, copied from the S&amp;P 500, and from 20.11 each frozen rule closes its own list on the breadth and at the floor its search chose, ..., with a variant beside it reading its check off, or the index's strongest floor where it reads none, ... (see: Each frozen rule on the S&amp;P 400 and 600 reads its market check at the level its own sweep chose) (see: A freeze on the S&amp;P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions)
+> ... listed after the provisional rule by its registration's words, which end on the market check off as its tab does (see: ...) (see: A freeze on the S&amp;P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions)
+> ... at one instant or none, from 20.11 beside a frozen family's live rule as well, ... (see: An S&amp;P 400 or 600 family's variants are registered again whole beside its provisional rule or its frozen live rule); and from 20.11 a freeze on the S&amp;P 400 or 600 is refused only where the family's live rule stands, ... (see: ...) (see: ...)
+> ... its row saying the same (see: An S&amp;P 400 or 600 family's variants are registered again whole beside its provisional rule or its frozen live rule); ...
+Why: the operator froze each family on the S&P 400 and 600 on 2026-10-20 at its own search's answer, each swing rule's market check at its own level, with a market variant and the rule of the day before beside it, and ruled that a retired rule's positions are ended; section 11.4 gains a paragraph stating the freezes.
+
+### 2026-10-20 - ARCHITECTURE.html - a frozen card states its sweep's figures, and the line saying its sweep passed none is kept at the freeze made on that answer
+Authorised by: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
+Was:
+> ... A family's card on any index then says its sweep found no setting that passed the floors where the newest answer recorded for each of its designs says none passed, the sector heavyweights sweeping two, and no freeze of the family on that index came after it, and goes on listing its picks; the line goes with a newer answer that passes or a freeze registered after it (see: A sweep passes where a setting it read meets the floors, and a card says none passed only where every design's newest answer does).
+> ... says none passed and no freeze of the family on that index was registered after it, and nothing where none is recorded; the card lists its picks whatever the line says (see: A sweep passes where a setting it read meets the floors, and a card says none passed only where every design's newest answer does) (see: ...).
+> ... and its list is the one the night read by that rule, so its sweep's line goes from that night and not before (see: ...).
+Now:
+> ... says none passed, the sector heavyweights sweeping two, and goes on listing its picks; the line goes with a newer answer that passes or, from 20.11, with the family's next freeze after the one made on that answer, ... From 20.11 the command also records beside the answer the figures its run states for the setting it would run and, given a tester's run on the index's own history, the tester's verdict on the family, which a frozen card draws (see: A frozen card on the S&amp;P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar).
+> ... says none passed and, from 20.11, no freeze of the family on that index was registered after the one made on that answer, ... From 20.11 a frozen family's card on the S&amp;P 400 or 600 states, while its live rule is chosen, the figures of the answer its live rule's freeze followed, ... (see: A frozen card on the S&amp;P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar) (see: ...).
+> ... and its list is the one the night read by that rule; its sweep's line went from that night until 20.11, and from 20.11 it is kept at the freeze made on its answer and goes with the family's next freeze or a sweep that passes (see: ...) (see: A frozen card ...). From 20.11 a family's freezes are the instants its live rule came to name a rule other than the one standing before, ... drawn on the index's Run page among the records as the rule before the freeze, kept 63 sessions beside it, with no verdict read.
+Why: the operator ruled on 2026-10-20 that each frozen card states the figures its sweep read and that no setting beat luck or the tester's bar, and that a family frozen on a sweep that passed none keeps its line until its next freeze or a sweep that passes.
+
+### 2026-10-20 - ARCHITECTURE.html - the setup ledger and the rule recorder read each S&P 400 and 600 family's frozen live rule, the rule cards the filed facts
+Authorised by: The setup ledger reads each S&P 400 and 600 family's frozen live rule where one stands, and a card draws setups like a pick only once its history is built under that rule
+Was:
+> Setup ledger reads: ... reported quarters, companies, member readings, filed facts, insider trades, insider reads, family picks, index family picks, heavyweight nights, setups, setup nights, ledger readings; its matrix row reading no candidate register
+> Rule recorder reads: membership, bar store, calendar, gate results, ...; its matrix row reading no fundamentals; and it replays each family's live rule on the S&amp;P 500 and its provisional one on the S&amp;P 400 and 600, at its one setting ...
+> Rule cards reads: ... reported quarters, companies, release documents, ...
+> ... with the live rule's own pass and the night's pick beside it, its plan as prices, ... (see: The fundamentals-first family's setups are the pullback's whose revenue and cash clear a grid step past the widest level its search tried).
+> ... with the live rule's own pass and the night's list beside it, so what the rule chose and what it passed over sit on the same row (see: ...).
+Now:
+> Setup ledger reads: ... member readings, switch readings, market readings, filed facts, insider trades, insider reads, family picks, index family picks, index family nights, candidate register, heavyweight nights, ...; its matrix row reading the candidate register; and from 20.11 on the S&amp;P 400 and 600 a setup's live pass is its family's frozen live rule's where one stands, ... (see: The setup ledger reads each S&amp;P 400 and 600 family's frozen live rule ...)
+> Rule recorder reads: membership, bar store, calendar, companies, gate results, ...; its matrix row reading the fundamentals; and it replays ... on the S&amp;P 400 and 600 its live rule where one stands as the night reads it and its provisional one otherwise, a live rule there by its family's sweep's own reading of the index's history at the next open (see: A frozen rule on the S&amp;P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone), ...
+> Rule cards reads: ... reported quarters, companies, filed facts, release documents, ...
+> ... with the live rule's own pass and the night's pick beside it, from 20.11 on the S&amp;P 400 and 600 the pass of the family's frozen live rule where one stands, read as the night read the register, a drift's reaction set passed on the night its rule buys it, ... (see: The setup ledger reads each S&amp;P 400 and 600 family's frozen live rule ...).
+> ... sit on the same row (see: ...). From 20.11 the live rule on the S&amp;P 400 and 600 is the family's frozen rule where one stands, ... (see: The setup ledger reads ...).
+Why: the operator agreed on 2026-10-20 that the cards draw no replayed record or setups like a pick until those exist for the frozen rules, and that the remedy replays the frozen rules' records; each component's reads are declared in its rows.
+
+### 2026-10-20 - SCHEMA.md - the sweep answers' figures, the night's register instant, each frozen rule's own check, the drift's revenue read and the ledger's frozen live rule
+Authorised by: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
+Was:
+> `market_open`: 1 where the breadth stood at or above the floor the S&P 500's filter reads, 0 otherwise, which closes every swing family's list of the index that night
+> `settings`: JSON: each family's rule as the night read it, ..., the fundamentals-first family's setting with its words and its cap among them
+> sweep_answer's columns ending at `recorded_at`; ... A family's card draws its one line, ..., where the newest answer recorded for each of the family's designs on its index says none passed and no live rule of the family was registered after the newest of them.
+> setup `rule`: ... so the ledger keeps one measure across every session it holds; `live_pass`: 1 where that setting passes the member-session as the sweep replays it, the market check included, 0 where it does not
+> ... and the step closes a window of a row the night wrote by updating it once its path ended or its benchmark settled, a history row settled by the build alone ...
+> setup_night: ... An index the night held no member of on the session has no row.
+Now:
+> `market_open`: ..., which closes the list of every swing family of the index with no freeze standing that night; from 20.11 a registered rule closes its own list on the breadth and at the floor it states (see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose)
+> `settings`: ..., and from 20.11 `registerAt`, the UTC instant the night read the register as of, which the pages read the rules standing at (see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read)
+> sweep_answer gains, from migration 102, `setting`, `trades`, `edge`, `year_edges`, `without_largest`, `settings_read`, `meeting`, `luck`, `tester_run`, `adjusted` and `tester_passed`; ... From 20.11 it reads beside the answer the figures the run states ... and, from 20.11, no live rule of the family was registered after the freeze made on the newest of them, and a frozen card on the S&P 400 or 600 draws the figures of the answer its live rule's freeze followed, the newest recorded at or before it.
+> filed_fact: ..., and from 20.11 each quarter's revenue among them as first filed before the session before the night for a drift rule stating the revenue level, through its filer's newest company row (see: A drift's revenue level on the S&P 400 and 600 reads a quarter only once its filing is stored, on the night and in its sweep alike).
+> setup `rule`: ...; from 20.11 on the S&P 400 and 600 the words of the family's frozen live rule where one stands ... (see: The setup ledger reads ...); `live_pass`: ...; from 20.11 under a frozen live rule 1 where the rule passes it as the night reads it, ..., and on a drift's row, anchored on its reaction's session, 1 where the rule buys that reaction on a session within its reach, set by the night that buys it
+> ... and from 20.11 sets a drift's row an earlier night wrote under a frozen live rule to passed on the night that rule buys its reaction, never setting one back and never touching a history row, ...
+> setup_night: ... From 20.11 an earlier session's row is written again, by deleting it and inserting it, with its live passes counted on the night a frozen drift buys one of its setups.
+Why: migration 102 adds the sweep answers' figures a frozen card draws, the night records the instant it read the register, and the index families and the setup ledger read each family's frozen live rule.
+
+### 2026-10-20 - RUNBOOK.md - the 20.11 freezes, their remedy and the newest night run again, the sweep answer's tester, and the forms beside a frozen live rule
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, business first alone left on the pullback's base
+Was:
+> ... and the line goes with the family's next sweep that passes, recorded the same way, or its next freeze. ...
+> It is refused whole where a value is one its sweep did not read, naming it, where more than eight variants are given, where a variant states a rule given before it, where the family already stands on the index, and for a family or an index no rule is carried for. ... no replay of an index rule is built, so its record counts from that registration.
+> ... and where any rule of the family stands on the index, a freeze then being the form once those rules are retired. ...
+> **A swing rule reading no market check** states the breadth's third value, `largeBreadth=2`, beside the index's own breadth at 0 and the S&P 500's at 1, the one value either form admits that no sweep read; ... (see: An S&P 400 or 600 swing family may carry a variant with no market check, the check standing on its provisional rule). The six variants of 19.1 ... are registered from main after the merge ...
+> **A family's variants registered again on the S&P 400 or 600**, from 20.4, is how a variant joins those standing beside the provisional rule: ... (see: An S&P 400 or 600 family's variants are registered again whole to add one beside its provisional rule). ... where no rule of the family stands, where the family's live rule stands, and wherever the form without `--again` refuses. ... `--variants "largeBreadth=2;readingVersion=3"` ... and the same with `--index SML`.
+> ... the share the live rule passes and the night's list picked, and the deciles of result and edge, with a chosen setup's path drawn from the bar store and the kept bars.
+Now:
+> ... or, from 20.11, the family's next freeze after the one made on that answer, ... (see: A frozen card ...). ... From 20.11 the command also records the figures the run states ... given `--tester` ...: `sweep-answer --run 20261020T053729Z --tester 20261020T062626Z` ...
+> It is refused whole where ..., where a variant states a rule given before it or a rule already standing, where the family's live rule stands on the index, naming it, ...; from 20.11 variants standing before the freeze stand on beside its rules ... `breadthFloor` ... `entry` ... `revenueGrew` ... "the background" ... the register's replay does not read an index rule, so its record counts from that registration, and the card's record is replayed by `rule-record`.
+> ... a freeze then being the form, which keeps them standing beside its own rules. ...
+> **A swing rule reading no market check** ..., from 20.11 with `breadthFloor=0`, the level each index's own search reads as its check off; ... (see: A freeze on the S&P 400 or 600 registers a market variant ...). The six variants of 19.1 ... were registered ..., and 20.11's remedy retires them as it freezes the families:
+> **A family's variants registered again on the S&P 400 or 600**, from 20.4, ..., and from 20.11 beside a frozen family's live rule: ... (see: An S&P 400 or 600 family's variants are registered again whole beside its provisional rule or its frozen live rule). ... `--variants "largeBreadth=2,breadthFloor=0;readingVersion=3"` ... and on the S&P 600 with `--index SML --variants "largeBreadth=0,breadthFloor=0.4;readingVersion=3"`.
+> ... drawn from the bar store and the kept bars. From 20.11 a build on the S&P 400 or 600 reads each family's frozen live rule standing when it runs, ...
+> and a new paragraph, **The S&P 400's and 600's freezes of 20.11**, naming the remedy `tools/remedies/2026-10-20-20.11-the-index-freezes.txt` and `tools/nightly.ps1 --session 2026-10-20 --register-now`.
+Why: the operator's rulings and answers of 2026-10-20 freeze the eight families through one remedy after the merge and run the newest night again; the runbook states the forms, the remedy and the run as they now stand.
+
+### 2026-10-20 - BUILD_PLAN.md - 20.11 amends its own done condition for the freezes the operator ruled
+Authorised by: The S&P 400's and 600's families freeze at the settings their own sweeps would run, business first alone left on the pullback's base
+Was:
+> ... no S&P 400 or 600 rule's code version moves before the operator's word, asserted; and, the word given, the night reads each index's own provisional rules, the remedy registers the rules moved again, and a constructed S&P 400 night with its market check closed stores every gate's answer for every member, worked by hand, with one mutation of it shown red, the rule stated before the run.
+Now:
+> ... no S&P 400 or 600 rule's code version moves before the operator's word, asserted; a constructed S&P 400 night with its market check closed stores every gate's answer for every member, worked by hand; and, the word given, the remedy's lines register the eight freezes over a register shaped as the operator's, each frozen rule's market check is worked by hand at its own floor on both sides, the S&P 400 drift's first pullback and the S&P 600 drift's revenue read as first filed before the night are each worked by hand, the rule of the day before is retired on the night reaching the block after its freeze and not the night before, a retired book's holding is sold at the close of the session it was retired on and a retired swing rule's open trade walked to its stop, each worked by hand, and the sweep answer's figures and the tester's verdict are recorded from constructed runs; with one mutation of these shown red, the rule stated before the run.
+> and a paragraph stating the operator's word of 2026-10-20.
+Why: the operator's word came as freezes rather than provisional rules, with the parts named above, and the checkpoint says what it is done when against the word given.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations and read-surface state 20.11's freezes and the corrections of 2026-10-20, and the line kept at its freeze
+Authorised by: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
+Was:
+> fixture-expectations: ... a card's line is drawn where every design's newest answer says none passed and no freeze came after it, worked by hand over designs, newer runs and a freeze at the answer's instant and a second before it ... and a night stored before the parts read as reading none |
+> read-surface: ... and an S&P 500 card's line goes with a freeze registered after its answer and is drawn for an answer recorded after the freeze, ... its sweep's line gone from that night and not before and drawn again for an answer recorded after the freeze, ... its sweeps' line gone from that night and not before, ... and its Universe's chip keeping the four |
+Now:
+> fixture-expectations: ... a card's line is drawn where every design's newest answer says none passed, from 20.11 kept at the freeze made on that answer and gone with the next freeze or a newer answer that passes, ... and a night stored before the parts read as reading none; and from 20.11's freezes ...; and from the 15.1 correction of 2026-10-20 ...; and from the 17.1 correction of 2026-10-20 ...; and from 20.11 a family's freezes ...; and the setup ledger reading each S&P 400 and 600 family's frozen live rule ... |
+> read-surface: ... and an S&P 500 card's line is kept from 20.11 at the freeze made on its answer, goes with the next freeze and is drawn for an answer recorded after it, ... its sweep's line kept from 20.11 at the freeze made on its answer, ... its sweeps' line kept from 20.11 at the freeze made on both designs' answers, ... and its Universe's chip keeping the four; and from 20.11's freezes a frozen card on the S&P 400 or 600 drawing beside its kept line ... |
+Why: each roster row says what its check asserts, and 20.11's tests and the two corrections extend both while the line's tests now hold it at its freeze.
+
+### 2026-10-20 - ARCHITECTURE.html - the S&P 400's and 600's heavyweights read by a frozen live rule have their cards, report requests and taken trades read off that rule's own book
+Corrects: from 15.5's second pull request the night's cards, its report requests and the taken trades' follower read the S&P 400's and 600's own heavyweights book whatever rule the page drew the family by, so a frozen live rule's buys would get no card and no report and the index's own book's would, labelled with the live rule's words; found by the 20.11 replay's own reading on 2026-10-20 before any heavyweights freeze stood on the operator's store.
+Was:
+> Decision cards reads: ... index heavyweight holdings, rule records, ...; ... (see: An approved change reaches the S&amp;P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions)
+> Decision cards matrix row: no candidate register
+> Taken follower reads: membership, bar store, heavyweight holdings, index heavyweight holdings, decision cards, taken trades; ... (see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then)
+> Request drain reads: family nights, family picks, gate results, fundamental readings, heavyweight holdings, index family picks, index heavyweight holdings, research requests, run log; ... It writes no research itself (see: ...)
+Now:
+> Decision cards reads: ... index heavyweight holdings, index heavyweight rule holdings, candidate register, rule records, ...; ... (see: An approved change reaches ...); and from the 15.5 correction of 2026-10-20, on the S&amp;P 400 or 600 a sector heavyweights family the night read by its frozen live rule writes the cards of that rule's own book's buys, each sized over the rule's own leaders in each sector, and none of the index's own book's (see: A rule of the S&amp;P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step)
+> Decision cards matrix row: reading the candidate register
+> Taken follower reads: ..., index heavyweight holdings, index heavyweight rule holdings, index family nights, decision cards, taken trades; ... (see: ...); and from the 15.5 correction of 2026-10-20 a sector heavyweight taken on the S&amp;P 400 or 600 ends at its sale by the book its card's night drew, a frozen live rule's own where the night read the family by one (see: A rule of the S&amp;P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step)
+> Request drain reads: ..., index family picks, index family nights, index heavyweight holdings, index heavyweight rule holdings, research requests, run log; ... It writes no research itself (see: ...). From the 15.5 correction of 2026-10-20 an S&amp;P 400's or 600's sector heavyweights read by a frozen live rule on the night are asked for by that rule's own book's buys, as its page draws them, and not by the index's own book's (see: ...)
+Why: the read surface draws a frozen live rule's own book from 15.5's second pull request, and every other reader of the book the page draws now reads the same one.
+
+### 2026-10-20 - SCHEMA.md - a frozen heavyweights rule's book is the one the night's cards, report requests and taken trades read
+Corrects: as the ARCHITECTURE.html entry above.
+Was:
+> index_heavyweight_rule_holding: ... The rows are never deleted otherwise: a rule's record on the index's Run page is its holdings.
+Now:
+> index_heavyweight_rule_holding: ... a rule's record on the index's Run page is its holdings. From the 15.5 correction of 2026-10-20, on a night that read the family by a frozen live rule, the night's cards, its report requests and the taken trades' follower read that rule's buys and sales here, as its page draws them, in the index's own book's place.
+Why: as the ARCHITECTURE.html entry above.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations states the frozen heavyweights' cards, report requests and taken trades
+Corrects: as the ARCHITECTURE.html entry above.
+Was:
+> fixture-expectations: ... and a night stored before the parts read as reading none |
+Now:
+> fixture-expectations: ... and from the 15.5 correction of 2026-10-20 an S&P 600 night that read its sector heavyweights by a frozen live rule writing its cards for that rule's own book's buys sized over its own leaders, asking for their reports and following a taken one to that book's sale, worked by hand over one constructed night, the index's own book's buys read for none of them |
+Why: the roster's row says what its check asserts.
+
+### 2026-10-20 - RUNBOOK.md - each search on an index's own history states the setting its family would run, and the tester's pullback run takes about an hour
+Corrects: the paragraph named no setting a search would run, which every search on an index's own history states on its last line and in its report since 5d9ed7e3, and gave the tester's pullback run about three hours an index where its runs on 2026-10-20 took 57 and 72 minutes side by side; found writing 20.11's run entries.
+Was:
+> ... the searches state their answer as every search does, and the market check and the tester's runs state none. On this machine the market check takes about fifteen minutes an index, each swing search a few, the pullback's search about half an hour and the tester's pullback run about three hours an index.
+Now:
+> ... the searches state their answer as every search does and, on their last line and in their report, the setting their family would run, the best edge after costs among the settings that pass or, where none passes, the highest edge among the settings holding the trade floor (see: ...), and the market check and the tester's runs state none. On this machine the market check takes about fifteen minutes an index, each swing search a few, the pullback's search about half an hour and the tester's pullback run about an hour an index.
+Why: the runbook states what each run shows and how long it takes.
+
+### 2026-10-20 - BUILD_PLAN.md - 20.11's section names the pulled history and the pullback's base in words that are not their subjects
+Corrects: 20.11's section, added by its ruling, named "the pulled history" and "pullback base" as whole words, so the plan read 20.11 as the checkpoint owing both subjects where they were built at 12.2 and 13.9, and `architecture-conformance` failed on the due points written for them; found running it over the branch before item 5's commit.
+Was:
+> ... over the pulled history on membership as it stood and after costs, ... the date the pulled history holds, which is the date as it happened ... The fundamentals-first family keeps buying at its own index's pullback base and follows the pullback's setting.
+Now:
+> ... over the history pulled for the years before the store's on membership as it stood and after costs, ... the date the history pulled holds, which is the date as it happened ... The fundamentals-first family keeps buying at its own index's pullback's base and follows the pullback's setting.
+Why: 20.11 reads both and builds neither, so its section names them without claiming them.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations and read-surface state 20.11's tests
+Authorised by: Each family on the S&P 400 and 600 is swept again on its own history at the next open, the market check a dial of each swing grid
+Was:
+> fixture-expectations: ... and from the 17.4 correction of 2026-10-20 the run on all finished data learning on every year the history holds, its floors and the S&P 400 drift's last two years read over all eight |
+> read-surface: ... and from the 18.3 correction of 2026-10-20 an actual stored at one place drawn to two |
+Now:
+> fixture-expectations: ... read over all eight; and from 20.11 the market check's seven levels worked by hand at each edge, ... each of the research's dials worked by hand at its edge, ... a level kept by the second stage's own rule over eight years and in proportion over a fold's fewer, ... a fold's pullback walk tallying only the trades ended before its year, ... a holding and its size cut bought at the open after the rebalance, ...; and an S&P 400 or 600 night with its market check closed storing every part of every member's rule with its answer, worked by hand over a constructed night: ... and a night stored before the parts read as reading none |
+> read-surface: ... an actual stored at one place drawn to two; and from 20.11 the S&P 400's Tonight over a constructed night with its market check closed drawing in its card of the stocks one gate short, on its market line and in the breakout's own expander the four stocks the check alone keeps off, ... and its Universe's chip keeping the four |
+Why: each roster row says what its check asserts, and 20.11's tests, item 5's among them (see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own), extend fixture-expectations' and read-surface's.
+
+### 2026-10-20 - ARCHITECTURE.html - the S&P 400's and 600's nights store every part's answer, and their one gate short card and chip read them
+Authorised by: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
+Was:
+> <td><b>Index families</b></td> ... stores every member's answer under each family whether it passed or not, draws each index's list by the S&amp;P 500's own rule, ...
+> <td>Tonight's stocks one gate short</td> ... A night before the newest draws no press and no link to Universe. An index whose night stores only the first part each member failed says in the card's line that it reads no stock as one gate short. Each family's card ...
+> <td>One gate short</td> ... with the gate it missed; the S&amp;P 400's and 600's tables say they cannot read it, since their nights store only the first part each member failed</td>
+Now:
+> <td><b>Index families</b></td> ... stores every member's answer under each family whether it passed or not, from 20.11 with every part of its rule and that part's answer, the market check its own and the setup read with the check open (see: The S&amp;P 400's and 600's nights store every part's answer for every member, the market check its own), draws each index's list by the S&amp;P 500's own rule, ...
+> <td>Tonight's stocks one gate short</td> ... A night before the newest draws no press and no link to Universe. From 20.11 the S&amp;P 400's and 600's nights store every part's answer for every member, and on those indices the card reads each member a family stored as passing its setup read with the market check open and failing exactly one other part, the market check among them, with that part's words, no press and no link to Universe, since the watch list holds the S&amp;P 500's names alone (see: ...); a night stored before them, storing only the first part each member failed, says in the card's line that it reads no stock as one gate short. Each family's card ...
+> <td>One gate short</td> ... with the gate it missed; from 20.11 on the S&amp;P 400 and 600 a member their night stored as passing a setup read with the market check open and failing exactly one other part, the first such setup in the one family order taken, and a table over a night stored before 20.11 says it cannot read it, since that night stores only the first part each member failed (see: ...)</td>
+Why: item 5 of the operator's addendum to 20.11 stores every part's answer on the S&P 400's and 600's nights so the one gate short list reads them on those pages; the catalogue and the two rows state what the night stores and what the pages read.
+
+### 2026-10-20 - ARCHITECTURE.html - the sweep history reads the companies' analyst counts, in its catalogue row and its matrix row
+Authorised by: Each family on the S&P 400 and 600 is swept again on its own history at the next open, the market check a dial of each swing grid
+Was:
+> <td><b>Sweep history</b></td> ... pulled snapshots, pulled holdings, calendar, gate results, heavyweight nights</td><td>none</td> ... matched by ISIN and then by name); the sweep computes over what it read outside the store, ...
+> <tr><td>Sweep history</td> ... six R cells ... <td></td><td></td><td></td><td></td> ... the Fundamentals cell blank ...
+Now:
+> <td><b>Sweep history</b></td> ... pulled snapshots, pulled holdings, calendar, gate results, heavyweight nights, companies</td><td>none</td> ... matched by ISIN and then by name); and from 20.11 each company's analysts as each fetch stored their counts with the day it fetched them, which the drift's sweep on an index's own history reads only from the session after a count was stored (see: Analyst coverage is stored from each fetch and waits for dated counts before any rule tests it); the sweep computes over what it read outside the store, ...
+> <tr><td>Sweep history</td> ... six R cells ... <td></td><td></td><td><span class="r">R</span></td> ... the Fundamentals cell R ...
+Why: the drift's dial of fewer analysts reads each company's counts as each fetch stored them, so the sweep history declares the read and the catalogue and the matrix state it.
+
+### 2026-10-20 - RUNBOOK.md - the history read runs with no daily stop and is stopped by hand for a merge
+Corrects: the paragraph started the history read with `--until 07:00` and had it stop each morning in New York for the day's merges, which is not how it runs since the operator asked at about 00:02 UTC on 2026-10-20 that the daily stop be removed, the read already keeping clear of the slots and the night by itself; found reading the runbook against the read restarted with no `--until`, and on the operator's word of 2026-10-20 that it may be paused while another run needs the machine.
+Was:
+> dotnet run --project src/EquityBrief.Worker -- releases --read --history --until 07:00
+> ... Started after the morning's merges with `--until 07:00`, it reads through the day and the night, keeping clear of the slots and the night by itself, and stops at 07:00 in New York the next morning for the day's merges. Pin 2's read ...
+Now:
+> dotnet run --project src/EquityBrief.Worker -- releases --read --history
+> ... It is started with no `--until` and reads through the day and the night, keeping clear of the slots and the night by itself; for a merge, or where another run needs the machine's memory, it is stopped by hand, the model unloaded, and started again afterwards from a clean copy of `main`'s commit with the card's limit read back first, going on from the release it stopped at. Pin 2's read ...
+Why: `--until` still stops the read cleanly where it is given; the runbook states how the read is run.
+
+### 2026-10-20 - .claude/rules/checks.md - fixture-expectations and read-surface state the corrections of 2026-10-20
+Corrects: five defects in built work, found by phase 18's sign-off review and by 20.11's own runs over the live store, each recorded as a correction in PROGRESS.md: the event book's one-price band and a two-place price of a thousand or more without their thousands marked (4.7), a rule's stored words drawn past the places they are read at and the quote line's unanswered asks (18.1), an actual at one place (18.3), the S&P 400's and 600's pullback searches reading the S&P 500 filter's live setting as their provisional base (15.4), and the run on all finished data learning on one year fewer (17.4).
+Was:
+> fixture-expectations: ... and from the 18.4 correction of 2026-10-19 results on the calendar's ninetieth day drawn |
+> read-surface: ... and from the second 16.1 correction of 2026-10-19 a card's tick drawn in the green a gain is drawn in on its fill, its note in grey and its warning in the caution's amber |
+Now:
+> fixture-expectations: ... and from the 18.4 correction of 2026-10-19 results on the calendar's ninetieth day drawn; and from the 15.4 correction of 2026-10-20 every pullback search on the S&P 400 and 600 reading the base its night reads as its provisional setting, on the widened grid and on 20.11's own; and from the 17.4 correction of 2026-10-20 the run on all finished data learning on every year the history holds, its floors and the S&P 400 drift's last two years read over all eight |
+> read-surface: ... its warning in the caution's amber; and from the 4.7 correction of 2026-10-20 a band of one price at a thousand or more named at that price with its thousands marked, and a sentence's two-place price of a thousand or more read with its thousands marked; and from the 18.1 correction of 2026-10-20 a rule's stored words on a pick's card, the name page's gates and the lines saying why the filter passed a name reading their figures at the places they are read at, a pass's stored reasons taking their counts in words, and the Run page's quote line naming each ask no run answered and a second ask of one name; and from the 18.3 correction of 2026-10-20 an actual stored at one place drawn to two |
+Why: each roster row says what its check asserts, and the five corrections' tests extend fixture-expectations' and read-surface's.
+
+### 2026-10-20 - BUILD_PLAN.md - 20.8 takes migration 103 and 20.11 is added after 20.10
+Authorised by: the operator's ruling of 2026-10-19 and their answer of 2026-10-20 on the migration's number, recorded as the 20.11 ruling "the S&P 400's and 600's rules chosen on their own history: the market check swept, every family swept again at the next open with the research's dials, every gate's answer stored, and nothing switched before the operator's word" in PROGRESS.md
+Was:
+> readable on a setup's session and accepted within the 95 days before it, none otherwise, read as it stood. Migration 102 adds their columns to the setups' table, copying every row, and creates the usefulness store,
+Now:
+> readable on a setup's session and accepted within the 95 days before it, none otherwise, read as it stood. Migration 103, 20.11 taking 102 on the operator's answer of 2026-10-20, adds their columns to the setups' table, copying every row, and creates the usefulness store,
+Why: 20.11's column on the S&P 400's and 600's results takes migration 102 and merges first, and the migrator applies only migrations above the store's version, so 20.8's open pull request moves to 103 once 20.11 merges. 20.11's own section is added after 20.10, deleting no line.
+
+### 2026-10-19 - .claude/rules/checks.md - read-surface states the session read in UTC and the card's coloured marks
+Corrects: the read surface wrote a session's open and close, instants at New York's offset, with a Z after New York's clock time, so the masthead and the Run page saw no quote or ask after noon in New York; found reading the Run page of 2026-10-13 back on 5152 after PR 511 merged, one ask of the session's five. And the operator asked for the card's marks in colour.
+Was:
+> read-surface: ... and from the 18.3 correction of 2026-10-19 each report's estimate and actual drawn to two places with the stored figure whole on its element |
+Now:
+> read-surface: ... with the stored figure whole on its element; and from the second 18.1 correction of 2026-10-19 the masthead's newest quote and the Run page's asks and quotes read between the session's own open and close, instants at New York's offset written in UTC, a quote and an ask after noon in New York among them; and from the second 16.1 correction of 2026-10-19 a card's tick drawn in the green a gain is drawn in on its fill, its note in grey and its warning in the caution's amber |
+Why: each roster row says what its check asserts, and the two corrections' tests extend read-surface's.
+
+### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the local run's guard of LM Studio's saved structured output
+Authorised by: The local run refuses to start where LM Studio's saved structured output for the model differs from the one its history read started under
+Was:
+> fixture-expectations: ... waiting to write while the night holds its lock, and a slot giving up on the local lock past its last instant; and from 20.2 the current filings feed, ...
+Now:
+> fixture-expectations: ... and a slot giving up on the local lock past its last instant; and from the 20.1 correction of 2026-10-19 a slot over saved model settings of the suite's own refused before anything is asked where LM Studio's saved structured output reads otherwise than the one its profile states the history read started under, in its words, ... and a profile stating none holding them to nothing; and from 20.2 the current filings feed, ...
+Why: each roster row says what its check asserts, and the correction's test extends fixture-expectations'.
+
+### 2026-10-19 - BUILD_PLAN.md - 20.1's profile carries the structured output the history read started under, and its done condition the guard
+Authorised by: The local run refuses to start where LM Studio's saved structured output for the model differs from the one its history read started under
+Was:
+> ... and the model's cutoff, read wherever a figure is split before and after it. The Run page gains ...
+> ... each named on the run's row; a model not loaded ...
+Now:
+> ... and the model's cutoff, read wherever a figure is split before and after it; from the operator's ruling of 2026-10-19 it gains as well the structured output LM Studio's saved settings for the model held when the history read started, json for pin 3's, which every run holds LM Studio's saved setting to before it reads anything, refusing where they differ and naming a setting it cannot read with the one the read started under, a guard beside the pin that moves no reading version. The Run page gains ...
+> ... each named on the run's row; from the 20.1 correction of 2026-10-19 a run refuses where LM Studio's saved structured output differs from the profile's, worked by hand over saved settings of the suite's own, and says so where they cannot be read; a model not loaded ...
+Why: the operator's ruling of 2026-10-19 has the local run guard LM Studio's saved structured output.
+
+### 2026-10-19 - RUNBOOK.md - the local profile's fourth setting and what a run refused by it asks
+Authorised by: The local run refuses to start where LM Studio's saved structured output for the model differs from the one its history read started under
+Was:
+> The local profile carries three settings for it, ... and `KnowledgeCutoff`, the model's cutoff from its maker's card as a date, 2025-01-31 for Gemma 4, which every figure split before and after the cutoff reads.
+Now:
+> The local profile carries three settings for it, ... which every figure split before and after the cutoff reads. From the 20.1 correction of 2026-10-19 it carries a fourth, `StructuredOutput`, `json`: ... set it back in LM Studio's settings for the model, or write a new pin with this setting changed beside it, before the next run. A run that cannot read the file says so on its row with the setting the read started under and goes on.
+Why: the operator's ruling of 2026-10-19 has the local run guard LM Studio's saved structured output, and the runbook says what a run it refuses asks of the operator.
+
+### 2026-10-19 - SCHEMA.md - the local run's row names what its guard read
+Authorised by: The local run refuses to start where LM Studio's saved structured output for the model differs from the one its history read started under
+Was:
+> ... and for the twice-read how many releases it compared and how many were answered alike. A slot whose fetch the SEC refused comes to `fetch refused` with the refusal as why.
+Now:
+> ... and for the twice-read how many releases it compared and how many were answered alike; and from the 20.1 correction of 2026-10-19, on a run whose profile states the structured output the history read started under, `structuredOutput`, ... A slot whose fetch the SEC refused comes to `fetch refused` with the refusal as why, and from that correction a run the guard refused comes to `setting differs` naming both settings (see: ...).
+Why: the operator's ruling of 2026-10-19 has the run say on its row what the guard read.
+
+### 2026-10-19 - ARCHITECTURE.html - the local run guards LM Studio's saved structured output, in 12's account and section 18's row
+Authorised by: The local run refuses to start where LM Studio's saved structured output for the model differs from the one its history read started under
+Was:
+> ... since the runtime answers a request naming a model it does not hold with whatever model it has loaded. A new pin is written by hand, ...
+> ... storing no reading under the pin, its row naming the part that differs (see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin)
+Now:
+> ... with whatever model it has loaded. From the 20.1 correction of 2026-10-19, before that, a run holds the structured output LM Studio's saved settings for the model hold, which LM Studio applies to every request, to the one its profile states the history read started under: ... (see: ...). A new pin is written by hand, ...
+> ... its row naming the part that differs (see: ...); from the 20.1 correction of 2026-10-19 the run refuses as well before it asks anything where LM Studio's saved structured output for the model differs from the one its profile states the history read started under, its outcome `setting differs` (see: ...)
+Why: the operator's ruling of 2026-10-19 has the local run guard LM Studio's saved structured output, a guard beside the pin.
+
+### 2026-10-19 - .claude/rules/checks.md - fixture-expectations and read-surface state the corrections of phase 18's review of 2026-10-19
+Corrects: phase 18's quote never reached the provider, the Run page counted no ask it was asked, five of the phase 18 handoff's thirteen mutations survived on edges no test reached, and the pages drew a verdict's word for its mark, a stored count's "(s)", keys naming indigo and plum, a band of one price as a range, the catalogue's column names and axes at odd values, found by the review of 2026-10-19.
+Was:
+> fixture-expectations: ... the monthly run's steps built in the order their names state, each index's ideas after its readings' step and before its tester |
+> read-surface: ... and one naming no change drawing none, read back off the rendered page over a constructed store |
+Now:
+> fixture-expectations: ... each index's ideas after its readings' step and before its tester; and from the 18.1 correction of 2026-10-19 the quote feed built at the provider's own address where the settings name none, ... and from the 18.4 correction of 2026-10-19 results on the calendar's ninetieth day drawn |
+> read-surface: ... read back off the rendered page over a constructed store; and from the 18.1 correction of 2026-10-19 the Run page's quote line counting the asks the name pages wrote beside the quotes stored ... and from the 18.3 correction of 2026-10-19 each report's estimate and actual drawn to two places with the stored figure whole on its element |
+Why: each roster row says what its check asserts, and the corrections' tests extend both.
+
+### 2026-10-19 - BUILD_PLAN.md - the quote's operating row counts its five sessions from the 18.1 correction of 2026-10-19
+Corrects: every quote a name page asked from 18.1's merge to 2026-10-19 ended the worker before it wrote a row, so no session the trigger counted asked the provider for a quote, found by the review of 2026-10-19 reading the quote requests and Windows' application log.
+Was:
+> 5 sessions after 18.1 merges, read on the run page's row for the quote runs, which 18.1 builds.
+Now:
+> 5 sessions after the 18.1 correction of 2026-10-19 merges, the first under which a quote asks the provider at all, read on the run page's row for the quote runs, which 18.1 builds.
+Why: the cap is settled against sessions that asked quotes, and none before the correction did.
+
+### 2026-10-19 - ARCHITECTURE.html - the Run page's quote runs name each ask no run answered
+Corrects: the Run page said no delayed quote was asked on 2026-10-13, over five asks the name pages wrote that the quote job never answered, since it counted the quotes stored as the asks; found by the review of 2026-10-19.
+Was:
+> beneath the news labeller's line for the night's session: how many delayed quotes the name pages asked for against the day's cap and how long after its own time each was asked by the median and the longest; the runs by what each came to; a session that asked none saying so (see: ...)
+Now:
+> beneath the news labeller's line for the night's session: how many delayed quotes the name pages asked for against the day's cap and how long after its own time each was asked by the median and the longest; the runs by what each came to; a session that asked none saying so; from the 18.1 correction of 2026-10-19 the quotes stored beside the asks, and each ask no run of the quote job answered named with its instant (see: ...)
+Why: an ask the job never answered is a quote the page never drew, and the line is where the operator reads it.
+
+### 2026-10-19 - RUNBOOK.md - the read surface started again after a merge carrying a migration only once the store holds it
+Corrects: on 2026-10-19 the read surface was started again from main after PRs 506 and 507 merged and drew blank screens, the store still at schema 100 while main read 101, found as it happened; the step after a merge said to start the page again and not that a migration the merge carries comes first.
+Was:
+> **It runs from a Release build of `main`.** ... After a merge the checkout is back on `main`, and the page is stopped and started again the same way to serve what merged.
+Now:
+> **It runs from a Release build of `main`.** ... After a merge the checkout is back on `main`, and the page is stopped and started again the same way to serve what merged. Where the merge carries a migration, the page is started again only once the store holds it: `tools/migrate` applies it while nothing writes, the history read stopped for it and started again after, since a page whose checkout reads a newer schema than the store's draws nothing.
+Why: the operator's ruling of 2026-10-19 amends the merge steps so the page is never started over a store behind its checkout.
+
 ### 2026-10-19 - .claude/rules/checks.md - fixture-expectations and read-surface state the 20.8 correction's hold on the put
 Authorised by: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
 Was:
@@ -107,6 +1743,30 @@ Now:
 > ... its tickers and their exchange forms become [ticker]; from the 20.3 correction of 2026-10-19 a short form the release defines for the filer, in quotation marks or a bracket straight after its name or its ticker or standing straight before a bracket holding its name, and the filer's initials in capitals become [company] wherever they recur, none the common words hold, so "the Company" stays; its people, the insiders its Forms 4 name ...
 > The date and quarter patterns run first, and a name's first word or a surname replaced on its own keeps its case, a word with a capital after its first letter, as nVent, read in that exact case; from the 20.3 correction of 2026-10-19 it is replaced where it opens a sentence or a list's item as anywhere else unless the common-word list holds it, or there alone one of the ordinary words an insider's surname may be, so a common word that is not the name stays, while a ticker goes wherever it stands.
 Why: the operator amended the anonymiser's decision on 2026-10-19, which the corpus writes as a new decision superseding the old, and a spec cites none that is superseded.
+
+### 2026-10-19 - .claude/rules/checks.md - fixture-expectations states the recorder asking the native endpoint
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> fixture-expectations: ... and the recorder keeping each answer as sent and answering a request asked again from its first recording; and from 20.9 ...
+Now:
+> fixture-expectations: ... and the recorder keeping each answer as sent and answering a request asked again from its first recording, from the 20.6 correction of 2026-10-19 asking LM Studio's native chat endpoint and never the OpenAI-compatible one; and from 20.9 ...
+Why: each roster row says what its check asserts, and the correction's test extends the recorder's.
+
+### 2026-10-19 - RUNBOOK.md - the comparison's local side recorded through the native endpoint, with each refused section's reason
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> ... The test then asks the model live for every section of the fixture's pass in the local lane, about a minute, writes each answer into the folder under its request's key, answers a request asked again from its first answer, and writes what each section came to into `equitybrief-local-comparison.txt` in the machine's temporary folder, ...
+Now:
+> ... The test then asks the model live, through LM Studio's native chat endpoint from the operator's ruling of 2026-10-19, for every section of the fixture's pass in the local lane, about a minute, writes each answer into the folder under its request's key, answers a request asked again from its first answer, and writes what each section came to, with the checker's reason for each it left out, into `equitybrief-local-comparison.txt` in the machine's temporary folder, ...
+Why: the operator's ruling of 2026-10-19 has the local side recorded again through the native endpoint, and the expectation holds each refused section's reason, which the recording now writes.
+
+### 2026-10-19 - BUILD_PLAN.md - 20.6's recording through the native endpoint
+Authorised by: A comparison of the local model against stored paid work writes no store row and switches nothing
+Was:
+> ... which the same test records anew by hand with a variable set while the history read is stopped, a request asked again in one recording answered from its first recording as the replay answers it, ...
+Now:
+> ... which the same test records anew by hand with a variable set while the history read is stopped, from the operator's ruling of 2026-10-19 through LM Studio's native chat endpoint, a request asked again in one recording answered from its first recording as the replay answers it, ...
+Why: the operator's ruling of 2026-10-19 has the local side recorded again through the native endpoint.
 
 ### 2026-10-19 - ARCHITECTURE.html - the release readings join the ledger's catalogue, and what each answer came to
 Authorised by: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff

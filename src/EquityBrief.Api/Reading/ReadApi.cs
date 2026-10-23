@@ -591,8 +591,10 @@ public sealed record FamilyPickRow(
 public sealed record IndexNightRow(string Index, DateOnly Session, int Members, double? Breadth, bool MarketOpen, string Settings, bool Rebalanced, string? Fault = null);
 
 // One member's answer under one of an index's families on a night: whether the family's provisional rule passed it,
-// its place among those it passed and its trade, or the first part of the rule it failed.
-public sealed record IndexResultRow(string Ticker, string Family, bool Passed, int? Place, decimal? Entry, decimal? Stop, decimal? Target, decimal? Trail, int? Cap, double? OrderBy, string? Reason);
+// its place among those it passed and its trade, or the first part of the rule it failed; and from 20.11 every part's
+// answer as stored, none on a row stored before.
+// see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
+public sealed record IndexResultRow(string Ticker, string Family, bool Passed, int? Place, decimal? Entry, decimal? Stop, decimal? Target, decimal? Trail, int? Cap, double? OrderBy, string? Reason, string? Gates = null);
 
 // One trade an index's list kept: where it ended by the night, its result before its cost and its cost, each in
 // multiples of its risk, none while open on the night.
@@ -606,7 +608,7 @@ public sealed record IndexHoldingRow(string Index, string Ticker, DateOnly Enter
 // One sector heavyweight holding as the book stored it as of a night: the stock, the session it was bought on, its
 // sector and company, its buy close, and where it had ended by the night, its sale close, why, its result and its
 // size cut's return over the same sessions, each none for a holding still open on the night.
-// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
 public sealed record HeavyweightHoldingRow(
     string Ticker,
     DateOnly EnteredOn,
@@ -827,6 +829,10 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.IndexFamilyResult, Touch.Read),
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
             new StoreTouch(Store.IndexFamilyTrade, Touch.Read),
+            new StoreTouch(Store.DipNight, Touch.Read),
+            new StoreTouch(Store.DipResult, Touch.Read),
+            new StoreTouch(Store.DipPick, Touch.Read),
+            new StoreTouch(Store.DipTrade, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
             new StoreTouch(Store.IndexRuleTrade, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightRuleNight, Touch.Read),
@@ -1585,12 +1591,18 @@ public sealed partial class ReadApi : IComponent
                     AND i.session_date <= $on
                 ORDER BY i.session_date DESC LIMIT 1),
                m.name,
-               m.industry,
+               " + NamedIndustry + @",
                " + ResearchedOn + @"
         FROM membership m
         WHERE " + CurrentMember + @"
         ORDER BY m.ticker;
     ";
+
+    // A member's industry as every page names it, on every index: the GICS industry its newest company fetch filed, read
+    // over a row aliased m holding its ticker, and never the words its membership row names.
+    // see: Every member is named and grouped by the GICS industry and sector its company fetch files
+    const string NamedIndustry = @"(SELECT c.industry FROM company c WHERE c.ticker = m.ticker
+                ORDER BY c.fetched_at DESC, c.rowid DESC LIMIT 1)";
 
     // The bands the universe screen states, which are the immediate ones the
     // level builder already marked, at each name's latest as-of date at or
@@ -3914,6 +3926,22 @@ public sealed partial class ReadApi : IComponent
         return await command.ExecuteScalarAsync() is string last ? DateOnly.ParseExact(last, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
     }
 
+    const string PulledBeforeTheYear = "SELECT EXISTS (SELECT 1 FROM pulled_bar WHERE session_date < $oldest);";
+
+    // Whether the pulled history holds a session before the oldest day the store's year to a night keeps, which the night
+    // reads the closes its year falls short by from.
+    // see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
+    public async Task<bool> PulledBeforeTheYearAsync(DateOnly night)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = PulledBeforeTheYear;
+        command.Parameters.AddWithValue("$oldest", night.AddYears(-EquityBrief.Core.Bars.BarRetention.Years).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return await command.ExecuteScalarAsync() is long held && held == 1;
+    }
+
     const string RuleNightsOn = @"
         SELECT index_code, session_date, family, rule, evaluated, listed, gates, stretch, mark, flagged, completed, sessions, source
         FROM rule_night
@@ -4084,7 +4112,7 @@ public sealed partial class ReadApi : IComponent
     }
 
     const string IndexResultsOn = @"
-        SELECT ticker, family, passed, place, entry, stop, target, trail, cap, order_by, reason
+        SELECT ticker, family, passed, place, entry, stop, target, trail, cap, order_by, reason, gates
         FROM index_family_result
         WHERE index_code = $index AND session_date = $on
         ORDER BY family, place IS NULL, place, ticker;
@@ -4119,7 +4147,8 @@ public sealed partial class ReadApi : IComponent
                 Price(7),
                 reader.IsDBNull(8) ? null : reader.GetInt32(8),
                 reader.IsDBNull(9) ? null : reader.GetDouble(9),
-                reader.IsDBNull(10) ? null : reader.GetString(10)));
+                reader.IsDBNull(10) ? null : reader.GetString(10),
+                reader.IsDBNull(11) ? null : reader.GetString(11)));
         }
 
         return rows;
@@ -4504,7 +4533,7 @@ public sealed partial class ReadApi : IComponent
     ";
 
     // The sector heavyweights' holdings as of a night, which tonight's card, a name's page and Past picks read.
-    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
+    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
     // A registered heavyweights rule's own book as of a night, read as the page's book is, which its card draws when the
     // card's selector chooses it.
     // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
@@ -5960,14 +5989,16 @@ public sealed partial class ReadApi : IComponent
     }
 
     // The sweep answers recorded for an index before an instant, every run's, which a card reads to say its family's
-    // sweep found no setting that passed the floors.
+    // sweep found no setting that passed the floors; and from 20.11 the figures each run stated where it stated them,
+    // which a frozen card states of the sweep its freeze followed.
     // see: No family on any index is set aside or hidden by a test result without the operator's word
+    // see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
     public async Task<IReadOnlyList<RecordedAnswer>> SweepAnswersAsync(string indexCode, DateTimeOffset before)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT run, index_code, family, design, answer, recorded_at FROM sweep_answer WHERE index_code = $index AND recorded_at < $before;";
+        command.CommandText = "SELECT run, index_code, family, design, answer, recorded_at, setting, trades, edge, year_edges, without_largest, settings_read, meeting, luck, tester_run, adjusted, tester_passed, ruled_on, entry_kept FROM sweep_answer WHERE index_code = $index AND recorded_at < $before;";
         command.Parameters.AddWithValue("$index", indexCode);
         command.Parameters.AddWithValue("$before", before.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture));
 
@@ -5975,18 +6006,53 @@ public sealed partial class ReadApi : IComponent
 
         await using var reader = await command.ExecuteReaderAsync();
 
+        double? Real(int column) => reader.IsDBNull(column) ? null : reader.GetDouble(column);
+
+        int? Whole(int column) => reader.IsDBNull(column) ? null : reader.GetInt32(column);
+
         while (await reader.ReadAsync())
         {
+            var figures = reader.IsDBNull(6) || reader.IsDBNull(7)
+                ? null
+                : new AnswerFigures(
+                    reader.GetString(6),
+                    reader.GetInt32(7),
+                    Real(8),
+                    reader.IsDBNull(9) ? new Dictionary<int, double?>() : YearEdges(reader.GetString(9)),
+                    Real(10),
+                    Whole(11),
+                    Whole(12),
+                    Real(13),
+                    reader.IsDBNull(14) ? null : reader.GetString(14),
+                    Real(15),
+                    reader.IsDBNull(16) ? null : reader.GetInt64(16) == 1,
+                    reader.IsDBNull(17) ? null : DateOnly.ParseExact(reader.GetString(17), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    reader.IsDBNull(18) ? null : reader.GetInt64(18) == 1);
+
             rows.Add(new RecordedAnswer(
                 reader.GetString(0),
                 reader.GetString(1),
                 reader.GetString(2),
                 reader.IsDBNull(3) ? null : reader.GetString(3),
                 reader.GetString(4),
-                DateTimeOffset.ParseExact(reader.GetString(5), "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal)));
+                DateTimeOffset.ParseExact(reader.GetString(5), "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
+                figures));
         }
 
         return rows;
+    }
+
+    // A run's edge each year as the store keeps it, an object of each calendar year to its edge, a year holding none
+    // read as none.
+    static IReadOnlyDictionary<int, double?> YearEdges(string stored)
+    {
+        using var document = JsonDocument.Parse(stored);
+
+        static double? EdgeOf(JsonElement edge) => edge.ValueKind == JsonValueKind.Number ? edge.GetDouble() : null;
+
+        return document.RootElement.EnumerateObject().ToDictionary(
+            year => int.Parse(year.Name, NumberStyles.Integer, CultureInfo.InvariantCulture),
+            year => EdgeOf(year.Value));
     }
 
     // Every replay of a family rule the run log holds, each read back as where the rule's record counts from.
@@ -6425,7 +6491,8 @@ public sealed partial class ReadApi : IComponent
     //
     // A name page open in the regular session asks for the delayed quote, this surface writes the ask, and the worker's
     // quote job answers it. An ask inside the interval of the name's newest is not written, so two pages open on one name
-    // ask once between them, and the page draws the newest stored quote of the session it is in.
+    // ask once between them, and the page draws the newest stored quote of the session it is in. A session's open and
+    // close are instants at New York's offset, and the store's instants are UTC, so each is written in UTC to compare.
     // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
 
     const string NewestQuoteAsk = "SELECT MAX(asked_at) FROM quote_request WHERE ticker = $ticker;";
@@ -6453,6 +6520,20 @@ public sealed partial class ReadApi : IComponent
         WHERE stage = $stage AND started_at >= $from AND started_at < $to
         GROUP BY outcome
         ORDER BY outcome;
+    ";
+
+    const string QuoteAsksBetween = @"
+        SELECT ticker, asked_at
+        FROM quote_request
+        WHERE asked_at >= $from AND asked_at < $to
+        ORDER BY asked_at, ticker;
+    ";
+
+    // Each run names the ask it answers by the name and the instant the page asked, and starts after it.
+    const string QuoteRunsAnswering = @"
+        SELECT json_extract(detail, '$.ticker'), json_extract(detail, '$.askedAt')
+        FROM run_log
+        WHERE stage = $stage AND started_at >= $from;
     ";
 
     // Writes the ask unless the name's newest ask is inside the interval, and says which.
@@ -6504,8 +6585,8 @@ public sealed partial class ReadApi : IComponent
 
         command.CommandText = NewestQuoteOf;
         command.Parameters.AddWithValue("$ticker", ticker);
-        command.Parameters.AddWithValue("$from", from.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
-        command.Parameters.AddWithValue("$to", to.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$from", from.UtcDateTime.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$to", to.UtcDateTime.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
 
         await using var reader = await command.ExecuteReaderAsync();
 
@@ -6531,19 +6612,53 @@ public sealed partial class ReadApi : IComponent
                 band.GetProperty("days").ValueKind == JsonValueKind.Number ? band.GetProperty("days").GetDouble() : null))]);
     }
 
-    // The quotes asked between two instants, each with how long after its own time it was asked, and the quote job's runs
-    // between them by what each came to, which the Run page's row for the quote runs draws against the day's cap.
+    // The quotes stored between two instants, each with how long after its own time it was asked, the quote job's runs
+    // between them by what each came to, and the asks the name pages wrote between them with each no run answered, which
+    // the Run page's row for the quote runs draws against the day's cap.
     public async Task<QuoteRunsView> QuoteRunsAsync(DateTimeOffset from, DateTimeOffset to)
     {
         await using var connection = Open();
         var asked = new List<(string Ticker, DateTimeOffset AskedAt, double DelayMinutes)>();
         var outcomes = new List<(string Outcome, int Runs)>();
+        var asks = new List<(string Ticker, string AskedAt)>();
+        var answered = new HashSet<(string, string)>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = QuoteAsksBetween;
+            command.Parameters.AddWithValue("$from", from.UtcDateTime.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$to", to.UtcDateTime.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                asks.Add((reader.GetString(0), reader.GetString(1)));
+            }
+        }
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = QuoteRunsAnswering;
+            command.Parameters.AddWithValue("$stage", QuoteStage);
+            command.Parameters.AddWithValue("$from", from.UtcDateTime.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                if (!reader.IsDBNull(0) && !reader.IsDBNull(1))
+                {
+                    answered.Add((reader.GetString(0), reader.GetString(1)));
+                }
+            }
+        }
 
         await using (var command = connection.CreateCommand())
         {
             command.CommandText = QuotesBetween;
-            command.Parameters.AddWithValue("$from", from.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
-            command.Parameters.AddWithValue("$to", to.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$from", from.UtcDateTime.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$to", to.UtcDateTime.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
 
             await using var reader = await command.ExecuteReaderAsync();
 
@@ -6557,8 +6672,8 @@ public sealed partial class ReadApi : IComponent
         {
             command.CommandText = QuoteRunsBetween;
             command.Parameters.AddWithValue("$stage", QuoteStage);
-            command.Parameters.AddWithValue("$from", from.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
-            command.Parameters.AddWithValue("$to", to.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$from", from.UtcDateTime.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$to", to.UtcDateTime.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
 
             await using var reader = await command.ExecuteReaderAsync();
 
@@ -6568,7 +6683,14 @@ public sealed partial class ReadApi : IComponent
             }
         }
 
-        return new QuoteRunsView(from, to, asked, outcomes, QuoteLimits.DailyCap);
+        return new QuoteRunsView(
+            from,
+            to,
+            asked,
+            outcomes,
+            QuoteLimits.DailyCap,
+            asks.Count,
+            [.. asks.Where(ask => !answered.Contains(ask)).Select(ask => (ask.Ticker, Instant(ask.AskedAt)))]);
     }
 
     // The stage the quote job writes its rows under. The worker's own constant cannot be referenced from here, so the

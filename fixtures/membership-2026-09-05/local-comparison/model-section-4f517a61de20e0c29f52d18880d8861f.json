@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-6ruvo55fjbew7zfrwjujo",
+  "object": "chat.completion",
+  "created": 1792418177,
+  "model": "google/gemma-4-26b-a4b-qat",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n \"bull_case\": \"The bull case rests on the substantial surge in orders driven by artificial intelligence infrastructure demand [D2]. This momentum is reflected in the significant growth of the Communications Solutions Group revenue [D1]. The company also achieved a substantial increase in operating income for the Communications Solutions Group [D1]. Furthermore, the Electronic Industrial Solutions Group saw a significant rise in operating income [D1]. The company needs to see continued strong demand for its testing solutions at the next report [D2].\",\n \"bear_case\": \"The bear case centers on the fact that one-time tariff impacts provided a boost to profitability that will not repeat [D3]. Management has noted that the supply environment is less flexible than it was a year ago [D3]. Additionally, supply chain constraints are expected to act as a governor on near-term revenue conversion [D4]. The company also faces a high comparison bar for future profitability due to these previous impacts [D3]. The company needs to see revenue growth that meets or exceeds the current guidance at the next report [D3].\"\n}",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 19467,
+    "completion_tokens": 229,
+    "total_tokens": 19696,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {
+    "tokens_per_second": 103.12458444863174,
+    "time_to_first_token": 0.47579000000000005,
+    "generation_time": 2.686708,
+    "stop_reason": "eosFound"
+  },
+  "model_info": {
+    "arch": "gemma4",
+    "quant": "Q4_0",
+    "format": "gguf",
+    "context_length": 50176
+  },
+  "runtime": {
+    "name": "llama.cpp-win-x86_64-nvidia-cuda12-avx2",
+    "version": "2.56.0",
+    "supported_formats": [
+      "gguf"
+    ]
+  }
+}

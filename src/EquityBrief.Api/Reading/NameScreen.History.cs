@@ -49,7 +49,7 @@ public static partial class NameScreen
         // moves the stored year's scale, and a level drawn across a line at another scale stands at the wrong price. The
         // year's high and low are read off the bars the long view's year is, so they are drawn whichever plan is stored.
         var apart = ladder is null
-            ? "no plan is stored for the night, the plan being read for the S&P 500's members alone"
+            ? PlanForTheLargeIndexAlone
             : inputs.LongView is { } view && view.Night != ladder.AsOf
                 ? FormattableString.Invariant($"the plan was read on {ladder.AsOf:yyyy-MM-dd} and the long view on {view.Night:yyyy-MM-dd}, so the plan's levels are drawn once both are read on one night")
                 : null;
@@ -82,7 +82,7 @@ public static partial class NameScreen
             price,
             live is not null,
             PlanSizes.Of(tranches, exits),
-            ladder is null ? "no plan is stored for the night, the plan being read for the S&P 500's members alone" : null,
+            ladder is null ? PlanForTheLargeIndexAlone : null,
             tranches.Count == 0 ? null : Trail(exits),
             MoveCauses.LabelsCover(Stories(inputs.Stories)),
             RiskLinesAt(bands, price, invalidation),

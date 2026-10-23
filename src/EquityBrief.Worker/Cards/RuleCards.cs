@@ -31,19 +31,20 @@ public sealed record RuleCardsOutcome(DateOnly? Session, IReadOnlyList<RuleCards
     public int Forming => Indices.Sum(index => index.Forming);
 }
 
-// One standing rule's night, as its row stores it.
-public sealed record RuleNightRow(string Index, string Family, string Rule, bool Evaluated, int Listed, IReadOnlyList<(string Gate, int Passed)>? Gates, StretchReading? Stretch);
+// One standing rule's night, as its row stores it, with how many members the night read for the rule where it counted
+// them, each of which reached its first gate.
+public sealed record RuleNightRow(string Index, string Family, string Rule, bool Evaluated, int Listed, IReadOnlyList<(string Gate, int Passed)>? Gates, StretchReading? Stretch, int? Reached = null);
 
 // The cards' rule rows. After the families have drawn each index's list, and for every rule standing on each index, live
 // or variant, the stage writes the rule's night: whether the night evaluated it, how many it listed with zeros, how many
-// members passed each of its gates and every gate before, and its empty stretch against the mark counted over its own
-// past empty nights, replayed from the pulled history by the record command and carried on by the night. For a rule whose
-// list no other table keeps, the swing filter's variants, it keeps the rule's own picks, five a night in the list's own
-// order with one open trade a stock, each walked on the closes since as the family's walk ends a trade. For each
-// breakout rule it keeps the members forming a breakout, at most the stated rows with the whole count on each, the
-// nearest misses first. A failure in one index's part leaves that index's rows of the night unwritten and named on the
-// stage's row, and the step goes on; the stage makes no request and calls no model. A night run again replaces its own
-// rows.
+// members reached its first gate and passed each of its gates and every gate before, and its empty stretch against the
+// mark counted over its own past empty nights, replayed from the pulled history by the record command and carried on by
+// the night. For a rule whose list no other table keeps, the swing filter's variants, it keeps the rule's own picks, five
+// a night in the list's own order with one open trade a stock, each walked on the closes since as the family's walk ends
+// a trade. For each breakout rule it keeps the members forming a breakout, at most the stated rows with the whole count
+// on each, the nearest misses first. A failure in one index's part leaves that index's rows of the night unwritten and
+// named on the stage's row, and the step goes on; the stage makes no request and calls no model. A night run again
+// replaces its own rows.
 // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
 // see: The forming list advises and never lists a stock
 // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
@@ -55,6 +56,7 @@ public sealed class RuleCards : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
@@ -62,6 +64,7 @@ public sealed class RuleCards : IComponent
             new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
+            new StoreTouch(Store.FiledFact, Touch.Read),
             new StoreTouch(Store.ReleaseDocument, Touch.Read),
             new StoreTouch(Store.ReleaseReading, Touch.Read),
             new StoreTouch(Store.ReadingPin, Touch.Read),
@@ -76,6 +79,9 @@ public sealed class RuleCards : IComponent
             new StoreTouch(Store.IndexRuleTrade, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightRuleHolding, Touch.Read),
+            new StoreTouch(Store.DipNight, Touch.Read),
+            new StoreTouch(Store.DipResult, Touch.Read),
+            new StoreTouch(Store.DipPick, Touch.Read),
             new StoreTouch(Store.RuleNight, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RulePick, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.FormingRow, Touch.Insert | Touch.Delete),
@@ -107,6 +113,18 @@ public sealed class RuleCards : IComponent
     ";
 
     const string ClearTheHistory = "DELETE FROM rule_night WHERE index_code = $index AND family = $family AND rule = $rule AND source = 'history';";
+
+    const string DipNightOn = "SELECT fault FROM dip_night WHERE index_code = $index AND session_date = $night;";
+
+    const string DipAnswers = "SELECT passed, reason FROM dip_result WHERE index_code = $index AND session_date = $night;";
+
+    const string DipListed = "SELECT COUNT(*) FROM dip_pick WHERE index_code = $index AND session_date = $night AND state = 'listed';";
+
+    // The replay's row of a rule on the night's own session, which the night's own row stands in place of.
+    const string ClearTheReplayedNight = "DELETE FROM rule_night WHERE index_code = $index AND session_date = $night AND family = $family AND rule = $rule AND source = 'history';";
+
+    // The sessions a night wrote a rule's own row on, which a replay of its history leaves standing.
+    const string NightsWritten = "SELECT session_date FROM rule_night WHERE index_code = $index AND family = $family AND rule = $rule AND source = 'night';";
 
     // A rule's listed counts on the nights before, oldest first, which its stretch is read over.
     const string ListedBefore = @"
@@ -159,6 +177,14 @@ public sealed class RuleCards : IComponent
     const string IndexNightRow = "SELECT fault, market_open FROM index_family_night WHERE index_code = $index AND session_date = $night;";
 
     const string IndexAnswers = "SELECT family, passed, reason FROM index_family_result WHERE index_code = $index AND session_date = $night;";
+
+    // Every part of one member's rule under a family as the night stored them, the market check first, the same for every
+    // member of the family.
+    const string FamilyGates = @"
+        SELECT gates FROM index_family_result
+        WHERE index_code = $index AND session_date = $night AND family = $family AND gates IS NOT NULL
+        ORDER BY ticker LIMIT 1;
+    ";
 
     const string IndexListed = "SELECT family, COUNT(*) FROM index_family_pick WHERE index_code = $index AND session_date = $night AND state = 'listed' GROUP BY family;";
 
@@ -229,9 +255,10 @@ public sealed class RuleCards : IComponent
                     var one = index == IndexFamilies.LargeIndex
                         ? await LargeAsync(connection, transaction, night, standing, cancellation)
                         : await IndexAsync(connection, transaction, index, night, standing, cancellation);
+                    var dip = await DipAsync(connection, transaction, index, night, cancellation);
 
                     await transaction.CommitAsync(cancellation);
-                    written.Add(one);
+                    written.Add(one with { Rules = one.Rules + dip });
                 }
                 catch (Exception failure) when (!cancellation.IsCancellationRequested)
                 {
@@ -265,7 +292,8 @@ public sealed class RuleCards : IComponent
 
     // A rule's history replayed by the record command: its listed count on each session the replay evaluated it on,
     // oldest first, written in place of what an earlier replay wrote, each night carrying the stretch and the mark read
-    // to it. The night's own rows stand beside them and are read after them.
+    // to it. The night's own rows stand beside them and are read after them, a session a night wrote the rule's own row
+    // on keeping that row, and the rows written are counted.
     public async Task<int> WriteHistoryAsync(string index, string family, string rule, IReadOnlyList<(DateOnly Session, int Listed)> nights, CancellationToken cancellation = default)
     {
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
@@ -274,17 +302,42 @@ public sealed class RuleCards : IComponent
 
         await ExecuteAsync(connection, transaction, ClearTheHistory, [("$index", index), ("$family", family), ("$rule", rule)], cancellation);
 
+        var written = new HashSet<string>(StringComparer.Ordinal);
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText = NightsWritten;
+            command.Parameters.AddWithValue("$index", index);
+            command.Parameters.AddWithValue("$family", family);
+            command.Parameters.AddWithValue("$rule", rule);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                written.Add(reader.GetString(0));
+            }
+        }
+
         var ordered = nights.OrderBy(night => night.Session).ToArray();
         var readings = RuleStretch.ReadEach([.. ordered.Select(night => night.Listed)]);
+        var rows = 0;
 
         for (var at = 0; at < ordered.Length; at++)
         {
+            if (written.Contains(Stamp(ordered[at].Session)))
+            {
+                continue;
+            }
+
             await InsertNightAsync(connection, transaction, index, ordered[at].Session, new RuleNightRow(index, family, rule, true, ordered[at].Listed, null, readings[at]), FromTheHistory, cancellation);
+            rows++;
         }
 
         await transaction.CommitAsync(cancellation);
 
-        return ordered.Length;
+        return rows;
     }
 
     // The S&P 500's rules on the night.
@@ -311,7 +364,8 @@ public sealed class RuleCards : IComponent
         {
             var verdicts = filter.Select(member => (member, Verdict: member.Shadow.FirstOrDefault(outcome => outcome.Candidate == row.Candidate))).Where(pair => pair.Verdict is not null).ToArray();
             var evaluated = filter.Count > 0 && verdicts.Length > 0;
-            var gates = evaluated ? Funnel(SwingGates.Order, verdicts.Select(pair => pair.Verdict!.Values).ToArray()) : null;
+            var parameters = CandidateEvaluator.Read(row.Parameters);
+            var gates = evaluated ? Funnel(SwingGates.Order, [.. verdicts.Select(pair => SwingAnswers(pair.Verdict!.Values, parameters))]) : null;
             int count;
 
             if (FamilyRecords.IsLive(row.Candidate))
@@ -332,7 +386,7 @@ public sealed class RuleCards : IComponent
                 count = kept.Count;
             }
 
-            rules.Add(new RuleNightRow(index, SetupFamilies.Pullback, row.Candidate, evaluated, count, gates, null));
+            rules.Add(new RuleNightRow(index, SetupFamilies.Pullback, row.Candidate, evaluated, count, gates, null, evaluated ? verdicts.Length : null));
         }
 
         // The breakout's and the drift's rules, each evaluated over every member at its own settings for its funnel, and
@@ -351,6 +405,7 @@ public sealed class RuleCards : IComponent
                 var evaluated = inputs is not null && evaluator.Version == row.EvaluatorVersion;
                 var parameters = CandidateEvaluator.Read(row.Parameters);
                 IReadOnlyList<(string Gate, int Passed)>? gates = null;
+                int? reached = null;
 
                 if (evaluated)
                 {
@@ -366,6 +421,7 @@ public sealed class RuleCards : IComponent
                     }
 
                     gates = Funnel(order, results.Select(Answers).ToArray());
+                    reached = results.Length;
 
                     if (evaluator.Family == BreakoutRule.Name)
                     {
@@ -376,7 +432,7 @@ public sealed class RuleCards : IComponent
                     }
                 }
 
-                rules.Add(new RuleNightRow(index, evaluator.Family, row.Candidate, evaluated, ruleListed.GetValueOrDefault(row.Candidate), gates, null));
+                rules.Add(new RuleNightRow(index, evaluator.Family, row.Candidate, evaluated, ruleListed.GetValueOrDefault(row.Candidate), gates, null, reached));
             }
         }
 
@@ -397,7 +453,9 @@ public sealed class RuleCards : IComponent
 
             foreach (var family in IndexNightRead.LargeFamilies)
             {
-                rules.Add(new RuleNightRow(index, family, ProvisionalRule, computed, indexListed.GetValueOrDefault(family), computed ? IndexFunnel([.. answers.Where(answer => answer.Family == family)], family) : null, null));
+                (string Family, bool Passed, string? Reason)[] read = [.. answers.Where(answer => answer.Family == family)];
+
+                rules.Add(new RuleNightRow(index, family, ProvisionalRule, computed, indexListed.GetValueOrDefault(family), computed ? IndexFunnel(read, family) : null, null, computed ? read.Length : null));
             }
         }
 
@@ -433,11 +491,13 @@ public sealed class RuleCards : IComponent
             var drawnBy = live?.Candidate ?? ProvisionalRule;
             var reasons = answers.Where(answer => answer.Family == family).ToArray();
 
-            rules.Add(new RuleNightRow(index, family, drawnBy, computed, listed.GetValueOrDefault(family), computed ? IndexFunnel(reasons, family) : null, null));
+            rules.Add(new RuleNightRow(index, family, drawnBy, computed, listed.GetValueOrDefault(family), computed ? IndexFunnel(reasons, family) : null, null, computed ? reasons.Length : null));
 
             foreach (var variant in own.Where(row => CandidateEvaluators.Find(row.Evaluator) is IndexRuleCandidate rule && rule.SetupFamily == family && row != live))
             {
-                rules.Add(new RuleNightRow(index, family, variant.Candidate, computed, ruleListed.GetValueOrDefault(variant.Candidate), computed ? await ToneFunnelAsync(connection, index, night, variant, cancellation) : null, null));
+                var tone = computed ? await ToneFunnelAsync(connection, index, night, variant, cancellation) : null;
+
+                rules.Add(new RuleNightRow(index, family, variant.Candidate, computed, ruleListed.GetValueOrDefault(variant.Candidate), tone?.Gates, null, tone?.Reached));
             }
 
             if (family == BreakoutRule.Name && computed)
@@ -465,10 +525,10 @@ public sealed class RuleCards : IComponent
 
     // From 20.4 an S&P 400's or 600's drift variant naming a reading version read again over the night for its funnel, the
     // parts its members failed in order with its print's release read and its tone after the provisional rule's own, so a
-    // night holding no reading says on its card where its members stopped; none for every other variant, whose funnel the
-    // night does not keep, and none for a variant the night did not read.
+    // night holding no reading says on its card where its members stopped, with how many members it read; none for every
+    // other variant, whose funnel the night does not keep, and none for a variant the night did not read.
     // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
-    static async Task<IReadOnlyList<(string Gate, int Passed)>?> ToneFunnelAsync(SqliteConnection connection, string index, DateOnly night, RegisterRow row, CancellationToken cancellation)
+    static async Task<(IReadOnlyList<(string Gate, int Passed)> Gates, int Reached)?> ToneFunnelAsync(SqliteConnection connection, string index, DateOnly night, RegisterRow row, CancellationToken cancellation)
     {
         var parameters = CandidateEvaluator.Read(row.Parameters);
 
@@ -487,15 +547,22 @@ public sealed class RuleCards : IComponent
             return null;
         }
 
-        var levels = await IndexFamilies.LevelsAsync(connection, inputs, cancellation, [version]);
+        // A variant reading the revenue level reads each member's quarters as first filed and stored before the night, as
+        // the night read it.
+        // see: A drift's revenue level on the S&P 400 and 600 reads a quarter only once its filing is stored, on the night and in its sweep alike
+        var levels = await IndexFamilies.LevelsAsync(connection, inputs, cancellation, [version], parameters.GetValueOrDefault(IndexDriftCandidate.RevenueGrewParameter) == 1);
         var answers = IndexNightRead.Answers(inputs, DriftRule.Name, IndexRules.Read(inputs, new IndexRule(row.Candidate, drift, parameters, row.RegisteredAt), levels));
 
-        return IndexFunnel([.. answers.Select(answer => (answer.Family, answer.Passed, answer.Reason))], DriftRule.Name, tone: true);
+        return (IndexFunnel([.. answers.Select(answer => (answer.Family, answer.Passed, answer.Reason))], DriftRule.Name, tone: true), answers.Count);
     }
 
     // The members forming a breakout on the S&P 400 or 600 under the rule drawing its list: those passing the index's
     // floors and profit gate as the provisional rule applies them, read through the breakout rule's own gates over the
-    // member's year of bars, the market check the index's own breadth.
+    // member's year of bars, with the sessions before it the night read from the pulled history where the year holds fewer
+    // than its high reads, the market check the one the rule drawing the list read on the night, as the night stored it
+    // among each member's parts, and the index's own check on a night that stored none.
+    // see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
     async Task<int> IndexFormingAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, string rule, RegisterRow? live, bool open, CancellationToken cancellation)
     {
         var (names, income) = await IndexFamilies.InputsAsync(connection, index, night, cancellation);
@@ -512,7 +579,8 @@ public sealed class RuleCards : IComponent
         var settings = live is not null ? BreakoutCandidate.SettingsOf(CandidateEvaluator.Read(live.Parameters))
             : stored?.GetValueOrDefault(BreakoutRule.Name)?.Places is { } places ? BreakoutAt(places)
             : BreakoutRule.Live;
-        var market = new Gate(FamilyRule.Market, open, open ? "the index's breadth at or above the floor" : "the index's breadth under the floor", FamilyRule.Values());
+        var market = MarketOf(await ScalarAsync(connection, FamilyGates, [("$index", index), ("$night", Stamp(night)), ("$family", BreakoutRule.Name)], cancellation, transaction) as string)
+            ?? new Gate(FamilyRule.Market, open, open ? "the index's breadth at or above the floor" : "the index's breadth under the floor", FamilyRule.Values());
         var members = new List<FormingMember>();
 
         foreach (var name in inputs.Held)
@@ -524,7 +592,7 @@ public sealed class RuleCards : IComponent
 
             var one = inputs.Series[name];
             var bar = IndexNightRead.BarOf(one, inputs.At);
-            var bars = one.Bars.Take(bar + 1).Select(day => new FamilyBar(day.Session, day.High, day.Low, day.Close, day.Volume)).ToArray();
+            var bars = (one.Name.Before ?? []).Concat(one.Bars.Take(bar + 1)).Select(day => new FamilyBar(day.Session, day.High, day.Low, day.Close, day.Volume)).ToArray();
             var window = bars.Length > 1 ? bars[Math.Max(0, bars.Length - 1 - MemberReadings.DollarVolumeSessions)..(bars.Length - 1)] : [];
             double? average = window.Length == MemberReadings.DollarVolumeSessions ? window.Average(day => Statistic.FromVolume(day.Volume)) : null;
             var breakout = new BreakoutInputs(one.Name.Ticker, market, bars, average, one.Atr[bar] > 0 ? one.Atr[bar] : null, []);
@@ -539,6 +607,13 @@ public sealed class RuleCards : IComponent
 
         return await InsertFormingAsync(connection, transaction, index, night, rule, FormingList.Order(members), earnings, cancellation);
     }
+
+    // The market check a family's parts stored on the night hold, as the gate the breakout rule reads its market by; none
+    // where the night stored no part.
+    public static Gate? MarketOf(string? stored) =>
+        stored is not null && FamilyRule.GatesOf(stored).FirstOrDefault(gate => gate.Name == RuleRows.Market) is { } market
+            ? market with { Name = FamilyRule.Market }
+            : null;
 
     // The breakout's settings at a setting of its sweep's grid.
     static BreakoutSettings BreakoutAt(IReadOnlyList<int> places)
@@ -561,6 +636,74 @@ public sealed class RuleCards : IComponent
         return answers;
     }
 
+    // A swing filter rule's answer at each of its gates as the rule reads it: a gate it does not read, the market check
+    // where it reads none and the trend and strength gate where its sector's lead stands in that gate's place, passed by
+    // every member it read, as an index rule reading no market check counts its market part.
+    public static IReadOnlyDictionary<string, string> SwingAnswers(IReadOnlyDictionary<string, string> values, IReadOnlyDictionary<string, double> parameters)
+    {
+        string[] unread =
+        [
+            .. parameters.GetValueOrDefault(SwingFilterRule.MarketGateParameter, 1) == 1 ? [] : new[] { SwingGates.Market },
+            .. parameters.GetValueOrDefault(SwingFilterRule.LeaderSectorsParameter) > 0 && parameters.GetValueOrDefault(SwingFilterRule.LeaderShareOfParameter) > 0 ? new[] { SwingGates.Trend } : [],
+        ];
+
+        if (unread.Length == 0)
+        {
+            return values;
+        }
+
+        var read = new Dictionary<string, string>(values, StringComparer.Ordinal);
+
+        foreach (var gate in unread)
+        {
+            read[gate] = Passed;
+        }
+
+        return read;
+    }
+
+    // The short-term dip's provisional rule on the index, from its own rows: what it listed and its funnel off the gate
+    // each member failed first, its row not evaluated where its part of the night failed, and none where its step did not
+    // read the night.
+    // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+    async Task<int> DipAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, CancellationToken cancellation)
+    {
+        // No row where the step did not read the night, and a stored fault where its part failed.
+        if (await ScalarAsync(connection, DipNightOn, [("$index", index), ("$night", Stamp(night))], cancellation, transaction) is not { } fault)
+        {
+            return 0;
+        }
+
+        var computed = fault is DBNull;
+        var answers = new List<(bool Passed, string? Reason)>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText = DipAnswers;
+            command.Parameters.AddWithValue("$index", index);
+            command.Parameters.AddWithValue("$night", Stamp(night));
+
+            await using var rows = await command.ExecuteReaderAsync(cancellation);
+
+            while (await rows.ReadAsync(cancellation))
+            {
+                answers.Add((rows.GetInt64(0) == 1, rows.IsDBNull(1) ? null : rows.GetString(1)));
+            }
+        }
+
+        var listed = Convert.ToInt32(await ScalarAsync(connection, DipListed, [("$index", index), ("$night", Stamp(night))], cancellation, transaction), CultureInfo.InvariantCulture);
+
+        await InsertNightsAsync(connection, transaction, index, night, [new RuleNightRow(index, DipRule.Name, ProvisionalRule, computed, listed, computed ? DipFunnel(answers) : null, null, computed ? answers.Count : null)], cancellation);
+
+        return 1;
+    }
+
+    // The members passing each of the dip's gates and every gate before it, read off the gate each failed first and
+    // named as the gate.
+    public static IReadOnlyList<(string Gate, int Passed)> DipFunnel(IReadOnlyList<(bool Passed, string? Reason)> answers) =>
+        [.. DipRule.Gates.Select((gate, at) => (gate, answers.Count(answer => answer.Passed || (answer.Reason is { } failed && DipRule.GateOf(failed) > at))))];
+
     // The members passing each gate and every gate before it, in the rule's order, read off each member's answers by
     // gate name.
     public static IReadOnlyList<(string Gate, int Passed)> Funnel(IReadOnlyList<string> order, IReadOnlyList<IReadOnlyDictionary<string, string>> answers)
@@ -575,16 +718,57 @@ public sealed class RuleCards : IComponent
         return counts;
     }
 
+    // The parts past the profit and the cover a registered rule's levels read, in the order its night reads them, each by
+    // the reason a member failing it carries: the industry's fall, the breakout's three levels, the drift's peers and its
+    // revenue, the switches, the tone's read and its answer, and a condition an approved setting's hooks add.
+    static readonly string[] LevelReasons =
+    [
+        IndexRules.IndustryFell,
+        IndexRules.NotNearItsHigh,
+        IndexRules.HighNotAsStated,
+        IndexRules.VolumeUnder,
+        IndexRules.PeersNotAbove,
+        IndexRules.RevenueNotAbove,
+        IndexRules.SwitchClosed,
+        ReleaseTone.NotHeldOnTheIndex,
+        ReleaseTone.FailedOnTheIndex,
+        IndexNightRead.NotByItsHooks,
+    ];
+
     // The members passing each part of an index rule and every part before, read off the first part each failed and
     // named as the part, not as the reason a member fails it; the fundamentals-first family's parts its own, the
-    // business's after the floors; and from 20.4 a drift rule's tone after the swing families' parts.
+    // business's after the floors, and a condition its approved setting's hooks add after them where a member failed it;
+    // and from 20.4 a drift rule's tone after the swing families' parts. From 20.11 a level a registered rule reads is a
+    // part of its own after the cover, in the order the night reads it, where a member failed it, so a member a frozen
+    // rule's level kept off is never counted as stopping at the market check.
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
     public static IReadOnlyList<(string Gate, int Passed)> IndexFunnel(IReadOnlyList<(string Family, bool Passed, string? Reason)> answers, string? family = null, bool tone = false)
     {
         string[] reasons = family == FundamentalsRule.Name
-            ? [IndexNightRead.MarketClosed, IndexNightRead.NoSetup, IndexNightRead.UnderTheFloors, FundamentalsRule.NoReadings, FundamentalsRule.NoProfit, FundamentalsRule.NoRevenue, FundamentalsRule.NoMargin, FundamentalsRule.NoCash, FundamentalsRule.NoTrend]
-            : tone
-                ? [IndexNightRead.MarketClosed, IndexNightRead.NoSetup, IndexNightRead.UnderTheFloors, IndexNightRead.NoProfit, IndexNightRead.NoCover, ReleaseTone.NotHeldOnTheIndex, ReleaseTone.FailedOnTheIndex]
-                : [IndexNightRead.MarketClosed, IndexNightRead.NoSetup, IndexNightRead.UnderTheFloors, IndexNightRead.NoProfit, IndexNightRead.NoCover];
+            ?
+            [
+                IndexNightRead.MarketClosed,
+                IndexNightRead.NoSetup,
+                IndexNightRead.UnderTheFloors,
+                FundamentalsRule.NoReadings,
+                FundamentalsRule.NoProfit,
+                FundamentalsRule.NoRevenue,
+                FundamentalsRule.NoMargin,
+                FundamentalsRule.NoCash,
+                FundamentalsRule.NoTrend,
+                .. answers.Any(answer => !answer.Passed && answer.Reason == IndexNightRead.NotByItsHooks) ? new[] { IndexNightRead.NotByItsHooks } : [],
+            ]
+            :
+            [
+                IndexNightRead.MarketClosed,
+                IndexNightRead.NoSetup,
+                IndexNightRead.UnderTheFloors,
+                IndexNightRead.NoProfit,
+                IndexNightRead.NoCover,
+                .. LevelReasons.Where(reason =>
+                    (tone && reason is ReleaseTone.NotHeldOnTheIndex or ReleaseTone.FailedOnTheIndex)
+                    || answers.Any(answer => !answer.Passed && answer.Reason == reason)),
+            ];
         var counts = new List<(string, int)>();
 
         foreach (var (reason, at) in reasons.Select((reason, at) => (reason, at)))
@@ -705,6 +889,7 @@ public sealed class RuleCards : IComponent
                 ? RuleStretch.Read([.. await ListedBeforeAsync(connection, transaction, index, rule.Family, rule.Rule, night, cancellation), rule.Listed])
                 : null;
 
+            await ExecuteAsync(connection, transaction, ClearTheReplayedNight, [("$index", index), ("$night", Stamp(night)), ("$family", rule.Family), ("$rule", rule.Rule)], cancellation);
             await InsertNightAsync(connection, transaction, index, night, rule with { Stretch = stretch }, FromTheNight, cancellation);
         }
     }
@@ -718,7 +903,7 @@ public sealed class RuleCards : IComponent
             ("$rule", rule.Rule),
             ("$evaluated", rule.Evaluated ? 1 : 0),
             ("$listed", rule.Listed),
-            ("$gates", rule.Gates is null ? DBNull.Value : RuleRows.GatesJson(rule.Gates)),
+            ("$gates", rule.Gates is null ? DBNull.Value : RuleRows.GatesJson(rule.Gates, rule.Reached)),
             ("$stretch", rule.Stretch?.Stretch is { } stretch ? stretch : DBNull.Value),
             ("$mark", rule.Stretch?.Mark is { } mark ? mark : DBNull.Value),
             ("$flagged", rule.Stretch?.Flagged == true ? 1 : 0),

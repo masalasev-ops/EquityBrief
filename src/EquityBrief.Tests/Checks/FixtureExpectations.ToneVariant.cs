@@ -25,7 +25,7 @@ namespace EquityBrief.Tests.Checks;
 // 17.11 form's `--again` registers an index's variants again whole and refuses as it refused before; and the per-rule
 // step keeps the variant not testable until the version it names has read its history whole, from 20.8.
 // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
-// see: An S&P 400 or 600 family's variants are registered again whole to add one beside its provisional rule
+// see: An S&P 400 or 600 family's variants are registered again whole beside its provisional rule or its frozen live rule
 public partial class FixtureExpectations
 {
     // The claims the tone variant makes, which this check reaches: 15.7's row for its card and section 17's row for its
@@ -47,8 +47,8 @@ public partial class FixtureExpectations
     // A release's reading under a version, read with its four words.
     static void ReadRelease(TemporaryStore store, string accession, long pin, ReleaseAnswer answer) =>
         store.Execute(
-            "INSERT INTO release_reading (accession, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, run_id) " +
-            FormattableString.Invariant($"VALUES ('{accession}', {pin}, 'read', NULL, '{answer.Results}', '{answer.Outlook}', '{answer.Tone}', '{answer.Demand}', 3.0, 5000, '2026-10-18T06:00:00Z', 'constructed');"));
+            "INSERT INTO release_reading (accession, exhibit, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, run_id) " +
+            FormattableString.Invariant($"VALUES ('{accession}', 'ex99.htm', {pin}, 'read', NULL, '{answer.Results}', '{answer.Outlook}', '{answer.Tone}', '{answer.Demand}', 3.0, 5000, '2026-10-18T06:00:00Z', 'constructed');"));
 
     [Fact]
     public void TheToneConditionListsOnlyAReleaseReadBetterWithItsOutlookNotCutAndSaysWhyOtherwise()
@@ -261,7 +261,7 @@ public partial class FixtureExpectations
         Assert.Equal(RuleCards.Ok, Text(store, "SELECT outcome FROM run_log WHERE run_id = 'night-tone-cards';"));
 
         Assert.Equal(
-            RuleRows.GatesJson([("market", 6), ("print", 4), ("beat", 2), ("reaction", 2), ("volume", 2), ("held", 2), ("trade", 2), (ReleaseTone.ReadStep, 0), (ReleaseTone.Gate, 0)]),
+            RuleRows.GatesJson([("market", 6), ("print", 4), ("beat", 2), ("reaction", 2), ("volume", 2), ("held", 2), ("trade", 2), (ReleaseTone.ReadStep, 0), (ReleaseTone.Gate, 0)], 6),
             Text(store, $"SELECT gates FROM rule_night WHERE session_date = '{BreakoutNight}' AND rule = '{quoted}';"));
     }
 
@@ -393,7 +393,7 @@ public partial class FixtureExpectations
             await new RuleCards(clock, store.DatabaseFile).RunAsync("cards-tone", register, at.AddHours(1));
 
             Assert.Equal(
-                RuleRows.GatesJson([(RuleRows.Market, 7), (RuleRows.Setup, 7), (RuleRows.Floors, 7), (RuleRows.Profit, 7), (RuleRows.Cover, 7), (ReleaseTone.ReadStep, 4), (ReleaseTone.Gate, 2)]),
+                RuleRows.GatesJson([(RuleRows.Market, 7), (RuleRows.Setup, 7), (RuleRows.Floors, 7), (RuleRows.Profit, 7), (RuleRows.Cover, 7), (ReleaseTone.ReadStep, 4), (ReleaseTone.Gate, 2)], 7),
                 Text(store, $"SELECT gates FROM rule_night WHERE index_code = '{index}' AND rule = '{variant}';"));
 
             store.Execute("UPDATE reading_pin SET history_completed_at = NULL WHERE id = 1;");
@@ -412,7 +412,7 @@ public partial class FixtureExpectations
             await new RuleCards(clock, store.DatabaseFile).RunAsync("cards-tone-open", register, at.AddHours(1));
 
             Assert.Equal(
-                RuleRows.GatesJson([(RuleRows.Market, 7), (RuleRows.Setup, 7), (RuleRows.Floors, 7), (RuleRows.Profit, 7), (RuleRows.Cover, 7), (ReleaseTone.ReadStep, 0), (ReleaseTone.Gate, 0)]),
+                RuleRows.GatesJson([(RuleRows.Market, 7), (RuleRows.Setup, 7), (RuleRows.Floors, 7), (RuleRows.Profit, 7), (RuleRows.Cover, 7), (ReleaseTone.ReadStep, 0), (ReleaseTone.Gate, 0)], 7),
                 Text(store, $"SELECT gates FROM rule_night WHERE index_code = '{index}' AND rule = '{variant}';"));
         }
     }
@@ -429,8 +429,9 @@ public partial class FixtureExpectations
         Task<(int Code, string Said)> Variants(DateTimeOffset when, string index, string variants, params string[] more) =>
             RegisterVerbAt(store, when, [RegisterVerb.IndexVariants, DriftRule.Name, "--index", index, "--variants", variants, .. more]);
 
-        // The variant with the market check off stands on the S&P 400, as the remedy of 19.1 registered it.
-        Assert.Equal(0, (await Variants(at, "MID", "largeBreadth=2")).Code);
+        // The variant with the market check off stands on the S&P 400, as the remedy of 19.1 registered it, from 20.11 stating
+        // the floor of no check, nought.
+        Assert.Equal(0, (await Variants(at, "MID", "largeBreadth=2,breadthFloor=0")).Code);
 
         var standing = Scalar(store, "SELECT COUNT(*) FROM candidate_register;");
 
@@ -439,13 +440,13 @@ public partial class FixtureExpectations
         // is not complete or that is no whole number, and a family none of whose rules stands. Each writes nothing.
         var refusals = new[]
         {
-            (await Variants(at.AddSeconds(1), "MID", "largeBreadth=2;readingVersion=1")).Said,
-            (await Variants(at.AddSeconds(2), "MID", "largeBreadth=2;readingVersion=1", RegisterVerb.Again)).Said,
-            (await Variants(at.AddSeconds(3), "MID", "largeBreadth=2;readingVersion=1", "--evidence", "e")).Said,
+            (await Variants(at.AddSeconds(1), "MID", "largeBreadth=2,breadthFloor=0;readingVersion=1")).Said,
+            (await Variants(at.AddSeconds(2), "MID", "largeBreadth=2,breadthFloor=0;readingVersion=1", RegisterVerb.Again)).Said,
+            (await Variants(at.AddSeconds(3), "MID", "largeBreadth=2,breadthFloor=0;readingVersion=1", "--evidence", "e")).Said,
             (await Variants(at.AddSeconds(4), "MID", "readingVersion=1", RegisterVerb.Again, "--evidence", "e")).Said,
-            (await Variants(at.AddSeconds(5), "MID", "largeBreadth=2", RegisterVerb.Again, "--evidence", "e")).Said,
-            (await Variants(at.AddSeconds(6), "MID", "largeBreadth=2;readingVersion=2", RegisterVerb.Again, "--evidence", "e")).Said,
-            (await Variants(at.AddSeconds(7), "MID", "largeBreadth=2;readingVersion=1.5", RegisterVerb.Again, "--evidence", "e")).Said,
+            (await Variants(at.AddSeconds(5), "MID", "largeBreadth=2,breadthFloor=0", RegisterVerb.Again, "--evidence", "e")).Said,
+            (await Variants(at.AddSeconds(6), "MID", "largeBreadth=2,breadthFloor=0;readingVersion=2", RegisterVerb.Again, "--evidence", "e")).Said,
+            (await Variants(at.AddSeconds(7), "MID", "largeBreadth=2,breadthFloor=0;readingVersion=1.5", RegisterVerb.Again, "--evidence", "e")).Said,
             (await Variants(at.AddSeconds(8), "SML", "readingVersion=1", RegisterVerb.Again, "--evidence", "e")).Said,
         };
 
@@ -462,7 +463,7 @@ public partial class FixtureExpectations
         // Given both, the standing variant is replayed first, said to restart since no replay reads an index rule, retired,
         // and registered again beside the tone variant at one instant.
         var again = at.AddMinutes(1);
-        var (code, said) = await Variants(again, "MID", "largeBreadth=2;readingVersion=1", RegisterVerb.Again, "--evidence", "the tone variant joins");
+        var (code, said) = await Variants(again, "MID", "largeBreadth=2,breadthFloor=0;readingVersion=1", RegisterVerb.Again, "--evidence", "the tone variant joins");
 
         Assert.Equal(0, code);
         Assert.Contains("restarts its record at this registration: " + FamilyReplay.NotReplayedOnItsIndex, said, StringComparison.Ordinal);
@@ -476,12 +477,17 @@ public partial class FixtureExpectations
         Assert.EndsWith(", the market check off", rows[1], StringComparison.Ordinal);
         Assert.EndsWith("its print's release reading better with its outlook not cut under reading version 1", rows[2], StringComparison.Ordinal);
 
-        // A family whose live rule stands is not registered again by the form.
+        // From 20.11 a family whose live rule stands is registered again beside it: the tone variant is the live rule's setting
+        // with the condition, and the live rule stands on untouched, nothing of it retired.
         store.Execute(
             "INSERT INTO candidate_register (id, candidate, rule, test, evaluator, parameters, evaluator_version, event, retires, registered_at, evidence) " +
             $"SELECT MAX(id) + 1, 'the live S&P 600 drift rule', 'a rule', 'a test', 'drift-600', '{CandidateEvaluator.Write(IndexRules.Provisional(IndexEvaluator("drift-600")))}', '{IndexEvaluator("drift-600").Version}', 'registered', NULL, '2026-10-12T12:00:00Z', NULL FROM candidate_register;");
 
-        Assert.Contains("the drift on the S&P 600's live rule 'the live S&P 600 drift rule' stands", (await Variants(at.AddMinutes(2), "SML", "readingVersion=1", RegisterVerb.Again, "--evidence", "e")).Said, StringComparison.Ordinal);
+        var beside = await Variants(at.AddMinutes(2), "SML", "readingVersion=1", RegisterVerb.Again, "--evidence", "the tone variant joins the frozen drift");
+
+        Assert.Equal(0, beside.Code);
+        Assert.Contains("retired 0 and registered 1 at one instant, family of 2 of 9", beside.Said, StringComparison.Ordinal);
+        Assert.Equal(["registered|the live S&P 600 drift rule"], TextRows(store, "SELECT event || '|' || candidate FROM candidate_register WHERE evaluator = 'drift-600' AND event = 'registered' AND candidate LIKE 'the live %';"));
     }
 
     [Fact]

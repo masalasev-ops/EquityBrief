@@ -127,9 +127,9 @@ public sealed partial class MarkRenderer
         foreach (var line in card.Lines)
         {
             body.Append(Invariant, $"<li class=\"card-line\" data-line=\"{line.Number}\" data-verdict=\"{Escaped(line.Verdict)}\">");
-            body.Append(Invariant, $"<span class=\"card-mark\" data-verdict=\"{Escaped(line.Verdict)}\">{Escaped(line.Verdict)}</span> ");
+            body.Append(CardMark(line.Verdict)).Append(' ');
             body.Append(Invariant, $"<b class=\"card-name\">{Escaped(line.Name)}</b> ");
-            body.Append(Invariant, $"<span class=\"card-words\">{WithSignedFigures(line.Words)}</span></li>");
+            body.Append(Invariant, $"<span class=\"card-words\">{WithSignedFigures(StoredWords(line.Words))}</span></li>");
         }
 
         body.Append("</ol>");
@@ -144,6 +144,17 @@ public sealed partial class MarkRenderer
 
         return body.ToString();
     }
+
+    // A checklist line's mark drawn as a tick, a note's sign or a warning's sign, the verdict's word its label and its
+    // title; a verdict none of the three is drawn as its word.
+    static string CardMark(string verdict) =>
+        Formatted($"<span class=\"card-mark\" data-verdict=\"{Escaped(verdict)}\" role=\"img\" aria-label=\"{Escaped(verdict)}\" title=\"{Escaped(verdict)}\">") + verdict switch
+        {
+            "tick" => "<svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M3.2 8.6l3 3 6.6-7\"/></svg>",
+            "note" => "<svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><circle cx=\"8\" cy=\"8\" r=\"6.2\"/><path d=\"M8 7.3v4.2\"/><circle class=\"dot\" cx=\"8\" cy=\"4.9\" r=\"1\"/></svg>",
+            "warning" => "<svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M8 1.9l6.6 11.6H1.4z\"/><path d=\"M8 6.4v3.6\"/><circle class=\"dot\" cx=\"8\" cy=\"11.7\" r=\"1\"/></svg>",
+            _ => Escaped(verdict),
+        } + "</span>";
 
     // The route of the settings page the plan links to where the account is not set.
     public const string AccountRoute = "#/account";
@@ -381,7 +392,10 @@ public sealed partial class MarkRenderer
         }
 
         body.Append("<dl class=\"card-figures\">");
-        body.Append(Formatted($"<dt>Matched</dt><dd data-similar=\"{count}\" data-distance=\"{(similar.Distance ?? 0).ToString("R", Invariant)}\">{count:N0} of the rule's {similar.RuleSetups ?? 0:N0} finished setups on this index, the nearest on {Escaped(string.Join(", ", similar.Readings ?? []))} by their places among them, a median distance of {(similar.Distance ?? 0).ToString("0.000", Invariant)}</dd>"));
+        var readings = similar.Readings ?? [];
+        var defined = readings.Select(column => EquityBrief.Core.Ledger.LedgerReadings.All.FirstOrDefault(reading => reading.Column == column)?.Definition ?? column);
+
+        body.Append(Formatted($"<dt>Matched</dt><dd data-similar=\"{count}\" data-distance=\"{(similar.Distance ?? 0).ToString("R", Invariant)}\" data-readings=\"{Escaped(string.Join(",", readings))}\">{count:N0} of the rule's {similar.RuleSetups ?? 0:N0} finished setups on this index, the nearest by their places among them on {Counted(readings.Count, "reading", "readings")} ({Escaped(string.Join("; ", defined))}), a median distance of {(similar.Distance ?? 0).ToString("0.000", Invariant)}</dd>"));
         body.Append(Formatted($"<dt>Their edge</dt><dd data-mean=\"{mean.ToString("R", Invariant)}\" data-low=\"{low.ToString("R", Invariant)}\" data-high=\"{high.ToString("R", Invariant)}\">a mean {SignedTwo(mean)} of the risk against the same plan on every member that session, before costs, ninety per cent between {SignedTwo(low)} and {SignedTwo(high)}</dd>"));
         body.Append(Formatted($"<dt>The rule's</dt><dd data-rule-mean=\"{ruleMean.ToString("R", Invariant)}\">a mean {SignedTwo(ruleMean)} over every one of them</dd>"));
         body.Append("</dl>");

@@ -12,7 +12,7 @@ namespace EquityBrief.Tests.Checks;
 // a holiday and after a night not run, the night's value on its count's basis, and the book over four constructed
 // nights: what it buys at the rank as it stood, what it carries, what it sells and why, a night run again and an
 // earlier night.
-// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
 // see: A heavyweight is bought where it leads its sector above nothing and passes the trend gate, and sold where the rule would not buy it
 // see: A sector's return is the mean of its members' own returns over the look-back
 // see: A heavyweight leaving the index is sold at its last session's close as a member
@@ -128,7 +128,16 @@ public partial class FixtureExpectations
                 .. expected.GetProperty("names").EnumerateObject().Select(name =>
                     $"{name.Name}|{name.Value.GetProperty("cik").GetString()}|{name.Value.GetProperty("sector").GetString()}|{name.Value.GetProperty("group").GetString()}|{name.Value.GetProperty("industry").GetString()}|{name.Value.GetProperty("subIndustry").GetString()}"),
             ],
-            Query(store, "SELECT ticker, cik, sector, industry_group, industry, sub_industry FROM company ORDER BY ticker;"));
+            Query(store, $"SELECT ticker, cik, sector, industry_group, industry, sub_industry FROM company WHERE fetched_at > '{FixtureReplay.CompaniesFetchedAt}' ORDER BY ticker;"));
+
+        // Beside it the earlier night's fetch the replay holds for each name, its classification alone, the same as the
+        // night's.
+        Assert.Equal(
+            [
+                .. expected.GetProperty("names").EnumerateObject().Select(name =>
+                    $"{name.Name}|null|{name.Value.GetProperty("sector").GetString()}|{name.Value.GetProperty("group").GetString()}|{name.Value.GetProperty("industry").GetString()}|{name.Value.GetProperty("subIndustry").GetString()}"),
+            ],
+            Query(store, $"SELECT ticker, cik, sector, industry_group, industry, sub_industry FROM company WHERE fetched_at = '{FixtureReplay.CompaniesFetchedAt}' ORDER BY ticker;"));
         Assert.Equal(
             ["1"],
             Query(store, "SELECT COUNT(DISTINCT c.fetched_at) FROM company c JOIN reported_quarter r ON r.ticker = c.ticker AND r.fetched_at = c.fetched_at GROUP BY c.ticker;").Distinct());

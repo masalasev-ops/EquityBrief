@@ -23,7 +23,7 @@ public sealed class SectorHeavyweightCandidate : BookEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "161a4d9d9dce";
+    public override string Version => "d78f1ca30465";
 
     public override string Family => HeavyweightRule.Name;
 
@@ -44,6 +44,8 @@ public sealed class SectorHeavyweightCandidate : BookEvaluator
         "src/EquityBrief.Worker/Families/HeavyweightBook.cs",
         "src/EquityBrief.Core/Candidates/CandidateEvaluator.cs",
         "src/EquityBrief.Core/Candidates/CandidateFamily.cs",
+        "src/EquityBrief.Core/Candidates/FamilyRecords.cs",
+        "src/EquityBrief.Core/Bars/ExchangeClosures.cs",
         "src/EquityBrief.Data/Money.cs",
         "src/EquityBrief.Core/Prices/Statistic.cs",
         "src/EquityBrief.Data/StoreConnection.cs",

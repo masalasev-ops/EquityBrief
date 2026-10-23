@@ -181,6 +181,11 @@ public partial class ReadSurface
         Assert.Contains($"<section class=\"picks\" data-night=\"{PicksNewest}\" data-universe=\"500\" data-trades=\"5\" data-shown=\"5\" data-status=\"all\">", page, StringComparison.Ordinal);
         Assert.Contains("<div class=\"screen-mast\" data-title=\"Past picks: S&P 500 large cap\"><span class=\"m-screen\">Past picks: S&P 500 large cap</span>", page, StringComparison.Ordinal);
         Assert.Contains($"Every trade the S&P 500's lists recommended, as of the close of {PicksNewest}", page, StringComparison.Ordinal);
+        Assert.Contains(
+            $"<p class=\"lede\">Every name the live list recommended from the swing filter's first night, each bought at the open of the session after the night that listed it and followed to its target, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions.</p>",
+            page,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("the close it was listed at", page, StringComparison.Ordinal);
         Assert.DoesNotContain("data-ticker=\"PF\"", page, StringComparison.Ordinal);
         Assert.DoesNotContain("data-ticker=\"PG\"", page, StringComparison.Ordinal);
 
@@ -294,7 +299,14 @@ public partial class ReadSurface
 
         // Both keys, each closing on what to take from it.
         Assert.Contains("<b>How to read it.</b> A trade is listed on the night the live list drew it", page, StringComparison.Ordinal);
-        Assert.Contains("<b>How to read the trade line.</b> The line runs from the stop on the left, in green, to the target on the right, in orange, with the buy marked between them.", page, StringComparison.Ordinal);
+        Assert.Contains("<b>How to read the trade line.</b> The line runs from the stop on the left, in red, to the target on the right, in orange, with the buy marked between them.", page, StringComparison.Ordinal);
+
+        // The words name the hues the stylesheet draws the line's two ends in, the stop the loss's red and the target the
+        // resistance orange, and no page's words call the stop green.
+        // see: Green means support or a gain and red a stop or a loss, with orange for resistance
+        Assert.Contains(".tl-stop{stroke:var(--fail);", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".tl-target{stroke:var(--res);", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.DoesNotMatch(@"stop[^.<]{0,40}\bin green\b", page);
         Assert.Contains("<p class=\"take\"><b>What to take from it.</b> The lists' trades appear here, each under the setup that listed it. A registered variant's own trades are its account's trade log, chosen above, beside its test years verdict and apart from it; none ever appears on Tonight.</p>", page, StringComparison.Ordinal);
         Assert.Contains($"<span class=\"stamp computed\">Computed for {PicksNewest}</span>", page, StringComparison.Ordinal);
 
@@ -424,6 +436,10 @@ public partial class ReadSurface
         Assert.Contains("+2.50 ×</td>", row, StringComparison.Ordinal);
         Assert.Contains("<p class=\"take\"><b>What to take from it.</b>", region, StringComparison.Ordinal);
 
+        // Its key names the hues the trade line's ends are drawn in, the stop's red and the target's orange.
+        Assert.Contains("The line runs from the stop in red to the target in orange with the buy between them", region, StringComparison.Ordinal);
+        Assert.DoesNotMatch(@"stop[^.<]{0,40}\bin green\b", region);
+
         // It is folded inside the plan, after the plan's own tables and before the next region, and has no entry of
         // its own in the contents.
         var titles = ContentsTitles(tonight);
@@ -489,13 +505,29 @@ public partial class ReadSurface
         Assert.Contains(">no outcome stored</text>", missing, StringComparison.Ordinal);
         Assert.Contains(">no close stored to place</text>", unplaced, StringComparison.Ordinal);
 
-        // No line where the plan lacks a price or its prices are out of order, the dashed outline saying which.
+        // A buy at an open under its stop of 96 sits at the stop's end, and one over its target of 110 at the
+        // target's, each line drawn with its dot and its title saying which end the open was past; one at the
+        // stop itself is past it, and one a cent inside is not.
+        foreach (var (buy, end, past) in new[] { (95m, "10", "stop"), (96m, "10", "stop"), (112m, "150", "target"), (110m, "150", "target") })
+        {
+            var opened = marks.TradeLine(Trade(PickStatus.Stopped, buy: buy));
+
+            Assert.Contains($"data-past=\"{past}\" data-dot=\"filled\">", opened, StringComparison.Ordinal);
+            Assert.Contains($"<line class=\"tl-buy\" x1=\"{end}\" y1=\"10\" x2=\"{end}\" y2=\"20\"/>", opened, StringComparison.Ordinal);
+            Assert.Contains($", bought at an open past its {past}; stopped out on", opened, StringComparison.Ordinal);
+            Assert.DoesNotContain("m-absent", opened, StringComparison.Ordinal);
+        }
+
+        Assert.DoesNotContain("data-past", marks.TradeLine(Trade(PickStatus.Open, buy: 96.01m)) + marks.TradeLine(Trade(PickStatus.Open, buy: 109.99m)), StringComparison.Ordinal);
+
+        // No line where the plan lacks a price or its stop is not under its target, the dashed outline saying which.
         foreach (var (cell, says) in new[]
         {
             (Trade(PickStatus.Open, stop: null), "no stop stored"),
             (Trade(PickStatus.Open, target: null), "no target stored"),
             (Trade(PickStatus.Open, buy: null), "no buy stored"),
-            (Trade(PickStatus.Open, stop: 101m), "the stop, buy and target are not in order"),
+            (Trade(PickStatus.Open, stop: 110m), "the stop, buy and target are not in order"),
+            (Trade(PickStatus.Open, stop: 111m), "the stop, buy and target are not in order"),
         })
         {
             var drawn = marks.TradeLine(cell);

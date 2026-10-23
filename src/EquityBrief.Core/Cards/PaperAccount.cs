@@ -6,7 +6,11 @@ namespace EquityBrief.Core.Cards;
 // holding, the session it ended on and its price or none while it is open, its round trip in dollars a share or none where
 // no cost could be read, its place among the session's buys, for a holding with no stop the most holdings its book can
 // hold, and from 19.10, for a trade a list or a book kept, the close its plan was set at, which it is sized from the night
-// before, and the price the bar store holds now for its buy, which an open position is marked from.
+// before, and the price the bar store holds now for its buy, which an open position is marked from. Paper trading's page
+// reads besides its target, the distance its stop trails where it trails, the sessions it is given, which end of its plan
+// its fill opened past, its edge over the same plan on every member or a holding's over its size cut as its fill stored
+// it, how a page list's trade ended or why a holding was sold, as stored, and the exit of the menu it is walked under by
+// its number, none for its rule's own, with its stop's distance in the night's typical moves, which a trail is counted in.
 // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
 public sealed record PaperTrade(
     string Ticker,
@@ -20,7 +24,15 @@ public sealed record PaperTrade(
     int? BookHoldings = null,
     decimal? Planned = null,
     decimal? MarkedFrom = null,
-    DateOnly? Listed = null)
+    DateOnly? Listed = null,
+    decimal? Target = null,
+    decimal? Trail = null,
+    int? Cap = null,
+    string? Past = null,
+    double? Edge = null,
+    string? Outcome = null,
+    int? Exit = null,
+    double? RiskMoves = null)
 {
     // The price the trade is sized from: the close its plan was set at where it was set the night before.
     public decimal SizedAt => Planned ?? Buy;
@@ -61,8 +73,8 @@ public sealed record PaperWalk(
 // an open position by the ratio of its stock's closes, so a split moves nothing; before its stock's close is read a
 // position stands at its cost and the walk says from when it marks. No store, log or export holds a figure of it.
 // see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
-// see: A paper account draws its test years verdict and its record since registration apart, and never merges them
-public static class PaperAccount
+// see: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together
+public static partial class PaperAccount
 {
     public const string UnderTheCash = "the free cash was under its cost";
 
@@ -186,20 +198,7 @@ public static class PaperAccount
             worst = Math.Max(worst, peak > 0m ? (peak - value) / peak : 0m);
         }
 
-        double? fundReturn = null;
-        DateOnly? fundFrom = null;
-
-        if (fund is not null && sessions.Count > 0)
-        {
-            if (fund(sessions[0]) is { } first && first > 0m && fund(sessions[^1]) is { } last)
-            {
-                fundReturn = Statistic.FromRatio((last / first) - 1m);
-            }
-            else
-            {
-                fundFrom = sessions.FirstOrDefault(session => fund(session) is not null) is var held && held != default ? held : null;
-            }
-        }
+        var held = fund is null ? new PaperFund(null, null) : FundOver(sessions, fund);
 
         return new PaperWalk(
             values,
@@ -209,9 +208,29 @@ public static class PaperAccount
             taken.Count(one => one.Skipped is null && one.Trade.RoundTrip is null),
             values.Count > 0 ? Statistic.FromRatio((values[^1].Item2 / account.Size) - 1m) : null,
             values.Count > 0 ? Statistic.FromRatio(worst) : null,
-            fundReturn,
-            fundFrom,
+            held.Return,
+            held.From,
             markedFrom,
             [.. values.Select(one => (one.Item1, Statistic.FromRatio((one.Item2 / account.Size) - 1m)))]);
     }
+
+    // A fund's return over sessions, its close on the last over its close on the first; where its series holds no close on
+    // the first, no return and the first session it holds one.
+    public static PaperFund FundOver(IReadOnlyList<DateOnly> sessions, Func<DateOnly, decimal?> fund)
+    {
+        if (sessions.Count == 0)
+        {
+            return new PaperFund(null, null);
+        }
+
+        if (fund(sessions[0]) is { } first && first > 0m && fund(sessions[^1]) is { } last)
+        {
+            return new PaperFund(Statistic.FromRatio((last / first) - 1m), null);
+        }
+
+        return new PaperFund(null, sessions.FirstOrDefault(session => fund(session) is not null) is var held && held != default ? held : null);
+    }
 }
+
+// A fund's return over an account's sessions, or where its series starts later the first session it holds a close.
+public sealed record PaperFund(double? Return, DateOnly? From);

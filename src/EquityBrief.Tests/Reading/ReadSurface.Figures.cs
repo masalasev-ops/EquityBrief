@@ -49,6 +49,45 @@ public partial class ReadSurface
         Assert.Equal(
             "the session after the print closes down more than 2 typical days and inside 213.57 to 230.21",
             Figures.InSentence("the session after the print closes down more than 2 typical days and inside 213.571 to 230.2124"));
+
+        // A band whose edges are one price as read is named at that price, CVX's support at 217.78 among them, and edges
+        // a cent apart, or a price that only begins with the other, are left as a range.
+        Assert.Equal(
+            "the session after the print closes down more than 2 typical days and inside the band at 217.78, and the next session holds its low",
+            Figures.OneBandAtItsPrice(Figures.InSentence("the session after the print closes down more than 2 typical days and inside 217.78 to 217.78, and the next session holds its low")));
+        Assert.Equal("inside the band at 213.57", Figures.OneBandAtItsPrice(Figures.InSentence("inside 213.571 to 213.5724")));
+        Assert.Equal("inside 217.78 to 217.79", Figures.OneBandAtItsPrice("inside 217.78 to 217.79"));
+        Assert.Equal("inside 217.7 to 217.78", Figures.OneBandAtItsPrice("inside 217.7 to 217.78"));
+
+        // A price of a thousand or more is read with its thousands marked whether it was stored to two places or more,
+        // and a band of one such price is named at it: NVR's flush of 2026-10-19 stored at 5797.6736, SNDK's at
+        // 1216.3799 and AZO's at 3046.47. A count of a thousand or more is no price and stays as written, and edges a
+        // cent apart stay a range.
+        Assert.Equal("inside 3,046.47 to 3,050.12", Figures.InSentence("inside 3046.47 to 3050.1234"));
+        Assert.Equal("1234 members, 2 typical days and 7.5 typical moves", Figures.InSentence("1234 members, 2 typical days and 7.5 typical moves"));
+        Assert.Equal("inside the band at 5,797.67, and", Figures.OneBandAtItsPrice(Figures.InSentence("inside 5797.6736 to 5797.6736, and")));
+        Assert.Equal("inside the band at 1,216.38, and", Figures.OneBandAtItsPrice(Figures.InSentence("inside 1216.3799 to 1216.3799, and")));
+        Assert.Equal("inside the band at 3,046.47, and", Figures.OneBandAtItsPrice(Figures.InSentence("inside 3046.47 to 3046.47, and")));
+        Assert.Equal("inside 1,216.38 to 1,216.39", Figures.OneBandAtItsPrice(Figures.InSentence("inside 1216.3799 to 1216.39")));
+        Assert.Equal("inside 1,216.3 to 1,216.38", Figures.OneBandAtItsPrice("inside 1,216.3 to 1,216.38"));
+        Assert.Equal("inside 5 to 5,000", Figures.OneBandAtItsPrice("inside 5 to 5,000"));
+
+        // The event book draws its trigger so.
+        var ladder = new EquityBrief.Api.Reading.LadderRow(
+            "CVX",
+            new DateOnly(2026, 10, 16),
+            "uptrend",
+            "{\"events\":[{\"name\":\"a flush after the print\",\"eventDate\":\"2026-10-30\",\"trigger\":\"the session after the print closes down more than 2 typical days and inside 217.78 to 217.78, and the next session holds its low\",\"entry\":\"217.78\",\"stop\":\"213.24\",\"target\":\"224.99\"}]}");
+
+        Assert.Contains("<td>the session after the print closes down more than 2 typical days and inside the band at 217.78, and the next session holds its low</td>", EquityBrief.Api.Reading.NameScreen.EventBook(ladder), StringComparison.Ordinal);
+
+        var thousands = new EquityBrief.Api.Reading.LadderRow(
+            "NVR",
+            new DateOnly(2026, 10, 19),
+            "uptrend",
+            "{\"events\":[{\"name\":\"a flush after the print\",\"eventDate\":\"2026-10-22\",\"trigger\":\"the session after the print closes down more than 2 typical days and inside 5797.6736 to 5797.6736, and the next session holds its low\",\"entry\":\"5797.6736\",\"stop\":\"5612.40\",\"target\":\"6168.22\"}]}");
+
+        Assert.Contains("<td>the session after the print closes down more than 2 typical days and inside the band at 5,797.67, and the next session holds its low</td>", EquityBrief.Api.Reading.NameScreen.EventBook(thousands), StringComparison.Ordinal);
     }
 
     [Fact]

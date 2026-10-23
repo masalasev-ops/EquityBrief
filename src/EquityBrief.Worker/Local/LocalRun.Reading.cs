@@ -8,13 +8,14 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Local;
 
-// One stored results release waiting for its reading: its accession, its filer, its text as stored and the hash and
-// instant it was stored under.
-sealed record UnreadRelease(string Accession, string Cik, byte[] Gzip, string Sha256, DateTimeOffset Accepted);
+// One stored results release waiting for its reading: its accession and exhibit, its filer, its text as stored and the
+// hash and instant it was stored under.
+sealed record UnreadRelease(string Accession, string Exhibit, string Cik, byte[] Gzip, string Sha256, DateTimeOffset Accepted);
 
 // What one reading came to: the four words or the cause the answer was refused for, how long the call took and the
-// prompt's tokens.
-sealed record ReadingTaken(ReleaseAnswerRead Read, double? Seconds, int? PromptTokens);
+// prompt's tokens, and from the 20.3 correction of 2026-10-22 the characters of the release kept where it was cut to
+// the window and the hash of the last request sent.
+sealed record ReadingTaken(ReleaseAnswerRead Read, double? Seconds, int? PromptTokens, int? CutAt = null, string? RequestSha256 = null);
 
 // From 20.3 the local run reads the stored results releases, each with every name and date in it replaced by a neutral
 // word, under the four questions, and keeps each reading under the pin it was read under, read or refused with its
@@ -41,13 +42,21 @@ public sealed partial class LocalRun
     static readonly TimeSpan BeforeASlot = TimeSpan.FromMinutes(3);
     static readonly TimeSpan SlotAllowance = TimeSpan.FromMinutes(30);
 
+    // From the 20.3 correction of 2026-10-22 a filing's release is the exhibit marked so, read where no reading under the
+    // pin holds that exhibit, so the exhibit a check put in the place of one read is read in its turn.
     const string Unread = @"
-        SELECT d.accession, d.cik, d.text_gzip, d.text_sha256, d.accepted_at
+        SELECT d.accession, d.exhibit, d.cik, d.text_gzip, d.text_sha256, d.accepted_at
         FROM release_document d
-        WHERE d.accepted_at >= $since
-          AND NOT EXISTS (SELECT 1 FROM release_reading r WHERE r.accession = d.accession AND r.pin = $pin)
+        WHERE d.release = 1 AND d.accepted_at >= $since
+          AND NOT EXISTS (SELECT 1 FROM release_reading r WHERE r.accession = d.accession AND r.exhibit = d.exhibit AND r.pin = $pin)
         ORDER BY d.accepted_at {0}, d.accession
         LIMIT $limit;
+    ";
+
+    const string CountUnread = @"
+        SELECT COUNT(*) FROM release_document d
+        WHERE d.release = 1
+          AND NOT EXISTS (SELECT 1 FROM release_reading r WHERE r.accession = d.accession AND r.exhibit = d.exhibit AND r.pin = $pin);
     ";
 
     const string FilerNames = "SELECT names, tickers FROM release_filer WHERE cik = $cik;";
@@ -141,7 +150,7 @@ public sealed partial class LocalRun
         await using var connection = await OpenAsync(cancellation);
         await using var command = connection.CreateCommand();
 
-        command.CommandText = "SELECT COUNT(*) FROM release_document d WHERE NOT EXISTS (SELECT 1 FROM release_reading r WHERE r.accession = d.accession AND r.pin = $pin);";
+        command.CommandText = CountUnread;
         command.Parameters.AddWithValue("$pin", pin.Id);
 
         return Convert.ToInt32(await command.ExecuteScalarAsync(cancellation), CultureInfo.InvariantCulture);
@@ -222,11 +231,11 @@ public sealed partial class LocalRun
                         }
                     }
 
-                    if (!prepared)
-                    {
-                        loaded = await feed.PrepareAsync(cancellation);
-                        prepared = true;
-                    }
+                    // The runtime's list is read before each release, since LM Studio may have loaded the model again
+                    // at a window of its own since the release before.
+                    // see: A reading is taken only at the window its pin names, and the model is loaded again at it wherever it is held at another
+                    loaded |= await feed.PrepareAsync(cancellation);
+                    prepared = true;
 
                     var taken = await ReadReleaseAsync(pin, release, filers, cancellation);
 
@@ -235,7 +244,7 @@ public sealed partial class LocalRun
                         seconds.Add(spent);
                     }
 
-                    await StoreReadingAsync(pin, release.Accession, taken, cancellation);
+                    await StoreReadingAsync(pin, release, taken, cancellation);
 
                     if (taken.Read.Answer is not null)
                     {
@@ -290,9 +299,10 @@ public sealed partial class LocalRun
             batch.Add(new UnreadRelease(
                 reader.GetString(0),
                 reader.GetString(1),
-                (byte[])reader[2],
-                reader.GetString(3),
-                DateTimeOffset.ParseExact(reader.GetString(4), "yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal)));
+                reader.GetString(2),
+                (byte[])reader[3],
+                reader.GetString(4),
+                DateTimeOffset.ParseExact(reader.GetString(5), "yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal)));
         }
 
         return batch;
@@ -372,25 +382,47 @@ public sealed partial class LocalRun
         return values;
     }
 
-    // One reading asked: asked once more after an answer that cannot be read, refused at once where the runtime refuses
-    // it or does not answer in time, and the run ended where an answer is neither the pin's model's nor its runtime's.
+    // One reading asked: asked once more after an answer that cannot be read, refused at once where the runtime does not
+    // answer in time or refuses it for any cause but its length, and the run ended where an answer is neither the pin's
+    // model's nor its runtime's. From the 20.3 correction of 2026-10-22 a release the runtime refuses as past the window
+    // it is loaded at is cut to fit on the runtime's own count and asked again, up to the cuts the fit allows, and one
+    // still refused after them stands refused; the hash of the last request sent is kept with what it came to.
+    // see: A release longer than the model's window is read from its opening that fits, with a marker where it was cut
     async Task<ReadingTaken> AskAsync(ReadingPin pin, string instruction, string text, CancellationToken cancellation)
     {
         ReleaseAnswerRead read = new(null, ReleaseAnswers.Empty);
         double? seconds = null;
         int? tokens = null;
+        int? cutAt = null;
+        var (asked, cuts) = (0, 0);
 
-        for (var ask = 0; ask <= ReadingSettings.AskedAgain; ask++)
+        while (true)
         {
+            var request = new ReadingRequest(pin.Model, instruction, text, pin.Seed, pin.AnswerTokens);
+            var sent = LmStudioReadingFeed.BodyHash(request);
             ReadingReply reply;
 
             try
             {
-                reply = await feed.AskAsync(new ReadingRequest(pin.Model, instruction, text, pin.Seed, pin.AnswerTokens), cancellation);
+                reply = await feed.AskAsync(request, cancellation);
+            }
+            catch (ReadingRefused refused) when (refused.Context is { } window && window != pin.Context)
+            {
+                throw new PinBroken(FormattableString.Invariant($"the runtime refused a release past a window of {window} tokens where the pin names {pin.Context}"));
             }
             catch (ReadingRefused refused)
             {
-                return new ReadingTaken(new ReleaseAnswerRead(null, refused.Cause), seconds, tokens);
+                if (cuts < ReleaseFit.Cuts
+                    && refused.PromptTokens is { } counted
+                    && refused.Context is { } context
+                    && ReleaseFit.Cut(text, instruction.Length, instruction.Length + text.Length, counted, context, pin.AnswerTokens) is { } cut)
+                {
+                    (text, cutAt, cuts) = (cut, ReleaseFit.Kept(cut), cuts + 1);
+
+                    continue;
+                }
+
+                return new ReadingTaken(new ReleaseAnswerRead(null, refused.Cause), seconds, tokens, cutAt, sent);
             }
 
             seconds = (seconds ?? 0) + reply.Seconds;
@@ -403,16 +435,14 @@ public sealed partial class LocalRun
 
             read = ReleaseAnswers.Read(reply.Content, reply.FinishReason);
 
-            if (read.Answer is not null)
+            if (read.Answer is not null || ++asked > ReadingSettings.AskedAgain)
             {
-                return new ReadingTaken(read, seconds, tokens);
+                return new ReadingTaken(read, seconds, tokens, cutAt, sent);
             }
         }
-
-        return new ReadingTaken(read, seconds, tokens);
     }
 
-    async Task StoreReadingAsync(ReadingPin pin, string accession, ReadingTaken taken, CancellationToken cancellation)
+    async Task StoreReadingAsync(ReadingPin pin, UnreadRelease release, ReadingTaken taken, CancellationToken cancellation)
     {
         await using var connection = await OpenAsync(cancellation);
 
@@ -422,7 +452,8 @@ public sealed partial class LocalRun
         var answer = taken.Read.Answer;
 
         command.CommandText = InsertReading;
-        command.Parameters.AddWithValue("$accession", accession);
+        command.Parameters.AddWithValue("$accession", release.Accession);
+        command.Parameters.AddWithValue("$exhibit", release.Exhibit);
         command.Parameters.AddWithValue("$pin", pin.Id);
         command.Parameters.AddWithValue("$outcome", answer is null ? Refused : Read);
         command.Parameters.AddWithValue("$cause", (object?)taken.Read.Cause ?? DBNull.Value);
@@ -432,6 +463,9 @@ public sealed partial class LocalRun
         command.Parameters.AddWithValue("$demand", (object?)answer?.Demand ?? DBNull.Value);
         command.Parameters.AddWithValue("$seconds", (object?)taken.Seconds ?? DBNull.Value);
         command.Parameters.AddWithValue("$prompt_tokens", (object?)taken.PromptTokens ?? DBNull.Value);
+        command.Parameters.AddWithValue("$cut_at", (object?)taken.CutAt ?? DBNull.Value);
+        command.Parameters.AddWithValue("$request_sha256", (object?)taken.RequestSha256 ?? DBNull.Value);
+        command.Parameters.AddWithValue("$carried_from", DBNull.Value);
         command.Parameters.AddWithValue("$read_at", Instant(clock.UtcNow));
         command.Parameters.AddWithValue("$run_id", runId);
 

@@ -46,6 +46,7 @@ public static partial class TonightScreen
         // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
         IReadOnlyList<SetupFamily> families = universe.Code == Universes.Large.Code ? [SetupFamilies.FundamentalsFirst] : SetupFamilies.OnEveryIndex;
         var cards = new List<FamilyCardView>();
+        var checks = IndexChecks(results);
 
         foreach (var (family, at) in families.Select((family, at) => (family, at)))
         {
@@ -107,7 +108,7 @@ public static partial class TonightScreen
                 0,
                 listed,
                 notes,
-                listed.Length > 0 ? null : IndexEmpty(universe, night, settings, own, [.. results.Where(result => result.Family == family.Name)]),
+                listed.Length > 0 ? null : IndexEmpty(universe, night, settings, own, [.. results.Where(result => result.Family == family.Name)], checks, family.Name),
                 HeldBack: own.Count(pick => pick.State == FamilyList.OpenTrade),
                 Passes: Passes(own)));
         }
@@ -115,37 +116,81 @@ public static partial class TonightScreen
         return cards;
     }
 
-    // The instant the live rule of a family on an S&P 400 or 600 index was registered, as of a night whose list it drew,
-    // none where no freeze stands or the night did not read it; the card's line saying its sweep found none goes from that
-    // night on.
+    // The instant an S&P 400's or 600's page reads the register and the sweep answers as of: past the night's evening, or,
+    // where the night read the register later, as a night run again after a freeze does, the second after that instant,
+    // so a night run again draws the rules it read. A night stored before it stated the instant is read past its evening.
+    // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
+    public static DateTimeOffset ReadAsOf(IndexNightRow? night, DateOnly session)
+    {
+        var past = PastTheNight(session);
+
+        return night is not null && IndexRuleSettings.Read(night.Settings).RegisterAt is { } read && read.AddSeconds(1) > past ? read.AddSeconds(1) : past;
+    }
+
+    // A family's freezes on an index up to the instant its page reads as of, and its live rule where the night read its
+    // list by it, none where no freeze stands or the night did not read it; what its card's sweep line is read against.
     // see: No family on any index is set aside or hidden by a test result without the operator's word
-    public static DateTimeOffset? IndexFrozenAt(string index, string family, IReadOnlyList<CandidateRow> register, IndexNightRow night) =>
-        ReadByLiveRule(night, family) ? StandingRows(IndexRuleCandidate.FamilyOn(family, index), register, night.Session).Live?.RegisteredAt : null;
+    // see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
+    public static FamilyFreezes IndexFreezesOf(string index, string family, IReadOnlyList<CandidateRow> register, IndexNightRow night)
+    {
+        var name = IndexRuleCandidate.FamilyOn(family, index);
+        var at = ReadAsOf(night, night.Session);
+        var live = ReadByLiveRule(night, family) ? StandingRows(name, register, at).Live?.Candidate : null;
+
+        return new FamilyFreezes(live, Freezes(name, register, at), family == HeavyweightRule.Name ? DesignOf(live, register) : null);
+    }
 
     // Each card of a family whose live rule stands on the index as of the night and drew its list that night: live since
-    // the day it was registered, the variants standing beside it, and its rule in the words its registration's name
-    // carries, which the code wrote from its settings. A family whose live rule the night did not read, one whose
-    // evaluator moved among them, keeps the provisional card its list was drawn by.
+    // the day it was registered, the variants standing beside it, its rule in the words its registration's name carries,
+    // which the code wrote from its settings, and each pick's why naming that rule. A family whose live rule the night
+    // did not read, one whose evaluator moved among them, keeps the provisional card its list was drawn by.
     // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
     // see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
+    // see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
     public static IReadOnlyList<FamilyCardView> WithIndexFreezes(IReadOnlyList<FamilyCardView> cards, UniverseChoice universe, IReadOnlyList<CandidateRow> register, IndexNightRow night) =>
     [
-        .. cards.Select(card => ReadByLiveRule(night, card.Family) && StandingRows(IndexRuleCandidate.FamilyOn(card.Family, universe.Code), register, night.Session) is { Live: { } live } standing
+        .. cards.Select(card => ReadByLiveRule(night, card.Family) && StandingRows(IndexRuleCandidate.FamilyOn(card.Family, universe.Code), register, ReadAsOf(night, night.Session)) is { Live: { } live } standing
             ? card with
             {
                 LiveSince = DateOnly.FromDateTime(live.RegisteredAt.UtcDateTime),
                 Variants = standing.Variants,
                 Rule = "The " + live.Candidate[FamilyRecords.LivePrefix.Length..] + ", each trade paying the published spread, half at each end.",
+                Picks = [.. card.Picks.Select(pick => pick with { Why = FrozenWhy(card.Family, live, universe.Name) })],
             }
             : card),
     ];
+
+    // Why a family frozen on an index lists a stock tonight: its live rule passed every part of it, named as the index's
+    // live rule of the family, never as the base setting or the provisional settings its list was drawn by before.
+    public static string FrozenWhy(string family, RegisterRow live, string index)
+    {
+        double? Dial(string name)
+        {
+            try
+            {
+                return CandidateEvaluator.Read(live.Parameters).TryGetValue(name, out var value) ? value : null;
+            }
+            catch (Exception failure) when (failure is ArgumentException or System.Text.Json.JsonException or InvalidCastException)
+            {
+                return null;
+            }
+        }
+
+        return family switch
+        {
+            SetupFamilies.Pullback => $"Dipped into a support band and turned back up tonight, every part of the {index}'s live pullback rule passing.",
+            BreakoutRule.Name => (Dial(IndexBreakoutCandidate.HighSessionsParameter) is { } high ? FormattableString.Invariant($"Closed above its high of the {high:0} sessions before on heavy volume tonight") : "Closed above its high on heavy volume tonight")
+                + $", every part of the {index}'s live breakout rule passing.",
+            _ => $"Its report beat its estimate and the reaction held, every part of the {index}'s live drift rule passing.",
+        };
+    }
 
     // Each setup row of the index's Run page whose family's live rule stands as of the night and drew its list that night:
     // live since the day it was registered, the variants standing beside it and its live rule's record in words, as the
     // records card reads it.
     public static IReadOnlyList<FamilyRunRow> WithIndexFreezes(IReadOnlyList<FamilyRunRow> rows, UniverseChoice universe, IReadOnlyList<CandidateRow> register, IReadOnlyList<FamilyRecordRow> records, IndexNightRow? night, DateOnly on) =>
     [
-        .. rows.Select(row => night is not null && ReadByLiveRule(night, row.Family) && StandingRows(IndexRuleCandidate.FamilyOn(row.Family, universe.Code), register, on) is { Live: { } live } standing
+        .. rows.Select(row => night is not null && ReadByLiveRule(night, row.Family) && StandingRows(IndexRuleCandidate.FamilyOn(row.Family, universe.Code), register, ReadAsOf(night, on)) is { Live: { } live } standing
             ? row with
             {
                 LiveSince = DateOnly.FromDateTime(live.RegisteredAt.UtcDateTime),
@@ -162,7 +207,20 @@ public static partial class TonightScreen
     // The registration of a family's live rule on the index that the night read the family by, none where no freeze
     // stands as of the night or the night did not read it.
     public static string? IndexLiveRule(string index, string family, IReadOnlyList<CandidateRow> register, IndexNightRow night) =>
-        ReadByLiveRule(night, family) ? StandingRows(IndexRuleCandidate.FamilyOn(family, index), register, night.Session).Live?.Candidate : null;
+        ReadByLiveRule(night, family) ? StandingRows(IndexRuleCandidate.FamilyOn(family, index), register, ReadAsOf(night, night.Session)).Live?.Candidate : null;
+
+    // The families an index's night read by their live rules, each with its setup's heading and the day its rule went
+    // live, in the one family order; none on a night no freeze was read by. Past picks names them as frozen and every
+    // other family as provisional.
+    public static IReadOnlyList<(string Family, string Heading, DateOnly Since)> FrozenOn(UniverseChoice universe, IReadOnlyList<CandidateRow> register, IndexNightRow? night) =>
+        night is null
+            ? []
+            : [
+                .. SetupFamilies.Order
+                    .Select(family => (family, Live: ReadByLiveRule(night, family) ? StandingRows(IndexRuleCandidate.FamilyOn(family, universe.Code), register, ReadAsOf(night, night.Session)).Live : null))
+                    .Where(one => one.Live is not null)
+                    .Select(one => (one.family, SetupFamilies.Named(one.family)?.Heading ?? SetupFamilies.SectorHeavyweights.Heading, DateOnly.FromDateTime(one.Live!.RegisteredAt.UtcDateTime))),
+            ];
 
     // The heavyweights' card of an index whose live rule stands and kept the book the card draws that night: live since
     // the day it was registered, the variants beside it in books of their own, its rule in the words its registration
@@ -171,9 +229,9 @@ public static partial class TonightScreen
     // keys and its rows that it reads no lead over a sector.
     // see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
     // see: An S&P 400 or 600 heavyweights holding keeps the lead it was bought on
-    public static HeavyweightCardView WithIndexHeavyweightFreeze(HeavyweightCardView card, UniverseChoice universe, IReadOnlyList<CandidateRow> register, IndexNightRow night)
+    public static HeavyweightCardView WithIndexHeavyweightFreeze(HeavyweightCardView card, UniverseChoice universe, IReadOnlyList<CandidateRow> register, IndexNightRow night, bool readsBefore = false)
     {
-        if (!ReadByLiveRule(night, HeavyweightRule.Name) || StandingRows(IndexRuleCandidate.FamilyOn(HeavyweightRule.Name, universe.Code), register, night.Session) is not { Live: { } live } standing)
+        if (!ReadByLiveRule(night, HeavyweightRule.Name) || StandingRows(IndexRuleCandidate.FamilyOn(HeavyweightRule.Name, universe.Code), register, ReadAsOf(night, night.Session)) is not { Live: { } live } standing)
         {
             return card;
         }
@@ -182,7 +240,7 @@ public static partial class TonightScreen
         var followers = dials[IndexHeavyweightCandidate.DesignParameter] == IndexHeavyweightCandidate.DesignB;
         var lookBack = (int)(followers ? dials[IndexHeavyweightCandidate.WindowParameter] : dials[IndexHeavyweightCandidate.LookBackParameter]);
         var reading = new HeavyweightSettings(1, lookBack, 1, HighBeta: !followers && dials[IndexHeavyweightCandidate.BetaParameter] == 1);
-        var next = HeavyweightRule.NextRebalance(night.Session, card.LastRebalance, reading);
+        var next = HeavyweightRule.NextRebalance(night.Session, card.LastRebalance, reading, readsBefore);
 
         return card with
         {
@@ -212,7 +270,7 @@ public static partial class TonightScreen
     // the session it ended on, as the S&P 500's heavyweights rules are read.
     // see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
     // see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
-    public static IReadOnlyList<FamilyRecordRow> IndexRecordRows(UniverseChoice universe, IReadOnlyList<CandidateRow> register, IReadOnlyList<FamilyTradeRow> trades, DateOnly night)
+    public static IReadOnlyList<FamilyRecordRow> IndexRecordRows(UniverseChoice universe, IReadOnlyList<CandidateRow> register, IReadOnlyList<FamilyTradeRow> trades, DateOnly night, DateTimeOffset? asOf = null)
     {
         RegisterRow[] rows =
         [
@@ -220,7 +278,7 @@ public static partial class TonightScreen
                 row.Id, row.Candidate, string.Empty, string.Empty, row.Evaluator,
                 row.Parameters, string.Empty, row.Event, row.Retires, row.RegisteredAt, row.Evidence)),
         ];
-        var standing = CandidateFamily.Standing(rows, PastTheNight(night));
+        var standing = CandidateFamily.Standing(rows, asOf ?? PastTheNight(night));
 
         return
         [
@@ -231,9 +289,15 @@ public static partial class TonightScreen
             {
                 var name = IndexRuleCandidate.FamilyOn(family.Name, universe.Code);
                 var rules = CandidateFamily.In(standing, name);
-                var trials = CandidateFamily.Trials(CandidateFamily.In(rows, name), rules.Select(rule => rule.Candidate));
 
-                return FamilyRecords.Family(rules, trades, night, family.Cap, trials)
+                // The rule of the day before a freeze, kept in the background, is read by no test: no trial of its
+                // family's, it takes and passes no share of the family's level and is read at the level its rules start at.
+                RegisterRow[] tested = [.. rules.Where(rule => !FamilyRecords.IsBackground(rule.Candidate))];
+                RegisterRow[] kept = [.. rules.Where(rule => FamilyRecords.IsBackground(rule.Candidate))];
+                var trials = CandidateFamily.Trials(CandidateFamily.In(rows, name), tested.Select(rule => rule.Candidate));
+
+                return FamilyRecords.Family(tested, trades, night, family.Cap, trials)
+                    .Concat(FamilyRecords.Family(kept, trades, night, family.Cap, Math.Max(1, trials)))
                     .OrderBy(view => view.Live ? 0 : 1)
                     .ThenBy(view => view.Candidate, StringComparer.Ordinal)
                     .Select(view => new FamilyRecordRow(
@@ -270,10 +334,13 @@ public static partial class TonightScreen
     public static string NotComputed(UniverseChoice universe) =>
         $"Not computed tonight: the {universe.Possessive} part of the night failed, and the Run page names its cause.";
 
-    // Why an index's family lists nothing on a night it lists none: its part of the night failed, the index's own market
-    // check closed every list, every stock it passed is held back, or none passed, with how many of the index's members
-    // stopped at each part of the rule.
-    static string IndexEmpty(UniverseChoice universe, IndexNightRow night, IndexRuleSettings settings, IReadOnlyList<FamilyPickRow> own, IReadOnlyList<IndexResultRow> results)
+    // Why an index's family lists nothing on a night it lists none: its part of the night failed, its own market check
+    // closed its list, every stock it passed is held back, or none passed, with how many of the index's members stopped
+    // at each part of the rule. A night storing each family's check says the check closed every list only where one check
+    // read alike for every family closed them all, and otherwise names this family's own; a night stored before the
+    // checks reads the index's own check for every family.
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
+    static string IndexEmpty(UniverseChoice universe, IndexNightRow night, IndexRuleSettings settings, IReadOnlyList<FamilyPickRow> own, IReadOnlyList<IndexResultRow> results, IReadOnlyList<MarketCheckView>? checks, string family)
     {
         if (night.Fault is not null)
         {
@@ -285,7 +352,15 @@ public static partial class TonightScreen
             return "Every stock this setup passed tonight is held back, as the notes beneath say.";
         }
 
-        if (!night.MarketOpen)
+        var check = checks?.FirstOrDefault(one => one.Family == family);
+        var every = checks is null || OneCheck(checks, night, settings);
+
+        if (check is { Open: false } && !every)
+        {
+            return $"The market check closed this setup's list tonight: {check.Words}.";
+        }
+
+        if (check is { Open: false } || (checks is null && !night.MarketOpen))
         {
             return night.Breadth is { } breadth
                 ? FormattableString.Invariant($"The market check closed every list of the {universe.Name} tonight: the {universe.Possessive} breadth was {EquityBrief.Core.Cards.FloorShare.Percent(breadth, settings.MarketFloor)}% of its members closing above their 200-day average, below its floor of {settings.MarketFloor * 100:0.#}%.")
@@ -319,7 +394,8 @@ public static partial class TonightScreen
         IReadOnlyList<IndexHoldingRow> holdings,
         DateOnly? last,
         IReadOnlyList<HeavyweightCloseRow> closes,
-        IReadOnlyList<(string Ticker, string? Company, decimal? Close)> members)
+        IReadOnlyList<(string Ticker, string? Company, decimal? Close)> members,
+        bool readsBefore = false)
     {
         var words = SetupFamilies.SectorHeavyweights;
         var settings = IndexRuleSettings.Read(night.Settings);
@@ -379,7 +455,7 @@ public static partial class TonightScreen
 
         // The book's look-back and beta as its night stored them, which the sessions its rebalance needs are read from.
         var reading = new HeavyweightSettings(HeavyweightRule.Largest, lookBack, HeavyweightRule.Leaders, HighBeta: settings.Heavyweights.GetValueOrDefault("beta") is not (null or "off"));
-        var next = HeavyweightRule.NextRebalance(night.Session, last, reading);
+        var next = HeavyweightRule.NextRebalance(night.Session, last, reading, readsBefore);
 
         return new HeavyweightCardView(
             words.Heading,
@@ -402,13 +478,19 @@ public static partial class TonightScreen
     // What an index's card draws for a holding whose book stored no lead, which a design (a) book stores at every buy.
     const string BoughtBeforeALead = "bought before its book stored a lead";
 
-    // How an index's night went, read off the rows its families stored for it.
-    public static IndexRunView IndexRun(IndexNightRow night, IReadOnlyList<FamilyPickRow> picks, IReadOnlyList<IndexResultRow> results, IReadOnlyList<IndexTradeRow> trades, IReadOnlyList<IndexHoldingRow> holdings) =>
-        new(
+    // How an index's night went, read off the rows its families stored for it: its own breadth against the floor every
+    // family's check read where one check read alike for all of them, and each family's own check otherwise.
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
+    public static IndexRunView IndexRun(IndexNightRow night, IReadOnlyList<FamilyPickRow> picks, IReadOnlyList<IndexResultRow> results, IReadOnlyList<IndexTradeRow> trades, IReadOnlyList<IndexHoldingRow> holdings)
+    {
+        var settings = IndexRuleSettings.Read(night.Settings);
+        var (open, checks) = MarketOf(night, settings, results);
+
+        return new(
             night.Members,
             night.Breadth,
-            IndexRuleSettings.Read(night.Settings).MarketFloor,
-            night.MarketOpen,
+            settings.MarketFloor,
+            open,
             results.Where(result => result.Passed).Select(result => result.Ticker).Distinct(StringComparer.Ordinal).Count(),
             picks.Count(pick => pick.State == FamilyList.Listed),
             picks.Count(pick => pick.State == FamilyList.OpenTrade),
@@ -416,7 +498,60 @@ public static partial class TonightScreen
             trades.Count(trade => trade.EndedOn == night.Session),
             night.Rebalanced,
             holdings.Count(holding => holding.EndedOn is null),
-            night.Fault);
+            night.Fault,
+            checks);
+    }
+
+    // Each swing family's own market check as the night stored it, the first part of its rule each member was answered
+    // on, one answer for every member of the family: its setup, whether it left the list open, its words, and the breadth
+    // and floor it read where it read one; none where the night stored no part's answer, as a night before 20.11 did.
+    // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
+    public static IReadOnlyList<MarketCheckView>? IndexChecks(IReadOnlyList<IndexResultRow> results)
+    {
+        if (results.Count == 0 || results.Any(result => result.Gates is null))
+        {
+            return null;
+        }
+
+        static double? Figure(IReadOnlyDictionary<string, string> values, string key) =>
+            values.TryGetValue(key, out var stored) && double.TryParse(stored, NumberStyles.Float, CultureInfo.InvariantCulture, out var figure) ? figure : null;
+
+        var checks = new List<MarketCheckView>();
+
+        foreach (var family in SetupFamilies.OnEveryIndex)
+        {
+            if (results.FirstOrDefault(result => result.Family == family.Name) is { Gates: { } gates }
+                && FamilyRule.GatesOf(gates).FirstOrDefault(gate => gate.Name == EquityBrief.Core.Cards.RuleRows.Market) is { } market)
+            {
+                checks.Add(new MarketCheckView(family.Name, family.Label, market.Passed, market.Reason, Figure(market.Values, "breadth"), Figure(market.Values, "floor")));
+            }
+        }
+
+        return checks.Count == 0 ? null : checks;
+    }
+
+    // Whether every family's stored check read one check alike, the index's own breadth at the floor its night stored, as
+    // the provisional rules all read it: the night's lines are then drawn as they were before each family's was stored.
+    static bool OneCheck(IReadOnlyList<MarketCheckView> checks, IndexNightRow night, IndexRuleSettings settings) =>
+        checks.All(check => check.Words == checks[0].Words && check.Open == checks[0].Open)
+        && checks[0].Breadth == night.Breadth
+        && checks[0].Floor == settings.MarketFloor;
+
+    // Whether the market checks left the index's lists open on the night, and each family's own check where one check did
+    // not read alike for every family: the index's own check on a night storing none, one family's list open leaving
+    // the lists open, and only every family's closed closing them.
+    static (bool Open, IReadOnlyList<MarketCheckView>? Checks) MarketOf(IndexNightRow night, IndexRuleSettings settings, IReadOnlyList<IndexResultRow> results) =>
+        IndexChecks(results) is not { } checks
+            ? (night.MarketOpen, null)
+            : OneCheck(checks, night, settings)
+                ? (checks[0].Open, null)
+                : (checks.Any(check => check.Open), checks);
+
+    // Whether one family's own market check left its list open on the night, the index's own check on a night storing
+    // none.
+    public static bool FamilyOpen(IndexNightRow night, IReadOnlyList<IndexResultRow> results, string family) =>
+        IndexChecks(results)?.FirstOrDefault(check => check.Family == family) is { } check ? check.Open : night.MarketOpen;
 
     // An index's setups on its Run page: each swing family with what it listed on the night and every trade its list has
     // kept, and the sector heavyweights with their holdings, each provisional with its record waiting for its freeze.
@@ -455,21 +590,70 @@ public static partial class TonightScreen
     public static IReadOnlyList<FamilyRunRow> WithBusinessFirst(IReadOnlyList<FamilyRunRow> rows, IReadOnlyList<FamilyPickRow> picks, IReadOnlyList<IndexTradeRow> trades) =>
         [.. rows, .. IndexFamilyRun(picks, trades, []).Where(row => row.Family == FundamentalsRule.Name)];
 
-    // The line an index's page opens its setups on: the index's own market check with its figures, how many of its
-    // members a setup passed, the buy points its cards list and how many setups list one, and its trades still open.
-    public static MarketLineView IndexLine(UniverseChoice universe, IndexNightRow night, IReadOnlyList<FamilyCardView> cards, IReadOnlyList<IndexResultRow> results, int openTrades) =>
-        new(
-            night.MarketOpen,
+    // The line an index's page opens its setups on: the index's own market check with its figures, or where its families'
+    // checks read otherwise than one alike, the index's breadth and each family's check that closed its list with the
+    // check's words; how many of its members a setup passed, the buy points its cards list and how many setups list one,
+    // the stocks one gate short where the night stored every part's answer, and its trades still open.
+    // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
+    public static MarketLineView IndexLine(UniverseChoice universe, IndexNightRow night, IReadOnlyList<FamilyCardView> cards, IReadOnlyList<IndexResultRow> results, int openTrades, IReadOnlyList<CloseToBuyCell>? close = null)
+    {
+        var settings = IndexRuleSettings.Read(night.Settings);
+        var (open, checks) = MarketOf(night, settings, results);
+
+        return new(
+            open,
             night.Breadth,
-            IndexRuleSettings.Read(night.Settings).MarketFloor,
+            checks is null ? settings.MarketFloor : null,
             cards.Sum(card => card.Picks.Count),
             cards.Count(card => card.Picks.Count > 0),
             cards.Count,
-            0,
+            close?.Count ?? 0,
             openTrades,
             universe.Name,
             results.Where(result => result.Passed).Select(result => result.Ticker).Distinct(StringComparer.Ordinal).Count(),
             night.Members,
-            CloseRead: false,
-            Universe: universe.Word);
+            CloseRead: close is not null,
+            Universe: universe.Word,
+            Checks: checks);
+    }
+
+    // The stocks one gate short of a buy point on an S&P 400 or 600 night, from 20.11: each member a family stored as
+    // passing its setup read with the market check open and failing exactly one other part, the market check among them,
+    // in the page's family order and by ticker, with that part and its stored words; none where the night stored no
+    // part's answer, as a night before 20.11 did.
+    // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+    // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
+    public static IReadOnlyList<CloseToBuyCell>? IndexCloseAcross(IReadOnlyList<IndexResultRow> results, IReadOnlyList<(string Ticker, string? Company, decimal? Close)> members)
+    {
+        if (results.Count == 0 || results.Any(result => result.Gates is null))
+        {
+            return null;
+        }
+
+        var companies = members.ToDictionary(member => member.Ticker, member => member.Company, StringComparer.Ordinal);
+        var cells = new List<CloseToBuyCell>();
+
+        foreach (var family in SetupFamilies.OnEveryIndex)
+        {
+            foreach (var result in results.Where(result => result.Family == family.Name && !result.Passed).OrderBy(result => result.Ticker, StringComparer.Ordinal))
+            {
+                var gates = FamilyRule.GatesOf(result.Gates!);
+
+                if (gates.Any(gate => gate.Name == EquityBrief.Core.Cards.RuleRows.Setup && gate.Passed) && gates.Count(gate => !gate.Passed) == 1)
+                {
+                    var missed = gates.First(gate => !gate.Passed);
+
+                    cells.Add(new CloseToBuyCell(result.Ticker, companies.GetValueOrDefault(result.Ticker), family.Name, family.Label, missed.Name, missed.Reason));
+                }
+            }
+        }
+
+        return cells;
+    }
+
+    // The index's card of those stocks, each with the sessions to its next report counted on the exchange's calendar and
+    // none watched, the watch list holding the S&P 500's names alone.
+    // see: The watch list is the operator's own, up to twenty names of the index, on a page of its own
+    public static IReadOnlyList<CloseToBuyRow> IndexCloseToBuy(IReadOnlyList<CloseToBuyCell> close, IReadOnlyDictionary<string, DateOnly> nextEvents, DateOnly night) =>
+        [.. close.Select(cell => new CloseToBuyRow(cell, nextEvents.TryGetValue(cell.Ticker, out var report) ? EquityBrief.Core.Bars.ExchangeClosures.SessionsUntil(night, report) : null, false))];
 }

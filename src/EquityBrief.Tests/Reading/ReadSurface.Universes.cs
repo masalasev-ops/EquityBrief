@@ -70,13 +70,13 @@ public partial class ReadSurface
 
     // The S&P 400's breakout rule in words at the settings the night stores, worked out here from the rule's own
     // numbers: a 126-session high, 1.5 times the volume, ranges at 0.85 of the 20 sessions before, a stop 1.5 typical
-    // moves under, $5 and $10,000,000 a day over 50 sessions, net income over 4 quarters, and the S&P 500's market
-    // floor of 45 per cent read on the index's own breadth.
+    // moves under, $5 and $10,000,000 a day over 50 sessions, net income over 4 quarters, and from 20.11 its own market
+    // check, the S&P 500's floor of 45 per cent read on the index's own breadth, closing its own list.
     const string MidBreakoutWords =
         "A stock closes above its highest price of the 126 sessions before on 1.5 times its average volume, after its daily ranges narrowed to at most 0.85 of those over the 20 sessions before them. " +
         "Stop 1.5 typical moves below, raised as the price climbs and never lowered; no target. " +
         "Unlike the S&P 500's rules, a stock is read only at $5 or more and trading at least $10,000,000 a day over 50 sessions, and only where its net income over its last 4 quarters sums above zero; " +
-        "it is ranked among the S&P 400's own members, and the lists close while the S&P 400's own breadth is under 45%; each trade's result is read after the published spread, half paid at each end.";
+        "it is ranked among the S&P 400's own members, and its list closes while the S&P 400's own breadth is under 45%; each trade's result is read after the published spread, half paid at each end.";
 
     [Fact]
     public async Task TonightOnTheSAndP400NamesItsIndexInEveryFigureAndDrawsItsCardsFromItsOwnNight()
@@ -240,8 +240,9 @@ public partial class ReadSurface
         Assert.Contains($"<p class=\"rule-words\">{MidBreakoutWords}</p>", before, StringComparison.Ordinal);
 
         // From 19.3 its chips are the settings the night stored, read as a registration would state them: the four dials,
-        // the floor at one times, the lowest close, the profit gate and its own breadth.
-        Assert.Equal(["126-session high", "volume 1.5 times", "ranges at 0.85", "stop 1.5 moves", "dollar floor 1 times", "close at least $5", "the profit gate", "market check on its own breadth"], Chips(before));
+        // the floor at one times, the lowest close, the profit gate and its own breadth, from 20.11 at the floor the night
+        // stored, 45 per cent.
+        Assert.Equal(["126-session high", "volume 1.5 times", "ranges at 0.85", "stop 1.5 moves", "dollar floor 1 times", "close at least $5", "the profit gate", "market check on its own breadth at 45%"], Chips(before));
 
         // The breakout's high widened to 251 sessions on twice the volume with no range ceiling, and the S&P 400's
         // dollar volume floor raised to $20,000,000, as a night run under those settings stores them.
@@ -257,7 +258,7 @@ public partial class ReadSurface
             "Unlike the S&P 500's rules, a stock is read only at $5 or more and trading at least $20,000,000 a day over 50 sessions,",
             after,
             StringComparison.Ordinal);
-        Assert.Equal(["251-session high", "volume 2 times", "any range", "stop 1.5 moves", "dollar floor 1 times", "close at least $5", "the profit gate", "market check on its own breadth"], Chips(after));
+        Assert.Equal(["251-session high", "volume 2 times", "any range", "stop 1.5 moves", "dollar floor 1 times", "close at least $5", "the profit gate", "market check on its own breadth at 45%"], Chips(after));
     }
 
     [Fact]

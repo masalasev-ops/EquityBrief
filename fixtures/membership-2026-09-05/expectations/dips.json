@@ -1,0 +1,21 @@
+{
+  "stage": "dips",
+  "derivation": "derived",
+  "tables": ["bar", "calendar"],
+  "derivedFrom": "22.1's rule and walk worked by hand over constructed bars, not a run. The 2-session RSI is Wilder's: over closes 10, 11, 10.5, 10 and 9 the changes are +1, -0.5, -0.5 and -1; the seed's mean gain over the first two changes is 0.5 and its mean loss 0.25, an RSI of 100 - 100 / 3 = 66.667; smoothed by two, a gain of 0.25 and a loss of 0.375 read 40; then 0.125 and 0.6875 read 100 - 100 / (1 + 0.125 / 0.6875) = 15.385. The report window counts the sessions a report falls from the night: the three sessions to the listing are the night and the two before it, offsets -2 to 0, and the time limit's ten sessions are offsets 1 to 10, so a report at -3 or 11 passes and one at -2, 0, 1 or 10 is refused. The exits, from a listing close of 100 with its stop at 96, a risk of 4: bought at 99 on the next open, a close of 101 above its 5-session average of 99.6 on the second session sells at the third's open of 101.5, (101.5 - 100) / 4 = 0.375 on the close's plan and (101.5 - 99) / 4 = 0.625 bought at the open; a close of 95.9 under the stop on the first session sells at the second's open of 95, (95 - 100) / 4 = -1.25; and with neither on any of three sessions the time limit sells at the third's close of 97.2. The constructed S&P 400 night: ten members a year of bars each, DN not falling and DR reporting on the night, so eight pass; its funnel passes ten at the market setting, the floors, the history and the trend, nine at the drop, and eight at the report and the typical move.",
+  "rsi": {
+    "closes": [10, 11, 10.5, 10, 9],
+    "values": [null, null, 66.66666666666667, 40, 15.384615384615385]
+  },
+  "reportEdges": {
+    "refused": [-2, 0, 1, 10],
+    "passed": [-3, 11]
+  },
+  "exits": {
+    "exit": 0.375,
+    "exitAtOpen": 0.625,
+    "stop": -1.25,
+    "limitSale": 97.2
+  },
+  "funnel": [["market", 10], ["floors", 10], ["history", 10], ["trend", 10], ["drop", 9], ["report", 8], ["typical move", 8]]
+}

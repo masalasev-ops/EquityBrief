@@ -18,10 +18,22 @@ public sealed record RouteTime(string Route, int Requests, double Median, double
 // A stretch of the weekly or monthly chart holding no daily row, between the candles either side of it.
 public sealed record ChartGap(DateOnly After, DateOnly Before);
 
+// From 20.12 what the chart page's graphs draw, each from a figure the report reads: the newest prints' earnings a share
+// against their estimates and the quarter to report next, the newest quarters' revenue and net income with the net
+// margin in the currency the filings state, and the analysts' figures with the price the target is set against.
+public sealed record ChartGraphs(
+    IReadOnlyList<EquityBrief.Core.Report.EarningsPrint> Prints,
+    (DateOnly Ends, decimal Eps)? Next,
+    IReadOnlyList<EquityBrief.Core.Report.QuarterIncome> Income,
+    string Currency,
+    EquityBrief.Core.Report.AnalystReading? Analysts,
+    decimal? Price);
+
 // The chart page as the shell draws it: the stock, the interval shown, its candles with the averages at each, the night's
 // bands, a listing rule's plan as lines, the report and ex-dividend marks, the stretches holding no daily row, the line
-// naming what the weekly and monthly charts read before the store's year, the grid's groups, and the day the stock's
-// report was written, none where none is.
+// naming what the weekly and monthly charts read before the store's year, the grid's groups, the day the stock's
+// report was written, none where none is, and the written report's standing with the controls that write it again; and
+// from 20.12 its graphs.
 public sealed record ChartPageView(
     string Ticker,
     string Interval,
@@ -32,10 +44,12 @@ public sealed record ChartPageView(
     IReadOnlyList<ChartGap> Gaps,
     string? Before,
     IReadOnlyList<GridGroup> Grid,
-    DateOnly? ReportWritten);
+    DateOnly? ReportWritten,
+    ReportStandingView? Standing = null,
+    ChartGraphs? Graphs = null);
 
 // The chart page, which every link opening a stock opens first, and the masthead it shares with the name page.
-// see: Every link that opens a stock opens its chart page first, and the chart page links to its report
+// see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
 public sealed partial class SinglePageApp
 {
     public const string ChartRoute = MarkRenderer.ChartRoute;
@@ -125,9 +139,10 @@ public sealed partial class SinglePageApp
         region.Append(marks.PricesSuspect(ticker, suspect));
         region.Append(Masthead(ticker, bars, mast, quote, quoteSession, asksForQuotes: true, night: null, suspect, watched, string.Empty));
 
-        // The report: a link to it with the day it was written, or that none is written and the name page's request.
+        // The report: a link to it with the day it was written, its standing and the controls that write it again, or that
+        // none is written and the name page's request.
         region.Append(view.ReportWritten is { } written
-            ? FormattableString.Invariant($"<p class=\"report-line\" data-report=\"written\" data-written=\"{written:yyyy-MM-dd}\"><a class=\"btn open-report\" href=\"{NameRoute}{Uri.EscapeDataString(ticker)}\">Open the report</a> <span class=\"muted\">written {written:yyyy-MM-dd}</span></p>")
+            ? FormattableString.Invariant($"<p class=\"report-line\" data-report=\"written\" data-written=\"{written:yyyy-MM-dd}\"><a class=\"btn open-report\" href=\"{NameRoute}{Uri.EscapeDataString(ticker)}\">Open the report</a> <span class=\"muted\">written {written:yyyy-MM-dd}</span></p>") + marks.ReportStanding(ticker, view.Standing, namesTheDay: false)
             : FormattableString.Invariant($"<div class=\"report-line\" data-report=\"none\"><p>No report is written yet for {Escaped(ticker)}. <a href=\"{NameRoute}{Uri.EscapeDataString(ticker)}\">Its page</a> holds every computed figure meanwhile.</p>{MarkRenderer.AskForAReport(ticker)}</div>"));
 
         var chart = new StringBuilder();
@@ -167,6 +182,27 @@ public sealed partial class SinglePageApp
 
         region.Append(Cards.Computed("The chart", chart.ToString(), title: FormattableString.Invariant($"{Escaped(ticker)}, {view.Interval}"), stamp: Cards.Night(last), id: "chart", region: "chart-page-chart"));
 
+        // From 20.12 the graphs beneath the chart, each from a figure the report reads.
+        // see: The chart page graphs the report's earnings and revenue and the analysts' figures beneath its chart, and no rule reads them from it
+        if (view.Graphs is { } graphs)
+        {
+            var drawn = new StringBuilder("<div class=\"chart-graphs\">");
+
+            drawn.Append("<section class=\"chart-graph\" data-graph=\"earnings\"><h3>Earnings a share against the estimate</h3><div class=\"fig\">").Append(marks.EarningsDots(ticker, graphs.Prints, graphs.Next)).Append("</div></section>");
+            drawn.Append("<section class=\"chart-graph\" data-graph=\"income\"><h3>Revenue against net income</h3><div class=\"fig\">").Append(marks.IncomeBars(ticker, graphs.Income, graphs.Currency)).Append("</div></section>");
+            drawn.Append("<section class=\"chart-graph\" data-graph=\"analysts\"><h3>The analysts</h3><div class=\"fig\">").Append(marks.TargetMarker(ticker, graphs.Analysts, graphs.Price)).Append("</div><div class=\"fig\">");
+            drawn.Append(graphs.Analysts is { } analysts
+                ? marks.RatingBars(analysts)
+                : "<p class=\"mark-short\" data-mark=\"rating-bars\">No fetch in the last twelve months filed the analysts' rating counts, so none is drawn.</p>");
+            drawn.Append("</div></section></div>");
+            drawn.Append(Cards.Key(
+                "How to read it.",
+                "Each print's estimate before its report is the hollow dot and the earnings a share it reported the filled one, green where it beat the estimate and red where it missed, with the difference beneath; the dashed dot after them is the analysts' consensus for the quarter to report next. The bars are each quarter's revenue and net income as filed, net income green where it was a profit and red where it was a loss, and the line is the net margin, read on the axis at the right. The analysts' mean target is set against the price drawn, with how far above or below it stands; the provider files no low or high target. Beneath it the analysts' rating counts are stacked a month at a time, a month no fetch fell in dashed.",
+                "These are the report's own figures drawn as pictures, and no rule reads them from this page."));
+
+            region.Append(Cards.Computed("The earnings and the analysts", drawn.ToString(), title: "Earnings, revenue and the analysts", stamp: Cards.Night(last), id: "graphs", region: "chart-page-graphs"));
+        }
+
         var grid = new StringBuilder();
 
         grid.Append("<div class=\"chart-grid\">");
@@ -193,7 +229,7 @@ public sealed partial class SinglePageApp
         grid.Append("</div>");
         grid.Append(Cards.Key(
             "How to read it.",
-            "Every figure is read from what the store holds for the stock, worked by the same function the stock's report page uses for it. A figure EquityBrief fetches and holds none of for this stock says not stored. The returns are the newest close over the close the span reaches back to, over the stored year and, for the longer spans, the month-end closes of the history pulled before it.",
+            "Every figure is read from what the store holds for the stock, worked by the same function the stock's report page uses for it. A figure EquityBrief fetches and holds none of for this stock says not stored. Where no dividend is kept in the year and the company's fetch files a dividend rate of nought, or no rate beside dividends kept from before the year, each dividend figure says pays none, but its last whole year's still draws what it paid where it paid in that year. The returns are the newest close over the close the span reaches back to, over the stored year and, for the longer spans, the month-end closes of the history pulled before it.",
             "A figure here is context for the chart and no rule reads it from this page."));
 
         region.Append(Cards.Computed("The figures", grid.ToString(), title: "The stock in figures", stamp: Cards.Night(last), id: "figures", region: "chart-page-figures"));
@@ -204,6 +240,10 @@ public sealed partial class SinglePageApp
 
     // What a figure EquityBrief fetches and holds none of for a stock says.
     public const string NotStored = "not stored";
+
+    // What each dividend figure says for a company paying none.
+    // see: A company filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing neither as not stored
+    public const string PaysNone = "pays none";
 
     // A figure's text with each date in it held on one line, since a browser breaks a line at a date's hyphens.
     static string Whole(string escaped) =>

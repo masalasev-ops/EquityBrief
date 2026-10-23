@@ -212,7 +212,7 @@ public class PriceStorageForm
         // `Percents.FromFraction` joined it at 18.2: a fraction worked as a decimal from money, a change, a margin or a
         // share, out as a percentage, through `Statistic.FromRatio`, which every figure of the name page's quarter, segments,
         // margins and analysts in per cent is read through.
-        // see: The latest quarter is read line by line against the estimate kept before its report and the same quarter a year earlier
+        // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
         //
         // `ValuationReading.Yield` joined it at 17.12: four quarters' net income and a filed share count in, the
         // earnings over the value at a close out, the count brought to the store's scale by the close as traded on
@@ -223,7 +223,7 @@ public class PriceStorageForm
         // in risks or as a fraction in, the price it was sold at out; and its stored round trip in risks or as a fraction, the
         // member readings' cost in per cent, or the company value the published table reads in, its round trip in dollars a
         // share out; each through `Statistic.ToPrice`. They are what every paper account's trade is priced at.
-        // see: A paper account draws its test years verdict and its record since registration apart, and never merges them
+        // see: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together
         //
         // `ValuationReading.OverValue` joined it at 19.13: the insiders' dollars on a session in, those dollars over the
         // company's value as the valuation reading works it out, through `Yield` and so through `Statistic.FromRatio`. It

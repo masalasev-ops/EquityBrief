@@ -41,7 +41,7 @@ public partial class ReadSurface
 
             Assert.Equal(gates.Select(gate => gate.GetProperty("gate").GetString()), drawn.Select(match => match.Groups[1].Value));
             Assert.Equal(gates.Select(gate => gate.GetProperty("passed").GetBoolean() ? "yes" : "no"), drawn.Select(match => match.Groups[2].Value));
-            Assert.Equal(gates.Select(gate => gate.GetProperty("reason").GetString()), drawn.Select(match => match.Groups[4].Value));
+            Assert.Equal(gates.Select(gate => Said(gate.GetProperty("reason").GetString()!)), drawn.Select(match => match.Groups[4].Value));
 
             // The family and the trigger's event.
             Assert.Contains(

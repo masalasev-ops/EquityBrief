@@ -61,6 +61,9 @@ public static class Nightly
     // tries three more times fifteen minutes apart; a run of the rest of a night, and a night the suite
     // runs unless it asks, tries once.
     // see: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own
+    // The flag a night run again for the newest session takes to read the register as it stands when it runs.
+    public const string RegisterNow = "--register-now";
+
     public sealed record TryPlan(int Retries, TimeSpan Wait, Func<TimeSpan, Task>? Delay = null)
     {
         public static TryPlan Standard { get; } = new(3, TimeSpan.FromMinutes(15));
@@ -153,7 +156,8 @@ public static class Nightly
         Build? build = null,
         CardSettings? cards = null,
         FormingSettings? forming = null,
-        string? adopt = null)
+        string? adopt = null,
+        DateTimeOffset? registerAt = null)
     {
         // The night's deadline, and the thing that can cancel it.
         //
@@ -490,8 +494,11 @@ public static class Nightly
                     wroteFrom = applyStartedAt;
                 }
 
+                // The register as it stood when the night started, or for the newest session run again the morning after a
+                // freeze as it stands when that run starts, which the operator names.
+                // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
                 var register = await new CandidateRegistrar(clock, store.DatabaseFile).RowsAsync(night.Token);
-                var standingAt = EquityBrief.Worker.Loop.LoopApply.ReadFrom(register, nightStartedAt, wroteFrom);
+                var standingAt = EquityBrief.Worker.Loop.LoopApply.ReadFrom(register, registerAt ?? nightStartedAt, wroteFrom);
                 var family = FamilyShadow.For(register, standingAt);
                 var rules = FamilyRuleShadow.For(register, standingAt);
                 var estimates = new EstimatesFetcher(askForTheFirstName ? companies : null, () => feeds.WeightedCalls, clock, store.DatabaseFile);
@@ -513,7 +520,7 @@ public static class Nightly
                     ? await ReadingsTonightAsync(night.Token)
                     : null;
                 var kept = await new FamilyRecorder(clock, store.DatabaseFile).RunAsync(indexCode, runId, rules.Standing, night.Token, hookReadings);
-                var held = await new HeavyweightBook(clock, store.DatabaseFile).RunAsync(indexCode, runId, night.Token, HeavyweightBook.Standing(register, standingAt));
+                var held = await new HeavyweightBook(clock, store.DatabaseFile).RunAsync(indexCode, runId, night.Token, HeavyweightBook.Standing(register, standingAt), HeavyweightBook.RetiredBooks(register, standingAt));
 
                 // The S&P 400's and 600's provisional rules, read after the S&P 500's list is drawn so each index's list
                 // holds back a stock whose S&P 500 trade is still open. A failure in their part is caught and named on
@@ -526,6 +533,12 @@ public static class Nightly
                     register,
                     standingAt,
                     (index, token) => new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).ReadingsTonightAsync(index, token));
+
+                // The short-term dip on every index, after every other family has drawn its list, so it gives way to each
+                // list and open trade, and before the cards, which read its picks. A failure in an index's part is named on
+                // the step's row, and the step goes on.
+                // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+                var dips = await new EquityBrief.Worker.Dips.DipFamily(clock, store.DatabaseFile).RunAsync(runId, night.Token);
 
                 // A card for each stock every index's families listed and each its books bought, read from the rows the
                 // stages above stored. A failure in an index's cards is named on their own row, and the step goes on.
@@ -572,13 +585,14 @@ public static class Nightly
                     $"; {(held.Rules ?? []).Count(rule => rule.Fault is null)} heavyweights rule(s) kept in books of their own" +
                     $"; {applied}" +
                     $"; {string.Join(", ", indices.Nights.Select(one => one.Fault is null ? $"{one.Listed} on the {one.Index} list" : $"the {one.Index} list not computed tonight"))}" +
+                    $"; {string.Join(", ", dips.Indices.Select(one => one.Fault is null ? $"{one.Listed} on the {one.Index} dip list" : $"the {one.Index} dip list not computed tonight"))}" +
                     $"; {decisionCards.Cards} decision card(s)" +
                     (decisionCards.Indices.Any(one => one.Fault is not null) ? ", " + string.Join(", ", decisionCards.Indices.Where(one => one.Fault is not null).Select(one => $"the {one.Index} cards not computed tonight")) : string.Empty) +
                     $"; {ruleCards.Rules} rule row(s), {ruleCards.Picks} variant pick(s) and {ruleCards.Forming} forming" +
                     (ruleCards.Indices.Any(one => one.Fault is not null) ? ", " + string.Join(", ", ruleCards.Indices.Where(one => one.Fault is not null).Select(one => $"the {one.Index} rule rows not computed tonight")) : string.Empty) +
                     $"; {alarmed}" +
                     (takenFollowed.Fault is null ? $"; {takenFollowed.Followed} taken trade(s) followed" : "; the taken trades not followed tonight");
-            }, [EquityBrief.Worker.Loop.LoopApply.Stage, SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, IndexFamilies.Stage, DecisionCards.Stage, RuleCards.Stage, EquityBrief.Worker.Loop.LiveAlarmReader.Stage, TakenFollower.Stage]),
+            }, [EquityBrief.Worker.Loop.LoopApply.Stage, SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, IndexFamilies.Stage, EquityBrief.Worker.Dips.DipFamily.Stage, DecisionCards.Stage, RuleCards.Stage, EquityBrief.Worker.Loop.LiveAlarmReader.Stage, TakenFollower.Stage]),
             // Section 14's step 17. The setup ledger, after the families have drawn every index's list, since it
             // stores the live rule's own pass and the night's pick beside each setup. It appends tonight's setups
             // on each index and closes the windows of the setups stored before that ended on tonight's close. A

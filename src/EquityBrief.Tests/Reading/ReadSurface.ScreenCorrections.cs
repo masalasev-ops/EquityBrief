@@ -83,6 +83,21 @@ public partial class ReadSurface
         var unread = new SinglePageApp().IndexTonightRegion(new MarkRenderer(), night, Universes.Small, string.Empty, [night], line with { CloseRead = false }, [], null);
 
         Assert.Contains("<p class=\"buy-points-none\" data-buy-points=\"0\" data-one-short=\"none\">No buy points tonight</p>", unread, StringComparison.Ordinal);
+
+        // From the 19.8 correction of 2026-10-21 a night reading no stock one gate short draws no card of them, and the two
+        // counts that would open it read nought with no link, on the market line and on the line in the buy points' place,
+        // where a night reading some links both to the card.
+        var href = $"{SinglePageApp.NightRoute}2026-10-12?universe=600&close=open";
+        var none = new SinglePageApp().IndexTonightRegion(new MarkRenderer(), night, Universes.Small, string.Empty, [night], line with { Close = 0, CloseHref = href }, [], null);
+        var some = new SinglePageApp().IndexTonightRegion(new MarkRenderer(), night, Universes.Small, string.Empty, [night], line with { CloseHref = href }, [], null);
+
+        Assert.Contains("data-one-short=\"0\">No buy points tonight · 0 one gate short</p>", none, StringComparison.Ordinal);
+        Assert.Contains("0 close to a buy point · ", none, StringComparison.Ordinal);
+        Assert.DoesNotContain("close-open", none, StringComparison.Ordinal);
+        Assert.DoesNotContain("close-to-buy", none, StringComparison.Ordinal);
+        Assert.Empty(new MarkRenderer().CloseToBuy([], false, true, "500"));
+        Assert.Contains($"No buy points tonight · <a class=\"close-open\" href=\"{href}\">32 one gate short</a></p>", WebUtility.HtmlDecode(some), StringComparison.Ordinal);
+        Assert.Contains($"<a class=\"close-open\" href=\"{href}\">32 close to a buy point</a> · ", WebUtility.HtmlDecode(some), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -100,9 +115,92 @@ public partial class ReadSurface
         Assert.Contains(".night-picker .np-short{display:none}", css, StringComparison.Ordinal);
         Assert.Contains(" .page-head .m-screen{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}", block, StringComparison.Ordinal);
         Assert.Contains(" .page-head .asof-words{display:none}", block, StringComparison.Ordinal);
-        Assert.Contains(" .page-head .m-asof:not(:has(.night-picker)){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}", block, StringComparison.Ordinal);
         Assert.Contains(" .night-picker .np-full{display:none}", block, StringComparison.Ordinal);
         Assert.Contains(" .night-picker .np-short{display:inline}", block, StringComparison.Ordinal);
+
+        // No rule holds a masthead's date line to one line or cuts it: the night picker's line is one line by its short
+        // date, and every line drawing no arrows wraps whole, a screen's sentence ending on its date, as Paper trading's
+        // "as of the close of 2026-10-20", and a stock's masthead line with its previous close, its sector's link and the
+        // name page's link back to its chart page among them.
+        Assert.Empty(Regex.Matches(css, @"\.m-asof[^{]*\{[^}]*(nowrap|overflow:hidden|text-overflow)"));
+
+        var stock = SinglePageApp.Masthead(
+            "AAA",
+            [new ChartBar(new DateOnly(2026, 10, 9), 100m, 102m, 99m, 101m, 1_000), new ChartBar(new DateOnly(2026, 10, 12), 101m, 104m, 100m, 103.5m, 1_000)],
+            new NameMast("Alpha Inc", "Industrials", "Machinery", 0.0248),
+            null,
+            null,
+            false,
+            null,
+            null,
+            null,
+            " · <a class=\"m-chart\" href=\"#/chart/AAA\">Its chart</a>");
+        var line = Regex.Match(stock, "<span class=\"m-asof\">(.*)</span></div>$", RegexOptions.Singleline).Groups[1].Value;
+
+        Assert.StartsWith("<span class=\"m-when\">As of the close of 2026-10-12", line, StringComparison.Ordinal);
+        Assert.EndsWith("<a href=\"#/universe?sector=Industrials\">Industrials</a>, Machinery · <a class=\"m-chart\" href=\"#/chart/AAA\">Its chart</a>", line, StringComparison.Ordinal);
+    }
+
+    // The 19.7 correction of 2026-10-21: a date in a cell of Past picks', the Watch list's or Researched's table is drawn
+    // whole, where each broke at a hyphen, "2026-10-" above "21", the Watch list's and Researched's even at 1440 px; and on
+    // a phone those two tables scroll sideways in their box at a width their words read at, where they squeezed a gate's
+    // pill into four lines and a row to 460 px, the pill held to one line.
+    [Fact]
+    public void ADateInATablesCellIsDrawnWholeAndTheWatchListAndResearchedScrollOnAPhone()
+    {
+        var css = Stylesheet.Css;
+
+        Assert.Contains(".picks-table td.num:first-child,.watch-table td.num,.researched-table td.num{white-space:nowrap}", css, StringComparison.Ordinal);
+        Assert.Contains(".watch-table{min-width:1040px}", css, StringComparison.Ordinal);
+        Assert.Contains(".watch-table .chip{white-space:nowrap}", css, StringComparison.Ordinal);
+        Assert.Contains(".researched-table{min-width:900px}", css, StringComparison.Ordinal);
+        Assert.Contains(".tbl-wrap{overflow-x:auto}", css, StringComparison.Ordinal);
+
+        // Each of the two tables is drawn in the box that scrolls it, so its width moves the box and not the page.
+        var night = new DateOnly(2026, 10, 9);
+        var watch = new SinglePageApp().WatchRegion(night, [new WatchCell(new ListingCell("AAA", night, 0, 0, 10m, []), "Alpha", night, "stopped", false, new NearestSetup("breakout", 1, "volume", "volume under 1.5 times its average"), null)], 20, new MarkRenderer());
+        var researched = new SinglePageApp().ResearchedRegion([new ResearchedCell("AAA", "Alpha", "Industrials", night, 8, true, ["a filing arrived after it was written"], 0.052, 10)]);
+
+        Assert.Contains("<div class=\"tbl-wrap\"><table class=\"watch-table\">", watch, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"tbl-wrap\"><table class=\"researched-table\">", researched, StringComparison.Ordinal);
+
+        // The first cell of a Past picks table, with the stock's column and without, is the night listed as a figure.
+        var pick = new PickCell("AAA", "Alpha Inc", new DateOnly(2026, 10, 12), "swing", 100m, 96m, 110m, PickStatus.Open, 2, null, 1.02, null, null, new DateOnly(2026, 10, 14), 102m, 0.3);
+
+        foreach (var named in new[] { true, false })
+        {
+            Assert.Matches("<tbody><tr [^>]*><td class=\"num\">(?:<a [^>]*>)?2026-10-12(?:</a>)?</td>", new MarkRenderer().PicksTable([pick], named));
+        }
+    }
+
+    // The 16.2 correction of 2026-10-21: on a phone the account form, which paper trading and the account page both open
+    // with, stands each setting's words whole above its box, one setting beneath another, where it ran as one paragraph and
+    // broke "Risk a trade, per cent" across two lines; each label holds its words and its box, and the form's rule there
+    // outranks the one every posted form is drawn inline by.
+    [Fact]
+    public void OnAPhoneTheAccountFormStandsEachSettingsWordsWholeAboveItsBox()
+    {
+        var form = SinglePageApp.AccountForm(null, null, null, 0.2m);
+
+        Assert.Equal(
+            ["Account size", "Risk a trade, per cent", "Position cap, share of the account"],
+            Regex.Matches(form, "<label>([^<]+) <input name=\"(?:size|risk|cap)\"").Select(match => match.Groups[1].Value));
+
+        var css = Stylesheet.Css;
+        var block = css[css.IndexOf("@media (max-width:560px){\n form.account-control", StringComparison.Ordinal)..];
+
+        block = block[..(block.IndexOf("\n}", StringComparison.Ordinal) + 2)];
+
+        Assert.Contains(" form.account-control{display:block;margin-right:0}", block, StringComparison.Ordinal);
+        Assert.Contains(" .account-control label{display:block;margin:0 0 10px}", block, StringComparison.Ordinal);
+        Assert.Contains(" .account-control input{display:block;width:100%;margin-top:4px}", block, StringComparison.Ordinal);
+        Assert.Contains("form[method='post']{display:inline-block;", css, StringComparison.Ordinal);
+
+        // The two selectors weigh the same, a class or an attribute on a form, so the phone's rule outranks the posted
+        // forms' inline rule only by standing after every rule stating it.
+        Assert.True(
+            css.IndexOf("@media (max-width:560px){\n form.account-control{display:block", StringComparison.Ordinal) > css.LastIndexOf("form[method='post']{display:inline-block;", StringComparison.Ordinal),
+            "The account form's rule on a phone stands before a posted forms' inline rule, which then draws the form inline.");
     }
 
     [Fact]
@@ -156,13 +254,15 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper"));
 
-        // No settings are kept, so the page names the example at its top, walks the accounts on it and draws the chart and
-        // the table, the form left empty for the operator's own.
-        Assert.Contains("data-walked=\"true\" data-example=\"true\">", page, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"notice paper-example\" data-example=\"true\"><b>Example account</b>: 100,000 dollars, 1 per cent of it a trade and at most 20 per cent of it in one position. Save your own below and every account is walked on yours.</p>", page, StringComparison.Ordinal);
+        // No settings are kept, so the page names the example at its top, walks the accounts on it and draws the account's
+        // line, the tiles and the chart, the form folded beneath Change the account and left empty for the operator's own.
+        Assert.Contains("data-walked=\"true\" data-example=\"true\"", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"notice paper-example\" data-example=\"true\"><b>Example account</b>: 100,000 dollars, 1 per cent of it a trade and at most 20 per cent of it in one position. Change the account to save your own, and every account is walked on yours.</p>", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"paper-line\" data-size=\"example\"><span>Account <b>$100,000</b></span><span>Risk a trade <b>1%</b></span><span>Most in one stock <b>20%</b></span><span>Each rule trades its own copy of this account.</span></p>", page, StringComparison.Ordinal);
+        Assert.Contains("<details class=\"paper-change\"><summary>Change the account</summary>", page, StringComparison.Ordinal);
         Assert.DoesNotContain("data-paper-chart=\"unset\"", page, StringComparison.Ordinal);
         Assert.Contains("class=\"paper-chart\"", page, StringComparison.Ordinal);
-        Assert.Contains("data-walked=\"true\"><thead>", page, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"paper-tile\" data-family=\"pullback\" data-standing=\"live\"", page, StringComparison.Ordinal);
         Assert.DoesNotContain("set your account to walk it", page, StringComparison.Ordinal);
         Assert.DoesNotContain("value=\"100000\"", page, StringComparison.Ordinal);
 
@@ -179,7 +279,8 @@ public partial class ReadSurface
 
         var saved = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper"));
 
-        Assert.Contains("data-walked=\"true\" data-example=\"false\">", saved, StringComparison.Ordinal);
+        Assert.Contains("data-walked=\"true\" data-example=\"false\"", saved, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"paper-line\" data-size=\"kept\"><span>Account <b>$50,000</b></span><span>Risk a trade <b>0.5%</b></span><span>Most in one stock <b>10%</b></span>", saved, StringComparison.Ordinal);
         Assert.DoesNotContain("paper-example", saved, StringComparison.Ordinal);
     }
 

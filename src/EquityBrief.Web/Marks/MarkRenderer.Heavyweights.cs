@@ -5,7 +5,7 @@ namespace EquityBrief.Web.Marks;
 // One holding on the sector heavyweights' card: the stock and its company, its sector, the session it was bought on,
 // its lead over its sector at the last rebalance that read it, or the words saying why none is drawn, and tonight's close
 // beside its 200-session average with whether the book's own rule reads the close as under it.
-// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
 public sealed record HeavyweightHoldingCell(
     string Ticker,
     string? Company,
@@ -58,7 +58,9 @@ public sealed record HeavyweightCardView(
     IReadOnlyDictionary<string, string>? Says = null,
     RuleView? RuleChoice = null,
     HeavyweightTilesView? Tiles = null,
-    IReadOnlyList<HeavyweightSectorView>? Sectors = null);
+    IReadOnlyList<HeavyweightSectorView>? Sectors = null,
+    IReadOnlyList<int>? SweepLost = null,
+    FrozenSweepView? Frozen = null);
 
 // One holding on Past picks as of a night: the stock, its sector, its buy and its sale with their closes, why it
 // ended, its return, its size cut's over the same sessions and the difference, each in percent and none while open.
@@ -100,8 +102,8 @@ public sealed partial class MarkRenderer
     // The sector heavyweights' card: its header, the rule's tabs and chips, a chosen book's band, the four tiles, its
     // holdings grouped by sector under each fund's return with why an empty sector holds none, what the last rebalance
     // bought and what ended, and the next rebalance.
-    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
-    // see: The market check closes every swing family's list together, and the sector heavyweights read none
+    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
+    // see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none
     // see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
     public string HeavyweightCard(HeavyweightCardView card)
     {
@@ -113,7 +115,8 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"data-live-since=\"{(card.LiveSince is { } since ? DayOf(since) : "none")}\" data-variants=\"{card.Variants}\" ");
         body.Append(Invariant, $"data-last-rebalance=\"{(card.LastRebalance is { } last ? DayOf(last) : "none")}\" data-next-rebalance=\"{(card.NextRebalance is { } next ? DayOf(next) : "none")}\" data-look-back=\"{card.LookBack}\">");
         body.Append(CardHead(EquityBrief.Core.Families.HeavyweightRule.Name, card.Heading, pill, pillClass, pillTitle, Count(card.Holdings.Count, "holding") + " tonight", HeavyweightCardGuide));
-        body.Append(SweepFoundNoneLine(card.SweepFoundNone));
+        body.Append(SweepFoundNoneLine(card.SweepFoundNone, card.SweepLost));
+        body.Append(variant is null ? FrozenSweepLine(card.Frozen) : string.Empty);
 
         // The tabs the swing cards carry, and a registered variant's own book drawn under the same band, with what it
         // shares with the live book, adds and drops.

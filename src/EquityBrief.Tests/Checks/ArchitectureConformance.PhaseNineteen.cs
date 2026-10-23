@@ -157,9 +157,17 @@ public partial class ArchitectureConformance
     // and section 18's, and 20.4's two, the tone variant's card row in 15.7 and section 17's window row, and 20.5's two,
     // the local comparison's catalogue and matrix rows, and 20.9's six, the idea generator's catalogue and matrix rows,
     // its store, the Loop page's row and section 18's two, and 20.8's four, the usefulness store, the Ledger page's and the
-    // Loop page's rows and section 17's window row, which phase 20's own pair counts once its report is written.
+    // Loop page's rows and section 17's window row, and 20.12's four, the chart page's graphs and their three marks, which
+    // phase 20's own pair counts once its report is written; and the seven parts paper trading's redesign draws in the
+    // place of its table of every account; and 22.1's thirteen, the dip family's catalogue and matrix rows, its four
+    // stores, section 17's row, section 18's four, its card on Tonight and its trades on Past picks, which phase 22's own
+    // pair counts once its report is written.
     internal static string[] AfterPhaseNineteen =>
     [
+        .. ComponentAccess.DipRows,
+        .. SchemaColumns.DipStoreRows,
+        .. FixtureExpectations.DipClaims,
+        .. Reading.ReadSurface.DipPageRows,
         .. FixtureExpectations.TradeFillRows,
         .. Reading.ReadSurface.ChartRows,
         .. Reading.ReadSurface.ReadingLinkRows,
@@ -190,9 +198,13 @@ public partial class ArchitectureConformance
         .. SchemaColumns.ReleaseAnswerStoreRows,
         .. Reading.ReadSurface.ReleaseAnswerClaims,
         .. FixtureExpectations.ReleaseLedgerClaims,
+        .. Reading.ReadSurface.ChartGraphRows,
+        .. Reading.ReadSurface.PaperPageRows,
     ];
 
-    internal static string[] TakenOutAfterPhaseNineteen => [];
+    // The rows the document loses after phase 19's report, each counted by the report of the phase that landed it and in
+    // no claim now: the 19.4 correction's table of every account, which the page's parts replace.
+    internal static string[] TakenOutAfterPhaseNineteen => [.. Reading.ReadSurface.RetiredPaperRows];
 
     // How many more rows each part of phase 19 landed than its count in the plan, a negative figure where it landed fewer.
     // 19.0, none as counted. 19.1, one as counted. 19.2, nine of twelve: the readings store, three marks, Tonight's two rows,
@@ -261,9 +273,10 @@ public partial class ArchitectureConformance
         var report = Report();
         var total = actual + AfterPhaseNineteen.Length - TakenOutAfterPhaseNineteen.Length;
 
+        // A row a later correction took out is counted where it landed and is in no claim now.
         Assert.Equal(rows.Length, rows.Distinct(StringComparer.Ordinal).Count());
-        Assert.All(rows, key => Assert.Equal(Verdict.Pass, Assert.Single(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key).Verdict));
-        Assert.All(taken, key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+        Assert.All(rows.Except(TakenOutAfterPhaseNineteen), key => Assert.Equal(Verdict.Pass, Assert.Single(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key).Verdict));
+        Assert.All(taken.Concat(rows.Intersect(TakenOutAfterPhaseNineteen)), key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
         Assert.Equal(
             (total, 0, 0, total),
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));

@@ -52,8 +52,8 @@ public partial class NightlyRun
             "INSERT INTO release_document (accession, cik, form, filed, accepted_at, exhibit, url, text_gzip, text_sha256, text_length, run_id) "
             + $"VALUES ('0000000101-26-000001', '0000000101', '8-K', '{LedgerStamp(70)}', '{LedgerStamp(70)}T20:30:00Z', 'ex99.htm', 'https://www.sec.gov/Archives/edgar/data/1/ex99.htm', zeroblob(1), 'h', 1, 'constructed');");
         store.Execute(
-            "INSERT INTO release_reading (accession, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, run_id) "
-            + $"VALUES ('0000000101-26-000001', 1, 'read', NULL, 'better', 'raised', 'confident', 'stronger', 3.0, 5000, '{LedgerStamp(71)}T12:10:00Z', 'constructed');");
+            "INSERT INTO release_reading (accession, exhibit, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, run_id) "
+            + $"VALUES ('0000000101-26-000001', 'ex99.htm', 1, 'read', NULL, 'better', 'raised', 'confident', 'stronger', 3.0, 5000, '{LedgerStamp(71)}T12:10:00Z', 'constructed');");
 
         foreach (var ticker in new[] { "AAA", "BBB", "CCC" })
         {

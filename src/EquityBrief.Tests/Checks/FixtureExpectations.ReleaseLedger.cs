@@ -5,11 +5,13 @@ using EquityBrief.Core.Loop;
 using EquityBrief.Core.Releases;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Core.Time;
+using EquityBrief.Data;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Indices;
 using EquityBrief.Worker.Ledger;
 using EquityBrief.Worker.Loop;
 using EquityBrief.Worker.Sweep;
+using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Tests.Checks;
 
@@ -32,7 +34,7 @@ public partial class FixtureExpectations
     static readonly DateOnly ReleaseCutoff = new(2025, 1, 31);
 
     // A release as the ledger reads it, its four words joined by bars, or none where its reading was refused or is not held.
-    static LedgerRelease Released(DateTimeOffset accepted, string? words) =>
+    static LedgerRelease ReleaseOn(DateTimeOffset accepted, string? words) =>
         new(accepted, words?.Split('|') is { } four ? new ReleaseAnswer(four[0], four[1], four[2], four[3]) : null);
 
     [Fact]
@@ -45,8 +47,8 @@ public partial class FixtureExpectations
         // On Friday 2025-05-02 the window's 95 days reach back to 2025-01-27: a release the SEC accepted on that day is
         // read, every word turned into its reading, and one accepted the second before it is not.
         var session = new DateOnly(2025, 5, 2);
-        var first = Released(Utc(2025, 1, 27, 0, 0, 0), "better|raised|confident|stronger");
-        var dayBefore = Released(Utc(2025, 1, 26, 23, 59, 59), "worse|lowered or withdrawn|cautious|weaker");
+        var first = ReleaseOn(Utc(2025, 1, 27, 0, 0, 0), "better|raised|confident|stronger");
+        var dayBefore = ReleaseOn(Utc(2025, 1, 26, 23, 59, 59), "worse|lowered or withdrawn|cautious|weaker");
 
         Assert.Equal(new DateOnly(2025, 1, 27), session.AddDays(-LedgerReleases.WindowDays));
         Assert.Equal<double?>([1.0, 1.0, 1.0, 1.0], LedgerReleases.Readings(LedgerReleases.On([first], session)));
@@ -55,8 +57,8 @@ public partial class FixtureExpectations
         // The newest the night may read: one accepted at the late slot's start on the session is read from the next
         // session's night and leaves the older one read, one accepted a second before it is read, its words saying
         // nothing none and never nought.
-        var atTheSlot = Released(Utc(2025, 5, 2, 21, 40, 0), "worse|lowered or withdrawn|cautious|weaker");
-        var aSecondBefore = Released(Utc(2025, 5, 2, 21, 39, 59), "in line|none given|neutral|not stated");
+        var atTheSlot = ReleaseOn(Utc(2025, 5, 2, 21, 40, 0), "worse|lowered or withdrawn|cautious|weaker");
+        var aSecondBefore = ReleaseOn(Utc(2025, 5, 2, 21, 39, 59), "in line|none given|neutral|not stated");
 
         Assert.Same(first, LedgerReleases.On([first, atTheSlot], session));
         Assert.Same(atTheSlot, LedgerReleases.On([first, atTheSlot], session.AddDays(3)));
@@ -64,7 +66,7 @@ public partial class FixtureExpectations
 
         // A newest release whose reading was refused or is not held reads none, and not the older one's, which answers for
         // another quarter; a stock holding no release reads none.
-        var refused = Released(Utc(2025, 4, 29, 21, 5, 0), null);
+        var refused = ReleaseOn(Utc(2025, 4, 29, 21, 5, 0), null);
 
         Assert.Equal<double?>([null, null, null, null], LedgerReleases.Readings(LedgerReleases.On([first, refused], session)));
         Assert.Equal<double?>([null, null, null, null], LedgerReleases.Readings(LedgerReleases.On([], session)));
@@ -93,11 +95,11 @@ public partial class FixtureExpectations
         // reading refused, before it, an edge of nothing, which is no win; and the drift's better after it.
         SettledRelease[] setups =
         [
-            new("pullback", Released(Utc(2025, 1, 31, 21, 0, 0), "better|raised|confident|stronger"), 1.0, 0.5),
-            new("pullback", Released(Utc(2025, 2, 1, 1, 0, 0), "better|kept|neutral|steady"), -1.0, -0.25),
-            new("pullback", Released(Utc(2025, 3, 1, 21, 0, 0), "worse|lowered or withdrawn|cautious|weaker"), 2.0, 1.5),
-            new("pullback", Released(Utc(2024, 6, 1, 21, 0, 0), null), 0.5, 0.0),
-            new("drift", Released(Utc(2025, 6, 1, 21, 0, 0), "better|none given|confident|not stated"), 3.0, 2.0),
+            new("pullback", ReleaseOn(Utc(2025, 1, 31, 21, 0, 0), "better|raised|confident|stronger"), 1.0, 0.5),
+            new("pullback", ReleaseOn(Utc(2025, 2, 1, 1, 0, 0), "better|kept|neutral|steady"), -1.0, -0.25),
+            new("pullback", ReleaseOn(Utc(2025, 3, 1, 21, 0, 0), "worse|lowered or withdrawn|cautious|weaker"), 2.0, 1.5),
+            new("pullback", ReleaseOn(Utc(2024, 6, 1, 21, 0, 0), null), 0.5, 0.0),
+            new("drift", ReleaseOn(Utc(2025, 6, 1, 21, 0, 0), "better|none given|confident|not stated"), 3.0, 2.0),
         ];
 
         var rows = ReleaseUsefulness.Of(setups, ReleaseCutoff);
@@ -133,8 +135,8 @@ public partial class FixtureExpectations
         // Two setups holding one answer on one side are counted together, their means worked by hand.
         var together = ReleaseUsefulness.Of(
             [
-                new("pullback", Released(Utc(2025, 3, 1, 21, 0, 0), "better|kept|neutral|steady"), 1.0, 0.5),
-                new("pullback", Released(Utc(2025, 4, 1, 21, 0, 0), "better|kept|neutral|steady"), -2.0, -1.0),
+                new("pullback", ReleaseOn(Utc(2025, 3, 1, 21, 0, 0), "better|kept|neutral|steady"), 1.0, 0.5),
+                new("pullback", ReleaseOn(Utc(2025, 4, 1, 21, 0, 0), "better|kept|neutral|steady"), -2.0, -1.0),
             ],
             ReleaseCutoff);
 
@@ -254,25 +256,25 @@ public partial class FixtureExpectations
         bool Holds(params LedgerRelease[] releases) =>
             RuleTests.ToneHolds(read, listing, new Dictionary<string, IReadOnlyList<LedgerRelease>>(StringComparer.Ordinal) { ["AAA"] = releases }, tones);
 
-        var lastQuarter = Released(Utc(2024, 11, 1, 21, 0, 0), "better|raised|confident|stronger");
+        var lastQuarter = ReleaseOn(Utc(2024, 11, 1, 21, 0, 0), "better|raised|confident|stronger");
 
         // Its print's release read better with its outlook kept or none given passes; lowered or withdrawn, results in
         // line, a refused reading and the quarter before's release alone each fail.
-        Assert.True(Holds(lastQuarter, Released(Utc(2025, 2, 3, 21, 5, 0), "better|kept|neutral|steady")));
-        Assert.True(Holds(Released(Utc(2025, 2, 3, 21, 5, 0), "better|none given|cautious|weaker")));
-        Assert.False(Holds(Released(Utc(2025, 2, 3, 21, 5, 0), "better|lowered or withdrawn|neutral|steady")));
-        Assert.False(Holds(Released(Utc(2025, 2, 3, 21, 5, 0), "in line|raised|neutral|steady")));
-        Assert.False(Holds(lastQuarter, Released(Utc(2025, 2, 3, 21, 5, 0), null)));
+        Assert.True(Holds(lastQuarter, ReleaseOn(Utc(2025, 2, 3, 21, 5, 0), "better|kept|neutral|steady")));
+        Assert.True(Holds(ReleaseOn(Utc(2025, 2, 3, 21, 5, 0), "better|none given|cautious|weaker")));
+        Assert.False(Holds(ReleaseOn(Utc(2025, 2, 3, 21, 5, 0), "better|lowered or withdrawn|neutral|steady")));
+        Assert.False(Holds(ReleaseOn(Utc(2025, 2, 3, 21, 5, 0), "in line|raised|neutral|steady")));
+        Assert.False(Holds(lastQuarter, ReleaseOn(Utc(2025, 2, 3, 21, 5, 0), null)));
         Assert.False(Holds(lastQuarter));
 
         // The window at its opening second and the second before it, and the listing's night at the late slot's start.
-        Assert.True(Holds(Released(Utc(2025, 1, 31, 5, 0, 0), "better|raised|neutral|steady")));
-        Assert.False(Holds(Released(Utc(2025, 1, 31, 4, 59, 59), "better|raised|neutral|steady")));
-        Assert.True(Holds(Released(Utc(2025, 2, 5, 21, 39, 59), "better|raised|neutral|steady")));
-        Assert.False(Holds(Released(Utc(2025, 2, 5, 21, 40, 0), "better|raised|neutral|steady")));
+        Assert.True(Holds(ReleaseOn(Utc(2025, 1, 31, 5, 0, 0), "better|raised|neutral|steady")));
+        Assert.False(Holds(ReleaseOn(Utc(2025, 1, 31, 4, 59, 59), "better|raised|neutral|steady")));
+        Assert.True(Holds(ReleaseOn(Utc(2025, 2, 5, 21, 39, 59), "better|raised|neutral|steady")));
+        Assert.False(Holds(ReleaseOn(Utc(2025, 2, 5, 21, 40, 0), "better|raised|neutral|steady")));
 
         // A listing on a bar holding no print, and a stock holding no release under the version, pass none.
-        Assert.False(RuleTests.ToneHolds(read, new RuleListing(0, 1, 1, null, null), new Dictionary<string, IReadOnlyList<LedgerRelease>>(StringComparer.Ordinal) { ["AAA"] = [Released(Utc(2025, 1, 29, 21, 0, 0), "better|raised|neutral|steady")] }, tones));
+        Assert.False(RuleTests.ToneHolds(read, new RuleListing(0, 1, 1, null, null), new Dictionary<string, IReadOnlyList<LedgerRelease>>(StringComparer.Ordinal) { ["AAA"] = [ReleaseOn(Utc(2025, 1, 29, 21, 0, 0), "better|raised|neutral|steady")] }, tones));
         Assert.False(RuleTests.ToneHolds(read, listing, new Dictionary<string, IReadOnlyList<LedgerRelease>>(StringComparer.Ordinal), tones));
     }
 
@@ -289,8 +291,8 @@ public partial class FixtureExpectations
         {
             ["AAA"] =
             [
-                Released(Utc(2026, 2, 10, 21, 0, 0), "better|raised|confident|stronger"),
-                Released(new DateTimeOffset(night.ToDateTime(new TimeOnly(21, 45)), TimeSpan.Zero), "worse|lowered or withdrawn|cautious|weaker"),
+                ReleaseOn(Utc(2026, 2, 10, 21, 0, 0), "better|raised|confident|stronger"),
+                ReleaseOn(new DateTimeOffset(night.ToDateTime(new TimeOnly(21, 45)), TimeSpan.Zero), "worse|lowered or withdrawn|cautious|weaker"),
             ],
         };
 
@@ -333,10 +335,10 @@ public partial class FixtureExpectations
         var four = words?.Split('|');
 
         store.Execute(
-            "INSERT INTO release_reading (accession, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, run_id) "
+            "INSERT INTO release_reading (accession, exhibit, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, run_id) "
             + (four is null
-                ? $"VALUES ('{accession}', 1, 'refused', 'the answer was not one object', NULL, NULL, NULL, NULL, 3.0, 5000, '2026-10-20T02:00:00Z', 'constructed');"
-                : $"VALUES ('{accession}', 1, 'read', NULL, '{four[0]}', '{four[1]}', '{four[2]}', '{four[3]}', 3.0, 5000, '2026-10-20T02:00:00Z', 'constructed');"));
+                ? $"VALUES ('{accession}', 'ex99.htm', 1, 'refused', 'the answer was not one object', NULL, NULL, NULL, NULL, 3.0, 5000, '2026-10-20T02:00:00Z', 'constructed');"
+                : $"VALUES ('{accession}', 'ex99.htm', 1, 'read', NULL, '{four[0]}', '{four[1]}', '{four[2]}', '{four[3]}', 3.0, 5000, '2026-10-20T02:00:00Z', 'constructed');"));
     }
 
     [Fact]
@@ -531,5 +533,38 @@ public partial class FixtureExpectations
             + "    Before the local model's cutoff of 2025-01-31, which it may have known the outcome of: 2022 to 2024, +1.500 risks over 30 units; from it, the years relied on: 2025 to 2026, -2.500 risks over 26 units.",
             text,
             StringComparison.Ordinal);
+    }
+
+    // From 20.8's merge after the 20.3 correction: the ledger reads the exhibit each filing holds as its release, the one a
+    // check replaced kept beside it marked no release read for nothing, and a reading of the replaced exhibit answering for
+    // nothing.
+    [Fact]
+    public async Task TheLedgerReadsTheExhibitEachFilingHoldsAsItsReleaseAndAReadingOnlyOfThatExhibit()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        // Both filings' supplements were read, the first worse and the second better, and each was then replaced by the
+        // press release its page names; only the first filing's press release has been read since.
+        StoredRelease(store, "0000000101-26-000001", "0000000101", "2026-02-03T21:05:00Z", "worse|lowered or withdrawn|cautious|weaker");
+        StoredRelease(store, "0000000101-26-000002", "0000000101", "2026-05-04T21:05:00Z", "better|raised|confident|stronger");
+        store.Execute("UPDATE release_document SET release = 0;");
+        store.Execute(
+            "INSERT INTO release_document (accession, cik, form, filed, accepted_at, exhibit, url, text_gzip, text_sha256, text_length, run_id, release) VALUES "
+            + "('0000000101-26-000001', '0000000101', '8-K', '2026-02-03', '2026-02-03T21:05:00Z', 'press.htm', 'https://www.sec.gov/Archives/edgar/data/1/press.htm', zeroblob(1), 'h', 1, 'exhibits', 1), "
+            + "('0000000101-26-000002', '0000000101', '8-K', '2026-05-04', '2026-05-04T21:05:00Z', 'press.htm', 'https://www.sec.gov/Archives/edgar/data/1/press.htm', zeroblob(1), 'h', 1, 'exhibits', 1);");
+        store.Execute(
+            "INSERT INTO release_reading (accession, exhibit, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, read_at, run_id) "
+            + "VALUES ('0000000101-26-000001', 'press.htm', 1, 'read', NULL, 'in line', 'kept', 'neutral', 'steady', 3.0, 5000, '2026-10-21T02:00:00Z', 'constructed');");
+
+        await using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        await connection.OpenAsync();
+
+        var releases = (await ReleaseReadings.ForLedgerAsync(connection, 1))["0000000101"];
+
+        Assert.Equal(
+            ["2026-02-03T21:05:00Z in line|kept|neutral|steady", "2026-05-04T21:05:00Z none"],
+            releases
+                .OrderBy(release => release.Accepted)
+                .Select(release => release.Accepted.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture) + " " + (release.Answer is { } answer ? $"{answer.Results}|{answer.Outlook}|{answer.Tone}|{answer.Demand}" : "none")));
     }
 }

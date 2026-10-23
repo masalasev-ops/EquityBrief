@@ -34,15 +34,17 @@ public partial class ReadSurface
         // BB an S&P 400 member read whole, with its row on the session before; AA an S&P 500 member whose company files no
         // count, whose quarters were fetched without their interest expense, whose state and volume average the night
         // stored none of and whose industry no S&P 500 member was read over; CC an S&P 600 member holding no bar on the
-        // night and filing no industry; EE an S&P 600 member whose company filed no count to a fetch that read them; and
-        // DD, a name the night stored nothing for.
+        // night and filing no industry; EE an S&P 600 member whose company filed no count to a fetch that read them; FF an
+        // S&P 400 member holding a bar on a night whose store's year fell short, the pull holding too few of the sessions
+        // before it, so the night stored no year's high; and DD, a name the night stored nothing for.
         store.Execute(
             "INSERT INTO member_reading (index_code, session_date, ticker, close, dollar_volume, company_value, cost, cost_double, profit, coverage, state, year_high, nearness, since_high, volume_ratio, industry, industry_month, industry_quarter, peer_surprise) VALUES " +
             $"('MID', '{MemberNight}', 'BB', '42.5', '18250000.5', '3400000000', 0.25, 0.5, 1, 1, 'improving', '47.25', 0.8994708994708995, 12, 1.37, 'Regional Banks', 0.0123, -0.0456, 3.5), " +
             $"('MID', '{MemberBefore}', 'BB', '41.1', '18000000', '3300000000', 0.25, 0.5, 1, 1, 'steady', '47.25', 0.8698, 9, 0.91, 'Regional Banks', 0.01, -0.04, 2.5), " +
             $"('GSPC', '{MemberNight}', 'AA', '210.75', '950000000', NULL, 0.125, 0.25, 0, NULL, NULL, '230', 0.9163, 40, NULL, 'Tobacco', NULL, NULL, NULL), " +
             $"('SML', '{MemberNight}', 'CC', NULL, NULL, NULL, NULL, NULL, 0, 0, 'deteriorating', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL), " +
-            $"('SML', '{MemberNight}', 'EE', NULL, NULL, NULL, NULL, NULL, 0, 0, 'steady', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);");
+            $"('SML', '{MemberNight}', 'EE', NULL, NULL, NULL, NULL, NULL, 0, 0, 'steady', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL), " +
+            $"('MID', '{MemberNight}', 'FF', '30.5', '5000000', NULL, 0.25, 0.5, 1, 1, NULL, NULL, NULL, NULL, NULL, 'Machinery', NULL, NULL, NULL);");
 
         // The companies' fetches: BB's on 2026-10-01 and again after the night, AA's made before the rating counts were
         // stored, its quarters read without their interest expense, EE's made after with its quarters read with theirs,
@@ -162,6 +164,14 @@ public partial class ReadSurface
         Reads(cc, "industry-month", "none", "not read: no industry filed");
         Reads(cc, "peer-surprise", "none", "not read: no industry filed");
         Reads(cc, "ratings", "none", "no fetch of its company stored");
+
+        // FF holds a bar on the night and no year's high: its year's high and the nearness to it say they are not available,
+        // and not that it holds no bar.
+        var ff = await CardOf("/screens/name/FF");
+
+        Reads(ff, "year-high", "none", "not available: too few sessions before the night held");
+        Reads(ff, "nearness", "none", "not available");
+        Assert.DoesNotContain(NoBarSaid, Cell(ff, "year-high"), StringComparison.Ordinal);
 
         // DD, which the night stored nothing for, draws no region and no entry in the contents.
         var dd = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/DD"));

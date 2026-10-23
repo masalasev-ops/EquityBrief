@@ -304,6 +304,35 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
                     }
                 }
             }
+
+            // An S&P 400's or 600's rule of the day before its freeze, kept in the background beside the frozen live rule,
+            // retired on the night whose session reaches the block after the session its stand began, so it ran beside the
+            // freeze for one whole block and not the night after it, its stand read over the rows naming it, which a moved
+            // rule's registration again in one second does not restart.
+            // see: A freeze on the S&P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions
+            var everyRow = await registrar.RowsAsync(cancellation);
+
+            foreach (var background in CandidateFamily.Standing(everyRow, clock.UtcNow).Where(row => FamilyRecords.IsBackground(row.Candidate)).ToArray())
+            {
+                var since = FamilyRecords.StoodSince(everyRow, background.Candidate);
+
+                if (Blocks.Of(since, tonight) < 1)
+                {
+                    continue;
+                }
+
+                var live = FamilyRecords.LiveOf(CandidateFamily.In(CandidateFamily.Standing(everyRow, clock.UtcNow), CandidateFamily.SetupFamilyOf(background.Evaluator)));
+                var retiring = await registrar.RetireAsync(
+                    background.Candidate,
+                    FormattableString.Invariant($"the rule of the day before the freeze of '{live?.Candidate ?? "its family"}', kept beside it in the background from {since:yyyy-MM-dd}, and the {LoopDecisions.ReplacedSessions} sessions it ran beside it have passed by {tonight:yyyy-MM-dd}"),
+                    runId,
+                    cancellation);
+
+                if (retiring.Outcome == CandidateRegistrar.Retired)
+                {
+                    retired.Add(background.Candidate);
+                }
+            }
         }
 
         // The families whose live rule stands registered on an S&P 400 or 600, which draw its page in the provisional

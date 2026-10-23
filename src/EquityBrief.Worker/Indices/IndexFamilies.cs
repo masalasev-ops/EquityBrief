@@ -35,6 +35,10 @@ public sealed record IndexNightOutcome(string Index, int Members, double? Breadt
     // From 20.4 what the night's releases held under each reading version a standing drift rule names, none where none
     // names one.
     public string? Releases { get; init; }
+
+    // What the night read before the store's year for the readings needing more closes than it holds, and the members it
+    // read none for; none on a night whose year holds them.
+    public string? BeforeTheYear { get; init; }
 }
 
 // The night the index families read, none where the store holds no bar, and each index's outcome.
@@ -61,6 +65,7 @@ public sealed class IndexFamilies : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
@@ -115,12 +120,24 @@ public sealed class IndexFamilies : IComponent
         WHERE ticker = $ticker AND session_date <= $night ORDER BY session_date;
     ";
 
+    // The newest pull holding a member's first stored session, and its close there, which the store's scale is read from.
+    const string PullHoldingFirst = "SELECT pull, close FROM pulled_bar WHERE ticker = $ticker AND session_date = $first ORDER BY pull DESC LIMIT 1;";
+
+    // That pull's newest sessions before the first stored one, as many as a reading falls short by.
+    const string PulledBefore = @"
+        SELECT session_date, high, low, close, volume, open, raw_close FROM pulled_bar
+        WHERE ticker = $ticker AND pull = $pull AND session_date < $first
+        ORDER BY session_date DESC LIMIT $count;
+    ";
+
     const string PrintsOf = "SELECT event_date, timing, detail FROM calendar WHERE ticker = $ticker AND kind = 'earnings' ORDER BY event_date;";
 
-    // Each quarter as filed, its net and operating income, the profit gate's reading.
+    // Each quarter as filed, its net and operating income, the profit gate's reading, from the fetches nights before this
+    // one stored, as the member readings read them, since the night's own quarters step runs after its index families and
+    // a night run again the next morning reads what its night read.
     const string QuartersOf = @"
         SELECT period_end, filing_date, net_income, operating_income FROM reported_quarter
-        WHERE ticker = $ticker AND filing_date IS NOT NULL ORDER BY period_end;
+        WHERE ticker = $ticker AND filing_date IS NOT NULL AND session_date < $night ORDER BY period_end;
     ";
 
     // Every trade an index's list kept, all indices together, which the open trade rule reads.
@@ -148,8 +165,8 @@ public sealed class IndexFamilies : IComponent
     ";
 
     const string InsertResult = @"
-        INSERT INTO index_family_result (index_code, session_date, ticker, family, passed, place, entry, stop, target, trail, cap, order_by, reason)
-        VALUES ($index, $night, $ticker, $family, $passed, $place, $entry, $stop, $target, $trail, $cap, $order_by, $reason);
+        INSERT INTO index_family_result (index_code, session_date, ticker, family, passed, place, entry, stop, target, trail, cap, order_by, reason, gates)
+        VALUES ($index, $night, $ticker, $family, $passed, $place, $entry, $stop, $target, $trail, $cap, $order_by, $reason, $gates);
     ";
 
     const string InsertPick = @"
@@ -240,7 +257,7 @@ public sealed class IndexFamilies : IComponent
             {
                 try
                 {
-                    var (outcome, written) = await IndexNightAsync(connection, index, session, [.. standing.Where(rule => rule.Index == index)], cancellation, readingsOf);
+                    var (outcome, written) = await IndexNightAsync(connection, index, session, [.. standing.Where(rule => rule.Index == index)], cancellation, readingsOf, nightStartedAt ?? startedAt, IndexHeavyweights.RetiredBooks(register ?? [], index, nightStartedAt ?? startedAt));
 
                     outcomes.Add(outcome);
                     rows += written;
@@ -351,12 +368,15 @@ public sealed class IndexFamilies : IComponent
         DateOnly session,
         IReadOnlyList<IndexRule> rules,
         CancellationToken cancellation,
-        Func<string, CancellationToken, Task<Func<string, IReadOnlyList<double?>?>>>? readingsOf = null)
+        Func<string, CancellationToken, Task<Func<string, IReadOnlyList<double?>?>>>? readingsOf = null,
+        DateTimeOffset? registerAt = null,
+        IReadOnlyDictionary<string, DateTimeOffset>? retiredBooks = null)
     {
         var (names, income) = await InputsAsync(connection, index, session, cancellation);
         var inputs = IndexNightRead.Prepare(index, session, names, income);
         var versions = ReadingVersions(rules);
-        var levels = inputs is null || rules.Count == 0 ? IndexLevels.None : await LevelsAsync(connection, inputs, cancellation, versions);
+        var revenue = rules.Any(rule => rule.Evaluator is Core.Candidates.IndexDriftCandidate && rule.Parameters.GetValueOrDefault(Core.Candidates.IndexDriftCandidate.RevenueGrewParameter) == 1);
+        var levels = inputs is null || rules.Count == 0 ? IndexLevels.None : await LevelsAsync(connection, inputs, cancellation, versions, revenue);
 
         // The S&P 500 is read here for the fundamentals-first family alone, its other families being the S&P 500's own and
         // its book the S&P 500's sector heavyweights'.
@@ -419,10 +439,10 @@ public sealed class IndexFamilies : IComponent
             : await IndexHeavyweights.RunAsync(connection, transaction, index, session, names, income, cancellation);
         var heavyweightRules = large
             ? new IndexHeavyweightsOutcome(false, 0, 0, 0)
-            : await IndexHeavyweights.RulesAsync(connection, transaction, index, session, names, income, levels, [.. rules.Where(rule => rule.Evaluator is Core.Candidates.IndexHeavyweightCandidate)], cancellation);
+            : await IndexHeavyweights.RulesAsync(connection, transaction, index, session, names, income, levels, [.. rules.Where(rule => rule.Evaluator is Core.Candidates.IndexHeavyweightCandidate)], cancellation, retiredBooks);
         var ruleTrades = await IndexRuleTrades.KeepAsync(connection, transaction, index, session, inputs, ruleAnswers, cancellation, readings);
 
-        await ExecuteAsync(connection, transaction, InsertNight, [("$index", index), ("$night", Stamp(session)), ("$members", read.Members), ("$breadth", (object?)read.Breadth ?? DBNull.Value), ("$open", read.MarketOpen ? 1 : 0), ("$settings", Settings(index, rules, stored)), ("$rebalanced", heavyweights.Rebalanced ? 1 : 0)], cancellation);
+        await ExecuteAsync(connection, transaction, InsertNight, [("$index", index), ("$night", Stamp(session)), ("$members", read.Members), ("$breadth", (object?)read.Breadth ?? DBNull.Value), ("$open", read.MarketOpen ? 1 : 0), ("$settings", Settings(index, rules, stored, registerAt)), ("$rebalanced", heavyweights.Rebalanced ? 1 : 0)], cancellation);
 
         foreach (var answer in read.Answers)
         {
@@ -431,6 +451,7 @@ public sealed class IndexFamilies : IComponent
                 ("$index", index), ("$night", Stamp(session)), ("$ticker", answer.Ticker), ("$family", answer.Family), ("$passed", answer.Passed ? 1 : 0),
                 ("$place", (object?)answer.Place ?? DBNull.Value), ("$entry", Stored(answer.Entry)), ("$stop", Stored(answer.Stop)), ("$target", Stored(answer.Target)), ("$trail", Stored(answer.Trail)),
                 ("$cap", (object?)answer.Cap ?? DBNull.Value), ("$order_by", (object?)answer.OrderBy ?? DBNull.Value), ("$reason", (object?)answer.Reason ?? DBNull.Value),
+                ("$gates", answer.Gates is { } gates ? FamilyRule.GatesJson(gates) : DBNull.Value),
             ], cancellation);
         }
 
@@ -487,6 +508,7 @@ public sealed class IndexFamilies : IComponent
             Releases = versions.Count == 0 || levels.Releases is not { } releases
                 ? null
                 : string.Join("; ", versions.Select(version => Core.Releases.ReleaseTone.Said(version, [.. releases.Where(pair => pair.Key.Version == version).Select(pair => pair.Value)]))),
+            BeforeTheYear = large ? null : BeforeTheYear(names, session),
         };
 
         return (outcome, 1 + read.Answers.Count + picks.Count + kept + ruleTrades.Trades);
@@ -500,7 +522,8 @@ public sealed class IndexFamilies : IComponent
                 $"{outcome.Index}: {outcome.Members} member(s) read, breadth {(outcome.Breadth is { } breadth ? breadth.ToString("0.00", CultureInfo.InvariantCulture) : "not read")}, the market check {(outcome.MarketOpen ? "open" : "closed")}, {string.Join(", ", outcome.Passed.Select(pair => $"{pair.Value} passed by the {pair.Key}"))}, {outcome.Listed} listed, {outcome.HeldByATrade} held back by a trade still open, {outcome.TradesKept} trade(s) kept, {outcome.TradesEnded} ended; the sector heavyweights {(outcome.Heavyweights.Rebalanced ? "rebalanced" : "carried")}{(outcome.Heavyweights.Waits is { } waits ? ", " + waits : string.Empty)}, {outcome.Heavyweights.Entered} bought, {outcome.Heavyweights.Ended} sold, {outcome.Heavyweights.Held} held")
                 + (outcome.Rules > 0 ? FormattableString.Invariant($"; {outcome.Rules} registered rule(s) kept {outcome.RuleTrades.Trades} trade(s) on their own lists, {outcome.RuleTrades.Ended} ended and {outcome.RuleTrades.Benchmarked} benchmarked") : string.Empty)
                 + (outcome.HeavyweightRules is { Held: > 0 } or { Entered: > 0 } or { Ended: > 0 } or { Rebalanced: true } or { Waits: not null } ? FormattableString.Invariant($"; the registered heavyweights rules' books {(outcome.HeavyweightRules.Rebalanced ? "rebalanced" : "carried")}, {outcome.HeavyweightRules.Entered} bought, {outcome.HeavyweightRules.Ended} sold, {outcome.HeavyweightRules.Held} held{(outcome.HeavyweightRules.Waits is { } ruleWaits ? "; " + ruleWaits : string.Empty)}") : string.Empty)
-                + (outcome.Releases is { } releases ? "; the release readings: " + releases : string.Empty)));
+                + (outcome.Releases is { } releases ? "; the release readings: " + releases : string.Empty)
+                + (outcome.BeforeTheYear is { } before ? "; " + before : string.Empty)));
 
     // The registered rules a night left unread, each with why, after the indices' own words.
     static string Skipped(IReadOnlyList<string> skipped) =>
@@ -508,10 +531,14 @@ public sealed class IndexFamilies : IComponent
 
     // The rule each family runs on in the index, the words a card's description is written from: its settings, its
     // floors, its gate and the cost its trades pay; and for each family whose live rule stands, that rule with the day it
-    // was registered and its settings in words, the rule the night read the family's list by in the provisional rule's place.
+    // was registered and its settings in words, the rule the night read the family's list by in the provisional rule's place;
+    // and from 20.11 the instant the night read the register at, which its page reads the rules standing as of where that
+    // is after the night's evening.
     // see: Every page reads one index at a time chosen under Universe, and every figure names its index
-    public static string Settings(string index, IReadOnlyList<IndexRule>? rules = null, IReadOnlyDictionary<string, LoopChange>? stored = null) => JsonSerializer.Serialize(new
+    // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
+    public static string Settings(string index, IReadOnlyList<IndexRule>? rules = null, IReadOnlyDictionary<string, LoopChange>? stored = null, DateTimeOffset? registerAt = null) => JsonSerializer.Serialize(new
     {
+        registerAt = registerAt?.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture),
         floors = new { price = MemberReadings.LowestPrice, dollarVolume = MemberReadings.DollarVolumeFloor(index), sessions = MemberReadings.DollarVolumeSessions },
         profitGate = new { quarters = MemberReadings.Quarters },
         costs = CostsPaid,
@@ -720,9 +747,10 @@ public sealed class IndexFamilies : IComponent
     // The readings a night's index rules read: each member's industry figures and coverage and its peers' surprise over
     // the sessions a drift's reaction can reach, the switches and the S&P 500's breadth, as the night stored them; and from
     // 20.4 the release of each member's print whose reaction a drift can reach, under each reading version given, through
-    // the one reader of the release readings.
+    // the one reader of the release readings; and from 20.11, where a standing drift rule reads its revenue level, each
+    // member's quarters' revenue as first filed.
     // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
-    public static async Task<IndexLevels> LevelsAsync(SqliteConnection connection, IndexNightInputs inputs, CancellationToken cancellation, IReadOnlyList<long>? readingVersions = null)
+    public static async Task<IndexLevels> LevelsAsync(SqliteConnection connection, IndexNightInputs inputs, CancellationToken cancellation, IReadOnlyList<long>? readingVersions = null, bool revenue = false)
     {
         var industry = new Dictionary<string, (double?, double?)>(StringComparer.Ordinal);
         var coverage = new Dictionary<string, bool?>(StringComparer.Ordinal);
@@ -771,8 +799,61 @@ public sealed class IndexFamilies : IComponent
 
         double? large = await ScalarAsync(connection, LargeBreadth, [("$night", Stamp(inputs.Night))], cancellation) is double breadth ? breadth : null;
 
-        return new IndexLevels(industry, coverage, peers, switches[0], switches[1], switches[2], switches[3], large, await ReleasesAsync(connection, inputs, readingVersions ?? [], cancellation));
+        return new IndexLevels(
+            industry,
+            coverage,
+            peers,
+            switches[0],
+            switches[1],
+            switches[2],
+            switches[3],
+            large,
+            await ReleasesAsync(connection, inputs, readingVersions ?? [], cancellation),
+            revenue ? await RevenueAsync(connection, inputs, cancellation) : null);
     }
+
+    // Each held member's quarters' revenue as first filed, read through the filer its newest company row names, over the
+    // facts filed before the session before the night: the night's filings refresh reads a day's filings only the night
+    // after it, and after the index families, so those are the facts a night finds stored, the same on the night and on
+    // a night run again later. A member whose company names no filer reads none.
+    // see: A drift's revenue level on the S&P 400 and 600 reads a quarter only once its filing is stored, on the night and in its sweep alike
+    static async Task<IReadOnlyDictionary<string, IReadOnlyList<QuarterRevenue>>> RevenueAsync(SqliteConnection connection, IndexNightInputs inputs, CancellationToken cancellation)
+    {
+        var filers = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        await foreach (var row in RowsAsync(connection, Filers, [], cancellation))
+        {
+            filers[row.GetString(0)] = row.GetString(1);
+        }
+
+        var before = inputs.Calendar[Math.Max(0, inputs.At - 1)];
+        var revenue = new Dictionary<string, IReadOnlyList<QuarterRevenue>>(StringComparer.Ordinal);
+
+        foreach (var name in inputs.Held)
+        {
+            var ticker = inputs.Series[name].Name.Ticker;
+
+            if (!filers.TryGetValue(ticker, out var cik))
+            {
+                continue;
+            }
+
+            var facts = new List<FiledRevenue>();
+
+            await foreach (var row in RowsAsync(connection, RevenueFacts, [("$cik", cik), ("$before", Stamp(before))], cancellation))
+            {
+                facts.Add(new FiledRevenue(row.GetString(0), Date(row.GetString(1)), Date(row.GetString(2)), Money.FromStorage(row.GetString(3)), Date(row.GetString(4)), row.GetString(5), row.GetString(6)));
+            }
+
+            revenue[ticker] = FirstFiledRevenue.Quarters(facts);
+        }
+
+        return revenue;
+    }
+
+    const string Filers = "SELECT ticker, cik FROM company WHERE cik IS NOT NULL ORDER BY fetched_at;";
+
+    const string RevenueFacts = "SELECT concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact WHERE cik = $cik AND filed < $before;";
 
     // Each member's newest print whose reaction sits inside the sessions a drift's reaction can reach, its release under
     // each version given, keyed by its ticker and report date.
@@ -885,7 +966,7 @@ public sealed class IndexFamilies : IComponent
                 }
             }
 
-            await foreach (var row in RowsAsync(connection, QuartersOf, [("$ticker", ticker)], cancellation))
+            await foreach (var row in RowsAsync(connection, QuartersOf, [("$ticker", ticker), ("$night", Stamp(night))], cancellation))
             {
                 quarters.Add(new FiledIncome(
                     Date(row.GetString(0)),
@@ -899,7 +980,148 @@ public sealed class IndexFamilies : IComponent
             income[ticker] = quarters;
         }
 
+        // On a night whose store's year holds fewer sessions than the night's longest readings read, the sessions the year
+        // falls short by from the pulled history, before the year's first session and for each S&P 400 and 600 member the
+        // store holds from it; a member starting later, or missing a session inside the year, reads no more than its own.
+        // see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
+        if (index != LargeIndex && YearOf(names, night) is var (held, first) && held < SessionsReadTo)
+        {
+            for (var at = 0; at < names.Count; at++)
+            {
+                if (names[at].Bars is [var oldest, ..] && oldest.Session == first)
+                {
+                    names[at] = names[at] with { Before = await BeforeTheYearAsync(connection, null, names[at].Ticker, oldest, SessionsReadTo - held, cancellation) };
+                }
+            }
+        }
+
         return (names, income);
+    }
+
+    // The closes the night's longest readings read to the night, the night's own among them: the breakout's year's high
+    // over the sessions before the night, and the sector heavyweights' look-back and beta over a year of returns.
+    public static int SessionsReadTo { get; } = Math.Max(BreakoutRule.ProvisionalHighSessions, HeavyweightRule.BetaReturns) + 1;
+
+    // The days past the count a pulled read asks for, so a bar the provider sent for a day the exchange was closed, which
+    // the read passes over, does not leave it short.
+    const int StrayDays = 5;
+
+    // The sessions the members' stored bars hold to the night, which is the store's year to it, and its first session.
+    static (int Held, DateOnly? First) YearOf(IReadOnlyList<SweepName> names, DateOnly night)
+    {
+        var sessions = names.SelectMany(name => name.Bars).Select(bar => bar.Session).Where(session => session <= night).Distinct().ToArray();
+
+        return (sessions.Length, sessions.Length > 0 ? sessions.Min() : null);
+    }
+
+    // A member's sessions before its first stored one that the newest pull holding that session holds, the newest of them
+    // up to the count asked and oldest first, each price brought to the store's scale by the ratio of the stored close to
+    // the pulled one on that first session and its close as traded as the pull holds it, a day the exchange's table holds
+    // no session on passed over and a session the pull is missing ending the read, so no reading reaches across a hole
+    // the pull holds; none where no pull holds the first session. A read handed no transaction runs in the one the
+    // connection holds, which a command takes as it is made, so a step reading inside its own transaction reads here.
+    // see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
+    public static async Task<SweepBar[]> BeforeTheYearAsync(SqliteConnection connection, SqliteTransaction? transaction, string ticker, SweepBar first, int count, CancellationToken cancellation)
+    {
+        string? pull = null;
+        var pulledClose = 0m;
+
+        await using (var holding = connection.CreateCommand())
+        {
+            if (transaction is not null)
+            {
+                holding.Transaction = transaction;
+            }
+
+            holding.CommandText = PullHoldingFirst;
+            holding.Parameters.AddWithValue("$ticker", ticker);
+            holding.Parameters.AddWithValue("$first", Stamp(first.Session));
+
+            await using var reader = await holding.ExecuteReaderAsync(cancellation);
+
+            if (await reader.ReadAsync(cancellation))
+            {
+                pull = reader.GetString(0);
+                pulledClose = Money.FromStorage(reader.GetString(1));
+            }
+        }
+
+        if (pull is null || pulledClose <= 0m || first.Close <= 0m)
+        {
+            return [];
+        }
+
+        var ratio = first.Close / pulledClose;
+        var before = new List<SweepBar>();
+
+        await using (var sessions = connection.CreateCommand())
+        {
+            if (transaction is not null)
+            {
+                sessions.Transaction = transaction;
+            }
+
+            sessions.CommandText = PulledBefore;
+            sessions.Parameters.AddWithValue("$ticker", ticker);
+            sessions.Parameters.AddWithValue("$pull", pull);
+            sessions.Parameters.AddWithValue("$first", Stamp(first.Session));
+            sessions.Parameters.AddWithValue("$count", count + StrayDays);
+
+            await using var reader = await sessions.ExecuteReaderAsync(cancellation);
+            var after = first.Session;
+
+            while (before.Count < count && await reader.ReadAsync(cancellation))
+            {
+                var day = Date(reader.GetString(0));
+                var covered = day >= Core.Bars.ExchangeClosures.CoveredFrom && day <= Core.Bars.ExchangeClosures.CoveredThrough;
+
+                if (covered && !Core.Bars.ExchangeClosures.IsSession(day))
+                {
+                    continue;
+                }
+
+                if (covered && Core.Bars.ExchangeClosures.SessionsBetween(day, after).Count != 0)
+                {
+                    break;
+                }
+
+                after = day;
+                before.Add(new SweepBar(
+                    day,
+                    Money.FromStorage(reader.GetString(1)) * ratio,
+                    Money.FromStorage(reader.GetString(2)) * ratio,
+                    Money.FromStorage(reader.GetString(3)) * ratio,
+                    reader.GetInt64(4),
+                    Money.FromStorage(reader.GetString(5)) * ratio,
+                    reader.IsDBNull(6) ? 0m : Money.FromStorage(reader.GetString(6))));
+            }
+        }
+
+        before.Reverse();
+
+        return [.. before];
+    }
+
+    // What the night says of the sessions it read before the store's year: none on a night whose year holds the sessions
+    // its longest readings read; on one that does not, how many it holds, how many members the pulled history was read
+    // for, and each member it holds too few sessions for, which reads none of those readings.
+    public static string? BeforeTheYear(IReadOnlyList<SweepName> names, DateOnly night)
+    {
+        var (held, first) = YearOf(names, night);
+
+        if (held >= SessionsReadTo)
+        {
+            return null;
+        }
+
+        var read = names.Count(name => name.Before is { Length: > 0 });
+        var few = names
+            .Where(name => name.Bars is [var oldest, ..] && oldest.Session == first && (name.Before?.Length ?? 0) < SessionsReadTo - held)
+            .Select(name => name.Ticker)
+            .ToArray();
+
+        return FormattableString.Invariant($"the store's year holds {held} of the {SessionsReadTo} sessions the year's high and the heavyweights' closes read, the sessions before it read from the pulled history for {read} member(s)")
+            + (few.Length > 0 ? FormattableString.Invariant($", which holds too few for {few.Length}, each reading none of them: {string.Join(", ", few)}") : string.Empty);
     }
 
     // The trade each of the names still holds on the night on any card of any index, with the index it is held in: the
@@ -1186,7 +1408,7 @@ public sealed record IndexFollower(string Ticker, string? Industry, string? Sect
 // rebalance waits for a night the index's members hold the sessions its readings need, and one reading no lead, or no
 // beta where it reads one, waits the same way, selling and buying nothing.
 // see: The 400 and 600 each sweep two heavyweight designs and keep the stronger after costs
-// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
 // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
 // see: A heavyweight leaving the index is sold at its last session's close as a member
 // see: An S&P 400 or 600 heavyweights holding keeps the lead it was bought on
@@ -1354,11 +1576,12 @@ public static class IndexHeavyweights
 
     // The leaders a rebalance on the night buys within the index at a setting, each with its sector and the size cut it
     // was chosen from, and the lead of every company ranked in a sector's size cut: the sweep's tape laid over the
-    // members' year with each company's value from the newest count filed before the session, a beta against the index's
+    // members' year with each company's value from the newest count filed before the session, brought to the session's
+    // basis by the splits the member's bars carry, a beta against the index's
     // fund, and the members failing the floors or the quality read by none, each member's return over the look-back or,
     // where the setting reads it, its twelve months' strength skipping the latest month; or why the rebalance waits, the
-    // members holding no close for the night, fewer sessions to it than the setting's readings need, or reading no lead,
-    // or no beta where the setting reads one.
+    // members holding no close for the night, fewer sessions to it than the setting's readings need, the store's year and
+    // the pulled history the night read before it together, or reading no lead, or no beta where the setting reads one.
     // see: An index family's variants may stand registered before its freeze, its provisional rule staying the live one
     static async Task<(IReadOnlyList<(string Ticker, string Sector, IReadOnlyList<string> Cut)> Leaders, IReadOnlyDictionary<string, double> Leads, int Read, string? Waits)> ReadAsync(
         SqliteConnection connection,
@@ -1395,6 +1618,10 @@ public static class IndexHeavyweights
             fund.Add((Date(row.GetString(0)), Statistic.FromPrice(Money.FromStorage(row.GetString(1)))));
         }
 
+        // Each member's sessions before the store's year, where the night read them, laid before its own.
+        // see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
+        names = [.. names.Select(name => name.Before is { Length: > 0 } before ? name with { Bars = [.. before, .. name.Bars], Before = null } : name)];
+
         var calendar = names.SelectMany(name => name.Bars.Select(bar => bar.Session)).Where(session => session <= night).Distinct().Order().ToArray();
         var at = Array.IndexOf(calendar, night);
 
@@ -1412,7 +1639,7 @@ public static class IndexHeavyweights
         var history = new HeavyweightHistory(
             companies,
             counts.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<FiledCount>)pair.Value, StringComparer.Ordinal),
-            new Dictionary<string, IReadOnlyList<FiledSplit>>(StringComparer.Ordinal),
+            names.ToDictionary(name => name.Ticker, name => CompanyValue.SplitsIn([.. name.Bars.Select(bar => new SessionClose(bar.Session, bar.Close, bar.RawClose))]), StringComparer.Ordinal),
             [],
             []);
         var (tape, sessions) = HeavyweightSweep.Lay(inputs, history, fund.Count > 0 ? new SweepMarketSeries(IndexSweepFunds[index], fund, string.Empty) : null, new HashSet<int> { at }, 0);
@@ -1472,6 +1699,9 @@ public static class IndexHeavyweights
     public const string UnderTheAverage = "a close under its 200-day average";
 
     public const string NoLongerBought = "no longer among those it buys";
+
+    // From 20.11 the reason a retired rule's book sells what it holds.
+    public const string RuleRetired = "its rule retired";
 
     const string UndoTheRuleNight = @"
         DELETE FROM index_heavyweight_rule_holding WHERE candidate = $candidate AND entered_on = $night;
@@ -1548,7 +1778,8 @@ public static class IndexHeavyweights
         IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income,
         IndexLevels levels,
         IReadOnlyList<IndexRule> rules,
-        CancellationToken cancellation)
+        CancellationToken cancellation,
+        IReadOnlyDictionary<string, DateTimeOffset>? retired = null)
     {
         var (entered, ended, held, rebalanced) = (0, 0, 0, false);
         var waiting = new List<string>();
@@ -1684,8 +1915,65 @@ public static class IndexHeavyweights
             held += holding.Count;
         }
 
+        // From 20.11 each retired rule's book sells what it still holds at the close of the session it was retired on,
+        // every holding carried to that close first, so no holding of a book no night keeps any more stays open; one
+        // whose stock holds no close that session is sold at the close it was last carried to. A rule retired since the
+        // newest session waits for its session's night.
+        // see: A retired rule's open positions are ended on every index, a book's holdings sold at the close of the session it was retired on and a swing rule's trades walked to their own exits
+        foreach (var (candidate, retiredAt) in retired ?? new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal))
+        {
+            var on = Core.Candidates.FamilyRecords.FirstSession(retiredAt);
+
+            if (on > night)
+            {
+                continue;
+            }
+
+            var key = new (string, object)[] { ("$candidate", candidate), ("$night", Stamp(night)) };
+
+            await ExecuteAsync(connection, transaction, UndoTheRuleNight, key, cancellation);
+
+            var open = new List<(string Ticker, DateOnly Entered, decimal Entry, double Growth, List<CutMember> Cut, DateOnly Through)>();
+
+            await foreach (var row in RowsAsync(connection, transaction, RuleOpenHoldings, key, cancellation))
+            {
+                open.Add((row.GetString(0), Date(row.GetString(1)), Money.FromStorage(row.GetString(3)), row.GetDouble(4), JsonSerializer.Deserialize<List<CutMember>>(row.GetString(5)) ?? [], Date(row.GetString(6))));
+            }
+
+            foreach (var one in open)
+            {
+                var close = await CloseOnAsync(connection, transaction, one.Ticker, Stamp(on), cancellation);
+                var through = await CloseOnAsync(connection, transaction, one.Ticker, Stamp(one.Through), cancellation);
+                var growth = close is { } now && through is { } then && then > 0m && on > one.Through ? one.Growth * Statistic.FromRatio(now / then) : one.Growth;
+                var cut = new List<CutMember>();
+
+                foreach (var member in one.Cut)
+                {
+                    var memberNow = await CloseOnAsync(connection, transaction, member.Ticker, Stamp(on), cancellation);
+                    var memberThen = await CloseOnAsync(connection, transaction, member.Ticker, member.Through, cancellation);
+
+                    cut.Add(memberNow is { } m && memberThen is { } t && t > 0m && on > Date(member.Through) ? member with { Growth = member.Growth * Statistic.FromRatio(m / t), Through = Stamp(on) } : member);
+                }
+
+                await RuleEndAsync(connection, transaction, index, candidate, one.Ticker, one.Entered, close is null ? one.Through : on, close ?? through ?? one.Entry, RuleRetired, growth, cut, one.Entry, cancellation);
+                ended++;
+            }
+        }
+
         return new IndexHeavyweightsOutcome(rebalanced, entered, ended, held, waiting.Count > 0 ? string.Join("; ", waiting) : null);
     }
+
+    // The registered heavyweights rules of an index retired as of an instant, each with the instant its retirement was
+    // written, read off the register by the last row naming each, so a rule registered again in the same second stands.
+    public static IReadOnlyDictionary<string, DateTimeOffset> RetiredBooks(IReadOnlyList<Core.Candidates.RegisterRow> register, string index, DateTimeOffset at) =>
+        register
+            .Where(row => row.RegisteredAt <= at && Core.Candidates.CandidateEvaluators.Find(row.Evaluator) is Core.Candidates.IndexHeavyweightCandidate evaluator && evaluator.Index == index)
+            .Select(row => (Row: row, Name: row.Event == Core.Candidates.CandidateFamily.Registered ? row.Candidate : row.Retires))
+            .Where(named => named.Name is not null)
+            .GroupBy(named => named.Name!, StringComparer.Ordinal)
+            .Select(group => group.OrderBy(named => named.Row.RegisteredAt).ThenBy(named => named.Row.Id).Last().Row)
+            .Where(row => row.Event == Core.Candidates.CandidateFamily.Retired)
+            .ToDictionary(row => row.Retires!, row => row.RegisteredAt, StringComparer.Ordinal);
 
     // Whether a member clears the price floor and the dollar volume floor at a multiple of it, and the quality on the
     // night: none, the profit gate, or the gate and the interest cover as the member readings stored it.
@@ -1943,6 +2231,10 @@ public static class IndexHeavyweights
 
         return await command.ExecuteScalarAsync(cancellation);
     }
+
+    // A stock's close on a session as stored, none where the store holds none.
+    static async Task<decimal?> CloseOnAsync(SqliteConnection connection, SqliteTransaction transaction, string ticker, string session, CancellationToken cancellation) =>
+        await ScalarAsync(connection, transaction, CloseOnSession, [("$ticker", ticker), ("$session", session)], cancellation) is string stored ? Money.FromStorage(stored) : null;
 
     static async IAsyncEnumerable<SqliteDataReader> RowsAsync(SqliteConnection connection, SqliteTransaction transaction, string sql, IReadOnlyList<(string Name, object Value)> parameters, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellation)
     {

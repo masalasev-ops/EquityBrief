@@ -122,8 +122,12 @@ for step in "${steps[@]}"; do
     # printed it. A remedy file is committed beside the change it belongs to.
     eval "arguments=($step)"
 
-    if ! dotnet run --no-build --project src/EquityBrief.Worker -- "${arguments[@]}"; then
-        code=$?
+    # The step's own exit code, read off the step and not off a test of it, which
+    # would read the test's own status and so nought.
+    code=0
+    dotnet run --no-build --project src/EquityBrief.Worker -- "${arguments[@]}" || code=$?
+
+    if [ "$code" -ne 0 ]; then
         echo "remedy: stopped at step $n of $count with exit $code; run it again with --from $n once the cause is fixed" >&2
         exit "$code"
     fi

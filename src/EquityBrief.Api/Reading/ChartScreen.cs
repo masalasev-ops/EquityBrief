@@ -12,7 +12,8 @@ namespace EquityBrief.Api.Reading;
 // What the chart page reads, each as the read API handed it: the stored bars and indicator rows, the chart's averages
 // before the store's year, the pulled sessions a weekly or monthly chart reads, the night's bands and cards, the chart's
 // marks, the stock's membership row and index, its filings and facts, the name page's report figures and year's
-// extremes, its long view, its peers, its next dated event, and the day its newest report section was written.
+// extremes, its long view, its peers, its next dated event, and the day its newest report section was written; and from
+// 20.12 its earnings reactions and the price the report's figures were read at, which its graphs draw.
 public sealed record ChartInputs(
     string Ticker,
     ChartInterval Interval,
@@ -33,12 +34,14 @@ public sealed record ChartInputs(
     IReadOnlyList<StoredPick> Peers,
     CalendarRow? NextEvent,
     DateOnly? ReportWritten,
-    (DateOnly Quarter, decimal Shares)? ProviderShares = null);
+    (DateOnly Quarter, decimal Shares)? ProviderShares = null,
+    IReadOnlyList<ReactionRow>? Reactions = null,
+    decimal? PriceDrawn = null);
 
 // The chart page's figures, worked when the page is read from what the store holds: the candles at the interval shown,
 // rolled up in the core, each with the averages the name page draws at its last session; and the grid, every figure
 // the one the name page's function works for it, so the two pages never disagree.
-// see: Every link that opens a stock opens its chart page first, and the chart page links to its report
+// see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
 // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
 public static class ChartScreen
 {
@@ -90,8 +93,25 @@ public static class ChartScreen
             [.. ChartSeries.Holes(candles, inputs.Interval).Select(hole => new ChartGap(hole.After, hole.Before))],
             BeforeLine(inputs, stored),
             Grid(inputs, stored),
-            inputs.ReportWritten);
+            inputs.ReportWritten,
+            Graphs: Graphs(inputs));
     }
+
+    // From 20.12 the graphs' figures, each the report's own: the stored reactions' estimates and reported earnings a share
+    // with the consensus for the quarter to report next, the quarters' revenue and net income, and the analysts' figures
+    // with the price the report read them at.
+    // see: The chart page graphs the report's earnings and revenue and the analysts' figures beneath its chart, and no rule reads them from it
+    static ChartGraphs Graphs(ChartInputs inputs)
+    {
+        var analysts = inputs.Report.Analysts;
+        var (prints, next) = EquityBrief.Core.Report.QuarterLines.Earnings(
+            (inputs.Reactions ?? []).Select(row => new EquityBrief.Core.Report.EarningsPrint(row.ReportDate, Stored(row.Estimate), Stored(row.Actual))),
+            analysts?.Consensus.Select(row => (row.Period, row.PeriodEnd, row.Eps)) ?? []);
+
+        return new ChartGraphs(prints, next, inputs.Report.Income ?? [], inputs.Report.Currency, analysts, inputs.PriceDrawn);
+    }
+
+    static decimal? Stored(string? text) => text is { } held ? EquityBrief.Data.Money.FromStorage(held) : null;
 
     // The averages the name page draws at each session: the indicator rows, and where they are empty the chart's
     // averages the night read through the sessions before the store's year.
@@ -247,11 +267,16 @@ public static class ChartScreen
         var perShare = quarter?.Lines.FirstOrDefault(line => line.PerShare);
         var revenue = quarter?.Lines.FirstOrDefault(line => !line.PerShare);
 
+        // A figure against the estimate the report page reads it against, an implied one named so, and where none is read
+        // the report page's words for why.
+        // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
         static GridFigure AgainstItsEstimate(string label, EquityBrief.Core.Report.QuarterLine? line, Func<decimal, string> shown) =>
             line?.Reported is { } reported
                 ? new GridFigure(
                     label,
-                    shown(reported) + (line.Estimate is { } estimate ? FormattableString.Invariant($" against an estimate of {shown(estimate)}") : ", no estimate filed"),
+                    shown(reported) + (line.Estimate is { } estimate
+                        ? FormattableString.Invariant($" against {(line.Implied is null ? "an" : "an implied")} estimate of {shown(estimate)}")
+                        : ", its estimate " + (line.EstimateAbsent ?? EquityBrief.Core.Report.QuarterLines.NonePublished)),
                     reported.ToString(CultureInfo.InvariantCulture))
                 : Missing(label);
 
@@ -277,22 +302,27 @@ public static class ChartScreen
     static GridGroup Dividend(ChartInputs inputs)
     {
         var dividend = inputs.Report.Dividend;
-        var year = dividend?.Years.LastOrDefault(paid => paid.Whole);
+        var year = dividend?.Years.LastOrDefault(paid => paid.Whole) ?? (inputs.Report.PaysNone ? inputs.Report.PaidLastYear : null);
+
+        // A company paying none says so in each figure, the year it last paid in still drawn where it is the last whole one,
+        // and not stored is left for one storing neither a rate nor a dividend.
+        // see: A company filing a dividend rate of nought with no dividend kept in the year is drawn as paying none, and one storing neither as not stored
+        GridFigure Unpaid(string label) => inputs.Report.PaysNone ? new GridFigure(label, SinglePageApp.PaysNone) : Missing(label);
 
         return new GridGroup("dividend", "Dividend",
         [
             dividend?.Yield is { } yield
                 ? new GridFigure("Yield", FormattableString.Invariant($"{yield:0.00}% on {(dividend.RateIsForward ? "the forward rate" : "the last year's payments")} of {Figures.PerShare(dividend.Rate)}"), yield.ToString(CultureInfo.InvariantCulture))
-                : Missing("Yield"),
+                : Unpaid("Yield"),
             year is { } whole
-                ? new GridFigure("Paid in its last whole year", FormattableString.Invariant($"{Figures.PerShare(whole.Total)} in {whole.Year}, {whole.Payments} payments"), whole.Total.ToString(CultureInfo.InvariantCulture))
-                : Missing("Paid in its last whole year"),
+                ? new GridFigure("Paid in its last whole year", FormattableString.Invariant($"{Figures.PerShare(whole.Total)} in {whole.Year}, {whole.Payments} {(whole.Payments == 1 ? "payment" : "payments")}"), whole.Total.ToString(CultureInfo.InvariantCulture))
+                : Unpaid("Paid in its last whole year"),
             dividend?.PayoutOnEarnings is { } payout
                 ? new GridFigure("Paid out of earnings", FormattableString.Invariant($"{payout:0.0}%"), payout.ToString(CultureInfo.InvariantCulture))
-                : Missing("Paid out of earnings"),
+                : Unpaid("Paid out of earnings"),
             dividend?.RaisedInARow is { } raised
-                ? new GridFigure("Raised in a row", FormattableString.Invariant($"{raised} years"), raised.ToString(CultureInfo.InvariantCulture))
-                : Missing("Raised in a row"),
+                ? new GridFigure("Raised in a row", FormattableString.Invariant($"{raised} {(raised == 1 ? "year" : "years")}"), raised.ToString(CultureInfo.InvariantCulture))
+                : Unpaid("Raised in a row"),
         ]);
     }
 

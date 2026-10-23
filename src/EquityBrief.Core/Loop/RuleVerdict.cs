@@ -4,7 +4,7 @@ namespace EquityBrief.Core.Loop;
 // where the gate did not clear the bar, the first screen it failed in the tester's own order, not testable with the
 // reading it lacks, or not tested yet where no test holds it. Its record since registration is labelled apart, too few
 // until the count screen's own minimum is met, and the two are never merged into one figure.
-// see: A paper account draws its test years verdict and its record since registration apart, and never merges them
+// see: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together
 public static class RuleVerdict
 {
     public const string Passed = "passed the test";

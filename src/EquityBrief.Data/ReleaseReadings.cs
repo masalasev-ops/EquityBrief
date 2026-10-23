@@ -26,12 +26,15 @@ public static class ReleaseReadings
     public const string RefusedWhy = "the release's reading was refused";
 
     // A filer's releases from the print's window on, newest first, each with its reading under the version where one is
-    // held; which of them the night may read is the core's one rule, asked of each.
+    // held; which of them the night may read is the core's one rule, asked of each. From the 20.3 correction of
+    // 2026-10-22 a filing's release is the exhibit marked so, and a reading answers for it only where it read that
+    // exhibit, so a reading of the exhibit it replaced answers for none.
+    // see: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so
     const string ForPrint = @"
         SELECT d.accession, d.accepted_at, r.outcome, r.cause, r.results, r.outlook, r.tone, r.demand
         FROM release_document d
-        LEFT JOIN release_reading r ON r.accession = d.accession AND r.pin = $pin
-        WHERE d.cik = $cik AND d.accepted_at >= $from
+        LEFT JOIN release_reading r ON r.accession = d.accession AND r.exhibit = d.exhibit AND r.pin = $pin
+        WHERE d.cik = $cik AND d.accepted_at >= $from AND d.release = 1
         ORDER BY d.accepted_at DESC, d.accession DESC;
     ";
 
@@ -39,8 +42,8 @@ public static class ReleaseReadings
     const string Newest = @"
         SELECT d.accession, d.accepted_at, r.results, r.outlook, r.tone, r.demand, r.pin
         FROM release_document d
-        JOIN release_reading r ON r.accession = d.accession AND r.outcome = 'read'
-        WHERE d.cik = $cik
+        JOIN release_reading r ON r.accession = d.accession AND r.exhibit = d.exhibit AND r.outcome = 'read'
+        WHERE d.cik = $cik AND d.release = 1
           AND r.pin = (SELECT MAX(id) FROM reading_pin)
         ORDER BY d.accepted_at DESC, d.accession DESC;
     ";
@@ -62,12 +65,14 @@ public static class ReleaseReadings
             : null;
     }
 
-    // From 20.8 every stored release with its reading under a version where one is held, which the ledger's release
-    // readings read.
+    // From 20.8 every stored filing's release with its reading under a version where one is held, which the ledger's
+    // release readings read: the exhibit the filing holds as its release, and a reading only of that exhibit.
+    // see: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so
     const string ForLedger = @"
         SELECT d.cik, d.accepted_at, r.outcome, r.results, r.outlook, r.tone, r.demand
         FROM release_document d
-        LEFT JOIN release_reading r ON r.accession = d.accession AND r.pin = $pin;
+        LEFT JOIN release_reading r ON r.accession = d.accession AND r.exhibit = d.exhibit AND r.pin = $pin
+        WHERE d.release = 1;
     ";
 
     // From 20.8 each filer's releases as the ledger reads them, by its CIK padded to ten digits: the instant the SEC

@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-wz1udm044j5ebyu99ytgw",
+  "object": "chat.completion",
+  "created": 1792418188,
+  "model": "google/gemma-4-26b-a4b-qat",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"error\": \"The user provided a prompt that requires writing a single sentence...: an answer written as a JSON object or list rather than prose. Answer in plain prose, with no JSON. Write the section again.\"\n}",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 890,
+    "completion_tokens": 55,
+    "total_tokens": 945,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {
+    "tokens_per_second": 65.71013797912121,
+    "time_to_first_token": 0.40008499999999997,
+    "generation_time": 1.221876,
+    "stop_reason": "eosFound"
+  },
+  "model_info": {
+    "arch": "gemma4",
+    "quant": "Q4_0",
+    "format": "gguf",
+    "context_length": 50176
+  },
+  "runtime": {
+    "name": "llama.cpp-win-x86_64-nvidia-cuda12-avx2",
+    "version": "2.56.0",
+    "supported_formats": [
+      "gguf"
+    ]
+  }
+}

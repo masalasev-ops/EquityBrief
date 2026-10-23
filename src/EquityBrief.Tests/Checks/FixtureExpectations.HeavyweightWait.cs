@@ -17,7 +17,7 @@ namespace EquityBrief.Tests.Checks;
 // buying nothing and storing no row of its month, while one where a company reading none ranks beside others reading
 // them goes ahead; a month whose rows read no lead is read again; the S&P 400's books wait the same way; and the store's
 // year holds the sessions the exchange's calendar gives it, worked by hand from the closure table.
-// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
 public partial class FixtureExpectations
 {
     // The row the wait adds that this check reaches: section 18's row for a rebalance whose store's year or readings
@@ -143,13 +143,14 @@ public partial class FixtureExpectations
         Assert.Equal(["W1"], first.Entered);
 
         // A month's first session on a Monday, its date a year back a Sunday: the fetch keeps 251 sessions, one short of
-        // the 252 the twelve-month return reads. The rebalance waits: nothing read, sold or bought, no row of the month
-        // stored, W1 carried and held, and the row naming the sessions held and needed.
+        // the 252 the twelve-month return reads, and the store holds no pull to read the session before them from. The
+        // rebalance waits: nothing read, sold or bought, no row of the month stored, W1 carried and held, and the row
+        // naming the sessions held and needed and each member the pull holds too few for.
         WaitBars(store, new DateOnly(2026, 10, 2), new DateOnly(2026, 10, 30));
 
         var monday = new DateOnly(2026, 11, 2);
         var (shortCut, waited) = await WaitNight(store, monday, "night-waits");
-        const string Waits = "the rebalance waits for a night the store holds the 252 sessions its readings need, since it holds 251 to 2026-11-02";
+        const string Waits = "the rebalance waits for a night the store's year and the pulled history before it hold the 252 sessions its readings need, since they hold 251 to 2026-11-02";
 
         Assert.Equal(DayOfWeek.Sunday, shortCut.Oldest.DayOfWeek);
         Assert.Equal(251, Scalar(store, "SELECT COUNT(DISTINCT session_date) FROM bar;"));
@@ -158,7 +159,9 @@ public partial class FixtureExpectations
         Assert.Empty(waited.Ended);
         Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM heavyweight_night WHERE session_date = '2026-11-02';"));
         Assert.Equal(["W1|2026-10-01|2026-11-02|open"], TextRows(store, "SELECT ticker || '|' || entered_on || '|' || through || '|' || IFNULL(ended_on, 'open') FROM heavyweight_holding;"));
-        Assert.Equal(Waits + ", 0 ended, 1 held", Text(store, "SELECT detail FROM run_log WHERE run_id = 'night-waits' AND stage = 'heavyweights';"));
+        Assert.Equal(
+            Waits + ", 0 ended, 1 held; the store's year holds 251 of the 252 sessions the heavyweights' closes read, the sessions before it read from the pulled history for 0 member(s), which holds too few for 3, each reading no return and no beta: W1, W2, W3",
+            Text(store, "SELECT detail FROM run_log WHERE run_id = 'night-waits' AND stage = 'heavyweights';"));
 
         // The session after holds 252, and the month's rebalance is read on it: every member ranked, W1 still the leader
         // and still held.
@@ -179,11 +182,11 @@ public partial class FixtureExpectations
         Assert.Equal(127, HeavyweightRule.SessionsNeeded(HeavyweightRule.Provisional));
         Assert.Null(HeavyweightRule.WaitsForSessions(HeavyweightRule.Provisional, 251, night));
         Assert.Equal(
-            "the rebalance waits for a night the store holds the 127 sessions its readings need, since it holds 126 to 2026-11-02",
+            "the rebalance waits for a night the store's year and the pulled history before it hold the 127 sessions its readings need, since they hold 126 to 2026-11-02",
             HeavyweightRule.WaitsForSessions(HeavyweightRule.Provisional, 126, night));
         Assert.Equal(252, HeavyweightRule.SessionsNeeded(HeavyweightRule.Provisional with { HighBeta = true }));
         Assert.Equal(
-            "the rebalance waits for a night the store holds the 252 sessions its readings need, since it holds 251 to 2026-11-02",
+            "the rebalance waits for a night the store's year and the pulled history before it hold the 252 sessions its readings need, since they hold 251 to 2026-11-02",
             HeavyweightRule.WaitsForSessions(HeavyweightRule.Provisional with { HighBeta = true }, 251, night));
         Assert.Null(HeavyweightRule.WaitsForSessions(HeavyweightRule.Provisional with { HighBeta = true }, 252, night));
 
@@ -430,7 +433,7 @@ public partial class FixtureExpectations
             Assert.Equal(251, Scalar(store, "SELECT COUNT(DISTINCT session_date) FROM bar;"));
 
             // Both books wait, naming the sessions held and needed: nothing bought or sold, and no rebalance stored.
-            const string Waits = "the rebalance waits for a night the store holds the 252 sessions its readings need, since it holds 251 to 2026-11-02";
+            const string Waits = "the rebalance waits for a night the store's year and the pulled history before it hold the 252 sessions its readings need, since they hold 251 to 2026-11-02";
             var waited = await Night(monthFirst, "waits");
 
             Assert.Equal(new IndexHeavyweightsOutcome(false, 0, 0, 2, Waits), waited.Heavyweights);

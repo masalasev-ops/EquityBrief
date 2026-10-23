@@ -11,6 +11,7 @@ using EquityBrief.Core.Readings;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
+using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Cards;
 using EquityBrief.Worker.Indices;
 using EquityBrief.Worker.Research;
@@ -20,9 +21,15 @@ using Microsoft.Data.Sqlite;
 namespace EquityBrief.Worker.Ledger;
 
 // One index's part of the ledger's night: the setups appended, those the live rule's own setting passes, the windows
-// closed, the time it took, or the failure that left the index unwritten; and from 20.8 the rows of the nights before
-// whose release readings it read again.
-public sealed record LedgerIndex(string Index, int Setups, int LivePasses, int Closed, double Seconds, string? Fault = null, int ReleasesAgain = 0);
+// closed, the time it took, or the failure that left the index unwritten; from 20.8 the rows of the nights before whose
+// release readings it read again; and on the S&P 400 and 600 the setups of the sessions before that their family's frozen
+// live rule bought tonight, and the words naming the live rules read.
+public sealed record LedgerIndex(string Index, int Setups, int LivePasses, int Closed, double Seconds, string? Fault = null, int ReleasesAgain = 0)
+{
+    public int BoughtSince { get; init; }
+
+    public string? LiveRules { get; init; }
+}
 
 public sealed record LedgerOutcome(DateOnly? Session, IReadOnlyList<LedgerIndex> Indices)
 {
@@ -65,6 +72,8 @@ public sealed partial class SetupLedger : IComponent
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
+            new StoreTouch(Store.SwitchReading, Touch.Read),
+            new StoreTouch(Store.MarketReading, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
             new StoreTouch(Store.InsiderTrade, Touch.Read),
             new StoreTouch(Store.InsiderRead, Touch.Read),
@@ -73,7 +82,9 @@ public sealed partial class SetupLedger : IComponent
             new StoreTouch(Store.ReadingPin, Touch.Read),
             new StoreTouch(Store.HeavyweightNight, Touch.Read),
             new StoreTouch(Store.FamilyPick, Touch.Read),
+            new StoreTouch(Store.IndexFamilyNight, Touch.Read),
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
+            new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.SetupNight, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LedgerSummary, Touch.Insert | Touch.Delete),
@@ -157,6 +168,26 @@ public sealed partial class SetupLedger : IComponent
         WHERE index_code = $index AND family = $family AND ticker = $ticker AND session_date = $session AND source = $source;";
 
     const string ReadingsBeforeReleases = "SELECT ticker, session_date, readings FROM ledger_reading WHERE index_code = $index AND pin = $pin AND session_date >= $from AND session_date < $night;";
+
+    // The instant the night's own read of the register was taken at on an index, as its index families' row states it.
+    // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
+    const string NightsRegisterAt = "SELECT settings FROM index_family_night WHERE index_code = $index AND session_date = $night;";
+
+    // A family's setups the night stored on the sessions before whose reaction its live rule may still buy, written under
+    // that rule's words and not yet passed, and the row each of those sessions wrote for the family.
+    const string StoredWithin = @"
+        SELECT ticker, session_date FROM setup
+        WHERE index_code = $index AND family = $family AND source = $source AND session_date >= $from AND session_date < $night
+            AND rule = $rule AND live_pass = 0
+        ORDER BY session_date, ticker;";
+
+    const string NightRowsWithin = @"
+        SELECT session_date, members, setups, live_passes FROM setup_night
+        WHERE index_code = $index AND family = $family AND source = $source AND session_date >= $from AND session_date < $night;";
+
+    const string BoughtSince = "UPDATE setup SET live_pass = 1 WHERE index_code = $index AND family = $family AND ticker = $ticker AND session_date = $session AND source = $source;";
+
+    const string ClearTheFamilysNight = "DELETE FROM setup_night WHERE index_code = $index AND family = $family AND session_date = $session AND source = $source;";
 
     const string NightsSetupTickers = "SELECT DISTINCT ticker FROM setup WHERE session_date = $session AND source = $source;";
 
@@ -261,13 +292,18 @@ public sealed partial class SetupLedger : IComponent
 
             var night = Date(newest);
 
+            // The register the S&P 400's and 600's frozen live rules are read from, each index's as the night's own read of
+            // it stood.
+            // see: The setup ledger reads each S&P 400 and 600 family's frozen live rule where one stands, and a card draws setups like a pick only once its history is built under that rule
+            var register = await new CandidateRegistrar(clock, databaseFile).RowsAsync(cancellation);
+
             foreach (var index in DecisionCards.Indices)
             {
                 var watch = Stopwatch.StartNew();
 
                 try
                 {
-                    written.Add(await IndexNightAsync(connection, index, night, watch, cancellation));
+                    written.Add(await IndexNightAsync(connection, index, night, watch, register, startedAt, cancellation));
                 }
                 catch (Exception failure) when (!cancellation.IsCancellationRequested)
                 {
@@ -391,9 +427,11 @@ public sealed partial class SetupLedger : IComponent
         string.Join("; ", indices.Select(index => index.Fault is null
             ? FormattableString.Invariant($"{index.Setups} setup(s), {index.LivePasses} passing the live rule, {index.Closed} window(s) closed on the {DecisionCards.NameOf(index.Index)}")
                 + (index.ReleasesAgain > 0 ? FormattableString.Invariant($", {index.ReleasesAgain} row(s) of the nights before with their release readings read again") : string.Empty)
+                + (index.BoughtSince > 0 ? FormattableString.Invariant($", {index.BoughtSince} setup(s) of the sessions before bought by their live rule tonight") : string.Empty)
+                + (index.LiveRules is { } read ? ", " + read : string.Empty)
             : $"the {DecisionCards.NameOf(index.Index)}'s setups not computed tonight: {index.Fault}"));
 
-    async Task<LedgerIndex> IndexNightAsync(SqliteConnection connection, string index, DateOnly night, Stopwatch watch, CancellationToken cancellation)
+    async Task<LedgerIndex> IndexNightAsync(SqliteConnection connection, string index, DateOnly night, Stopwatch watch, IReadOnlyList<Core.Candidates.RegisterRow> register, DateTimeOffset startedAt, CancellationToken cancellation)
     {
         // Every read before the write, since the inputs are read on the connection the transaction will hold.
         var (names, income) = await IndexFamilies.InputsAsync(connection, index, night, cancellation);
@@ -415,6 +453,16 @@ public sealed partial class SetupLedger : IComponent
             ? await HeavyweightCutsAsync(connection, since, night, cancellation)
             : new Dictionary<DateOnly, IReadOnlyList<HeavyweightCut>>();
 
+        // The S&P 400's and 600's frozen live rules as the night's own read of the register took them, the instant its
+        // index families' row states, or the step's own start where the night wrote none; each rule's passes on the night
+        // and, for a drift, on each session since the oldest reaction it may still buy, each read as the night read it;
+        // and the setups the night stored on those sessions under the rule that it had not yet bought.
+        // see: The setup ledger reads each S&P 400 and 600 family's frozen live rule where one stands, and a card draws setups like a pick only once its history is built under that rule
+        var registerAt = index == IndexFamilies.LargeIndex ? startedAt : await RegisterAtAsync(connection, index, night, cancellation) ?? startedAt;
+        var live = inputs is null ? LiveRulesRead.None : LedgerLiveRules.Of(register, registerAt, index);
+        var bought = inputs is null ? new Dictionary<string, HashSet<(string Ticker, DateOnly Session)>>(StringComparer.Ordinal) : await LivePassesAsync(connection, inputs, live, facts, cancellation);
+        var waiting = inputs is null ? new StoredSince([], []) : await StoredSinceAsync(connection, index, inputs, live, cancellation);
+
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
         try
@@ -428,6 +476,7 @@ public sealed partial class SetupLedger : IComponent
             var passes = 0;
             var closed = 0;
             var again = 0;
+            var boughtSince = 0;
 
             if (inputs is not null)
             {
@@ -441,7 +490,11 @@ public sealed partial class SetupLedger : IComponent
                     InsiderSpans = insiders.Spans,
                     Releases = releases,
                 };
-                var families = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, context);
+                var families = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, context)
+                    .Select(family => live.Read.TryGetValue(family.Family, out var rule)
+                        ? LedgerLiveRules.Under(family, rule, row => bought.TryGetValue(family.Family, out var passed) && passed.Contains((row.Ticker, row.Session)))
+                        : family)
+                    .ToArray();
 
                 foreach (var family in families)
                 {
@@ -490,6 +543,7 @@ public sealed partial class SetupLedger : IComponent
                     passes += heavyweights.LivePasses;
                 }
 
+                boughtSince = await BoughtSinceAsync(connection, transaction, index, waiting, bought, cancellation);
                 closed = await SettleAsync(connection, transaction, index, open, inputs, closes, opens, rebalances, cancellation);
 
                 // Every member's readings on the night, read as its setups read theirs, which the chart of what is behind a
@@ -521,7 +575,7 @@ public sealed partial class SetupLedger : IComponent
             await transaction.CommitAsync(cancellation);
             await RefreshSummaryAsync(connection, index, cancellation);
 
-            return new LedgerIndex(index, setups, passes, closed, watch.Elapsed.TotalSeconds, ReleasesAgain: again);
+            return new LedgerIndex(index, setups, passes, closed, watch.Elapsed.TotalSeconds, ReleasesAgain: again) { BoughtSince = boughtSince, LiveRules = live.Words(registerAt) };
         }
         catch
         {
@@ -529,6 +583,162 @@ public sealed partial class SetupLedger : IComponent
 
             throw;
         }
+    }
+
+    // The instant the night's index families read the register at on an index, as their row of the night states it; none
+    // where the night wrote no row or its row states none.
+    // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
+    static async Task<DateTimeOffset?> RegisterAtAsync(SqliteConnection connection, string index, DateOnly night, CancellationToken cancellation)
+    {
+        if (await ScalarAsync(connection, NightsRegisterAt, [("$index", index), ("$night", Stamp(night))], cancellation) is not string settings)
+        {
+            return null;
+        }
+
+        try
+        {
+            using var document = System.Text.Json.JsonDocument.Parse(settings);
+
+            return document.RootElement.TryGetProperty("registerAt", out var at)
+                && at.ValueKind == System.Text.Json.JsonValueKind.String
+                && DateTimeOffset.TryParseExact(at.GetString(), "yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var instant)
+                ? instant
+                : null;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return null;
+        }
+    }
+
+    // The members a session holds a bar of with the index holding them, as the night's inputs read them.
+    static int[] HeldOn(SweepSeries[] series, int at) =>
+        [.. Enumerable.Range(0, series.Length).Where(name => IndexNightRead.BarOf(series[name], at) is var bar && bar >= 0 && series[name].Member[bar])];
+
+    // Each live rule's passes as the night reads them: on the night, and for a drift on each session from the oldest
+    // reaction it may still buy, each session's inputs the night's own year of bars cut at that session by the readers and
+    // its levels those the night stored for it, the revenue the facts filed before the session before it; the setups
+    // passed by stock and session, by family.
+    // see: A drift's revenue level on the S&P 400 and 600 reads a quarter only once its filing is stored, on the night and in its sweep alike
+    static async Task<Dictionary<string, HashSet<(string Ticker, DateOnly Session)>>> LivePassesAsync(
+        SqliteConnection connection,
+        IndexNightInputs inputs,
+        LiveRulesRead live,
+        IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>> facts,
+        CancellationToken cancellation)
+    {
+        var bought = new Dictionary<string, HashSet<(string Ticker, DateOnly Session)>>(StringComparer.Ordinal);
+
+        if (live.Read.Count == 0)
+        {
+            return bought;
+        }
+
+        foreach (var family in live.Read.Keys)
+        {
+            bought[family] = [];
+        }
+
+        for (var at = Math.Max(0, inputs.At - live.Read.Values.Max(LedgerLiveRules.Reach)); at <= inputs.At; at++)
+        {
+            var on = at == inputs.At ? inputs : inputs with { Night = inputs.Calendar[at], At = at, Held = HeldOn(inputs.Series, at) };
+            var levels = await IndexFamilies.LevelsAsync(connection, on, cancellation);
+
+            foreach (var (family, rule) in live.Read)
+            {
+                if (at < inputs.At - LedgerLiveRules.Reach(rule))
+                {
+                    continue;
+                }
+
+                var read = rule.Parameters.GetValueOrDefault(Core.Candidates.IndexDriftCandidate.RevenueGrewParameter) == 1
+                    ? levels with { Revenue = LedgerLiveRules.RevenueBefore(facts, on.Calendar[Math.Max(0, at - 1)]) }
+                    : levels;
+
+                foreach (var (name, session) in LedgerLiveRules.Passes(on, rule, read))
+                {
+                    bought[family].Add((on.Series[name].Name.Ticker, on.Calendar[session]));
+                }
+            }
+        }
+
+        return bought;
+    }
+
+    // A live drift's setups the night stored on the sessions before that it may still buy, under its own words and not yet
+    // passed, and the row of each of those sessions for the family.
+    sealed record StoredSince(IReadOnlyList<(string Family, string Ticker, DateOnly Session)> Setups, IReadOnlyList<(string Family, DateOnly Session, int Members, int Setups, int Passes)> Nights);
+
+    static async Task<StoredSince> StoredSinceAsync(SqliteConnection connection, string index, IndexNightInputs inputs, LiveRulesRead live, CancellationToken cancellation)
+    {
+        var setups = new List<(string Family, string Ticker, DateOnly Session)>();
+        var nights = new List<(string Family, DateOnly Session, int Members, int Setups, int Passes)>();
+
+        foreach (var (family, rule) in live.Read.Where(pair => LedgerLiveRules.Reach(pair.Value) > 0))
+        {
+            var parameters = new (string Name, object Value)[]
+            {
+                ("$index", index), ("$family", family), ("$source", NightSource), ("$night", Stamp(inputs.Night)),
+                ("$from", Stamp(inputs.Calendar[Math.Max(0, inputs.At - LedgerLiveRules.Reach(rule))])), ("$rule", LedgerLiveRules.Words(rule)),
+            };
+
+            await using (var command = Command(connection, null, StoredWithin, parameters))
+            await using (var reader = await command.ExecuteReaderAsync(cancellation))
+            {
+                while (await reader.ReadAsync(cancellation))
+                {
+                    setups.Add((family, reader.GetString(0), Date(reader.GetString(1))));
+                }
+            }
+
+            await using (var command = Command(connection, null, NightRowsWithin, [.. parameters.Where(parameter => parameter.Name != "$rule")]))
+            await using (var reader = await command.ExecuteReaderAsync(cancellation))
+            {
+                while (await reader.ReadAsync(cancellation))
+                {
+                    nights.Add((family, Date(reader.GetString(0)), reader.GetInt32(1), reader.GetInt32(2), reader.GetInt32(3)));
+                }
+            }
+        }
+
+        return new StoredSince(setups, nights);
+    }
+
+    // The setups of the sessions before that their live rule bought on a session the night read, each marked passed, and
+    // the row of each such session written again with its passes counted; how many were marked.
+    static async Task<int> BoughtSinceAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        string index,
+        StoredSince waiting,
+        IReadOnlyDictionary<string, HashSet<(string Ticker, DateOnly Session)>> bought,
+        CancellationToken cancellation)
+    {
+        var marked = 0;
+
+        foreach (var session in waiting.Setups
+            .Where(setup => bought.TryGetValue(setup.Family, out var passed) && passed.Contains((setup.Ticker, setup.Session)))
+            .GroupBy(setup => (setup.Family, setup.Session)))
+        {
+            foreach (var (family, ticker, day) in session)
+            {
+                await ExecuteAsync(connection, transaction, BoughtSince, [("$index", index), ("$family", family), ("$ticker", ticker), ("$session", Stamp(day)), ("$source", NightSource)], cancellation);
+            }
+
+            if (waiting.Nights.FirstOrDefault(night => night.Family == session.Key.Family && night.Session == session.Key.Session) is { Family: not null } stood)
+            {
+                await ExecuteAsync(connection, transaction, ClearTheFamilysNight, [("$index", index), ("$family", stood.Family), ("$session", Stamp(stood.Session)), ("$source", NightSource)], cancellation);
+                await ExecuteAsync(connection, transaction, InsertNight,
+                [
+                    ("$index", index), ("$family", stood.Family), ("$session", Stamp(stood.Session)), ("$members", stood.Members),
+                    ("$setups", stood.Setups), ("$live_passes", stood.Passes + session.Count()), ("$source", NightSource),
+                ], cancellation);
+            }
+
+            marked += session.Count();
+        }
+
+        return marked;
     }
 
     // A setup's path from its anchor over the closes the series holds, and the same plan on every member of its
@@ -910,7 +1120,7 @@ public sealed partial class SetupLedger : IComponent
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        var prepared = await PrepareAsync(connection, index, through, output, cancellation);
+        var prepared = await PrepareAsync(connection, index, through, output, cancellation, live: await LiveRulesAsync(index, output, cancellation));
         var first = Array.FindIndex(prepared.Calendar, session => session >= from);
         var last = Array.FindLastIndex(prepared.Calendar, session => session <= through);
 
@@ -978,7 +1188,7 @@ public sealed partial class SetupLedger : IComponent
             await WaitForTheNightAsync(dataRoot, output, pause, cancellation);
 
             var startedAt = clock.UtcNow;
-            var prepared = await PrepareAsync(connection, index, span.Through, output, cancellation);
+            var prepared = await PrepareAsync(connection, index, span.Through, output, cancellation, live: await LiveRulesAsync(index, output, cancellation));
             var first = Array.FindIndex(prepared.Calendar, session => session >= span.From);
             var last = Array.FindLastIndex(prepared.Calendar, session => session <= span.Through);
 
@@ -1038,7 +1248,7 @@ public sealed partial class SetupLedger : IComponent
     // the sessions each row's end is dated by, the market's, the context's and the heavyweights' inputs, and what the
     // build reads past the span's end. Once the bar store no longer holds the span's end, no path is replayed past it,
     // and the words say so.
-    async Task<PreparedHistory> PrepareAsync(SqliteConnection connection, string index, DateOnly through, TextWriter output, CancellationToken cancellation, bool heavyweightsRead = true)
+    async Task<PreparedHistory> PrepareAsync(SqliteConnection connection, string index, DateOnly through, TextWriter output, CancellationToken cancellation, bool heavyweightsRead = true, (LiveRulesRead Rules, DateTimeOffset At)? live = null)
     {
         var history = new SweepHistory(databaseFile);
 
@@ -1078,7 +1288,40 @@ public sealed partial class SetupLedger : IComponent
             Releases = releases,
         };
 
-        return new PreparedHistory(index, calendar, series, sessions, members, income, closes, opens, stopped, [.. calendar, .. after], past, market, context, heavyweights);
+        // A live rule reading the S&P 500's breadth reads it as it stood on each session, from the S&P 500's own history as
+        // its sweep reads it.
+        // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
+        var rules = live?.Rules ?? LiveRulesRead.None;
+        double?[]? largeBreadth = null;
+
+        if (rules.Read.Values.Any(rule => rule.Parameters[Core.Candidates.IndexRuleCandidate.LargeBreadthParameter] == 1))
+        {
+            output.WriteLine("ledger-build: reading the S&P 500's history as it stood for its breadth, which a live rule's market check reads");
+            largeBreadth = SweepSwitches.LargeBreadth(await history.ReadAsync(through, null, cancellation), calendar);
+        }
+
+        return new PreparedHistory(index, calendar, series, sessions, members, income, closes, opens, stopped, [.. calendar, .. after], past, market, context, heavyweights)
+        {
+            Live = rules,
+            LiveWords = live is { } read ? read.Rules.Words(read.At) : null,
+            LargeBreadth = largeBreadth,
+        };
+    }
+
+    // The S&P 400's and 600's frozen live rules a build reads, as the register stands when it reads it, and the words
+    // naming them, said on the build's output.
+    // see: The setup ledger reads each S&P 400 and 600 family's frozen live rule where one stands, and a card draws setups like a pick only once its history is built under that rule
+    async Task<(LiveRulesRead Rules, DateTimeOffset At)> LiveRulesAsync(string index, TextWriter output, CancellationToken cancellation)
+    {
+        var at = clock.UtcNow;
+        var rules = LedgerLiveRules.Of(await new CandidateRegistrar(clock, databaseFile).RowsAsync(cancellation), at, index);
+
+        if (rules.Words(at) is { } words)
+        {
+            output.WriteLine($"ledger-build: on the {DecisionCards.NameOf(index)}, {words}");
+        }
+
+        return (rules, at);
     }
 
     // One session the history build computed: each family's setups with each one's path and benchmark beside it.
@@ -1127,16 +1370,29 @@ public sealed partial class SetupLedger : IComponent
 
         public IReadOnlyDictionary<string, int> Places => nameOf;
 
-        // One session's setups on every family, each replayed to its end with its benchmark; on a rebalance of the S&P
-        // 500's heavyweights, each member of each sector's size cut held as the rule holds a buy, to the first later
-        // rebalance whose buys leave it out or its cap, against its size cut.
+        // The S&P 400's and 600's frozen live rules the build reads each family's setups under, the words naming them, and
+        // the S&P 500's breadth on each session as it stood where a live rule's market check reads it.
+        public LiveRulesRead Live { get; init; } = LiveRulesRead.None;
+
+        public string? LiveWords { get; init; }
+
+        public double?[]? LargeBreadth { get; init; }
+
+        readonly Lazy<SweepSeries[]> empty = new(() => [.. series.Select(one => LedgerLiveRules.Empty(one.Name.Ticker))]);
+
+        // One session's setups on every family, each replayed to its end with its benchmark, a family whose live rule
+        // the build reads read under it; on a rebalance of the S&P 500's heavyweights, each member of each sector's size
+        // cut held as the rule holds a buy, to the first later rebalance whose buys leave it out or its cap, against its
+        // size cut.
         public BuiltSession Compute(int at)
         {
             var families = new List<(FamilySetups, IReadOnlyList<SetupRead>)>();
             var inputsOnTheNight = new IndexNightInputs(index, calendar[at], calendar, at, series, sessions, members, members.Names[at], income);
 
-            foreach (var family in LedgerSetups.On(index, series, sessions, members, calendar, at, market, context))
+            foreach (var read in LedgerSetups.On(index, series, sessions, members, calendar, at, market, context))
             {
+                var family = Live.Read.TryGetValue(read.Family, out var rule) ? LedgerLiveRules.Under(read, rule, Bought(rule, read, at)) : read;
+
                 families.Add((family, [.. family.Rows.Select(row =>
                 {
                     var name = NameOf(series, row.Ticker);
@@ -1177,6 +1433,38 @@ public sealed partial class SetupLedger : IComponent
             }
 
             return new BuiltSession(families);
+        }
+
+        // Whether a family's live rule buys each of its setups of a session, read as the night reads the rule on each
+        // session from the setup's own through the rule's reach that the history holds, each with its levels read over the
+        // history as the rule's sweep reads them, and every series but the setups' own read as holding no bar.
+        // see: The setup ledger reads each S&P 400 and 600 family's frozen live rule where one stands, and a card draws setups like a pick only once its history is built under that rule
+        Func<SetupRow, bool> Bought(IndexRule rule, FamilySetups family, int at)
+        {
+            if (family.Rows.Count == 0)
+            {
+                return _ => false;
+            }
+
+            var names = family.Rows.Select(row => nameOf[row.Ticker]).ToHashSet();
+            var tickers = family.Rows.Select(row => row.Ticker).ToArray();
+            var bought = new HashSet<string>(StringComparer.Ordinal);
+
+            for (var on = at; on <= Math.Min(at + LedgerLiveRules.Reach(rule), calendar.Length - 1); on++)
+            {
+                var inputs = LedgerLiveRules.Masked(new IndexNightInputs(index, calendar[on], calendar, on, series, sessions, members, members.Names[on], income), names, empty.Value);
+                var levels = LedgerLiveRules.HistoryLevels(rule, calendar[on], calendar[Math.Max(0, on - 1)], income, context.Sectors, context.Facts, tickers, LargeBreadth is { } breadth && on < breadth.Length ? breadth[on] : null);
+
+                foreach (var (name, session) in LedgerLiveRules.Passes(inputs, rule, levels))
+                {
+                    if (session == at)
+                    {
+                        bought.Add(series[name].Name.Ticker);
+                    }
+                }
+            }
+
+            return row => bought.Contains(row.Ticker);
         }
     }
 
@@ -1245,7 +1533,9 @@ public sealed partial class SetupLedger : IComponent
         }
 
         await AppendAsync(connection, runId, BuildStage, startedAt, written, Ok,
-            FormattableString.Invariant($"{written} setup(s) on the {DecisionCards.NameOf(index)} over {Stamp(calendar[first])} to {Stamp(calendar[last])}, {passes} passing the live rule, {sessionsToWrite.Count} session(s) written of the {last - first + 1} in the span, {prepared.Past}"), cancellation);
+            FormattableString.Invariant($"{written} setup(s) on the {DecisionCards.NameOf(index)} over {Stamp(calendar[first])} to {Stamp(calendar[last])}, {passes} passing the live rule")
+                + (prepared.LiveWords is { } words ? ", " + words : string.Empty)
+                + FormattableString.Invariant($", {sessionsToWrite.Count} session(s) written of the {last - first + 1} in the span, {prepared.Past}"), cancellation);
 
         output.WriteLine(FormattableString.Invariant($"ledger-build: {written} setup(s) written for the {DecisionCards.NameOf(index)} over {sessionsToWrite.Count} session(s), {passes} passing the live rule"));
     }

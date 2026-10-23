@@ -223,7 +223,9 @@ public sealed record PickCell(
     string? Past = null,
     string? Unfilled = null,
     bool Waiting = false,
-    DateOnly? FilledOn = null);
+    DateOnly? FilledOn = null,
+    // The sessions the trade is given, which paper trading draws an open trade's sessions held against.
+    int? Cap = null);
 
 // One stock the swing filter passed on a night while a trade the live list recommended for it on an
 // earlier night is still open, with that trade as Past picks draws it as of the night.
@@ -1144,6 +1146,11 @@ public sealed record ResearchPassLine(string Outcome, DateOnly AsOf, string Line
 
 // A control that starts a research pass for the name, and what it asks for.
 public sealed record ResearchControl(string Kind, string Label, bool Refresh, bool PaidForLocal);
+
+// A written report's standing as the chart page's report line and the name page under its masthead draw it: stands or
+// stale, the day its newest section was written, what made a stale one so, the controls that rewrite its stale sections
+// and regenerate it, and what research has cost, stated before them.
+public sealed record ReportStandingView(string State, DateOnly? Written, IReadOnlyList<string> Why, IReadOnlyList<ResearchControl> Controls, ResearchCost? Cost);
 
 // Where a pass the page started stands: starting before its first row lands, running while it
 // works with the step it is on in the reader's words, and ended when its own row lands, with
@@ -2833,7 +2840,7 @@ public sealed partial class MarkRenderer : IComponent
 
         foreach (var gate in why.Gates)
         {
-            region.Append(Invariant, $"<p class=\"gate\" data-gate=\"{Escaped(gate.Name)}\" data-passed=\"{(gate.Passed ? "true" : "false")}\"><b>{Escaped(gate.Name)}</b>: {Escaped(gate.Reason)}</p>");
+            region.Append(Invariant, $"<p class=\"gate\" data-gate=\"{Escaped(gate.Name)}\" data-passed=\"{(gate.Passed ? "true" : "false")}\"><b>{Escaped(gate.Name)}</b>: {Escaped(StoredWords(gate.Reason))}</p>");
         }
 
         region.Append(Invariant, $"<p class=\"context\" data-reasons=\"{why.Reasons.Count}\">");
@@ -3242,7 +3249,7 @@ public sealed partial class MarkRenderer : IComponent
             // region is for whichever row is selected, and a row a reader cannot select is a row the
             // region can never be about. The address it selects carries the night as well as the name,
             // so a selected view of an earlier night is a link like every other view.
-            // see: Selecting a row draws its plan and its card beneath the row and is no navigation
+            // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
             list.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-fired-count=\"{row.FiredCount}\" data-strength=\"{row.Strength}\" ");
             list.Append(Invariant, $"data-day-change=\"{Change(row.DayChangePct)}\" data-trend-state=\"{Escaped(row.TrendState ?? NotClassified)}\" ");
             list.Append(Invariant, $"data-selects=\"{Escaped(row.Ticker)}\" data-select-href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}\"{(row.RepeatOf is { } again ? Formatted($" data-repeat-of=\"{DayOf(again)}\"") : string.Empty)}>");
@@ -3366,7 +3373,7 @@ public sealed partial class MarkRenderer : IComponent
             else if (byFilter)
             {
                 list.Append(row.Filter is { } gates
-                    ? Formatted($"<td class=\"gates\" data-rank=\"{gates.Rank}\" data-family=\"{Escaped(gates.Family ?? "none")}\" data-arrived=\"{Escaped(gates.Arrived)}\" data-input=\"{Escaped(gates.Input)}\" title=\"{Escaped(string.Join("; ", gates.Gates.Select(gate => gate.Name + ": " + gate.Reason)))}\">{Escaped(gates.Family ?? "no family")}, arrived {Escaped(gates.Arrived)}; {Escaped(PlanWords(gates.Input))}, reward to risk {Hundredths(gates.RewardToRisk)}, its stop {Hundredths(gates.StopMoves)} typical moves below the entry</td>")
+                    ? Formatted($"<td class=\"gates\" data-rank=\"{gates.Rank}\" data-family=\"{Escaped(gates.Family ?? "none")}\" data-arrived=\"{Escaped(gates.Arrived)}\" data-input=\"{Escaped(gates.Input)}\" title=\"{Escaped(string.Join("; ", gates.Gates.Select(gate => gate.Name + ": " + StoredWords(gate.Reason))))}\">{Escaped(gates.Family ?? "no family")}, arrived {Escaped(gates.Arrived)}; {Escaped(PlanWords(gates.Input))}, reward to risk {Hundredths(gates.RewardToRisk)}, its stop {Hundredths(gates.StopMoves)} typical moves below the entry</td>")
                     : "<td class=\"gates\"><span class=\"degraded\">no gate result stored</span></td>");
             }
 
@@ -3989,7 +3996,7 @@ public sealed partial class MarkRenderer : IComponent
         // ran today. In the words the page projection assembles from the pass's own row.
         if (pass is not null)
         {
-            region.Append(Invariant, $"<p class=\"research-pass\" data-outcome=\"{Escaped(pass.Outcome)}\" data-as-of=\"{pass.AsOf:yyyy-MM-dd}\">{Escaped(pass.Line)}</p>");
+            region.Append(Invariant, $"<p class=\"research-pass\" data-outcome=\"{Escaped(pass.Outcome)}\" data-as-of=\"{pass.AsOf:yyyy-MM-dd}\">{Escaped(CountsInWords(pass.Line))}</p>");
         }
 
         // Research paused, section 15.9's state, from 6.7: one line saying research is
@@ -4002,16 +4009,17 @@ public sealed partial class MarkRenderer : IComponent
             region.Append(Invariant, $"{Escaped(paused.Line)}</p>");
         }
 
+        // Each reason as a pass stored it, its counts read as a reader reads them.
         foreach (var section in leftOut)
         {
             region.Append(Invariant, $"<p class=\"left-out\" data-section=\"{Escaped(section.Section)}\">");
-            region.Append(Invariant, $"{Escaped(section.Section)} is left out: {Escaped(section.Reason)}</p>");
+            region.Append(Invariant, $"{Escaped(section.Section)} is left out: {Escaped(CountsInWords(section.Reason))}</p>");
         }
 
         foreach (var section in unwritten)
         {
             region.Append(Invariant, $"<p class=\"not-written\" data-section=\"{Escaped(section.Section)}\">");
-            region.Append(Invariant, $"{Escaped(section.Section)} is not written: {Escaped(section.Reason)}</p>");
+            region.Append(Invariant, $"{Escaped(section.Section)} is not written: {Escaped(CountsInWords(section.Reason))}</p>");
         }
 
         // The controls, each a form the page's own script sends, with what it asks for on
@@ -4028,17 +4036,65 @@ public sealed partial class MarkRenderer : IComponent
 
         foreach (var control in offered)
         {
-            region.Append(Invariant, $"<form class=\"research-control\" method=\"post\" action=\"/passes/{Uri.EscapeDataString(ticker)}\" ");
-            region.Append(Invariant, $"data-kind=\"{Escaped(control.Kind)}\" data-refresh=\"{Flag(control.Refresh)}\" data-paid-for-local=\"{Flag(control.PaidForLocal)}\">");
-            region.Append(Invariant, $"<input type=\"hidden\" name=\"refresh\" value=\"{Flag(control.Refresh)}\">");
-            region.Append(Invariant, $"<input type=\"hidden\" name=\"paidForLocal\" value=\"{Flag(control.PaidForLocal)}\">");
-            region.Append(Invariant, $"<button type=\"submit\">{Escaped(control.Label)}</button></form>");
+            region.Append(ControlForm(ticker, control));
         }
 
         region.Append("</section>");
 
         return region.ToString();
     }
+
+    // A control as a form the page's own script sends, with what it asks for on the form.
+    static string ControlForm(string ticker, ResearchControl control) =>
+        Formatted($"<form class=\"research-control\" method=\"post\" action=\"/passes/{Uri.EscapeDataString(ticker)}\" data-kind=\"{Escaped(control.Kind)}\" data-refresh=\"{Flag(control.Refresh)}\" data-paid-for-local=\"{Flag(control.PaidForLocal)}\"><input type=\"hidden\" name=\"refresh\" value=\"{Flag(control.Refresh)}\"><input type=\"hidden\" name=\"paidForLocal\" value=\"{Flag(control.PaidForLocal)}\"><button type=\"submit\">{Escaped(control.Label)}</button></form>");
+
+    // A written report's standing, as the chart page's report line and the name page under its masthead draw it: stands,
+    // or stale in the failure's red with what made it so, then what research has cost and the controls that rewrite its
+    // stale sections and regenerate it, which the research region at the page's foot draws as well. A control is drawn
+    // only with its cost, as there, and a report not written draws no standing.
+    // see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
+    public string ReportStanding(string ticker, ReportStandingView? standing, bool namesTheDay)
+    {
+        if (standing is null)
+        {
+            return string.Empty;
+        }
+
+        var offered = standing.Cost is null ? [] : standing.Controls;
+        var stale = string.Equals(standing.State, StaleStanding, StringComparison.Ordinal);
+        var drawn = new StringBuilder();
+
+        drawn.Append(Invariant, $"<div class=\"report-standing\" data-ticker=\"{Escaped(ticker)}\" data-state=\"{Escaped(standing.State)}\" data-written=\"{(standing.Written is { } day ? DayOf(day) : "none")}\" data-controls=\"{offered.Count}\"><p class=\"rs-line\">");
+        drawn.Append(namesTheDay && standing.Written is { } written ? Formatted($"<span class=\"rs-written\">The report was written {DayOf(written)}</span> ") : string.Empty);
+        drawn.Append(stale ? "<span class=\"status-pill failed\">stale</span>" : "<span class=\"status-pill live\">stands</span>");
+        drawn.Append(stale && standing.Why.Count > 0 ? Formatted($" <span class=\"rs-why\">{Escaped(string.Join("; ", standing.Why))}</span>") : string.Empty);
+        drawn.Append("</p>");
+
+        if (offered.Count > 0 && standing.Cost is { } cost)
+        {
+            drawn.Append(Invariant, $"<p class=\"research-cost\" data-passes=\"{cost.Passes}\" data-spend=\"{cost.Total}\" data-most=\"{cost.Most}\">{Escaped(ShortCostLine(cost))}</p><div class=\"rs-controls\">");
+
+            foreach (var control in offered)
+            {
+                drawn.Append(ControlForm(ticker, control));
+            }
+
+            drawn.Append("</div>");
+        }
+
+        drawn.Append("</div>");
+
+        return drawn.ToString();
+    }
+
+    // The standing a stale report's verdict names, the other being that it stands.
+    public const string StaleStanding = "stale";
+
+    // What research has cost, in short, before the controls a report's standing draws: the most one pass came to and where
+    // spend stands against the caps.
+    // see: The spend cap is a stop, not an allowance
+    public static string ShortCostLine(ResearchCost cost) =>
+        (cost.Passes == 0 ? "No research pass has a recorded cost yet. " : Formatted($"The most a research pass has cost is {SpendVerdict.Money(cost.Most)}. ")) + Capitalised(cost.Verdict) + ".";
 
     // What research has cost, in one sentence. Every figure is the run log's: the passes
     // it priced and what they came to. A pass's price is known only once it has been
@@ -5552,7 +5608,7 @@ public sealed partial class MarkRenderer : IComponent
             return FormattableString.Invariant($"<td class=\"group-median\" data-group=\"not-a-member\" data-read-on=\"{readOn:yyyy-MM-dd}\">not a member of the index on {readOn:yyyy-MM-dd}, the night its moves' groups were read, so no group is read for this move</td>");
         }
 
-        var named = group.Name is { Length: > 0 } name ? $"the {Escaped(name)} {Escaped(group.Kind)}" : $"a {Escaped(group.Kind)} its membership row does not name";
+        var named = group.Name is { Length: > 0 } name ? $"the {Escaped(name)} {Escaped(group.Kind)}" : $"a {Escaped(group.Kind)} {UnnamedGroup}";
         var attributes = Formatted($"data-group-kind=\"{Escaped(group.Kind)}\" data-group-name=\"{Escaped(group.Name ?? string.Empty)}\" data-group-members=\"{group.Members}\" data-group-counted=\"{group.Counted}\"");
 
         if (group.Members == 0)
@@ -5571,6 +5627,11 @@ public sealed partial class MarkRenderer : IComponent
             + (missing > 0 ? Formatted($", {missing} holding no close on one of the two sessions") : string.Empty)
             + "</td>";
     }
+
+    // What a group the night read no name for says, true of a group read before the company fetch was read for it as of one
+    // read after it from a fetch naming none.
+    // see: Every member is named and grouped by the GICS industry and sector its company fetch files
+    public const string UnnamedGroup = "the night read no name for";
 
     // Section 2's peers table: the name's own row, marked, then the members of its group the night
     // chose, ten at most, those sharing its industry first and then by how closely each one's daily
@@ -5613,7 +5674,7 @@ public sealed partial class MarkRenderer : IComponent
 
         var named = peers.GroupName is { Length: > 0 } name
             ? $"the {Escaped(name)} {Escaped(kind)}"
-            : $"a {Escaped(kind)} its membership row does not name";
+            : $"a {Escaped(kind)} {UnnamedGroup}";
 
         var followed = Formatted($"how closely each one's daily moves followed {Escaped(ticker)}'s over the sessions both hold");
 
@@ -5757,6 +5818,12 @@ public sealed partial class MarkRenderer : IComponent
         return svg.ToString();
     }
 
+    // A stored earnings a share at two places, as the masthead's tile draws one; anything that is no number as stored.
+    static string PerShareRead(string stored) =>
+        decimal.TryParse(stored, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, Invariant, out var value)
+            ? Figures.PerShare(value)
+            : stored;
+
     // Section 4's earnings reaction record, beside the earnings setups: one row per print over the
     // calendar's year behind, each with its report date, its timing, the session it moved on, the
     // estimate, the actual, the provider's surprise and that session's move, drawn as stored. A print
@@ -5791,10 +5858,10 @@ public sealed partial class MarkRenderer : IComponent
             table.Append(Invariant, $"<tr data-report-date=\"{print.ReportDate:yyyy-MM-dd}\" data-timing=\"{Escaped(print.Timing)}\" data-session=\"{print.Session:yyyy-MM-dd}\">");
             table.Append(Invariant, $"<td class=\"nw\">{print.ReportDate:yyyy-MM-dd}</td><td>{when}</td><td class=\"nw\">{print.Session:yyyy-MM-dd}</td>");
             table.Append(print.Estimate is { } estimate
-                ? Formatted($"<td class=\"r num\" data-estimate=\"{Escaped(estimate)}\">{Escaped(Figures.Read(estimate))}</td>")
+                ? Formatted($"<td class=\"r num\" data-estimate=\"{Escaped(estimate)}\">{Escaped(PerShareRead(estimate))}</td>")
                 : "<td class=\"estimate\" data-estimate=\"\"><span class=\"degraded\">none was filed</span></td>");
             table.Append(print.Actual is { } actual
-                ? Formatted($"<td class=\"r num\" data-actual=\"{Escaped(actual)}\">{Escaped(Figures.Read(actual))}</td>")
+                ? Formatted($"<td class=\"r num\" data-actual=\"{Escaped(actual)}\">{Escaped(PerShareRead(actual))}</td>")
                 : "<td class=\"actual\" data-actual=\"\"><span class=\"degraded\">not filed</span></td>");
             table.Append(print.Estimate is null
                 ? "<td class=\"surprise\" data-surprise=\"\"><span class=\"degraded\">none, with no estimate to measure against</span></td>"
@@ -6053,7 +6120,7 @@ public sealed partial class MarkRenderer : IComponent
         ("Buy", "The open it was bought at, the session after its night. A trade whose next session is not stored yet says it buys at the next open."),
         ("Stop", "The price the plan sells at to cut the loss, or the first level of a stop that trails the price."),
         ("Target", "The price the plan takes its gain at. A setup that trails its stop names none."),
-        ("Trade", "The line runs from the stop on the left, in green, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished."),
+        ("Trade", "The line runs from the stop on the left, in red, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished."),
         ("Status", "What became of the trade: open, reached target, stopped out, or ran out of time where its holding limit passed before either."),
         ("Sessions held", "Trading sessions from the night listed to the session it finished on, or to the night drawn while it is still open."),
         ("Result", "What the trade came to from its buy in multiples of the risk its plan put up, the fall from the evening's close to the stop: +2.00 made twice that risk and -1.00 lost it, and a close through the stop can read below -1. Open while the trade runs."),
@@ -6302,7 +6369,7 @@ public sealed partial class MarkRenderer : IComponent
 
         foreach (var gate in view.Gates)
         {
-            region.Append(Invariant, $"<tr data-gate=\"{Escaped(gate.Gate)}\" data-passed=\"{(gate.Passed ? "yes" : "no")}\"><td>{Escaped(gate.Gate)}</td><td>{(gate.Passed ? "passed" : "failed")}</td><td>{Escaped(gate.Reason)}</td></tr>");
+            region.Append(Invariant, $"<tr data-gate=\"{Escaped(gate.Gate)}\" data-passed=\"{(gate.Passed ? "yes" : "no")}\"><td>{Escaped(gate.Gate)}</td><td>{(gate.Passed ? "passed" : "failed")}</td><td>{Escaped(StoredWords(gate.Reason))}</td></tr>");
         }
 
         region.Append("</table></div>");
@@ -6529,7 +6596,7 @@ public sealed partial class MarkRenderer : IComponent
             Formatted($"Highest high of the {MemberReadings.YearSessions} sessions before the night"),
             Stored(view.YearHigh),
             view.YearHigh is { } high && view.SinceHigh is { } since ? Formatted($"{Price(high)}, made {Counted(since, "session", "sessions")} before the night")
-                : barred ? Short("not available: no session before the night held") : noBar);
+                : barred ? Short("not available: too few sessions before the night held") : noBar);
         Row(
             "nearness",
             "The close against that high",
@@ -6703,15 +6770,17 @@ public sealed partial class MarkRenderer : IComponent
 
     // The trade line, section 15.5's eighth mark: one trade from its stop at the left to its target at the
     // right, the buy a short tick between them, and a dot for the price, hollow while the trade is open and
-    // filled where it finished. The stop and the target keep the two hues a level below and above the price
-    // own, and nothing else on the mark uses them; a price past either end sits at that end rather than off
+    // filled where it finished. The stop is drawn in the loss's red and the target in the resistance orange,
+    // and every page's words name those two hues; a price past either end sits at that end rather than off
     // the line. It is placed by ratios to the buy, so a split since the listing moves no part of it.
     //
-    // It degrades by saying what it has: a plan missing a price, or whose prices are out of order, draws no
-    // line, and a trade whose outcome row is missing or an open one with no close to place draws the line
-    // and no dot, each saying why.
+    // A buy is the open the trade was bought at, so one that opened past its stop or its target sits at that
+    // end and its title says which. It degrades by saying what it has: a plan missing a price, or whose stop is
+    // not under its target, draws no line, and a trade whose outcome row is missing or an open one with no
+    // close to place draws the line and no dot, each saying why.
     // see: Green means support or a gain and red a stop or a loss, with orange for resistance
     // see: Marks are defined once and every screen draws from that list
+    // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
     public string TradeLine(PickCell pick)
     {
         const double Left = 10;
@@ -6726,7 +6795,7 @@ public sealed partial class MarkRenderer : IComponent
         mark.Append(Invariant, $"data-ticker=\"{Escaped(pick.Ticker)}\" data-night=\"{DayOf(pick.Night)}\" data-status=\"{pick.Status}\" ");
         mark.Append(Invariant, $"data-buy=\"{StoredPrice(pick.Buy)}\" data-stop=\"{StoredPrice(pick.Stop)}\" data-target=\"{StoredPrice(pick.Target)}\" data-along=\"{Whole(pick.Along)}\"");
 
-        if (pick.Buy is not { } buy || pick.Stop is not { } stop || pick.Target is not { } target || stop >= buy || buy >= target)
+        if (pick.Buy is not { } buy || pick.Stop is not { } stop || pick.Target is not { } target || stop >= target)
         {
             var missing = pick.Stop is null
                 ? "no stop stored"
@@ -6751,13 +6820,15 @@ public sealed partial class MarkRenderer : IComponent
             ? "none"
             : pick.Status == PickStatus.Open ? "open" : "filled";
 
-        mark.Append(Invariant, $" data-dot=\"{dot}\">");
+        var past = buy <= stop ? "stop" : buy >= target ? "target" : null;
+
+        mark.Append(Invariant, $"{(past is null ? string.Empty : $" data-past=\"{past}\"")} data-dot=\"{dot}\">");
         mark.Append(Invariant, $"<line class=\"tl-track\" x1=\"{Left}\" y1=\"{Middle}\" x2=\"{Right}\" y2=\"{Middle}\"/>");
         mark.Append(Invariant, $"<line class=\"tl-stop\" x1=\"{Left}\" y1=\"6\" x2=\"{Left}\" y2=\"24\"/>");
         mark.Append(Invariant, $"<line class=\"tl-target\" x1=\"{Right}\" y1=\"6\" x2=\"{Right}\" y2=\"24\"/>");
         mark.Append(Invariant, $"<line class=\"tl-buy\" x1=\"{Number(At(1))}\" y1=\"10\" x2=\"{Number(At(1))}\" y2=\"20\"/>");
 
-        var plan = Formatted($"Stop {Price(stop)}, buy {Price(buy)}, target {Price(target)}");
+        var plan = Formatted($"Stop {Price(stop)}, buy {Price(buy)}, target {Price(target)}") + (past is null ? string.Empty : $", bought at an open past its {past}");
 
         switch (dot)
         {
@@ -6792,6 +6863,16 @@ public sealed partial class MarkRenderer : IComponent
             ? string.Empty
             : $" <span class=\"business\" tabindex=\"0\" data-state=\"{Escaped(business.State)}\">{Escaped(business.State)}"
                 + $"<span class=\"says\" role=\"tooltip\">{string.Join(" ", business.Sentences.Select(WithSignedFigures))}</span></span>";
+
+    // A sentence a rule stored, its counts read as a reader reads them: a noun the rule's code wrote after a count with
+    // "(s)" takes its singular at one and its plural at any other count.
+    public static string CountsInWords(string stored) =>
+        Regex.Replace(stored, @"\b(\d{1,3}(?:,\d{3})+|\d+) ([A-Za-z]+)\(s\)", count => count.Groups[1].Value + " " + count.Groups[2].Value + (count.Groups[1].Value == "1" ? string.Empty : "s"));
+
+    // A sentence a rule stored, read as a reader reads it: its counts in words, and each figure it wrote past two places
+    // or at a thousand or more read as a price is, so a card's "the target at 441.815" reads 441.82 as the plan beside it.
+    // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
+    public static string StoredWords(string stored) => CountsInWords(Figures.InSentence(stored));
 
     // A sentence the code wrote, escaped, each figure in it written with its sign drawn in the gain's green or the loss's
     // red by that sign, from 19.2.
@@ -7002,6 +7083,34 @@ public sealed partial class MarkRenderer : IComponent
         return counts.ToString();
     }
 
+    // Past picks' chips of the setups the page listed a trade under, each with its trades, and all setups, where the page
+    // has drawn more than one; nothing where it has drawn one or none. Each link names the index the page reads where it
+    // is not the S&P 500, which a link naming none reads.
+    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+    public string SetupChips(string? setup, IReadOnlyList<(string Family, string Label, int Trades)>? setups, string? universe = null)
+    {
+        if (setups is not { Count: > 1 })
+        {
+            return string.Empty;
+        }
+
+        var chosen = setup is { } named && setups.Any(one => one.Family == named) ? named : null;
+        var chips = new StringBuilder();
+        var index = universe is { } word ? Uri.EscapeDataString(word) : null;
+
+        chips.Append("<nav class=\"universe-filters picks-filters picks-setups\" aria-label=\"Filter the trades by setup\"><span class=\"chips-label\">Setup</span>");
+        chips.Append(Invariant, $"<a class=\"chip\" data-filter=\"setup\" data-value=\"all\" aria-pressed=\"{Flag(chosen is null)}\" href=\"#/picks{(index is null ? string.Empty : "?universe=" + index)}\">All setups<span class=\"n\">{setups.Sum(one => one.Trades)}</span></a>");
+
+        foreach (var (family, label, trades) in setups)
+        {
+            chips.Append(Invariant, $"<a class=\"chip\" data-filter=\"setup\" data-value=\"{Escaped(family)}\" aria-pressed=\"{Flag(family == chosen)}\" href=\"#/picks?setup={Uri.EscapeDataString(family)}{(index is null ? string.Empty : "&amp;universe=" + index)}\">{Escaped(label)}<span class=\"n\">{trades}</span></a>");
+        }
+
+        chips.Append("</nav>");
+
+        return chips.ToString();
+    }
+
     // The Past picks screen's filters: one chip a setup with the trades the page listed under it, where the
     // page has drawn more than one, then one chip a status with the trades it holds under the setup
     // chosen, and all. A status chip keeps the setup chosen, and a setup chip starts from every status.
@@ -7011,18 +7120,7 @@ public sealed partial class MarkRenderer : IComponent
         var lit = status is { } asked && PickStatus.Filters.Contains(asked, StringComparer.Ordinal) ? asked : null;
         var chosen = setup is { } named && (setups ?? []).Any(one => one.Family == named) ? named : null;
 
-        if (setups is { Count: > 1 })
-        {
-            filters.Append("<nav class=\"universe-filters picks-filters picks-setups\" aria-label=\"Filter the trades by setup\"><span class=\"chips-label\">Setup</span>");
-            filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"setup\" data-value=\"all\" aria-pressed=\"{Flag(chosen is null)}\" href=\"#/picks\">All setups<span class=\"n\">{setups.Sum(one => one.Trades)}</span></a>");
-
-            foreach (var (family, label, trades) in setups)
-            {
-                filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"setup\" data-value=\"{Escaped(family)}\" aria-pressed=\"{Flag(family == chosen)}\" href=\"#/picks?setup={Uri.EscapeDataString(family)}\">{Escaped(label)}<span class=\"n\">{trades}</span></a>");
-            }
-
-            filters.Append("</nav>");
-        }
+        filters.Append(SetupChips(setup, setups));
 
         var kept = chosen is null ? string.Empty : "setup=" + Uri.EscapeDataString(chosen);
 
@@ -7549,7 +7647,7 @@ public sealed partial class MarkRenderer : IComponent
         picture.Append("</svg>");
         picture.Append(Invariant, $"<p class=\"fp-listed\"><b>{funnel.Passing}</b> ");
         picture.Append(funnel.Rule == ListRules.Filter
-            ? Formatted($"stock(s) on this night's list. <a class=\"fp-open\" href=\"{Escaped(tonight)}\">Open the list &#8594;</a></p>")
+            ? Formatted($"stock(s) passed every one of the swing filter's checks this night. <a class=\"fp-open\" href=\"{Escaped(tonight)}\">Open tonight's list &#8594;</a></p>")
             : Formatted($"stock(s) passed, and the six reasons drew this evening's list. <a class=\"fp-open\" href=\"{Escaped(tonight)}\">Open the list &#8594;</a></p>"));
         picture.Append("</div>");
 
@@ -7652,9 +7750,10 @@ public sealed partial class MarkRenderer : IComponent
         return region.ToString();
     }
 
-    // The quote runs of the night's session: how many quotes the name pages asked for against the day's cap, how long
-    // after its own time each was asked, by the median and the longest, and the runs refused or failed by why. A night
-    // whose session held none says so, and a night on no session draws nothing.
+    // The quote runs of the night's session: how many delayed quotes the name pages asked for and how many were stored
+    // against the day's cap, how long after its own time each stored one was asked, by the median and the longest, the
+    // runs refused or failed by why, and each ask no run of the quote job answered, by its name and instant. A night whose
+    // session's pages asked none says so, and a night on no session draws nothing.
     // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
     // owes: The day's live quotes stay under their cap on the first five sessions
     static string QuotesParagraph(EquityBrief.Web.App.QuoteRunsView? quotes)
@@ -7665,21 +7764,26 @@ public sealed partial class MarkRenderer : IComponent
         }
 
         var day = DayOf(DateOnly.FromDateTime(quotes.From.UtcDateTime));
+        var unanswered = quotes.Unanswered ?? [];
 
-        if (quotes.Asked.Count == 0 && quotes.Outcomes.Count == 0)
+        if (quotes.Asks == 0 && quotes.Asked.Count == 0 && quotes.Outcomes.Count == 0)
         {
-            return Formatted($"<p class=\"rp-quotes\" data-session=\"{day}\" data-asked=\"0\" data-cap=\"{quotes.Cap}\">No delayed quote was asked in the session of {day}, against a cap of {quotes.Cap}.</p>");
+            return Formatted($"<p class=\"rp-quotes\" data-session=\"{day}\" data-asks=\"0\" data-stored=\"0\" data-unanswered=\"0\" data-cap=\"{quotes.Cap}\">The name pages asked for no delayed quote in the session of {day}, against a cap of {quotes.Cap}.</p>");
         }
 
         var delays = quotes.Asked.Select(asked => asked.DelayMinutes).Order().ToArray();
         double? median = delays.Length == 0 ? null : delays.Length % 2 == 1 ? delays[delays.Length / 2] : (delays[(delays.Length / 2) - 1] + delays[delays.Length / 2]) / 2;
         var refused = quotes.Outcomes.Where(outcome => outcome.Outcome != EquityBrief.Web.App.QuoteRunsView.Quoted).ToArray();
 
-        return Formatted($"<p class=\"rp-quotes\" data-session=\"{day}\" data-asked=\"{quotes.Asked.Count}\" data-cap=\"{quotes.Cap}\" data-median-delay=\"{(median is { } middle ? middle.ToString(Invariant) : "none")}\">")
-            + Formatted($"{quotes.Asked.Count} delayed quote(s) asked in the session of {day}, against a cap of {quotes.Cap}")
+        return Formatted($"<p class=\"rp-quotes\" data-session=\"{day}\" data-asks=\"{quotes.Asks}\" data-stored=\"{quotes.Asked.Count}\" data-unanswered=\"{unanswered.Count}\" data-cap=\"{quotes.Cap}\" data-median-delay=\"{(median is { } middle ? middle.ToString(Invariant) : "none")}\">")
+            + Formatted($"The name pages asked for {Counted(quotes.Asks, "delayed quote", "delayed quotes")} in the session of {day}, and {Counted(quotes.Asked.Count, "quote was", "quotes were")} stored against a cap of {quotes.Cap}")
             + (median is { } typical ? ", each asked a median " + Figures.Duration(typical * 60) + " after its own time and at most " + Figures.Duration(delays[^1] * 60) : string.Empty)
-            + (refused.Length == 0 ? "." : "; " + string.Join(", ", refused.Select(outcome => Formatted($"{outcome.Runs} run(s) {Escaped(outcome.Outcome)}"))) + ".")
-            + "</p>";
+            + (refused.Length == 0 ? string.Empty : "; " + string.Join(", ", refused.Select(outcome => Formatted($"{Counted(outcome.Runs, "run", "runs")} {Escaped(outcome.Outcome)}"))))
+            + (unanswered.Count == 0
+                ? string.Empty
+                : "; " + Counted(unanswered.Count, "ask", "asks") + " no run of the quote job answered, the job ending before it wrote its row or never starting: "
+                    + string.Join(", ", unanswered.Select(ask => Formatted($"<span class=\"rp-unanswered\" data-ticker=\"{Escaped(ask.Ticker)}\" data-asked-at=\"{ask.AskedAt.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", Invariant)}\">{Escaped(ask.Ticker)} at {ask.AskedAt.UtcDateTime.ToString("HH:mm:ss", Invariant)} UTC</span>"))))
+            + ".</p>";
     }
 
     // The news labeller's line for the night: what it cost and the month against its limit, the articles

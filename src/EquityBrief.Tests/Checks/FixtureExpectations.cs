@@ -165,6 +165,8 @@ public partial class FixtureExpectations
             .. IdeaGeneratorClaims,
             // 20.8, the release readings in the ledger: section 17's window row.
             .. ReleaseLedgerClaims,
+            // 22.1, the short-term dip: section 17's row and section 18's four.
+            .. DipClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 
@@ -462,6 +464,8 @@ public partial class FixtureExpectations
             RecordedIndexMembershipFeed.FromFile(Path.Combine(Folder(), "index-constituents.json")),
             clock,
             store.DatabaseFile).LoadAsync(Index, "replay-0");
+
+        await FixtureReplay.CompaniesBeforeTheNightAsync(store);
 
         await new Backfill(
             RecordedHistoricalBarFeed.FromFolder(Folder()),

@@ -9,7 +9,8 @@ public sealed record CloseToBuyRow(CloseToBuyCell Cell, int? SessionsToReport, b
 // Tonight's card of the stocks one gate short of a buy point across every setup, from 19.8: folded to one line counting
 // them as the market line counts them, opened to one table in the page's family order with each family's rows as its own
 // card orders them, a Watch press a row on the newest night and a link to Universe with its one gate short chip lit. An
-// index whose night stores only the first part each member failed reads no stock as one gate short and says so.
+// index whose night stores only the first part each member failed reads no stock as one gate short and says so, and a
+// night reading none one gate short draws no card, the counts that would open it saying nought with no link.
 // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
 // see: The watch list is the operator's own, up to twenty names of the index, on a page of its own
 public sealed partial class MarkRenderer
@@ -27,6 +28,11 @@ public sealed partial class MarkRenderer
     // keeps it open; the presses and the Universe link on the newest night alone.
     public string CloseToBuy(IReadOnlyList<CloseToBuyRow>? rows, bool open, bool newest, string? universe)
     {
+        if (rows is { Count: 0 })
+        {
+            return string.Empty;
+        }
+
         var html = new StringBuilder();
 
         html.Append(Invariant, $"<section class=\"card folded close-to-buy\" id=\"{CloseToBuyId}\" data-card=\"close-to-buy\" data-count=\"{(rows is null ? "none" : rows.Count.ToString(Invariant))}\" data-newest=\"{Flag(newest)}\"><div class=\"card-b\">");
@@ -39,13 +45,6 @@ public sealed partial class MarkRenderer
         }
 
         var line = Formatted($"{Count(rows.Count, "stock")} one gate short of a buy point");
-
-        if (rows.Count == 0)
-        {
-            html.Append(Invariant, $"<p class=\"card-one-line\" data-close=\"0\">{line}</p></div></section>");
-
-            return html.ToString();
-        }
 
         html.Append(Invariant, $"<details class=\"close-to-buy\" data-link-key=\"{CloseToBuyKey}\"{(open ? " open" : string.Empty)}><summary class=\"card-one-line\">{line}</summary>");
         html.Append("<div class=\"watch-said\" role=\"status\"></div>");

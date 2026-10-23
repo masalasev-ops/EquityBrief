@@ -70,9 +70,15 @@ public static partial class Figures
     }
 
     // A sentence the nightly store wrote, with every number in it written to more than two
-    // places read to two, which is the places its prices are read at.
+    // places, or to two at a thousand or more, read as a price is read: to two places with its
+    // thousands marked, so 3046.47 reads 3,046.47 as the plan beside it does.
     public static string InSentence(string text) =>
         Long().Replace(text, number => Price(decimal.Parse(number.Value, Invariant)));
+
+    // A sentence's band whose two edges are one price as it is read, named at that price: "inside 217.78 to 217.78" is
+    // "inside the band at 217.78", and "inside 5,797.67 to 5,797.67" is "inside the band at 5,797.67".
+    public static string OneBandAtItsPrice(string sentence) =>
+        Regex.Replace(sentence, @"\binside (\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?) to \1(?![\d.]|,\d)", "inside the band at $1");
 
     // The scale is the largest at which the figure rounds to at least one, so a figure a shade
     // under a billion reads as $1.0B rather than $1000.0M.
@@ -98,6 +104,6 @@ public static partial class Figures
         (1_000_000m, "M", 1),
     ];
 
-    [GeneratedRegex(@"(?<![\d.])\d+\.\d{3,}(?![\d.])")]
+    [GeneratedRegex(@"(?<![\d.])(?:\d+\.\d{3,}|\d{4,}\.\d{2})(?![\d.])")]
     private static partial Regex Long();
 }

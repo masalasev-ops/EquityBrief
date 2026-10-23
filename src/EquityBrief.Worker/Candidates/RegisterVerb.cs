@@ -56,9 +56,14 @@ public static class RegisterVerb
     public const string IndexVariants = "--index-variants";
 
     // From 20.4 the switch that registers an index family's standing variants again whole with the ones given, on the
-    // evidence given, which is how a variant joins them.
-    // see: An S&P 400 or 600 family's variants are registered again whole to add one beside its provisional rule
+    // evidence given, which is how a variant joins them, and from 20.11 beside a frozen family's live rule.
+    // see: An S&P 400 or 600 family's variants are registered again whole beside its provisional rule or its frozen live rule
     public const string Again = "--again";
+
+    // The option naming the retired live rule a freeze replaces, which the freeze keeps in the background in the provisional
+    // rule's place.
+    // see: A freeze on the S&P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions
+    public const string Replacing = "--replacing";
 
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
@@ -70,7 +75,7 @@ public static class RegisterVerb
         new(Family, [Family], [], []),
         new(TheFamilyAgain, ["--evidence"], [], [TheFamilyAgain]),
         new(FamilyAgain, [FamilyAgain, "--evidence"], [], []),
-        new(IndexFamily, [IndexFamily, "--index", "--parameters"], ["--variants"], []),
+        new(IndexFamily, [IndexFamily, "--index", "--parameters"], ["--variants", Replacing], []),
         new(IndexVariants, [IndexVariants, "--index", "--variants"], ["--evidence"], [Again]),
     ];
 
@@ -182,7 +187,7 @@ public static class RegisterVerb
                 return await RefusedAsync(registrar, runId, unreadable.Message, error);
             }
 
-            var (registrations, refused) = Indices.IndexRules.Freeze(Given(IndexFamily), Given("--index"), live, variants, await registrar.RowsAsync(), at);
+            var (registrations, refused) = Indices.IndexRules.Freeze(Given(IndexFamily), Given("--index"), live, variants, await registrar.RowsAsync(), at, VerbArguments.Value(args, Replacing));
 
             return registrations is null
                 ? await RefusedAsync(registrar, runId, refused!, error)

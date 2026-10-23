@@ -90,6 +90,10 @@ public sealed record LocalModelSettings
     public const string ModelsFolderName = "ModelsFolder";
     public const string KnowledgeCutoffName = "KnowledgeCutoff";
 
+    // From the 20.1 correction of 2026-10-19 the structured output LM Studio's saved settings for the model held when the
+    // newest pin's history read started, which the local run holds them to before each run.
+    public const string StructuredOutputName = "StructuredOutput";
+
     // The longest a call or a load may be given, a day: a bound past it is a slip in the file rather than a wait,
     // and three of it still fit the transport's own limit.
     public const int MostSeconds = 86400;
@@ -128,6 +132,12 @@ public sealed record LocalModelSettings
     public string? ModelsFolder { get; init; }
 
     public DateOnly? KnowledgeCutoff { get; init; }
+
+    // The structured output LM Studio's saved settings for the model held when the newest pin's history read started, as
+    // they write its type, json; none where the profile states none, when the local run holds the saved settings to
+    // nothing. A guard beside the pin and not a part of it.
+    // see: The local run refuses to start where LM Studio's saved structured output for the model differs from the one its history read started under
+    public string? StructuredOutput { get; init; }
 
     // Why the settings name no model the lane can call, where they do not: then every call is the local model
     // unavailable with this reason, and no other value is one the lane reads.

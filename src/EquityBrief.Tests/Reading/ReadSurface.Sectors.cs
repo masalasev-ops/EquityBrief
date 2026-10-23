@@ -34,7 +34,7 @@ public partial class ReadSurface
         // AAPL's snapshot says Technology and its fetch files Information Technology; a newer fetch filing another sector
         // is the one read. MSFT files none in its newest fetch, so it stands in no sector.
         store.Execute(
-            "INSERT INTO company (ticker, fetched_at, sector) VALUES ('AAPL', '2026-02-01T00:00:00Z', 'Communication Services'), ('MSFT', '2026-02-01T00:00:00Z', NULL);");
+            "INSERT INTO company (ticker, fetched_at, sector) VALUES ('AAPL', '2026-09-05T00:00:00Z', 'Communication Services'), ('MSFT', '2026-09-05T00:00:00Z', NULL);");
 
         Assert.Equal("Technology", Rows(store, "SELECT sector FROM membership WHERE ticker = 'AAPL' AND \"left\" IS NULL;").Single()[0]);
 

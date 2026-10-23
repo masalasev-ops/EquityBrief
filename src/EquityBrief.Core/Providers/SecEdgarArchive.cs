@@ -334,6 +334,30 @@ public static class SecEdgarArchive
             .OrderBy(document => document.Sequence)
             .FirstOrDefault();
 
+    // A results release among a filing's documents as the local reading takes it: the exhibit its index page names a
+    // press, earnings or news release, in its description or its file name, the lowest sequence where more than one is;
+    // where none is named so, the release above, the lowest. Most filers describe an exhibit by its type alone, as
+    // "EX-99.1", and BXP's pages of 2025 name its supplemental data package and its press release in their file names
+    // alone, the supplement first; a filer naming neither keeps the exhibit it had, as DLR's supplement does, which carries
+    // its earnings release inside it with its slides the exhibit after.
+    // see: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so
+    public static FiledDocument? NamedRelease(IReadOnlyList<FiledDocument> documents) =>
+        documents
+            .Where(Exhibit)
+            .Where(document => !NamesATranscript(document) && NamesTheRelease(document))
+            .OrderBy(document => document.Sequence)
+            .FirstOrDefault()
+        ?? Release(documents);
+
+    // Whether a filing's index page names a document its press, earnings or news release, in its description or, words
+    // run together or joined by a hyphen or an underscore, in its file name.
+    public static bool NamesTheRelease(FiledDocument document) =>
+        DescriptionNamesRelease.IsMatch(document.Description) || FileNamesRelease.IsMatch(document.FileName);
+
+    static readonly Regex DescriptionNamesRelease = new(@"\b(?:press|earnings|news)\s+release\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+    static readonly Regex FileNamesRelease = new(@"(?:press|earnings|news)[-_ ]?release", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
     // The call transcript, where a company files one.
     //
     // Located rather than parsed, because none of the twelve filers measured at

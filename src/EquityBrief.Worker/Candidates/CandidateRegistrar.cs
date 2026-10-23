@@ -421,10 +421,12 @@ public sealed class CandidateRegistrar : IComponent
             runId,
             cancellation);
 
-    // From 20.4 an S&P 400's or 600's family's variants registered again whole at one instant: every standing rule of the
-    // family on its index retired on the evidence given and the variants given registered, the standing ones stated again
-    // among them, or none of it.
-    // see: An S&P 400 or 600 family's variants are registered again whole to add one beside its provisional rule
+    // From 20.4 an S&P 400's or 600's family's variants registered again whole at one instant: every standing variant of
+    // the family on its index retired on the evidence given and the variants given registered, the standing ones stated
+    // again among them, or none of it; from 20.11 a frozen family's live rule and the rule kept in the background beside it
+    // stand on untouched.
+    // see: An S&P 400 or 600 family's variants are registered again whole beside its provisional rule or its frozen live rule
+    // see: A freeze on the S&P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions
     public Task<RegistrationOutcome> RegisterTheIndexVariantsAgainAsync(string family, IReadOnlyList<Registration> variants, string evidence, string runId, CancellationToken cancellation = default) =>
         AgainAsync(
             family,
@@ -433,10 +435,12 @@ public sealed class CandidateRegistrar : IComponent
             $"no rule of the {family} stands registered, so there are no variants to register again and none was written; the form without --again registers them.",
             evidence,
             runId,
-            cancellation);
+            cancellation,
+            row => !FamilyRecords.IsLive(row.Candidate) && !FamilyRecords.IsBackground(row.Candidate));
 
-    // A family registered again whole at one instant: every standing rule of the family retired on the evidence given and
-    // the registrations written for it registered, or none of it, refused where none is written or none of the family stands.
+    // A family registered again whole at one instant: every standing rule of the family, or every one the form retires,
+    // retired on the evidence given and the registrations written for it registered, or none of it, refused where none is
+    // written or none of the family stands.
     async Task<RegistrationOutcome> AgainAsync(
         string family,
         Func<SqliteConnection, SqliteTransaction, Task<IReadOnlyList<Registration>?>> write,
@@ -444,7 +448,8 @@ public sealed class CandidateRegistrar : IComponent
         string noneStanding,
         string evidence,
         string runId,
-        CancellationToken cancellation)
+        CancellationToken cancellation,
+        Func<RegisterRow, bool>? retires = null)
     {
         var startedAt = clock.UtcNow;
 
@@ -467,13 +472,14 @@ public sealed class CandidateRegistrar : IComponent
         }
 
         var rows = await RowsAsync(connection, cancellation);
-        var standing = CandidateFamily.In(CandidateFamily.Standing(rows, startedAt), family).ToArray();
+        var rules = CandidateFamily.In(CandidateFamily.Standing(rows, startedAt), family).ToArray();
 
-        if (standing.Length == 0)
+        if (rules.Length == 0)
         {
             return await RefuseAsync(noneStanding);
         }
 
+        var standing = rules.Where(retires ?? (_ => true)).ToArray();
         var taken = rows.ToList();
 
         foreach (var row in standing)

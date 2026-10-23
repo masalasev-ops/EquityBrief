@@ -128,6 +128,40 @@ public sealed class DriftSweep
         return edges.Length > 0 ? edges.Min() : double.NaN;
     }
 
+    // The sessions after a reaction its first pullback is read within.
+    public const int FirstPullbackSessions = 10;
+
+    // A drift bought on the first pullback after its reaction: the first session within ten after the reaction whose
+    // close is below the close before it, bought at that close with the stop its listing set and its target the nearer of
+    // the band and the setting's multiple of the new risk; none where no session falls, or where the first that does
+    // comes before the listing's own session, whose stop no buy before it could have read, or finds the market check
+    // closed, the member out of the index or holding a gap, or its close at or under the stop. The index's sweeps read it
+    // as a level of the drift's second stage and the night as a frozen rule's entry, one function.
+    // see: The S&P 400's and 600's breakouts and drift read an entry on the first pullback within ten sessions as a level of their second stage
+    // see: A drift rule on the S&P 400 or 600 stating the first pullback is bought on the night through the one function its search's entry level reads
+    public static IEnumerable<FamilyListing> FirstPullback(FamilyListing listing, SweepSeries one, int reaction, double multiple, IReadOnlyList<SweepColumns.Session> sessions)
+    {
+        for (var bar = reaction + 1; bar <= reaction + FirstPullbackSessions && bar < one.Bars.Length; bar++)
+        {
+            if (!(one.Bars[bar].Close < one.Bars[bar - 1].Close))
+            {
+                continue;
+            }
+
+            var close = Statistic.FromPrice(one.Bars[bar].Close);
+
+            if (bar >= listing.Bar && one.Member[bar] && !one.Gap[bar] && sessions[one.SessionAt[bar]].Breadth >= FamilySweep.MarketFloor && close > listing.Stop)
+            {
+                var byRisk = close + (multiple * (close - listing.Stop));
+                var band = BandAbove(one, bar, close);
+
+                yield return listing with { Bar = bar, Session = one.SessionAt[bar], Entry = close, Target = !double.IsNaN(band) && band < byRisk ? band : byRisk, Move = one.Atr[bar] };
+            }
+
+            yield break;
+        }
+    }
+
     // The listings one setting makes: a reaction inside the setting's window, on its rise and its volume, bought
     // at the close, stopped at the reaction's low and aimed at the nearer of the band and the setting's
     // multiple of the risk, in the order of the surprise. Given a floor, the stop is moved down to that many

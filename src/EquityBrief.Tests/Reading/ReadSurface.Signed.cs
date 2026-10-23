@@ -173,5 +173,17 @@ public partial class ReadSurface
 
         Assert.True(signed >= 40, $"The pages write {signed} signed figures, expected at least 40.");
         Assert.True(uncoloured.Length == 0, "Signed figures outside the pair: " + string.Join("\n", uncoloured.Take(80)));
+
+        // And the words saying how to read them name the green and the red they are drawn in and never indigo or plum, a
+        // written section's plum-grey rule being the one plum a page names.
+        var stale = pages
+            .Where(page => Regex.IsMatch(Regex.Replace(page.Html, @"<(script|style)\b.*?</\1>", " ", RegexOptions.Singleline), @"\bindigo\b|\bplum\b(?!-grey)", RegexOptions.IgnoreCase))
+            .Select(page => page.Page)
+            .ToArray();
+
+        Assert.True(stale.Length == 0, "Pages naming indigo or plum: " + string.Join(", ", stale));
+        Assert.Contains(pages, page => page.Html.Contains("A rise is drawn in green and a fall in red, with its sign always written.", StringComparison.Ordinal));
+        Assert.Contains(pages, page => page.Html.Contains("A bar above the rule rose and is drawn in green, one below it fell and is drawn in red.", StringComparison.Ordinal));
+        Assert.Contains(pages, page => page.Html.Contains("a raise in green, a cut in red and a year level or not compared in grey", StringComparison.Ordinal));
     }
 }

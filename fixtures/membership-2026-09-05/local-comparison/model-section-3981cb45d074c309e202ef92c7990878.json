@@ -1,0 +1,46 @@
+{
+  "id": "chatcmpl-oa1j3hnsxhpqscjhotj14c",
+  "object": "chat.completion",
+  "created": 1792418137,
+  "model": "google/gemma-4-26b-a4b-qat",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"bull_case\": \"The bull case rests on the significant momentum in orders which surged over fifty percent year-over-year [D1, D2, D3]. Demand for testing solutions linked to artificial intelligence infrastructure is a major contributor to this increase [D2]. The Communications Solutions Group achieved its first billion dollar quarter [D3]. Wireline revenue exceeded wireless revenue for the first time this quarter [D3]. Management expects the 6G opportunity to be larger than the 5G cycle [D3]. The company needs to see continued order strength and revenue growth at the next report [D1].\",\n  \"bear_case\": \"The bear case is driven by the fact that one-time tariff impacts in fiscal 2026 will not repeat [D3]. Supply chain constraints are expected to act as a governor on near-term revenue conversion for several quarters [D3, D4]. The supply environment is currently less flexible than it was a year ago [D3]. Revenue conversion is expected to be nonlinear due to external supply dependencies [D4]. The company needs to see improved supply chain flexibility and revenue conversion at the next report [D3].\"\n}",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 19378,
+    "completion_tokens": 252,
+    "total_tokens": 19630,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {
+    "tokens_per_second": 96.98110568506334,
+    "time_to_first_token": 6.9970159999999995,
+    "generation_time": 9.585149,
+    "stop_reason": "eosFound"
+  },
+  "model_info": {
+    "arch": "gemma4",
+    "quant": "Q4_0",
+    "format": "gguf",
+    "context_length": 50176
+  },
+  "runtime": {
+    "name": "llama.cpp-win-x86_64-nvidia-cuda12-avx2",
+    "version": "2.56.0",
+    "supported_formats": [
+      "gguf"
+    ]
+  }
+}

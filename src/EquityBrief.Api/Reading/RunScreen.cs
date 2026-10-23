@@ -1082,7 +1082,7 @@ public static class RunScreen
         ("Prices and calendar", ["migrate", "membership", "backfill", "fetch", "market-series", "actions", "dividends", "calendar"]),
         ("Indicators and levels", ["indicators", "chart-averages", "page-history", "swings", "volume-profile", "levels"]),
         ("Plans and moves", ["ladders", "moves"]),
-        ("Readings and the list", ["swing-readings", "fundamental-readings", "member-readings", "listings", "swing-filter", "estimates", "family-rules", "families", "family-records", "heavyweights", "loop-apply", "index-families", "decision-cards", "rule-cards", "live-alarm", "taken-follower", "ledger", "shape-proposal"]),
+        ("Readings and the list", ["swing-readings", "fundamental-readings", "member-readings", "listings", "swing-filter", "estimates", "family-rules", "families", "family-records", "heavyweights", "loop-apply", "index-families", "dip-family", "decision-cards", "rule-cards", "live-alarm", "taken-follower", "ledger", "shape-proposal"]),
         ("Records", ["facts", "changes", "forward-returns", "fills", "news-pulse", "rule-versions", "close"]),
         ("After the close", ["quarters", "filings", "treasury", QueueStage, "report", "label-news", "backup"]),
     ];
@@ -2078,12 +2078,19 @@ public static class RunScreen
 
     // From 19.7 each registered rule's record row named as its card's tab names it, the live rule Live and a variant by the
     // settings that differ from it, with its verdict in the index's newest per-rule test, or not tested yet where the test
-    // read none of it.
-    public static IReadOnlyList<FamilyRecordRow> Named(IReadOnlyList<FamilyRecordRow> rows, IReadOnlyList<CandidateRow> register, DateOnly night, bool large, string indexName, IReadOnlyList<RuleTestRow> tests) =>
+    // read none of it; and from 20.11 the rule of the day before an S&P 400 or 600 freeze, kept in the background beside
+    // the live rule, named as that, read by no test and on no card.
+    // see: A freeze on the S&P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions
+    public static IReadOnlyList<FamilyRecordRow> Named(IReadOnlyList<FamilyRecordRow> rows, IReadOnlyList<CandidateRow> register, DateOnly night, bool large, string indexName, IReadOnlyList<RuleTestRow> tests, DateTimeOffset? asOf = null) =>
     [
         .. rows.Select(row =>
         {
-            var (_, variants) = RuleScreen.Accounts(row.Family, large, indexName, register, night);
+            if (EquityBrief.Core.Candidates.FamilyRecords.IsBackground(row.Rule))
+            {
+                return row with { Short = BeforeTheFreeze, Verdict = null };
+            }
+
+            var (_, variants) = RuleScreen.Accounts(row.Family, large, indexName, register, night, asOf: asOf);
             var tab = variants.Where(variant => variant.Row.Candidate == row.Rule).Select(variant => variant.Tab).FirstOrDefault();
             var test = tests.FirstOrDefault(one => one.Family == row.Family && one.Rule == row.Rule)
                 ?? (row.Live ? tests.FirstOrDefault(one => one.Family == row.Family && one.Standing != PaperAccountView.Variant) : null);
@@ -2097,6 +2104,10 @@ public static class RunScreen
             };
         }),
     ];
+
+    // The short label of the rule a freeze keeps in the background, the block it is kept for read from the blocks every
+    // record is read over.
+    public static string BeforeTheFreeze { get; } = FormattableString.Invariant($"The rule before the freeze, kept {EquityBrief.Core.Returns.Blocks.Sessions} sessions beside it");
 
     // The steps' rows of a monthly run carry this before each step's name, as the monthly run writes them.
     public const string MonthlyPrefix = "loop-month-";

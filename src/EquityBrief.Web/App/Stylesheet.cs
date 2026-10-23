@@ -8,7 +8,7 @@ namespace EquityBrief.Web.App;
 // The marks draw with the tokens' names rather than with values, so both palettes restyle
 // every picture without a mark knowing which one is showing.
 // see: Green means support or a gain and red a stop or a loss, with orange for resistance
-// see: Each setup family has a hue of its own drawn as a mark and a tint beside its word
+// see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them
 // see: Not yet measured is drawn as a dashed outline, never as a pale value
 public static class Stylesheet
 {
@@ -32,7 +32,8 @@ public static class Stylesheet
                  of counts. Two steps of one blue. Never a level and never a pill.
    --wait, --wait-fill   Waiting: a night not run yet and a provisional rule's pill, in the amber.
    --fail, --fail-fill   The RED: a night that stopped, was left unfinished or never ran, a loss and a stop. The night's
-                 state is always in words beside it.
+                 state is always in words beside it. The pill of a report gone stale or a monthly run that stopped is
+                 the accent's ink on solid red, its word inside it.
    --fam-<family>, --fam-<family>-tint   A setup family's own hue, drawn as a MARK alone, a card's or a tile's edge, a
                  tag's swatch or an account's line, at 3 to 1 or more on every ground and 15 or more in OKLab times a
                  hundred from the green, the orange, the red and each other; and its tint behind ink text on its tags,
@@ -50,7 +51,7 @@ public static class Stylesheet
  --wait:#6e5a00; --wait-fill:rgba(110,90,0,.12); --fail:#b23a34; --fail-fill:rgba(178,58,52,.1);
  --fam-pullback:#084e6c; --fam-pullback-tint:rgba(8,78,108,.16); --fam-breakout:#70639e; --fam-breakout-tint:rgba(112,99,158,.16);
  --fam-drift:#663d05; --fam-drift-tint:rgba(102,61,5,.16); --fam-fundamentals:#274fe7; --fam-fundamentals-tint:rgba(39,79,231,.16);
- --fam-heavyweight:#851473; --fam-heavyweight-tint:rgba(133,20,115,.16);
+ --fam-heavyweight:#851473; --fam-heavyweight-tint:rgba(133,20,115,.16); --fam-dip:#e000e8; --fam-dip-tint:rgba(224,0,232,.16);
  --serif:Charter,"Iowan Old Style",Georgia,"Times New Roman",serif;
  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
  /* The column, at its widest: the widest picture a screen draws, with the card's side padding
@@ -71,7 +72,7 @@ public static class Stylesheet
  --wait:#efe08a; --wait-fill:rgba(239,224,138,.13); --fail:#e5534b; --fail-fill:rgba(229,83,75,.14);
  --fam-pullback:#4097bd; --fam-pullback-tint:rgba(64,151,189,.18); --fam-breakout:#9d58e9; --fam-breakout-tint:rgba(157,88,233,.18);
  --fam-drift:#90693e; --fam-drift-tint:rgba(144,105,62,.18); --fam-fundamentals:#8ec4fc; --fam-fundamentals-tint:rgba(142,196,252,.18);
- --fam-heavyweight:#f478dc; --fam-heavyweight-tint:rgba(244,120,220,.18);
+ --fam-heavyweight:#f478dc; --fam-heavyweight-tint:rgba(244,120,220,.18); --fam-dip:#d8009c; --fam-dip-tint:rgba(216,0,156,.18);
 }}
 :root[data-theme='dark']:not([data-eb-theme='light']),:root[data-eb-theme='dark']{
  --page:#121416; --surface:#1a1d20; --plot:#16191b; --ink:#e8e5dd; --ink-2:#c3c0b8; --soft:#9ea3a9; --hair:#2d3237; --hair-2:#3d434a;
@@ -85,7 +86,7 @@ public static class Stylesheet
  --wait:#efe08a; --wait-fill:rgba(239,224,138,.13); --fail:#e5534b; --fail-fill:rgba(229,83,75,.14);
  --fam-pullback:#4097bd; --fam-pullback-tint:rgba(64,151,189,.18); --fam-breakout:#9d58e9; --fam-breakout-tint:rgba(157,88,233,.18);
  --fam-drift:#90693e; --fam-drift-tint:rgba(144,105,62,.18); --fam-fundamentals:#8ec4fc; --fam-fundamentals-tint:rgba(142,196,252,.18);
- --fam-heavyweight:#f478dc; --fam-heavyweight-tint:rgba(244,120,220,.18);
+ --fam-heavyweight:#f478dc; --fam-heavyweight-tint:rgba(244,120,220,.18); --fam-dip:#d8009c; --fam-dip-tint:rgba(216,0,156,.18);
 }
 /* The names the marks draw with, each the token of the same kind, so every mark follows the palette. */
 :root{ --muted:var(--soft); --rule:var(--hair); --panel:var(--plot); --support:var(--sup); --resistance:var(--res); }
@@ -134,11 +135,12 @@ code{font-size:.92em}
 .m-badge[hidden]{display:none}
 .page-head{display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap;padding-top:14px}
 .night-picker .np-short{display:none}
-/* on a phone the title holds one line and the date line is the night as a short date between its arrows */
+/* on a phone the title holds one line and the date line is the night as a short date between its arrows; a date line
+   drawing no arrows, a screen's sentence ending on its date and a stock's masthead line with its quote and its links
+   among them, wraps whole */
 @media (max-width:560px){
  .page-head .m-screen{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
  .page-head .asof-words{display:none}
- .page-head .m-asof:not(:has(.night-picker)){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
  .page-head .night-picker{margin-left:0}
  .night-picker .np-full{display:none}
  .night-picker .np-short{display:inline}
@@ -155,7 +157,13 @@ code{font-size:.92em}
  .m-panel .m-search{margin-left:0}
  .m-panel .m-search input{width:100%}
 }
-@media (max-width:480px){ .m-brand{display:none} }
+/* on a phone the bar holds two rows, the brand with the Menu button and then the index menu */
+@media (max-width:480px){
+ .mast .wrap{flex-wrap:wrap}
+ .m-menu{margin-left:auto}
+ .m-index{order:6;flex-basis:100%;margin-left:0}
+ .m-index:empty{display:none}
+}
 .m-brand{font:600 12px var(--sans);letter-spacing:.14em;text-transform:uppercase;text-decoration:none;color:var(--soft)}
 .m-tk{font:700 20px var(--sans);letter-spacing:.02em}
 .m-co{font:600 18px var(--serif)}
@@ -192,6 +200,12 @@ form.name-watch[method='post'] button:hover{color:var(--ink);border-color:var(--
 .watch-table td.listed{color:var(--ink);font-weight:700}
 .watch-table td.stopped{color:var(--soft)}
 .watch-table .btn-2{padding:0 8px;line-height:20px}
+/* a date in these tables' cells is never broken at its hyphens, and on a phone the two tables scroll sideways in their
+   box rather than squeeze their words into columns a few letters wide */
+.picks-table td.num:first-child,.watch-table td.num,.researched-table td.num{white-space:nowrap}
+.watch-table{min-width:1040px}
+.watch-table .chip{white-space:nowrap}
+.researched-table{min-width:900px}
 .level-summary td.strength{white-space:nowrap}
 .level-summary .str-bar{display:inline-block;height:8px;margin-right:6px;vertical-align:middle;border-radius:2px;background:var(--ink-2);opacity:.45}
 .level-summary tr.close-row td{border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);font-weight:600;color:var(--ink)}
@@ -252,6 +266,7 @@ main{padding-block:8px 64px}
 .status-pill.live{background:var(--accent);color:var(--accent-ink)}
 .status-pill.provisional{background:var(--wait-fill);border-color:var(--wait);color:var(--wait)}
 .status-pill.variant{border:1.3px dashed var(--accent);color:var(--ink-2)}
+.status-pill.failed{background:var(--fail);color:var(--accent-ink)}
 /* a setup family: its word in ink on its tint, beside a swatch of its hue; and its hue as the edge of its tile or card */
 .fam-tag{display:inline-flex;align-items:center;gap:6px;font:600 12px var(--sans);color:var(--ink);border-radius:5px;padding:1px 8px 1px 6px;white-space:nowrap}
 .fam-swatch{display:inline-block;width:10px;height:10px;border-radius:2px;flex:none}
@@ -260,6 +275,7 @@ main{padding-block:8px 64px}
 .fam-tag[data-family='drift']{background:var(--fam-drift-tint)} .fam-swatch[data-family='drift']{background:var(--fam-drift)} .fam-edge[data-family='drift']{border-left-color:var(--fam-drift)}
 .fam-tag[data-family='fundamentals']{background:var(--fam-fundamentals-tint)} .fam-swatch[data-family='fundamentals']{background:var(--fam-fundamentals)} .fam-edge[data-family='fundamentals']{border-left-color:var(--fam-fundamentals)}
 .fam-tag[data-family='heavyweight']{background:var(--fam-heavyweight-tint)} .fam-swatch[data-family='heavyweight']{background:var(--fam-heavyweight)} .fam-edge[data-family='heavyweight']{border-left-color:var(--fam-heavyweight)}
+.fam-tag[data-family='dip']{background:var(--fam-dip-tint)} .fam-swatch[data-family='dip']{background:var(--fam-dip)} .fam-edge[data-family='dip']{border-left-color:var(--fam-dip)}
 .fam-edge{border-left:4px solid var(--s3)}
 /* a signed figure: a rise in the green and a fall in the red, on every page, its sign always written beside it */
 .gain{color:var(--up)} .loss{color:var(--down)}
@@ -386,7 +402,8 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .setup-tile .tile-counted{font-size:12.5px;color:var(--ink-2)}
 .setup-tile .tile-state{font-size:12.5px;color:var(--ink-2)}
 .buy-points td.setup{white-space:nowrap}
-.buy-points tr.plan-row>td{white-space:normal;background:var(--plot);padding:12px}
+.buy-points tr.fold-row>td{white-space:normal;background:var(--plot);padding:12px}
+.buy-points tr[data-fold]{scroll-margin-top:84px}
 .selwrap{display:grid;grid-template-columns:minmax(0,390px) minmax(0,1fr);gap:24px;align-items:start}
 .sel-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 .sel-unwritten{margin:14px 0 0;font-size:13.5px;color:var(--ink-2)}
@@ -403,35 +420,88 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-line{fill:none;stroke:var(--ink);stroke-width:1.8;stroke-linejoin:round}
 .paper-line.dashed{stroke-dasharray:5 4;stroke-width:1.4}
 .paper-line[data-family='pullback']{stroke:var(--fam-pullback)} .paper-line[data-family='breakout']{stroke:var(--fam-breakout)} .paper-line[data-family='drift']{stroke:var(--fam-drift)}
-.paper-line[data-family='fundamentals']{stroke:var(--fam-fundamentals)} .paper-line[data-family='heavyweight']{stroke:var(--fam-heavyweight)}
+.paper-line[data-family='fundamentals']{stroke:var(--fam-fundamentals)} .paper-line[data-family='heavyweight']{stroke:var(--fam-heavyweight)} .paper-line[data-family='dip']{stroke:var(--fam-dip)}
 .paper-keys{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .paper-key{display:inline-flex;align-items:center;gap:6px;font:12px var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--hair);border-radius:999px;padding:2px 10px;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .paper-key[aria-pressed='false']{opacity:.45;text-decoration:line-through}
 .paper-key-mark{display:inline-block;width:16px;height:0;border-top:2.5px solid var(--ink);flex:none}
 .paper-key-mark[data-standing='variant']{border-top-style:dashed}
 .paper-key-mark[data-family='pullback']{border-top-color:var(--fam-pullback)} .paper-key-mark[data-family='breakout']{border-top-color:var(--fam-breakout)} .paper-key-mark[data-family='drift']{border-top-color:var(--fam-drift)}
-.paper-key-mark[data-family='fundamentals']{border-top-color:var(--fam-fundamentals)} .paper-key-mark[data-family='heavyweight']{border-top-color:var(--fam-heavyweight)}
-.paper-table{min-width:760px}
-.paper-table td{vertical-align:top}
-.paper-table .paper-verdict{min-width:170px}
-.paper-table .paper-since{min-width:170px}
-.paper-since .day{white-space:nowrap}
-.paper-table .paper-name{white-space:normal;min-width:180px}
-.paper-table .paper-log{display:block;font-size:12px;margin-top:4px}
-.paper-table .verdict-word{display:block;font-weight:600}
-.paper-table .verdict-chosen,.too-few{display:block;font-size:12px;color:var(--soft)}
-.too-few.met{color:var(--ink-2)}
-.paper-table .paper-p{display:block;font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
-.paper-yearbars{display:block;margin:6px 0 2px}
-.paper-yearbars .yb-axis{stroke:var(--hair-2);stroke-width:1}
-.paper-yearbars .yb-this{fill:var(--ink-2)}
-.paper-yearbars .yb-that{fill:var(--soft);opacity:.55}
-.paper-yearbars .yb-year{font:10px var(--sans);fill:var(--soft)}
-.paper-table .paper-count{display:block;font-variant-numeric:tabular-nums}
-.paper-table .paper-walked{display:block;font-size:12px;color:var(--soft)}
-.paper-years summary{font-size:12px;color:var(--ink-2);cursor:pointer}
-.paper-years table{font-size:12px;margin-top:4px}
-.paper-adopted,.paper-entry{font-size:13px;color:var(--ink-2);margin:10px 0 0}
+.paper-key-mark[data-family='fundamentals']{border-top-color:var(--fam-fundamentals)} .paper-key-mark[data-family='heavyweight']{border-top-color:var(--fam-heavyweight)} .paper-key-mark[data-family='dip']{border-top-color:var(--fam-dip)}
+/* paper trading's parts: what the page is and the account's line with the form behind its press; a tile a family's live
+   or provisional account beside the fund's, stacking on a phone; the open and closed tabs and the family chips, wrapping;
+   the trades, the variants and the scorecard's variants each in a table its box scrolls; a rule's scorecard in two halves,
+   side by side and one beneath the other on a phone, its test years as boxes, its scale of luck in three zones and its
+   progress as a bar */
+.paper-what{font-size:14.5px;color:var(--ink-2);margin:0 0 10px;max-width:78ch}
+.paper-line{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;margin:0 0 8px;font-size:14px;color:var(--ink-2)}
+.paper-line b{color:var(--ink);font-variant-numeric:tabular-nums}
+.paper-change>summary{display:inline-block;cursor:pointer;font:600 13.5px var(--sans);color:var(--ink);text-decoration:underline;text-underline-offset:3px;padding:6px 0;min-height:32px}
+.paper-change[open]>summary{margin-bottom:8px}
+.paper-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin:0 0 14px}
+.paper-tile{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border:1px solid var(--hair-2);border-radius:8px;background:var(--surface);min-width:0}
+.paper-tile.fund{background:var(--plot)}
+.paper-tile .pt-name{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font:600 13px var(--sans);color:var(--ink)}
+.paper-tile .pt-figure{font:600 22px var(--sans);font-variant-numeric:tabular-nums}
+.paper-tile .pt-sub{font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.paper .day,.paper-variants .too-few{white-space:nowrap}
+.paper-tabs,.paper-chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 10px}
+.paper-bought,.paper-variants,.paper-only,.score-table{min-width:720px}
+.paper-bought td,.paper-variants td,.paper-only td,.score-table td{vertical-align:top}
+.pb-stock a{font-weight:600}
+.pb-co,.pb-day{display:block;font-size:12px;color:var(--soft);font-weight:400}
+.pb-also{display:block;font-size:12px;color:var(--ink-2)}
+.pb-day{white-space:nowrap}
+.pb-standing{font-weight:600}
+.pb-standing.near-target,.pb-standing.leading{color:var(--up)}
+.pb-standing.near-stop,.pb-standing.opened-under,.pb-standing.below-average{color:var(--down)}
+.pb-standing.opened-over,.pb-standing.lost-lead{color:var(--warn)}
+.paper-unbought,.paper-adopted,.paper-entry{font-size:13px;color:var(--ink-2);margin:10px 0 0}
+.paper-unbought .pu-reason{margin-right:6px}
+.paper-pick{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 12px;max-width:min(100%,560px)}
+.paper-pick select{min-height:36px;padding:0 8px;border-radius:6px;font:500 13.5px var(--sans)}
+.pv-rule .paper-log{font-weight:600}
+.pv-verdict{display:block;font-size:12px;color:var(--soft)}
+.pv-only-h{font-size:15px;margin:16px 0 6px}
+.too-few{display:block;font-size:12px;color:var(--soft)}
+.score{border:1px solid var(--hair-2);border-radius:8px;background:var(--surface)}
+.score-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:12px 14px;border-bottom:1px solid var(--hair)}
+.score-h h3{font-size:17px}
+.score-rule{font-size:13px;color:var(--ink-2);flex:1 1 240px;min-width:0}
+.score-halves{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:1px;background:var(--hair)}
+.score-half{padding:12px 14px;min-width:0;background:var(--surface)}
+.sh-h{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-bottom:4px}
+.sh-lbl{font:600 11.5px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+.score-half h4{font:600 14.5px var(--sans);margin:12px 0 4px}
+.sh-line{font-size:13.5px;color:var(--ink-2);margin:6px 0}
+.sh-count{font-size:14px;color:var(--ink);font-weight:600;margin:6px 0}
+.sh-years{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.sy{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:68px;padding:5px 8px;border:1px solid var(--hair-2);border-radius:8px;font-variant-numeric:tabular-nums}
+.sy.better{background:var(--up-fill);border-color:var(--up)}
+.sy.worse{background:var(--down-fill);border-color:var(--down)}
+.sy .sy-y{font-size:11.5px;color:var(--soft)}
+.sy b{font-size:13px}
+.sy .sy-e{font-size:12px}
+.luck{margin:6px 0 0;max-width:420px}
+.luck-scale{width:100%;height:auto;display:block}
+.luck-scale .ls-easily{fill:var(--down-fill);stroke:var(--down);stroke-width:1}
+.luck-scale .ls-maybe{fill:var(--warn-fill);stroke:var(--warn);stroke-width:1}
+.luck-scale .ls-real{fill:var(--up-fill);stroke:var(--up);stroke-width:1}
+.luck-scale .ls-mark{fill:var(--ink);stroke:var(--surface);stroke-width:2.5}
+.luck-scale .ls-word{font:11px var(--sans);fill:var(--soft)}
+.sh-warn{font-size:13px;color:var(--warn);background:var(--warn-fill);border-radius:6px;padding:6px 9px;margin:8px 0 0}
+.sh-progress{width:100%;max-width:420px;height:10px;display:block;margin:6px 0 4px}
+.sh-progress .sp-track{fill:var(--s1)}
+.sh-progress .sp-fill{fill:var(--ink-2)}
+.sh-ends{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;max-width:420px;font-size:12px;color:var(--soft)}
+.score-variants{padding:6px 14px 12px;border-top:1px solid var(--hair)}
+.score-variants>summary{cursor:pointer;font:600 13.5px var(--sans);padding:8px 0;min-height:32px}
+.score-none{padding:8px 14px;margin:0}
+.paper-yours p{margin:4px 0;font-size:14px}
+.paper-yours .paper-count{font-variant-numeric:tabular-nums;font-weight:600}
+@media (max-width:560px){
+ .paper-tiles{grid-template-columns:1fr}
+}
 /* from 19.7 the remaining screens: the Run page's two headings, its trades line and the monthly run; the Loop page's
    summary, its p meter and its proposal rows with their paired year bars; the Ledger's edge bars, decile strip and tabs;
    the Researched page's two orders */
@@ -467,7 +537,13 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-heads ul{margin:6px 0 0;padding-left:18px;font-size:13px}
 .paper-heads li{margin:3px 0}
 .account-pick{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0;max-width:min(100%,560px)}
-.paper-log-since .too-few{display:inline}
+/* on a phone the account form stands each setting's words whole above its box, one setting beneath another */
+@media (max-width:560px){
+ form.account-control{display:block;margin-right:0}
+ .account-control label{display:block;margin:0 0 10px}
+ .account-control input{display:block;width:100%;margin-top:4px}
+}
+.paper-log-since .too-few,.paper-heads .too-few{display:inline}
 .paper-log-table td:nth-child(-n+5){white-space:nowrap}
 .paper-running{margin:0 0 12px;max-width:420px}
 .paper-running figcaption{font-size:12.5px;color:var(--ink-2)}
@@ -557,6 +633,8 @@ a.sort[aria-pressed='true']{color:var(--ink)}
 .family-state{margin:0 0 10px;font-size:13.5px;color:var(--ink-2)}
 .family-state .provisional{font-weight:600;color:var(--ink)}
 .family-sweep{margin:-6px 0 10px;font-size:13.5px;color:var(--ink)}
+.family-frozen{margin:0 0 10px;font-size:13px;color:var(--ink-2)}
+.family-frozen .frozen-setting{overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 .family-empty{margin:0 0 8px}
 .fam-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px}
 .fam-head .fam-tag{font-size:14px;padding:3px 10px 3px 8px}
@@ -601,7 +679,7 @@ p.no-variant{margin:0 0 8px;font-size:12.5px;color:var(--soft)}
 .hw-empty-list .hw-why{color:var(--soft)}
 .funnel-bar{margin:10px 0}
 .funnel-bar .rule-funnel{list-style:none;margin:0;padding:0;display:grid;gap:3px}
-.funnel-bar li{display:grid;grid-template-columns:minmax(90px,150px) 1fr 44px;align-items:center;gap:8px;font-size:12px;color:var(--ink-2)}
+.funnel-bar li{display:grid;grid-template-columns:minmax(90px,150px) 1fr 76px;align-items:center;gap:8px;font-size:12px;color:var(--ink-2)}
 .funnel-bar .fb-bar{height:8px;background:var(--hair);border-radius:2px;overflow:hidden}
 .funnel-bar .fb-fill{display:block;height:100%;background:var(--s3)}
 .funnel-bar li.largest-drop .fb-name{font-weight:600;color:var(--ink)}
@@ -622,7 +700,7 @@ details.expander>*:not(summary){margin:10px 12px}
 .hw-fill{display:block;height:100%}
 .hw-fill.gain{background:var(--up)} .hw-fill.loss{background:var(--down)}
 .hw-pill{display:inline-block;font:600 11px var(--sans);border:1px solid var(--hair-2);border-radius:999px;padding:1px 8px;color:var(--ink-2);white-space:nowrap}
-@media (max-width:700px){ .hw-tiles{grid-template-columns:repeat(2,minmax(0,1fr))} .funnel-bar li{grid-template-columns:minmax(70px,100px) 1fr 36px} }
+@media (max-width:700px){ .hw-tiles{grid-template-columns:repeat(2,minmax(0,1fr))} .funnel-bar li{grid-template-columns:minmax(70px,100px) 1fr 66px} }
 .family-note{margin:8px 0 0;padding-top:8px;border-top:1px solid var(--hair-2);font-size:13px;color:var(--soft)}
 .family-table td.why-tonight{font-size:13px;max-width:340px;white-space:normal}
 .family-table td.plan-stop{color:var(--down)}
@@ -639,9 +717,11 @@ details.expander>*:not(summary){margin:10px 12px}
 .list-table .report-state{display:block;font-size:12px;color:var(--soft)}
 .card-head{margin:0 0 8px;color:var(--ink-2)}
 .card-lines{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:6px}
-.card-line{display:grid;grid-template-columns:78px 150px minmax(0,1fr);gap:8px;align-items:baseline}
-.card-mark{font:600 11px var(--sans);text-transform:uppercase;letter-spacing:.04em;border-radius:4px;padding:1px 6px;text-align:center}
-.card-mark[data-verdict='tick']{color:var(--ink);background:var(--plot);border:1px solid var(--ink-2)}
+.card-line{display:grid;grid-template-columns:24px 150px minmax(0,1fr);gap:8px;align-items:start}
+.card-mark{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;width:24px;height:24px;border-radius:6px;font:600 11px var(--sans)}
+.card-mark svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.card-mark svg .dot{fill:currentColor;stroke:none}
+.card-mark[data-verdict='tick']{color:var(--up);background:var(--up-fill);border:1px solid var(--up)}
 .card-mark[data-verdict='note']{color:var(--ink-2);background:var(--plot);border:1px solid var(--hair-2)}
 .card-mark[data-verdict='warning']{color:var(--warn);background:var(--warn-fill);border:1px solid var(--warn)}
 .card-record{border:1px solid var(--hair-2);border-radius:6px;padding:10px 12px}
@@ -963,10 +1043,31 @@ th.tipped:hover .head-tip,th.tipped:focus-within .head-tip{display:block}
 .chart-reading{font-variant-numeric:tabular-nums;margin:4px 0 8px;min-height:1.4em}
 .report-line{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:8px 0 14px}
 .report-line .open-report{display:inline-flex;align-items:center;text-decoration:none}
+.report-standing{margin:0 0 14px}
+.report-standing .rs-line{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0}
+.report-standing .rs-why{color:var(--ink-2)}
+.report-standing .rs-line+p{margin:6px 0 0;color:var(--soft);font-size:13px}
 .chart-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
 .grid-group h3{font-size:13px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2)}
 .grid-group dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:3px 10px;margin:0}
 .grid-group dt{color:var(--ink-2)} .grid-group dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+/* From 20.12 the chart page's graphs beneath its chart: a print's estimate a hollow dot and its reported figure filled in
+   the rise or the fall hue by its beat or its miss, the quarter to report next dashed, revenue a neutral bar beside net
+   income in the rise or the fall hue by its sign with the net margin a line in ink, the price an ink dot against the
+   analysts' mean target, and the analysts' ratings the report's own ramp. */
+.chart-graphs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,560px),1fr));gap:18px}
+.chart-graph h3{font-size:13px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2)}
+.chart-graph .fig+.fig{margin-top:10px}
+.mark-note{font-size:13px;color:var(--soft);margin:6px 0 0}
+.ed-estimate{fill:var(--surface);stroke:var(--ink-2);stroke-width:1.5}
+.ed-actual,.lg-swatch.ed-actual{fill:var(--ink-2)} .chart-graphs .ed-actual-up{fill:var(--up)} .chart-graphs .ed-actual-down{fill:var(--down)}
+.ed-next{fill:none;stroke:var(--dash-ink);stroke-width:1.5;stroke-dasharray:3 2}
+.ed-result{font-size:11px;font-weight:600} .ed-result.flat{fill:var(--ink-2)}
+.ib-revenue{fill:var(--s3)} .lg-swatch.ib-income{fill:var(--ink-2)} .chart-graphs .ib-income-up{fill:var(--up)} .chart-graphs .ib-income-down{fill:var(--down)}
+.ib-margin{fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round} .ib-margin-dot,.lg-swatch.ib-margin{fill:var(--ink);stroke:none}
+.tm-price{fill:var(--ink)} .tm-target{fill:var(--surface);stroke:var(--ink-2);stroke-width:2}
+.tm-against{font-size:13px;font-weight:700}
+.chart-graphs .rt-strong-buy{fill:var(--up)} .chart-graphs .rt-buy{fill:var(--up);fill-opacity:.5} .chart-graphs .rt-sell{fill:var(--down);fill-opacity:.5} .chart-graphs .rt-strong-sell{fill:var(--down)}
 .route-times code{font-size:12.5px}
 .m-barlab-in{font-size:11px;font-weight:600;fill:var(--surface);font-variant-numeric:tabular-nums} .m-barlab-out{font-size:11px;font-weight:600;fill:var(--ink);font-variant-numeric:tabular-nums}
 .sw{display:inline-block;width:12px;height:10px;margin-right:6px;vertical-align:-1px}

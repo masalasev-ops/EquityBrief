@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using EquityBrief.Core.Loop;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
@@ -177,6 +178,67 @@ public partial class ReadSurface
         Assert.Equal([DisabledDay], under.Select(line => line[..line.IndexOf(" in --", StringComparison.Ordinal)]).Distinct());
     }
 
+    // Every pill style a page draws has a rule of its own, read off each place a pill is drawn in every state it draws:
+    // a setup card live, provisional and on a variant, paper trading's tiles and a scorecard's head by their standing, a
+    // researched report standing and stale, and the monthly run held and stopped. A stale report and a stopped run are
+    // drawn in the failure's red, the accent's ink on it as on the live rule's slate.
+    // see: Status is drawn in blues with amber for a wait and red for a failure alone
+    [Fact]
+    public void EveryPillStyleAPageDrawsHasARuleOfItsOwnAndAFailedOneIsDrawnInTheRed()
+    {
+        var renderer = new MarkRenderer();
+        var since = new DateOnly(2026, 1, 2);
+        var live = new RuleChoiceView("the live breakout rule", RuleScreenWords.LiveSlug, null, true, "Live");
+        var variant = new RuleChoiceView("the breakout rule at a volume of 1.25 times", "v1", 1, false, "V1 · volume 1.25 times");
+        var chosen = new RuleView(variant, [live, variant], [new RulePartView("A stock closes above its high", false)], [], [("market", 9), ("new high", 9), ("volume", 1), ("trade", 1)], new StretchLineView(1, 48, false, 30, 600), null, true, null);
+
+        string Card(DateOnly? liveSince, RuleView? rule) =>
+            renderer.FamilyCard(new FamilyCardView("breakout", "Breakout", "Breakouts to a new high", "Breakout from a base", "A stock closes above its high.", 2, 3, liveSince, 1, [], [], "No stock passed this setup tonight.", RuleChoice: rule));
+
+        PaperAccountView Account(string standing, string family) =>
+            new(standing, family, standing, "An account", "A rule.", standing == PaperAccountView.You ? RuleVerdict.Yours : RuleVerdict.NotTested, null, "R", [], null, 0, 0, null, null);
+
+        PaperAccountView[] accounts = [Account(PaperAccountView.Live, "pullback"), Account(PaperAccountView.Variant, "pullback"), Account(PaperAccountView.Provisional, "breakout"), Account(PaperAccountView.You, "you")];
+        var page = new PaperPageView(accounts, [], [], [], new EquityBrief.Core.Cards.PaperNotBought([]), [], null);
+
+        string Monthly(string state) =>
+            renderer.MonthlyRunRegion(new MonthlyRunView(new DateTimeOffset(since.ToDateTime(new TimeOnly(14, 0)), TimeSpan.Zero), state, state == WorryItem.Held ? null : "its history step did not hold", "2026-01", [], 0, 60, null), "#/loop", "#/paper");
+
+        (string Drawing, string Markup, string[] Styles)[] drawn =
+        [
+            ("a live card", Card(since, null), ["live"]),
+            ("a provisional card", Card(null, null), ["provisional"]),
+            ("a card on a variant", Card(since, chosen), ["variant"]),
+            ("paper trading's tiles", renderer.PaperTiles(accounts, null), ["live", "provisional"]),
+            ("paper trading's scorecard", renderer.PaperScorecard(page, new PaperLink("500"), "breakout"), ["provisional"]),
+            ("the researched list", new SinglePageApp().ResearchedRegion([new ResearchedCell("AAA", null, null, since, 1, true), new ResearchedCell("BBB", null, null, since, 1, false)]), ["failed", "live"]),
+            ("a monthly run held", Monthly(WorryItem.Held), ["live"]),
+            ("a monthly run stopped", Monthly(WorryItem.Failed), ["failed"]),
+        ];
+
+        foreach (var (drawing, markup, styles) in drawn)
+        {
+            Assert.True(
+                styles.SequenceEqual(Regex.Matches(markup, "class=\"status-pill ([a-z-]+)\"").Select(pill => pill.Groups[1].Value), StringComparer.Ordinal),
+                $"{drawing} draws its pills as {string.Join(", ", Regex.Matches(markup, "class=\"status-pill ([a-z-]+)\"").Select(pill => pill.Groups[1].Value))}, not {string.Join(", ", styles)}.");
+        }
+
+        // Each of the four styles has one rule of its own that colours it.
+        var rules = StyleRules();
+        var used = drawn.SelectMany(one => one.Styles).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+
+        Assert.Equal(["failed", "live", "provisional", "variant"], used);
+
+        foreach (var style in used)
+        {
+            var own = rules.Where(rule => rule.Selectors.Split(',').Any(one => one.Trim() == ".status-pill." + style)).ToArray();
+
+            Assert.True(own.Length == 1 && Regex.IsMatch(own[0].Body, @"(?<![\w-])(?:background|border|color)\s*:"), $"The {style} pill has {own.Length} rule(s) of its own colouring it, not one.");
+        }
+
+        Assert.Equal("background:var(--fail);color:var(--accent-ink)", rules.Single(rule => rule.Selectors == ".status-pill.failed").Body);
+    }
+
     // Six digits read back as an opaque colour.
     static (double R, double G, double B, double A) Opaque(string hex) =>
         (int.Parse(hex[1..3], NumberStyles.HexNumber, CultureInfo.InvariantCulture),
@@ -223,7 +285,7 @@ public partial class ReadSurface
     }
 
     // The setup families' tokens, each the family's word as the store keeps it.
-    static readonly string[] Families = ["pullback", "breakout", "drift", "fundamentals", "heavyweight"];
+    static readonly string[] Families = ["pullback", "breakout", "drift", "fundamentals", "heavyweight", "dip"];
 
     // A colour in OKLab times a hundred, from its six digits over the sRGB curve.
     static (double L, double A, double B) OkLab(string hex)
@@ -256,7 +318,7 @@ public partial class ReadSurface
     // 19.2: each setup family's hue reads as a mark at 3 to 1 on every ground and stands 15 or more apart in OKLab from the
     // green, the orange, the red and each other family's, its tint holds ink at 4.5 to 1, in both palettes, and no rule
     // draws text in a family's hue.
-    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word
+    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them
     [Fact]
     public void EachFamilysHueReadsAsAMarkStandsApartAndItsTintHoldsInkInBothPalettes()
     {
@@ -290,8 +352,8 @@ public partial class ReadSurface
             }
         }
 
-        // Five families on three grounds in two palettes.
-        Assert.Equal(30, read);
+        // Six families on three grounds in two palettes.
+        Assert.Equal(36, read);
 
         // No rule draws text in a family's hue or its tint.
         Assert.DoesNotContain(rules, rule => Regex.IsMatch(rule.Body, @"(?<![\w-])color\s*:\s*var\(--fam-"));

@@ -1,0 +1,40 @@
+# The remedy of 20.11 (the S&P 400's and 600's freezes), as its PROGRESS entry prints it, on the operator's rulings of
+# 2026-10-20. Migration 102 adds every part's answer to the S&P 400's and 600's results and the sweep answers' figures.
+# Then each search on an index's own history is recorded with its figures and the tester's verdict on it, before the
+# freezes, so each frozen card reads the answer its freeze followed. The six market-off variants of 19.1 are retired.
+# Every S&P 400 and 600 rule's version moved, so the S&P 600 heavyweights' two books of 17.11, which stand beside the
+# freeze, are registered again, each named as not replayed and restarting. Then the eight families are frozen at the
+# settings their own sweeps would run, each with its market variant, the S&P 600 pullback with the tester's own choice
+# as well, and each family's rule of the day before kept in the background for 63 sessions by the form itself. Last, the
+# rule recorder replays the eight frozen rules over the pulled history by each sweep's own reading, so each card the
+# night draws carries its own rule's record, about an hour for the two indices. No request to the provider and no
+# model call. Run from main after the merge and before the newest night is run again, when no night, local run, drain,
+# labeller or monthly run is writing, and read the output for "remedy done". The frozen rules' stretch lines are
+# written by 20.11's second remedy, after the night run again, so that run ends before the open.
+migrate
+sweep-answer --run 20261020T053729Z --tester 20261020T062626Z
+sweep-answer --run 20261020T055645Z --tester 20261020T062624Z
+sweep-answer --run 20261020T140546Z --tester 20261020T141632Z
+sweep-answer --run 20261020T074857Z --tester 20261020T062626Z
+sweep-answer --run 20261020T075047Z --tester 20261020T062626Z
+sweep-answer --run 20261020T055646Z --tester 20261020T062627Z
+sweep-answer --run 20261020T073338Z --tester 20261020T132349Z
+sweep-answer --run 20261020T131852Z --tester 20261020T132349Z
+sweep-answer --run 20261020T074950Z --tester 20261020T132349Z
+sweep-answer --run 20261020T075106Z --tester 20261020T132349Z
+register --retire "the S&P 400 pullback rule at a strength of 0.5, 1 to 5 typical moves deep, a dry-up under 1.5, fresh within 3, 2 times the risk, the stop 0.5 to 4 moves, the market off and band strength 0, the profit gate, the market check off" --evidence "the operator's ruling of 2026-10-20 on 20.11's answers: the six market-off variants of 19.1 are retired as each family on the S&P 400 and 600 is frozen at its own sweep's setting"
+register --retire "the S&P 400 breakout rule at a 126-session high, 1.5 times the volume, ranges at 0.85 and the stop 1.5 typical moves beneath, the profit gate, the market check off" --evidence "the operator's ruling of 2026-10-20 on 20.11's answers: the six market-off variants of 19.1 are retired as each family on the S&P 400 and 600 is frozen at its own sweep's setting"
+register --retire "the S&P 400 drift rule within 3 sessions, up 0.5 typical moves on 2 times the volume, the target at 2.5 times the risk, the profit gate, the market check off" --evidence "the operator's ruling of 2026-10-20 on 20.11's answers: the six market-off variants of 19.1 are retired as each family on the S&P 400 and 600 is frozen at its own sweep's setting"
+register --retire "the S&P 600 pullback rule at a strength of 0.5, 1 to 5 typical moves deep, a dry-up under 1.5, fresh within 3, 2 times the risk, the stop 0.5 to 4 moves, the market off and band strength 0, the profit gate, the market check off" --evidence "the operator's ruling of 2026-10-20 on 20.11's answers: the six market-off variants of 19.1 are retired as each family on the S&P 400 and 600 is frozen at its own sweep's setting"
+register --retire "the S&P 600 breakout rule at a 126-session high, 1.5 times the volume, ranges at 0.85 and the stop 1.5 typical moves beneath, the profit gate, the market check off" --evidence "the operator's ruling of 2026-10-20 on 20.11's answers: the six market-off variants of 19.1 are retired as each family on the S&P 400 and 600 is frozen at its own sweep's setting"
+register --retire "the S&P 600 drift rule within 3 sessions, up 0.5 typical moves on 2 times the volume, the target at 2.5 times the risk, the profit gate, the market check off" --evidence "the operator's ruling of 2026-10-20 on 20.11's answers: the six market-off variants of 19.1 are retired as each family on the S&P 400 and 600 is frozen at its own sweep's setting"
+register --moved --evidence "20.11: every S&P 400 and 600 rule's version moves with each part's answer stored and the frozen rules' own levels read; the S&P 600 heavyweights' two books of 17.11 stand beside its freeze and are registered again unchanged"
+register --index-family pullback --index MID --parameters "strength=0.75,depthLow=1,depthHigh=3,dryUp=1.5,freshness=8,rewardToRisk=2,stopLow=0.5,stopHigh=4,market=0,band=6,floors=1,lowestClose=5,quality=2,hold=0,industryFall=0,fundOverSpy=0,creditAverage=0,creditChange=0,largeBreadth=0,breadthFloor=0.35" --variants "largeBreadth=2,breadthFloor=0"
+register --index-family breakout --index MID --parameters "highSessions=251,volumeMultiple=1.5,rangeCeiling=1,stopMoves=3,floors=1,lowestClose=5,quality=1,hold=0,industryFall=0,fundOverSpy=0,creditAverage=0,creditChange=0,largeBreadth=1,breadthFloor=0.45,nearness=0,recency=0,highVolume=0" --variants "largeBreadth=2,breadthFloor=0"
+register --index-family drift --index MID --parameters "windowSessions=3,reactionMoves=1.5,volumeMultiple=2,targetMultiple=2,stopFloor=1,floors=1,lowestClose=5,quality=1,hold=0,industryFall=0,fundOverSpy=0,creditAverage=0,creditChange=0,largeBreadth=0,breadthFloor=0.5,wideWindow=0,peers=0,entry=0,revenueGrew=0" --variants "largeBreadth=2,breadthFloor=0"
+register --index-family heavyweight --index MID --parameters "design=0,largest=10,lookBack=251,leaders=2,highBeta=1,soldOnLeading=0,soldUnderAverage=1,twelveOne=0,window=0,industries=0,members=0,quality=0,floors=1"
+register --index-family pullback --index SML --parameters "strength=0.75,depthLow=1,depthHigh=4,dryUp=1,freshness=8,rewardToRisk=2.5,stopLow=0.5,stopHigh=2.5,market=0,band=2,floors=1,lowestClose=5,quality=2,hold=0,industryFall=0,fundOverSpy=0,creditAverage=0,creditChange=0,largeBreadth=2,breadthFloor=0" --variants "largeBreadth=0,breadthFloor=0.35;stopHigh=4,band=0"
+register --index-family breakout --index SML --parameters "highSessions=126,volumeMultiple=1.25,rangeCeiling=0.85,stopMoves=3,floors=1,lowestClose=5,quality=1,hold=0,industryFall=0,fundOverSpy=0,creditAverage=0,creditChange=0,largeBreadth=0,breadthFloor=0.4,nearness=0,recency=0,highVolume=0" --variants "largeBreadth=2,breadthFloor=0"
+register --index-family drift --index SML --parameters "windowSessions=3,reactionMoves=0.5,volumeMultiple=1.25,targetMultiple=2.5,stopFloor=1,floors=1,lowestClose=5,quality=1,hold=63,industryFall=0,fundOverSpy=0,creditAverage=0,creditChange=0,largeBreadth=2,breadthFloor=0,wideWindow=0,peers=0,entry=0,revenueGrew=1" --variants "largeBreadth=0,breadthFloor=0.4"
+register --index-family heavyweight --index SML --parameters "design=0,largest=10,lookBack=63,leaders=1,highBeta=1,soldOnLeading=0,soldUnderAverage=1,twelveOne=0,window=0,industries=0,members=0,quality=0,floors=1"
+rule-record --index MID,SML

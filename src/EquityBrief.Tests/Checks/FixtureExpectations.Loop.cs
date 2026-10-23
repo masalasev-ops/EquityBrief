@@ -409,4 +409,26 @@ public partial class FixtureExpectations
             [.. evidence.Years.Select(year => FormattableString.Invariant($"{year.CurrentTotal:R}|{year.ProposedTotal:R}"))],
             Rows(connection, "SELECT current_total, proposed_total FROM loop_test ORDER BY year;"));
     }
+
+    [Fact]
+    public void TheRunOnAllFinishedDataLearnsOnEveryYearTheHistoryHolds()
+    {
+        var calendar = Weekdays(new DateOnly(2019, 1, 2), 2035);
+        var read = new LoopRead("MID", null!, [], [], null!, null!, new Dictionary<string, IReadOnlyList<Core.Readings.FiledIncome>>(), calendar, 0, LoopFolds.Of(calendar, calendar[^1]));
+
+        // A history ending in October 2026: the folds testing 2022 to 2026 learn on the three to seven years before
+        // theirs, and the run on all finished data on all eight, 2026 among them.
+        Assert.Equal(2026, calendar[^1].Year);
+        Assert.Equal([3, 4, 5, 6, 7], read.Folds.Select(read.LearningYears));
+        Assert.Equal(8, read.LearningYears(read.AllFinished));
+        Assert.Equal((300, 6), LoopProcedures.Floors(read.LearningYears(read.AllFinished)));
+
+        // The S&P 400 drift's last two years on all finished data are 2025's and 2026's, -0.2 and -0.1 over ten trades
+        // each, and not 2024's and 2025's, which read seven years would take.
+        int[] trades = [10, 10, 10, 10, 10, 10, 10, 10];
+        double?[] edges = [0.1, 0.1, 0.1, 0.1, 0.1, 0.5, -0.2, -0.1];
+
+        Assert.Equal(-0.15, LoopProcedures.LastTwoYears(trades, edges, read.LearningYears(read.AllFinished))!.Value, 12);
+        Assert.Equal(0.15, LoopProcedures.LastTwoYears(trades, edges, 7)!.Value, 12);
+    }
 }

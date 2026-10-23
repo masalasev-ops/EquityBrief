@@ -52,8 +52,14 @@ public sealed class BreakoutSweep
         {
             var one = series[name];
             var shortHigh = HighsBefore(one.Bars, ShortHighSessions);
-            var yearHigh = HighsBefore(one.Bars, BreakoutRule.ProvisionalHighSessions);
             var ranges = RangesBefore(one.Bars, BreakoutRule.RangeSessions);
+
+            // The year's high over the sessions before the store's year as well, where the night read them for a store
+            // whose year holds fewer than it reads.
+            // see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
+            var yearHigh = one.Name.Before is { Length: > 0 } before
+                ? HighsBefore([.. before, .. one.Bars], BreakoutRule.ProvisionalHighSessions)[before.Length..]
+                : HighsBefore(one.Bars, BreakoutRule.ProvisionalHighSessions);
 
             for (var bar = 0; bar < one.Bars.Length; bar++)
             {

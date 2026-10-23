@@ -4,34 +4,41 @@ using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Web.App;
 
-// Paper trading, section 15.21: the account's three settings, the chart of each family's live or provisional account
-// with a chosen family's variants dashed beside them, and the table of every account on the index with its test years
-// verdict and its record since registration side by side. An account's trades are its trade log on Past picks.
-// see: A paper account draws its test years verdict and its record since registration apart, and never merges them
+// Paper trading, section 15.21: what the page is and the account's line with the form behind its press, a tile a family's
+// live or provisional account beside the index's fund with the chart beneath, what the system bought, what the variants
+// did differently, a rule's scorecard and your own trades, each part's choice kept in the link. An account's trades are its
+// trade log on Past picks.
+// see: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together
 // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
 public sealed partial class SinglePageApp
 {
     // How paper trading is read, opened from its "?".
     public const string PaperGuide =
-        "Each account takes one rule's trades: a family's live or provisional rule takes the page's own list, each registered variant its own list or book, and You the trades you took from the cards. Each trade is sized off the account's value at its buy by the card's own sizing, the trades ending on a session sold before any is bought, and one the free cash cannot buy is skipped and counted; each pays its round trip, half at its buy and half at its sale. The chart draws each account's return since its record began, the live and provisional accounts always and a chosen family's variants dashed; a key's press hides or shows its line. The table puts two things side by side and never merges them: the rule's verdict in the newest monthly test over the ledger's years, and the account's own record since it was registered, which is too few to read until it holds the test's count of trades or months. An account is evidence about one unchanged rule, so a registered rule's account counts only the trades of its current version, from where the Run page's record of the rule starts, and starts again when the rule is registered again; each row names its start and the version it counts, and the trades of earlier versions stay in its trade log, folded and left out of its line, return, worst drop and counts. A provisional account and yours count every trade from the first.";
+        "Each account takes one rule's trades: a family's live or provisional rule takes the page's own list, each registered variant its own list or book, and You the trades you took from the cards. Each trade is bought at the open of the session after the night that listed it and sized off the account's value at its buy by the card's own sizing, the trades ending on a session sold before any is bought, and one the free cash cannot buy is skipped and counted; each pays its round trip, half at its buy and half at its sale. The tiles draw each family's live or provisional account's return since its record began beside the index's fund over the same days, and the chart draws each account's return session by session, a chosen family's variants dashed; a key's press hides or shows its line. An account is evidence about one unchanged rule, so a registered rule's account counts only the trades of its current version, from where the Run page's record of the rule starts, and starts again when the rule is registered again; the trades of earlier versions stay folded and left out of every figure. A provisional account and yours count every trade from the first. A rule's scorecard puts two things beside each other and never adds them together: how the rule did on the test years in the newest monthly test, and its own record since it went live, which is not evidence until it holds the test's count of trades or months.";
+
+    // The one sentence saying what the page is.
+    public const string PaperWhat = "Every stock a rule lists is bought on paper at the open of the session after the night that listed it, in a copy of your account each rule keeps, so you can see what each rule bought, how each trade stands, what its variants did differently and how the rule scores.";
 
     public string PaperRegion(
         MarkRenderer marks,
         UniverseChoice reading,
         DateOnly? night,
-        IReadOnlyList<PaperAccountView> accounts,
-        string? chosen,
+        PaperPageView page,
+        PaperLink link,
+        string variants,
+        string rule,
         (decimal Size, decimal Risk, decimal Cap)? settings,
         decimal proposedCap,
         string selector = "",
         (decimal Size, decimal Risk, decimal Cap)? example = null)
     {
         var region = new StringBuilder();
+        var accounts = page.Accounts;
         var drawn = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
         var heading = "Paper trading: " + reading.Titled;
         var walked = settings ?? example;
 
-        region.Append(Invariant($"<section class=\"paper\" data-universe=\"{reading.Word}\" data-night=\"{drawn}\" data-accounts=\"{accounts.Count}\" data-family=\"{Escaped(chosen ?? "none")}\" data-walked=\"{(walked is null ? "false" : "true")}\" data-example=\"{(settings is null && example is not null ? "true" : "false")}\">"));
+        region.Append(Invariant($"<section class=\"paper\" data-universe=\"{reading.Word}\" data-night=\"{drawn}\" data-accounts=\"{accounts.Count}\" data-family=\"{Escaped(link.Family ?? "none")}\" data-walked=\"{(walked is null ? "false" : "true")}\" data-example=\"{(settings is null && example is not null ? "true" : "false")}\" data-bought=\"{(link.Closed ? "closed" : "open")}\" data-show=\"{Escaped(link.Show ?? "none")}\" data-variants=\"{Escaped(variants)}\" data-rule=\"{Escaped(rule)}\">"));
         region.Append(Cards.Masthead(
             heading,
             $"<span class=\"m-screen\">{Escaped(heading)}</span>",
@@ -41,55 +48,61 @@ public sealed partial class SinglePageApp
         // Until the operator saves an account, every account is walked on the example and the page says so at its top.
         if (settings is null && example is { } shown)
         {
-            region.Append(Invariant($"<p class=\"notice paper-example\" data-example=\"true\"><b>Example account</b>: {shown.Size:#,0} dollars, {shown.Risk:0.##} per cent of it a trade and at most {shown.Cap * 100:0.##} per cent of it in one position. Save your own below and every account is walked on yours.</p>"));
+            region.Append(Invariant($"<p class=\"notice paper-example\" data-example=\"true\"><b>Example account</b>: {shown.Size:#,0} dollars, {shown.Risk:0.##} per cent of it a trade and at most {shown.Cap * 100:0.##} per cent of it in one position. Change the account to save your own, and every account is walked on yours.</p>"));
         }
 
-        region.Append(Cards.Computed(
-            "Account",
-            AccountForm(settings?.Size, settings?.Risk, settings?.Cap, proposedCap),
-            title: "Your account",
-            lede: settings is null
-                ? example is null
-                    ? "Set the three to walk the accounts: each trade is sized from them as a pick's card sizes its plan."
-                    : "Save the three to walk every account on yours, each trade sized as a pick's card sizes its plan; until then each is walked on the example above."
-                : "Every account is walked from these, each trade sized as a pick's card sizes its plan.",
-            region: "account"));
-
-        var families = accounts
-            .Where(account => account.Standing == PaperAccountView.Variant)
-            .Select(account => account.Family)
-            .Distinct()
-            .OrderBy(EquityBrief.Core.Families.SetupFamilies.OrderOf)
-            .ToArray();
-        var choices = new StringBuilder();
-
-        choices.Append("<nav class=\"paper-families\" aria-label=\"Add a family's variants to the chart\">");
-        choices.Append(Invariant($"<a href=\"{PaperRoute}?universe={reading.Word}\"{(chosen is null ? " aria-current=\"true\"" : string.Empty)}>Live and provisional only</a>"));
-
-        foreach (var family in families)
-        {
-            choices.Append(Invariant($"<a class=\"fam-tag\" data-family=\"{Escaped(family)}\" href=\"{PaperRoute}?universe={reading.Word}&amp;family={Uri.EscapeDataString(family)}\"{(family == chosen ? " aria-current=\"true\"" : string.Empty)}><span class=\"fam-swatch\" data-family=\"{Escaped(family)}\"></span>{Escaped(FamilyLabel(family))} with its variants</a>"));
-        }
-
-        choices.Append("</nav>");
+        // The account's line, the settings each rule's copy is walked on, the form behind its press.
+        var line = walked is { } used
+            ? Invariant($"<p class=\"paper-line\" data-size=\"{(settings is null ? "example" : "kept")}\"><span>Account <b>${used.Size:#,0}</b></span><span>Risk a trade <b>{used.Risk:0.##}%</b></span><span>Most in one stock <b>{used.Cap * 100:0.##}%</b></span><span>Each rule trades its own copy of this account.</span></p>")
+            : "<p class=\"paper-line degraded\">No account is kept: set the three to walk the accounts.</p>";
 
         region.Append(Cards.Computed(
             "Paper trading",
-            Guide(PaperGuide) + choices + (walked is null ? "<p class=\"degraded\" data-paper-chart=\"unset\">Set your account above to draw the accounts.</p>" : marks.PaperChart(accounts, chosen)),
-            title: "Each account since its record began",
-            lede: "In per cent of the account's size, open positions at each session's close.",
+            Invariant($"<p class=\"paper-what\">{Escaped(PaperWhat)}</p>") + line
+                + Invariant($"<details class=\"paper-change\"{(walked is null ? " open" : string.Empty)}><summary>Change the account</summary>{AccountForm(settings?.Size, settings?.Risk, settings?.Cap, proposedCap)}</details>"),
+            title: "Each rule's trades, in your money",
+            region: "account"));
+
+        region.Append(Cards.Computed(
+            "Paper trading",
+            Guide(PaperGuide) + marks.PaperTiles(accounts, page.Fund) + MarkRenderer.PaperFamilies(accounts, link)
+                + (walked is null ? "<p class=\"degraded\" data-paper-chart=\"unset\">Set your account above to draw the accounts.</p>" : marks.PaperChart(accounts, link.Family)),
+            title: "Each rule since its record began",
+            lede: "Each family's live or provisional rule, its return on your size beside the index's fund over the same days, and beneath, each account's return in per cent of its size, session by session.",
             stamp: Cards.Night(night),
             region: "paper-chart"));
 
         region.Append(Cards.Computed(
             "Paper trading",
-            marks.PaperTable(accounts, walked is not null, reading.Word)
-                + Invariant($"<p class=\"paper-adopted\">{Escaped(MarkRenderer.AdoptedLine)}</p>")
-                + Invariant($"<p class=\"paper-entry\">{Escaped(MarkRenderer.EntryPriceLine)}</p>"),
-            title: "Every account",
-            lede: "The test years verdict and the record since registration, side by side and never merged.",
+            marks.PaperBought(page, link),
+            title: "What the system bought",
+            lede: "The live and provisional rules' trades, newest first, each bought at the open after the night that listed it and sized from that night's close and stop.",
             stamp: Cards.Night(night),
-            region: "paper-accounts"));
+            region: "paper-bought"));
+
+        region.Append(Cards.Computed(
+            "Paper trading",
+            marks.PaperVariants(page, link, variants),
+            title: "What the variants did differently",
+            lede: "Each variant is its rule with a setting changed, trading in the background and never on Tonight: what it changes, the trades it shared with its rule and those it took alone.",
+            stamp: Cards.Night(night),
+            region: "paper-variants"));
+
+        region.Append(Cards.Computed(
+            "Paper trading",
+            marks.PaperScorecard(page, link, rule),
+            title: "Rule scorecard",
+            lede: "On history: over the test years, did the rule beat the same plan bought on every stock in the index that night, and is the gap bigger than luck would give a rule picking at random? Since it went live: how its own trades have done, counted toward the count a verdict needs. The two are never added together.",
+            stamp: Cards.Night(night),
+            region: "paper-scorecard"));
+
+        region.Append(Cards.Computed(
+            "Paper trading",
+            marks.PaperYours(accounts.FirstOrDefault(account => account.Standing == PaperAccountView.You), reading.Word),
+            title: "Your own trades",
+            lede: "The trades you took from a pick's card on this index, as an account of your size, apart from the system's.",
+            stamp: Cards.Night(night),
+            region: "paper-yours"));
         region.Append("</section>");
 
         return region.ToString();

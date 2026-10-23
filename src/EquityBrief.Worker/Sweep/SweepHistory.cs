@@ -14,7 +14,10 @@ public sealed record SweepSurprise(DateOnly EventDate, bool After, double Percen
 // One member of the index on any session of the history, with its series, the spans the index held it for, the
 // earnings dates on file for it, the sector it carries as filed today, and its surprises as filed. A survivor is a name
 // the wider universe adds from today's S&P 400 and 600 members alone, read as a member on every session since nothing
-// says when it joined, which flatters the wider universe.
+// says when it joined, which flatters the wider universe. On a night whose store's year holds fewer sessions than a
+// reading needs, the sessions before its first stored one that the pulled history holds, at the store's scale, read by
+// those readings alone; none on every other night and in the history.
+// see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
 public sealed record SweepName(
     string Ticker,
     SweepBar[] Bars,
@@ -22,7 +25,8 @@ public sealed record SweepName(
     DateOnly[] Prints,
     string? Sector = null,
     IReadOnlyList<SweepSurprise>? SurprisesFiled = null,
-    bool Survivor = false)
+    bool Survivor = false,
+    SweepBar[]? Before = null)
 {
     public IReadOnlyList<SweepSurprise> Surprises => SurprisesFiled ?? [];
 
@@ -115,6 +119,7 @@ public sealed class SweepHistory : IComponent
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.HeavyweightNight, Touch.Read),
+            new StoreTouch(Store.Company, Touch.Read),
         ],
         Feeds: []);
 
@@ -469,7 +474,7 @@ public sealed class SweepHistory : IComponent
     // pull asked for it, each sector fund's closes through the history's end, and the readings the night's book stored
     // through it; each none where the store holds no table for it.
     // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
-    // see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis
+    // see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session
     // Each pulled company's GICS industry as the companies pull filed it, the newest pull's where two filed one, none for
     // a company filing none; the heavyweights' second design reads an industry's lead off it.
     public async Task<IReadOnlyDictionary<string, string>> IndustriesAsync(CancellationToken cancellation = default)
@@ -785,6 +790,37 @@ public sealed class SweepHistory : IComponent
         }
 
         return [.. bars];
+    }
+
+    // Each company's analyst counts as its fundamentals fetches stored them, oldest first, each with the UTC day it was
+    // fetched on: the analysts rating it strong buy, buy, hold, sell or strong sell together. A fetch is made by the night
+    // after its session's close, so a count stands on a session only where it was fetched on an earlier day, and no count
+    // is read before the first fetch that stored one.
+    // see: Analyst coverage is stored from each fetch and waits for dated counts before any rule tests it
+    public async Task<IReadOnlyDictionary<string, IReadOnlyList<(DateOnly Fetched, int Analysts)>>> AnalystCountsAsync(CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(ConnectionString(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var counts = new Dictionary<string, List<(DateOnly Fetched, int Analysts)>>(StringComparer.Ordinal);
+
+        await foreach (var row in RowsAsync(
+            connection,
+            "SELECT ticker, fetched_at, strong_buy, buy, hold, sell, strong_sell FROM company WHERE strong_buy IS NOT NULL AND buy IS NOT NULL AND hold IS NOT NULL AND sell IS NOT NULL AND strong_sell IS NOT NULL ORDER BY ticker, fetched_at;",
+            [],
+            cancellation))
+        {
+            var ticker = row.GetString(0);
+
+            if (!counts.TryGetValue(ticker, out var list))
+            {
+                counts[ticker] = list = [];
+            }
+
+            list.Add((Date(row.GetString(1)[..10]), row.GetInt32(2) + row.GetInt32(3) + row.GetInt32(4) + row.GetInt32(5) + row.GetInt32(6)));
+        }
+
+        return counts.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<(DateOnly Fetched, int Analysts)>)pair.Value, StringComparer.Ordinal);
     }
 
     // One statement, read to its end and closed before the caller computes anything over what it returned.

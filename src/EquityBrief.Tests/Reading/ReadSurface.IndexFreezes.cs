@@ -8,10 +8,11 @@ using EquityBrief.Worker.Indices;
 namespace EquityBrief.Tests.Reading;
 
 // read-surface, 15.5: a family frozen on the S&P 400 draws its card by its live rule from the night of its freeze on, live
-// since the day it was registered with its variants beside it and its rule in the words its name carries, its sweep's line
-// gone from that night and not before; and the index's Run page draws each registered rule's record over its own trades,
-// each trade's result read after its own round trip, with the family's setup row live beside it.
+// since the day it was registered with its variants beside it and its rule in the words its name carries, and from 20.11
+// its sweep's line kept at the freeze made on its answer; and the index's Run page draws each registered rule's record over
+// its own trades, each trade's result read after its own round trip, with the family's setup row live beside it.
 // see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
+// see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
 public partial class ReadSurface
 {
     // The S&P 400 breakout frozen at its provisional settings with the variants given, written as the command writes them,
@@ -52,7 +53,7 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task AnSAndP400FamilyFrozenIsDrawnByItsLiveRuleFromTheNightOfItsFreezeAndItsSweepLineGoesThenAndNotBefore()
+    public async Task AnSAndP400FamilyFrozenIsDrawnByItsLiveRuleFromTheNightOfItsFreezeAndItsSweepLineIsKeptAtItsFreeze()
     {
         // The S&P 400 breakout's sweep found none, recorded the day before the night, and the family frozen at the instant
         // given with two variants, the cover and four times the volume, the night reading its list by the live rule where
@@ -101,12 +102,15 @@ public partial class ReadSurface
         Assert.DoesNotContain(FrozenRule, unread.Page, StringComparison.Ordinal);
 
         // Frozen on the night and read by it: live since that day with its two variants, its rule in the words its name
-        // carries above the card, the line gone, and still listing M1 as the night stored it.
+        // carries above the card, and still listing M1 as the night stored it. From 20.11 the line is kept at the freeze,
+        // the first at or after the answer and the one that made the live rule; the answer states no figures, so the line
+        // adds no years and no figures line is drawn.
         var frozen = await CardFrozenAt("2026-10-02T12:00:00Z", readByIt: true);
 
         Assert.Contains("<span class=\"status-pill live\" title=\"live since 2026-10-02\">Live</span> <span class=\"fam-count\">1 pick tonight</span>", frozen.Card, StringComparison.Ordinal);
         Assert.Equal(3, Regex.Matches(frozen.Card, "<a class=\"rule-tab").Count);
-        Assert.DoesNotContain(SweepLineDrawn, frozen.Card, StringComparison.Ordinal);
+        Assert.Contains("</details></header>" + SweepLineDrawn, frozen.Card, StringComparison.Ordinal);
+        Assert.DoesNotContain("family-frozen", frozen.Card, StringComparison.Ordinal);
         Assert.DoesNotContain(SetupFamilies.ProvisionalStatus, frozen.Card, StringComparison.Ordinal);
         Assert.Single(Regex.Matches(frozen.Page, Regex.Escape(FrozenRule)));
         Assert.Equal(["M1"], CardPicksOf(frozen.Card));
@@ -232,11 +236,12 @@ public partial class ReadSurface
         }
 
         // Read by the night: the card is the live rule's book, live since the day of the freeze with its variant, holding
-        // M1 and not the index's own book's M2, its rebalance buying M1 and selling M3, under its rule's words.
+        // M1 and not the index's own book's M2, its rebalance buying M1 and selling M3, under its rule's words. From 20.11
+        // the sweeps' line is kept at the freeze made on both designs' answers.
         var (page, card, run) = await Pages(readByIt: true);
 
         Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-02\" data-variants=\"1\" data-last-rebalance=\"2026-10-02\" data-next-rebalance=\"2026-11-03\"", card, StringComparison.Ordinal);
-        Assert.DoesNotContain(SweepLineDrawn, card, StringComparison.Ordinal);
+        Assert.Contains(SweepLineDrawn, card, StringComparison.Ordinal);
         Assert.Contains("<span class=\"status-pill live\" title=\"live since 2026-10-02\">Live</span> <span class=\"fam-count\">1 holding tonight</span>", card, StringComparison.Ordinal);
         Assert.Contains("since the last rebalance of 2026-10-02", card, StringComparison.Ordinal);
         Assert.Contains("data-ticker=\"M1\"", card, StringComparison.Ordinal);

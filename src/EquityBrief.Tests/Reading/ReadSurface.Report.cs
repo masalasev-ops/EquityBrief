@@ -17,6 +17,22 @@ namespace EquityBrief.Tests.Reading;
 // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
 public partial class ReadSurface
 {
+    [Fact]
+    public void TheReportChartsAreTickedAtRoundValuesWithNoughtWhereTheAxisSpansIt()
+    {
+        // CVX's growth axis from -62.9% to 265%: a quarter of its span is 82, so the ticks rise by a hundred, 0, 100 and
+        // 200; its reactions' from -3.2% to 3.8% rise by two, -2, 0 and 2; its multiples' from 7.8 to 30.4 times by ten;
+        // and its yield's from nought to 5.8% by two.
+        Assert.Equal([0d, 100d, 200d], MarkRenderer.TickValues(-62.9, 265));
+        Assert.Equal([-2d, 0d, 2d], MarkRenderer.TickValues(-3.2, 3.8));
+        Assert.Equal([10d, 20d, 30d], MarkRenderer.TickValues(7.8, 30.4));
+        Assert.Equal([0d, 2d, 4d], MarkRenderer.TickValues(0, 5.8));
+
+        // A quarter of the span exactly at two and a half, and a span a few hundredths wide.
+        Assert.Equal([0d, 2.5d, 5d, 7.5d, 10d], MarkRenderer.TickValues(0, 10));
+        Assert.Equal([1.25, 1.3, 1.35], MarkRenderer.TickValues(1.24, 1.36));
+    }
+
     // The rows 18.2 adds that this check reaches: section 15.5's nine marks and section 15.9's seven regions.
     internal static string[] ReportPageRows =>
     [
@@ -334,10 +350,10 @@ public partial class ReadSurface
             new DateOnly(2026, 7, 30),
             new DateOnly(2025, 6, 30),
             [
-                new QuarterLine(QuarterLines.Revenue, 1_100_000_000m, 1_050_000_000m, 50_000_000m, 4.7619, 900_000_000m, 22.2222, null, null, false, null),
-                new QuarterLine(QuarterLines.GrossProfit, null, null, null, null, 495_000_000m, null, null, 55.0, false, QuarterLines.FetchedBefore),
-                new QuarterLine(QuarterLines.NetIncome, null, null, null, null, 135_000_000m, null, null, 15.0, false, QuarterLines.NotFiled),
-                new QuarterLine(QuarterLines.Eps, 2.20m, 2.30m, -0.10m, -4.3478, 1.60m, 37.5, null, null, true, null),
+                new QuarterLine(QuarterLines.Revenue, 1_100_000_000m, 1_050_000_000m, 50_000_000m, 4.7619, 900_000_000m, 22.2222, null, null, false, null, null, null),
+                new QuarterLine(QuarterLines.GrossProfit, null, null, null, null, 495_000_000m, null, null, 55.0, false, QuarterLines.FetchedBefore, QuarterLines.NonePublished, null),
+                new QuarterLine(QuarterLines.NetIncome, null, null, null, null, 135_000_000m, null, null, 15.0, false, QuarterLines.NotFiled, QuarterLines.NonePublished, null),
+                new QuarterLine(QuarterLines.Eps, 2.20m, 2.30m, -0.10m, -4.3478, 1.60m, 37.5, null, null, true, null, null, null),
             ]);
         var quarter = marks.QuarterTable("CVX", new ReportView(latest, [], new DateOnly(2026, 9, 8), "USD", [], null, null, null, null));
 
@@ -352,8 +368,31 @@ public partial class ReadSurface
             "<td class=\"num\"><span class=\"loss\" data-difference=\"-0.10\">-0.10</span> (<span class=\"loss\" data-against=\"-4.3478\">-4.3%</span>)</td>",
             quarter,
             StringComparison.Ordinal);
-        Assert.Contains($"<td class=\"num degraded\" data-reported=\"absent\">{QuarterLines.FetchedBefore}</td><td class=\"num degraded\" data-estimate=\"absent\">none kept</td>", quarter, StringComparison.Ordinal);
+        Assert.Contains($"<td class=\"num degraded\" data-reported=\"absent\">{QuarterLines.FetchedBefore}</td><td class=\"num degraded\" data-estimate=\"absent\">none published</td>", quarter, StringComparison.Ordinal);
         Assert.Contains("<tr data-line=\"Net income\"><td>Net income</td><td class=\"num degraded\" data-reported=\"absent\">not filed</td>", quarter, StringComparison.Ordinal);
+        Assert.DoesNotContain("none kept", quarter, StringComparison.Ordinal);
+
+        // From the 18.2 correction of 2026-10-21 an implied estimate drawn with its mark and worked out beneath the table,
+        // each figure whole on its element; an estimate not kept saying from which day the stock's estimates are kept; and a
+        // line with no quarter held a year earlier saying so.
+        LatestQuarter fourth = new(
+            new DateOnly(2026, 8, 31),
+            new DateOnly(2026, 10, 15),
+            null,
+            [
+                new QuarterLine(QuarterLines.Revenue, 2_658_334_000m, 2_552_717_880m, 105_616_120m, 4.1374, null, null, null, null, false, null, null, new ImpliedEstimate(9_288_287_880m, new DateOnly(2026, 8, 31), new DateOnly(2026, 10, 11), 6_735_570_000m)),
+                new QuarterLine(QuarterLines.Eps, 1.84m, null, null, null, null, null, null, null, true, null, QuarterLines.NotKept(new DateOnly(2026, 10, 14)), null),
+            ]);
+        var implied = marks.QuarterTable("CMC", new ReportView(fourth, [], new DateOnly(2026, 10, 20), "USD", [], null, null, null, null));
+
+        Assert.Contains("<td class=\"num\" data-estimate=\"2552717880\" data-implied=\"yes\">$2.6B implied</td>", implied, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"num degraded\" data-estimate=\"absent\">not kept: estimates kept from 2026-10-14</td>", implied, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"num degraded\" data-year-earlier=\"absent\">no quarter held a year earlier</td>", implied, StringComparison.Ordinal);
+        Assert.EndsWith(
+            "</table></div><p class=\"mark-note\" data-implied=\"Revenue\">Revenue's estimate is implied: the analysts' estimate for the fiscal year to 2026-08-31, "
+            + "<span data-year-estimate=\"9288287880\">$9.3B</span> as kept on 2026-10-11, less its three earlier quarters as reported, <span data-earlier-quarters=\"6735570000\">$6.7B</span>.</p>",
+            implied,
+            StringComparison.Ordinal);
         Assert.Equal(
             "<p class=\"degraded\" data-absent=\"quarter\" data-ticker=\"CVX\">No reported quarter is stored for CVX yet, so no line is read.</p>",
             marks.QuarterTable("CVX", new ReportView(null, [], null, "USD", [], null, null, null, null)));
@@ -516,7 +555,7 @@ public partial class ReadSurface
             Regex.Matches(page, "<tr data-period=\"([^\"]+)\" data-period-end=\"([^\"]+)\"><td>[^<]+</td><td class=\"num\" data-eps=\"([^\"]+)\">")
                 .Select(match => (match.Groups[1].Value, match.Groups[2].Value, Held(match.Groups[3].Value))));
 
-        var company = Rows(store, "SELECT target_price, strong_buy, buy, hold, sell, strong_sell, substr(fetched_at, 1, 7) FROM company WHERE ticker = 'MSFT';").Single();
+        var company = Rows(store, "SELECT target_price, strong_buy, buy, hold, sell, strong_sell, substr(fetched_at, 1, 7) FROM company WHERE ticker = 'MSFT' ORDER BY fetched_at DESC LIMIT 1;").Single();
 
         Assert.Contains($"<p class=\"analyst-target\" data-target=\"{company[0]}\">", page, StringComparison.Ordinal);
         Assert.Equal(

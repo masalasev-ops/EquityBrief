@@ -624,6 +624,15 @@ public partial class ReadSurface
         Assert.Contains(".m-nav>a[aria-current='page'],.m-group.current .m-group-btn{background:var(--hair);", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains(".m-group.open .m-drop{display:flex}", Stylesheet.Css, StringComparison.Ordinal);
         Assert.DoesNotContain(".mast .wrap{grid-template-columns", Stylesheet.Css, StringComparison.Ordinal);
+
+        // The brand stands in the bar at every width, no rule hiding it; on a phone the bar holds two rows, the brand with
+        // the Menu button and then the index menu, and a place holding no index menu takes no row.
+        Assert.Contains("<header class=\"mast\" id=\"mast\"><div class=\"wrap\"><a class=\"m-brand\" href=\"#/\">", shell, StringComparison.Ordinal);
+        Assert.DoesNotMatch(@"\.m-brand\{[^}]*display:none", Stylesheet.Css);
+        Assert.Contains(
+            "@media (max-width:480px){\n .mast .wrap{flex-wrap:wrap}\n .m-menu{margin-left:auto}\n .m-index{order:6;flex-basis:100%;margin-left:0}\n .m-index:empty{display:none}\n}",
+            Stylesheet.Css,
+            StringComparison.Ordinal);
     }
 
     // The 19.2 correction of 2026-10-13: each index named with the size of company it holds, in each page's heading and in

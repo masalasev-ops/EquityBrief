@@ -224,10 +224,10 @@
   ]
  },
  "groups": {
-  "note": "derived by hand from the membership expectation's sectors and industries, not from a run. Each of the four members has an industry of its own, so no industry reaches the floor of five other members and every name's group is its sector: AAPL, KEYS and MSFT are Technology, so each one's group is the other two, and NFLX is Communication Services, alone in it, so its group holds nobody and says so. The name is never in its own group.",
+  "note": "derived by hand from the companies expectation's GICS sectors and industries, which each member's company fetch before the night files, not from a run; from the second 15.1 correction of 2026-10-21 the membership's own words are read for no group. Each of the four members has an industry of its own, so no industry reaches the floor of five other members and every name's group is its sector: AAPL, KEYS and MSFT are Information Technology, so each one's group is the other two, and NFLX is Communication Services, alone in it, so its group holds nobody and says so. The name is never in its own group.",
   "AAPL": {
    "kind": "sector",
-   "name": "Technology",
+   "name": "Information Technology",
    "members": [
     "KEYS",
     "MSFT"
@@ -235,7 +235,7 @@
   },
   "KEYS": {
    "kind": "sector",
-   "name": "Technology",
+   "name": "Information Technology",
    "members": [
     "AAPL",
     "MSFT"
@@ -243,7 +243,7 @@
   },
   "MSFT": {
    "kind": "sector",
-   "name": "Technology",
+   "name": "Information Technology",
    "members": [
     "AAPL",
     "KEYS"

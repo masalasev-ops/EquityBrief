@@ -31,6 +31,7 @@ public sealed class MemberReader(IClock clock, string databaseFile) : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
@@ -156,6 +157,25 @@ public sealed class MemberReader(IClock clock, string databaseFile) : IComponent
             .Where(ticker => bars.TryGetValue(ticker, out var series) && gaps.Stops(ticker, [.. series.Select(bar => bar.Session)]))
             .ToHashSet(StringComparer.Ordinal);
 
+        // On a night whose store's year holds fewer sessions than the year's high reads, the sessions the year falls short
+        // by before its first session, for each member holding a bar on the night that the store holds from that session,
+        // from the newest pull holding it at the store's scale, as the index families read them; a member whose bars start
+        // later reads its own alone.
+        // see: The member readings' year's high and a breakout rule's checks on it read the sessions before a short year as the breakout's own high does
+        var shortfall = MemberReadings.YearSessions + 1 - calendar.Length;
+        var before = new Dictionary<string, SweepBar[]>(StringComparer.Ordinal);
+
+        if (shortfall > 0 && calendar.Length > 0)
+        {
+            foreach (var ticker in members.Select(member => member.Ticker).Distinct(StringComparer.Ordinal))
+            {
+                if (!stopped.Contains(ticker) && bars.GetValueOrDefault(ticker) is [var oldest, .., var newest] && oldest.Session == calendar[0] && newest.Session == night)
+                {
+                    before[ticker] = await Indices.IndexFamilies.BeforeTheYearAsync(connection, null, ticker, oldest, shortfall, cancellation);
+                }
+            }
+        }
+
         // A member's company value on a session of the calendar, from the count filed before it on its newest fetch's
         // basis, none where it holds no bar on the session or no count was filed before it.
         decimal? ValueOn(string ticker, DateOnly session)
@@ -254,7 +274,7 @@ public sealed class MemberReader(IClock clock, string databaseFile) : IComponent
             bool? coverage = four.All(quarter => fetch!.InterestRead.Contains(quarter.PeriodEnd))
                 ? MemberReadings.Coverage(income, night, company.Sector)
                 : null;
-            var high = held ? MemberReadings.YearHigh(series, last) : null;
+            var high = held ? MemberReadings.YearHigh(before.GetValueOrDefault(ticker), series, last) : null;
             var industry = company.Industry;
 
             withABar += held ? 1 : 0;
@@ -314,7 +334,8 @@ public sealed class MemberReader(IClock clock, string databaseFile) : IComponent
             log.Parameters.AddWithValue("$rows_written", members.Count + 1);
             log.Parameters.AddWithValue(
                 "$detail",
-                FormattableString.Invariant($"{members.Count} member(s) read for {Stamp(night)}, {withABar} holding a bar on it, {industries} industr(ies) of the S&P 500 read; the switches read") + gaps.Report());
+                FormattableString.Invariant($"{members.Count} member(s) read for {Stamp(night)}, {withABar} holding a bar on it, {industries} industr(ies) of the S&P 500 read; the switches read") + gaps.Report()
+                    + (BeforeTheYear(before, shortfall, calendar.Length) is { } read ? "; " + read : string.Empty));
 
             await log.ExecuteNonQueryAsync(cancellation);
         }
@@ -322,6 +343,22 @@ public sealed class MemberReader(IClock clock, string databaseFile) : IComponent
         await transaction.CommitAsync(cancellation);
 
         return new MemberReadOutcome(night, members.Count, withABar, industries);
+    }
+
+    // What the night says of the sessions it read before the store's year: none on a night whose year holds the sessions
+    // the year's high reads; on one that does not, how many it holds, how many members the pulled history was read for,
+    // and each member it holds too few for, which reads no year's high.
+    static string? BeforeTheYear(IReadOnlyDictionary<string, SweepBar[]> before, int shortfall, int held)
+    {
+        if (shortfall <= 0)
+        {
+            return null;
+        }
+
+        var few = before.Where(pair => pair.Value.Length < shortfall).Select(pair => pair.Key).Order(StringComparer.Ordinal).ToArray();
+
+        return FormattableString.Invariant($"the store's year holds {held} of the {MemberReadings.YearSessions + 1} sessions the year's high reads, the sessions before it read from the pulled history for {before.Count(pair => pair.Value.Length > 0)} member(s)")
+            + (few.Length > 0 ? FormattableString.Invariant($", which holds too few for {few.Length}, each reading no year's high: {string.Join(", ", few)}") : string.Empty);
     }
 
     // The switches on the night: each index fund over SPY across half a year and a year of sessions, and HYG against its

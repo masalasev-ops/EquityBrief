@@ -11,7 +11,7 @@ namespace EquityBrief.Tests.Checks;
 // fixture-expectations, 14.2: the readings the sector heavyweights and the context checks are measured by, each
 // worked by hand, and the four pulls storing what they read, each over constructed answers, with the answers the
 // readers were written against read as the provider and the archive sent them.
-// see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis
+// see: A company's value on a session is the newest share count filed before it times the session's close, the two on one basis by every plain split between the count's day and the session
 // see: A company's sector on a session is the GICS sector the provider files, with the fourteen moves of 2023-03-17 read by date
 // see: Companies are ranked by CIK with one listing held, the class that traded the more dollars over fifty sessions
 // see: A quarter's revenue is read as first filed, a fiscal fourth quarter being the year less its first nine months

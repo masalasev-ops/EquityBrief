@@ -694,128 +694,128 @@
       "trimmedTo": "nothing. The whole response to one paid call, 329 uncached and 0 cached prompt tokens and 9 completion tokens, 0 of them reasoning, created at 2026-09-30T10:39:20Z, off-peak, and priced at 0.00005475 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-63ab491f4c2a4cf2f2a47b8b2055db52.json",
+      "file": "model-section-4eecdf608a85de13c0bd385e16f74cb2.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, its first draft, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 63ab491f4c2a4cf2f2a47b8b2055db52, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, its first draft, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 4eecdf608a85de13c0bd385e16f74cb2 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 63ab491f4c2a4cf2f2a47b8b2055db52: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T19:51:47Z",
       "trimmedTo": "nothing. The whole response to one section call, 12264 prompt tokens and 56 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-5695d4265470ed2e5dd766ae13f64856.json",
+      "file": "model-section-1f4e5ae40e878f95c78c9a1c4914cd52.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What the company sells on KEYS in the local lane, its first draft, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 5695d4265470ed2e5dd766ae13f64856, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What the company sells on KEYS in the local lane, its first draft, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 1f4e5ae40e878f95c78c9a1c4914cd52 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 5695d4265470ed2e5dd766ae13f64856: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T19:51:52Z",
       "trimmedTo": "nothing. The whole response to one section call, 12095 prompt tokens and 109 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-5af5585fc866a1fdfd1cb2d5a8c017d9.json",
+      "file": "model-section-5fe0383de5e8df5a75c16271b6b7e766.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, its first draft, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 5af5585fc866a1fdfd1cb2d5a8c017d9, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, its first draft, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 5fe0383de5e8df5a75c16271b6b7e766 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 5af5585fc866a1fdfd1cb2d5a8c017d9: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T19:51:57Z",
       "trimmedTo": "nothing. The whole response to one section call, 12178 prompt tokens and 177 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-c863931e7b8519be7d860fcba04acc7f.json",
+      "file": "model-section-31d781a637798c0b247a0cb43482109a.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What the company sells on KEYS in the local lane, its first draft, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed c863931e7b8519be7d860fcba04acc7f, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What the company sells on KEYS in the local lane, its first draft, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 31d781a637798c0b247a0cb43482109a (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed c863931e7b8519be7d860fcba04acc7f: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T19:52:10Z",
       "trimmedTo": "nothing. The whole response to one section call, 12100 prompt tokens and 109 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-a937181bfcd834dc9d0f659204c3efab.json",
+      "file": "model-section-72da9e91cca8b450c7539eca93c5c905.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, its first draft, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed a937181bfcd834dc9d0f659204c3efab, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, its first draft, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 72da9e91cca8b450c7539eca93c5c905 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed a937181bfcd834dc9d0f659204c3efab: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T19:52:15Z",
       "trimmedTo": "nothing. The whole response to one section call, 12183 prompt tokens and 178 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-d1991c6e35403f5e5463b2667f923dc7.json",
+      "file": "model-section-9f894e9c15c595bad3550fc124b0db10.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed d1991c6e35403f5e5463b2667f923dc7, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 9f894e9c15c595bad3550fc124b0db10 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed d1991c6e35403f5e5463b2667f923dc7: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T19:52:55Z",
       "trimmedTo": "nothing. The whole response to one section call, 12436 prompt tokens and 133 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-04e92aba3fb3dd9eed43cc4d755bedd1.json",
+      "file": "model-section-b06f5e6d488ca50f89185bb79d666246.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 04e92aba3fb3dd9eed43cc4d755bedd1, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed b06f5e6d488ca50f89185bb79d666246 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 04e92aba3fb3dd9eed43cc4d755bedd1: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T19:52:57Z",
       "trimmedTo": "nothing. The whole response to one section call, 12596 prompt tokens and 133 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-907549fb89dd8d2b73e9531dbab20b73.json",
+      "file": "model-section-203e5f303ae769034ef95e37ad035974.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, its first draft, handed 2 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 907549fb89dd8d2b73e9531dbab20b73, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, its first draft, handed 2 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 203e5f303ae769034ef95e37ad035974 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 907549fb89dd8d2b73e9531dbab20b73: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T20:04:54Z",
       "trimmedTo": "nothing. The whole response to one section call, 9859 prompt tokens and 61 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-318856658d51c12e62ab54c83cec23bd.json",
+      "file": "model-section-843c409ebab3669c3f1cac4e5f757613.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What management said on KEYS in the local lane, its first draft, handed 2 document(s), the newest results release and the one before it: the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 318856658d51c12e62ab54c83cec23bd, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What management said on KEYS in the local lane, its first draft, handed 2 document(s), the newest results release and the one before it: the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 843c409ebab3669c3f1cac4e5f757613 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 318856658d51c12e62ab54c83cec23bd: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T20:04:58Z",
       "trimmedTo": "nothing. The whole response to one section call, 18417 prompt tokens and 208 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-7248e911104506ca8bb78ca1b73f0d8e.json",
+      "file": "model-section-80dd300d5122b584a523e7fd0941c1ab.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The dated calendar items on KEYS in the local lane, its first draft, handed 7 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 7248e911104506ca8bb78ca1b73f0d8e, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The dated calendar items on KEYS in the local lane, its first draft, handed 7 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 80dd300d5122b584a523e7fd0941c1ab (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 7248e911104506ca8bb78ca1b73f0d8e: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T20:05:06Z",
       "trimmedTo": "nothing. The whole response to one section call, 19105 prompt tokens and 107 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-ac0de4b5f0ef151c1796dee5b5f08e75.json",
+      "file": "model-section-e05189b0f9e328bc73dc42932fe21d09.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 2 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed ac0de4b5f0ef151c1796dee5b5f08e75, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 2 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed e05189b0f9e328bc73dc42932fe21d09 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed ac0de4b5f0ef151c1796dee5b5f08e75: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T20:05:38Z",
       "trimmedTo": "nothing. The whole response to one section call, 9991 prompt tokens and 61 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-40a65faddcd0d0d0ff2eb17725b2e442.json",
+      "file": "model-section-32fd79efa91c9f8f1a067e2694c3c249.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The dated calendar items on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 7 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 40a65faddcd0d0d0ff2eb17725b2e442, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The dated calendar items on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 7 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 32fd79efa91c9f8f1a067e2694c3c249 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 40a65faddcd0d0d0ff2eb17725b2e442: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T20:05:44Z",
       "trimmedTo": "nothing. The whole response to one section call, 19233 prompt tokens and 63 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-32248b9f94e26c20dcb79a9bd8a98af8.json",
+      "file": "model-section-98d7a38af752dd6f9be7526832820909.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 32248b9f94e26c20dcb79a9bd8a98af8, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 98d7a38af752dd6f9be7526832820909 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 32248b9f94e26c20dcb79a9bd8a98af8: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T20:23:42Z",
       "trimmedTo": "nothing. The whole response to one section call, 12594 prompt tokens and 53 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-4d79ef7e0de5335ef46d44f06e621d77.json",
+      "file": "model-section-2882379556517fe4c7f8da54cc913579.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 4d79ef7e0de5335ef46d44f06e621d77, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 2882379556517fe4c7f8da54cc913579 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 4d79ef7e0de5335ef46d44f06e621d77: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T20:23:43Z",
       "trimmedTo": "nothing. The whole response to one section call, 13133 prompt tokens and 171 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-75d50858c35b59ef03260bff96483cd9.json",
+      "file": "model-section-d3e6c336c556d486173ce47e28894973.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 75d50858c35b59ef03260bff96483cd9, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 1 document(s): the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed d3e6c336c556d486173ce47e28894973 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 75d50858c35b59ef03260bff96483cd9: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T20:23:52Z",
       "trimmedTo": "nothing. The whole response to one section call, 13057 prompt tokens and 124 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-7d10ae71bde1633a6dd56fde4ef34b78.json",
+      "file": "model-section-d067b6c1ee33fc5ef565c7f0662c2112.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What management said on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 2 document(s), the newest results release and the one before it: the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 7d10ae71bde1633a6dd56fde4ef34b78, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What management said on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 2 document(s), the newest results release and the one before it: the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed d067b6c1ee33fc5ef565c7f0662c2112 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 7d10ae71bde1633a6dd56fde4ef34b78: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T20:25:20Z",
       "trimmedTo": "nothing. The whole response to one section call, 19141 prompt tokens and 390 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-e5327f0d36c4841594581fc016de2220.json",
+      "file": "model-section-b3b1bb22444e8a624daded742a6ae284.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What management said on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 2 document(s), the newest results release and the one before it: the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed e5327f0d36c4841594581fc016de2220, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What management said on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 2 document(s), the newest results release and the one before it: the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed b3b1bb22444e8a624daded742a6ae284 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed e5327f0d36c4841594581fc016de2220: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T20:25:38Z",
       "trimmedTo": "nothing. The whole response to one section call, 18964 prompt tokens and 290 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-47d1f79755352cc131239ec2bee5f06e.json",
+      "file": "model-section-a26e147ef0813b3568baaffb8229fbbc.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What management said on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 2 document(s), the newest results release and the one before it: the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed 47d1f79755352cc131239ec2bee5f06e, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What management said on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 2 document(s), the newest results release and the one before it: the request SectionPrompt builds under the instructions of 18.4, which list each figure under the region of the page drawing it, keyed a26e147ef0813b3568baaffb8229fbbc (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 47d1f79755352cc131239ec2bee5f06e: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T20:25:54Z",
       "trimmedTo": "nothing. The whole response to one section call, 18915 prompt tokens and 356 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
@@ -841,51 +841,51 @@
       "trimmedTo": "nothing. The whole response to one section call, 899 prompt tokens and 272 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-801013cb1a89f91c48b80c25643033ff.json",
+      "file": "model-section-636b3e0b533fb815e8c1ac657d09106f.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The two cases on KEYS in the local lane, its first draft, handed 7 document(s): the request SectionPrompt builds under 18.5's instructions, which hold each case to six sentences, keyed 801013cb1a89f91c48b80c25643033ff, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The two cases on KEYS in the local lane, its first draft, handed 7 document(s): the request SectionPrompt builds under 18.5's instructions, which hold each case to six sentences, keyed 636b3e0b533fb815e8c1ac657d09106f (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 801013cb1a89f91c48b80c25643033ff: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-11T11:39:57Z",
       "trimmedTo": "nothing. The whole response to one section call, 19381 prompt tokens and 324 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-7ba4a7f96e1cd277ad50801721bd2766.json",
+      "file": "model-section-395873001536f27ab5138ceb92df35c0.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, its first draft, handed 7 document(s): the request SectionPrompt builds under the instructions of the 12.6 correction of 2026-10-11, which ask each fact's words, keyed 7ba4a7f96e1cd277ad50801721bd2766, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, its first draft, handed 7 document(s): the request SectionPrompt builds under the instructions of the 12.6 correction of 2026-10-11, which ask each fact's words, keyed 395873001536f27ab5138ceb92df35c0 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 7ba4a7f96e1cd277ad50801721bd2766: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-11T11:40:07Z",
       "trimmedTo": "nothing. The whole response to one section call, 19958 prompt tokens and 422 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-1f83a1d2edd4bf46e28ec968951e34cc.json",
+      "file": "model-section-0371be7b4ddeba80ad439517395b9739.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The two cases on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 7 document(s): the request SectionPrompt builds under 18.5's instructions, which hold each case to six sentences, keyed 1f83a1d2edd4bf46e28ec968951e34cc, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The two cases on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 7 document(s): the request SectionPrompt builds under 18.5's instructions, which hold each case to six sentences, keyed 0371be7b4ddeba80ad439517395b9739 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 1f83a1d2edd4bf46e28ec968951e34cc: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-11T11:40:11Z",
       "trimmedTo": "nothing. The whole response to one section call, 19699 prompt tokens and 301 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-f059296e3baa7dbced8eb4b3cd82c913.json",
+      "file": "model-section-195d7796d0d542d1006d33ad27725ce1.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 7 document(s): the request SectionPrompt builds under the instructions of the 12.6 correction of 2026-10-11, which ask each fact's words, keyed f059296e3baa7dbced8eb4b3cd82c913, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 7 document(s): the request SectionPrompt builds under the instructions of the 12.6 correction of 2026-10-11, which ask each fact's words, keyed 195d7796d0d542d1006d33ad27725ce1 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed f059296e3baa7dbced8eb4b3cd82c913: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-11T11:40:17Z",
       "trimmedTo": "nothing. The whole response to one section call, 22335 prompt tokens and 420 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-bcf49114ebcbfb131c7d8976d92b180f.json",
+      "file": "model-section-24725c0846ca18a06440ec8f914043ed.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The two cases on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 7 document(s): the request SectionPrompt builds under 18.5's instructions, which hold each case to six sentences, keyed bcf49114ebcbfb131c7d8976d92b180f, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The two cases on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 7 document(s): the request SectionPrompt builds under 18.5's instructions, which hold each case to six sentences, keyed 24725c0846ca18a06440ec8f914043ed (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed bcf49114ebcbfb131c7d8976d92b180f: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-11T11:40:21Z",
       "trimmedTo": "nothing. The whole response to one section call, 19522 prompt tokens and 287 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-1215e99d87760fed3772ddeb8e189b64.json",
+      "file": "model-section-2ce665a3901a1924922a2b617dc37578.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 7 document(s): the request SectionPrompt builds under the instructions of the 12.6 correction of 2026-10-11, which ask each fact's words, keyed 1215e99d87760fed3772ddeb8e189b64, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 7 document(s): the request SectionPrompt builds under the instructions of the 12.6 correction of 2026-10-11, which ask each fact's words, keyed 2ce665a3901a1924922a2b617dc37578 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 1215e99d87760fed3772ddeb8e189b64: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-11T11:40:27Z",
       "trimmedTo": "nothing. The whole response to one section call, 22323 prompt tokens and 420 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-22ef05afa362dc3dda22317b838f317b.json",
+      "file": "model-section-8aca05b1981919bf43ce74c723fdc05c.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The two cases on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 7 document(s): the request SectionPrompt builds under 18.5's instructions, which hold each case to six sentences, keyed 22ef05afa362dc3dda22317b838f317b, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The two cases on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 7 document(s): the request SectionPrompt builds under 18.5's instructions, which hold each case to six sentences, keyed 8aca05b1981919bf43ce74c723fdc05c (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 22ef05afa362dc3dda22317b838f317b: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-11T11:40:32Z",
       "trimmedTo": "nothing. The whole response to one section call, 19529 prompt tokens and 400 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
@@ -1317,6 +1317,20 @@
       "trimmedTo": "the filing's own header block as sent, from its form name to the end of its Items, of a page of 209 lines: Apple's 8-K/A of 2026-09-01, an amendment whose one item is 5.02 and carries no results. The page's navigation and its tables of documents and data files are cut."
     },
     {
+      "file": "filing-page-0001656423-25-000043.htm",
+      "endpoint": "Archives/edgar/data/1037540/000165642325000043/0001656423-25-000043-index.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/1037540/000165642325000043/0001656423-25-000043-index.htm",
+      "fetchedAt": "2026-10-22T13:38:59Z",
+      "trimmedTo": "the filing's own header block and its table of documents as sent, of a page of 297 lines, with the white space at each line's end taken off: BXP's results 8-K of 2025-07-29, whose items are 2.02 and 9.01. Its table describes its two EX-99 exhibits by their types alone and names them in their file names, the supplemental data package q22025supplemental.htm at sequence 2 and the press release q22025pressrelease.htm at sequence 3. The page's navigation, its series button, its table of data files and its filers' addresses are cut."
+    },
+    {
+      "file": "filing-page-0001104659-26-010887.htm",
+      "endpoint": "Archives/edgar/data/1297996/000110465926010887/0001104659-26-010887-index.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/1297996/000110465926010887/0001104659-26-010887-index.htm",
+      "fetchedAt": "2026-10-22T13:38:24Z",
+      "trimmedTo": "the filing's own header block and its table of documents as sent, of a page of 400 lines, with the white space at each line's end taken off and the table kept to its 8-K, its two EX-99 exhibits, its first graphic and the complete submission's row, its 25 other graphics cut: DLR's results 8-K of 2026-02-05, whose items are 2.02, 7.01 and 9.01. Its table describes and names its exhibits by their types alone, the financial supplement dlr-20260205xex99d1.htm at sequence 2, which carries the earnings release inside it, and the results presentation dlr-20260205xex99d2.htm at sequence 3. The page's navigation, its series button, its table of data files and its filer's address are cut."
+    },
+    {
       "file": "previous-filing-types-AAPL-8k.htm",
       "endpoint": "Archives/edgar/data/320193/000032019326000011/0000320193-26-000011-index.htm",
       "query": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/0000320193-26-000011-index.htm",
@@ -1582,144 +1596,151 @@
       "trimmedTo": "six of its 170 filings, every column of each in the page's own order and serialized as the SEC serializes the whole: the three results announcements filed from 2015-05-01, an 8-K carrying no results, a 10-Q and a Form 4"
     },
     {
-      "file": "local-comparison/model-section-5bceb85a43f440e8f2f1cc13bfecde60.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 5bceb85a43f440e8f2f1cc13bfecde60, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:21:58Z",
+      "file": "local-comparison/model-section-4d0c6805be911ecf145c9a852ace2002.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The cause of each large move on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 4d0c6805be911ecf145c9a852ace2002 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 5bceb85a43f440e8f2f1cc13bfecde60: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:55:23Z",
       "trimmedTo": "nothing. The whole response to one section call, 9834 prompt tokens and 7 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-9f2cda613e30a6f765c0a63087b0e9e5.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What the company sells on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 9f2cda613e30a6f765c0a63087b0e9e5, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:00Z",
+      "file": "local-comparison/model-section-85f44e4b949c3dea4faa71c044e1368f.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for What the company sells on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 85f44e4b949c3dea4faa71c044e1368f (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 9f2cda613e30a6f765c0a63087b0e9e5: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:55:25Z",
       "trimmedTo": "nothing. The whole response to one section call, 12063 prompt tokens and 20 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-e45cee6244e60734d51a66bb99bca801.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed e45cee6244e60734d51a66bb99bca801, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:01Z",
-      "trimmedTo": "nothing. The whole response to one section call, 12146 prompt tokens and 7 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-96c2f0b51cd9ac7960e5caa8feb3b435.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The segment commentary on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 96c2f0b51cd9ac7960e5caa8feb3b435 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed e45cee6244e60734d51a66bb99bca801: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:55:26Z",
+      "trimmedTo": "nothing. The whole response to one section call, 12146 prompt tokens and 20 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-6f255b3b366ee859ad390bf96e5fd720.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What management said on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 6f255b3b366ee859ad390bf96e5fd720, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:02Z",
+      "file": "local-comparison/model-section-e912133bec67d7cef7001d9975767e11.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for What management said on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed e912133bec67d7cef7001d9975767e11 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 6f255b3b366ee859ad390bf96e5fd720: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:55:27Z",
       "trimmedTo": "nothing. The whole response to one section call, 18367 prompt tokens and 36 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-38d31d8a5ad57d87911009018c87407c.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The dated calendar items on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 38d31d8a5ad57d87911009018c87407c, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:04Z",
+      "file": "local-comparison/model-section-a79099a91549b8f80ed225b4d7042828.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The dated calendar items on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed a79099a91549b8f80ed225b4d7042828 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 38d31d8a5ad57d87911009018c87407c: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:55:29Z",
       "trimmedTo": "nothing. The whole response to one section call, 19102 prompt tokens and 7 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-48ed68b58b1142ac5a45bcac9dfe3fe9.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The two cases on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 48ed68b58b1142ac5a45bcac9dfe3fe9, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:07Z",
-      "trimmedTo": "nothing. The whole response to one section call, 19378 prompt tokens and 264 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-3981cb45d074c309e202ef92c7990878.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The two cases on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 3981cb45d074c309e202ef92c7990878 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 48ed68b58b1142ac5a45bcac9dfe3fe9: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:55:37Z",
+      "trimmedTo": "nothing. The whole response to one section call, 19378 prompt tokens and 252 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-7d3dfda4d5fa9bfff19fea2543338ac6.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 7d3dfda4d5fa9bfff19fea2543338ac6, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:14Z",
-      "trimmedTo": "nothing. The whole response to one section call, 19963 prompt tokens and 624 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-3acbca3cdbd3442865e8a1736a67895a.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 3acbca3cdbd3442865e8a1736a67895a (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 7d3dfda4d5fa9bfff19fea2543338ac6: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:55:47Z",
+      "trimmedTo": "nothing. The whole response to one section call, 19963 prompt tokens and 631 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-183528d855aa4d1de248a8730e550a28.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 183528d855aa4d1de248a8730e550a28, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:15Z",
+      "file": "local-comparison/model-section-bf9823b91b22a9b4a8ffbd6fd2a6b148.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The cause of each large move on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed bf9823b91b22a9b4a8ffbd6fd2a6b148 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 183528d855aa4d1de248a8730e550a28: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:02Z",
       "trimmedTo": "nothing. The whole response to one section call, 9903 prompt tokens and 7 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-007a469df12327fff24a74245c50e856.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What the company sells on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 007a469df12327fff24a74245c50e856, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:17Z",
+      "file": "local-comparison/model-section-559c9ff25fba2e6884722b9492049689.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for What the company sells on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 559c9ff25fba2e6884722b9492049689 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 007a469df12327fff24a74245c50e856: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:03Z",
       "trimmedTo": "nothing. The whole response to one section call, 12144 prompt tokens and 20 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-c778223dcf3aecd41edb66c92a5af09e.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed c778223dcf3aecd41edb66c92a5af09e, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:18Z",
-      "trimmedTo": "nothing. The whole response to one section call, 12215 prompt tokens and 7 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-deb5ccdce7aa14daad06f5de0384a7c7.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The segment commentary on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed deb5ccdce7aa14daad06f5de0384a7c7 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 9717cc8de50d36c74f1167c6d3f51585: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:04Z",
+      "trimmedTo": "nothing. The whole response to one section call, 12227 prompt tokens and 7 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-62e95616d41f4dcd49314d42e865b70d.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What management said on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 62e95616d41f4dcd49314d42e865b70d, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:19Z",
+      "file": "local-comparison/model-section-7e81c5fd4ea5dc95e86b6a32cb092bb0.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for What management said on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 7e81c5fd4ea5dc95e86b6a32cb092bb0 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 62e95616d41f4dcd49314d42e865b70d: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:05Z",
       "trimmedTo": "nothing. The whole response to one section call, 18452 prompt tokens and 53 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-981f18d2ef188f1a60c95d0bce1cef14.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The dated calendar items on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 981f18d2ef188f1a60c95d0bce1cef14, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:21Z",
+      "file": "local-comparison/model-section-24be54cdc68c2eea0c8b6a704b9866f4.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The dated calendar items on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 24be54cdc68c2eea0c8b6a704b9866f4 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 981f18d2ef188f1a60c95d0bce1cef14: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:07Z",
       "trimmedTo": "nothing. The whole response to one section call, 19171 prompt tokens and 7 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-461c9efce96af3c16856e9cec0bec109.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The two cases on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 461c9efce96af3c16856e9cec0bec109, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:24Z",
-      "trimmedTo": "nothing. The whole response to one section call, 19468 prompt tokens and 259 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-e8f6b1a908c776c911fb249c286d6aae.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The two cases on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed e8f6b1a908c776c911fb249c286d6aae (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 461c9efce96af3c16856e9cec0bec109: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:08Z",
+      "trimmedTo": "nothing. The whole response to one section call, 19468 prompt tokens and 233 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-243a81a3c543741124b9ed178fce6d5f.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 243a81a3c543741124b9ed178fce6d5f, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:31Z",
-      "trimmedTo": "nothing. The whole response to one section call, 20211 prompt tokens and 513 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-9d28fa205b45cc3443ee8cbb9256a5ef.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 9d28fa205b45cc3443ee8cbb9256a5ef (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed ff2a547db44402cbc78fef954cb846bc: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:12Z",
+      "trimmedTo": "nothing. The whole response to one section call, 20202 prompt tokens and 266 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-2016498a1728f8cf5e6d11ff70166c52.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The two cases on KEYS in the local lane, its retry 2, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 2016498a1728f8cf5e6d11ff70166c52, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:34Z",
-      "trimmedTo": "nothing. The whole response to one section call, 19467 prompt tokens and 261 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-c43df01326d1d2c9d9bc656052431f82.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The segment commentary on KEYS in the local lane, its retry 2, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed c43df01326d1d2c9d9bc656052431f82 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed c778223dcf3aecd41edb66c92a5af09e: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:16Z",
+      "trimmedTo": "nothing. The whole response to one section call, 12215 prompt tokens and 7 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-b5e13542dc1a589e14098332a6e070f8.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, its retry 2, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed b5e13542dc1a589e14098332a6e070f8, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:38Z",
-      "trimmedTo": "nothing. The whole response to one section call, 20103 prompt tokens and 311 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-4f517a61de20e0c29f52d18880d8861f.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The two cases on KEYS in the local lane, its retry 2, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 4f517a61de20e0c29f52d18880d8861f (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed 3823ee34704d83eff09ad38aa2384235: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:17Z",
+      "trimmedTo": "nothing. The whole response to one section call, 19467 prompt tokens and 229 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-0a74412af43fb56d8dfd0f3ffafb721c.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The short version on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 0a74412af43fb56d8dfd0f3ffafb721c, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:40Z",
-      "trimmedTo": "nothing. The whole response to one section call, 955 prompt tokens and 49 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-65f0be0d0e9fbf3bd1743ebee9f23d48.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The two cases on KEYS in the local lane, its retry 3, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 65f0be0d0e9fbf3bd1743ebee9f23d48 (re-keyed by the second 15.1 correction of 2026-10-21 from the recording keyed db077edca7d44d2eed86164f513e2079: the request the replay now makes differs from the one recorded only in the group's GICS name, Information Technology where the index snapshot named Technology, so the answer stands whole with no call), at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:21Z",
+      "trimmedTo": "nothing. The whole response to one section call, 19467 prompt tokens and 222 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-f18bb82f01963a8bbcead0c04fde0950.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The headline on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed f18bb82f01963a8bbcead0c04fde0950, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:42Z",
-      "trimmedTo": "nothing. The whole response to one section call, 848 prompt tokens and 72 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-96a64e0616440af594dcf99b799da1a3.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The short version on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 96a64e0616440af594dcf99b799da1a3, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:23Z",
+      "trimmedTo": "nothing. The whole response to one section call, 910 prompt tokens and 49 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-d6dbd3fb63714d6fa5aea66f2a35fb8b.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The short version on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed d6dbd3fb63714d6fa5aea66f2a35fb8b, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:43Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1043 prompt tokens and 56 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-5527a61ba24427a19fd61a69558490f7.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The headline on KEYS in the local lane, its first draft, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 5527a61ba24427a19fd61a69558490f7, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:25Z",
+      "trimmedTo": "nothing. The whole response to one section call, 803 prompt tokens and 141 completion tokens, named for the request's key so the comparison asking the same request reads it."
     },
     {
-      "file": "local-comparison/model-section-f22cd06089b1965f7d3c94cd90c2d8d5.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The headline on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed f22cd06089b1965f7d3c94cd90c2d8d5, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-10-19T05:22:44Z",
-      "trimmedTo": "nothing. The whole response to one section call, 938 prompt tokens and 58 completion tokens, named for the request's key so the comparison asking the same request reads it."
+      "file": "local-comparison/model-section-33bb85687da9071de812b5a12c4c19be.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The short version on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed 33bb85687da9071de812b5a12c4c19be, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:27Z",
+      "trimmedTo": "nothing. The whole response to one section call, 998 prompt tokens and 57 completion tokens, named for the request's key so the comparison asking the same request reads it."
+    },
+    {
+      "file": "local-comparison/model-section-e8f4bbd5a97b059cc3f920a1ec164e7c.json",
+      "endpoint": "api/v0/chat/completions on the operator's local model runtime, LM Studio's native chat endpoint serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The headline on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed e8f4bbd5a97b059cc3f920a1ec164e7c, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-19T13:56:28Z",
+      "trimmedTo": "nothing. The whole response to one section call, 890 prompt tokens and 55 completion tokens, named for the request's key so the comparison asking the same request reads it."
     }
   ]
 }

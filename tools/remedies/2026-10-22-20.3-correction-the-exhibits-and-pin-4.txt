@@ -1,0 +1,13 @@
+# The remedy of the 20.3 correction of 2026-10-22, as its PROGRESS entry prints it: migration 104 rebuilding the release
+# documents and readings with the exhibit in their keys and creating the release checks; then every stored filing's
+# page read once for the exhibit it names as the release, the one named stored in the place of one stored first and
+# that one kept marked no release; then pin 4 written, the model's file hashed whole, carrying pin 3's reading of every
+# release whose request it would send unchanged and printing how many it carried and left to read again by why; and
+# every release left read under it, oldest first, its pin's history marked complete once none is left. Requests of the
+# SEC alone, free and keyless, at ten a second under the archive's contact, and the local model alone, with LM Studio
+# running and holding the model and the card held at 250 W; no provider request and no paid call. Run from main after
+# the merge, outside the night, with no history read running; each keeps clear of each slot and of the night's window.
+migrate
+releases --exhibits
+local-run --pin
+releases --read --history

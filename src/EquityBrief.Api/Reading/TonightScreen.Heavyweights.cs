@@ -10,7 +10,7 @@ namespace EquityBrief.Api.Reading;
 // reads what the book stored and reads the rule's own functions for what the card states of a close and of the next
 // rebalance, so the card and the book say one thing.
 // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
-// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
 public static partial class TonightScreen
 {
     // The card on a night: the holdings open at its close in the order of their sectors, each with its lead at the last
@@ -26,7 +26,8 @@ public static partial class TonightScreen
         IReadOnlyList<HeavyweightReadRow> read,
         IReadOnlyList<HeavyweightCloseRow> closes,
         IReadOnlyDictionary<string, UniverseCell> cellByTicker,
-        IReadOnlyList<CandidateRow>? register = null)
+        IReadOnlyList<CandidateRow>? register = null,
+        bool readsBefore = false)
     {
         var words = SetupFamilies.SectorHeavyweights;
         var (liveSince, variants) = Standing(HeavyweightRule.Name, register ?? [], night);
@@ -73,19 +74,20 @@ public static partial class TonightScreen
         var empty = cells.Length > 0
             ? null
             : last is not { } rebalance
-                ? FormattableString.Invariant($"No rebalance has been read yet. The book reads its first on the next night the store holds that night's closes of the index and of each sector's fund and the {HeavyweightRule.SessionsNeeded(HeavyweightRule.Live)} sessions its readings need, ranking each member by the company and share counts the quarters fetch stores from the answer it already asks for.")
+                ? FormattableString.Invariant($"No rebalance has been read yet. The book reads its first on the next night the store holds that night's closes of the index and of each sector's fund, and the store's year with the pulled history before it the {HeavyweightRule.SessionsNeeded(HeavyweightRule.Live)} sessions its readings need, ranking each member by the company and share counts the quarters fetch stores from the answer it already asks for.")
                 : entered.Length == 0
                     ? FormattableString.Invariant($"No sector's largest companies led their sector's fund above nothing while passing the trend gate with a beta of at least one at the rebalance of {rebalance:yyyy-MM-dd}, so the book holds nothing until the next.")
                     : FormattableString.Invariant($"Every holding the rebalance of {rebalance:yyyy-MM-dd} bought has been sold since, as the notes beneath say.");
-        var next = HeavyweightRule.NextRebalance(night, last, HeavyweightRule.Live);
+        var next = HeavyweightRule.NextRebalance(night, last, HeavyweightRule.Live, readsBefore);
 
-        return new HeavyweightCardView(words.Heading, words.Eyebrow, RuleWords.Heavyweights(HeavyweightRule.Live), HeavyweightRule.Live.LookBack, last, next, cells, entered, ended, empty, liveSince, variants, Waits: Waiting(night, last, next, HeavyweightRule.Live));
+        return new HeavyweightCardView(words.Heading, words.Eyebrow, RuleWords.Heavyweights(HeavyweightRule.Live), HeavyweightRule.Live.LookBack, last, next, cells, entered, ended, empty, liveSince, variants, Waits: Waiting(night, last, next, HeavyweightRule.Live, readsBefore));
     }
 
     // What the card says on a night in a month whose rebalance a book that has read one before has not read: that the
-    // store's year to the night holds fewer sessions than the readings need where it does, and the session the book reads
-    // it on; none on any other night.
-    static string? Waiting(DateOnly night, DateOnly? last, DateOnly? next, HeavyweightSettings settings)
+    // store's year to the night holds fewer sessions than the readings need where it does and the pulled history reaches
+    // no session before it, and the session the book reads it on; none on any other night.
+    // see: A night's reading needing more closes than the store's year holds reads the sessions before it from the pulled history at the store's scale
+    static string? Waiting(DateOnly night, DateOnly? last, DateOnly? next, HeavyweightSettings settings, bool readsBefore = false)
     {
         if (last is null || !HeavyweightRule.Rebalances(night, last, settings.Weekly))
         {
@@ -95,7 +97,7 @@ public static partial class TonightScreen
         var on = next is { } day ? FormattableString.Invariant($"on {day:yyyy-MM-dd}") : "past the exchange calendar's table";
         var need = HeavyweightRule.SessionsNeeded(settings);
 
-        return BarRetention.SessionsTo(night) is { } held && held < need
+        return !readsBefore && BarRetention.SessionsTo(night) is { } held && held < need
             ? FormattableString.Invariant($"The rebalance of this month waits: the year of closes the store keeps to {night:yyyy-MM-dd} holds {held} sessions and its readings need {need}, so the book reads it {on}.")
             : $"The rebalance of this month has not been read, and the book tries again {on}.";
     }

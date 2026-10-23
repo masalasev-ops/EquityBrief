@@ -722,7 +722,11 @@ public static class SchemaMigrations
         new Migration(99, "create release_document and release_day", CreateReleases),
         new Migration(100, "create release_filer, release_reading and release_probe", CreateReleaseReadings),
         new Migration(101, "create loop_idea", CreateLoopIdeas),
-        new Migration(102, "add setup's release readings, and create release_answer_edge", AddReleaseReadings),
+        new Migration(102, "add index_family_result.gates and the sweep answers' figures", AddIndexResultGates),
+        new Migration(103, "add the sweep answers' ruled setting", AddSweepAnswerRuled),
+        new Migration(104, "rebuild release_document and release_reading with the exhibit in their keys, mark each document whether it is its filing's release, add each reading's cut, request and carry, and create release_check", AddNamedReleases),
+        new Migration(105, "create dip_night, dip_result, dip_pick and dip_trade", CreateDips),
+        new Migration(106, "add setup's release readings, and create release_answer_edge", AddReleaseReadings),
     ];
 
     // From 20.8: the setup ledger's four release readings, a column a reading after every column before them, each row
@@ -751,6 +755,183 @@ public static class SchemaMigrations
             mean_edge    REAL,
             PRIMARY KEY (run_id, index_code, family, question, answer, side)
         ) STRICT;
+    ";
+
+    // The short-term dip's own rows, apart from every other family's so its step writes nothing another family's reads:
+    // what each night read on each index, every member's answer with the gates that decided it, the family's list with
+    // why a stock it passed was held back, and each trade its list kept, keyed by the rule that kept it, `provisional`
+    // until a freeze registers one, with its fill at the next open, where it ended and why, and its result and cost in
+    // the risk its listing close set. Created empty, nothing copied and nothing dropped.
+    // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+    const string CreateDips = @"
+        CREATE TABLE dip_night (
+            index_code    TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            members       INTEGER NOT NULL,
+            market        TEXT NOT NULL,
+            market_open   INTEGER NOT NULL,
+            settings      TEXT NOT NULL,
+            passed        INTEGER NOT NULL,
+            listed        INTEGER NOT NULL,
+            fault         TEXT,
+            PRIMARY KEY (index_code, session_date)
+        ) STRICT;
+
+        CREATE TABLE dip_result (
+            index_code    TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            passed        INTEGER NOT NULL,
+            place         INTEGER,
+            entry         TEXT,
+            stop          TEXT,
+            time_limit    INTEGER,
+            rsi           REAL,
+            reason        TEXT,
+            gates         TEXT NOT NULL,
+            PRIMARY KEY (index_code, session_date, ticker)
+        ) STRICT;
+
+        CREATE TABLE dip_pick (
+            index_code    TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            state         TEXT NOT NULL CHECK (state IN ('listed', 'under another', 'open trade', 'past five')),
+            place         INTEGER,
+            listed_under  TEXT,
+            held_index    TEXT,
+            held_family   TEXT,
+            held_night    TEXT,
+            PRIMARY KEY (index_code, session_date, ticker)
+        ) STRICT;
+
+        CREATE TABLE dip_trade (
+            rule          TEXT NOT NULL,
+            index_code    TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            place         INTEGER NOT NULL,
+            entry         TEXT NOT NULL,
+            stop          TEXT NOT NULL,
+            time_limit    INTEGER NOT NULL,
+            exit_average  INTEGER NOT NULL,
+            risk_moves    REAL NOT NULL,
+            bought_on     TEXT,
+            fill          TEXT,
+            past          TEXT CHECK (past IN ('stop')),
+            ended_on      TEXT,
+            sale          TEXT,
+            end_reason    TEXT NOT NULL CHECK (end_reason IN ('open', 'exit', 'stop', 'limit')),
+            sessions      INTEGER,
+            result        REAL,
+            cost          REAL,
+            PRIMARY KEY (rule, index_code, ticker, session_date)
+        ) STRICT;
+    ";
+
+    // From the 20.3 correction of 2026-10-22: a filing's results release is the exhibit its index page names as the
+    // release, so the one stored before stands beside it marked no release, and a reading is of one exhibit, so the
+    // exhibit joins both keys, which SQLite cannot change in place: every row of each is copied across before its old
+    // table goes, a document as its filing's release and a reading as of the one exhibit its filing then held, and the
+    // index a reader takes a filer's releases by is made again. Each reading keeps, from the correction, the characters
+    // kept where its release was cut to the window, the hash of the request it sent and the version it was carried from
+    // where it was not asked; and each stored filing's check of its page is kept.
+    // see: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so
+    const string AddNamedReleases = @"
+        CREATE TABLE release_document_rebuilt (
+            accession    TEXT    NOT NULL,
+            cik          TEXT    NOT NULL,
+            form         TEXT    NOT NULL,
+            filed        TEXT    NOT NULL,
+            accepted_at  TEXT    NOT NULL,
+            exhibit      TEXT    NOT NULL,
+            url          TEXT    NOT NULL,
+            text_gzip    BLOB    NOT NULL,
+            text_sha256  TEXT    NOT NULL,
+            text_length  INTEGER NOT NULL,
+            run_id       TEXT    NOT NULL,
+            release      INTEGER NOT NULL DEFAULT 1,
+            PRIMARY KEY (accession, exhibit)
+        ) STRICT;
+
+        INSERT INTO release_document_rebuilt (accession, cik, form, filed, accepted_at, exhibit, url, text_gzip, text_sha256, text_length, run_id, release)
+        SELECT accession, cik, form, filed, accepted_at, exhibit, url, text_gzip, text_sha256, text_length, run_id, 1 FROM release_document;
+
+        DROP TABLE release_document;
+
+        ALTER TABLE release_document_rebuilt RENAME TO release_document;
+
+        CREATE INDEX release_document_by_cik ON release_document (cik, accepted_at);
+
+        CREATE TABLE release_check (
+            accession   TEXT    PRIMARY KEY,
+            exhibit     TEXT,
+            named       INTEGER NOT NULL,
+            replaced    INTEGER NOT NULL,
+            checked_at  TEXT    NOT NULL,
+            run_id      TEXT    NOT NULL
+        ) STRICT;
+
+        CREATE TABLE release_reading_rebuilt (
+            accession       TEXT    NOT NULL,
+            exhibit         TEXT    NOT NULL,
+            pin             INTEGER NOT NULL,
+            outcome         TEXT    NOT NULL,
+            cause           TEXT,
+            results         TEXT,
+            outlook         TEXT,
+            tone            TEXT,
+            demand          TEXT,
+            seconds         REAL,
+            prompt_tokens   INTEGER,
+            cut_at          INTEGER,
+            request_sha256  TEXT,
+            carried_from    INTEGER,
+            read_at         TEXT    NOT NULL,
+            run_id          TEXT    NOT NULL,
+            PRIMARY KEY (accession, exhibit, pin)
+        ) STRICT;
+
+        INSERT INTO release_reading_rebuilt (accession, exhibit, pin, outcome, cause, results, outlook, tone, demand, seconds, prompt_tokens, cut_at, request_sha256, carried_from, read_at, run_id)
+        SELECT r.accession, (SELECT d.exhibit FROM release_document d WHERE d.accession = r.accession), r.pin, r.outcome, r.cause, r.results, r.outlook, r.tone, r.demand, r.seconds, r.prompt_tokens, NULL, NULL, NULL, r.read_at, r.run_id
+        FROM release_reading r;
+
+        DROP TABLE release_reading;
+
+        ALTER TABLE release_reading_rebuilt RENAME TO release_reading;
+    ";
+
+    // From the operator's ruling of the evening of 2026-10-20: a recorded answer whose setting is one the operator ruled
+    // from among those the run read, in place of the one the run states, carries the day of that ruling, and whether the
+    // run's second stage kept the entry the setting is bought on. An answer recorded before the change, or of the setting
+    // the run states, holds none.
+    // see: The S&P 400's and 600's families freeze at the settings their own sweeps would run, the S&P 400 drift at the setting the operator ruled and business first on the pullback's base
+    const string AddSweepAnswerRuled = @"
+        ALTER TABLE sweep_answer ADD COLUMN ruled_on TEXT;
+        ALTER TABLE sweep_answer ADD COLUMN entry_kept INTEGER;
+    ";
+
+    // From 20.11: every part of an S&P 400 or 600 rule a member is answered on, the market check its own, each with its
+    // answer, in the form the S&P 500's family rows keep their gates. A row stored before the change holds none. And each
+    // recorded sweep answer's figures as its run states them: the setting the family would run, its trades, its edge after
+    // costs, its edge each year, its edge without its five largest results, how many settings the run read, how many met
+    // the floors and what luck alone would pass, and the tester's verdict on the family's search where a tester run was
+    // named with it. An answer recorded before the change, or from a run stating none of them, holds none.
+    // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
+    // see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
+    const string AddIndexResultGates = @"
+        ALTER TABLE index_family_result ADD COLUMN gates TEXT;
+        ALTER TABLE sweep_answer ADD COLUMN setting TEXT;
+        ALTER TABLE sweep_answer ADD COLUMN trades INTEGER;
+        ALTER TABLE sweep_answer ADD COLUMN edge REAL;
+        ALTER TABLE sweep_answer ADD COLUMN year_edges TEXT;
+        ALTER TABLE sweep_answer ADD COLUMN without_largest REAL;
+        ALTER TABLE sweep_answer ADD COLUMN settings_read INTEGER;
+        ALTER TABLE sweep_answer ADD COLUMN meeting INTEGER;
+        ALTER TABLE sweep_answer ADD COLUMN luck REAL;
+        ALTER TABLE sweep_answer ADD COLUMN tester_run TEXT;
+        ALTER TABLE sweep_answer ADD COLUMN adjusted REAL;
+        ALTER TABLE sweep_answer ADD COLUMN tester_passed INTEGER;
     ";
 
     // From 20.9: each answer the idea generator stored, a row a prompt and reading version, with the prompt as it was put,
@@ -2826,7 +3007,7 @@ public static class SchemaMigrations
     // its entry and exit, why it ended, and its growth and its size cut's carried each night from that night's closes,
     // which a corporate action's refetch of the year leaves standing. Values and closes are text, growths and returns
     // statistics.
-    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
+    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
     // see: A heavyweight's result is the product of its daily close ratios since its buy, carried each night
     const string CreateHeavyweights = @"
         ALTER TABLE reported_quarter ADD COLUMN shares TEXT;

@@ -56,11 +56,13 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "Reading pins"),
     ];
 
-    // 20.2's two: the members' results releases and the days the fetch read for them.
+    // 20.2's two: the members' results releases and the days the fetch read for them; and from the 20.3 correction of
+    // 2026-10-22 the stored filings' checks of the exhibit each page names as the release.
     internal static string[] ReleaseStoreRows =>
     [
         CheckReach.Key(Scope.StoresTable, "Release documents"),
         CheckReach.Key(Scope.StoresTable, "Release days"),
+        CheckReach.Key(Scope.StoresTable, "Release checks"),
     ];
 
     // 20.3's three: the releases' filers, the readings and the probes.
@@ -81,6 +83,15 @@ public class SchemaColumns
     internal static string[] ReleaseAnswerStoreRows =>
     [
         CheckReach.Key(Scope.StoresTable, "Release answer edges"),
+    ];
+
+    // 22.1's four: the short-term dip's nights, answers, picks and trades.
+    internal static string[] DipStoreRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Dip nights"),
+        CheckReach.Key(Scope.StoresTable, "Dip results"),
+        CheckReach.Key(Scope.StoresTable, "Dip picks"),
+        CheckReach.Key(Scope.StoresTable, "Dip trades"),
     ];
 
     internal static CheckReach Reach => new(
@@ -197,6 +208,8 @@ public class SchemaColumns
 
             // 20.8, what each release answer came to.
             .. ReleaseAnswerStoreRows,
+            // 22.1, the short-term dip's four tables.
+            .. DipStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

@@ -265,6 +265,17 @@ public class PinnedConstants
             new("The fundamentals-first search", "3", Worker.Sweep.SweepIdeas.RecentYears, "SweepIdeas.RecentYears"),
             new("The fundamentals-first search", "3.6", Math.Round((decimal)Worker.Loop.FundamentalsSearch.Luck(Core.Families.FundamentalsRule.Grid.Count), 1), "FundamentalsSearch.Luck over the grid, to one place"),
             new("The fundamentals-first search", "27", Core.Families.FundamentalsRule.Grid.Count, "FundamentalsRule.Grid, counted"),
+            // The short-term dip's provisional rule, 22.1, the figures in the row's order.
+            new("The short-term dip", "200", Core.Families.DipRule.TrendSessions, "DipRule.TrendSessions"),
+            new("The short-term dip", "200", Core.Families.DipRule.TrendSessions, "DipRule.TrendSessions"),
+            new("The short-term dip", "2", Core.Families.DipRule.RsiSessions, "DipRule.RsiSessions"),
+            new("The short-term dip", "10", (decimal)Core.Families.DipRule.Provisional.RsiUnder, "DipRule.Provisional.RsiUnder"),
+            new("The short-term dip", "3", Core.Families.DipRule.Provisional.DropSessions, "DipRule.Provisional.DropSessions"),
+            new("The short-term dip", "4", (decimal)Core.Families.DipRule.Provisional.StopMoves, "DipRule.Provisional.StopMoves"),
+            new("The short-term dip", "5", Core.Families.DipRule.Provisional.ExitAverage, "DipRule.Provisional.ExitAverage"),
+            new("The short-term dip", "10", Core.Families.DipRule.Provisional.TimeLimit, "DipRule.Provisional.TimeLimit"),
+            new("The short-term dip", "5", Core.Families.SetupFamilies.ListedANight, "SetupFamilies.ListedANight"),
+            new("The short-term dip", "2", Core.Families.DipRule.RsiSessions, "DipRule.RsiSessions"),
             new("Stretch mark", "95", (decimal)Math.Round(Core.Cards.RuleStretch.Share * 100), "RuleStretch.Share in per cent"),
             new("Stretch mark", "30", Core.Cards.RuleStretch.CompletedStretchesFloor, "RuleStretch.CompletedStretchesFloor"),
             new("Stretch mark", "504", Core.Cards.RuleStretch.SessionsFloor, "RuleStretch.SessionsFloor"),
@@ -300,6 +311,9 @@ public class PinnedConstants
             new("Local reading's settings", "7", Worker.Local.LocalRun.SlotReadsDays, "LocalRun.SlotReadsDays"),
             new("Local reading's settings", "21", Core.Releases.LocalSlots.LateStart.Hour, "LocalSlots.LateStart's hour"),
             new("Local reading's settings", "40", Core.Releases.LocalSlots.LateStart.Minute, "LocalSlots.LateStart's minute"),
+            // From the 20.3 correction of 2026-10-22 the fit of a release past the model's window.
+            new("Local reading's settings", "1,024", Core.Releases.ReleaseFit.Margin, "ReleaseFit.Margin"),
+            new("Local reading's settings", "3", Core.Releases.ReleaseFit.Cuts, "ReleaseFit.Cuts"),
             // The release fetch's settings, 20.2.
             new("Release fetch's settings", "10", Worker.Local.ReleaseFetch.DaysASlot, "ReleaseFetch.DaysASlot"),
             new("Release fetch's settings", "7", Worker.Local.ReleaseFetch.FirstLookBack, "ReleaseFetch.FirstLookBack"),

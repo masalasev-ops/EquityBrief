@@ -245,7 +245,9 @@ static int NoVerb()
         "both reviews kept or both changed to a file under the data root, writing nothing to the store, and " +
         "'releases --history --from <yyyy-MM-dd>' fetches every ledger filer's results releases from the one before its " +
         "first session in the ledger from that day through its last, with '--until <HH:mm>' stopping cleanly at that " +
-        "time in New York, and goes on from where an earlier run stopped. '--live' " +
+        "time in New York, and goes on from where an earlier run stopped, and 'releases --exhibits' reads each stored " +
+        "filing's page once for the exhibit it names as the release and stores that one in the place of the one " +
+        "stored where they differ. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -535,9 +537,10 @@ static async Task<int> MembersRun(string[] args)
 }
 
 // The night's index families step by hand, over the newest session the store holds and under a run of its own: the S&P
-// 400's and 600's provisional rules read by the sweep's own code into their tables as the night reads them, asking the
-// provider for nothing.
+// 400's and 600's provisional rules read by the sweep's own code into their tables as the night reads them, and then the
+// short-term dip's step, which gives way to the lists they drew, asking the provider for nothing.
 // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+// see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
 static async Task<int> IndexFamiliesRun(string[] args)
 {
     var configuration = Configuration();
@@ -567,6 +570,13 @@ static async Task<int> IndexFamiliesRun(string[] args)
     Console.Out.WriteLine(outcome.Session is { } session
         ? FormattableString.Invariant($"index-families: {session:yyyy-MM-dd} read under {runId}: {IndexFamilies.Detail(outcome.Nights)}")
         : "index-families: the store holds no bar, so nothing was read.");
+
+    if (outcome.Session is not null)
+    {
+        var dips = await new EquityBrief.Worker.Dips.DipFamily(clock, store.DatabaseFile).RunAsync(runId);
+
+        Console.Out.WriteLine("index-families: the short-term dip drawn again after them: " + EquityBrief.Worker.Dips.DipFamily.Detail(dips.Indices));
+    }
 
     return 0;
 }
@@ -624,7 +634,10 @@ static async Task<int> SweepAnswerRun(string[] args)
         SystemClock.ForUnitedStatesSessions(),
         store.DatabaseFile,
         EquityBrief.Core.Sweep.SweepFolder.Resolve(configuration[EquityBrief.Core.Sweep.SweepFolder.Key], store.DataRoot),
-        Console.Out).RecordAsync(VerbArguments.Value(args, "--run") ?? string.Empty);
+        Console.Out).RecordAsync(
+            VerbArguments.Value(args, "--run") ?? string.Empty,
+            tester: VerbArguments.Value(args, "--tester"),
+            ruled: EquityBrief.Worker.Sweep.SweepAnswers.RuledOf(VerbArguments.Value(args, "--ruled"), VerbArguments.Value(args, "--setting"), VerbArguments.Value(args, "--entry")));
 }
 
 // The record behind each pick's card, by hand: every rule a card names on each index replayed at its one setting over the
@@ -1790,6 +1803,29 @@ static async Task<int> NightlyRun(string[] args)
         return 1;
     }
 
+    // The newest session the store holds, run again the morning after a freeze, may read the register as it stands
+    // when it runs rather than as that session's evening stood, so the rules frozen since draw its lists; any other
+    // night reads the register as its evening stood, and the flag is refused for it.
+    // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
+    DateTimeOffset? registerAt = null;
+
+    if (args.Contains(Nightly.RegisterNow))
+    {
+        var newest = NightSession.NewestStored(store.DatabaseFile);
+
+        if (named is null || rest is not null || named != newest?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
+        {
+            Console.Error.WriteLine(
+                $"nightly: '{Nightly.RegisterNow}' reads the register as it stands now for the newest session the store holds, " +
+                $"{newest?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "none"}, run again with '--session'; a night on the clock reads it so already, " +
+                "and any other night reads it as its own evening stood.");
+
+            return 1;
+        }
+
+        registerAt = SystemClock.ForUnitedStatesSessions().UtcNow;
+    }
+
     // Where tonight's feeds come from, taken from configuration and overridable
     // for the run RUNBOOK asks for by hand.
     //
@@ -1867,7 +1903,8 @@ static async Task<int> NightlyRun(string[] args)
         build: build,
         cards: EquityBrief.Core.Cards.CardSettings.From(key => configuration[key]),
         forming: EquityBrief.Core.Cards.FormingSettings.From(key => configuration[key]),
-        adopt: configuration[EquityBrief.Core.Loop.LoopDecisions.AdoptSetting]);
+        adopt: configuration[EquityBrief.Core.Loop.LoopDecisions.AdoptSetting],
+        registerAt: registerAt);
 }
 
 // A night refused before its first step, on stderr and on the run log.
@@ -1929,7 +1966,7 @@ static async Task<int> QuoteRun(string[] args)
     var outcome = await new EquityBrief.Worker.Quotes.QuoteJob(
         SystemClock.ForUnitedStatesSessions(),
         store.DatabaseFile,
-        EodhdQuoteFeed.Live(configuration[EodhdBulkPriceFeed.BaseAddressKey] ?? string.Empty, credentials)).RunAsync(ticker.ToUpperInvariant(), askedAt);
+        EodhdQuoteFeed.Live(configuration[EodhdBulkPriceFeed.BaseAddressKey], credentials)).RunAsync(ticker.ToUpperInvariant(), askedAt);
 
     Console.WriteLine($"quote: {outcome.Outcome}, {outcome.Detail}");
 
@@ -2014,21 +2051,24 @@ static async Task<int> LocalRunVerb(string[] args)
 // under its contact. From 20.3 '--names', with '--again', each filer's names from its submissions; '--read --history'
 // with '--until', every release no reading under the newest pin holds, oldest first; '--probe <kind>', one probe over
 // its sample; '--reference --out <folder>', the reference set's releases written out as the model reads them; and
-// '--accuracy', with '--labels <file>', every accuracy figure printed and nothing written.
+// '--accuracy', with '--labels <file>', every accuracy figure printed and nothing written. From the 20.3 correction of
+// 2026-10-22 '--exhibits', with '--until', each stored filing's page read once for the exhibit it names as the release,
+// the one stored replaced where another is.
 // see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it
 // see: A release is read with every name and date in it replaced by a neutral word wherever it stands, and product names kept
+// see: A results release is the exhibit its filing's index page names as the release, and the lowest exhibit only where none is named so
 static async Task<int> ReleasesVerb(string[] args)
 {
     var configuration = Configuration();
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
     IClock clock = SystemClock.ForUnitedStatesSessions();
 
-    var forms = new[] { "--history", "--names", "--probe", "--reference", "--accuracy" }.Count(form => args.Contains(form, StringComparer.Ordinal));
+    var forms = new[] { "--history", "--names", "--exhibits", "--probe", "--reference", "--accuracy" }.Count(form => args.Contains(form, StringComparer.Ordinal));
     var reading = args.Contains("--read", StringComparer.Ordinal);
 
     if (forms != 1 || reading && !args.Contains("--history", StringComparer.Ordinal))
     {
-        Console.Error.WriteLine("releases: name one form, '--history --from <yyyy-MM-dd>', '--names', '--read --history', '--probe <kind>', '--reference --out <folder>' or '--accuracy', '--until <HH:mm>' in New York's time stopping a history.");
+        Console.Error.WriteLine("releases: name one form, '--history --from <yyyy-MM-dd>', '--names', '--exhibits', '--read --history', '--probe <kind>', '--reference --out <folder>' or '--accuracy', '--until <HH:mm>' in New York's time stopping a history or a check of the exhibits.");
 
         return 1;
     }
@@ -2122,6 +2162,18 @@ static async Task<int> ReleasesVerb(string[] args)
         var named = await feed.NamesAsync(args.Contains("--again", StringComparer.Ordinal), FormattableString.Invariant($"release-names-{clock.UtcNow:yyyyMMddTHHmmss.fffffffZ}"), Console.Out);
 
         return named.Refusal is null ? 0 : 1;
+    }
+
+    if (args.Contains("--exhibits", StringComparer.Ordinal))
+    {
+        if (Until(args, clock) is not (true, var stop))
+        {
+            return 1;
+        }
+
+        var exhibits = await feed.ExhibitsAsync(stop, FormattableString.Invariant($"release-exhibits-{clock.UtcNow:yyyyMMddTHHmmss.fffffffZ}"), Console.Out);
+
+        return exhibits.Refusal is null ? 0 : 1;
     }
 
     if (Argument(args, "--from") is not { } fromText
