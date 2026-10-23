@@ -8,7 +8,7 @@ namespace EquityBrief.Tests.Checks;
 // fixture-expectations, the 5.8 correction: a regenerate is held to once a name a day by the pass
 // itself, so a request the drain reaches for a name a pass already wrote that day starts nothing,
 // fetches nothing and asks no model.
-// see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+// see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
 public partial class FixtureExpectations
 {
     [Fact]
@@ -20,7 +20,13 @@ public partial class FixtureExpectations
 
         var first = await FixtureReplay.Researcher(store, ResearchClock, archive: new NoRelease(), news: new NoArticles()).RunAsync("KEYS", "research-before-regenerate");
 
+        // Over no document the pass writes none of the name's own sections, which spends no regenerate; its row as one
+        // that wrote a section does.
         Assert.Equal(ResearchRunner.Written, first.Outcome);
+        Assert.False(await ResearchRunner.WrittenTodayAsync(store.DatabaseFile, ResearchClock, "KEYS"));
+
+        WroteASection(store, "research-before-regenerate");
+
         Assert.True(await ResearchRunner.WrittenTodayAsync(store.DatabaseFile, ResearchClock, "KEYS"));
 
         // The regenerate a press asks for, the paid model asked for every section, on the day the pass
@@ -49,6 +55,12 @@ public partial class FixtureExpectations
             "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) " +
             $"VALUES ('{runId}', '{stage}', '2026-09-30T14:40:04Z', '2026-09-30T14:41:05Z', '{SpendCap.Unavailable}', 0, 1, 0, '0', '{{}}');");
 
+    // A pass's row as one that wrote a section of the name's own, which a fixture pass handed no document never does.
+    static void WroteASection(TemporaryStore store, string runId) =>
+        store.Execute(
+            "UPDATE run_log SET detail = json_set(detail, '$.written', json('[{\"section\":\"What the company sells\",\"version\":1,\"model\":\"deepseek-flash\",\"retry\":false}]')) " +
+            $"WHERE run_id = '{runId}' AND stage = 'research';");
+
     [Fact]
     public async Task APassTheModelCouldNotBeReachedForOnASectionIsNotTheDaysReport()
     {
@@ -62,6 +74,7 @@ public partial class FixtureExpectations
 
         Assert.Equal(ResearchRunner.Written, first.Outcome);
 
+        WroteASection(store, "research-cut-short");
         Unreached(store, "research-cut-short", SpendCap.StageFor("The two cases", TrialCalls.ReviewRound));
         Unreached(store, "research-cut-short", SpendCap.StageFor("The short version", TrialCalls.Round));
 
@@ -78,6 +91,38 @@ public partial class FixtureExpectations
             .RunAsync("KEYS", "research-regenerate-after-a-cut", new ResearchPassRequest(Refresh: true, PaidForLocal: true));
 
         Assert.NotEqual(ResearchRunner.NotWarranted, again.Outcome);
+        Assert.Equal((1, 0), (paid.Probes, paid.Requests));
+    }
+
+    // From the 19.11 correction of 2026-10-23: a pass that ran to the end today and wrote none of the name's own sections,
+    // as a night's pass refreshing only its industry does, spends no regenerate, so a regenerate the same day passes the
+    // day's gate, where a plain open after it still starts nothing.
+    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
+    [Fact]
+    public async Task APassWritingNoneOfTheNamesOwnSectionsSpendsNoRegenerateWhereAPlainOpenAfterItStillStartsNothing()
+    {
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        // Handed no document, the pass runs to the end writing none of the name's own sections, and spends no regenerate.
+        var first = await FixtureReplay.Researcher(store, ResearchClock, archive: new NoRelease(), news: new NoArticles()).RunAsync("KEYS", "research-wrote-nothing");
+
+        Assert.Equal(ResearchRunner.Written, first.Outcome);
+        Assert.Empty(first.Written);
+        Assert.False(await ResearchRunner.WrittenTodayAsync(store.DatabaseFile, ResearchClock, "KEYS"));
+
+        // A plain open after it still starts nothing and says why.
+        var plain = await FixtureReplay.Researcher(store, ResearchClock, archive: new NoRelease(), news: new NoArticles()).RunAsync("KEYS", "research-open-again");
+
+        Assert.Equal((ResearchRunner.NotWarranted, ResearchRunner.RanToday), (plain.Outcome, plain.Reason));
+
+        // And the pass itself lets the regenerate through: past the day's gate it asks whether the model answers, which
+        // here it does not, so it stops there having asked for nothing.
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned(), unreachable: "the model does not answer");
+        var again = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, archive: new NoRelease(), news: new NoArticles())
+            .RunAsync("KEYS", "research-regenerate-after-nothing", new ResearchPassRequest(Refresh: true, PaidForLocal: true));
+
+        Assert.NotEqual(ResearchRunner.NotWarranted, again.Outcome);
+        Assert.NotEqual(ResearchRunner.RegeneratedToday, again.Reason);
         Assert.Equal((1, 0), (paid.Probes, paid.Requests));
     }
 }

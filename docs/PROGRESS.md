@@ -7188,3 +7188,73 @@ Carried:    20.8's remedy once pin 4's history read completes, its three builds,
             record stating the builds' times and the checks' results; a test walking the drift's tone variant through
             the tester's per-rule verb over a constructed history with its releases, which J4 shows no test holds; the
             tone variant's first walk at the monthly run of 2026-11-07; the sign-offs of phases 18 and 20.
+
+### 19.11 ruling - the report line names the stock's own written day and a later industry section's, says when today's pass wrote none and why Regenerate is withheld, and a pass writing none of the stock's own sections holds no Regenerate to the day   2026-10-23
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-23 at about 03:17 UTC through the question tool, on two questions put to them on
+            2026-10-22 after they found HPQ's Regenerate missing beside a report written on 2026-10-11 and asked "So
+            why does it say written on 10-11 ? WHy is an incorrect date being shown. This is misleading": asked "Shall
+            I start the report line fix now (both dates, today's check, and why Regenerate is missing)?", "Build it now
+            (Recommended)"; and asked "Should an overnight check that rewrote none of the stock's own sections still
+            block Regenerate for the rest of the day?", "Don't count it (Recommended)", the option reading "Only a pass
+            that wrote the stock's own sections counts against the once-a-day limit, so HPQ's Regenerate would be
+            available now. Stocks that keep reappearing on the list stop being locked out."
+Found:      read-only on the store: HPQ's night pass of 2026-10-22 at 04:19 UTC ran to the end with its industry's cycle
+            the one section warranted and wrote none of the stock's own sections, its theme declining for lack of
+            industry sources, and held Regenerate to the day; the stock's own sections were written on 2026-10-11. Of
+            the 95 research passes stored since 2026-09-25, 3 ran to the end writing none of the stock's own sections.
+Plan:       the correction below.
+Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.9, 20.11 and 20.12 merged with their records, 20.8
+            in PR 505 with its migration run, 22.0 planned and ruled, 22.1 merged and the night of 2026-10-22 run again
+            under it, the 20.3 correction carrying across an update of the runtime in PR 533 and pin 4 written under
+            it; in progress, the history read of the releases pin 4 left and the correction below; next, the analyst
+            panels read from Yahoo and the TipRanks button as the operator ruled on 2026-10-23, 20.8's remedy once pin
+            4's read completes, 22.2, 20.3's record, the tone variant at pin 4, 20.10, and the sign-offs of phases 18
+            and 20 by fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 19.11 - correction: the report's standing names its own sections' day and a later industry section's, says when today's pass wrote none and why Regenerate is withheld, and a pass writing none of the stock's own sections holds no Regenerate to the day   2026-10-23
+
+Queue:      as the ruling entry above, this correction in progress.
+Ruled:      the 19.11 ruling entry above.
+Corrected:  the page offers Regenerate unless the newest pass ran to the end today and wrote some of the stock's own
+            sections, read off the sections its row names as written, and the drain refuses a regenerate only after such
+            a pass, where a plain open after any pass that day still starts nothing. The report's standing on the chart
+            page and under the name page's masthead names the day the report's own newest section was written, its
+            industry's cycle left out since that is its theme's, names the industry section's day apart where it is
+            later, says when a pass ran today and wrote none of the report's own sections, and says why Regenerate is not
+            offered where it would be on another day: a pass wrote the report's own sections today, or the spend cap
+            has paused research. The regenerate decision superseded, the old one under Previously decided and its
+            citations repointed, 14 in code and 9 in the specs, beside a new decision of the standing's days and its
+            reasons; section 15's Regenerate Report and report line rows, the runbook, the roster's two rows and the
+            changelog. The fixture's passes handed no document write none of their own sections, so the two tests
+            reading such a pass as the day's report read its row as one that wrote a section, as the regenerate
+            figures test's constructed row now does.
+Tests:      2 new and 3 amended, 2661 in all: the standing over a researched store on the day of a pass that wrote the
+            report's own sections withholding Regenerate with its reason, the same pass read as writing none offering
+            it with the line that a pass checked it, and an industry section written later named apart on the name
+            page and the chart page and none named where it is no later; the drain over the fixture's pass writing
+            none spending no regenerate, a plain open after it starting nothing and a regenerate passing the day's
+            gate; and the once-a-day test, the connection's test and the figures test each given a pass that wrote a
+            section.
+Claims:     1400, none new: two rows gain words.
+Mutated:    the rule, stated before the runs: one mutation each property the correction adds, the smallest edit undoing
+            it alone, each run over the seven tests naming them with its red predicted, made in this checkout and
+            reverted with the editor. Each went red where predicted and nowhere else: R1 the page holding Regenerate to
+            the day after any pass, at the standing's new test; R2 the drain's condition on the pass's own sections
+            dropped, at the once-a-day test and the drain's new test; R3 a regenerate held by any pass at the drain, at
+            the drain's new test; R4 the standing's own day taking the industry section's, R5 the industry's day named
+            however early, R6 the reason dropped and R7 the line of today's pass dropped, each at the standing's new
+            test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2661 of 2661 tests ran with none failed,
+            migrations 0 to 106 with none pending, schema version 106, against `data-ci` and never `data`; the phase
+            report 60 tables, 1400 claims, 1400 passing, none out of scope and none unexamined, 1411 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the page reads the newest pass for the name and the drain every pass of the day, so a pass writing none of
+            the stock's own sections after one that wrote them on the same day would draw a Regenerate the drain
+            refuses, and a pass the connection cut holds Regenerate on the page where the drain lets it through, as it
+            did before this correction; the analyst panels; 20.8's remedy; 22.2; 20.3's record; the tone variant at
+            pin 4; 20.10; the sign-offs of phases 18 and 20.

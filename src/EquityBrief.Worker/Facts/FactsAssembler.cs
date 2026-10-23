@@ -102,7 +102,7 @@ public sealed class FactsAssembler : IComponent
     // than the quarter it restates and the later filing is what is now known.
     // Beside it the newest copy of the parts that are as of a fetch, where a
     // fetch has stored one.
-    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
     const string LatestFilingFor = @"
         SELECT f.filing_date, f.payload,
                (SELECT s.payload FROM fundamentals_snapshot s

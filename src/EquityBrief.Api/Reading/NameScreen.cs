@@ -1442,8 +1442,16 @@ public static partial class NameScreen
             figuresChecked: checkedFigures.Conflicts,
             filedFactsHeld: checkedFigures.Compared > 0,
             behind: behind,
-            standing: Standing(staleness, newest, spend, priced, today, accepted.Count > 0 ? accepted.Max(section => section.AsOf) : null));
+            standing: Standing(staleness, newest, spend, priced, today, OwnWritten(accepted), IndustryWritten(accepted)));
     }
+
+    // The day a written report's own newest section was written, and the day its industry's cycle was, which is its
+    // theme's and written by a theme pass on a day of its own.
+    public static DateOnly? OwnWritten(IReadOnlyList<WrittenSectionRow> accepted) =>
+        accepted.Where(section => !string.Equals(section.Section, ClaimRules.CycleSection, StringComparison.Ordinal)).Select(section => (DateOnly?)section.AsOf).Max();
+
+    public static DateOnly? IndustryWritten(IReadOnlyList<WrittenSectionRow> accepted) =>
+        accepted.Where(section => string.Equals(section.Section, ClaimRules.CycleSection, StringComparison.Ordinal)).Select(section => (DateOnly?)section.AsOf).Max();
 
     // The ninety days after the night the page draws: the company's next results, its next ex-dividend date, declared or
     // estimated from the newest ex-date the store holds, a kept dividend's or the provider's, at the payments a year its
@@ -1781,8 +1789,9 @@ public static partial class NameScreen
     public const string PausedLine = "research is paused:";
 
     // The newest pass for a name as the page reads it off the run log's detail: the stage
-    // that wrote it, the session it ran on, what it came to, and its reason.
-    public sealed record PassRecord(string Stage, DateOnly? AsOf, string Outcome, string? Reason, IReadOnlyList<(string Section, string Reason)> NotWritten);
+    // that wrote it, the session it ran on, what it came to, its reason, and how many of the
+    // name's own sections it wrote, its industry's cycle being its theme pass's and none of them.
+    public sealed record PassRecord(string Stage, DateOnly? AsOf, string Outcome, string? Reason, IReadOnlyList<(string Section, string Reason)> NotWritten, int Written = 0);
 
     public static PassRecord? Pass(string? detail)
     {
@@ -1807,7 +1816,8 @@ public static partial class NameScreen
             root.TryGetProperty("reason", out var reason) && reason.ValueKind == JsonValueKind.String ? reason.GetString() : null,
             root.TryGetProperty("notWritten", out var lines) && lines.ValueKind == JsonValueKind.Array
                 ? [.. lines.EnumerateArray().Select(line => (line.GetProperty("section").GetString()!, line.GetProperty("reason").GetString()!))]
-                : []);
+                : [],
+            root.TryGetProperty("written", out var wrote) && wrote.ValueKind == JsonValueKind.Array ? wrote.GetArrayLength() : 0);
     }
 
     // The stages a pass writes, in the words a reader reads them in. The worker's own
@@ -1930,10 +1940,13 @@ public static partial class NameScreen
         }
 
         // The operator's own ask, which the rule that nothing expires on a timer names beside the
-        // three triggers: once a name's research stands and no pass has run for it today, every
-        // section can be written again, whether or not a trigger has fired.
+        // three triggers: once a name's research stands and no pass has written its own sections
+        // today, every section can be written again, whether or not a trigger has fired. A pass
+        // that ran today and wrote none of them, as a night's pass refreshing only its industry
+        // does, leaves the day's one regenerate unspent.
         // see: Nothing expires on a timer
-        if (!ranToday && staleness?.State is Core.Research.ResearchState.Stands or Core.Research.ResearchState.Stale)
+        // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
+        if (!WroteToday(pass, today) && staleness?.State is Core.Research.ResearchState.Stands or Core.Research.ResearchState.Stale)
         {
             controls.Add(new ResearchControl(RefreshKind, "Regenerate Report", Refresh: true, PaidForLocal: false));
         }
@@ -1951,17 +1964,22 @@ public static partial class NameScreen
     public const string RefreshKind = "refresh";
 
     // A written report's standing as the chart page's report line and the name page under its masthead draw it: the
-    // verdict's own state, what made a stale one so, the day its newest section was written, and of the controls the
-    // research region offers the two that write a written report again, beside what research has cost. None where no
-    // report is written, and none for a page about an earlier night, which judges nothing.
+    // verdict's own state, what made a stale one so, the day its own newest section was written, and of the controls the
+    // research region offers the two that write a written report again, beside what research has cost; the day its
+    // industry section was written where that is later, its theme's pass writing it on a day of its own; what a pass that
+    // ran today came to where it wrote none of the report's own sections; and why Regenerate is not offered where it
+    // would be on another day. None where no report is written, and none for a page about an earlier night, which judges
+    // nothing.
     // see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
+    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
     public static ReportStandingView? Standing(
         StalenessVerdict? staleness,
         PassRecord? pass,
         SpendVerdict? spend,
         IReadOnlyList<(string RunId, decimal Spend)>? priced,
         DateOnly? today,
-        DateOnly? written) =>
+        DateOnly? written,
+        DateOnly? industry = null) =>
         staleness is { State: Core.Research.ResearchState.Stands or Core.Research.ResearchState.Stale } judged
             ? new ReportStandingView(
                 ResearchState(judged).State,
@@ -1969,7 +1987,29 @@ public static partial class NameScreen
                 [.. judged.Fired.Select(fired => fired.Line)],
                 [.. Controls(judged, pass, [], spend, priced, today).Where(control => control.Kind is RewriteKind or RefreshKind)],
                 spend is null || priced is null ? null : Cost(priced, spend))
+            {
+                Industry = industry is { } cycle && (written is not { } own || cycle > own) ? cycle : null,
+                Today = pass is { Stage: ReadApi.ResearchStage, Outcome: ReadApi.PassWritten, Written: 0, AsOf: { } ran } && ran == today
+                    ? CheckedToday(ran)
+                    : null,
+                Withheld = spend is null || priced is null ? null
+                    : spend.Paused ? RegeneratePaused
+                    : WroteToday(pass, today) ? RegenerateTomorrow
+                    : null,
+            }
             : null;
+
+    // Whether the newest pass for the name ran to the end today and wrote some of its own sections, which spends the
+    // day's one regenerate.
+    static bool WroteToday(PassRecord? pass, DateOnly? today) =>
+        pass is { Stage: ReadApi.ResearchStage, Outcome: ReadApi.PassWritten, Written: > 0 } && pass.AsOf == today;
+
+    // What a pass that ran today and wrote none of the report's own sections came to, and why Regenerate is not offered.
+    public static string CheckedToday(DateOnly day) => $"A pass checked it today, {Day(day)}, and wrote none of its own sections.";
+
+    public const string RegenerateTomorrow = "Regenerate is offered again tomorrow: a pass wrote this report's own sections today, and a report is regenerated once a day.";
+
+    public const string RegeneratePaused = "Regenerate waits while the spend cap has paused research.";
 
     // What research has cost, from the priced calls the run log carries: the passes they
     // were made in, what they came to, and the most one pass came to, beside the line the

@@ -26,6 +26,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-23 - ARCHITECTURE.html - Regenerate is held to the day only by a pass that wrote the name's own sections, and the report's standing names each day and why Regenerate is not offered
+Authorised by: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
+Was:
+> 15 Regenerate Report: where a record stands or has gone stale and no pass has run for the name on the day in New York the page is read on: ... and the drain answering it with such a pass at most once a name a day, a request reaching it for a name a pass already wrote that day starting nothing and fetching nothing (see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day); ...
+> 15 The report line: Open the report to the name page with the day its newest section was written; from the 19.11 correction of 2026-10-22 the report's standing ...; or that none is written, with the request the list offers (see: ...)
+> the market value's row, Where the research stands, the facts assembler's and the fundamentals fetcher's rows, the numbers section's paragraph and the fundamentals store's row: (see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day)
+Now:
+> 15 Regenerate Report: where a record stands or has gone stale and no pass has written the name's own sections on the day in New York the page is read on: ... a request reaching it for a name a pass already wrote its own sections for that day starting nothing and fetching nothing; from the 19.11 correction of 2026-10-23 a pass that ran to the end writing none of the name's own sections holding no regenerate to the day, as a night's pass refreshing only its industry's cycle does (see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections); ...
+> 15 The report line: Open the report to the name page with the day its own newest section was written; ...; from the 19.11 correction of 2026-10-23 its industry section's day named apart where it is later; a pass today that wrote none of the report's own sections said to have checked it; and why Regenerate is not offered where it would be on another day; or that none is written, with the request the list offers (see: ...) (see: A report's standing names its own sections' day and a later industry section's day apart, and says why Regenerate is not offered)
+> the same rows: (see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections)
+Why: the operator ruled on 2026-10-23 that a pass writing none of the stock's own sections spends no regenerate, and that the report line state the stock's own written day, a later industry section's and why Regenerate is withheld.
+
+### 2026-10-23 - SCHEMA.md, RUNBOOK.md - the fundamentals copies' citation, and a regenerate held to the day only by a pass that wrote the name's own sections
+Authorised by: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
+Was:
+> fundamentals_copy: ... so an earlier night's page draws what the store held that night (see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day). ...
+> What a pass costs: ... It runs once a name a day: a request the drain reaches for a name a pass already wrote that day starts nothing and fetches nothing, and its run log row says why (see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day).
+Now:
+> fundamentals_copy: the same, citing (see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections).
+> What a pass costs: ... It runs once a name a day: a request the drain reaches for a name a pass already wrote its own sections for that day starts nothing and fetches nothing, and its run log row says why. A pass that ran to the end writing none of the name's own sections, as a night's pass refreshing only its industry's cycle does, holds no regenerate to the day, and the report's standing on the chart page and under the name page's masthead says when a pass checked it today and wrote none, and why Regenerate is not offered where it is not (see: ...) (see: ...).
+Why: the decision the two cite was superseded on the operator's ruling of 2026-10-23.
+
+### 2026-10-23 - .claude/rules/checks.md - read-surface and fixture-expectations reach the report's standing and the regenerate held only by a pass that wrote the name's own sections
+Authorised by: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
+Was:
+> read-surface: ... and its tile saying its part was not computed on a night it failed |
+> fixture-expectations: ... and no source a rule's version pins naming it |
+Now:
+> read-surface: ... and its tile saying its part was not computed on a night it failed; and from the 19.11 correction of 2026-10-23 a written report's standing over a researched store naming the day its own sections were written and its industry section's day apart where that is later, on the name page and on the chart page, a pass that ran today writing none of the report's own sections leaving Regenerate offered with a line saying a pass checked it today, and one that wrote them withholding Regenerate with a line saying why |
+> fixture-expectations: ... and no source a rule's version pins naming it; and from the 19.11 correction of 2026-10-23 a pass that ran to the end over no document writing none of the name's own sections and spending no regenerate, a regenerate the same day passing the day's gate where a plain open after it still starts nothing, and the same pass read as one that wrote a section holding a regenerate to the day |
+Why: the correction adds these assertions.
+
 ### 2026-10-23 - BUILD_PLAN.md, RUNBOOK.md - 20.8's migration named 106, merged after the migrations 20.11, the 20.3 correction and 22.1 took
 Corrects: 20.8's text named its migration 102, and the build plan's 20.11 text 103, numbers 20.11, the 20.3 correction and 22.1 took while PR 505 waited on the history read; found merging main into PR 505 on the operator's word of 2026-10-23.
 Was:

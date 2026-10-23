@@ -122,8 +122,8 @@ public sealed class ResearchRunner(
     // Why a plain open on the day a pass ran starts nothing.
     public const string RanToday = "a research pass for this name already ran today, and opening it again writes nothing until a later day or a rewrite";
 
-    // Why a regenerate on the day a pass for the name ran starts nothing.
-    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+    // Why a regenerate on the day a pass wrote the name's own sections starts nothing.
+    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
     public const string RegeneratedToday = "a report for this name was already written today, and a report is regenerated once a day";
 
     // The window a document a pass keeps may be dated inside, which is the stored year: a
@@ -188,14 +188,18 @@ public sealed class ResearchRunner(
     // detail rather than in a column, so it is read with the store's own JSON function,
     // and a detail that is not JSON is passed over, since other stages write a sentence.
     // A pass the model could not be reached for on a call of the report's own did not run
-    // to the end, whatever else it wrote: a trial's or a review's call is no part of it.
+    // to the end, whatever else it wrote: a trial's or a review's call is no part of it. Asked
+    // for a regenerate, only a pass that wrote some of the name's own sections counts, its
+    // industry's cycle being its theme pass's.
     // see: A regenerate on the day a report was written writes only the sections that report left out, and a report the connection cut is not the day's
+    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
     const string RanOnSession = @"
         SELECT COUNT(*) FROM run_log AS ran
         WHERE ran.stage = $stage
           AND ran.outcome = $written
           AND CASE WHEN json_valid(ran.detail) THEN json_extract(ran.detail, '$.ticker') END = $ticker
           AND CASE WHEN json_valid(ran.detail) THEN json_extract(ran.detail, '$.asOf') END = $as_of
+          AND ($own = 0 OR json_array_length(json_extract(ran.detail, '$.written')) > 0)
           AND NOT EXISTS (
               SELECT 1 FROM run_log AS asked
               WHERE asked.run_id = ran.run_id
@@ -279,11 +283,15 @@ public sealed class ResearchRunner(
         // with the paid model, so a second on the same day would pay for the same report twice.
         // On the day a report was written, a regenerate writes the sections that report left out
         // and nothing it wrote, so the second pays only for what the first did not buy, and where
-        // it left nothing out the regenerate starts nothing.
-        // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+        // it left nothing out the regenerate starts nothing. A pass that wrote none of the name's
+        // own sections wrote no report, as a night's pass refreshing only its industry does, and
+        // spends no regenerate; a plain open after it still starts nothing.
+        // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
         // see: A regenerate on the day a report was written writes only the sections that report left out, and a report the connection cut is not the day's
         var newest = await NewestAsync(connection, ticker, cancellation);
-        var ranToday = (asked.Refresh || !asked.PaidForLocal) && await RanTodayAsync(connection, ticker, asOf, cancellation);
+        var ranToday = asked.Refresh
+            ? await RanTodayAsync(connection, ticker, asOf, ownSections: true, cancellation)
+            : !asked.PaidForLocal && await RanTodayAsync(connection, ticker, asOf, ownSections: false, cancellation);
         var fillLeftOut = ranToday && asked.Refresh && newest.Values.Any(one => one.Status == ClaimChecker.Fallback && one.AsOf == asOf);
 
         if (ranToday && !fillLeftOut)
@@ -1198,18 +1206,18 @@ public sealed class ResearchRunner(
             : (null, asOf);
     }
 
-    // Whether a pass for the name ran to the end on the day the clock reads now, which a regenerate
-    // is asked before it fetches the company's figures, so one that will start nothing costs nothing.
+    // Whether a pass for the name ran to the end on the day the clock reads now and wrote some of its own sections, which
+    // a regenerate is asked before it fetches the company's figures, so one that will start nothing costs nothing.
     // see: Deciding not to spend must not cost anything
     public static async Task<bool> WrittenTodayAsync(string databaseFile, IClock clock, string ticker, CancellationToken cancellation = default)
     {
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        return await RanTodayAsync(connection, ticker, clock.SessionDateAt(clock.UtcNow), cancellation);
+        return await RanTodayAsync(connection, ticker, clock.SessionDateAt(clock.UtcNow), ownSections: true, cancellation);
     }
 
-    static async Task<bool> RanTodayAsync(SqliteConnection connection, string ticker, DateOnly asOf, CancellationToken cancellation)
+    static async Task<bool> RanTodayAsync(SqliteConnection connection, string ticker, DateOnly asOf, bool ownSections, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
@@ -1218,6 +1226,7 @@ public sealed class ResearchRunner(
         command.Parameters.AddWithValue("$written", Written);
         command.Parameters.AddWithValue("$ticker", ticker);
         command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$own", ownSections ? 1 : 0);
         command.Parameters.AddWithValue("$call", SpendCap.Stage + ": ");
         command.Parameters.AddWithValue("$unreachable", SpendCap.Unavailable);
         command.Parameters.AddWithValue("$trial", ", " + TrialCalls.Round);

@@ -10,7 +10,7 @@ namespace EquityBrief.Core.Facts;
 // their own, so a reader asking for the figures as they stand now takes each of these parts from the
 // newest copy and every other part from the filing. A part the copy holds as null replaces the
 // filing's, since the copy is the newer statement of whether the company files it.
-// see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+// see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
 public static class FundamentalsSnapshot
 {
     // The earnings bases a multiple is struck on, the multiples, the market value, the analysts'

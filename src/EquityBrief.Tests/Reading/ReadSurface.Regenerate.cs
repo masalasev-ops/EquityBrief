@@ -11,7 +11,7 @@ namespace EquityBrief.Tests.Reading;
 
 // read-surface, the 5.8 corrections: a report is regenerated whole on the operator's ask once the day
 // it was written has passed, the press carrying the ask on its request and the drain handing it on.
-// see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+// see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
 public partial class ReadSurface
 {
     const string RegenerateControl =
