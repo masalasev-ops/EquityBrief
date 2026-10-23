@@ -7188,3 +7188,29 @@ Carried:    20.8's remedy once pin 4's history read completes, its three builds,
             record stating the builds' times and the checks' results; a test walking the drift's tone variant through
             the tester's per-rule verb over a constructed history with its releases, which J4 shows no test holds; the
             tone variant's first walk at the monthly run of 2026-11-07; the sign-offs of phases 18 and 20.
+
+### 19.11 ruling - the report line names the stock's own written day and a later industry section's, says when today's pass wrote none and why Regenerate is withheld, and a pass writing none of the stock's own sections holds no Regenerate to the day   2026-10-23
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-23 at about 03:17 UTC through the question tool, on two questions put to them on
+            2026-10-22 after they found HPQ's Regenerate missing beside a report written on 2026-10-11 and asked "So
+            why does it say written on 10-11 ? WHy is an incorrect date being shown. This is misleading": asked "Shall
+            I start the report line fix now (both dates, today's check, and why Regenerate is missing)?", "Build it now
+            (Recommended)"; and asked "Should an overnight check that rewrote none of the stock's own sections still
+            block Regenerate for the rest of the day?", "Don't count it (Recommended)", the option reading "Only a pass
+            that wrote the stock's own sections counts against the once-a-day limit, so HPQ's Regenerate would be
+            available now. Stocks that keep reappearing on the list stop being locked out."
+Found:      read-only on the store: HPQ's night pass of 2026-10-22 at 04:19 UTC ran to the end with its industry's cycle
+            the one section warranted and wrote none of the stock's own sections, its theme declining for lack of
+            industry sources, and held Regenerate to the day; the stock's own sections were written on 2026-10-11. Of
+            the 95 research passes stored since 2026-09-25, 3 ran to the end writing none of the stock's own sections.
+Plan:       the correction below.
+Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.9, 20.11 and 20.12 merged with their records, 20.8
+            in PR 505 with its migration run, 22.0 planned and ruled, 22.1 merged and the night of 2026-10-22 run again
+            under it, the 20.3 correction carrying across an update of the runtime in PR 533 and pin 4 written under
+            it; in progress, the history read of the releases pin 4 left and the correction below; next, the analyst
+            panels read from Yahoo and the TipRanks button as the operator ruled on 2026-10-23, 20.8's remedy once pin
+            4's read completes, 22.2, 20.3's record, the tone variant at pin 4, 20.10, and the sign-offs of phases 18
+            and 20 by fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
