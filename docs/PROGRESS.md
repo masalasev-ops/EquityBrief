@@ -6971,3 +6971,27 @@ Verified:   `tools/ci.ps1` green over main at 5e8acba4, whose tree is aebbf431's
             this entry, 176 of 176 passed.
 Carried:    as 22.1's entry, the night run again done here; 22.2; PR 505's migration at 106; the sign-offs of phases
             18 and 20.
+
+### 20.3 ruling - pin 4 carries pin 3's readings across LM Studio's update of its runtime where Gemma 4's file hashes the same, and only the releases that changed are read   2026-10-23
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-23 at about 03:20 UTC, told that pin 4 written under LM Studio's newest runtime
+            would carry none of pin 3's readings and the history would be read whole, in these words: "What do you mean
+            full history read ? Why do we need to do a full read all over again", then "THe LM studio software will
+            update every so often, just because runtime changed does not mean GEmma 4 got updated. We do not need a full
+            history read", and "you can check the gemma 4 model version and see if it got updated as part of your
+            check. I am sure you only need 3000 changed reads". This replaces the plan of the 20.3 ruling entry of
+            2026-10-22 for the carry and keeps its runtime: pin 4 is still written under 2.62.1.
+Plan:       the carry decision superseded so a version carries from one written under another version of the same
+            runtime where the model's file hashes the same, in the correction below; once it merges, LM Studio's
+            runtime 2.62.1 selected and the model unloaded, `tools/localrun.ps1 --pin` writing pin 4, its hash of Gemma
+            4's file read beside pin 3's and its carry counts reported to the operator, and the history read started
+            under it at 250 W with the temperature guard over the releases left to it.
+Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.7, 20.9, 20.11 and 20.12 merged with their
+            records, 22.0 planned and ruled, 22.1 merged and the night of 2026-10-22 run again under it; in review,
+            20.8 with its correction, PR 505; in progress, the correction below; next, pin 4 and the history read of
+            the releases it leaves, the report line's written date and the Regenerate rule as the operator answered on
+            2026-10-22, 22.2, 20.3's record, the tone variant at pin 4, PR 505 rebased with its migration at 106,
+            20.10, and the sign-offs of phases 18 and 20 by fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
