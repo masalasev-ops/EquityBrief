@@ -29,7 +29,7 @@ public sealed record ReleaseAnswerRead(ReleaseAnswer? Answer, string? Cause);
 public static class ReleaseAnswers
 {
     // The causes an answer is refused for: the first five read off the answer, the next two off the runtime, and the
-    // last an answer the pin's model or runtime did not give.
+    // last an answer the pin's model did not give.
     public const string Empty = "empty";
     public const string CutOff = "cut off";
     public const string NotOneObject = "not one object";
@@ -37,7 +37,7 @@ public static class ReleaseAnswers
     public const string WordNotListed = "a word not listed";
     public const string RuntimeRefused = "the runtime refused";
     public const string NotAnsweredInTime = "not answered in time";
-    public const string NotThePins = "not the pin's model or runtime";
+    public const string NotThePins = "not the pin's model";
 
     public static IReadOnlyList<string> Causes { get; } =
         [Empty, CutOff, NotOneObject, MissingAnAnswer, WordNotListed, RuntimeRefused, NotAnsweredInTime, NotThePins];

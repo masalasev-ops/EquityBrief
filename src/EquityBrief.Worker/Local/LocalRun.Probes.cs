@@ -149,7 +149,7 @@ public sealed partial class LocalRun
             return (null, filer.Names.FirstOrDefault(), null, refused.Cause, null);
         }
 
-        if (ReadingPins.AnswerDiffers(pin, reply.Model, reply.RuntimeName, reply.RuntimeVersion) is { } part)
+        if (ReadingPins.AnswerDiffers(pin, reply.Model) is { } part)
         {
             throw new PinBroken($"an answer came from {part} the pin does not name: {reply.Model ?? "no model"} on {reply.RuntimeName ?? "no runtime"} {reply.RuntimeVersion}");
         }

@@ -19,7 +19,7 @@ namespace EquityBrief.Tests.Checks;
 // local run over a constructed store and a runtime answering as the captures show, writing a pin, checking it before a
 // slot, reading the stored releases twice, ending where the runtime is not running or does not hold the model, ending
 // at an answer the pin did not ask for, and waiting to write while the night holds its lock.
-// see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+// see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
 // see: The release reading asks four closed questions written before any release is read, and code turns each answer into a reading
 // see: A release reading is readable from the first night whose late slot starts after the release was accepted
 public partial class FixtureExpectations
@@ -30,7 +30,7 @@ public partial class FixtureExpectations
         CheckReach.Key(Scope.LimitsTable, "Local reading's settings"),
         CheckReach.Key(Scope.FailureTable, "LM Studio is not running when a local run starts"),
         CheckReach.Key(Scope.FailureTable, "The model the local profile names is not held"),
-        CheckReach.Key(Scope.FailureTable, "The model, its file, the runtime or the prompt is not the pin's"),
+        CheckReach.Key(Scope.FailureTable, "The model, its file, the prompt or the window is not the pin's"),
         CheckReach.Key(Scope.FailureTable, "An answer the local run cannot read, or one the runtime refuses"),
     ];
 
@@ -92,7 +92,7 @@ public partial class FixtureExpectations
 
         // The causes are the decision's, in its order.
         Assert.Equal(
-            ["empty", "cut off", "not one object", "missing an answer", "a word not listed", "the runtime refused", "not answered in time", "not the pin's model or runtime"],
+            ["empty", "cut off", "not one object", "missing an answer", "a word not listed", "the runtime refused", "not answered in time", "not the pin's model"],
             ReleaseAnswers.Causes);
     }
 
@@ -184,9 +184,13 @@ public partial class FixtureExpectations
         var qwenPin = Pinned(model: Qwen);
 
         Assert.Equal(Gemma, stranger.Model);
-        Assert.Equal(ReadingPins.ModelPart, ReadingPins.AnswerDiffers(qwenPin, stranger.Model, stranger.RuntimeName, stranger.RuntimeVersion));
-        Assert.Null(ReadingPins.AnswerDiffers(Pinned(), stranger.Model, stranger.RuntimeName, stranger.RuntimeVersion));
-        Assert.Equal(ReadingPins.RuntimePart, ReadingPins.AnswerDiffers(Pinned(), stranger.Model, stranger.RuntimeName, "2.57.0"));
+        Assert.Equal(ReadingPins.ModelPart, ReadingPins.AnswerDiffers(qwenPin, stranger.Model));
+        Assert.Null(ReadingPins.AnswerDiffers(Pinned(), stranger.Model));
+
+        // The runtime that served it is no part: the pin's model's answer is the pin's under a pin naming another
+        // runtime's version or name.
+        Assert.Null(ReadingPins.AnswerDiffers(Pinned() with { RuntimeVersion = "2.57.0" }, stranger.Model));
+        Assert.Null(ReadingPins.AnswerDiffers(Pinned() with { RuntimeName = "llama.cpp-cuda" }, stranger.Model));
 
         // The request the reading sends: temperature zero, the seed, the budget, no stream and reasoning off, at the
         // native chat answer's path.
@@ -308,14 +312,19 @@ public partial class FixtureExpectations
             runtime.Asked.Select(asked => string.Join(' ', asked.Split(' ').Take(2))));
         Assert.Contains("\"context_length\":50176", runtime.Asked[1], StringComparison.Ordinal);
 
-        // Written again over the same file, runtime and prompt, nothing differs and no version is written.
+        // Written again over the same file, runtime and prompt, nothing differs and no version is written; and again after
+        // LM Studio updated its runtime by itself, which is no part of a version, so none is written then either.
         var again = await new LocalRun(ReadingFeedOver(AnsweringRuntime(loaded: true, chat: _ => Runtime("local-reading-probe-answered.json")), settings), settings, clock, store.DatabaseFile, store.Root, NoWait).PinAsync(TextWriter.Null);
 
         Assert.Equal(LocalRun.PinUnchanged, again.Outcome);
+
+        var updated = await new LocalRun(ReadingFeedOver(AnsweringRuntime(loaded: true, chat: _ => Runtime("local-reading-probe-answered.json").Replace($"\"{RuntimeVersion}\"", "\"2.63.0\"", StringComparison.Ordinal)), settings), settings, clock, store.DatabaseFile, store.Root, NoWait).PinAsync(TextWriter.Null);
+
+        Assert.Equal(LocalRun.PinUnchanged, updated.Outcome);
         Assert.Equal(1L, Scalar(store, "SELECT COUNT(*) FROM reading_pin;"));
 
         // One run log row a run, under the local run's stage, with no network request and no spend.
-        Assert.Equal(2L, Scalar(store, "SELECT COUNT(*) FROM run_log WHERE stage = 'local-run' AND network_requests = 0 AND spend = '0';"));
+        Assert.Equal(3L, Scalar(store, "SELECT COUNT(*) FROM run_log WHERE stage = 'local-run' AND network_requests = 0 AND spend = '0';"));
         Assert.Equal(1L, Scalar(store, "SELECT COUNT(*) FROM run_log WHERE stage = 'local-run' AND outcome = 'finished' AND rows_written = 1 AND model_calls = 1;"));
     }
 
@@ -533,7 +542,7 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task AnAnswerFromAModelOrRuntimeThePinDoesNotNameEndsTheRun()
+    public async Task AnAnswerFromAModelThePinDoesNotNameEndsTheRunAndOneUnderAnotherRuntimeIsReadAsThePins()
     {
         using var store = new TemporaryStore().Migrated();
         using var models = new ModelsFolder();
@@ -543,11 +552,18 @@ public partial class FixtureExpectations
         await new LocalRun(ReadingFeedOver(AnsweringRuntime(loaded: true, chat: _ => Runtime("local-reading-probe-answered.json")), settings), settings, clock, store.DatabaseFile, store.Root, NoWait).PinAsync(TextWriter.Null);
         StoreRelease(store, "a", "Results release, a.htm", "Release A beat its quarter.");
 
-        var upgraded = Runtime("local-reading-KEYS-answered.json").Replace("\"2.56.0\"", "\"2.57.0\"", StringComparison.Ordinal);
-        var outcome = await new LocalRun(ReadingFeedOver(AnsweringRuntime(loaded: true, chat: _ => upgraded), settings), settings, clock, store.DatabaseFile, store.Root, NoWait).TwiceAsync(TextWriter.Null);
+        // The pin's model answering under a runtime LM Studio updated by itself is read as the pin's.
+        var upgraded = Runtime("local-reading-KEYS-answered.json").Replace($"\"{RuntimeVersion}\"", "\"2.57.0\"", StringComparison.Ordinal);
+        var read = await new LocalRun(ReadingFeedOver(AnsweringRuntime(loaded: true, chat: _ => upgraded), settings), settings, clock, store.DatabaseFile, store.Root, NoWait).TwiceAsync(TextWriter.Null);
+
+        Assert.Equal((LocalRun.Finished, 1, 1), (read.Outcome, read.Compared, read.Identical));
+
+        // Another model's answer ends the run with nothing compared.
+        var stranger = Runtime("local-reading-KEYS-answered.json").Replace($"\"{Gemma}\"", $"\"{Qwen}\"", StringComparison.Ordinal);
+        var outcome = await new LocalRun(ReadingFeedOver(AnsweringRuntime(loaded: true, chat: _ => stranger), settings), settings, clock, store.DatabaseFile, store.Root, NoWait).TwiceAsync(TextWriter.Null);
 
         Assert.Equal(LocalRun.PinRefused, outcome.Outcome);
-        Assert.Contains("the runtime the pin does not name", outcome.Why, StringComparison.Ordinal);
+        Assert.Contains("an answer came from the model the pin does not name", outcome.Why, StringComparison.Ordinal);
         Assert.Equal(0, outcome.Compared);
     }
 

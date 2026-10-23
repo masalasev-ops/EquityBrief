@@ -383,10 +383,12 @@ public sealed partial class LocalRun
     }
 
     // One reading asked: asked once more after an answer that cannot be read, refused at once where the runtime does not
-    // answer in time or refuses it for any cause but its length, and the run ended where an answer is neither the pin's
-    // model's nor its runtime's. From the 20.3 correction of 2026-10-22 a release the runtime refuses as past the window
-    // it is loaded at is cut to fit on the runtime's own count and asked again, up to the cuts the fit allows, and one
-    // still refused after them stands refused; the hash of the last request sent is kept with what it came to.
+    // answer in time or refuses it for any cause but its length, and the run ended where an answer is not the pin's
+    // model's. From the 20.3 correction of 2026-10-22 a release the runtime refuses as past the window it is loaded at is
+    // cut to fit on the runtime's own count and asked again, up to the cuts the fit allows, and one still refused after
+    // them stands refused; an answer cut off where the runtime counted its request past the window less the answer's
+    // budget is cut again on that count within the same cuts; the hash of the last request sent is kept with what it
+    // came to.
     // see: A release longer than the model's window is read from its opening that fits, with a marker where it was cut
     async Task<ReadingTaken> AskAsync(ReadingPin pin, string instruction, string text, CancellationToken cancellation)
     {
@@ -428,12 +430,23 @@ public sealed partial class LocalRun
             seconds = (seconds ?? 0) + reply.Seconds;
             tokens = reply.PromptTokens;
 
-            if (ReadingPins.AnswerDiffers(pin, reply.Model, reply.RuntimeName, reply.RuntimeVersion) is { } part)
+            if (ReadingPins.AnswerDiffers(pin, reply.Model) is { } part)
             {
                 throw new PinBroken($"an answer came from {part} the pin does not name: {reply.Model ?? "no model"} on {reply.RuntimeName ?? "no runtime"} {reply.RuntimeVersion}");
             }
 
             read = ReleaseAnswers.Read(reply.Content, reply.FinishReason);
+
+            if (string.Equals(read.Cause, ReleaseAnswers.CutOff, StringComparison.Ordinal)
+                && cuts < ReleaseFit.Cuts
+                && tokens is { } answered
+                && ReleaseFit.Overran(answered, pin.Context, pin.AnswerTokens)
+                && ReleaseFit.Cut(text, instruction.Length, instruction.Length + text.Length, answered, pin.Context, pin.AnswerTokens) is { } recut)
+            {
+                (text, cutAt, cuts) = (recut, ReleaseFit.Kept(recut), cuts + 1);
+
+                continue;
+            }
 
             if (read.Answer is not null || ++asked > ReadingSettings.AskedAgain)
             {

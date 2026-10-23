@@ -161,7 +161,7 @@ public partial class NightlyCost
     // run's readings over LM Studio's native chat answer, which no night constructs.
     // see: The outward-request scan names the files that may hold a client rather than dropping the patterns
     // see: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp
-    // see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+    // see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
     internal static readonly string[] MayHoldAModel =
     [
         "src/EquityBrief.Core/Providers/AnthropicMessagesFeed.cs",
@@ -725,7 +725,7 @@ public partial class NightlyCost
 
         // From 20.2 the ninth carve-out, the local run and its release fetch, carved by no name since no night constructs
         // either: a night that did is found by the local model and the filings archive each declares.
-        // see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+        // see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
         Assert.Contains(
             LanesTheNightMayNotCall("new LocalRun(feed, settings, clock, db, root, pause, fetch)", components),
             offence => offence.Contains(nameof(Feed.LocalModel), StringComparison.Ordinal));

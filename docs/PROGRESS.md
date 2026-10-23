@@ -7292,3 +7292,63 @@ Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.9, 20.11 
             complete version, 20.10, and the sign-offs of phases 18 and 20 by fresh sessions.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
+
+### 20.3 - correction: the pins compare the model and not LM Studio's runtime, a version carries at any window by each reading's own request, the model is loaded at 60,160 tokens, and an answer cut off past its room is cut again   2026-10-23
+
+Queue:      as the ruling entry above, this correction in progress.
+Ruled:      the 20.3 ruling entry above.
+Corrected:  an answer from the pin's model is read whatever runtime served it, at the history read, the slot, the
+            twice-read, the probes and the idea generator, the runtime's name and version kept on the pin as a record
+            and compared with nothing, and `--pin` writes no version where the runtime alone differs; a version
+            carries from the one before where both hold the same model, its file by its hash, the seed and the
+            answer's budget, whatever their runtime, window or prompt's version, each reading carried where it read
+            its release whole, its request counted at no more than either window less the answer's budget, and the
+            request the new version would send hashes as the one it keeps, a reading keeping no hash judged as before
+            from a version before the fit alone, and a release cut to fit or with less than its answer's room read
+            again and counted apart; the gemma-4 profile loads the model at 60,160 tokens; and an answer cut off where
+            the runtime counted its request past the window less the answer's budget is cut again on that count within
+            the fit's three cuts, the fit's version moving to a2c0158a0eff and the prompt's with it. The cause an
+            answer from another model is refused for is named "not the pin's model". The local run's and the carry's
+            decisions superseded, the old ones under Previously decided and their citations repointed, 20 in code, 16
+            in the specs and CLAUDE.md and 2 in the decisions; sections 1, 7, 12.3, 15, 16, 17, 18 and 20, SCHEMA.md,
+            the runbook with pin 5's paragraph and its remedy file, the guide, the roster's row and the changelog.
+Tests:      2 new and 7 amended, 2663 in all: a version at 60,160 under runtime 2.63.0 over pin 1 at 50,176 under
+            2.56.0 carrying a reading read whole and one refused for its word by their requests' hashes, and reading
+            again one cut to fit, one cut off past its room, one whose request changed, one the runtime refused, one
+            keeping no hash under a version after the fit and a filing never read, its history read answered under
+            2.64.0 asking those six alone, and a third version back at 50,176 reading again the one its request was
+            counted past; an answer cut off at a count of 50,100 cut again to 38,919 characters worked by hand and
+            read, one cut off with its room asked once more and standing cut off, and the room's edge at 49,920 and
+            49,921; the twice-read and the idea generator reading an answer under another runtime as the pin's and
+            ending at another model's, the pin written again under runtime 2.63.0 written as none, the answer check
+            and the carry's parts, the pin 1 carry's counts and line, and the causes' words.
+Claims:     1400, none new: the failure row naming the pin's parts renamed, and rows and section 12.3's paragraph
+            gaining words.
+Mutated:    the rule, stated before the runs: one mutation a property the correction adds or changes, the smallest
+            edit undoing it alone, each run over the tests naming it with its red predicted, made in this checkout and
+            reverted with the editor. W1 the twice-read's answer check comparing the runtime's version again, red
+            predicted at the twice-read's test; W2 the history read's the same, at the wider window's carry test; W3
+            the idea generator's the same, at its test; W4 `--pin`'s sameness comparing the runtime's version again, at
+            the pin's test; W5 the carry comparing the window again, at the parts' test and the wider window's; W6 the
+            carry comparing the runtime's name again, at the parts' test; W7 a hashed reading carried whatever its
+            request, at the wider window's; W8 a reading of a cut release no longer read again as cut, at the wider
+            window's; W9 a request past the old window's room carried, at the wider window's; W10 a request past the
+            new window's room carried, at the wider window's third version; W11 a reading keeping no hash under a
+            version after the fit judged by the names stored since, at the wider window's; W12 the fit's cut again
+            after an answer cut off past its room dropped, at the cut-off test; W13 the room's edge taken at the room
+            itself, at the cut-off test; W14 the profile's window back at 50,176, at the runbook's settings test; W15
+            the cause's old words, at the causes' test. Each went red where predicted and nowhere else, W13 also at the
+            fit's version pin, which pins every edit to the fit's source; W8 went red on the count alone, the cut
+            reading falling to a changed request, since the hash it keeps is the cut text's and no carry reproduces a
+            cut, so the guard sorts it and its hash already keeps it from being carried.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2663 of 2663 tests ran with none failed,
+            migrations 0 to 106 with none pending, schema version 106, against `data-ci` and never `data`; the phase
+            report 60 tables, 1400 claims, 1400 passing, none out of scope and none unexamined, 1411 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the remedy, `tools/remedies/2026-10-23-20.3-correction-pin-5-at-the-wider-window.txt`, run from main after
+            the merge with pin 4's history read stopped: pin 5 at 60,160 and the history read under it; an answer the
+            runtime could not give because its engine crashed is stored refused by the runtime and read again by the
+            next version, as GTY's release of 2020-07-22 was at 12:38:12 UTC; the probes' answer check, changed with
+            the other three, is reached by no test reading a probe's answer under another runtime; 20.8's remedy; the analyst panels; 22.2;
+            20.3's record; the tone variant at the newest complete version; 20.10; the sign-offs of phases 18 and 20.

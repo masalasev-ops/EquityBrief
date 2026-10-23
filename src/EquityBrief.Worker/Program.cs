@@ -1982,7 +1982,7 @@ static IConfiguration Configuration() => WorkerConfiguration.Build();
 // see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
 // The local run, as tools/localrun starts it at its two slots and by hand: '--slot early' or '--slot late', '--pin' or
 // '--twice', one form a run. A profile the settings cannot read refuses before the store is opened.
-// see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+// see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
 static async Task<int> LocalRunVerb(string[] args)
 {
     var configuration = Configuration();

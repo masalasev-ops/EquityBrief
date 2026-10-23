@@ -126,7 +126,7 @@ public sealed record LocalModelSettings
     // profile names none; the folder, none where the profile names none and the one under the machine's home is read;
     // and the model's knowledge cutoff, none where the profile names none. The local run reads all three and the
     // report lane none.
-    // see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+    // see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
     public string? ModelFile { get; init; }
 
     public string? ModelsFolder { get; init; }

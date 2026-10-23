@@ -6,7 +6,7 @@ namespace EquityBrief.Tests.Checks;
 // commit as the off-peak run does, into the same folder of nights, reusing a copy a night built, building main's commit
 // and not the branch's where the checkout is on a branch, refusing a main holding a commit origin/main lacks before any
 // worker exists, and refusing a run that names no form; read in its check mode over temporary repositories.
-// see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+// see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
 // see: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
 public partial class NightlyRun
 {

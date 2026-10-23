@@ -225,7 +225,7 @@ public static class LocalLocks
 // is not the pin's; an answer it cannot read is asked once more and then counted refused with its cause; it holds none
 // of the night's, the drain's or the monthly run's locks and waits to write while one is held, one local process at a
 // time by a lock of its own; and it writes one run log row a run, every call on its own row and never on a night's.
-// see: The local run is a process of its own at two slots outside the night and refuses any model file, runtime or prompt but its pin
+// see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
 public sealed partial class LocalRun(
     IReadingModelFeed feed,
     LocalModelSettings settings,
@@ -406,8 +406,9 @@ public sealed partial class LocalRun(
         return await EndAsync(started, kind, outcome, limit, output, cancellation, rowsWritten: kept);
     }
 
-    // A new reading version: the model's file hashed whole, the runtime read off a probe's answer and the
-    // instruction's version, written where any part differs from the newest pin and refused where none does.
+    // A new reading version: the model's file hashed whole, the runtime read off a probe's answer and kept as a record,
+    // the instruction's version and the window, written where any part but the runtime differs from the newest pin and
+    // refused where none does.
     public async Task<LocalRunOutcome> PinAsync(TextWriter output, CancellationToken cancellation = default)
     {
         var started = clock.UtcNow;
@@ -472,7 +473,7 @@ public sealed partial class LocalRun(
 
         if (before is { } newest && Same(newest, candidate))
         {
-            return await EndAsync(started, Pinning, Ended(Pinning, PinUnchanged, FormattableString.Invariant($"pin {newest.Id} holds this model, its file, the runtime and the prompt already, so no version is written")) with { Pin = newest, FileCheck = ReadingPins.WholeHash, HashSeconds = hashSeconds }, null, output, cancellation);
+            return await EndAsync(started, Pinning, Ended(Pinning, PinUnchanged, FormattableString.Invariant($"pin {newest.Id} holds this model, its file, the prompt and the window already, so no version is written")) with { Pin = newest, FileCheck = ReadingPins.WholeHash, HashSeconds = hashSeconds }, null, output, cancellation);
         }
 
         // From the 20.3 correction of 2026-10-22 the readings the new version carries from the one before, worked out
@@ -655,7 +656,7 @@ public sealed partial class LocalRun(
 
             seconds.Add(reply.Seconds);
 
-            if (ReadingPins.AnswerDiffers(pin, reply.Model, reply.RuntimeName, reply.RuntimeVersion) is { } part)
+            if (ReadingPins.AnswerDiffers(pin, reply.Model) is { } part)
             {
                 throw new PinBroken($"an answer came from {part} the pin does not name: {reply.Model ?? "no model"} on {reply.RuntimeName ?? "no runtime"} {reply.RuntimeVersion}");
             }
@@ -855,6 +856,7 @@ public sealed partial class LocalRun(
                 carried = carry.Carried,
                 replaced = carry.Replaced,
                 runtime = carry.Runtime,
+                cut = carry.Cut,
                 named = carry.Named,
                 namesWritten = carry.NamesWritten,
                 unread = carry.Unread,
@@ -899,9 +901,11 @@ public sealed partial class LocalRun(
         return sorted.Length % 2 == 1 ? sorted[sorted.Length / 2] : (sorted[(sorted.Length / 2) - 1] + sorted[sorted.Length / 2]) / 2;
     }
 
+    // Whether a new version would pin what the newest already does. The runtime is no part, so an update LM Studio makes
+    // to it by itself writes no version.
     static bool Same(ReadingPin one, ReadingPin two) =>
         one.Model == two.Model && one.File == two.File && one.Sha256 == two.Sha256 && one.Size == two.Size
-        && one.Modified.UtcTicks == two.Modified.UtcTicks && one.RuntimeName == two.RuntimeName && one.RuntimeVersion == two.RuntimeVersion
+        && one.Modified.UtcTicks == two.Modified.UtcTicks
         && one.PromptVersion == two.PromptVersion && one.Seed == two.Seed && one.AnswerTokens == two.AnswerTokens
         && one.Context == two.Context && one.Cutoff == two.Cutoff;
 
