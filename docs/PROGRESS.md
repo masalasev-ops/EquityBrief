@@ -6861,3 +6861,60 @@ Verified:   `tools/ci.ps1` green over main at b6cb98dc as the 19.11 correction's
             change, so the checks reading them run filtered over the tree carrying this entry, 176 of 176 passed.
 Carried:    the sign-offs of phases 18, 19 and 20, each owed by a fresh session and discharged by no checkpoint of
             phase 22.
+
+### 22.1 - the short-term dip at provisional settings on every index: its rule and its walk at the next open, its night step giving way to every other family, its card the 19.3 way in a hue of its own, its trades, its Run row and its name-page line   2026-10-23
+
+Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.7, 20.9, 20.11 and 20.12 merged with their
+            records, 22.0 planned and ruled; in review, 20.8 with its correction, PR 505; in progress, this checkpoint;
+            next, its merge and the night of 2026-10-22 run again under it from main, then 22.2 with each index's sweep
+            answer to the operator, 22.3 on their word and 22.4; beside them, pin 4's history read, 20.3's record, the
+            tone variant at pin 4, PR 505 rebased with its migration at 106, 20.10, and the sign-offs of phases 18 and
+            20 by fresh sessions.
+Ruled:      the 22.0 ruling entry above.
+Built:      the dip's rule in the core, Wilder's 2-session RSI, its seven gates in order and its order, and its walk
+            bought at the next open and sold at the next open after a close above its 5-session average or under its
+            stop, or at its last session's close; its step after the index families' on all three indices over the
+            stored bars alone, every member's answer stored, its list last and giving way to every other family's list
+            and open trades, its trades kept and walked, in four tables by migration 105; its card on Tonight the 19.3
+            way in a hue of its own, its settings as chips and its exit in words where a target would stand, the market
+            line saying it reads its own setting, its tile and its label on the row of a stock it gave way on; each
+            pick's card with its report line; its rule's night with its funnel; Past picks' label, its card on the
+            S&P 500 and setup chips on every index; its Run row and its name-page line. The decisions naming the family
+            and its exits, and the market check's and the family hue's amended, each superseded entry under Previously
+            decided and its citations repointed, 22 and 9; sections 7, 11, 14, 15, 16, 17, 18 and 23, SCHEMA.md, the
+            guide, the roster's rows and the changelog. This checkpoint amends its own done condition's text: 22.1 read
+            the history pulled before the store's year where that year falls short, which the hard rule on bars names
+            the dip no reader of, and it reads the stored bars alone.
+Measured:   read-only on the operator's store, 8 of the 1,504 members holding a bar on 2026-10-21 held fewer than 201
+            stored sessions, each a recent listing the pull holds nothing earlier for. The card read back on Tonight
+            for each index at 1440 and 390 pixels over constructed stores, the S&P 400's in both palettes, no page wider
+            than its screen; the first read-back drew the card with no hue and no chips, both added before this entry.
+            The dip's hue searched over the colour cube by the palette check's arithmetic, #e000e8 on the light ground
+            and #d8009c on the dark, its nearest other hue 24.7 and 17.2 apart.
+Tests:      16 new, 2637 in all: the RSI, each gate on both sides of its threshold and at it, the report window's
+            edges, the exits, the 5-session average and the order worked by hand and read against the fixture's derived
+            figures; the night over a constructed S&P 400 giving way to every other family, and a stock the dip holds
+            listed by an older family as before; its cards and its rule's night; the four failure rows each induced;
+            its card, line, tile, chips and label read back off Tonight; its Past picks, Run row and name-page line;
+            and no pinned source naming it. The fixture's setup cards expect its card and its line, worked by hand.
+Claims:     1396, 13 new: the dip family's catalogue and matrix rows, its four stores, section 17's row, section
+            18's four, its card on Tonight and its trades on Past picks.
+Mutated:    the rule, stated before the runs: one mutation a property the checkpoint adds, the smallest edit undoing
+            it alone, each run filtered to the tests naming the property with its red predicted, made in the worktree
+            and reverted with the editor. D1 each later RSI average the latest change alone, red at the RSI and gate
+            tests; D2 the report window's far edge open, red at its edges test; D3 an exit sold at its triggering
+            close, red at the exits test, the waiting test named beside it unaffected as it returns before a sale; D4
+            the S&P 500's open trades left unread, red at the night's test; D5 the history gate passing whatever is
+            stored, stated as an average over fewer closes and made as the gate's verdict, the smaller edit on the same
+            property, red at the gate test and the short history row's; D6 a comment naming the dip's rule in the
+            index families' pinned file, red at the pinned sources test; D7 the dip's chip left out of the S&P 400's
+            setups, red at the Past picks read-back; D8 the market line's dip words dropped, red at the Tonight
+            read-back. Not mutated: the order, the average's window, the card's report line, the Run row, the
+            name-page line and the four tables' columns.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2637 of 2637 tests ran with none failed,
+            migrations 0 to 105 with none pending, schema version 105, against `data-ci` and never `data`; the phase
+            report 60 tables, 1396 claims, 1396 passing, none out of scope and none unexamined, 1407 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the night of 2026-10-22 run again under the dip from main after the merge; 22.2; PR 505's migration at 106
+            behind this one's 105; the sign-offs of phases 18 and 20.
