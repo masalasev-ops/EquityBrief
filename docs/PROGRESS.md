@@ -6686,3 +6686,178 @@ Carried:    (p5), the replay's test of a close missing on the session a trade en
             the suite alone, are read on the first night one ends on the store. Phase 18's sign-off is owed by its own
             fresh session, and phase 20 is in progress.
 Signed:     phase 19, over b6cb98dc.
+
+### 22.0 planning - phase 22 planned: a short-term dip family on every index, the route that moves no rule's version, the one way of one trade a stock with no route put to the operator, and the grid's size and the sweep's time measured   2026-10-22
+
+Not a checkpoint entry. It lands 22.0, the pass that plans phase 22, and builds none of it.
+Queue:      done, phases 0 to 19 built, 20.0 to 20.7, 20.9 and 20.12 merged with their records, 20.11 merged with its
+            remedies, the 20.3 corrections in PRs 526 and 528 and the 19.11 correction in PR 529; in review, 20.8 with
+            its correction, PR 505; in progress, the check of the exhibits, the phase 19 sign-off by a fresh session and
+            this pass; next, the operator's answer on the way of one trade a stock with no route, then 22.1 and 22.2
+            with each index's sweep answer to the operator, 22.3 on their word and 22.4; and beside them, pin 4 under
+            the newest runtime and the history read under it, 20.3's record, the tone variant at pin 4, PR 505 rebased
+            with its migration renumbered and its remedy run, 20.10, and the sign-offs of phases 18 and 20 by fresh
+            sessions.
+Ruled:      by the operator on 2026-10-22, in these words, kept whole in
+            `prompts/2026-10-22-22.0-ruling-short-term-dip-family.md`, its headings and its lists run into the text:
+            "Ruling of 2026-10-22: a short-term dip family, built now. Save this prompt word for word as
+            prompts/2026-10-22-20.13-ruling-short-term-dip-family.md and add the work to phase 20 as the checkpoints
+            after 20.12, as 20.11 and 20.12 were added. On my word it goes ahead of the hold on new work until the 7
+            November monthly run's proposals are read. Nothing it adds is read by that run: the family joins the
+            monthly run from the first run after its freeze. What it is for: Every family today holds for weeks, so a
+            rule takes years to reach the 300 decided trades a live verdict needs. This family buys a stock in an
+            uptrend right after a sharp two to four day drop that no report caused, and sells the bounce within days.
+            It makes hundreds of trades a year across the three indices, so its verdict comes in months, and it buys
+            weakness where breakout and drift buy strength. Research for section 11 and section 23, each read in its
+            source before it is written, each rule marked evidence or judgement: Jegadeesh (1990) and Lehmann (1990)
+            on short-term reversal; Chan (2003) on drops with and without news, the reason a report inside the drop is
+            refused; Nagel (2012) on reversal profits rising with the volatility index, the reason this family reads
+            its own market setting; Connors and Alvarez (2008) for the provisional settings. Hard limits: No paid call
+            and no new provider request. Everything reads stored bars, the stored calendar and the pulled history. No
+            existing rule's code version moves, and no record or paper account restarts. The family lives in files of
+            its own and joins the night by the route the business-first family used, read in the planning entry.
+            Where the page's order or any shared list sits in a pinned file, the entry states the route that avoids
+            it; if none exists, stop and bring it to me before building. Merges follow the standing rule on writers,
+            the pin 4 history read included. The family's ledger history build runs only when no other writer is
+            running. Nothing is frozen or registered before my word on each index's sweep answer. Nothing is dropped
+            from the grid below without my word. The rule at its provisional settings, on all three indices: Store
+            word `dip`, label 'Short-term dip', heading 'Short dips in an uptrend', eyebrow 'Sharp drop in an
+            uptrend'. Gates: the floors every family on that index reads; the close above its 200-session average;
+            the 2-session relative strength index (Wilder's) below 10; no report on any of the three sessions to the
+            listing and none due before the time limit ends, read from the stored calendar and, over history, from the
+            dates the pull holds, as the 20.11 drift sale read them. Market setting: off. The dip reads its own market
+            setting on every index, the S&P 500's included, chosen by its sweep. The decision that the market check
+            closes every swing family's list together is too broad for this family: amend it to name the dip as
+            reading its own setting, keep its reasoning, and move the superseded wording under Previously decided with
+            every citation repointed. Order: the lowest 2-session RSI first. Five a night, one open trade a stock, a
+            stock listed once under the first family in the page's order, as every family. Placed after the earnings
+            drift where that moves no version; the entry states where it lands. Trade: bought at the next session's
+            open through the core's one pricing function. Stop 4 typical moves below the listing close. No target.
+            Sold at the next session's open after the first close above the 5-session average of closes, or after a
+            close under the stop; sold at the close of the 10th session where neither came, since that day is known
+            ahead. Result in multiples of the risk the listing close set, as every swing family's. Exits at the next
+            open are this family's from its first night, in a walk in its own files. No other family's exits change;
+            that question stays parked until phase 20 is done. Write a decision naming the dip's exits. Order of work,
+            three pull requests: 1. Planning entry, building nothing: the pin lists read and the route that moves
+            none; the decisions it writes; the grid below with its count per index and the full sweep's time measured
+            on one sampled year, a cut brought to me where the time is too long; whether the stored history holds the
+            volatility index and each index fund's closes over all 8 years, naming any gap; the migration expected;
+            the claims predicted. 2. The family at provisional settings (first pull request). From its first night on
+            all three indices: every member's answer stored with the values that decided it; the card on Tonight built
+            the 19.3 way (rule in a sentence, provisional marker, picks with the buy at the next open, the stop and the
+            exit in words, tabs, funnel, the one-gate-short list); each pick's card as every family's (checklist, plan
+            in my money, record, what could hit it, what is behind it); the top of Tonight saying which lists the
+            market check closed and that the dip reads its own setting; Past picks' label and filter; the name page's
+            listed-under line; the Run page's family region. Picks count toward nothing before the freeze. Visible:
+            the dip card on Tonight for each index. 3. The ledger and the sweep (second pull request). a. The ledger's
+            history build and night step write the dip's setups at loose gates one grid step past the widest on each
+            entry dial, at the provisional plan, with the benchmark, the readings and the point-in-time check the
+            other families carry. The walk-forward tester gains the family's procedure over its grid, read by the
+            monthly run only after the freeze. Visible: the Ledger page's dip counts per year on each index. b. The
+            sweep per index over the pulled history, on membership as it stood, after costs, every trade bought at the
+            next open and sold as the rule states. First stage, crossed: Drop: 2-session RSI below 5, 10 or 15; or a
+            3-session fall of at least 2, 3 or 4 typical moves. Trend: the close above the 200-session average; or that
+            with the 50 above the 200. Exit: the first close above the 5-session average; the 2-session RSI back above
+            65; or the first up close. Time limit: 5, 7 or 10 sessions. Stop: 3 or 4 typical moves below the listing
+            close. The wider stands in for no stop, since every swing result is in multiples of the risk the stop
+            sets. Market setting: off; the index's own breadth at 0.35, 0.40, 0.45 and 0.50; on the S&P 400 and 600
+            the S&P 500's breadth at 0.45; the index's own fund above its 200-session average; the volatility index
+            above its own median of the 252 sessions before. Second stage, each dial read alone on the ten strongest
+            settings and kept only where the edge after costs rises in 6 of the 8 years with 2 of the last 3, the
+            survivors crossed, as 20.11 did: the order: lowest RSI, deepest fall in typical moves, or largest company
+            first; no single session of the drop down more than 3 typical moves; the drop's mean volume under 1.5
+            times its 50-session average; the drop measured as the stock's fall less its sector's median member's fall
+            on the index over the same sessions. Each index's answer states its trades, its edge after costs, each
+            year's edge with 2020, 2022, 2025 and 2026 named, the edge without the five largest results, what luck
+            alone passes over the whole grid, and the tester's year-by-year verdict with its adjusted p. Beside it, two
+            figures that change nothing: the same setting with the report gate removed, and with exits sold at the
+            triggering close instead of the next open. Visible: the sweep report in its run folder as HTML with JSON
+            beside it. Then stop and bring each index's answer to me. 4. The freezes, on my word (third pull request):
+            each index's live dip rule at the setting I approve, with its one-step neighbours as variants and a market
+            variant, as the 20.11 freezes registered them, the family's luck correction counting its own rules alone.
+            Paper trading gains the family's tile, and its variants and rule scorecard dropdowns list it. The family
+            joins the monthly run from the next run after the freeze. Done when, besides each checkpoint's own
+            conditions: the 2-session RSI, each gate on both sides of its threshold and exactly at it, the 5-session
+            average exit, the order and the benchmark are worked by hand over constructed bars; a report on the drop's
+            last session and one due on the time limit's last session are refused, and one due the session after the
+            time limit is not; exits are worked by hand: a sale at the next open after the triggering close, a stop
+            close selling at the next open, the time limit selling at its own close, and an exit whose next session is
+            not stored waiting; on a constructed night with the market check closed, the other swing cards close and
+            the dip card lists, read back off the rendered page; a stock the pullback and the dip both pass is listed
+            under the first in the page's order with the other's label; one sweep trade's result and benchmark at the
+            next open are worked by hand and equal the tester's over the same trade; no existing rule's code version
+            moves, asserted, with one mutation shown red, the rule stated before the run; each pull request adds its
+            claims to the architecture doc and its expectations to the frozen fixture, and the phase report reaches
+            every claim with none unexamined. Writes: section 11's rule and research; section 13's sweep and tester;
+            section 15's card and pages; section 16's store and SCHEMA.md; section 17's settings, marked provisional;
+            section 18's failure rows (a member short of 200 sessions, no typical move, a missing report date, no next
+            session stored); the decisions (the family, its exits, the amended market check); section 23's sources;
+            the runbook's sweep command; the guide; the changelog. The architecture doc states rules and their general
+            reasons only; figures go to the progress log." Then, in the same message, kept in
+            `prompts/2026-10-22-22.0-ruling-recorded-as-phase-22.md`: "Record this as phase 22, its own phase after
+            phase 21's place in the build plan, with its own planning entry, checkpoints and phase report, so phase
+            20's sign-off does not wait on it." So the work is phase 22's and none of phase 20's, and the prompt is
+            kept under 22.0 and not under 20.13 (see: The short-term dip family is built as phase 22 ahead of the hold
+            on new work, and phase 20's sign-off waits on none of it).
+Planned:    `BUILD_PLAN.md`'s phase 22 section with its checkpoints 22.0 to 22.4, and a line in the list tabled for
+            phase 21 saying the family is not tabled there; section 20's row; and the decision placing the phase. The
+            rule at its provisional settings, the grid, both stages, the order of work, the done conditions and what
+            each checkpoint writes stand in the section's checkpoints, so nothing the corpus will cite lives only in
+            the prompt. The decisions naming the family, its exits at the next open and the amended market check are
+            written at 22.1 beside the research they rest on.
+Measured:   read-only on the code at b6cb98dc and on the operator's store, with no provider or paid call, each figure
+            set out in the section's findings: the pins and the route that moves none; the family's place after the
+            fundamentals-first family on every index; the one way of one trade a stock with no route; the market
+            check's 22 citations, 3 of them comment lines in pinned files; no session of the eight years missing from
+            the index's, the VIX's, SPY's, IJH's or IJR's series over 2,213 sessions, the VIX's 36 rows on days the
+            exchange was closed and its median first read on 2019-01-03; 1,512, 1,728 and 1,728 first-stage settings,
+            4,968 in all, and 50 alone with at most 240 crossed in the second stage an index; and the sweep's time,
+            measured by a prototype kept outside the repository and naming none of its projects, 4,165,752 bars of
+            2,352 names read with their readings in 60 seconds and again in 33, every first-stage setting walked over
+            2022, drawn at seed 20261022 among the seven full years, on all three indices in 0.8 seconds, and all eight
+            years in 6.9, so no cut is brought. Two migrations, at 22.1 and 22.2.
+Put:        to the operator before 22.1 is built, as the ruling's limit asks, which way one trade a stock runs where no
+            route moves nothing: (a) the S&P 500's own lists hold back a stock the dip holds on any index, and every
+            list holds back one the S&P 500's dip holds, while the S&P 400's and 600's own lists do not hold back one
+            their own index's dip holds, so a stock may stand there on an older card and on the dip's at once; (b) no
+            older list holds back a stock the dip holds on any index, the dip alone holding back for the others, as
+            the sector heavyweights and the swing families stand apart; or (c) the index families' step reads the
+            dip's trades on every index, every S&P 400 and 600 rule's version moving and its record and paper account
+            restarting, which the ruling's limit forbids without the operator's word. An older live list is its rule's
+            paper account, so under (a) or (c) it skips a stock the dip holds from the merge on, as it skips one
+            another family holds, and restarts nothing.
+Tests:      2621, unchanged.
+Claims:     1383, unchanged: section 20's row is no claim, and the plan and the decision sit in no table the harness
+            reads.
+Pins:       none moved: the pass edits no shipped source.
+Verified:   `tools/ci.ps1` green over main at b6cb98dc as the 19.11 correction's entry above records, 2621 of 2621
+            tests; documents alone change, so the checks reading them run filtered over the tree carrying this entry,
+            176 of 176 passed.
+Carried:    the sign-offs of phases 18, 19 and 20, each owed by a fresh session and discharged by no checkpoint of
+            phase 22; the operator's answer on the way one trade a stock runs, before 22.1 is built.
+
+### 22.0 ruling - the dip gives way to every other family's list and open trades and stands after the fundamentals-first family on every index, and 22.1 is built in a worktree of its own from the plan's branch   2026-10-22
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-22 at about 19:45 UTC through the question tool, on the questions the planning
+            entry above put to them, word for word in `prompts/2026-10-22-22.0-operator-answers.md`: asked whether the
+            older families stop listing a stock the dip holds, "Dip gives way (Recommended)"; asked where the dip's card
+            sits on the S&P 500's page, "After fundamentals-first (Recommended)"; and asked when 22.1 is built: "Start
+            22.1 now. Build it in a separate git worktree on a branch taken from the plan's branch (PR 530), so the
+            reviewer's checkout on main and the night's build stay untouched. Keep heavy build and test runs out of the
+            night's way once it starts at 7 pm ET. Nothing merges until the night and every other writer have finished,
+            as the standing rule says."
+Plan:       the dip lists no stock another family listed that night on its index or holds an open trade on, on any
+            index, and no other family's list reads its trades; its card stands after the fundamentals-first family's
+            on every index (see: The dip lists last among the swing families on every index and gives way to every
+            other family's list and open trades). The build plan's 22.1 says so, its prior text in the changelog. 22.1
+            is built in a git worktree beside the repository, `EquityBrief-dip`, on a branch taken from this pull
+            request's, which departs on the operator's word, for this build alone, from the merge section's one
+            checkout: the checkout and its build stay on main for the phase 19 sign-off's gates and the night, no heavy
+            build or test runs from 23:00 UTC while the night runs, and nothing merges until the night and every other
+            writer have finished.
+Queue:      as the planning entry above, its question answered; in progress, 22.1.
+Verified:   `tools/ci.ps1` green over main at b6cb98dc as the 19.11 correction's entry above records; documents alone
+            change, so the checks reading them run filtered over the tree carrying this entry, 176 of 176 passed.
+Carried:    the sign-offs of phases 18, 19 and 20, each owed by a fresh session and discharged by no checkpoint of
+            phase 22.
