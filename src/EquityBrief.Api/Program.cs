@@ -307,6 +307,27 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
         reactions,
         priceDrawn));
 
+    // From 20.13 the analysts as Yahoo and TipRanks last answered for the stock, the month's TipRanks calls, and whether
+    // the page asks Yahoo again, which it does where no answer of this New York day is stored.
+    // see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
+    if (view.Graphs is { } graphs)
+    {
+        var now = clock.UtcNow;
+        var yahoo = await read.NewestAnalystsAsync(ticker);
+
+        view = view with
+        {
+            Graphs = graphs with
+            {
+                Yahoo = yahoo,
+                AsksYahoo = indexCode is not null && (yahoo is null || yahoo.AskedAt < EquityBrief.Core.Analysts.AnalystLimits.DayOf(now, clock.SessionZone).From),
+                TipRanks = await read.NewestRatingsAsync(ticker),
+                Calls = await read.TipRanksCallsAsync(),
+                Now = now,
+            },
+        };
+    }
+
     // A written report's standing with the controls that write it again, read as the name page reads them, the day its
     // industry section was written read off its theme as the name page reads it.
     if (view.ReportWritten is { } written)
@@ -769,6 +790,126 @@ app.MapGet(SinglePageApp.QuoteRoute + "{ticker}", async (string ticker, ReadApi 
             ladder = MarkRenderer.Away(band.Days, band.Low > quote.Price),
             value = band.Days is { } held ? held.ToString(CultureInfo.InvariantCulture) : "none",
         }),
+    });
+});
+
+// A chart page's ask for its stock's analysts, which its script makes as the page opens where no answer of the New York
+// day is stored: refused without the page's own header and for a stock no index the night reads holds, writing nothing
+// either way. An answer of the day or an ask inside the minutes between two asks writes nothing and starts nothing, and
+// otherwise the ask is written and the analyst job started as a process of its own, as a name page's ask starts the quote
+// job.
+// see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
+app.MapPost(SinglePageApp.AnalystsRoute + "{ticker}", async (string ticker, HttpRequest request, ReadApi read, IClock clock, IDrainLauncher launcher) =>
+{
+    var named = ticker.ToUpperInvariant();
+
+    if (!string.Equals(request.Headers[SinglePageApp.PassHeader].FirstOrDefault(), SinglePageApp.PassHeaderValue, StringComparison.Ordinal))
+    {
+        return Results.Content(
+            "<p class=\"analysts-refused\" data-refused=\"header\">nothing was asked: the request did not come from the chart page</p>",
+            "text/html; charset=utf-8",
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    if (await read.IndexOfAsync(named, clock.SessionDateAt(clock.UtcNow)) is null)
+    {
+        return Results.Content(
+            $"<p class=\"analysts-refused\" data-refused=\"membership\">nothing was asked: {System.Net.WebUtility.HtmlEncode(named)} is in no index the night reads</p>",
+            "text/html; charset=utf-8",
+            statusCode: StatusCodes.Status404NotFound);
+    }
+
+    var asked = await read.AskAnalystsAsync(named);
+    var started = asked.Written ? launcher.StartTheAnalysts(named, asked.AskedAt) : null;
+    var line = started is null ? asked.Line : asked.Line + " " + started.Line;
+
+    return Results.Content(
+        $"<p class=\"analysts-asked\" data-asked=\"{(asked.Written ? "true" : "false")}\" data-started=\"{(started?.Started == true ? "true" : "false")}\">{System.Net.WebUtility.HtmlEncode(line)}</p>",
+        "text/html; charset=utf-8",
+        statusCode: asked.Written ? StatusCodes.Status202Accepted : StatusCodes.Status200OK);
+});
+
+// The newest answer Yahoo gave for the stock drawn as the chart page's analysts section, which the page's script swaps
+// in once it is newer than the one drawn, at the price the page draws; and the newest run of the analyst job for the
+// stock, which the page states where it stored nothing.
+// see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
+app.MapGet(SinglePageApp.AnalystsRoute + "{ticker}", async (string ticker, ReadApi read, MarkRenderer marks, IClock clock) =>
+{
+    var named = ticker.ToUpperInvariant();
+    var run = await read.NewestAnalystRunAsync(EquityBrief.Core.Analysts.AnalystLimits.AnalystsStage, named);
+    var ran = run is { } last ? new { startedAt = last.StartedAt.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture), outcome = last.Outcome, detail = last.Detail } : null;
+
+    if (await read.NewestAnalystsAsync(named) is not { } yahoo)
+    {
+        return Results.Json(new { answered = false, run = ran });
+    }
+
+    var now = clock.UtcNow;
+    var today = clock.SessionDateAt(now);
+    var quote = RegularSession.On(today, clock.SessionZone) is { } session && RegularSession.IsOpen(now, clock.SessionZone) ? await read.NewestQuoteAsync(named, session.Open, session.Close) : null;
+    var price = quote?.Price ?? (await read.BarsAsync(named, today.AddDays(-14), today)).LastOrDefault()?.Close;
+    var graphs = new ChartGraphs([], null, [], string.Empty, null, price, yahoo);
+
+    return Results.Json(new
+    {
+        answered = true,
+        answeredAt = yahoo.AskedAt.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
+        html = SinglePageApp.AnalystsSection(marks, named, graphs),
+        run = ran,
+    });
+});
+
+// A chart page's press asking TipRanks for its stock's ratings: refused without the page's own header and for a stock no
+// index the night reads holds, writing nothing either way. An answer of the stock's New York day or a spent month writes
+// nothing and starts nothing, saying which, and otherwise the ask is written and the ratings job started as a process of
+// its own.
+// see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+app.MapPost(SinglePageApp.RatingsRoute + "{ticker}", async (string ticker, HttpRequest request, ReadApi read, IClock clock, IDrainLauncher launcher) =>
+{
+    var named = ticker.ToUpperInvariant();
+
+    if (!string.Equals(request.Headers[SinglePageApp.PassHeader].FirstOrDefault(), SinglePageApp.PassHeaderValue, StringComparison.Ordinal))
+    {
+        return Results.Content(
+            "no call was made: the request did not come from the chart page",
+            "text/html; charset=utf-8",
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    if (await read.IndexOfAsync(named, clock.SessionDateAt(clock.UtcNow)) is null)
+    {
+        return Results.Content(
+            $"no call was made: {System.Net.WebUtility.HtmlEncode(named)} is in no index the night reads",
+            "text/html; charset=utf-8",
+            statusCode: StatusCodes.Status404NotFound);
+    }
+
+    var asked = await read.AskRatingsAsync(named);
+    var started = asked.Written ? launcher.StartTheRatings(named, asked.AskedAt) : null;
+    var line = started is null ? asked.Line : asked.Line + " " + started.Line;
+
+    return Results.Content(
+        System.Net.WebUtility.HtmlEncode(line),
+        "text/html; charset=utf-8",
+        statusCode: asked.Written && started?.Started == true ? StatusCodes.Status202Accepted : asked.Written ? StatusCodes.Status200OK : StatusCodes.Status409Conflict);
+});
+
+// The newest answer TipRanks gave for the stock drawn as the chart page's ratings section with the month's calls used
+// and left, which the page's script swaps in once it is newer than its press; and the newest run of the ratings job for
+// the stock, which the page states where it stored nothing.
+// see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+app.MapGet(SinglePageApp.RatingsRoute + "{ticker}", async (string ticker, ReadApi read, MarkRenderer marks, IClock clock) =>
+{
+    var named = ticker.ToUpperInvariant();
+    var run = await read.NewestAnalystRunAsync(EquityBrief.Core.Analysts.AnalystLimits.RatingsStage, named);
+    var tipranks = await read.NewestRatingsAsync(named);
+
+    return Results.Json(new
+    {
+        answered = tipranks is not null,
+        answeredAt = tipranks?.AskedAt.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
+        html = SinglePageApp.RatingsSection(marks, named, tipranks, await read.TipRanksCallsAsync(), clock.UtcNow),
+        run = run is { } last ? new { startedAt = last.StartedAt.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture), outcome = last.Outcome, detail = last.Detail } : null,
     });
 });
 

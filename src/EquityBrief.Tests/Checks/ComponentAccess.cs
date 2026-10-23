@@ -29,6 +29,15 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Quote job"),
     ];
 
+    // The rows 20.13 adds that this check reaches: the analyst job's and the ratings job's catalogue and matrix rows.
+    internal static string[] AnalystJobRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Analyst job"),
+        CheckReach.Key(Scope.MatrixTable, "Analyst job"),
+        CheckReach.Key(Scope.CatalogueTable, "Ratings job"),
+        CheckReach.Key(Scope.MatrixTable, "Ratings job"),
+    ];
+
     // 18.2's two: the dividend keeper and the Treasury reader.
     internal static string[] ReportComponentRows =>
     [
@@ -107,6 +116,9 @@ public partial class ComponentAccess
         [
             // 18.1, the quote job.
             .. QuoteJobRows,
+
+            // 20.13, the analyst job and the ratings job.
+            .. AnalystJobRows,
 
             // 18.2, the dividend keeper and the Treasury reader.
             .. ReportComponentRows,

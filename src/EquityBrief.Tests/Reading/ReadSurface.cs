@@ -164,6 +164,7 @@ public partial class ReadSurface
 
             // 20.12, the chart page's graphs and their three marks.
             .. ChartGraphRows,
+            .. AnalystPageRows,
 
             // 22.1, the short-term dip's card on Tonight and its trades on Past picks.
             .. DipPageRows,

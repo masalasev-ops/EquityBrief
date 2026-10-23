@@ -727,7 +727,50 @@ public static class SchemaMigrations
         new Migration(104, "rebuild release_document and release_reading with the exhibit in their keys, mark each document whether it is its filing's release, add each reading's cut, request and carry, and create release_check", AddNamedReleases),
         new Migration(105, "create dip_night, dip_result, dip_pick and dip_trade", CreateDips),
         new Migration(106, "add setup's release readings, and create release_answer_edge", AddReleaseReadings),
+        new Migration(107, "create analyst_request, analyst_view and analyst_rating", CreateAnalysts),
     ];
+
+    // From 20.13: a chart page's ask for its stock's analysts, a row an ask, Yahoo's when the page opens and TipRanks' on
+    // its press; Yahoo's answer, the targets with how many analysts set them, its recommendation, the counts of each
+    // month and every firm's action as lists; and TipRanks' answer, the counts over each span and each analyst's
+    // rating as lists. Prices are text, which is the storage form money takes, inside the lists as in the columns.
+    // see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
+    // see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+    const string CreateAnalysts = @"
+        CREATE TABLE analyst_request (
+            ticker    TEXT NOT NULL,
+            asked_at  TEXT NOT NULL,
+            source    TEXT NOT NULL CHECK (source IN ('yahoo', 'tipranks')),
+            PRIMARY KEY (ticker, asked_at, source)
+        ) STRICT;
+
+        CREATE TABLE analyst_view (
+            ticker          TEXT    NOT NULL,
+            asked_at        TEXT    NOT NULL,
+            answered_at     TEXT    NOT NULL,
+            currency        TEXT,
+            target_low      TEXT,
+            target_mean     TEXT,
+            target_median   TEXT,
+            target_high     TEXT,
+            analysts        INTEGER,
+            recommendation  TEXT,
+            months          TEXT    NOT NULL,
+            actions         TEXT    NOT NULL,
+            PRIMARY KEY (ticker, asked_at)
+        ) STRICT;
+
+        CREATE TABLE analyst_rating (
+            ticker       TEXT    NOT NULL,
+            asked_at     TEXT    NOT NULL,
+            answered_at  TEXT    NOT NULL,
+            as_of        TEXT,
+            total        INTEGER,
+            counts       TEXT    NOT NULL,
+            ratings      TEXT    NOT NULL,
+            PRIMARY KEY (ticker, asked_at)
+        ) STRICT;
+    ";
 
     // From 20.8: the setup ledger's four release readings, a column a reading after every column before them, each row
     // kept and the new columns null until a build or a night writes them; and what each answer of each question came to

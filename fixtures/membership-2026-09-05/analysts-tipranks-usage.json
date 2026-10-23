@@ -1,0 +1,1 @@
+{"jsonrpc":"2.0","id":3,"result":{"content":[{"text":"{\"tier\": \"free\", \"window\": \"monthly\", \"used\": 3, \"limit\": 100, \"remaining\": 97, \"resets_at\": \"2026-11-01T00:00:00+00:00\", \"note\": \"Shared across all API keys on your account.\"}","type":"text"}],"isError":false}}

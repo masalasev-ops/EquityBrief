@@ -20,14 +20,21 @@ public sealed record ChartGap(DateOnly After, DateOnly Before);
 
 // From 20.12 what the chart page's graphs draw, each from a figure the report reads: the newest prints' earnings a share
 // against their estimates and the quarter to report next, the newest quarters' revenue and net income with the net
-// margin in the currency the filings state, and the analysts' figures with the price the target is set against.
+// margin in the currency the filings state, and the analysts' figures with the price the target is set against; and
+// from 20.13 the newest answers Yahoo and TipRanks gave for the stock, whether the page asks Yahoo again on this New
+// York day, the month's TipRanks calls as last read and the instant the page is drawn at.
 public sealed record ChartGraphs(
     IReadOnlyList<EquityBrief.Core.Report.EarningsPrint> Prints,
     (DateOnly Ends, decimal Eps)? Next,
     IReadOnlyList<EquityBrief.Core.Report.QuarterIncome> Income,
     string Currency,
     EquityBrief.Core.Report.AnalystReading? Analysts,
-    decimal? Price);
+    decimal? Price,
+    EquityBrief.Core.Analysts.YahooAnalystView? Yahoo = null,
+    bool AsksYahoo = false,
+    EquityBrief.Core.Analysts.TipRanksView? TipRanks = null,
+    EquityBrief.Core.Analysts.TipRanksCalls? Calls = null,
+    DateTimeOffset? Now = null);
 
 // The chart page as the shell draws it: the stock, the interval shown, its candles with the averages at each, the night's
 // bands, a listing rule's plan as lines, the report and ex-dividend marks, the stretches holding no daily row, the line
@@ -182,23 +189,22 @@ public sealed partial class SinglePageApp
 
         region.Append(Cards.Computed("The chart", chart.ToString(), title: FormattableString.Invariant($"{Escaped(ticker)}, {view.Interval}"), stamp: Cards.Night(last), id: "chart", region: "chart-page-chart"));
 
-        // From 20.12 the graphs beneath the chart, each from a figure the report reads.
-        // see: The chart page graphs the report's earnings and revenue and the analysts' figures beneath its chart, and no rule reads them from it
+        // From 20.12 the graphs beneath the chart, each from a figure the report reads, and from 20.13 the analysts as Yahoo
+        // answered when the page opened and TipRanks on its press.
+        // see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
         if (view.Graphs is { } graphs)
         {
             var drawn = new StringBuilder("<div class=\"chart-graphs\">");
 
             drawn.Append("<section class=\"chart-graph\" data-graph=\"earnings\"><h3>Earnings a share against the estimate</h3><div class=\"fig\">").Append(marks.EarningsDots(ticker, graphs.Prints, graphs.Next)).Append("</div></section>");
             drawn.Append("<section class=\"chart-graph\" data-graph=\"income\"><h3>Revenue against net income</h3><div class=\"fig\">").Append(marks.IncomeBars(ticker, graphs.Income, graphs.Currency)).Append("</div></section>");
-            drawn.Append("<section class=\"chart-graph\" data-graph=\"analysts\"><h3>The analysts</h3><div class=\"fig\">").Append(marks.TargetMarker(ticker, graphs.Analysts, graphs.Price)).Append("</div><div class=\"fig\">");
-            drawn.Append(graphs.Analysts is { } analysts
-                ? marks.RatingBars(analysts)
-                : "<p class=\"mark-short\" data-mark=\"rating-bars\">No fetch in the last twelve months filed the analysts' rating counts, so none is drawn.</p>");
-            drawn.Append("</div></section></div>");
+            drawn.Append(AnalystsSection(marks, ticker, graphs));
+            drawn.Append(RatingsSection(marks, ticker, graphs.TipRanks, graphs.Calls, graphs.Now ?? DateTimeOffset.MinValue));
+            drawn.Append("</div>");
             drawn.Append(Cards.Key(
                 "How to read it.",
-                "Each print's estimate before its report is the hollow dot and the earnings a share it reported the filled one, green where it beat the estimate and red where it missed, with the difference beneath; the dashed dot after them is the analysts' consensus for the quarter to report next. The bars are each quarter's revenue and net income as filed, net income green where it was a profit and red where it was a loss, and the line is the net margin, read on the axis at the right. The analysts' mean target is set against the price drawn, with how far above or below it stands; the provider files no low or high target. Beneath it the analysts' rating counts are stacked a month at a time, a month no fetch fell in dashed.",
-                "These are the report's own figures drawn as pictures, and no rule reads them from this page."));
+                "Each print's estimate before its report is the hollow dot and the earnings a share it reported the filled one, green where it beat the estimate and red where it missed, with the difference beneath; the dashed dot after them is the analysts' consensus for the quarter to report next. The bars are each quarter's revenue and net income as filed, net income green where it was a profit and red where it was a loss, and the line is the net margin, read on the axis at the right. The analysts' targets are drawn as Yahoo answered when the page was opened, once a New York day: the band runs from the lowest target to the highest, the bar is their mean and the diamond their median, set against the price drawn with how far the mean stands above or below it; until Yahoo answers, the provider's mean target alone is drawn. Beneath it the analysts' rating counts are stacked a month at a time, Yahoo's four months where it answered and the provider's twelve where it did not, a month no fetch fell in dashed, and each firm's rating action follows, newest first. The press asks TipRanks for each analyst's newest rating with the analyst's record, one of the month's calls, at most once a stock a New York day.",
+                "These are the report's own figures and the analysts' as Yahoo and TipRanks answered, drawn as pictures and tables, and no rule reads them from this page."));
 
             region.Append(Cards.Computed("The earnings and the analysts", drawn.ToString(), title: "Earnings, revenue and the analysts", stamp: Cards.Night(last), id: "graphs", region: "chart-page-graphs"));
         }
@@ -236,6 +242,64 @@ public sealed partial class SinglePageApp
         region.Append("</section>");
 
         return region.ToString();
+    }
+
+    // From 20.13 the routes a chart page asks for its analysts on, Yahoo's when it opens and TipRanks' on its press, each
+    // taking a press with the page's own header and answering the newest stored answer drawn.
+    public const string AnalystsRoute = "/analysts/";
+
+    public const string RatingsRoute = "/analyst-ratings/";
+
+    // The analysts' graph of the chart page: Yahoo's targets as a range against the price drawn, its counts by month and
+    // each firm's action where Yahoo has answered, and the report's own mean target and rating bars where it has not, with
+    // a line saying which. Where no answer of this New York day is stored the section carries its route, so the page's
+    // script asks Yahoo and draws the answer once it is stored; the route's own reply is this section drawn again.
+    // see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
+    public static string AnalystsSection(MarkRenderer marks, string ticker, ChartGraphs graphs)
+    {
+        var section = new StringBuilder();
+        var asks = graphs.AsksYahoo
+            ? FormattableString.Invariant($" data-analysts-route=\"{AnalystsRoute}{Uri.EscapeDataString(ticker)}\" data-ask=\"yes\"")
+            : FormattableString.Invariant($" data-analysts-route=\"{AnalystsRoute}{Uri.EscapeDataString(ticker)}\" data-ask=\"no\"");
+        var answered = graphs.Yahoo is { } yahoo ? FormattableString.Invariant($" data-answered=\"{yahoo.AskedAt.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}\"") : string.Empty;
+
+        section.Append(FormattableString.Invariant($"<section class=\"chart-graph\" data-graph=\"analysts\"{asks}{answered}><h3>The analysts</h3>"));
+
+        if (graphs.Yahoo is { } answer)
+        {
+            section.Append("<div class=\"fig\">").Append(marks.TargetRange(ticker, answer, graphs.Price)).Append("</div>");
+            section.Append("<div class=\"fig\">").Append(marks.RatingBars(MarkRenderer.YahooMonths(answer))).Append("</div>");
+            section.Append("<div class=\"fig\">").Append(marks.FirmActions(ticker, answer)).Append("</div>");
+        }
+        else
+        {
+            section.Append("<div class=\"fig\">").Append(marks.TargetMarker(ticker, graphs.Analysts, graphs.Price)).Append("</div><div class=\"fig\">");
+            section.Append(graphs.Analysts is { } analysts
+                ? marks.RatingBars(analysts)
+                : "<p class=\"mark-short\" data-mark=\"rating-bars\">No fetch in the last twelve months filed the analysts' rating counts, so none is drawn.</p>");
+            section.Append("</div>");
+            section.Append(graphs.AsksYahoo
+                ? FormattableString.Invariant($"<p class=\"mark-note analysts-said\" data-yahoo=\"asking\">Yahoo is asked for {Escaped(ticker)}'s targets, counts by month and firm actions as the page opens, and they are drawn here once it answers.</p>")
+                : FormattableString.Invariant($"<p class=\"mark-note analysts-said\" data-yahoo=\"none\">Yahoo has answered nothing for {Escaped(ticker)}, so the provider's own figures are drawn.</p>"));
+        }
+
+        return section.Append("</section>").ToString();
+    }
+
+    // TipRanks' graph of the chart page: the press asking TipRanks for each analyst's newest rating, the month's calls used
+    // and left beside it, and the newest answer stored for the stock beneath; the route's own reply is this section drawn
+    // again.
+    // see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+    public static string RatingsSection(MarkRenderer marks, string ticker, EquityBrief.Core.Analysts.TipRanksView? tipranks, EquityBrief.Core.Analysts.TipRanksCalls? calls, DateTimeOffset now)
+    {
+        var route = RatingsRoute + Uri.EscapeDataString(ticker);
+        var section = new StringBuilder();
+
+        section.Append(FormattableString.Invariant($"<section class=\"chart-graph\" data-graph=\"ratings\" data-ratings-route=\"{route}\"{(tipranks is { } held ? FormattableString.Invariant($" data-answered=\"{held.AskedAt.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}\"") : string.Empty)}><h3>The analysts by name</h3>"));
+        section.Append(FormattableString.Invariant($"<form class=\"ratings-press\" action=\"{route}\" method=\"post\"><button type=\"submit\" class=\"btn-2\">Get analyst ratings</button> {MarkRenderer.TipRanksCallsLine(calls, now)}<span class=\"ratings-said\" aria-live=\"polite\"></span></form>"));
+        section.Append(marks.TipRanksRatings(ticker, tipranks));
+
+        return section.Append("</section>").ToString();
     }
 
     // What a figure EquityBrief fetches and holds none of for a stock says.

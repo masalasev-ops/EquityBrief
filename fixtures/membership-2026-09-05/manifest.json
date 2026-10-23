@@ -1741,6 +1741,27 @@
       "query": "POST http://127.0.0.1:1234/api/v0/chat/completions for The headline on KEYS in the local lane, its retry 1, for 20.6's comparison with every section in the local lane: the request SectionPrompt builds, keyed e8f4bbd5a97b059cc3f920a1ec164e7c, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-19T13:56:28Z",
       "trimmedTo": "nothing. The whole response to one section call, 890 prompt tokens and 55 completion tokens, named for the request's key so the comparison asking the same request reads it."
+    },
+    {
+      "file": "analysts-yahoo-HPQ.json",
+      "endpoint": "v10/finance/quoteSummary/HPQ",
+      "query": "https://query1.finance.yahoo.com/v10/finance/quoteSummary/HPQ?modules=financialData,recommendationTrend,upgradeDowngradeHistory,price&crumb=<the crumb Yahoo answered the cookie with>",
+      "fetchedAt": "2026-10-23T04:20:25Z",
+      "trimmedTo": "the four parts asked, each key kept as sent, from a payload of 73,672 characters: the recommendation trend whole, its four months 0m to -3m; the newest 12 of the 378 firm actions under upgradeDowngradeHistory, in Yahoo's order, the first an initiation whose prior target is written as nought; of financialData the price, the four targets, the recommendation's mean and word, the analysts' count and the currency, its cash, debt, margins and growth left out; and of price the session's price and time, the exchange, the symbol, the name and the currency. Asked keyless with a browser's name, after a cookie from fc.yahoo.com and a crumb from v1/test/getcrumb; HPQ's targets are 19.00 low, 27.51765 mean, 29.00 median and 33.80 high over 17 analysts, its word hold."
+    },
+    {
+      "file": "analysts-tipranks-HPQ.json",
+      "endpoint": "tools/call get_recent_analyst_ratings on TipRanks' server at mcp.tipranks.com/mcp/",
+      "query": "POST https://mcp.tipranks.com/mcp/ with the key in the request's Authorization header and in no address: a JSON-RPC tools/call of get_recent_analyst_ratings with the ticker HPQ, inside a session opened by initialize",
+      "fetchedAt": "2026-10-23T04:28:16Z",
+      "trimmedTo": "nothing. The server's JSON-RPC answer as the probe kept it, written again without its spacing: one text content holding the tool's own JSON, as of 2026-10-23, 16 ratings counted, the buys, holds and sells over 30 days, 90 days and 12 months, and each analyst's newest rating, newest first, two of them by an analyst TipRanks names Unknown Analyst with no stars, success rate, return or rank. It spent one of the month's calls."
+    },
+    {
+      "file": "analysts-tipranks-usage.json",
+      "endpoint": "tools/call get_my_usage on TipRanks' server at mcp.tipranks.com/mcp/",
+      "query": "POST https://mcp.tipranks.com/mcp/ with the key in the request's Authorization header and in no address: a JSON-RPC tools/call of get_my_usage, inside a session opened by initialize",
+      "fetchedAt": "2026-10-23T14:56:28Z",
+      "trimmedTo": "nothing. The server's JSON-RPC answer as the probe kept it, written again without its spacing: the month's calls, 3 used of a limit of 100, 97 remaining, starting again at 2026-11-01T00:00:00+00:00. Asked with the key in the header alone, which answered as the address had; the count spends none of the month's calls."
     }
   ]
 }

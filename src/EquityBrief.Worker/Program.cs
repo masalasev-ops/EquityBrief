@@ -73,6 +73,8 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "news-fill" => await NewsFill(args),
     "backup" => await BackupRun(args),
     "quote" => await QuoteRun(args),
+    "analysts" => await AnalystsRun(args),
+    "analyst-ratings" => await AnalystRatingsRun(args),
     "dividends" => await DividendsRun(args),
     "local-run" => await LocalRunVerb(args),
     "releases" => await ReleasesVerb(args),
@@ -84,7 +86,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 49 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 51 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -227,6 +229,12 @@ static int NoVerb()
         "'quote --ticker <TICKER> --asked <yyyy-MM-ddTHH:mm:ssZ>' asks the provider once for the name's delayed quote " +
         "inside the regular session and under the day's cap and stores it with each band's distance at its price, as a " +
         "name page's press starts it, and " +
+        "'analysts --ticker <TICKER> --asked <yyyy-MM-ddTHH:mm:ssZ>' asks Yahoo once for the stock's analysts under the " +
+        "New York day's cap and stores the targets, the counts by month and every firm's action, as a chart page opened " +
+        "starts it, and " +
+        "'analyst-ratings --ticker <TICKER> --asked <yyyy-MM-ddTHH:mm:ssZ>' asks TipRanks' count of the month's calls and, " +
+        "under the limit and once a stock a New York day, the stock's recent ratings, and stores them, as a chart page's " +
+        "press starts it, and " +
         "'dividends --history --from <yyyy-MM-dd>' asks each member the index holds today for its dividends from that date, " +
         "one request a member, stating its asks and their weighted calls before the first request, and keeps each beside " +
         "the ones the nights kept, with '--index <GSPC, MID or SML>' naming the index and '--names' with codes between " +
@@ -1971,6 +1979,95 @@ static async Task<int> QuoteRun(string[] args)
     Console.WriteLine($"quote: {outcome.Outcome}, {outcome.Detail}");
 
     return outcome.Outcome == EquityBrief.Worker.Quotes.QuoteJob.Quoted ? 0 : 1;
+}
+
+// A chart page's ask for its stock's analysts, which the read surface starts once the ask is written.
+// see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it
+static async Task<int> AnalystsRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (AnalystAsk(args, "analysts") is not { } ask)
+    {
+        return 1;
+    }
+
+    if (!File.Exists(store.DatabaseFile))
+    {
+        Console.Error.WriteLine($"analysts: no store at '{store.DatabaseFile}', so there is nowhere to keep an answer.");
+
+        return 1;
+    }
+
+    var outcome = await new EquityBrief.Worker.Analysts.AnalystJob(
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        YahooAnalystFeed.Live()).RunAsync(ask.Ticker, ask.AskedAt);
+
+    Console.WriteLine($"analysts: {outcome.Outcome}, {outcome.Detail}");
+
+    return outcome.Outcome == EquityBrief.Worker.Analysts.AnalystJob.Answered ? 0 : 1;
+}
+
+// A chart page's press asking TipRanks for its stock's ratings, which the read surface starts once the ask is written.
+// The key is read here and handed to the feed and to the redaction alone, and no line this prints carries it.
+// see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit
+static async Task<int> AnalystRatingsRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (AnalystAsk(args, "analyst-ratings") is not { } ask)
+    {
+        return 1;
+    }
+
+    if (!File.Exists(store.DatabaseFile))
+    {
+        Console.Error.WriteLine($"analyst-ratings: no store at '{store.DatabaseFile}', so there is nowhere to keep an answer.");
+
+        return 1;
+    }
+
+    TipRanksCredentials credentials;
+
+    try
+    {
+        credentials = new TipRanksCredentials(configuration[TipRanksCredentials.ApiKeyName] ?? string.Empty);
+    }
+    catch (InvalidOperationException refusal)
+    {
+        Console.Error.WriteLine("analyst-ratings: " + refusal.Message);
+
+        return 1;
+    }
+
+    var outcome = await new EquityBrief.Worker.Analysts.RatingsJob(
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        TipRanksRatingsFeed.Live(credentials),
+        TipRanksCredentials.Limit(configuration[TipRanksCredentials.LimitName]),
+        credentials.Redact).RunAsync(ask.Ticker, ask.AskedAt);
+
+    Console.WriteLine($"analyst-ratings: {outcome.Outcome}, {credentials.Redact(outcome.Detail)}");
+
+    return outcome.Outcome == EquityBrief.Worker.Analysts.RatingsJob.Answered ? 0 : 1;
+}
+
+// The stock and the instant its page asked, each verb's two flags, or a line saying what the verb takes.
+static (string Ticker, DateTimeOffset AskedAt)? AnalystAsk(string[] args, string verb)
+{
+    if (Argument(args, "--ticker") is not { Length: > 0 } ticker
+        || Argument(args, "--asked") is not { } asked
+        || !DateTimeOffset.TryParseExact(asked, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var askedAt))
+    {
+        Console.Error.WriteLine($"{verb}: it takes '--ticker <TICKER> --asked <yyyy-MM-ddTHH:mm:ssZ>', the stock and the instant its page asked.");
+
+        return null;
+    }
+
+    return (ticker.ToUpperInvariant(), askedAt);
 }
 
 static IConfiguration Configuration() => WorkerConfiguration.Build();

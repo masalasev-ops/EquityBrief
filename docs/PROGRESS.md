@@ -7354,3 +7354,111 @@ Carried:    the remedy, `tools/remedies/2026-10-23-20.3-correction-pin-5-at-the-
             next version, as GTY's release of 2020-07-22 was at 12:38:12 UTC; the probes' answer check, changed with
             the other three, is reached by no test reading a probe's answer under another runtime; 20.8's remedy; the analyst panels; 22.2;
             20.3's record; the tone variant at the newest complete version; 20.10; the sign-offs of phases 18 and 20.
+
+### 20.13 ruling - the chart page draws the analysts' targets, monthly counts and firms' actions Yahoo answers when it opens, and TipRanks' ratings on a press, at most one call a stock a day and none past the month's limit   2026-10-23
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-23, 20.12's graphs drawing the provider's mean target alone and no firm's
+            rating, after they had asked whether a TipRanks key would help with the analysts. At 04:11 UTC: "THe
+            problem with Tipranks is my subscription only allows 100 calls per month. I am not sure if that will be
+            sufficient"; at 04:15, the key written into the worker's secrets file with its limit: "Once you are done
+            with all the previous steps can you do what you suggested by doing the free yahoo and "get analyst
+            ratings" button if yahoo doesnt suffice. Measure the yahoo vs tipranks on 1-2 stocks first."; at 04:18:
+            "Be extra careful not to leak the tipranks key"; at 04:31, on the measurement below and the recommendation
+            "Yahoo covers the target range, the rating counts and each firm's actions, so build those panels on it.
+            Add the TipRanks button only for "who are the analysts and how good are they". It would use one call per
+            stock, the ratings list alone, since Yahoo already gives the summary.": "ok add your recommendation to the
+            list of things to do tonight when i go off to bed"; and at 14:51, on the plan put to them at 14:49: "Can
+            we get on working on the analyst rating stuff while the read progresses ?"
+Measured:   by scripts outside the repository that stored nothing, the key read from the secrets file and printed
+            nowhere. Yahoo's quote summary, free and keyless once a cookie and a crumb are taken, answered HPQ and ARMK
+            whole at 04:20 UTC: the low, mean, median and high targets with how many analysts set them, HPQ's 19.00,
+            27.52, 29.00 and 33.80 over 17, four months of strong buy to strong sell counts, and every firm's rating
+            action with its old and new grade and target, 378 for HPQ and 191 for ARMK. TipRanks' server answered each
+            stock's recent ratings in one call at 04:28: each analyst's name, firm, rating, target and date, stars,
+            success rate, average return and rank, with the counts of buys, holds and sells over 30 and 90 days and 12
+            months, three calls spent and its own count of the month's calls costing none. Where both list one firm's
+            action the target and the date agree. At 14:56 the count answered with the key in the request's header and
+            in no address: 3 used of 100, reset on 2026-11-01.
+Plan:       checkpoint 20.13 in the build plan, committed with this entry and built in the next commit of its pull
+            request.
+Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.9, 20.11 and 20.12 merged with their records,
+            22.0 planned and ruled, 22.1 merged, the 19.11 correction merged, the 20.3 corrections merged with pin 5
+            written at 60,160; in progress, the history read of the releases pin 5 leaves, and 20.13; next, 20.8's
+            remedy once pin 5 has read its history whole, 22.2, 20.3's record, the tone variant at the newest complete
+            version, 20.10, and the sign-offs of phases 18 and 20 by fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 20.13 - the chart page's analysts from Yahoo as it opens, and TipRanks' ratings on a press, one call a stock a day and none past the month's limit   2026-10-23
+
+Queue:      as the ruling entry above, this checkpoint in progress.
+Ruled:      the 20.13 ruling entry above.
+Built:      a chart page opened with no answer of the stock's New York day stored asks for its analysts under the page's
+            own header, and the read surface writes the ask and starts the analyst job, an ask inside 10 minutes of the
+            stock's last asking nothing; the job asks Yahoo's quote summary under the cookie and the crumb Yahoo answers
+            first, under a cap of 100 asks a New York day read as its runs that asked, and stores the four targets with
+            the analysts setting them, Yahoo's word, the months' counts and every firm's action. The page draws the
+            target range against its price, Yahoo's four months as the rating bars and ten firm actions numbered with
+            the rest behind a control, and the provider's mean target beside the report's bars until Yahoo answers, its
+            script drawing the answer in their place. A press asks TipRanks through the ratings job: the read surface
+            refuses it over an answer of the stock's New York day or a month the newest run read as spent, and the job
+            asks TipRanks' own count first, asks nothing more at the lesser of the secrets file's limit and TipRanks'
+            own, and otherwise asks for the ratings once and never again on a failure, storing each analyst's rating
+            with the analyst's record and every run's row carrying the month's calls, which the page draws beside the
+            press. The key goes to TipRanks alone in the request's header, and every failure's words are redacted of it.
+            Migration 107 creates analyst_request, analyst_view and analyst_rating. The two decisions with 20.12's
+            superseded, its citations repointed, 3 in code and 3 in the specs; sections 7, 15.5, 15.22, 16, 17, 18 and
+            20; SCHEMA's three tables and the read surface's sixth; the runbook's two verbs and the key; the guide; the
+            roster's two rows; the changelog; and Yahoo's and TipRanks' captures for HPQ in the fixture with their
+            manifest's entries, Yahoo's cut to the parts asked and its newest 12 of 378 actions.
+Measured:   TipRanks' count of the month's calls answered with the key in the request's header alone at 14:56 UTC, 3
+            used of 100 and starting again on 2026-11-01; no TipRanks call was spent building or testing this
+            checkpoint, every test reading the captures of 04:20 and 04:28 UTC.
+Tests:      9 new, 2672 in all: Yahoo's HPQ capture read as sent, its four targets over 17 analysts, its four months
+            and its twelve actions newest first with an initiation's prior target of nought read as none, a symbol
+            Yahoo does not know, an empty result and one holding no figure read as none and an answer that is no object
+            refused; TipRanks' HPQ captures, sixteen ratings newest first with their records, one TipRanks names no
+            analyst for holding none, the three spans' counts and the month's calls plain and as a stream's last event,
+            a tool's error and the server's refused and the secrets file's limit read from its number; the TipRanks
+            feed's four requests carrying the key as a bearer token and in no address with the session it named, a
+            failure's words with the key and an address taken out, and the count asked again on a transient refusal
+            and the ratings never; the analyst job storing what Yahoo sent, its cap at the New York day's 99th and
+            100th runs that asked, the evening before and a run that asked nothing counting none, and no analysts and
+            a failure storing nothing; the ratings job's count, ratings and count again, a stock answered on its day
+            asking nothing, each limit on both sides with each the lesser, a failure carrying the key reaching no row
+            and a count unread asking no ratings; the ask and the press under the header, the ask at 9 minutes 59
+            seconds and 10 minutes and over an answer of the day to the next day's first second, and the press over an
+            answer of the day and a spent month a second before its count starts again and at it; the chart page before
+            and after Yahoo answers, ten of a constructed twelve actions, the ratings with the calls used and left and
+            each route's read-back; and the target range worked by hand with Yahoo's months oldest first. And 7
+            amended: the chart page's routes, the analysts' and the ratings' beside the quote's; the shipped files
+            holding a client, 26, in two tests; the vocabulary's count read as forty-two; the screens' rows at 253 and
+            their parts at 654; and the phase 13 pair's total at 1417, the first run of the checkpoint script over this
+            checkpoint finding the first of them, and a run of the whole suite the chart page's routes and a run log
+            read the read surface took by its instant, now by the order its rows were written.
+Claims:     1417, 17 new: the analyst job's and the ratings job's catalogue and matrix rows, their three stores, section
+            17's three rows, section 18's four, the target range among the marks, and the chart page's firm actions
+            and analysts by name.
+Mutated:    the rule, stated before the runs: one mutation a property the checkpoint adds, the smallest edit undoing it
+            alone, each run filtered to the tests naming the property with its red predicted, made in this checkout and
+            reverted with the editor. Each went red where predicted: M1 the key in the request's address, at the feed's
+            test; M2 the key's redaction dropped, at the feed's and the ratings job's; M3 a call allowed at the limit,
+            at the ratings job's; M4 the greater of the two limits taken, at the ratings job's, a first try dropping the
+            stated limit not building with its parameter unread; M5 the ratings asked again on a transient refusal, at
+            the feed's; M6 the cap counting runs that asked nothing, at the analyst job's; M7 the day read in UTC, at
+            the analyst job's and the ask's, the press's test reaching no day's edge; M8 the interval's end inside it,
+            at the ask's; M9 a spent month read as started again, at the press's; M10 every action shown, at the chart
+            page's; M11 Yahoo's months left newest first, at the chart page's and the target range's; and M12 a prior
+            target of nought read as a target, at the Yahoo capture's, the analyst job's test storing whatever the
+            parser read.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2672 of 2672 tests ran with none failed,
+            migrations 0 to 107 with none pending, schema version 107, against `data-ci` and never `data`; the phase
+            report 60 tables, 1417 claims, 1417 passing, none out of scope and none unexamined, 1428 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the remedy, `tools/remedies/2026-10-23-20.13-the-analysts-tables.txt`, migration 107 run from main after the
+            merge with no history read running and before the read surface is started again; one live press on a
+            stock's chart page to see TipRanks answer end to end, one of the month's calls, put to the operator first;
+            20.8's remedy; 22.2; 20.3's record; the tone variant at the newest complete version; 20.10; the sign-offs
+            of phases 18 and 20.

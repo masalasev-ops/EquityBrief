@@ -157,8 +157,10 @@ public partial class ArchitectureConformance
     // and section 18's, and 20.4's two, the tone variant's card row in 15.7 and section 17's window row, and 20.5's two,
     // the local comparison's catalogue and matrix rows, and 20.9's six, the idea generator's catalogue and matrix rows,
     // its store, the Loop page's row and section 18's two, and 20.8's four, the usefulness store, the Ledger page's and the
-    // Loop page's rows and section 17's window row, and 20.12's four, the chart page's graphs and their three marks, which
-    // phase 20's own pair counts once its report is written; and the seven parts paper trading's redesign draws in the
+    // Loop page's rows and section 17's window row, and 20.12's four, the chart page's graphs and their three marks, and
+    // 20.13's seventeen, the analyst job's and the ratings job's catalogue and matrix rows, their three stores, section
+    // 17's three rows, section 18's four, the target range among the marks and the chart page's firm actions and analysts
+    // by name, which phase 20's own pair counts once its report is written; and the seven parts paper trading's redesign draws in the
     // place of its table of every account; and 22.1's thirteen, the dip family's catalogue and matrix rows, its four
     // stores, section 17's row, section 18's four, its card on Tonight and its trades on Past picks, which phase 22's own
     // pair counts once its report is written.
@@ -199,6 +201,10 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.ReleaseAnswerClaims,
         .. FixtureExpectations.ReleaseLedgerClaims,
         .. Reading.ReadSurface.ChartGraphRows,
+        .. ComponentAccess.AnalystJobRows,
+        .. SchemaColumns.AnalystStoreRows,
+        .. FixtureExpectations.AnalystRows,
+        .. Reading.ReadSurface.AnalystPageRows,
         .. Reading.ReadSurface.PaperPageRows,
     ];
 

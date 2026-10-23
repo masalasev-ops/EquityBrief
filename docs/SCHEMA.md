@@ -37,6 +37,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `kept_bar` | BarFetcher | none | none |
 | `market_bar` | MarketSeriesFetcher | MarketSeriesFetcher | none |
 | `live_quote` | QuoteJob | none | none |
+| `analyst_view` | AnalystJob | none | none |
+| `analyst_rating` | RatingsJob | none | none |
 | `treasury_yield` | TreasuryReader | none | none |
 | `calendar` | CalendarFetcher | CalendarFetcher | CalendarFetcher |
 | `pulled_bar` | HistoryPull | none | HistoryPull |
@@ -159,6 +161,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `research_request` | ReadApi, RequestDrain | ReadApi, RequestDrain | none |
 | `watch_list` | ReadApi | none | ReadApi |
 | `quote_request` | ReadApi | none | none |
+| `analyst_request` | ReadApi | none | none |
 | `run_log` | every component that writes appends | RunLog | none |
 
 **`bar` has three inserters and two deleters, and that is the one exception this file argues for.** Backfill inserts a name's first year, once, on the run that finds it holding none. BarFetcher inserts the day's bars and drops the sessions that fall out of the retention window on the night they fall out of it. CorporateActionChecker deletes and reinserts a name's whole year when an action changes its adjusted prices.
@@ -179,7 +182,7 @@ The `DELETE` lives in each component's own file rather than in a shared helper, 
 
 **`facts` is inserted by one component and updated by another, and no column is written by both in one operation.** FactsAssembler inserts the facts file and its hash. ChangeDetector writes the material-change list on a row that already exists, and empties `payload` on that same row under the retention. A split is permitted where two components own disjoint declared column sets per operation on the same grain, and the declared sets are below. The delete is the assembler's, and it removes one row only: tonight's file for a name, where it differs from the one the store now computes, so the insert writes the new one in its place (see: A re-run replaces a night's facts file where the store now computes a different one).
 
-**`research_request`, `watch_list`, `taken_trade`, `loop_decision` and `quote_request` are the five tables the read surface writes, and the split on the first is by operation.** ReadApi does two things: it inserts a request when a press asks for one, from tonight's list or from a name's page, and it updates a request nobody has claimed to `withdrawn` when a press on the queue screen takes it out. RequestDrain belongs to the worker and moves the same row through `writing` and then `written` or `refused`, puts a row a drain left `writing` when it ended back to `outstanding` (see: A request a drain left being written is put back as outstanding by the next drain, and a pass that fails settles its request as refused), and after the night's close it inserts the night's own requests, six taken in turn from the three indices' pages: the insert is split between the two by what asks, a press on a screen or the night (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order). No column is written by both in one operation and the declared sets are below, which is the permission `facts` is already declared under. The read surface still writes nothing a pass writes: a request is an ask, and the research it leads to is the worker's (see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now). The watch list is the operator's own: ReadApi inserts a name on one press and deletes it on another, and nothing but the pages reads it (see: The watch list is the operator's own, up to twenty names of the index, on a page of its own). The taken trades are the operator's own too: ReadApi inserts one on a card's Taken press, deletes one on its Not taken press before a night has followed it, and records an exit on a third, and no component that picks a stock, orders a list or keeps a record reads them. The decisions are the operator's word on the loop's proposals: ReadApi inserts one on a Loop page press and never edits it, and the worker's apply step reads it and writes what it did in tables of its own (see: An approved change is applied by the night's own build on the index it was approved on alone). A quote request is a name page's ask for its delayed quote: ReadApi inserts one when the page's script asks inside the regular session and the name's newest is not inside the interval, and the quote job the ask starts answers it in `live_quote`, which it alone writes (see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap).
+**`research_request`, `watch_list`, `taken_trade`, `loop_decision`, `quote_request` and `analyst_request` are the six tables the read surface writes, and the split on the first is by operation.** ReadApi does two things: it inserts a request when a press asks for one, from tonight's list or from a name's page, and it updates a request nobody has claimed to `withdrawn` when a press on the queue screen takes it out. RequestDrain belongs to the worker and moves the same row through `writing` and then `written` or `refused`, puts a row a drain left `writing` when it ended back to `outstanding` (see: A request a drain left being written is put back as outstanding by the next drain, and a pass that fails settles its request as refused), and after the night's close it inserts the night's own requests, six taken in turn from the three indices' pages: the insert is split between the two by what asks, a press on a screen or the night (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order). No column is written by both in one operation and the declared sets are below, which is the permission `facts` is already declared under. The read surface still writes nothing a pass writes: a request is an ask, and the research it leads to is the worker's (see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now). The watch list is the operator's own: ReadApi inserts a name on one press and deletes it on another, and nothing but the pages reads it (see: The watch list is the operator's own, up to twenty names of the index, on a page of its own). The taken trades are the operator's own too: ReadApi inserts one on a card's Taken press, deletes one on its Not taken press before a night has followed it, and records an exit on a third, and no component that picks a stock, orders a list or keeps a record reads them. The decisions are the operator's word on the loop's proposals: ReadApi inserts one on a Loop page press and never edits it, and the worker's apply step reads it and writes what it did in tables of its own (see: An approved change is applied by the night's own build on the index it was approved on alone). A quote request is a name page's ask for its delayed quote: ReadApi inserts one when the page's script asks inside the regular session and the name's newest is not inside the interval, and the quote job the ask starts answers it in `live_quote`, which it alone writes (see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap). From 20.13 an analyst request is a chart page's ask for its stock's analysts, Yahoo's as the page opens and TipRanks' on its press: ReadApi inserts one where the ask passes the read surface's checks, and the analyst job and the ratings job it starts answer it in `analyst_view` and `analyst_rating`, which each alone writes (see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it) (see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit).
 
 **`research_section` and `theme_section` are inserted by the writers and updated only by the checker.** A pending section is written by whichever model wrote it and is then accepted or rejected by ClaimChecker. Nothing else touches the status.
 
@@ -301,6 +304,45 @@ Grain: one row per name and ask the quote job answered with a price.
 Primary key: `ticker`, `asked_at`.
 
 **The delayed quote a name's page asked for in the regular session, written by the quote job alone** (see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap). The job inserts one row for each ask it answers with a price and never updates or deletes one; an ask outside the session, at the day's cap or answered with no price stores nothing and says why on its run log row. The cap is read as the rows asked inside the session. A name's page draws the newest row stored inside the session it is open in, and the Run page counts a session's rows against the cap; no night, rule or list reads the table.
+
+### analyst_view
+Grain: one row per stock and ask the analyst job answered from Yahoo.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | the stock the page asked for |
+| `asked_at` | TEXT | the UTC instant of the page's ask the job answered, the one its analyst request carries |
+| `answered_at` | TEXT | the UTC instant the job stored the answer |
+| `currency` | TEXT | the currency Yahoo prices the stock in, null where it sent none |
+| `target_low` | TEXT | decimal in code, the lowest target as Yahoo sent it, null where it sent none |
+| `target_mean` | TEXT | decimal in code, the mean target as Yahoo sent it, null where it sent none |
+| `target_median` | TEXT | decimal in code, the median target as Yahoo sent it, null where it sent none |
+| `target_high` | TEXT | decimal in code, the highest target as Yahoo sent it, null where it sent none |
+| `analysts` | INTEGER | how many analysts set the targets, null where Yahoo sent none |
+| `recommendation` | TEXT | Yahoo's word for their view, `strong_buy` to `sell`, null where it sent none |
+| `months` | TEXT | JSON: each month Yahoo files under its own label, `0m` the month asked and `-1m` the one before, with its strong buy, buy, hold, sell and strong sell counts |
+| `actions` | TEXT | JSON: every firm's rating action Yahoo files, newest first: its UTC instant, the firm, Yahoo's word for the action, the grade before and after, the target before and after as text in the store's form of money and Yahoo's word for the target's move, each null where Yahoo stated none |
+
+Primary key: `ticker`, `asked_at`.
+
+**What Yahoo sent about a stock's analysts when its chart page asked, written by the analyst job alone** from 20.13 (see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it). The job inserts one row for each ask it answers and never updates or deletes one; an ask at the New York day's cap, one Yahoo answers with no analysts and one that fails store nothing and say why on the run log row, the cap read as the job's runs of the day that asked. The chart page draws the newest row and asks again on a New York day holding none; no night, rule or list reads the table.
+
+### analyst_rating
+Grain: one row per stock and press the ratings job answered from TipRanks.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | the stock the press asked for |
+| `asked_at` | TEXT | the UTC instant of the press the job answered, the one its analyst request carries |
+| `answered_at` | TEXT | the UTC instant the job stored the answer |
+| `as_of` | TEXT | the date TipRanks states its answer as of, null where it stated none |
+| `total` | INTEGER | how many ratings TipRanks counts for the stock, null where it stated none |
+| `counts` | TEXT | JSON: each span TipRanks names, `last30Days`, `last90Days` and `last12Months`, with how many analysts rated the stock over it and their buys, holds and sells |
+| `ratings` | TEXT | JSON: each analyst's newest rating, newest first: the analyst, the firm, the rating, TipRanks' word for the action, the day, the target as text in the store's form of money and its currency, the analyst's stars out of five, the share of their ratings that made money, their average return over the market in per cent, their rank and how many ratings their record counts, and the title of the article it was reported in, each null where TipRanks stated none |
+
+Primary key: `ticker`, `asked_at`.
+
+**What TipRanks sent about a stock's ratings on the chart page's press, written by the ratings job alone** from 20.13 (see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit). The job inserts one row for each press it answers and never updates or deletes one; a press over an answer of the stock's New York day, one at the month's limit, one TipRanks answers with no ratings and one that fails store nothing and say why on the run log row. Every run's row carries in its detail the month's calls as the job last read them off TipRanks' own count, used, the limit, when the count starts again and when it was read, which the chart page draws as the calls used and left and the read surface refuses a press by. The chart page draws the newest row; no night, rule or list reads the table.
 
 ### treasury_yield
 Grain: one row per session the Treasury published a 10-year par yield for.
@@ -2987,3 +3029,16 @@ Grain: one row per name page's ask for its delayed quote that ReadApi wrote.
 Primary key: `ticker`, `asked_at`.
 
 Written by ReadApi on a name page's ask inside the regular session and on nothing else, and never updated or deleted. An ask inside the interval of the name's newest row writes none, so two pages open on one name ask once between them, and an ask in the same second as one held writes none. The quote job the ask starts answers it in `live_quote` (see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap).
+
+### analyst_request
+Grain: one row per chart page's ask for its stock's analysts that ReadApi wrote, a source an ask.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | the stock the page asked for |
+| `asked_at` | TEXT | the UTC instant of the ask |
+| `source` | TEXT | `yahoo` for the ask a chart page makes as it opens, `tipranks` for its press asking TipRanks' ratings |
+
+Primary key: `ticker`, `asked_at`, `source`.
+
+Written by ReadApi from 20.13 on a chart page's ask under the page's own header and on nothing else, and never updated or deleted. Yahoo's ask writes none where an answer of the stock's New York day is stored in `analyst_view` or the stock's newest Yahoo row is inside the 10 minutes between two asks, and TipRanks' none where an answer of the stock's New York day is stored in `analyst_rating` or the ratings job's newest run says the month's calls are spent until the count starts again; an ask in the same second as one held writes none. The analyst job and the ratings job the asks start answer them in `analyst_view` and `analyst_rating` (see: The chart page graphs the report's earnings and revenue beneath its chart with the analysts' figures Yahoo answers when it opens, and no rule reads them from it) (see: TipRanks' analyst ratings are asked only on a press, once a stock a day and never past the month's limit).

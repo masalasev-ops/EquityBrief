@@ -1,0 +1,7 @@
+# The remedy of 20.13 (the chart page's analysts from Yahoo and TipRanks' ratings on a press), as its PROGRESS entry
+# prints it: the merge adds migration 107, the analyst requests', the analyst views' and the analyst ratings' tables,
+# which nothing fills until a chart page is opened or its press is made. The migration runs alone, before the read
+# surface is started again from the merged build, since the chart page reads the two answer tables. No provider
+# request, no model call and no TipRanks call. Run after the merge, when no night, history read or other writer is
+# running.
+migrate
