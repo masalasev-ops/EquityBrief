@@ -5365,7 +5365,7 @@ public sealed partial class ReadApi : IComponent
     // The newest row's parts that are as of a fetch are the newest copy's, of the copies fetched on
     // or before the night the read is about, so tonight's page draws the day's figures and an
     // earlier night's draws what the store held that night.
-    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
     // see: A name's page for an earlier night draws what the store held that night and nothing it learned after
     public async Task<IReadOnlyList<FilingRow>> FundamentalsAsync(string ticker, DateOnly? asOf = null)
     {

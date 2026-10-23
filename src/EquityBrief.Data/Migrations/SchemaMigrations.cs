@@ -2828,7 +2828,7 @@ public static class SchemaMigrations
     // A filing's row is never updated, so a fetch finding no new filing had nowhere to put a price
     // that has moved since; this is where it goes, and the newest copy is read in place of the
     // newest filing row's.
-    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
     const string CreateFundamentalsSnapshot = @"
         CREATE TABLE fundamentals_snapshot (
             ticker     TEXT NOT NULL,

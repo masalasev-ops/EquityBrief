@@ -12,7 +12,7 @@ namespace EquityBrief.Tests.Reading;
 // read-surface, the 5.8 correction: a regenerate writes from the company's figures as they stand on the
 // day it runs and at most once a name a day, and the facts file and the page read the newest copy of the
 // parts that are as of a fetch, an earlier night's page the newest fetched by that night.
-// see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+// see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
 public partial class ReadSurface
 {
     // The recorded answer as the provider gives it on a later day, the trailing multiple moved to 31.25
@@ -50,11 +50,11 @@ public partial class ReadSurface
         Assert.NotNull(held);
         Assert.NotEqual("31.25", held);
 
-        // A pass for the name ran to the end on 2026-09-08 in New York, so a regenerate that day
-        // fetches nothing and the page is as it was.
+        // A pass for the name ran to the end on 2026-09-08 in New York writing a section of its own, so a
+        // regenerate that day fetches nothing and the page is as it was.
         store.Execute(
             "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) " +
-            "VALUES ('research-earlier-AAPL', 'research', '2026-09-08T14:00:00Z', '2026-09-08T14:05:00Z', 'ok', 0, 0, 0, '0', '{\"ticker\":\"AAPL\",\"asOf\":\"2026-09-08\"}');");
+            "VALUES ('research-earlier-AAPL', 'research', '2026-09-08T14:00:00Z', '2026-09-08T14:05:00Z', 'ok', 0, 0, 0, '0', '{\"ticker\":\"AAPL\",\"asOf\":\"2026-09-08\",\"written\":[{\"section\":\"What the company sells\",\"version\":1,\"model\":\"deepseek-flash\",\"retry\":false}]}');");
 
         var morning = At("2026-09-08T15:00:00Z");
         var sameDay = new LaterFundamentals();

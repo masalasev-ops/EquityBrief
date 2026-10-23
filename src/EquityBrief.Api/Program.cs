@@ -307,10 +307,11 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
         reactions,
         priceDrawn));
 
-    // A written report's standing with the controls that write it again, read as the name page reads them.
+    // A written report's standing with the controls that write it again, read as the name page reads them, the day its
+    // industry section was written read off its theme as the name page reads it.
     if (view.ReportWritten is { } written)
     {
-        view = view with { Standing = NameScreen.Standing(await read.StalenessAsync(ticker), NameScreen.Pass(await read.NewestPassAsync(ticker)), await SpendNow(read, caps, clock), await read.PaidCallSpendsAsync(), today, written) };
+        view = view with { Standing = NameScreen.Standing(await read.StalenessAsync(ticker), NameScreen.Pass(await read.NewestPassAsync(ticker)), await SpendNow(read, caps, clock), await read.PaidCallSpendsAsync(), today, written, (await read.ThemeCycleAsync(ticker))?.AsOf) };
     }
 
     var mast = new NameMast(member?.Name, member?.Sector, member?.Industry, NameScreen.DayChange(ticker, bars), Universes.ByCode(indexCode ?? string.Empty)?.Name);

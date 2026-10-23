@@ -192,7 +192,7 @@ public sealed class FundamentalsFetcher : IComponent
 
     // A fetch the operator asked for by regenerating a report, made whatever the store holds, so a
     // filing made since is stored and the parts as of the fetch are stored again as the day's copy.
-    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
     public Task<FundamentalsOutcome> RefetchAsync(
         string ticker,
         string runId,
@@ -537,7 +537,7 @@ public sealed class FundamentalsFetcher : IComponent
     // which a fetch stores whether or not it found a new filing. The newest filing's row carries the
     // same parts as they stood when it was fetched, and a row is never updated, so without the copy a
     // later fetch would have nowhere to put a price that has moved.
-    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
     internal static string Snapshot(CompanyFundamentals fetched) =>
         JsonSerializer.Serialize(new
         {

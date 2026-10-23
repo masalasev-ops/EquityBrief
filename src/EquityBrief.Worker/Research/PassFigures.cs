@@ -14,7 +14,7 @@ namespace EquityBrief.Worker.Research;
 // the pass will then start nothing, or write only what that pass left out from the figures it
 // fetched, and a fetch would buy nothing. Null where it was not asked.
 // see: A name's facts file is assembled again for its night when an open fetches its fundamentals
-// see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+// see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
 public static class PassFigures
 {
     public static async Task<FundamentalsOutcome?> FetchAsync(

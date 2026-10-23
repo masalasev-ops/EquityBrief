@@ -1148,9 +1148,18 @@ public sealed record ResearchPassLine(string Outcome, DateOnly AsOf, string Line
 public sealed record ResearchControl(string Kind, string Label, bool Refresh, bool PaidForLocal);
 
 // A written report's standing as the chart page's report line and the name page under its masthead draw it: stands or
-// stale, the day its newest section was written, what made a stale one so, the controls that rewrite its stale sections
-// and regenerate it, and what research has cost, stated before them.
-public sealed record ReportStandingView(string State, DateOnly? Written, IReadOnlyList<string> Why, IReadOnlyList<ResearchControl> Controls, ResearchCost? Cost);
+// stale, the day its own newest section was written, what made a stale one so, the controls that rewrite its stale
+// sections and regenerate it, and what research has cost, stated before them; and the day its industry section was
+// written where that is later, what a pass that ran today came to where it wrote none of the report's own sections, and
+// why Regenerate is not offered where the report would be offered it on another day.
+public sealed record ReportStandingView(string State, DateOnly? Written, IReadOnlyList<string> Why, IReadOnlyList<ResearchControl> Controls, ResearchCost? Cost)
+{
+    public DateOnly? Industry { get; init; }
+
+    public string? Today { get; init; }
+
+    public string? Withheld { get; init; }
+}
 
 // Where a pass the page started stands: starting before its first row lands, running while it
 // works with the step it is on in the reader's words, and ended when its own row lands, with
@@ -4051,8 +4060,11 @@ public sealed partial class MarkRenderer : IComponent
     // A written report's standing, as the chart page's report line and the name page under its masthead draw it: stands,
     // or stale in the failure's red with what made it so, then what research has cost and the controls that rewrite its
     // stale sections and regenerate it, which the research region at the page's foot draws as well. A control is drawn
-    // only with its cost, as there, and a report not written draws no standing.
+    // only with its cost, as there, and a report not written draws no standing. The day named is the report's own; its
+    // industry section, which its theme's pass writes, is named apart where it is later, a pass today that wrote none of
+    // the report's own sections says so, and a Regenerate not offered says why.
     // see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
+    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
     public string ReportStanding(string ticker, ReportStandingView? standing, bool namesTheDay)
     {
         if (standing is null)
@@ -4068,7 +4080,9 @@ public sealed partial class MarkRenderer : IComponent
         drawn.Append(namesTheDay && standing.Written is { } written ? Formatted($"<span class=\"rs-written\">The report was written {DayOf(written)}</span> ") : string.Empty);
         drawn.Append(stale ? "<span class=\"status-pill failed\">stale</span>" : "<span class=\"status-pill live\">stands</span>");
         drawn.Append(stale && standing.Why.Count > 0 ? Formatted($" <span class=\"rs-why\">{Escaped(string.Join("; ", standing.Why))}</span>") : string.Empty);
+        drawn.Append(standing.Industry is { } industry ? Formatted($" <span class=\"rs-industry\">Its industry section was written {DayOf(industry)}.</span>") : string.Empty);
         drawn.Append("</p>");
+        drawn.Append(standing.Today is { } today ? Formatted($"<p class=\"rs-today\">{Escaped(today)}</p>") : string.Empty);
 
         if (offered.Count > 0 && standing.Cost is { } cost)
         {
@@ -4082,6 +4096,7 @@ public sealed partial class MarkRenderer : IComponent
             drawn.Append("</div>");
         }
 
+        drawn.Append(standing.Withheld is { } withheld ? Formatted($"<p class=\"rs-withheld\">{Escaped(withheld)}</p>") : string.Empty);
         drawn.Append("</div>");
 
         return drawn.ToString();

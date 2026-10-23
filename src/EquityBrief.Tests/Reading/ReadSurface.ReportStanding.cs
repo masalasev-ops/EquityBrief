@@ -14,7 +14,7 @@ public partial class ReadSurface
 {
     // A page's report standing, from its opening tag to its close.
     static string StandingOn(string page) =>
-        Regex.Match(page, "<div class=\"report-standing\"[^>]*><p class=\"rs-line\">.*?</p>(?:<p class=\"research-cost\"[^>]*>[^<]*</p><div class=\"rs-controls\">.*?</div>)?</div>", RegexOptions.Singleline).Value;
+        Regex.Match(page, "<div class=\"report-standing\"[^>]*><p class=\"rs-line\">.*?</p>(?:<p class=\"rs-today\">[^<]*</p>)?(?:<p class=\"research-cost\"[^>]*>[^<]*</p><div class=\"rs-controls\">.*?</div>)?(?:<p class=\"rs-withheld\">[^<]*</p>)?</div>", RegexOptions.Singleline).Value;
 
     // The kinds of the controls a piece of a page draws, in order.
     static IReadOnlyList<string> KindsIn(string markup) =>
@@ -129,6 +129,63 @@ public partial class ReadSurface
         Assert.Contains($"<p class=\"notice earlier-night\" data-night=\"{earlier}\"", then, StringComparison.Ordinal);
         Assert.DoesNotContain("report-standing", then, StringComparison.Ordinal);
         Assert.Empty(KindsIn(then));
+    }
+
+    // From the 19.11 correction of 2026-10-23: a pass that ran today and wrote none of the report's own sections, as a
+    // night's pass refreshing only the industry does, leaves Regenerate offered and says it checked; one that wrote them
+    // withholds Regenerate and says why; and the report's own day is named apart from a later industry section's, on the
+    // name page and on the chart page alike.
+    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
+    [Fact]
+    public async Task APassTodayWritingNoneOfTheReportsOwnSectionsLeavesRegenerateOfferedAndTheLineNamesEachDayAndWhy()
+    {
+        using var store = await FixtureReplay.ResearchedAsync();
+        var passDay = DateTimeOffset.Parse("2026-09-08T23:00:00Z", System.Globalization.CultureInfo.InvariantCulture);
+        async Task<string> NameOn(DateTimeOffset at) => StandingOn(await ResearchedPage(store, "KEYS", at));
+
+        // On the day its pass wrote the report's own sections: no Regenerate, and the line saying why.
+        var wrote = await NameOn(passDay);
+
+        Assert.Empty(KindsIn(wrote));
+        Assert.Contains($"<p class=\"rs-withheld\">{EquityBrief.Api.Reading.NameScreen.RegenerateTomorrow}</p></div>", wrote, StringComparison.Ordinal);
+        Assert.DoesNotContain("rs-today", wrote, StringComparison.Ordinal);
+
+        // The same pass as one that wrote none of the report's own sections: Regenerate offered after the cost, the line
+        // saying a pass checked it today, and nothing withheld.
+        store.Execute("UPDATE run_log SET detail = json_set(detail, '$.written', json('[]')) WHERE stage = 'research' AND json_valid(detail) AND json_extract(detail, '$.ticker') = 'KEYS';");
+
+        var checkedOnly = await NameOn(passDay);
+
+        Assert.Equal([NameScreenKinds.Refresh], KindsIn(checkedOnly));
+        Assert.Contains($"</p><p class=\"rs-today\">{EquityBrief.Api.Reading.NameScreen.CheckedToday(new DateOnly(2026, 9, 8))}</p><p class=\"research-cost\"", checkedOnly, StringComparison.Ordinal);
+        Assert.Equal("A pass checked it today, 2026-09-08, and wrote none of its own sections.", EquityBrief.Api.Reading.NameScreen.CheckedToday(new DateOnly(2026, 9, 8)));
+        Assert.DoesNotContain("rs-withheld", checkedOnly, StringComparison.Ordinal);
+
+        // A week later its industry's cycle written by a theme pass on the fourteenth: the report's own day stays the
+        // eighth, and the industry's is named apart, on the name page and on the chart page.
+        store.Execute(
+            "INSERT INTO theme_section (theme, section, version, as_of, model, status, prose, source_ids, reject_reason, industries) "
+            + $"SELECT m.industry, '{EquityBrief.Core.Research.ClaimRules.CycleSection}', 99, '2026-09-14', 'deepseek-flash', 'accepted', 'The cycle turned.', '[]', NULL, '[]' "
+            + "FROM membership m WHERE m.ticker = 'KEYS' AND m.industry IS NOT NULL ORDER BY m.observed_at DESC LIMIT 1;");
+
+        var name = await NameOn(AWeekLater);
+
+        using var host = new PassHost(store.Root) { Clock = FixedClock.At(AWeekLater, SessionZones.UnitedStates) };
+        using var client = host.CreateClient();
+
+        var chart = StandingOn(await client.GetStringAsync("/screens/chart/KEYS"));
+
+        Assert.Contains("data-written=\"2026-09-08\"", name, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"rs-written\">The report was written 2026-09-08</span>", name, StringComparison.Ordinal);
+        Assert.Contains(" <span class=\"rs-industry\">Its industry section was written 2026-09-14.</span></p>", name, StringComparison.Ordinal);
+        Assert.Contains("data-written=\"2026-09-08\"", chart, StringComparison.Ordinal);
+        Assert.Contains(" <span class=\"rs-industry\">Its industry section was written 2026-09-14.</span></p>", chart, StringComparison.Ordinal);
+        Assert.DoesNotContain("rs-today", name, StringComparison.Ordinal);
+
+        // An industry section no later than the report's own is not named.
+        store.Execute($"UPDATE theme_section SET as_of = '2026-09-08' WHERE version = 99 AND section = '{EquityBrief.Core.Research.ClaimRules.CycleSection}';");
+
+        Assert.DoesNotContain("rs-industry", await NameOn(AWeekLater), StringComparison.Ordinal);
     }
 
     // A press from a report's standing is confirmed with the cost its own block states, and the pass it starts is watched

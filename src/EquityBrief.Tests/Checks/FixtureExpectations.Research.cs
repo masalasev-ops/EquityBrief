@@ -351,7 +351,7 @@ public partial class FixtureExpectations
         Assert.DoesNotContain(fill.Warranted, section => newest.TryGetValue(section, out var one) && one is { Status: ClaimChecker.Accepted, AsOf: "2026-09-08" });
 
         // And where that day's report left nothing out, a regenerate that day starts nothing and warrants nothing.
-        // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+        // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
         store.Execute("UPDATE research_section SET status = 'accepted', reject_reason = NULL WHERE ticker = 'KEYS' AND status = 'fallback' AND as_of = '2026-09-08';");
 
         var regenerate = await FixtureReplay.Researcher(store, ResearchClock, paid: new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned(), unreachable))
