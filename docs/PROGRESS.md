@@ -7673,3 +7673,25 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over d9d5a13
 Carried:    20.8's remedy; the tone variants at pin 5; 20.10, with the probes' console line naming each probe's own
             count where it words every probe as a reading twice; the sign-offs of phases 20 and 18 by fresh sessions;
             22.2 on the operator's word.
+
+### 20.3 - correction: each probe's line names what it compared in its own words, as the probes under pin 5 showed   2026-10-23
+
+Queue:      as the 20.10 ruling entry above, 20.3's record open as PR 540; in progress, this pull request, 20.10's; next,
+            the sign-offs of phases 20 and 18 by fresh sessions; 22.2 on the operator's word.
+Found:      the three probes under pin 5 on 2026-10-23: each probe's line on the console ended in the releases "answered
+            alike when read twice", the re-identification probe's count of the filers it named, 87 of 200, and the
+            distraction probe's of the answers alike with the names in, 133 of 200, among them. The rows the probes keep
+            and the accuracy report, whose figures 20.3's record states, read each probe in its own terms.
+Corrected:  the line names the distraction probe's count as the releases answered alike with the names removed and with
+            them in, and the re-identification probe's as the releases whose filer it named, the twice-read and the
+            probe reading twice keeping theirs. The roster's fixture-expectations row and the changelog.
+Tests:      none new: the probes' test reads each probe's line.
+Claims:     1418, none new.
+Mutated:    the rule, stated before the runs: one mutation each probe's own words, the smallest edit falling back to the
+            words of a reading twice, run over the probes' test with its red predicted, made in this checkout and
+            reverted with the editor. P1 the distraction probe's words dropped, red; P2 the re-identification probe's
+            words dropped, red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    20.8's remedy and its record; the tone variants at pin 5 and their record; 20.10; the sign-offs of phases 20
+            and 18 by fresh sessions; 22.2 on the operator's word.

@@ -823,10 +823,17 @@ public sealed partial class LocalRun(
         return ended;
     }
 
+    // What a comparison came to in its own kind's words: the distraction probe's answers alike with the names removed and
+    // with them in, the re-identification probe's filer named, and every other the answers alike when read twice.
     static string Said(LocalRunOutcome outcome) =>
-        outcome.Compared > 0
-            ? FormattableString.Invariant($"; {outcome.Identical} of {outcome.Compared} release(s) answered alike when read twice")
-            : string.Empty;
+        outcome.Compared <= 0
+            ? string.Empty
+            : outcome.Kind switch
+            {
+                Probing + " " + ReleaseProbes.Distract => FormattableString.Invariant($"; {outcome.Identical} of {outcome.Compared} release(s) answered alike with the names removed and with them in"),
+                Probing + " " + ReleaseProbes.Reidentify => FormattableString.Invariant($"; the filer named for {outcome.Identical} of {outcome.Compared} release(s) read with the names removed"),
+                _ => FormattableString.Invariant($"; {outcome.Identical} of {outcome.Compared} release(s) answered alike when read twice"),
+            };
 
     // The row's detail, which the Run page draws: what the run was and came to, its counts, its times, the pin and the
     // file check, and from the 20.1 correction of 2026-10-19 what the guard of LM Studio's saved structured output read,

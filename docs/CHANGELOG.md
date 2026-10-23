@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-23 - .claude/rules/checks.md - fixture-expectations reaches each probe's line in its own words
+Corrects: each probe's line on the console said how many releases were answered alike when read twice, the re-identification probe's count of filers named and the distraction probe's of answers alike with the names in among them, found when the three probes ran under pin 5
+Was:
+> fixture-expectations: ... the feed reading the count where the server answers the notice that the session is open with a body it never ends, against a bound of two seconds, and every request asking for its connection to be closed |
+Now:
+> fixture-expectations: ... the feed reading the count where the server answers the notice that the session is open with a body it never ends, against a bound of two seconds, and every request asking for its connection to be closed; and from the third 20.3 correction of 2026-10-23 each probe's line naming what it compared in its own words, the distraction probe's answers alike with the names removed and with them in and the re-identification probe's filer named, and the probe reading twice its answers alike when read twice |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
 ### 2026-10-23 - RUNBOOK.md - the tone variants are registered at reading version 5, the newest whose history read is complete
 Corrects: the runbook's form for the S&P 400's and 600's tone variants named reading version 3, while pin 5's history read, complete at 18:39:57 UTC, is the newest the variants are to read
 Was:
