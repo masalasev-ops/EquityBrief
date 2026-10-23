@@ -7487,11 +7487,31 @@ Mutated:    the rule, stated before the runs: one mutation each part of the corr
             each run over the test naming it with its red predicted, made in this checkout and reverted with the editor.
             N1 the notice's body read again, red at the new test past its bound; N2 connections kept alive, red at the
             new test.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
-            stated before that run: all six steps, 0 warnings, 0 errors, 2673 of 2673 tests ran with none failed,
-            migrations 0 to 107 with none pending, schema version 107, against `data-ci` and never `data`; the phase
-            report 60 tables, 1417 claims, 1417 passing, none out of scope and none unexamined, 1428 placements and
-            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
 Carried:    no remedy; once merged, the live press for PG the operator asked for, one of the month's calls; 20.8's
             remedy; 22.2; 20.3's record; the tone variant at the newest complete version; 20.10; the sign-offs of
             phases 18 and 20.
+
+### 20.13 ruling - TipRanks is asked again for a stock only 15 days after it last answered for it, the press drawn closed until then, and the fixes found while this pull request is open land in it as commits of their own   2026-10-23
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-23 at 17:49 UTC, with a screenshot of PG's chart page offering its press: "The get
+            analyst rating is still available even after it was fetched once. I think it should be disabled for at
+            least 15 days on one stock after it was pressed.", and in the same message, of the masthead's search: "There
+            is also a secondary problem. The search bar is saying OKTA is not available even though OKTA is part of
+            SP400". Told that PG's press had reached no TipRanks call, the feed waiting on the notice past its bound,
+            and offered the wait and the search's fix as pull requests of their own after this one, at 17:51 UTC: "just
+            do them all in this PR in separate commits. How many PRs do we need for small fixes".
+Plan:       the 20.13 correction below: a press for a stock TipRanks answered for in the 15 days before refused by the
+            read surface and asked nothing by the ratings job, and the press drawn closed with the day it opens again;
+            a press that reached no answer starts no wait. The TipRanks decision superseded, its citations repointed.
+            Then a 15.1 correction in this pull request: the masthead's search reading every current member of the S&P
+            500, 400 and 600.
+Queue:      done, phases 0 to 19 built and phase 19 signed, 20.0 to 20.9 and 20.11 to 20.13 merged with their records,
+            20.13's remedy run, 22.0 planned and ruled, 22.1 merged, the 19.11 and 20.3 corrections merged; in progress,
+            the history read of the releases pin 5 leaves, and this pull request; next, the live press for PG the
+            operator asked for, 20.8's remedy once pin 5 has read its history whole, 22.2, 20.3's record, the tone
+            variant at the newest complete version, 20.10, and the sign-offs of phases 18 and 20 by fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
