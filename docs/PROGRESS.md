@@ -7600,3 +7600,26 @@ Mutated:    none: the run over 77990489 is the check red over the words this rep
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the ruling entry above.
+
+### 20.13 - correction: TipRanks' analysts, firms and titles sent with an entity are drawn as their characters escaped once, as PG's first answer showed   2026-10-23
+
+Queue:      as the ruling entry above, this correction in progress, the last of this pull request.
+Found:      PG's first answer, stored at 18:29 UTC, drawn on its chart page: TipRanks sends some article titles with an
+            ampersand already written as an entity, "Procter &amp; Gamble upgraded to Buy", and others with it bare, and
+            the page escaped what it was sent, so the reader saw the entity's letters.
+Corrected:  the analyst, the article's title and the firm are read back as TipRanks sent their characters before the page
+            escapes them once, by the one helper the news titles are drawn through, and stored as sent. The roster's
+            read-surface row and the changelog.
+Tests:      1 new, 2675 in all: an analyst, a title and a firm sent with an entity and sent bare, each drawn escaped once.
+Claims:     1418, none new.
+Mutated:    the rule, stated before the runs: one mutation each place the words are read back, the smallest edit undoing
+            it, each run over the new test with its red predicted, made in this checkout and reverted with the editor. T1
+            the title drawn as sent, red; T2 the firm drawn as sent, red; T3 the row's analyst drawn as sent, red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2675 of 2675 tests ran with none failed,
+            migrations 0 to 107 with none pending, schema version 107, against `data-ci` and never `data`; the phase
+            report 60 tables, 1418 claims, 1418 passing, none out of scope and none unexamined, 1429 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    no remedy; the stored answer is drawn right as it stands. 20.8's remedy, the probes and 20.3's record, the tone
+            variants at pin 5, 20.10, and the sign-offs of phases 20 and 18 by fresh sessions; 22.2 on the operator's
+            word.

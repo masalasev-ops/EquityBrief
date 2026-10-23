@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-23 - .claude/rules/checks.md - read-surface reaches TipRanks' words sent with an entity
+Corrects: the chart page drew an ampersand TipRanks sent as an entity as the entity's own letters, "Procter &amp; Gamble", found on PG's first answer
+Was:
+> read-surface: ... read over a constructed store of the three indices, and saying so over the three where text matches none |
+Now:
+> read-surface: ... read over a constructed store of the three indices, and saying so over the three where text matches none; and from the 20.13 correction of 2026-10-23 an analyst, an article's title and a firm TipRanks sent with an ampersand written as an entity, and sent bare, each drawn as its characters escaped once |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
 ### 2026-10-23 - BUILD_PLAN.md - 20.13's done condition names a stock's TipRanks wait as its 15-day wait
 Corrects: `done-condition-producible` read "15 days" in the clause the 15-day correction wrote as a wait on the calendar, red in `tools/ci.ps1` over 77990489, the tree PR 538 merged
 Was:

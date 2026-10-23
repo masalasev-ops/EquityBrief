@@ -268,6 +268,22 @@ public partial class ReadSurface
         }
     }
 
+    // TipRanks sends some words with an ampersand already written as an entity and others with it bare, as its first
+    // answer for PG did, and each is drawn as its characters escaped once: the analyst, the article's title and the firm.
+    [Fact]
+    public void TipRanksWordsSentWithAnEntityAreDrawnAsTheirCharactersEscapedOnce()
+    {
+        var sent = new TipRanksRating("Ana &amp; Lee", "Smith &amp; Co", "Buy", "upgraded", new DateOnly(2026, 10, 23), 176m, "USD", 2.5, 0.857, 8.4, 3, 40, "Procter &amp; Gamble upgraded to Buy from Hold");
+        var bare = sent with { Analyst = "Bo & Al", Firm = "Jones & Co", Article = "Procter & Gamble (NYSE: PG) and Nestlé SA" };
+        var drawn = new MarkRenderer().TipRanksRatings("PG", new TipRanksView(new DateTimeOffset(2026, 10, 23, 18, 29, 48, TimeSpan.Zero), new TipRanksAnswer(new DateOnly(2026, 10, 23), 2, [], [sent, bare])));
+
+        Assert.Contains("<tr data-analyst=\"Ana &amp; Lee\" data-target=\"176\">", drawn, StringComparison.Ordinal);
+        Assert.Contains("<td>Ana &amp; Lee<span class=\"muted tr-article\"> Procter &amp; Gamble upgraded to Buy from Hold</span></td><td>Smith &amp; Co</td>", drawn, StringComparison.Ordinal);
+        Assert.Contains("<tr data-analyst=\"Bo &amp; Al\" data-target=\"176\">", drawn, StringComparison.Ordinal);
+        Assert.Contains("<td>Bo &amp; Al<span class=\"muted tr-article\"> Procter &amp; Gamble (NYSE: PG) and Nestlé SA</span></td><td>Jones &amp; Co</td>", drawn, StringComparison.Ordinal);
+        Assert.DoesNotContain("&amp;amp;", drawn, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void TheTargetRangeIsWorkedByHandAndTheRatingMonthsAreYahoosOwnLabelsOldestFirst()
     {
