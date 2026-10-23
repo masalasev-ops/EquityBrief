@@ -7312,7 +7312,7 @@ Corrected:  an answer from the pin's model is read whatever runtime served it, a
             decisions superseded, the old ones under Previously decided and their citations repointed, 20 in code, 16
             in the specs and CLAUDE.md and 2 in the decisions; sections 1, 7, 12.3, 15, 16, 17, 18 and 20, SCHEMA.md,
             the runbook with pin 5's paragraph and its remedy file, the guide, the roster's row and the changelog.
-Tests:      2 new and 7 amended, 2663 in all: a version at 60,160 under runtime 2.63.0 over pin 1 at 50,176 under
+Tests:      2 new and 8 amended, 2663 in all: a version at 60,160 under runtime 2.63.0 over pin 1 at 50,176 under
             2.56.0 carrying a reading read whole and one refused for its word by their requests' hashes, and reading
             again one cut to fit, one cut off past its room, one whose request changed, one the runtime refused, one
             keeping no hash under a version after the fit and a filing never read, its history read answered under
@@ -7321,7 +7321,8 @@ Tests:      2 new and 7 amended, 2663 in all: a version at 60,160 under runtime 
             read, one cut off with its room asked once more and standing cut off, and the room's edge at 49,920 and
             49,921; the twice-read and the idea generator reading an answer under another runtime as the pin's and
             ending at another model's, the pin written again under runtime 2.63.0 written as none, the answer check
-            and the carry's parts, the pin 1 carry's counts and line, and the causes' words.
+            and the carry's parts, the pin 1 carry's counts and line, the causes' words, and the shipped settings'
+            window, which the first run of the checkpoint script over this correction found still read at 50,176.
 Claims:     1400, none new: the failure row naming the pin's parts renamed, and rows and section 12.3's paragraph
             gaining words.
 Mutated:    the rule, stated before the runs: one mutation a property the correction adds or changes, the smallest
@@ -7338,7 +7339,8 @@ Mutated:    the rule, stated before the runs: one mutation a property the correc
             after an answer cut off past its room dropped, at the cut-off test; W13 the room's edge taken at the room
             itself, at the cut-off test; W14 the profile's window back at 50,176, at the runbook's settings test; W15
             the cause's old words, at the causes' test. Each went red where predicted and nowhere else, W13 also at the
-            fit's version pin, which pins every edit to the fit's source; W8 went red on the count alone, the cut
+            fit's version pin, which pins every edit to the fit's source, and W14 run again once the shipped settings'
+            test read the window at 60,160, red at both settings tests; W8 went red on the count alone, the cut
             reading falling to a changed request, since the hash it keeps is the cut text's and no carry reproduces a
             cut, so the guard sorts it and its hash already keeps it from being carried.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
