@@ -17,7 +17,8 @@ public partial class ArchitectureConformance
 
         var (drawn, keyed) = Parts(architecture, "Figure 15.3.", "<div class=\"key\">", "</div>");
 
-        Assert.Equal(Enumerable.Range(1, 6).Select(part => part.ToString(CultureInfo.InvariantCulture)), drawn.Keys);
+        // Eight parts from 22.6, which redrew the top as the page draws it in the reader's words.
+        Assert.Equal(Enumerable.Range(1, 8).Select(part => part.ToString(CultureInfo.InvariantCulture)), drawn.Keys);
         Assert.Equal(drawn.Keys, keyed.Keys);
         Assert.All(keyed.Values, words => Assert.True(words.Length > 40, $"A key line says too little to explain a part: '{words}'."));
 
@@ -27,12 +28,12 @@ public partial class ArchitectureConformance
         Assert.Equal(pictured.Keys, listed.Keys);
 
         // Every figure drawn as a placeholder and never a night's: no digit in either figure's text but a part's own
-        // number and the three indices' names.
+        // number, the three indices' names, the 200-day average the market's line names and the column the risk of $1 heads.
         foreach (var figure in new[] { Figure(architecture, "Figure 15.3."), Figure(guide, "Tonight's top, its figures blanked out") })
         {
             var words = Regex.Matches(figure, "<text[^>]*>(.*?)</text>").Select(text => Regex.Replace(text.Groups[1].Value, "<[^>]+>", string.Empty))
                 .Where(text => !Regex.IsMatch(text, @"^\d$"))
-                .Select(text => Regex.Replace(text, @"S&amp;P (500|400|600)", string.Empty));
+                .Select(text => Regex.Replace(text, @"S&amp;P (500|400|600)|200-day|\$1 to make", string.Empty));
 
             Assert.All(words, text => Assert.DoesNotMatch(@"\d", text));
         }
@@ -164,8 +165,8 @@ public partial class ArchitectureConformance
     // place of its table of every account; and 22.1's thirteen, the dip family's catalogue and matrix rows, its four
     // stores, section 17's row, section 18's four, its card on Tonight and its trades on Past picks, and 22.2's three,
     // section 17's grid of the dip's sweep, section 18's row for a market series it reads missing a session and the
-    // Ledger page's dip counts, and 22.4's one, the chart page's brief read, which phase 22's own pair counts once its
-    // report is written.
+    // Ledger page's dip counts, and 22.4's one, the chart page's brief read, and 22.6's two, Tonight in one minute and the
+    // page's words at its foot, which phase 22's own pair counts once its report is written.
     internal static string[] AfterPhaseNineteen =>
     [
         .. ComponentAccess.DipRows,
@@ -175,6 +176,7 @@ public partial class ArchitectureConformance
         .. FixtureExpectations.DipLedgerClaims,
         .. Reading.ReadSurface.DipLedgerPageRows,
         .. Reading.ReadSurface.BriefRows,
+        .. Reading.ReadSurface.TonightRows,
         .. FixtureExpectations.TradeFillRows,
         .. Reading.ReadSurface.ChartRows,
         .. Reading.ReadSurface.ReadingLinkRows,

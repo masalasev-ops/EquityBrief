@@ -65,18 +65,23 @@ public partial class ReadSurface
         // readings alone, K2's none read.
         var momentum = 0.2 * (1.05 - 1.0) / 0.1;
 
-        Assert.Contains($"<section class=\"behind-it\" data-index=\"S&P 500\" data-push=\"drawn\">", rows["K1"], StringComparison.Ordinal);
+        Assert.Contains($"<section class=\"behind-it card-compares\" data-index=\"S&P 500\" data-push=\"drawn\">", rows["K1"], StringComparison.Ordinal);
         Assert.Contains($"<li data-heading=\"Momentum\" data-push=\"{momentum.ToString("R", CultureInfo.InvariantCulture)}\">", rows["K1"], StringComparison.Ordinal);
         Assert.Contains($"<ul class=\"behind-push\" data-centre=\"2\" data-score=\"{(0.2 / 0.1 * 1.05).ToString("R", CultureInfo.InvariantCulture)}\">", rows["K1"], StringComparison.Ordinal);
         Assert.Contains("<li data-heading=\"Momentum\" data-percentile=\"0.75\">", rows["K1"], StringComparison.Ordinal);
-        Assert.Contains("<section class=\"behind-it\" data-index=\"S&P 500\" data-push=\"none\">", rows["F1"], StringComparison.Ordinal);
+        Assert.Contains("<section class=\"behind-it card-compares\" data-index=\"S&P 500\" data-push=\"none\">", rows["F1"], StringComparison.Ordinal);
         Assert.Contains("<li data-heading=\"Momentum\" data-percentile=\"0.25\">", rows["F1"], StringComparison.Ordinal);
-        Assert.Contains("<section class=\"behind-it\" data-index=\"S&P 500\" data-push=\"none\">", rows["K2"], StringComparison.Ordinal);
+        Assert.Contains("<section class=\"behind-it card-compares\" data-index=\"S&P 500\" data-push=\"none\">", rows["K2"], StringComparison.Ordinal);
         Assert.DoesNotContain("data-percentile=\"0", rows["K2"], StringComparison.Ordinal);
 
-        // No rule replayed on the S&P 500: each card's record is the outline under the rule's own heading.
-        Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\"><h5>The record of the breakout on the S&P 500</h5><p class=\"degraded\">Not replayed yet", rows["K1"], StringComparison.Ordinal);
-        Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\"><h5>The record of the pullback on the S&P 500</h5><p class=\"degraded\">Not replayed yet", rows["F1"], StringComparison.Ordinal);
+        // From 22.6 each heading's bar says what higher means under it, as section 15.23 declares: F1's momentum, a
+        // quarter of the way up, reads 25 of 100.
+        Assert.Contains("<span class=\"bh-name\">Momentum</span>", rows["F1"], StringComparison.Ordinal);
+        Assert.Contains("<b class=\"bh-figure\">25</b> of 100; higher means stronger momentum</span>", rows["F1"], StringComparison.Ordinal);
+
+        // No rule replayed on the S&P 500: each card's record is the outline under the setup's own heading.
+        Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\"><h5>How this setup has done</h5><p class=\"degraded\">No record yet", rows["K1"], StringComparison.Ordinal);
+        Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\"><h5>How this setup has done</h5><p class=\"degraded\">No record yet", rows["F1"], StringComparison.Ordinal);
 
         // A stock no family listed has no card on its page: HELD, held back, and K3, a gate short.
         foreach (var ticker in new[] { "HELD", "K3" })
@@ -131,32 +136,25 @@ public partial class ReadSurface
 
         var rows = await CardsReadBack(client, stored, IndexNight);
 
-        // From the 19.2 correction of 2026-10-21 the S&P 600's buy points fold each row's plan and card beneath it, closed
-        // where the link names no row: S1's fold hidden, holding the line saying its plan is its rule's buy, stop and target
-        // and the ladder at the bands is worked for the S&P 500's members alone, and no plan's tables, the band the night
-        // stored for it beneath its close of 50, and then its card.
+        // From 22.6 the S&P 600's buy points fold each row's pick's card beneath it alone, closed where the link names no
+        // row: S1's fold hidden, holding its card, whose one plan is its setup's own, and no levels plan, which stays on the
+        // stock's full page, though the night stored a band for it beneath its close of 50.
         var points = BuyPointsOf(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight))));
         var s1 = Assert.Single(Folds(points));
 
         Assert.Equal(("fold-breakout-s1", "S1", true), (s1.Id, s1.Ticker, s1.Hidden));
-        Assert.StartsWith(
-            $"<section class=\"selected-name\" data-ticker=\"S1\" data-plan-rows=\"0\" data-bands=\"1\"><div class=\"selwrap\"><div class=\"fig\"><p class=\"mark-note no-ladder\" data-ticker=\"S1\" data-rows=\"0\">{EquityBrief.Api.Reading.NameScreen.LadderForTheLargeIndexAlone("S1")}</p>",
-            s1.Body,
-            StringComparison.Ordinal);
-        Assert.Contains("<table class=\"level-summary\" data-ticker=\"S1\" data-bands=\"1\">", s1.Body, StringComparison.Ordinal);
-        Assert.Contains("<tr class=\"close-row\" data-close=\"50\">", s1.Body, StringComparison.Ordinal);
-        Assert.Contains("<tr class=\"band\" data-low-edge=\"46\" data-high-edge=\"47.5\" data-role=\"support\"", s1.Body, StringComparison.Ordinal);
-        Assert.DoesNotContain("has no plan to draw", s1.Body, StringComparison.Ordinal);
-        Assert.DoesNotContain("The plan places no tranche.", s1.Body, StringComparison.Ordinal);
-        Assert.Matches("<div class=\"decision-card\" data-index=\"SML\" data-family=\"breakout\" data-ticker=\"S1\"", s1.Body);
+        Assert.StartsWith("<div class=\"decision-card\" data-index=\"SML\" data-family=\"breakout\" data-ticker=\"S1\"", s1.Body, StringComparison.Ordinal);
+        Assert.DoesNotContain("level-summary", s1.Body, StringComparison.Ordinal);
+        Assert.DoesNotContain("selected-name", s1.Body, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-low-edge=\"46\"", s1.Body, StringComparison.Ordinal);
         Assert.DoesNotContain(" class=\"sel\"", points, StringComparison.Ordinal);
 
         // From 19.11 the row's stock opens its chart page, and its report link the report.
         Assert.Contains("<a class=\"name-link\" href=\"#/chart/S1\">S1</a>", points, StringComparison.Ordinal);
         Assert.Matches("<a class=\"open[^\"]*\" href=\"#/name/S1\"", points);
 
-        // With S3 listed second, a link naming S3 opens its fold and no other, its row selected, and a link naming a stock no
-        // row holds opens none.
+        // With S3 listed second and its card written, a link naming S3 opens its fold and no other, its row selected, and a
+        // link naming a stock no row holds opens none.
         store.Execute(
             "INSERT INTO index_family_result (index_code, session_date, ticker, family, passed, place, entry, stop, target, trail, cap, order_by, reason) VALUES " +
             $"('SML', '{IndexNight}', 'S3', 'breakout', 1, 2, '40', '38', NULL, '2', 63, 1.9, NULL);");
@@ -164,10 +162,12 @@ public partial class ReadSurface
             "INSERT INTO index_family_pick (index_code, session_date, ticker, family, state, place, also, held_index, held_family, held_night) VALUES " +
             $"('SML', '{IndexNight}', 'S3', 'breakout', 'listed', 2, '[]', NULL, NULL, NULL);");
 
+        await new DecisionCards(new WaitedClock(new DateTimeOffset(2026, 10, 2, 23, 55, 0, TimeSpan.Zero)), store.DatabaseFile).RunAsync("cards-again");
+
         var named = BuyPointsOf(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight) + "&name=S3")));
 
         Assert.Equal(["S3"], Folds(named).Where(fold => !fold.Hidden).Select(fold => fold.Ticker));
-        Assert.Contains("<tr data-ticker=\"S3\" data-family=\"breakout\" data-fold=\"fold-breakout-s3\" class=\"sel\">", named, StringComparison.Ordinal);
+        Assert.Contains("<tr data-ticker=\"S3\" data-family=\"breakout\" data-place=\"2\" data-fold=\"fold-breakout-s3\" class=\"sel\">", named, StringComparison.Ordinal);
 
         var unnamed = BuyPointsOf(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight) + "&name=ZZZ")));
 
@@ -175,24 +175,27 @@ public partial class ReadSurface
         Assert.Equal(2, Folds(unnamed).Count);
 
         // M1's chart names its index and places it alone among its members, level with itself; no score on the S&P 400.
-        Assert.Contains("<section class=\"behind-it\" data-index=\"S&P 400\" data-push=\"none\">", rows["M1"], StringComparison.Ordinal);
+        Assert.Contains("<section class=\"behind-it card-compares\" data-index=\"S&P 400\" data-push=\"none\">", rows["M1"], StringComparison.Ordinal);
         Assert.Contains("<li data-heading=\"Momentum\" data-percentile=\"0.5\">", rows["M1"], StringComparison.Ordinal);
 
-        // The S&P 400's breakout record under the rule's own heading naming its index, opening with the line that it is the
-        // rule's record and not the stock's, its figures as the record stored them and no word of the stock; a rule not
-        // replayed draws the outline under its own heading, named for its index.
+        // The S&P 400's breakout record under the setup's own heading, worked by hand off the record stored: 400 trades
+        // from 2019 to 2026 with no target set, so no share reached one, an average of 0.21 of the risk, $21.00 for every
+        // $100 risked, a median of 12 trading days and a median worst close of 0.4 of the risk, 40% of the way to the stop;
+        // the lines that it is the setup's record and not the stock's and that its settings were chosen on those years; and
+        // no word of the stock. A rule not replayed draws the outline under the setup's own heading.
         var record = Regex.Match(rows["M1"], "<section class=\"card-record\" data-trades=\"400\" data-unit=\"risks\">(.*?)</section>", RegexOptions.Singleline);
 
         Assert.True(record.Success, "M1's card draws no record.");
-        Assert.StartsWith($"<h5>The record of the breakout on the S&P 400</h5><p class=\"card-caution\">{MarkRenderer.RecordIsTheRules}</p>", record.Groups[1].Value, StringComparison.Ordinal);
-        Assert.Contains("<dd data-average=\"0.21\"><span class=\"gain\">+0.21</span> of the risk after each trade's cost</dd>", record.Groups[1].Value, StringComparison.Ordinal);
-        Assert.Contains("<dd data-worst=\"-0.4\">a median <span class=\"loss\">-0.40</span> of the risk from the buy before the end</dd>", record.Groups[1].Value, StringComparison.Ordinal);
-        Assert.Contains("<dd data-won=\"none\">none read: the rule sets no target, so a trade has no win</dd>", record.Groups[1].Value, StringComparison.Ordinal);
-        Assert.Contains("<dd data-median=\"12\" data-held=\"", record.Groups[1].Value, StringComparison.Ordinal);
-        Assert.Contains($"<p class=\"card-caution\">{MarkRenderer.RecordReadsHigh}</p>", record.Groups[1].Value, StringComparison.Ordinal);
+        Assert.StartsWith(
+            "<h5>How this setup has done</h5><p class=\"record-said\" data-trades=\"400\" data-won=\"none\" data-average=\"0.21\">From 2019 to 2026 the breakout made 400 trades, and on average it made about $21.00 for every $100 risked, after costs. A trade was usually over in 12 trading days.</p>",
+            record.Groups[1].Value,
+            StringComparison.Ordinal);
+        Assert.Contains("<div class=\"plan-tile\" data-tile=\"worst\" data-worst=\"-0.4\"><span class=\"tile-label\">Typical worst close</span><b>40% of the way to the stop</b>", record.Groups[1].Value, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"plan-tile\" data-tile=\"held\" data-median=\"12\" data-held=\"", record.Groups[1].Value, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"card-caution\">{MarkRenderer.RecordIsTheRules} {MarkRenderer.RecordReadsHigh}</p>", record.Groups[1].Value, StringComparison.Ordinal);
         Assert.DoesNotContain("M1", record.Groups[1].Value, StringComparison.Ordinal);
-        Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\"><h5>The record of the sector heavyweights on the S&P 400</h5><p class=\"degraded\">Not replayed yet", rows["M2"], StringComparison.Ordinal);
-        Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\"><h5>The record of the breakout on the S&P 600</h5><p class=\"degraded\">Not replayed yet", rows["S1"], StringComparison.Ordinal);
+        Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\"><h5>How this setup has done</h5><p class=\"degraded\">No record yet", rows["M2"], StringComparison.Ordinal);
+        Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\"><h5>How this setup has done</h5><p class=\"degraded\">No record yet", rows["S1"], StringComparison.Ordinal);
 
         // The S&P 500's Tonight, whose families drew nothing on the night, draws no card, and M3, which no family listed,
         // has none on its page.
@@ -250,10 +253,11 @@ public partial class ReadSurface
 
         // A tick is a check's two strokes; a note a circle around an i, its stroke and its dot; a warning a triangle
         // around an exclamation, its stroke and its dot. Each is drawn in its mark's own colour and named by its verdict's
-        // word for a reader that does not see it.
-        Assert.Contains("<li class=\"card-line\" data-line=\"1\" data-verdict=\"tick\"><span class=\"card-mark\" data-verdict=\"tick\" role=\"img\" aria-label=\"tick\" title=\"tick\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M3.2 8.6l3 3 6.6-7\"/></svg></span> <b class=\"card-name\">Trend and strength</b>", drawn, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"card-mark\" data-verdict=\"note\" role=\"img\" aria-label=\"note\" title=\"note\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><circle cx=\"8\" cy=\"8\" r=\"6.2\"/><path d=\"M8 7.3v4.2\"/><circle class=\"dot\" cx=\"8\" cy=\"4.9\" r=\"1\"/></svg></span> <b class=\"card-name\">Business</b>", drawn, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"card-mark\" data-verdict=\"warning\" role=\"img\" aria-label=\"warning\" title=\"warning\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M8 1.9l6.6 11.6H1.4z\"/><path d=\"M8 6.4v3.6\"/><circle class=\"dot\" cx=\"8\" cy=\"11.7\" r=\"1\"/></svg></span> <b class=\"card-name\">Earnings in the hold</b>", drawn, StringComparison.Ordinal);
+        // word for a reader that does not see it: from 22.6 the first line's on the step it passed, the business's among
+        // the other checks, and the earnings line's on the next report among what could go wrong.
+        Assert.Contains("<li class=\"card-tick\" data-step=\"\"><span class=\"card-mark\" data-verdict=\"tick\" role=\"img\" aria-label=\"tick\" title=\"tick\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M3.2 8.6l3 3 6.6-7\"/></svg></span> <span class=\"card-words\">Passed every step.</span></li>", drawn, StringComparison.Ordinal);
+        Assert.Contains("<li class=\"card-line\" data-line=\"2\" data-verdict=\"note\"><span class=\"card-mark\" data-verdict=\"note\" role=\"img\" aria-label=\"note\" title=\"note\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><circle cx=\"8\" cy=\"8\" r=\"6.2\"/><path d=\"M8 7.3v4.2\"/><circle class=\"dot\" cx=\"8\" cy=\"4.9\" r=\"1\"/></svg></span> <b class=\"card-name\">The business</b>", drawn, StringComparison.Ordinal);
+        Assert.Contains("<li data-hit=\"report\" data-line=\"3\" data-verdict=\"warning\"><span class=\"card-mark\" data-verdict=\"warning\" role=\"img\" aria-label=\"warning\" title=\"warning\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M8 1.9l6.6 11.6H1.4z\"/><path d=\"M8 6.4v3.6\"/><circle class=\"dot\" cx=\"8\" cy=\"11.7\" r=\"1\"/></svg></span><span class=\"hit-when\">Next report</span>", drawn, StringComparison.Ordinal);
         Assert.DoesNotMatch(">(?:tick|note|warning)<", drawn);
 
         Assert.Contains(".card-mark svg{width:16px;height:16px;fill:none;stroke:currentColor;", Stylesheet.Css, StringComparison.Ordinal);
@@ -291,7 +295,7 @@ public partial class ReadSurface
                 // From the 19.2 correction of 2026-10-21 a buy point's card stands in its fold after its plan, the control
                 // in its row's stock cell naming the fold; a holding's stands in a card row with its control in its row.
                 var foldId = MarkRenderer.FoldId(card.Family, card.Ticker);
-                var fold = Regex.Match(page, $"<tr class=\"fold-row\" id=\"{foldId}\" data-fold-for=\"{Regex.Escape(card.Ticker)}\" hidden><td colspan=\"\\d+\">(.*?)(?=<tr data-ticker=|</tbody></table></div><p class=\"buys-next\">)", RegexOptions.Singleline);
+                var fold = Regex.Match(page, $"<tr class=\"fold-row\" id=\"{foldId}\" data-fold-for=\"{Regex.Escape(card.Ticker)}\" hidden><td colspan=\"\\d+\">(.*?)(?=<tr data-ticker=|</tbody></table></div><p class=\"buys-read\">)", RegexOptions.Singleline);
                 var row = Regex.Match(page, $"<tr class=\"card-row\" id=\"{card.Id}\" hidden><td colspan=\"\\d+\">(.*?)</td></tr>", RegexOptions.Singleline);
                 string body;
 
@@ -315,15 +319,10 @@ public partial class ReadSurface
                     body = row.Groups[1].Value;
                 }
 
-                // The lines the night stored, in their order, and after them the sixth, which Tonight works out from the
-                // operator's open trades where it draws the card.
-                var drawn = Regex.Matches(body, "<li class=\"card-line\" data-line=\"(\\d+)\" data-verdict=\"([a-z]+)\"><span class=\"card-mark\" data-verdict=\"\\2\" role=\"img\" aria-label=\"\\2\" title=\"\\2\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\">.*?</svg></span> <b class=\"card-name\">([^<]*)</b> <span class=\"card-words\">(.*?)</span></li>")
-                    .Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}|{match.Groups[3].Value}|{CardWords(match.Groups[4].Value)}")
-                    .ToArray();
-
-                Assert.Equal(card.Lines.Select(line => $"{line.Number}|{line.Verdict}|{line.Name}|{Said(line.Words)}"), drawn[..^1]);
-                Assert.StartsWith($"6|", drawn[^1], StringComparison.Ordinal);
-                Assert.Contains($"|{EquityBrief.Core.Cards.CardLines.ConcentrationName}|", drawn[^1], StringComparison.Ordinal);
+                // The lines the night stored, as 22.6 draws them: the first as a tick a step it passed, the earnings line
+                // among what could go wrong with its own mark, and every other line among the other checks in its order,
+                // and after them the sixth, which Tonight works out from the operator's open trades where it draws the card.
+                LinesReadBack(card, body, pressed: true);
 
                 rows[card.Ticker] = body;
             }
@@ -340,17 +339,56 @@ public partial class ReadSurface
             var named = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{card.Ticker}/{night}"));
             var top = Regex.Match(named, $"<section class=\"card name-card\" id=\"card\" data-role=\"buy\" data-family=\"{card.Family}\" data-index=\"{card.Index}\">(.*?)</div></section>", RegexOptions.Singleline);
 
-            // The card is the page's third region, after the reading guide and the short version.
+            // The card is the page's third region, after the reading guide and the short version, its lines the night
+            // stored drawn as on Tonight and no sixth, which reads the operator's own trades.
             Assert.True(top.Success, $"{card.Ticker}'s page draws no card as its third region.");
             Assert.Equal(
                 ["how-to-read", "s-the-short-version", "card"],
                 Regex.Matches(named, "<section class=\"(?:card[^\"]*|absent)\" id=\"([^\"]+)\"").Select(match => match.Groups[1].Value).Take(3));
-            Assert.Equal(
-                card.Lines.Select(line => Said(line.Words)),
-                Regex.Matches(top.Groups[1].Value, "<span class=\"card-words\">(.*?)</span></li>").Select(match => CardWords(match.Groups[1].Value)));
+            LinesReadBack(card, top.Groups[1].Value, pressed: false);
         }
 
         return rows;
+    }
+
+    // A card's stored lines read back off it as 22.6 draws them: the first line's steps each a tick naming its step as the
+    // night stored it, every step the line names drawn and no other; the earnings line among what could go wrong, its mark
+    // and its words kept; every other line among the other checks in its order with its mark and its words said plainly;
+    // and where the card draws its presses, the sixth after them.
+    static void LinesReadBack(StoredCard card, string body, bool pressed)
+    {
+        var first = card.Lines.Single(line => line.Number == 1);
+        var why = Regex.Match(body, $"<section class=\"card-why\" data-line=\"1\" data-verdict=\"{first.Verdict}\"><h5>Why it qualified</h5><ul class=\"card-ticks\">(.*?)</ul></section>", RegexOptions.Singleline);
+
+        Assert.True(why.Success, $"{card.Ticker}'s card draws no tick for the steps it passed.");
+
+        var steps = Regex.Matches(why.Groups[1].Value, "<li class=\"card-tick\" data-step=\"([^\"]*)\">").Select(match => match.Groups[1].Value).ToArray();
+
+        Assert.NotEmpty(steps);
+        Assert.All(steps, step => Assert.Contains(step.Length == 0 ? "Passed every gate" : step + ", ", first.Words, StringComparison.Ordinal));
+
+        var checks = Regex.Matches(body, "<li class=\"card-line\" data-line=\"(\\d+)\" data-verdict=\"([a-z]+)\"><span class=\"card-mark\" data-verdict=\"\\2\" role=\"img\" aria-label=\"\\2\" title=\"\\2\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\">.*?</svg></span> <b class=\"card-name\">([^<]*)</b> <span class=\"card-words\">(.*?)</span></li>")
+            .Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}|{CardWords(match.Groups[4].Value)}")
+            .ToArray();
+        var expected = card.Lines
+            .Where(line => line.Number is not 1 and not 4)
+            .Select(line => $"{line.Number}|{line.Verdict}|{ReaderWords.Plain(Said(line.Words))}")
+            .ToArray();
+
+        Assert.Equal(expected, pressed ? checks[..^1] : checks);
+
+        if (pressed)
+        {
+            Assert.StartsWith("6|", checks[^1], StringComparison.Ordinal);
+        }
+
+        if (card.Lines.SingleOrDefault(line => line.Number == 4) is { } report)
+        {
+            var hit = Regex.Match(body, $"<li data-hit=\"report\" data-line=\"4\" data-verdict=\"{report.Verdict}\"><span class=\"card-mark\" data-verdict=\"{report.Verdict}\" role=\"img\"[^>]*><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\">.*?</svg></span><span class=\"hit-when\">Next report</span><span class=\"hit-what\">(.*?)<span class=\"hit-why\">");
+
+            Assert.True(hit.Success, $"{card.Ticker}'s card draws its earnings line nowhere among what could go wrong.");
+            Assert.Equal(ReaderWords.Plain(Said(report.Words)), CardWords(hit.Groups[1].Value));
+        }
     }
 
     // A card line's words as stored, read off the markup with each signed figure's gain or loss span taken off and no
@@ -398,7 +436,8 @@ public partial class ReadSurface
             [],
             new ListRuleView(EquityBrief.Core.Shortlist.ListRules.Filter, true, 0.55, 0.45, [1, 1, 1, 1, 1]));
 
-        Assert.Contains($"<span class=\"card-words\">{Read}</span>", card, StringComparison.Ordinal);
+        // From 22.6 the card's tick says the line in the reader's words, its figures read the same way.
+        Assert.Contains("<span class=\"card-words\">Reward against the risk 2.31 at or above 2; the target at 441.82, 1 trading day before tonight</span>", card, StringComparison.Ordinal);
         Assert.Contains($"<td>{Read}</td>", gates, StringComparison.Ordinal);
         Assert.Contains($"<b>trade</b>: {Read}</p>", why, StringComparison.Ordinal);
         Assert.Contains($"title=\"trade: {Read}\"", WebUtility.HtmlDecode(list).Replace("&#39;", "'", StringComparison.Ordinal), StringComparison.Ordinal);
@@ -443,11 +482,12 @@ public partial class ReadSurface
         Assert.Equal("2 sessions and 1,250 calls", MarkRenderer.CountsInWords("2 session(s) and 1,250 call(s)"));
         Assert.Equal("its stop sits 0.85 typical moves below", MarkRenderer.CountsInWords("its stop sits 0.85 typical moves below"));
 
-        // On a pick's card the line reads the same, and the stored words are kept as the rule wrote them.
+        // On a pick's card the line reads the same, and from 22.6 its step is said in the reader's words.
         var line = new CardLineView(1, "Trend and strength", "tick", "Passed every gate: print, the print of 2026-10-16 reacted on 2026-10-16, 0 session(s) before tonight.");
         var drawn = new MarkRenderer().DecisionCard(new DecisionCardView("GSPC", new DateOnly(2026, 10, 16), "drift", "TRV", "the earnings drift", 389.54m, 368.63m, 441.82m, [line], null));
 
-        Assert.Contains("<span class=\"card-words\">Passed every gate: print, the print of 2026-10-16 reacted on 2026-10-16, 0 sessions before tonight.</span>", drawn, StringComparison.Ordinal);
+        Assert.Contains("<li class=\"card-tick\" data-step=\"print\">", drawn, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"card-words\">Reported in its last few trading days: the report of 2026-10-16 reacted on 2026-10-16, 0 trading days before tonight.</span>", drawn, StringComparison.Ordinal);
         Assert.DoesNotContain("(s)", drawn, StringComparison.Ordinal);
 
         // The name page's gates and the lines saying why the filter passed it read their stored reasons the same way.

@@ -1561,8 +1561,13 @@ app.MapGet("/screens/tonight/{night?}", async (
         var (liveDrift, _) = RuleScreen.Accounts(EquityBrief.Core.Families.DriftRule.Name, false, reading.Name, indexRegister, dated, indexSettings, indexAsOf);
         indexCards = await WithNumbersAsync(read, indexCards, reading, dated, indexClose, driftWindow: TonightScreen.DriftWindow(liveDrift, indexSettings));
         indexCards = TonightScreen.WithDipChips(TonightScreen.WithDipLabels(indexCards, indexDipPicks), indexDipNight, reading.Code);
-        var indexOpen = (await read.IndexTradesAsync(reading.Code, dated)).Count(trade => trade.Listed < dated && trade.EndedOn is null)
-            + (await read.DipTradesAsync(reading.Code, dated)).Count(trade => trade.Listed < dated && trade.EndedOn is null);
+
+        // Each setup's record so far as Paper trading counts it, its finished trades against what a verdict needs.
+        var indexProgress = await PaperProgressAsync(read, reading, dated);
+
+        indexCards = [.. indexCards.Select(card => card with { Progress = indexProgress.GetValueOrDefault(card.Family) })];
+        var indexTrades = (await read.IndexTradesAsync(reading.Code, dated)).Concat(await read.DipTradesAsync(reading.Code, dated)).ToArray();
+        var indexOpen = indexTrades.Count(trade => trade.Listed < dated && trade.EndedOn is null);
 
         // The heavyweights' card drawn from the index's own book, or from its live rule's book where a freeze stands and the
         // night kept it.
@@ -1641,28 +1646,6 @@ app.MapGet("/screens/tonight/{night?}", async (
             _ => TonightScreen.StoresNoSectorReading,
             RuleScreen.DesignB(indexHeavyweightVariant ?? heavyweightRule, indexRegister));
 
-        // Each buy point's fold holds the bands the night stored for the stock against its close, beside the line saying
-        // its plan is its rule's buy, stop and target and the ladder at the bands is worked for the S&P 500's members alone.
-        // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
-        var indexUniverse = await read.UniverseAsync(reading.Code, dated);
-        var indexPlans = new Dictionary<string, string>(StringComparer.Ordinal);
-
-        foreach (var buyPoint in indexCards.SelectMany(card => card.Picks).Select(pick => pick.Row.Ticker).Distinct(StringComparer.Ordinal))
-        {
-            var stock = indexUniverse.FirstOrDefault(row => row.Ticker == buyPoint);
-
-            indexPlans[buyPoint] = NameScreen.PlanRegion(
-                page,
-                marks,
-                buyPoint,
-                null,
-                stock?.Close ?? 0m,
-                await read.LevelsAsync(buyPoint, dated),
-                stock?.TypicalMove,
-                stock?.Close is not null,
-                inPlace: NameScreen.LadderForTheLargeIndexAlone(buyPoint));
-        }
-
         return Results.Content(
             notice + page.IndexTonightRegion(
                 marks,
@@ -1691,7 +1674,7 @@ app.MapGet("/screens/tonight/{night?}", async (
                 request.Query["name"].FirstOrDefault(),
                 indexClose is null ? null : TonightScreen.IndexCloseToBuy(indexClose, await NextEventsAsync(read, dated), dated),
                 request.Query[MarkRenderer.CloseToBuyKey].FirstOrDefault() == MarkRenderer.CloseToBuyOpen,
-                indexPlans),
+                ended: TonightScreen.EndedTonight(dated, [], indexTrades)),
             "text/html; charset=utf-8");
     }
 
@@ -1945,6 +1928,11 @@ app.MapGet("/screens/tonight/{night?}", async (
         cards = await WithBehindAsync(read, cards, reading, dated);
         cards = await WithNumbersAsync(read, cards, reading, dated, closeAcross, familyResults);
         cards = TonightScreen.WithDipLabels(cards, dipPicks);
+
+        // Each setup's record so far as Paper trading counts it, its finished trades against what a verdict needs.
+        var progress = await PaperProgressAsync(read, reading, dated);
+
+        cards = [.. cards.Select(card => card with { Progress = progress.GetValueOrDefault(card.Family) })];
     }
 
     // A plan and its bands as the night shown stored them, drawn against that night's close.
@@ -1963,24 +1951,15 @@ app.MapGet("/screens/tonight/{night?}", async (
             member?.Close is not null);
     }
 
-    // On a night the families drew the list, every buy point folds its plan beneath its row, the one the hash names open,
-    // and no row is selected where it names none; a name the table does not hold, from the rows close to a buy point, is
-    // drawn beneath the list. On a night before them, whichever row the reader selected, and the first row where they
-    // selected none: section 15.7's region is for whichever row is selected, and a row of either list can be selected.
-    // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
+    // On a night the families drew the list, every buy point folds its pick's card beneath its row, the one the hash names
+    // open, and no row is selected where it names none; the stock's levels plan is drawn on its full page alone. On a
+    // night before them, whichever row the reader selected, and the first row where they selected none: section 15.7's
+    // region is for whichever row is selected, and a row of either list can be selected.
+    // see: Each buy point's row folds its pick's card alone, and the levels plan stays on the stock's full page
     var asked = request.Query["name"].FirstOrDefault();
     var pointed = cards is null ? [] : cards.SelectMany(card => card.Picks).Select(pick => pick.Row.Ticker).Distinct(StringComparer.Ordinal).ToArray();
     var opened = asked is { } named && pointed.Contains(named, StringComparer.Ordinal) ? named : null;
-    var selection = cards is null
-        ? TonightScreen.Selected(rows, asked, nearRows)
-        : opened is null && asked is { } other ? nearRows?.FirstOrDefault(row => row.Ticker == other) : null;
-    var plans = new Dictionary<string, string>(StringComparer.Ordinal);
-
-    foreach (var ticker in pointed)
-    {
-        plans[ticker] = await PlanOf(ticker);
-    }
-
+    var selection = cards is null ? TonightScreen.Selected(rows, asked, nearRows) : null;
     var selected = selection is { } chosen ? await PlanOf(chosen.Ticker) : string.Empty;
 
     // The sector heavyweights' card, drawn after the swing families' on a night they drew the page, whatever the
@@ -2092,7 +2071,7 @@ app.MapGet("/screens/tonight/{night?}", async (
             closeOpen: request.Query[MarkRenderer.CloseToBuyKey].FirstOrDefault() == MarkRenderer.CloseToBuyOpen,
             newest: await read.NewestNightAsync() == dated,
             closeHref: closeToBuy is null ? null : MarkRenderer.CloseToBuyHref(night is { Length: > 0 } ? SinglePageApp.NightRoute + night : "#/", reading.Word),
-            plans: plans),
+            ended: cards is null ? null : TonightScreen.EndedTonight(dated, PicksScreen.Cells(picks, dated), await read.DipTradesAsync(reading.Code, dated))),
         "text/html; charset=utf-8");
 });
 
@@ -2239,6 +2218,33 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
             held is null ? (walkedOn.Size, walkedOn.RiskPercent, walkedOn.PositionCap) : null),
         "text/html; charset=utf-8");
 });
+
+// Each family's live or provisional rule's record so far on an index as of a night, as Paper trading counts it off the
+// same accounts: its finished trades against the count a verdict needs, a book's months against its own.
+async Task<IReadOnlyDictionary<string, EquityBrief.Core.Cards.PaperProgress>> PaperProgressAsync(ReadApi read, UniverseChoice reading, DateOnly night)
+{
+    var large = reading == Universes.Large;
+    var indexNight = await read.IndexNightAsync(reading.Code, night);
+    var sources = PaperScreen.Accounts(
+        large,
+        reading.Name,
+        night,
+        await read.RegisteredCandidatesAsync(),
+        indexNight is null ? null : IndexRuleSettings.Read(indexNight.Settings),
+        await read.PaperRowsAsync(reading.Code),
+        large ? PicksScreen.Cells(await read.PicksAsync(night), night) : [],
+        PaperScreen.Yours(await read.TakenTradesAsync(), reading.Code),
+        large ? await read.FamilyReplaysAsync() : [],
+        large ? null : TonightScreen.ReadAsOf(indexNight, night));
+
+    return sources
+        .Where(account => account.Standing is PaperAccountView.Live or PaperAccountView.Provisional)
+        .GroupBy(account => account.Family, StringComparer.Ordinal)
+        .ToDictionary(
+            group => group.Key,
+            group => EquityBrief.Core.Cards.PaperAccount.Progress(group.First().Book, [.. group.First().Trades.Select(one => one.Trade)], group.First().Since, night),
+            StringComparer.Ordinal);
+}
 
 // An index's paper accounts as of a night: its stored trades in one shape, each costed, walked and judged, with the
 // sessions they were walked over, each stock's company and night readings, the fund's closes and each open holding's

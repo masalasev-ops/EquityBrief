@@ -271,8 +271,8 @@ public partial class ReadSurface
         var small600 = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=600"));
         var stated = Assert.Single(Blocks(small600, "<p class=\"rule-words\">[^<]*approved on the Loop page[^<]*</p>"));
 
-        Assert.StartsWith("<p class=\"rule-words\">A stock closes above its highest price of the 126 sessions before", stated, StringComparison.Ordinal);
-        Assert.Contains("its list closes while the S&P 600's own breadth is under 45%; each trade's result is read after the published spread, half paid at each end. It stands at a change approved on the Loop page: exit: ", stated, StringComparison.Ordinal);
+        Assert.StartsWith("<p class=\"rule-words\">A stock closes above its highest price of the 126 trading days before", stated, StringComparison.Ordinal);
+        Assert.Contains("its list closes while the S&P 600's own share above the 200-day average is under 45%; each trade's result is read after the published spread, half paid at each end. It stands at a change approved on the Loop page: exit: ", stated, StringComparison.Ordinal);
         Assert.Equal(mid, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")));
         Assert.Equal(large, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}")));
         Assert.Contains($"<p class=\"rule-words\">{MidBreakoutWords}</p>", mid, StringComparison.Ordinal);
@@ -315,11 +315,11 @@ public partial class ReadSurface
         // as the live rule and the rule it replaced as a variant; the S&P 400's and the S&P 600's pages as before it.
         var large = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}"));
         var replaced = EquityBrief.Worker.Candidates.TheSetupFamilies.Breakouts[0].Candidate;
-        var picker = Assert.Single(Blocks(large, "<nav class=\"rule-tabs\" data-rule-choice=\"breakout\".*?</nav>"));
+        var picker = Assert.Single(Blocks(large, "<select id=\"rule-breakout\" class=\"rule-select\" data-rule-choice=\"breakout\".*?</select>"));
 
-        Assert.Contains("It stands at a change approved on the Loop page: exit: a target at 1.5 risks.", large, StringComparison.Ordinal);
-        Assert.Contains($"data-variant=\"none\" title=\"{replaced}; exit: a target at 1.5 risks\" aria-current=\"true\">Live</a>", picker, StringComparison.Ordinal);
-        Assert.Matches($"data-variant=\"[0-9]+\" title=\"{Regex.Escape(replaced)}\">V[0-9]+ · without ", picker);
+        Assert.Contains("It stands at a change approved on the Loop page: exit: a target at 1.5 times the risk.", large, StringComparison.Ordinal);
+        Assert.Contains($"data-variant=\"none\" title=\"{replaced}; exit: a target at 1.5 risks\" selected>The live setup</option>", picker, StringComparison.Ordinal);
+        Assert.Matches($"data-variant=\"[0-9]+\" title=\"{Regex.Escape(replaced)}\">Version: without ", picker);
         Assert.Equal(mid, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")));
         Assert.Equal(small, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=600")));
     }
@@ -340,8 +340,8 @@ public partial class ReadSurface
 
         var rows = await CardsReadBack(client, StoredCards(store), TheSwitch);
 
-        Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\" data-approved=\"exit: a target at 1.5 risks\"><h5>The record of the breakout on the S&P 500</h5>", rows["K1"], StringComparison.Ordinal);
-        Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\"><h5>The record of the pullback on the S&P 500</h5><p class=\"degraded\">Not replayed yet", rows["F1"], StringComparison.Ordinal);
+        Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\" data-approved=\"exit: a target at 1.5 risks\"><h5>How this setup has done</h5>", rows["K1"], StringComparison.Ordinal);
+        Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\"><h5>How this setup has done</h5><p class=\"degraded\">No record yet", rows["F1"], StringComparison.Ordinal);
     }
 
     // From 17.14 a hook change approved for the S&P 500's pullback is read by the swing filter's page: the lister keeps and
@@ -400,7 +400,7 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}"));
 
-        Assert.Contains($"It stands at a change approved on the Loop page: {change.Words()}.", page, StringComparison.Ordinal);
+        Assert.Contains($"It stands at a change approved on the Loop page: {ReaderWords.Plain(change.Words())}.", page, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -436,7 +436,7 @@ public partial class ReadSurface
         var card = new DecisionCardView("SML", new DateOnly(2026, 10, 2), "breakout", "S1", "The breakout on the S&P 600", 50m, 47m, null, [], null, Approved: "exit: the seventh");
         var drawn = WebUtility.HtmlDecode(new MarkRenderer().DecisionCard(card));
 
-        Assert.Contains($"<section class=\"card-record outline\" data-trades=\"none\" data-approved=\"exit: the seventh\"><h5>The record of the breakout on the S&P 600</h5><p class=\"degraded\">{MarkRenderer.ApprovedRecord("exit: the seventh")}</p></section>", drawn, StringComparison.Ordinal);
-        Assert.DoesNotContain("Not replayed yet", drawn, StringComparison.Ordinal);
+        Assert.Contains($"<section class=\"card-record outline\" data-trades=\"none\" data-approved=\"exit: the seventh\"><h5>How this setup has done</h5><p class=\"degraded\">{ReaderWords.Plain(MarkRenderer.ApprovedRecord("exit: the seventh"))}</p></section>", drawn, StringComparison.Ordinal);
+        Assert.DoesNotContain("No record yet", drawn, StringComparison.Ordinal);
     }
 }

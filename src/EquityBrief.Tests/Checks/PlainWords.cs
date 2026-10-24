@@ -12,10 +12,10 @@ using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Tests.Checks;
 
-// plain-words, 22.5. Each page section 15.23 names speaks in the reader's words: rendered, no card of it draws a term of
-// the word list in its visible text outside a glossary and the tooltips, and every card's first visible element is its
-// summary sentence. The code's own lists are held to section 15.23's tables word for word in both directions, every
-// step each setup's rule stores to its row, and the headings to the chart of what is behind a stock.
+// plain-words, 22.5, and Tonight from 22.6. Each page section 15.23 names speaks in the reader's words: rendered, no card
+// of it draws a term of the word list in its visible text outside a glossary and the tooltips, and every card's first
+// visible element is its summary sentence. The code's own lists are held to section 15.23's tables word for word in both
+// directions, every step each setup's rule stores to its row, and the headings to the chart of what is behind a stock.
 // see: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
 public partial class PlainWords
 {
@@ -32,12 +32,29 @@ public partial class PlainWords
         ["docs/ARCHITECTURE.html", "fixtures/membership-2026-09-05"],
         [TermsTable, StepsTable, HeadingsTable, PagesTable]);
 
-    // The pages the check covers, by the name section 15.23's last table gives each, the checkpoint it is covered from
-    // and the card region each is read from.
-    internal static readonly (string Page, string From, string Region)[] Covered =
+    // The pages the check covers, by the name section 15.23's last table gives each, the checkpoint it is covered from,
+    // the card regions each is read from, and whether the page is covered whole, every card it draws being of one of them,
+    // or is one card among others the check does not read, as the brief read is on the chart page.
+    internal static readonly (string Page, string From, string[] Regions, bool Whole)[] Covered =
     [
-        ("The chart page's brief read", "22.5", "chart-page-brief"),
+        (BriefPage, "22.5", ["chart-page-brief"], false),
+        (TonightPage, "22.6", ["one-minute", "buy-points", "close-to-buy", "setups", "family", "heavyweights", "words"], true),
     ];
+
+    internal const string BriefPage = "The chart page's brief read";
+
+    internal const string TonightPage = "Tonight";
+
+    // The card regions a covered page is read from.
+    internal static string[] RegionsOf(string page) => Assert.Single(Covered, covered => covered.Page == page).Regions;
+
+    // What the check finds wrong with a page drawn for a page it covers, read as that page's row says.
+    internal static IReadOnlyList<string> FaultsOn(string covered, string page, IReadOnlyList<string> terms)
+    {
+        var row = Assert.Single(Covered, one => one.Page == covered);
+
+        return Faults(page, row.Regions, terms, row.Whole);
+    }
 
     // Every step each setup's rule stores, by its constants: the S&P 500's swing filter, breakout and drift; the parts the
     // S&P 400's and 600's families store, the fundamentals-first family's on every index; the dip's; and the steps the
@@ -64,6 +81,9 @@ public partial class PlainWords
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     static bool Opens(Match tag) => tag.Groups["close"].Length == 0 && !Void.Contains(tag.Groups["name"].Value) && !tag.Value.EndsWith("/>", StringComparison.Ordinal);
+
+    // A word of more than one letter written all in capitals.
+    static bool Ticker(string word) => word.Length > 1 && word.All(letter => !char.IsLetter(letter) || char.IsUpper(letter));
 
     // Each element whose opening tag the test accepts, from its opening tag to the end of its closing tag, read by depth
     // over the markup's tags so an element of its own name nested inside it closes inside it.
@@ -159,24 +179,42 @@ public partial class PlainWords
     // What the check finds wrong with the cards a page draws for a region: a term of the list in a card's visible text
     // outside its glossary and tooltips, a card whose body opens on anything visible before its summary sentence, a card
     // with no summary sentence or an empty one, and a page drawing no card for the region.
-    internal static IReadOnlyList<string> Faults(string page, string region, IReadOnlyList<string> terms)
+    internal static IReadOnlyList<string> Faults(string page, string region, IReadOnlyList<string> terms) => Faults(page, [region], terms, whole: false);
+
+    // The same over every card of the regions a page's row names, the page drawing at least one; on a page covered whole
+    // every card must be of one of them, so a card added to it and to no row is a fault rather than a card the check never
+    // reads, and on a page covered in part a card of another region is left unread.
+    internal static IReadOnlyList<string> Faults(string page, IReadOnlyList<string> regions, IReadOnlyList<string> terms, bool whole = true)
     {
         var faults = new List<string>();
-        var cards = Elements(page, tag => tag.Groups["name"].Value == "section" && tag.Groups["attributes"].Value.Contains($"data-card=\"{region}\"", StringComparison.Ordinal));
+        var cards = Elements(page, tag => tag.Groups["name"].Value == "section" && Regex.IsMatch(tag.Groups["attributes"].Value, @"\bclass=""card(?:\s[^""]*)?""") && tag.Groups["attributes"].Value.Contains("data-card=\"", StringComparison.Ordinal));
 
-        if (cards.Count == 0)
+        if (!cards.Any(card => regions.Contains(RegionOf(page[card.Start..card.End]), StringComparer.Ordinal)))
         {
-            faults.Add($"No card of the region '{region}' is drawn on the page.");
+            faults.Add($"No card of the region{(regions.Count == 1 ? string.Empty : "s")} '{string.Join("', '", regions)}' is drawn on the page.");
         }
 
         foreach (var (start, end) in cards)
         {
             var card = page[start..end];
+            var region = RegionOf(card);
+
+            if (!regions.Contains(region, StringComparer.Ordinal))
+            {
+                if (whole)
+                {
+                    faults.Add($"A card of the region '{region}' is drawn on the page, and the check reads no card of it.");
+                }
+
+                continue;
+            }
+
             var said = Visible(WithoutAsides(card));
 
             foreach (var term in terms)
             {
-                foreach (Match found in Pattern(term).Matches(said))
+                // A word written all in capitals is a ticker, which the reader's words leave as it stands, HELD among them.
+                foreach (Match found in Pattern(term).Matches(said).Where(match => !Ticker(match.Value)))
                 {
                     faults.Add($"'{term}' in the card '{region}': ...{said[Math.Max(0, found.Index - 40)..Math.Min(said.Length, found.Index + found.Length + 40)]}...");
                 }
@@ -210,6 +248,9 @@ public partial class PlainWords
         return faults;
     }
 
+    // A card's region, as its opening tag names it.
+    static string RegionOf(string card) => Regex.Match(card, @"^<section[^>]*\bdata-card=""([^""]*)""").Groups[1].Value;
+
     static IReadOnlyList<ArchitectureTable> Tables() => ArchitectureTables.In(File.ReadAllText(Repository.Architecture));
 
     static IReadOnlyList<IReadOnlyList<string>> Rows(string heading) =>
@@ -224,14 +265,18 @@ public partial class PlainWords
             ReaderWords.Terms.Select(term => $"{term.Term}|{term.Words}"),
             Rows(TermsTable).Select(row => string.Join("|", row)));
         Assert.Equal(
-            ReaderWords.Steps.Select(step => $"{step.Setup}|{step.Step}|{step.Missed}"),
+            ReaderWords.Steps.Select(step => $"{step.Setup}|{step.Step}|{step.Passed}|{step.Missed}"),
             Rows(StepsTable).Select(row => string.Join("|", row)));
         Assert.Equal(
-            ReaderWords.Headings.Select(heading => $"{heading.Heading}|{heading.Higher}"),
+            ReaderWords.Headings.Select(heading => $"{heading.Heading}|{heading.Named}|{heading.Higher}"),
             Rows(HeadingsTable).Select(row => string.Join("|", row)));
         Assert.Equal(
             Covered.Select(page => $"{page.Page}|{page.From}"),
             Rows(PagesTable).Select(row => $"{row[0]}|{row[1]}"));
+
+        // The steps passed and missed are said in words of their own, and a heading's name on a pick's card is its own.
+        Assert.All(ReaderWords.Steps, step => Assert.NotEqual(step.Passed, step.Missed));
+        Assert.Equal(ReaderWords.Headings.Count, ReaderWords.Headings.Select(heading => heading.Named).Distinct(StringComparer.Ordinal).Count());
 
         // The headings are the chart's, heading for heading, and no term or step is listed twice.
         Assert.Equal(LedgerHeadings.All.Select(heading => heading.Name), ReaderWords.Headings.Select(heading => heading.Heading));
@@ -240,7 +285,9 @@ public partial class PlainWords
 
         // No reader's words of the list draw a term of it.
         Assert.All(
-            ReaderWords.Terms.Select(term => term.Words).Concat(ReaderWords.Steps.Select(step => step.Missed)).Concat(ReaderWords.Headings.Select(heading => heading.Higher)),
+            ReaderWords.Terms.Select(term => term.Words)
+                .Concat(ReaderWords.Steps.SelectMany(step => new[] { step.Passed, step.Missed }))
+                .Concat(ReaderWords.Headings.SelectMany(heading => new[] { heading.Named, heading.Higher })),
             words => Assert.DoesNotContain(ReaderWords.Terms, term => Pattern(term.Term).IsMatch(words)));
     }
 
@@ -270,14 +317,16 @@ public partial class PlainWords
         using var client = host.CreateClient();
 
         var terms = Terms();
-        var region = Assert.Single(Covered).Region;
 
         foreach (var ticker in new[] { "AAPL", "KEYS", "MSFT", "NFLX" })
         {
             var page = await client.GetStringAsync($"/screens/chart/{ticker}");
 
-            Assert.Empty(Faults(page, region, terms));
+            Assert.Empty(FaultsOn(BriefPage, page, terms));
         }
+
+        // From 22.6 Tonight over the fixture's night, every card of it in the reader's words and opening on its summary.
+        Assert.Empty(FaultsOn(TonightPage, await client.GetStringAsync("/screens/tonight/2026-09-08"), terms));
     }
 
     // The brief drawn as the chart page draws its card, over constructed figures.
@@ -327,7 +376,7 @@ public partial class PlainWords
         views.Add(BriefScreen.Of(Reading.ReadSurface.BriefOf(Reading.ReadSurface.BriefMember(), standing: [.. states.Select(state => new BriefStanding(SetupFamilies.Pullback, state)), new BriefStanding(HeavyweightRule.Name, BriefStates.Held)])));
         views.Add(BriefScreen.Of(Reading.ReadSurface.BriefOf(Reading.ReadSurface.BriefMember(), standing: [new BriefStanding(HeavyweightRule.Name, BriefStates.NotHeld), new BriefStanding(SetupFamilies.Pullback, BriefStates.Passed)])));
 
-        foreach (var (setup, step, _) in ReaderWords.Steps)
+        foreach (var (setup, step, _, _) in ReaderWords.Steps)
         {
             views.Add(BriefScreen.Of(Reading.ReadSurface.BriefOf(Reading.ReadSurface.BriefMember(), standing: [new BriefStanding(setup, BriefStates.Short, step, 1)])));
         }

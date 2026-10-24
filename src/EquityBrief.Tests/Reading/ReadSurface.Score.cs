@@ -206,14 +206,16 @@ public partial class ReadSurface
         var (named, loop) = await ScorePagesAsync(store);
         var part = ScorePart(named);
 
-        Assert.Contains("<p class=\"card-caution\">Setups like this one under this rule on the S&P 500, not this stock's chance.</p>", part, StringComparison.Ordinal);
-        Assert.Contains($"<p class=\"card-rank degraded\" data-rank=\"none\">{CardSimilar.NotValidated}.</p>", part, StringComparison.Ordinal);
-        Assert.Contains("<dd data-similar=\"40\"", part, StringComparison.Ordinal);
-        Assert.Contains("40 of the rule's 40 finished setups on this index, the nearest by their places among them on ", part, StringComparison.Ordinal);
-        Assert.Contains("(the close over its 20-session average", part, StringComparison.Ordinal);
+        // From 22.6 the part in the reader's words: the forty setups most like it did about the same as the setup's usual, both
+        // at nothing, and the score ranking nothing until it passes.
+        Assert.Contains("<p class=\"card-caution\">These are setups like this one under the same setup on the S&P 500, not this stock's chance.</p>", part, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"card-rank degraded\" data-rank=\"none\">The learned score has not passed its test on this index yet, so it ranks nothing here.</p>", part, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"card-similar\" data-similar=\"40\"", part, StringComparison.Ordinal);
+        Assert.Contains(">The 40 past breakout setups on the S&P 500 most like this one did about the same as the setup's usual: they came to $0.00 for every $100 risked beyond the same plan on every stock that day, before costs, against $0.00 for all 40 of its finished setups.", part, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"card-note\">Matched on 1 reading: the close over its 20-day average.</p>", part, StringComparison.Ordinal);
         Assert.DoesNotContain("close_over_twenty, ", part, StringComparison.Ordinal);
-        Assert.Contains($"<p class=\"card-verdict\" data-distinguishable=\"false\">{CardSimilar.NotDistinguishable}</p>", part, StringComparison.Ordinal);
-        Assert.DoesNotContain("places it at hundredth", part, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"card-verdict\" data-distinguishable=\"false\">That range holds the setup's usual, so nothing here says this pick is better or worse than an average one.</p>", part, StringComparison.Ordinal);
+        Assert.DoesNotContain("ranks it", part, StringComparison.Ordinal);
 
         Assert.Contains($"<p class=\"loop-rank degraded\" data-rank=\"none\">{CardSimilar.NotValidated}.</p>", loop, StringComparison.Ordinal);
         Assert.Contains($"data-validated=\"0\" data-hash=\"{ScoreOfTheCloseOverTwenty().Hash}\"", loop, StringComparison.Ordinal);
@@ -252,10 +254,10 @@ public partial class ReadSurface
         (named, loop) = await ScorePagesAsync(store);
         part = ScorePart(named);
 
-        Assert.Contains("<p class=\"card-rank\" data-rank=\"59\">The learned score, which passed the walk-forward tester on this index, places it at hundredth 59 of the setups it learned on here.</p>", part, StringComparison.Ordinal);
-        Assert.DoesNotContain(CardSimilar.NotValidated, part, StringComparison.Ordinal);
-        Assert.DoesNotContain(CardSimilar.NotDistinguishable, part, StringComparison.Ordinal);
-        Assert.Contains("<dd data-similar=\"250\"", part, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"card-rank\" data-rank=\"59\">The learned score, which passed its test on this index, ranks it 59 of 100 among the setups it learned from here.</p>", part, StringComparison.Ordinal);
+        Assert.DoesNotContain("card-rank degraded", part, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"card-verdict\" data-distinguishable=\"true\">", part, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"card-similar\" data-similar=\"250\"", part, StringComparison.Ordinal);
 
         Assert.Contains("data-validated=\"1\"", loop, StringComparison.Ordinal);
 
@@ -315,7 +317,7 @@ public partial class ReadSurface
         var (named, _) = await ScorePagesAsync(store);
         var chart = ScoreBehind(named);
 
-        Assert.Contains("<p class=\"degraded\" data-similar=\"none\">No setups matched: the learned score could not be read tonight: ", ScorePart(named), StringComparison.Ordinal);
+        Assert.Contains("<p class=\"degraded\" data-similar=\"none\">No past setups were matched: the learned score could not be read tonight: ", ScorePart(named), StringComparison.Ordinal);
         Assert.StartsWith("<section class=\"behind-it\" data-index=\"S&P 500\" data-push=\"none\">", chart, StringComparison.Ordinal);
         Assert.Contains("<li data-heading=\"Momentum\" data-percentile=\"0.5\">", chart, StringComparison.Ordinal);
         Assert.Contains("<p class=\"degraded\" data-push=\"unread\">The learned score passed on this index, and its push is not drawn: its stored text could not be read: ", chart, StringComparison.Ordinal);
@@ -341,8 +343,8 @@ public partial class ReadSurface
         {
             var unscored = ScorePart(rows[ticker]);
 
-            Assert.Contains($"<p class=\"card-rank degraded\" data-rank=\"none\">{CardSimilar.NotValidated}.</p>", unscored, StringComparison.Ordinal);
-            Assert.Contains("<p class=\"degraded\" data-similar=\"none\">No setups matched: no score has been fitted for this rule on this index yet; the walk-forward tester fits it.</p>", unscored, StringComparison.Ordinal);
+            Assert.Contains("<p class=\"card-rank degraded\" data-rank=\"none\">The learned score has not passed its test on this index yet, so it ranks nothing here.</p>", unscored, StringComparison.Ordinal);
+            Assert.Contains("<p class=\"degraded\" data-similar=\"none\">No past setups were matched: no score has been fitted for this rule on this index yet; the walk-forward tester fits it.</p>", unscored, StringComparison.Ordinal);
         }
 
         Assert.DoesNotContain("card-score", rows["F1"], StringComparison.Ordinal);
@@ -353,11 +355,12 @@ public partial class ReadSurface
 
         var part = ScorePart((await CardsReadBack(client, StoredCards(store), TheSwitch))["K1"]);
 
-        Assert.Contains("<p class=\"card-rank\" data-rank=\"83\">The learned score, which passed the walk-forward tester on this index, places it at hundredth 83 of the setups it learned on here.</p>", part, StringComparison.Ordinal);
-        Assert.Contains("<dd data-similar=\"250\" data-distance=\"0.125\" data-readings=\"close_over_twenty,liquidity\">250 of the rule's 3,120 finished setups on this index, the nearest by their places among them on 2 readings (the close over its 20-session average; the base-10 logarithm of the mean of close times volume over the 50 sessions to the session), a median distance of 0.125</dd>", part, StringComparison.Ordinal);
-        Assert.Contains("<dd data-mean=\"0.2\" data-low=\"0.1\" data-high=\"0.3\">a mean <span class=\"gain\">+0.20</span> of the risk against the same plan on every member that session, before costs, ninety per cent between <span class=\"gain\">+0.10</span> and <span class=\"gain\">+0.30</span></dd>", part, StringComparison.Ordinal);
-        Assert.Contains("<dd data-rule-mean=\"0.05\">a mean <span class=\"gain\">+0.05</span> over every one of them</dd>", part, StringComparison.Ordinal);
-        Assert.DoesNotContain(CardSimilar.NotValidated, part, StringComparison.Ordinal);
-        Assert.DoesNotContain(CardSimilar.NotDistinguishable, part, StringComparison.Ordinal);
+        // From 22.6 worked by hand in the reader's words: the 250 setups most like K1 made 0.2 of the risk, $20.00 a $100
+        // risked, nine times in ten between 0.1 and 0.3, against 0.05 over all 3,120, so the range leaves the usual out.
+        Assert.Contains("<p class=\"card-rank\" data-rank=\"83\">The learned score, which passed its test on this index, ranks it 83 of 100 among the setups it learned from here.</p>", part, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"card-similar\" data-similar=\"250\" data-distance=\"0.125\" data-readings=\"close_over_twenty,liquidity\" data-mean=\"0.2\" data-low=\"0.1\" data-high=\"0.3\" data-rule-mean=\"0.05\">The 250 past breakout setups on the S&P 500 most like this one did better than the setup's usual: they came to $20.00 for every $100 risked beyond the same plan on every stock that day, before costs, against $5.00 for all 3,120 of its finished setups. Nine times in ten the figure for setups like these falls between $10.00 and $30.00.</p>", part, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"card-verdict\" data-distinguishable=\"true\">That range leaves out the setup's usual, so these setups are told apart from its record.</p>", part, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"card-note\">Matched on 2 readings: the close over its 20-day average; the base-10 logarithm of the mean of close times volume over the 50 trading days to the trading day.</p>", part, StringComparison.Ordinal);
+        Assert.DoesNotContain("card-rank degraded", part, StringComparison.Ordinal);
     }
 }

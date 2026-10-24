@@ -12,7 +12,10 @@ namespace EquityBrief.Tests.Reading;
 // see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
 public partial class ReadSurface
 {
-    const string SweepLineDrawn = "<p class=\"family-sweep\" data-sweep=\"none passed\">Its sweep found no setting that passed the floors</p>";
+    const string SweepLineDrawn = "<p class=\"family-sweep\" data-sweep=\"none passed\">Its search over settings found no setting that passed the floors.</p>";
+
+    // A setup card's fold of its full rule and how its settings were chosen, where from 22.6 the sweep's line stands.
+    static string RuleFoldOf(string card) => Assert.Single(Blocks(card, "<details class=\"fold fam-rule\">.*?</details>"));
 
     static void RecordAnswer(TemporaryStore store, string run, string index, string family, string? design, string answer, string recordedAt) =>
         store.Execute(
@@ -43,8 +46,8 @@ public partial class ReadSurface
         var breakout = FamilyCardOf(page, BreakoutRule.Name);
 
         // The breakout's card alone draws the line, beneath its standing, and still lists M1.
-        Assert.Contains("<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Provisional</span> <span class=\"fam-count\">1 pick tonight</span>", breakout, StringComparison.Ordinal);
-        Assert.Contains("</details></header>" + SweepLineDrawn, breakout, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Not yet tested</span> <span class=\"fam-count\">1 pick tonight</span>", breakout, StringComparison.Ordinal);
+        Assert.Contains(SweepLineDrawn, RuleFoldOf(breakout), StringComparison.Ordinal);
         Assert.Equal(["M1"], CardPicksOf(breakout));
         Assert.Single(Regex.Matches(page, Regex.Escape(SweepLineDrawn)));
         Assert.DoesNotContain(SweepLineDrawn, FamilyCardOf(page, SetupFamilies.Pullback), StringComparison.Ordinal);
@@ -82,8 +85,8 @@ public partial class ReadSurface
 
         var kept = await Card();
 
-        Assert.Contains("<span class=\"status-pill live\" title=\"live since 2026-09-25\">Live</span> <span class=\"fam-count\">5 picks tonight</span>", kept, StringComparison.Ordinal);
-        Assert.Contains("</details></header>" + SweepLineDrawn, kept, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill live\">Live since 25 Sep 2026</span> <span class=\"fam-count\">5 picks tonight</span>", kept, StringComparison.Ordinal);
+        Assert.Contains(SweepLineDrawn, RuleFoldOf(kept), StringComparison.Ordinal);
         Assert.Contains("data-picks=\"5\"", kept, StringComparison.Ordinal);
 
         // The next freeze, version 2 in version 1's place at one instant on 2026-09-27: two freezes stand at or after the
@@ -95,7 +98,7 @@ public partial class ReadSurface
 
         var next = await Card();
 
-        Assert.Contains("<span class=\"status-pill live\" title=\"live since 2026-09-27\">Live</span>", next, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill live\">Live since 27 Sep 2026</span>", next, StringComparison.Ordinal);
         Assert.DoesNotContain(SweepLineDrawn, next, StringComparison.Ordinal);
 
         // A sweep after the second freeze found none: the card draws the line again and keeps its five picks.
@@ -103,7 +106,7 @@ public partial class ReadSurface
 
         var card = await Card();
 
-        Assert.Contains("</details></header>" + SweepLineDrawn, card, StringComparison.Ordinal);
+        Assert.Contains(SweepLineDrawn, RuleFoldOf(card), StringComparison.Ordinal);
         Assert.Contains("data-picks=\"5\"", card, StringComparison.Ordinal);
     }
 }

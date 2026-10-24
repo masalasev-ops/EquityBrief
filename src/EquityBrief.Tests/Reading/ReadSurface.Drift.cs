@@ -58,30 +58,40 @@ public partial class ReadSurface
         var families = SetupFamilies.InPageOrder.Count;
 
         // The card: the third of the page's families, two picks, on provisional settings.
-        Assert.StartsWith(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"drift\" data-place=\"3\" data-of=\"{families}\" data-picks=\"2\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-rule=\"live\" data-variant=\"none\" data-folded=\"false\">"), card, StringComparison.Ordinal);
-        Assert.Contains(FormattableString.Invariant($"<div class=\"lbl\">Setup 3 of {families} · After a strong report</div>"), page, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"fam-swatch\" data-family=\"drift\"></span>Earnings drift</span>", card, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"drift\" data-place=\"3\" data-of=\"{families}\" data-picks=\"2\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-rule=\"live\" data-variant=\"none\" data-folded=\"false\">"), card, StringComparison.Ordinal);
+        Assert.Contains("<header class=\"fam-head\" data-family=\"drift\"><span class=\"fam-tag\" data-family=\"drift\"><span class=\"fam-swatch\" data-family=\"drift\"></span>Earnings drift</span>", card, StringComparison.Ordinal);
         // Its rule in words, written from the settings it froze at: 3 sessions to buy, a reaction of 0.5 typical moves
-        // on twice the volume and a target at 2.5 times the risk, a click away beneath its chips.
-        Assert.Contains("<p class=\"rule-words\">A company beats its estimate and the stock closes up at least 0.5 typical moves on 2 times its usual volume. Bought within 3 sessions while it holds above that day's low. Stop at that day's low, target at the next band above or 2.5 times the risk, whichever is nearer.</p>", card, StringComparison.Ordinal);
+        // on twice the volume and a target at 2.5 times the risk, from 22.6 in the reader's words behind its fold.
+        Assert.Contains("<p class=\"rule-words\">A company beats its estimate and the stock closes up at least 0.5 typical days' moves on 2 times its usual volume. Bought within 3 trading days while it holds above that day's low. Stop at that day's low, target at the next band above or 2.5 times the risk, whichever is nearer.</p>", card, StringComparison.Ordinal);
 
         // Its picks drawn as rows of its own, E1 and E2, each ticker opening its chart page, and among the buy points E1
         // sixth and E2 seventh.
         Assert.Equal(["E1", "E2"], CardPicksOf(card));
         Assert.Contains("<a class=\"name-link\" href=\"#/chart/E1\">E1</a>", CardPickRowOf(card, "E1"), StringComparison.Ordinal);
-        Assert.Contains("<td class=\"place\" data-place=\"6\">6</td>", PickRowOf(page, "E1"), StringComparison.Ordinal);
-        Assert.Contains("<td class=\"place\" data-place=\"7\">7</td>", PickRowOf(page, "E2"), StringComparison.Ordinal);
+        Assert.StartsWith("<tr data-ticker=\"E1\" data-family=\"drift\" data-place=\"6\"", PickRowOf(page, "E1"), StringComparison.Ordinal);
+        Assert.StartsWith("<tr data-ticker=\"E2\" data-family=\"drift\" data-place=\"7\"", PickRowOf(page, "E2"), StringComparison.Ordinal);
 
         // E1's trade and its reward to risk, as its trade gate stored it, on its buy point's row.
         var first = PickRowOf(page, "E1");
 
         Assert.Contains("<td class=\"r num plan-buy\" data-buy=\"104\">104.00</td><td class=\"r num plan-stop\" data-stop=\"100.5\">100.50</td><td class=\"r num plan-target\" data-target=\"108\">108.00</td>", first, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"1.1429\">1.14</td>", first, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"1.1429\">$1.14</td>", first, StringComparison.Ordinal);
 
         var second = PickRowOf(page, "E2");
 
         Assert.Contains("data-target=\"109.25\">109.25</td>", second, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"2.5\">2.50</td>", second, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"2.5\">$2.50</td>", second, StringComparison.Ordinal);
+
+        // From 22.6 why each qualified, the drift's template worked by hand off the figures its gates stored: E1 beat by
+        // 12.5 per cent on its report of 28 September, its reaction 1.4 typical days' moves on 2.1 times its volume, its
+        // close of 104 above the reaction's low of 100.5; E2 by 5 per cent on 2 October, 1 move on 1.5 times. The same
+        // sentence on its buy point's row and its card's own row.
+        const string WhyE1 = "Beat its estimate by 12.5% on 28 Sep, jumped 1.4 typical days' moves on 2.10 times its usual volume, and is still above that day's low of 100.50.";
+        const string WhyE2 = "Beat its estimate by 5.0% on 2 Oct, jumped 1.0 typical days' moves on 1.50 times its usual volume, and is still above that day's low of 100.50.";
+
+        Assert.Contains($"<td class=\"why\">{WhyE1}</td>", first, StringComparison.Ordinal);
+        Assert.Contains($"<td class=\"why\">{WhyE2}</td>", second, StringComparison.Ordinal);
+        Assert.Contains($"<td class=\"why\">{WhyE1}</td>", CardPickRowOf(card, "E1"), StringComparison.Ordinal);
 
         // Read back against the store in both directions.
         var points = Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>"));

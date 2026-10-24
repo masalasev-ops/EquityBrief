@@ -1447,7 +1447,8 @@ public partial class ArchitectureConformance
         // 253 at 20.13: the mark vocabulary's target range, and the chart page's firm actions and analysts by name.
         // 254 at 22.2: the Ledger page's row for the short-term dip's counts.
         // 255 at 22.4: the chart page's brief read.
-        Assert.Equal(255, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 257 at 22.6: Tonight in one minute and the page's words at its foot.
+        Assert.Equal(257, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1607,7 +1608,8 @@ public partial class ArchitectureConformance
         // 654 at 20.13: the mark vocabulary's target range, and the chart page's firm actions and analysts by name.
         // 655 at 22.2: the Ledger page's row for the short-term dip's counts.
         // 656 at 22.4: the chart page's brief read.
-        Assert.Equal(656, inDocument.Length);
+        // 658 at 22.6: Tonight in one minute and the page's words at its foot.
+        Assert.Equal(658, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

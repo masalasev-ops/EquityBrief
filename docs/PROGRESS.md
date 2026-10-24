@@ -8415,3 +8415,89 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 64 tables, 1422 claims, 1422 passing, none out of scope and none unexamined, 1437 placements and
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    22.6.
+
+### 22.6 - Tonight redesigned: tonight in one minute, tomorrow's buys, one step from qualifying, the six setups and each setup's card in the reader's words, a pick's card holding its setup's one plan, and the page's words at its foot   2026-10-24
+
+Queue:      done, phase 20 finished for its sign-off with its report, 22.0, 22.1 with its record, 22.2 with its
+            correction and its remedy, the one-gate-short correction, 22.4 with its correction and 22.5; in progress,
+            22.6 in this pull request, on the operator's word of 2026-10-24 to finish the track and merge it while they
+            are away; next, 22.7, the phase report; 22.3 on the operator's word; and the sign-offs of phases 20 and 18
+            by fresh sessions when they say.
+Limits:     no migration, and no rule's version moves, asserted. Two sources 22.2 edited, `Program.cs` and
+            `SinglePageApp.cs`, are edited here for the page's own reading and drawing after 22.2 merged; neither is a
+            source a rule's version pins. 22.3 has edited nothing.
+Built:      Tonight on every index from the mockup the operator approved: one line of links; tonight in one minute,
+            the market, tonight's picks, the trades still open with those ended tonight, and the stocks one step from
+            qualifying, each a bold sentence with a line beneath; tomorrow's buys, one table across every setup with
+            why each qualified in a template a setup and News as so many good and so many bad, each row folding its
+            pick's card alone; one step from qualifying; the six setups as tiles; each setup's card with its header,
+            its Showing list in place of the rule tabs, its summary with picks and without, its picks table, its notes,
+            its quiet-nights line and its folds closed; the heavyweights' card with three tiles, its holdings table and
+            its folds; and the page's words at its foot in place of the per-card guides. A pick's card in the reader's
+            words with one plan, its setup's own: the levels plan leaves the card and stays on the stock's full page,
+            written as a decision with the 19.2 correction's fold decision under Previously decided. Found while
+            building and fixed in the same pass: the shared rewrites turned the ticker HELD into Kept, so a word written
+            all in capitals is now a ticker, left as it stands and read as no term by the check; the heavyweights'
+            waiting and empty lines and a book version's test line read "its holdings reads" through the rewrites, so
+            they are written in the reader's words where they are made; an empty card whose stock was already bought
+            on an earlier night, and one whose part of the night failed, lost their reason in the first summary and now
+            say it; and the closed market's sentence ends "but the short-term dip's own" where the dip's list is open.
+            Section 15's Tonight rows, two of them new, and the pick card's paragraph; the decisions; the guide's
+            Tonight section; the fixture's expectations; the roster's row; and the changelog.
+Moved:      every element of the page before it, and where it now stands. The market line: tonight in one minute's
+            first line. Its counts of the members a setup passed and the buy points across the setups: the picks line.
+            The stocks close to a buy point and their link: the one-step line and its link. The open trades and their
+            link: the open-trades line, with those ended tonight. What ran tonight and the watch list's line: the
+            page's first line. The tiles: the six setups' card beneath one step from qualifying. Tonight's buy points:
+            tomorrow's buys, the place number giving way to the rows' order, the business and the news kept and why each
+            qualified added. A row's fold: its pick's card alone, the levels plan on the stock's full page, linked from
+            the card. The stocks one gate short: one step from qualifying, the step and where the stock stands in the
+            reader's words, its Watch press and Universe link kept. A setup card's pill and count: its header's badge
+            and count. Its rule tabs: the Showing list. Its rule's sentence and chips, the sweep's line and a fixed
+            card's figures: the fold of its full rule. Its rows and notes: its picks table and notes, the business on
+            tomorrow's buys alone. Its funnel: the fold narrowing the stocks, its largest drop in the summary. Its
+            stretch line: the quiet-nights line. Its stocks one gate short and its breakouts forming: their two folds.
+            Its versions and its record: their two folds. A version's band and picks: the banner and the version's own
+            table. The guide behind each card's "?": the words at the page's foot. The heavyweights' four tiles: three,
+            the holdings and their sectors in one. Its empty sectors, its rule and its record: their folds. A pick
+            card's checklist: why it qualified, its first line, and other checks, the rest. Its plan, money and
+            management: the plan. What could hit the trade: what could go wrong before it ends. The rule's record, the
+            setups like it and what is behind it: their three parts. The operator's record and the press: their two.
+Tests:      5 new, 2719 in all: every card of Tonight in the reader's words over nine constructed nights on the three
+            indices, each opening on its summary; a pick's card in every part and form it draws holding one plan with
+            one stop and no levels plan; a ticker never rewritten; no source a rule's version pins written by 22.6; and
+            the check failing a term planted in a pick's card, a card opening on anything else and a card of a region
+            its row does not name. Each summary and why-template worked by hand in the read-surface tests over
+            constructed nights: with picks, the S&P 500's seven, the drift's two and the breakout's two; with none, the
+            breakout's and the pullback's quiet nights; a closed market on the S&P 500 and the S&P 400; and an S&P 400
+            night whose setups read checks of their own. The Showing list swaps the table to a version's own picks on
+            the swing and heavyweights cards. The 86 tests the page's new markup moved read it again.
+Fixture:    setup-cards.json's summaries of the fixture's night, which lists none, worked by hand: the pullback's "No
+            picks tonight. The step most stocks missed: not at the pullback's buy point, 4 of the 4 that got that far.",
+            the dip's with its closest stock and its missing step, and the unruled setups' "No picks tonight.".
+Claims:     1424, two new: tonight in one minute and the words at the page's foot, each read by the read surface; the
+            rows section 15.7 extends keep their verdicts, their new parts written as clauses the reader reads whole.
+Pins:       none move: no source a rule's version pins is one of the 19 22.6 writes, asserted.
+Screens:    read back from this branch's build at 1,440 pixels and a true 390 in both palettes over four constructed
+            stores, the S&P 500's picks with a pick's card opened, the S&P 400's and 600's, a closed market on the S&P
+            400 and the heavyweights holding: no page wider than its screen at either width, the wide tables scrolling
+            in their own boxes and an opened card held to the screen's width. The read-back found three slips, fixed
+            before this entry: "1 more qualified and were kept back", and "The night did not read this setup" added to
+            the summary of a card whose stock qualified and of one the market check closed.
+Mutated:    the rule, stated before the runs: one mutation for each property 22.6 adds, the smallest edit undoing it
+            where the property is stated, made in the worktree and reverted with the editor, each run filtered to the
+            13 tests reading Tonight's new parts. P1 the drift's why without its volume; P2 the breakout's why without
+            its quiet spell; P3 an empty card's summary without its stock already bought; P4 the closed market's
+            sentence without the dip's own list; P5 the picks line without the setups they came from; P6 a pick's card
+            drawing a second stop; P7 the Showing list drawing the live setup last; P8 the reader's words rewriting a
+            ticker; P9 the check reading a ticker as a term; P10 the news drawn as signed counts. Each red: P1 at the
+            drift's test; P2 at the breakout's; P3 at the S&P 400's; P4 at the dip's; P5 at both one-minute tests; P6
+            at the one-plan test and the fold's; P7 at the heavyweights' selector; P8 at the ticker test and the card's
+            notes; P9 at Tonight's plain-words test; P10 at the card's buy points row.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2719 of 2719 tests ran with none failed,
+            migrations 0 to 108 with none pending, schema version 108, against `data-ci` and never `data`; the phase
+            report 64 tables, 1424 claims, 1424 passing, none out of scope and none unexamined, 1439 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    22.7, the phase report, reading the redesigned Tonight on each index over the live store at 1,440 pixels
+            and a true 390 in both palettes.

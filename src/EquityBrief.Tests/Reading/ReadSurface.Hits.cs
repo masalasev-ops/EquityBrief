@@ -45,21 +45,22 @@ public partial class ReadSurface
         var card = await CardRowOf(client, "MID", "breakout", "M1");
 
         // The breakout's cap of 63 sessions after Friday 2026-10-02 ends on Monday 2027-01-04: inside it the CPI releases
-        // of 10-14, 11-10 and 12-10 and the FOMC decisions of 10-28 and 12-09, and both tables run past it.
-        Assert.Contains("<section class=\"card-hits\" data-through=\"2027-01-04\"><h5>What could hit it before 2027-01-04</h5>", card, StringComparison.Ordinal);
-        Assert.Contains("<li data-hit=\"reactions\">Its 3 stored earnings reactions moved a median 1.0 typical moves, 0.74 of this plan's risk; 1 moved further than the stop's distance.</li>", card, StringComparison.Ordinal);
-        Assert.Contains("<li data-hit=\"dividend\" data-declared=\"yes\">Ex-dividend 2026-10-14, declared.</li>", card, StringComparison.Ordinal);
+        // of 10-14, 11-10 and 12-10 and the FOMC decisions of 10-28 and 12-09, and both tables run past it. From 22.6 each
+        // in the reader's words with its day and why it matters.
+        Assert.Contains("<section class=\"card-hits\" data-through=\"2027-01-04\"><h5>What could go wrong before it ends, about 4 Jan 2027</h5>", card, StringComparison.Ordinal);
+        Assert.Contains("<li data-hit=\"reactions\"><span class=\"hit-when\">Past reports</span><span class=\"hit-what\">Its last 3 reports moved it a median 1.0 typical days' moves, 0.74 times the plan's risk; 1 moved it further than the stop is from the buy.</span></li>", card, StringComparison.Ordinal);
+        Assert.Contains("<li data-hit=\"dividend\" data-declared=\"yes\"><span class=\"hit-when\">14 Oct</span><span class=\"hit-what\">Ex-dividend, declared<span class=\"hit-why\">The price drops by the dividend that morning.</span></span></li>", card, StringComparison.Ordinal);
         Assert.Equal(
-            ["CPI release on 2026-10-14.", "FOMC decision on 2026-10-28.", "CPI release on 2026-11-10.", "FOMC decision on 2026-12-09.", "CPI release on 2026-12-10."],
-            System.Text.RegularExpressions.Regex.Matches(card, "<li data-hit=\"event\">([^<]*)</li>").Select(match => match.Groups[1].Value));
+            ["14 Oct Inflation report (CPI)", "28 Oct Fed rate decision", "10 Nov Inflation report (CPI)", "9 Dec Fed rate decision", "10 Dec Inflation report (CPI)"],
+            System.Text.RegularExpressions.Regex.Matches(card, "<li data-hit=\"event\"><span class=\"hit-when\">([^<]*)</span><span class=\"hit-what\">([^<]*)<span class=\"hit-why\">Market-wide moves are common on these days.</span>").Select(match => $"{match.Groups[1].Value} {match.Groups[2].Value}"));
         Assert.DoesNotContain("data-hit=\"past\"", card, StringComparison.Ordinal);
 
-        // The operator's record under the rule's heading, a trailing rule's trades ended rather than won or lost, and the
-        // outline until twenty have ended, with the rule's own picks on the same two nights counted the same way beneath
+        // The operator's record under the setup's heading, a trailing rule's trades ended rather than won or lost, and the
+        // outline until twenty have ended, with the setup's own picks on the same two nights counted the same way beneath
         // it; the stock's page for an earlier night draws none of it.
         Assert.Contains(
-            "<section class=\"card-mine outline\"><h5>Your trades of the breakout on the S&P 400</h5><p>3 ended and 1 open.</p><p class=\"degraded\" data-average=\"none\">3 of 20 ended: the average is drawn once 20 have.</p>" +
-            "<p class=\"card-same-nights\" data-nights=\"2\" data-listed=\"6\" data-average=\"none\">The rule's own 6 picks on the same 2 nights, each bought at the next session's open: 4 ended and 2 open. 4 of 20 ended: the average is drawn once 20 have.</p></section>",
+            "<section class=\"card-mine outline\"><h5>Your own trades of the breakout on the S&P 400</h5><p>3 ended and 1 open.</p><p class=\"degraded\" data-average=\"none\">3 of 20 ended: the average is drawn once 20 have.</p>" +
+            "<p class=\"card-same-nights\" data-nights=\"2\" data-listed=\"6\" data-average=\"none\">The setup's own 6 picks on the same 2 nights, each bought at the next trading day's open: 4 ended and 2 open. 4 of 20 ended: the average is drawn once 20 have.</p></section>",
             card,
             StringComparison.Ordinal);
         Assert.DoesNotContain("card-mine", System.Net.WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M1/{IndexNight}")), StringComparison.Ordinal);
@@ -94,11 +95,11 @@ public partial class ReadSurface
 
         Assert.Contains("<section class=\"card-hits\" data-through=\"2027-12-23\">", card, StringComparison.Ordinal);
         Assert.Equal(
-            ["CPI release on 2027-10-14.", "FOMC decision on 2027-10-27.", "CPI release on 2027-11-10.", "FOMC decision on 2027-12-08.", "CPI release on 2027-12-10."],
-            System.Text.RegularExpressions.Regex.Matches(card, "<li data-hit=\"event\">([^<]*)</li>").Select(match => match.Groups[1].Value));
+            ["14 Oct Inflation report (CPI)", "27 Oct Fed rate decision", "10 Nov Inflation report (CPI)", "8 Dec Fed rate decision", "10 Dec Inflation report (CPI)"],
+            System.Text.RegularExpressions.Regex.Matches(card, "<li data-hit=\"event\"><span class=\"hit-when\">([^<]*)</span><span class=\"hit-what\">([^<]*)<span class=\"hit-why\">").Select(match => $"{match.Groups[1].Value} {match.Groups[2].Value}"));
         Assert.Equal(
-            ["<li data-hit=\"past\">The hold runs past the last CPI release the table holds, so one after it is not ruled out.</li>"],
-            System.Text.RegularExpressions.Regex.Matches(card, "<li data-hit=\"past\">[^<]*</li>").Select(match => match.Value));
+            ["<li data-hit=\"past\"><span class=\"hit-when\">Later</span><span class=\"hit-what\">The trade runs past the last inflation report (CPI) date on file, so a later one is not ruled out.</span></li>"],
+            System.Text.RegularExpressions.Regex.Matches(card, "<li data-hit=\"past\">.*?</li>").Select(match => match.Value));
     }
 
     [Fact]
@@ -114,7 +115,7 @@ public partial class ReadSurface
             using var client = host.CreateClient();
 
             Assert.Contains(
-                "<li data-hit=\"dividend\" data-declared=\"unread\">No ex-dividend date is declared in the sessions the calendar is asked for, and the store holds no dividend of the company's with a last date and a usual interval to estimate a later one from, so one later in the hold is not ruled out.</li>",
+                "<li data-hit=\"dividend\" data-declared=\"unread\"><span class=\"hit-when\">No date</span><span class=\"hit-what\">No ex-dividend date is declared for the days the calendar is asked for, and none of the company's is stored to estimate one from.<span class=\"hit-why\">One inside the trade is not ruled out.</span></span></li>",
                 await CardRowOf(client, "MID", "breakout", "M1"),
                 StringComparison.Ordinal);
         }
@@ -129,7 +130,7 @@ public partial class ReadSurface
             using var host = new Host(store.Root);
             using var client = host.CreateClient();
 
-            Assert.Contains("<li data-hit=\"dividend\">No ex-dividend date inside the hold, declared or estimated.</li>", await CardRowOf(client, "MID", "breakout", "M1"), StringComparison.Ordinal);
+            Assert.Contains("<li data-hit=\"dividend\"><span class=\"hit-when\">None</span><span class=\"hit-what\">No ex-dividend date inside the trade, declared or estimated.</span></li>", await CardRowOf(client, "MID", "breakout", "M1"), StringComparison.Ordinal);
         }
     }
 
@@ -143,8 +144,8 @@ public partial class ReadSurface
         const string Steps = DividendStepBars;
         const string Paying = "{\"dividend\":{\"forwardAnnualRate\":\"1.08\",\"forwardYield\":\"0.0216\",\"payoutRatio\":\"0.3\",\"exDividendDate\":\"2026-08-10\",\"payDate\":\"2026-08-13\"}}";
         const string PayingNone = "{\"dividend\":{\"forwardAnnualRate\":\"0\",\"forwardYield\":\"0\",\"payoutRatio\":\"0\",\"exDividendDate\":null,\"payDate\":null}}";
-        const string Estimated = "<li data-hit=\"dividend\" data-declared=\"no\">Ex-dividend 2026-11-09, estimated from the company's last declared date and its usual interval, 0.27 a share, 0.10 of the risk.</li>";
-        const string None = "<li data-hit=\"dividend\">No ex-dividend date inside the hold, declared or estimated.</li>";
+        const string Estimated = "<li data-hit=\"dividend\" data-declared=\"no\"><span class=\"hit-when\">9 Nov</span><span class=\"hit-what\">Ex-dividend, estimated from the company's last declared date and its usual interval, about $0.27 a share, 0.10 of the plan's risk<span class=\"hit-why\">The price drops by the dividend that morning.</span></span></li>";
+        const string None = "<li data-hit=\"dividend\"><span class=\"hit-when\">None</span><span class=\"hit-what\">No ex-dividend date inside the trade, declared or estimated.</span></li>";
         const string Unread = "<li data-hit=\"dividend\" data-declared=\"unread\">";
 
         string Copy(string payload) => $"INSERT INTO fundamentals_snapshot (ticker, fetched_at, payload) VALUES ('M1', '2026-10-01T23:00:00Z', '{payload}');";
@@ -189,8 +190,8 @@ public partial class ReadSurface
         // holding no ex-date leaves it unread the same way, however its bars step.
         const string Kept = "INSERT INTO dividend_reading (ticker, fetched_at, forward_rate, last_ex_date, by_year) VALUES ('M1', '2026-10-01T23:00:00Z', '1.08', '2026-08-10', '[{\"year\":2026,\"count\":3}]');";
         const string KeptNoDate = "INSERT INTO dividend_reading (ticker, fetched_at, forward_rate, last_ex_date, by_year) VALUES ('M1', '2026-10-01T23:00:00Z', '1.08', NULL, '[{\"year\":2025,\"count\":4}]');";
-        const string Estimated = "<li data-hit=\"dividend\" data-declared=\"no\">Ex-dividend 2026-11-09, estimated from the company's last declared date and its usual interval, 0.27 a share, 0.10 of the risk.</li>";
-        const string Unread = "<li data-hit=\"dividend\" data-declared=\"unread\">No ex-dividend date is declared in the sessions the calendar is asked for, and the store holds no dividend of the company's with a last date and a usual interval to estimate a later one from, so one later in the hold is not ruled out.</li>";
+        const string Estimated = "<li data-hit=\"dividend\" data-declared=\"no\"><span class=\"hit-when\">9 Nov</span><span class=\"hit-what\">Ex-dividend, estimated from the company's last declared date and its usual interval, about $0.27 a share, 0.10 of the plan's risk<span class=\"hit-why\">The price drops by the dividend that morning.</span></span></li>";
+        const string Unread = "<li data-hit=\"dividend\" data-declared=\"unread\"><span class=\"hit-when\">No date</span><span class=\"hit-what\">No ex-dividend date is declared for the days the calendar is asked for, and none of the company's is stored to estimate one from.<span class=\"hit-why\">One inside the trade is not ruled out.</span></span></li>";
 
         (string[] Rows, string Expected)[] cases =
         [

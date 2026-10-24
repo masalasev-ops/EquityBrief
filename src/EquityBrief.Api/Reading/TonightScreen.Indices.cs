@@ -448,10 +448,10 @@ public static partial class TonightScreen
             : !computed
                 ? NotComputed(universe)
             : last is not { } rebalance
-                ? $"No rebalance has been read yet. The {universe.Possessive} book reads its first on the first night of a month the night reads the {universe.Possessive} members."
+                ? $"No reshuffle has been read yet. The first is read on the first night of a month the night reads the {universe.Possessive} members."
                 : entered.Length == 0
-                    ? FormattableString.Invariant($"No sector's largest companies of the {universe.Name} led their sector at the rebalance of {rebalance:yyyy-MM-dd} while passing the floors, the profit check, the trend gate and the beta, so the book holds nothing until the next.")
-                    : FormattableString.Invariant($"Every holding the rebalance of {rebalance:yyyy-MM-dd} bought has been sold since, as the notes beneath say.");
+                    ? FormattableString.Invariant($"At the reshuffle of {rebalance:d MMM yyyy}, none of the {universe.Possessive} sectors' largest companies led its sector while passing the floors, the profit check, the trend check and the beta, so it holds nothing until the next.")
+                    : FormattableString.Invariant($"Everything the reshuffle of {rebalance:d MMM yyyy} bought has been sold since, as the lines beneath say.");
 
         // The book's look-back and beta as its night stored them, which the sessions its rebalance needs are read from.
         var reading = new HeavyweightSettings(HeavyweightRule.Largest, lookBack, HeavyweightRule.Leaders, HighBeta: settings.Heavyweights.GetValueOrDefault("beta") is not (null or "off"));

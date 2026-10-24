@@ -19,20 +19,14 @@ public partial class ReadSurface
         CheckReach.Key("15.7 Tonight", "The fundamentals-first family's card"),
     ];
 
-    // The family's card from the card holding its heading and its rule, open or folded to its one line, to the next card
-    // the page draws.
+    // The family's card from the card holding its heading and its rule to the next card the page draws.
     static string FundamentalsCard(string page)
     {
-        var at = page.IndexOf("<section class=\"family-card\" data-family=\"fundamentals\"", StringComparison.Ordinal);
+        var card = SetupCardOf(page, "fundamentals");
 
-        Assert.True(at >= 0, "The page draws no fundamentals-first card.");
+        Assert.Contains("<section class=\"family-card\" data-family=\"fundamentals\"", card, StringComparison.Ordinal);
 
-        var start = page.LastIndexOf("<section class=\"card", at, StringComparison.Ordinal);
-        var end = page.IndexOf("<section class=\"card", at, StringComparison.Ordinal);
-
-        Assert.Matches("^<section class=\"card(?: folded)?\" id=\"setup-fundamentals\" data-card=\"family\">", page[start..]);
-
-        return page[start..(end < 0 ? page.Length : end)];
+        return card;
     }
 
     // A card's words as a reader reads them, the marks between its clauses taken out.
@@ -71,7 +65,7 @@ public partial class ReadSurface
         Assert.Contains("revenue up more than 0 per cent on the year-earlier quarter and growing faster than the quarter before", Read(midCard), StringComparison.Ordinal);
         Assert.Equal(["M2"], CardPicksOf(midCard));
         Assert.Contains("<tr data-ticker=\"M2\" data-family=\"fundamentals\"", Assert.Single(Blocks(mid, "<table class=\"list-table buy-points\".*?</table>")), StringComparison.Ordinal);
-        Assert.True(mid.IndexOf("data-family=\"drift\"", StringComparison.Ordinal) < mid.IndexOf("data-family=\"fundamentals\"", StringComparison.Ordinal));
+        Assert.True(mid.IndexOf("id=\"setup-drift\"", StringComparison.Ordinal) < mid.IndexOf("id=\"setup-fundamentals\"", StringComparison.Ordinal));
 
         // The S&P 600: the card listing none and saying how many members stopped at each part of the rule.
         var small = FundamentalsCard(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=600")));
@@ -124,7 +118,7 @@ public partial class ReadSurface
 
         Assert.Contains($"data-passed=\"{ownPasses + 1}\"", Assert.Single(Blocks(page, "<p class=\"market-line\".*?</p>")), StringComparison.Ordinal);
         Assert.Equal(["FF1"], CardPicksOf(card));
-        Assert.Contains("Read on the S&P 500 by the S&P 400's and 600's step, apart from its own families.", Read(card), StringComparison.Ordinal);
+        Assert.Contains("Read on the S&P 500 by the S&P 400's and 600's step, apart from its own setups.", Read(card), StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"FF1\" data-family=\"fundamentals\"", Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>")), StringComparison.Ordinal);
 
         // From the 19.7 correction of 2026-10-18 its chips on the S&P 500 too, off the setting the S&P 500's night stored.

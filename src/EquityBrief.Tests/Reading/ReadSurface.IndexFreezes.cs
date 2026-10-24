@@ -84,21 +84,22 @@ public partial class ReadSurface
             return (page, FamilyCardOf(page, BreakoutRule.Name));
         }
 
-        const string FrozenRule = "The S&P 400 breakout rule at a 126-session high, 1.5 times the volume, ranges at 0.85 and the stop 1.5 typical moves beneath, the profit gate, each trade paying the published spread, half at each end.";
+        // The frozen rule in the words its name carries, from 22.6 in the reader's words in its card's fold.
+        const string FrozenRule = "The S&P 400 breakout rule at a 126-day high, 1.5 times the volume, ranges at 0.85 and the stop 1.5 typical days' moves beneath, the profit step, each trade paying the published spread, half at each end.";
 
         // Frozen the day after the night: the night's card is the provisional rule's still, its sweep's line drawn.
         var before = await CardFrozenAt("2026-10-03T12:00:00Z", readByIt: false);
 
-        Assert.Contains("<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Provisional</span> <span class=\"fam-count\">1 pick tonight</span>", before.Card, StringComparison.Ordinal);
-        Assert.Contains("</details></header>" + SweepLineDrawn, before.Card, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Not yet tested</span> <span class=\"fam-count\">1 pick tonight</span>", before.Card, StringComparison.Ordinal);
+        Assert.Contains(SweepLineDrawn, RuleFoldOf(before.Card), StringComparison.Ordinal);
         Assert.DoesNotContain(FrozenRule, before.Page, StringComparison.Ordinal);
 
         // Frozen before the night, but the night read its list by the provisional rule, as it does where the live rule's
         // evaluator moved: the card is the provisional rule's the list was drawn by, its line drawn.
         var unread = await CardFrozenAt("2026-10-02T12:00:00Z", readByIt: false);
 
-        Assert.Contains("<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Provisional</span> <span class=\"fam-count\">1 pick tonight</span>", unread.Card, StringComparison.Ordinal);
-        Assert.Contains("</details></header>" + SweepLineDrawn, unread.Card, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Not yet tested</span> <span class=\"fam-count\">1 pick tonight</span>", unread.Card, StringComparison.Ordinal);
+        Assert.Contains(SweepLineDrawn, RuleFoldOf(unread.Card), StringComparison.Ordinal);
         Assert.DoesNotContain(FrozenRule, unread.Page, StringComparison.Ordinal);
 
         // Frozen on the night and read by it: live since that day with its two variants, its rule in the words its name
@@ -107,9 +108,9 @@ public partial class ReadSurface
         // adds no years and no figures line is drawn.
         var frozen = await CardFrozenAt("2026-10-02T12:00:00Z", readByIt: true);
 
-        Assert.Contains("<span class=\"status-pill live\" title=\"live since 2026-10-02\">Live</span> <span class=\"fam-count\">1 pick tonight</span>", frozen.Card, StringComparison.Ordinal);
-        Assert.Equal(3, Regex.Matches(frozen.Card, "<a class=\"rule-tab").Count);
-        Assert.Contains("</details></header>" + SweepLineDrawn, frozen.Card, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill live\">Live since 2 Oct 2026</span> <span class=\"fam-count\">1 pick tonight</span>", frozen.Card, StringComparison.Ordinal);
+        Assert.Equal(3, Regex.Matches(frozen.Card, "<option ").Count);
+        Assert.Contains(SweepLineDrawn, RuleFoldOf(frozen.Card), StringComparison.Ordinal);
         Assert.DoesNotContain("family-frozen", frozen.Card, StringComparison.Ordinal);
         Assert.DoesNotContain(SetupFamilies.ProvisionalStatus, frozen.Card, StringComparison.Ordinal);
         Assert.Single(Regex.Matches(frozen.Page, Regex.Escape(FrozenRule)));
@@ -119,8 +120,8 @@ public partial class ReadSurface
         // A sweep recorded after the freeze that found none draws the line again beneath the live rule's standing.
         var answeredAfter = await CardFrozenAt("2026-10-02T12:00:00Z", readByIt: true, "2026-10-02T13:00:00Z");
 
-        Assert.Contains("<span class=\"status-pill live\" title=\"live since 2026-10-02\">Live</span>", answeredAfter.Card, StringComparison.Ordinal);
-        Assert.Contains("</details></header>" + SweepLineDrawn, answeredAfter.Card, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill live\">Live since 2 Oct 2026</span>", answeredAfter.Card, StringComparison.Ordinal);
+        Assert.Contains(SweepLineDrawn, RuleFoldOf(answeredAfter.Card), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -242,14 +243,14 @@ public partial class ReadSurface
 
         Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-02\" data-variants=\"1\" data-last-rebalance=\"2026-10-02\" data-next-rebalance=\"2026-11-03\"", card, StringComparison.Ordinal);
         Assert.Contains(SweepLineDrawn, card, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"status-pill live\" title=\"live since 2026-10-02\">Live</span> <span class=\"fam-count\">1 holding tonight</span>", card, StringComparison.Ordinal);
-        Assert.Contains("since the last rebalance of 2026-10-02", card, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill live\">Live since 2 Oct 2026</span> <span class=\"fam-count\">1 holding</span>", card, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"tile-label\">Since the last reshuffle, 2 Oct</span>", card, StringComparison.Ordinal);
         Assert.Contains("data-ticker=\"M1\"", card, StringComparison.Ordinal);
         Assert.DoesNotContain("data-ticker=\"M2\"", card, StringComparison.Ordinal);
-        Assert.Contains("The rebalance of 2026-10-02 bought M1.", card, StringComparison.Ordinal);
-        Assert.Contains($"M3 was sold at the close of 2026-10-02: {IndexHeavyweights.NoLongerTheLeader}.", card, StringComparison.Ordinal);
+        Assert.Contains("The last reshuffle, on 2 Oct 2026, bought M1.", card, StringComparison.Ordinal);
+        Assert.Contains($"M3 was sold at the close of 2 Oct 2026: {EquityBrief.Web.Marks.ReaderWords.Plain(IndexHeavyweights.NoLongerTheLeader)}.", card, StringComparison.Ordinal);
         Assert.Contains(
-            "The S&P 400 heavyweights rule of each sector's 10 largest members leading it over 251 sessions, 2 leader(s) a sector with a beta of at least 1, sold on no longer leading, the profit gate, each holding paying the published spread, half at each end.",
+            "The S&P 400 heavyweights rule of each sector's 10 largest members leading it over 251 trading days, 2 leader(s) a sector with a beta of at least 1, sold on no longer leading, the profit step, each holding paying the published spread, half at each end.",
             page,
             StringComparison.Ordinal);
 

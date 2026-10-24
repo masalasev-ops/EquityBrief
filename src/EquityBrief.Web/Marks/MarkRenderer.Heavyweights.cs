@@ -86,22 +86,38 @@ public sealed partial class MarkRenderer
     // What each column of the sector heavyweights' card holds, in the order the columns are drawn.
     public static IReadOnlyList<(string Heading, string Says)> HeavyweightHeadings { get; } =
     [
-        ("#", "The holding's place on the card, the sectors in alphabetical order. The session it was bought on is under the pointer."),
-        ("Stock", "The ticker opens the stock's page, with the company beneath."),
-        (LeadHeading, "Its return over the look-back less its sector fund's over the same sessions, in percentage points, at the last rebalance that read it, as a bar."),
+        ("#", "The holding's place on the card, the sectors in alphabetical order. The day it was bought on is under the pointer."),
+        ("Stock", "The ticker opens the stock's chart, with the company beneath."),
+        (LeadHeading, "How far its return over the year beat its sector fund's when it was last checked, in percentage points, as a bar."),
         ("Against its 200-day", "Tonight's close above or below its 200-day average, in per cent of the average."),
         ("Since bought", "Its return from its buy to tonight's close, in per cent of the buy."),
-        ("Tonight", "Still leading, lost its lead or below its 200-day, read off tonight's closes by the rule's own functions. Information only: the book sells at a rebalance, never on this."),
+        ("Tonight", "Whether it still leads its sector tonight, read off tonight's closes. This sells nothing: a stock is sold only at a reshuffle."),
     ];
 
-    // How a heavyweights card is read, written once for every heavyweights card on every index and opened from its
-    // header's "?", where each card once repeated its key.
-    public const string HeavyweightCardGuide =
-        "Each row is a stock the book holds at tonight's close, chosen at the close of a month's rebalance and bought at the next session's open as one of the leaders of its sector's largest companies, grouped under its sector beside the sector's fund and its return over the look-back to tonight, the S&P 500's funds on the S&P 400 and 600. It has no stop and no target: it is held while it leads and sold at the close of a later rebalance where the rule would not buy it, or at its last close as a member of the index. The tiles count its holdings and the sectors holding one, its return since the last rebalance beside the funds' of the sectors it holds, and the sessions to the next. A sector holding nothing says why its last rebalance bought nothing. Tonight's standing is read off tonight's closes and sells nothing. A month-long holding and not a swing trade, so the market check that closes the swing setups' lists does not close this card.";
+    // The sector heavyweights' card's header, as a setup card's: its name, whether it is live, tonight's holdings, the two
+    // sentences describing it and the Showing list.
+    public string HeavyweightCardHead(HeavyweightCardView card)
+    {
+        var view = new FamilyCardView(
+            EquityBrief.Core.Families.HeavyweightRule.Name,
+            card.Heading,
+            card.Heading,
+            card.Eyebrow,
+            card.Rule,
+            0,
+            0,
+            card.LiveSince,
+            card.Variants,
+            [],
+            [],
+            null,
+            RuleChoice: card.RuleChoice);
+        return FamilyCardHead(view, count: card.Holdings.Count == 1 ? "1 holding" : Formatted($"{card.Holdings.Count} holdings"));
+    }
 
-    // The sector heavyweights' card: its header, the rule's tabs and chips, a chosen book's band, the four tiles, its
-    // holdings grouped by sector under each fund's return with why an empty sector holds none, what the last rebalance
-    // bought and what ended, and the next rebalance.
+    // The sector heavyweights' card from 22.6: its summary, a chosen version's band, the three tiles, its holdings grouped
+    // by sector under each fund's return, what the last reshuffle bought and what ended, then the sectors holding nothing
+    // and the full rule with how its settings were chosen behind folds.
     // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
     // see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none
     // see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
@@ -109,33 +125,36 @@ public sealed partial class MarkRenderer
     {
         var body = new StringBuilder();
         var variant = card.RuleChoice is { Chosen.Live: false } chosen ? chosen : null;
-        var (pill, pillClass, pillTitle) = Pill(card.LiveSince, card.RuleChoice);
 
         body.Append(Invariant, $"<section class=\"family-card heavyweight-card\" data-family=\"{EquityBrief.Core.Families.HeavyweightRule.Name}\" data-holdings=\"{card.Holdings.Count}\" data-state=\"{(card.LiveSince is null ? "provisional" : "live")}\" ");
         body.Append(Invariant, $"data-live-since=\"{(card.LiveSince is { } since ? DayOf(since) : "none")}\" data-variants=\"{card.Variants}\" ");
         body.Append(Invariant, $"data-last-rebalance=\"{(card.LastRebalance is { } last ? DayOf(last) : "none")}\" data-next-rebalance=\"{(card.NextRebalance is { } next ? DayOf(next) : "none")}\" data-look-back=\"{card.LookBack}\">");
-        body.Append(CardHead(EquityBrief.Core.Families.HeavyweightRule.Name, card.Heading, pill, pillClass, pillTitle, Count(card.Holdings.Count, "holding") + " tonight", HeavyweightCardGuide));
-        body.Append(SweepFoundNoneLine(card.SweepFoundNone, card.SweepLost));
-        body.Append(variant is null ? FrozenSweepLine(card.Frozen) : string.Empty);
 
-        // The tabs the swing cards carry, and a registered variant's own book drawn under the same band, with what it
-        // shares with the live book, adds and drops.
+        // The summary: what it holds and in how many sectors, and when it next reshuffles.
+        var sectorsHeld = card.Holdings.Select(holding => holding.Sector).Distinct(StringComparer.Ordinal).Count();
+        var reshuffle = card.Tiles?.SessionsToNext is { } days ? Formatted($"; it reshuffles next in {days} trading {(days == 1 ? "day" : "days")}") : string.Empty;
+        var summary = card.Holdings.Count == 0
+            ? (variant is null ? "It holds nothing tonight" : "This version would hold nothing tonight") + reshuffle + "."
+            : (variant is null ? "It holds " : "This version would hold ") + (card.Holdings.Count == 1 ? "1 stock" : Formatted($"{card.Holdings.Count} stocks")) + Formatted($" in {sectorsHeld} of {card.Tiles?.Of ?? 11} sectors") + reshuffle + ".";
+
+        body.Append(Invariant, $"<p class=\"card-summary\" data-summary>{Escaped(summary)}</p>");
+
+        // A registered version's own holdings drawn under its band, with what it shares with the live holdings, adds and
+        // drops.
         // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
         if (card.RuleChoice is { } rule)
         {
             body.Append(Invariant, $"<div class=\"heavyweight-rule\" data-rule=\"{Escaped(rule.Chosen.Slug)}\" data-variant=\"{(variant is null ? "none" : variant.Chosen.Variant!.Value.ToString(Invariant))}\">");
-            body.Append(RuleTabs(EquityBrief.Core.Families.HeavyweightRule.Name, rule));
-            body.Append(RuleChipsLine(rule));
 
             if (variant is not null)
             {
-                body.Append(Invariant, $"<p class=\"variant-band\" role=\"status\" data-variant=\"{variant.Chosen.Variant}\">{Escaped(RuleScreenWords.Band(variant.Chosen.Variant!.Value))}</p>");
+                body.Append(Invariant, $"<div class=\"variant-band\" role=\"status\" data-variant=\"{variant.Chosen.Variant}\"><p class=\"band-head\">A version being tested, not tonight's holdings</p><p>{Escaped(VersionName(variant.Chosen))}</p><p class=\"band-note\">It runs every night beside the live setup with its own paper account. It replaces the live setup only if it proves better and you approve it on the Loop page.</p></div>");
 
-                // A book registered before its family's freeze says how the tester judged its design.
+                // A version registered before its setup's settings were fixed says how the tester judged its design.
                 // see: An index family's variants may stand registered before its freeze, its provisional rule staying the live one
                 if (variant.Untested is { } untested)
                 {
-                    body.Append(Invariant, $"<p class=\"variant-untested\" data-adjusted=\"{(untested.Adjusted is { } p ? p.ToString("R", Invariant) : "none")}\">{Escaped(untested.Line)}</p>");
+                    body.Append(Invariant, $"<p class=\"variant-untested\" data-adjusted=\"{(untested.Adjusted is { } p ? p.ToString("R", Invariant) : "none")}\">{Escaped(ReaderWords.Plain(untested.Line))}</p>");
                 }
 
                 body.Append(ShareLine(variant.Share, "holdings"));
@@ -146,14 +165,14 @@ public sealed partial class MarkRenderer
 
         if (card.Waits is { } waits)
         {
-            body.Append(Invariant, $"<p class=\"family-note heavyweight-waits\">{Escaped(waits)}</p>");
+            body.Append(Invariant, $"<p class=\"family-note heavyweight-waits\">{Escaped(ReaderWords.Plain(waits))}</p>");
         }
 
         body.Append(HeavyweightTiles(card));
 
         if (card.Holdings.Count == 0)
         {
-            body.Append(Invariant, $"<p class=\"degraded family-empty\" data-holdings=\"0\">{Escaped(card.Empty ?? "The sector heavyweights hold nothing tonight.")}</p>");
+            body.Append(Invariant, $"<p class=\"degraded family-empty\" data-holdings=\"0\">{Escaped(ReaderWords.Plain(card.Empty ?? "The sector heavyweights hold nothing tonight."))}</p>");
         }
 
         // The sectors holding a stock first, a table of their holdings; then, once a rebalance has been read, the sectors
@@ -204,31 +223,52 @@ public sealed partial class MarkRenderer
             body.Append("</tbody></table></div>");
         }
 
-        if (empties.Length > 0)
-        {
-            body.Append(Invariant, $"<details class=\"hw-empties\" data-empty=\"{empties.Length}\"><summary>{Count(empties.Length, "sector")} with no holding</summary><ul class=\"hw-empty-list\">");
-
-            foreach (var sector in empties)
-            {
-                body.Append(Invariant, $"<li class=\"hw-empty\" data-sector=\"{Escaped(sector.Sector)}\"><b>{Escaped(sector.Sector)}</b>{FundReturnSpan(sector, card.LookBack)} <span class=\"hw-why\">{Escaped(sector.Reason ?? "It holds nothing tonight.")}</span></li>");
-            }
-
-            body.Append("</ul></details>");
-        }
-
         if (card.LastRebalance is { } rebalance)
         {
             body.Append(Invariant, $"<p class=\"family-note heavyweight-entered\" data-entered=\"{Escaped(string.Join(",", card.Entered))}\">");
             body.Append(card.Entered.Count == 0
-                ? Formatted($"The rebalance of {DayOf(rebalance)} bought nothing new.")
-                : Formatted($"The rebalance of {DayOf(rebalance)} bought {Escaped(string.Join(", ", card.Entered))}."));
+                ? FormattableString.Invariant($"The last reshuffle, on {rebalance:d MMM yyyy}, bought nothing new.")
+                : FormattableString.Invariant($"The last reshuffle, on {rebalance:d MMM yyyy}, bought {Escaped(string.Join(", ", card.Entered))}."));
             body.Append("</p>");
         }
 
         foreach (var ended in card.Ended)
         {
             body.Append(Invariant, $"<p class=\"family-note heavyweight-ended\" data-ticker=\"{Escaped(ended.Ticker)}\" data-ended-on=\"{DayOf(ended.EndedOn)}\" data-reason=\"{Escaped(ended.Reason)}\">");
-            body.Append(Invariant, $"{Escaped(ended.Ticker)} was sold at the close of {DayOf(ended.EndedOn)}: {Escaped(ended.Reason)}.</p>");
+            body.Append(Invariant, $"{Escaped(ended.Ticker)} was sold at the close of {ended.EndedOn:d MMM yyyy}: {Escaped(ReaderWords.Plain(ended.Reason))}.</p>");
+        }
+
+        // The folds, closed: why each sector holding nothing holds nothing, and the full rule with how its settings were
+        // chosen, its versions and its record.
+        if (empties.Length > 0)
+        {
+            body.Append(Invariant, $"<details class=\"hw-empties\" data-empty=\"{empties.Length}\"><summary>Why {(empties.Length == 1 ? "1 sector holds" : Formatted($"{empties.Length} sectors hold"))} nothing</summary><ul class=\"hw-empty-list\">");
+
+            foreach (var sector in empties)
+            {
+                body.Append(Invariant, $"<li class=\"hw-empty\" data-sector=\"{Escaped(sector.Sector)}\"><b>{Escaped(sector.Sector)}</b>{FundReturnSpan(sector, card.LookBack)} <span class=\"hw-why\">{Escaped(ReaderWords.Plain(sector.Reason ?? "It holds nothing tonight."))}</span></li>");
+            }
+
+            body.Append("</ul></details>");
+        }
+
+        body.Append("<details class=\"fold fam-rule\"><summary>The full rule, how its settings were chosen, and its record</summary><div class=\"fold-b\">");
+
+        if (card.RuleChoice is { } chips)
+        {
+            body.Append(RuleChipsLine(chips));
+        }
+
+        body.Append(SweepFoundNoneLine(card.SweepFoundNone, card.SweepLost));
+        body.Append(variant is null ? FrozenSweepLine(card.Frozen) : string.Empty);
+        body.Append(card.Frozen is { } frozen && variant is null ? Formatted($"<p class=\"record-said\">{Escaped(FrozenRecordSaid(frozen))}</p>") : string.Empty);
+        body.Append(card.RuleChoice?.NoVariantLine is { } none ? Formatted($"<p class=\"no-variant\" data-no-variant=\"true\">{Escaped(ReaderWords.Plain(none))}</p>") : string.Empty);
+        body.Append(Invariant, $"<p class=\"record-said\">{(card.LiveSince is { } live ? FormattableString.Invariant($"It went live on {live:d MMM yyyy}; its holdings since then are on <a href=\"#/paper\">Paper trading</a>.") : "It has not been tested yet, so its holdings count toward nothing; they are on <a href=\"#/paper\">Paper trading</a>.")}</p>");
+        body.Append("</div></details>");
+
+        if (card.RuleChoice is { Choices.Count: > 1 } versions)
+        {
+            body.Append(VersionsSideBySide(versions));
         }
 
         body.Append("</section>");
@@ -240,7 +280,7 @@ public sealed partial class MarkRenderer
     // sector names no fund.
     static string FundReturnSpan(HeavyweightSectorView sector, int lookBack) =>
         sector.Fund is { } fund
-            ? Formatted($" <span class=\"hw-fund\" data-fund=\"{Escaped(fund)}\" data-return=\"{(sector.FundReturn is { } fundReturn ? fundReturn.ToString("R", Invariant) : "none")}\">{Escaped(fund)} {(sector.FundReturn is { } over ? SignedFigure(over * 100, 1, Formatted($"{Unsigned(over * 100, 1):+0.0;-0.0;0.0}%")) : "<span class=\"degraded\">not read</span>")} over {lookBack} sessions</span>")
+            ? Formatted($" <span class=\"hw-fund\" data-fund=\"{Escaped(fund)}\" data-return=\"{(sector.FundReturn is { } fundReturn ? fundReturn.ToString("R", Invariant) : "none")}\">{Escaped(fund)} {(sector.FundReturn is { } over ? SignedFigure(over * 100, 1, Formatted($"{Unsigned(over * 100, 1):+0.0;-0.0;0.0}%")) : "<span class=\"degraded\">not read</span>")} over {lookBack} trading days</span>")
             : string.Empty;
 
     // The four tiles a heavyweights card opens on.
@@ -257,12 +297,11 @@ public sealed partial class MarkRenderer
         var body = new StringBuilder();
 
         body.Append(Invariant, $"<div class=\"hw-tiles\" data-holdings=\"{tiles.Holdings}\" data-sectors=\"{tiles.Sectors}\" data-of=\"{tiles.Of}\" data-book-since=\"{(tiles.BookSince is { } book ? book.ToString("R", Invariant) : "none")}\" data-funds-since=\"{(tiles.FundsSince is { } funds ? funds.ToString("R", Invariant) : "none")}\" data-sessions-to-next=\"{(tiles.SessionsToNext is { } next ? next.ToString(Invariant) : "none")}\">");
-        body.Append(Invariant, $"<div class=\"hw-tile\"><b>{tiles.Holdings}</b><span>{(tiles.Holdings == 1 ? "holding" : "holdings")}</span></div>");
-        body.Append(Invariant, $"<div class=\"hw-tile\"><b>{tiles.Sectors} of {tiles.Of}</b><span>sectors holding one</span></div>");
+        body.Append(Invariant, $"<div class=\"hw-tile\"><span class=\"tile-label\">Holding</span><b>{(tiles.Holdings == 1 ? "1 stock" : Formatted($"{tiles.Holdings} stocks"))}</b><span>in {tiles.Sectors} of {tiles.Of} sectors</span></div>");
         body.Append(card.LastRebalance is { } last
-            ? Formatted($"<div class=\"hw-tile\" title=\"{Escaped(tiles.Funds.Count == 0 ? "no fund held" : "the funds: " + string.Join(", ", tiles.Funds))}\"><b>{Percent(tiles.BookSince)}</b><span>since the last rebalance of {DayOf(last)}, its funds {Percent(tiles.FundsSince)}</span></div>")
-            : "<div class=\"hw-tile\"><b>none</b><span>no rebalance read yet</span></div>");
-        body.Append(Invariant, $"<div class=\"hw-tile\"><b>{(tiles.SessionsToNext is { } sessions ? sessions.ToString(Invariant) : "none")}</b><span>{(tiles.SessionsToNext is null ? "next rebalance past the exchange calendar's table" : card.NextRebalance is { } coming ? Formatted($"{(tiles.SessionsToNext == 1 ? "session" : "sessions")} to the next rebalance, {DayOf(coming)}") : "sessions to the next rebalance")}</span></div>");
+            ? FormattableString.Invariant($"<div class=\"hw-tile\" title=\"{Escaped(tiles.Funds.Count == 0 ? "no fund held" : "the funds: " + string.Join(", ", tiles.Funds))}\"><span class=\"tile-label\">Since the last reshuffle, {last:d MMM}</span><b>{Percent(tiles.BookSince)}</b><span>their sector funds {Percent(tiles.FundsSince)}</span></div>")
+            : "<div class=\"hw-tile\"><span class=\"tile-label\">Since the last reshuffle</span><b>none</b><span>no reshuffle read yet</span></div>");
+        body.Append(Invariant, $"<div class=\"hw-tile\"><span class=\"tile-label\">Next reshuffle</span><b>{(card.NextRebalance is { } coming ? FormattableString.Invariant($"{coming:d MMM}") : "not read")}</b><span>{(tiles.SessionsToNext is { } sessions ? Formatted($"in {sessions} trading {(sessions == 1 ? "day" : "days")}") : "past the exchange calendar's table")}</span></div>");
         body.Append("</div>");
 
         return body.ToString();
@@ -283,17 +322,28 @@ public sealed partial class MarkRenderer
         cells.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(holding.Ticker)}\">{Escaped(holding.Ticker)}</a>{(holding.Card is { } decision ? CardToggle(decision) : string.Empty)}{(holding.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
         cells.Append(holding.Lead is { } lead
             ? Formatted($"<td class=\"r num heavyweight-lead\" title=\"over {lookBack} sessions{(holding.LeadOn is { } on ? Formatted($", at the rebalance of {DayOf(on)}") : string.Empty)}\"><span class=\"hw-bar\"><span class=\"hw-fill {(lead >= 0 ? "gain" : "loss")}\" style=\"width:{(top > 0 ? Math.Abs(lead) / top * 100 : 0).ToString("0.#", Invariant)}%\"></span></span> {SignedTenth(lead * 100)} points</td>")
-            : Formatted($"<td class=\"r num heavyweight-lead\"><span class=\"degraded\">{Escaped(holding.NoLead ?? "not read")}</span></td>"));
+            : Formatted($"<td class=\"r num heavyweight-lead\"><span class=\"degraded\">{Escaped(ReaderWords.Plain(holding.NoLead ?? "not read"))}</span></td>"));
         cells.Append(standing?.OverAverage is { } over
             ? Formatted($"<td class=\"r num heavyweight-average\" data-under=\"{Flag(holding.Under)}\">{SignedFigure(over * 100, 1, Formatted($"{Unsigned(over * 100, 1):+0.0;-0.0;0.0}%"))}</td>")
             : "<td class=\"r num heavyweight-average\"><span class=\"degraded\">no close or average stored tonight</span></td>");
         cells.Append(holding.SinceBought is { } bought
             ? Formatted($"<td class=\"r num heavyweight-since\">{SignedFigure(bought * 100, 1, Formatted($"{Unsigned(bought * 100, 1):+0.0;-0.0;0.0}%"))}</td>")
             : "<td class=\"r num heavyweight-since\"><span class=\"degraded\">not read</span></td>");
-        cells.Append(Invariant, $"<td class=\"heavyweight-standing\"><span class=\"hw-pill\" data-standing=\"{Escaped(standing?.Word ?? EquityBrief.Core.Families.HeavyweightStandings.NotRead)}\" title=\"information only: the book sells at a rebalance, never on this\">{Escaped(standing?.Word ?? EquityBrief.Core.Families.HeavyweightStandings.NotRead)}</span></td></tr>");
+        cells.Append(Invariant, $"<td class=\"heavyweight-standing\"><span class=\"hw-pill\" data-standing=\"{Escaped(standing?.Word ?? EquityBrief.Core.Families.HeavyweightStandings.NotRead)}\" title=\"information only: a stock is sold only at a reshuffle\">{Escaped(StandingWords(standing?.Word))}</span></td></tr>");
 
         return cells.ToString();
     }
+
+    // A holding's standing tonight in a sentence: still leading, or what it fell short of and what that means at the next
+    // reshuffle.
+    static string StandingWords(string? word) => word switch
+    {
+        EquityBrief.Core.Families.HeavyweightStandings.StillLeading => "Still leading its sector",
+        EquityBrief.Core.Families.HeavyweightStandings.LostItsLead => "Lost its lead; sold at the next reshuffle if it is not leading then",
+        EquityBrief.Core.Families.HeavyweightStandings.BelowItsAverage => "Fell below its 200-day average; sold at the next reshuffle if it stops leading",
+        EquityBrief.Core.Families.HeavyweightStandings.NotForThisDesign => "Not read for this version",
+        _ => "Not read tonight",
+    };
 
     // What each column of Past picks' table of the sector heavyweights holds.
     public static IReadOnlyList<(string Heading, string Says)> HeavyweightPickHeadings { get; } =

@@ -30,9 +30,9 @@ public partial class ReadSurface
         var closed = WebUtility.HtmlDecode(new MarkRenderer().MarketLine(new MarketLineView(false, 0.4497, 0.45, 0, 0, 4, 32, 0, "S&P 600", 1, 600, true, "600")));
         var open = WebUtility.HtmlDecode(new MarkRenderer().MarketLine(new MarketLineView(true, 0.45, 0.45, 0, 0, 4, 32, 0, "S&P 600", 1, 600, true, "600")));
 
-        Assert.Contains("the S&P 600's breadth: 44.9% of its members closed above their 200-day average, below its floor of 45%", closed, StringComparison.Ordinal);
+        Assert.Contains("<b class=\"market-closed\">The market check is closed: no new buys tonight.</b> 44.9% of S&P 600 stocks are above their 200-day average. The setups only buy when at least 45% are", closed, StringComparison.Ordinal);
         Assert.DoesNotContain("45.0%", closed, StringComparison.Ordinal);
-        Assert.Contains("the S&P 600's breadth: 45.0% of its members closed above their 200-day average, at or above its floor of 45%", open, StringComparison.Ordinal);
+        Assert.Contains("<b class=\"market-open\">The market is healthy enough to buy.</b> 45.0% of S&P 600 stocks are above their 200-day average. The setups only buy when at least 45% are", open, StringComparison.Ordinal);
         Assert.Contains(
             "S&P 600's breadth is 44.9% against its floor of 45%",
             CardLines.Market(new MarketReading(0.4497, 0.45, true), null, "S&P 600", CardSettings.Defaults).Words,
@@ -51,53 +51,50 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}"));
 
-        // The tiles carry the passes and the market line the breadth, so neither card the night drew before the families
-        // stands; beneath the market line, what ran tonight and the watch list in one line.
+        // From 22.6 neither card the night drew before the families stands; the page opens on what ran tonight and the
+        // watch list with how many it holds, above tonight in one minute.
         Assert.DoesNotContain("data-card=\"night\"", page, StringComparison.Ordinal);
         Assert.DoesNotContain("data-card=\"watch\"", page, StringComparison.Ordinal);
-        Assert.Contains($"</span></p><p class=\"market-links\"><a class=\"market-run\" href=\"{SinglePageApp.RunRoute}{TheSwitch}\">What ran tonight</a> · <span class=\"market-watch\" data-watching=\"2\">2 watched · <a href=\"{SinglePageApp.WatchRoute}\">open the watch list</a></span></p>", page, StringComparison.Ordinal);
-        Assert.True(page.IndexOf("<p class=\"market-links\">", StringComparison.Ordinal) < page.IndexOf("class=\"setup-tiles\"", StringComparison.Ordinal));
+        Assert.Contains($"<p class=\"tonight-links\"><a class=\"market-run\" href=\"{SinglePageApp.RunRoute}{TheSwitch}\">What ran tonight</a> · <a class=\"market-watch\" data-watching=\"2\" href=\"{SinglePageApp.WatchRoute}\">Your watch list (2)</a></p>", page, StringComparison.Ordinal);
+        Assert.True(page.IndexOf("<p class=\"tonight-links\">", StringComparison.Ordinal) < page.IndexOf("data-card=\"one-minute\"", StringComparison.Ordinal));
 
-        // The night drew buy points, so the table stands and no line in its place.
+        // The night drew buy points, so the table stands beneath the sentence counting them.
         Assert.Contains("<table class=\"list-table buy-points\"", page, StringComparison.Ordinal);
-        Assert.DoesNotContain("buy-points-none", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("No stock to buy at tomorrow's open", page, StringComparison.Ordinal);
     }
 
+    // From 22.6 a night no setup picks from draws tomorrow's buys as its one sentence with no table, and tonight in one
+    // minute counts the stocks one step from qualifying, linking to their card where the night read some and any stand.
     [Fact]
-    public void ANightNoSetupListsDrawsOneLineInTheBuyPointsPlaceWithTheMembersOneGateShortAndItsGuideBehindItsPress()
+    public void ANightNoSetupListsDrawsTomorrowsBuysAsItsSentenceAndCountsTheStocksOneStepShort()
     {
         var night = new DateOnly(2026, 10, 12);
         var line = new MarketLineView(true, 0.48, 0.45, 0, 0, 4, 32, 0, "S&P 600", 1, 600, true, "600");
         var region = new SinglePageApp().IndexTonightRegion(new MarkRenderer(), night, Universes.Small, string.Empty, [night], line, [], null);
 
-        Assert.Contains(
-            $"<section class=\"card folded\" data-card=\"buy-points\"><div class=\"card-b\"><div class=\"card-one-line\"><p class=\"buy-points-none\" data-buy-points=\"0\" data-one-short=\"32\">No buy points tonight · 32 one gate short</p><details class=\"guide\"><summary title=\"How to read this\" aria-label=\"How to read this\">?</summary><p class=\"guide-b\">{Cards.Escaped(SinglePageApp.BuyPointsGuide)}</p></details></div></div></section>",
-            region,
-            StringComparison.Ordinal);
+        Assert.Contains("<p class=\"card-summary\" data-summary data-buy-points=\"0\">No stock to buy at tomorrow's open: no setup picked one tonight.</p>", region, StringComparison.Ordinal);
         Assert.DoesNotContain("list-table buy-points", region, StringComparison.Ordinal);
+        Assert.Contains("<b>32 stocks are one step from qualifying.</b>", region, StringComparison.Ordinal);
 
-        // The S&P 600's market line links what ran on its own Run page and draws no watch list, which is the S&P 500's.
-        Assert.Contains($"<p class=\"market-links\"><a class=\"market-run\" href=\"{SinglePageApp.RunRoute}2026-10-12?universe=600\">What ran tonight</a></p>", region, StringComparison.Ordinal);
+        // The S&P 600's page links what ran on its own Run page and draws no watch list, which is the S&P 500's.
+        Assert.Contains($"<p class=\"tonight-links\"><a class=\"market-run\" href=\"{SinglePageApp.RunRoute}2026-10-12?universe=600\">What ran tonight</a></p>", region, StringComparison.Ordinal);
 
-        // A night whose close to a buy point was not read says none.
+        // A night whose stocks one step short were not read says so.
         var unread = new SinglePageApp().IndexTonightRegion(new MarkRenderer(), night, Universes.Small, string.Empty, [night], line with { CloseRead = false }, [], null);
 
-        Assert.Contains("<p class=\"buy-points-none\" data-buy-points=\"0\" data-one-short=\"none\">No buy points tonight</p>", unread, StringComparison.Ordinal);
+        Assert.Contains("<b>Which stocks are one step from qualifying is not read tonight.</b>", unread, StringComparison.Ordinal);
 
-        // From the 19.8 correction of 2026-10-21 a night reading no stock one gate short draws no card of them, and the two
-        // counts that would open it read nought with no link, on the market line and on the line in the buy points' place,
-        // where a night reading some links both to the card.
+        // A night reading no stock one step short draws no card of them and links nothing, where a night reading some links
+        // to the card.
         var href = $"{SinglePageApp.NightRoute}2026-10-12?universe=600&close=open";
         var none = new SinglePageApp().IndexTonightRegion(new MarkRenderer(), night, Universes.Small, string.Empty, [night], line with { Close = 0, CloseHref = href }, [], null);
         var some = new SinglePageApp().IndexTonightRegion(new MarkRenderer(), night, Universes.Small, string.Empty, [night], line with { CloseHref = href }, [], null);
 
-        Assert.Contains("data-one-short=\"0\">No buy points tonight · 0 one gate short</p>", none, StringComparison.Ordinal);
-        Assert.Contains("0 close to a buy point · ", none, StringComparison.Ordinal);
+        Assert.Contains("<b>No stock is one step from qualifying.</b>", none, StringComparison.Ordinal);
         Assert.DoesNotContain("close-open", none, StringComparison.Ordinal);
-        Assert.DoesNotContain("close-to-buy", none, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-card=\"close-to-buy\"", none, StringComparison.Ordinal);
         Assert.Empty(new MarkRenderer().CloseToBuy([], false, true, "500"));
-        Assert.Contains($"No buy points tonight · <a class=\"close-open\" href=\"{href}\">32 one gate short</a></p>", WebUtility.HtmlDecode(some), StringComparison.Ordinal);
-        Assert.Contains($"<a class=\"close-open\" href=\"{href}\">32 close to a buy point</a> · ", WebUtility.HtmlDecode(some), StringComparison.Ordinal);
+        Assert.Contains($"<a class=\"close-open\" href=\"{href}\">See which, and the step each is missing</a>", WebUtility.HtmlDecode(some), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -221,11 +218,12 @@ public partial class ReadSurface
     {
         var shell = new SinglePageApp().Shell("EquityBrief");
 
-        // A tab finds its card again by the family it names; a chip, a sector's tile, a column's heading or the search box
-        // by its card's own mark; each keeps how far down the window the card stood.
+        // A card's Showing list, from 22.6 in the tabs' place, finds its card again by the family it names; a chip, a
+        // sector's tile, a column's heading or the search box by its card's own mark; each keeps how far down the window
+        // the card stood.
         Assert.Contains("function keepPlace(control, find) {", shell, StringComparison.Ordinal);
         Assert.Contains("keptPlace = card ? { find: find, top: card.getBoundingClientRect().top, at: Date.now() } : null;", shell, StringComparison.Ordinal);
-        Assert.Contains("keepPlace(tab, 'a[data-rule-tab=\"' + CSS.escape(tab.getAttribute('data-rule-tab')) + '\"]');", shell, StringComparison.Ordinal);
+        Assert.Contains("keepPlace(rule, 'select[data-rule-choice=\"' + CSS.escape(rule.getAttribute('data-rule-choice')) + '\"]');", shell, StringComparison.Ordinal);
         Assert.Contains("const keeper = event.target.closest('a.chip[data-filter], a.sector-tile, a.sort');", shell, StringComparison.Ordinal);
         Assert.Contains("if (keeperCard) { keepPlace(keeper, 'section.card[data-card=\"' + CSS.escape(keeperCard.getAttribute('data-card')) + '\"]'); }", shell, StringComparison.Ordinal);
         Assert.Contains("if (searched) { keepPlace(form, 'section.card[data-card=\"' + CSS.escape(searched.getAttribute('data-card')) + '\"]'); }", shell, StringComparison.Ordinal);

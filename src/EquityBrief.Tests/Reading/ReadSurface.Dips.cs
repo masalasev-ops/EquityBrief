@@ -83,13 +83,13 @@ public partial class ReadSurface
         // open.
         Assert.Contains("data-dip=\"open\"", line, StringComparison.Ordinal);
         Assert.Contains(
-            "<b class=\"market-closed\">The lists are closed but the short-term dip's</b>: the S&P 400's breadth: 42.0% of its members closed above their 200-day average, below its floor of 45%; the short-term dip reads its own market setting, none while it is provisional, and its list is open.",
+            "<b class=\"market-closed\">The market check is closed: no new buys tonight but the short-term dip's own.</b> 42.0% of S&P 400 stocks are above their 200-day average. The setups only buy when at least 45% are, because buying when most stocks are falling has lost money in the past. The short-term dip reads its own market setting, none while it is not yet tested, and its list is open.",
             line,
             StringComparison.Ordinal);
 
         // The pullback's card closed by the check, and the dip's card drawn last of the swing families, listing M2 on its
         // rule and its provisional marker, with the notes on M1 and M3.
-        Assert.Contains("nothing tonight · the market check closed", FamilyCardOf(page, SetupFamilies.Pullback), StringComparison.Ordinal);
+        Assert.Contains("No picks tonight: the market check closed its list.", FamilyCardOf(page, SetupFamilies.Pullback), StringComparison.Ordinal);
 
         var dip = FamilyCardOf(page, DipRule.Name);
 
@@ -98,14 +98,14 @@ public partial class ReadSurface
         // Its settings as chips beneath its heading, the S&P 400's dollar floor and least close first, and its tag in its
         // own hue.
         Assert.Equal(
-            ["dollar floor 1 times", "close at least $5", "above its 200-session average", "2-session RSI under 10", "no report in 3 sessions or ahead", "stop 4 moves", "sold over its 5-session average", "10 sessions at most", "market setting off"],
+            ["dollar floor 1 times", "close at least $5", "above its 200-day average", "2-day RSI under 10", "no report in 3 trading days or ahead", "stop 4 moves", "sold over its 5-day average", "10 trading days at most", "market setting off"],
             Regex.Matches(Assert.Single(Blocks(dip, "<ul class=\"rule-chips\".*?</ul>")), "<li class=\"rule-chip\">([^<]+)</li>").Select(match => match.Groups[1].Value));
         Assert.Contains(Blocks(dip, "<span class=\"fam-tag\"[^>]*>"), tag => tag.Contains("data-family=\"dip\"", StringComparison.Ordinal));
         // Its pick's exit in words where a target would stand, its reward to risk open, as a trailing pick's is.
         var m2 = Assert.Single(Blocks(dip, "<tr data-ticker=\"M2\" data-card-pick=\"true\">.*?</tr>"));
 
-        Assert.Contains("<td class=\"r num plan-target\" data-target=\"none\">over its 5-session average</td>", m2, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">open</td>", m2, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num plan-target\" data-target=\"none\">over its 5-day average</td>", m2, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">no target</td>", m2, StringComparison.Ordinal);
         Assert.Contains(SetupFamilies.ProvisionalStatus, dip, StringComparison.Ordinal);
         Assert.Contains("M1 also qualified here tonight and is shown once, under Breakouts to a new high, with both labels. One stock is one trade.", dip, StringComparison.Ordinal);
         Assert.Contains("M3 qualified tonight but its pullback trade from 2026-09-30 on the S&P 500's list is still open, so it is not listed. One stock, one trade.", dip, StringComparison.Ordinal);
@@ -114,7 +114,8 @@ public partial class ReadSurface
         Assert.Equal(
             ["pullback", "breakout", "drift", "fundamentals", "dip"],
             Regex.Matches(page, "<section class=\"family-card\" data-family=\"([^\"]+)\"").Select(match => match.Groups[1].Value).Distinct());
-        Assert.Contains("Setup 5 of 5 · Sharp drop in an uptrend", page, StringComparison.Ordinal);
+        Assert.Contains("data-family=\"dip\" data-place=\"5\" data-of=\"5\"", page, StringComparison.Ordinal);
+        Assert.Contains("<header class=\"fam-head\" data-family=\"dip\">", dip, StringComparison.Ordinal);
 
         // The tiles: every swing family's by the check, the dip's by its own setting, listing with M3 held back.
         var tiles = Regex.Matches(Assert.Single(Blocks(page, "<nav class=\"setup-tiles\".*?</nav>")), "data-family=\"([^\"]+)\" data-card=\"[^\"]+\" data-count=\"[0-9]+\" data-state=\"([^\"]+)\"").Select(match => $"{match.Groups[1].Value}: {match.Groups[2].Value}");

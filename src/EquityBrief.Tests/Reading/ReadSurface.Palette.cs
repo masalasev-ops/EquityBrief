@@ -192,8 +192,12 @@ public partial class ReadSurface
         var variant = new RuleChoiceView("the breakout rule at a volume of 1.25 times", "v1", 1, false, "V1 · volume 1.25 times");
         var chosen = new RuleView(variant, [live, variant], [new RulePartView("A stock closes above its high", false)], [], [("market", 9), ("new high", 9), ("volume", 1), ("trade", 1)], new StretchLineView(1, 48, false, 30, 600), null, true, null);
 
-        string Card(DateOnly? liveSince, RuleView? rule) =>
-            renderer.FamilyCard(new FamilyCardView("breakout", "Breakout", "Breakouts to a new high", "Breakout from a base", "A stock closes above its high.", 2, 3, liveSince, 1, [], [], "No stock passed this setup tonight.", RuleChoice: rule));
+        string Card(DateOnly? liveSince, RuleView? rule)
+        {
+            var card = new FamilyCardView("breakout", "Breakout", "Breakouts to a new high", "Breakout from a base", "A stock closes above its high.", 2, 3, liveSince, 1, [], [], "No stock passed this setup tonight.", RuleChoice: rule);
+
+            return renderer.FamilyCardHead(card) + renderer.FamilyCard(card);
+        }
 
         PaperAccountView Account(string standing, string family) =>
             new(standing, family, standing, "An account", "A rule.", standing == PaperAccountView.You ? RuleVerdict.Yours : RuleVerdict.NotTested, null, "R", [], null, 0, 0, null, null);

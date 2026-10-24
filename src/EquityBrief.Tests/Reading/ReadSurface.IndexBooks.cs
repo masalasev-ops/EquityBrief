@@ -67,12 +67,13 @@ public partial class ReadSurface
         // registered and no line on a test.
         var page = await Card(null);
 
-        // From 19.3 each book's tab names what it differs from the provisional rule on, read off its stored settings: the
-        // cover's interest cover beside the profit gate, and the twelve-month book's strength in the look-back's place.
+        // From 19.3 each book's choice names what it differs from the provisional rule on, read off its stored settings: the
+        // cover's interest cover beside the profit gate, and the twelve-month book's strength in the look-back's place,
+        // from 22.6 in the Showing list.
         Assert.Contains(
-            $"<a class=\"rule-tab current\" href=\"#\" data-rule-tab=\"heavyweight\" data-value=\"{RuleScreenWords.LiveSlug}\" data-variant=\"none\" title=\"{RuleScreen.ProvisionalChoice}\" aria-current=\"true\">Provisional</a>"
-            + $"<a class=\"rule-tab\" href=\"#\" data-rule-tab=\"heavyweight\" data-value=\"{RunScreen.Slug(cover)}\" data-variant=\"1\" title=\"{cover}\">V1 · profit and cover</a>"
-            + $"<a class=\"rule-tab\" href=\"#\" data-rule-tab=\"heavyweight\" data-value=\"{RunScreen.Slug(twelve)}\" data-variant=\"2\" title=\"{twelve}\">V2 · twelve months less the latest</a>",
+            $"<option value=\"{RuleScreenWords.LiveSlug}\" data-variant=\"none\" title=\"{RuleScreen.ProvisionalChoice}\" selected>The setup as it runs, not yet tested</option>"
+            + $"<option value=\"{RunScreen.Slug(cover)}\" data-variant=\"1\" title=\"{cover}\">Version: profit and cover</option>"
+            + $"<option value=\"{RunScreen.Slug(twelve)}\" data-variant=\"2\" title=\"{twelve}\">Version: twelve months less the latest</option>",
             page,
             StringComparison.Ordinal);
         Assert.DoesNotContain("no-variant", page, StringComparison.Ordinal);
@@ -81,9 +82,10 @@ public partial class ReadSurface
 
         // The cover's book: its own holding under the band, with the line and no word of the twelve-month strength.
         var covered = await Card(cover);
-        const string Untested = "This book did not pass the year-by-year test: the run for 2026-10 read design (a)'s six settings at an adjusted p of 0.60 against the bar of 0.0042, so it does not read as better than the provisional rule.";
+        const string Untested = "This version did not pass the year-by-year test: the run for 2026-10 put the chance that design (a)'s six settings did as well by luck at 0.60, against the 0.0042 it needs, so it does not read as better than the starting setup.";
 
-        Assert.Contains($"<p class=\"variant-band\" role=\"status\" data-variant=\"1\">{RuleScreenWords.Band(1)}</p><p class=\"variant-untested\" data-adjusted=\"0.5999\">{Untested}</p>", covered, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"band-head\">A version being tested, not tonight's holdings</p><p>Version: profit and cover</p>", covered, StringComparison.Ordinal);
+        Assert.Contains($"</div><p class=\"variant-untested\" data-adjusted=\"0.5999\">{Untested}</p>", covered, StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"M1\"", covered, StringComparison.Ordinal);
         Assert.DoesNotContain("<tr data-ticker=\"M3\"", covered, StringComparison.Ordinal);
 
@@ -91,7 +93,7 @@ public partial class ReadSurface
         var twelveMonth = await Card(twelve);
 
         Assert.Contains(
-            $"<p class=\"variant-untested\" data-adjusted=\"0.5999\">{Untested} It reads twelve months' strength from 251 sessions back, the oldest close the night holds, one session short of the 252 the search read.</p>",
+            $"<p class=\"variant-untested\" data-adjusted=\"0.5999\">{Untested} It reads twelve months' strength from 251 trading days back, the oldest close the night holds, one trading day short of the 252 the search read.</p>",
             twelveMonth,
             StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"M3\"", twelveMonth, StringComparison.Ordinal);

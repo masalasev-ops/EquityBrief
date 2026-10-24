@@ -110,16 +110,19 @@ public partial class ArchitectureConformance
         Assert.Equal(pictured.Keys, listed.Keys);
 
         // Every figure on the card drawn as a placeholder and never a night's: no digit in the figure's text but the
-        // part's own number, the tick, the floor of 2, the 11 sectors, the twenty and the index's name.
+        // part's own number, the tick, the floor of 2, the 11 sectors, the twenty, the index's name, and from 22.6 the
+        // risk of $1 the plan's line names and the hundred a heading's bar is read out of.
         foreach (var figure in new[] { Figure(architecture, "Figure 15.2."), Figure(guide, "A pick's card, its figures blanked out") })
         {
             var words = Regex.Matches(figure, "<text[^>]*>([^<]*)</text>").Select(text => text.Groups[1].Value)
-                .Where(text => !Regex.IsMatch(text, @"^\d$"))
+                .Where(text => !Regex.IsMatch(text, @"^\d+$"))
                 .Select(text => text.Replace("&#10003;", string.Empty, StringComparison.Ordinal)
                     .Replace("S&amp;P 500", string.Empty, StringComparison.Ordinal)
                     .Replace("floor of 2", string.Empty, StringComparison.Ordinal)
                     .Replace("index's 11", string.Empty, StringComparison.Ordinal)
-                    .Replace("of 20 ended", string.Empty, StringComparison.Ordinal));
+                    .Replace("of 20 ended", string.Empty, StringComparison.Ordinal)
+                    .Replace("$1 to make", string.Empty, StringComparison.Ordinal)
+                    .Replace("of 100", string.Empty, StringComparison.Ordinal));
 
             Assert.All(words, text => Assert.DoesNotMatch(@"\d", text));
         }

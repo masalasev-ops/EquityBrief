@@ -92,10 +92,10 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        // No account kept: the plan in prices and risks with the line linking the account page, and no shares.
+        // No account kept: the plan in prices alone with the line linking the account page, and no shares.
         var unset = await CardRowOf(client, "MID", "breakout", "M1");
 
-        Assert.Contains($"<p class=\"card-money degraded\" data-account=\"unset\">Your account is not set, so the plan is drawn in prices and risks: <a href=\"{EquityBrief.Web.Marks.MarkRenderer.AccountRoute}\">", unset, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"card-money degraded\" data-account=\"unset\">Your account is not set, so the plan is drawn in prices alone: <a href=\"{EquityBrief.Web.Marks.MarkRenderer.AccountRoute}\">", unset, StringComparison.Ordinal);
         Assert.DoesNotContain("data-shares=", unset, StringComparison.Ordinal);
 
         // 10,000 at a risk of 1% under the cap the page proposes: 37 shares at a stop 2.70 under a buy of 50.00.
@@ -103,14 +103,14 @@ public partial class ReadSurface
 
         var sized = await CardRowOf(client, "MID", "breakout", "M1");
 
-        Assert.Contains("<p class=\"card-money\" data-shares=\"37\" data-at-risk=\"99.90\">Buy 37 shares at 50.00, a position of 1,850.00, 18.5% of the account, with 99.90 at risk to the stop at 47.30, the 1% a trade your settings give.", sized, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"card-money\" data-shares=\"37\" data-at-risk=\"99.90\">In your money: 37 shares at 50.00, a position of $1,850.00, 18.5% of your account, with $99.90 at risk to the stop at 47.30, the 1% a trade your settings give.", sized, StringComparison.Ordinal);
         Assert.DoesNotContain("the position cap limits it", sized, StringComparison.Ordinal);
 
         // The sector heavyweights' buy, which sets no stop: an equal share across the 22 holdings its book can hold, 9.
         var bought = await CardRowOf(client, "MID", HeavyweightRule.Name, "M2");
 
         Assert.Equal(22, GicsSectors.Eleven.Count * IndexHeavyweights.Provisional.Leaders);
-        Assert.Contains("<p class=\"card-money\" data-shares=\"9\" data-at-risk=\"450.00\">Buy 9 shares at 50.00, a position of 450.00, 4.5% of the account. The whole position is at risk", bought, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"card-money\" data-shares=\"9\" data-at-risk=\"450.00\">In your money: 9 shares at 50.00, a position of $450.00, 4.5% of your account. The whole position is at risk", bought, StringComparison.Ordinal);
 
         // A stop 0.50 under the buy: the risk buys 200 and the cap 40, and the card says the cap cut it.
         store.Execute("UPDATE decision_card SET stop = '49.50' WHERE ticker = 'M1';");
@@ -267,14 +267,15 @@ public partial class ReadSurface
         TakenRow(store, "CCC", "SML", "Energy", exited: true);
         TakenRow(store, "UUU", "SML", "Utilities", exited: false);
 
+        // From 22.6 the line is named for the reader, your other trades, among the card's other checks.
         Assert.Equal(
-            "6|tick|Concentration|1 of your open trades is in Energy across the S&P 500, 400 and 600.",
+            "6|tick|Your other trades|1 of your open trades is in Energy across the S&P 500, 400 and 600.",
             LineSix(await CardRowOf(client, "MID", "breakout", "M1")));
 
         TakenRow(store, "BBB", "GSPC", "Energy", exited: false);
 
         Assert.Equal(
-            "6|warning|Concentration|2 of your open trades are in Energy across the S&P 500, 400 and 600, at or over 2: another adds to one sector's risk.",
+            "6|warning|Your other trades|2 of your open trades are in Energy across the S&P 500, 400 and 600, at or over 2: another adds to one sector's risk.",
             LineSix(await CardRowOf(client, "MID", "breakout", "M1")));
 
         // The stock's page for an earlier night offers no control and draws no sixth line.
@@ -303,8 +304,8 @@ public partial class ReadSurface
         var says = drawn.IndexOf($"<p class=\"card-taken-says\">{MarkRenderer.TakenSays}</p>", StringComparison.Ordinal);
 
         Assert.True(says >= 0 && says < drawn.IndexOf($"action=\"{take}\"", StringComparison.Ordinal), "The Taken control's boxes are drawn with nothing above them saying what they record.");
-        Assert.Contains("Leave Fill empty to use the next session's opening price once it is stored", MarkRenderer.TakenSays, StringComparison.Ordinal);
-        Assert.Contains("the date empty for the session after this pick's night", MarkRenderer.TakenSays, StringComparison.Ordinal);
+        Assert.Contains("Leave Fill empty to use the next trading day's opening price once it is stored", MarkRenderer.TakenSays, StringComparison.Ordinal);
+        Assert.Contains("the date empty for the trading day after this pick's night", MarkRenderer.TakenSays, StringComparison.Ordinal);
 
         string Rows() => string.Join(";", WatchRows(store, "SELECT ticker || ' ' || fill || ' ' || fill_date || ' ' || provisional || ' ' || entered || ' ' || stop || ' ' || IFNULL(trail, '-') || ' ' || IFNULL(cap, '-') || ' ' || IFNULL(sector, '-') || ' ' || IFNULL(exit_price, '-') FROM taken_trade ORDER BY taken_at;"));
 
@@ -363,7 +364,7 @@ public partial class ReadSurface
 
         // The card draws the trade as provisional, with its Not taken press.
         var card = await CardRowOf(client, "MID", "breakout", "M1");
-        var takenAt = Regex.Match(card, "data-taken-at=\"([^\"]+)\" data-provisional=\"yes\">Taken at 50.00 for 2026-10-05, provisional: the plan's buy until the next session's open is stored.").Groups[1].Value;
+        var takenAt = Regex.Match(card, "data-taken-at=\"([^\"]+)\" data-provisional=\"yes\">You bought at 50.00 for 2026-10-05, the plan's buy price until the next trading day's open is stored.").Groups[1].Value;
 
         Assert.NotEqual(string.Empty, takenAt);
         Assert.Contains($"action=\"{SinglePageApp.NotTakenPostRoute}M1/{takenAt}\"", card, StringComparison.Ordinal);
@@ -415,7 +416,7 @@ public partial class ReadSurface
         // The card draws the ended trade and its Taken press again.
         var ended = await CardRowOf(client, "MID", "breakout", "M1");
 
-        Assert.Contains("Taken at 51.25 for 2026-10-06; exited at 55.00 on 2026-10-06.", ended, StringComparison.Ordinal);
+        Assert.Contains("You bought at 51.25 for 2026-10-06; you sold at 55.00 on 2026-10-06.", ended, StringComparison.Ordinal);
         Assert.Contains($"action=\"{take}\"", ended, StringComparison.Ordinal);
 
         // A trade the night's follower has ended by its stop, written as the follower writes one, takes no exit.
@@ -537,7 +538,7 @@ public partial class ReadSurface
         var page = WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf(index, night)));
         var id = $"card-{index}-{family}-{ticker}".ToLowerInvariant();
         var row = Regex.Match(page, $"<tr class=\"card-row\" id=\"{id}\" hidden><td colspan=\"\\d+\">(.*?)</td></tr>", RegexOptions.Singleline);
-        var fold = Regex.Match(page, $"<tr class=\"fold-row\" id=\"{MarkRenderer.FoldId(family, ticker)}\" data-fold-for=\"{Regex.Escape(ticker)}\"(?: hidden)?><td colspan=\"\\d+\">.*?(<div class=\"decision-card\" data-index=\"{index}\" data-family=\"{family}\" data-ticker=\"{Regex.Escape(ticker)}\".*?)(?=<tr data-ticker=|</tbody></table></div><p class=\"buys-next\">)", RegexOptions.Singleline);
+        var fold = Regex.Match(page, $"<tr class=\"fold-row\" id=\"{MarkRenderer.FoldId(family, ticker)}\" data-fold-for=\"{Regex.Escape(ticker)}\"(?: hidden)?><td colspan=\"\\d+\">.*?(<div class=\"decision-card\" data-index=\"{index}\" data-family=\"{family}\" data-ticker=\"{Regex.Escape(ticker)}\".*?)(?=<tr data-ticker=|</tbody></table></div><p class=\"buys-read\">)", RegexOptions.Singleline);
 
         Assert.True(row.Success || fold.Success, $"The {index} page draws no card for {ticker}'s {family}, drawing {string.Join(", ", Regex.Matches(page, "<tr class=\"(?:card|fold)-row\" id=\"([^\"]+)\"").Select(match => match.Groups[1].Value))}.");
 
