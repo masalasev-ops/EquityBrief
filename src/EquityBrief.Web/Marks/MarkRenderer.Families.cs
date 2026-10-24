@@ -501,7 +501,8 @@ public sealed partial class MarkRenderer
             ? $"the setting the operator ruled on {DayOf(ruled)} from among those its sweep read"
             : passed ? "the setting its sweep would run" : "the strongest setting its sweep read";
 
-        body.Append(Invariant, $"Frozen on {DayOf(frozen.FrozenOn)} at {at}, <span class=\"frozen-setting\">{Escaped(figures.Setting)}</span>: ");
+        // The setting is named by the chips beneath the line and kept whole on the element, never drawn by the sweep's key.
+        body.Append(Invariant, $"Frozen on {DayOf(frozen.FrozenOn)} at {at}: ");
         body.Append(Invariant, $"{figures.Trades.ToString("#,0", Invariant)} {noun}{(figures.Trades == 1 ? string.Empty : "s")} at an edge after costs of {(figures.Edge is { } edge ? Signed(edge) + " " + unit : "none stated")}, ");
         body.Append(figures.WithoutLargest is { } without ? Formatted($"{Signed(without)} without its five largest results, ") : string.Empty);
         body.Append(Invariant, $"above nothing in {EquityBrief.Core.Sweep.SweepLine.YearsAbove(figures)} of the {years.Length} years it stored");

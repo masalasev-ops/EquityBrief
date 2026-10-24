@@ -7854,3 +7854,26 @@ Ruled:      by the operator on 2026-10-24, asked at 00:52 UTC what a frozen S&P 
             alike."
 Plan:       a 20.11 correction: the line drops the key on every frozen card, its figures and the stored setting on the
             element kept, with section 15's sentence and the roster's row; then phase 20's sign-off by a fresh session.
+
+### 20.11 - correction: a frozen card's line drops the sweep's setting key, the chips beneath it naming the setting, as the operator ruled   2026-10-24
+
+Queue:      as the ruling entry above; in progress, this correction; next, phase 20's sign-off by a fresh session and
+            phase 18's by its own; 22.2 on the operator's word.
+Found:      phase 19's sign-off carried the frozen S&P 400 and 600 heavyweights cards drawing their setting's key as
+            stored, on the night of 2026-10-23 "quality=off|floors=1x|size=10|look-back=251|leaders=2|sector=members|
+            beta=at least 1|rebalance=monthly|exit=break" on the S&P 400's, owed a 20.11 correction; the frozen swing
+            cards drew theirs the same way, "high=251|volume=1.5|ceiling=1|stop=3|market=5" on the S&P 400 breakout's.
+Corrected:  on the operator's ruling above every frozen card's line reads "Frozen on" its day "at the setting its sweep
+            would run:", or the strongest it read or the setting the operator ruled, then its figures; the setting stays
+            whole on the element and the chips beneath name it; the stylesheet's rule for the key is gone. Section 15's
+            sentence, the roster's read-surface row and the changelog.
+Tests:      none new: the frozen cards' tests read each line without its key. 2678 in all.
+Claims:     1418, none new.
+Mutated:    the rule, stated before the run: the key drawn again, run over the frozen cards' tests with its red predicted,
+            made in this checkout and reverted with the editor. K1 red at three tests.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2678 of 2678 tests ran with none failed,
+            migrations 0 to 107 with none pending, schema version 107, against `data-ci` and never `data`; the phase
+            report 60 tables, 1418 claims, 1418 passing, none out of scope and none unexamined, 1429 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    phase 20's sign-off by a fresh session and phase 18's by its own; 22.2 on the operator's word.

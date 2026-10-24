@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-24 - ARCHITECTURE.html - a frozen card names its setting by its chips and never by the sweep's key
+Corrects: a frozen S&P 400 or 600 card's line drew the setting it was frozen at by the sweep's key as stored, "quality=off|floors=1x|size=10|..." on the heavyweights' and "high=251|volume=1.5|..." on the swing cards', which phase 19's sign-off carried as owed a 20.11 correction, the operator ruling on 2026-10-24 that the line drops the key
+Was:
+> ... the newest recorded at or before the freeze and for the sector heavyweights of the live rule's design: the day it was frozen, the setting its sweep would run or, where none passed, the strongest it read, its trades or holdings, ...
+Now:
+> ... the newest recorded at or before the freeze and for the sector heavyweights of the live rule's design: the day it was frozen and whether at the setting its sweep would run or, where none passed, the strongest it read, that setting named by the card's chips and never by the sweep's key, its trades or holdings, ...
+Why: the operator ruled that the line keep its figures and lose the key, the chips beneath it naming the setting in words.
+
+### 2026-10-24 - .claude/rules/checks.md - read-surface reaches a frozen card's line drawing no key of its sweep's
+Corrects: a frozen card's line drew the setting it was frozen at by the sweep's key, owed a 20.11 correction by phase 19's sign-off and ruled on by the operator on 2026-10-24
+Was:
+> read-surface: ... a stock tonight's list holds back by its open trade named in a note beneath the live rule's picks and in none beneath a chosen variant's, which lists it |
+Now:
+> read-surface: ... a stock tonight's list holds back by its open trade named in a note beneath the live rule's picks and in none beneath a chosen variant's, which lists it; and from the 20.11 correction of 2026-10-24 a frozen card's line naming the setting it was frozen at by no key of its sweep's, the setting kept whole on the element |
+Why: the roster row says what its check asserts, and the correction's tests change it.
+
 ### 2026-10-24 - .claude/rules/checks.md - fixture-expectations reaches the per-rule verb handing the tone variant's walk its release readings
 Corrects: the per-rule verb's hand-off of the release readings to the drift's tone variant's walk was held by no test, as the 20.8 correction of 2026-10-23's mutation J4 found
 Was:
