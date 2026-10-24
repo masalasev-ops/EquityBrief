@@ -8137,3 +8137,30 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the remedy's three history builds with `--again` from main once this merges, the S&P 500's first, its
             sessions after 2026-07-10 still the build before's until then, and each checked; each index's dip answer with
             the operator and 22.3 on their word; the sign-offs of phases 18 and 20.
+
+### 22.4 ruling - a brief read atop every stock's chart page joins phase 22 as 22.4 before its phase report, built in a worktree of its own beside 22.2 and 22.3   2026-10-24
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-24 at about 04:05 UTC, word for word in
+            `prompts/2026-10-24-22.4-ruling-chart-page-brief-read.md`: "Ruling of 2026-10-24: a brief read on every
+            stock's chart page, built beside 22.2 and 22.3. Build this after 22.3", saved as the day's ruling and added to
+            phase 22 as a checkpoint before its phase report. Why, in their words: "A stock someone looks up opens on its
+            chart page, which draws a chart and figures but no read of them, and a written report is more than a quick
+            look needs." The card, its limits, its done condition and what it writes stand in the build plan's 22.4 as
+            the ruling states them, the mockup's figures placeholders and none a value or a threshold.
+Plan:       22.4 is the brief read and the phase report moves to 22.5, the build plan's section and section 20's row
+            saying so with their prior text in the changelog, the claims phase 22 predicts taking about 2 more at 22.4,
+            and the decision the ruling names written now (see: The chart page opens on a brief read written by code
+            from stored figures, and no rule reads it).
+            It is built in a git worktree, `EquityBrief-brief`, on a branch of its own taken from main, which departs on
+            the operator's word, for this build alone, from the merge section's one checkout, while 22.2 is built in the
+            checkout and its sweep runs, 22.2 and 22.3 keeping priority. Before anything is built the chart page's code
+            is read for the three things the ruling stops on, a migration, a source 22.2 or 22.3 edits other than the
+            records and the documents, and any rule's version moving, and where any holds it goes to the operator first.
+            Merges follow the standing writer rule, and whichever pull request lands second rebases.
+Queue:      done, phase 20 finished for its sign-off with its report, 22.0, and 22.1 with its record; in progress, 22.2
+            with 22.1's three carried corrections in the checkout, on the operator's word of the same day; next, 22.4's
+            reading for its stop conditions and its build beside 22.2's sweep, each index's dip answer to the operator and
+            22.3 on their word, 22.5, and the sign-offs of phases 20 and 18 by fresh sessions when the operator says.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.

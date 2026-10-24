@@ -94,6 +94,31 @@ Now:
 > and a report on the drop's last session and on the time limit's last refused while one the session after is not; on the large cap index the least close on both sides of it with no dollar volume floor read; the figures read off the document against the constants
 Why: the code reads the least close on every index and no S&P 500 member closed under it on 2026-10-23, so the document is brought to the code, and a test holds the dip's floor on the S&P 500 at $4.99 and $5.00.
 
+### 2026-10-24 - BUILD_PLAN.md and ARCHITECTURE.html - phase 22 gains 22.4, a brief read atop every stock's chart page, and its phase report moves to 22.5
+Authorised by: The chart page opens on a brief read written by code from stored figures, and no rule reads it
+Was:
+> ### 22.4 The phase report
+> Every screen the phase touched, Tonight on each index with the dip's card, its picks' cards, Past picks, a stock's page, the Run page, the Ledger and paper trading, at 1440 pixels
+
+> **The claims phase 22 predicts.** 1,383 claims and 1,383 PASS on main at b6cb98dc. After 22.4 about 1,399, within 1,394 to 1,406, or 1,405 within 1,400 to 1,412 where PR 505's six land first:
+
+> - none at 22.3, as 20.11's freezes added none, and none at 22.4.
+
+> its setups in the ledger and its sweep on each index over the pulled history; and each index's freeze on the operator's word</td>...<td>the build plan's phase 22 checkpoints, 22.0 to 22.4</td></tr>
+Now:
+> ### 22.4 A brief read on every stock's chart page, its text and its done condition, then
+> ### 22.5 The phase report
+> Every screen the phase touched, Tonight on each index with the dip's card, its picks' cards, Past picks, a stock's page and its chart page with its brief read, the Run page, the Ledger and paper trading, at 1440 pixels
+
+> **The claims phase 22 predicts.** 1,383 claims and 1,383 PASS on main at b6cb98dc. After 22.5 about 1,401, within 1,396 to 1,408, or 1,407 within 1,402 to 1,414 where PR 505's six land first:
+
+> - none at 22.3, as 20.11's freezes added none;
+> - about 2 at 22.4, added on the operator's ruling of 2026-10-24 after the plan stated its pair, the chart page's brief read and its row of chips;
+> - none at 22.5.
+
+> its setups in the ledger and its sweep on each index over the pulled history; each index's freeze on the operator's word; and, on the operator's ruling of 2026-10-24, a brief read written by code at the top of every stock's chart page</td>...<td>the build plan's phase 22 checkpoints, 22.0 to 22.5</td></tr>
+Why: the operator ruled the brief read into phase 22 before its phase report, so the checkpoint takes 22.4 and the report the number after it.
+
 ### 2026-10-24 - ARCHITECTURE.html - a frozen card names its setting by its chips and never by the sweep's key
 Corrects: a frozen S&P 400 or 600 card's line drew the setting it was frozen at by the sweep's key as stored, "quality=off|floors=1x|size=10|..." on the heavyweights' and "high=251|volume=1.5|..." on the swing cards', which phase 19's sign-off carried as owed a 20.11 correction, the operator ruling on 2026-10-24 that the line drops the key
 Was:
