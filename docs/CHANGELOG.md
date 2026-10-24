@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-24 - ARCHITECTURE.html - the setup ledger's history budget raised to 1.5 gigabytes for the short-term dip's setups
+Authorised by: The short-term dip's setups clear its drop a grid step past the widest its sweep reads with no trend condition, and the ledger's history budget is raised to hold them
+Was:
+> <tr><td>Setup ledger's history budget</td><td>0.5 gigabytes for the history build, over which the pullback's strength floor rises a grid step until it fits</td><td>the whole store held 1.46 gigabytes when phase 17 was planned, and a history larger than a third of it would double the copy's time for a table no night reads. <b>Judgement:</b> phase 17's plan of 2026-10-08 as ruled</td>
+Now:
+> <tr><td>Setup ledger's history budget</td><td>1.5 gigabytes for the history build, over which the pullback's strength floor rises a grid step until it fits</td><td>the whole store held 1.46 gigabytes when phase 17 was planned, and a history larger than a third of it would double the copy's time for a table no night reads; raised on the operator's ruling of 2026-10-24 for the short-term dip's setups at their loose gates, about a gigabyte of them, the store then holding 3.9 gigabytes. <b>Judgement:</b> phase 17's plan of 2026-10-08 and the ruling of 2026-10-24, as ruled</td>
+Why: the dip's setups at loose gates a step past its sweep's widest levels are about a gigabyte, which the half gigabyte set when the store held 1.46 gigabytes could not hold under any loose gate.
+
 ### 2026-10-24 - ARCHITECTURE.html - the dip and the fundamentals-first family read the least close of $5 on the S&P 500
 Corrects: section 17 said the large cap index's rules carry no floor, while the short-term dip and the fundamentals-first family read a close of at least $5 there through the one floors function every index family shares; 22.1's reviews found it, and the operator ruled on 2026-10-24 that the floor stays and is written down.
 Was:

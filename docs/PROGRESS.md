@@ -7937,3 +7937,22 @@ Mutated:    the rule, stated before the runs: one mutation a property the correc
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as 22.1's entry, less these three.
+
+### 22.2 ruling - the dip's setups at its full loose gates with no trend condition, and the ledger's history budget raised to 1.5 gigabytes   2026-10-24
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-24 at about 04:35 UTC through the question tool, word for word in
+            `prompts/2026-10-24-22.2-operator-answers.md`, asked which way 22.2 goes since the dip's ledger setups break
+            section 17's history budget of half a gigabyte under any loose gate: "Full loose gates, budget 1.5 GB
+            (Recommended)", the option reading "Every entry dial one step past the widest as the plan says: RSI2 under
+            20 or a fall of 1 typical move, and no trend condition (the close-over-average reading is stored, so an
+            engine can re-impose it)."
+Measured:   read-only on the operator's store, the setup table held 227,677 rows at about 1,270 bytes a row, about 289
+            megabytes; over every pulled name from 2019-01-02 the dip's loose gates with no trend condition pass 25.6 per
+            cent of 3,621,374 name-sessions and with the close above its 200-session average 11.6 per cent, about
+            750,000 and 340,000 setups over the three indices.
+Plan:       the decision naming the dip's setups and the raised budget, section 17's budget row and its constant at 1.5
+            gigabytes with the prior text in the changelog; the dip's loose gates written with its setups in this pull
+            request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.

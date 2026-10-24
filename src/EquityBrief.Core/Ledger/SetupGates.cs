@@ -39,7 +39,7 @@ public static class SetupGates
     public const decimal FloorShare = 0.5m;
 
     // The history build's budget, in gigabytes; over it the pullback's strength floor rises a grid step until it fits.
-    public const double BudgetGigabytes = 0.5;
+    public const double BudgetGigabytes = 1.5;
 
     public static bool ClearsTheFloors(string indexCode, decimal close, decimal? dollarVolume) =>
         close >= LowestPrice
