@@ -8197,3 +8197,30 @@ Queue:      done, phase 20 finished for its sign-off with its report, 22.0, and 
             sessions when the operator says.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
+
+### 19.3 ruling - the one-gate-short columns on the S&P 400 and 600 read off the ledger's setups, a drift's off its report day within its rule's window   2026-10-24
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-24 through the question tool, each question and answer word for word in
+            `prompts/2026-10-24-19.3-correction-one-gate-short-answer.md`. At about 12:55 UTC, told that the S&P 400's and
+            600's answers store their setup as one part with no values, written by a source every rule there pins, so
+            storing values would move every rule's version there: "Ledger setup rows (Recommended)", the option reading
+            "S&P 500 from the stored gate answers as ruled. S&P 400 and 600 from the night's ledger setup row for that stock
+            and family, the same definitions the columns already use. A cell with no setup stored says so. No rule's version
+            moves." At about 13:40 UTC, told that the ledger stores a drift's setup on its report day alone, so that of the
+            S&P 600's 27 drift rows one gate short over 2026-10-02 to 2026-10-23, 16 held a setup on the night, 8 only on an
+            earlier report day and 3 none: "Read its report-day row (Recommended)", the option reading "For the drift on the
+            S&P 400 and 600, read the setup the ledger stored on the stock's report day, within the rule's own window before
+            the night. Reaction and Volume come as stored there. Since the report is the exchange's sessions from that day to
+            the night, counted by the calendar function the page already uses. Other families keep the night's row. A row
+            with no such setup says so."
+Plan:       the build plan's paragraph on the correction states both answers, its prior text in the changelog, and its
+            done condition reads the S&P 400's and 600's columns off the ledger's setups and works its rows over
+            constructed nights of every family where the fixture's draw no number: the fixture's whole night draws one
+            stock one gate short, NFLX under the short-term dip, whose card draws no number of its own.
+Queue:      done, phase 20 finished for its sign-off with its report, 22.0, 22.1 with its record and 22.2 with its
+            correction; in progress, the one-gate-short correction on the brief read's track in its worktree, and 22.2's
+            history builds run again in the checkout; next, 22.4, 22.5 and 22.6 on that track; 22.3 on the operator's word;
+            22.7; and the sign-offs of phases 20 and 18 by fresh sessions when the operator says.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.

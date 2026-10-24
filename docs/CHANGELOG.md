@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-24 - BUILD_PLAN.md - the one-gate-short correction states the operator's answers on the S&P 400's and 600's columns and its done condition reads them
+Corrects: the correction's paragraph drew every column from the stored gate answers, which on the S&P 400 and 600 store their setup with no values, found reading those answers before building
+Was:
+> ... is verified before anything changes. It lands as its own pull request before 22.5, ...; it is done when every row of each card's table on the fixture's nights draws each value from the stored answer, worked by hand against the shared list for at least one row a family, ...
+Now:
+> ... is verified before anything changes. On the operator's answers of 2026-10-24, word for word in `prompts/2026-10-24-19.3-correction-one-gate-short-answer.md`, the S&P 400's and 600's columns, whose answers store their setup with no values in a source every rule there pins, are read off the setup the ledger stored for the stock and its family on the night, a drift's off the one the ledger stored on its report day within the window its rule states, its sessions since the report counted on the exchange's calendar, and a cell with no such setup says so. It lands as its own pull request before 22.5, ...; it is done when every row of each card's table on the fixture's nights, and on constructed nights of every family where the fixture's draw no number, draws each value from the stored answer, or on the S&P 400 and 600 from the ledger's setup the operator's answers name, worked by hand against the shared list for at least one row a family, ...
+Why: the operator answered on 2026-10-24 that those indices' columns read the ledger's setups, a drift's on its report day, so no rule's version moves; and the fixture's whole night draws one stock one gate short, under the dip, whose card draws no number.
+
 ### 2026-10-24 - .claude/rules/checks.md - fixture-expectations reaches a dip path running on past the sessions its series places
 Corrects: 22.2's dip path read each close's session place to tell a session its bars skip, and the history build hands a path the bar store's closes after its span with no place, so the S&P 500's build of 2026-10-24 stopped with an index outside its array where a dip path ran past the span's end
 Was:
