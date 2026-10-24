@@ -356,6 +356,16 @@ public partial class FixtureExpectations
         Assert.All(closing.Indices, index => Assert.Null(index.Fault));
         Assert.Equal((SetupEnds.Exit, Stamp(after[1]), "1", "99"), (closed[0], closed[1], closed[2], closed[3]));
         Assert.Equal((100.0 - 99.0) / (95.0 - double.Parse(closed[4], System.Globalization.CultureInfo.InvariantCulture)), double.Parse(closed[5], System.Globalization.CultureInfo.InvariantCulture), 9);
+
+        // The next-open check prices the settled dip setup through the dip's own walk over the history and works its
+        // result and its edge at the open again as the ledger stored them.
+        using var output = new StringWriter();
+
+        Assert.Equal(0, await new SetupLedger(Core.Time.FixedClock.At(new DateTimeOffset(after[1].ToDateTime(new TimeOnly(21, 30)), TimeSpan.Zero), Core.Time.SessionZones.UnitedStates), store.DatabaseFile).NextOpenAsync(Worker.Indices.IndexFamilies.LargeIndex, output));
+        Assert.Contains(
+            $"1 of 1 settled setup(s) on the S&P 500 priced over the history read through {Stamp(after[1])}, 0 whose stock or session the history does not hold; 1 of 1 results at the open worked again as stored to a millionth and 1 to a thousandth, and 1 of the 1 stored edges to a millionth and 1 to a thousandth; nothing written",
+            output.ToString(),
+            StringComparison.Ordinal);
     }
 
     // The sources 22.2 writes, the ledger's, the sweep's, the tester's procedure, the dip's rule and the Ledger page's.
