@@ -26,6 +26,41 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-24 - BUILD_PLAN.md and ARCHITECTURE.html - phase 22 gains the fundamentals scorecard, the quality family, its history test and its freezes as 22.7 to 22.11, and its phase report moves to 22.12
+Authorised by: The fundamentals scorecard and the quality family join phase 22 ahead of the hold on new work, and the monthly run reads none of them before its first run after 2026-11-07
+Was:
+> **What is the operator's.** Each index's sweep answer, each freeze with its setting, its variants and its market variant. Any cut to the grid and any dial dropped from it. A report request for a dip pick, none being asked. Any migration beyond the two this plan names. Any rule's version moving.
+
+> **The claims phase 22 predicts.** 1,383 claims and 1,383 PASS on main at b6cb98dc. After 22.7 about 1,447, within 1,427 to 1,467, or 1,453 within 1,433 to 1,473 where PR 505's six land first:
+
+> - none at 22.7.
+
+> ### 22.7 The phase report
+> Every screen the phase touched, Tonight on each index redesigned with the dip's card, its picks' cards, Past picks, a stock's page and its chart page with its brief read, the Run page, the Ledger and paper trading, at 1440 pixels and a true 390 in both palettes, read back against the store and laid out as one overview page linked from the entry; each index's sweep answer and freeze; the counts each checkpoint stated; and `tools/verify-phase` reaching every claim the phase added, the pair checked against the actual.
+
+> and on its addendum the stocks one gate short drawn on every card from their stored answers, plain words on every redesigned page held by a check, and Tonight redesigned</td>...<td>the build plan's phase 22 checkpoints, 22.0 to 22.7</td></tr>
+Now:
+> **What is the operator's.** the same, then: From the ruling of 2026-10-24 on the fundamentals: each index's answer from the quality family's history test and each of its freezes with its setting and its neighbours; what becomes of business first; any request beyond the one whole refresh the planning pass states; and any migration beyond the two it names.
+
+> **Fundamentals back in the picture.** and **What the fundamentals planning pass found.**, after the correction's paragraph, then
+> **The claims phase 22 predicts.** 1,383 claims and 1,383 PASS on main at b6cb98dc, and 1,424 on main at 99dca7dd after 22.6. After 22.12 about 1,453, within 1,438 to 1,468:
+
+> - none at 22.7, added on the operator's ruling of 2026-10-24, which adds section 20's row in place and no row of a table the harness reads;
+> - about 18 at 22.8, the ten readings it adds to the ledger's catalogue, the chart page's fundamentals card and the full page's, its store, its section 17 row and its three failure rows;
+> - about 10 at 22.9, the family's catalogue and matrix rows, its three stores, its card on Tonight, its settings row and its two failure rows;
+> - about 1 at 22.10, the history test's grid row;
+> - none at 22.11, as 22.3's freezes add none;
+> - none at 22.12.
+
+> ### 22.7 Planning the fundamentals scorecard and the family that picks on it, ### 22.8 The fundamentals scorecard on every stock's chart page, ### 22.9 Quality at a fair price at its starting settings on every index, ### 22.10 The quality family's history test on each index and ### 22.11 The quality family's freezes, on the operator's word, their text and their done conditions, then
+> ### 22.12 The phase report
+> Every screen the phase touched, Tonight on each index redesigned with the dip's card and the quality family's, its picks' cards, Past picks, a stock's page with its business section and its chart page with its brief read and its fundamentals card, the Run page, the Ledger and paper trading, at 1440 pixels and a true 390 in both palettes, read back against the store and laid out as one overview page linked from the entry; each index's dip and quality answers and freezes; the counts each checkpoint stated; and `tools/verify-phase` reaching every claim the phase added, the pair checked against the actual.
+
+> and on its addendum the stocks one gate short drawn on every card from their stored answers, plain words on every redesigned page held by a check, and Tonight redesigned; and, on its ruling of the same day on the fundamentals, a scorecard of nine checks over every stock's filings as first filed on its chart page and its full page with its readings in the ledger, a family holding the companies the scorecard rates strongest that are not expensive against their own history, reshuffled monthly, its history test on each index and its freezes on the operator's word</td>...<td>the build plan's phase 22 checkpoints, 22.0 to 22.12</td></tr>
+
+> and in the list tabled for phase 21, a line saying the ruling of 2026-10-24 takes the fundamentals scorecard and the family that picks on it ahead of the hold into phase 22, so they are not tabled there.
+Why: the operator's ruling of 2026-10-24 adds the work to phase 22 after Tonight redesigned and before its report, numbered as the plan needs, so the planning pass takes 22.7, the scorecard 22.8, the family 22.9, its history test 22.10, its freezes 22.11, and the report 22.12; PR 505 has landed, so the claims' second reading goes.
+
 ### 2026-10-24 - ARCHITECTURE.html - section 15.7, Tonight redesigned in the reader's words, and its figure 15.3 redrawn
 Authorised by: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
 Was:

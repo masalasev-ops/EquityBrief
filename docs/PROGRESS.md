@@ -8526,3 +8526,77 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 64 tables, 1424 claims, 1424 passing, none out of scope and none unexamined, 1439 placements and
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    22.7, as 22.6's entry carries it.
+
+### 22.7 planning - the fundamentals scorecard and the quality family planned: the four balance sheet lines the store lacks taken from the SEC's free archive and the sources 22.2 edited put to the operator, a financial company's seven checks on their answer, and the history test's grid and time   2026-10-24
+
+Not a checkpoint entry. It lands 22.7, the pass that plans the fundamentals scorecard and the family that picks on it,
+and builds none of it.
+Queue:      done, 22.0, 22.1 and 22.2 with their records and the remedy run, the one-gate-short correction, 22.4, 22.5
+            and 22.6 with its correction, merged by the operator as PR 550 at 21:28 UTC; in progress, this pass; next,
+            22.8 and its remedy, 22.9 before the night of 2026-10-26, 22.10 with each index's answer to the operator,
+            22.11 and 22.3 on their word, 22.12, and the sign-offs of phases 18, 19 and 20 by fresh sessions when the
+            operator says.
+Ruled:      by the operator on 2026-10-24 at about 21:24 UTC, kept whole in
+            `prompts/2026-10-24-22.7-ruling-fundamentals-scorecard-and-quality-family.md`, given with "Yes continue with
+            building #550. However, right after merging that i want you to build the below." Where it rules the work's
+            place, its order and its limits, in its words: "Add the work to phase 22 as checkpoints after the Tonight
+            redesign and before phase 22's report, numbered as the plan needs; the phase's report covers all of it. On
+            my word it goes ahead of the hold on new work until the 7 November monthly run's proposals are read;
+            nothing it adds is read by that run, and its readings and family join the monthly run from the first run
+            after." "No paid call. Any history the scorecard needs comes from the SEC's free archive under the filings
+            refresh's own limit, or from EODHD within its daily allowance, with the request counts stated before any
+            fetch." "No existing rule's code version moves and no record restarts. Business first is left exactly as it
+            is; what becomes of it is my ruling, not this work's." "Every figure is code over filings as first filed
+            before the session. No model writes or judges anything." "Every page it adds follows the plain-words rule
+            of the Tonight addendum and joins the plain-words check." "Stop and bring it to me before building if a
+            source 22.2 or 22.3 edits must change, or the planning pass finds the history short of what the scorecard
+            needs." "Order on the track. 22.2 and 22.3 keep priority. Then: the one-gate-short correction; this work's
+            planning pass; the scorecard on the chart page; the new family at its starting settings, so its card and
+            first book appear on Monday's night; its history test; then the brief read and the Tonight redesign, with
+            the new family's card built to that design." The brief read and Tonight redesigned had merged when it was
+            given, so the family's card is built to the redesign at 22.9. The scorecard's checks, its word, its card
+            and its ledger readings, the family's settings, its book, its benchmark and its card, the history test's
+            grid and answer, the freezes, the done conditions and what each writes stand in the build plan's 22.8 to
+            22.11 as the ruling states them, so nothing the corpus will cite lives only in the prompt.
+Answered:   by the operator at about 21:38 UTC through the question tool, word for word in
+            `prompts/2026-10-24-22.7-operator-answers.md`, both stops having held: the lines the store lacks are taken
+            from the SEC's archive, the refresh keeping the four balance sheet lines, the cost of sales and the
+            six-month spans, and the whole refresh by hand run once after the scorecard merges, 2,121 free requests and
+            no provider call; the sources 22.2 edited are edited, the three ledger histories built again after the
+            merge while no other writer runs; and a financial company is scored on seven checks, any other company
+            passing over a check only where a figure is not filed, the word and the family's floor read as shares of
+            the checks that applied, and no word under five checks.
+Planned:    the build plan's paragraphs on the fundamentals in phase 22's section, its checkpoints 22.7 to 22.11 and the
+            phase report moved to 22.12, with what is the operator's and the claims; the line in the list tabled for
+            phase 21; section 20's row; and the decision placing the work (see: The fundamentals scorecard and the
+            quality family join phase 22 ahead of the hold on new work, and the monthly run reads none of them before
+            its first run after 2026-11-07). The decisions naming the scorecard, the family, its exit and its benchmark
+            are written at 22.8 and 22.9 beside the research they rest on. The work is built in the worktree the brief
+            read's track runs in, `EquityBrief-brief`, the ruling setting it on that track.
+Measured:   read-only on the code at 99dca7dd and on the operator's store at about 21:30 UTC, with no provider or paid
+            call: `filed_fact` 680,130 rows of 2,095 filers, the six measures and the cover's count for periods ending
+            from 2015-01-02; net income held for 2,090 filers, cash from operations for 2,089, revenue for 2,024, the
+            cover's count for 1,946 and gross profit for 1,082; cash from operations kept for 20,471 quarters, 19,030
+            nine months and 19,886 years and for no six-month span; no balance sheet line; the last whole refresh by
+            hand, on 2026-10-17, asking 2,121 filers in 1,648 seconds; the GICS Financials sector holding 76 of the S&P
+            500's 503 members, 62 of the 400's 400 and 115 of the 600's 602; the ledger's version the pin of ten
+            sources with the filed facts' rule among them and no rule pinning that rule, and the revenue rule, which
+            every S&P 400 and 600 drift candidate pins, reading no six-month span; 22.2's merge editing the migrations,
+            five of the ledger's files, the monthly loop's readings and its own procedures, three of the sweep's files,
+            the read surface's routes and its page; the newest migration 108 and no pull request open; and the
+            heavyweights' sweep of 432 settings over 94 monthly reshuffles of 828 names run in about a minute on
+            2026-10-04, so the history test's 72 settings an index are expected within about ten minutes an index. Two
+            migrations, 109 at 22.8 and 110 at 22.9.
+Put:        to the operator before anything is built, as the ruling's stops ask: the history short of the four balance
+            sheet lines, half of gross profit and a second quarter's cash, with their source and its 2,121 requests;
+            the sources 22.2 edited that the build must change, with the ledger's version moving and its histories
+            built again; and how a company is scored where a check cannot be read. Answered as above.
+Tests:      2719, unchanged.
+Claims:     1424, unchanged: section 20's row is no claim, and the plan and the decision sit in no table the harness
+            reads.
+Pins:       none moved: the pass edits no shipped source.
+Verified:   `tools/ci.ps1` green over main at 99dca7dd, the 22.6 correction's tree, 2719 of 2719 tests, with
+            `tools/verify-phase.ps1` green over it; documents alone change, so the checks reading them run filtered over
+            the tree carrying this entry, 192 of 192 passed.
+Carried:    the sign-offs of phases 18, 19 and 20, each owed by a fresh session and discharged by no checkpoint of phase
+            22; what becomes of business first, the operator's ruling.
