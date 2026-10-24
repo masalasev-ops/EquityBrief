@@ -1164,28 +1164,49 @@ static async Task<IReadOnlyList<FamilyCardView>> WithBehindAsync(ReadApi read, I
 static async Task<IReadOnlyDictionary<string, DateOnly>> NextEventsAsync(ReadApi read, DateOnly night) =>
     (await read.NextEventsAsync(night)).ToDictionary(row => row.Ticker, row => row.EventDate, StringComparer.Ordinal);
 
-// Each card with its own rows close to a buy point and the numbers its rows draw in place of sentences, read off the
-// index's stored readings once: for each stock a chosen variant picks or that stands close to a buy point.
+// Each card with its own rows close to a buy point and the numbers its rows draw in place of sentences, for each stock a
+// chosen variant picks or that stands close to a buy point: on the S&P 500, whose family results are handed in, off the
+// stored answer holding them, the swing filter's for the pullback and the night's result for the breakout and the
+// drift; and otherwise a family's own reading off the stock's setup of the family the ledger stored on the night, a
+// drift's, where its index's window is handed in, off the one stored on its report day within that window, and every
+// other off its ledger readings on the night, each read once and each number they do not hold saying why.
 // see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
-static async Task<IReadOnlyList<FamilyCardView>> WithNumbersAsync(ReadApi read, IReadOnlyList<FamilyCardView> cards, UniverseChoice universe, DateOnly night, IReadOnlyList<CloseToBuyCell>? close = null)
+// see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+static async Task<IReadOnlyList<FamilyCardView>> WithNumbersAsync(ReadApi read, IReadOnlyList<FamilyCardView> cards, UniverseChoice universe, DateOnly night, IReadOnlyList<CloseToBuyCell>? close = null, IReadOnlyList<FamilyResultRow>? results = null, int? driftWindow = null)
 {
+    var drawn = cards.Select(card =>
+    {
+        var own = (close ?? []).Where(row => row.Family == card.Family).ToArray();
+
+        return (Card: card, Own: own, Tickers: own.Select(row => row.Ticker).Concat((card.RuleChoice?.Picks ?? []).Select(pick => pick.Ticker)).Distinct(StringComparer.Ordinal).ToArray());
+    }).ToArray();
     var readings = await read.LedgerReadingsAsync(universe.Code, night);
+    var setups = await read.NightSetupReadingsAsync(universe.Code, night);
+    var reportDays = driftWindow is null
+        ? null
+        : await read.NewestSetupsAsync(universe.Code, EquityBrief.Core.Families.DriftRule.Name, night, [.. drawn.Where(one => one.Card.Family == EquityBrief.Core.Families.DriftRule.Name).SelectMany(one => one.Tickers).Distinct(StringComparer.Ordinal)]);
+    var swing = results is null ? new Dictionary<string, string>(StringComparer.Ordinal) : await read.SwingGatesAsync(night);
+    var answers = (results ?? []).GroupBy(result => (result.Family, result.Ticker)).ToDictionary(group => group.Key, group => group.First().Gates);
+
+    IReadOnlyList<EquityBrief.Core.Filter.Gate>? AnswerOf(string family, string ticker) =>
+        family == EquityBrief.Core.Families.SetupFamilies.Pullback && swing.TryGetValue(ticker, out var filtered)
+            ? EquityBrief.Core.Families.FamilyRule.GatesOf(filtered)
+            : answers.TryGetValue((family, ticker), out var stored) ? EquityBrief.Core.Families.FamilyRule.GatesOf(stored) : null;
+
+    IReadOnlyList<double?>? SetupOf(string family, string ticker) =>
+        family == EquityBrief.Core.Families.DriftRule.Name && driftWindow is { } window
+            ? reportDays!.TryGetValue(ticker, out var newest) ? EquityBrief.Core.Cards.CardNumbers.AtReportDay(newest.Session, newest.Readings, night, window) : null
+            : setups.GetValueOrDefault((family, ticker));
 
     return
     [
-        .. cards.Select(card =>
+        .. drawn.Select(one => one.Card with
         {
-            var own = (close ?? []).Where(row => row.Family == card.Family).ToArray();
-            var tickers = own.Select(row => row.Ticker).Concat((card.RuleChoice?.Picks ?? []).Select(pick => pick.Ticker)).Distinct(StringComparer.Ordinal);
-
-            return card with
-            {
-                Close = own,
-                Numbers = tickers.ToDictionary(
-                    ticker => ticker,
-                    ticker => readings.TryGetValue(ticker, out var held) ? EquityBrief.Core.Cards.CardNumbers.Values(card.Family, held) : new double?[EquityBrief.Core.Cards.CardNumbers.Of(card.Family).Count],
-                    StringComparer.Ordinal),
-            };
+            Close = one.Own,
+            Numbers = one.Tickers.ToDictionary(
+                ticker => ticker,
+                ticker => EquityBrief.Core.Cards.CardNumbers.Cells(one.Card.Family, AnswerOf(one.Card.Family, ticker), SetupOf(one.Card.Family, ticker), readings.GetValueOrDefault(ticker)),
+                StringComparer.Ordinal),
         }),
     ];
 }
@@ -1444,7 +1465,10 @@ app.MapGet("/screens/tonight/{night?}", async (
         var indexCloseHref = indexClose is null ? null : MarkRenderer.CloseToBuyHref(night is { Length: > 0 } ? SinglePageApp.NightRoute + night : "#/", reading.Word);
 
         indexCards = await WithBehindAsync(read, indexCards, reading, dated);
-        indexCards = await WithNumbersAsync(read, indexCards, reading, dated, indexClose);
+        // A drift's numbers read off the setup the ledger stored on its report day, within the window its rule states.
+        var indexSettings = IndexRuleSettings.Read(indexNight.Settings);
+        var (liveDrift, _) = RuleScreen.Accounts(EquityBrief.Core.Families.DriftRule.Name, false, reading.Name, indexRegister, dated, indexSettings, indexAsOf);
+        indexCards = await WithNumbersAsync(read, indexCards, reading, dated, indexClose, driftWindow: TonightScreen.DriftWindow(liveDrift, indexSettings));
         indexCards = TonightScreen.WithDipChips(TonightScreen.WithDipLabels(indexCards, indexDipPicks), indexDipNight, reading.Code);
         var indexOpen = (await read.IndexTradesAsync(reading.Code, dated)).Count(trade => trade.Listed < dated && trade.EndedOn is null)
             + (await read.DipTradesAsync(reading.Code, dated)).Count(trade => trade.Listed < dated && trade.EndedOn is null);
@@ -1828,7 +1852,7 @@ app.MapGet("/screens/tonight/{night?}", async (
     if (cards is not null)
     {
         cards = await WithBehindAsync(read, cards, reading, dated);
-        cards = await WithNumbersAsync(read, cards, reading, dated, closeAcross);
+        cards = await WithNumbersAsync(read, cards, reading, dated, closeAcross, familyResults);
         cards = TonightScreen.WithDipLabels(cards, dipPicks);
     }
 

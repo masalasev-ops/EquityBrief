@@ -8137,3 +8137,139 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the remedy's three history builds with `--again` from main once this merges, the S&P 500's first, its
             sessions after 2026-07-10 still the build before's until then, and each checked; each index's dip answer with
             the operator and 22.3 on their word; the sign-offs of phases 18 and 20.
+
+### 22.4 ruling - a brief read atop every stock's chart page joins phase 22 as 22.4 before its phase report, built in a worktree of its own beside 22.2 and 22.3   2026-10-24
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-24 at about 04:05 UTC, word for word in
+            `prompts/2026-10-24-22.4-ruling-chart-page-brief-read.md`: "Ruling of 2026-10-24: a brief read on every
+            stock's chart page, built beside 22.2 and 22.3. Build this after 22.3", saved as the day's ruling and added to
+            phase 22 as a checkpoint before its phase report. Why, in their words: "A stock someone looks up opens on its
+            chart page, which draws a chart and figures but no read of them, and a written report is more than a quick
+            look needs." The card, its limits, its done condition and what it writes stand in the build plan's 22.4 as
+            the ruling states them, the mockup's figures placeholders and none a value or a threshold.
+Plan:       22.4 is the brief read and the phase report moves to 22.5, the build plan's section and section 20's row
+            saying so with their prior text in the changelog, the claims phase 22 predicts taking about 2 more at 22.4,
+            and the decision the ruling names written now (see: The chart page opens on a brief read written by code
+            from stored figures, and no rule reads it).
+            It is built in a git worktree, `EquityBrief-brief`, on a branch of its own taken from main, which departs on
+            the operator's word, for this build alone, from the merge section's one checkout, while 22.2 is built in the
+            checkout and its sweep runs, 22.2 and 22.3 keeping priority. Before anything is built the chart page's code
+            is read for the three things the ruling stops on, a migration, a source 22.2 or 22.3 edits other than the
+            records and the documents, and any rule's version moving, and where any holds it goes to the operator first.
+            Merges follow the standing writer rule, and whichever pull request lands second rebases.
+Queue:      done, phase 20 finished for its sign-off with its report, 22.0, and 22.1 with its record; in progress, 22.2
+            with 22.1's three carried corrections in the checkout, on the operator's word of the same day; next, 22.4's
+            reading for its stop conditions and its build beside 22.2's sweep, each index's dip answer to the operator and
+            22.3 on their word, 22.5, and the sign-offs of phases 20 and 18 by fresh sessions when the operator says.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 22.5 ruling - the one-gate-short columns corrected, plain words held by a check as 22.5 and Tonight redesigned as 22.6 join phase 22 before its phase report, now 22.7   2026-10-24
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-24 at about 05:20 UTC, an addendum to the ruling on the brief read, word for word
+            in `prompts/2026-10-24-22.4-ruling-addendum-plain-words-and-tonight.md`: "Everything below runs on the same
+            track beside 22.2 and 22.3, in the same worktree, under the same limits", "No model writes any sentence;
+            every sentence is a code template over stored figures, and every figure comes from the core function the
+            page or card already uses for it", and "Add these as phase 22 checkpoints before its phase report, numbered
+            as the plan needs, in this order": a correction, each setup card's one-gate-short table drawing none where
+            the values are stored, its own pull request first; plain words on every redesigned page, held by a check;
+            and Tonight redesigned from the mockup they approved. Why, in their words: "The pages are written in the
+            build's internal vocabulary and state what was computed rather than what it means. Each redesign fixed one
+            page and the next feature brought the wording back."
+Plan:       the correction stands first on the track in the build plan's phase 22 section and lands as a correction to
+            the checkpoint that built those tables, read off the record before it is built, so it takes no number of
+            this phase; plain words is 22.5, Tonight redesigned 22.6 and the phase report 22.7, the build plan's section
+            and section 20's row saying so with their prior text in the changelog, and the claims phase 22 predicts
+            taking about 40 more at 22.5 and about 6 at 22.6. The decision 22.5 names is written now (see: A redesigned
+            page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term
+            reaches the screen outside the glossary); the one 22.6 names, that a pick's card draws one plan, its
+            setup's, and the levels plan stays on the stock's full page, is written with 22.6, since it moves what said
+            otherwise under Previously decided. The plain-words check covers the chart page's brief read from 22.5 and
+            Tonight from 22.6, which redesigns it, since today's Tonight is what the check is written to refuse. Each
+            goes to the operator before it is built where it needs a migration, must edit a source 22.2 or 22.3 edits
+            other than the records and the documents, or moves any rule's version.
+Queue:      done, phase 20 finished for its sign-off with its report, 22.0, and 22.1 with its record; in progress, 22.2
+            in the checkout, its six sweep answers with the operator; next, on the brief read's track in its worktree,
+            22.4's reading for its stop conditions and its build, the one-gate-short correction, 22.5 and 22.6, 22.2 and
+            22.3 keeping priority; 22.3 on the operator's word; 22.7; and the sign-offs of phases 20 and 18 by fresh
+            sessions when the operator says.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 19.3 ruling - the one-gate-short columns on the S&P 400 and 600 read off the ledger's setups, a drift's off its report day within its rule's window   2026-10-24
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-24 through the question tool, each question and answer word for word in
+            `prompts/2026-10-24-19.3-correction-one-gate-short-answer.md`. At about 12:55 UTC, told that the S&P 400's and
+            600's answers store their setup as one part with no values, written by a source every rule there pins, so
+            storing values would move every rule's version there: "Ledger setup rows (Recommended)", the option reading
+            "S&P 500 from the stored gate answers as ruled. S&P 400 and 600 from the night's ledger setup row for that stock
+            and family, the same definitions the columns already use. A cell with no setup stored says so. No rule's version
+            moves." At about 13:40 UTC, told that the ledger stores a drift's setup on its report day alone, so that of the
+            S&P 600's 27 drift rows one gate short over 2026-10-02 to 2026-10-23, 16 held a setup on the night, 8 only on an
+            earlier report day and 3 none: "Read its report-day row (Recommended)", the option reading "For the drift on the
+            S&P 400 and 600, read the setup the ledger stored on the stock's report day, within the rule's own window before
+            the night. Reaction and Volume come as stored there. Since the report is the exchange's sessions from that day to
+            the night, counted by the calendar function the page already uses. Other families keep the night's row. A row
+            with no such setup says so."
+Plan:       the build plan's paragraph on the correction states both answers, its prior text in the changelog, and its
+            done condition reads the S&P 400's and 600's columns off the ledger's setups and works its rows over
+            constructed nights of every family where the fixture's draw no number: the fixture's whole night draws one
+            stock one gate short, NFLX under the short-term dip, whose card draws no number of its own.
+Queue:      done, phase 20 finished for its sign-off with its report, 22.0, 22.1 with its record and 22.2 with its
+            correction; in progress, the one-gate-short correction on the brief read's track in its worktree, and 22.2's
+            history builds run again in the checkout; next, 22.4, 22.5 and 22.6 on that track; 22.3 on the operator's word;
+            22.7; and the sign-offs of phases 20 and 18 by fresh sessions when the operator says.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 19.3 - correction: each card's stocks one gate short draw their numbers off the answers the night stored and the ledger's setups, where every row drew none under a family's own numbers   2026-10-24
+
+Found:      by the operator on the S&P 500's Tonight for 2026-10-23: the earnings drift card's table of the stocks one gate
+            short drew none under its reaction, its volume and the sessions since the report on all 23 rows, and the
+            breakout card none under its volume and its ranges on its 3, while the page's shared list drew the same
+            stocks' values from their stored answers. Verified before anything changed: the card read its numbers off the
+            members' ledger readings, which hold none of the six only a family's setup carries; the S&P 500's answers hold
+            every value the columns need in their gates' values; the S&P 400's and 600's store their setup as one part with
+            no values. 19.3's own test stored a family's own readings on a member's row, a shape no night writes, which hid
+            it.
+Corrected:  on the S&P 500 each number is read off the answer the night stored for the stock under its family, the swing
+            filter's for the pullback; on the S&P 400 and 600, on the operator's answers above, a number the family's setup
+            alone holds off the setup the ledger stored on the night, whichever step wrote it, and a drift's off the one
+            stored on its report day within the window its rule states, the wider one where it states one, its last session
+            included, its sessions since the report counted by the exchange's calendar; every other number off the member's
+            readings; and a cell holding none says why: not reached, not stored, no setup stored or not read. Read
+            read-only on the operator's store for 2026-10-23, that draws the S&P 500's 23 drift and 3 breakout rows from
+            their answers and the S&P 600's 13 drift rows from their report days' setups, 7 on the night and 6 a session
+            before, inside its rules' window of 3. The bound's end: a rule stating the first pullback's entry is read at the
+            window it states, which for the S&P 400's live drift, 10 sessions, is that entry's reach.
+Tests:      5 new, 1 replaced and 1 extended, 2697 in all: a family's numbers worked by hand off the answers, ALLE's and
+            GL's as the operator's store held them, a gate storing nothing or never reached saying which; an index's off the
+            ledger's setups and a drift's off its report day, at its window's edge and across Thanksgiving, the window read
+            off the live rule and the night's settings; the S&P 500's page drawing N1's, K3's, K5's and D1's rows from their
+            answers, worked by hand against the shared list's words; the S&P 400's page drawing a closed night's breakouts
+            and drifts from the ledger's setups, two a history build wrote among them; and no source a rule pins written.
+            19.3's test of the numbers off the members' readings is replaced, and the fixture's setup cards' test extended.
+Fixture:    setup-cards.json derives the one stock one gate short the fixture's whole night draws, NFLX under the short-term
+            dip at its trend alone, whose card draws no number; so no number column holds a row on the fixture's nights,
+            and the rows the correction reads are worked over constructed nights. This correction amends its own done
+            condition, on the operator's answers recorded in the ruling before it, to read the S&P 400's and 600's columns
+            off the ledger's setups and to work its rows over constructed nights where the fixture's draw no number.
+Claims:     1421, none new: the architecture's new sentences state no run of parts.
+Pins:       none move: no source a rule's version pins is one the correction writes, as its new test asserts.
+Mutated:    the rule, stated before the runs: one mutation for each property the correction adds, the smallest edit
+            undoing it where the property is stated, made in the worktree and reverted with the editor, each run filtered to
+            the correction's six tests. L1 the stored answer never read; L2 the window's last session not read; L3 the
+            sessions since the report counted in calendar days; L4 the report day read only before the night; L5 a value
+            stored as no number read as one; L6 the night's setups read only where the night's step wrote them; L7 the live
+            rule's window never read. Each red: L1 at the answers worked by hand and the S&P 500's page; L2 at the index's
+            by hand and its page; L3 at the index's by hand, across Thanksgiving; L4 and L6 at the index's page; L5 and L7
+            at the tests worked by hand.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2697 of 2697 tests ran with none failed,
+            migrations 0 to 108 with none pending, schema version 108, against `data-ci` and never `data`; the phase
+            report 60 tables, 1421 claims, 1421 passing, none out of scope and none unexamined, 1432 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    none.

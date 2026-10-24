@@ -1,10 +1,12 @@
 using System.Net;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Cards;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
+using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Web.Marks;
@@ -339,56 +341,360 @@ public partial class ReadSurface
             FunnelRows(card));
     }
 
-    [Fact]
-    public async Task EachFamilysThreeNumbersAreReadOffTheNightsLedgerReadingsInTheirOwnForms()
-    {
-        // A member's readings with the six the families draw stored, the breakout's ranges' ratio not stored: the pullback
-        // and the fundamentals-first family read depth, dry-up and strength, the breakout its sessions since its high,
-        // volume and ranges, the drift its reaction, volume and sessions since the report, and the heavyweights none.
-        var readings = new double?[EquityBrief.Core.Ledger.LedgerReadings.Count];
+    static CardCell NumberCell(double value) => new(value, null);
 
-        foreach (var (column, value) in new[] { ("depth", 2.3456), ("dry_up", 0.8), ("strength", 0.734), ("since_high", 3.0), ("volume_multiple", 1.75), ("reaction_moves", 1.5), ("freshness", 2.0) })
+    static CardCell NoNumber(string why) => new(null, why);
+
+    // A member's catalogue readings with the columns given held and every other none.
+    static double?[] ReadingsOf(params (string Column, double Value)[] held)
+    {
+        var readings = new double?[LedgerReadings.Count];
+
+        foreach (var (column, value) in held)
         {
-            readings[EquityBrief.Core.Ledger.LedgerReadings.IndexOf(column)] = value;
+            readings[LedgerReadings.IndexOf(column)] = value;
         }
 
-        Assert.Equal([2.3456, 0.8, 0.734], CardNumbers.Values(SetupFamilies.Pullback, readings));
-        Assert.Equal([2.3456, 0.8, 0.734], CardNumbers.Values(FundamentalsRule.Name, readings));
-        Assert.Equal([3.0, 1.75, null], CardNumbers.Values(BreakoutRule.Name, readings));
-        Assert.Equal([1.5, 1.75, 2.0], CardNumbers.Values(DriftRule.Name, readings));
-        Assert.Empty(CardNumbers.Values(HeavyweightRule.Name, readings));
+        return readings;
+    }
 
-        // Over the night 13.1's cards are read on, N1 failed its trade gate alone and stands one gate short behind the
-        // pullback card's expander; with its readings stored on the night its three numbers are drawn in their forms, depth
-        // in typical moves to two places, dry-up as a multiple to two and strength as a whole per cent.
-        using var store = await FamilyNightStore();
+    // From the 19.3 correction of 2026-10-24, worked by hand: a family's numbers read off the answer the night stored for the
+    // stock where one is handed in, as the S&P 500's nights store every gate with its values. ALLE's drift answer of
+    // 2026-10-23, short of its volume, reads its reaction of 5.2065 typical moves, its volume of 1.7359 times and 1 session
+    // since the report as the operator's store held them; GL's breakout answer its volume of 3.4117 times and ranges of
+    // 0.8375, with its sessions since its high, 4, off its readings, which no gate holds; and a pullback's swing answer its
+    // depth, dry-up and strength, whatever the member's readings hold. A gate holding no value, or one stored as none or
+    // as no number, says it stored nothing; a gate the answer never reached says so; and the business-first family, whose
+    // S&P 500 answer holds no values, reads its member's readings, saying where they hold none.
+    [Fact]
+    public void EachFamilysNumbersAreReadOffTheAnswerTheNightStoredAndSayWhichWhereItHoldsNone()
+    {
+        static Gate Part(string name, bool passed, params (string Key, string Value)[] values) => new(name, passed, "its words", FamilyRule.Values(values));
 
-        store.Execute($"INSERT INTO ledger_reading (index_code, session_date, ticker, readings, pin) VALUES ('GSPC', '{TheSwitch}', 'N1', '{EquityBrief.Worker.Ledger.SetupLedger.ReadingsText(readings)}', '{EquityBrief.Core.Ledger.LedgerReadings.Version}');");
+        var member = ReadingsOf(("since_high", 4), ("depth", 9.5));
+
+        IReadOnlyList<Gate> alle =
+        [
+            Part(FamilyRule.Market, true, ("breadth", "0.6"), ("floor", "0.5")),
+            Part(DriftRule.Print, true, ("report", "2026-10-22"), ("session", "2026-10-22"), ("back", "1"), ("window", "3")),
+            Part(DriftRule.Beat, true),
+            Part(DriftRule.Reaction, true, ("moves", "5.2065185076060505"), ("floor", "0.5"), ("typical move", "3.365012526970862")),
+            Part(DriftRule.Volume, false, ("multiple", "1.7359287717276313"), ("floor", "2")),
+            Part(DriftRule.Held, true),
+            Part(FamilyRule.Trade, true),
+        ];
+        IReadOnlyList<Gate> gl =
+        [
+            Part(FamilyRule.Market, true),
+            Part(BreakoutRule.NewHigh, true, ("sessions", "252"), (BreakoutRule.WindowValue, "126")),
+            Part(BreakoutRule.Volume, true, ("multiple", "3.411733765277914"), ("floor", "1.5")),
+            Part(BreakoutRule.Tightened, true, ("ratio", "0.8375345830200104"), ("ceiling", "0.85")),
+            Part(FamilyRule.Trade, false),
+        ];
+        IReadOnlyList<Gate> pullback =
+        [
+            Part(SwingGates.Market, true),
+            Part(SwingGates.Trend, true, ("trend state", "uptrend"), ("strength", "0.734"), ("floor", "0.5")),
+            Part(SwingGates.Setup, true, ("family", "pullback"), ("depth", "2.3456"), ("dry-up", "0.8")),
+            Part(SwingGates.Trigger, true),
+            Part(SwingGates.Trade, false),
+        ];
+
+        Assert.Equal([NumberCell(5.2065185076060505), NumberCell(1.7359287717276313), NumberCell(1)], CardNumbers.Cells(DriftRule.Name, alle, null, member));
+        Assert.Equal([NumberCell(4), NumberCell(3.411733765277914), NumberCell(0.8375345830200104)], CardNumbers.Cells(BreakoutRule.Name, gl, null, member));
+        Assert.Equal([NumberCell(2.3456), NumberCell(0.8), NumberCell(0.734)], CardNumbers.Cells(SetupFamilies.Pullback, pullback, null, member));
+
+        // A print outside the window: the gates after it store nothing and its sessions back are read.
+        IReadOnlyList<Gate> outside =
+        [
+            Part(FamilyRule.Market, true),
+            Part(DriftRule.Print, false, ("report", "2026-08-20"), ("session", "2026-08-20"), ("back", "35"), ("window", "3")),
+            Part(DriftRule.Beat, false),
+            Part(DriftRule.Reaction, false),
+            Part(DriftRule.Volume, false),
+        ];
+
+        Assert.Equal([NoNumber(CardNumbers.NotStored), NoNumber(CardNumbers.NotStored), NumberCell(35)], CardNumbers.Cells(DriftRule.Name, outside, null, member));
+
+        // A volume stored as none and ranges stored as no number store nothing; an answer stored before its tightened gate
+        // never reached it.
+        IReadOnlyList<Gate> unread = [Part(FamilyRule.Market, true), Part(BreakoutRule.Volume, false, ("multiple", "none")), Part(BreakoutRule.Tightened, true, ("ratio", "NaN"))];
+        IReadOnlyList<Gate> older = [Part(FamilyRule.Market, true), Part(BreakoutRule.NewHigh, true), Part(BreakoutRule.Volume, true, ("multiple", "1.6"))];
+
+        Assert.Equal([NumberCell(4), NoNumber(CardNumbers.NotStored), NoNumber(CardNumbers.NotStored)], CardNumbers.Cells(BreakoutRule.Name, unread, null, member));
+        Assert.Equal([NumberCell(4), NumberCell(1.6), NoNumber(CardNumbers.NotReached)], CardNumbers.Cells(BreakoutRule.Name, older, null, member));
+        Assert.Equal([NumberCell(9.5), NoNumber(CardNumbers.NotRead), NoNumber(CardNumbers.NotRead)], CardNumbers.Cells(FundamentalsRule.Name, null, null, member));
+        Assert.Empty(CardNumbers.Cells(HeavyweightRule.Name, alle, null, member));
+
+        // Drawn: a value in its form, and a number held nowhere as none with why.
+        var drawn = new MarkRenderer().FamilyCard(new FamilyCardView(
+            BreakoutRule.Name, "Breakout", "Breakouts to a new high", "Breakout from a base", "A stock closes above its high.", 2, 3, new DateOnly(2026, 1, 2), 0, [], [], null,
+            Close: [new CloseToBuyCell("B1", "B One", BreakoutRule.Name, "Breakout", "volume", "volume 1.60 times its 50-session average, below 1.75"), new CloseToBuyCell("B2", null, BreakoutRule.Name, "Breakout", "new high", "no new high")],
+            Numbers: new Dictionary<string, IReadOnlyList<CardCell>>
+            {
+                ["B1"] = CardNumbers.Cells(BreakoutRule.Name, older, null, member),
+                ["B2"] = [NoNumber(CardNumbers.NotRead), NoNumber(CardNumbers.NoSetup), NoNumber(CardNumbers.NotStored)],
+            }));
+
+        Assert.Contains("<td class=\"r num\" data-number=\"since_high\" data-value=\"4\">4</td><td class=\"r num\" data-number=\"volume_multiple\" data-value=\"1.6\">1.60 times</td><td class=\"r num\" data-number=\"range_ratio\" data-value=\"none\" data-none=\"not reached\"><span class=\"degraded\">none, not reached</span></td>", drawn, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"missed-gate\" title=\"volume 1.60 times its 50-session average, below 1.75\"><b>volume</b></td>", drawn, StringComparison.Ordinal);
+        Assert.Equal(["not read", "no setup stored", "not stored"], Regex.Matches(Assert.Single(Blocks(drawn, "<tr data-ticker=\"B2\".*?</tr>")), "data-none=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Contains("<summary>One gate short of a buy point: 2</summary>", drawn, StringComparison.Ordinal);
+    }
+
+    // From the 19.3 correction of 2026-10-24, worked by hand: on an index whose answers hold no values, a family's own
+    // numbers read off the stock's setup the ledger stored on the night and every other off the member's readings, each
+    // saying where none is held; and a drift's, which the ledger stores on its report day alone, off the setup of that day
+    // within the window its rule states, its last session included, its sessions since the report counted on the
+    // exchange's calendar: from Thursday 2026-10-22 to Friday 2026-10-23 one; from Tuesday 2026-10-20 three, at the
+    // provisional rule's window of 3 and read; from Monday 2026-10-19 four, past it and read only at the S&P 400's live
+    // window of 10; and across Thanksgiving from Wednesday 2026-11-25 to Friday 2026-11-27 one. The window is the live
+    // rule's, its wider window where it states one, and the provisional rule's off the night's settings where none stands.
+    [Fact]
+    public void AnIndexsNumbersAreReadOffTheLedgersSetupsAndADriftsOffItsReportDayWithinItsRulesWindow()
+    {
+        var member = ReadingsOf(("since_high", 4));
+        var breakout = ReadingsOf(("volume_multiple", 2.0), ("since_high", 7));
+
+        Assert.Equal([NumberCell(4), NumberCell(2.0), NoNumber(CardNumbers.NotRead)], CardNumbers.Cells(BreakoutRule.Name, null, breakout, member));
+        Assert.Equal([NumberCell(4), NoNumber(CardNumbers.NoSetup), NoNumber(CardNumbers.NoSetup)], CardNumbers.Cells(BreakoutRule.Name, null, null, member));
+        Assert.Equal([NoNumber(CardNumbers.NotRead), NumberCell(2.0), NoNumber(CardNumbers.NotRead)], CardNumbers.Cells(BreakoutRule.Name, null, breakout, null));
+
+        var reaction = ReadingsOf(("reaction_moves", 2.25), ("volume_multiple", 3.0), ("freshness", 0));
+        var night = new DateOnly(2026, 10, 23);
+        var since = LedgerReadings.IndexOf("freshness");
+
+        Assert.Equal([NumberCell(2.25), NumberCell(3.0), NumberCell(0)], CardNumbers.Cells(DriftRule.Name, null, CardNumbers.AtReportDay(night, reaction, night, 3), null));
+        Assert.Equal([NumberCell(2.25), NumberCell(3.0), NumberCell(1)], CardNumbers.Cells(DriftRule.Name, null, CardNumbers.AtReportDay(new DateOnly(2026, 10, 22), reaction, night, 3), null));
+        Assert.Equal(3.0, CardNumbers.AtReportDay(new DateOnly(2026, 10, 20), reaction, night, 3)![since]);
+        Assert.Null(CardNumbers.AtReportDay(new DateOnly(2026, 10, 19), reaction, night, 3));
+        Assert.Equal(4.0, CardNumbers.AtReportDay(new DateOnly(2026, 10, 19), reaction, night, 10)![since]);
+        Assert.Equal(1.0, CardNumbers.AtReportDay(new DateOnly(2026, 11, 25), reaction, new DateOnly(2026, 11, 27), 3)![since]);
+        Assert.Null(CardNumbers.AtReportDay(new DateOnly(2026, 10, 26), reaction, night, 3));
+        Assert.Equal(0.0, reaction[since]);
+        Assert.Equal([NoNumber(CardNumbers.NoSetup), NoNumber(CardNumbers.NoSetup), NoNumber(CardNumbers.NoSetup)], CardNumbers.Cells(DriftRule.Name, null, null, member));
+
+        var settings = IndexRuleSettings.Read(IndexFamilies.Settings("MID"));
+        CandidateRow Live(string parameters) => new(1, "the live S&P 400 drift rule", "drift-400", "registered", null, DateTimeOffset.UnixEpoch, parameters);
+
+        Assert.Equal(3, TonightScreen.DriftWindow(null, settings));
+        Assert.Equal(10, TonightScreen.DriftWindow(Live("{\"entry\": 1, \"wideWindow\": 0, \"windowSessions\": 10}"), settings));
+        Assert.Equal(21, TonightScreen.DriftWindow(Live("{\"wideWindow\": 21, \"windowSessions\": 3}"), settings));
+        Assert.Null(TonightScreen.DriftWindow(Live("no parameters"), settings));
+    }
+
+    // From the 19.3 correction of 2026-10-24: on the S&P 500 each card's stocks one gate short draw the values their stored
+    // answers hold, read back off the page and worked by hand against the words the shared list draws for the same rows.
+    // Over the night the family pages are read on: N1, one gate short of the pullback at its trade, its swing answer
+    // storing a depth of 2.3456, a dry-up of 0.8 and a strength of 0.734 while its ledger readings hold others; K3, short
+    // of the breakout at its volume of 1.2 times its average under 1.5, its ranges at 0.7 and its sessions since its high,
+    // 3, off its readings; K5, short at its volume where no average was stored, whose gate stored nothing; and D1, short
+    // of the drift at its volume as ALLE's answer stood on 2026-10-23, its reaction 5.2065 typical moves a session back on
+    // 1.7359 times its average under 2.
+    [Fact]
+    public async Task OnTheSAndP500EachCardsStocksOneGateShortDrawTheValuesTheirStoredAnswersHold()
+    {
+        using var store = await FamilyPagesStore();
+
+        object Part(string gate, bool passed, string reason, Dictionary<string, string> values) => new { gate, passed, reason, values };
+
+        var n1 = JsonSerializer.Serialize(new
+        {
+            gates = new[]
+            {
+                Part(SwingGates.Market, true, "breadth at or above its floor", new() { ["breadth"] = "0.6", ["floor"] = "0.5" }),
+                Part(SwingGates.Trend, true, "an uptrend at or above its floor", new() { ["trend state"] = "uptrend", ["strength"] = "0.734", ["floor"] = "0.5" }),
+                Part(SwingGates.Setup, true, "a pullback into an anchored support band", new() { ["family"] = "pullback", ["depth"] = "2.3456", ["dry-up"] = "0.8" }),
+                Part(SwingGates.Trigger, true, "the close above the previous session's high", new() { ["arrived"] = "tonight" }),
+                Part(SwingGates.Trade, false, "reward to risk below its floor", new() { ["reward to risk"] = "1.2" }),
+            },
+            notes = Array.Empty<string>(),
+        });
+
+        store.Execute($"UPDATE gate_result SET gates = '{n1}' WHERE ticker = 'N1' AND session_date = '{TheSwitch}';");
+
+        static string Breakout(string volumeWords, IReadOnlyDictionary<string, string> volume, string ratio) => FamilyRule.GatesJson(
+        [
+            new Gate(FamilyRule.Market, true, "breadth at or above its floor", FamilyRule.Values(("breadth", "0.6"), ("floor", "0.5"))),
+            new Gate(BreakoutRule.NewHigh, true, "the close of 30 is above the highest high of the 126 sessions before it, 29", FamilyRule.Values(("close", "30"), ("high", "29"), ("sessions", "252"), (BreakoutRule.WindowValue, "126"))),
+            new Gate(BreakoutRule.Volume, false, volumeWords, volume),
+            new Gate(BreakoutRule.Tightened, true, "ranges narrowed", FamilyRule.Values(("ratio", ratio), ("ceiling", "0.85"))),
+            new Gate(FamilyRule.Trade, true, "the stop 1.5 typical moves beneath", FamilyRule.Values(("close", "30"))),
+        ]);
+
+        store.Execute($"UPDATE family_result SET gates = '{Breakout("volume 1.20 times its 50-session average, below 1.5", FamilyRule.Values(("multiple", "1.2"), ("floor", "1.5")), "0.7")}' WHERE ticker = 'K3' AND session_date = '{TheSwitch}';");
+        store.Execute(
+            "INSERT INTO family_result (session_date, ticker, family, passed, missed, place, entry, stop, target, order_by, exclusions, gates) " +
+            $"VALUES ('{TheSwitch}', 'K5', 'breakout', 0, 1, NULL, '30', '28', NULL, NULL, '[]', '{Breakout("not available: no 50-session average volume is stored for the night", FamilyRule.Values(), "0.8")}');");
+
+        var drift = FamilyRule.GatesJson(
+        [
+            new Gate(FamilyRule.Market, true, "breadth at or above its floor", FamilyRule.Values(("breadth", "0.6"), ("floor", "0.5"))),
+            new Gate(DriftRule.Print, true, "the print of 2026-10-01 reacted on 2026-10-01, 1 session(s) before tonight, inside the 3-session window", FamilyRule.Values(("report", "2026-10-01"), ("session", "2026-10-01"), ("back", "1"), ("window", "3"))),
+            new Gate(DriftRule.Beat, true, "the print beat its estimate", FamilyRule.Values(("surprise", "4.5"))),
+            new Gate(DriftRule.Reaction, true, "the reaction session closed up 5.21 typical moves, at or above 0.5 up", FamilyRule.Values(("moves", "5.2065185076060505"), ("floor", "0.5"), ("typical move", "3.365012526970862"))),
+            new Gate(DriftRule.Volume, false, "the reaction session's volume was 1.74 times its 50-session average, below 2.0", FamilyRule.Values(("multiple", "1.7359287717276313"), ("floor", "2"))),
+            new Gate(DriftRule.Held, true, "the close of 190 is above the reaction session's low of 180", FamilyRule.Values(("close", "190"), ("low", "180"))),
+            new Gate(FamilyRule.Trade, true, "the stop at the reaction's low", FamilyRule.Values(("close", "190"), ("stop", "180"), ("target", "215"), (FamilyRule.RewardToRiskValue, "2.5"))),
+        ]);
+
+        store.Execute(
+            "INSERT INTO family_result (session_date, ticker, family, passed, missed, place, entry, stop, target, order_by, exclusions, gates) " +
+            $"VALUES ('{TheSwitch}', 'D1', 'drift', 0, 1, NULL, '190', '180', '215', 4.5, '[]', '{drift}');");
+
+        // The members' readings as a night stores them, holding none of a family's own: N1's others than its answer's, and
+        // K3's sessions since its high.
+        foreach (var (ticker, readings) in new[] { ("N1", ReadingsOf(("depth", 9.5), ("dry_up", 1.9), ("strength", 0.1))), ("K3", ReadingsOf(("since_high", 3))) })
+        {
+            store.Execute($"INSERT INTO ledger_reading (index_code, session_date, ticker, readings, pin) VALUES ('GSPC', '{TheSwitch}', '{ticker}', '{EquityBrief.Worker.Ledger.SetupLedger.ReadingsText(readings)}', '{LedgerReadings.Version}');");
+        }
+
+        await RedrawTheFamilies(store);
 
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        var card = FamilyCardOf(System.Net.WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")), SetupFamilies.Pullback);
-        var close = Assert.Single(Blocks(card, "<details class=\"expander close-rows\".*?</details>"));
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}"));
 
-        Assert.StartsWith("<details class=\"expander close-rows\" data-close=\"1\"><summary>One gate short of a buy point: 1</summary>", close, StringComparison.Ordinal);
-        Assert.Contains("<tr data-ticker=\"N1\" data-gate=\"trade\">", close, StringComparison.Ordinal);
-        Assert.Contains(
-            "<td class=\"r num\" data-number=\"depth\" data-value=\"2.3456\">2.35 moves</td><td class=\"r num\" data-number=\"dry_up\" data-value=\"0.8\">0.80 times</td><td class=\"r num\" data-number=\"strength\" data-value=\"0.734\">73%</td>",
-            close,
-            StringComparison.Ordinal);
+        string Row(string family, string ticker) =>
+            Assert.Single(Blocks(Assert.Single(Blocks(FamilyCardOf(page, family), "<details class=\"expander close-rows\".*?</details>")), $"<tr data-ticker=\"{ticker}\" data-gate=.*?</tr>"));
 
-        // A member the night stored no readings for draws each of its three numbers as none.
-        var renderer = new MarkRenderer();
-        var drawn = renderer.FamilyCard(new FamilyCardView(
-            BreakoutRule.Name, "Breakout", "Breakouts to a new high", "Breakout from a base", "A stock closes above its high.", 2, 3, new DateOnly(2026, 1, 2), 0, [], [], null,
-            Close: [new CloseToBuyCell("B1", "B One", BreakoutRule.Name, "Breakout", "volume", "its volume 1.2 times its average, under 1.5"), new CloseToBuyCell("B2", null, BreakoutRule.Name, "Breakout", "new high", "no new high")],
-            Numbers: new Dictionary<string, IReadOnlyList<double?>> { ["B1"] = CardNumbers.Values(BreakoutRule.Name, readings), ["B2"] = new double?[3] }));
+        string Words(string family, string ticker) =>
+            Regex.Match(Assert.Single(Blocks(CloseCard(page), $"<tr data-ticker=\"{ticker}\" data-family=\"{family}\".*?</tr>")), "<td class=\"close-had\">([^<]*)</td>").Groups[1].Value;
 
-        Assert.Contains("<td class=\"r num\" data-number=\"since_high\" data-value=\"3\">3</td><td class=\"r num\" data-number=\"volume_multiple\" data-value=\"1.75\">1.75 times</td><td class=\"r num\" data-number=\"range_ratio\" data-value=\"none\"><span class=\"degraded\">none</span></td>", drawn, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"missed-gate\" title=\"its volume 1.2 times its average, under 1.5\"><b>volume</b></td>", drawn, StringComparison.Ordinal);
-        Assert.Equal(3, Regex.Matches(Assert.Single(Blocks(drawn, "<tr data-ticker=\"B2\".*?</tr>")), "data-value=\"none\"").Count);
-        Assert.Contains("<summary>One gate short of a buy point: 2</summary>", drawn, StringComparison.Ordinal);
+        // Every row of each card's table, in its order.
+        Assert.Equal(["N1|trade"], Regex.Matches(Assert.Single(Blocks(FamilyCardOf(page, SetupFamilies.Pullback), "<details class=\"expander close-rows\".*?</details>")), "<tr data-ticker=\"([^\"]+)\" data-gate=\"([^\"]+)\">").Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}"));
+        Assert.Equal(["K3|volume", "K5|volume"], Regex.Matches(Assert.Single(Blocks(FamilyCardOf(page, BreakoutRule.Name), "<details class=\"expander close-rows\".*?</details>")), "<tr data-ticker=\"([^\"]+)\" data-gate=\"([^\"]+)\">").Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}"));
+        Assert.Equal(["D1|volume"], Regex.Matches(Assert.Single(Blocks(FamilyCardOf(page, DriftRule.Name), "<details class=\"expander close-rows\".*?</details>")), "<tr data-ticker=\"([^\"]+)\" data-gate=\"([^\"]+)\">").Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}"));
+
+        // N1: its answer's three, not its readings', in their forms; the shared list's row its trade's reward of 1.2
+        // against the version's floor of 1.5.
+        Assert.Contains("<td class=\"r num\" data-number=\"depth\" data-value=\"2.3456\">2.35 moves</td><td class=\"r num\" data-number=\"dry_up\" data-value=\"0.8\">0.80 times</td><td class=\"r num\" data-number=\"strength\" data-value=\"0.734\">73%</td>", Row(SetupFamilies.Pullback, "N1"), StringComparison.Ordinal);
+        Assert.Equal("the reward is 1.20 times the risk, needs 1.5", Words(SetupFamilies.Pullback, "N1"));
+
+        // K3: its volume as the shared list words it, 1.20 times, its ranges at 0.70 and 3 sessions since its high.
+        Assert.Contains("<td class=\"r num\" data-number=\"since_high\" data-value=\"3\">3</td><td class=\"r num\" data-number=\"volume_multiple\" data-value=\"1.2\">1.20 times</td><td class=\"r num\" data-number=\"range_ratio\" data-value=\"0.7\">0.70</td>", Row(BreakoutRule.Name, "K3"), StringComparison.Ordinal);
+        Assert.Equal("volume 1.20 times its 50-session average, below 1.5", Words(BreakoutRule.Name, "K3"));
+
+        // K5: no average, so its volume stored nothing, as the shared list says; no readings, so its high is not read.
+        Assert.Contains("<td class=\"r num\" data-number=\"since_high\" data-value=\"none\" data-none=\"not read\"><span class=\"degraded\">none, not read</span></td><td class=\"r num\" data-number=\"volume_multiple\" data-value=\"none\" data-none=\"not stored\"><span class=\"degraded\">none, not stored</span></td><td class=\"r num\" data-number=\"range_ratio\" data-value=\"0.8\">0.80</td>", Row(BreakoutRule.Name, "K5"), StringComparison.Ordinal);
+        Assert.Equal("not available: no 50-session average volume is stored for the night", Words(BreakoutRule.Name, "K5"));
+
+        // D1: its reaction of 5.21 moves, its volume of 1.74 times as the shared list words it, and 1 session since the
+        // report.
+        Assert.Contains("<td class=\"r num\" data-number=\"reaction_moves\" data-value=\"5.2065185076060505\">5.21 moves</td><td class=\"r num\" data-number=\"volume_multiple\" data-value=\"1.7359287717276313\">1.74 times</td><td class=\"r num\" data-number=\"freshness\" data-value=\"1\">1</td>", Row(DriftRule.Name, "D1"), StringComparison.Ordinal);
+        Assert.Equal("the reaction session's volume was 1.74 times its 50-session average, below 2.0", Words(DriftRule.Name, "D1"));
+
+        // And no cell on any card's table draws none without why.
+        Assert.DoesNotMatch("data-value=\"none\"(?! data-none=)", page);
+    }
+
+    // From the 19.3 correction of 2026-10-24: on the S&P 400, whose answers store their setup with no values, each card's
+    // stocks one gate short draw a family's own numbers off the setup the ledger stored and every other off the member's
+    // readings, read back off the page. Over the closed night of 2026-10-02 IA, IB, IC and ID break out and the market check
+    // alone keeps them off: IA's setup stores its volume at 2.0 times and its ranges at 0.62 and its readings 4 sessions
+    // since its high; IB's setup, which a history build wrote, its volume at 1.6 times and no ranges, its readings 2; IC
+    // holds no setup, its readings 6; and ID neither. F1, F2 and F3's drift answers are short at the market check alone,
+    // and their report days' setups are read at the provisional rule's window of 3: F1's on the night, none since; F2's on
+    // Tuesday 2026-09-29, three sessions back and read; F3's on Monday 2026-09-28, four back and not.
+    [Fact]
+    public async Task OnAnIndexEachCardsStocksOneGateShortDrawTheLedgersSetupAndADriftItsReportDaysWithinItsWindow()
+    {
+        using var store = Checks.FixtureExpectations.ClosedIndexStore();
+        var night = new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero);
+
+        await new IndexFamilies(FixedClock.At(night, SessionZones.UnitedStates), store.DatabaseFile).RunAsync("night-numbers", default, [], night);
+
+        var market = Text(store, $"SELECT gates FROM index_family_result WHERE index_code = 'MID' AND session_date = '{IndexNight}' AND family = 'breakout' AND ticker = 'IA';");
+        var closed = FamilyRule.GatesOf(market).First(gate => gate.Name == EquityBrief.Core.Cards.RuleRows.Market);
+
+        Assert.False(closed.Passed);
+
+        var shortOfTheCheck = FamilyRule.GatesJson(
+        [
+            closed,
+            new Gate(EquityBrief.Core.Cards.RuleRows.Setup, true, string.Empty, FamilyRule.Values()),
+            new Gate(EquityBrief.Core.Cards.RuleRows.Floors, true, string.Empty, FamilyRule.Values()),
+            new Gate(EquityBrief.Core.Cards.RuleRows.Profit, true, string.Empty, FamilyRule.Values()),
+        ]);
+
+        store.Execute($"UPDATE index_family_result SET gates = '{shortOfTheCheck}' WHERE index_code = 'MID' AND session_date = '{IndexNight}' AND family = 'drift' AND ticker IN ('F1', 'F2', 'F3');");
+
+        void Setup(string family, string ticker, string session, string source, params (string Column, double Value)[] readings) =>
+            store.Execute(
+                "INSERT INTO setup (index_code, family, ticker, session_date, rule, live_pass, entry, stop, cap, end, settled, source, pin"
+                + string.Concat(readings.Select(reading => ", " + reading.Column)) + ") "
+                + $"VALUES ('MID', '{family}', '{ticker}', '{session}', 'the provisional rule', 0, '10', '9', 21, 'open', 0, '{source}', '{LedgerReadings.Version}'"
+                + string.Concat(readings.Select(reading => ", " + reading.Value.ToString("R", System.Globalization.CultureInfo.InvariantCulture))) + ");");
+
+        // IB's and F2's written by a history build run over their sessions, which the ledger keeps one a session as the
+        // night's.
+        Setup(BreakoutRule.Name, "IA", IndexNight, "night", ("volume_multiple", 2.0), ("range_ratio", 0.62));
+        Setup(BreakoutRule.Name, "IB", IndexNight, "history", ("volume_multiple", 1.6));
+        Setup(DriftRule.Name, "F1", IndexNight, "night", ("reaction_moves", 1.5), ("volume_multiple", 2.5), ("freshness", 0));
+        Setup(DriftRule.Name, "F2", "2026-09-29", "history", ("reaction_moves", 2.25), ("volume_multiple", 3.0), ("freshness", 0));
+        Setup(DriftRule.Name, "F3", "2026-09-28", "night", ("reaction_moves", 0.75), ("volume_multiple", 2.2), ("freshness", 0));
+
+        foreach (var (ticker, high) in new[] { ("IA", 4.0), ("IB", 2.0), ("IC", 6.0) })
+        {
+            store.Execute($"INSERT INTO ledger_reading (index_code, session_date, ticker, readings, pin) VALUES ('MID', '{IndexNight}', '{ticker}', '{EquityBrief.Worker.Ledger.SetupLedger.ReadingsText(ReadingsOf(("since_high", high)))}', '{LedgerReadings.Version}');");
+        }
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
+
+        // Each row of a card's table as its ticker and its three cells as drawn.
+        IReadOnlyList<string> Rows(string family) =>
+        [
+            .. Regex.Matches(Assert.Single(Blocks(Section(page, family), "<details class=\"expander close-rows\".*?</details>")), "<tr data-ticker=\"([^\"]+)\" data-gate=\"[^\"]+\">(.*?)</tr>", RegexOptions.Singleline)
+                .Select(match => match.Groups[1].Value + "|" + string.Join("|", Regex.Matches(match.Groups[2].Value, "<td class=\"r num\" data-number=\"[^\"]+\" data-value=\"[^\"]+\"(?: data-none=\"[^\"]+\")?>(.*?)</td>").Select(cell => Regex.Replace(cell.Groups[1].Value, "<[^>]+>", string.Empty)))),
+        ];
+
+        Assert.Equal(
+            [
+                "IA|4|2.00 times|0.62",
+                "IB|2|1.60 times|none, not read",
+                "IC|6|none, no setup stored|none, no setup stored",
+                "ID|none, not read|none, no setup stored|none, no setup stored",
+            ],
+            Rows(BreakoutRule.Name));
+        Assert.Equal(
+            [
+                "F1|1.50 moves|2.50 times|0",
+                "F2|2.25 moves|3.00 times|3",
+                "F3|none, no setup stored|none, no setup stored|none, no setup stored",
+            ],
+            Rows(DriftRule.Name));
+    }
+
+    // The sources the 19.3 correction of 2026-10-24 writes.
+    static readonly string[] OneGateShortSources =
+    [
+        "src/EquityBrief.Api/Program.cs",
+        "src/EquityBrief.Api/Reading/ReadApi.CardNumbers.cs",
+        "src/EquityBrief.Api/Reading/TonightScreen.Indices.cs",
+        "src/EquityBrief.Core/Cards/CardNumbers.cs",
+        "src/EquityBrief.Web/Marks/MarkRenderer.Families.cs",
+    ];
+
+    // From the 19.3 correction of 2026-10-24: no source a rule's version pins is one the correction writes, so no rule's
+    // version moves, the reader shown to find a source a rule pins.
+    [Fact]
+    public void NoSourceARulesVersionPinsIsOneTheOneGateShortCorrectionWrites()
+    {
+        var pinned = CandidateEvaluators.All
+            .SelectMany(evaluator => evaluator.OwnSources)
+            .Concat(CandidateEvaluator.EvaluationSources)
+            .Concat(EquityBrief.Core.Loop.RuleHooks.Sources)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(pinned.Length >= 30, $"Read {pinned.Length} pinned source(s), expected at least 30.");
+        Assert.All(OneGateShortSources, path => Assert.True(File.Exists(Path.Combine(Repository.Root, path)), path));
+        Assert.Empty(OneGateShortSources.Intersect(pinned, StringComparer.Ordinal));
+        Assert.NotEmpty(new[] { "src/EquityBrief.Worker/Indices/IndexFamilies.cs" }.Intersect(pinned, StringComparer.Ordinal));
     }
 
     [Fact]

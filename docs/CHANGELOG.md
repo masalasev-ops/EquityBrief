@@ -26,6 +26,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-24 - .claude/rules/checks.md - fixture-expectations reaches the one stock one gate short the fixture's whole night draws
+Corrects: no check read which stocks the fixture's whole night draws one gate short, so the one-gate-short correction could not say whether the fixture holds a row its numbers read; found reading the page the whole night draws
+Was:
+> fixture-expectations: ... and no source a rule's version pins one 22.2 writes |
+Now:
+> fixture-expectations: ... and no source a rule's version pins one 22.2 writes; and from the 19.3 correction of 2026-10-24 the fixture's whole night drawing one stock one gate short, NFLX under the short-term dip at its trend alone, whose card draws no number of its own, so no card's number column holds a row on the night |
+Why: the roster row says what its check asserts, and the correction extends the setup cards' fixture test with the rows the file derives.
+
+### 2026-10-24 - ARCHITECTURE.html - a family's card reads its three numbers off the answers the night stored and the ledger's setups
+Corrects: every setup card's table of the stocks one gate short drew none under a number only a family's setup holds, on the S&P 500's Tonight for 2026-10-23 the drift's reaction, volume and sessions since the report on all 23 rows and the breakout's volume and ranges on its 3, since the card read the members' ledger readings, which hold none of those; found by the operator against the page's shared list, which drew the same stocks' values from the stored answers
+Was:
+> A family's card row: ... and the drift's reaction in typical moves, volume as a multiple and sessions since the report. Each is read off the ledger's readings the night stored for the member and is none where it stored none. From the 19.3 correction of 2026-10-13 ...
+Now:
+> A family's card row: ... and the drift's reaction in typical moves, volume as a multiple and sessions since the report. From the 19.3 correction of 2026-10-24 each is read on the S&amp;P 500 off the answer the night stored for the stock under its family, the swing filter's for the pullback. On the S&amp;P 400 and 600 their answers hold no values: a number held by the family's setup alone is read off the setup the ledger stored on the night; a drift's is read off the one stored on its report day within the window its rule states, its sessions since the report counted on the exchange's calendar; every other is read off the member's readings on the night. A number held nowhere is none with why: its gate not reached or storing nothing; no setup stored; or not read. From the 19.3 correction of 2026-10-13 ...
+Why: the S&P 500's answers hold every value the columns need, and on the S&P 400 and 600, whose answers hold none in a source every rule there pins, the operator ruled on 2026-10-24 that the ledger's setups are read, a drift's on its report day.
+
+### 2026-10-24 - .claude/rules/checks.md - read-surface reaches the one-gate-short numbers read off the answers and the ledger's setups
+Corrects: read-surface's row said each family's three numbers were worked off the ledger's readings, which is how the cards drew none under a family's own numbers
+Was:
+> read-surface: ... the stocks one gate short and the forming list behind expanders with each family's three numbers worked by hand off the ledger's readings and none where none is stored, and the heavyweights card's ... read under a clock fixed on each |
+Now:
+> read-surface: ... the stocks one gate short and the forming list behind expanders with each family's three numbers worked by hand, and the heavyweights card's ... read under a clock fixed on each; and from the 19.3 correction of 2026-10-24 each family's three numbers read off the answer the S&P 500's night stored for the stock, the swing filter's for the pullback, and worked by hand against the words the shared list draws for a row of each family over a constructed night, a gate storing nothing or never reached saying which; and on the S&P 400 a number the family's setup alone holds read off the setup the ledger stored on the night, a drift's off its report day's within its rule's window with its sessions counted on the exchange's calendar, the window's last session read and the one after it not, and a stock with no setup or no readings saying so |
+Why: the roster row says what its check asserts, and the correction replaces 19.3's test of the numbers.
+
+### 2026-10-24 - BUILD_PLAN.md - the one-gate-short correction states the operator's answers on the S&P 400's and 600's columns and its done condition reads them
+Corrects: the correction's paragraph drew every column from the stored gate answers, which on the S&P 400 and 600 store their setup with no values, found reading those answers before building
+Was:
+> ... is verified before anything changes. It lands as its own pull request before 22.5, ...; it is done when every row of each card's table on the fixture's nights draws each value from the stored answer, worked by hand against the shared list for at least one row a family, ...
+Now:
+> ... is verified before anything changes. On the operator's answers of 2026-10-24, word for word in `prompts/2026-10-24-19.3-correction-one-gate-short-answer.md`, the S&P 400's and 600's columns, whose answers store their setup with no values in a source every rule there pins, are read off the setup the ledger stored for the stock and its family on the night, a drift's off the one the ledger stored on its report day within the window its rule states, its sessions since the report counted on the exchange's calendar, and a cell with no such setup says so. It lands as its own pull request before 22.5, ...; it is done when every row of each card's table on the fixture's nights, and on constructed nights of every family where the fixture's draw no number, draws each value from the stored answer, or on the S&P 400 and 600 from the ledger's setup the operator's answers name, worked by hand against the shared list for at least one row a family, ...
+Why: the operator answered on 2026-10-24 that those indices' columns read the ledger's setups, a drift's on its report day, so no rule's version moves; and the fixture's whole night draws one stock one gate short, under the dip, whose card draws no number.
+
 ### 2026-10-24 - .claude/rules/checks.md - fixture-expectations reaches a dip path running on past the sessions its series places
 Corrects: 22.2's dip path read each close's session place to tell a session its bars skip, and the history build hands a path the bar store's closes after its span with no place, so the S&P 500's build of 2026-10-24 stopped with an index outside its array where a dip path ran past the span's end
 Was:
@@ -93,6 +125,58 @@ Now:
 
 > and a report on the drop's last session and on the time limit's last refused while one the session after is not; on the large cap index the least close on both sides of it with no dollar volume floor read; the figures read off the document against the constants
 Why: the code reads the least close on every index and no S&P 500 member closed under it on 2026-10-23, so the document is brought to the code, and a test holds the dip's floor on the S&P 500 at $4.99 and $5.00.
+
+### 2026-10-24 - BUILD_PLAN.md and ARCHITECTURE.html - phase 22 gains the one-gate-short correction, 22.5's plain words and 22.6's Tonight redesigned, and its phase report moves to 22.7
+Authorised by: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
+Was:
+> **The claims phase 22 predicts.** 1,383 claims and 1,383 PASS on main at b6cb98dc. After 22.5 about 1,401, within 1,396 to 1,408, or 1,407 within 1,402 to 1,414 where PR 505's six land first:
+
+> - none at 22.5.
+
+> ### 22.5 The phase report
+> Every screen the phase touched, Tonight on each index with the dip's card, its picks' cards, Past picks, a stock's page and its chart page with its brief read, the Run page, the Ledger and paper trading, at 1440 pixels
+
+> each index's freeze on the operator's word; and, on the operator's ruling of 2026-10-24, a brief read written by code at the top of every stock's chart page</td>...<td>the build plan's phase 22 checkpoints, 22.0 to 22.5</td></tr>
+Now:
+> **First on the brief read's track, a correction.**, the one-gate-short columns drawn from the stored gate answers, labelled for the checkpoint that built them, then
+> **The claims phase 22 predicts.** 1,383 claims and 1,383 PASS on main at b6cb98dc. After 22.7 about 1,447, within 1,427 to 1,467, or 1,453 within 1,433 to 1,473 where PR 505's six land first:
+
+> - none for the correction on the brief read's track, which moves no row;
+> - about 40 at 22.5, added on the operator's addendum of 2026-10-24, the word list's rows, a term a row, which the plain-words check reaches, the widest of the estimates here since the list is to hold every term the pages use;
+> - about 6 at 22.6, on the same addendum, Tonight's new parts, its minute, its one table of tomorrow's buys, its tiles, the versions' dropdown, its folds and its glossary, beside the rows it rewrites in place;
+> - none at 22.7.
+
+> ### 22.5 Plain words on every redesigned page, held by a check, and ### 22.6 Tonight redesigned, their text and their done conditions, then
+> ### 22.7 The phase report
+> Every screen the phase touched, Tonight on each index redesigned with the dip's card, its picks' cards, Past picks, a stock's page and its chart page with its brief read, the Run page, the Ledger and paper trading, at 1440 pixels
+
+> each index's freeze on the operator's word; and, on the operator's ruling of 2026-10-24, a brief read written by code at the top of every stock's chart page, and on its addendum the stocks one gate short drawn on every card from their stored answers, plain words on every redesigned page held by a check, and Tonight redesigned</td>...<td>the build plan's phase 22 checkpoints, 22.0 to 22.7</td></tr>
+Why: the operator's addendum of 2026-10-24 adds the three in this order before the phase report; the correction carries the label of the checkpoint that built the tables, so it takes no number here, and the two checkpoints take 22.5 and 22.6.
+
+### 2026-10-24 - BUILD_PLAN.md and ARCHITECTURE.html - phase 22 gains 22.4, a brief read atop every stock's chart page, and its phase report moves to 22.5
+Authorised by: The chart page opens on a brief read written by code from stored figures, and no rule reads it
+Was:
+> ### 22.4 The phase report
+> Every screen the phase touched, Tonight on each index with the dip's card, its picks' cards, Past picks, a stock's page, the Run page, the Ledger and paper trading, at 1440 pixels
+
+> **The claims phase 22 predicts.** 1,383 claims and 1,383 PASS on main at b6cb98dc. After 22.4 about 1,399, within 1,394 to 1,406, or 1,405 within 1,400 to 1,412 where PR 505's six land first:
+
+> - none at 22.3, as 20.11's freezes added none, and none at 22.4.
+
+> its setups in the ledger and its sweep on each index over the pulled history; and each index's freeze on the operator's word</td>...<td>the build plan's phase 22 checkpoints, 22.0 to 22.4</td></tr>
+Now:
+> ### 22.4 A brief read on every stock's chart page, its text and its done condition, then
+> ### 22.5 The phase report
+> Every screen the phase touched, Tonight on each index with the dip's card, its picks' cards, Past picks, a stock's page and its chart page with its brief read, the Run page, the Ledger and paper trading, at 1440 pixels
+
+> **The claims phase 22 predicts.** 1,383 claims and 1,383 PASS on main at b6cb98dc. After 22.5 about 1,401, within 1,396 to 1,408, or 1,407 within 1,402 to 1,414 where PR 505's six land first:
+
+> - none at 22.3, as 20.11's freezes added none;
+> - about 2 at 22.4, added on the operator's ruling of 2026-10-24 after the plan stated its pair, the chart page's brief read and its row of chips;
+> - none at 22.5.
+
+> its setups in the ledger and its sweep on each index over the pulled history; each index's freeze on the operator's word; and, on the operator's ruling of 2026-10-24, a brief read written by code at the top of every stock's chart page</td>...<td>the build plan's phase 22 checkpoints, 22.0 to 22.5</td></tr>
+Why: the operator ruled the brief read into phase 22 before its phase report, so the checkpoint takes 22.4 and the report the number after it.
 
 ### 2026-10-24 - ARCHITECTURE.html - a frozen card names its setting by its chips and never by the sweep's key
 Corrects: a frozen S&P 400 or 600 card's line drew the setting it was frozen at by the sweep's key as stored, "quality=off|floors=1x|size=10|..." on the heavyweights' and "high=251|volume=1.5|..." on the swing cards', which phase 19's sign-off carried as owed a 20.11 correction, the operator ruling on 2026-10-24 that the line drops the key
