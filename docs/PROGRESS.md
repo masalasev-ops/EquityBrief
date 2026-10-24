@@ -8164,3 +8164,36 @@ Queue:      done, phase 20 finished for its sign-off with its report, 22.0, and 
             22.3 on their word, 22.5, and the sign-offs of phases 20 and 18 by fresh sessions when the operator says.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
+
+### 22.5 ruling - the one-gate-short columns corrected, plain words held by a check as 22.5 and Tonight redesigned as 22.6 join phase 22 before its phase report, now 22.7   2026-10-24
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-24 at about 05:20 UTC, an addendum to the ruling on the brief read, word for word
+            in `prompts/2026-10-24-22.4-ruling-addendum-plain-words-and-tonight.md`: "Everything below runs on the same
+            track beside 22.2 and 22.3, in the same worktree, under the same limits", "No model writes any sentence;
+            every sentence is a code template over stored figures, and every figure comes from the core function the
+            page or card already uses for it", and "Add these as phase 22 checkpoints before its phase report, numbered
+            as the plan needs, in this order": a correction, each setup card's one-gate-short table drawing none where
+            the values are stored, its own pull request first; plain words on every redesigned page, held by a check;
+            and Tonight redesigned from the mockup they approved. Why, in their words: "The pages are written in the
+            build's internal vocabulary and state what was computed rather than what it means. Each redesign fixed one
+            page and the next feature brought the wording back."
+Plan:       the correction stands first on the track in the build plan's phase 22 section and lands as a correction to
+            the checkpoint that built those tables, read off the record before it is built, so it takes no number of
+            this phase; plain words is 22.5, Tonight redesigned 22.6 and the phase report 22.7, the build plan's section
+            and section 20's row saying so with their prior text in the changelog, and the claims phase 22 predicts
+            taking about 40 more at 22.5 and about 6 at 22.6. The decision 22.5 names is written now (see: A redesigned
+            page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term
+            reaches the screen outside the glossary); the one 22.6 names, that a pick's card draws one plan, its
+            setup's, and the levels plan stays on the stock's full page, is written with 22.6, since it moves what said
+            otherwise under Previously decided. The plain-words check covers the chart page's brief read from 22.5 and
+            Tonight from 22.6, which redesigns it, since today's Tonight is what the check is written to refuse. Each
+            goes to the operator before it is built where it needs a migration, must edit a source 22.2 or 22.3 edits
+            other than the records and the documents, or moves any rule's version.
+Queue:      done, phase 20 finished for its sign-off with its report, 22.0, and 22.1 with its record; in progress, 22.2
+            in the checkout, its six sweep answers with the operator; next, on the brief read's track in its worktree,
+            22.4's reading for its stop conditions and its build, the one-gate-short correction, 22.5 and 22.6, 22.2 and
+            22.3 keeping priority; 22.3 on the operator's word; 22.7; and the sign-offs of phases 20 and 18 by fresh
+            sessions when the operator says.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.

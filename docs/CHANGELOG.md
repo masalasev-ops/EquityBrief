@@ -94,6 +94,33 @@ Now:
 > and a report on the drop's last session and on the time limit's last refused while one the session after is not; on the large cap index the least close on both sides of it with no dollar volume floor read; the figures read off the document against the constants
 Why: the code reads the least close on every index and no S&P 500 member closed under it on 2026-10-23, so the document is brought to the code, and a test holds the dip's floor on the S&P 500 at $4.99 and $5.00.
 
+### 2026-10-24 - BUILD_PLAN.md and ARCHITECTURE.html - phase 22 gains the one-gate-short correction, 22.5's plain words and 22.6's Tonight redesigned, and its phase report moves to 22.7
+Authorised by: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
+Was:
+> **The claims phase 22 predicts.** 1,383 claims and 1,383 PASS on main at b6cb98dc. After 22.5 about 1,401, within 1,396 to 1,408, or 1,407 within 1,402 to 1,414 where PR 505's six land first:
+
+> - none at 22.5.
+
+> ### 22.5 The phase report
+> Every screen the phase touched, Tonight on each index with the dip's card, its picks' cards, Past picks, a stock's page and its chart page with its brief read, the Run page, the Ledger and paper trading, at 1440 pixels
+
+> each index's freeze on the operator's word; and, on the operator's ruling of 2026-10-24, a brief read written by code at the top of every stock's chart page</td>...<td>the build plan's phase 22 checkpoints, 22.0 to 22.5</td></tr>
+Now:
+> **First on the brief read's track, a correction.**, the one-gate-short columns drawn from the stored gate answers, labelled for the checkpoint that built them, then
+> **The claims phase 22 predicts.** 1,383 claims and 1,383 PASS on main at b6cb98dc. After 22.7 about 1,447, within 1,427 to 1,467, or 1,453 within 1,433 to 1,473 where PR 505's six land first:
+
+> - none for the correction on the brief read's track, which moves no row;
+> - about 40 at 22.5, added on the operator's addendum of 2026-10-24, the word list's rows, a term a row, which the plain-words check reaches, the widest of the estimates here since the list is to hold every term the pages use;
+> - about 6 at 22.6, on the same addendum, Tonight's new parts, its minute, its one table of tomorrow's buys, its tiles, the versions' dropdown, its folds and its glossary, beside the rows it rewrites in place;
+> - none at 22.7.
+
+> ### 22.5 Plain words on every redesigned page, held by a check, and ### 22.6 Tonight redesigned, their text and their done conditions, then
+> ### 22.7 The phase report
+> Every screen the phase touched, Tonight on each index redesigned with the dip's card, its picks' cards, Past picks, a stock's page and its chart page with its brief read, the Run page, the Ledger and paper trading, at 1440 pixels
+
+> each index's freeze on the operator's word; and, on the operator's ruling of 2026-10-24, a brief read written by code at the top of every stock's chart page, and on its addendum the stocks one gate short drawn on every card from their stored answers, plain words on every redesigned page held by a check, and Tonight redesigned</td>...<td>the build plan's phase 22 checkpoints, 22.0 to 22.7</td></tr>
+Why: the operator's addendum of 2026-10-24 adds the three in this order before the phase report; the correction carries the label of the checkpoint that built the tables, so it takes no number here, and the two checkpoints take 22.5 and 22.6.
+
 ### 2026-10-24 - BUILD_PLAN.md and ARCHITECTURE.html - phase 22 gains 22.4, a brief read atop every stock's chart page, and its phase report moves to 22.5
 Authorised by: The chart page opens on a brief read written by code from stored figures, and no rule reads it
 Was:
