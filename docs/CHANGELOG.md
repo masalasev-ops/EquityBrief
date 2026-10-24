@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-24 - ARCHITECTURE.html - a family's card reads its three numbers off the answers the night stored and the ledger's setups
+Corrects: every setup card's table of the stocks one gate short drew none under a number only a family's setup holds, on the S&P 500's Tonight for 2026-10-23 the drift's reaction, volume and sessions since the report on all 23 rows and the breakout's volume and ranges on its 3, since the card read the members' ledger readings, which hold none of those; found by the operator against the page's shared list, which drew the same stocks' values from the stored answers
+Was:
+> A family's card row: ... and the drift's reaction in typical moves, volume as a multiple and sessions since the report. Each is read off the ledger's readings the night stored for the member and is none where it stored none. From the 19.3 correction of 2026-10-13 ...
+Now:
+> A family's card row: ... and the drift's reaction in typical moves, volume as a multiple and sessions since the report. From the 19.3 correction of 2026-10-24 each is read on the S&amp;P 500 off the answer the night stored for the stock under its family, the swing filter's for the pullback. On the S&amp;P 400 and 600 their answers hold no values: a number held by the family's setup alone is read off the setup the ledger stored on the night; a drift's is read off the one stored on its report day within the window its rule states, its sessions since the report counted on the exchange's calendar; every other is read off the member's readings on the night. A number held nowhere is none with why: its gate not reached or storing nothing; no setup stored; or not read. From the 19.3 correction of 2026-10-13 ...
+Why: the S&P 500's answers hold every value the columns need, and on the S&P 400 and 600, whose answers hold none in a source every rule there pins, the operator ruled on 2026-10-24 that the ledger's setups are read, a drift's on its report day.
+
+### 2026-10-24 - .claude/rules/checks.md - read-surface reaches the one-gate-short numbers read off the answers and the ledger's setups
+Corrects: read-surface's row said each family's three numbers were worked off the ledger's readings, which is how the cards drew none under a family's own numbers
+Was:
+> read-surface: ... the stocks one gate short and the forming list behind expanders with each family's three numbers worked by hand off the ledger's readings and none where none is stored, and the heavyweights card's ... read under a clock fixed on each |
+Now:
+> read-surface: ... the stocks one gate short and the forming list behind expanders with each family's three numbers worked by hand, and the heavyweights card's ... read under a clock fixed on each; and from the 19.3 correction of 2026-10-24 each family's three numbers read off the answer the S&P 500's night stored for the stock, the swing filter's for the pullback, and worked by hand against the words the shared list draws for a row of each family over a constructed night, a gate storing nothing or never reached saying which; and on the S&P 400 a number the family's setup alone holds read off the setup the ledger stored on the night, a drift's off its report day's within its rule's window with its sessions counted on the exchange's calendar, the window's last session read and the one after it not, and a stock with no setup or no readings saying so |
+Why: the roster row says what its check asserts, and the correction replaces 19.3's test of the numbers.
+
 ### 2026-10-24 - BUILD_PLAN.md - the one-gate-short correction states the operator's answers on the S&P 400's and 600's columns and its done condition reads them
 Corrects: the correction's paragraph drew every column from the stored gate answers, which on the S&P 400 and 600 store their setup with no values, found reading those answers before building
 Was:

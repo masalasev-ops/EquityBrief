@@ -651,6 +651,31 @@ public static partial class TonightScreen
         return cells;
     }
 
+    // The window an index's drift rule states, within which a stock's report day is read for its card's numbers: its live
+    // rule's, the wider window where the rule states one, and the provisional rule's off the settings its night stored
+    // where no live rule stands; none where neither can be read.
+    // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+    public static int? DriftWindow(CandidateRow? live, IndexRuleSettings settings)
+    {
+        if (live is not null)
+        {
+            try
+            {
+                var p = CandidateEvaluator.Read(live.Parameters);
+
+                return p.GetValueOrDefault(IndexDriftCandidate.WideWindowParameter) is var wide && wide > 0
+                    ? (int)wide
+                    : p.TryGetValue(IndexDriftCandidate.WindowSessionsParameter, out var window) ? (int)window : null;
+            }
+            catch (FormatException)
+            {
+                return null;
+            }
+        }
+
+        return settings.Drift.TryGetValue("window", out var dial) && int.TryParse(dial, NumberStyles.Integer, CultureInfo.InvariantCulture, out var provisional) ? provisional : null;
+    }
+
     // The index's card of those stocks, each with the sessions to its next report counted on the exchange's calendar and
     // none watched, the watch list holding the S&P 500's names alone.
     // see: The watch list is the operator's own, up to twenty names of the index, on a page of its own

@@ -44,7 +44,7 @@ public sealed record FamilyCardView(
     int HeldBack = 0,
     IReadOnlyList<string>? Passes = null,
     IReadOnlyList<CloseToBuyCell>? Close = null,
-    IReadOnlyDictionary<string, IReadOnlyList<double?>>? Numbers = null,
+    IReadOnlyDictionary<string, IReadOnlyList<EquityBrief.Core.Cards.CardCell>>? Numbers = null,
     IReadOnlyList<int>? SweepLost = null,
     FrozenSweepView? Frozen = null,
     bool NotComputed = false);
@@ -825,15 +825,20 @@ public sealed partial class MarkRenderer
     static string RuleWordsLine(IReadOnlyList<RulePartView> parts) =>
         "<p class=\"rule-words\">" + string.Join(", ", parts.Select(part => part.Differs ? $"<mark class=\"differs\">{WithSignedFigures(part.Text)}</mark>" : WithSignedFigures(part.Text))) + ".</p>";
 
-    // A family's three numbers for a row, each in its own cell, a number the night stored no reading of drawn as none.
-    static string NumberCells(string family, string ticker, IReadOnlyDictionary<string, IReadOnlyList<double?>>? numbers)
+    // A family's three numbers for a row, each in its own cell, a number the stored rows do not hold drawn as none with why.
+    static string NumberCells(string family, string ticker, IReadOnlyDictionary<string, IReadOnlyList<EquityBrief.Core.Cards.CardCell>>? numbers)
     {
         var columns = EquityBrief.Core.Cards.CardNumbers.Of(family);
-        var values = numbers is not null && numbers.TryGetValue(ticker, out var held) ? held : null;
+        var cells = numbers is not null && numbers.TryGetValue(ticker, out var held) ? held : null;
 
-        return string.Concat(columns.Select((column, at) => values is not null && at < values.Count && values[at] is { } value
-            ? Formatted($"<td class=\"r num\" data-number=\"{Escaped(column.Column)}\" data-value=\"{value.ToString("R", Invariant)}\">{CardNumber(column.Form, value)}</td>")
-            : Formatted($"<td class=\"r num\" data-number=\"{Escaped(column.Column)}\" data-value=\"none\"><span class=\"degraded\">none</span></td>")));
+        return string.Concat(columns.Select((column, at) =>
+        {
+            var cell = cells is not null && at < cells.Count ? cells[at] : null;
+
+            return cell?.Value is { } value
+                ? Formatted($"<td class=\"r num\" data-number=\"{Escaped(column.Column)}\" data-value=\"{value.ToString("R", Invariant)}\">{CardNumber(column.Form, value)}</td>")
+                : Formatted($"<td class=\"r num\" data-number=\"{Escaped(column.Column)}\" data-value=\"none\" data-none=\"{Escaped(cell?.None ?? EquityBrief.Core.Cards.CardNumbers.NotRead)}\"><span class=\"degraded\">none, {Escaped(cell?.None ?? EquityBrief.Core.Cards.CardNumbers.NotRead)}</span></td>");
+        }));
     }
 
     static string NumberHeadings(string family) =>
@@ -850,7 +855,7 @@ public sealed partial class MarkRenderer
     };
 
     // A variant's own picks, drawn under the band: each with its plan and the family's three numbers in place of words.
-    string VariantPicks(string family, IReadOnlyList<VariantPickView> picks, IReadOnlyDictionary<string, IReadOnlyList<double?>>? numbers)
+    string VariantPicks(string family, IReadOnlyList<VariantPickView> picks, IReadOnlyDictionary<string, IReadOnlyList<EquityBrief.Core.Cards.CardCell>>? numbers)
     {
         if (picks.Count == 0)
         {
@@ -884,7 +889,7 @@ public sealed partial class MarkRenderer
     // The stocks one gate short of the family's buy point tonight, behind an expander: each with the gate it missed and
     // the family's three numbers. It recommends nothing.
     // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
-    string CloseRows(string family, IReadOnlyList<CloseToBuyCell> rows, IReadOnlyDictionary<string, IReadOnlyList<double?>>? numbers)
+    string CloseRows(string family, IReadOnlyList<CloseToBuyCell> rows, IReadOnlyDictionary<string, IReadOnlyList<EquityBrief.Core.Cards.CardCell>>? numbers)
     {
         if (rows.Count == 0)
         {

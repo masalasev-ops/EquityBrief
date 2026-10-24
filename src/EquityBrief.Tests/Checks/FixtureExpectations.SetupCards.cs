@@ -127,6 +127,17 @@ public partial class FixtureExpectations
             }
         }
 
+        // From the 19.3 correction of 2026-10-24 the stocks one gate short each card draws, as the file works them: NFLX under
+        // the dip at its trend alone, the dip's card drawing no number of its own, so no card's number column holds a row.
+        var close = Regex.Matches(page, "<section class=\"family-card[^\"]*\" data-family=\"([^\"]+)\".*?</section>", RegexOptions.Singleline)
+            .SelectMany(card => Regex.Matches(card.Value, "<tr data-ticker=\"([^\"]+)\" data-gate=\"([^\"]+)\">(.*?)</tr>", RegexOptions.Singleline)
+                .Select(row => (Row: $"{card.Groups[1].Value}|{row.Groups[1].Value}|{row.Groups[2].Value}", Family: card.Groups[1].Value, Numbers: Regex.Matches(row.Groups[3].Value, "data-number=").Count)))
+            .ToArray();
+
+        Assert.Equal(expected.GetProperty("closeRows").EnumerateArray().Select(row => row.GetString()!), close.Select(row => row.Row));
+        Assert.All(close, row => Assert.Equal(CardNumbers.Of(row.Family).Count, row.Numbers));
+        Assert.Empty(CardNumbers.Of(Core.Families.DipRule.Name));
+
         // The heavyweights, having read no rebalance, hold nothing in none of the eleven sectors.
         var heavyweights = expected.GetProperty("heavyweights");
         var tiles = Regex.Match(page, "<div class=\"hw-tiles\"[^>]*>").Value;
