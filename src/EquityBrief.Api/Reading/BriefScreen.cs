@@ -258,15 +258,15 @@ public static class BriefScreen
         }
 
         var support = member.NearestSupport is { } edge
-            ? Inside(close, member.SupportFloor, edge)
-                ? Invariant($"inside its support band at {Price(member.SupportFloor)} to {Price(edge)}")
+            ? member.SupportFloor is { } floor && Inside(close, floor, edge)
+                ? "inside its support band at " + Zone(floor, edge)
                 : Distances.InTypicalDays(close, edge, member.TypicalMove) is { } below
                     ? Invariant($"support at {Price(edge)}, ") + Away(below, "below", "at the price")
                     : Invariant($"support at {Price(edge)}, its distance not read")
             : "no support band below";
         var resistance = member.NearestResistance is { } top
-            ? Inside(close, top, member.ResistanceCeiling)
-                ? Invariant($"inside its resistance band at {Price(top)} to {Price(member.ResistanceCeiling)}")
+            ? member.ResistanceCeiling is { } ceiling && Inside(close, top, ceiling)
+                ? "inside its resistance band at " + Zone(top, ceiling)
                 : Distances.InTypicalDays(close, top, member.TypicalMove) is { } above
                     ? Invariant($"resistance at {Price(top)}, ") + Away(above, "above", "at the price")
                     : Invariant($"resistance at {Price(top)}, its distance not read")
@@ -421,8 +421,8 @@ public static class BriefScreen
         {
             return
             [
-                new BriefLine("buy", "Not on a list tonight."),
-                new BriefLine("stop", NameScreen.LadderForTheLargeIndexAlone(inputs.Ticker)),
+                new BriefLine("buy", "Not on a list tonight, and " + NameScreen.PlanForTheLargeIndexAlone + "."),
+                new BriefLine("stop", "No stop is stored."),
                 new BriefLine("exit", "Its bands stand on its full page."),
                 new BriefLine("size", "No plan is stored to size."),
             ];
@@ -444,7 +444,7 @@ public static class BriefScreen
 
         return
         [
-            new BriefLine("buy", Invariant($"Not on a list tonight. The night's levels plan buys in its first zone, {Price(tranche.LowEdge)} to {Price(tranche.HighEdge)}."), tranche.HighEdge.ToString(CultureInfo.InvariantCulture)),
+            new BriefLine("buy", "Not on a list tonight. The night's levels plan buys in its first zone at " + Zone(tranche.LowEdge, tranche.HighEdge) + ".", tranche.HighEdge.ToString(CultureInfo.InvariantCulture)),
             new BriefLine("stop", tranche.Stop is { } stop ? Invariant($"Its stop: a daily close below {Price(stop)}.") : "Its first zone has no stop beneath it."),
             new BriefLine("exit", sale is null
                 ? "No first sale is stored."
@@ -458,7 +458,7 @@ public static class BriefScreen
     {
         if (account is null)
         {
-            return new BriefLine("size", "Your account is not set:", Href: MarkRenderer.AccountRoute, LinkWords: "set your account's size and risk to see a size");
+            return new BriefLine("size", "Your account is not set:", Href: MarkRenderer.AccountRoute, LinkWords: "set your account's size and risk", After: " to see a size.");
         }
 
         if (plan is null || PositionSize.Of(account, plan.Buy, plan.Stop, plan.BookHoldings, plan.RoundTrip) is not { } size)

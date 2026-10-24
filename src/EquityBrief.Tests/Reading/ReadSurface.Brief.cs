@@ -185,7 +185,7 @@ public partial class ReadSurface
         // The account not set: the size line links the settings.
         var unset = BriefScreen.Of(BriefOf(BriefMember(), PullbackListed())).Panels.Single(one => one.Key == "way-in").Lines[^1];
 
-        Assert.Equal(new BriefLine("size", "Your account is not set:", Href: MarkRenderer.AccountRoute, LinkWords: "set your account's size and risk to see a size"), unset);
+        Assert.Equal(new BriefLine("size", "Your account is not set:", Href: MarkRenderer.AccountRoute, LinkWords: "set your account's size and risk", After: " to see a size."), unset);
     }
 
     [Fact]
@@ -203,17 +203,42 @@ public partial class ReadSurface
 
         Assert.Equal(
             [
-                "Not on a list tonight. The night's levels plan buys in its first zone, 95.00 to 97.00.",
+                "Not on a list tonight. The night's levels plan buys in its first zone at 95.00 to 97.00.",
                 "Its stop: a daily close below 92.00.",
                 "Its first sale at 108.00: risk $1 to make $2.28.",
                 "Your size: 200 shares, 19,400.00, 19.4% of the account, 1,000.00 at risk to the stop.",
             ],
             LinesOf(BriefScreen.Of(BriefOf(BriefMember(), levels: levels, account: new AccountSettings(100_000m, 1m, 0.5m))), "way-in"));
 
-        // On the S&P 400 and 600, whose plans are not worked as a ladder, the full page's own words.
+        // On the S&P 400 and 600, whose plans are not worked as a ladder, no plan stored and why, in the chart page's own
+        // words and none naming a row or a card the chart page does not draw.
         Assert.Equal(
-            ["Not on a list tonight.", NameScreen.LadderForTheLargeIndexAlone("XYZ"), "Its bands stand on its full page.", "No plan is stored to size."],
+            ["Not on a list tonight, and no plan is stored for the night, the plan being read for the S&P 500's members alone.", "No stop is stored.", "Its bands stand on its full page.", "No plan is stored to size."],
             LinesOf(BriefScreen.Of(BriefOf(BriefMember(), ladder: false)), "way-in"));
+    }
+
+    // A zone or a band whose two edges are one price is drawn as that price, and one wider as its two edges.
+    [Fact]
+    public void AZoneOrBandOfOnePriceIsDrawnAsThatPrice()
+    {
+        IReadOnlyList<PlanRow> levels =
+        [
+            new PlanRow(97m, 97m, PlanKind.Tranche, "buy on a touch, stop on a daily close below 92.00", true, "a touch", 92m),
+            new PlanRow(108m, 108m, PlanKind.Exit, "sell a third", true),
+        ];
+
+        Assert.Equal("Not on a list tonight. The night's levels plan buys in its first zone at 97.00.", LinesOf(BriefScreen.Of(BriefOf(BriefMember(), levels: levels)), "way-in")[0]);
+
+        // Closing at 96 on a support band of 96 to 96, its resistance 106 five typical days above; and closing at 106 on a
+        // resistance band of 106 to 106, its support 96 five below.
+        var onSupport = BriefMember() with { Close = 96m, SupportFloor = 96m };
+        var onResistance = BriefMember() with { Close = 106m, ResistanceCeiling = 106m };
+
+        Assert.Equal("Inside its support band at 96.00; resistance at 106.00, 5.0 typical days above.", LinesOf(BriefScreen.Of(BriefOf(onSupport)), "chart")[1]);
+        Assert.Equal("Support at 96.00, 5.0 typical days below; inside its resistance band at 106.00.", LinesOf(BriefScreen.Of(BriefOf(onResistance)), "chart")[1]);
+
+        // A band of two prices keeps both.
+        Assert.Equal("Inside its support band at 94.00 to 96.00; resistance at 106.00, 5.5 typical days above.", LinesOf(BriefScreen.Of(BriefOf(BriefMember() with { Close = 95m })), "chart")[1]);
     }
 
     // A chart page's brief, read back off the rendered page: its summary, each panel's lines and each chip's state and words.
@@ -254,7 +279,7 @@ public partial class ReadSurface
         Assert.Equal($"On the list tonight under {pullback}: buy at the next open, from tonight's close of 100.00.", f1.Lines["buy"]);
         Assert.Equal("Sell at the close of a session that closes below 96.00.", f1.Lines["stop"]);
         Assert.Equal("Sell at the close of a session that closes at or above 110.00. Otherwise sell at the close 21 sessions after the buy.", f1.Lines["exit"]);
-        Assert.Equal("Your account is not set: set your account's size and risk to see a size", f1.Lines["size"]);
+        Assert.Equal("Your account is not set: set your account's size and risk to see a size.", f1.Lines["size"]);
         Assert.Equal($"pullback|listed|{pullback}: on the list", f1.Chips[0]);
 
         var n1 = await Brief("N1");
@@ -286,7 +311,7 @@ public partial class ReadSurface
     }
 
     // Over the closed S&P 400 night: IA breaks out and the market check alone keeps it off, so its chip and its summary name
-    // that step; its index works no ladder, so its way in says so in the full page's words; the book holds nothing.
+    // that step; its index works no ladder, so its way in says no plan is stored and why; the book holds nothing.
     [Fact]
     public async Task OnTheSAndP400TheBriefReadsEachChipOffTheIndexsAnswersAndSaysItWorksNoLadder()
     {
@@ -307,8 +332,9 @@ public partial class ReadSurface
         Assert.Contains($"breakout|short|{breakout}: one step short, at the market step", ia.Chips);
         Assert.Contains($"heavyweight|not-held|{SetupFamilies.SectorHeavyweights.Label}: not held", ia.Chips);
         Assert.EndsWith($"Tonight the closest setup is {breakout}, one step short at the market step.", ia.Summary, StringComparison.Ordinal);
-        Assert.Equal("Not on a list tonight.", ia.Lines["buy"]);
-        Assert.Equal(NameScreen.LadderForTheLargeIndexAlone("IA"), ia.Lines["stop"]);
+        Assert.Equal("Not on a list tonight, and no plan is stored for the night, the plan being read for the S&P 500's members alone.", ia.Lines["buy"]);
+        Assert.Equal("No stop is stored.", ia.Lines["stop"]);
+        Assert.DoesNotContain(ia.Lines.Values, line => line.Contains("its row", StringComparison.Ordinal) || line.Contains("its card", StringComparison.Ordinal));
     }
 
     // The sources 22.4 writes.
@@ -373,7 +399,7 @@ public partial class ReadSurface
         Assert.StartsWith("<div class=\"brief-read\" data-ticker=\"XYZ\"><p class=\"brief-summary\">", drawn, StringComparison.Ordinal);
         Assert.Equal(["chart", "business", "way-in"], Regex.Matches(drawn, "<section class=\"brief-panel\" data-panel=\"([^\"]+)\">").Select(match => match.Groups[1].Value));
         Assert.Equal(12, Regex.Matches(drawn, "<li data-line=").Count);
-        Assert.Contains($"<li data-line=\"size\">Your account is not set: <a href=\"{MarkRenderer.AccountRoute}\">set your account's size and risk to see a size</a></li>", drawn, StringComparison.Ordinal);
+        Assert.Contains($"<li data-line=\"size\">Your account is not set: <a href=\"{MarkRenderer.AccountRoute}\">set your account's size and risk</a> to see a size.</li>", drawn, StringComparison.Ordinal);
         Assert.Contains("data-family=\"dip\" data-state=\"short\">", drawn, StringComparison.Ordinal);
         Assert.Contains("<p class=\"brief-watch\">Watch for: its report on 2026-11-05 falls inside a typical hold.</p>", drawn, StringComparison.Ordinal);
         Assert.EndsWith($"<p class=\"brief-foot\"><span>{MarkRenderer.BriefFooter}</span> <a href=\"#/name/XYZ\">The stock's full page</a></p></div>", drawn, StringComparison.Ordinal);

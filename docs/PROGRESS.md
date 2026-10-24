@@ -8343,3 +8343,31 @@ Measured:   the ledger's night of 2026-10-23 took 36 seconds, 116 setups on the 
             20 minutes 24 seconds. The store stands at 4.19 gigabytes.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
+
+### 22.4 - correction: the brief read's way in on the S&P 400 and 600 names no row or card the chart page does not draw, a zone of one price reads as that price, and the size line ends on its full stop   2026-10-24
+
+Found:      reading the brief over the operator's store from main's Release build after PR 547 merged, the look 22.4's
+            entry carried: ARMK's way in on the S&P 400 drew the sentence Tonight's fold of an S&P 400 or 600 buy point
+            draws, naming its row and its card beneath, which the chart page does not draw; ALLE's levels plan bought in
+            its first zone of 170.27 to 170.27, a zone of one price; and the line linking the account's settings ended on
+            the link with no full stop. Every other line read as 22.4 states it on AAPL, NVDA, UNP listed under the drift,
+            ALLE one step short at its volume, ARMK held off the S&P 400's dip list, CART listed under the S&P 400's
+            breakout and EPRT under the S&P 600's drift. A multiple below or above its own range reads at its cheap or
+            expensive end, the core's reading the full page draws, and stands.
+Corrected:  on an index working no ladder the way in says no plan is stored for the night and why, in the name page's own
+            words for it, and that no stop is stored; a zone or a band whose two edges are one price is drawn as that
+            price; and the size line's link is followed by the words ending its sentence.
+Tests:      1 new and 4 extended, 2708 in all: a zone and a band of one price drawn as that price and a band of two
+            keeping both; the S&P 400's page naming no row or card; and the size line's words read off the drawn card,
+            the S&P 500's page and the fixture's.
+Claims:     1422, none new: section 15.22's row states the way in as it stands.
+Pins:       none move: no source a rule's version pins is one the correction writes, as 22.4's test asserts.
+Mutated:    the rule, stated before the runs: one mutation for each property the correction adds, the smallest edit
+            undoing it, made in the worktree and reverted with the editor, each run filtered to the brief's eleven tests.
+            W1 the buy zone of one price drawn as its two edges, red at the new test; W2 the support band of one price
+            drawn so, red there; W3 the way in naming Tonight's row and card again, red at the levels plan's test and the
+            S&P 400's page; W4 the words after the size line's link left out, red at the drawn card, the S&P 500's page
+            and the fixture's.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.

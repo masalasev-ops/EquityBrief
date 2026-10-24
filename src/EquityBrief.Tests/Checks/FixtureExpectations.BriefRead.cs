@@ -48,6 +48,8 @@ public partial class FixtureExpectations
 
         static string Price(decimal price) => price.ToString("#,##0.00", CultureInfo.InvariantCulture);
 
+        static string Zone(decimal low, decimal high) => low == high ? Price(low) : $"{Price(low)} to {Price(high)}";
+
         foreach (var ticker in names)
         {
             var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/chart/{ticker}"));
@@ -69,7 +71,7 @@ public partial class FixtureExpectations
             var move = member.TypicalMove!.Value;
             var inSupport = member.SupportFloor is { } floor && close >= floor && close <= member.NearestSupport!.Value;
             var support = inSupport
-                ? $"Inside its support band at {Price(member.SupportFloor!.Value)} to {Price(member.NearestSupport!.Value)}"
+                ? $"Inside its support band at {Zone(member.SupportFloor!.Value, member.NearestSupport!.Value)}"
                 : $"Support at {Price(member.NearestSupport!.Value)}, " + Days((double)Math.Abs(close - member.NearestSupport!.Value) / move, "below", "at the price");
             var resistance = $"resistance at {Price(member.NearestResistance!.Value)}, " + Days((double)Math.Abs(close - member.NearestResistance!.Value) / move, "above", "at the price");
 
@@ -128,14 +130,14 @@ public partial class FixtureExpectations
             var sale = plan.RootElement.GetProperty("exits").EnumerateArray().FirstOrDefault(exit => exit.GetProperty("traded").GetBoolean());
             var ratio = Query(store, $"SELECT ladder_reward_to_risk FROM gate_result WHERE ticker = '{ticker}' AND session_date = '{day}';").Single();
 
-            Assert.Equal($"Not on a list tonight. The night's levels plan buys in its first zone, {Price(low)} to {Price(high)}.", lines["buy"]);
+            Assert.Equal($"Not on a list tonight. The night's levels plan buys in its first zone at {Zone(low, high)}.", lines["buy"]);
             Assert.Equal($"Its stop: a daily close below {Price(stop)}.", lines["stop"]);
             Assert.Equal(
                 sale.ValueKind == JsonValueKind.Undefined
                     ? "No first sale is stored."
                     : $"Its first sale at {Price(decimal.Parse(sale.GetProperty("lowEdge").GetString()!, CultureInfo.InvariantCulture))}" + (ratio == "null" ? "." : FormattableString.Invariant($": risk $1 to make ${double.Parse(ratio, CultureInfo.InvariantCulture):0.00}.")),
                 lines["exit"]);
-            Assert.Equal("Your account is not set: set your account's size and risk to see a size", lines["size"]);
+            Assert.Equal("Your account is not set: set your account's size and risk to see a size.", lines["size"]);
 
             // The chips: the drift's newest print outside its window on every name, NFLX one step short of the dip at its
             // trend, and every other setup not close; none held in the heavyweights' book.

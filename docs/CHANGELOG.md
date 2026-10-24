@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-24 - .claude/rules/checks.md - read-surface reaches the brief read's zones of one price, its way in on an index working no ladder and its size line's full stop
+Corrects: the brief read drew a zone of one price as its two edges, borrowed for an S&P 400 or 600 stock the sentence of Tonight's fold naming its row and its card, which the chart page does not draw, and ended its size line on the link with no full stop; found reading the brief over the operator's store after 22.4 merged
+Was:
+> read-surface: ... and no source a rule's version pins one the brief read writes |
+Now:
+> read-surface: ... and no source a rule's version pins one the brief read writes; and from the 22.4 correction of 2026-10-24 a zone or a band whose two edges are one price drawn as that price, an index working no ladder saying no plan is stored and naming no row or card the chart page does not draw, and the size line's sentence ending after its link |
+Why: the roster row says what its check asserts, and the correction extends the brief read's tests.
+
 ### 2026-10-24 - .claude/rules/checks.md - read-surface and fixture-expectations reach the chart page's brief read
 Authorised by: The chart page opens on a brief read written by code from stored figures, and no rule reads it
 Was:
