@@ -112,7 +112,7 @@ public sealed partial class IndexSweepRunner
         }
 
         var quoted = vix.Closes.ToDictionary(one => one.Session, one => one.Close);
-        var closes = calendar.Select(session => quoted.TryGetValue(session, out var close) ? close : (double?)null).ToArray();
+        var closes = calendar.Select<DateOnly, double?>(session => quoted.TryGetValue(session, out var close) ? close : null).ToArray();
         var window = new double[over];
 
         for (var session = over; session < calendar.Count; session++)
@@ -219,10 +219,10 @@ public sealed partial class IndexSweepRunner
                 ];
             });
 
-            var marketDial = Enumerable.Range(0, marketLevels.Count).Select(place => (double)place).ToArray();
+            var marketDial = Enumerable.Range(0, marketLevels.Count).Select<int, double>(place => place).ToArray();
 
             Grid = new FamilyGrid(
-                [("drop", DipDrops), ("trend", DipTrends), ("exit", DipExits), ("limit", [.. DipLimits.Select(limit => (double)limit)]), ("stop", DipStops), ("market", marketDial)],
+                [("drop", DipDrops), ("trend", DipTrends), ("exit", DipExits), ("limit", [.. DipLimits.Select<int, double>(limit => limit)]), ("stop", DipStops), ("market", marketDial)],
                 DipProvisional);
             Levels = LevelsOf();
         }
