@@ -139,14 +139,14 @@ public partial class FixtureExpectations
 
         // The market: IJH at 50 for 199 days and 60 on the session, over its average of 50.05; the S&P 500's index quoted on
         // every day but the fifth before the session, which the VIX quotes at 9999; and the VIX at its day's place plus 10
-        // otherwise and 150 on the session, so the 252 days the index is quoted before it read 56 to 308 less 304, a median
-        // of 181.5.
+        // otherwise and 400 on the session, so the 252 days the index is quoted before it read 56 to 308 less 304, a median
+        // of 181.5, where a median taking the session's own 400 in place of the oldest 56 would read 182.5.
         var indexDays = calendar.Where((_, place) => place != at - 5).ToArray();
         var market = new LedgerMarket(new Dictionary<string, IReadOnlyList<(DateOnly, double)>>(StringComparer.Ordinal)
         {
             [LedgerMarket.Mid] = [.. calendar.Skip(at - 199).Select(session => (session, session == day ? 60.0 : 50.0))],
             [LedgerMarket.Index] = [.. indexDays.Select(session => (session, 4000.0))],
-            [LedgerMarket.Vix] = [.. calendar.Select((session, place) => (session, place == at ? 150.0 : place == at - 5 ? 9999.0 : place + 10.0))],
+            [LedgerMarket.Vix] = [.. calendar.Select((session, place) => (session, place == at ? 400.0 : place == at - 5 ? 9999.0 : place + 10.0))],
         });
         var facts = new Dictionary<string, IReadOnlyList<FiledFactRow>>(StringComparer.Ordinal)
         {
@@ -185,7 +185,7 @@ public partial class FixtureExpectations
         // the index is not quoted passed over; and the value, a million shares at the session's close.
         Assert.Equal(0.55, Reading("large_breadth"), 12);
         Assert.Equal(60 / ((50.0 * 199 + 60) / 200), Reading("fund_over_long"), 12);
-        Assert.Equal(150 / 181.5, Reading("vix_over_median"), 12);
+        Assert.Equal(400 / 181.5, Reading("vix_over_median"), 12);
         Assert.Equal(Math.Log10(1_000_000 * closes[0][at]), Reading("company_value"), 9);
 
         // On an S&P 500 row no S&P 500 breadth is read, and without the members' series no fall against the sector.
