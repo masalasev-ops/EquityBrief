@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-24 - ARCHITECTURE.html - the dip and the fundamentals-first family read the least close of $5 on the S&P 500
+Corrects: section 17 said the large cap index's rules carry no floor, while the short-term dip and the fundamentals-first family read a close of at least $5 there through the one floors function every index family shares; 22.1's reviews found it, and the operator ruled on 2026-10-24 that the floor stays and is written down.
+Was:
+> a member holding fewer sessions reading none and failing; the large cap index's rules carry no floor (see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing)
+
+> passes where its own market setting is open, off while it is provisional, it clears its index's floors, its close is above its 200-session average,
+
+> and a report on the drop's last session and on the time limit's last refused while one the session after is not; the figures read off the document against the constants
+Now:
+> a member holding fewer sessions reading none and failing; the large cap index's swing rules carry no floor, and its fundamentals-first family and its short-term dip read that least close alone, with no dollar volume floor (see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing)
+
+> passes where its own market setting is open, off while it is provisional, it clears its index's floors, on the large cap index the least close of the mid and small cap indices' rules alone, its close is above its 200-session average,
+
+> and a report on the drop's last session and on the time limit's last refused while one the session after is not; on the large cap index the least close on both sides of it with no dollar volume floor read; the figures read off the document against the constants
+Why: the code reads the least close on every index and no S&P 500 member closed under it on 2026-10-23, so the document is brought to the code, and a test holds the dip's floor on the S&P 500 at $4.99 and $5.00.
+
 ### 2026-10-24 - ARCHITECTURE.html - a frozen card names its setting by its chips and never by the sweep's key
 Corrects: a frozen S&P 400 or 600 card's line drew the setting it was frozen at by the sweep's key as stored, "quality=off|floors=1x|size=10|..." on the heavyweights' and "high=251|volume=1.5|..." on the swing cards', which phase 19's sign-off carried as owed a 20.11 correction, the operator ruling on 2026-10-24 that the line drops the key
 Was:

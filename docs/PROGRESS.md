@@ -7907,3 +7907,33 @@ Queue:      done, phase 20 finished for its sign-off with its report, 22.0 and 2
             word, 22.4, and the sign-offs of phases 20 and 18 by fresh sessions when the operator says.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
+
+### 22.1 - correction: a stock's page names the family a dip pick gave way to on its own index's list, the S&P 500 line counts the fundamentals-first family's passes, and the dip's least close of $5 on the S&P 500 is written down   2026-10-24
+
+Found:      the three faults 22.1's entry carried from its reviews. The name page read the S&P 500's own lists alone, so
+            a stock an S&P 400 or 600 family or the S&P 500's fundamentals-first family listed drew no line, and where
+            the dip gave way to that family no dip label. The S&P 500 line's count of the members a setup passed left
+            out the fundamentals-first family's passes, which predates the dip. And section 17 said the large cap
+            index's rules carry no floor, while the dip and the fundamentals-first family read a close of at least $5
+            there through the one floors function every index family shares.
+Corrected:  the name page reads the stock's own index's list beside the S&P 500's own, its line naming the family
+            listing it and the dip's label where the dip gave way, as section 15.9's row states; the S&P 500 line counts
+            the fundamentals-first family's passes beside the swing filter's, its own families' and the dip's, each
+            member once, as section 15.7's row states; and on the operator's ruling above section 17's floors row and
+            the dip's own row say both families read that least close alone on the large cap index, with no dollar
+            volume floor, the changelog holding the prior text.
+Tests:      2 new and one assertion added: M1 under the S&P 400's breakout and BBB under the S&P 500's
+            fundamentals-first family each drawn on its page with the dip's label; two S&P 500 members at closes of
+            4.99 and 5.00 on a few hundred dollars a session, the first stopped at the floors and the second passing;
+            and the S&P 500 line's count taking in FF1, which the fundamentals-first family alone passed. 2680 in all.
+Claims:     1418, none new: each row already stated what the code now does, or is the row the ruling amends.
+Pins:       none move: the name page and the line are the read surface's, and the dip's floor is read as before.
+Mutated:    the rule, stated before the runs: one mutation a property the correction adds, the smallest edit undoing it,
+            each run filtered to the tests naming the property with its red predicted, made in this checkout and
+            reverted with the editor. C1 the name page reading the S&P 500's own lists alone, red at the new name-page
+            test, the dip's earlier read-back unaffected; C2 the S&P 500 line's count leaving the fundamentals-first
+            family's passes out, red at that family's S&P 500 read-back, 10 drawn against 11; C3 the dip's floors handed
+            no least close, red at the new test with DU passing.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as 22.1's entry, less these three.
