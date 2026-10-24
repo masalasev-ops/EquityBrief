@@ -69,7 +69,7 @@ public partial class ReadSurface
         "<p class=\"family-frozen\" data-frozen=\"2026-10-02\" data-run=\"20261001T120000Z\" data-answer=\"none passed\" data-setting=\"high=251|volume=1.5|ceiling=1|stop=3|market=5\" " +
         "data-trades=\"1033\" data-edge=\"0.023\" data-years=\"2019=0.091 2020=0.054 2021=-0.012 2022=0.033 2023=-0.045 2024=0.078 2025=-0.071 2026=-0.096\" data-without-largest=\"-0.01\" " +
         "data-settings-read=\"378\" data-meeting=\"0\" data-luck=\"54.6\" data-tester-run=\"20261020T062626Z\" data-adjusted=\"0.1798\" data-tester-passed=\"false\" data-beat-luck=\"false\" data-ruled=\"none\" data-entry-kept=\"none\">" +
-        "Frozen on 2026-10-02 at the strongest setting its sweep read, <span class=\"frozen-setting\">high=251|volume=1.5|ceiling=1|stop=3|market=5</span>: " +
+        "Frozen on 2026-10-02 at the strongest setting its sweep read: " +
         "1,033 trades at an edge after costs of <span class=\"gain\">+0.023</span> risks, <span class=\"loss\">-0.010</span> without its five largest results, above nothing in 4 of the 8 years it stored, 2025 at <span class=\"loss\">-0.071</span> and 2026 at <span class=\"loss\">-0.096</span>. " +
         "No setting it read beat luck or the tester's bar: 0 of the 378 settings it read met the floors where luck alone passes about 54.6, and the tester read its search at an adjusted p of 0.1798 against its bar of 0.0042, " +
         "so this rule is a starting point and not a proven edge.</p>";
@@ -151,7 +151,7 @@ public partial class ReadSurface
             "<p class=\"family-frozen\" data-frozen=\"2026-10-02\" data-run=\"20261001T120000Z\" data-answer=\"passed\" data-setting=\"size=10|look-back=251|leaders=2|beta=on|exit=drop\" " +
             "data-trades=\"335\" data-edge=\"0.0217\" data-years=\"2019=0.03 2020=0.02 2021=-0.01 2022=0.04 2023=0.01 2024=0.05 2025=0.0911 2026=-0.0281\" data-without-largest=\"-0.0008\" " +
             "data-settings-read=\"648\" data-meeting=\"53\" data-luck=\"93.7\" data-tester-run=\"20261020T062626Z\" data-adjusted=\"0.261\" data-tester-passed=\"false\" data-beat-luck=\"false\" data-ruled=\"none\" data-entry-kept=\"none\">" +
-            "Frozen on 2026-10-02 at the setting its sweep would run, <span class=\"frozen-setting\">size=10|look-back=251|leaders=2|beta=on|exit=drop</span>: " +
+            "Frozen on 2026-10-02 at the setting its sweep would run: " +
             "335 holdings at an edge after costs of <span class=\"gain\">+2.17</span> points, <span class=\"loss\">-0.08</span> without its five largest results, above nothing in 6 of the 8 years it stored, 2025 at <span class=\"gain\">+9.11</span> and 2026 at <span class=\"loss\">-2.81</span>. " +
             "No setting it read beat luck or the tester's bar: 53 of the 648 settings it read met the floors where luck alone passes about 93.7, and the tester read its search at an adjusted p of 0.2610 against its bar of 0.0042, " +
             "so this rule is a starting point and not a proven edge.</p>",
@@ -181,7 +181,7 @@ public partial class ReadSurface
         var tested = Frozen(pullback);
 
         Assert.Equal(
-            ">Frozen on 2026-10-21 at the setting its sweep would run, <span class=\"frozen-setting\">strength=0.75|depth=1-3</span>: 717 trades at an edge after costs of <span class=\"gain\">+0.190</span> risks, " +
+            ">Frozen on 2026-10-21 at the setting its sweep would run: 717 trades at an edge after costs of <span class=\"gain\">+0.190</span> risks, " +
             "<span class=\"gain\">+0.148</span> without its five largest results, " +
             "above nothing in 6 of the 8 years it stored, 2025 at <span class=\"gain\">+0.424</span> and 2026 at <span class=\"gain\">+0.093</span>. " +
             "No setting it read beat the tester's bar: the tester read its search at an adjusted p of 0.6552 against its bar of 0.0042, so this rule is a starting point and not a proven edge.</p>",
@@ -213,7 +213,7 @@ public partial class ReadSurface
 
         Assert.Contains("data-ruled=\"2026-10-20\" data-entry-kept=\"false\"", line, StringComparison.Ordinal);
         Assert.Equal(
-            $">Frozen on 2026-10-21 at the setting the operator ruled on 2026-10-20 from among those its sweep read, <span class=\"frozen-setting\">{drift}</span>: 1,807 trades at an edge after costs of <span class=\"gain\">+0.098</span> risks, " +
+            $">Frozen on 2026-10-21 at the setting the operator ruled on 2026-10-20 from among those its sweep read: 1,807 trades at an edge after costs of <span class=\"gain\">+0.098</span> risks, " +
             "above nothing in 6 of the 8 years it stored, 2025 at <span class=\"loss\">-0.067</span> and 2026 at <span class=\"gain\">+0.099</span>. " +
             "Its entry did not survive the search's second stage, so it is a starting point that depends on its exact setting. " +
             "No setting it read beat luck or the tester's bar: 0 of the 567 settings it read met the floors where luck alone passes about 81.9, and the tester read its search at an adjusted p of 0.4104 against its bar of 0.0042, so this rule is a starting point and not a proven edge.</p>",

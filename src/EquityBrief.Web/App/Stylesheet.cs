@@ -634,7 +634,6 @@ a.sort[aria-pressed='true']{color:var(--ink)}
 .family-state .provisional{font-weight:600;color:var(--ink)}
 .family-sweep{margin:-6px 0 10px;font-size:13.5px;color:var(--ink)}
 .family-frozen{margin:0 0 10px;font-size:13px;color:var(--ink-2)}
-.family-frozen .frozen-setting{overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 .family-empty{margin:0 0 8px}
 .fam-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px}
 .fam-head .fam-tag{font-size:14px;padding:3px 10px 3px 8px}
