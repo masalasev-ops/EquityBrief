@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-24 - .claude/rules/checks.md - fixture-expectations reaches the per-rule verb handing the tone variant's walk its release readings
+Corrects: the per-rule verb's hand-off of the release readings to the drift's tone variant's walk was held by no test, as the 20.8 correction of 2026-10-23's mutation J4 found
+Was:
+> fixture-expectations: ... the distraction probe's answers alike with the names removed and with them in and the re-identification probe's filer named, and the probe reading twice its answers alike when read twice |
+Now:
+> fixture-expectations: ... the distraction probe's answers alike with the names removed and with them in and the re-identification probe's filer named, and the probe reading twice its answers alike when read twice; and from the 20.8 correction of 2026-10-24 the per-rule verb over a constructed history handing the walk every complete reading version's release readings, the S&P 400's tone variant at a complete version walked and judged against its provisional rule, where a verb handing it none keeps it not testable |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
 ### 2026-10-24 - .claude/rules/checks.md - read-surface reaches a chosen variant's card drawing none of tonight's list's notes
 Corrects: a chosen variant's card drew tonight's list's notes beneath the variant's own picks, so a stock the variant lists read as "not listed" beneath it, found when 20.10 read the S&P 500's drift card back on its tone variant's tab
 Was:

@@ -7820,3 +7820,26 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 60 tables, 1418 claims, 1418 passing, none out of scope and none unexamined, 1429 placements and
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    the sign-offs of phases 20 and 18 by fresh sessions; 22.2 on the operator's word.
+
+### 20.8 - correction: the per-rule verb's hand-off of the release readings to the tone variant's walk held by a test, as J4 found   2026-10-24
+
+Queue:      done, phase 20 to its report, 20.10 merged as PR 541; in progress, this correction, the last item phase 20
+            carried; next, the sign-offs of phases 20 and 18 by fresh sessions; 22.2 on the operator's word.
+Found:      the 20.8 correction of 2026-10-23's mutation J4, the per-rule test handed no tone releases, survived every
+            test: a missing property, which its entry carried as a test walking the drift's tone variant through the
+            tester's per-rule verb over a constructed history with its releases.
+Corrected:  no shipped source moves. A test runs the per-rule verb over a constructed history of three S&P 400 members
+            reaching into 2022, the drift's tone variant registered at reading version 1 with that version's history read
+            complete, and holds the variant walked and judged against the provisional rule, naming no reading it lacks.
+            The roster's fixture-expectations row and the changelog.
+Tests:      1 new, 2678 in all.
+Claims:     1418, none new.
+Mutated:    the rule, stated before the run: J4 made again, the verb handing the walk no tone releases, run over the new
+            test with its red predicted, made in this checkout and reverted with the editor. Red, the variant kept not
+            testable for its reading version's history read.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2678 of 2678 tests ran with none failed,
+            migrations 0 to 107 with none pending, schema version 107, against `data-ci` and never `data`; the phase
+            report 60 tables, 1418 claims, 1418 passing, none out of scope and none unexamined, 1429 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the sign-offs of phases 20 and 18 by fresh sessions; 22.2 on the operator's word.
