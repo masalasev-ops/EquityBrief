@@ -7854,6 +7854,8 @@ Ruled:      by the operator on 2026-10-24, asked at 00:52 UTC what a frozen S&P 
             alike."
 Plan:       a 20.11 correction: the line drops the key on every frozen card, its figures and the stored setting on the
             element kept, with section 15's sentence and the roster's row; then phase 20's sign-off by a fresh session.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
 
 ### 20.11 - correction: a frozen card's line drops the sweep's setting key, the chips beneath it naming the setting, as the operator ruled   2026-10-24
 
