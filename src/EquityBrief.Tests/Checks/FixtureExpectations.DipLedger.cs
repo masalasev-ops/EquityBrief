@@ -318,6 +318,44 @@ public partial class FixtureExpectations
         Assert.All(outcome.Indices, index => Assert.Null(index.Fault));
         Assert.Equal([$"CCC|{Stamp(night)}|1|1"], Query(store, "SELECT ticker || '|' || session_date || '|' || live_pass || '|' || picked FROM setup WHERE family = 'dip';"));
         Assert.True(double.Parse(Query(store, "SELECT rsi_two FROM setup WHERE family = 'dip';").Single(), System.Globalization.CultureInfo.InvariantCulture) < DipRule.Provisional.RsiUnder);
+
+        // The two sessions after: CCC opens and closes at 99, above the average of its last five closes, then opens and
+        // closes at 100, while AAA and BBB rise on above theirs. The second night closes CCC's window: bought at the open
+        // of 99 after its listing and sold at the open of 100 after its exit's close, a result of 1 over the risk its close
+        // put up, 95 less its stop, its benchmark settled with every member's path ended there.
+        var after = new List<DateOnly>();
+
+        for (var day = night.AddDays(1); after.Count < 2; day = day.AddDays(1))
+        {
+            if (day.DayOfWeek is not DayOfWeek.Saturday and not DayOfWeek.Sunday)
+            {
+                after.Add(day);
+            }
+        }
+
+        var later = new List<string>();
+
+        foreach (var ticker in new[] { "AAA", "BBB", "CCC" })
+        {
+            for (var step = 0; step < after.Count; step++)
+            {
+                var close = ticker == "CCC" ? 99m + step : Math.Round(60m + (40m * (sessions.Count + step) / (sessions.Count - 1)), 2);
+                var stamp = Stamp(after[step]);
+
+                later.Add(
+                    "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) "
+                    + FormattableString.Invariant($"VALUES ('{ticker}', '{stamp}', '{close}', '{close + 1m}', '{close - 1m}', '{close}', 1000000, 'constructed', '{stamp}T21:00:00Z', '{close}');"));
+            }
+        }
+
+        Batch(store, later);
+
+        var closing = await new SetupLedger(Core.Time.FixedClock.At(new DateTimeOffset(after[1].ToDateTime(new TimeOnly(21, 10)), TimeSpan.Zero), Core.Time.SessionZones.UnitedStates), store.DatabaseFile).NightAsync("night-dip-closed");
+        var closed = Query(store, $"SELECT IFNULL(end, 'none') || '|' || IFNULL(ended_on, 'none') || '|' || settled || '|' || IFNULL(fill, 'none') || '|' || stop || '|' || IFNULL(result, 'none') FROM setup WHERE family = 'dip' AND session_date = '{Stamp(night)}';").Single().Split('|');
+
+        Assert.All(closing.Indices, index => Assert.Null(index.Fault));
+        Assert.Equal((SetupEnds.Exit, Stamp(after[1]), "1", "99"), (closed[0], closed[1], closed[2], closed[3]));
+        Assert.Equal((100.0 - 99.0) / (95.0 - double.Parse(closed[4], System.Globalization.CultureInfo.InvariantCulture)), double.Parse(closed[5], System.Globalization.CultureInfo.InvariantCulture), 9);
     }
 
     // The sources 22.2 writes, the ledger's, the sweep's, the tester's procedure, the dip's rule and the Ledger page's.
