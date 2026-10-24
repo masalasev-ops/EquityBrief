@@ -8224,3 +8224,52 @@ Queue:      done, phase 20 finished for its sign-off with its report, 22.0, 22.1
             22.7; and the sign-offs of phases 20 and 18 by fresh sessions when the operator says.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
+
+### 19.3 - correction: each card's stocks one gate short draw their numbers off the answers the night stored and the ledger's setups, where every row drew none under a family's own numbers   2026-10-24
+
+Found:      by the operator on the S&P 500's Tonight for 2026-10-23: the earnings drift card's table of the stocks one gate
+            short drew none under its reaction, its volume and the sessions since the report on all 23 rows, and the
+            breakout card none under its volume and its ranges on its 3, while the page's shared list drew the same
+            stocks' values from their stored answers. Verified before anything changed: the card read its numbers off the
+            members' ledger readings, which hold none of the six only a family's setup carries; the S&P 500's answers hold
+            every value the columns need in their gates' values; the S&P 400's and 600's store their setup as one part with
+            no values. 19.3's own test stored a family's own readings on a member's row, a shape no night writes, which hid
+            it.
+Corrected:  on the S&P 500 each number is read off the answer the night stored for the stock under its family, the swing
+            filter's for the pullback; on the S&P 400 and 600, on the operator's answers above, a number the family's setup
+            alone holds off the setup the ledger stored on the night, whichever step wrote it, and a drift's off the one
+            stored on its report day within the window its rule states, the wider one where it states one, its last session
+            included, its sessions since the report counted by the exchange's calendar; every other number off the member's
+            readings; and a cell holding none says why: not reached, not stored, no setup stored or not read. Read
+            read-only on the operator's store for 2026-10-23, that draws the S&P 500's 23 drift and 3 breakout rows from
+            their answers and the S&P 600's 13 drift rows from their report days' setups, 7 on the night and 6 a session
+            before, inside its rules' window of 3. The bound's end: a rule stating the first pullback's entry is read at the
+            window it states, which for the S&P 400's live drift, 10 sessions, is that entry's reach.
+Tests:      5 new, 1 replaced and 1 extended, 2697 in all: a family's numbers worked by hand off the answers, ALLE's and
+            GL's as the operator's store held them, a gate storing nothing or never reached saying which; an index's off the
+            ledger's setups and a drift's off its report day, at its window's edge and across Thanksgiving, the window read
+            off the live rule and the night's settings; the S&P 500's page drawing N1's, K3's, K5's and D1's rows from their
+            answers, worked by hand against the shared list's words; the S&P 400's page drawing a closed night's breakouts
+            and drifts from the ledger's setups, two a history build wrote among them; and no source a rule pins written.
+            19.3's test of the numbers off the members' readings is replaced, and the fixture's setup cards' test extended.
+Fixture:    setup-cards.json derives the one stock one gate short the fixture's whole night draws, NFLX under the short-term
+            dip at its trend alone, whose card draws no number; so no number column holds a row on the fixture's nights,
+            and the rows the correction reads are worked over constructed nights. This correction amends its own done
+            condition, on the operator's answers recorded in the ruling before it, to read the S&P 400's and 600's columns
+            off the ledger's setups and to work its rows over constructed nights where the fixture's draw no number.
+Claims:     1421, none new: the architecture's new sentences state no run of parts.
+Pins:       none move: no source a rule's version pins is one the correction writes, as its new test asserts.
+Mutated:    the rule, stated before the runs: one mutation for each property the correction adds, the smallest edit
+            undoing it where the property is stated, made in the worktree and reverted with the editor, each run filtered to
+            the correction's six tests. L1 the stored answer never read; L2 the window's last session not read; L3 the
+            sessions since the report counted in calendar days; L4 the report day read only before the night; L5 a value
+            stored as no number read as one; L6 the night's setups read only where the night's step wrote them; L7 the live
+            rule's window never read. Each red: L1 at the answers worked by hand and the S&P 500's page; L2 at the index's
+            by hand and its page; L3 at the index's by hand, across Thanksgiving; L4 and L6 at the index's page; L5 and L7
+            at the tests worked by hand.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2697 of 2697 tests ran with none failed,
+            migrations 0 to 108 with none pending, schema version 108, against `data-ci` and never `data`; the phase
+            report 60 tables, 1421 claims, 1421 passing, none out of scope and none unexamined, 1432 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    none.

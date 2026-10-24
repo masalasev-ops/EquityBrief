@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-24 - .claude/rules/checks.md - fixture-expectations reaches the one stock one gate short the fixture's whole night draws
+Corrects: no check read which stocks the fixture's whole night draws one gate short, so the one-gate-short correction could not say whether the fixture holds a row its numbers read; found reading the page the whole night draws
+Was:
+> fixture-expectations: ... and no source a rule's version pins one 22.2 writes |
+Now:
+> fixture-expectations: ... and no source a rule's version pins one 22.2 writes; and from the 19.3 correction of 2026-10-24 the fixture's whole night drawing one stock one gate short, NFLX under the short-term dip at its trend alone, whose card draws no number of its own, so no card's number column holds a row on the night |
+Why: the roster row says what its check asserts, and the correction extends the setup cards' fixture test with the rows the file derives.
+
 ### 2026-10-24 - ARCHITECTURE.html - a family's card reads its three numbers off the answers the night stored and the ledger's setups
 Corrects: every setup card's table of the stocks one gate short drew none under a number only a family's setup holds, on the S&P 500's Tonight for 2026-10-23 the drift's reaction, volume and sessions since the report on all 23 rows and the breakout's volume and ranges on its 3, since the card read the members' ledger readings, which hold none of those; found by the operator against the page's shared list, which drew the same stocks' values from the stored answers
 Was:
