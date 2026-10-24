@@ -3845,6 +3845,11 @@ internal static class Scope
             Verdict.Pass,
             "read back off the rendered page over a constructed store: the dip's card on each of the three indices with its year's setups, its passes, its picks and its settled as each index's summary stored them, and a settled dip setup's path drawn with its buy and its stop and no target, its end the exit",
             ByReadSurface),
+        // 22.4, on the operator's ruling of 2026-10-24: the brief read atop every chart page.
+        [CheckReach.Key("15.22 Chart", "In brief")] = new Scoped(
+            Verdict.Pass,
+            "every fixture name's chart page opening on its brief, each line worked by the suite from the figure the store holds for it and read back off the page; each template worked by hand over constructed figures, the listing rule's plan where a rule lists the stock and the levels plan where none does, each chip read off the night's answers on the S&P 500 and the S&P 400, the line of what to watch for on both sides of each condition and nowhere else, each figure not stored said so, the panels stacked at a phone's width, and no source a rule pins written",
+            ByReadSurface),
         // 17.9, approval and the live alarm: the apply step's and the alarm's catalogue and matrix rows, five stores,
         // section 17's alarm and setting, section 18's two rows, the Loop page's three regions, Tonight's line and the
         // card's row for a rule standing at an approved change.
@@ -6727,6 +6732,8 @@ internal static class Scope
         [CheckReach.Key("15.17 Past picks", "The short-term dip's trades")] = "22.1",
         // 22.2's one, which the plan names as the Ledger page's dip counts.
         [CheckReach.Key(LedgerPage, "The short-term dip's setups")] = "22.2",
+        // 22.4's one, which the plan names as section 15's chart page rows.
+        [CheckReach.Key("15.22 Chart", "In brief")] = "22.4",
 
     };
 

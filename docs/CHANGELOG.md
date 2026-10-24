@@ -26,6 +26,26 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-24 - .claude/rules/checks.md - read-surface and fixture-expectations reach the chart page's brief read
+Authorised by: The chart page opens on a brief read written by code from stored figures, and no rule reads it
+Was:
+> read-surface: ... and a stock with no setup or no readings saying so |
+> fixture-expectations: ... so no card's number column holds a row on the night |
+Now:
+> read-surface: ... and a stock with no setup or no readings saying so; and from 22.4 the brief read atop a stock's chart page worked by hand over constructed figures, each line's template over the figure it reads, the listing rule's plan where a rule lists the stock and the night's levels plan where none does, sized in the account's money or linking the settings where none is set, each chip read off the answers a constructed S&P 500 night and a closed S&P 400 night stored, the line of what to watch for on both sides of each of its conditions and drawn nowhere else, a figure the store does not hold said so in its line, the panels side by side and one beneath another at a phone's width, and no source a rule's version pins one the brief read writes |
+> fixture-expectations: ... so no card's number column holds a row on the night; and from 22.4 the brief read atop each fixture name's chart page over the fixture's whole night, each line worked by the suite from the figure the store holds for it in the template's words and read back off the rendered page, with each name's trend, its newest report's reaction day and the setup closest to a buy point as the file derives them by hand, NFLX one step short of the short-term dip at its trend |
+Why: the roster row says what its check asserts, and 22.4 adds the brief read's tests to both checks.
+
+### 2026-10-24 - ARCHITECTURE.html - the chart page opens on a brief read, and what it reads
+Authorised by: The chart page opens on a brief read written by code from stored figures, and no rule reads it
+Was:
+> 15.22 Reads: ... and from 20.13 the newest answers Yahoo and TipRanks gave about the stock's analysts and the month's TipRanks calls as the ratings job last read them. It asks for the delayed quote as the name page asks for it, ...
+Now:
+> 15.22 Reads: ... and from 20.13 the newest answers Yahoo and TipRanks gave about the stock's analysts and the month's TipRanks calls as the ratings job last read them. From 22.4 its brief read reads the answers and picks of each setup the night stored on the stock's index; whether the heavyweights' book holds it; on the S&amp;P 500 the night's levels plan and the trade step's reading of it; the account's settings; its reported quarters' readings; the ledger's readings of its index on the night; and its next report. It asks for the delayed quote as the name page asks for it, ...
+>
+> and a row after the report line: In brief, from 22.4 under the report line and above the chart on every chart page on every index, its summary line, its three panels, its chips, its line of what to watch for and its footer.
+Why: the operator's ruling of 2026-10-24 puts a short read written by code atop every chart page, and the page's region and what it reads are stated where the chart page is.
+
 ### 2026-10-24 - .claude/rules/checks.md - fixture-expectations reaches the one stock one gate short the fixture's whole night draws
 Corrects: no check read which stocks the fixture's whole night draws one gate short, so the one-gate-short correction could not say whether the fixture holds a row its numbers read; found reading the page the whole night draws
 Was:

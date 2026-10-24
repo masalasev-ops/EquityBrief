@@ -391,9 +391,10 @@ public partial class ArchitectureConformance
         // catalogue and matrix rows, their three stores, section 17's three rows, section 18's four, the target range and
         // the chart page's firm actions and analysts by name, and 1418 from the 20.13 correction of 2026-10-23, section
         // 17's row for the 15 days a stock's TipRanks press waits, and 1421 from 22.2, section 17's grid of the dip's
-        // sweep, section 18's row for a market series it reads missing a session and the Ledger page's dip counts.
+        // sweep, section 18's row for a market series it reads missing a session and the Ledger page's dip counts, and 1422
+        // from 22.4, the chart page's brief read.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1421),
+            (789, 853, 6, 4, 855, 876, 1422),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

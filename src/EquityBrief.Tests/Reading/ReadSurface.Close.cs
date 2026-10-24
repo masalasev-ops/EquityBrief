@@ -375,8 +375,8 @@ public partial class ReadSurface
         Assert.Contains("<tr data-ticker=\"P1\"", picks, StringComparison.Ordinal);
         Assert.All(CloseOrder, ticker => Assert.DoesNotContain($"<tr data-ticker=\"{ticker}\"", picks, StringComparison.Ordinal));
 
-        // And the near-miss rule is named only by the readers that draw the list and Universe's one gate short chip:
-        // the edge clock, Past picks and every writer read nothing of it.
+        // And the near-miss rule is named only by the readers that draw the list, Universe's one gate short chip and from
+        // 22.4 the brief read's chips: the edge clock, Past picks and every writer read nothing of it.
         var readers = Directory.EnumerateFiles(Path.Combine(Repository.Root, "src"), "*.cs", SearchOption.AllDirectories)
             .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}EquityBrief.Tests{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
                 && !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
@@ -387,6 +387,7 @@ public partial class ReadSurface
         Assert.Equal(
             [
                 "src/EquityBrief.Api/Program.cs",
+                "src/EquityBrief.Api/Reading/BriefScreen.cs",
                 "src/EquityBrief.Api/Reading/CloseScreen.cs",
                 "src/EquityBrief.Api/Reading/TonightScreen.cs",
                 "src/EquityBrief.Api/Reading/UniverseScreen.cs",

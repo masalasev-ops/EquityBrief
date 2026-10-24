@@ -171,6 +171,9 @@ public partial class ReadSurface
             // 22.1, the short-term dip's card on Tonight and its trades on Past picks.
             .. DipPageRows,
 
+            // 22.4, the chart page's brief read.
+            .. BriefRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 

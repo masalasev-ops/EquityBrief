@@ -164,7 +164,8 @@ public partial class ArchitectureConformance
     // place of its table of every account; and 22.1's thirteen, the dip family's catalogue and matrix rows, its four
     // stores, section 17's row, section 18's four, its card on Tonight and its trades on Past picks, and 22.2's three,
     // section 17's grid of the dip's sweep, section 18's row for a market series it reads missing a session and the
-    // Ledger page's dip counts, which phase 22's own pair counts once its report is written.
+    // Ledger page's dip counts, and 22.4's one, the chart page's brief read, which phase 22's own pair counts once its
+    // report is written.
     internal static string[] AfterPhaseNineteen =>
     [
         .. ComponentAccess.DipRows,
@@ -173,6 +174,7 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.DipPageRows,
         .. FixtureExpectations.DipLedgerClaims,
         .. Reading.ReadSurface.DipLedgerPageRows,
+        .. Reading.ReadSurface.BriefRows,
         .. FixtureExpectations.TradeFillRows,
         .. Reading.ReadSurface.ChartRows,
         .. Reading.ReadSurface.ReadingLinkRows,
