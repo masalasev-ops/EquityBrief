@@ -17,7 +17,7 @@ public static class LedgerReadings
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "e964b3be3453";
+    public const string Version = "ab6244bc6081";
 
     // The reference high the pullback's readings are taken at, the live design's twenty sessions.
     public const int ReferenceHighSessions = 20;
@@ -124,7 +124,28 @@ public static class LedgerReadings
         new("release_outlook", "that release's outlook: 1 raised, 0 kept, -1 lowered or withdrawn, none where none is given"),
         new("release_tone", "the tone of management's own words in that release: 1 confident, 0 neutral, -1 cautious"),
         new("release_demand", "demand or orders in that release: 1 stronger, 0 steady, -1 weaker, none not stated"),
+
+        // From 22.2 the readings the short-term dip's grid reads that the catalogue did not hold, appended so every reading
+        // before them keeps its place, each over the member's own bars to the session or the market series to its day.
+        // see: The short-term dip's setups clear its drop a grid step past the widest its sweep reads with no trend condition, and the ledger's history budget is raised to hold them
+        new("rsi_two", "the 2-session relative strength index on the session, Wilder's, the short-term dip's drop"),
+        new("drop_fall", "the fall over the 3 sessions to the session, the close 3 sessions before less the session's, in the session's typical moves"),
+        new("drop_largest", "the largest fall of a single one of those 3 sessions, the close before it less its own, in the typical move standing before it"),
+        new("drop_volume", "the mean volume of those 3 sessions over the mean of the 50 sessions before them"),
+        new("drop_against_sector", "the fall over those 3 sessions less the median of the same fall of the members of its GICS sector the index held that session, each in its own typical moves, none where fewer than two of them read one"),
+        new("large_breadth", "on an S&P 400 or 600 row the S&P 500's breadth on the session, none on an S&P 500 row"),
+        new("fund_over_long", "the index's own fund's close over its 200-session average, SPY's on an S&P 500 row and IJH's and IJR's on the S&P 400's and 600's"),
+        new("vix_over_median", "the VIX's close over the median of its closes on the 252 sessions of the exchange before the session, a session being a day the S&P 500's index closed"),
+        new("company_value", "the base-10 logarithm of the company's value on the session as the valuation reading works it, the newest share count its filings' covers state for a day before the session times the session's close on that count's basis"),
     ];
+
+    // The sessions the dip's drop readings are read over, and the volume's sessions before them.
+    public const int DropSessions = 3;
+    public const int DropVolumeSessions = 50;
+
+    // The sessions the VIX's median is read over, and the sessions a fund's average reads.
+    public const int VixMedianSessions = 252;
+    public const int FundAverageSessions = 200;
 
     public static int Count => All.Count;
 
@@ -222,6 +243,39 @@ public static class SeriesReadings
         }
 
         return LedgerReadings.Over(series[at].Close, sum / sessions);
+    }
+
+    // The close over the median of the closes on the given count of the exchange's sessions before the day, a day the
+    // series is quoted on that is no session of the exchange's passed over; none where it reaches back over fewer.
+    public static double? OverMedianBefore(IReadOnlyList<(DateOnly Session, double Close)> series, DateOnly day, int sessions, Func<DateOnly, bool> isSession)
+    {
+        var at = At(series, day);
+
+        if (at < 0)
+        {
+            return null;
+        }
+
+        var before = new List<double>(sessions);
+
+        for (var place = at - 1; place >= 0 && before.Count < sessions; place--)
+        {
+            if (isSession(series[place].Session))
+            {
+                before.Add(series[place].Close);
+            }
+        }
+
+        if (before.Count < sessions)
+        {
+            return null;
+        }
+
+        before.Sort();
+
+        var median = sessions % 2 == 1 ? before[sessions / 2] : (before[(sessions / 2) - 1] + before[sessions / 2]) / 2;
+
+        return LedgerReadings.Over(series[at].Close, median);
     }
 
     // The close over the close the given count of sessions before, none where the series does not reach back.

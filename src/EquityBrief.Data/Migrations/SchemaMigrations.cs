@@ -728,7 +728,24 @@ public static class SchemaMigrations
         new Migration(105, "create dip_night, dip_result, dip_pick and dip_trade", CreateDips),
         new Migration(106, "add setup's release readings, and create release_answer_edge", AddReleaseReadings),
         new Migration(107, "create analyst_request, analyst_view and analyst_rating", CreateAnalysts),
+        new Migration(108, "add setup's short-term dip readings", AddDipReadings),
     ];
+
+    // From 22.2: the setup ledger's readings the short-term dip's grid reads that the catalogue did not hold, a column a
+    // reading after every column before them, each row kept and the new columns null until a build or a night writes them.
+    // Nothing is copied and nothing is dropped.
+    // see: The short-term dip's setups clear its drop a grid step past the widest its sweep reads with no trend condition, and the ledger's history budget is raised to hold them
+    const string AddDipReadings = @"
+        ALTER TABLE setup ADD COLUMN rsi_two REAL;
+        ALTER TABLE setup ADD COLUMN drop_fall REAL;
+        ALTER TABLE setup ADD COLUMN drop_largest REAL;
+        ALTER TABLE setup ADD COLUMN drop_volume REAL;
+        ALTER TABLE setup ADD COLUMN drop_against_sector REAL;
+        ALTER TABLE setup ADD COLUMN large_breadth REAL;
+        ALTER TABLE setup ADD COLUMN fund_over_long REAL;
+        ALTER TABLE setup ADD COLUMN vix_over_median REAL;
+        ALTER TABLE setup ADD COLUMN company_value REAL;
+    ";
 
     // From 20.13: a chart page's ask for its stock's analysts, a row an ask, Yahoo's when the page opens and TipRanks' on
     // its press; Yahoo's answer, the targets with how many analysts set them, its recommendation, the counts of each

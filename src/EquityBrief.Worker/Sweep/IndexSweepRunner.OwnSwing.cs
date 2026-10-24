@@ -15,7 +15,7 @@ public sealed partial class IndexSweepRunner
     // family's grid with the market check's seven levels as its last dial, the provisional setting the one its night reads
     // today, every listing bought at the next open after its round trip, and the second stage's levels, each defined once
     // for both.
-    public sealed class OwnSwingRead
+    public sealed class OwnSwingRead : OwnProcedures.IOwnSwing
     {
         readonly ConcurrentDictionary<string, IReadOnlyList<QuarterRevenue>> quartersOf = new(StringComparer.Ordinal);
         readonly ConcurrentDictionary<(int Name, int Sessions), double[]> highs = new();

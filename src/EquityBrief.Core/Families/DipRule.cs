@@ -114,8 +114,9 @@ public sealed record DipPath(
     double? ResultAtClose);
 
 // One session of a trade's path: its date, open and close, and the average of closes the exit reads on it, none where
-// the member holds too few closes for it.
-public readonly record struct DipSession(DateOnly Session, double Open, double Close, double? Average);
+// the member holds too few closes for it; or, for an exit a sweep reads in the average's place, whether its close
+// triggers that exit, which the walk then reads instead.
+public readonly record struct DipSession(DateOnly Session, double Open, double Close, double? Average, bool? Trigger = null);
 
 // The short-term dip: a stock in an uptrend, its 2-session relative strength index driven under its floor by a sharp
 // drop no report caused, bought at the next session's open and sold on the bounce within days. Every part is read by
@@ -413,7 +414,7 @@ public static class DipRule
 
             var session = after[held - 1];
             var stopped = session.Close < stop;
-            var exited = !stopped && session.Average is { } average && session.Close > average;
+            var exited = !stopped && (session.Trigger ?? (session.Average is { } average && session.Close > average));
 
             if (stopped || exited)
             {

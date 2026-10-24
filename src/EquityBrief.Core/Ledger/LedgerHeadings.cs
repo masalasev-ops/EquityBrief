@@ -10,7 +10,10 @@ public sealed record LedgerHeading(string Name, IReadOnlyList<string> Readings);
 // the learned score. A reading read off a market series is the same for every member of an index on a night, so it stands
 // in its heading's push and in no percentile, where every member would hold the same place on it. The insiders' four
 // readings stand from 19.13 under analyst sentiment, the nearest of the seven headings the operator ruled, and from 20.8
-// the release readings beside them, what the results release itself said beside the surprise the provider filed.
+// the release readings beside them, what the results release itself said beside the surprise the provider filed. From
+// 22.2 the short-term dip's readings stand where each fits: its RSI, its fall and its fall against its sector under
+// momentum, its largest session under volatility, its volume and the company's value under size and liquidity, and its
+// three market series' readings with the market's.
 // see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
 public static class LedgerHeadings
 {
@@ -23,11 +26,12 @@ public static class LedgerHeadings
             "depth", "rsi_low", "freshness", "band_strength", "reaction_moves", "reward_to_risk", "breadth", "highs_less_lows",
             "index_over_long", "mid_over_large", "small_over_large", "credit_over_fifty", "return_week", "return_month",
             "close_place", "overnight_less_intraday", "sector_month", "sector_quarter", "low_ratio", "streak", "alpha_one", "alpha_four",
+            "rsi_two", "drop_fall", "drop_against_sector", "large_breadth", "fund_over_long",
         ]),
         new("Valuation", ["value_place"]),
         new("Analyst sentiment", ["surprise_percent", "surprise_sessions", "earnings_sessions", "insider_net_buy", "insider_buyers", "insider_officer_buy", "insider_unplanned_sale", "release_results", "release_outlook", "release_tone", "release_demand"]),
-        new("Volatility", ["move_share", "gap_down", "tightness", "range_ratio", "vix", "vix_change", "largest_return", "volatility_month", "residual_volatility", "beta", "skewness"]),
-        new("Size and liquidity", ["liquidity", "volume_ratio", "dry_up", "volume_multiple", "up_volume_share", "price_volume_correlation", "illiquidity", "volume_slope", "alpha_two", "alpha_three", "alpha_six"]),
+        new("Volatility", ["move_share", "gap_down", "tightness", "range_ratio", "vix", "vix_change", "largest_return", "volatility_month", "residual_volatility", "beta", "skewness", "drop_largest", "vix_over_median"]),
+        new("Size and liquidity", ["liquidity", "volume_ratio", "dry_up", "volume_multiple", "up_volume_share", "price_volume_correlation", "illiquidity", "volume_slope", "alpha_two", "alpha_three", "alpha_six", "drop_volume", "company_value"]),
         new("Financial strength", ["profit", "coverage", "cash_over_income"]),
         new("Earnings quality", ["revenue_growth", "growth_change", "gross_margin_change", "operating_margin_change"]),
     ];
@@ -36,6 +40,7 @@ public static class LedgerHeadings
     public static IReadOnlySet<string> Market { get; } = new HashSet<string>(StringComparer.Ordinal)
     {
         "breadth", "highs_less_lows", "index_over_long", "vix", "vix_change", "mid_over_large", "small_over_large", "credit_over_fifty",
+        "large_breadth", "fund_over_long", "vix_over_median",
     };
 
     // A value's place among the values the members hold, the share of them under it and half the share level with it, the

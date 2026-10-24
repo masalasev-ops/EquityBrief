@@ -1644,6 +1644,15 @@ Grain: one row per index, family, stock and session a family's loose gates passe
 | `release_outlook` | REAL | that release's outlook: 1 raised, 0 kept, -1 lowered or withdrawn, null where none is given |
 | `release_tone` | REAL | the tone of management's own words in that release: 1 confident, 0 neutral, -1 cautious |
 | `release_demand` | REAL | demand or orders in that release: 1 stronger, 0 steady, -1 weaker, null not stated |
+| `rsi_two` | REAL | from 22.2 the 2-session relative strength index on the session, Wilder's, the short-term dip's drop |
+| `drop_fall` | REAL | the fall over the 3 sessions to the session, the close 3 sessions before less the session's, in the session's typical moves |
+| `drop_largest` | REAL | the largest fall of a single one of those 3 sessions in the typical move standing before it |
+| `drop_volume` | REAL | the mean volume of those 3 sessions over the mean of the 50 sessions before them |
+| `drop_against_sector` | REAL | the fall over those 3 sessions less the median of the same fall of the members of its GICS sector the index held that session, each in its own typical moves, null where fewer than two of them read one |
+| `large_breadth` | REAL | on an S&P 400 or 600 row the S&P 500's breadth on the session, null on an S&P 500 row |
+| `fund_over_long` | REAL | the index's own fund's close over its 200-session average, SPY's on an S&P 500 row and IJH's and IJR's on the S&P 400's and 600's |
+| `vix_over_median` | REAL | the VIX's close over the median of its closes on the 252 sessions of the exchange before the session |
+| `company_value` | REAL | the base-10 logarithm of the company's value on the session as the valuation reading works it, a statistic and never money |
 
 Primary key: `index_code`, `family`, `ticker`, `session_date`. Indexed on `index_code`, `settled` and `session_date`, which the step closing the windows reads by.
 

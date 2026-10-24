@@ -561,12 +561,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
             : null,
         // The name's rows on the page's list for the night, where the setup families drew it, and the short-term dip's on
         // the name's own index beside them.
-        familyPicks: night is { } drawnOn
-            ? TonightScreen.WithDipPicks(
-                await read.FamilyPicksAsync(drawnOn),
-                await read.IndexOfAsync(ticker, drawnOn) is { } dipIndex ? await read.DipPicksAsync(dipIndex, drawnOn) : [],
-                ticker)
-            : null,
+        familyPicks: night is { } drawnOn ? await PicksOfTheName(read, ticker, drawnOn) : null,
         // The sector heavyweights' holdings as of the night, which say whether they hold the name.
         heavyweights: night is { } heldOn ? await read.HeavyweightHoldingsAsync(heldOn) : null,
         // The name's member readings for the page's night, or its newest where the page is tonight's, and its company's
@@ -602,6 +597,20 @@ static async Task<EquityBrief.Core.Filter.FilterSettings> FilterSettingsOf(ReadA
     await read.FilterSettingsAsync(version) is { } json
         ? EquityBrief.Core.Filter.FilterSettings.Read(json)
         : EquityBrief.Core.Filter.FilterSettings.Proposed;
+
+// A name's rows on the page's list for a night: the S&P 500's own families', the families its own index's step drew,
+// the S&P 500's fundamentals-first family among them, and the short-term dip's on that index, its label on the row of
+// the family it gave way to.
+// see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+static async Task<IReadOnlyList<FamilyPickRow>> PicksOfTheName(ReadApi read, string ticker, DateOnly night)
+{
+    var index = await read.IndexOfAsync(ticker, night);
+
+    return TonightScreen.WithDipPicks(
+        [.. await read.FamilyPicksAsync(night), .. index is null ? [] : await read.IndexPicksAsync(index, night)],
+        index is null ? [] : await read.DipPicksAsync(index, night),
+        ticker);
+}
 
 // The plan a filter version's trade gate reads, by its word, read off the version's stored settings as Past
 // picks reads it, and section 17's proposed input where no version row is stored, which is what the filter
@@ -1754,15 +1763,19 @@ app.MapGet("/screens/tonight/{night?}", async (
     // The fundamentals-first family's card, which the index families' step reads on the S&P 500 under its own rows, drawn
     // after the S&P 500's own families on a night that step read it, each card numbered in the page's order.
     // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+    IReadOnlyList<IndexResultRow> largeIndexResults = [];
+
     if (cards is not null && await read.IndexNightAsync(reading.Code, dated) is { } largeIndexNight)
     {
+        largeIndexResults = await read.IndexResultsAsync(reading.Code, dated);
+
         var fundamentals = RuleScreen.WithRules(
             CardScreen.WithCards(
                 TonightScreen.IndexCards(
                     reading,
                     largeIndexNight,
                     await read.IndexPicksAsync(reading.Code, dated),
-                    await read.IndexResultsAsync(reading.Code, dated),
+                    largeIndexResults,
                     await read.IndexMembersAsync(reading.Code, dated),
                     researched,
                     states,
@@ -1912,9 +1925,13 @@ app.MapGet("/screens/tonight/{night?}", async (
             // short-term dip's among them.
             PicksScreen.Cells(picks, dated).Count(trade => trade.Night < dated && trade.Status == EquityBrief.Web.Marks.PickStatus.Open && trade.RepeatOf is null)
                 + (await read.DipTradesAsync(reading.Code, dated)).Count(trade => trade.Listed < dated && trade.EndedOn is null),
-            // The members a setup passed: the swing filter's passes, which are the pullback's, every other family's, and the
-            // short-term dip's.
-            TonightScreen.PassedWithDip(gates!.Where(gate => gate.Passed).Select(gate => gate.Ticker).Concat(familyResults.Where(result => result.Passed).Select(result => result.Ticker)), dipResults),
+            // The members a setup passed: the swing filter's passes, which are the pullback's, every other family's, the
+            // fundamentals-first family's under the index families' own rows, and the short-term dip's.
+            TonightScreen.PassedWithDip(
+                gates!.Where(gate => gate.Passed).Select(gate => gate.Ticker)
+                    .Concat(familyResults.Where(result => result.Passed).Select(result => result.Ticker))
+                    .Concat(largeIndexResults.Where(result => result.Passed).Select(result => result.Ticker)),
+                dipResults),
             universe.Count) with
         {
             Dip = dipNight is null ? null : TonightScreen.DipSettingWords(dipNight),

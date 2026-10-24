@@ -115,6 +115,14 @@ public partial class ReadSurface
 
         // After the S&P 500's three cards, the fourth of four, its rule read on the S&P 500 by the index families' step.
         Assert.Equal(["pullback|1|4", "breakout|2|4", "drift|3|4", "fundamentals|4|4"], families);
+
+        // The line atop the cards counts every member a setup passed, FF1 under the fundamentals-first family among them:
+        // one more than the swing filter's and the S&P 500's own families' passes.
+        var ownPasses = int.Parse(
+            Text(store, $"SELECT COUNT(*) FROM (SELECT ticker FROM gate_result WHERE session_date = '{TheSwitch}' AND passed = 1 UNION SELECT ticker FROM family_result WHERE session_date = '{TheSwitch}' AND passed = 1);"),
+            System.Globalization.CultureInfo.InvariantCulture);
+
+        Assert.Contains($"data-passed=\"{ownPasses + 1}\"", Assert.Single(Blocks(page, "<p class=\"market-line\".*?</p>")), StringComparison.Ordinal);
         Assert.Equal(["FF1"], CardPicksOf(card));
         Assert.Contains("Read on the S&P 500 by the S&P 400's and 600's step, apart from its own families.", Read(card), StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"FF1\" data-family=\"fundamentals\"", Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>")), StringComparison.Ordinal);

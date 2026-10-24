@@ -20,6 +20,28 @@ namespace EquityBrief.Worker.Loop;
 // see: A family's search on the S&P 400 or 600 is judged by the tester year by year with its second stage run inside each fold
 public static class OwnProcedures
 {
+    // What a family's grid on an index's own history offers a fold: its grid, a setting's trades under a set of the second
+    // stage's levels after their round trips, with the sessions each was held to its sale where a map is handed in, the
+    // rule the index's night reads today, the strongest settings a second stage reads, and its levels.
+    public interface IOwnSwing
+    {
+        string Family { get; }
+
+        FamilyGrid Grid { get; }
+
+        bool LastTwo { get; }
+
+        bool Floored { get; }
+
+        IReadOnlyList<DialLevel<FamilyListing>> Levels { get; }
+
+        IReadOnlyList<FamilyTrade> TradesUnder(int[] setting, IReadOnlyList<DialLevel<FamilyListing>> together, ConcurrentDictionary<(int Name, int Session), int>? held = null);
+
+        IReadOnlyList<FamilyTrade> NightsRule(ConcurrentDictionary<(int Name, int Session), int>? held = null);
+
+        int[][] Strongest(IReadOnlyList<(int[] Setting, FamilyFigures Figures)> read, int tradesHeld = SweepDials.TradesHeld);
+    }
+
     public const string SwingGrid = "the grid with the market check and its second stage, at the next open";
 
     public const string DesignA = "design (a)'s full grid, at the next open";
@@ -78,7 +100,7 @@ public static class OwnProcedures
     // The breakout's or the drift's search on an index's own history as a procedure: every setting of the grid walked
     // once over the whole history and every setting a fold's second stage reads under each level once, a fold reading
     // only the trades that ended before its year.
-    public static LoopProposalRead Swing(LoopRead read, IndexSweepRunner.OwnSwingRead own, Action<string> progress)
+    public static LoopProposalRead Swing(LoopRead read, IOwnSwing own, Action<string> progress)
     {
         var grid = own.Grid;
         var settings = grid.Settings;

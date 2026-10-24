@@ -40,9 +40,10 @@ public partial class FixtureExpectations
     [Fact]
     public void EachReleaseReadingIsWorkedByHandAsACatalogueReadingAtAConstructedSession()
     {
-        // The four are the catalogue's last, in the questions' order.
+        // The four stand together in the catalogue in the questions' order, the last before the short-term dip's of 22.2.
         Assert.Equal(["release_results", "release_outlook", "release_tone", "release_demand"], LedgerReleases.Columns);
-        Assert.Equal(LedgerReleases.Columns, LedgerReadings.All.TakeLast(4).Select(reading => reading.Column));
+        Assert.Equal(LedgerReleases.Columns, LedgerReadings.All.Skip(LedgerReadings.IndexOf("release_results")).Take(4).Select(reading => reading.Column));
+        Assert.Equal("rsi_two", LedgerReadings.All[LedgerReadings.IndexOf("release_demand") + 1].Column);
 
         // On Friday 2025-05-02 the window's 95 days reach back to 2025-01-27: a release the SEC accepted on that day is
         // read, every word turned into its reading, and one accepted the second before it is not.

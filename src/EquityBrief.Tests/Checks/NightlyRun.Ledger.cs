@@ -76,9 +76,10 @@ public partial class NightlyRun
         Assert.All(outcome.Indices, index => Assert.Null(index.Fault));
 
         // The S&P 500's part: AAA under the breakout and under the drift, and nothing under the pullback or, from 19.9,
-        // the fundamentals-first family, whose setups are the pullback's; the 400 and the 600, which the store holds no
-        // member of on the night, are not read and write no row.
-        Assert.Equal(["GSPC|breakout|3|1|0", "GSPC|drift|3|1|0", "GSPC|fundamentals|3|0|0", "GSPC|pullback|3|0|0"],
+        // the fundamentals-first family, whose setups are the pullback's, or, from 22.2, the short-term dip, whose drop no
+        // member's closes made; the 400 and the 600, which the store holds no member of on the night, are not read and
+        // write no row.
+        Assert.Equal(["GSPC|breakout|3|1|0", "GSPC|dip|3|0|0", "GSPC|drift|3|1|0", "GSPC|fundamentals|3|0|0", "GSPC|pullback|3|0|0"],
             Texts(store, "SELECT index_code || '|' || family || '|' || members || '|' || setups || '|' || live_passes FROM setup_night ORDER BY index_code, family;"));
 
         // The breakout: bought at 110, the stop and the trail 1.5 of AAA's typical move under, read back off its own
@@ -180,14 +181,15 @@ public partial class NightlyRun
         Assert.Equal(0.0, double.Parse(closed[0].Split('|')[6], System.Globalization.CultureInfo.InvariantCulture), 9);
         Assert.Equal(["breakout|100|stop", "drift|100|stop"], Texts(store, $"SELECT family || '|' || fill || '|' || past FROM setup WHERE session_date = '{LedgerStamp(70)}' ORDER BY family;"));
 
-        // Tonight itself holds no setup: nothing broke out and no print landed.
-        Assert.Equal(["0", "0", "0", "0"], Texts(store, $"SELECT setups FROM setup_night WHERE index_code = 'GSPC' AND session_date = '{LedgerStamp(71)}' ORDER BY family;"));
+        // Tonight itself holds no setup: nothing broke out, no print landed and nothing fell.
+        Assert.Equal(["0", "0", "0", "0", "0"], Texts(store, $"SELECT setups FROM setup_night WHERE index_code = 'GSPC' AND session_date = '{LedgerStamp(71)}' ORDER BY family;"));
 
-        // The night run again writes what it wrote: the same rows, once.
+        // The night run again writes what it wrote: the same rows, once, the two setups and the five families' night rows
+        // of each of the two nights.
         var again = await ledger.NightAsync("night-ledger-again");
 
         Assert.Equal(LedgerSession(71), again.Session);
-        Assert.Equal(["2", "8"], Texts(store, "SELECT COUNT(*) FROM setup UNION ALL SELECT COUNT(*) FROM setup_night;"));
+        Assert.Equal(["2", "10"], Texts(store, "SELECT COUNT(*) FROM setup UNION ALL SELECT COUNT(*) FROM setup_night;"));
         Assert.Equal([$"{LedgerStamp(70)}|3", $"{LedgerStamp(71)}|3"], Texts(store, "SELECT session_date || '|' || COUNT(*) FROM ledger_reading GROUP BY session_date ORDER BY session_date;"));
         Assert.Equal([SetupLedger.Ok, SetupLedger.Ok, SetupLedger.Ok], Texts(store, $"SELECT outcome FROM run_log WHERE stage = '{SetupLedger.Stage}' ORDER BY rowid;"));
     }

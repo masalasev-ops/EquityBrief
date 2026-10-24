@@ -350,6 +350,48 @@ public partial class FixtureExpectations
         return store;
     }
 
+    // A year of bars ending on the night at the given close, a calendar day a session: closes rising over the year to 80
+    // cents above it and falling 40 cents a session over the last two, each bar's range 5 cents about its close, and a
+    // hundred shares traded a session, under every index's dollar volume floor.
+    static IReadOnlyList<FamilyBar> CheapYear(decimal last)
+    {
+        var night = DateOnly.ParseExact(DipNightSession, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var top = last + 0.80m;
+
+        return
+        [
+            .. Enumerable.Range(0, 252).Select(at =>
+            {
+                var close = at < 250 ? Math.Round(top * (0.4m + (0.6m * at / 249m)), 2) : top - (0.40m * (at - 249));
+
+                return new FamilyBar(night.AddDays(at - 251), close + 0.05m, close - 0.05m, close, 100);
+            }),
+        ];
+    }
+
+    // The least close of $5 the dip reads on the S&P 500 as on the S&P 400 and 600, with no dollar volume floor there: two
+    // S&P 500 members falling out of the same uptrend to a close of 4.99 and of 5.00 on a few hundred dollars a session,
+    // the first stopped at the floors and the second passing every gate.
+    [Fact]
+    public async Task OnTheSAndP500TheDipReadsTheLeastCloseOfFiveDollarsAndNoDollarVolumeFloor()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        foreach (var (ticker, close) in new[] { ("DU", 4.99m), ("DV", 5.00m) })
+        {
+            StoreYear(store, ticker, CheapYear(close));
+            store.Execute($"INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', '{ticker}', '2024-01-02', NULL, '2024-01-02T00:00:00Z');");
+        }
+
+        var clock = FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        await new DipFamily(clock, store.DatabaseFile).RunAsync("night-dip");
+
+        Assert.Equal(
+            [$"DU|0|{DipRule.UnderTheFloors}", "DV|1|null"],
+            FamilyRows(store, "SELECT ticker, passed, reason FROM dip_result WHERE index_code = 'GSPC' ORDER BY ticker;"));
+    }
+
     [Fact]
     public async Task TheDipsNightStoresEveryMembersAnswerAndGivesWayToEveryOtherFamilysListAndOpenTrades()
     {

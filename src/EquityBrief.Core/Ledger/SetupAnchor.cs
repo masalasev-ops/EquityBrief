@@ -31,6 +31,9 @@ public static class SetupEnds
     // A trade sold by a time exit, its close at the sessions the exit reads short of the level it asks for.
     public const string Time = "time";
 
+    // A short-term dip's trade sold at the next session's open after a close above its exit's average.
+    public const string Exit = "exit";
+
     // The series ran out before the trade ended, so it is open as of the last close held.
     public const string Open = "open";
 
