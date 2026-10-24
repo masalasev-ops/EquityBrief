@@ -64,6 +64,8 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
         [FollowersOwn] = "followers of the S&P 500's industry leaders at the next open, the sector heavyweights'",
         [TesterOwn] = "families' searches on its own history, run year by year,",
         [TesterPullbackOwn] = "pullback's search on its own history, run year by year,",
+        [Dip] = "short-term dip's at the next open, on the S&P 500 as well,",
+        [DipTester] = "short-term dip's search on its own history, run year by year, on the S&P 500 as well,",
     };
 
     public const string Pullback = "pullback";
@@ -103,6 +105,11 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
     // nearer, which a risk a hair wide would otherwise turn into a result of thousands of risks.
     public async Task<int> RunAsync(string indexCode, string family, CancellationToken cancellation = default, double stopFloor = 0, bool survivorsOnly = false)
     {
+        if (family is Dip or DipTester)
+        {
+            return await DipAsync(indexCode, family == DipTester, cancellation);
+        }
+
         if (!Indices.TryGetValue(indexCode, out var named))
         {
             output.WriteLine($"{Verb}: name an index with '--index', one of {string.Join(", ", Indices.Keys)}");
