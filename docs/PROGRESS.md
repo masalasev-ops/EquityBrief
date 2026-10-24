@@ -7747,3 +7747,24 @@ Found:      why: MMM's print of 2026-10-20, which that night read at a surprise 
             again since reads the newer answer and restarts the record, saying what differed.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
+
+### 17.2 - correction: a chosen variant's card draws none of tonight's list's notes beneath its own picks, as 20.10's read-back found   2026-10-24
+
+Queue:      as the 20.10 ruling entry above; in progress, this pull request, 20.10's; next, the sign-offs of phases 20
+            and 18 by fresh sessions; 22.2 on the operator's word.
+Found:      20.10's read-back of the S&P 500's drift card on its tone variant's tab, the night of 2026-10-23: the variant
+            lists URI, DHR and LMT, and beneath its picks the card drew tonight's list's notes, "URI qualified again
+            tonight but its trade from 2026-10-22 is still open, so it is not listed", the same for DHR and LMT. The
+            notes are the live list's: the variant, registered that evening, holds no trade of its own, and a chosen
+            variant is drawn as that rule saw the night (see: A variant's picks are shown on its card when chosen and
+            its results on paper trading beside its verdict, never on Tonight).
+Corrected:  the card draws tonight's list's notes beneath the live rule's picks alone. The roster's read-surface row and
+            the changelog.
+Tests:      1 new: a stock tonight's list holds back by its trade of the night before named in a note beneath the live
+            rule's picks and in none beneath the variant's, which lists it.
+Claims:     1418, none new.
+Mutated:    the rule, stated before the run: the notes drawn whatever rule is chosen, run over the new test with its red
+            predicted, made in this checkout and reverted with the editor. R1 red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.

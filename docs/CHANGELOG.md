@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-24 - .claude/rules/checks.md - read-surface reaches a chosen variant's card drawing none of tonight's list's notes
+Corrects: a chosen variant's card drew tonight's list's notes beneath the variant's own picks, so a stock the variant lists read as "not listed" beneath it, found when 20.10 read the S&P 500's drift card back on its tone variant's tab
+Was:
+> read-surface: ... an analyst, an article's title and a firm TipRanks sent with an ampersand written as an entity, and sent bare, each drawn as its characters escaped once |
+Now:
+> read-surface: ... an analyst, an article's title and a firm TipRanks sent with an ampersand written as an entity, and sent bare, each drawn as its characters escaped once; and from the 17.2 correction of 2026-10-24 a stock tonight's list holds back by its open trade named in a note beneath the live rule's picks and in none beneath a chosen variant's, which lists it |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
 ### 2026-10-23 - .claude/rules/checks.md - architecture-conformance reads phase 20's pair
 Authorised by: Phase 20 is built whole in the order its dependencies set with the sign-offs of phases 18 and 19 after it, spending no money and retiring nothing on a result
 Was:
