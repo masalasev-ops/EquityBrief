@@ -7879,3 +7879,31 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 60 tables, 1418 claims, 1418 passing, none out of scope and none unexamined, 1429 placements and
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    phase 20's sign-off by a fresh session and phase 18's by its own; 22.2 on the operator's word.
+
+### 22.2 ruling - 22.2 goes on, the three corrections 22.1's reviews carried land beside it, and the dip's least close of $5 stays on the S&P 500 and is written down   2026-10-24
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-24, word for word in `prompts/2026-10-24-22.2-operator-answers.md`. Shown at about
+            03:30 UTC what was left after phase 20's report, six items, they answered at about 03:40 UTC: "Can you do
+            item 3 and 4 on your list. Forget about item 5, i deleted it to clear up some disk space. and yes delete
+            stale branch if its no longer needed". Item 3 was 22.2; item 4 the three corrections 22.1's entry carried
+            from its reviews; item 5 the two copies of the store the 20.10 report found gone from their folder, removed
+            by no copy, which the operator removed by hand for the disk's room; item 6 the branch
+            `phase-19-2-colour-header`, whose one commit's migration 92 stands on main in its built form, deleted from
+            the remote. Asked at about 03:50 UTC through the question tool whether the least close of $5 the dip reads
+            on the S&P 500, where the documents state no floor, is kept or dropped, the options being to keep it and
+            write it down, to drop it for the dip alone or to drop it for the dip and the fundamentals-first family,
+            they chose "Keep $5, document it (Recommended)", which moves no behaviour: the S&P 500's fundamentals-first
+            family reads the same least close through the same function, and no member of the S&P 500 closed under $5
+            on 2026-10-23, SKYD's 7.77 the lowest.
+Plan:       in this pull request, a 22.1 correction first: section 17's floors row and the dip's own row say the
+            fundamentals-first family and the dip read the least close of $5 on the S&P 500, with no dollar volume floor
+            there, held by a test on both sides of it; the name page's listed-under line names the family a dip pick
+            gave way to on the S&P 400 and 600 and to the S&P 500's fundamentals-first family; and the S&P 500 line's
+            count takes in the fundamentals-first family's passes. Then 22.2 as its plan states, the operator's answer
+            on each index's sweep put to them before any freeze.
+Queue:      done, phase 20 finished for its sign-off with its report, 22.0 and 22.1 with its record; in progress, this
+            pull request, 22.1's corrections and 22.2; next, each index's dip answer to the operator and 22.3 on their
+            word, 22.4, and the sign-offs of phases 20 and 18 by fresh sessions when the operator says.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
