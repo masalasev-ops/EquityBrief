@@ -7843,3 +7843,14 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 60 tables, 1418 claims, 1418 passing, none out of scope and none unexamined, 1429 placements and
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    the sign-offs of phases 20 and 18 by fresh sessions; 22.2 on the operator's word.
+
+### 20.11 ruling - a frozen card's line names its setting by the chips beneath it and drops the sweep's key   2026-10-24
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-24, asked at 00:52 UTC what a frozen S&P 400 or 600 card's line should show where
+            it drew its setting by the sweep's key, which phase 19's sign-off carried as owed a 20.11 correction, and
+            answering by 02:13 UTC: "Drop the key (Recommended)", the option reading "The line keeps its figures and loses
+            the key. The chips just beneath it already name the setting in words, on the swing and heavyweights cards
+            alike."
+Plan:       a 20.11 correction: the line drops the key on every frozen card, its figures and the stored setting on the
+            element kept, with section 15's sentence and the roster's row; then phase 20's sign-off by a fresh session.
