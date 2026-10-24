@@ -8322,3 +8322,24 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 60 tables, 1422 claims, 1422 passing, none out of scope and none unexamined, 1433 placements and
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    the brief read seen over the operator's store from main's Release build once it merges; 22.5 and 22.6.
+
+### 22.2 - the remedy run from main: migration 108, the ledger's night by hand, the three ledger histories built again with the dip's setups and each index's check   2026-10-24
+
+Not a checkpoint entry: it records 22.2's remedy and what it measured, and lands nothing.
+Ran:        from main's 220a3d59, the merge of PR 544 at 12:43 UTC, `tools/remedies/2026-10-24-22.2-the-dip-in-the-ledger.txt`
+            with no night, local run, drain, labeller or monthly run writing, migration 108 applied, 107 to 108, and the
+            ledger's night of 2026-10-23 run again by hand; then, after the S&P 500's first build stopped on the fault the
+            22.2 correction's entry names, from main's 81d54039, the merge of PR 545, the three ledger builds with
+            `--again` over 2019-01-02 to 2026-10-05 between 14:15:00Z and 15:15:31Z from main's clean copy, and each index's
+            point-in-time check between 15:15:31Z and 16:03:46Z from the checkout's own build of the same tree; the read
+            surface started again from main's Release build at 16:06Z, after PRs 546 and 547 merged. No request to the
+            provider or the SEC and no model call.
+Measured:   the ledger's night of 2026-10-23 took 36 seconds, 116 setups on the S&P 500, 124 on the S&P 400 and 143 on the
+            S&P 600, the dip's 98, 104 and 110 of them. The S&P 500's build took 17 minutes 19 seconds, 338,110 setups over
+            1,950 sessions, 49,831 passing the live rule; the S&P 400's 20 minutes 21 seconds, 249,926 and 35,200; the S&P
+            600's 22 minutes 51 seconds, 343,895 and 39,984; 60 minutes 31 seconds together against 65 minutes 45 seconds
+            for 20.8's, which wrote 92,160, 58,483 and 76,174 before the dip's setups joined. Each index's check rebuilt 200
+            of 200 sampled history setups with every reading the same, in 14 minutes 22 seconds, 13 minutes 29 seconds and
+            20 minutes 24 seconds. The store stands at 4.19 gigabytes.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
