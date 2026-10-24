@@ -337,5 +337,13 @@ public partial class ReadSurface
         // paper trading's two pickers of a family, which share one, five, and from 22.6 the setup cards' Showing list, six.
         Assert.Equal(6, rules.Length);
         Assert.True(widened.Length == 0, $"A rule gives a select a width of its own: {string.Join("; ", widened)}.");
+
+        // The 22.6 correction: a flex item is no narrower than its widest content unless a rule lets it be, so the Showing
+        // list, as wide as its longest version's name, widened the S&P 600's Tonight to 600 pixels at a phone's 390 through
+        // the card's header. The list's parts and each part of a card's header may be narrower than their content, so the
+        // list holds to its card.
+        Assert.Matches(@"(?m)^\.rule-view>\*\{min-width:0\}$", css);
+        Assert.Matches(@"(?m)^\.card-h>div\{min-width:0\}$", css);
+        Assert.Matches(@"(?m)^\.rule-select\{max-width:100%;", css);
     }
 }

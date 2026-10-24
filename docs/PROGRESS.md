@@ -8501,3 +8501,28 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    22.7, the phase report, reading the redesigned Tonight on each index over the live store at 1,440 pixels
             and a true 390 in both palettes.
+
+### 22.6 - correction: the Showing list held to its card at a phone's width, where a long version's name widened the S&P 600's Tonight to 600 pixels   2026-10-24
+
+Queue:      done, 22.6 merged as PR 549; in progress, this correction; next, 22.3 on the operator's word; 22.7, the
+            phase report; and the sign-offs of phases 20 and 18 by fresh sessions when they say.
+Found:      reading Tonight over the operator's store from main's Release build after PR 549 merged, at 1,440 pixels and
+            a true 390: the S&P 500's and 400's pages held to the screen, and the S&P 600's was laid out 600 pixels wide
+            at 390. Its cards' Showing list, a select as wide as its longest version's name, held each card's header
+            open, a flex item being no narrower than its widest content. The constructed stores 22.6 read back held
+            only short names.
+Corrected:  the Showing list's parts and each part of a card's header may be narrower than their content, so the list
+            holds to its card and shows its choice cut to fit. The two rules, injected over the three indices' live
+            Tonight before the change, held each to 390 in both palettes with no element past the screen.
+Tests:      1 extended, 2719 in all: the stylesheet holding both rules beside every select's own.
+Claims:     1424, none new.
+Pins:       none move: the correction writes the stylesheet and a test, no source a rule's version pins.
+Mutated:    the rule, stated before the runs: each new rule removed in turn, made in the worktree and reverted with the
+            editor, each run filtered to the select's test. C1 the list's parts held to their content, red; C2 the
+            header's parts held to theirs, red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2719 of 2719 tests ran with none failed,
+            migrations 0 to 108 with none pending, schema version 108, against `data-ci` and never `data`; the phase
+            report 64 tables, 1424 claims, 1424 passing, none out of scope and none unexamined, 1439 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    22.7, as 22.6's entry carries it.

@@ -758,6 +758,8 @@ details.expander>*:not(summary){margin:10px 12px}
 .setup-tile .tile-tonight{font-size:13px;font-weight:600;color:var(--ink)}
 .setup-about{flex-basis:100%;margin:2px 0 0;font-size:13.5px;color:var(--ink-2)}
 .rule-view{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px;font-size:13px;color:var(--ink-2)}
+.rule-view>*{min-width:0}
+.card-h>div{min-width:0}
 .rule-select{max-width:100%;min-height:34px;padding:0 8px;border-radius:6px;font:500 13px var(--sans)}
 details.fold{margin:10px 0 0;border-top:1px solid var(--hair)}
 details.fold>summary{cursor:pointer;padding:8px 0;font:600 13.5px var(--sans);color:var(--ink)}
