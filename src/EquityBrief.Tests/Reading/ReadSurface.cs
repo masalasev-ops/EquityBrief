@@ -384,8 +384,9 @@ public partial class ReadSurface
             // 18's two rows for the screen.
             .. PastPicksClaims,
 
-            // 17.3's setup ledger page under Universe.
+            // 17.3's setup ledger page under Universe, and from 22.2 its card of the short-term dip's counts.
             .. LedgerPageClaims,
+            .. DipLedgerPageRows,
 
             // 17.4's Loop page under Universe.
             .. LoopPageClaims,

@@ -170,6 +170,8 @@ public partial class FixtureExpectations
             .. ReleaseLedgerClaims,
             // 22.1, the short-term dip: section 17's row and section 18's four.
             .. DipClaims,
+            // 22.2, the dip's setups and its sweep: section 17's grid and section 18's row.
+            .. DipLedgerClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

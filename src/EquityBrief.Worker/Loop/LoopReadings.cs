@@ -26,12 +26,12 @@ public sealed class LoopReadings
 
     public static async Task<LoopReadings> ReadAsync(LoopRead read, string databaseFile, DateOnly through, CancellationToken cancellation = default)
     {
-        var (market, context) = await SetupLedger.HistoryReadingsAsync(databaseFile, read.Inputs, read.Series, read.Members, read.Income, through, cancellation);
+        var (market, context) = await SetupLedger.HistoryReadingsAsync(databaseFile, read.Inputs, read.Series, read.Members, read.Income, through, cancellation, read.Index);
 
         return new LoopReadings(read, market, context);
     }
 
     // A member's readings on a session at its bar.
     public IReadOnlyList<double?> Of(int name, int bar, int session) =>
-        held.GetOrAdd((name, session), _ => LedgerSetups.Readings(read.Index, name, read.Series[name], closes[name], bar, read.Sessions[session], read.Members, read.Calendar, session, market, context));
+        held.GetOrAdd((name, session), _ => LedgerSetups.Readings(read.Index, name, read.Series[name], closes[name], bar, read.Sessions[session], read.Members, read.Calendar, session, market, context, read.Series));
 }

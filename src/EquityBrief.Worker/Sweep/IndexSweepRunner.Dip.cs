@@ -62,8 +62,8 @@ public sealed partial class IndexSweepRunner
     // multiples of the risk the stop sets.
     public static IReadOnlyList<double> DipStops { get; } = [3, 4];
 
-    // The sessions the drop is read over, and the report gate's window back from the listing.
-    public const int DipDropSessions = 3;
+    // The sessions the drop is read over, and the report gate's window back from the listing, the ledger's own.
+    public const int DipDropSessions = Core.Ledger.LedgerReadings.DropSessions;
 
     // The VIX's level read against its own median of the sessions before.
     public const int VixMedianSessions = 252;
@@ -74,7 +74,7 @@ public sealed partial class IndexSweepRunner
 
     public const double DipDropVolume = 1.5;
 
-    public const int DipVolumeSessions = 50;
+    public const int DipVolumeSessions = Core.Ledger.LedgerReadings.DropVolumeSessions;
 
     // The provisional setting's place on each dial: the 2-session RSI under 10, the close above its 200-session average, the
     // 5-session average's exit, a time limit of 10 sessions, a stop of 4 typical moves and no market setting.
@@ -302,14 +302,9 @@ public sealed partial class IndexSweepRunner
             return Clears(indexCode, one, bar, [], IndexQuality.Off) && traded >= MemberReadings.LowestPrice;
         }
 
-        // A member's fall over the drop's sessions in its typical moves on the listing session, none where it holds too few
-        // sessions or no typical move.
-        public double FallOf(int name, int bar)
-        {
-            var move = Series[name].Atr[bar];
-
-            return bar >= DipDropSessions && move > 0 ? (closes[name][bar - DipDropSessions] - closes[name][bar]) / move : double.NaN;
-        }
+        // A member's fall over the drop's sessions in its typical moves on the listing session, through the ledger's own
+        // reading of it, none where it holds too few sessions or no typical move.
+        public double FallOf(int name, int bar) => Ledger.LedgerContext.DropFall(Series[name], bar);
 
         // A setting's listings, the market dial aside: each member-session of the scored history its index held, holding the
         // 200 sessions its average reads with none missing, clearing the floors, its close above its average, its drop at
@@ -525,49 +520,14 @@ public sealed partial class IndexSweepRunner
                 : double.NegativeInfinity;
         }
 
-        // Whether no session of the drop fell more than the moves in the typical move standing before it.
-        public bool NoSessionFellOver(FamilyListing listing, double moves)
-        {
-            var one = Series[listing.Name];
+        // Whether no session of the drop fell more than the moves in the typical move standing before it, through the
+        // ledger's own reading of the drop's largest session.
+        public bool NoSessionFellOver(FamilyListing listing, double moves) =>
+            Ledger.LedgerSetups.DropLargest(Series[listing.Name], closes[listing.Name], listing.Bar) is not { } largest || largest <= moves;
 
-            for (var day = Math.Max(1, listing.Bar - DipDropSessions + 1); day <= listing.Bar; day++)
-            {
-                if (one.Atr[day - 1] > 0 && (closes[listing.Name][day - 1] - closes[listing.Name][day]) / one.Atr[day - 1] > moves)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        // The drop's mean volume over the mean of the sessions before it, none where too few stand before it.
-        public double DropVolume(FamilyListing listing)
-        {
-            var bars = Series[listing.Name].Bars;
-            var first = listing.Bar - DipDropSessions + 1;
-
-            if (first - DipVolumeSessions < 0)
-            {
-                return double.NaN;
-            }
-
-            var before = 0.0;
-
-            for (var day = first - DipVolumeSessions; day < first; day++)
-            {
-                before += bars[day].Volume;
-            }
-
-            var drop = 0.0;
-
-            for (var day = first; day <= listing.Bar; day++)
-            {
-                drop += bars[day].Volume;
-            }
-
-            return before > 0 ? drop / DipDropSessions / (before / DipVolumeSessions) : double.NaN;
-        }
+        // The drop's mean volume over the mean of the sessions before it, through the ledger's own reading of it, none where
+        // too few stand before it.
+        public double DropVolume(FamilyListing listing) => Ledger.LedgerSetups.DropVolume(Series[listing.Name], listing.Bar) ?? double.NaN;
 
         // The median fall over the drop's sessions, in each member's own typical moves, of the members of a sector the index
         // held that session; none where fewer than two read one.

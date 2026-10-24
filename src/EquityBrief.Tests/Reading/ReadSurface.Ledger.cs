@@ -28,6 +28,12 @@ public partial class ReadSurface
     // regions and its summary's store.
     internal static string[] LedgerPageRows => [.. LedgerPageClaims, CheckReach.Key(Scope.StoresTable, "Ledger summaries")];
 
+    // The row 22.2 adds to section 15.19, the short-term dip's counts.
+    internal static readonly string[] DipLedgerPageRows =
+    [
+        CheckReach.Key(Scope.LedgerPage, "The short-term dip's setups"),
+    ];
+
     static void LedgerYearRow(TemporaryStore store, string family, int year, int setups, int passes, int nightRows, int picked, int settled, string? result, string? edge, string? deciles) =>
         store.Execute(
             "INSERT INTO ledger_summary (index_code, family, year, setups, live_passes, night_rows, picked, settled, result_mean, edge_mean, result_deciles, edge_deciles, refreshed_at) "
@@ -126,6 +132,50 @@ public partial class ReadSurface
             "The ledger holds no setup on this index yet.",
             WebUtility.HtmlDecode(await client.GetStringAsync("/screens/ledger?universe=400")),
             StringComparison.Ordinal);
+    }
+
+    // 22.2: the short-term dip's counts a year on each index, from the summary as each index's ledger stored it, and a
+    // settled dip setup's path drawn with its buy and its stop and no target, ended at the next open after its exit.
+    [Fact]
+    public async Task TheLedgerPageDrawsTheDipsCountsAYearOnEachIndexAndItsSetupsPathWithNoTarget()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        foreach (var (index, setups) in new[] { ("GSPC", 120), ("MID", 90), ("SML", 60) })
+        {
+            store.Execute(
+                "INSERT INTO ledger_summary (index_code, family, year, setups, live_passes, night_rows, picked, settled, result_mean, edge_mean, result_deciles, edge_deciles, refreshed_at) "
+                + $"VALUES ('{index}', 'dip', 2026, {setups}, 6, 12, 3, 30, 0.2, 0.05, '-1,-0.5,0,0.25,0.5,1,1.5,2,3', '-1,-0.5,0,0.25,0.5,1,1.5,2,3', '2026-10-24T00:00:00.000Z');");
+        }
+
+        store.Execute(
+            "INSERT INTO setup (index_code, family, ticker, session_date, rule, live_pass, picked, entry, stop, target, trail, cap, result, edge, sessions, end, ended_on, settled, source, pin) "
+            + "VALUES ('GSPC', 'dip', 'AAA', '2026-03-09', 'the provisional rule', 0, 0, '100', '96', NULL, NULL, 10, 0.5, 0.4, 3, 'exit', '2026-03-12', 1, 'night', 'x');");
+
+        foreach (var (stamp, close) in new[] { ("2026-03-05", 104), ("2026-03-06", 102), ("2026-03-09", 100), ("2026-03-10", 101), ("2026-03-11", 103), ("2026-03-12", 102) })
+        {
+            store.Execute($"INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES ('AAA', '{stamp}', '{close}', '{close + 1}', '{close - 1}', '{close}', 1000, 'constructed', '{stamp}T21:00:00Z', '{close}');");
+        }
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        foreach (var (universe, setups) in new[] { ("500", 120), ("400", 90), ("600", 60) })
+        {
+            var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/ledger?universe={universe}"));
+
+            Assert.Contains("data-card=\"ledger-dip\"", page, StringComparison.Ordinal);
+            Assert.Contains("Short-term dip setups", page, StringComparison.Ordinal);
+            Assert.Contains($"<tr data-year=\"2026\" data-setups=\"{setups}\" data-live-passes=\"6\" data-picked=\"3\" data-settled=\"30\" data-night-rows=\"12\">", page, StringComparison.Ordinal);
+        }
+
+        var path = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/ledger?family=dip&setup=AAA.2026-03-09"));
+
+        Assert.Contains("class=\"ledger-path\" data-ticker=\"AAA\" data-session=\"2026-03-09\"", path, StringComparison.Ordinal);
+        Assert.Contains("data-buy=\"100\"", path, StringComparison.Ordinal);
+        Assert.Contains("data-stop=\"96\"", path, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-target=", path, StringComparison.Ordinal);
+        Assert.Contains($"data-end=\"{SetupEnds.Exit}\"", path, StringComparison.Ordinal);
     }
 
     // 19.2: the Ledger page and the Loop page list the families in Tonight's order, the one list the core holds, over a

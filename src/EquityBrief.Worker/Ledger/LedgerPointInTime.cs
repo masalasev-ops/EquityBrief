@@ -48,9 +48,10 @@ public static class LedgerPointInTime
         IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>> facts,
         string ticker,
         LedgerInsiders? insiders = null,
-        IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? releases = null) =>
-        Read(cut, income, sectors, facts, ticker, insiders, releases) is { } read
-            ? LedgerSetups.Readings(index, read.Name, read.Series[read.Name], Closes(read.Series[read.Name]), read.Bar, read.Sessions[read.At], read.Members, read.Calendar, read.At, market, read.Context)
+        IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? releases = null,
+        IReadOnlyDictionary<DateOnly, double>? largeBreadth = null) =>
+        Read(cut, income, sectors, facts, ticker, insiders, releases, largeBreadth) is { } read
+            ? LedgerSetups.Readings(index, read.Name, read.Series[read.Name], Closes(read.Series[read.Name]), read.Bar, read.Sessions[read.At], read.Members, read.Calendar, read.At, market, read.Context, read.Series)
             : null;
 
     // One stock's setup of a family on the last session of a cut history as the build reads it: a swing family's from the
@@ -67,16 +68,17 @@ public static class LedgerPointInTime
         string family,
         string ticker,
         LedgerInsiders? insiders = null,
-        IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? releases = null)
+        IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? releases = null,
+        IReadOnlyDictionary<DateOnly, double>? largeBreadth = null)
     {
-        if (Read(cut, income, sectors, facts, ticker, insiders, releases) is not { } read)
+        if (Read(cut, income, sectors, facts, ticker, insiders, releases, largeBreadth) is not { } read)
         {
             return (false, null);
         }
 
         if (family == HeavyweightRule.Name)
         {
-            return (true, LedgerSetups.Readings(index, read.Name, read.Series[read.Name], Closes(read.Series[read.Name]), read.Bar, read.Sessions[read.At], read.Members, read.Calendar, read.At, market, read.Context));
+            return (true, LedgerSetups.Readings(index, read.Name, read.Series[read.Name], Closes(read.Series[read.Name]), read.Bar, read.Sessions[read.At], read.Members, read.Calendar, read.At, market, read.Context, read.Series));
         }
 
         var row = LedgerSetups.On(index, read.Series, read.Sessions, read.Members, read.Calendar, read.At, market, read.Context)
@@ -96,7 +98,8 @@ public static class LedgerPointInTime
         IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>> facts,
         string ticker,
         LedgerInsiders? insiders,
-        IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? releases)
+        IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? releases,
+        IReadOnlyDictionary<DateOnly, double>? largeBreadth)
     {
         var calendar = cut.Sessions;
 
@@ -134,6 +137,7 @@ public static class LedgerPointInTime
             Insiders = insiders?.Rows,
             InsiderSpans = insiders?.Spans ?? InsiderCoverage.None,
             Releases = releases,
+            LargeBreadth = largeBreadth,
         });
     }
 

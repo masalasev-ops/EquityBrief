@@ -26,6 +26,34 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-24 - ARCHITECTURE.html - the short-term dip's setups join the ledger on every index with nine readings, and its sweep
+Authorised by: The short-term dip's setups clear its drop a grid step past the widest its sweep reads with no trend condition, and the ledger's history budget is raised to hold them
+Was:
+> Setup ledger catalogue row, reads: ... release readings, reading pins, family picks, index family picks, index family nights, candidate register, heavyweight nights, setups, setup nights, ledger readings
+> Setup ledger catalogue row, does: appends, on every index the night read, every member-session a family's loose gates pass, the pullback's, the breakout's, the drift's and from 19.9 the fundamentals-first family's, with the live rule's own pass ...
+> 13.10: Every reading is defined once, in the core's catalogue, and read as it stood: the seventy-six readings of the stock, its business, its insiders and the market, the twenty-two published factors among them from 19.12, the four insiders' from 19.13 and from 20.8 the four answers the local model gave ...
+> Setups store row: ... the plan as prices with the risk in typical moves, a heavyweights' setup holding no stop, the seventy-six readings as they stood, ...
+> Setup ledger's loose gates row: ... whatever its profit, the growth's change, its margins or its trend (see: The fundamentals-first family's setups are the pullback's whose revenue and cash clear a grid step past the widest level its search tried); and the heavyweights each member of a sector's size cut ... <b>Judgement:</b> each figure, phase 17's plan of 2026-10-08 as ruled, and the fundamentals-first family's the operator's ruling of 2026-10-15
+Now:
+> Setup ledger catalogue row, reads: ... family picks, index family picks, dip picks, index family nights, ...
+> Setup ledger catalogue row, does: ... the pullback's, the breakout's, the drift's, from 19.9 the fundamentals-first family's and from 22.2 the short-term dip's, with the live rule's own pass ...
+> 13.10 counts eighty-five readings, from 22.2 nine the dip's grid reads among them, and gains a paragraph on the dip's setups at their loose gates, walked by the rule's own walk against the same plan on every member, and 13.9 a paragraph on the dip's sweep on each index and its tester.
+> Setups store row: ... a heavyweights' setup holding no stop and a short-term dip's no target, the eighty-five readings as they stood, ... and the dip's nine from 22.2 ...
+> Setup ledger's loose gates row: ... (see: The fundamentals-first family's setups are ...); the short-term dip at a 2-session RSI under 20 or a fall of at least 1 typical move over the drop's 3 sessions, whatever its trend (see: The short-term dip's setups clear its drop ...); and the heavyweights ... <b>Judgement:</b> each figure, phase 17's plan of 2026-10-08 as ruled, the fundamentals-first family's the operator's ruling of 2026-10-15 and the short-term dip's their ruling of 2026-10-24
+> and rows added: section 17's grid of the dip's sweep, section 18's row for a market series the dip's sweep reads missing a session, and 15.19's card of the dip's setups.
+Why: 22.2 writes the dip's setups into the ledger on every index with the readings its grid reads, and sweeps it on each index's own history.
+
+### 2026-10-24 - RUNBOOK.md and .claude/rules/checks.md - the dip's sweep commands and its ledger remedy, and what the roster's two checks reach of 22.2
+Authorised by: The short-term dip's setups clear its drop a grid step past the widest its sweep reads with no trend condition, and the ledger's history budget is raised to hold them
+Was:
+> fixture-expectations: ... the S&P 400's tone variant at a complete version walked and judged against its provisional rule, where a verb handing it none keeps it not testable |
+> read-surface: ... and from the 20.11 correction of 2026-10-24 a frozen card's line naming the setting it was frozen at by no key of its sweep's, the setting kept whole on the element |
+Now:
+> fixture-expectations: ... where a verb handing it none keeps it not testable; and from 22.2 a dip setup's path and its benchmark of the same plan on every member worked by hand over constructed bars, ... and no source a rule's version pins one 22.2 writes |
+> read-surface: ... the setting kept whole on the element; and from 22.2 the Ledger page's card of the short-term dip on each of the three indices with its year's counts as each index's summary stored them, and a settled dip setup's path drawn with its buy and its stop and no target |
+> and the runbook gains the dip's `sweep-index` commands and 22.2's remedy with its three history builds and their checks, adding lines and removing none.
+Why: the roster rows say what their checks assert, and 22.2's tests extend them.
+
 ### 2026-10-24 - ARCHITECTURE.html - the setup ledger's history budget raised to 1.5 gigabytes for the short-term dip's setups
 Authorised by: The short-term dip's setups clear its drop a grid step past the widest its sweep reads with no trend condition, and the ledger's history budget is raised to hold them
 Was:

@@ -1,10 +1,12 @@
 {
   "stage": "ledger",
   "derivation": "derived",
-  "derivedFrom": "the three swing families, from 19.9 the fundamentals-first family beside them, and the index the night reads, not a run: the ledger's step writes one setup_night row a family an index on the night, and every setup row it writes sits inside its family's loose gates, which the suite reads back off the rows' own readings against the gates' constants",
-  "tables": ["setup_night"],
-  "setupTable": "setup is the step's other table and is not named above, since over the fixture's four names and one night no family's loose gates pass, so the replay leaves it empty; the constructed-store test of the step writes and reads it",
-  "families": ["pullback", "breakout", "drift", "fundamentals"],
-  "setupNightsAnIndex": 4,
-  "setups": "every setup row's family is one of the four, its session the night's, its source the night's, its pin the readings' version, its path open on the night it is written, and its readings inside its family's loose gates; how many there are depends on the fixture's bars and is not stated"
+  "derivedFrom": "the three swing families, from 19.9 the fundamentals-first family beside them, from 22.2 the short-term dip after it, and the index the night reads, not a run: the ledger's step writes one setup_night row a family an index on the night, and every setup row it writes sits inside its family's loose gates, which the suite reads back off the rows' own readings against the gates' constants. The dip's setups over the fixture's whole night of 2026-09-08 are worked by hand from the captured bars and the night's price file at the store's scale, each close the adjusted close and each high and low scaled with it: NFLX closes at 76.77 after 82.73, 82.67 and 78.25, and Wilder's 2-session RSI over its closes reads 6.81, under 20; its fall from the close of 82.73 three sessions before, 5.96, over its 14-session typical move of 2.391, seeded on the first fourteen changes of the year to the night, from 2025-09-08, is 2.49 moves, past one. MSFT reads 22.76 and 0.25 moves and KEYS 96.68 and -1.07, so neither passes, and AAPL, the gapped name, holds no bar on the night. NFLX closes under its 200-session average of 86.70, so the provisional dip passes it not and the night's list picks it not",
+  "tables": ["setup_night", "setup", "ledger_summary"],
+  "families": ["pullback", "breakout", "drift", "fundamentals", "dip"],
+  "setupNightsAnIndex": 5,
+  "dipSetups": [{ "ticker": "NFLX", "rsiTwo": 6.81, "dropFall": 2.49, "livePass": 0, "picked": 0 }],
+  "otherSetups": "none: over the fixture's whole night no other family's loose gates pass, as before 22.2",
+  "summary": "one row, the dip's on the S&P 500 in 2026: one setup, none the provisional rule passes, one the night wrote, none its list picked and none settled",
+  "setups": "every setup row's family is one of the five, its session the night's, its source the night's, its pin the readings' version, its path open on the night it is written, and its readings inside its family's loose gates"
 }

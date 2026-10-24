@@ -33,6 +33,14 @@ public static class SetupGates
     public const double FundamentalsGrowth = -0.05;
     public const double FundamentalsCash = 0.6;
 
+    // The short-term dip: a 2-session relative strength index under 20, a grid step past the widest floor of 15 its sweep
+    // reads, or a fall over the drop's three sessions of at least one typical move, a step past the least fall of two it
+    // reads, whatever the trend, the step past the trend's widest level, the close above its 200-session average, being
+    // no trend condition.
+    // see: The short-term dip's setups clear its drop a grid step past the widest its sweep reads with no trend condition, and the ledger's history budget is raised to hold them
+    public const double DipRsiUnder = 20;
+    public const double DipFallMoves = 1;
+
     // Every family's floors on every index: a close of at least $5 and a dollar volume of at least half the index's
     // own floor, an index with no floor clearing it.
     public const decimal LowestPrice = Readings.MemberReadings.LowestPrice;
@@ -61,4 +69,7 @@ public static class SetupGates
 
     public static bool Fundamentals(double? revenueGrowth, double? cashOverIncome) =>
         revenueGrowth is { } growth && growth > FundamentalsGrowth && cashOverIncome is { } cash && cash >= FundamentalsCash;
+
+    public static bool Dip(double? rsiTwo, double fall) =>
+        (rsiTwo is { } read && read < DipRsiUnder) || fall >= DipFallMoves;
 }
