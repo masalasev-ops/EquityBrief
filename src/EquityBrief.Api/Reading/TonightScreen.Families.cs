@@ -199,8 +199,9 @@ public static partial class TonightScreen
         return new FamilyPickCell(row, pick.Place ?? 0, gate.SwingEntry, stop, target, false, row.RewardToRisk, PullbackWhy(gate), also);
     }
 
-    // Why the pullback lists a stock tonight, in the figures its setup and trigger gates stored: how far it
-    // came down, the band it came down into, how its volume ran on the way, and the session it turned up on.
+    // Why the pullback lists a stock tonight, in the figures its setup and trigger gates stored, in the reader's words:
+    // how far it came down, the band it came down into, how its volume ran on the way, and the day it turned back up.
+    // see: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
     public static string PullbackWhy(GateResultRow gate)
     {
         using var document = JsonDocument.Parse(gate.Gates);
@@ -221,20 +222,20 @@ public static partial class TonightScreen
         var arrived = Value(SwingGates.Trigger, SwingGates.ArrivedValue);
 
         var fell = depth is { } moves
-            ? FormattableString.Invariant($"Fell {moves:0.0} typical moves")
-            : "Fell";
+            ? FormattableString.Invariant($"Dipped {moves:0.0} typical days' moves")
+            : "Dipped";
         var band = low is { Length: > 0 } and not "none" && high is { Length: > 0 } and not "none"
-            ? FormattableString.Invariant($" into its support band at {Price(low)} to {Price(high)}")
-            : " into a support band";
+            ? FormattableString.Invariant($" to a price where it has bounced before, {Price(low)} to {Price(high)}")
+            : " to a price where it has bounced before";
         var volume = dryUp is { } ratio
-            ? FormattableString.Invariant($" on volume {ratio:0.00} times its average")
+            ? FormattableString.Invariant($", on {ratio:0.00} times its usual volume")
             : string.Empty;
         var turned = arrived switch
         {
             null or "none" => string.Empty,
-            "tonight" => ", and turned up tonight",
-            var on when DateOnly.TryParseExact(on, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _) => $", and turned up on {on}",
-            var worded => $", and turned up on {worded}",
+            "tonight" => ", and turned back up tonight",
+            var on when DateOnly.TryParseExact(on, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day) => FormattableString.Invariant($", and turned back up on {day:d MMM}"),
+            var worded => $", and turned back up on {worded}",
         };
 
         return fell + band + volume + turned + ".";
@@ -250,8 +251,8 @@ public static partial class TonightScreen
     static double? StoredFigure(string gates, string gate, string key) =>
         double.TryParse(Stored(gates, gate, key), NumberStyles.Float, CultureInfo.InvariantCulture, out var figure) ? figure : null;
 
-    // Why the breakout lists a stock tonight, in the figures its gates stored: the high it closed above,
-    // its volume against its average, and how its daily ranges ran before.
+    // Why the breakout lists a stock tonight, in the figures its gates stored, in the reader's words: the high it closed
+    // above, its volume against its usual, and the quiet spell its daily ranges ran in before.
     public static string BreakoutWhy(FamilyResultRow result)
     {
         var close = Stored(result.Gates, BreakoutRule.NewHigh, "close");
@@ -265,13 +266,13 @@ public static partial class TonightScreen
             ?? BreakoutRule.ProvisionalHighSessions.ToString(CultureInfo.InvariantCulture);
 
         var closed = close is { Length: > 0 } and not "none" && high is { Length: > 0 } and not "none"
-            ? FormattableString.Invariant($"Closed at {Price(close)}, above its high of {Price(high)} over the {window} sessions before")
+            ? FormattableString.Invariant($"Closed at {Price(close)}, above its {window}-day high of {Price(high)}")
             : "Closed above its high of the year before";
         var volume = multiple is { } times
-            ? FormattableString.Invariant($", on volume {times:0.00} times its average")
+            ? FormattableString.Invariant($", on {times:0.00} times its usual volume")
             : string.Empty;
         var ranges = ratio is { } narrowed
-            ? FormattableString.Invariant($", after its daily ranges ran at {narrowed:0.00} of the {BreakoutRule.RangeSessions} sessions before them")
+            ? FormattableString.Invariant($", after a quiet spell: its daily ranges ran at {narrowed:0.00} of the {BreakoutRule.RangeSessions} days before them")
             : string.Empty;
 
         return closed + volume + ranges + ".";
@@ -298,13 +299,12 @@ public static partial class TonightScreen
         return standing + leading + ". It is at a pullback's buy point tonight.";
     }
 
-    // Why the earnings drift lists a stock tonight, in the figures its gates stored: the print and how far
-    // it beat its estimate, how the reaction session closed and on what volume, and the low the close holds
-    // above.
+    // Why the earnings drift lists a stock tonight, in the figures its gates stored, in the reader's words: how far its
+    // report beat its estimate and on what day, how far it jumped that day and on what volume, and the low the close is
+    // still above.
     public static string DriftWhy(FamilyResultRow result)
     {
         var report = Stored(result.Gates, DriftRule.Print, "report");
-        var back = StoredFigure(result.Gates, DriftRule.Print, "back");
         var surprise = StoredFigure(result.Gates, DriftRule.Beat, "surprise");
         var moves = StoredFigure(result.Gates, DriftRule.Reaction, "moves");
         var multiple = StoredFigure(result.Gates, DriftRule.Volume, "multiple");
@@ -313,25 +313,20 @@ public static partial class TonightScreen
         var beat = surprise is { } by
             ? FormattableString.Invariant($"Beat its estimate by {by:0.0}%")
             : "Beat its estimate";
-        var reported = report is { Length: > 0 } ? $" in its report of {report}" : string.Empty;
-        var reacted = moves is { } up
-            ? FormattableString.Invariant($", and closed up {up:0.0} typical moves on the reaction")
+        var reported = report is { Length: > 0 } && DateOnly.TryParseExact(report, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day)
+            ? FormattableString.Invariant($" on {day:d MMM}")
+            : string.Empty;
+        var jumped = moves is { } up
+            ? FormattableString.Invariant($", jumped {up:0.0} typical days' moves")
             : string.Empty;
         var volume = multiple is { } times
-            ? FormattableString.Invariant($" on volume {times:0.00} times its average")
+            ? FormattableString.Invariant($" on {times:0.00} times its usual volume")
             : string.Empty;
-        var since = back switch
-        {
-            null => string.Empty,
-            0 => ", which was tonight",
-            1 => ", one session ago",
-            var sessions => FormattableString.Invariant($", {sessions:0} sessions ago"),
-        };
         var held = low is { Length: > 0 } and not "none"
-            ? FormattableString.Invariant($". It holds above that session's low of {Price(low)}")
+            ? FormattableString.Invariant($", and is still above that day's low of {Price(low)}")
             : string.Empty;
 
-        return beat + reported + reacted + volume + since + held + ".";
+        return beat + reported + jumped + volume + held + ".";
     }
 
     // The day a family's rule went live and the variants scored beside it, read off the register as it
@@ -754,6 +749,20 @@ public static partial class TonightScreen
             Universes.Large.Name,
             passed,
             members);
+
+    // The trades from earlier nights that ended on the night, as Past picks reads each: at its target, at its stop or out
+    // of time where the trade's own status says so, and every other one, the short-term dip's and the S&P 400's and 600's
+    // among them, counted as ended by its setup's own exit, since their rows store no status.
+    public static EndedTonightView EndedTonight(DateOnly night, IReadOnlyList<PickCell> trades, IEnumerable<IndexTradeRow> others)
+    {
+        var ended = trades.Where(trade => trade.EndedOn == night && trade.Night < night && trade.RepeatOf is null).ToArray();
+
+        return new EndedTonightView(
+            ended.Count(trade => trade.Status == PickStatus.Target),
+            ended.Count(trade => trade.Status == PickStatus.Stopped),
+            ended.Count(trade => trade.Status == PickStatus.Time),
+            ended.Count(trade => trade.Status is not (PickStatus.Target or PickStatus.Stopped or PickStatus.Time)) + others.Count(trade => trade.EndedOn == night && trade.Listed < night));
+    }
 
     // How far the members got down a family's gates, each count the members passing that gate and every
     // gate before it, the market check left out since it is one answer for every member.

@@ -22,10 +22,11 @@ public sealed partial class MarkRenderer
 
     public const string CloseToBuyOpen = "open";
 
-    public const string CloseToBuyGuide = "Each passed every gate of its setup but one tonight with nothing excluding it; none is a pick and none is counted as one.";
-
-    // The card: the rows in the order given, which the read surface puts in the page's family order; open where the link
-    // keeps it open; the presses and the Universe link on the newest night alone.
+    // The card, from 22.6 One step from qualifying: its summary counting the stocks, a line saying none is a pick, and the
+    // rows behind a fold, open where the link keeps it open, each with the step it missed and where it stands in the
+    // reader's words; the presses and the Universe link on the newest night alone. A night reading none one step short
+    // draws no card, tonight in one minute saying none is close, and a night whose answers say which it cannot read says
+    // so in its summary.
     public string CloseToBuy(IReadOnlyList<CloseToBuyRow>? rows, bool open, bool newest, string? universe)
     {
         if (rows is { Count: 0 })
@@ -35,25 +36,28 @@ public sealed partial class MarkRenderer
 
         var html = new StringBuilder();
 
-        html.Append(Invariant, $"<section class=\"card folded close-to-buy\" id=\"{CloseToBuyId}\" data-card=\"close-to-buy\" data-count=\"{(rows is null ? "none" : rows.Count.ToString(Invariant))}\" data-newest=\"{Flag(newest)}\"><div class=\"card-b\">");
+        html.Append(Invariant, $"<section class=\"card close-to-buy\" id=\"{CloseToBuyId}\" data-card=\"close-to-buy\" data-count=\"{(rows is null ? "none" : rows.Count.ToString(Invariant))}\" data-newest=\"{Flag(newest)}\">");
+        html.Append("<div class=\"card-h\"><div><div class=\"lbl\">One step from qualifying</div></div></div><div class=\"card-b\">");
 
         if (rows is null)
         {
-            html.Append("<p class=\"card-one-line degraded\" data-close=\"not read\">One gate short of a buy point: this index's night stores only the first part each member failed, so no stock is read as one gate short.</p></div></section>");
+            html.Append("<p class=\"card-summary degraded\" data-summary data-close=\"not read\">Which stocks are one step from qualifying is not read on this index tonight: its night stores only the first step each stock missed.</p></div></section>");
 
             return html.ToString();
         }
 
-        var line = Formatted($"{Count(rows.Count, "stock")} one gate short of a buy point");
+        var line = rows.Count == 1 ? "1 stock missed a pick by a single step tonight." : Formatted($"{rows.Count} stocks missed a pick by a single step tonight.");
 
-        html.Append(Invariant, $"<details class=\"close-to-buy\" data-link-key=\"{CloseToBuyKey}\"{(open ? " open" : string.Empty)}><summary class=\"card-one-line\">{line}</summary>");
+        html.Append(Invariant, $"<p class=\"card-summary\" data-summary data-close=\"{rows.Count}\">{Escaped(line)}</p>");
+        html.Append(Invariant, $"<p class=\"close-said\">Each passed every step of its setup but one. None is a pick.{(newest ? " Add any to your watch list to see it come back here or become a pick." : string.Empty)}</p>");
+        html.Append(Invariant, $"<details class=\"close-to-buy\" data-link-key=\"{CloseToBuyKey}\"{(open ? " open" : string.Empty)}><summary class=\"card-one-line\">See {(rows.Count == 1 ? "the stock" : Formatted($"the {rows.Count} stocks"))} and the step each missed</summary>");
         html.Append("<div class=\"watch-said\" role=\"status\"></div>");
         html.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table close-to-buy-table\" data-rows=\"{rows.Count}\"><thead><tr>");
-        html.Append(TippedHeading("Setup", "the setup the stock is one gate short of, in the page's family order"));
-        html.Append(TippedHeading("Stock", "the ticker opens the stock's page, with the company beneath"));
-        html.Append(TippedHeading("The gate it missed", "the one gate of its setup it did not pass tonight"));
-        html.Append(TippedHeading("What it had", "what it had against the bar the gate needed"));
-        html.Append(TippedHeading("Report in", "the sessions to its next report, as the watch list counts them", "r"));
+        html.Append(TippedHeading("Setup", "the setup the stock is one step short of"));
+        html.Append(TippedHeading("Stock", "the ticker opens the stock's chart, with the company beneath"));
+        html.Append(TippedHeading("The step it missed", "the one step of its setup it did not pass tonight"));
+        html.Append(TippedHeading("Where it stands", "what it had against what the step needed"));
+        html.Append(TippedHeading("Next report", "the trading days to its next report", "r"));
 
         if (newest)
         {
@@ -65,15 +69,16 @@ public sealed partial class MarkRenderer
         foreach (var row in rows)
         {
             var cell = row.Cell;
+            var missed = ReaderWords.Missed(cell.Family, cell.Gate) ?? ReaderWords.Plain(cell.Gate);
 
             html.Append(Invariant, $"<tr data-ticker=\"{Escaped(cell.Ticker)}\" data-family=\"{Escaped(cell.Family)}\" data-gate=\"{Escaped(cell.Gate)}\" data-watched=\"{Flag(row.Watched)}\">");
             html.Append(Invariant, $"<td><span class=\"fam-tag\" data-family=\"{Escaped(cell.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(cell.Family)}\"></span>{Escaped(cell.Setup)}</span></td>");
             html.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(cell.Ticker)}\">{Escaped(cell.Ticker)}</a>{(cell.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
-            html.Append(Invariant, $"<td class=\"missed-gate\"><b>{Escaped(cell.Gate)}</b></td>");
-            html.Append(Invariant, $"<td class=\"close-had\">{Escaped(cell.Words)}</td>");
+            html.Append(Invariant, $"<td class=\"missed-gate\"><b>{Escaped(char.ToUpperInvariant(missed[0]) + missed[1..])}</b></td>");
+            html.Append(Invariant, $"<td class=\"close-had\">{Escaped(ReaderWords.Plain(StoredWords(cell.Words)))}</td>");
             html.Append(row.SessionsToReport is { } sessions
-                ? Formatted($"<td class=\"r num\" data-sessions=\"{sessions}\">{Count(sessions, "session")}</td>")
-                : "<td class=\"r\"><span class=\"degraded\">no date</span></td>");
+                ? Formatted($"<td class=\"r num\" data-sessions=\"{sessions}\">in {sessions} trading {(sessions == 1 ? "day" : "days")}</td>")
+                : "<td class=\"r\"><span class=\"degraded\">no date on file</span></td>");
 
             if (newest)
             {
@@ -86,7 +91,6 @@ public sealed partial class MarkRenderer
         }
 
         html.Append("</tbody></table></div>");
-        html.Append(Invariant, $"<p class=\"forming-key\">{Escaped(CloseToBuyGuide)}</p>");
 
         if (newest && universe is { Length: > 0 })
         {

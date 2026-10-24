@@ -20,5 +20,5 @@ public static class RuleScreenWords
     // The forming list's closing line: what the rule would read of a member that broke out, which is every other gate,
     // as on any night, and never a listing from this list.
     public const string FormingClosingLine =
-        "These have not broken out. If one closes above its breakout price on the volume shown, with its range under the rule's ceiling and the market check open, the rule reads its other gates that night as on any other, and lists five at most.";
+        "These have not broken out. If one closes above the price shown on the volume shown, after a quiet spell and with the market check open, the setup reads its other steps that night as on any other, and picks five at most.";
 }

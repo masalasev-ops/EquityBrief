@@ -50,46 +50,47 @@ public partial class FixtureExpectations
         // Each funnel carries the four members the night read for its rule, each of which reached its first gate.
         Assert.All(rows, row => Assert.Equal(4, RuleRows.ReachedOf(row[1])));
 
-        // The line by the suite's own arithmetic: the largest fall from one gate's count to the next, the earlier gate
-        // taking a tie, with the fall and the count reaching it; and the completed stretches against the thirty a usual
-        // stretch waits for, none past them being read on a store of one night.
-        static string Line(string gates, int completed)
+        // From 22.6 the card's sentence by the suite's own arithmetic: no picks, then the step where the largest fall from
+        // one gate's count to the next fell, the earlier gate taking a tie, in the words section 15.23 declares for a stock
+        // missing it, with the fall and the count reaching it, and where some went past it the furthest step any passed.
+        static string Sentence(string family, string gates)
         {
             var funnel = JsonDocument.Parse(gates).RootElement.EnumerateArray()
                 .Select(gate => (Gate: gate.GetProperty("gate").GetString()!, Passed: gate.GetProperty("passed").GetInt32()))
                 .ToArray();
-            (string Gate, int Stopped, int Reached)? largest = null;
+            var said = "No picks tonight.";
+            var (dropAt, stopped) = (-1, 0);
 
             for (var at = 1; at < funnel.Length; at++)
             {
-                var stopped = funnel[at - 1].Passed - funnel[at].Passed;
-
-                if (stopped > 0 && (largest is null || stopped > largest.Value.Stopped))
+                if (funnel[at - 1].Passed - funnel[at].Passed is var fell && fell > stopped)
                 {
-                    largest = (funnel[at].Gate, stopped, funnel[at - 1].Passed);
+                    (dropAt, stopped) = (at, fell);
                 }
             }
 
-            var parts = new List<string> { "nothing tonight" };
-
-            if (largest is { } drop)
+            if (dropAt < 0)
             {
-                parts.Add(FormattableString.Invariant($"most stopped at the {drop.Gate} gate ({drop.Stopped} of {drop.Reached})"));
+                return said;
             }
 
-            parts.Add(FormattableString.Invariant($"no usual stretch yet ({completed} of 30)"));
+            said += FormattableString.Invariant($" The step most stocks missed: {Web.Marks.ReaderWords.Missed(family, funnel[dropAt].Gate)}, {stopped} of the {funnel[dropAt - 1].Passed} that got that far.");
 
-            return string.Join(" · ", parts);
+            var lastAt = Array.FindLastIndex(funnel, gate => gate.Passed > 0 && gate.Gate != "market");
+
+            return lastAt >= dropAt
+                ? said + FormattableString.Invariant($" The furthest any got: {Web.Marks.ReaderWords.Passed(family, funnel[lastAt].Gate)}, {funnel[lastAt].Passed} of them.")
+                : said;
         }
 
-        // Each ruled family's line as the file works it, the dip's from 22.1 its own.
-        string LineOf(string family) => (family == Core.Families.DipRule.Name ? expected.GetProperty("dipLine") : expected.GetProperty("ruledLine")).GetString()!;
-
-        Assert.All(rows, row => Assert.Equal(LineOf(row[0]), Line(row[1], int.Parse(row[2], System.Globalization.CultureInfo.InvariantCulture))));
+        // The completed stretches against the thirty a usual stretch waits for, none past them being read on a store of
+        // one night, which each ruled card's quiet-nights line says.
+        Assert.All(rows, row => Assert.Equal("0", row[2]));
         Assert.Equal(30, RuleStretch.CompletedStretchesFloor);
 
-        // Each card read back off the page in the one family order, the ruled family's line the one worked above with its
-        // funnel marking that gate, and every other family's line Nothing tonight with no tabs and no funnel.
+        // Each card read back off the page in the one family order, the ruled family's sentence the one worked above with
+        // its funnel marking that gate, and every other family's no picks with the reason its answers give, one choice in
+        // its Showing list and no funnel.
         using var host = new Reading.ReadSurface.Host(store.Root);
         using var client = host.CreateClient();
 
@@ -108,23 +109,35 @@ public partial class FixtureExpectations
             if (ruled.Contains(family))
             {
                 var row = rows.Single(stored => stored[0] == family);
+                var stated = family == Core.Families.DipRule.Name ? expected.GetProperty("dipLine").GetString()! : expected.GetProperty("ruledLine").GetString()!;
 
-                Assert.Contains($"<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">{Line(row[1], int.Parse(row[2], System.Globalization.CultureInfo.InvariantCulture))}</span>", card, StringComparison.Ordinal);
+                // The sentence the file states by hand is the suite's own arithmetic over the stored funnel, and the card's.
+                Assert.StartsWith(Sentence(family, row[1]), stated, StringComparison.Ordinal);
+                Assert.Contains($"<p class=\"card-summary\" data-summary><span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">{stated}</span></p>", card, StringComparison.Ordinal);
+                Assert.Contains("it is too new to know a normal quiet run, 0 of the 30 runs it needs having ended", card, StringComparison.Ordinal);
                 var (gates, largestDrop) = family == Core.Families.DipRule.Name
                     ? (expected.GetProperty("dipFunnel").GetProperty("gates").GetInt32(), expected.GetProperty("dipFunnel").GetProperty("largestDrop").GetString())
                     : (9, "setup");
 
                 Assert.Contains($"<div class=\"funnel-bar\" data-gates=\"{gates}\" data-largest-drop=\"{largestDrop}\" data-market-row=\"false\">", card, StringComparison.Ordinal);
-                Assert.Contains("<nav class=\"rule-tabs\"", card, StringComparison.Ordinal);
             }
             else
             {
-                // One tab, the provisional rule's, as its pill reads with no freeze registered, and no funnel.
-                Assert.Contains($"<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">{expected.GetProperty("unruledLine").GetString()}</span>", card, StringComparison.Ordinal);
-                Assert.Contains("<span class=\"status-pill provisional\"", card, StringComparison.Ordinal);
-                Assert.Equal(["Provisional"], Regex.Matches(card, "<a class=\"rule-tab[^>]*>([^<]*)</a>").Select(match => match.Groups[1].Value));
+                // One choice, the setup as it runs, as its pill reads with no freeze registered, and no funnel.
+                Assert.Contains($"<p class=\"card-summary\" data-summary><span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">{expected.GetProperty("unruledLine").GetString()} ", card, StringComparison.Ordinal);
                 Assert.DoesNotContain("funnel-bar", card, StringComparison.Ordinal);
             }
+        }
+
+        // Each card's header and Showing list: a ruled family's choices with the setup as it runs first, and an unruled
+        // family's that one alone, each pill reading not yet tested with no freeze registered.
+        foreach (var family in cards.Where(family => family != Core.Families.HeavyweightRule.Name))
+        {
+            var head = Regex.Match(page, $"<section class=\"card setup-card\" id=\"setup-{family}\" data-card=\"family\".*?</header>.*?</div></div>", RegexOptions.Singleline).Value;
+
+            Assert.Contains("<span class=\"status-pill provisional\"", head, StringComparison.Ordinal);
+            Assert.Contains($"<select id=\"rule-{family}\" class=\"rule-select\" data-rule-choice=\"{family}\"", head, StringComparison.Ordinal);
+            Assert.Equal("The setup as it runs, not yet tested", Regex.Matches(head, "<option [^>]*>([^<]*)</option>").Select(match => match.Groups[1].Value).First());
         }
 
         // From the 19.3 correction of 2026-10-24 the stocks one gate short each card draws, as the file works them: NFLX under
@@ -144,6 +157,6 @@ public partial class FixtureExpectations
 
         Assert.Contains($"data-holdings=\"{heavyweights.GetProperty("holdings").GetInt32()}\" data-sectors=\"{heavyweights.GetProperty("sectors").GetInt32()}\" data-of=\"{heavyweights.GetProperty("of").GetInt32()}\"", tiles, StringComparison.Ordinal);
         Assert.Equal(heavyweights.GetProperty("of").GetInt32(), Core.Families.GicsSectors.Funds.Count);
-        Assert.Contains("<div class=\"hw-tile\"><b>none</b><span>no rebalance read yet</span></div>", page, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"hw-tile\"><span class=\"tile-label\">Since the last reshuffle</span><b>none</b><span>no reshuffle read yet</span></div>", page, StringComparison.Ordinal);
     }
 }

@@ -74,10 +74,10 @@ public static partial class TonightScreen
         var empty = cells.Length > 0
             ? null
             : last is not { } rebalance
-                ? FormattableString.Invariant($"No rebalance has been read yet. The book reads its first on the next night the store holds that night's closes of the index and of each sector's fund, and the store's year with the pulled history before it the {HeavyweightRule.SessionsNeeded(HeavyweightRule.Live)} sessions its readings need, ranking each member by the company and share counts the quarters fetch stores from the answer it already asks for.")
+                ? FormattableString.Invariant($"No reshuffle has been read yet. The first is read on the next night the store holds that night's closes of the index and of each sector's fund, and {HeavyweightRule.SessionsNeeded(HeavyweightRule.Live)} trading days of closes in the store's year with the history pulled before it, each company ranked by its value from the share counts stored with its quarterly reports.")
                 : entered.Length == 0
-                    ? FormattableString.Invariant($"No sector's largest companies led their sector's fund above nothing while passing the trend gate with a beta of at least one at the rebalance of {rebalance:yyyy-MM-dd}, so the book holds nothing until the next.")
-                    : FormattableString.Invariant($"Every holding the rebalance of {rebalance:yyyy-MM-dd} bought has been sold since, as the notes beneath say.");
+                    ? FormattableString.Invariant($"At the reshuffle of {rebalance:d MMM yyyy}, none of the sectors' largest companies beat its sector's fund while in an uptrend and moving at least as much as the market, so it holds nothing until the next.")
+                    : FormattableString.Invariant($"Everything the reshuffle of {rebalance:d MMM yyyy} bought has been sold since, as the lines beneath say.");
         var next = HeavyweightRule.NextRebalance(night, last, HeavyweightRule.Live, readsBefore);
 
         return new HeavyweightCardView(words.Heading, words.Eyebrow, RuleWords.Heavyweights(HeavyweightRule.Live), HeavyweightRule.Live.LookBack, last, next, cells, entered, ended, empty, liveSince, variants, Waits: Waiting(night, last, next, HeavyweightRule.Live, readsBefore));
@@ -94,12 +94,12 @@ public static partial class TonightScreen
             return null;
         }
 
-        var on = next is { } day ? FormattableString.Invariant($"on {day:yyyy-MM-dd}") : "past the exchange calendar's table";
+        var on = next is { } day ? FormattableString.Invariant($"on {day:d MMM yyyy}") : "past the exchange calendar's table";
         var need = HeavyweightRule.SessionsNeeded(settings);
 
         return !readsBefore && BarRetention.SessionsTo(night) is { } held && held < need
-            ? FormattableString.Invariant($"The rebalance of this month waits: the year of closes the store keeps to {night:yyyy-MM-dd} holds {held} sessions and its readings need {need}, so the book reads it {on}.")
-            : $"The rebalance of this month has not been read, and the book tries again {on}.";
+            ? FormattableString.Invariant($"This month's reshuffle waits: the year of closes the store keeps to {night:d MMM yyyy} holds {held} trading days and its readings need {need}, so it is read {on}.")
+            : $"This month's reshuffle has not been read yet, and it is tried again {on}.";
     }
 
     // The line an S&P 400's or 600's book draws for a sector it holds nothing in, since its rebalance stores its holdings

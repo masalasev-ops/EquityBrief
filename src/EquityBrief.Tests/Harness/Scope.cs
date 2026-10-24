@@ -3199,7 +3199,15 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Tonight's buy points")] = new Scoped(
             Verdict.Pass,
-            "every family's picks in one table in the one order and each family's own, tagged and numbered from one across the table; from 19.3 each row's report state, business and stories read off the row, and a row opened beneath another held inside the box the table scrolls in by the stylesheet's rule; and from the 19.2 correction of 2026-10-21 every row followed by its fold holding the stock's plan and its pick's card, hidden where the link names no row and open for the row a link names, its control the one in the row's stock cell, the S&P 500's plan worked by hand from its stored ladder and bands and the S&P 400's and 600's a stored band against its close with the line naming its rule's buy, stop and target, on both kinds of index",
+            "every family's picks in one table in the one order and each family's own, tagged and numbered from one across the table; from 19.3 each row's report state, business and stories read off the row, and a row opened beneath another held inside the box the table scrolls in by the stylesheet's rule; from the 19.2 correction of 2026-10-21 every row followed by its fold, hidden where the link names no row and open for the row a link names, its control the one in the row's stock cell; and from 22.6 the table's sentence and columns read off the page and each fold holding its pick's card alone with one stop and no levels plan though the night stored a band for the stock, on both kinds of index",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Tonight in one minute")] = new Scoped(
+            Verdict.Pass,
+            "each of its four lines read off the rendered page and worked by hand over constructed nights on both kinds of index: the market's sentence open and closed with the share against the floor, an S&P 400 night whose setups each read a check of their own, the picks and the setups they came from with the stocks qualifying, the trades still open and those ended tonight by how each ended, and the stocks one step short with the link opening them or the words that none was read",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Words used on this page")] = new Scoped(
+            Verdict.Pass,
+            "the glossary read off the foot of the rendered page with every word it holds, on both kinds of index, and no card of the page drawing a guide behind a press",
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Tonight's stocks one gate short")] = new Scoped(
             Verdict.Pass,
@@ -6734,6 +6742,9 @@ internal static class Scope
         [CheckReach.Key(LedgerPage, "The short-term dip's setups")] = "22.2",
         // 22.4's one, which the plan names as section 15's chart page rows.
         [CheckReach.Key("15.22 Chart", "In brief")] = "22.4",
+        // 22.6's two, which the addendum names as Tonight in one minute and the page's words at its foot.
+        [CheckReach.Key("15.7 Tonight", "Tonight in one minute")] = "22.6",
+        [CheckReach.Key("15.7 Tonight", "Words used on this page")] = "22.6",
 
     };
 

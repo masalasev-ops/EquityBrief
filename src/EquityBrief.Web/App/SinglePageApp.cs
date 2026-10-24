@@ -325,47 +325,15 @@ public sealed partial class SinglePageApp : IComponent
         return (tiles, points);
     }
 
-    // A setup's card under its place and words, or, where it lists nothing and no variant is chosen, folded to its one
-    // line with no heading of its own.
+    // A setup's card from 22.6: its header with its name, its standing, tonight's count, what it buys and the Showing
+    // list, and its body opening on its summary sentence.
     // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
     static string SetupCard(MarkRenderer marks, FamilyCardView card, DateOnly night) =>
-        MarkRenderer.Folded(card)
-            ? Invariant($"<section class=\"card folded\" id=\"setup-{Escaped(card.Family)}\" data-card=\"family\"><div class=\"card-b\">{marks.FamilyCard(card)}</div></section>")
-            : Cards.Computed(
-                Invariant($"Setup {card.Place} of {card.Of} · {card.Eyebrow}"),
-                marks.FamilyCard(card),
-                stamp: Cards.Night(night),
-                id: "setup-" + card.Family,
-                region: "family");
+        Invariant($"<section class=\"card setup-card\" id=\"setup-{Escaped(card.Family)}\" data-card=\"family\" data-night=\"{night:yyyy-MM-dd}\"><div class=\"card-h\"><div>{marks.FamilyCardHead(card)}</div></div><div class=\"card-b\">{marks.FamilyCard(card)}</div></section>");
 
-    // A card of one line with its reading guide behind its "?".
-    static string LineCard(string region, string line, string guide) =>
-        Invariant($"<section class=\"card folded\" data-card=\"{Escaped(region)}\"><div class=\"card-b\"><div class=\"card-one-line\">{line}<details class=\"guide\"><summary title=\"How to read this\" aria-label=\"How to read this\">?</summary><p class=\"guide-b\">{Escaped(guide)}</p></details></div></div></section>");
-
-    // How tonight's buy points are read, written once for the table and for the line drawn in its place.
-    public const string BuyPointsGuide =
-        "Each row is one stock a setup lists tonight, tagged with its setup in the setup's hue, its plan set at the evening's close and bought at the next session's open. The stop is the price that says the plan was wrong and the target the price that says it was right. Press a row, or plan beside its stock, to open its plan and its card just beneath it, and again to fold them; any number may be open at once. A stock is listed once, under the first setup it qualified for in the page's order, and never while a trade for it is still open. The reward to risk is a fact about the chart and not a chance of anything.";
-
-    // Tonight's buy points as a card of their own, the table across every setup with its key, each row folding its plan
-    // and its card beneath it, the one the link names open; on a night no setup lists one, a line saying so with how many
-    // members stand one gate short, from 19.8 a link opening the card of them where any does, its guide behind its "?".
-    // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
-    static string BuyPointsCard(MarkRenderer marks, IReadOnlyList<BuyPointView> points, string? open, IReadOnlyDictionary<string, string>? plans, DateOnly night, int? oneShort = null, string? closeHref = null) =>
-        points.Count == 0
-            ? LineCard(
-                "buy-points",
-                Invariant($"<p class=\"buy-points-none\" data-buy-points=\"0\" data-one-short=\"{(oneShort is { } stated ? stated.ToString(CultureInfo.InvariantCulture) : "none")}\">No buy points tonight{(oneShort is not { } shortOf ? string.Empty : closeHref is { } href && shortOf > 0 ? Invariant($" · <a class=\"close-open\" href=\"{Escaped(href)}\">{shortOf} one gate short</a>") : Invariant($" · {shortOf} one gate short"))}</p>"),
-                BuyPointsGuide)
-            : Cards.Computed(
-                "Buy points",
-                marks.BuyPoints(points, open, plans) + Cards.Key(
-                    "How to read the table.",
-                    "Each row is one stock a setup lists tonight, tagged with its setup in the setup's hue, its plan set at the evening's close and bought at the next session's open. The stop is the price that says the plan was wrong and the target the price that says it was right. Press a row, or plan beside its stock, to open its plan and its card just beneath it, and again to fold them; any number may be open at once.",
-                    "A stock is listed once, under the first setup it qualified for in the page's order, and never while a trade for it is still open. The reward to risk is a fact about the chart and not a chance of anything."),
-                title: "Tonight's buy points",
-                lede: Invariant($"{points.Count} across every setup tonight."),
-                stamp: Cards.Night(night),
-                region: "buy-points");
+    // The sector heavyweights' card, laid out as a setup's.
+    static string HeavyweightsCard(MarkRenderer marks, HeavyweightCardView card, DateOnly night) =>
+        Invariant($"<section class=\"card setup-card\" id=\"setup-{EquityBrief.Core.Families.HeavyweightRule.Name}\" data-card=\"heavyweights\" data-night=\"{night:yyyy-MM-dd}\"><div class=\"card-h\"><div>{marks.HeavyweightCardHead(card)}</div></div><div class=\"card-b\">{marks.HeavyweightCard(card)}</div></section>");
 
     // The date line's words for a night not yet run, in place of the notice it drew: when tonight's night starts, in New
     // York's time with UTC beneath the pointer, read off the start the newest nights share; none for a night in any other
@@ -774,6 +742,13 @@ public sealed partial class SinglePageApp : IComponent
           const keptCard = kept ? kept.closest('section.card[data-card]') : null;
           if (keptCard) { keepPlace(kept, 'section.card[data-card="' + CSS.escape(keptCard.getAttribute('data-card')) + '"]'); }
           if (kept) { fresh = true; location.hash = merged(kept.getAttribute('data-merge-key'), kept.value === '' ? null : kept.value); }
+          // A card's Showing choice: the version it chooses kept in the link under the setup's own key with every other key
+          // kept, the live setup as the key's absence, so the default returns to it.
+          const rule = event.target.closest ? event.target.closest('select[data-rule-choice]') : null;
+          if (rule) {
+            keepPlace(rule, 'select[data-rule-choice="' + CSS.escape(rule.getAttribute('data-rule-choice')) + '"]');
+            location.hash = merged(rule.getAttribute('data-rule-choice'), rule.value === '{{{RuleScreenWords.LiveSlug}}}' ? null : rule.value);
+          }
         });
         // Words searched for kept in the link under the box's key with every other key kept, none where the box is
         // empty, and the page back to the first.
@@ -920,15 +895,6 @@ public sealed partial class SinglePageApp : IComponent
           if (hide) {
             const fold = hide.closest('details');
             if (fold) { fold.open = false; fold.querySelector('summary').scrollIntoView({ block: 'center' }); }
-            return;
-          }
-          // A card's tab: the rule it chooses kept in the link under the family's own key with every other key kept, the
-          // live rule as the key's absence, so the default returns to it.
-          const tab = event.target.closest('a[data-rule-tab]');
-          if (tab) {
-            event.preventDefault();
-            keepPlace(tab, 'a[data-rule-tab="' + CSS.escape(tab.getAttribute('data-rule-tab')) + '"]');
-            location.hash = merged(tab.getAttribute('data-rule-tab'), tab.getAttribute('data-value') === '{{{RuleScreenWords.LiveSlug}}}' ? null : tab.getAttribute('data-value'));
             return;
           }
           // A chip, a sector's tile or a column's heading keeps its card where it stood, found again by the card's mark.
@@ -2644,7 +2610,7 @@ public sealed partial class SinglePageApp : IComponent
         bool closeOpen = false,
         bool newest = true,
         string? closeHref = null,
-        IReadOnlyDictionary<string, string>? plans = null)
+        EndedTonightView? ended = null)
     {
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
@@ -2689,64 +2655,29 @@ public sealed partial class SinglePageApp : IComponent
                 region: "watch"));
         }
 
-        // On a night the families drew the page's list, one card a family in the page's order, each with
-        // its rule in a sentence, whether it is live or provisional, its picks and the notes on what it
-        // passed and the page holds back; on a night before them, the one list as it was drawn.
+        // On a night the families drew the page's list, from 22.6 the page redesigned in the reader's words: tonight in one
+        // minute, tomorrow's buys, the stocks one step from qualifying, the six setups, each setup's card, the sector
+        // heavyweights' card and the page's words; on a night before them, the one list as it was drawn.
         // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
-        if (families is not null)
+        // see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none
+        if (families is not null && line is not null)
         {
-            // The line the page opens its setups on: whether the market check left the lists open, and the
-            // night's counts across every setup.
-            // see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none
-            if (line is not null)
-            {
-                region.Append(marks.MarketLine(line with { RunHref = Invariant($"{RunRoute}{night:yyyy-MM-dd}"), Watching = watching, CloseHref = closeHref }));
-            }
-
-            // Tonight's top: a tile a setup, then one table of tonight's buy points across every setup, each row folding
-            // beneath it the stock's plan with the links the selected name's region carries and its pick's card, the row the
-            // link names open.
-            // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
-            var (tiles, points) = TopOf(families, heavyweights, line?.Open ?? true, night, dipOpen: line?.DipOpen);
-            var folded = points
-                .GroupBy(point => point.Pick.Row.Ticker, StringComparer.Ordinal)
-                .ToDictionary(
-                    point => point.Key,
-                    point => (plans?.GetValueOrDefault(point.Key) ?? string.Empty) + SelectedLinks(point.Key, point.First().Pick.Row),
-                    StringComparer.Ordinal);
-
-            region.Append(marks.SetupTiles(tiles));
-            region.Append(BuyPointsCard(marks, points, selectedTicker, folded, night, oneShort: line is { CloseRead: true } read ? read.Close : null, closeHref: closeHref));
-
-            // From 19.8 the stocks one gate short across every setup in one card beneath the buy points, folded to its line.
-            // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
-            if (closeToBuy is not null)
-            {
-                region.Append(marks.CloseToBuy(closeToBuy, closeOpen, newest, Universes.Large.Word));
-            }
-
-            // One card a setup, its header carrying the guide every setup card is read by in place of a key it repeated.
-            // see: Every region is a card ruled down its left by its role, stating where its figures came from and how to read them
-            foreach (var card in families)
-            {
-                region.Append(SetupCard(marks, card, night));
-            }
-
-            // The sector heavyweights' card after the swing families', its holdings, its last rebalance and its
-            // next, drawn whatever the market check read.
-            // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year and the pulled history before it hold the closes their readings need
-            // see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none
-            if (heavyweights is not null)
-            {
-                region.Append(Cards.Computed(
-                    Invariant($"Rotation · {heavyweights.Eyebrow}"),
-                    marks.HeavyweightCard(heavyweights),
-                    stamp: Cards.Night(night),
-                    id: "setup-" + EquityBrief.Core.Families.HeavyweightRule.Name,
-                    region: "heavyweights"));
-            }
+            region.Append(TonightCards(
+                marks,
+                night,
+                Invariant($"{RunRoute}{night:yyyy-MM-dd}"),
+                watching,
+                line with { CloseHref = closeHref, Universe = line.Universe },
+                families,
+                heavyweights,
+                closeToBuy,
+                closeOpen,
+                newest,
+                Universes.Large.Word,
+                selectedTicker,
+                ended));
         }
-        else
+        else if (families is null)
         {
         region.Append(Cards.Computed(
             "The list",
@@ -2808,12 +2739,13 @@ public sealed partial class SinglePageApp : IComponent
 
         // The selected name's plan and level summary, which is what section 15.7
         // means by the common case needing no navigation: selecting a row draws its
-        // plan beneath the list, on the same page, and brings it into view. On a night the families drew the list, a buy
-        // point's plan is folded beneath its row in the table instead, and this region draws any other name selected.
-        // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
-        var inTheTable = families is not null && selectedTicker is { } asked && families.Any(card => card.Picks.Any(pick => pick.Row.Ticker == asked));
+        // plan beneath the list, on the same page, and brings it into view. On a night the families drew the list, from
+        // 22.6 no plan is drawn here: a pick's card beneath its row holds its one plan, and the levels plan stays on the
+        // stock's full page.
+        // see: Each buy point's row folds its pick's card alone, and the levels plan stays on the stock's full page
+        var byFamilies = families is not null;
 
-        if (!inTheTable && selectedName.Length > 0 && selectedTicker is { } chosen)
+        if (!byFamilies && selectedName.Length > 0 && selectedTicker is { } chosen)
         {
             var picked = rows.Concat(close ?? []).FirstOrDefault(row => row.Ticker == chosen);
             var name = picked?.Distance?.Name;
@@ -2832,7 +2764,7 @@ public sealed partial class SinglePageApp : IComponent
                 id: "selected",
                 region: "selected"));
         }
-        else if (!inTheTable)
+        else if (!byFamilies)
         {
             region.Append(selectedName);
         }
@@ -2861,7 +2793,7 @@ public sealed partial class SinglePageApp : IComponent
         string? selectedTicker = null,
         IReadOnlyList<CloseToBuyRow>? closeToBuy = null,
         bool closeOpen = false,
-        IReadOnlyDictionary<string, string>? plans = null)
+        EndedTonightView? ended = null)
     {
         var region = new StringBuilder();
         var heading = "Tonight: " + universe.Titled;
@@ -2884,44 +2816,19 @@ public sealed partial class SinglePageApp : IComponent
             return region.ToString();
         }
 
-        // A night whose part failed opens on the words its cards carry in place of a market line it did not read.
-        region.Append(notComputed is { } said
-            ? $"<p class=\"degraded\" data-index-night=\"not-computed\">{Escaped(said)}</p>"
-            : marks.MarketLine(line with { RunHref = Invariant($"{RunRoute}{night:yyyy-MM-dd}{query}") }));
+        // A night whose part failed says so above its cards.
+        if (notComputed is { } said)
+        {
+            region.Append($"<p class=\"degraded\" data-index-night=\"not-computed\">{Escaped(said)}</p>");
+        }
 
-        // Tonight's top, as the S&P 500's: a tile a setup and one table of the index's buy points across every setup, each
-        // row folding beneath it the bands the night stored for the stock, with the line saying its plan is read for the
-        // S&P 500's members alone, and its pick's card, the row the link names open.
-        // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
-        var (tiles, points) = TopOf(families, heavyweights, line.Open, night, line.Checks, line.DipOpen);
-        var open = points.Any(point => point.Pick.Row.Ticker == selectedTicker) ? selectedTicker : null;
-
-        region.Append(marks.SetupTiles(tiles));
-        region.Append(BuyPointsCard(marks, points, open, plans, night, line.CloseRead ? line.Close : null, line.CloseHref));
-
-        // From 19.8 the card of the stocks one gate short, read from 20.11 off every part's answer the night stored, with no
-        // Watch press since the watch list holds the S&P 500's names alone; a night storing only the first part each member
-        // failed says it reads none.
+        // From 22.6 the page redesigned as the S&P 500's, with no watch list, which holds the S&P 500's names alone, and no
+        // Watch press on the stocks one step from qualifying; read from 20.11 off every part's answer the night stored, a
+        // night storing only the first part each member failed saying it reads none.
         // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
-        region.Append(marks.CloseToBuy(line.CloseRead ? closeToBuy ?? [] : null, closeOpen, false, universe.Word));
+        var open = families.SelectMany(card => card.Picks).Any(pick => pick.Row.Ticker == selectedTicker) ? selectedTicker : null;
 
-        // One card a setup, its header carrying the guide every setup card is read by in place of a key it repeated.
-        // see: Every region is a card ruled down its left by its role, stating where its figures came from and how to read them
-        foreach (var card in families)
-        {
-            region.Append(SetupCard(marks, card, night));
-        }
-
-        if (heavyweights is not null)
-        {
-            region.Append(Cards.Computed(
-                Invariant($"Rotation · {heavyweights.Eyebrow}"),
-                marks.HeavyweightCard(heavyweights),
-                stamp: Cards.Night(night),
-                id: "setup-" + EquityBrief.Core.Families.HeavyweightRule.Name,
-                region: "heavyweights"));
-        }
-
+        region.Append(TonightCards(marks, night, Invariant($"{RunRoute}{night:yyyy-MM-dd}{query}"), null, line, families, heavyweights, closeToBuy, closeOpen, false, universe.Word, open, ended));
         region.Append("</section>");
 
         return region.ToString();

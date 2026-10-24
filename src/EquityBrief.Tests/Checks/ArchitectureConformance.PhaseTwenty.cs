@@ -55,8 +55,8 @@ public partial class ArchitectureConformance
     // The rows the document gains after phase 20's report, named beside the pair and never counted in it, which phase 22's
     // own report counts: 22.1's thirteen, the dip family's catalogue and matrix rows, its four stores, section 17's row,
     // section 18's four, its card on Tonight and its trades on Past picks, 22.2's three, section 17's grid of the dip's
-    // sweep, section 18's row for a market series it reads missing a session and the Ledger page's dip counts, and 22.4's
-    // one, the chart page's brief read.
+    // sweep, section 18's row for a market series it reads missing a session and the Ledger page's dip counts, 22.4's
+    // one, the chart page's brief read, and 22.6's two, Tonight in one minute and the page's words at its foot.
     internal static string[] AfterPhaseTwenty =>
     [
         .. ComponentAccess.DipRows,
@@ -66,6 +66,7 @@ public partial class ArchitectureConformance
         .. FixtureExpectations.DipLedgerClaims,
         .. Reading.ReadSurface.DipLedgerPageRows,
         .. Reading.ReadSurface.BriefRows,
+        .. Reading.ReadSurface.TonightRows,
     ];
 
     // The rows the document loses after phase 20's report: none.

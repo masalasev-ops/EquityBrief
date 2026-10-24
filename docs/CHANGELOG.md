@@ -26,6 +26,54 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-24 - ARCHITECTURE.html - section 15.7, Tonight redesigned in the reader's words, and its figure 15.3 redrawn
+Authorised by: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
+Was:
+> Watch list: ... from the 19.2 correction of 2026-10-13 on a night the setup families drew the page's list that line stands beneath the market line
+> A family's card: ... Its funnel leaves out the market check's row while the check is open, since it then passes every member read (see: ...)
+> A family's card's rule: ... on the S&amp;P 400 or 600 a variant reading no market check listed after the provisional rule by its registration's words, which end on the market check off as its tab does (see: ...)
+> The market line: ... from the 19.2 correction of 2026-10-13 beneath it in one line the link to what ran tonight on the Run page and on the S&amp;P 500 the watch list's line (see: ...)
+> Tonight's setups: ... Each tile draws tonight's count and its state in words, and a press opens its card (see: ...)
+> Tonight's buy points: ... From the 19.2 correction of 2026-10-13 a night no setup lists a buy point draws one line in the table's place saying so with how many members stand one gate short, its reading guide behind its "?" (see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it) (see: ...)
+> Tonight's stocks one gate short: ... Each family's card keeps its own stocks one gate short behind its expander (see: ...)
+> The sector heavyweights' card: ... the next rebalance's date; and a line saying why where it holds none (see: ...)
+> The list's note: ... and from the 19.2 correction of 2026-10-21 each row of tonight's buy points folds its plan and its pick's card beneath it, closed until a press on the row or a link naming it opens it; its ticker is a link opening the stock's chart page (see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it)
+> Figure 15.3: six parts, the bar, the title and the date line, the market line with what ran and the watch list beneath, a tile a setup, Tonight's buy points, and a row's fold holding its plan and its card.
+Now:
+> Each of those rows keeps its words and gains a passage from 22.6: the page's links on one line; each setup's card in the reader's words with its header, its Showing list, its summary sentence, its picks table's columns, its notes, its quiet-nights line and its folds, how the setup has done among them with its finished trades against the count a verdict needs; the Showing list in place of the tabs with a version's banner; the market line as Tonight in one minute's first line; the six setups as a card of tiles with each tile's lines; tomorrow's buys with its sentence and columns, each row folding its pick's card alone (see: Each buy point's row folds its pick's card alone, and the levels plan stays on the stock's full page); one step from qualifying with its sentence and columns; and the sector heavyweights' card laid out as a setup's with its sentence, tiles, holdings columns and folds. Two rows are added: Tonight in one minute, after the watch list's, and Words used on this page, before Close to a buy point. The list's note says from 22.6 each row of tomorrow's buys folds its pick's card alone, the levels plan staying on the stock's full page. Figure 15.3 is redrawn in eight parts: the bar, the title and the date line, the page's links, Tonight in one minute, tomorrow's buys, a row's fold holding its pick's card alone, one step from qualifying folded to its sentence, and the six setups' tiles.
+Why: the operator's addendum of 2026-10-24 redesigns Tonight from the mockup they approved, every piece of information the page drew staying reachable, and the levels plan leaving the pick's card.
+
+### 2026-10-24 - ARCHITECTURE.html - section 15.18, the pick's card redesigned in the reader's words, and its figure 15.2 redrawn
+Authorised by: Each buy point's row folds its pick's card alone, and the levels plan stays on the stock's full page
+Was:
+> 15.18: the paragraphs stating the card's six-line checklist, the rule's record, the score's part, the plan in money, the management, what could hit the trade and the operator's record, with no paragraph on how the card is laid out in the reader's words.
+> Figure 15.2: A pick's card, its eight parts numbered: the checklist, the rule's record, the plan in the operator's money, the management, what could hit the trade, the operator's own record beside the rule's picks on the same nights, the Taken press, and what is behind the stock.
+Now:
+> A paragraph after the card's second states that from 22.6 the card is drawn in the reader's words wherever it is drawn and opens on its sentence, and names its parts in order: why it qualified, one ticked sentence a step passed; the plan, one only and its setup's own, with the line saying the stock's levels on its full page are no second plan; other checks; what could go wrong before it ends; how this setup has done; setups most like this one as a plain verdict; how it compares with the index's stocks with what higher means under each heading; the operator's own trades; I bought this; and on Tonight the link to the stock's full page. Figure 15.2 is redrawn as the card's ten parts in that order, its key naming each.
+Why: the addendum asks for a pick's card with one plan, its setup's own, and its parts in plain words, the levels plan leaving the card.
+
+### 2026-10-24 - ARCHITECTURE.html - section 15.23, the steps' passed words, the headings' names on a pick's card, and Tonight among the pages the check covers
+Authorised by: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
+Was:
+> The word list below is declared once: each term the build uses with the reader's words a page draws in its place; each step a setup's rule stores with what a stock one step short of it missed; and what higher means under each heading of what is behind a stock.
+> Each step a setup stores, in the reader's words: three columns, Setup, The step as stored, and Missed, in the reader's words.
+> What higher means under each heading: two columns, Heading and Higher means.
+> The pages the plain-words check covers: one row, the chart page's brief read from 22.5.
+> The plain-words check renders each page the last table names ... A term is matched as a whole word or phrase in any case, with its plural, a space and a hyphen read alike. The code's own lists are held to these tables word for word in both directions; ...
+Now:
+> The word list below is declared once: each term the build uses with the reader's words a page draws in its place; each step a setup's rule stores with what a stock that passed it did, which a pick's card ticks, and what a stock one step short of it missed; and each heading of what is behind a stock with the name a pick's card gives it and what higher means under it.
+> ... A term is matched as a whole word or phrase in any case, with its plural, a space and a hyphen read alike; from 22.6 a word of more than one letter written all in capitals is a ticker, which the reader's words leave as it stands and the check reads as no term, a stock named HELD among them. The code's own lists ...
+> The steps table gains the column Passed, in the reader's words, between the step and the missed words, a row for each step as before. The headings table gains the column A pick's card names it, Analyst sentiment named Analysts and insiders and Size and liquidity named Size and trading. The pages table gains Tonight from 22.6, rendered over the fixture's night and over constructed nights on each index with the pick cards opened, and a pick's card over constructed figures in every part it draws.
+Why: the addendum's pick card ticks each step passed in its own words and names each heading by what higher means, and its plain-words check covers Tonight.
+
+### 2026-10-24 - .claude/rules/checks.md - plain-words reaches Tonight
+Authorised by: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
+Was:
+> plain-words: ... and the check shown to fail a term planted in a card's visible text in its plural, with a hyphen and in any case, and a card opening on anything but its summary sentence, and to pass the term in a glossary, a tooltip and an attribute and a word the term only begins |
+Now:
+> plain-words: ... and to pass the term in a glossary, a tooltip and an attribute and a word the term only begins; and from 22.6 Tonight, every card of it, each a region its row names, over the fixture's night and over nine constructed nights on the three indices with the pick cards opened beneath their rows, a pick's card drawn over constructed figures in every part and form it draws holding one plan with one stop, the steps' passed words and the headings' names held to their tables as the rest, and the check shown to fail a term planted in a pick's card, a card of the page opening on anything but its summary and a card of a region its row does not name; a word written all in capitals read as a ticker, left as it stands by the reader's words and read as no term by the check |
+Why: the roster row says what its check asserts, and 22.6 adds Tonight to the pages the check covers, where a stock named HELD was rewritten as a word until a ticker was left as it stands.
+
 ### 2026-10-24 - ARCHITECTURE.html - section 15.23, the reader's words: the word list declared once and the pages the plain-words check covers
 Authorised by: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
 Was:

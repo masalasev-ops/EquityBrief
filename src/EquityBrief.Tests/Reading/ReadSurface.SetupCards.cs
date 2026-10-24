@@ -194,36 +194,35 @@ public partial class ReadSurface
     [Fact]
     public void ACardListingNothingSaysSoInOneLineOnBothSidesOfItsFloors()
     {
-        // Under the floors: no usual stretch yet, the completed stretches against the thirty the mark waits for.
-        Assert.Contains(
-            "<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">nothing tonight · most stopped at the volume gate (8 of 9) · no usual stretch yet (29 of 30)</span>",
-            EmptyCard(new StretchLineView(14, null, false, 29, 600)),
-            StringComparison.Ordinal);
+        // From 22.6 the card opens on its sentence, worked by hand over the funnel: no picks tonight, the step most stocks
+        // missed in the setup's own words for it, the volume stopping 8 of the 9 reaching it, and the furthest any got, its
+        // trade's room for its stop, which 1 passed.
+        const string Said = "No picks tonight. The step most stocks missed: volume too light, 8 of the 9 that got that far. The furthest any got: room for its stop, 1 of them.";
 
-        // At the floors: the empty stretch against its usual longest, and past it flagged.
-        Assert.Contains(
-            "<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">nothing tonight · most stopped at the volume gate (8 of 9) · empty 14 nights, its usual longest 48</span>",
-            EmptyCard(new StretchLineView(14, 48, false, 30, 600)),
-            StringComparison.Ordinal);
-        Assert.Contains(
-            "<span class=\"family-empty-line flagged\" data-picks=\"0\" data-flagged=\"true\">nothing tonight · most stopped at the volume gate (8 of 9) · empty 49 nights, its usual longest 48</span>",
-            EmptyCard(new StretchLineView(49, 48, true, 30, 600)),
-            StringComparison.Ordinal);
-        Assert.Contains("· empty 1 night, its usual longest 48</span>", EmptyCard(new StretchLineView(1, 48, false, 30, 600)), StringComparison.Ordinal);
+        // Under the floors: the quiet-nights line says it is too new to know a normal quiet run, the completed stretches
+        // against the thirty the mark waits for.
+        var under = EmptyCard(new StretchLineView(14, null, false, 29, 600));
 
-        // A card listing nothing folds to its one line, its name, its pill and the line in the summary of a fold that opens
-        // on a press, the rest behind it; it names no pick and draws no stretch line of its own, and says why it lists
-        // nothing once: neither the sentence repeating its funnel nor the funnel's own line beneath the bars is drawn.
+        Assert.Contains($"<p class=\"card-summary\" data-summary><span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">{Said}</span></p>", under, StringComparison.Ordinal);
+        Assert.Contains(">Quiet nights: this is its 14th quiet night in a row; it is too new to know a normal quiet run, 29 of the 30 runs it needs having ended.</p>", under, StringComparison.Ordinal);
+
+        // At the floors: the quiet run against its usual longest, and past it flagged on its sentence and its line.
+        var flagged = EmptyCard(new StretchLineView(49, 48, true, 30, 600));
+
+        Assert.Contains(">Quiet nights: this is its 14th quiet night in a row; runs of up to 48 have happened before.</p>", EmptyCard(new StretchLineView(14, 48, false, 30, 600)), StringComparison.Ordinal);
+        Assert.Contains($"<span class=\"family-empty-line flagged\" data-picks=\"0\" data-flagged=\"true\">{Said}</span>", flagged, StringComparison.Ordinal);
+        Assert.Contains(">Quiet nights: this is its 49th quiet night in a row; runs of up to 48 have happened before, so this one is longer than usual.</p>", flagged, StringComparison.Ordinal);
+        Assert.Contains(">Quiet nights: this is its 1st quiet night in a row; runs of up to 48 have happened before.</p>", EmptyCard(new StretchLineView(1, 48, false, 30, 600)), StringComparison.Ordinal);
+
+        // A card listing nothing names no pick, says why in its sentence, and keeps the rest in its folds, each closed: the
+        // full rule, how the stocks it read were narrowed and how the setup has done.
         var card = EmptyCard(new StretchLineView(14, 48, false, 30, 600));
 
-        Assert.Contains("data-folded=\"true\"><details class=\"fam-fold\"><summary class=\"fam-line\"><span class=\"fam-tag\" data-family=\"breakout\">", card, StringComparison.Ordinal);
-        Assert.Matches("<summary class=\"fam-line\">.*<span class=\"status-pill live\"[^>]*>Live</span> <span class=\"family-empty-line\"[^>]*>nothing tonight[^<]*</span></summary><div class=\"fam-fold-b\">", card);
-        Assert.EndsWith("</div></details></section>", card, StringComparison.Ordinal);
-        Assert.DoesNotContain("<details class=\"fam-fold\" open", card, StringComparison.Ordinal);
         Assert.DoesNotContain("card-picks", card, StringComparison.Ordinal);
-        Assert.DoesNotContain("stretch-line", card, StringComparison.Ordinal);
-        Assert.DoesNotContain("degraded family-empty", card, StringComparison.Ordinal);
-        Assert.DoesNotContain("funnel-drop", card, StringComparison.Ordinal);
+        Assert.Contains("<details class=\"fold fam-rule\"><summary>The full rule, and how its settings were chosen</summary>", card, StringComparison.Ordinal);
+        Assert.Contains("<details class=\"fold fam-funnel\"><summary>How the 9 stocks it read were narrowed to 1</summary>", card, StringComparison.Ordinal);
+        Assert.Contains("<details class=\"fold fam-record\"><summary>How this setup has done</summary>", card, StringComparison.Ordinal);
+        Assert.DoesNotMatch("<details class=\"fold[^\"]*\" open", card);
 
         // The funnel leaves out the market check's row while the check is open, since it then passes every member read.
         Assert.Contains("data-market-row=\"false\"><ol class=\"rule-funnel\"><li data-gate=\"new high\"", card, StringComparison.Ordinal);
@@ -241,10 +240,10 @@ public partial class ReadSurface
             397);
 
         Assert.Contains(
-            "<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">nothing tonight · the market check closed · empty 18 nights, its usual longest 58</span>",
+            "<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">No picks tonight: the market check closed its list.</span>",
             shut,
             StringComparison.Ordinal);
-        Assert.DoesNotContain("degraded family-empty", shut, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"funnel-drop\" data-drop=\"market\">No stock got past the first step tonight: the market check closed.</p>", shut, StringComparison.Ordinal);
         Assert.Contains("data-largest-drop=\"market\" data-market-row=\"true\"", shut, StringComparison.Ordinal);
         Assert.Equal(
             [("market", "0", "397", true, "0", "0 of 397"), ("setup", "0", "0", false, "0", "0 of 0"), ("floors", "0", "0", false, "0", "0 of 0")],
@@ -277,9 +276,11 @@ public partial class ReadSurface
         var card = new MarkRenderer().FamilyCard(new FamilyCardView("breakout", "Breakout", "Breakouts to a new high", "Breakout from a base", "A stock closes above its high.", 2, 3, new DateOnly(2026, 1, 2), 1, [], [], "No stock passed this setup tonight.", RuleChoice: chosen));
 
         Assert.False(MarkRenderer.Folded(new FamilyCardView("breakout", "Breakout", "Breakouts to a new high", "Breakout from a base", "A stock closes above its high.", 2, 3, new DateOnly(2026, 1, 2), 1, [], [], null, RuleChoice: chosen)));
-        Assert.Contains("data-folded=\"false\"><header class=\"fam-head\"", card, StringComparison.Ordinal);
-        Assert.DoesNotContain("fam-fold", card, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"funnel-drop\" data-drop=\"volume\">Most stopped at the volume gate: 8 of the 9 reaching it.</p>", card, StringComparison.Ordinal);
+
+        // From 22.6 the card opens on what the version chosen would buy, beneath it the banner saying it is a version being
+        // tested and not tonight's picks, and its funnel's fold names the step most stocks missed in the setup's words.
+        Assert.Contains("data-folded=\"false\"><p class=\"card-summary\" data-summary>This version finds no pick tonight.</p><div class=\"variant-band\" role=\"status\" data-variant=\"1\"><p class=\"band-head\">A version being tested, not tonight's picks</p><p>Version: volume 1.25 times</p>", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"funnel-drop\" data-drop=\"volume\">The step most stocks missed: volume too light, 8 of the 9 that got that far.</p>", card, StringComparison.Ordinal);
     }
 
     // A constructed S&P 400 night whose first gate drawn stops all but one: its three members read with the market check
@@ -308,7 +309,7 @@ public partial class ReadSurface
         Assert.Equal(
             [("setup", "1", "3", true, "33.3", "1 of 3"), ("floors", "1", "1", false, "100", "1 of 1"), ("profit", "1", "1", false, "100", "1 of 1"), ("interest cover", "1", "1", false, "100", "1 of 1")],
             FunnelRows(card));
-        Assert.Contains("<p class=\"funnel-drop\" data-drop=\"setup\">Most stopped at the setup gate: 2 of the 3 reaching it.</p>", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"funnel-drop\" data-drop=\"setup\">The step most stocks missed: not at a new high on heavy volume, 2 of the 3 that got that far.</p>", card, StringComparison.Ordinal);
     }
 
     // A constructed S&P 400 night whose market check closed, the index's own breadth of seven in seventeen under the
@@ -437,9 +438,9 @@ public partial class ReadSurface
             }));
 
         Assert.Contains("<td class=\"r num\" data-number=\"since_high\" data-value=\"4\">4</td><td class=\"r num\" data-number=\"volume_multiple\" data-value=\"1.6\">1.60 times</td><td class=\"r num\" data-number=\"range_ratio\" data-value=\"none\" data-none=\"not reached\"><span class=\"degraded\">none, not reached</span></td>", drawn, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"missed-gate\" title=\"volume 1.60 times its 50-session average, below 1.75\"><b>volume</b></td>", drawn, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"missed-gate\" title=\"volume 1.60 times its 50-day average, below 1.75\"><b>Volume too light</b></td>", drawn, StringComparison.Ordinal);
         Assert.Equal(["not read", "no setup stored", "not stored"], Regex.Matches(Assert.Single(Blocks(drawn, "<tr data-ticker=\"B2\".*?</tr>")), "data-none=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
-        Assert.Contains("<summary>One gate short of a buy point: 2</summary>", drawn, StringComparison.Ordinal);
+        Assert.Contains("<summary>Stocks one step short (2)</summary>", drawn, StringComparison.Ordinal);
     }
 
     // From the 19.3 correction of 2026-10-24, worked by hand: on an index whose answers hold no values, a family's own
@@ -574,16 +575,16 @@ public partial class ReadSurface
 
         // K3: its volume as the shared list words it, 1.20 times, its ranges at 0.70 and 3 sessions since its high.
         Assert.Contains("<td class=\"r num\" data-number=\"since_high\" data-value=\"3\">3</td><td class=\"r num\" data-number=\"volume_multiple\" data-value=\"1.2\">1.20 times</td><td class=\"r num\" data-number=\"range_ratio\" data-value=\"0.7\">0.70</td>", Row(BreakoutRule.Name, "K3"), StringComparison.Ordinal);
-        Assert.Equal("volume 1.20 times its 50-session average, below 1.5", Words(BreakoutRule.Name, "K3"));
+        Assert.Equal("volume 1.20 times its 50-day average, below 1.5", Words(BreakoutRule.Name, "K3"));
 
         // K5: no average, so its volume stored nothing, as the shared list says; no readings, so its high is not read.
         Assert.Contains("<td class=\"r num\" data-number=\"since_high\" data-value=\"none\" data-none=\"not read\"><span class=\"degraded\">none, not read</span></td><td class=\"r num\" data-number=\"volume_multiple\" data-value=\"none\" data-none=\"not stored\"><span class=\"degraded\">none, not stored</span></td><td class=\"r num\" data-number=\"range_ratio\" data-value=\"0.8\">0.80</td>", Row(BreakoutRule.Name, "K5"), StringComparison.Ordinal);
-        Assert.Equal("not available: no 50-session average volume is stored for the night", Words(BreakoutRule.Name, "K5"));
+        Assert.Equal("not available: no 50-day average volume is stored for the night", Words(BreakoutRule.Name, "K5"));
 
         // D1: its reaction of 5.21 moves, its volume of 1.74 times as the shared list words it, and 1 session since the
         // report.
         Assert.Contains("<td class=\"r num\" data-number=\"reaction_moves\" data-value=\"5.2065185076060505\">5.21 moves</td><td class=\"r num\" data-number=\"volume_multiple\" data-value=\"1.7359287717276313\">1.74 times</td><td class=\"r num\" data-number=\"freshness\" data-value=\"1\">1</td>", Row(DriftRule.Name, "D1"), StringComparison.Ordinal);
-        Assert.Equal("the reaction session's volume was 1.74 times its 50-session average, below 2.0", Words(DriftRule.Name, "D1"));
+        Assert.Equal("the report day's volume was 1.74 times its 50-day average, below 2.0", Words(DriftRule.Name, "D1"));
 
         // And no cell on any card's table draws none without why.
         Assert.DoesNotMatch("data-value=\"none\"(?! data-none=)", page);

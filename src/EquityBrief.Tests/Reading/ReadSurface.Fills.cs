@@ -39,15 +39,15 @@ public partial class ReadSurface
         Assert.Contains($"<td class=\"r num\" data-buy=\"100\"><span class=\"degraded\">{TradeFills.NoNextSession}</span></td>", unfilled, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r res\" data-result=\"none\"><span class=\"degraded\">none</span></td>", unfilled, StringComparison.Ordinal);
 
-        // Tonight's buy points say once beneath the table that each pick buys at the next open with its plan.
+        // Tonight's buy points say once beneath the table that each pick buys at the next open with its plan, from 22.6 in
+        // the one line on how to read the table.
         using var tonightStore = await FamilyPagesStore();
         using var tonightHost = new Host(tonightStore.Root);
         using var tonightClient = tonightHost.CreateClient();
 
-        Assert.Contains(
-            $"</table></div><p class=\"buys-next\">Each pick {TradeFills.Waiting}, the open of the session after this night, with its stop and target where this night's close set them.</p>",
-            WebUtility.HtmlDecode(await tonightClient.GetStringAsync($"/screens/tonight/{TheSwitch}")),
-            StringComparison.Ordinal);
+        Assert.Matches(
+            "</table></div><p class=\"buys-read\">[^<]* Each pick is bought at tomorrow's open, with its stop and target where tonight's close set them\\.</p>",
+            WebUtility.HtmlDecode(await tonightClient.GetStringAsync($"/screens/tonight/{TheSwitch}")));
     }
 
     internal static void FillAtTheirOwnBuy(TemporaryStore store) =>

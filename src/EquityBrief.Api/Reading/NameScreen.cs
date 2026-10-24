@@ -2289,14 +2289,8 @@ public static partial class NameScreen
     // Why a stock holds no plan where the night stored no ladder for it, the plan being worked for the S&P 500 alone.
     public const string PlanForTheLargeIndexAlone = "no plan is stored for the night, the plan being read for the S&P 500's members alone";
 
-    // What an S&P 400 or 600 buy point's fold says in the plan column's place: its plan is its rule's buy, stop and target,
-    // which its row and its card draw, and the ladder the column draws at the bands is worked for the S&P 500 alone.
-    // see: Each buy point's row folds its plan and its card beneath it, closed until a press on the row or a link naming it opens it
-    public static string LadderForTheLargeIndexAlone(string ticker) =>
-        ticker + "'s plan is its rule's buy, stop and target, drawn in its row and on its card beneath; the ladder of buys and sells at its bands is worked for the S&P 500's members alone, so the bands the night stored for it stand here alone.";
-
-    // The plan region alone, which is what tonight's list shows for the selected
-    // name and a buy point's fold holds: the plan column and the two tables it is
+    // The plan region alone, which is what tonight's list showed for the selected
+    // name on a night before the families drew it: the plan column and the two tables it is
     // read beside. Section 15.7 says the common case of checking a plan needs no
     // navigation. Where no ladder is stored and a reason is given, the column
     // says why and the plan's two tables are left out.

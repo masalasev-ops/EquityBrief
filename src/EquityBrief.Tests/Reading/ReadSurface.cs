@@ -174,6 +174,9 @@ public partial class ReadSurface
             // 22.4, the chart page's brief read.
             .. BriefRows,
 
+            // 22.6, Tonight in one minute and the page's words at its foot.
+            .. TonightRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 

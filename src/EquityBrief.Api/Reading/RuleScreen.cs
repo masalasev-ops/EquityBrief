@@ -395,17 +395,17 @@ public static class RuleScreen
         var line = verdict switch
         {
             { Passed: true, Adjusted: { } p } => FormattableString.Invariant(
-                $"This book's design passed the year-by-year test: the run for {verdict.Month} read {named} six settings at an adjusted p of {p:0.00} against the bar of {LoopGate.Bar:0.0000}."),
+                $"This version's design passed the year-by-year test: the run for {verdict.Month} put the chance that {named} six settings did as well by luck at {p:0.00}, within the {LoopGate.Bar:0.0000} it needs."),
             { Adjusted: { } p } => FormattableString.Invariant(
-                $"This book did not pass the year-by-year test: the run for {verdict.Month} read {named} six settings at an adjusted p of {p:0.00} against the bar of {LoopGate.Bar:0.0000}, so it does not read as better than the provisional rule."),
+                $"This version did not pass the year-by-year test: the run for {verdict.Month} put the chance that {named} six settings did as well by luck at {p:0.00}, against the {LoopGate.Bar:0.0000} it needs, so it does not read as better than the starting setup."),
             _ => FormattableString.Invariant(
-                $"This book did not pass the year-by-year test: the run for {verdict.Month} held too few blocks to read {named} six settings, so it does not read as better than the provisional rule."),
+                $"This version did not pass the year-by-year test: the run for {verdict.Month} held too little history to read {named} six settings, so it does not read as better than the starting setup."),
         };
 
         if (parameters.GetValueOrDefault(IndexHeavyweightCandidate.TwelveOneParameter) == 1)
         {
             line += FormattableString.Invariant(
-                $" It reads twelve months' strength from {TwelveMonthStrength.From} sessions back, the oldest close the night holds, one session short of the {SweepAxes.TwelveMonthSessions} the search read.");
+                $" It reads twelve months' strength from {TwelveMonthStrength.From} trading days back, the oldest close the night holds, one trading day short of the {SweepAxes.TwelveMonthSessions} the search read.");
         }
 
         return new UntestedLineView(line, verdict.Adjusted);

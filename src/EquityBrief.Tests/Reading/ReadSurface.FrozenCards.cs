@@ -61,20 +61,20 @@ public partial class ReadSurface
         0.1798,
         false);
 
-    // The frozen card's figures line those figures give, worked by hand: the setting read where none passed, 1,033 trades at
-    // +0.023 risks and -0.010 without its five largest, 0.091, 0.054, 0.033 and 0.078 above nothing of the eight, 2025 and
-    // 2026 in the loss's red, then the count against luck and the tester's p against the bar of 0.05 over 12, 0.0042 to four
-    // places.
+    // The frozen card's figures line those figures give, worked by hand, from 22.6 in the reader's words: the setting read
+    // where none passed, 1,033 trades at +0.023 risks, about $2.30 a $100 risked, and -0.010 without its five largest,
+    // 0.091, 0.054, 0.033 and 0.078 above nothing of the eight, 2025 at -$7.10 and 2026 at -$9.60, then the count against
+    // luck and the tester's p against the bar of 0.05 over 12, 0.0042 to four places.
     const string MidBreakoutFrozen =
         "<p class=\"family-frozen\" data-frozen=\"2026-10-02\" data-run=\"20261001T120000Z\" data-answer=\"none passed\" data-setting=\"high=251|volume=1.5|ceiling=1|stop=3|market=5\" " +
         "data-trades=\"1033\" data-edge=\"0.023\" data-years=\"2019=0.091 2020=0.054 2021=-0.012 2022=0.033 2023=-0.045 2024=0.078 2025=-0.071 2026=-0.096\" data-without-largest=\"-0.01\" " +
         "data-settings-read=\"378\" data-meeting=\"0\" data-luck=\"54.6\" data-tester-run=\"20261020T062626Z\" data-adjusted=\"0.1798\" data-tester-passed=\"false\" data-beat-luck=\"false\" data-ruled=\"none\" data-entry-kept=\"none\">" +
-        "Frozen on 2026-10-02 at the strongest setting its sweep read: " +
-        "1,033 trades at an edge after costs of <span class=\"gain\">+0.023</span> risks, <span class=\"loss\">-0.010</span> without its five largest results, above nothing in 4 of the 8 years it stored, 2025 at <span class=\"loss\">-0.071</span> and 2026 at <span class=\"loss\">-0.096</span>. " +
-        "No setting it read beat luck or the tester's bar: 0 of the 378 settings it read met the floors where luck alone passes about 54.6, and the tester read its search at an adjusted p of 0.1798 against its bar of 0.0042, " +
-        "so this rule is a starting point and not a proven edge.</p>";
+        "Its settings were fixed on 2 Oct 2026 at the strongest setting its search over settings read. " +
+        "Over the history it was tested on, its 1,033 trades came to about $2.30 for every $100 risked beyond the same plan on every stock after costs, or about -$1.00 without its five largest results, and it came out ahead in 4 of the 8 years, 2025 at -$7.10 and 2026 at -$9.60. " +
+        "The best of many tries always looks better than it is, and no setting it tried beat what luck alone would produce or the tester's bar: 0 of the 378 settings it tried met its floors, where luck alone would pass about 54.6, and the tester put its search's chance of being luck at 0.1798, against the 0.0042 it needs, " +
+        "so treat it as a starting point rather than a proven edge.</p>";
 
-    const string KeptLine = "<p class=\"family-sweep\" data-sweep=\"none passed\" data-lost=\"2025 2026\">Its sweep found no setting that passed the floors, and the setting frozen here lost in 2025 and 2026</p>";
+    const string KeptLine = "<p class=\"family-sweep\" data-sweep=\"none passed\" data-lost=\"2025 2026\">Its search over settings found no setting that passed the floors, and the setting fixed here lost in 2025 and 2026.</p>";
 
     [Fact]
     public async Task AnSAndP400BreakoutFrozenOnASweepThatPassedNoneKeepsItsLineNamingTheYearsItLostAndStatesItsSweepsFigures()
@@ -94,11 +94,11 @@ public partial class ReadSurface
 
         async Task<string> Card() => FamilyCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")), BreakoutRule.Name);
 
-        // The line kept beneath its standing, naming 2025 and 2026, the figures line beneath it word for word, and M1 still
-        // listed.
+        // The line kept, from 22.6 in the fold of its full rule, naming 2025 and 2026, the figures line beneath it word for
+        // word, and M1 still listed.
         var card = await Card();
 
-        Assert.Contains("</details></header>" + KeptLine + MidBreakoutFrozen, card, StringComparison.Ordinal);
+        Assert.Contains(KeptLine + MidBreakoutFrozen, RuleFoldOf(card), StringComparison.Ordinal);
         Assert.Equal(["M1"], CardPicksOf(card));
 
         // The family frozen again on the night an hour later, the S&P 500's breadth in the first rule's place and the night
@@ -117,7 +117,7 @@ public partial class ReadSurface
         var refrozen = await Card();
 
         Assert.DoesNotContain("family-sweep", refrozen, StringComparison.Ordinal);
-        Assert.Contains("</details></header>" + MidBreakoutFrozen, refrozen, StringComparison.Ordinal);
+        Assert.Contains(MidBreakoutFrozen, RuleFoldOf(refrozen), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -146,17 +146,18 @@ public partial class ReadSurface
 
         // By hand: the setting its sweep would run, 335 holdings at 2.17 points and -0.08 without its five largest, 0.03,
         // 0.02, 0.04, 0.01, 0.05 and 0.0911 above nothing, six of the eight, 2025 at 9.11 points and 2026 at -2.81, then the
-        // count against luck and the p to four places. No line: both designs passed.
+        // count against luck and the p to four places, from 22.6 in the reader's words in its fold. No line: both designs
+        // passed.
         Assert.Equal(
             "<p class=\"family-frozen\" data-frozen=\"2026-10-02\" data-run=\"20261001T120000Z\" data-answer=\"passed\" data-setting=\"size=10|look-back=251|leaders=2|beta=on|exit=drop\" " +
             "data-trades=\"335\" data-edge=\"0.0217\" data-years=\"2019=0.03 2020=0.02 2021=-0.01 2022=0.04 2023=0.01 2024=0.05 2025=0.0911 2026=-0.0281\" data-without-largest=\"-0.0008\" " +
             "data-settings-read=\"648\" data-meeting=\"53\" data-luck=\"93.7\" data-tester-run=\"20261020T062626Z\" data-adjusted=\"0.261\" data-tester-passed=\"false\" data-beat-luck=\"false\" data-ruled=\"none\" data-entry-kept=\"none\">" +
-            "Frozen on 2026-10-02 at the setting its sweep would run: " +
-            "335 holdings at an edge after costs of <span class=\"gain\">+2.17</span> points, <span class=\"loss\">-0.08</span> without its five largest results, above nothing in 6 of the 8 years it stored, 2025 at <span class=\"gain\">+9.11</span> and 2026 at <span class=\"loss\">-2.81</span>. " +
-            "No setting it read beat luck or the tester's bar: 53 of the 648 settings it read met the floors where luck alone passes about 93.7, and the tester read its search at an adjusted p of 0.2610 against its bar of 0.0042, " +
-            "so this rule is a starting point and not a proven edge.</p>",
+            "Its settings were fixed on 2 Oct 2026 at the best setting its search over settings found. " +
+            "Over the history it was tested on, its 335 holdings came to +2.17 percentage points against the same companies by size after costs, or -0.08 points without its five largest results, and it came out ahead in 6 of the 8 years, 2025 at +9.11 points and 2026 at -2.81 points. " +
+            "The best of many tries always looks better than it is, and no setting it tried beat what luck alone would produce or the tester's bar: 53 of the 648 settings it tried met its floors, where luck alone would pass about 93.7, and the tester put its search's chance of being luck at 0.2610, against the 0.0042 it needs, " +
+            "so treat it as a starting point rather than a proven edge.</p>",
             Assert.Single(Blocks(card, "<p class=\"family-frozen\".*?</p>")));
-        Assert.Contains("</details></header><p class=\"family-frozen\"", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"family-frozen\"", RuleFoldOf(card), StringComparison.Ordinal);
         Assert.DoesNotContain("family-sweep", card, StringComparison.Ordinal);
     }
 
@@ -181,26 +182,26 @@ public partial class ReadSurface
         var tested = Frozen(pullback);
 
         Assert.Equal(
-            ">Frozen on 2026-10-21 at the setting its sweep would run: 717 trades at an edge after costs of <span class=\"gain\">+0.190</span> risks, " +
-            "<span class=\"gain\">+0.148</span> without its five largest results, " +
-            "above nothing in 6 of the 8 years it stored, 2025 at <span class=\"gain\">+0.424</span> and 2026 at <span class=\"gain\">+0.093</span>. " +
-            "No setting it read beat the tester's bar: the tester read its search at an adjusted p of 0.6552 against its bar of 0.0042, so this rule is a starting point and not a proven edge.</p>",
-            tested[tested.IndexOf(">Frozen on", StringComparison.Ordinal)..]);
+            ">Its settings were fixed on 21 Oct 2026 at the best setting its search over settings found. Over the history it was tested on, its 717 trades came to about $19.00 for every $100 risked beyond the same plan on every stock after costs, " +
+            "or about $14.80 without its five largest results, " +
+            "and it came out ahead in 6 of the 8 years, 2025 at $42.40 and 2026 at $9.30. " +
+            "The best of many tries always looks better than it is, and no setting it tried beat the tester's bar: the tester put its search's chance of being luck at 0.6552, against the 0.0042 it needs, so treat it as a starting point rather than a proven edge.</p>",
+            tested[tested.IndexOf(">Its settings were fixed on", StringComparison.Ordinal)..]);
         Assert.Contains("data-settings-read=\"none\" data-meeting=\"none\" data-luck=\"none\"", Frozen(pullback), StringComparison.Ordinal);
 
         // Luck alone, no tester stored: 0 of 567 against 81.9.
         Assert.EndsWith(
-            ". No setting it read beat luck: 0 of the 567 settings it read met the floors where luck alone passes about 81.9, so this rule is a starting point and not a proven edge.</p>",
+            ". The best of many tries always looks better than it is, and no setting it tried beat what luck alone would produce: 0 of the 567 settings it tried met its floors, where luck alone would pass about 81.9, so treat it as a starting point rather than a proven edge.</p>",
             Frozen(pullback with { SettingsRead = 567, Meeting = 0, Luck = 81.9, TesterRun = null, Adjusted = null, TesterPassed = null }),
             StringComparison.Ordinal);
 
         // A count above luck, a tester that passed, or neither stored: no sentence, the figures standing alone.
-        Assert.EndsWith("2026 at <span class=\"gain\">+0.093</span>.</p>", Frozen(pullback with { SettingsRead = 648, Meeting = 100, Luck = 93.7 }), StringComparison.Ordinal);
-        Assert.EndsWith("2026 at <span class=\"gain\">+0.093</span>.</p>", Frozen(pullback with { TesterPassed = true }), StringComparison.Ordinal);
-        Assert.EndsWith("2026 at <span class=\"gain\">+0.093</span>.</p>", Frozen(pullback with { TesterRun = null, Adjusted = null, TesterPassed = null }), StringComparison.Ordinal);
+        Assert.EndsWith("2026 at $9.30.</p>", Frozen(pullback with { SettingsRead = 648, Meeting = 100, Luck = 93.7 }), StringComparison.Ordinal);
+        Assert.EndsWith("2026 at $9.30.</p>", Frozen(pullback with { TesterPassed = true }), StringComparison.Ordinal);
+        Assert.EndsWith("2026 at $9.30.</p>", Frozen(pullback with { TesterRun = null, Adjusted = null, TesterPassed = null }), StringComparison.Ordinal);
 
         // A tester that read too few blocks says so, and a variant chosen on the card draws no figures line.
-        Assert.Contains("the tester read too few blocks of its search to pass it, so this rule", Frozen(pullback with { Adjusted = null }), StringComparison.Ordinal);
+        Assert.Contains("the tester read too little of its search to pass it, so treat it as a starting point", Frozen(pullback with { Adjusted = null }), StringComparison.Ordinal);
         Assert.Equal(string.Empty, Frozen(pullback, variant: true));
 
         // The S&P 400 drift's setting the operator ruled on the evening of 2026-10-20 from among those its sweep read, bought
@@ -213,11 +214,11 @@ public partial class ReadSurface
 
         Assert.Contains("data-ruled=\"2026-10-20\" data-entry-kept=\"false\"", line, StringComparison.Ordinal);
         Assert.Equal(
-            $">Frozen on 2026-10-21 at the setting the operator ruled on 2026-10-20 from among those its sweep read: 1,807 trades at an edge after costs of <span class=\"gain\">+0.098</span> risks, " +
-            "above nothing in 6 of the 8 years it stored, 2025 at <span class=\"loss\">-0.067</span> and 2026 at <span class=\"gain\">+0.099</span>. " +
-            "Its entry did not survive the search's second stage, so it is a starting point that depends on its exact setting. " +
-            "No setting it read beat luck or the tester's bar: 0 of the 567 settings it read met the floors where luck alone passes about 81.9, and the tester read its search at an adjusted p of 0.4104 against its bar of 0.0042, so this rule is a starting point and not a proven edge.</p>",
-            line[line.IndexOf(">Frozen on", StringComparison.Ordinal)..]);
+            ">Its settings were fixed on 21 Oct 2026 at the setting the operator chose on 20 Oct 2026 from among those its search read. Over the history it was tested on, its 1,807 trades came to about $9.80 for every $100 risked beyond the same plan on every stock after costs, " +
+            "and it came out ahead in 6 of the 8 years, 2025 at -$6.70 and 2026 at $9.90. " +
+            "Its entry did not survive the search's second round, so it depends on its exact setting. " +
+            "The best of many tries always looks better than it is, and no setting it tried beat what luck alone would produce or the tester's bar: 0 of the 567 settings it tried met its floors, where luck alone would pass about 81.9, and the tester put its search's chance of being luck at 0.4104, against the 0.0042 it needs, so treat it as a starting point rather than a proven edge.</p>",
+            line[line.IndexOf(">Its settings were fixed on", StringComparison.Ordinal)..]);
         Assert.DoesNotContain(MarkRenderer.EntryNotKept, Frozen(ruled with { EntryKept = true }, "none passed"), StringComparison.Ordinal);
     }
 
@@ -260,7 +261,7 @@ public partial class ReadSurface
         var card = FamilyCardOf(page, BreakoutRule.Name);
 
         Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-02\" data-variants=\"1\"", card, StringComparison.Ordinal);
-        Assert.Equal(["Live", "V1 · market check off"], Regex.Matches(card, "<a class=\"rule-tab[^>]*>([^<]*)</a>").Select(match => match.Groups[1].Value));
+        Assert.Equal(["The live setup", "Version: market check off"], Regex.Matches(card, "<option [^>]*>([^<]*)</option>").Select(match => match.Groups[1].Value));
         Assert.DoesNotContain(background, page, StringComparison.Ordinal);
         Assert.DoesNotContain("data-no-variant", card, StringComparison.Ordinal);
 
@@ -324,9 +325,9 @@ public partial class ReadSurface
         var card = FamilyCardOf(page, BreakoutRule.Name);
 
         Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-02\" data-variants=\"0\"", card, StringComparison.Ordinal);
-        Assert.Equal(["Live"], Regex.Matches(card, "<a class=\"rule-tab[^>]*>([^<]*)</a>").Select(match => match.Groups[1].Value));
+        Assert.Equal(["The live setup"], Regex.Matches(card, "<option [^>]*>([^<]*)</option>").Select(match => match.Groups[1].Value));
         Assert.DoesNotContain("data-no-variant", card, StringComparison.Ordinal);
-        Assert.Contains($"<p class=\"no-variant\" data-no-variant=\"true\">{RuleScreen.NoVariantLine("S&P 400")}</p>", FamilyCardOf(page, DriftRule.Name), StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"no-variant\" data-no-variant=\"true\">{ReaderWords.Plain(RuleScreen.NoVariantLine("S&P 400"))}</p>", FamilyCardOf(page, DriftRule.Name), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -382,8 +383,8 @@ public partial class ReadSurface
         // on none of it; the heavyweights' card the live rule's own book, holding M1, live since that day.
         var (frozen, frozenBook) = await CardsReadAt("2026-10-03T11:05:00Z");
 
-        Assert.Contains("<span class=\"status-pill live\" title=\"live since 2026-10-03\">Live</span>", frozen, StringComparison.Ordinal);
-        Assert.Contains("</details></header>" + SweepLineDrawn, frozen, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill live\">Live since 3 Oct 2026</span>", frozen, StringComparison.Ordinal);
+        Assert.Contains(SweepLineDrawn, RuleFoldOf(frozen), StringComparison.Ordinal);
         Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-03\"", frozenBook, StringComparison.Ordinal);
         Assert.Contains("data-ticker=\"M1\"", frozenBook, StringComparison.Ordinal);
 
@@ -429,9 +430,14 @@ public partial class ReadSurface
 
         var before = await Read();
 
+        // From 22.6 the line and the cards in the reader's words, worked by hand: the market check closed, 42.0 per cent above
+        // their 200-day average against the 45 the setups need, and the pullback's card saying the check closed its list.
+        const string ClosedLine = "<b class=\"market-closed\">The market check is closed: no new buys tonight.</b> 42.0% of S&P 400 stocks are above their 200-day average. The setups only buy when at least 45% are, because buying when most stocks are falling has lost money in the past.</p>";
+        const string ClosedCard = "<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">No picks tonight: the market check closed its list.";
+
         Assert.Contains("data-open=\"false\" data-breadth=\"0.42\" data-floor=\"0.45\"", before.Line, StringComparison.Ordinal);
-        Assert.Contains("<b class=\"market-closed\">The lists are closed</b>: the S&P 400's breadth: 42.0% of its members closed above their 200-day average, below its floor of 45%.", before.Line, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">nothing tonight · the market check closed</span>", before.Pullback, StringComparison.Ordinal);
+        Assert.EndsWith(ClosedLine, before.Line, StringComparison.Ordinal);
+        Assert.Contains(ClosedCard, before.Pullback, StringComparison.Ordinal);
         Assert.Equal(["pullback: the market check closed", "breakout: listing tonight", "drift: the market check closed", "fundamentals: the market check closed", "heavyweight: rebalanced tonight"], before.Tiles);
 
         // From 20.11 each family's own check stored: the pullback's on the index's own breadth at 35 per cent and the
@@ -445,10 +451,10 @@ public partial class ReadSurface
         var mixed = await Read();
 
         Assert.StartsWith("<p class=\"market-line\" data-index=\"S&P 400\" data-open=\"true\" data-breadth=\"0.42\" data-floor=\"none\" data-passed=\"2\" data-members=\"3\" data-buy-points=\"1\" data-setups-listing=\"1\" data-setups=\"4\" data-close=\"0\" data-open-trades=\"0\" data-closed=\"drift\">", mixed.Line, StringComparison.Ordinal);
-        Assert.Contains("<b class=\"market-open\">The lists are open</b>: the S&P 400's breadth: 42.0% of its members closed above their 200-day average; the market check closed the earnings drift list, the index's own breadth 42.0% below its floor of 45%, and left the others open.", mixed.Line, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">nothing tonight</span>", mixed.Pullback, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"degraded family-empty\" data-picks=\"0\">No stock passed this setup tonight: of the 3 S&P 400 members read, 2 no setup.</p>", mixed.Pullback, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">nothing tonight · the market check closed</span>", mixed.Drift, StringComparison.Ordinal);
+        Assert.EndsWith("<b class=\"market-open\">Each setup checks the market its own way here; 2 of 3 left their lists open.</b> 42.0% of S&P 400 stocks are above their 200-day average. The earnings drift's check needs 45% and closed its list.</p>", mixed.Line, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">No picks tonight. Of the 3 S&P 400 members read, 2 no setup.</span>", mixed.Pullback, StringComparison.Ordinal);
+        Assert.DoesNotContain("market check closed", mixed.Pullback, StringComparison.Ordinal);
+        Assert.Contains(ClosedCard, mixed.Drift, StringComparison.Ordinal);
         Assert.Contains("<li class=\"index-checks\" data-closed=\"drift\">the S&P 400's breadth: 42.0% of its members above their 200-day average; the market check closed the earnings drift list, the index's own breadth 42.0% below its floor of 45%, and left the others open</li>", mixed.Run, StringComparison.Ordinal);
 
         // Tonight's tiles by each family's own check: the drift's closed, the pullback's open with nothing listed, and the
@@ -466,8 +472,8 @@ public partial class ReadSurface
 
         Assert.Contains("data-open=\"false\" data-breadth=\"0.42\" data-floor=\"0.45\"", one.Line, StringComparison.Ordinal);
         Assert.DoesNotContain("data-closed", one.Line, StringComparison.Ordinal);
-        Assert.Contains("<b class=\"market-closed\">The lists are closed</b>: the S&P 400's breadth: 42.0% of its members closed above their 200-day average, below its floor of 45%.", one.Line, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">nothing tonight · the market check closed</span>", one.Pullback, StringComparison.Ordinal);
+        Assert.EndsWith(ClosedLine, one.Line, StringComparison.Ordinal);
+        Assert.Contains(ClosedCard, one.Pullback, StringComparison.Ordinal);
         Assert.Contains("<li>the S&P 400's breadth: 42.0% of its members above their 200-day average, below its floor of 45%, so its swing lists were closed</li>", one.Run, StringComparison.Ordinal);
     }
 

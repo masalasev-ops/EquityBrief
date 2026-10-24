@@ -79,7 +79,9 @@ public static class CardScreen
                     new CardSameNightsView(kept.SameNights, kept.RuleListed, kept.RuleWon, kept.RuleLost, kept.RuleEnded, kept.RuleAverage))
                 : null,
             row.Similar is { } similar ? new CardScoreView(row.ScoreRank, EquityBrief.Core.Cards.CardSimilar.Read(similar)) : null,
-            row.Approved);
+            row.Approved,
+            Cap: row.Cap,
+            Trail: row.Trail);
     }
 
     // What could hit the trade, as the night stored it on the card.

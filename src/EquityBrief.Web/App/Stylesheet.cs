@@ -643,9 +643,6 @@ a.sort[aria-pressed='true']{color:var(--ink)}
 .fam-head .guide>summary{list-style:none;cursor:pointer;width:26px;height:26px;border:1px solid var(--hair-2);border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font:600 13px var(--sans);color:var(--ink-2)}
 .fam-head .guide>summary::-webkit-details-marker{display:none}
 .fam-head .guide-b{margin:8px 0 0;padding:10px 12px;border:1px solid var(--hair);border-radius:6px;background:var(--surface);font-size:13px;line-height:1.5;color:var(--ink-2)}
-.rule-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
-.rule-tab{font:600 12.5px var(--sans);text-decoration:none;color:var(--ink-2);border:1px solid var(--hair-2);border-radius:6px;padding:4px 10px}
-.rule-tab.current{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 p.no-variant{margin:0 0 8px;font-size:12.5px;color:var(--soft)}
 .rule-chips{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0 0 6px;padding:0}
 .rule-chip{font:500 12px var(--sans);color:var(--ink-2);border:1px solid var(--hair);border-radius:999px;padding:2px 9px;background:var(--plot)}
@@ -743,6 +740,59 @@ details.expander>*:not(summary){margin:10px 12px}
 .bh-zero{stroke:var(--ink-2);stroke-width:1}
 .bh-figure{text-align:right;font-variant-numeric:tabular-nums}
 .behind-total{margin:0;font-size:13px}
+/* Tonight in the reader's words, from 22.6: the one-minute card, the six setups, each setup's card and the opened pick */
+.tonight-links{margin:12px 0 0;font-size:13.5px;color:var(--ink-2)}
+.card-summary{margin:0 0 10px;font-size:15px;color:var(--ink)}
+.one-minute{display:grid;gap:14px}
+.minute-line p{margin:0}
+.minute-line .minute-said{font-size:13.5px;color:var(--ink-2)}
+.market-bar{margin:10px 0 0;max-width:560px}
+.market-bar svg{display:block;width:100%;height:10px}
+.market-bar .bar-track{fill:var(--s1)}
+.market-bar .bar-fill.open{fill:var(--up)}
+.market-bar .bar-fill.closed{fill:var(--down)}
+.market-bar .bar-floor{fill:var(--ink)}
+.bar-labels{display:flex;justify-content:space-between;gap:8px;margin:4px 0 0;font-size:12px;color:var(--soft)}
+.setup-tile .tile-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.setup-tile .tile-plain{font-size:13px;color:var(--ink-2)}
+.setup-tile .tile-tonight{font-size:13px;font-weight:600;color:var(--ink)}
+.setup-about{flex-basis:100%;margin:2px 0 0;font-size:13.5px;color:var(--ink-2)}
+.rule-view{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px;font-size:13px;color:var(--ink-2)}
+.rule-select{max-width:100%;min-height:34px;padding:0 8px;border-radius:6px;font:500 13px var(--sans)}
+details.fold{margin:10px 0 0;border-top:1px solid var(--hair)}
+details.fold>summary{cursor:pointer;padding:8px 0;font:600 13.5px var(--sans);color:var(--ink)}
+details.fold>.fold-b{padding:0 0 8px}
+.gloss.tonight-words{display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:6px 16px;margin:0;padding:12px 14px;font-size:13.5px}
+.gloss.tonight-words .gloss-row{display:contents}
+.gloss.tonight-words dt{font-weight:600}
+.gloss.tonight-words dd{margin:0;color:var(--ink-2)}
+.buys-read,.close-said,.versions-said,.record-said{font-size:13.5px;color:var(--ink-2)}
+.decision-card h5{margin:14px 0 6px;font:600 11.5px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+.decision-card .card-summary{font-size:14.5px}
+.card-ticks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.card-tick{display:grid;grid-template-columns:24px minmax(0,1fr);gap:8px;align-items:start}
+.plan-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:0 0 8px}
+.plan-tile{background:var(--surface);border:1px solid var(--hair);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.plan-tile .tile-label,.plan-tile .tile-under{font-size:12px;color:var(--ink-2)}
+.plan-tile b{font:600 17px/1.25 var(--sans);font-variant-numeric:tabular-nums}
+.plan-tile b.loss{color:var(--down)} .plan-tile b.gain{color:var(--up)}
+.card-reward{margin:0 0 6px;font-weight:600}
+.card-management{margin:6px 0;padding-left:18px;font-size:13px;color:var(--ink-2)}
+.card-note{margin:6px 0 0;font-size:12.5px;color:var(--soft)}
+.card-hits ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.card-hits li{display:flex;align-items:flex-start;gap:10px;padding:0 0 6px;border-bottom:1px solid var(--hair)}
+.card-hits .card-mark{flex:none}
+.hit-when{flex:0 0 92px;font-weight:600;font-variant-numeric:tabular-nums}
+.hit-what{flex:1 1 auto;min-width:0}
+.hit-why{display:block;font-size:12.5px;color:var(--ink-2)}
+.card-score p,.card-record p{margin:0 0 6px}
+.card-compares .behind-readings li{grid-template-columns:minmax(0,150px) 100px minmax(0,1fr)}
+.card-compares .bh-words{font-size:12.5px;color:var(--ink-2)}
+.card-full{margin:12px 0 0;font-size:13.5px}
+@media (max-width:560px){
+ .card-compares .behind-readings li{grid-template-columns:minmax(0,1fr) 100px} .card-compares .bh-words{grid-column:1/-1}
+ .gloss.tonight-words{grid-template-columns:1fr} .hit-when{flex-basis:70px}
+}
 .stt{position:relative;display:inline-block;width:120px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--fail) 0,var(--fail) 3px,var(--s2) 3px,var(--s2) calc(100% - 3px),var(--res) calc(100% - 3px))}
 .stt .stt-mark{position:absolute;top:-4px;width:3px;height:14px;margin-left:-1px;border-radius:2px;background:var(--ink)}
 .stt.trailing{width:auto;height:auto;background:none;font-size:12px;color:var(--soft);white-space:nowrap}

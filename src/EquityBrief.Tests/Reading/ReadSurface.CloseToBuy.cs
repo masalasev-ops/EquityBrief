@@ -23,7 +23,7 @@ public partial class ReadSurface
     ];
 
     static string CloseCard(string page) =>
-        Assert.Single(Blocks(page, "<section class=\"card folded close-to-buy\".*?</section>"));
+        Assert.Single(Blocks(page, "<section class=\"card close-to-buy\".*?</section>"));
 
     // The rows a family's card draws behind its own expander, in its order, and the count the expander states.
     static (IReadOnlyList<string> Rows, int Count) FamilyCloseRows(string page, string family)
@@ -59,15 +59,17 @@ public partial class ReadSurface
             Regex.Matches(card, "<tr data-ticker=\"([^\"]+)\" data-family=\"([^\"]+)\"").Select(match => $"{match.Groups[2].Value}|{match.Groups[1].Value}"));
         Assert.Equal(["pullback|N1", "breakout|K3"], Regex.Matches(card, "<tr data-ticker=\"([^\"]+)\" data-family=\"([^\"]+)\"").Select(match => $"{match.Groups[2].Value}|{match.Groups[1].Value}"));
 
-        // Folded to its line by default, the gate's words on the row, a press a row, the key and the Universe link.
-        Assert.Contains("<details class=\"close-to-buy\" data-link-key=\"close\"><summary class=\"card-one-line\">2 stocks one gate short of a buy point</summary>", card, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"missed-gate\"><b>volume</b></td><td class=\"close-had\">the volume against its average</td>", card, StringComparison.Ordinal);
+        // From 22.6 the card opens on its sentence, its table folded behind a line naming how many, the step missed in the
+        // setup's own words for it and where the stock stands on the row, a press a row, what it is and the Universe link.
+        Assert.Contains("<p class=\"card-summary\" data-summary data-close=\"2\">2 stocks missed a pick by a single step tonight.</p>", card, StringComparison.Ordinal);
+        Assert.Contains("<details class=\"close-to-buy\" data-link-key=\"close\"><summary class=\"card-one-line\">See the 2 stocks and the step each missed</summary>", card, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"missed-gate\"><b>Volume too light</b></td><td class=\"close-had\">the volume against its average</td>", card, StringComparison.Ordinal);
         Assert.Equal(2, Regex.Matches(card, "<form class=\"watch-control close-watch\" method=\"post\" action=\"/watch/\"").Count);
-        Assert.Contains($"<p class=\"forming-key\">{MarkRenderer.CloseToBuyGuide}</p>", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"close-said\">Each passed every step of its setup but one. None is a pick. Add any to your watch list to see it come back here or become a pick.</p>", card, StringComparison.Ordinal);
         Assert.Contains("<p class=\"close-universe\"><a href=\"#/universe?page=1&universe=500&short=1\">See them with their readings on Universe</a></p>", card, StringComparison.Ordinal);
 
-        // The market line's count opens it, and the link keeps it open.
-        Assert.Contains($"<a class=\"close-open\" href=\"#/night/{TheSwitch}?universe=500&close=open\">2 close to a buy point</a>", line, StringComparison.Ordinal);
+        // Tonight in one minute's line counting them opens it, and the link keeps it open.
+        Assert.Contains($"<b>2 stocks are one step from qualifying.</b></p><p class=\"minute-said\">They could become picks in the next few nights. <a class=\"close-open\" href=\"#/night/{TheSwitch}?universe=500&close=open\">See which, and the step each is missing</a>", page, StringComparison.Ordinal);
         Assert.Contains("<details class=\"close-to-buy\" data-link-key=\"close\" open>", CloseCard(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}?close=open"))), StringComparison.Ordinal);
 
         // The S&P 400 and 600, whose nights store only the first part each member failed: the card says it reads none,
@@ -86,7 +88,7 @@ public partial class ReadSurface
             var index = WebUtility.HtmlDecode(await indexClient.GetStringAsync($"/screens/tonight/{IndexNight}?universe={word}"));
 
             Assert.Contains("data-count=\"none\"", CloseCard(index), StringComparison.Ordinal);
-            Assert.Contains("this index's night stores only the first part each member failed, so no stock is read as one gate short", CloseCard(index), StringComparison.Ordinal);
+            Assert.Contains("Which stocks are one step from qualifying is not read on this index tonight: its night stores only the first step each stock missed.", CloseCard(index), StringComparison.Ordinal);
             Assert.Contains("data-close=\"none\"", Assert.Single(Blocks(index, "<p class=\"market-line\".*?</p>")), StringComparison.Ordinal);
             Assert.Equal(0, SetupFamilies.InPageOrder.Sum(family => FamilyCloseRows(index, family.Name).Count));
         }
@@ -115,7 +117,7 @@ public partial class ReadSurface
 
         Assert.Contains("data-count=\"4\"", card, StringComparison.Ordinal);
         Assert.Equal(["IA", "IB", "IC", "ID"], Regex.Matches(card, "<tr data-ticker=\"([^\"]+)\" data-family=\"breakout\" data-gate=\"market\"").Select(match => match.Groups[1].Value));
-        Assert.Equal(4, Regex.Matches(card, "<td class=\"close-had\">the index's own breadth 41.2% below its floor of 45%</td>").Count);
+        Assert.Equal(4, Regex.Matches(card, "<td class=\"close-had\">the index's own share above the 200-day average 41.2% below its floor of 45%</td>").Count);
         Assert.Contains("data-close=\"4\"", Assert.Single(Blocks(tonight, "<p class=\"market-line\".*?</p>")), StringComparison.Ordinal);
         Assert.DoesNotContain("<form", card, StringComparison.Ordinal);
         Assert.DoesNotContain("close-universe", card, StringComparison.Ordinal);
@@ -147,7 +149,7 @@ public partial class ReadSurface
 
         Assert.Equal(HttpStatusCode.Forbidden, await Press("N1", fromThePage: false));
         Assert.Empty(Strings(store, "SELECT ticker FROM watch_list;"));
-        Assert.Contains("<span class=\"market-watch\" data-watching=\"0\">", await Page(), StringComparison.Ordinal);
+        Assert.Contains("<a class=\"market-watch\" data-watching=\"0\"", await Page(), StringComparison.Ordinal);
 
         // A press adds the name: its row reads Watching and the market line's count moves.
         Assert.Equal(HttpStatusCode.OK, await Press("N1"));
@@ -159,11 +161,11 @@ public partial class ReadSurface
         Assert.Contains("data-watched=\"true\"", row, StringComparison.Ordinal);
         Assert.Contains("<span class=\"watching\" data-watching=\"true\">Watching</span>", row, StringComparison.Ordinal);
         Assert.DoesNotContain("<form", row, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"market-watch\" data-watching=\"1\">", watching, StringComparison.Ordinal);
+        Assert.Contains("<a class=\"market-watch\" data-watching=\"1\"", watching, StringComparison.Ordinal);
 
-        // Its sessions to its report on the card and on the watch list, counted alike; K3 holds no dated report.
-        Assert.Contains("<td class=\"r num\" data-sessions=\"3\">3 sessions</td>", row, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r\"><span class=\"degraded\">no date</span></td>", Assert.Single(Blocks(CloseCard(watching), "<tr data-ticker=\"K3\".*?</tr>")), StringComparison.Ordinal);
+        // Its trading days to its report on the card and on the watch list, counted alike; K3 holds no dated report.
+        Assert.Contains("<td class=\"r num\" data-sessions=\"3\">in 3 trading days</td>", row, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r\"><span class=\"degraded\">no date on file</span></td>", Assert.Single(Blocks(CloseCard(watching), "<tr data-ticker=\"K3\".*?</tr>")), StringComparison.Ordinal);
         Assert.Contains("data-sessions=\"3\">3 session(s)</td>", Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync("/screens/watch")), "<tr data-ticker=\"N1\".*?</tr>")), StringComparison.Ordinal);
 
         // Again for a name held: refused, nothing written twice.
