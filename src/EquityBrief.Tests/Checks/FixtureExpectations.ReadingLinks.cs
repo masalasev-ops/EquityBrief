@@ -118,7 +118,7 @@ public partial class FixtureExpectations
             ["alpha_six|30|1|goes with winners"],
             Query(store, "SELECT reading || '|' || setups || '|' || years || '|' || words FROM loop_link WHERE words <> 'too few settled setups in a test year to read';"));
         Assert.Equal(
-            ["loop-links|76|1 family(ies) on the S&P 500 for 2026-10: 1 reading(s) going with winners, 0 with losers, 0 with no link beyond the shuffle and 75 too few to read; no reading version's history read is complete, so no release answer was worked"],
+            ["loop-links|85|1 family(ies) on the S&P 500 for 2026-10: 1 reading(s) going with winners, 0 with losers, 0 with no link beyond the shuffle and 84 too few to read; no reading version's history read is complete, so no release answer was worked"],
             Query(store, "SELECT stage || '|' || rows_written || '|' || detail FROM run_log WHERE stage = 'loop-links';"));
         Assert.StartsWith("loop-links-GSPC-20261016T120000Z", Query(store, "SELECT DISTINCT run_id FROM loop_link;").Single(), StringComparison.Ordinal);
 

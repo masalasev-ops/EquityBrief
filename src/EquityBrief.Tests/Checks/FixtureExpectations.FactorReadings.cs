@@ -351,8 +351,8 @@ public partial class FixtureExpectations
         Assert.Equal(Enumerable.Range(0, LedgerReadings.Count), ConditionSearch.Spreads(units).Select(spread => spread.Reading));
 
         // The learned score and its challenger weigh every reading but the family's own and the one read ahead, the factors
-        // among them, and a score over seven hundred and twenty setups, past the floor of 710 the four release readings of
-        // 20.8 raised it to, whose edges move with the last factor alone weighs it.
+        // among them, and a score over eight hundred and forty setups, past the floor of 800 the dip's nine readings of 22.2
+        // raised it to, whose edges move with the last factor alone weighs it.
         Assert.Equal(
             Enumerable.Range(0, LedgerReadings.Count).Where(at => !RidgeScore.FamilyOwn.Contains(LedgerReadings.All[at].Column) && !RidgeScore.LookAhead.Contains(LedgerReadings.All[at].Column)),
             RidgeScore.Weighable);
@@ -360,7 +360,7 @@ public partial class FixtureExpectations
 
         var rows = new ScoreRows();
 
-        for (var at = 0; at < 720; at++)
+        for (var at = 0; at < 840; at++)
         {
             rows.Add("GSPC", ScoreSession(at), ScoreSession(at + 10), Weighed(1, ("alpha_six", at % 4)), 2.0 * (at % 4), 1);
         }

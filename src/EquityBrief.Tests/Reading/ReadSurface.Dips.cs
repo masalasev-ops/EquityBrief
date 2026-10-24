@@ -283,4 +283,35 @@ public partial class ReadSurface
         Assert.Contains("data-family=\"pullback\" data-place=\"1\" data-also=\"Short-term dip\"", listedUnder, StringComparison.Ordinal);
         Assert.Contains("it also qualified as a short-term dip.", listedUnder, StringComparison.Ordinal);
     }
+
+    // A stock the dip gave way to on its own index's list is drawn on its page under that list's family with the dip's label:
+    // M1 under the S&P 400's breakout, and BBB under the S&P 500's fundamentals-first family, which the index families'
+    // step draws apart from the S&P 500's own lists.
+    [Fact]
+    public async Task AStockTheDipGaveWayToOnItsOwnIndexsListIsDrawnOnItsPageUnderThatFamilyWithTheDipsLabel()
+    {
+        using var store = UniversesStore();
+
+        DipNightOn(store);
+        store.Execute(
+            "INSERT INTO index_family_pick (index_code, session_date, ticker, family, state, place, also, held_index, held_family, held_night) VALUES " +
+            $"('GSPC', '{IndexNight}', 'BBB', 'fundamentals', 'listed', 1, '[]', NULL, NULL, NULL);");
+        store.Execute(
+            "INSERT INTO dip_pick (index_code, session_date, ticker, state, place, listed_under, held_index, held_family, held_night) VALUES " +
+            $"('GSPC', '{IndexNight}', 'BBB', 'under another', NULL, 'fundamentals', NULL, NULL, NULL);");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var m1 = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M1/{IndexNight}"));
+
+        Assert.Equal(
+            "<p class=\"listed-under\" data-night=\"2026-10-02\" data-family=\"breakout\" data-place=\"1\" data-also=\"Short-term dip\">On the page's list for 2026-10-02 under <b>Breakouts to a new high</b>, at place 1; it also qualified as a short-term dip.</p>",
+            Assert.Single(Blocks(m1, "<p class=\"listed-under\".*?</p>")));
+
+        var bbb = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/BBB/{IndexNight}")), "<p class=\"listed-under\".*?</p>"));
+
+        Assert.Contains("data-family=\"fundamentals\" data-place=\"1\" data-also=\"Short-term dip\"", bbb, StringComparison.Ordinal);
+        Assert.Contains($"under <b>{SetupFamilies.Named("fundamentals")!.Heading}</b>, at place 1; it also qualified as a short-term dip.", bbb, StringComparison.Ordinal);
+    }
 }

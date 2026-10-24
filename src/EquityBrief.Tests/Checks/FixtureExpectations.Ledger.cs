@@ -82,10 +82,11 @@ public partial class FixtureExpectations
         Assert.Null(LedgerReadings.Figure(double.NaN));
         Assert.Equal((1.0, 0.0), (LedgerReadings.Flag(true)!.Value, LedgerReadings.Flag(false)!.Value));
 
-        // The catalogue names each column once, and from 20.8 holds the four release readings at its end.
+        // The catalogue names each column once, and from 20.8 holds the four release readings at its end, from 22.2 before
+        // the short-term dip's nine.
         Assert.Equal(LedgerReadings.All.Count, LedgerReadings.All.Select(reading => reading.Column).Distinct(StringComparer.Ordinal).Count());
-        Assert.Equal(76, LedgerReadings.Count);
-        Assert.Equal(LedgerReleases.Columns, LedgerReadings.All.TakeLast(4).Select(reading => reading.Column));
+        Assert.Equal(85, LedgerReadings.Count);
+        Assert.Equal(LedgerReleases.Columns, LedgerReadings.All.SkipLast(9).TakeLast(4).Select(reading => reading.Column));
     }
 
     [Fact]
@@ -307,15 +308,18 @@ public partial class FixtureExpectations
     [Fact]
     public async Task TheFixturesNightWritesOneLedgerRowAFamilyAndEverySetupSitsInsideItsFamilysGates()
     {
-        // The ledger expectation names the two tables the step writes and says what it derives: one row a family of
-        // the four on the index the night read, worked here from the families rather than frozen from a run.
+        // The ledger expectation names the three tables the step writes and says what it derives: one row a family of
+        // the five on the index the night read, worked here from the families rather than frozen from a run, and from
+        // 22.2 the dip's setups worked by hand from the captured bars.
         var expected = Expected("ledger");
 
         Assert.Equal("derived", expected.GetProperty("derivation").GetString());
-        Assert.Equal(4, expected.GetProperty("setupNightsAnIndex").GetInt32());
+        Assert.Equal(["setup_night", "setup", "ledger_summary"], expected.GetProperty("tables").EnumerateArray().Select(table => table.GetString()!));
+        Assert.Equal(5, expected.GetProperty("setupNightsAnIndex").GetInt32());
         Assert.Equal(LedgerSetups.Families, expected.GetProperty("families").EnumerateArray().Select(family => family.GetString()!).ToArray());
-        Assert.StartsWith("every setup row's family is one of the four", expected.GetProperty("setups").GetString(), StringComparison.Ordinal);
-        Assert.StartsWith("setup is the step's other table", expected.GetProperty("setupTable").GetString(), StringComparison.Ordinal);
+        Assert.StartsWith("every setup row's family is one of the five", expected.GetProperty("setups").GetString(), StringComparison.Ordinal);
+        Assert.StartsWith("none:", expected.GetProperty("otherSetups").GetString(), StringComparison.Ordinal);
+        Assert.StartsWith("one row, the dip's", expected.GetProperty("summary").GetString(), StringComparison.Ordinal);
 
         using var store = await Replayed();
 
@@ -328,7 +332,7 @@ public partial class FixtureExpectations
         var members = Query(store, "SELECT DISTINCT members FROM setup_night WHERE index_code = 'GSPC';").Single();
 
         Assert.True(int.Parse(members, System.Globalization.CultureInfo.InvariantCulture) > 0, "the fixture's night held no member");
-        Assert.Equal([$"GSPC|breakout|{members}|night", $"GSPC|drift|{members}|night", $"GSPC|fundamentals|{members}|night", $"GSPC|pullback|{members}|night"], nights);
+        Assert.Equal([$"GSPC|breakout|{members}|night", $"GSPC|dip|{members}|night", $"GSPC|drift|{members}|night", $"GSPC|fundamentals|{members}|night", $"GSPC|pullback|{members}|night"], nights);
         Assert.Equal(["ok"], Query(store, $"SELECT outcome FROM run_log WHERE run_id = 'ledger-fixture' AND stage = '{SetupLedger.Stage}';"));
 
         // Every setup written sits inside its family's loose gates, read back off its own readings and its session.
@@ -343,6 +347,30 @@ public partial class FixtureExpectations
         Assert.Empty(Query(store, $"SELECT ticker FROM setup WHERE family = 'breakout' AND (volume_multiple < {SetupGates.BreakoutVolume} OR range_ratio > {SetupGates.BreakoutRangeCeiling});"));
         Assert.Empty(Query(store, $"SELECT ticker FROM setup WHERE family = 'drift' AND (surprise_percent <= 0 OR reaction_moves < {SetupGates.DriftReactionMoves});"));
         Assert.Empty(Query(store, FormattableString.Invariant($"SELECT ticker FROM setup WHERE family = 'fundamentals' AND (revenue_growth IS NULL OR revenue_growth <= {SetupGates.FundamentalsGrowth} OR cash_over_income IS NULL OR cash_over_income < {SetupGates.FundamentalsCash});")));
+        Assert.Empty(Query(store, FormattableString.Invariant($"SELECT ticker FROM setup WHERE family = 'dip' AND NOT (COALESCE(rsi_two < {SetupGates.DipRsiUnder}, 0) OR COALESCE(drop_fall >= {SetupGates.DipFallMoves}, 0));")));
         Assert.Empty(Query(store, "SELECT ticker FROM setup WHERE end <> 'open' OR settled <> 0 OR result IS NOT NULL;"));
+
+        // Over the fixture's whole night, where AAPL holds no bar on the night, the setups are the dip's the expectation
+        // works by hand, at its readings to the hundredth, and no other family's.
+        using var whole = await FixtureReplay.ReplayedAsync();
+
+        var dips = expected.GetProperty("dipSetups").EnumerateArray().ToArray();
+        var stored = Query(whole, "SELECT family || '|' || ticker || '|' || rsi_two || '|' || drop_fall || '|' || live_pass || '|' || picked FROM setup ORDER BY family, ticker;");
+
+        Assert.Equal(dips.Select(dip => $"dip|{dip.GetProperty("ticker").GetString()}"), stored.Select(row => string.Join('|', row.Split('|')[..2])));
+
+        foreach (var (dip, row) in dips.Zip(stored))
+        {
+            var parts = row.Split('|');
+
+            Assert.Equal(("dip", dip.GetProperty("ticker").GetString(), dip.GetProperty("livePass").GetInt32().ToString(System.Globalization.CultureInfo.InvariantCulture), dip.GetProperty("picked").GetInt32().ToString(System.Globalization.CultureInfo.InvariantCulture)), (parts[0], parts[1], parts[4], parts[5]));
+            Assert.Equal(dip.GetProperty("rsiTwo").GetDouble(), double.Parse(parts[2], System.Globalization.CultureInfo.InvariantCulture), 2);
+            Assert.Equal(dip.GetProperty("dropFall").GetDouble(), double.Parse(parts[3], System.Globalization.CultureInfo.InvariantCulture), 2);
+        }
+
+        // The Ledger page's summary holds the one family a year the setups do.
+        Assert.Equal(
+            ["GSPC|dip|2026|1|0|1|0|0"],
+            Query(whole, "SELECT index_code || '|' || family || '|' || year || '|' || setups || '|' || live_passes || '|' || night_rows || '|' || picked || '|' || settled FROM ledger_summary;"));
     }
 }

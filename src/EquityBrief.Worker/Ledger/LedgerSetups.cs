@@ -1,3 +1,4 @@
+using EquityBrief.Core.Bars;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Insiders;
 using EquityBrief.Core.Ledger;
@@ -60,6 +61,14 @@ public sealed record LedgerMarket(IReadOnlyDictionary<string, IReadOnlyList<(Dat
         "SML" => Small,
         _ => Index,
     };
+
+    // The fund an index's own trend is read on: SPY for the S&P 500, and the 400's and 600's own funds.
+    public static string FundOf(string indexCode) => indexCode switch
+    {
+        "MID" => Mid,
+        "SML" => Small,
+        _ => Large,
+    };
 }
 
 // From 19.13 each member's insiders' transactions by ticker and the spans the store's insider history holds, as the
@@ -84,6 +93,71 @@ public sealed record LedgerContext(
     readonly System.Collections.Concurrent.ConcurrentDictionary<(string Ticker, int Filed), BusinessReading> business = new();
     readonly System.Collections.Concurrent.ConcurrentDictionary<(string Ticker, int Filed), ValuationParts> valuation = new();
     readonly System.Runtime.CompilerServices.ConditionalWeakTable<SweepSeries, PriceHistory> prices = new();
+    readonly System.Runtime.CompilerServices.ConditionalWeakTable<SweepSeries, double?[]> rsiTwo = new();
+    readonly System.Collections.Concurrent.ConcurrentDictionary<(int Session, string Sector), double?> sectorFalls = new();
+
+    // From 22.2 the S&P 500's breadth on each session, which an S&P 400 or 600 row reads; none where it is read without it.
+    // see: The short-term dip's setups clear its drop a grid step past the widest its sweep reads with no trend condition, and the ledger's history budget is raised to hold them
+    public IReadOnlyDictionary<DateOnly, double>? LargeBreadth { get; init; }
+
+    // A member's 2-session relative strength index on each of its bars, read once a series through the dip's own function.
+    public double?[] RsiTwo(SweepSeries one, double[] closes) => rsiTwo.GetValue(one, _ => DipRule.Rsi(closes));
+
+    // A member's fall over the drop's sessions to a bar in that bar's typical moves, none where it holds too few sessions
+    // or no typical move.
+    public static double DropFall(SweepSeries one, int bar)
+    {
+        var move = one.Atr[bar];
+
+        return bar >= LedgerReadings.DropSessions && move > 0
+            ? (Statistic.FromPrice(one.Bars[bar - LedgerReadings.DropSessions].Close) - Statistic.FromPrice(one.Bars[bar].Close)) / move
+            : double.NaN;
+    }
+
+    // The median of that fall over the members of a sector the index held on a session, each in its own typical moves; none
+    // where fewer than two of them read one. Read once a session and sector.
+    public double? SectorFall(int at, string sector, IReadOnlyList<SweepSeries> all, SweepBenchmark.Members members) =>
+        sectorFalls.GetOrAdd((at, sector), key =>
+        {
+            var falls = new List<double>();
+
+            for (var place = 0; place < members.Names[key.Session].Length; place++)
+            {
+                var one = all[members.Names[key.Session][place]];
+
+                if (string.Equals(Sectors.GetValueOrDefault(one.Name.Ticker), key.Sector, StringComparison.Ordinal) && DropFall(one, members.Bars[key.Session][place]) is var fall && !double.IsNaN(fall))
+                {
+                    falls.Add(fall);
+                }
+            }
+
+            if (falls.Count < 2)
+            {
+                return null;
+            }
+
+            falls.Sort();
+
+            return falls.Count % 2 == 1 ? falls[falls.Count / 2] : (falls[(falls.Count / 2) - 1] + falls[falls.Count / 2]) / 2;
+        });
+
+    // The base-10 logarithm of the company's value on a session as the valuation reading works it, none where no count
+    // stands before the session or the prices hold no such session.
+    public double? CompanyValue(SweepSeries one, DateOnly session)
+    {
+        var ticker = one.Name.Ticker;
+        var facts = Facts?.GetValueOrDefault(ticker) ?? [];
+        var filed = facts.Count(fact => fact.Filed < session);
+        var parts = valuation.GetOrAdd((ticker, filed), _ => ValuationReading.PartsOf(facts, session));
+        var history = prices.GetValue(one, series => (BeforeTheYear?.GetValueOrDefault(ticker) ?? PriceHistory.None).Then(PriceHistory.Of(series.Bars)));
+
+        return CompanyValueOf(parts, history, session);
+    }
+
+    // The base-10 logarithm of a company's value on a session from its filings' parts and its prices, none where no count
+    // stands before the session or the prices hold no such session.
+    public static double? CompanyValueOf(ValuationParts parts, PriceHistory history, DateOnly session) =>
+        ValuationReading.OverValue(1m, parts, history, session) is { } perDollar && perDollar > 0 ? -Math.Log10(perDollar) : null;
 
     // From 19.12 the members' places on each session over the series the readings are read from, which the four of
     // Kakushadze's formulas that rank across the index read; none where the readings are read without them.
@@ -153,7 +227,7 @@ public sealed record LedgerContext(
 // see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
 public static class LedgerSetups
 {
-    public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, FundamentalsRule.Name];
+    public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, FundamentalsRule.Name, DipRule.Name];
 
     static readonly int LiveHigh = SweepAxes.ReferenceHighs.ToList().IndexOf(SweepDesign.Live.ReferenceHigh);
     static readonly int LiveAge = SweepCandidate.AgeAt(SweepDesign.Live.Trigger, SweepDesign.Live.Support);
@@ -230,7 +304,7 @@ public static class LedgerSetups
                     cut.Leaders.Contains(ticker),
                     new SetupAnchor(calendar[at], closes[name][bar], 0, null, null, HeavyweightPaths.Cap, null),
                     new SetupPlan(0, null, null, HeavyweightPaths.Cap),
-                    Readings(indexCode, name, series[name], closes[name], bar, sessions[at], members, calendar, at, market, context)));
+                    Readings(indexCode, name, series[name], closes[name], bar, sessions[at], members, calendar, at, market, context, series)));
             }
         }
 
@@ -256,7 +330,116 @@ public static class LedgerSetups
             Breakouts(indexCode, series, closes, sessions, members, calendar, at, market, context),
             Drifts(indexCode, series, closes, sessions, members, calendar, at, market, context),
             fundamentals,
+            Dips(indexCode, series, closes, sessions, members, calendar, at, market, context),
         ];
+    }
+
+    // The short-term dip's setting in words, as its pass is read beside its setups: the provisional setting.
+    public static string DipWords { get; } = DipPaths.Plan.Short;
+
+    // The plan a dip setup is stated at in typical moves: the provisional stop, no target and no trail, its time limit the
+    // cap; its path is the rule's own walk at the next open and never the swing families' replay.
+    public static SetupPlan DipPlan { get; } = new(DipPaths.Plan.StopMoves, null, null, DipPaths.Plan.TimeLimit);
+
+    // The short-term dip's setups: each member clearing the index's floors whose 2-session relative strength index or fall
+    // over the drop's sessions clears the dip's loose gates, whatever its trend, bought at its close at the provisional
+    // plan; its pass the provisional rule's as the night reads it, through the rule's own reading of the year of closes a
+    // night holds to the session, its floors whole, its history, its trend, its drop, its reports and its typical move.
+    // see: The short-term dip's setups clear its drop a grid step past the widest its sweep reads with no trend condition, and the ledger's history budget is raised to hold them
+    static FamilySetups Dips(
+        string indexCode,
+        IReadOnlyList<SweepSeries> series,
+        double[][] closes,
+        IReadOnlyList<SweepColumns.Session> sessions,
+        SweepBenchmark.Members members,
+        IReadOnlyList<DateOnly> calendar,
+        int at,
+        LedgerMarket market,
+        LedgerContext context)
+    {
+        var held = members.Names[at];
+        var bars = members.Bars[at];
+        var rows = new List<SetupRow>();
+
+        for (var place = 0; place < held.Length; place++)
+        {
+            var name = held[place];
+            var bar = bars[place];
+            var one = series[name];
+
+            if (!SetupGates.Dip(context.RsiTwo(one, closes[name])[bar], LedgerContext.DropFall(one, bar))
+                || !Clears(indexCode, one, bar)
+                || DipPaths.Anchor(calendar[at], closes[name][bar], one.Atr[bar]) is not { } anchor)
+            {
+                continue;
+            }
+
+            var readings = Readings(indexCode, name, one, closes[name], bar, sessions[at], members, calendar, at, market, context, series);
+
+            rows.Add(new SetupRow(indexCode, DipRule.Name, one.Name.Ticker, calendar[at], DipWords, DipPasses(indexCode, one, closes[name], bar, calendar, at), anchor, DipPlan, readings));
+        }
+
+        return new FamilySetups(DipRule.Name, held.Length, Ordered(rows));
+    }
+
+    // Whether the provisional dip passes a member on a session as a night reads it: over the year of closes a night holds
+    // to the session, its floors whole, the first session its year behind the bar misses, and each report on file by the
+    // sessions it falls from the session, counted over the history's own calendar where it reaches and over the exchange's
+    // ahead of it, a report dated on a closed day read at the session after it.
+    public static bool DipPasses(string indexCode, SweepSeries one, double[] closes, int bar, IReadOnlyList<DateOnly> calendar, int at)
+    {
+        var year = closes[Math.Max(0, bar - FactorReadings.YearBars + 1)..(bar + 1)];
+        var reports = new List<int>();
+
+        foreach (var print in one.Name.Prints)
+        {
+            var session = FirstOnOrAfter(calendar, print);
+
+            if (session < calendar.Count)
+            {
+                reports.Add(session - at);
+            }
+            else if (ExchangeClosures.SessionsUntil(calendar[at], print) is { } ahead)
+            {
+                reports.Add(ExchangeClosures.IsSession(print) ? ahead : ahead + 1);
+            }
+        }
+
+        var member = new DipMember(
+            one.Name.Ticker,
+            year,
+            one.Atr[bar] is var move && double.IsNaN(move) ? null : move,
+            ClearsTheWholeFloors(indexCode, one, bar),
+            string.Empty,
+            reports,
+            null,
+            DipRule.NoMarket,
+            one.Gap[bar] ? EquityBrief.Worker.Dips.DipFamily.Missing(one, bar, calendar) : null);
+
+        return DipRule.Read(member, DipRule.Provisional).Passed;
+    }
+
+    // The first session of a calendar on or after a day, the calendar's count where none is.
+    static int FirstOnOrAfter(IReadOnlyList<DateOnly> calendar, DateOnly day)
+    {
+        var low = 0;
+        var high = calendar.Count;
+
+        while (low < high)
+        {
+            var middle = (low + high) / 2;
+
+            if (calendar[middle] < day)
+            {
+                low = middle + 1;
+            }
+            else
+            {
+                high = middle;
+            }
+        }
+
+        return low;
     }
 
     // The fundamentals-first family's setting in words, as its pass is read beside its setups: the provisional setting,
@@ -324,7 +507,7 @@ public static class LedgerSetups
             var inTheEarningsWindow = SweepDesign.Live.EarningsWindow > 0 && candidate.Earnings >= 0 && candidate.Earnings <= SweepDesign.Live.EarningsWindow;
             var passes = corner is { } placed && placed.Passes(live) && !inTheEarningsWindow;
 
-            var readings = Readings(indexCode, candidate.Name, one, closes[candidate.Name], bar, sessions[at], members, calendar, at, market, context);
+            var readings = Readings(indexCode, candidate.Name, one, closes[candidate.Name], bar, sessions[at], members, calendar, at, market, context, series);
 
             readings[LedgerReadings.IndexOf("reward_to_risk")] = plan.RewardToRisk;
             readings[LedgerReadings.IndexOf("freshness")] = candidate.Age[LiveAge];
@@ -392,7 +575,7 @@ public static class LedgerSetups
 
             var liveHighBefore = BreakoutSweep.HighsBefore(one.Bars, (int)liveHigh)[bar];
             var passes = open && close > liveHighBefore && volume >= liveVolume && (double.IsPositiveInfinity(liveCeiling) || ranges <= liveCeiling);
-            var readings = Readings(indexCode, name, one, closes[name], bar, sessions[at], members, calendar, at, market, context);
+            var readings = Readings(indexCode, name, one, closes[name], bar, sessions[at], members, calendar, at, market, context, series);
 
             readings[LedgerReadings.IndexOf("volume_multiple")] = LedgerReadings.Figure(volume);
             readings[LedgerReadings.IndexOf("range_ratio")] = LedgerReadings.Figure(ranges);
@@ -457,7 +640,7 @@ public static class LedgerSetups
             var plan = new SetupPlan(risk / move, (target - close) / risk, null, DriftRule.CapSessions);
             var anchor = new SetupAnchor(calendar[at], close, low, target, null, DriftRule.CapSessions, risk / move);
             var passes = open && 0 < liveWindow && rise >= liveRise && volume >= liveVolume && liveMultiple == DriftRule.TargetRiskMultiple;
-            var readings = Readings(indexCode, name, one, closes[name], bar, sessions[at], members, calendar, at, market, context);
+            var readings = Readings(indexCode, name, one, closes[name], bar, sessions[at], members, calendar, at, market, context, series);
 
             readings[LedgerReadings.IndexOf("reward_to_risk")] = plan.RewardToRisk;
             readings[LedgerReadings.IndexOf("freshness")] = 0;
@@ -512,7 +695,8 @@ public static class LedgerSetups
     }
 
     // Every reading the catalogue defines that is not the family's own, from the series to the bar, the session's
-    // places and breadth, the market series to the session's day and the quarters filed before it.
+    // places and breadth, the market series to the session's day and the quarters filed before it; and where every
+    // member's series is handed in, the dip's fall against its sector's members that session.
     public static double?[] Readings(
         string indexCode,
         int name,
@@ -524,7 +708,8 @@ public static class LedgerSetups
         IReadOnlyList<DateOnly> calendar,
         int at,
         LedgerMarket market,
-        LedgerContext context)
+        LedgerContext context,
+        IReadOnlyList<SweepSeries>? all = null)
     {
         var readings = new double?[LedgerReadings.Count];
         var close = closes[bar];
@@ -638,7 +823,67 @@ public static class LedgerSetups
             Set(LedgerReleases.Columns[column], releases[column]);
         }
 
+        // The short-term dip's readings: its drop over the member's own bars to the session, against its sector's members
+        // the index held that session, and the market series the dip's market setting reads, each to the session's day.
+        // see: The short-term dip's setups clear its drop a grid step past the widest its sweep reads with no trend condition, and the ledger's history budget is raised to hold them
+        var fall = LedgerContext.DropFall(one, bar);
+        var fundSeries = market.Of(LedgerMarket.FundOf(indexCode));
+
+        Set("rsi_two", context.RsiTwo(one, closes)[bar]);
+        Set("drop_fall", LedgerReadings.Figure(fall));
+        Set("drop_largest", DropLargest(one, closes, bar));
+        Set("drop_volume", DropVolume(one, bar));
+        Set("drop_against_sector", all is not null && sector is { } filed && !double.IsNaN(fall) && context.SectorFall(at, filed, all, members) is { } median ? fall - median : null);
+        Set("large_breadth", indexCode != IndexFamilies.LargeIndex && context.LargeBreadth is { } large500 && large500.TryGetValue(day, out var largeBreadth) ? largeBreadth : null);
+        Set("fund_over_long", fundSeries is null ? null : SeriesReadings.OverAverage(fundSeries, day, LedgerReadings.FundAverageSessions));
+        Set("vix_over_median", vix is null || market.Of(LedgerMarket.Index) is not { } sessionsHeld ? null : SeriesReadings.OverMedianBefore(vix, day, LedgerReadings.VixMedianSessions, quoted => SeriesReadings.At(sessionsHeld, quoted) is var place && place >= 0 && sessionsHeld[place].Session == quoted));
+        Set("company_value", context.CompanyValue(one, day));
+
         return readings;
+    }
+
+    // The largest fall of a single one of the drop's sessions, the close before it less its own, in the typical move
+    // standing before it; none where none of them reads one. The dip's sweep reads its second stage's filter through it.
+    public static double? DropLargest(SweepSeries one, double[] closes, int bar)
+    {
+        double? largest = null;
+
+        for (var day = Math.Max(1, bar - LedgerReadings.DropSessions + 1); day <= bar; day++)
+        {
+            if (one.Atr[day - 1] > 0 && (closes[day - 1] - closes[day]) / one.Atr[day - 1] is var fall && (largest is not { } held || fall > held))
+            {
+                largest = fall;
+            }
+        }
+
+        return largest;
+    }
+
+    // The drop's mean volume over the mean of the sessions before it, none where too few stand before it or they traded
+    // nothing. The dip's sweep reads its second stage's filter through it.
+    public static double? DropVolume(SweepSeries one, int bar)
+    {
+        var first = bar - LedgerReadings.DropSessions + 1;
+
+        if (first - LedgerReadings.DropVolumeSessions < 0)
+        {
+            return null;
+        }
+
+        var before = 0.0;
+        var drop = 0.0;
+
+        for (var day = first - LedgerReadings.DropVolumeSessions; day < first; day++)
+        {
+            before += one.Bars[day].Volume;
+        }
+
+        for (var day = first; day <= bar; day++)
+        {
+            drop += one.Bars[day].Volume;
+        }
+
+        return before > 0 ? drop / LedgerReadings.DropSessions / (before / LedgerReadings.DropVolumeSessions) : null;
     }
 
     // The place among a session's places of the return over the 231 sessions ending 21 before, after the live measure's

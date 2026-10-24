@@ -84,6 +84,7 @@ public sealed partial class SetupLedger : IComponent
             new StoreTouch(Store.FamilyPick, Touch.Read),
             new StoreTouch(Store.IndexFamilyNight, Touch.Read),
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
+            new StoreTouch(Store.DipPick, Touch.Read),
             new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.SetupNight, Touch.Read | Touch.Insert | Touch.Delete),
@@ -143,7 +144,8 @@ public sealed partial class SetupLedger : IComponent
     const string BusinessAgain = @"
         UPDATE setup
         SET revenue_growth = $revenue_growth, growth_change = $growth_change, gross_margin_change = $gross_margin_change,
-            operating_margin_change = $operating_margin_change, cash_over_income = $cash_over_income, value_place = $value_place
+            operating_margin_change = $operating_margin_change, cash_over_income = $cash_over_income, value_place = $value_place,
+            company_value = $company_value
         WHERE ticker = $ticker AND session_date = $session AND source = $source;
     ";
 
@@ -211,13 +213,19 @@ public sealed partial class SetupLedger : IComponent
     // The round trip a member's trade pays, in per cent of its close, as the member reader stored it for the night.
     const string Costs = "SELECT ticker, cost FROM member_reading WHERE index_code = $index AND session_date = $night AND cost IS NOT NULL;";
 
-    // The S&P 500's own families' list, and the fundamentals-first family's, which the index families' step draws for it.
+    // The S&P 500's own families' list, and the fundamentals-first family's, which the index families' step draws for it;
+    // and from 22.2 the short-term dip's own list on the index.
     const string LargePicks = @"
         SELECT ticker, family FROM family_pick WHERE session_date = $night AND state = 'listed'
         UNION ALL
-        SELECT ticker, family FROM index_family_pick WHERE index_code = 'GSPC' AND session_date = $night AND state = 'listed';";
+        SELECT ticker, family FROM index_family_pick WHERE index_code = 'GSPC' AND session_date = $night AND state = 'listed'
+        UNION ALL
+        SELECT ticker, 'dip' FROM dip_pick WHERE index_code = 'GSPC' AND session_date = $night AND state = 'listed';";
 
-    const string IndexPicks = "SELECT ticker, family FROM index_family_pick WHERE index_code = $index AND session_date = $night AND state = 'listed';";
+    const string IndexPicks = @"
+        SELECT ticker, family FROM index_family_pick WHERE index_code = $index AND session_date = $night AND state = 'listed'
+        UNION ALL
+        SELECT ticker, 'dip' FROM dip_pick WHERE index_code = $index AND session_date = $night AND state = 'listed';";
 
     const string ClearTheNight = "DELETE FROM setup WHERE index_code = $index AND session_date = $night AND source = $source;";
 
@@ -364,6 +372,7 @@ public sealed partial class SetupLedger : IComponent
             Insiders = insiders.Rows,
             InsiderSpans = insiders.Spans,
             Releases = releases,
+            LargeBreadth = await LargeBreadthOnAsync(connection, index, night, cancellation),
         };
         var read = new Dictionary<string, IReadOnlyList<double?>?>(StringComparer.Ordinal);
 
@@ -378,7 +387,7 @@ public sealed partial class SetupLedger : IComponent
 
             var closes = inputs.Series[name].Bars.Select(one => Statistic.FromPrice(one.Close)).ToArray();
 
-            return LedgerSetups.Readings(index, name, inputs.Series[name], closes, bar, inputs.Sessions[inputs.At], inputs.Members, inputs.Calendar, inputs.At, market, context);
+            return LedgerSetups.Readings(index, name, inputs.Series[name], closes, bar, inputs.Sessions[inputs.At], inputs.Members, inputs.Calendar, inputs.At, market, context, inputs.Series);
         }
 
         return ticker => read.TryGetValue(ticker, out var held) ? held : read[ticker] = Of(ticker);
@@ -395,7 +404,8 @@ public sealed partial class SetupLedger : IComponent
         SweepBenchmark.Members members,
         IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income,
         DateOnly through,
-        CancellationToken cancellation = default)
+        CancellationToken cancellation = default,
+        string? index = null)
     {
         var (highs, lows) = SweepIdeas.HighsAndLows(series, members, inputs.Sessions.Length);
 
@@ -408,13 +418,45 @@ public sealed partial class SetupLedger : IComponent
         var insiders = await InsidersAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), FirstInsiderDay(inputs.Sessions), cancellation);
         var releases = await ReleasesAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
 
+        // On the S&P 400 and 600 the S&P 500's breadth as it stood, as the history build reads it.
+        var largeBreadth = index is not null && index != IndexFamilies.LargeIndex
+            ? LargeBreadthOver(inputs.Sessions, SweepSwitches.LargeBreadth(await new SweepHistory(databaseFile).ReadAsync(through, null, cancellation), inputs.Sessions))
+            : null;
+
         return (market, new LedgerContext(income, sectors, highs, lows, facts)
         {
             Ranks = new FactorRanks(series, members),
             Insiders = insiders.Rows,
             InsiderSpans = insiders.Spans,
             Releases = releases,
+            LargeBreadth = largeBreadth,
         });
+    }
+
+    // From 22.2 the S&P 500's breadth on a night as the night's own readings stored it, which an S&P 400 or 600 row's
+    // reading reads as the index families' market check does; none on the S&P 500 or where the night stored none.
+    const string NightsLargeBreadth = "SELECT breadth FROM market_reading WHERE session_date = $night;";
+
+    static async Task<IReadOnlyDictionary<DateOnly, double>?> LargeBreadthOnAsync(SqliteConnection connection, string index, DateOnly night, CancellationToken cancellation) =>
+        index != IndexFamilies.LargeIndex && await ScalarAsync(connection, NightsLargeBreadth, [("$night", Stamp(night))], cancellation) is double breadth
+            ? new Dictionary<DateOnly, double> { [night] = breadth }
+            : null;
+
+    // The S&P 500's breadth on each session of a history as it stood, from the S&P 500's own history as its sweep reads it,
+    // keyed by the session, which an S&P 400 or 600 row's reading reads.
+    static IReadOnlyDictionary<DateOnly, double> LargeBreadthOver(IReadOnlyList<DateOnly> calendar, double?[] breadth)
+    {
+        var read = new Dictionary<DateOnly, double>();
+
+        for (var at = 0; at < Math.Min(calendar.Count, breadth.Length); at++)
+        {
+            if (breadth[at] is { } held)
+            {
+                read[calendar[at]] = held;
+            }
+        }
+
+        return read;
     }
 
     // The first day a history's insider readings read a filing on: the window before its first session.
@@ -445,6 +487,7 @@ public sealed partial class SetupLedger : IComponent
         var before = await BeforeTheYearAsync(connection, FirstSessions(names), facts, night, cancellation);
         var insiders = await InsidersAsync(connection, [Filers], names.Select(name => name.Ticker), night.AddDays(-InsiderReadings.WindowDays), cancellation);
         var releases = await ReleasesAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
+        var largeBreadth = await LargeBreadthOnAsync(connection, index, night, cancellation);
 
         // The S&P 500's heavyweights' rebalances the book stored from the oldest open heavyweights' setup to the night:
         // tonight's size cut is tonight's setups, and each later rebalance's buys end the setups the rule did not buy.
@@ -489,6 +532,7 @@ public sealed partial class SetupLedger : IComponent
                     Insiders = insiders.Rows,
                     InsiderSpans = insiders.Spans,
                     Releases = releases,
+                    LargeBreadth = largeBreadth,
                 };
                 var families = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, context)
                     .Select(family => live.Read.TryGetValue(family.Family, out var rule)
@@ -499,12 +543,15 @@ public sealed partial class SetupLedger : IComponent
                 foreach (var family in families)
                 {
                     var listed = picks.TryGetValue(family.Family, out var held) ? held : [];
+                    var dipBenchmark = family.Family == DipRule.Name && family.Rows.Count > 0 ? DipBenchmark(closes, opens, inputs, inputs.At, night) : default;
 
                     foreach (var row in family.Rows)
                     {
                         var name = NameOf(inputs.Series, row.Ticker);
                         var at = IndexNightRead.BarOf(inputs.Series[name], inputs.At);
-                        var outcome = Outcome(closes, opens, inputs, name, at, row.Anchor, row.Plan);
+                        var outcome = family.Family == DipRule.Name
+                            ? DipRead(closes, opens, inputs, name, at, row.Anchor, dipBenchmark)
+                            : Outcome(closes, opens, inputs, name, at, row.Anchor, row.Plan);
                         var cost = costs.TryGetValue(row.Ticker, out var percent) ? CostInRisks(percent, row.Anchor) : null;
 
                         await InsertAsync(connection, transaction, row, listed.Contains(row.Ticker), cost, outcome, inputs.Calendar, inputs.At, NightSource, cancellation);
@@ -560,7 +607,7 @@ public sealed partial class SetupLedger : IComponent
                         continue;
                     }
 
-                    var readings = LedgerSetups.Readings(index, name, inputs.Series[name], closes[name], bar, inputs.Sessions[inputs.At], inputs.Members, inputs.Calendar, inputs.At, market, context);
+                    var readings = LedgerSetups.Readings(index, name, inputs.Series[name], closes[name], bar, inputs.Sessions[inputs.At], inputs.Members, inputs.Calendar, inputs.At, market, context, inputs.Series);
 
                     await ExecuteAsync(connection, transaction, InsertReadings,
                     [
@@ -788,6 +835,29 @@ public sealed partial class SetupLedger : IComponent
             : new SetupRead(outcome with { Result = fill.Result }, moved, fill.Fill, fill.Past);
     }
 
+    // The short-term dip's benchmark on a session: its one plan on every member the index held with a bar and no gap that
+    // session, each walked by the dip's own walk, which every dip setup of the session shares, worked once a session.
+    // see: The dip buys at the next session's open and sells at the next open after its exit's close or its stop's, and at its last session's close
+    static (BenchmarkReading Reading, IReadOnlyList<FillMember> Members) DipBenchmark(double[][] closes, double[][] opens, IndexNightInputs inputs, int at, DateOnly session, bool[]? stopped = null)
+    {
+        var members = new List<(double[] Closes, double[] Opens, int[] SessionAt, int Bar, double Move, bool Stopped)>();
+
+        for (var place = 0; place < inputs.Members.Names[at].Length; place++)
+        {
+            var member = inputs.Members.Names[at][place];
+            var memberBar = inputs.Members.Bars[at][place];
+
+            members.Add((closes[member], opens[member], inputs.Series[member].SessionAt, memberBar, inputs.Series[member].Atr[memberBar], stopped is not null && stopped[member]));
+        }
+
+        return DipPaths.WithMembers(members, session);
+    }
+
+    // A short-term dip's setup's path through the dip's own walk against its session's benchmark, read at its next open
+    // as every setup is.
+    static SetupRead DipRead(double[][] closes, double[][] opens, IndexNightInputs inputs, int name, int bar, SetupAnchor anchor, (BenchmarkReading Reading, IReadOnlyList<FillMember> Members) benchmark) =>
+        AtOpen(anchor, DipPaths.Replay(closes[name], opens[name], inputs.Series[name].SessionAt, bar, anchor), benchmark.Reading, benchmark.Members, OpenAfter(closes[name], opens[name], bar), book: false);
+
     // The open of the session after a bar, none where the series holds none.
     static double? OpenAfter(double[] closes, double[] opens, int bar) =>
         bar >= 0 && bar + 1 < closes.Length && bar + 1 < opens.Length && opens[bar + 1] > 0 ? opens[bar + 1] : null;
@@ -811,6 +881,7 @@ public sealed partial class SetupLedger : IComponent
     {
         var closed = 0;
         var names = inputs.Series.Select((one, name) => (one.Name.Ticker, name)).ToDictionary(pair => pair.Ticker, pair => pair.name, StringComparer.Ordinal);
+        var dipBenchmarks = new Dictionary<int, (BenchmarkReading Reading, IReadOnlyList<FillMember> Members)>();
 
         foreach (var setup in open)
         {
@@ -838,6 +909,15 @@ public sealed partial class SetupLedger : IComponent
                 }
 
                 read = heavyweight;
+            }
+            else if (setup.Family == DipRule.Name)
+            {
+                if (!dipBenchmarks.TryGetValue(at, out var benchmarked))
+                {
+                    dipBenchmarks[at] = benchmarked = DipBenchmark(closes, opens, inputs, at, setup.Session);
+                }
+
+                read = DipRead(closes, opens, inputs, name, bar, setup.Anchor, benchmarked);
             }
             else
             {
@@ -1280,25 +1360,27 @@ public sealed partial class SetupLedger : IComponent
             : new Dictionary<int, IReadOnlyList<HeavyweightCut>>();
         var insiders = await InsidersAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), FirstInsiderDay(calendar), cancellation);
         var releases = await ReleasesAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
+
+        // On the S&P 400 and 600 the S&P 500's breadth as it stood on each session, from the S&P 500's own history as its
+        // sweep reads it, which the dip's reading reads and a live rule's market check reads.
+        // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
+        var rules = live?.Rules ?? LiveRulesRead.None;
+        double?[]? largeBreadth = null;
+
+        if (index != IndexFamilies.LargeIndex)
+        {
+            output.WriteLine("ledger-build: reading the S&P 500's history as it stood for its breadth, which the dip's reading and a live rule's market check read");
+            largeBreadth = SweepSwitches.LargeBreadth(await history.ReadAsync(through, null, cancellation), calendar);
+        }
+
         var context = new LedgerContext(income, sectors, highs, lows, facts)
         {
             Ranks = new FactorRanks(series, members),
             Insiders = insiders.Rows,
             InsiderSpans = insiders.Spans,
             Releases = releases,
+            LargeBreadth = largeBreadth is null ? null : LargeBreadthOver(calendar, largeBreadth),
         };
-
-        // A live rule reading the S&P 500's breadth reads it as it stood on each session, from the S&P 500's own history as
-        // its sweep reads it.
-        // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
-        var rules = live?.Rules ?? LiveRulesRead.None;
-        double?[]? largeBreadth = null;
-
-        if (rules.Read.Values.Any(rule => rule.Parameters[Core.Candidates.IndexRuleCandidate.LargeBreadthParameter] == 1))
-        {
-            output.WriteLine("ledger-build: reading the S&P 500's history as it stood for its breadth, which a live rule's market check reads");
-            largeBreadth = SweepSwitches.LargeBreadth(await history.ReadAsync(through, null, cancellation), calendar);
-        }
 
         return new PreparedHistory(index, calendar, series, sessions, members, income, closes, opens, stopped, [.. calendar, .. after], past, market, context, heavyweights)
         {
@@ -1393,11 +1475,17 @@ public sealed partial class SetupLedger : IComponent
             {
                 var family = Live.Read.TryGetValue(read.Family, out var rule) ? LedgerLiveRules.Under(read, rule, Bought(rule, read, at)) : read;
 
+                // The dip's setups of the session share its one benchmark, worked once.
+                var dipBenchmark = family.Family == DipRule.Name && family.Rows.Count > 0 ? DipBenchmark(closes, opens, inputsOnTheNight, at, calendar[at], stopped) : default;
+
                 families.Add((family, [.. family.Rows.Select(row =>
                 {
                     var name = NameOf(series, row.Ticker);
+                    var bar = IndexNightRead.BarOf(series[name], at);
 
-                    return Outcome(closes, opens, inputsOnTheNight, name, IndexNightRead.BarOf(series[name], at), row.Anchor, row.Plan, stopped);
+                    return family.Family == DipRule.Name
+                        ? DipRead(closes, opens, inputsOnTheNight, name, bar, row.Anchor, dipBenchmark)
+                        : Outcome(closes, opens, inputsOnTheNight, name, bar, row.Anchor, row.Plan, stopped);
                 })]));
             }
 
@@ -1626,6 +1714,9 @@ public sealed partial class SetupLedger : IComponent
         var facts = await FactsAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
         var insiders = await InsidersAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), FirstInsiderDay(inputs.Sessions), cancellation);
         var releases = await ReleasesAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
+        var largeBreadth = index == IndexFamilies.LargeIndex
+            ? null
+            : LargeBreadthOver(inputs.Sessions, SweepSwitches.LargeBreadth(await history.ReadAsync(through, null, cancellation), inputs.Sessions));
         var findings = new List<string>();
         var read = 0;
 
@@ -1636,7 +1727,7 @@ public sealed partial class SetupLedger : IComponent
 
             foreach (var row in session)
             {
-                var (held, rebuilt) = LedgerPointInTime.Setup(index, cut, cutMarket, income, sectors, facts, row.Family, row.Ticker, insiders, releases);
+                var (held, rebuilt) = LedgerPointInTime.Setup(index, cut, cutMarket, income, sectors, facts, row.Family, row.Ticker, insiders, releases, largeBreadth);
 
                 if (!held)
                 {
@@ -2264,10 +2355,10 @@ public sealed partial class SetupLedger : IComponent
             new InsiderCoverage(spans));
     }
 
-    // The business readings and the valuation reading of the night's setups read again for the tickers given, once the
-    // filings refresh has stored what the archive posted before the session; the night's rows alone, each from the facts
-    // filed before the setup's session and the valuation reading over the closes the night's step read. It returns how
-    // many rows it read again.
+    // The business readings, the valuation reading and from 22.2 the company's value of the night's setups read again for
+    // the tickers given, once the filings refresh has stored what the archive posted before the session; the night's rows
+    // alone, each from the facts filed before the setup's session and the two over the closes the night's step read. It
+    // returns how many rows it read again.
     public async Task<int> BusinessAgainAsync(DateOnly session, IReadOnlyList<string> tickers, CancellationToken cancellation = default)
     {
         if (tickers.Count == 0)
@@ -2280,10 +2371,16 @@ public sealed partial class SetupLedger : IComponent
 
         var facts = await FactsAsync(connection, [Filers], tickers, cancellation);
         var places = new Dictionary<string, double?>(StringComparer.Ordinal);
+        var values = new Dictionary<string, double?>(StringComparer.Ordinal);
 
         foreach (var ticker in tickers.Distinct(StringComparer.Ordinal))
         {
-            places[ticker] = await ValuePlaceAsync(connection, ticker, facts.GetValueOrDefault(ticker) ?? [], session, cancellation);
+            var filed = facts.GetValueOrDefault(ticker) ?? [];
+            var parts = ValuationReading.PartsOf(filed, session);
+            var prices = await PricesOnAsync(connection, ticker, filed, session, cancellation);
+
+            places[ticker] = prices is null ? null : ValuationReading.Place(parts, prices, session);
+            values[ticker] = prices is null ? null : LedgerContext.CompanyValueOf(parts, prices, session);
         }
 
         var read = 0;
@@ -2305,6 +2402,7 @@ public sealed partial class SetupLedger : IComponent
                 ("$operating_margin_change", (object?)business.OperatingMarginChange ?? DBNull.Value),
                 ("$cash_over_income", (object?)business.CashOverIncome ?? DBNull.Value),
                 ("$value_place", (object?)places[ticker] ?? DBNull.Value),
+                ("$company_value", (object?)values[ticker] ?? DBNull.Value),
             ]);
 
             read += await command.ExecuteNonQueryAsync(cancellation);
@@ -2314,13 +2412,6 @@ public sealed partial class SetupLedger : IComponent
 
         return read;
     }
-
-    // A member's valuation reading on the night over its stored closes and those before its year, as the night's step
-    // reads it.
-    static async Task<double?> ValuePlaceAsync(SqliteConnection connection, string ticker, IReadOnlyList<FiledFactRow> facts, DateOnly night, CancellationToken cancellation) =>
-        await PricesOnAsync(connection, ticker, facts, night, cancellation) is { } prices
-            ? ValuationReading.Place(ValuationReading.PartsOf(facts, night), prices, night)
-            : null;
 
     // The four insider readings of the night's setups and of every member's readings on the night read again, once the
     // filings refresh has stored the session before's filings and recorded its day: each from the filings filed before

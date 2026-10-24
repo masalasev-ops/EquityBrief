@@ -7879,3 +7879,233 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 60 tables, 1418 claims, 1418 passing, none out of scope and none unexamined, 1429 placements and
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    phase 20's sign-off by a fresh session and phase 18's by its own; 22.2 on the operator's word.
+
+### 22.2 ruling - 22.2 goes on, the three corrections 22.1's reviews carried land beside it, and the dip's least close of $5 stays on the S&P 500 and is written down   2026-10-24
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-24, word for word in `prompts/2026-10-24-22.2-operator-answers.md`. Shown at about
+            03:30 UTC what was left after phase 20's report, six items, they answered at about 03:40 UTC: "Can you do
+            item 3 and 4 on your list. Forget about item 5, i deleted it to clear up some disk space. and yes delete
+            stale branch if its no longer needed". Item 3 was 22.2; item 4 the three corrections 22.1's entry carried
+            from its reviews; item 5 the two copies of the store the 20.10 report found gone from their folder, removed
+            by no copy, which the operator removed by hand for the disk's room; item 6 the branch
+            `phase-19-2-colour-header`, whose one commit's migration 92 stands on main in its built form, deleted from
+            the remote. Asked at about 03:50 UTC through the question tool whether the least close of $5 the dip reads
+            on the S&P 500, where the documents state no floor, is kept or dropped, the options being to keep it and
+            write it down, to drop it for the dip alone or to drop it for the dip and the fundamentals-first family,
+            they chose "Keep $5, document it (Recommended)", which moves no behaviour: the S&P 500's fundamentals-first
+            family reads the same least close through the same function, and no member of the S&P 500 closed under $5
+            on 2026-10-23, SKYD's 7.77 the lowest.
+Plan:       in this pull request, a 22.1 correction first: section 17's floors row and the dip's own row say the
+            fundamentals-first family and the dip read the least close of $5 on the S&P 500, with no dollar volume floor
+            there, held by a test on both sides of it; the name page's listed-under line names the family a dip pick
+            gave way to on the S&P 400 and 600 and to the S&P 500's fundamentals-first family; and the S&P 500 line's
+            count takes in the fundamentals-first family's passes. Then 22.2 as its plan states, the operator's answer
+            on each index's sweep put to them before any freeze.
+Queue:      done, phase 20 finished for its sign-off with its report, 22.0 and 22.1 with its record; in progress, this
+            pull request, 22.1's corrections and 22.2; next, each index's dip answer to the operator and 22.3 on their
+            word, 22.4, and the sign-offs of phases 20 and 18 by fresh sessions when the operator says.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 22.1 - correction: a stock's page names the family a dip pick gave way to on its own index's list, the S&P 500 line counts the fundamentals-first family's passes, and the dip's least close of $5 on the S&P 500 is written down   2026-10-24
+
+Found:      the three faults 22.1's entry carried from its reviews. The name page read the S&P 500's own lists alone, so
+            a stock an S&P 400 or 600 family or the S&P 500's fundamentals-first family listed drew no line, and where
+            the dip gave way to that family no dip label. The S&P 500 line's count of the members a setup passed left
+            out the fundamentals-first family's passes, which predates the dip. And section 17 said the large cap
+            index's rules carry no floor, while the dip and the fundamentals-first family read a close of at least $5
+            there through the one floors function every index family shares.
+Corrected:  the name page reads the stock's own index's list beside the S&P 500's own, its line naming the family
+            listing it and the dip's label where the dip gave way, as section 15.9's row states; the S&P 500 line counts
+            the fundamentals-first family's passes beside the swing filter's, its own families' and the dip's, each
+            member once, as section 15.7's row states; and on the operator's ruling above section 17's floors row and
+            the dip's own row say both families read that least close alone on the large cap index, with no dollar
+            volume floor, the changelog holding the prior text.
+Tests:      2 new and one assertion added: M1 under the S&P 400's breakout and BBB under the S&P 500's
+            fundamentals-first family each drawn on its page with the dip's label; two S&P 500 members at closes of
+            4.99 and 5.00 on a few hundred dollars a session, the first stopped at the floors and the second passing;
+            and the S&P 500 line's count taking in FF1, which the fundamentals-first family alone passed. 2680 in all.
+Claims:     1418, none new: each row already stated what the code now does, or is the row the ruling amends.
+Pins:       none move: the name page and the line are the read surface's, and the dip's floor is read as before.
+Mutated:    the rule, stated before the runs: one mutation a property the correction adds, the smallest edit undoing it,
+            each run filtered to the tests naming the property with its red predicted, made in this checkout and
+            reverted with the editor. C1 the name page reading the S&P 500's own lists alone, red at the new name-page
+            test, the dip's earlier read-back unaffected; C2 the S&P 500 line's count leaving the fundamentals-first
+            family's passes out, red at that family's S&P 500 read-back, 10 drawn against 11; C3 the dip's floors handed
+            no least close, red at the new test with DU passing.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as 22.1's entry, less these three.
+
+### 22.2 ruling - the dip's setups at its full loose gates with no trend condition, and the ledger's history budget raised to 1.5 gigabytes   2026-10-24
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-24 at about 04:35 UTC through the question tool, word for word in
+            `prompts/2026-10-24-22.2-operator-answers.md`, asked which way 22.2 goes since the dip's ledger setups break
+            section 17's history budget of half a gigabyte under any loose gate: "Full loose gates, budget 1.5 GB
+            (Recommended)", the option reading "Every entry dial one step past the widest as the plan says: RSI2 under
+            20 or a fall of 1 typical move, and no trend condition (the close-over-average reading is stored, so an
+            engine can re-impose it)."
+Measured:   read-only on the operator's store, the setup table held 227,677 rows at about 1,270 bytes a row, about 289
+            megabytes; over every pulled name from 2019-01-02 the dip's loose gates with no trend condition pass 25.6 per
+            cent of 3,621,374 name-sessions and with the close above its 200-session average 11.6 per cent, about
+            750,000 and 340,000 setups over the three indices.
+Plan:       the decision naming the dip's setups and the raised budget, section 17's budget row and its constant at 1.5
+            gigabytes with the prior text in the changelog; the dip's loose gates written with its setups in this pull
+            request.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 22.2 run - the short-term dip swept on the S&P 500 at the next open and judged by the tester year by year, its answer meeting its floors and not the tester's bar   2026-10-24
+
+Not a checkpoint entry: it lands nothing.
+Queue:      as the 22.2 ruling entries above.
+Ran:        from 2df73146's build in this checkout, read-only over the operator's store: `sweep-index --index GSPC
+            --family dip` from 06:05:53 to 06:06:54 UTC, run 20261024T060554Z, and `--family dip-tester` from 06:06:54
+            to 06:08:42, run 20261024T060655Z, each answer the same as the first runs from 6e8a904d's build at 04:42.
+Results:    would run drop=-3|trend=50|exit=65|limit=10|stop=3|market=6: a fall of at least 3 typical moves over the
+            drop's 3 sessions, the 50-session average above the 200, sold at the next open after the 2-session RSI
+            closes back above 65 or at the 10th session's close, its stop 3 typical moves under the close, listing
+            only on a session the VIX closes above its median of the 252 before. 511 trades, an edge after costs of
+            0.052 risks, 0.061 before costs and 0.043 at double, above nothing in 7 of the 8 years, 2020 0.247, 2022
+            -0.087, 2025 0.020 and 2026 0.002, and 0.054 without its five largest results. 22 of the grid's 1,512
+            settings meet the floors and 117 stand above nothing in six of the eight years, where luck alone would put
+            about 218.5; no level of the second stage survives on 6 of the 10 strongest. Beside it, changing nothing:
+            the report gate removed, 0.036 over 794 trades, 4 of 8 years; exits sold at the triggering close, 0.046
+            over 511, 6 of 8. The provisional rule its night reads, drop=10|trend=200|exit=5|limit=10|stop=4|market=0,
+            -0.000 over 7,388 trades, 3 of 8. The tester: not passed, its adjusted p 0.3736 against the bar of 0.0042,
+            better in 3 of 3 counted years, 301 risks, 5 of 5 folds within a step of its choice.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 22.2 run - the short-term dip swept on the S&P 400 at the next open and judged by the tester year by year, its answer meeting its floors and not the tester's bar   2026-10-24
+
+Not a checkpoint entry: it lands nothing.
+Queue:      as the 22.2 ruling entries above.
+Ran:        from 2df73146's build in this checkout, read-only over the operator's store: `sweep-index --index MID
+            --family dip` from 06:08:42 to 06:09:46 UTC, run 20261024T060843Z, and `--family dip-tester` from 06:09:46
+            to 06:11:27, run 20261024T060946Z, each answer the same as the first runs from 6e8a904d's build at 04:48.
+Results:    would run drop=-3|trend=50|exit=65|limit=5|stop=3|market=5: a fall of at least 3 typical moves over the
+            drop's 3 sessions, the 50-session average above the 200, sold at the next open after the 2-session RSI
+            closes back above 65 or at the 5th session's close, its stop 3 typical moves under the close, listing only
+            on a session the S&P 500's breadth stands at 0.45 or above. 546 trades, an edge after costs of 0.024
+            risks, 0.032 before costs and 0.016 at double, above nothing in 6 of the 8 years, 2020 0.013, 2022 0.009,
+            2025 0.013 and 2026 -0.050, and 0.033 without its five largest results. 8 of the grid's 1,728 settings meet
+            the floors and 38 stand above nothing in six of the eight years, where luck alone would put about 249.8;
+            no level of the second stage survives on 6 of the 10 strongest. Beside it, changing nothing: the report gate
+            removed, -0.001 over 805 trades, 3 of 8 years; exits sold at the triggering close, 0.017 over 546, 4 of 8.
+            The provisional rule its night reads, drop=10|trend=200|exit=5|limit=10|stop=4|market=0, -0.006 over 6,502
+            trades, 2 of 8. The tester: not passed, its adjusted p 0.0397 against the bar of 0.0042, better in 3 of 3
+            counted years, 317 risks, 1 of 5 folds within a step of its choice.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 22.2 run - the short-term dip swept on the S&P 600 at the next open and judged by the tester year by year, its answer meeting its floors and not the tester's bar   2026-10-24
+
+Not a checkpoint entry: it lands nothing.
+Queue:      as the 22.2 ruling entries above.
+Ran:        from 2df73146's build in this checkout, read-only over the operator's store: `sweep-index --index SML
+            --family dip` from 06:11:27 to 06:12:53 UTC, run 20261024T061128Z, and `--family dip-tester` from 06:12:53
+            to 06:14:56, run 20261024T061254Z, each answer the same as the first runs from 6e8a904d's build at 04:55.
+Results:    would run drop=-3|trend=200|exit=65|limit=7|stop=3|market=1 with the drop's volume under 1.5 times its
+            50-session average: a fall of at least 3 typical moves over the drop's 3 sessions on that volume, the close
+            above its 200-session average, sold at the next open after the 2-session RSI closes back above 65 or at the
+            7th session's close, its stop 3 typical moves under the close, listing only on a session the index's own
+            breadth stands at 0.35 or above. 317 trades, an edge after costs of 0.057 risks, above nothing in 6 of the
+            8 years, 2020 0.139, 2022 -0.182, 2025 0.108 and 2026 0.096, and 0.063 without its five largest results;
+            the first stage's proposal, drop=-3|trend=200|exit=65|limit=10|stop=3|market=2, 0.039 over 540 trades,
+            0.047 before costs and 0.030 at double. 44 of the grid's 1,728 settings meet the floors and 44 stand above
+            nothing in six of the eight years, where luck alone would put about 249.8; of the second stage's levels the
+            drop's volume alone survives on 6 of the 10 strongest, and crossed, 10 of 10 meet the floors. Beside it,
+            changing nothing: the report gate removed, 0.037 over 445 trades, 5 of 8 years; exits sold at the
+            triggering close, 0.058 over 317, 6 of 8. The provisional rule its night reads,
+            drop=10|trend=200|exit=5|limit=10|stop=4|market=0, -0.009 over 6,814 trades, 3 of 8. The tester: not passed,
+            its adjusted p 0.0764 against the bar of 0.0042, better in 1 of 2 counted years, short of the stability
+            screen, 227 risks, short of the count, 0 of 5 folds within a step of its choice.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 20.13 - correction: the chart page's test reads the quote's route under a clock fixed on a trading day and on a Saturday, where it held the route on every day and failed on a Saturday   2026-10-24
+
+Found:      the first `tools/ci.ps1` over this pull request's tree, on Saturday 2026-10-24, failed 20.13's test of the
+            fixture's chart page: it held the page to the routes of the analysts, the quote and the ratings, while the
+            page names the delayed quote's route only on a day the exchange trades, asking for the quote as the name page
+            does, as section 15.22 states, so on a day it does not the route is rightly absent and the test failed
+            whatever the code did. The read surface's
+            test host read the machine's clock.
+Corrected:  the test host takes a clock in place of the machine's; the fixture's page is held to the analysts' and the
+            ratings' routes and no other but the quote's; and a test of its own reads a member's chart page under a
+            clock fixed at 15:00 UTC on Friday 2026-10-23, naming the quote's route, and on Saturday 2026-10-24, naming
+            none. No shipped source changes.
+Tests:      1 new, the quote's route on both sides.
+Claims:     none new: section 15.22's row already states it.
+Pins:       none move: only the suite changes.
+Mutated:    the rule, stated before the runs: one mutation a side of the property, the smallest edit undoing it alone,
+            made in this checkout and reverted with the editor. C1 the chart page never naming the quote's route, red at
+            the new test's Friday; C2 the chart route reading a Saturday as the Friday before, red at its Saturday.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 22.2 - the short-term dip's setups in the ledger on every index at its loose gates with the nine readings its grid reads, and its sweep and tester on each index's own history   2026-10-24
+
+Queue:      done, phase 20 finished for its sign-off with its report, 22.0 and 22.1 with its record; in progress, this
+            pull request, 22.1's corrections and 22.2; next, its merge and its remedy from main, each index's dip answer
+            with the operator and 22.3 on their word; on the brief read's track in its worktree, 22.4, the one-gate-short
+            correction, 22.5 and 22.6, 22.2 and 22.3 keeping priority; then 22.7, and the sign-offs of phases 20 and 18
+            by fresh sessions when the operator says.
+Built:      the dip's sweep on each index over its own history at the next open, its grid with the market setting its
+            last dial, its second stage, the tester's year-by-year run and the two figures beside its answer; the
+            ledger's dip setups on every index at loose gates a step past the sweep's widest, a 2-session RSI under 20
+            or a fall of one typical move over three sessions with no trend condition, walked by the rule's own walk at
+            the provisional plan against the same plan on every member, read at the next open, carrying the dip's own
+            pick and the provisional rule's pass, closed the night their paths end and rebuilt by the point-in-time
+            check; the nine readings the grid reads joined to the catalogue, 85 in all, by migration 108, each under one
+            heading, the company's value read again with the valuation reading after the filings refresh; the Ledger
+            page's dip counts on each index; the readings' version moved to ab6244bc6081; sections 7, 13.9, 13.10,
+            15.19, 16, 17 and 18, SCHEMA.md, the runbook's commands and remedy, the guide, the roster's rows and the
+            changelog.
+Tests:      11 new, 2692 in all with the 20.13 correction's one above: a dip setup's path and its benchmark of the same
+            plan on every member worked by hand over constructed bars, a member whose bars skip a session holding the
+            benchmark open and one whose prices stopped left out; the loose gates on both sides of their step past the sweep's widest; each of the nine
+            readings worked by hand at a constructed session, standing at the catalogue's end; the company's value read
+            again after the refresh; a dip setup's readings rebuilt by its own gates over the cut history; a dip setup
+            on the night carrying the provisional rule's pass and the dip's own pick, closed the night after at the next
+            open after its exit, and the next-open check working its result and edge at the open again as stored; no
+            source a rule's version pins one 22.2 writes; one sweep trade's result and benchmark at the next open worked
+            by hand and read the same by the tester's walk, the walk's exit read in place of the average and the VIX's
+            level at its median's edge; and the Ledger page's dip counts on each index. The fixture's whole night writes
+            NFLX's dip setup, worked by hand from the captured bars, with its summary row.
+Claims:     1421, 3 new: section 17's grid of the dip's sweep, section 18's row for a market series it reads missing a
+            session and the Ledger page's dip counts, as the plan counted.
+Pins:       none move: no source a rule's version pins is one 22.2 writes, asserted.
+Mutated:    the rule, stated before the runs: one mutation a property 22.2 adds, the smallest edit undoing it alone,
+            each run filtered to the tests naming the property with its red predicted, made in this checkout and
+            reverted with the editor. M1 the Ledger page naming the dip by its word, red at its read-back; M2 a dip
+            setup's exit counted to its triggering close, red at the path test, 2 sessions for 3; M3 the benchmark
+            settling with a path open, red there; M4 the loose gate taking an RSI of exactly 20, red at the gates test;
+            M5 the drop read over two sessions, red at the readings test; M6 the VIX's median taking the session's own
+            close, which survived its first run, the session's close of 150 standing below the median as the oldest
+            close it displaced did, so the test's session close was raised to 400, above every close before it, and M6
+            then red at 400 over 182.5 against 400 over 181.5; M7 the company's value left as the night wrote it after
+            the refresh, red; M8 the point-in-time rebuild read without the S&P 500's breadth, red naming
+            large_breadth; M9 the S&P 500's dip picks left unread, red at the pick test; M10 the sweep's trade sold at
+            its triggering close, red at the sweep trade test, 0.292 for 0.233; M11 the VIX level's window taking its
+            own session, red at its test; M12 the walk reading the average in place of the sweep's exit, red at its
+            test; M13 the night after reading a dip setup through the other families' replay, red at the night's fault
+            check, that replay refusing a plan with no target; M14 the next-open check's dip result left without the
+            open's gap, red at its line. M13's and M14's tests were written after the first twelve ran, for the two
+            branches the rule's list showed no test held. Not mutated: the history build's dip branch, which the
+            rebuild comparison's two dips hold, and the Ledger page's year counts, read as every family's.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2692 of 2692 tests ran with none failed,
+            migrations 0 to 108 with none pending, schema version 108, against `data-ci` and never `data`; the phase
+            report 60 tables, 1421 claims, 1421 passing, none out of scope and none unexamined, 1432 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the remedy from main after the merge, before the night with no other writer running: migration 108, the
+            ledger's night by hand, the three histories built again with `--again` and each checked; each index's dip
+            answer with the operator and 22.3 on their word; the sign-offs of phases 18 and 20.

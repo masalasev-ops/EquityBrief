@@ -3832,6 +3832,19 @@ internal static class Scope
             Verdict.Pass,
             "read back off the rendered pages over a constructed store: on the S&P 400 the dip's trades among the index's under its label with the setup chips counting each setup's trades, each chip's link keeping the index, and the dip chosen keeping its own, and on the S&P 500 its card of its own with its chosen view drawing that card alone",
             ByReadSurface),
+        // 22.2, the dip's setups and its sweep: section 17's grid, section 18's row and the Ledger page's counts.
+        [CheckReach.Key(LimitsTable, "The short-term dip's sweep grid")] = new Scoped(
+            Verdict.Pass,
+            "one sweep trade's result and benchmark at the next open worked by hand over a constructed history and read the same by the tester's walk, the walk's exit read in place of the average, the dip's loose gates on both sides of their step past the widest the grid reads, and the VIX's level at its median's edge; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A market series missing a session the dip's sweep reads")] = new Scoped(
+            Verdict.Pass,
+            "the VIX's level read closed on a session missing its close and on one whose median reaches a session missing its close, a day the exchange was closed passed over",
+            ByExpectations),
+        [CheckReach.Key(LedgerPage, "The short-term dip's setups")] = new Scoped(
+            Verdict.Pass,
+            "read back off the rendered page over a constructed store: the dip's card on each of the three indices with its year's setups, its passes, its picks and its settled as each index's summary stored them, and a settled dip setup's path drawn with its buy and its stop and no target, its end the exit",
+            ByReadSurface),
         // 17.9, approval and the live alarm: the apply step's and the alarm's catalogue and matrix rows, five stores,
         // section 17's alarm and setting, section 18's two rows, the Loop page's three regions, Tonight's line and the
         // card's row for a rule standing at an approved change.
@@ -6712,6 +6725,8 @@ internal static class Scope
         // 22.1's two, which the plan names as the dip's card and its label on Past picks.
         [CheckReach.Key("15.7 Tonight", "The short-term dip's card")] = "22.1",
         [CheckReach.Key("15.17 Past picks", "The short-term dip's trades")] = "22.1",
+        // 22.2's one, which the plan names as the Ledger page's dip counts.
+        [CheckReach.Key(LedgerPage, "The short-term dip's setups")] = "22.2",
 
     };
 
@@ -7597,6 +7612,8 @@ internal static class Scope
         ["A dip member with no typical move"] = "22.1",
         ["A dip member with no report date on file"] = "22.1",
         ["No next session stored for a dip trade"] = "22.1",
+        // 22.2's one, which the plan names as a failure row.
+        ["A market series missing a session the dip's sweep reads"] = "22.2",
     };
 
     // The two rows of the read and write matrix whose component already exists.
@@ -7803,6 +7820,8 @@ internal static class Scope
         ["Queue window"] = "19.6",
         // 22.1's settings, which the plan names as the family's provisional rule.
         ["The short-term dip"] = "22.1",
+        // 22.2's grid, which the plan names as the sweep's grid row.
+        ["The short-term dip's sweep grid"] = "22.2",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

@@ -145,11 +145,15 @@ public partial class NightlyRun
 
         var standing = ComparedRows(store);
 
-        // The same history computed again gives AAA's and EEE's breakouts their benchmarks again, and is written.
+        // The same history computed again gives AAA's and EEE's breakouts their benchmarks again and, from 22.2, their dips
+        // three sessions on, each closing 10 under the close three sessions before, past a typical move; it is written.
         var (held, words) = await Ledger(13).RebuildAsync(store.Root, ["SML"], new StringWriter());
 
         Assert.True(held);
-        Assert.Equal("every index's history written again: the S&P 600 2 with a benchmark against the standing 2", words);
+        Assert.Equal("every index's history written again: the S&P 600 4 with a benchmark against the standing 4", words);
+        Assert.Equal(
+            [$"AAA|{LedgerStamp(73)}", $"EEE|{LedgerStamp(78)}"],
+            Texts(store, "SELECT ticker || '|' || session_date FROM setup WHERE family = 'dip' AND benchmark IS NOT NULL ORDER BY ticker;"));
         Assert.Equal(standing, ComparedRows(store));
         Assert.Equal(2, Texts(store, "SELECT run_id FROM run_log WHERE stage = 'ledger-build';").Count);
 

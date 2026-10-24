@@ -26,6 +26,66 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-24 - .claude/rules/checks.md - read-surface reaches the chart page's quote route on a trading day and on a closed one
+Corrects: 20.13's test held the fixture's chart page to the delayed quote's route whatever the machine's day, while the page names that route only on a day the exchange trades, so the suite failed on Saturday 2026-10-24
+Was:
+> read-surface: ... and from 22.2 the Ledger page's card of the short-term dip on each of the three indices with its year's counts as each index's summary stored them, and a settled dip setup's path drawn with its buy and its stop and no target |
+Now:
+> read-surface: ... and a settled dip setup's path drawn with its buy and its stop and no target; and from the 20.13 correction of 2026-10-24 a stock's chart page naming the delayed quote's route on a day the exchange trades and not on one it does not, read under a clock fixed on each |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
+### 2026-10-24 - ARCHITECTURE.html - the short-term dip's setups join the ledger on every index with nine readings, and its sweep
+Authorised by: The short-term dip's setups clear its drop a grid step past the widest its sweep reads with no trend condition, and the ledger's history budget is raised to hold them
+Was:
+> Setup ledger catalogue row, reads: ... release readings, reading pins, family picks, index family picks, index family nights, candidate register, heavyweight nights, setups, setup nights, ledger readings
+> Setup ledger catalogue row, does: appends, on every index the night read, every member-session a family's loose gates pass, the pullback's, the breakout's, the drift's and from 19.9 the fundamentals-first family's, with the live rule's own pass ...
+> 13.10: Every reading is defined once, in the core's catalogue, and read as it stood: the seventy-six readings of the stock, its business, its insiders and the market, the twenty-two published factors among them from 19.12, the four insiders' from 19.13 and from 20.8 the four answers the local model gave ...
+> Setups store row: ... the plan as prices with the risk in typical moves, a heavyweights' setup holding no stop, the seventy-six readings as they stood, ...
+> Setup ledger's loose gates row: ... whatever its profit, the growth's change, its margins or its trend (see: The fundamentals-first family's setups are the pullback's whose revenue and cash clear a grid step past the widest level its search tried); and the heavyweights each member of a sector's size cut ... <b>Judgement:</b> each figure, phase 17's plan of 2026-10-08 as ruled, and the fundamentals-first family's the operator's ruling of 2026-10-15
+Now:
+> Setup ledger catalogue row, reads: ... family picks, index family picks, dip picks, index family nights, ...
+> Setup ledger catalogue row, does: ... the pullback's, the breakout's, the drift's, from 19.9 the fundamentals-first family's and from 22.2 the short-term dip's, with the live rule's own pass ...
+> 13.10 counts eighty-five readings, from 22.2 nine the dip's grid reads among them, and gains a paragraph on the dip's setups at their loose gates, walked by the rule's own walk against the same plan on every member, and 13.9 a paragraph on the dip's sweep on each index and its tester.
+> Setups store row: ... a heavyweights' setup holding no stop and a short-term dip's no target, the eighty-five readings as they stood, ... and the dip's nine from 22.2 ...
+> Setup ledger's loose gates row: ... (see: The fundamentals-first family's setups are ...); the short-term dip at a 2-session RSI under 20 or a fall of at least 1 typical move over the drop's 3 sessions, whatever its trend (see: The short-term dip's setups clear its drop ...); and the heavyweights ... <b>Judgement:</b> each figure, phase 17's plan of 2026-10-08 as ruled, the fundamentals-first family's the operator's ruling of 2026-10-15 and the short-term dip's their ruling of 2026-10-24
+> and rows added: section 17's grid of the dip's sweep, section 18's row for a market series the dip's sweep reads missing a session, and 15.19's card of the dip's setups.
+Why: 22.2 writes the dip's setups into the ledger on every index with the readings its grid reads, and sweeps it on each index's own history.
+
+### 2026-10-24 - RUNBOOK.md and .claude/rules/checks.md - the dip's sweep commands and its ledger remedy, and what the roster's two checks reach of 22.2
+Authorised by: The short-term dip's setups clear its drop a grid step past the widest its sweep reads with no trend condition, and the ledger's history budget is raised to hold them
+Was:
+> fixture-expectations: ... the S&P 400's tone variant at a complete version walked and judged against its provisional rule, where a verb handing it none keeps it not testable |
+> read-surface: ... and from the 20.11 correction of 2026-10-24 a frozen card's line naming the setting it was frozen at by no key of its sweep's, the setting kept whole on the element |
+Now:
+> fixture-expectations: ... where a verb handing it none keeps it not testable; and from 22.2 a dip setup's path and its benchmark of the same plan on every member worked by hand over constructed bars, ... and no source a rule's version pins one 22.2 writes |
+> read-surface: ... the setting kept whole on the element; and from 22.2 the Ledger page's card of the short-term dip on each of the three indices with its year's counts as each index's summary stored them, and a settled dip setup's path drawn with its buy and its stop and no target |
+> and the runbook gains the dip's `sweep-index` commands and 22.2's remedy with its three history builds and their checks, adding lines and removing none.
+Why: the roster rows say what their checks assert, and 22.2's tests extend them.
+
+### 2026-10-24 - ARCHITECTURE.html - the setup ledger's history budget raised to 1.5 gigabytes for the short-term dip's setups
+Authorised by: The short-term dip's setups clear its drop a grid step past the widest its sweep reads with no trend condition, and the ledger's history budget is raised to hold them
+Was:
+> <tr><td>Setup ledger's history budget</td><td>0.5 gigabytes for the history build, over which the pullback's strength floor rises a grid step until it fits</td><td>the whole store held 1.46 gigabytes when phase 17 was planned, and a history larger than a third of it would double the copy's time for a table no night reads. <b>Judgement:</b> phase 17's plan of 2026-10-08 as ruled</td>
+Now:
+> <tr><td>Setup ledger's history budget</td><td>1.5 gigabytes for the history build, over which the pullback's strength floor rises a grid step until it fits</td><td>the whole store held 1.46 gigabytes when phase 17 was planned, and a history larger than a third of it would double the copy's time for a table no night reads; raised on the operator's ruling of 2026-10-24 for the short-term dip's setups at their loose gates, about a gigabyte of them, the store then holding 3.9 gigabytes. <b>Judgement:</b> phase 17's plan of 2026-10-08 and the ruling of 2026-10-24, as ruled</td>
+Why: the dip's setups at loose gates a step past its sweep's widest levels are about a gigabyte, which the half gigabyte set when the store held 1.46 gigabytes could not hold under any loose gate.
+
+### 2026-10-24 - ARCHITECTURE.html - the dip and the fundamentals-first family read the least close of $5 on the S&P 500
+Corrects: section 17 said the large cap index's rules carry no floor, while the short-term dip and the fundamentals-first family read a close of at least $5 there through the one floors function every index family shares; 22.1's reviews found it, and the operator ruled on 2026-10-24 that the floor stays and is written down.
+Was:
+> a member holding fewer sessions reading none and failing; the large cap index's rules carry no floor (see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing)
+
+> passes where its own market setting is open, off while it is provisional, it clears its index's floors, its close is above its 200-session average,
+
+> and a report on the drop's last session and on the time limit's last refused while one the session after is not; the figures read off the document against the constants
+Now:
+> a member holding fewer sessions reading none and failing; the large cap index's swing rules carry no floor, and its fundamentals-first family and its short-term dip read that least close alone, with no dollar volume floor (see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing)
+
+> passes where its own market setting is open, off while it is provisional, it clears its index's floors, on the large cap index the least close of the mid and small cap indices' rules alone, its close is above its 200-session average,
+
+> and a report on the drop's last session and on the time limit's last refused while one the session after is not; on the large cap index the least close on both sides of it with no dollar volume floor read; the figures read off the document against the constants
+Why: the code reads the least close on every index and no S&P 500 member closed under it on 2026-10-23, so the document is brought to the code, and a test holds the dip's floor on the S&P 500 at $4.99 and $5.00.
+
 ### 2026-10-24 - ARCHITECTURE.html - a frozen card names its setting by its chips and never by the sweep's key
 Corrects: a frozen S&P 400 or 600 card's line drew the setting it was frozen at by the sweep's key as stored, "quality=off|floors=1x|size=10|..." on the heavyweights' and "high=251|volume=1.5|..." on the swing cards', which phase 19's sign-off carried as owed a 20.11 correction, the operator ruling on 2026-10-24 that the line drops the key
 Was:

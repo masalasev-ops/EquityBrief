@@ -82,6 +82,7 @@ public sealed partial class SetupLedger
         var nearResult = new bool[settled.Count];
         var nearEdge = new bool[settled.Count];
         var benchmarks = new ConcurrentDictionary<(int At, SetupPlan Plan), (BenchmarkReading Close, BenchmarkReading Open)>();
+        var dipBenchmarks = new ConcurrentDictionary<int, (BenchmarkReading Close, BenchmarkReading Open)>();
         var opens = prepared.Opens;
 
         Parallel.For(0, settled.Count, place =>
@@ -118,6 +119,19 @@ public sealed partial class SetupLedger
                 atOpen = (
                     NextOpenCheck.HeavyweightResult(closes, bar, setup.Sessions, open),
                     members is null ? null : NextOpenCheck.HeavyweightCut(members, setup.Sessions));
+            }
+            else if (setup.Family == DipRule.Name)
+            {
+                // The dip's path through its own walk from the stored stop in the history's prices, its result moved by
+                // the open's gap over the risk the close set, and its session's one benchmark both ways.
+                var factor = setup.Entry > 0 ? closes[bar] / setup.Entry : 1;
+                var anchor = new SetupAnchor(setup.Session, closes[bar], setup.Stop * factor, null, null, setup.Cap, setup.RiskMoves);
+                var walked = DipPaths.Replay(closes, opens[name], prepared.Series[name].SessionAt, bar, anchor);
+                var (closeBenchmark, openBenchmark) = dipBenchmarks.GetOrAdd(at, key => DipBenchmarks(prepared, opens, key, setup.Session));
+
+                gap = NextOpenCheck.Gap(anchor, open);
+                atClose = (walked.Result, closeBenchmark);
+                atOpen = (walked.Result is { } result && open is { } price && price > 0 ? TradeFills.AtOpen(result, anchor.Entry, anchor.Risk, price) : null, openBenchmark);
             }
             else
             {
@@ -181,6 +195,25 @@ public sealed partial class SetupLedger
         }
 
         return (SetupBenchmark.Of(atClose, session, plan), NextOpenCheck.Benchmark(atOpen, session, plan));
+    }
+
+    // The short-term dip's one benchmark of a session both ways, its plan on every member the history held that session.
+    static (BenchmarkReading Close, BenchmarkReading Open) DipBenchmarks(PreparedHistory prepared, double[][] opens, int at, DateOnly session)
+    {
+        var names = prepared.Members.Names[at];
+        var bars = prepared.Members.Bars[at];
+        var members = new List<(double[] Closes, double[] Opens, int[] SessionAt, int Bar, double Move, bool Stopped)>(names.Length);
+
+        for (var place = 0; place < names.Length; place++)
+        {
+            var member = names[place];
+
+            members.Add((prepared.Closes[member], opens[member], prepared.Series[member].SessionAt, bars[place], prepared.Series[member].Atr[bars[place]], prepared.Stopped[member]));
+        }
+
+        var (reading, listed) = DipPaths.WithMembers(members, session);
+
+        return (reading, reading with { Mean = TradeFills.Benchmark(reading.Mean, listed).Mean });
     }
 
     // One group's line: a swing family's figures in multiples of the risk its plan put up at the listing's close, the

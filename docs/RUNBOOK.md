@@ -770,6 +770,15 @@ dotnet run --project src/EquityBrief.Worker -- sweep-index --index SML --family 
 
 Each reads the live store read-only, writes nothing to it, and writes its report and its figures into a run folder of its own; the searches state their answer as every search does and, on their last line and in their report, the setting their family would run, the best edge after costs among the settings that pass or, where none passes, the highest edge among the settings holding the trade floor (see: The setting a family on the S&P 400 or 600 would run is the best edge among its passing settings, or the strongest read where none passes), and the market check and the tester's runs state none. On this machine the market check takes about fifteen minutes an index, each swing search a few, the pullback's search about half an hour and the tester's pullback run about an hour an index. Nothing any of them shows is adopted, frozen or registered; the night reads an index's own rules only on the operator's word.
 
+From 22.2 the short-term dip is swept on each of the three indices, the S&P 500's among them, by naming its family, and judged year by year by naming its tester (see: The short-term dip buys a stock in an uptrend after a sharp drop no report caused and sells the bounce within days). `dip` reads the family's first stage over its grid with the market setting its last dial and a second stage of the order and the research's three filters read alone on the ten strongest settings, every trade bought at the next open and sold as the rule states, and states the setting it would run with its trades, its edge after costs, each year's edge, the edge without its five largest results and what luck alone passes over the whole grid, and beside it, changing nothing, the same setting read with the report gate removed and with its exits sold at the triggering close; `dip-tester` judges the search as the tester judges a search, inside every fold on the years before its test year, and states its adjusted p and its screens.
+
+```
+dotnet run --project src/EquityBrief.Worker -- sweep-index --index GSPC --family dip
+dotnet run --project src/EquityBrief.Worker -- sweep-index --index MID --family dip-tester
+```
+
+Each reads the live store read-only, writes nothing to it, and writes its report and its figures into a run folder of its own. On this machine the search took about two minutes an index and the tester about four. Nothing either shows is adopted, frozen or registered; each index's answer goes to the operator, and a freeze is a remedy of its own on their word.
+
 ### The rule's record on each pick's card
 
 Each pick's card draws the record of the rule that picked it, replayed at its one setting over the pulled history with the sweep's own walk, each trade after its cost at the published table (see: A rule's record is replayed at its one setting by the sweep's own code over the pulled history, after costs on every index). The replay is run by hand, every index or one, and a freeze's remedy runs it again so the record follows the rule a card names:
@@ -869,6 +878,18 @@ dotnet run --project src/EquityBrief.Worker -- loop-links --index GSPC
 ```
 
 each check and each `loop-links` run for MID and SML as for GSPC. No source a rule's version pins moves, so nothing is registered again and no record or paper account restarts.
+
+From 22.2 the night and the build write the short-term dip's setups beside the others on every index, a member-session clearing the index's floors whose 2-session RSI stands under 20 or whose fall over the drop's three sessions is at least one typical move, whatever its trend, at the provisional plan with its stop four typical moves under the close and no target, and every setup and every member's readings carry the nine readings the dip's grid reads (see: The short-term dip's setups clear its drop a grid step past the widest its sweep reads with no trend condition, and the ledger's history budget is raised to hold them). The history's budget is 1.5 gigabytes, over which the pullback's strength floor rises a grid step until it fits. A row written before 22.2 holds none of the nine until the history is built again with `--again`. 22.2's remedy, from main after the merge and before the night, runs the file, which migrates to 108 and runs the ledger's night step by hand over the newest night, then builds each index's history again and checks it:
+
+```
+powershell -File tools/remedy.ps1 tools/remedies/2026-10-24-22.2-the-dip-in-the-ledger.txt
+tools/ledger-build.ps1 --index GSPC --from 2019-01-02 --through 2026-10-05 --again
+tools/ledger-build.ps1 --index MID --from 2019-01-02 --through 2026-10-05 --again
+tools/ledger-build.ps1 --index SML --from 2019-01-02 --through 2026-10-05 --again
+dotnet run --project src/EquityBrief.Worker -- ledger-check --index GSPC
+```
+
+each check run for MID and SML as for GSPC. No source a rule's version pins moves, so nothing is registered again and no record or paper account restarts.
 
 ### The SEC's facts and the filings refresh
 
