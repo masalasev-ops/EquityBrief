@@ -32,7 +32,8 @@ public static class DipPaths
 
     // The path over a member's closes and opens oldest first, the anchor's bar at `from`, with each bar's place among the
     // calendar's sessions, which tells a session the bars skip: the sessions it was held to its sale, the close it ended
-    // on where the time limit sold it.
+    // on where the time limit sold it. Closes past the places held, the bar store's own after a history's span, are read
+    // in turn.
     public static SetupOutcome Replay(double[] closes, double[] opens, int[] sessionAt, int from, SetupAnchor anchor)
     {
         if (from < 0 || from >= closes.Length || !(anchor.Risk > 0))
@@ -44,7 +45,7 @@ public static class DipPaths
 
         for (var at = from + 1; at < closes.Length && after.Count <= anchor.Cap; at++)
         {
-            if (sessionAt[at] - sessionAt[at - 1] > 1)
+            if (at < sessionAt.Length && sessionAt[at] - sessionAt[at - 1] > 1)
             {
                 break;
             }

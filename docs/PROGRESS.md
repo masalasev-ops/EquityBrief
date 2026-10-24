@@ -8109,3 +8109,31 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the remedy from main after the merge, before the night with no other writer running: migration 108, the
             ledger's night by hand, the three histories built again with `--again` and each checked; each index's dip
             answer with the operator and 22.3 on their word; the sign-offs of phases 18 and 20.
+
+### 22.2 - correction: a dip path runs on over the closes past the sessions its series places, where the S&P 500's history build stopped at its span's end   2026-10-24
+
+Found:      22.2's remedy from main at 220a3d59, after PR 544 merged at 12:43 UTC: migration 108 applied, 107 to 108,
+            and the ledger's night of 2026-10-23 run again by hand in 36 seconds, 116 setups on the S&P 500, 124 on the
+            S&P 400 and 143 on the S&P 600, the dip's 98, 104 and 110 of them; then the S&P 500's history build with
+            `--again` from 12:47 UTC wrote its chunks through 2026-07-10, 325,674 setups, and stopped at 13:04 on an index
+            outside its array. The dip's path read each close's session place to tell a session its bars skip, and the
+            build hands a path the bar store's closes after its span, which its series places none of, so a dip path
+            running past the span's end read past the places. The night's own step hands its paths only placed closes and
+            ran clean; the next-open check by hand reads as the build does.
+Corrected:  the path reads the skipped session only where its series places the bar, and the closes past the places,
+            the bar store's own after the span, in turn, as every other family's replay reads them.
+Tests:      1 new, 2693 in all: A's path with its series placing only its first six bars sold where every bar is
+            placed, and the benchmark over the three members placed so the same.
+Claims:     1421, none new.
+Pins:       none move: the dip's path is no source a rule's version pins, as 22.2's test asserts.
+Mutated:    the rule, stated before the run: one mutation, the property the correction adds, the smallest edit undoing
+            it, made in this checkout and reverted with the editor. K1 the place read past the series' last, red at the new
+            test with the build's own exception.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2693 of 2693 tests ran with none failed,
+            migrations 0 to 108 with none pending, schema version 108, against `data-ci` and never `data`; the phase
+            report 60 tables, 1421 claims, 1421 passing, none out of scope and none unexamined, 1432 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the remedy's three history builds with `--again` from main once this merges, the S&P 500's first, its
+            sessions after 2026-07-10 still the build before's until then, and each checked; each index's dip answer with
+            the operator and 22.3 on their word; the sign-offs of phases 18 and 20.

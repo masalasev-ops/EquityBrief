@@ -86,6 +86,28 @@ public partial class FixtureExpectations
         Assert.Null(DipPaths.Anchor(LedgerDay, 3, 1));
     }
 
+    // From the 22.2 correction of 2026-10-24: the history build hands a path its closes past its span's end, the bar
+    // store's own after the sessions its series places. A's path, its series placing only its first six bars, runs on over
+    // the closes after them in turn, closing over its average on its second session and selling at the third's open, as
+    // where every bar is placed; and the benchmark over the three members placed so is the same.
+    [Fact]
+    public void ADipPathRunsOnOverTheClosesPastTheSessionsItsSeriesPlaces()
+    {
+        var members = DipMembers();
+        var (a, aOpens, sessionAt, bar, move, _) = members[0];
+        int[] placed = [.. sessionAt.Take(6)];
+        var anchor = DipPaths.Anchor(LedgerDay, a[bar], move)!;
+
+        Assert.Equal(new SetupOutcome(1.125, 3, SetupEnds.Exit), DipPaths.Replay(a, aOpens, placed, bar, anchor));
+        Assert.Equal(DipPaths.Replay(a, aOpens, sessionAt, bar, anchor), DipPaths.Replay(a, aOpens, placed, bar, anchor));
+
+        var shortened = members.Select(member => (member.Closes, member.Opens, (int[])[.. member.SessionAt.Take(6)], member.Bar, member.Move, member.Stopped)).ToArray();
+        var whole = DipPaths.WithMembers(members, LedgerDay).Reading;
+        var cut = DipPaths.WithMembers(shortened, LedgerDay).Reading;
+
+        Assert.Equal((whole.Mean, whole.Ended, whole.Entered, whole.Settled), (cut.Mean, cut.Ended, cut.Entered, cut.Settled));
+    }
+
     [Fact]
     public void TheDipsLooseGatesAreWorkedOnBothSidesOfTheirStepPastTheWidestItsSweepReads()
     {
