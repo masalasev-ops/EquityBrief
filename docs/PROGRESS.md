@@ -8371,3 +8371,47 @@ Mutated:    the rule, stated before the runs: one mutation for each property the
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
+
+### 22.5 - plain words on every redesigned page, held by a check: the word list declared once in section 15.23, the brief read speaking it, and the plain-words check   2026-10-24
+
+Queue:      done, phase 20 finished for its sign-off with its report, 22.0, 22.1 with its record, 22.2 with its
+            correction and its remedy, the one-gate-short correction and 22.4; in progress, 22.4's correction and 22.5
+            in this pull request, on the operator's word of 2026-10-24 to finish the track and merge it while they are
+            away, word for word in `prompts/2026-10-24-22.6-operator-answer-mockup.md`; next, 22.6 Tonight redesigned;
+            22.3 on the operator's word; 22.7; and the sign-offs of phases 20 and 18 by fresh sessions when they say.
+Limits:     none of the ruling's three stops held: no migration, no source 22.2 or 22.3 edits, and no rule's version
+            moves.
+Built:      section 15.23, the reader's words: the build's 36 terms with the reader's words for each, the 49 steps the
+            setups' rules store with what a stock one step short of each missed, what higher means under each of the
+            seven headings, and the pages the check covers, the chart page's brief read. The code's own lists of them,
+            which the brief read speaks: a missed step said as what was missed, typical days' moves, tonight's picks and
+            zero. The pick card's plan sentences, wherever drawn, in trading days, a time limit and a reshuffle. The
+            plain-words check on the roster, rendering each covered page and failing a listed term in a card's visible
+            text outside a glossary and the tooltips, and a card not opening on its summary sentence. The guide's chart
+            page, the roster's row and the changelog.
+Tests:      6 new, 2714 in all: the code's lists held to section 15.23 word for word in both directions, the headings
+            the chart's own; every step each setup's rule stores holding its row; the brief over the fixture's whole
+            night; the brief in every state it draws, 64 of them, one step short at every stored step among them; the
+            check failing a planted term in its plural, with a hyphen and in any case and a card opening on anything but
+            its summary, and passing the term in a glossary, a tooltip and an attribute; and no source a rule's version
+            pins written. The brief's, the fixture's, the dip page's and the taken trades' tests read the new words.
+Fixture:    brief-read.json states NFLX's missed step in the word list's words, not in a long uptrend, worked by hand
+            from section 15.23.
+Claims:     1422, none new: section 15.23's four tables are placed whole and held by the check word for word in both
+            directions, as section 15.9's patterns are, where the plan counted about 40 at 22.5, a claim a row.
+Pins:       none move: no source a rule's version pins is one 22.5 writes, asserted.
+Mutated:    the rule, stated before the runs: one mutation for each property 22.5 adds, the smallest edit undoing it
+            where the property is stated, made in the worktree and reverted with the editor, each run filtered to the
+            check's six tests and the brief's eleven. P1 the matcher's plural dropped; P2 a hyphen not read as a space;
+            P3 the matcher reading case; P4 a glossary not left out; P5 a tooltip not left out; P6 the summary-first rule
+            not held; P7 the code's list drifting from section 15.23; P8 a stored step without its row; P9 the plan's
+            words saying sessions again; P10 the chip naming the step as stored. Each red: P1 to P6 at the planted test;
+            P7 at the both-directions test; P8 there and at the every-step test; P9 at the every-state test, the planted
+            test's own card and the brief's two tests reading a listed stock's plan; P10 at the every-state test, the
+            brief's three tests naming a step and the fixture's.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2714 of 2714 tests ran with none failed,
+            migrations 0 to 108 with none pending, schema version 108, against `data-ci` and never `data`; the phase
+            report 64 tables, 1422 claims, 1422 passing, none out of scope and none unexamined, 1437 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    22.6.

@@ -26,7 +26,7 @@ public partial class ReadSurface
 
     // A stock in an uptrend closing at 100 between its support band of 94 to 96 and its resistance band of 106 to 108, its
     // typical day's move 2: 2 days above the support's near edge and 3 below the resistance's.
-    static UniverseRow BriefMember(bool bands = true) =>
+    internal static UniverseRow BriefMember(bool bands = true) =>
         new("XYZ", "Industrials", 100m, "uptrend", bands ? 96m : null, bands ? 106m : null, 2.0, SupportFloor: bands ? 94m : null, ResistanceCeiling: bands ? 108m : null);
 
     // Sales up 12% on a year in the quarter to 2026-06-30 after 9% in the quarter before, the operating margin 21% against
@@ -44,7 +44,7 @@ public partial class ReadSurface
         new QualityReading([], null, null, null, null, null),
         new ValuationReading([], 18.4m, 15.2m, 24.8m, QuarterReadings.Middle, null));
 
-    static BriefInputs BriefOf(
+    internal static BriefInputs BriefOf(
         UniverseRow? member = null,
         BriefListed? listed = null,
         IReadOnlyList<PlanRow>? levels = null,
@@ -73,7 +73,7 @@ public partial class ReadSurface
             new InsiderView([], new InsiderTotals(0m, sold, 0, sold > 0 ? 1 : 0), new InsiderTotals(0m, sold, 0, sold > 0 ? 1 : 0), 0, 0, 0, 0, null),
             2.28);
 
-    static BriefListed PullbackListed() =>
+    internal static BriefListed PullbackListed() =>
         new(SetupFamilies.Pullback, new DecisionCardRow("GSPC", BriefNight, SetupFamilies.Pullback, "XYZ", 1, 100m, 96m, 110m, "the live rule", "{}", "[]", null, Cap: 21));
 
     static IReadOnlyList<string> LinesOf(BriefView view, string panel) =>
@@ -102,12 +102,12 @@ public partial class ReadSurface
             ]));
         var pullback = SetupFamilies.Named(SetupFamilies.Pullback)!.Label;
 
-        Assert.Equal($"XYZ is in an uptrend, 2.0 typical days above its nearest support and 3.0 typical days below its nearest resistance. Its business reads improving, from sales and operating margin. Tonight it is on the list under {pullback}.", view.Summary);
+        Assert.Equal($"XYZ is in an uptrend, 2.0 typical days' moves above its nearest support and 3.0 typical days' moves below its nearest resistance. Its business reads improving, from sales and operating margin. Tonight {pullback} picked it.", view.Summary);
         Assert.Equal(
             [
                 "Trend: an uptrend.",
-                "Support at 96.00, 2.0 typical days below; resistance at 106.00, 3.0 typical days above.",
-                "Momentum rising: relative strength 62.5 above its middle of 50, the trend momentum line above nought.",
+                "Support at 96.00, 2.0 typical days' moves below; resistance at 106.00, 3.0 typical days' moves above.",
+                "Momentum rising: relative strength 62.5 above its middle of 50, the trend momentum line above zero.",
                 "Six months: its return ranks at the 73rd percentile of the S&P 500's stocks.",
             ],
             LinesOf(view, "chart"));
@@ -121,14 +121,14 @@ public partial class ReadSurface
             LinesOf(view, "business"));
         Assert.Equal(
             [
-                $"On the list tonight under {pullback}: buy at the next open, from tonight's close of 100.00.",
-                "Sell at the close of a session that closes below 96.00.",
-                "Sell at the close of a session that closes at or above 110.00. Otherwise sell at the close 21 sessions after the buy.",
+                $"Picked tonight by {pullback}: buy at the next open, near tonight's close of 100.00.",
+                "Sell at the close of a day that closes below 96.00.",
+                "Sell at the close of a day that closes at or above 110.00. Otherwise sell at the close 21 trading days after the buy.",
                 "Your size: 250 shares, 25,000.00, 25.0% of the account, 1,000.00 at risk to the stop.",
             ],
             LinesOf(view, "way-in"));
         Assert.Equal(
-            ["on the list", "one step short, at the volume step", "no recent report", "not close", "not read tonight", "not held"],
+            ["picked tonight", "one step short: volume too light", "no recent report", "not close", "not read tonight", "not in its holdings"],
             view.Chips.Select(chip => chip.Words));
 
         // The hold is 21 sessions to 2026-11-23, so the report of 2026-11-05 falls inside it; the moves of 6, 8 and 5 per
@@ -173,7 +173,7 @@ public partial class ReadSurface
             ["Sales: too few quarters are stored to read them against a year earlier.", "Operating margin: too few quarters are stored to read it against a year earlier.", "Earnings multiple: not read for the night.", "The analysts' mean target: not stored."],
             LinesOf(bare, "business"));
         Assert.Equal(
-            ["Not on a list tonight, and no levels plan is stored for the night.", "No stop is stored.", "No first sale is stored.", "No plan is stored to size."],
+            ["Not among tonight's picks, and no levels plan is stored for the night.", "No stop is stored.", "No first sale is stored.", "No plan is stored to size."],
             LinesOf(bare, "way-in"));
 
         // A stock with no bands says so in its summary and its line.
@@ -203,7 +203,7 @@ public partial class ReadSurface
 
         Assert.Equal(
             [
-                "Not on a list tonight. The night's levels plan buys in its first zone at 95.00 to 97.00.",
+                "Not among tonight's picks. The night's levels plan buys in its first zone at 95.00 to 97.00.",
                 "Its stop: a daily close below 92.00.",
                 "Its first sale at 108.00: risk $1 to make $2.28.",
                 "Your size: 200 shares, 19,400.00, 19.4% of the account, 1,000.00 at risk to the stop.",
@@ -213,7 +213,7 @@ public partial class ReadSurface
         // On the S&P 400 and 600, whose plans are not worked as a ladder, no plan stored and why, in the chart page's own
         // words and none naming a row or a card the chart page does not draw.
         Assert.Equal(
-            ["Not on a list tonight, and no plan is stored for the night, the plan being read for the S&P 500's members alone.", "No stop is stored.", "Its bands stand on its full page.", "No plan is stored to size."],
+            ["Not among tonight's picks, and no plan is stored for the night, the plan being read for the S&P 500's members alone.", "No stop is stored.", "Its bands stand on its full page.", "No plan is stored to size."],
             LinesOf(BriefScreen.Of(BriefOf(BriefMember(), ladder: false)), "way-in"));
     }
 
@@ -227,18 +227,18 @@ public partial class ReadSurface
             new PlanRow(108m, 108m, PlanKind.Exit, "sell a third", true),
         ];
 
-        Assert.Equal("Not on a list tonight. The night's levels plan buys in its first zone at 97.00.", LinesOf(BriefScreen.Of(BriefOf(BriefMember(), levels: levels)), "way-in")[0]);
+        Assert.Equal("Not among tonight's picks. The night's levels plan buys in its first zone at 97.00.", LinesOf(BriefScreen.Of(BriefOf(BriefMember(), levels: levels)), "way-in")[0]);
 
-        // Closing at 96 on a support band of 96 to 96, its resistance 106 five typical days above; and closing at 106 on a
+        // Closing at 96 on a support band of 96 to 96, its resistance 106 five typical days' moves above; and closing at 106 on a
         // resistance band of 106 to 106, its support 96 five below.
         var onSupport = BriefMember() with { Close = 96m, SupportFloor = 96m };
         var onResistance = BriefMember() with { Close = 106m, ResistanceCeiling = 106m };
 
-        Assert.Equal("Inside its support band at 96.00; resistance at 106.00, 5.0 typical days above.", LinesOf(BriefScreen.Of(BriefOf(onSupport)), "chart")[1]);
-        Assert.Equal("Support at 96.00, 5.0 typical days below; inside its resistance band at 106.00.", LinesOf(BriefScreen.Of(BriefOf(onResistance)), "chart")[1]);
+        Assert.Equal("Inside its support band at 96.00; resistance at 106.00, 5.0 typical days' moves above.", LinesOf(BriefScreen.Of(BriefOf(onSupport)), "chart")[1]);
+        Assert.Equal("Support at 96.00, 5.0 typical days' moves below; inside its resistance band at 106.00.", LinesOf(BriefScreen.Of(BriefOf(onResistance)), "chart")[1]);
 
         // A band of two prices keeps both.
-        Assert.Equal("Inside its support band at 94.00 to 96.00; resistance at 106.00, 5.5 typical days above.", LinesOf(BriefScreen.Of(BriefOf(BriefMember() with { Close = 95m })), "chart")[1]);
+        Assert.Equal("Inside its support band at 94.00 to 96.00; resistance at 106.00, 5.5 typical days' moves above.", LinesOf(BriefScreen.Of(BriefOf(BriefMember() with { Close = 95m })), "chart")[1]);
     }
 
     // A chart page's brief, read back off the rendered page: its summary, each panel's lines and each chip's state and words.
@@ -247,7 +247,7 @@ public partial class ReadSurface
         var brief = Assert.Single(Blocks(page, "<div class=\"brief-read\".*?<p class=\"brief-foot\">"));
 
         return (
-            Regex.Match(brief, "<p class=\"brief-summary\">(.*?)</p>").Groups[1].Value,
+            Regex.Match(brief, "<p class=\"brief-summary\" data-summary>(.*?)</p>").Groups[1].Value,
             Regex.Matches(brief, "<li data-line=\"([^\"]+)\"[^>]*>(.*?)</li>").ToDictionary(match => match.Groups[1].Value, match => Regex.Replace(match.Groups[2].Value, "<[^>]+>", string.Empty), StringComparer.Ordinal),
             [.. Regex.Matches(brief, "data-family=\"([^\"]+)\" data-state=\"([^\"]+)\"><span[^>]*></span>([^<]*)</span>").Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}|{match.Groups[3].Value}")]);
     }
@@ -275,23 +275,23 @@ public partial class ReadSurface
         var breakout = SetupFamilies.Named(BreakoutRule.Name)!.Label;
         var f1 = await Brief("F1");
 
-        Assert.EndsWith($"Tonight it is on the list under {pullback}.", f1.Summary, StringComparison.Ordinal);
-        Assert.Equal($"On the list tonight under {pullback}: buy at the next open, from tonight's close of 100.00.", f1.Lines["buy"]);
-        Assert.Equal("Sell at the close of a session that closes below 96.00.", f1.Lines["stop"]);
-        Assert.Equal("Sell at the close of a session that closes at or above 110.00. Otherwise sell at the close 21 sessions after the buy.", f1.Lines["exit"]);
+        Assert.EndsWith($"Tonight {pullback} picked it.", f1.Summary, StringComparison.Ordinal);
+        Assert.Equal($"Picked tonight by {pullback}: buy at the next open, near tonight's close of 100.00.", f1.Lines["buy"]);
+        Assert.Equal("Sell at the close of a day that closes below 96.00.", f1.Lines["stop"]);
+        Assert.Equal("Sell at the close of a day that closes at or above 110.00. Otherwise sell at the close 21 trading days after the buy.", f1.Lines["exit"]);
         Assert.Equal("Your account is not set: set your account's size and risk to see a size.", f1.Lines["size"]);
-        Assert.Equal($"pullback|listed|{pullback}: on the list", f1.Chips[0]);
+        Assert.Equal($"pullback|listed|{pullback}: picked tonight", f1.Chips[0]);
 
         var n1 = await Brief("N1");
 
-        Assert.EndsWith($"Tonight the closest setup is {pullback}, one step short at the trade step.", n1.Summary, StringComparison.Ordinal);
-        Assert.Equal($"pullback|short|{pullback}: one step short, at the trade step", n1.Chips[0]);
-        Assert.Equal("Not on a list tonight, and no levels plan is stored for the night.", n1.Lines["buy"]);
+        Assert.EndsWith($"Tonight the closest setup is {pullback}, one step short: reward not worth the risk.", n1.Summary, StringComparison.Ordinal);
+        Assert.Equal($"pullback|short|{pullback}: one step short: reward not worth the risk", n1.Chips[0]);
+        Assert.Equal("Not among tonight's picks, and no levels plan is stored for the night.", n1.Lines["buy"]);
 
         var held = await Brief("HELD");
 
-        Assert.EndsWith($"Tonight it passed {pullback} and is held off the list.", held.Summary, StringComparison.Ordinal);
-        Assert.Equal($"pullback|passed|{pullback}: passed, held off the list", held.Chips[0]);
+        Assert.EndsWith($"Tonight it qualified for {pullback} but is not among tonight's picks.", held.Summary, StringComparison.Ordinal);
+        Assert.Equal($"pullback|passed|{pullback}: qualified, not among tonight's picks", held.Chips[0]);
 
         // K3: two of the pullback's gates missed, one step short of the breakout at its volume; the drift, the fundamentals-
         // first family and the dip stored no answer for it, and the heavyweights' book holds nothing.
@@ -300,14 +300,14 @@ public partial class ReadSurface
         Assert.Equal(
             [
                 $"pullback|not-close|{pullback}: not close",
-                $"breakout|short|{breakout}: one step short, at the volume step",
+                $"breakout|short|{breakout}: one step short: volume too light",
                 $"drift|not-read|{SetupFamilies.Named(DriftRule.Name)!.Label}: not read tonight",
                 $"fundamentals|not-read|{SetupFamilies.FundamentalsFirst.Label}: not read tonight",
                 $"dip|not-read|{SetupFamilies.Dips.Label}: not read tonight",
-                $"heavyweight|not-held|{SetupFamilies.SectorHeavyweights.Label}: not held",
+                $"heavyweight|not-held|{SetupFamilies.SectorHeavyweights.Label}: not in its holdings",
             ],
             k3.Chips);
-        Assert.EndsWith($"Tonight the closest setup is {breakout}, one step short at the volume step.", k3.Summary, StringComparison.Ordinal);
+        Assert.EndsWith($"Tonight the closest setup is {breakout}, one step short: volume too light.", k3.Summary, StringComparison.Ordinal);
     }
 
     // Over the closed S&P 400 night: IA breaks out and the market check alone keeps it off, so its chip and its summary name
@@ -329,10 +329,10 @@ public partial class ReadSurface
         var ia = BriefOfPage(System.Net.WebUtility.HtmlDecode(await client.GetStringAsync("/screens/chart/IA")));
         var breakout = SetupFamilies.Named(BreakoutRule.Name)!.Label;
 
-        Assert.Contains($"breakout|short|{breakout}: one step short, at the market step", ia.Chips);
-        Assert.Contains($"heavyweight|not-held|{SetupFamilies.SectorHeavyweights.Label}: not held", ia.Chips);
-        Assert.EndsWith($"Tonight the closest setup is {breakout}, one step short at the market step.", ia.Summary, StringComparison.Ordinal);
-        Assert.Equal("Not on a list tonight, and no plan is stored for the night, the plan being read for the S&P 500's members alone.", ia.Lines["buy"]);
+        Assert.Contains($"breakout|short|{breakout}: one step short: the market check closed", ia.Chips);
+        Assert.Contains($"heavyweight|not-held|{SetupFamilies.SectorHeavyweights.Label}: not in its holdings", ia.Chips);
+        Assert.EndsWith($"Tonight the closest setup is {breakout}, one step short: the market check closed.", ia.Summary, StringComparison.Ordinal);
+        Assert.Equal("Not among tonight's picks, and no plan is stored for the night, the plan being read for the S&P 500's members alone.", ia.Lines["buy"]);
         Assert.Equal("No stop is stored.", ia.Lines["stop"]);
         Assert.DoesNotContain(ia.Lines.Values, line => line.Contains("its row", StringComparison.Ordinal) || line.Contains("its card", StringComparison.Ordinal));
     }
@@ -396,7 +396,7 @@ public partial class ReadSurface
             standing: [new BriefStanding(SetupFamilies.Pullback, BriefStates.Listed), new BriefStanding(DipRule.Name, BriefStates.Short, DipRule.TrendGate, 1)]));
         var drawn = new MarkRenderer().BriefRead("XYZ", view);
 
-        Assert.StartsWith("<div class=\"brief-read\" data-ticker=\"XYZ\"><p class=\"brief-summary\">", drawn, StringComparison.Ordinal);
+        Assert.StartsWith("<div class=\"brief-read\" data-ticker=\"XYZ\"><p class=\"brief-summary\" data-summary>", drawn, StringComparison.Ordinal);
         Assert.Equal(["chart", "business", "way-in"], Regex.Matches(drawn, "<section class=\"brief-panel\" data-panel=\"([^\"]+)\">").Select(match => match.Groups[1].Value));
         Assert.Equal(12, Regex.Matches(drawn, "<li data-line=").Count);
         Assert.Contains($"<li data-line=\"size\">Your account is not set: <a href=\"{MarkRenderer.AccountRoute}\">set your account's size and risk</a> to see a size.</li>", drawn, StringComparison.Ordinal);

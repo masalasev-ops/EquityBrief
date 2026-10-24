@@ -135,6 +135,21 @@ internal static class PhaseReport
         ["What the numbers say, pattern by pattern"] = new Placement(
             "the sentences the name page's numbers open with, each pattern held word for word to the one the renderer writes from, in both directions; what the page draws from them is claimed in 15.9",
             Check: "read-surface"),
+        // Section 15.23's word list, from 22.5. Its rows are words a page draws rather than claims about the code, held
+        // word for word in both directions to the lists the pages write from, as the name page's patterns above are,
+        // and the terms are refused on each page its last table names, so each table is placed whole.
+        ["The build's terms in the reader's words"] = new Placement(
+            "the terms the build uses with the reader's words for each, held word for word to the pages' own list in both directions and refused in every card of each page the check covers",
+            Check: "plain-words"),
+        ["Each step a setup stores, in the reader's words"] = new Placement(
+            "each step a setup's rule stores with what a stock one step short of it missed, held word for word to the pages' own list in both directions and to every step each rule stores",
+            Check: "plain-words"),
+        ["What higher means under each heading"] = new Placement(
+            "what higher means under each heading of what is behind a stock, held word for word to the pages' own list and heading for heading to the chart's",
+            Check: "plain-words"),
+        ["The pages the plain-words check covers"] = new Placement(
+            "the pages the check renders, held to the pages its code renders in both directions",
+            Check: "plain-words"),
         // 5.4 and not 5.1. Its reason names the listings expectations and
         // `listing` is created at 5.4, so this is the third row of the same
         // family: a due point naming a checkpoint that does not produce the

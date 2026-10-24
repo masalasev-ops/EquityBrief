@@ -28,7 +28,7 @@ public sealed partial class MarkRenderer
         var html = new StringBuilder();
 
         html.Append(Formatted($"<div class=\"brief-read\" data-ticker=\"{Escaped(ticker)}\">"));
-        html.Append(Formatted($"<p class=\"brief-summary\">{Escaped(view.Summary)}</p><div class=\"brief-panels\">"));
+        html.Append(Formatted($"<p class=\"brief-summary\" data-summary>{Escaped(view.Summary)}</p><div class=\"brief-panels\">"));
 
         foreach (var panel in view.Panels)
         {

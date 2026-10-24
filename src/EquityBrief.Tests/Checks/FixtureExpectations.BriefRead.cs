@@ -44,7 +44,7 @@ public partial class FixtureExpectations
             .ToDictionary(row => row[0], row => JsonDocument.Parse(row[1]).RootElement[halfYearAt] is { ValueKind: JsonValueKind.Number } value ? value.GetDouble() : (double?)null, StringComparer.Ordinal);
 
         static string Days(double days, string side, string at) =>
-            Math.Round(days, 1) == 0 ? at : FormattableString.Invariant($"{days:0.0} typical {(Math.Round(days, 1) == 1 ? "day" : "days")} {side}");
+            Math.Round(days, 1) == 0 ? at : FormattableString.Invariant($"{days:0.0} typical {(Math.Round(days, 1) == 1 ? "day's move" : "days' moves")} {side}");
 
         static string Price(decimal price) => price.ToString("#,##0.00", CultureInfo.InvariantCulture);
 
@@ -77,7 +77,7 @@ public partial class FixtureExpectations
 
             Assert.Equal(support + "; " + resistance + ".", lines["bands"]);
 
-            // Momentum: the newest relative strength and trend momentum line against their middles of 50 and nought.
+            // Momentum: the newest relative strength and trend momentum line against their middles of 50 and zero.
             double? Newest(string name) =>
                 Query(store, $"SELECT value FROM indicator WHERE ticker = '{ticker}' AND name = '{name}' ORDER BY session_date DESC LIMIT 1;").Single() is var held && held != "null"
                     ? double.Parse(held, CultureInfo.InvariantCulture)
@@ -87,7 +87,7 @@ public partial class FixtureExpectations
             var line = Newest("macd_hist")!.Value;
             var words = rsi > 50 && line > 0 ? "rising" : rsi <= 50 && line <= 0 ? "falling" : "mixed";
 
-            Assert.Equal(FormattableString.Invariant($"Momentum {words}: relative strength {rsi:0.0} {(rsi > 50 ? "above" : "at or below")} its middle of 50, the trend momentum line {(line > 0 ? "above" : "at or below")} nought."), lines["momentum"]);
+            Assert.Equal(FormattableString.Invariant($"Momentum {words}: relative strength {rsi:0.0} {(rsi > 50 ? "above" : "at or below")} its middle of 50, the trend momentum line {(line > 0 ? "above" : "at or below")} zero."), lines["momentum"]);
 
             // Six months: the share of the members' returns under the stock's with half of those level with it, its own
             // among them.
@@ -130,7 +130,7 @@ public partial class FixtureExpectations
             var sale = plan.RootElement.GetProperty("exits").EnumerateArray().FirstOrDefault(exit => exit.GetProperty("traded").GetBoolean());
             var ratio = Query(store, $"SELECT ladder_reward_to_risk FROM gate_result WHERE ticker = '{ticker}' AND session_date = '{day}';").Single();
 
-            Assert.Equal($"Not on a list tonight. The night's levels plan buys in its first zone at {Zone(low, high)}.", lines["buy"]);
+            Assert.Equal($"Not among tonight's picks. The night's levels plan buys in its first zone at {Zone(low, high)}.", lines["buy"]);
             Assert.Equal($"Its stop: a daily close below {Price(stop)}.", lines["stop"]);
             Assert.Equal(
                 sale.ValueKind == JsonValueKind.Undefined
@@ -147,6 +147,7 @@ public partial class FixtureExpectations
             Assert.True(ExchangeClosures.SessionsUntil(newest, night) > DriftRule.WindowSessions);
 
             var closest = expected.GetProperty("closest").TryGetProperty(ticker, out var near) ? near.GetString() : null;
+            var closestWords = expected.GetProperty("closestWords").TryGetProperty(ticker, out var stepWords) ? stepWords.GetString() : null;
 
             Assert.Equal(
                 new Dictionary<string, string>(StringComparer.Ordinal)
@@ -163,13 +164,13 @@ public partial class FixtureExpectations
             // The summary, from the same figures and the closest setup the file derives.
             var standing = closest is null
                 ? "Tonight no setup is one step from it."
-                : $"Tonight the closest setup is {SetupFamilies.Dips.Label}, one step short at the {closest.Split('|')[1]} step.";
+                : $"Tonight the closest setup is {SetupFamilies.Dips.Label}, one step short: {closestWords}.";
             var bandsPhrase = (inSupport ? "inside its support band" : Days((double)Math.Abs(close - member.NearestSupport!.Value) / move, "above its nearest support", "at its nearest support"))
                 + " and " + Days((double)Math.Abs(close - member.NearestResistance!.Value) / move, "below its nearest resistance", "at its nearest resistance");
 
             Assert.Equal(
                 $"{ticker} {(trend == "range" ? "is moving sideways" : "is in an uptrend")}, {bandsPhrase}. No reported quarter is stored for it yet. {standing}",
-                Regex.Match(brief, "<p class=\"brief-summary\">(.*?)</p>").Groups[1].Value);
+                Regex.Match(brief, "<p class=\"brief-summary\" data-summary>(.*?)</p>").Groups[1].Value);
 
             // What to watch for: the next report after the night inside the 21 sessions a hold with no cap reads, and the
             // median report move in the levels plan's risks past one, by the suite's own arithmetic; no insiders' history.

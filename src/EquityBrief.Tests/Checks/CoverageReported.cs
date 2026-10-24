@@ -68,6 +68,7 @@ public class CoverageReported
         ["candidate-verdicts"] = "CandidateVerdicts",
         ["candidate-conditions"] = "CandidateConditions",
         ["trend-versions"] = "TrendVersions",
+        ["plain-words"] = "PlainWords",
     };
 
     internal static IReadOnlyList<RosterRow> Roster()
