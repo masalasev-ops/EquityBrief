@@ -3,8 +3,8 @@ using System.Text;
 namespace EquityBrief.Web.Marks;
 
 // One line of a stock's brief read: what it states, its words, the stored figure it reads where it reads one, and a link
-// after its words where it points somewhere.
-public sealed record BriefLine(string Key, string Words, string? Figure = null, string? Href = null, string? LinkWords = null);
+// after its words where it points somewhere, with the words that end the line after the link.
+public sealed record BriefLine(string Key, string Words, string? Figure = null, string? Href = null, string? LinkWords = null, string? After = null);
 
 // One of the brief read's three panels: what the chart says, what the business says, and the way in.
 public sealed record BriefPanel(string Key, string Heading, IReadOnlyList<BriefLine> Lines);
@@ -28,7 +28,7 @@ public sealed partial class MarkRenderer
         var html = new StringBuilder();
 
         html.Append(Formatted($"<div class=\"brief-read\" data-ticker=\"{Escaped(ticker)}\">"));
-        html.Append(Formatted($"<p class=\"brief-summary\">{Escaped(view.Summary)}</p><div class=\"brief-panels\">"));
+        html.Append(Formatted($"<p class=\"brief-summary\" data-summary>{Escaped(view.Summary)}</p><div class=\"brief-panels\">"));
 
         foreach (var panel in view.Panels)
         {
@@ -37,7 +37,7 @@ public sealed partial class MarkRenderer
             foreach (var line in panel.Lines)
             {
                 var figure = line.Figure is { } held ? Formatted($" data-figure=\"{Escaped(held)}\"") : string.Empty;
-                var link = line.Href is { } href ? Formatted($" <a href=\"{Escaped(href)}\">{Escaped(line.LinkWords ?? href)}</a>") : string.Empty;
+                var link = line.Href is { } href ? Formatted($" <a href=\"{Escaped(href)}\">{Escaped(line.LinkWords ?? href)}</a>{Escaped(line.After ?? string.Empty)}") : string.Empty;
 
                 html.Append(Formatted($"<li data-line=\"{Escaped(line.Key)}\"{figure}>{Escaped(line.Words)}{link}</li>"));
             }

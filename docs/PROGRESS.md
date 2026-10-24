@@ -8322,3 +8322,96 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 60 tables, 1422 claims, 1422 passing, none out of scope and none unexamined, 1433 placements and
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    the brief read seen over the operator's store from main's Release build once it merges; 22.5 and 22.6.
+
+### 22.2 - the remedy run from main: migration 108, the ledger's night by hand, the three ledger histories built again with the dip's setups and each index's check   2026-10-24
+
+Not a checkpoint entry: it records 22.2's remedy and what it measured, and lands nothing.
+Ran:        from main's 220a3d59, the merge of PR 544 at 12:43 UTC, `tools/remedies/2026-10-24-22.2-the-dip-in-the-ledger.txt`
+            with no night, local run, drain, labeller or monthly run writing, migration 108 applied, 107 to 108, and the
+            ledger's night of 2026-10-23 run again by hand; then, after the S&P 500's first build stopped on the fault the
+            22.2 correction's entry names, from main's 81d54039, the merge of PR 545, the three ledger builds with
+            `--again` over 2019-01-02 to 2026-10-05 between 14:15:00Z and 15:15:31Z from main's clean copy, and each index's
+            point-in-time check between 15:15:31Z and 16:03:46Z from the checkout's own build of the same tree; the read
+            surface started again from main's Release build at 16:06Z, after PRs 546 and 547 merged. No request to the
+            provider or the SEC and no model call.
+Measured:   the ledger's night of 2026-10-23 took 36 seconds, 116 setups on the S&P 500, 124 on the S&P 400 and 143 on the
+            S&P 600, the dip's 98, 104 and 110 of them. The S&P 500's build took 17 minutes 19 seconds, 338,110 setups over
+            1,950 sessions, 49,831 passing the live rule; the S&P 400's 20 minutes 21 seconds, 249,926 and 35,200; the S&P
+            600's 22 minutes 51 seconds, 343,895 and 39,984; 60 minutes 31 seconds together against 65 minutes 45 seconds
+            for 20.8's, which wrote 92,160, 58,483 and 76,174 before the dip's setups joined. Each index's check rebuilt 200
+            of 200 sampled history setups with every reading the same, in 14 minutes 22 seconds, 13 minutes 29 seconds and
+            20 minutes 24 seconds. The store stands at 4.19 gigabytes.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 22.4 - correction: the brief read's way in on the S&P 400 and 600 names no row or card the chart page does not draw, a zone of one price reads as that price, and the size line ends on its full stop   2026-10-24
+
+Found:      reading the brief over the operator's store from main's Release build after PR 547 merged, the look 22.4's
+            entry carried: ARMK's way in on the S&P 400 drew the sentence Tonight's fold of an S&P 400 or 600 buy point
+            draws, naming its row and its card beneath, which the chart page does not draw; ALLE's levels plan bought in
+            its first zone of 170.27 to 170.27, a zone of one price; and the line linking the account's settings ended on
+            the link with no full stop. Every other line read as 22.4 states it on AAPL, NVDA, UNP listed under the drift,
+            ALLE one step short at its volume, ARMK held off the S&P 400's dip list, CART listed under the S&P 400's
+            breakout and EPRT under the S&P 600's drift. A multiple below or above its own range reads at its cheap or
+            expensive end, the core's reading the full page draws, and stands.
+Corrected:  on an index working no ladder the way in says no plan is stored for the night and why, in the name page's own
+            words for it, and that no stop is stored; a zone or a band whose two edges are one price is drawn as that
+            price; and the size line's link is followed by the words ending its sentence.
+Tests:      1 new and 4 extended, 2708 in all: a zone and a band of one price drawn as that price and a band of two
+            keeping both; the S&P 400's page naming no row or card; and the size line's words read off the drawn card,
+            the S&P 500's page and the fixture's.
+Claims:     1422, none new: section 15.22's row states the way in as it stands.
+Pins:       none move: no source a rule's version pins is one the correction writes, as 22.4's test asserts.
+Mutated:    the rule, stated before the runs: one mutation for each property the correction adds, the smallest edit
+            undoing it, made in the worktree and reverted with the editor, each run filtered to the brief's eleven tests.
+            W1 the buy zone of one price drawn as its two edges, red at the new test; W2 the support band of one price
+            drawn so, red there; W3 the way in naming Tonight's row and card again, red at the levels plan's test and the
+            S&P 400's page; W4 the words after the size line's link left out, red at the drawn card, the S&P 500's page
+            and the fixture's.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 22.5 - plain words on every redesigned page, held by a check: the word list declared once in section 15.23, the brief read speaking it, and the plain-words check   2026-10-24
+
+Queue:      done, phase 20 finished for its sign-off with its report, 22.0, 22.1 with its record, 22.2 with its
+            correction and its remedy, the one-gate-short correction and 22.4; in progress, 22.4's correction and 22.5
+            in this pull request, on the operator's word of 2026-10-24 to finish the track and merge it while they are
+            away, word for word in `prompts/2026-10-24-22.6-operator-answer-mockup.md`; next, 22.6 Tonight redesigned;
+            22.3 on the operator's word; 22.7; and the sign-offs of phases 20 and 18 by fresh sessions when they say.
+Limits:     none of the ruling's three stops held: no migration, no source 22.2 or 22.3 edits, and no rule's version
+            moves.
+Built:      section 15.23, the reader's words: the build's 36 terms with the reader's words for each, the 49 steps the
+            setups' rules store with what a stock one step short of each missed, what higher means under each of the
+            seven headings, and the pages the check covers, the chart page's brief read. The code's own lists of them,
+            which the brief read speaks: a missed step said as what was missed, typical days' moves, tonight's picks and
+            zero. The pick card's plan sentences, wherever drawn, in trading days, a time limit and a reshuffle. The
+            plain-words check on the roster, rendering each covered page and failing a listed term in a card's visible
+            text outside a glossary and the tooltips, and a card not opening on its summary sentence. The guide's chart
+            page, the roster's row and the changelog.
+Tests:      6 new, 2714 in all: the code's lists held to section 15.23 word for word in both directions, the headings
+            the chart's own; every step each setup's rule stores holding its row; the brief over the fixture's whole
+            night; the brief in every state it draws, 64 of them, one step short at every stored step among them; the
+            check failing a planted term in its plural, with a hyphen and in any case and a card opening on anything but
+            its summary, and passing the term in a glossary, a tooltip and an attribute; and no source a rule's version
+            pins written. The brief's, the fixture's, the dip page's and the taken trades' tests read the new words.
+Fixture:    brief-read.json states NFLX's missed step in the word list's words, not in a long uptrend, worked by hand
+            from section 15.23.
+Claims:     1422, none new: section 15.23's four tables are placed whole and held by the check word for word in both
+            directions, as section 15.9's patterns are, where the plan counted about 40 at 22.5, a claim a row.
+Pins:       none move: no source a rule's version pins is one 22.5 writes, asserted.
+Mutated:    the rule, stated before the runs: one mutation for each property 22.5 adds, the smallest edit undoing it
+            where the property is stated, made in the worktree and reverted with the editor, each run filtered to the
+            check's six tests and the brief's eleven. P1 the matcher's plural dropped; P2 a hyphen not read as a space;
+            P3 the matcher reading case; P4 a glossary not left out; P5 a tooltip not left out; P6 the summary-first rule
+            not held; P7 the code's list drifting from section 15.23; P8 a stored step without its row; P9 the plan's
+            words saying sessions again; P10 the chip naming the step as stored. Each red: P1 to P6 at the planted test;
+            P7 at the both-directions test; P8 there and at the every-step test; P9 at the every-state test, the planted
+            test's own card and the brief's two tests reading a listed stock's plan; P10 at the every-state test, the
+            brief's three tests naming a step and the fixture's.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2714 of 2714 tests ran with none failed,
+            migrations 0 to 108 with none pending, schema version 108, against `data-ci` and never `data`; the phase
+            report 64 tables, 1422 claims, 1422 passing, none out of scope and none unexamined, 1437 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    22.6.

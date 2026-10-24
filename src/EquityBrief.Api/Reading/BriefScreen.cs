@@ -219,21 +219,21 @@ public static class BriefScreen
     {
         if (standing.FirstOrDefault(one => one.State is BriefStates.Listed) is { } listed)
         {
-            return $"Tonight it is on the list under {Label(listed.Family)}";
+            return $"Tonight {Label(listed.Family)} picked it";
         }
 
         if (standing.FirstOrDefault(one => one.State is BriefStates.Held) is { } held)
         {
-            return $"Tonight it is held in {Label(held.Family)}'s book";
+            return $"Tonight it is in the {Label(held.Family)} setup's holdings";
         }
 
         if (standing.FirstOrDefault(one => one.State is BriefStates.Passed) is { } passed)
         {
-            return $"Tonight it passed {Label(passed.Family)} and is held off the list";
+            return $"Tonight it qualified for {Label(passed.Family)} but is not among tonight's picks";
         }
 
         return standing.Where(one => one.State is BriefStates.Short).OrderBy(one => one.Missed).ThenBy(one => SetupFamilies.OrderOf(one.Family)).FirstOrDefault() is { } closest
-            ? $"Tonight the closest setup is {Label(closest.Family)}, one step short at {StepWords(closest.Step)}"
+            ? $"Tonight the closest setup is {Label(closest.Family)}, {StepShort(closest.Family, closest.Step)}"
             : standing.Count == 0 || standing.All(one => one.State is BriefStates.NotRead)
                 ? "No setup's answer for it is stored tonight"
                 : "Tonight no setup is one step from it";
@@ -258,15 +258,15 @@ public static class BriefScreen
         }
 
         var support = member.NearestSupport is { } edge
-            ? Inside(close, member.SupportFloor, edge)
-                ? Invariant($"inside its support band at {Price(member.SupportFloor)} to {Price(edge)}")
+            ? member.SupportFloor is { } floor && Inside(close, floor, edge)
+                ? "inside its support band at " + Zone(floor, edge)
                 : Distances.InTypicalDays(close, edge, member.TypicalMove) is { } below
                     ? Invariant($"support at {Price(edge)}, ") + Away(below, "below", "at the price")
                     : Invariant($"support at {Price(edge)}, its distance not read")
             : "no support band below";
         var resistance = member.NearestResistance is { } top
-            ? Inside(close, top, member.ResistanceCeiling)
-                ? Invariant($"inside its resistance band at {Price(top)} to {Price(member.ResistanceCeiling)}")
+            ? member.ResistanceCeiling is { } ceiling && Inside(close, top, ceiling)
+                ? "inside its resistance band at " + Zone(top, ceiling)
                 : Distances.InTypicalDays(close, top, member.TypicalMove) is { } above
                     ? Invariant($"resistance at {Price(top)}, ") + Away(above, "above", "at the price")
                     : Invariant($"resistance at {Price(top)}, its distance not read")
@@ -276,7 +276,7 @@ public static class BriefScreen
     }
 
     // Momentum in words, each reading against the middle the core states for it: the 14-session relative strength
-    // against 50 and the trend momentum line against nought.
+    // against 50 and the trend momentum line against zero.
     static BriefLine Momentum(IReadOnlyDictionary<string, double?> latest)
     {
         var rsi = latest.GetValueOrDefault(IndicatorSeries.Rsi14);
@@ -293,7 +293,7 @@ public static class BriefScreen
 
         return new BriefLine(
             "momentum",
-            Invariant($"Momentum {words}: relative strength {strength:0.0} {(rsiUp ? "above" : "at or below")} its middle of 50, the trend momentum line {(lineUp ? "above" : "at or below")} nought."),
+            Invariant($"Momentum {words}: relative strength {strength:0.0} {(rsiUp ? "above" : "at or below")} its middle of 50, the trend momentum line {(lineUp ? "above" : "at or below")} zero."),
             strength.ToString(CultureInfo.InvariantCulture));
     }
 
@@ -395,7 +395,7 @@ public static class BriefScreen
         {
             return
             [
-                new BriefLine("buy", $"On the list tonight under {Label(uncarded.Family)}."),
+                new BriefLine("buy", $"Picked tonight by {Label(uncarded.Family)}."),
                 new BriefLine("stop", "Its pick's card is not stored for the night, so its stop is not read here."),
                 new BriefLine("exit", "Its target or exit is not read here either."),
                 new BriefLine("size", "No plan is stored to size."),
@@ -410,7 +410,7 @@ public static class BriefScreen
 
             return
             [
-                new BriefLine("buy", Invariant($"On the list tonight under {Label(listed.Family)}: buy at the next open, from tonight's close of {Price(entry)}."), entry.ToString(CultureInfo.InvariantCulture)),
+                new BriefLine("buy", Invariant($"Picked tonight by {Label(listed.Family)}: buy at the next open, near tonight's close of {Price(entry)}."), entry.ToString(CultureInfo.InvariantCulture)),
                 new BriefLine("stop", steps.Count > 0 ? steps[0] : "No stop is stored."),
                 new BriefLine("exit", steps.Count > 1 ? string.Join(" ", steps.Skip(1)) : "No target or exit is stored."),
                 Size(inputs.Account, plan),
@@ -421,8 +421,8 @@ public static class BriefScreen
         {
             return
             [
-                new BriefLine("buy", "Not on a list tonight."),
-                new BriefLine("stop", NameScreen.LadderForTheLargeIndexAlone(inputs.Ticker)),
+                new BriefLine("buy", "Not among tonight's picks, and " + NameScreen.PlanForTheLargeIndexAlone + "."),
+                new BriefLine("stop", "No stop is stored."),
                 new BriefLine("exit", "Its bands stand on its full page."),
                 new BriefLine("size", "No plan is stored to size."),
             ];
@@ -435,7 +435,7 @@ public static class BriefScreen
         {
             return
             [
-                new BriefLine("buy", "Not on a list tonight, and no levels plan is stored for the night."),
+                new BriefLine("buy", "Not among tonight's picks, and no levels plan is stored for the night."),
                 new BriefLine("stop", "No stop is stored."),
                 new BriefLine("exit", "No first sale is stored."),
                 new BriefLine("size", "No plan is stored to size."),
@@ -444,7 +444,7 @@ public static class BriefScreen
 
         return
         [
-            new BriefLine("buy", Invariant($"Not on a list tonight. The night's levels plan buys in its first zone, {Price(tranche.LowEdge)} to {Price(tranche.HighEdge)}."), tranche.HighEdge.ToString(CultureInfo.InvariantCulture)),
+            new BriefLine("buy", "Not among tonight's picks. The night's levels plan buys in its first zone at " + Zone(tranche.LowEdge, tranche.HighEdge) + ".", tranche.HighEdge.ToString(CultureInfo.InvariantCulture)),
             new BriefLine("stop", tranche.Stop is { } stop ? Invariant($"Its stop: a daily close below {Price(stop)}.") : "Its first zone has no stop beneath it."),
             new BriefLine("exit", sale is null
                 ? "No first sale is stored."
@@ -458,7 +458,7 @@ public static class BriefScreen
     {
         if (account is null)
         {
-            return new BriefLine("size", "Your account is not set:", Href: MarkRenderer.AccountRoute, LinkWords: "set your account's size and risk to see a size");
+            return new BriefLine("size", "Your account is not set:", Href: MarkRenderer.AccountRoute, LinkWords: "set your account's size and risk", After: " to see a size.");
         }
 
         if (plan is null || PositionSize.Of(account, plan.Buy, plan.Stop, plan.BookHoldings, plan.RoundTrip) is not { } size)
@@ -482,13 +482,13 @@ public static class BriefScreen
         standing.State,
         standing.State switch
         {
-            BriefStates.Listed => "on the list",
-            BriefStates.Passed => "passed, held off the list",
-            BriefStates.Short => "one step short, at " + StepWords(standing.Step),
+            BriefStates.Listed => "picked tonight",
+            BriefStates.Passed => "qualified, not among tonight's picks",
+            BriefStates.Short => StepShort(standing.Family, standing.Step),
             BriefStates.NotClose => "not close",
             BriefStates.NoReport => "no recent report",
-            BriefStates.Held => "held",
-            BriefStates.NotHeld => "not held",
+            BriefStates.Held => "in its holdings",
+            BriefStates.NotHeld => "not in its holdings",
             _ => "not read tonight",
         });
 
@@ -524,13 +524,14 @@ public static class BriefScreen
         SetupFamilies.Named(family)?.Label
         ?? (family == SetupFamilies.SectorHeavyweights.Name ? SetupFamilies.SectorHeavyweights.Label : family);
 
-    static string StepWords(string? step) => step is { Length: > 0 } named ? "the " + named + " step" : "one step";
+    // One step short, naming the step missed in the reader's words where the word list holds it.
+    static string StepShort(string family, string? step) => ReaderWords.Missed(family, step) is { } words ? "one step short: " + words : "one step short";
 
     static bool Inside(decimal close, decimal? low, decimal? high) => low is { } bottom && high is { } top && close >= bottom && close <= top;
 
-    // A distance in typical days with the side it lies on, or the words for one that rounds to none.
+    // A distance in typical days' moves with the side it lies on, or the words for one that rounds to none.
     static string Away(double days, string side, string at) =>
-        Math.Round(days, 1) == 0 ? at : Invariant($"{days:0.0} typical {(Math.Round(days, 1) == 1 ? "day" : "days")} {side}");
+        Math.Round(days, 1) == 0 ? at : Invariant($"{days:0.0} typical {(Math.Round(days, 1) == 1 ? "day's move" : "days' moves")} {side}");
 
     static string Zone(decimal low, decimal high) => low == high ? Price(low) : Price(low) + " to " + Price(high);
 

@@ -74,10 +74,10 @@ public partial class ReadSurface
 
         // M2's card words its plan by the dip's own exits: sold at the next open after a close under its stop or above
         // its 5-session average, and at its 10th session's close.
-        Assert.Contains("Sell at the next session's open after a session that closes below 44.00.", page, StringComparison.Ordinal);
-        Assert.Contains("Sell at the next session's open after a session that closes above its 5-session average of closes.", page, StringComparison.Ordinal);
-        Assert.Contains("Otherwise sell at the close 10 sessions after the buy.", page, StringComparison.Ordinal);
-        Assert.DoesNotContain("Sell at the close of a session that closes below 44.00.", page, StringComparison.Ordinal);
+        Assert.Contains("Sell at the next trading day's open after a day that closes below 44.00.", page, StringComparison.Ordinal);
+        Assert.Contains("Sell at the next trading day's open after a day that closes above its 5-day average close.", page, StringComparison.Ordinal);
+        Assert.Contains("Otherwise sell at the close 10 trading days after the buy.", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("Sell at the close of a day that closes below 44.00.", page, StringComparison.Ordinal);
 
         // The line names the check that closed the swing lists and says the dip read its own setting, which left its list
         // open.

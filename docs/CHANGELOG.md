@@ -26,6 +26,30 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-24 - ARCHITECTURE.html - section 15.23, the reader's words: the word list declared once and the pages the plain-words check covers
+Authorised by: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
+Was:
+> Section 15 ended at 15.22 Chart, and no list of the build's terms with the reader's words for them stood in the document.
+Now:
+> 15.23 The reader's words: from 22.5 a redesigned page speaks in the reader's words, every card opening on one sentence from tonight's numbers, every count a sentence and detail behind folds, every sentence a code template over stored figures; the pick card's plan sentences speaking these words wherever drawn, a session a trading day, the cap a time limit and a rebalance a reshuffle; how the plain-words check reads a page and matches a term; and four tables: the build's terms in the reader's words, each step a setup stores with what a stock one step short of it missed, what higher means under each heading, and the pages the check covers, the chart page's brief read from 22.5.
+Why: the operator's addendum of 2026-10-24 rules plain words on every redesigned page held by a check, with the word list declared once in the architecture.
+
+### 2026-10-24 - .claude/rules/checks.md - the roster gains `plain-words`
+Authorised by: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
+Was:
+> The roster ended at `trend-versions` and held no check of the words a page draws.
+Now:
+> After it, the row `plain-words`, every CI run: from 22.5 each page section 15.23's last table names speaks in the reader's words, rendered with no card drawing a term of the word list in its visible text outside a glossary and the tooltips and every card opening on its summary sentence; the chart page's brief read over the fixture's whole night and over constructed figures in every state it draws; the code's lists held to section 15.23's tables word for word in both directions, every stored step holding its row and the headings the chart's own; and the check shown to fail a planted term and a card opening on anything but its summary, and to pass the term in a glossary, a tooltip and an attribute.
+Why: the addendum asks for the check by name, and the roster is where a check is promised.
+
+### 2026-10-24 - .claude/rules/checks.md - read-surface reaches the brief read's zones of one price, its way in on an index working no ladder and its size line's full stop
+Corrects: the brief read drew a zone of one price as its two edges, borrowed for an S&P 400 or 600 stock the sentence of Tonight's fold naming its row and its card, which the chart page does not draw, and ended its size line on the link with no full stop; found reading the brief over the operator's store after 22.4 merged
+Was:
+> read-surface: ... and no source a rule's version pins one the brief read writes |
+Now:
+> read-surface: ... and no source a rule's version pins one the brief read writes; and from the 22.4 correction of 2026-10-24 a zone or a band whose two edges are one price drawn as that price, an index working no ladder saying no plan is stored and naming no row or card the chart page does not draw, and the size line's sentence ending after its link |
+Why: the roster row says what its check asserts, and the correction extends the brief read's tests.
+
 ### 2026-10-24 - .claude/rules/checks.md - read-surface and fixture-expectations reach the chart page's brief read
 Authorised by: The chart page opens on a brief read written by code from stored figures, and no rule reads it
 Was:
