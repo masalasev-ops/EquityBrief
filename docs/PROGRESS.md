@@ -7673,3 +7673,150 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over d9d5a13
 Carried:    20.8's remedy; the tone variants at pin 5; 20.10, with the probes' console line naming each probe's own
             count where it words every probe as a reading twice; the sign-offs of phases 20 and 18 by fresh sessions;
             22.2 on the operator's word.
+
+### 20.3 - correction: each probe's line names what it compared in its own words, as the probes under pin 5 showed   2026-10-23
+
+Queue:      as the 20.10 ruling entry above, 20.3's record open as PR 540; in progress, this pull request, 20.10's; next,
+            the sign-offs of phases 20 and 18 by fresh sessions; 22.2 on the operator's word.
+Found:      the three probes under pin 5 on 2026-10-23: each probe's line on the console ended in the releases "answered
+            alike when read twice", the re-identification probe's count of the filers it named, 87 of 200, and the
+            distraction probe's of the answers alike with the names in, 133 of 200, among them. The rows the probes keep
+            and the accuracy report, whose figures 20.3's record states, read each probe in its own terms.
+Corrected:  the line names the distraction probe's count as the releases answered alike with the names removed and with
+            them in, and the re-identification probe's as the releases whose filer it named, the twice-read and the
+            probe reading twice keeping theirs. The roster's fixture-expectations row and the changelog.
+Tests:      none new: the probes' test reads each probe's line.
+Claims:     1418, none new.
+Mutated:    the rule, stated before the runs: one mutation each probe's own words, the smallest edit falling back to the
+            words of a reading twice, run over the probes' test with its red predicted, made in this checkout and
+            reverted with the editor. P1 the distraction probe's words dropped, red; P2 the re-identification probe's
+            words dropped, red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    20.8's remedy and its record; the tone variants at pin 5 and their record; 20.10; the sign-offs of phases 20
+            and 18 by fresh sessions; 22.2 on the operator's word.
+
+### 20.8 - the remedy run from main: the three ledger histories built again with the release readings, each index's checks and what each answer came to   2026-10-23
+
+Not a checkpoint entry: it records 20.8's remedy and what it measured, and lands nothing.
+Ran:        from main's e5e4a2af, the merge of PR 539, once pin 5's history read was marked complete:
+            `tools/remedies/2026-10-19-20.8-the-release-readings-in-the-ledger.txt` between 19:47:38Z and 19:48:39Z
+            with no night, local run, drain, labeller or monthly run writing, the migration finding nothing pending at
+            schema 107 and the ledger's night step run by hand over the night of 2026-10-22; then the three ledger
+            builds with `--again` over 2019-01-02 to 2026-10-05 between 19:48:39Z and 20:54:24Z, each index's
+            point-in-time check between 20:56:31Z and 21:27:26Z and `loop-links` on each by 21:28:49Z, all from main's
+            clean copy of e5e4a2af, and the read surface started again after them. 20.4's second remedy ran between
+            the builds and the checks, its entry below. No request to the provider or the SEC and no model call.
+Measured:   the ledger's night step over the night of 2026-10-22 took 49 seconds with the four release readings,
+            writing the 80, 33 and 55 setups the night wrote, 11, 2 and none passing the live rule. The S&P 500's build
+            took 21 minutes 56 seconds, 92,160 setups, 9,345 passing the live rule; the S&P 400's 21 minutes 58
+            seconds, 58,483 and 5,396; the S&P 600's 21 minutes 51 seconds, 76,174 and 3,992; 65 minutes 45 seconds
+            together against 45 minutes 46 seconds for 19.13's, each setup now reading its release. Each index's
+            point-in-time check rebuilt 200 of 200 sampled history setups with every reading the same, the four release
+            readings among them, in 9 minutes 46 seconds, 8 minutes 12 seconds and 12 minutes 57 seconds. `loop-links`
+            stored on the S&P 500 59 readings going with winners, 38 with losers, 258 with no link beyond the shuffle
+            and 25 too few over five families, on the S&P 400 20, 10, 255 and 19 and on the S&P 600 17, 22, 246 and
+            19 over four, with 182, 152 and 144 rows of what each release answer came to, split at the cutoff of
+            2025-01-31. Of the release readings, demand goes with winners for the S&P 500's pullback and
+            fundamentals-first family and the S&P 600's breakout, and no other beyond the shuffle.
+Found:      `loop-links` was first run with `--print`, which prints the figures and writes nothing, between 21:27:26Z and
+            21:27:55Z; it was run again without it, writing the runs above, before the local run's late slot.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 20.4 - the second remedy run from main: the drift's tone variant registered at reading version 5 on every index   2026-10-23
+
+Not a checkpoint entry: it records 20.4's second remedy and lands nothing.
+Ran:        from main's 69a84aa1, the merge of PR 540: `tools/remedies/2026-10-18-20.4-the-tone-variants.txt` between
+            20:54:59Z and 20:55:43Z, its build included, after 20.8's three builds ended and with no night, local run,
+            drain, labeller or monthly run writing, reading version 5's history read complete since 18:39:57Z. No
+            request and no model call.
+Registered: the S&P 500's drift again whole at 20:55:40Z, its 8 standing rules retired and 9 registered as the
+            register's 612 to 628, the ninth the tone variant reading version 5; on the S&P 400 the frozen drift's
+            market variant stated again beside the tone variant, 629 to 631, and on the S&P 600 the same, 632 to 634,
+            each pair named as not replayed on its index and restarting, the live rule and the rule kept in the
+            background standing on.
+Replayed:   of the S&P 500's eight, the variant switched on the VIX reproduced its 2 trades over 14 nights from
+            2026-10-05 and carries its record on; the live rule and the other six restart their records at 20:55:40Z,
+            the replay over the 4 nights from 2026-10-19 placing EFX fifth on 2026-10-20 where the record places it
+            fourth, and HAL for the variant at 1.5 times the volume.
+Found:      why: MMM's print of 2026-10-20, which that night read at a surprise of 2.07 per cent and placed seventh among
+            the drift's passes, reads 4.17 per cent in the earnings reactions from the night of 2026-10-21 on, an
+            actual of 2.50 against an estimate of 2.40, since the move annotator writes each print's row again from each
+            night's calendar; the replay orders MMM fourth. A replay over a night whose print the provider has answered
+            again since reads the newer answer and restarts the record, saying what differed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 17.2 - correction: a chosen variant's card draws none of tonight's list's notes beneath its own picks, as 20.10's read-back found   2026-10-24
+
+Queue:      as the 20.10 ruling entry above; in progress, this pull request, 20.10's; next, the sign-offs of phases 20
+            and 18 by fresh sessions; 22.2 on the operator's word.
+Found:      20.10's read-back of the S&P 500's drift card on its tone variant's tab, the night of 2026-10-23: the variant
+            lists URI, DHR and LMT, and beneath its picks the card drew tonight's list's notes, "URI qualified again
+            tonight but its trade from 2026-10-22 is still open, so it is not listed", the same for DHR and LMT. The
+            notes are the live list's: the variant, registered that evening, holds no trade of its own, and a chosen
+            variant is drawn as that rule saw the night (see: A variant's picks are shown on its card when chosen and
+            its results on paper trading beside its verdict, never on Tonight).
+Corrected:  the card draws tonight's list's notes beneath the live rule's picks alone. The roster's read-surface row and
+            the changelog.
+Tests:      1 new: a stock tonight's list holds back by its trade of the night before named in a note beneath the live
+            rule's picks and in none beneath the variant's, which lists it.
+Claims:     1418, none new.
+Mutated:    the rule, stated before the run: the notes drawn whatever rule is chosen, run over the new test with its red
+            predicted, made in this checkout and reverted with the editor. R1 red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
+### 20.10 - the phase 20 report: every screen read back against the store, the accuracy and usefulness figures before and after the cutoff, the pair checked against the actual, and phase 20 opening no operating row   2026-10-24
+
+Queue:      done, 20.0 to 20.9 and 20.11 to 20.13 with their corrections and records, 20.8's remedy and 20.4's second
+            remedy run; in progress, this report; next, the sign-offs of phases 20 and 18 by fresh sessions; 22.2 on the
+            operator's word.
+Screens:    read back on 2026-10-23 between 23:42Z and 23:57Z from main's build at 69a84aa1 over the live store,
+            read-only, at 1,440 pixels and a true 390 in both palettes, 12 screens and 48 shots with no page wider than
+            its screen, the wide tables scrolling in their own boxes, laid out with what each was read back against at
+            https://claude.ai/artifact/CHxNCP8zTrAcSVSZXCRk6V. Night 2026-10-23, 23:00:11Z to 23:41:18Z, 48 steps ok:
+            the S&P 500's lists open at 58.6% over 45%, TSCO, BX, PKG, NDAQ and UNP listed under the drift and its tone
+            variant keeping URI, DHR, LMT, BX and PKG; the S&P 400's at 46.8%, 7 buy points across 3 setups, its tone
+            variant ZION, EWBC and WAL; the S&P 600's at 50.4%, EPRT alone under the drift and its tone variant; the
+            drift's paper account since 2026-10-23; LMT's release of 2026-10-22 read better, raised, confident and
+            stronger under version 5, and its close of 604.18; the Ledger's drift answers as `loop-links` wrote them.
+            The read-back found a chosen variant's card drawing tonight's list's notes beneath its own picks, the 17.2
+            correction above, and the Run page's worry list red for two copies of the store gone from their folder,
+            removed by no copy, as the night before's copy found too, put to the operator.
+Accuracy:   as 20.3's record states, before the cutoff of 2025-01-31 and after it: results against the sign of the
+            provider's surprise 75.2 and 79.6 per cent; against the reference set's labels results 36.0 and 32.7,
+            outlook 56.0 and 75.5, tone 76.0 and 93.9 and demand 68.0 and 59.2; the probes 190 of 200 read alike twice,
+            the filer named for 87 of 200 and 133 of 200 alike with the names in.
+Usefulness: what each answer came to over the drift's settled setups, the family the tone variant reads them for, from
+            `loop-links` at 21:28Z on 2026-10-23 as the Ledger draws it, each as setups, the share winning and the mean
+            edge in risks: a release reading its results better, after the cutoff, 801, 41.6 per cent and -0.051 on the
+            S&P 500, 610, 41.6 and -0.074 on the S&P 400 and 746, 42.8 and -0.054 on the S&P 600, and before it 3,140,
+            43.9 and -0.012, 2,283, 43.7 and +0.038 and 2,873, 40.6 and -0.220; an outlook lowered or withdrawn, which
+            the tone variant keeps off, after the cutoff 52, 59.6 and +1.112, 29, 48.3 and +0.291 and 52, 48.1 and
+            -0.539. Of the four readings, demand alone goes with winners beyond the shuffle, for the S&P 500's pullback
+            and fundamentals-first family and the S&P 600's breakout.
+Pair:       before phase 20, 1340 claims; the plan's pair after 20.10 1379 within 1345 to 1415; the actual 1405, inside
+            the range and 26 past the pair by the net of what each part landed fewer or more than its count: the
+            corrections six more, paper trading's seven parts for its table of every account, 20.2 one more, 20.8 two
+            fewer, 20.10 one fewer, and 20.11 to 20.13 twenty-two more on the operator's rulings after the plan stated
+            its pair, 20.0, 20.1, 20.3, 20.4, 20.5 to 20.7 and 20.9 as counted, each part's rows named with what it
+            landed and took out in `ArchitectureConformance.PhaseTwentyLanded`, the row it took out reached by no
+            claim; 22.1's 13 rows after its report named beside it, 1418 in all.
+Operating:  phase 20 opened no operating row; `obligation-reconciles` states phase 20 at none.
+Tests:      one new, the pair; 2677 in all with the 17.2 correction's above.
+Claims:     1418, none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: one mutation a property the report adds, each filtered to the test it was
+            predicted red at, made in this checkout and reverted with the editor. M1 20.2's count of more at none, at
+            the pair test; red. M2 20.4's rows left out of what it landed, at the pair test; red. M3 phase 20 stated as
+            opening one operating row, at the operating rows test; red, phase 20 stated at one against none in its
+            report. Not mutated: the screens, read back by hand.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2677 of 2677 tests ran with none failed,
+            migrations 0 to 107 with none pending, schema version 107, against `data-ci` and never `data`; the phase
+            report 60 tables, 1418 claims, 1418 passing, none out of scope and none unexamined, 1429 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the sign-offs of phases 20 and 18 by fresh sessions; 22.2 on the operator's word.

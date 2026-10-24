@@ -132,6 +132,33 @@ public partial class ReadSurface
     }
 
     [Fact]
+    public async Task AChosenVariantDrawsNoneOfTheNotesTonightsListHoldsWhichTheLiveRuleDraws()
+    {
+        // The live breakout and its neighbour standing on the night, and K9, which the live rule passed, held back from
+        // tonight's list by its trade of the night before; the neighbour, holding no trade of K9, keeps it on its own list.
+        using var store = await FamilyPagesStore();
+
+        RegisteredRule(store, 101, TheSetupFamilies.Breakouts[0], "2026-01-02T12:00:00Z");
+        RegisteredRule(store, 103, TheSetupFamilies.Breakouts[1], "2026-01-02T12:00:00Z");
+        Kept(store, NeighbourBreakout, "breakout", "K9", TheSwitch, null, null, null);
+        store.Execute($"INSERT INTO family_pick (session_date, ticker, family, state, place, also, held_family, held_night) VALUES ('{TheSwitch}', 'K9', 'breakout', 'open trade', NULL, '[]', 'breakout', '{BeforeTheSwitch}');");
+        RuleNightRow(store, "GSPC", TheSwitch, "breakout", LiveBreakout, 2, null, 0, null, false, 2, 4);
+        RuleNightRow(store, "GSPC", TheSwitch, "breakout", NeighbourBreakout, 1, null, 0, null, false, 2, 4);
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var live = Section(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")), "breakout");
+        var chosen = Section(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}?breakout={RunScreen.Slug(NeighbourBreakout)}")), "breakout");
+
+        // The live rule's card says why K9 is not on tonight's list; the variant's, drawn as that rule saw the night, lists
+        // K9 and draws none of tonight's list's notes.
+        Assert.Contains($"<p class=\"family-note\">K9 qualified again tonight but its trade from {BeforeTheSwitch} is still open, so it is not listed. One stock, one trade.</p>", live, StringComparison.Ordinal);
+        Assert.Contains("<tr data-ticker=\"K9\" data-variant-pick=\"true\">", chosen, StringComparison.Ordinal);
+        Assert.DoesNotContain("class=\"family-note\"", chosen, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task TheStretchLineIsFlaggedPastItsMarkAndTheRunPageNamesTheLiveRule()
     {
         using var store = await FamilyPagesStore();

@@ -636,9 +636,13 @@ public sealed partial class MarkRenderer
             body.Append(LivePicks(card.Picks));
         }
 
-        foreach (var note in card.Notes)
+        // Tonight's list's notes beneath the live rule's picks alone: a chosen variant is drawn as that rule saw the night.
+        if (variant is null)
         {
-            body.Append(Invariant, $"<p class=\"family-note\">{WithSignedFigures(note)}</p>");
+            foreach (var note in card.Notes)
+            {
+                body.Append(Invariant, $"<p class=\"family-note\">{WithSignedFigures(note)}</p>");
+            }
         }
 
         // Why a folded card lists nothing where its funnel does not say it, as when the night did not evaluate the rule.

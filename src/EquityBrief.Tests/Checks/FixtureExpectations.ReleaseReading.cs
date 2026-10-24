@@ -842,6 +842,7 @@ public partial class FixtureExpectations
         var steady = Reply("""{"results": "in line", "outlook": "kept", "tone": "neutral", "demand": "steady"}""");
         var stronger = Reply("""{"results": "better", "outlook": "raised", "tone": "confident", "demand": "stronger"}""");
         var asked = new List<string>();
+        using var said = new StringWriter();
 
         async Task<LocalRunOutcome> Probe(string kind, Func<string, ReadingReply> answer)
         {
@@ -852,7 +853,7 @@ public partial class FixtureExpectations
                 return answer(body);
             });
 
-            return await new LocalRun(feed, settings, clock, store.DatabaseFile, store.Root, NoWait).ProbeAsync(kind, TextWriter.Null);
+            return await new LocalRun(feed, settings, clock, store.DatabaseFile, store.Root, NoWait).ProbeAsync(kind, said);
         }
 
         // Twice: each release's text with its names and dates removed asked twice, Microsoft's of 2025 answered otherwise
@@ -887,6 +888,15 @@ public partial class FixtureExpectations
         var reidentify = await Probe(ReleaseProbes.Reidentify, body => Reply(names[body]));
 
         Assert.Equal((LocalRun.Finished, 4, 2), (reidentify.Outcome, reidentify.Compared, reidentify.Identical));
+
+        // Each probe's line says what it compared in its own words.
+        Assert.Equal(
+            [
+                $"{LocalRun.Stage}: probe twice came to finished: 4 of 4 sampled releases probed; 3 of 4 release(s) answered alike when read twice",
+                $"{LocalRun.Stage}: probe distract came to finished: 4 of 4 sampled releases probed; 3 of 4 release(s) answered alike with the names removed and with them in",
+                $"{LocalRun.Stage}: probe reidentify came to finished: 4 of 4 sampled releases probed; the filer named for 2 of 4 release(s) read with the names removed",
+            ],
+            said.ToString().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries));
         Assert.Equal(
             [
                 "distract|0000789019-24-000030|in line|kept|neutral|steady|1",
