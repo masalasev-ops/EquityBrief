@@ -272,6 +272,54 @@ public partial class FixtureExpectations
         Assert.Equal((true, (double?[]?)null), LedgerPointInTime.Setup("MID", LedgerPointInTime.Cut(inputs, calendar[at + 1]), LedgerPointInTime.Cut(market, calendar[at + 1]), NoIncome, sectors, facts, DipRule.Name, "BBB", largeBreadth: breadth));
     }
 
+    // Three S&P 500 members over 260 weekdays, rising from 60 to 100 on a point's range either side and a million shares a
+    // session. On the last CCC closes at 95 instead, a fall of about five after a steady rise: its 2-session RSI about 3,
+    // under the provisional rule's 10, its close above its 200-session average of about 84.5 and no report on file, so
+    // its dip setup is one the provisional rule passes, and the dip's own list picked it that night. AAA and BBB rise on,
+    // their 2-session RSI 100, and hold no dip setup.
+    [Fact]
+    public async Task ADipSetupOnTheNightCarriesTheProvisionalRulesPassAndTheDipsOwnPick()
+    {
+        using var store = new TemporaryStore().Migrated();
+        var sessions = new List<DateOnly>();
+
+        for (var day = new DateOnly(2025, 6, 2); sessions.Count < 260; day = day.AddDays(1))
+        {
+            if (day.DayOfWeek is not DayOfWeek.Saturday and not DayOfWeek.Sunday)
+            {
+                sessions.Add(day);
+            }
+        }
+
+        var night = sessions[^1];
+        var statements = new List<string>();
+
+        foreach (var ticker in new[] { "AAA", "BBB", "CCC" })
+        {
+            statements.Add($"INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', '{ticker}', '2020-01-02', NULL, '2020-01-02T21:00:00Z');");
+
+            for (var at = 0; at < sessions.Count; at++)
+            {
+                var close = ticker == "CCC" && at == sessions.Count - 1 ? 95m : Math.Round(60m + (40m * at / (sessions.Count - 1)), 2);
+                var stamp = Stamp(sessions[at]);
+
+                statements.Add(
+                    "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) "
+                    + FormattableString.Invariant($"VALUES ('{ticker}', '{stamp}', '{close}', '{close + 1m}', '{close - 1m}', '{close}', 1000000, 'constructed', '{stamp}T21:00:00Z', '{close}');"));
+            }
+        }
+
+        statements.Add($"INSERT INTO dip_pick (index_code, session_date, ticker, state, place, listed_under, held_index, held_family) VALUES ('GSPC', '{Stamp(night)}', 'CCC', 'listed', 1, NULL, NULL, NULL);");
+        Batch(store, statements);
+
+        var outcome = await new SetupLedger(Core.Time.FixedClock.At(new DateTimeOffset(night.ToDateTime(new TimeOnly(21, 10)), TimeSpan.Zero), Core.Time.SessionZones.UnitedStates), store.DatabaseFile).NightAsync("night-dip-pick");
+
+        Assert.Equal(night, outcome.Session);
+        Assert.All(outcome.Indices, index => Assert.Null(index.Fault));
+        Assert.Equal([$"CCC|{Stamp(night)}|1|1"], Query(store, "SELECT ticker || '|' || session_date || '|' || live_pass || '|' || picked FROM setup WHERE family = 'dip';"));
+        Assert.True(double.Parse(Query(store, "SELECT rsi_two FROM setup WHERE family = 'dip';").Single(), System.Globalization.CultureInfo.InvariantCulture) < DipRule.Provisional.RsiUnder);
+    }
+
     // The sources 22.2 writes, the ledger's, the sweep's, the tester's procedure, the dip's rule and the Ledger page's.
     internal static readonly string[] DipLedgerSources =
     [
