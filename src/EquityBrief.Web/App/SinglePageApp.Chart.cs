@@ -53,7 +53,8 @@ public sealed record ChartPageView(
     IReadOnlyList<GridGroup> Grid,
     DateOnly? ReportWritten,
     ReportStandingView? Standing = null,
-    ChartGraphs? Graphs = null);
+    ChartGraphs? Graphs = null,
+    BriefView? Brief = null);
 
 // The chart page, which every link opening a stock opens first, and the masthead it shares with the name page.
 // see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
@@ -151,6 +152,13 @@ public sealed partial class SinglePageApp
         region.Append(view.ReportWritten is { } written
             ? FormattableString.Invariant($"<p class=\"report-line\" data-report=\"written\" data-written=\"{written:yyyy-MM-dd}\"><a class=\"btn open-report\" href=\"{NameRoute}{Uri.EscapeDataString(ticker)}\">Open the report</a> <span class=\"muted\">written {written:yyyy-MM-dd}</span></p>") + marks.ReportStanding(ticker, view.Standing, namesTheDay: false)
             : FormattableString.Invariant($"<div class=\"report-line\" data-report=\"none\"><p>No report is written yet for {Escaped(ticker)}. <a href=\"{NameRoute}{Uri.EscapeDataString(ticker)}\">Its page</a> holds every computed figure meanwhile.</p>{MarkRenderer.AskForAReport(ticker)}</div>"));
+
+        // From 22.4 the brief read under the report line and above the chart, every line written by code.
+        // see: The chart page opens on a brief read written by code from stored figures, and no rule reads it
+        if (view.Brief is { } brief)
+        {
+            region.Append(Cards.Computed("In brief", marks.BriefRead(ticker, brief), title: FormattableString.Invariant($"{Escaped(ticker)} in brief"), stamp: Cards.Night(bars.Count > 0 ? bars[^1].SessionDate : null), id: "brief", region: "chart-page-brief"));
+        }
 
         var chart = new StringBuilder();
 

@@ -1046,6 +1046,16 @@ th.tipped:hover .head-tip,th.tipped:focus-within .head-tip{display:block}
 .report-standing .rs-line{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0}
 .report-standing .rs-why{color:var(--ink-2)}
 .report-standing .rs-line+p{margin:6px 0 0;color:var(--soft);font-size:13px}
+/* From 22.4 the chart page's brief read: its three panels side by side, one beneath another at a phone's width. */
+.brief-summary{margin:0 0 12px;font-size:15px}
+.brief-panels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.brief-panel h3{font-size:13px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2)}
+.brief-panel ul{margin:0;padding-left:18px}
+.brief-panel li{margin:0 0 4px;overflow-wrap:anywhere}
+.brief-chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+.brief-watch{margin:10px 0 0}
+.brief-foot{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0;color:var(--soft);font-size:13px}
+@media (max-width:760px){.brief-panels{grid-template-columns:1fr}}
 .chart-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
 .grid-group h3{font-size:13px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2)}
 .grid-group dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:3px 10px;margin:0}

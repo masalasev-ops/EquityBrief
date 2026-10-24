@@ -256,7 +256,7 @@ app.MapGet("/screens/name/{ticker}/{date}", async (string ticker, string date, R
 // chart at the interval the link names and the grid of stored figures, each read as tonight's page reads it so the two
 // pages draw one figure alike. Only the interval shown is read, so the daily chart reads no pulled bar.
 // see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
-app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, string? universe, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock) =>
+app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, string? universe, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, StoreLocation store) =>
 {
     var shown = EquityBrief.Core.Chart.ChartSeries.Read(interval);
     var today = clock.SessionDateAt(clock.UtcNow);
@@ -273,6 +273,8 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
     var fundamentals = await read.FundamentalsAsync(ticker);
     var reactions = await read.ReactionsAsync(ticker);
     var priceDrawn = live?.Price ?? (bars.Count > 0 ? bars[^1].Close : null);
+    var indicators = await read.IndicatorsAsync(ticker, DateOnly.MinValue, DateOnly.MaxValue);
+    IReadOnlyList<DecisionCardRow> cards = night is { } listed ? await read.DecisionCardsOfAsync(ticker, listed) : [];
     var report = NameScreen.Report(
         ticker,
         reportInputs,
@@ -287,11 +289,11 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
         ticker,
         shown,
         bars,
-        await read.IndicatorsAsync(ticker, DateOnly.MinValue, DateOnly.MaxValue),
+        indicators,
         await read.ChartAveragesAsync(ticker),
         shown != EquityBrief.Core.Chart.ChartInterval.Daily && bars.Count > 0 ? await read.PulledSeriesAsync(ticker, bars[0].SessionDate) : null,
         await read.LevelsAsync(ticker),
-        night is { } listed ? await read.DecisionCardsOfAsync(ticker, listed) : [],
+        cards,
         NameScreen.Events(bars, reactions, reportInputs.Dividends, await read.RawClosesAsync(ticker)),
         member,
         Universes.ByCode(indexCode ?? string.Empty)?.Name,
@@ -333,6 +335,13 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
     if (view.ReportWritten is { } written)
     {
         view = view with { Standing = NameScreen.Standing(await read.StalenessAsync(ticker), NameScreen.Pass(await read.NewestPassAsync(ticker)), await SpendNow(read, caps, clock), await read.PaidCallSpendsAsync(), today, written, (await read.ThemeCycleAsync(ticker))?.AsOf) };
+    }
+
+    // From 22.4 the brief read atop the page, on a night the store holds.
+    // see: The chart page opens on a brief read written by code from stored figures, and no rule reads it
+    if (night is { } briefed)
+    {
+        view = view with { Brief = await BriefAsync(read, store, ticker, indexCode, briefed, member, indicators, report, reactions, cards) };
     }
 
     var mast = new NameMast(member?.Name, member?.Sector, member?.Industry, NameScreen.DayChange(ticker, bars), Universes.ByCode(indexCode ?? string.Empty)?.Name);
@@ -1209,6 +1218,88 @@ static async Task<IReadOnlyList<FamilyCardView>> WithNumbersAsync(ReadApi read, 
                 StringComparer.Ordinal),
         }),
     ];
+}
+
+// From 22.4 a stock's brief read on its chart page, its inputs each read as the full page or the decision card reads them:
+// each setup's answer and pick of the night on the stock's index and whether the heavyweights' book holds it, the card of
+// the rule listing it, its levels plan and the trade step's reading of it on the S&P 500, the account, its reported
+// quarters' readings, its six-month return's place among its index's members off the ledger's readings of the night, and
+// its next report after the night.
+// see: The chart page opens on a brief read written by code from stored figures, and no rule reads it
+static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, string ticker, string? indexCode, DateOnly night, UniverseRow? member, IReadOnlyList<IndicatorRow> indicators, ReportView report, IReadOnlyList<ReactionRow> reactions, IReadOnlyList<DecisionCardRow> cards)
+{
+    var large = indexCode == Universes.Large.Code;
+    var gate = large ? await read.GateResultAsync(ticker, night) : null;
+    IReadOnlyList<BriefStanding> standing = [];
+    IReadOnlyDictionary<string, IReadOnlyList<double?>>? readings = null;
+
+    if (indexCode is { } index)
+    {
+        bool held;
+
+        if (large)
+        {
+            held = TonightScreen.OpenHoldings(await read.HeavyweightHoldingsAsync(night)).Contains(ticker, StringComparer.Ordinal);
+        }
+        else
+        {
+            var heavyweightRule = await read.IndexNightAsync(index, night) is { } indexNight
+                ? TonightScreen.IndexLiveRule(index, EquityBrief.Core.Families.HeavyweightRule.Name, await read.RegisteredCandidatesAsync(), indexNight)
+                : null;
+            var book = heavyweightRule is null ? await read.IndexHoldingsAsync(index, night) : await read.IndexRuleHoldingsAsync(heavyweightRule, night);
+
+            held = book.Any(row => row.Ticker == ticker && row.EndedOn is null);
+        }
+
+        standing = BriefScreen.Standing(new BriefAnswers(
+            ticker,
+            large,
+            gate,
+            large ? await read.FamilyResultsAsync(night) : [],
+            large ? await read.FamilyPicksAsync(night) : [],
+            await read.IndexResultsAsync(index, night),
+            await read.IndexPicksAsync(index, night),
+            await read.DipResultsAsync(index, night),
+            await read.DipPicksAsync(index, night),
+            held));
+        readings = await read.LedgerReadingsAsync(index, night);
+    }
+
+    BriefListed? listed = null;
+
+    if (standing.FirstOrDefault(one => one.State == BriefStates.Listed) is { } onTheList)
+    {
+        int? exitAverage = onTheList.Family == EquityBrief.Core.Families.DipRule.Name && indexCode is { } dipIndex && await read.DipNightAsync(dipIndex, night) is { } dipNight
+            ? TonightScreen.SettingOf(dipNight).Setting.ExitAverage
+            : null;
+
+        listed = new BriefListed(onTheList.Family, cards.FirstOrDefault(card => card.Family == onTheList.Family && card.Index == indexCode), exitAverage);
+    }
+
+    var halfYearAt = EquityBrief.Core.Ledger.LedgerReadings.IndexOf("return_half_year");
+    var halfYear = readings is not null && readings.TryGetValue(ticker, out var own)
+        ? EquityBrief.Core.Ledger.LedgerHeadings.Percentile(own[halfYearAt], [.. readings.Values.Select(one => one[halfYearAt])])
+        : null;
+    var fundamental = await read.FundamentalReadingAsync(ticker);
+
+    return BriefScreen.Of(new BriefInputs(
+        ticker,
+        Universes.ByCode(indexCode ?? string.Empty)?.Name,
+        night,
+        member,
+        indicators.GroupBy(row => row.Name, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.OrderBy(row => row.SessionDate).Last().Value, StringComparer.Ordinal),
+        fundamental is null ? null : EquityBrief.Core.Quarters.Readings.FromJson(fundamental.Readings),
+        halfYear,
+        report.Analysts,
+        listed,
+        large ? NameScreen.PlanRows(await read.LadderAsync(ticker, night)) : [],
+        large,
+        EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot),
+        standing,
+        await read.NextReportAsync(ticker, night),
+        [.. reactions.Select(row => row.MovePct)],
+        report.Insiders,
+        gate?.LadderRewardToRisk));
 }
 
 // A heavyweights card with its standing tonight, read off tonight's closes once: each holding's and each sector fund's

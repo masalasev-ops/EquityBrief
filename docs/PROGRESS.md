@@ -8273,3 +8273,52 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 60 tables, 1421 claims, 1421 passing, none out of scope and none unexamined, 1432 placements and
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    none.
+
+### 22.4 - a brief read atop every stock's chart page, each line written by code from a figure the page already reads, and no rule reads it   2026-10-24
+
+Queue:      done, phase 20 finished for its sign-off with its report, 22.0, 22.1 with its record and 22.2 with its
+            correction; in progress, 22.2's history builds run again in the checkout, the one-gate-short correction's
+            merge once they finish, and 22.4 on the brief read's track in its worktree; next, 22.5 and 22.6 on that
+            track; 22.3 on the operator's word; 22.7; and the sign-offs of phases 20 and 18 by fresh sessions when the
+            operator says.
+Limits:     none of the ruling's three stops held, read before the build: no migration, no source 22.2 or 22.3 edits,
+            and no rule's version moves.
+Built:      the card "In brief" under the report line and above the chart on every chart page on every index: its
+            summary line; its three panels of four lines, the chart, the business and the way in, side by side and one
+            beneath another at a phone's width; its chips, one a setup on the stock's index read off the answers the night
+            stored, the dip's and the heavyweights' book among them; its line of what to watch for where one applies; and
+            its footer. Each line is a template over a figure read through the core function the full page or the card
+            uses for it: the bands' distances in typical days, momentum against its indicator's own middle, six months
+            against the members' readings on the night, the reported quarters' readings, the analysts' newest answer,
+            the listing rule's plan and size off its card or the night's levels plan, the hold and report moves off the
+            card's own reads, and the next report off the stored calendar. Section 15.22's row and what it reads, the
+            guide's chart page, the roster's two rows and the changelog.
+Tests:      10 new and 1 extended, 2707 in all: every line worked by hand from its figure, listed under the pullback with
+            its card's plan and sized in the account's money; the line of what to watch for on both sides of each
+            condition and nowhere else; a figure the store does not hold said so in its line, the account not set
+            linking the settings; a stock on no list reading the levels plan, and an index working no ladder saying so;
+            the S&P 500's chart pages over a constructed night, each chip off its stored answers; a closed S&P 400 night
+            naming the market check; no source a rule's version pins written; the panels stacking at a phone's width;
+            the card drawn with its parts; and the fixture's whole night. The near-miss rule's readers, which name every
+            source reading it, list the brief read's chips beside the list's and Universe's.
+Fixture:    brief-read.json derives by hand each fixture name's trend, its newest report's reaction day and the setup
+            closest to a buy point, NFLX one step short of the short-term dip at its trend; the suite works each line of
+            each name's brief from the figures the store holds in the template's words and reads it back off the page.
+Claims:     1422, 1 new: section 15.22's brief read, of about 2 the plan counted, its chips landing as words in its
+            row.
+Pins:       none move: no source a rule's version pins is one the brief read writes, asserted.
+Mutated:    the rule, stated before the runs: one mutation for each property the brief adds, the smallest edit undoing it
+            where the property is stated, made in the worktree and reverted with the editor, each run filtered to the
+            brief's ten tests. B1 a band's distance not read in typical days; B2 momentum read against a middle of its own
+            and not the core's; B3 the listing rule's target dropped from its card's words; B4 the hold's last session
+            read outside it; B5 a median report move of the stop's distance read as past it; B6 an index's chip one step
+            short read by no card's function; B7 the S&P 500 drift's missing report read off another step; B8 the size
+            read with no stop; B9 the panels kept side by side at a phone's width. Each red: B1 at the lines worked by hand
+            and the fixture's; B2 and B7 at the fixture's; B3 at the lines worked by hand and the S&P 500's page; B4 and B5
+            at the watch line's edges; B6 at the S&P 400's page; B8 at both sizes worked by hand; B9 at the stacking test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2707 of 2707 tests ran with none failed,
+            migrations 0 to 108 with none pending, schema version 108, against `data-ci` and never `data`; the phase
+            report 60 tables, 1422 claims, 1422 passing, none out of scope and none unexamined, 1433 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the brief read seen over the operator's store from main's Release build once it merges; 22.5 and 22.6.
