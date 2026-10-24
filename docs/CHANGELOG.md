@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-24 - .claude/rules/checks.md - fixture-expectations reaches a dip path running on past the sessions its series places
+Corrects: 22.2's dip path read each close's session place to tell a session its bars skip, and the history build hands a path the bar store's closes after its span with no place, so the S&P 500's build of 2026-10-24 stopped with an index outside its array where a dip path ran past the span's end
+Was:
+> fixture-expectations: ... a member whose bars skip the session after its listing holding the benchmark open and one whose prices stopped there left out, the dip's loose gates ...
+Now:
+> fixture-expectations: ... a member whose bars skip the session after its listing holding the benchmark open and one whose prices stopped there left out, from the 22.2 correction of 2026-10-24 a path running on over the closes past the sessions its series places as where every bar is placed, the dip's loose gates ...
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
 ### 2026-10-24 - .claude/rules/checks.md - read-surface reaches the chart page's quote route on a trading day and on a closed one
 Corrects: 20.13's test held the fixture's chart page to the delayed quote's route whatever the machine's day, while the page names that route only on a day the exchange trades, so the suite failed on Saturday 2026-10-24
 Was:
