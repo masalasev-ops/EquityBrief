@@ -8029,6 +8029,28 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             request, with the figures it states.
 Carried:    as the newest entry of this pull request.
 
+### 20.13 - correction: the chart page's test reads the quote's route under a clock fixed on a trading day and on a Saturday, where it held the route on every day and failed on a Saturday   2026-10-24
+
+Found:      the first `tools/ci.ps1` over this pull request's tree, on Saturday 2026-10-24, failed 20.13's test of the
+            fixture's chart page: it held the page to the routes of the analysts, the quote and the ratings, while the
+            page names the delayed quote's route only on a day the exchange trades, asking for the quote as the name page
+            does, as section 15.22 states, so on a day it does not the route is rightly absent and the test failed
+            whatever the code did. The read surface's
+            test host read the machine's clock.
+Corrected:  the test host takes a clock in place of the machine's; the fixture's page is held to the analysts' and the
+            ratings' routes and no other but the quote's; and a test of its own reads a member's chart page under a
+            clock fixed at 15:00 UTC on Friday 2026-10-23, naming the quote's route, and on Saturday 2026-10-24, naming
+            none. No shipped source changes.
+Tests:      1 new, the quote's route on both sides.
+Claims:     none new: section 15.22's row already states it.
+Pins:       none move: only the suite changes.
+Mutated:    the rule, stated before the runs: one mutation a side of the property, the smallest edit undoing it alone,
+            made in this checkout and reverted with the editor. C1 the chart page never naming the quote's route, red at
+            the new test's Friday; C2 the chart route reading a Saturday as the Friday before, red at its Saturday.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    as the newest entry of this pull request.
+
 ### 22.2 - the short-term dip's setups in the ledger on every index at its loose gates with the nine readings its grid reads, and its sweep and tester on each index's own history   2026-10-24
 
 Queue:      done, phase 20 finished for its sign-off with its report, 22.0 and 22.1 with its record; in progress, this
@@ -8047,9 +8069,9 @@ Built:      the dip's sweep on each index over its own history at the next open,
             page's dip counts on each index; the readings' version moved to ab6244bc6081; sections 7, 13.9, 13.10,
             15.19, 16, 17 and 18, SCHEMA.md, the runbook's commands and remedy, the guide, the roster's rows and the
             changelog.
-Tests:      11 new, 2691 in all: a dip setup's path and its benchmark of the same plan on every member worked by hand
-            over constructed bars, a member whose bars skip a session holding the benchmark open and one whose prices
-            stopped left out; the loose gates on both sides of their step past the sweep's widest; each of the nine
+Tests:      11 new, 2692 in all with the 20.13 correction's one above: a dip setup's path and its benchmark of the same
+            plan on every member worked by hand over constructed bars, a member whose bars skip a session holding the
+            benchmark open and one whose prices stopped left out; the loose gates on both sides of their step past the sweep's widest; each of the nine
             readings worked by hand at a constructed session, standing at the catalogue's end; the company's value read
             again after the refresh; a dip setup's readings rebuilt by its own gates over the cut history; a dip setup
             on the night carrying the provisional rule's pass and the dip's own pick, closed the night after at the next
@@ -8080,7 +8102,7 @@ Mutated:    the rule, stated before the runs: one mutation a property 22.2 adds,
             branches the rule's list showed no test held. Not mutated: the history build's dip branch, which the
             rebuild comparison's two dips hold, and the Ledger page's year counts, read as every family's.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
-            stated before that run: all six steps, 0 warnings, 0 errors, 2691 of 2691 tests ran with none failed,
+            stated before that run: all six steps, 0 warnings, 0 errors, 2692 of 2692 tests ran with none failed,
             migrations 0 to 108 with none pending, schema version 108, against `data-ci` and never `data`; the phase
             report 60 tables, 1421 claims, 1421 passing, none out of scope and none unexamined, 1432 placements and
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.

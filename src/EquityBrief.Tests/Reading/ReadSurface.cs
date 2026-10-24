@@ -34,7 +34,9 @@ using EquityBrief.Worker.Swings;
 using EquityBrief.Worker.Volume;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace EquityBrief.Tests.Reading;
 
@@ -5100,12 +5102,18 @@ public partial class ReadSurface
     // has a `Program` of its own for the phase report command, and both are in
     // the global namespace, so naming that one is ambiguous and the compiler
     // says so.
-    internal sealed class Host(string root) : WebApplicationFactory<ReadApi>
+    // A clock handed in stands in for the machine's, for a page that reads the session the day holds.
+    internal sealed class Host(string root, IClock? clock = null) : WebApplicationFactory<ReadApi>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseSetting(StoreLocation.DataRootKey, root);
             Providers.ResearchModelFeedTests.PinModels(builder);
+
+            if (clock is not null)
+            {
+                builder.ConfigureTestServices(services => services.AddSingleton(clock));
+            }
         }
     }
 

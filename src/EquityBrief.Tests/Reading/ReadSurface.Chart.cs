@@ -179,6 +179,44 @@ public partial class ReadSurface
         Assert.Equal((double)((year[^1].Close / 80m) - 1), after.Return!.Value, 12);
     }
 
+    // From the 20.13 correction of 2026-10-24: a member's chart page names the delayed quote's route on Friday 2026-10-23,
+    // a day the exchange trades, and not on Saturday 2026-10-24, read under a clock fixed at 15:00 UTC on each, where the
+    // fixture's page was held to the quote's route whatever the machine's day and so failed on a Saturday.
+    [Fact]
+    public async Task TheChartPageNamesTheQuotesRouteOnADayTheExchangeTradesAndNotOnOneItDoesNot()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', 'AAA', '2020-01-02', NULL, '2020-01-02T21:00:00Z');");
+
+        var day = new DateOnly(2026, 9, 1);
+
+        for (var held = 0; held < 30; day = day.AddDays(1))
+        {
+            if (day.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+            {
+                continue;
+            }
+
+            var stamp = day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            store.Execute($"INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES ('AAA', '{stamp}', '100', '101', '99', '100', 1000000, 'constructed', '{stamp}T21:00:00Z', '100');");
+            held++;
+        }
+
+        async Task<string[]> RoutesAsync(DateTimeOffset at)
+        {
+            using var host = new Host(store.Root, FixedClock.At(at, SessionZones.UnitedStates));
+            using var client = host.CreateClient();
+            var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/chart/AAA"));
+
+            return [.. Regex.Matches(page, "data-([a-z-]+)-route=").Select(match => match.Groups[1].Value).Distinct()];
+        }
+
+        Assert.Contains("quote", await RoutesAsync(new DateTimeOffset(2026, 10, 23, 15, 0, 0, TimeSpan.Zero)));
+        Assert.DoesNotContain("quote", await RoutesAsync(new DateTimeOffset(2026, 10, 24, 15, 0, 0, TimeSpan.Zero)));
+    }
+
     // The fixture's night: AAPL's chart page draws a week worked by hand from the daily bars it rolls up, its 50-session
     // average at the newest session worked by hand from the 50 newest closes, its quarter's return worked by hand, a
     // figure the store holds none of as not stored; it asks for nothing but the delayed quote; its figures are the name
@@ -292,11 +330,12 @@ public partial class ReadSurface
                 daily);
 
             // The page asks for nothing but the delayed quote and from 20.13 the analysts: no picture or script it loads,
-            // and no route on it but the quote's, which the shell's script asks inside the session alone, Yahoo's and
-            // TipRanks', each asked through a worker job.
+            // and no route on it but Yahoo's and TipRanks', each asked through a worker job, and the quote's, which the
+            // page names only on a day the exchange trades and the shell's script asks inside the session alone, from the
+            // 20.13 correction of 2026-10-24 read under a clock fixed on either side by a test of its own.
             Assert.DoesNotContain(" src=\"", daily, StringComparison.Ordinal);
             Assert.DoesNotContain("<script", daily, StringComparison.Ordinal);
-            Assert.Equal(["analysts", "quote", "ratings"], Regex.Matches(daily, "data-([a-z-]+)-route=").Select(match => match.Groups[1].Value).Distinct().Order(StringComparer.Ordinal));
+            Assert.Equal(["analysts", "ratings"], Regex.Matches(daily, "data-([a-z-]+)-route=").Select(match => match.Groups[1].Value).Distinct().Where(route => route != "quote").Order(StringComparer.Ordinal));
 
             // Its figures are the name page's: the year's high and low, the market value and the relative strength.
             var name = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/AAPL"));

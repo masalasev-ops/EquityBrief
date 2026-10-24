@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-24 - .claude/rules/checks.md - read-surface reaches the chart page's quote route on a trading day and on a closed one
+Corrects: 20.13's test held the fixture's chart page to the delayed quote's route whatever the machine's day, while the page names that route only on a day the exchange trades, so the suite failed on Saturday 2026-10-24
+Was:
+> read-surface: ... and from 22.2 the Ledger page's card of the short-term dip on each of the three indices with its year's counts as each index's summary stored them, and a settled dip setup's path drawn with its buy and its stop and no target |
+Now:
+> read-surface: ... and a settled dip setup's path drawn with its buy and its stop and no target; and from the 20.13 correction of 2026-10-24 a stock's chart page naming the delayed quote's route on a day the exchange trades and not on one it does not, read under a clock fixed on each |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
 ### 2026-10-24 - ARCHITECTURE.html - the short-term dip's setups join the ledger on every index with nine readings, and its sweep
 Authorised by: The short-term dip's setups clear its drop a grid step past the widest its sweep reads with no trend condition, and the ledger's history budget is raised to hold them
 Was:
