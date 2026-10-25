@@ -163,5 +163,7 @@ public sealed partial class SinglePageApp
     static string FamilyLabel(string family) =>
         family == EquityBrief.Core.Families.HeavyweightRule.Name
             ? EquityBrief.Core.Families.SetupFamilies.SectorHeavyweights.Heading
-            : EquityBrief.Core.Families.SetupFamilies.Named(family)?.Label ?? family;
+            : family == EquityBrief.Core.Families.QualityRule.Name
+                ? EquityBrief.Core.Families.QualityRule.Label
+                : EquityBrief.Core.Families.SetupFamilies.Named(family)?.Label ?? family;
 }

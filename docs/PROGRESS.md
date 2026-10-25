@@ -9400,3 +9400,49 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    `tools/remedies/2026-10-25-22.3-the-dip-freezes.txt` from main after the merge and before the night of
             2026-10-26, when no other writer runs, then the read surface restarted; 22.12.
+
+### 22.3 - the remedy run from main: each index's dip answer recorded with its tester's verdict, and the dip frozen at its 22.2 setting with its versions   2026-10-25
+
+Not a checkpoint entry: it records 22.3's merge and remedy and what they measured, and lands nothing.
+Merged:     PR 562 by the operator at 23:25:55 UTC as 420e221f, over 13496c9c, before the gates over that commit
+            ended. The run over 5ad7e1b5 failed one test on both hosted runners, 2788 of 2789, the 22.3 test holding
+            the dip's own rule and step among the sources its rules pin asserting its two sets the wrong way round, so
+            it could pass on no platform, and the local run reached the same test; 13496c9c turns the assertion round,
+            its filtered run 8 of 8. The local run over 13496c9c was stopped at the merge. HOSTED
+Ran:        from main's 420e221f, `tools/remedies/2026-10-25-22.3-the-dip-freezes.txt` from 23:27:13 to 23:27:25 with
+            no night, local run, drain, labeller, history read, ledger build or monthly run writing, the read surface
+            stopped first and started again from main's Release build after it. No request and no model call.
+Measured:   each answer recorded with its tester's verdict: the S&P 500's run 20261024T060554Z passed at a fall of 3
+            moves, the 50-day above the 200-day, sold on the RSI over 65, 10 days at most, its stop 3 moves under and
+            the VIX above its own median, at 511 trades, its tester's run at an adjusted p of 0.3736, not passed; the
+            S&P 400's 20261024T060843Z at 5 days at most and the S&P 500's breadth at 45 per cent, at 546 trades, 0.0397,
+            not passed; the S&P 600's 20261024T061128Z above its 200-day, 7 days at most, the index's own breadth at 35
+            per cent and the drop's volume under 1.5 times its average, at 317 trades, 0.0764, not passed. Each freeze
+            registered at one instant, each at e8c0399ca425: the S&P 500's live rule as 659 and its four versions as 660
+            to 663 on `dip-500`, the family 5 of 9; the S&P 400's as 664 and 665 to 667 on `dip-400`, 4 of 9; the S&P
+            600's as 668 and 669 to 672 on `dip-600`, 5 of 9. The cards draw the frozen rules from their first night,
+            2026-10-26.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 22.12's report below, which
+            carries 22.3's code unchanged.
+
+### 22.11 - correction: Past picks and paper trading name the quality family by its label, where they named it by the word the store keeps it under   2026-10-25
+
+Found:      by 22.12's read-back of the S&P 400's Past picks and the S&P 500's paper trading against the store: Past
+            picks' line beside each family's verdict and its account selector, and paper trading's tile, chips and
+            scorecard, named the quality family "quality", the word the store keeps it under, where every other family is
+            named by its label, since each page's label read the swing families and the sector heavyweights alone.
+            Tonight's tile and card named it by its label.
+Corrected:  both pages' labels name the quality family "Quality at a fair price", as its card and its tile on Tonight
+            do: Past picks' selector, the line beside its verdict and an account's trade log, and paper trading's tile,
+            chart key, chips, variants' picker and scorecard.
+Tests:      none new, two extended, 2789 in all: Past picks over the constructed S&P 500 store naming each of its seven
+            families by its label beside its verdict, none by its word, and the quality family's account by its label and
+            its words in the selector; paper trading over the constructed frozen S&P 400 store naming no family by its
+            word on any of its 24 names, the quality family's tile by its label.
+Claims:     1444, none new.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each page's property, made in this checkout and
+            reverted with the editor, each filtered to the test reading it. M1 Past picks' label's quality branch never
+            taken; red, "quality" drawn beside its verdict. M2 paper trading's label's quality branch never taken; red,
+            "quality" drawn in 7 of its 24 names.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 22.12's report below, which
+            carries this correction unchanged.

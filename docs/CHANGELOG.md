@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-25 - .claude/rules/checks.md - read-surface holds Past picks and paper trading naming every family by its label
+Corrects: Past picks and paper trading named the quality family by the word the store keeps it under, "quality", in Past picks' account selector and beside its verdict and on paper trading's tile, chips and scorecard, found when 22.12 read both pages back against the store
+Was:
+> read-surface: ... and paper trading keeping an account for the live rule and each of its three versions with the family's tile before the sector heavyweights' and both pickers listing it |
+Now:
+> read-surface: ... and both pickers listing it; and from the 22.11 correction of 2026-10-25 Past picks naming every family by its label in its account selector and beside its verdict, and paper trading on its tiles, its chips and its scorecard, the quality family's among them, and neither page any family by the word the store keeps it under |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
 ### 2026-10-25 - ARCHITECTURE.html - the dip family keeps each standing rule under its own name, its card names its freeze, paper trading keeps its accounts, and section 17 names its freezes
 Authorised by: A dip rule is registered as the family on its index and kept by the dip's own step alone
 Was:

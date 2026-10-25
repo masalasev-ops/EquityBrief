@@ -868,5 +868,7 @@ public sealed partial class MarkRenderer
     static string FamilyName(string family) =>
         family == HeavyweightRule.Name
             ? SetupFamilies.SectorHeavyweights.Heading
-            : SetupFamilies.Named(family)?.Label ?? family;
+            : family == QualityRule.Name
+                ? QualityRule.Label
+                : SetupFamilies.Named(family)?.Label ?? family;
 }
