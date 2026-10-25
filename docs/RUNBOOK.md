@@ -779,6 +779,14 @@ dotnet run --project src/EquityBrief.Worker -- sweep-index --index MID --family 
 
 Each reads the live store read-only, writes nothing to it, and writes its report and its figures into a run folder of its own. On this machine the search took about two minutes an index and the tester about four. Nothing either shows is adopted, frozen or registered; each index's answer goes to the operator, and a freeze is a remedy of its own on their word.
 
+From 22.10 Quality at a fair price's history is tested on each of the three indices by naming its family (see: Quality at a fair price's history test walks the book over the pulled history on 72 settings an index and registers nothing). `quality` scores and values every member as first filed at each month's first session and after each of its filings, walks the book under each of the 72 settings section 17 states, and states the starting setting's holdings and edge, each year's edge, the edge without its five largest results, the proposal among the settings meeting the family floors, what luck alone passes over the 72, and the tester's verdict of the grid run year by year:
+
+```
+dotnet run --project src/EquityBrief.Worker -- sweep-index --index MID --family quality
+```
+
+It reads the live store read-only, the filed facts among what it reads, and writes its report and its figures into a run folder of its own and nothing else. Nothing it shows is adopted, frozen or registered; each index's answer goes to the operator, and a freeze is 22.11's remedy on their word.
+
 ### The rule's record on each pick's card
 
 Each pick's card draws the record of the rule that picked it, replayed at its one setting over the pulled history with the sweep's own walk, each trade after its cost at the published table (see: A rule's record is replayed at its one setting by the sweep's own code over the pulled history, after costs on every index). The replay is run by hand, every index or one, and a freeze's remedy runs it again so the record follows the rule a card names:

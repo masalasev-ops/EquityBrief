@@ -66,6 +66,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
         [TesterPullbackOwn] = "pullback's search on its own history, run year by year,",
         [Dip] = "short-term dip's at the next open, on the S&P 500 as well,",
         [DipTester] = "short-term dip's search on its own history, run year by year, on the S&P 500 as well,",
+        [Quality] = "Quality at a fair price's history over its 72 settings, on the S&P 500 as well,",
     };
 
     public const string Pullback = "pullback";
@@ -108,6 +109,11 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
         if (family is Dip or DipTester)
         {
             return await DipAsync(indexCode, family == DipTester, cancellation);
+        }
+
+        if (family == Quality)
+        {
+            return await QualityAsync(indexCode, cancellation);
         }
 
         if (!Indices.TryGetValue(indexCode, out var named))

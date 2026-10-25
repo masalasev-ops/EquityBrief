@@ -1,6 +1,7 @@
 using System.Globalization;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
@@ -120,6 +121,7 @@ public sealed class SweepHistory : IComponent
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.HeavyweightNight, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
+            new StoreTouch(Store.FiledFact, Touch.Read),
         ],
         Feeds: []);
 
@@ -391,6 +393,35 @@ public sealed class SweepHistory : IComponent
         }
 
         return income.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<EquityBrief.Core.Readings.FiledIncome>)pair.Value, StringComparer.Ordinal);
+    }
+
+    // From 22.10 each filer's facts as first filed by the history's end, one statement a filer, which the quality family's
+    // history test scores and values each member from as of each session it reads.
+    // see: Quality at a fair price's history test walks the book over the pulled history on 72 settings an index and registers nothing
+    public async Task<IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>>> FiledFactsAsync(IEnumerable<string> ciks, DateOnly through, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(ConnectionString(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var facts = new Dictionary<string, IReadOnlyList<FiledFactRow>>(StringComparer.Ordinal);
+
+        foreach (var cik in ciks.Distinct(StringComparer.Ordinal))
+        {
+            var rows = new List<FiledFactRow>();
+
+            await foreach (var row in RowsAsync(
+                connection,
+                "SELECT concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact WHERE cik = $cik AND filed <= $through;",
+                [("$cik", cik), ("$through", through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))],
+                cancellation))
+            {
+                rows.Add(new FiledFactRow(row.GetString(0), Date(row.GetString(1)), Date(row.GetString(2)), Money.FromStorage(row.GetString(3)), Date(row.GetString(4)), row.GetString(5), row.GetString(6)));
+            }
+
+            facts[cik] = rows;
+        }
+
+        return facts;
     }
 
     // Whether the store holds a table, so a store migrated before it read none rather than failing.

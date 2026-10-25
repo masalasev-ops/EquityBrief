@@ -176,6 +176,8 @@ public partial class FixtureExpectations
             .. ScorecardClaims,
             // 22.9, Quality at a fair price: section 17's starting settings and section 18's two rows.
             .. QualityClaims,
+            // 22.10, its history test: section 17's grid.
+            .. QualityHistoryClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

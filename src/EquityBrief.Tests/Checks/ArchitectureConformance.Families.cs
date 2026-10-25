@@ -396,9 +396,9 @@ public partial class ArchitectureConformance
         // and 1433 from 22.8, the fundamentals scorecard's catalogue and matrix rows, its store, section 17's numbers,
         // section 18's three and its card on the chart page and the name page, and 1443 from 22.9, Quality at a fair price's
         // catalogue and matrix rows, its three stores, section 17's starting settings, section 18's two, its card on
-        // Tonight and its step in section 14.
+        // Tonight and its step in section 14, and 1444 from 22.10, section 17's grid of its history test.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1443),
+            (789, 853, 6, 4, 855, 876, 1444),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }
