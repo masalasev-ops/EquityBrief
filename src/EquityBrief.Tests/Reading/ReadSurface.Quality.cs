@@ -26,26 +26,27 @@ public partial class ReadSurface
     // M3 under the floor at 6 of 9. On 2026-10-02 both were bought at that day's open, M1 2.5% over its close and M2 at it;
     // M1 still qualifies with its growth at 1.12, M2 fell to 6 of 9 with its growth at 0.94, and M3 rose to 9 of 9 and
     // cheaper than in 3 of its quarters, qualifying unheld with its growth at 1.15.
-    static void QualityNightsOn(TemporaryStore store, string? fault = null)
+    static void QualityNightsOn(TemporaryStore store, string? fault = null, string rule = QualityFamily.ProvisionalRule, QualitySettings? setting = null)
     {
-        var settings = QualityFamily.Settings(QualityRule.Starting).Replace("'", "''", StringComparison.Ordinal);
+        var settings = QualityFamily.Settings(setting ?? QualityRule.Starting, rule).Replace("'", "''", StringComparison.Ordinal);
+        var named = rule.Replace("'", "''", StringComparison.Ordinal);
 
         store.Execute(
             "INSERT INTO quality_night (rule, index_code, session_date, members, scored, qualified, held, reshuffle, settings, fault) VALUES " +
-            $"('provisional', 'MID', '2026-10-01', 3, 3, 2, 2, 1, '{settings}', NULL), " +
-            $"('provisional', 'MID', '{IndexNight}', 3, 3, 2, 2, 0, '{settings}', {(fault is null ? "NULL" : $"'{fault}'")});");
+            $"('{named}', 'MID', '2026-10-01', 3, 3, 2, 2, 1, '{settings}', NULL), " +
+            $"('{named}', 'MID', '{IndexNight}', 3, 3, 2, 2, 0, '{settings}', {(fault is null ? "NULL" : $"'{fault}'")});");
         store.Execute(
             "INSERT INTO quality_result (rule, index_code, session_date, ticker, passed, place, passed_checks, applied, value_place, reason, carried) VALUES " +
-            "('provisional', 'MID', '2026-10-01', 'M1', 1, 1, 8, 9, 0.75, NULL, 1.0), " +
-            "('provisional', 'MID', '2026-10-01', 'M2', 1, 2, 7, 9, 0.5, NULL, 1.0), " +
-            $"('provisional', 'MID', '2026-10-01', 'M3', 0, NULL, 6, 9, 0.25, '{QualityRule.UnderTheFloor}', 1.0), " +
-            $"('provisional', 'MID', '{IndexNight}', 'M3', 1, 1, 9, 9, 0.25, NULL, 1.15), " +
-            $"('provisional', 'MID', '{IndexNight}', 'M1', 1, 2, 8, 9, 0.75, NULL, 1.12), " +
-            $"('provisional', 'MID', '{IndexNight}', 'M2', 0, NULL, 6, 9, 0.5, '{QualityRule.UnderTheFloor}', 0.94);");
+            $"('{named}', 'MID', '2026-10-01', 'M1', 1, 1, 8, 9, 0.75, NULL, 1.0), " +
+            $"('{named}', 'MID', '2026-10-01', 'M2', 1, 2, 7, 9, 0.5, NULL, 1.0), " +
+            $"('{named}', 'MID', '2026-10-01', 'M3', 0, NULL, 6, 9, 0.25, '{QualityRule.UnderTheFloor}', 1.0), " +
+            $"('{named}', 'MID', '{IndexNight}', 'M3', 1, 1, 9, 9, 0.25, NULL, 1.15), " +
+            $"('{named}', 'MID', '{IndexNight}', 'M1', 1, 2, 8, 9, 0.75, NULL, 1.12), " +
+            $"('{named}', 'MID', '{IndexNight}', 'M2', 0, NULL, 6, 9, 0.5, '{QualityRule.UnderTheFloor}', 0.94);");
         store.Execute(
             "INSERT INTO quality_holding (rule, index_code, ticker, chosen_on, buy_close, bought_on, fill, gap, bench_gap, members, growth, through, ended_on, sale, end_reason, result, benchmark, cost, edge) VALUES " +
-            $"('provisional', 'MID', 'M1', '2026-10-01', '48', '{IndexNight}', '49.2', 0.025, 0.0, 3, 1.12, '{IndexNight}', NULL, NULL, 'open', NULL, NULL, NULL, NULL), " +
-            $"('provisional', 'MID', 'M2', '2026-10-01', '50', '{IndexNight}', '50', 0.0, 0.0, 3, 0.94, '{IndexNight}', NULL, NULL, 'open', NULL, NULL, NULL, NULL);");
+            $"('{named}', 'MID', 'M1', '2026-10-01', '48', '{IndexNight}', '49.2', 0.025, 0.0, 3, 1.12, '{IndexNight}', NULL, NULL, 'open', NULL, NULL, NULL, NULL), " +
+            $"('{named}', 'MID', 'M2', '2026-10-01', '50', '{IndexNight}', '50', 0.0, 0.0, 3, 0.94, '{IndexNight}', NULL, NULL, 'open', NULL, NULL, NULL, NULL);");
     }
 
     [Fact]

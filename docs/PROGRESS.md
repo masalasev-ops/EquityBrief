@@ -9110,3 +9110,63 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             request, with the figures it states.
 Carried:    its answer to the operator before any freeze, as item 4 of the ruling states for an index a setting meets the
             floors on.
+
+### 22.11 - Quality at a fair price frozen on the S&P 500 at its starting setting with its seven one-step neighbours as versions, each rule kept by the family's own step under its own name   2026-10-25
+
+Queue:      done, 22.10 with its two remedies and the history test again on each index; in progress, 22.11 for the
+            S&P 500 in this pull request and the three ledger histories built again under 22.10's remedy; next, 22.11's
+            remedy from main after the merge and before the night of 2026-10-26, the S&P 400's and 600's quality answers
+            to the operator, 22.10's remedy record, 22.3 on the ruling's fifth item, 22.12, then the sign-offs of phases
+            18, 19 and 20 by fresh sessions.
+Limits:     no paid call and no request from this branch; no migration; the store read-only; the S&P 400 and 600 left
+            provisional, each holding a setting that meets the floors; no other rule's version moves, asserted over the
+            28 sources 22.11 writes or edits.
+Built:      an evaluator a family on each index, `quality-500`, `quality-400` and `quality-600`, whose family is the
+            family on its index, "quality on the S&P 500", over the history test's five dials, its version pinning the
+            files the family's own step runs through as the compiled code reaches them and none of the swing families'
+            shared sources, the step's failure words held in its own file so no index rule's file is among them. The
+            index family form freezes the family on an index at a setting on the grid, its live rule and each setting one
+            dial from it as a version at one instant, eight from the starting setting, refusing an index it carries no
+            rule for, a family already standing, other parameters, a setting off the grid and variants. The night keeps
+            every rule of the family standing on an index under its own name, each in a transaction of its own, the live
+            rule first, a rule reading the trend reading the night's 200-day average and one selling on a filing selling
+            at that close a holding whose score fell under its floor since the night before; a rule whose code moved is
+            not kept and its night names why; the provisional rule only where none stands. The family evaluator, the
+            recorder, the replay, the rule cards and the registrar's hooks pass it over. The card draws the live rule's
+            holdings, the day it went live and, from the answer the history test recorded before the freeze, its line in
+            the reader's words; paper trading keeps an account for the live rule and each version, the family's tile last,
+            both pickers listing it; the monthly run walks each standing rule's book from the run after the freeze;
+            `sweep-answer --newest <family> --index <index>`, and a quality run writing its answer file. Found while
+            building and fixed before this entry: the paper page's link reader read only the swing order, so choosing
+            the family in its pickers chose nothing. Two decisions, section 15's card and tiles, section 17's settings,
+            the catalogue and the matrix, the runbook's remedy, the guide, the roster and the changelog.
+Tests:      9 new, 2775 in all, nine amended: the remedy's line freezing the S&P 500 over a register shaped as the
+            operator's stood, 58 rules on 2026-10-23's copy, and the form's five refusals; the frozen setting on both
+            sides of each dial; the luck correction over the family's eight; the night over a constructed S&P 400 store
+            keeping the live rule and each version, the trend both sides of its average, a filing's sale and a moved rule
+            not kept; the monthly run reading the family from the run after the freeze; no source another rule pins
+            written; the card and paper trading read back off a frozen store. The evaluator pin, the five tests holding
+            no earlier source pinned and the three paper pages' family lists amended for the family's own evaluators and
+            its tile, and the fixture's paper accounts reading it through their expectations.
+Fixture:    quality-freeze.json, derived by hand: 8 rules and a level of 0.05 / 8 = 0.00625; the first night's holdings
+            under each rule, 10, 10, 10, 10, 11, 1, 10 and 5; and the filing's sale bought at 105 and sold at 106, the
+            version holding 9 and the live rule 10. paper-accounts.json gains the family's provisional account.
+Claims:     1444, none new, as the plan predicted.
+Mutated:    the rule, stated before the runs: one mutation for each property 22.11 adds, the smallest edit undoing it,
+            made in this checkout and reverted with the editor, each run filtered to the tests reading it. M1 the versions
+            two dials from the live setting; M2 the night keeping the provisional rule whatever stands; M3 no sale on a
+            filing; M4 a close at its average read as above it; M5 a rule's family read as the setup family alone; M6 the
+            monthly run reading the family on every index; M7 the card's years behind counted as those ahead; M8 the
+            paper page's link reader refusing the family; M9 every rule walked as a version; M10 the pin leaving out the
+            family's step. Each red: M1 at the remedy's freeze, the luck correction, the night and the monthly run; M2,
+            M3 and M4 at the night; M5 at the remedy's freeze and the luck correction; M6 and M9 at the monthly run; M7
+            at the card; M8 at the frozen paper accounts and the fixture's; M10 at the evaluator pin.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2775 of 2775 tests ran with none failed,
+            migrations 0 to 111 with none pending, schema version 111, against `data-ci` and never `data`; the phase
+            report 64 tables, 1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    `tools/remedies/2026-10-25-22.11-the-s-and-p-500-quality-freeze.txt` from main after the merge and before
+            the night of 2026-10-26, when no other writer runs: the S&P 500's history test again so its run writes its
+            answer file, that answer recorded, and the freeze, then the read surface restarted; the S&P 400's and 600's
+            answers to the operator; 22.10's remedy record once the ledger's histories and checks end.

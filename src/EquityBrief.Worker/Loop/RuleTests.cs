@@ -41,7 +41,8 @@ public sealed record RuleTested(RuleUnderTest Rule, string Against, LoopEvidence
 // What the per-rule test walks an index's rules over: the history as it stood, the register's rules standing when the
 // run began, the setting an approval stored for each family, the market series, the heavyweights' history laid out, the
 // ledger's readings, the stored trees, the S&P 500's open filter version with its history, the progress line, the
-// pullback's candidates where they were read already, and from 20.8 the release readings the drift's tone variant reads.
+// pullback's candidates where they were read already, from 20.8 the release readings the drift's tone variant reads, and
+// from 22.11 Quality at a fair price's history laid out where a freeze stands on the index.
 public sealed record RuleTestInputs(
     LoopRead Read,
     IReadOnlyList<RegisterRow> Standing,
@@ -53,7 +54,8 @@ public sealed record RuleTestInputs(
     (string Version, FilterSettings Settings, LargePullback History)? Filter,
     Action<string> Progress,
     IdeaReplay? Candidates = null,
-    ToneReleases? Tones = null);
+    ToneReleases? Tones = null,
+    QualityLay? Quality = null);
 
 // From 20.8 the release readings the per-rule test walks the drift's tone variant over: for each reading version whose
 // history read is complete, each stock's results releases with their readings under it, read through the one reader of
@@ -196,7 +198,22 @@ public static class RuleTests
             .. Swings(inputs, DriftRule.Name),
             Fundamentals(inputs, Candidates()),
             .. Heavyweights(inputs),
+            .. (inputs.Quality is { } lay ? Quality(inputs.Standing, inputs.Read.Index, setting => lay.Book(setting).Months) : []),
         ];
+    }
+
+    // From 22.11 Quality at a fair price on any index once a freeze stands on it: each registered rule's book walked by the
+    // history test's own lay at its setting, its months the unit, the live rule first; none before a freeze, so the
+    // monthly run reads the family from its next run after one.
+    // see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions
+    public static IEnumerable<RuleUnderTest> Quality(IReadOnlyList<RegisterRow> standing, string index, Func<QualitySettings, IReadOnlyList<(int Opens, double? Edge)>> months)
+    {
+        foreach (var row in LiveFirst(standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is QualityCandidate rule && rule.Index == index)))
+        {
+            var setting = QualityCandidate.SettingsOf(CandidateEvaluator.Read(row.Parameters));
+
+            yield return new RuleUnderTest(QualityRule.Name, row.Candidate, StandingOf(row), setting.Words, LoopProcedures.Points, BookMonths.LongestMonth, Months: months(setting));
+        }
     }
 
     static IReadOnlyList<(int Entry, double? Edge)> Units(IEnumerable<ExitProcedures.Walked> walked) => [.. walked.Select(one => (one.Entry, one.Edge))];

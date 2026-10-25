@@ -158,7 +158,8 @@ static int NoVerb()
         "stood or with '--survivors' on survivors only, reading the store and writing nothing to it, and writes its " +
         "report and figures in a run folder of its own, " +
         "'sweep-answer --run <name>' records the answer a sweep run states, whether a setting it read met the floors, " +
-        "which a family's card reads to say its sweep found none, " +
+        "which a family's card reads to say its sweep found none, '--newest <family> --index <index>' in place of the run " +
+        "naming the newest run stating one for that family on that index, " +
         "'rule-record' replays each rule a pick's card names on each index at its one setting over the pulled history, " +
         "each trade after its cost, and stores its record for the card, with '--index <GSPC, MID or SML>' one index alone, " +
         "and 'rule-record --nights' replays instead each standing rule's listed count on every session of the pulled " +
@@ -643,13 +644,17 @@ static async Task<int> SweepAnswerRun(string[] args)
 {
     var configuration = Configuration();
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
-
-    return await new EquityBrief.Worker.Sweep.SweepAnswers(
+    var answers = new EquityBrief.Worker.Sweep.SweepAnswers(
         SystemClock.ForUnitedStatesSessions(),
         store.DatabaseFile,
         EquityBrief.Core.Sweep.SweepFolder.Resolve(configuration[EquityBrief.Core.Sweep.SweepFolder.Key], store.DataRoot),
-        Console.Out).RecordAsync(
-            VerbArguments.Value(args, "--run") ?? string.Empty,
+        Console.Out);
+
+    // From 22.11 '--newest <family> --index <index>' names the newest run stating an answer for that family on that index.
+    return await answers.RecordAsync(
+            VerbArguments.Value(args, "--run")
+                ?? (VerbArguments.Value(args, "--newest") is { } family ? answers.NewestRun(family, VerbArguments.Value(args, "--index") ?? string.Empty) : null)
+                ?? string.Empty,
             tester: VerbArguments.Value(args, "--tester"),
             ruled: EquityBrief.Worker.Sweep.SweepAnswers.RuledOf(VerbArguments.Value(args, "--ruled"), VerbArguments.Value(args, "--setting"), VerbArguments.Value(args, "--entry")));
 }

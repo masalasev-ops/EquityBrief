@@ -531,11 +531,11 @@ public class RegisterAppendOnly
         var faults = new List<string>();
 
         // An evaluator's own sources besides its file, a family rule's own files, read between its file and the
-        // shared ones; and the shared ones, which a book's evaluator does not pin.
+        // shared ones; and the shared ones, which neither a book's evaluator nor a rule its own family's step keeps pins.
         static string[] OwnOf(CandidateEvaluator evaluator) =>
             [.. evaluator.OwnSources.Select(path => File.ReadAllText(Path.Combine(Repository.Root, path)))];
 
-        string[] SharedOf(CandidateEvaluator evaluator) => evaluator is BookEvaluator ? [] : shared;
+        string[] SharedOf(CandidateEvaluator evaluator) => evaluator is BookEvaluator or OwnStepCandidate ? [] : shared;
 
         foreach (var evaluator in evaluators)
         {
@@ -556,8 +556,9 @@ public class RegisterAppendOnly
         // that hands it each member and the stage that reads each member's inputs, and a change to one family's
         // rule moves that family's version and no other evaluator's.
         // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
-        var families = evaluators.OfType<FamilyRuleEvaluator>().Where(family => family is not IndexRuleCandidate).ToArray();
+        var families = evaluators.OfType<FamilyRuleEvaluator>().Where(family => family is not (IndexRuleCandidate or OwnStepCandidate)).ToArray();
         var books = evaluators.OfType<BookEvaluator>().ToArray();
+        var qualities = evaluators.OfType<QualityCandidate>().ToArray();
 
         Assert.Equal(["breakout", "drift"], families.Select(family => family.Family).Order(StringComparer.Ordinal));
         // Four of its own, and from 17.5 the engines' hooks and the exit menu its list and trades are read through; and from
@@ -596,9 +597,31 @@ public class RegisterAppendOnly
         movedShared[Array.IndexOf([.. CandidateEvaluator.EvaluationSources], "src/EquityBrief.Worker/Filter/SwingFilter.cs")] += "\ninternal static class ChangesTheFilter { }\n";
 
         Assert.Equal(book.Version, CandidateEvaluator.Pin([SourceOf(book), .. OwnOf(book)]));
-        Assert.All(evaluators.Where(evaluator => evaluator is not BookEvaluator), evaluator => Assert.NotEqual(evaluator.Version, CandidateEvaluator.Pin([SourceOf(evaluator), .. OwnOf(evaluator), .. movedShared])));
+        Assert.All(evaluators.Where(evaluator => evaluator is not (BookEvaluator or OwnStepCandidate)), evaluator => Assert.NotEqual(evaluator.Version, CandidateEvaluator.Pin([SourceOf(evaluator), .. OwnOf(evaluator), .. movedShared])));
 
-        foreach (var family in families.Cast<CandidateEvaluator>().Concat(books))
+        // From 22.11 each index's quality rule pins its rule's file first and every file the family's own step runs through
+        // keeping its holdings, read off the compiled code with the catalogue left out, and the indicator arithmetic whose
+        // averages its trend reads off the store, and none of the shared sources, which the step never reads: the three
+        // pin the same sources and carry one version, and a change to the swing filter moves none of them.
+        // see: A quality rule is registered as the family on its index and kept by the family's own step alone
+        var qualityRuns = SourcesReached.From(
+            [
+                typeof(EquityBrief.Worker.Quality.QualityFamily).GetMethod(nameof(EquityBrief.Worker.Quality.QualityFamily.RunAsync))!,
+                typeof(QualityCandidate).GetMethod(nameof(QualityCandidate.SettingsOf))!,
+            ])
+            .Where(path => path is not "src/EquityBrief.Core/Candidates/CandidateEvaluators.cs" && !path.EndsWith($"/{nameof(QualityCandidate)}.cs", StringComparison.Ordinal))
+            .Concat(["src/EquityBrief.Core/Indicators/IndicatorSeries.cs", "src/EquityBrief.Worker/Indicators/IndicatorEngine.cs"])
+            .Distinct(StringComparer.Ordinal);
+
+        Assert.Equal(["GSPC", "MID", "SML"], qualities.Select(quality => quality.Index).Order(StringComparer.Ordinal));
+        Assert.Equal(["quality-400", "quality-500", "quality-600"], qualities.Select(quality => quality.Name).Order(StringComparer.Ordinal));
+        Assert.Single(qualities.Select(quality => quality.Version).Distinct());
+        Assert.All(qualities, quality => Assert.Equal("src/EquityBrief.Core/Families/QualityRule.cs", quality.OwnSources[0]));
+        Assert.All(qualities, quality => Assert.Equal(qualityRuns.Order(StringComparer.Ordinal), quality.OwnSources.Order(StringComparer.Ordinal)));
+        Assert.All(qualities, quality => Assert.DoesNotContain("src/EquityBrief.Worker/Filter/SwingFilter.cs", quality.OwnSources));
+        Assert.All(qualities, quality => Assert.Equal(quality.Version, CandidateEvaluator.Pin([SourceOf(quality), .. OwnOf(quality)])));
+
+        foreach (var family in families.Cast<CandidateEvaluator>().Concat(books).Concat(qualities))
         {
             var rule = family.OwnSources[0];
             var movedRule = OwnOf(family);
@@ -730,7 +753,7 @@ public class RegisterAppendOnly
         // family rule's evaluator pins.
         Assert.All(onThePath, path => Assert.True(
             CandidateEvaluator.EvaluationSources.Contains(path, StringComparer.Ordinal)
-                || evaluators.OfType<FamilyRuleEvaluator>().All(family => family.OwnSources.Contains(path, StringComparer.Ordinal)),
+                || evaluators.OfType<FamilyRuleEvaluator>().Where(family => family is not OwnStepCandidate).All(family => family.OwnSources.Contains(path, StringComparer.Ordinal)),
             $"{path} is on the evaluation path and pinned by neither every evaluator nor every family rule's."));
         Assert.Contains("src/EquityBrief.Worker/Families/FamilyEvaluator.cs", onThePath);
         Assert.Contains("src/EquityBrief.Core/Candidates/FamilyRuleShadow.cs", onThePath);

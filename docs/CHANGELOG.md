@@ -26,6 +26,46 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-25 - ARCHITECTURE.html - the quality family's step keeps every rule of the family standing on an index under its own name, and section 17 names the S&P 500's freeze
+Authorised by: A quality rule is registered as the family on its index and kept by the family's own step alone
+Was:
+> The catalogue's Quality family: reads membership, bar store, fundamental scores, ledger readings, member readings, quality nights, quality results, quality holdings | ... | reads Quality at a fair price's starting rule on each index over every member holding a bar on the night: its scorecard ...
+> The matrix's Quality family row: a blank under the candidate register.
+> Section 17's Quality at a fair price's starting settings: ... sold only at a reshuffle or on leaving the index; starting, until its history test and a freeze on the operator's word (see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session) | the operator's ruling of 2026-10-24 named the family, ..., after Piotroski (2000) and Novy-Marx (2013). Judgement: ... | fixture-expectations, the floor, the valuation and the order worked by hand on both sides of each threshold and the step over a constructed store; the figures read off the document against the constants
+Now:
+> The catalogue's Quality family: reads membership, bar store, indicators, fundamental scores, ledger readings, member readings, candidate register, quality nights, quality results, quality holdings | ... | reads Quality at a fair price's starting rule on each index over every member holding a bar on the night, and from 22.11 every rule of the family standing registered on the index when the night started in its place, the live rule first, each at its registration's settings in a transaction of its own and kept under its own name, a rule reading the trend reading each close against its 200-day average as the night stored it and a rule selling on a filing selling at the night's close a holding whose score fell under its floor since the night before (see: A quality rule is registered as the family on its index and kept by the family's own step alone): its scorecard ...
+> The matrix's Quality family row: R under the candidate register.
+> Section 17's row: ... sold only at a reshuffle or on leaving the index; starting on each index until its history test and a freeze on the operator's word (see: ...); the large cap index's live rule frozen at it, each setting of the history test's grid one dial from it a version beside it, and the mid and small cap indices' provisional at it until the operator rules on their answers (see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions) | ...; their ruling of 2026-10-25 froze each index at it where no setting met the floors. Judgement: ... | ...; from 22.11 the freeze's register lines over a register shaped as the operator's, the frozen setting on both sides of each dial, the luck correction over the family's own rules, the night keeping each rule under its own name, paper trading's accounts and the monthly run's read of the family; the figures read off the document against the constants
+Why: the operator's ruling of 2026-10-25 freezes each index whose history test found no setting meeting the floors at the starting setting with its one-step neighbours as versions, which the S&P 500's answer did, and the family's step keeps each registered rule's book.
+
+### 2026-10-25 - ARCHITECTURE.html - the quality card names its freeze, and paper trading keeps the family's accounts
+Authorised by: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions
+Was:
+> 15.7's Quality at a fair price's card: from 22.9 on every index after the sector heavyweights' card: a header as a setup card's saying it is not yet tested; one sentence from tonight's figures; ...
+> 15.21's The tiles: a tile a family's live or provisional rule in the one family order: its account's return ...
+Now:
+> 15.7's card: ... a header as a setup card's saying it is not yet tested, and from 22.11 where its family is frozen on the index the day it went live, its holdings the live rule's and beneath its header the line its history test's recorded answer gives in the reader's words, the day it was fixed, its holdings, its edge a holding behind or ahead of an equal-weight hold of the index's stocks after costs and in how many of the years it had holdings, and where no setting beat luck or the year-by-year test that it is a starting point rather than a proven edge (see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions); one sentence from tonight's figures; ...
+> 15.21's The tiles: a tile a family's live or provisional rule in the one family order, and from 22.11 Quality at a fair price's after them, its live rule's where a freeze stands on the index and its provisional rule's otherwise, each of its versions an account of its own that the variants' part and the scorecard list under the family (see: A quality rule is registered as the family on its index and kept by the family's own step alone): its account's return ...
+Why: the operator's ruling of 2026-10-25 asks the frozen card's line in points a holding and the reader's words, and the family's freeze gives paper trading its accounts and pickers.
+
+### 2026-10-25 - RUNBOOK.md - the quality freeze's form and 22.11's remedy
+Authorised by: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions
+Was:
+> (nothing; the paragraph after 22.9's remedy is new)
+Now:
+> From 22.11 a quality family is frozen on an index by the index family form, naming the family, the index and its live setting's five dials, ... 22.11's remedy, on the operator's ruling of 2026-10-25, does this for the S&P 500 alone, the S&P 400's and 600's answers going to the operator first; run it from main after the merge and before the night, read the output for "remedy done", and restart the read surface after it: powershell -File tools/remedy.ps1 tools/remedies/2026-10-25-22.11-the-s-and-p-500-quality-freeze.txt
+Why: the operator's ruling of 2026-10-25 freezes the S&P 500's quality family, and the form and its remedy are run by hand.
+
+### 2026-10-25 - .claude/rules/checks.md - fixture-expectations and read-surface state 22.11's freezes
+Authorised by: A quality rule is registered as the family on its index and kept by the family's own step alone
+Was:
+> fixture-expectations: ... and no source a rule's version pins one the months floors or the deeper pull write
+> read-surface: ... its hue held to the bounds with the ink among them, and its step in the run page's groups
+Now:
+> fixture-expectations: ... and no source a rule's version pins one the months floors or the deeper pull write; and from 22.11 its freezes: the remedy's register line freezing the S&P 500's family over a register shaped as the operator's stood, ..., and no source another rule's version pins one 22.11 writes, the quality rules' versions pinning the files their own step runs through as the evaluator pin reads them off the compiled code
+> read-surface: ... and its step in the run page's groups; and from 22.11 the family frozen on that store, its card drawing the live rule's holdings, the day it went live and the line its recorded answer gives word for word in the reader's words, and paper trading keeping an account for the live rule and each of its seven versions with the family's tile last and both pickers listing it
+Why: the roster states what each check asserts, and 22.11 adds the freeze's assertions to both.
+
 ### 2026-10-25 - RUNBOOK.md - an older pull is kept standing only for a stock an index holds that no newer pull does
 Corrects: the runbook kept standing any older pull holding a stock no newer pull does, which the comparison of 2026-10-25 showed keeps two pulls standing for thirteen stocks no index holds and hands the sweeps' history IIVI's 204 sessions after 2022-09-07 at the older pull's scale.
 Was:

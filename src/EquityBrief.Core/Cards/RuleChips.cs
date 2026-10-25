@@ -21,6 +21,7 @@ public enum RuleKind
     IndexBreakout,
     IndexDrift,
     IndexHeavyweights,
+    Quality,
 }
 
 // A rule's settings as a card's chips, written by code from the parameters its registration states, or from the settings
@@ -140,6 +141,21 @@ public static class RuleChips
                     (_, 1) => "sold under the 200-day",
                     _ => null,
                 });
+                break;
+
+            // From 22.11 Quality at a fair price's five dials.
+            case RuleKind.Quality:
+                Add(QualityCandidate.FloorParameter, At(QualityCandidate.FloorParameter) is { } scoreFloor ? Invariant($"a score of {Number(scoreFloor)} in 9") : null);
+                Add(QualityCandidate.ValuationParameter, At(QualityCandidate.ValuationParameter) switch
+                {
+                    0 => "its price not read",
+                    1 => "at or below its own usual price",
+                    2 => "in the cheapest third of its own range",
+                    _ => null,
+                });
+                Add(QualityCandidate.TrendParameter, At(QualityCandidate.TrendParameter) == 1 ? "above its 200-day average" : null);
+                Add(QualityCandidate.BookParameter, At(QualityCandidate.BookParameter) is { } book ? Invariant($"{Number(book)} holdings") : null);
+                Add(QualityCandidate.SaleParameter, At(QualityCandidate.SaleParameter) == 1 ? "also sold on a filing" : "sold at reshuffles");
                 break;
         }
 

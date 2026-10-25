@@ -33,19 +33,31 @@ public sealed record QualityHoldingRow(
 // see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session
 public sealed partial class ReadApi
 {
+    // The rule its holdings are kept under before a freeze registers one, the night's own word.
+    public const string QualityProvisional = "provisional";
+
+    // From 22.11 the rule the card draws on a night: the live rule where the night kept one, its row naming it, and the
+    // provisional rule otherwise.
+    // see: A quality rule is registered as the family on its index and kept by the family's own step alone
+    const string QualityLiveOn = @"
+        SELECT rule FROM quality_night
+        WHERE index_code = $index AND session_date = $on AND substr(rule, 1, length($live)) = $live
+        ORDER BY rule LIMIT 1;
+    ";
+
     const string QualityNightOn = @"
         SELECT index_code, session_date, members, scored, qualified, held, reshuffle, settings, fault
-        FROM quality_night WHERE rule = 'provisional' AND index_code = $index AND session_date = $on;
+        FROM quality_night WHERE rule = $rule AND index_code = $index AND session_date = $on;
     ";
 
     const string QualityLastReshuffle = @"
         SELECT MAX(session_date) FROM quality_night
-        WHERE rule = 'provisional' AND index_code = $index AND reshuffle = 1 AND fault IS NULL AND session_date <= $on;
+        WHERE rule = $rule AND index_code = $index AND reshuffle = 1 AND fault IS NULL AND session_date <= $on;
     ";
 
     const string QualityResultsOn = @"
         SELECT ticker, passed, place, passed_checks, applied, value_place, reason, carried
-        FROM quality_result WHERE rule = 'provisional' AND index_code = $index AND session_date = $on
+        FROM quality_result WHERE rule = $rule AND index_code = $index AND session_date = $on
         ORDER BY place IS NULL, place, ticker;
     ";
 
@@ -60,17 +72,32 @@ public sealed partial class ReadApi
                CASE WHEN ended_on <= $on THEN result END, CASE WHEN ended_on <= $on THEN benchmark END,
                CASE WHEN ended_on <= $on THEN cost END, CASE WHEN ended_on <= $on THEN edge END
         FROM quality_holding
-        WHERE rule = 'provisional' AND index_code = $index AND chosen_on <= $on AND (ended_on IS NULL OR ended_on >= $since)
+        WHERE rule = $rule AND index_code = $index AND chosen_on <= $on AND (ended_on IS NULL OR ended_on >= $since)
         ORDER BY chosen_on, ticker;
     ";
 
-    // Quality at a fair price's night on an index, none for a night its step did not read.
-    public async Task<QualityNightRow?> QualityNightAsync(string index, DateOnly on)
+    // The rule the card draws on a night: the live rule the night kept, or the provisional rule.
+    public async Task<string> QualityCardRuleAsync(string index, DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = QualityLiveOn;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$on", Day(on));
+        command.Parameters.AddWithValue("$live", EquityBrief.Core.Candidates.FamilyRecords.LivePrefix);
+
+        return await command.ExecuteScalarAsync() is string live ? live : QualityProvisional;
+    }
+
+    // Quality at a fair price's night on an index under a rule, none for a night its step did not read.
+    public async Task<QualityNightRow?> QualityNightAsync(string index, DateOnly on, string rule = QualityProvisional)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
         command.CommandText = QualityNightOn;
+        command.Parameters.AddWithValue("$rule", rule);
         command.Parameters.AddWithValue("$index", index);
         command.Parameters.AddWithValue("$on", Day(on));
 
@@ -91,12 +118,13 @@ public sealed partial class ReadApi
     }
 
     // The newest reshuffle on or before a night, none before the family's first.
-    public async Task<DateOnly?> QualityLastReshuffleAsync(string index, DateOnly on)
+    public async Task<DateOnly?> QualityLastReshuffleAsync(string index, DateOnly on, string rule = QualityProvisional)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
         command.CommandText = QualityLastReshuffle;
+        command.Parameters.AddWithValue("$rule", rule);
         command.Parameters.AddWithValue("$index", index);
         command.Parameters.AddWithValue("$on", Day(on));
 
@@ -104,12 +132,13 @@ public sealed partial class ReadApi
     }
 
     // Every member's answer on a night, in the family's order and the rest by ticker.
-    public async Task<IReadOnlyList<QualityResultRow>> QualityResultsAsync(string index, DateOnly on)
+    public async Task<IReadOnlyList<QualityResultRow>> QualityResultsAsync(string index, DateOnly on, string rule = QualityProvisional)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
         command.CommandText = QualityResultsOn;
+        command.Parameters.AddWithValue("$rule", rule);
         command.Parameters.AddWithValue("$index", index);
         command.Parameters.AddWithValue("$on", Day(on));
 
@@ -133,12 +162,13 @@ public sealed partial class ReadApi
     }
 
     // Every holding chosen by a night that was still open on a session or ended after it, read as of the night.
-    public async Task<IReadOnlyList<QualityHoldingRow>> QualityHoldingsAsync(string index, DateOnly on, DateOnly since)
+    public async Task<IReadOnlyList<QualityHoldingRow>> QualityHoldingsAsync(string index, DateOnly on, DateOnly since, string rule = QualityProvisional)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
         command.CommandText = QualityHoldingsFrom;
+        command.Parameters.AddWithValue("$rule", rule);
         command.Parameters.AddWithValue("$index", index);
         command.Parameters.AddWithValue("$on", Day(on));
         command.Parameters.AddWithValue("$since", Day(since));

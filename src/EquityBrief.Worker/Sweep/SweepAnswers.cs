@@ -37,7 +37,36 @@ public sealed class SweepAnswers(IClock clock, string databaseFile, string sweep
     // The indices a run may name and the families a card draws, which are the answers a card can read.
     static readonly string[] IndexCodes = [EquityBrief.Worker.Indices.IndexFamilies.LargeIndex, "MID", "SML"];
 
-    static readonly string[] Families = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, HeavyweightRule.Name];
+    static readonly string[] Families = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, HeavyweightRule.Name, QualityRule.Name];
+
+    // From 22.11 the newest run in the sweep's folder that states an answer for a family on an index, by its folder's name,
+    // which is the instant it started; none where no run states one. A remedy written before its run names it this way.
+    // see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions
+    public string? NewestRun(string family, string index)
+    {
+        if (!Directory.Exists(sweepFolder))
+        {
+            return null;
+        }
+
+        foreach (var folder in Directory.GetDirectories(sweepFolder).Select(Path.GetFileName).OfType<string>().OrderByDescending(name => name, StringComparer.Ordinal))
+        {
+            var file = Path.Combine(sweepFolder, folder, SweepAnswer.File);
+
+            try
+            {
+                if (File.Exists(file) && SweepAnswer.Read(File.ReadAllText(file)) is { } stated && stated.Family == family && stated.Index == index)
+                {
+                    return folder;
+                }
+            }
+            catch (JsonException)
+            {
+            }
+        }
+
+        return null;
+    }
 
     const string Write = @"
         INSERT INTO sweep_answer (run, index_code, family, design, answer, recorded_at, setting, trades, edge, year_edges, without_largest, settings_read, meeting, luck, tester_run, adjusted, tester_passed, ruled_on, entry_kept)
@@ -180,6 +209,31 @@ public sealed class SweepAnswers(IClock clock, string databaseFile, string sweep
 
             static double? Number(JsonElement element, string name) =>
                 element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number ? value.GetDouble() : null;
+
+            // From 22.11 the quality family's history test: its proposal's figures where one met its floors in months, and
+            // its starting setting's otherwise, the setting a freeze then fixes, with its settings, those meeting its floors
+            // against luck and the run's own tester's verdict.
+            // see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions
+            if (root.TryGetProperty("family", out var named) && named.GetString() == QualityRule.Name && root.TryGetProperty("settings", out var grid))
+            {
+                var settings = grid.EnumerateArray().ToArray();
+                var key = root.TryGetProperty("proposal", out var proposed) && proposed.ValueKind == JsonValueKind.String ? proposed.GetString()! : QualityRule.Starting.Key;
+                var chosen = settings.Single(setting => setting.GetProperty("Key").GetString() == key).GetProperty("Figures");
+                var tested = root.TryGetProperty("tested", out var verdict) && verdict.ValueKind == JsonValueKind.Object ? verdict : (JsonElement?)null;
+
+                return (new AnswerFigures(
+                    key,
+                    chosen.GetProperty("Trades").GetInt32(),
+                    Number(chosen, "Edge"),
+                    Years(chosen.GetProperty("YearEdge")),
+                    Number(chosen, "EdgeWithoutLargest"),
+                    settings.Length,
+                    settings.Count(setting => setting.GetProperty("meetsFloors").GetBoolean()),
+                    Number(root, "luck"),
+                    tested is null ? null : run,
+                    tested is { } judged ? Number(judged.GetProperty("verdict"), "Adjusted") : null,
+                    tested is { } passed ? passed.GetProperty("passed").GetBoolean() : null), null);
+            }
 
             if (root.TryGetProperty("wouldRun", out var wouldRun) && wouldRun.TryGetProperty("figures", out var figures))
             {

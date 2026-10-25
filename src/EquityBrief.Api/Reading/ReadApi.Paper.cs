@@ -39,6 +39,7 @@ public sealed record PaperRow(
     double? Edge = null,
     string? Sector = null,
     string? Reason = null,
+    int? BookSize = null,
     int? Exit = null,
     double? RiskMoves = null);
 
@@ -112,6 +113,17 @@ public sealed partial class ReadApi
     static readonly string IndexBookOn = $"SELECT '', h.ticker, h.entered_on, h.entry_close, h.ended_on, f.result, h.cost, h.sector, h.reason, {FillColumns} FROM index_heavyweight_holding h {Filled("index_heavyweight_holding", "h", "h.index_code", "''", "entered_on")} WHERE h.index_code = $index ORDER BY h.entered_on, h.sector, h.ticker;";
 
     static readonly string IndexRuleBooksOn = $"SELECT h.candidate, h.ticker, h.entered_on, h.entry_close, h.ended_on, f.result, h.cost, h.sector, h.reason, {FillColumns} FROM index_heavyweight_rule_holding h {Filled("index_heavyweight_rule_holding", "h", "h.index_code", "h.candidate", "entered_on")} WHERE h.index_code = $index ORDER BY h.entered_on, h.sector, h.ticker;";
+
+    // From 22.11 every holding of the quality family on an index, under its rule's name and the provisional rule's under
+    // the page's list, in the holdings' column order with the book its rule keeps and the fill its own step stored at the
+    // next open in the fills' place, its round trip read as a fraction of its buy and its edge in percentage points as one.
+    // see: A quality rule is registered as the family on its index and kept by the family's own step alone
+    static readonly string QualityBooksOn =
+        $"SELECT CASE WHEN h.rule = '{QualityProvisional}' THEN '{PageList} {QualityRule.Name}' ELSE h.rule END, h.ticker, h.chosen_on, h.buy_close, h.ended_on, h.result, h.cost / 100.0, NULL, " +
+        "CASE WHEN h.end_reason = 'open' THEN NULL ELSE h.end_reason END, " +
+        "(SELECT json_extract(n.settings, '$.holdings') FROM quality_night n WHERE n.rule = h.rule AND n.index_code = h.index_code AND n.session_date = h.chosen_on), " +
+        "h.fill, h.bought_on, (SELECT b.open FROM bar b WHERE b.ticker = h.ticker AND b.session_date = h.bought_on), NULL, NULL, h.edge / 100.0 " +
+        "FROM quality_holding h WHERE h.index_code = $index ORDER BY h.chosen_on, h.ticker;";
 
     // A stock's company as its newest membership row names it, and its typical move and 200-session average on the night.
     const string PaperStocksOn = @"
@@ -230,6 +242,12 @@ public sealed partial class ReadApi
             large && reader.GetString(0) != FundamentalsRule.Name
                 ? null
                 : Swing(reader, PageList + " " + reader.GetString(0)));
+
+        await ReadAsync(QualityBooksOn, reader => Fill(reader, new(reader.GetString(0), QualityRule.Name, reader.GetString(1), Day(reader.GetString(2)), 0, Money.FromStorage(reader.GetString(3)), null, DayAt(reader, 4), Optional(reader, 5), true, null, Optional(reader, 6))
+        {
+            Reason = reader.IsDBNull(8) ? null : reader.GetString(8),
+            BookSize = reader.IsDBNull(9) ? null : reader.GetInt32(9),
+        }));
 
         return rows;
     }

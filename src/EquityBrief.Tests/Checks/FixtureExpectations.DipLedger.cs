@@ -418,8 +418,11 @@ public partial class FixtureExpectations
     [Fact]
     public void NoSourceARulesVersionPinsIsOne22Point2WritesSoNoExistingRulesVersionMoves()
     {
-        // Every source an evaluator pins, its own and the shared evaluation's, and the hooks'.
+        // Every source an evaluator pins, its own and the shared evaluation's, and the hooks', but the quality rules', which
+        // pin the readings their own step reads and no rule registered before them did.
+        // see: A quality rule is registered as the family on its index and kept by the family's own step alone
         var pinned = EquityBrief.Core.Candidates.CandidateEvaluators.All
+            .Where(evaluator => evaluator is not EquityBrief.Core.Candidates.QualityCandidate)
             .SelectMany(evaluator => evaluator.OwnSources)
             .Concat(EquityBrief.Core.Candidates.CandidateEvaluator.EvaluationSources)
             .Concat(EquityBrief.Core.Loop.RuleHooks.Sources)

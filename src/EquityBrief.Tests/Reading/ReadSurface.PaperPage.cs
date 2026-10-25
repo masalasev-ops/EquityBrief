@@ -411,9 +411,10 @@ public partial class ReadSurface
         // The breakout's: O3 25 shares at 40 over its risk of 4, at 46 on Friday, 10,150, a return of 0.015.
         Assert.Contains("<div class=\"paper-tile\" data-family=\"breakout\" data-standing=\"provisional\" data-return=\"0.015\" data-open=\"1\" data-closed=\"0\" data-since=\"2026-09-29\"", page, StringComparison.Ordinal);
 
-        // The families holding no trade say so, and every family has its tile in the one order.
+        // The families holding no trade say so, and every family has its tile in the one order, from 22.11 Quality at a fair
+        // price's after the setups'.
         Assert.Equal(
-            ["pullback", "breakout", "drift", "fundamentals", "heavyweight"],
+            ["pullback", "breakout", "drift", "fundamentals", "heavyweight", "quality"],
             Regex.Matches(page, "<div class=\"paper-tile\" data-family=\"([a-z]+)\"").Select(match => match.Groups[1].Value));
         Assert.Contains("data-family=\"drift\" data-standing=\"provisional\" data-return=\"none\" data-open=\"0\" data-closed=\"0\" data-since=\"none\"", page, StringComparison.Ordinal);
 
@@ -562,7 +563,7 @@ public partial class ReadSurface
         // The select lists every family in the one order, the first its key's absence, the one the link names chosen.
         var select = Regex.Match(page, "<select data-merge-key=\"variants\".*?</select>", RegexOptions.Singleline).Value;
 
-        Assert.Equal(["", "breakout", "drift", "fundamentals", "heavyweight"], Regex.Matches(select, "<option value=\"([^\"]*)\"").Select(match => match.Groups[1].Value));
+        Assert.Equal(["", "breakout", "drift", "fundamentals", "heavyweight", "quality"], Regex.Matches(select, "<option value=\"([^\"]*)\"").Select(match => match.Groups[1].Value));
         Assert.Contains("<option value=\"breakout\" selected>Breakout · live rule and 1 variant</option>", select, StringComparison.Ordinal);
         Assert.Contains("<option value=\"fundamentals\">Fundamentals first · provisional rule, no variant</option>", select, StringComparison.Ordinal);
 

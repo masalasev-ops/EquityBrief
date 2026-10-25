@@ -23,9 +23,11 @@ public static partial class TonightScreen
         IReadOnlyList<QualityHoldingRow> holdings,
         IReadOnlyList<QualityResultRow> tonight,
         IReadOnlyDictionary<DateOnly, IReadOnlyList<QualityResultRow>> answersOn,
-        IReadOnlyDictionary<string, UniverseCell> cellByTicker)
+        IReadOnlyDictionary<string, UniverseCell> cellByTicker,
+        DateOnly? liveSince = null,
+        QualityFixedView? fixedView = null)
     {
-        var settings = QualityRule.Starting;
+        var (holdingsKept, words) = read is not null && SettingsRead(read.Settings) is { } stored ? stored : (QualityRule.Starting.Holdings, QualityRule.Starting.Words);
         var byTicker = tonight.ToDictionary(row => row.Ticker, StringComparer.Ordinal);
         var open = holdings.Where(holding => holding.EndedOn is null).OrderBy(holding => holding.ChosenOn).ThenBy(holding => holding.Ticker, StringComparer.Ordinal).ToArray();
 
@@ -75,7 +77,7 @@ public static partial class TonightScreen
             night,
             read is not null,
             read?.Fault,
-            settings.Holdings,
+            holdingsKept,
             lastReshuffle,
             next,
             next is { } coming ? ExchangeClosures.SessionsUntil(night, coming) : null,
@@ -86,8 +88,45 @@ public static partial class TonightScreen
             [.. holdings.Where(holding => holding.EndedOn is { } end && end <= night).OrderBy(holding => holding.EndedOn).ThenBy(holding => holding.Ticker, StringComparer.Ordinal).Select(holding => new QualitySoldCell(holding.Ticker, holding.EndedOn!.Value, holding.EndReason))],
             [.. tonight.Where(row => row.Passed && open.All(holding => holding.Ticker != row.Ticker)).Take(MarkRenderer.QualityNextShown)
                 .Select(row => new QualityNextCell(row.Ticker, cellByTicker.TryGetValue(row.Ticker, out var cell) ? cell.Name : null, row.PassedChecks, row.Applied, row.ValuePlace))],
-            settings.Words);
+            words,
+            liveSince,
+            fixedView);
     }
+
+    // The holdings a rule keeps and its words, as the night stored its settings on its row; none where the row's settings
+    // cannot be read.
+    public static (int Holdings, string Words)? SettingsRead(string settings)
+    {
+        try
+        {
+            using var document = System.Text.Json.JsonDocument.Parse(settings);
+            var root = document.RootElement;
+
+            return root.TryGetProperty("holdings", out var holdings) && root.TryGetProperty("words", out var words) && words.GetString() is { } said
+                ? (holdings.GetInt32(), said)
+                : null;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return null;
+        }
+    }
+
+    // From 22.11 a fixed card's line read off the answer its history test recorded before its freeze, none where none was
+    // recorded or it states no figures.
+    // see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
+    public static QualityFixedView? QualityFixed(DateOnly fixedOn, EquityBrief.Core.Sweep.RecordedAnswer? answer) =>
+        answer?.Figures is { } figures
+            ? new QualityFixedView(
+                fixedOn,
+                figures.YearEdges.Count > 0 ? figures.YearEdges.Keys.Min() : fixedOn.Year,
+                figures.Trades,
+                figures.Edge,
+                figures.YearEdges.Count(year => year.Value is not null),
+                figures.YearEdges.Count(year => year.Value > 0),
+                figures.BeatLuck,
+                figures.TesterPassed)
+            : null;
 
     // A holding's line tonight in the reader's words: chosen tonight, waiting for its buy, still qualifying, or what it fell
     // short of and what happens at the next reshuffle, its score's fall said where its score stood higher at the

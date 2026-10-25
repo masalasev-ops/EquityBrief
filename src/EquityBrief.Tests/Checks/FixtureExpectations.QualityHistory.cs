@@ -223,11 +223,14 @@ public partial class FixtureExpectations
     ];
 
     // No source a rule's version pins is one the months floors and the deeper pull write, so no rule's version moves, the
-    // reader shown to find a source a rule pins.
+    // reader shown to find a source a rule pins. From 22.11 the quality rules pin their family's rule, being rules of it,
+    // and no rule registered before them did.
+    // see: A quality rule is registered as the family on its index and kept by the family's own step alone
     [Fact]
     public void NoSourceARulesVersionPinsIsOneTheMonthsFloorsAndTheDeeperPullWrite()
     {
         var pinned = EquityBrief.Core.Candidates.CandidateEvaluators.All
+            .Where(evaluator => evaluator is not EquityBrief.Core.Candidates.QualityCandidate)
             .SelectMany(evaluator => evaluator.OwnSources)
             .Concat(EquityBrief.Core.Candidates.CandidateEvaluator.EvaluationSources)
             .Concat(RuleHooks.Sources)

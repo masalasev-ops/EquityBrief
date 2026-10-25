@@ -120,8 +120,9 @@ public sealed class FamilyReplay : IComponent
         var register = await RegisterAsync(connection, cancellation);
         var replays = await ReplaysAsync(connection, cancellation);
         var standing = CandidateFamily.Standing(register, startedAt).Where(which).ToArray();
-        // The S&P 500's family rules alone: an S&P 400's or 600's rule is read over its own index by the index families.
-        var rules = standing.Where(rule => CandidateEvaluators.Find(rule.Evaluator) is FamilyRuleEvaluator and not IndexRuleCandidate).ToArray();
+        // The S&P 500's family rules alone: an S&P 400's or 600's rule is read over its own index by the index families, and
+        // a rule its own family's step keeps by that step.
+        var rules = standing.Where(rule => CandidateEvaluators.Find(rule.Evaluator) is FamilyRuleEvaluator and not IndexRuleCandidate and not OwnStepCandidate).ToArray();
         var found = new List<FamilyReplayed>();
 
         foreach (var family in rules.GroupBy(FamilyOf))
@@ -130,11 +131,12 @@ public sealed class FamilyReplay : IComponent
         }
 
         // A rule the heavyweights' book keeps is not replayed, so its record restarts at the registration and its row says so,
-        // and from 20.4 an S&P 400's or 600's rule the same.
+        // and from 20.4 an S&P 400's or 600's rule the same, and from 22.11 a rule its own family's step keeps.
         // see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut
         // see: An S&P 400 or 600 family's variants are registered again whole beside its provisional rule or its frozen live rule
+        // see: A quality rule is registered as the family on its index and kept by the family's own step alone
         found.AddRange(standing
-            .Where(rule => CandidateEvaluators.Find(rule.Evaluator) is BookEvaluator or IndexRuleCandidate)
+            .Where(rule => CandidateEvaluators.Find(rule.Evaluator) is BookEvaluator or IndexRuleCandidate or OwnStepCandidate)
             .Select(rule => new FamilyReplayed(
                 rule.Candidate,
                 CandidateEvaluators.Find(rule.Evaluator)!.Version,

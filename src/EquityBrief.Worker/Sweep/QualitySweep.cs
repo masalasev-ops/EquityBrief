@@ -35,8 +35,8 @@ public sealed class QualityLay
     // The one group a reshuffle's choices and the members they are judged against stand under.
     public const string Group = QualityRule.Name;
 
-    // Why a holding the history sold on a filing ended.
-    public const string OnAFiling = "a filing dropped its score";
+    // Why a holding the history sold on a filing ended, the words the night's step stores.
+    public const string OnAFiling = QualityFamily.OnAFiling;
 
     // The average the trend dial reads a close against, the tape's own.
     public const int TrendSessions = 200;
