@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-25 - .claude/rules/checks.md - read-surface holds an open dip trade's target drawn as none on paper trading
+Corrects: paper trading drew an open dip trade's target as "it trails", where its plan holds no target and its stop never trails, found when 22.12 read the S&P 400's paper trading back against the store
+Was:
+> read-surface: ... the quality family's among them, and neither page any family by the word the store keeps it under |
+Now:
+> read-surface: ... the quality family's among them, and neither page any family by the word the store keeps it under; and from the 22.3 correction of 2026-10-25 paper trading drawing an open dip trade's target as none, its plan holding no target and its stop never trailing, where a trade whose stop trails reads that it trails |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
 ### 2026-10-25 - .claude/rules/checks.md - read-surface holds Past picks and paper trading naming every family by its label
 Corrects: Past picks and paper trading named the quality family by the word the store keeps it under, "quality", in Past picks' account selector and beside its verdict and on paper trading's tile, chips and scorecard, found when 22.12 read both pages back against the store
 Was:

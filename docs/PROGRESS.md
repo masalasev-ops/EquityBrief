@@ -9446,3 +9446,18 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pag
             "quality" drawn in 7 of its 24 names.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 22.12's report below, which
             carries this correction unchanged.
+
+### 22.3 - correction: paper trading draws an open dip trade's target as none, where it drew that its stop trails   2026-10-25
+
+Found:      by 22.12's read-back of the S&P 400's paper trading against the store: ARMK and GME, the dip's open trades,
+            drew their target as "it trails", since what the system bought read any trade with no target as one whose
+            stop trails, where the dip's plan holds no target and its stop never trails. Past picks drew them as none.
+Corrected:  a trade with no target draws that it trails only where its stop trails, and none otherwise, as Past picks
+            draws it; the column's words under the pointer name the dip.
+Tests:      none new, one extended, 2789 in all: the dip's open trade drawn with its target as none and never as
+            trailing, beside a trade whose stop trails drawn as trailing.
+Claims:     1444, none new.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, made in this checkout and reverted
+            with the editor, filtered to the test reading it. M1 every trade with no target drawn as trailing; red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 22.12's report below, which
+            carries this correction unchanged.
