@@ -1,0 +1,11 @@
+{
+  "stage": "dip-freeze",
+  "derivation": "derived",
+  "tables": ["candidate_register", "bar"],
+  "derivedFrom": "22.3's freezes worked by hand from the operator's second answers of 2026-10-25, not a run. The S&P 500's live rule stands with four versions, its trend on the 200-session average alone, its time limit at 7 sessions, its stop at 4 typical moves and its market setting off, so the family holds 5 rules and its level is 0.05 / 5 = 0.01; the S&P 400's with three, its trend on the 200-session average alone, its stop at 4 and its market setting off, 4 rules at 0.05 / 4 = 0.0125; and the S&P 600's with four, its exit on the 5-session average, its trend with the 50 above the 200, its time limit at 5 and its market setting off, 5 rules at 0.01. Each family counts its own index's rules alone, so the quality families keep 8 each and every other family the count it held.",
+  "families": [
+    { "family": "dip on the S&P 500", "rules": 5, "level": 0.01 },
+    { "family": "dip on the S&P 400", "rules": 4, "level": 0.0125 },
+    { "family": "dip on the S&P 600", "rules": 5, "level": 0.01 }
+  ]
+}

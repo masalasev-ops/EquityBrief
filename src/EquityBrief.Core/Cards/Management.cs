@@ -13,9 +13,10 @@ namespace EquityBrief.Core.Cards;
 // see: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
 public static class Management
 {
-    // A short-term dip pick's management: sold at the next session's open after a close under its stop or above its
-    // exit's average of closes, and at the close of its last session where neither came.
-    public static IReadOnlyList<string> ForDip(decimal? stop, int exitAverage, int? timeLimit)
+    // A short-term dip pick's management: sold at the next session's open after a close under its stop or one its exit
+    // reads, by its dial's level, above its exit's average of closes, from 22.3 its 2-session RSI closing above its level
+    // or a close above the close before, and at the close of its last session where neither came.
+    public static IReadOnlyList<string> ForDip(decimal? stop, int exitLevel, int? timeLimit)
     {
         var words = new List<string>();
 
@@ -24,7 +25,12 @@ public static class Management
             words.Add($"Sell at the next trading day's open after a day that closes below {Price(floor)}.");
         }
 
-        words.Add(FormattableString.Invariant($"Sell at the next trading day's open after a day that closes above its {exitAverage}-day average close."));
+        words.Add(exitLevel switch
+        {
+            Families.DipRule.RsiExit => FormattableString.Invariant($"Sell at the next trading day's open after a day its {Families.DipRule.RsiSessions}-day RSI closes above {exitLevel}."),
+            Families.DipRule.UpCloseExit => "Sell at the next trading day's open after a day that closes above the day before.",
+            _ => FormattableString.Invariant($"Sell at the next trading day's open after a day that closes above its {exitLevel}-day average close."),
+        });
         words.Add("No target: the trade is ended by its stop, its exit or its time limit.");
 
         if (timeLimit is { } most)

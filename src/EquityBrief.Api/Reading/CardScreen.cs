@@ -61,7 +61,7 @@ public static class CardScreen
             drawn,
             row.Record is { } stored ? Record(stored) : null,
             dip
-                ? EquityBrief.Core.Cards.Management.ForDip(row.Stop, (given.Dip ?? EquityBrief.Core.Families.DipRule.Provisional).ExitAverage, row.Cap)
+                ? EquityBrief.Core.Cards.Management.ForDip(row.Stop, (given.Dip ?? EquityBrief.Core.Families.DipRule.Provisional).ExitLevel, row.Cap)
                 : EquityBrief.Core.Cards.Management.For(row.Stop, row.Target, row.Trail, row.Cap, heavyweights),
             money is { } plan && given.Account is { } held
                 ? new CardMoneyView(plan.Shares, plan.AtRisk, plan.Value, plan.ShareOfAccount, plan.RoundTrip, plan.Capped, plan.WholeAtRisk, held.RiskPercent)

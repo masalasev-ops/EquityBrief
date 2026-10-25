@@ -26,6 +26,69 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-25 - ARCHITECTURE.html - the dip family keeps each standing rule under its own name, its card names its freeze, paper trading keeps its accounts, and section 17 names its freezes
+Authorised by: A dip rule is registered as the family on its index and kept by the dip's own step alone
+Was:
+> The catalogue's Dip family: reads membership, bar store, calendar, series state, gate results, filter versions, list rules, family picks, forward returns, index family picks, index family trades, member readings, dip trades | ... | reads the short-term dip's provisional rule on each index over every member holding a bar on the night, its members ...
+> The matrix's Dip family row: a blank under the candidate register.
+> The catalogue's Decision cards: reads ... index family picks, dip results, dip picks, index heavyweight holdings, ...
+> The catalogue's Rule cards: ... so a night holding no reading says where its members stopped; a night run again replaces its own rows, ...
+> 15.7's The short-term dip's card: ... (see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none)
+> 15.21's The tiles: ... each of Quality at a fair price's versions an account of its own that the variants' part and the scorecard list under the family (see: ...): its account's return ...
+> Section 17's The short-term dip: ...; provisional at those values (see: ...) (see: ...) | the operator's ruling of 2026-10-22 named the parts and the provisional values; ... | fixture-expectations, ...; on the large cap index the least close on both sides of it with no dollar volume floor read; the figures read off the document against the constants
+Now:
+> The catalogue's Dip family: reads ..., member readings, candidate register, market readings, market series, dip trades | ... | reads the short-term dip's provisional rule on each index over every member holding a bar on the night, and from 22.3 every rule of the family standing registered on the index when the night started in its place, the live rule first and each at its registration's setting, the live rule's answers, list and night drawn as its card's and each version's trades kept under its own name beside them, its market setting read at its level ..., and a rule whose code moved named and not kept (see: ...), its members ...
+> The matrix's Dip family row: R under the candidate register.
+> The catalogue's Decision cards: reads ... index family picks, dip nights, dip results, dip picks, ...
+> The catalogue's Rule cards: ... so a night holding no reading says where its members stopped; from 22.3 the short-term dip's night under the rule its card was drawn by as the dip's night names it (see: ...); a night run again replaces its own rows, ...
+> 15.7's card: ... (see: ...); and from 22.3 where a frozen rule drew its night the day that rule went live with its versions counted on its tabs; each pick's why and its exit in that rule's words; beneath its header the line every frozen card draws from the answer its freeze followed (see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions)
+> 15.21's The tiles: ... (see: ...); from 22.3 the short-term dip's in the page's order before the sector heavyweights', its live rule's where a freeze stands and each of its versions an account of its own listed under the family as a quality version is (see: ...): its account's return ...
+> Section 17's row: ...; provisional at those values (see: ...) (see: ...); each index's live rule frozen at the setting its sweep would run, its drop read as a fall in typical moves, its exit on the RSI closing back above its level and its market setting at the level its sweep chose, with the one-step neighbours meeting the floors and the market variant as versions (see: ...) | the operator's ruling of 2026-10-22 named the parts and the provisional values, and their rulings of 2026-10-25 froze each index at the setting its sweep would run; ... | ...; from 22.3 each dial the freeze reads worked on both sides at a constructed session, the remedy's register lines over a register shaped as the operator's, the live rule's market setting and its market variant on both sides of the floor and the night keeping each rule under its own name; the figures read off the document against the constants
+Why: the operator's rulings of 2026-10-25 freeze each index's dip, and its step keeps each registered rule's trades, its card and paper trading draw them, and the decision cards read the rule its night ran.
+
+### 2026-10-25 - SCHEMA.md - dip_night and dip_trade under the dip's registered rules
+Authorised by: A dip rule is registered as the family on its index and kept by the dip's own step alone
+Was:
+> dip_night `market`: the dip's own market setting as the night read it, `off` while it reads none
+> dip_night `settings`: JSON: the rule the night read the dip by, `provisional` until a freeze registers one, its setting ...
+> dip_trade `rule`: the rule whose list kept the trade, `provisional` for the page's list until a freeze registers one
+> dip_trade `exit_average`: the sessions of the average of closes a close above sells on
+> **The dip's step writes it and is its own deleter** ... then it keeps each listed row of tonight's list. A night run again replaces the trades it kept for that night.
+Now:
+> dip_night `market`: ...; from 22.3 the key of the level the card's rule reads, as the sweep's market dial names it
+> dip_night `settings`: JSON: the rule the night read the dip by, `provisional` until a freeze registers one and the live rule's name after it, ...
+> dip_trade `rule`: ..., and from 22.3 each registered rule's name, the live rule's the page's list and each version's its own
+> dip_trade `exit_average`: ...; from 22.3 the exit dial's level as the sweep's keys state it, 65 for the 2-session RSI closing back above 65 and 1 for the first close above the close before, which no average reads
+> ... then it keeps each listed row of tonight's list, and from 22.3 each standing rule's under that rule's name, its exit read by the level it stored (see: ...). A night run again replaces the trades it kept for that night under every rule it keeps.
+Why: the dip's freezes keep each registered rule's trades in its own table with no migration, the exit's level stored where the average's sessions were.
+
+### 2026-10-25 - RUNBOOK.md - the dip freeze's form and 22.3's remedy
+Authorised by: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
+Was:
+> (nothing; the paragraph after the S&P 400's and 600's quality remedy is new)
+Now:
+> From 22.3 the short-term dip is frozen on an index by the index family form, naming the family `dip`, the index, its live setting's seven dials as its sweep's keys state them and each version with `--variants`, ...; each version is one of the live rule's one-step neighbours on the sweep's grid or its market variant, ...; run it from main after the merge and before the night, ...: powershell -File tools/remedy.ps1 tools/remedies/2026-10-25-22.3-the-dip-freezes.txt
+Why: the operator's rulings of 2026-10-25 freeze each index's dip, and the form and its remedy are run by hand.
+
+### 2026-10-25 - .claude/rules/checks.md - fixture-expectations and read-surface state 22.3's freezes
+Authorised by: A dip rule is registered as the family on its index and kept by the dip's own step alone
+Was:
+> fixture-expectations: ... the S&P 400's valuation-off neighbour among them |
+> read-surface: ... paper trading keeping an account for the live rule and each of its seven versions with the family's tile last and both pickers listing it |
+Now:
+> fixture-expectations: ... the S&P 400's valuation-off neighbour among them; and from 22.3 the dip's freezes: each dial the rule gains worked by hand on both sides at a constructed session, ...; and no source another rule's version pins one 22.3 writes, the dip's rules pinning the files their own step runs through |
+> read-surface: ... both pickers listing it; and from 22.3 the short-term dip frozen on that store, its card drawn by its live rule live since its freeze with its versions counted on its tabs, ..., and paper trading keeping an account for the live rule and each of its three versions with the family's tile before the sector heavyweights' and both pickers listing it |
+Why: each roster row says what its check asserts, and 22.3's tests extend both.
+
+### 2026-10-25 - BUILD_PLAN.md - 22.10 and 22.11 carry the rulings and answers of 2026-10-25
+Corrects: 22.10's and 22.11's text still read as they did before the operator's ruling and answers of 2026-10-25, which landed in the decisions, the architecture and the guide but not in the plan; found on the operator's question of the same evening why the plan's phase 22 was not complete.
+Was:
+> 22.10: ... Each index's answer states its holdings, ... The report stands in its run folder as HTML with JSON beside it, each index's answer goes to the operator and nothing registers. Writes section 13's sweep ...
+> 22.11: On the operator's word on each index's answer, a remedy registers each index's live quality rule at the setting they approve with its one-step neighbours as versions, ..., and the family's luck correction counts its own rules alone. Each registered rule keeps ...
+Now:
+> 22.10: ... each index's answer goes to the operator and nothing registers. On the operator's ruling of 2026-10-25, ..., a setting meets the floors where its book held stocks in at least 48 months and its monthly edge stands above nothing in at least 6 of the 8 years, ...; the history is pulled from 2015-10-01 for every name each index held, ...; and the test is run again on each index over the deeper history, each run an entry of its own stating each year's coverage. Writes section 13's sweep ...
+> 22.11: ... and the family's luck correction counts its own rules alone. On their ruling and answers of 2026-10-25, ..., every index is frozen at the starting setting, ..., with its seven one-step neighbours as versions: the S&P 500 where no setting met the floors, and the S&P 400 and 600 on the operator's answers where some did, the S&P 400's proposal standing two dials from the starting setting and not run (see: ...) (see: ...). Each index's answer is recorded at the starting setting before its freeze, and its card draws the line every frozen card draws, opening "Its settings were fixed on", from that answer. Each registered rule keeps ...
+
 ### 2026-10-25 - ARCHITECTURE.html - section 17 names the S&P 400's and 600's quality freezes
 Authorised by: The S&P 400's and 600's quality rules are frozen at their starting settings on the operator's answer, as the S&P 500's was
 Was:

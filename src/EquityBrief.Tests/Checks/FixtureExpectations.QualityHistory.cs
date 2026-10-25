@@ -226,11 +226,14 @@ public partial class FixtureExpectations
     // reader shown to find a source a rule pins. From 22.11 the quality rules pin their family's rule, being rules of it,
     // and no rule registered before them did.
     // see: A quality rule is registered as the family on its index and kept by the family's own step alone
+    // From 22.3 the dip's rules pin the sweep's history reader its step's members are read through, being registered
+    // after the deeper pull, and no rule registered before them did.
+    // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
     [Fact]
     public void NoSourceARulesVersionPinsIsOneTheMonthsFloorsAndTheDeeperPullWrite()
     {
         var pinned = EquityBrief.Core.Candidates.CandidateEvaluators.All
-            .Where(evaluator => evaluator is not EquityBrief.Core.Candidates.QualityCandidate)
+            .Where(evaluator => evaluator is not (EquityBrief.Core.Candidates.QualityCandidate or EquityBrief.Core.Candidates.DipCandidate))
             .SelectMany(evaluator => evaluator.OwnSources)
             .Concat(EquityBrief.Core.Candidates.CandidateEvaluator.EvaluationSources)
             .Concat(RuleHooks.Sources)

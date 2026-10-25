@@ -230,7 +230,7 @@ public partial class ReadSurface
             Regex.Matches(Assert.Single(Blocks(picks, "<nav class=\"universe-filters picks-filters picks-setups\".*?</nav>")), "data-filter=\"setup\"[^>]*href=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
         Assert.Contains("<td class=\"setup\" data-setup=\"dip\">Short-term dip · S&P 400</td>", Assert.Single(Blocks(picks, "<tr data-ticker=\"M2\" data-index=\"S&P 400\" data-family=\"dip\".*?</tr>")), StringComparison.Ordinal);
         Assert.Contains("data-ended=\"2026-09-30\"", Assert.Single(Blocks(picks, "<tr data-ticker=\"M1\" data-index=\"S&P 400\" data-family=\"dip\".*?</tr>")), StringComparison.Ordinal);
-        Assert.Contains("A short-term dip trade is bought at the open of the session after the night that listed it and sold at the open after the first close above its 5-session average of closes or under its stop", picks, StringComparison.Ordinal);
+        Assert.Contains("A short-term dip trade is bought at the open of the session after the night that listed it and sold at the open after its exit's close or one under its stop, or at the close of its last session where neither came; its exit is the first close above its 5-session average of closes on the provisional settings", picks, StringComparison.Ordinal);
 
         // The dip chosen keeps its trades alone, the count saying how many of the index's are shown.
         var dipsOnly = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks?universe=400&setup=dip"));

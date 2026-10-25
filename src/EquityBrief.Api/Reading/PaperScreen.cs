@@ -165,8 +165,48 @@ public static class PaperScreen
         var accounts = new List<PaperAccountSource>();
         var replayed = large ? replays ?? [] : [];
 
-        foreach (var family in SetupFamilies.Order)
+        foreach (var family in SetupFamilies.PageOrder)
         {
+            // From 22.3 the short-term dip's in the page's order, after the swing families' and before the sector
+            // heavyweights': its live rule's trades from its freeze, or the provisional rule's from its first, and each
+            // version's beside it, named by what it changes.
+            // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
+            if (family == DipRule.Name)
+            {
+                var (liveDip, versions) = RuleScreen.Accounts(family, large, indexName, register, night, null, asOf);
+                var dipChips = liveDip is not null
+                    ? RuleScreen.ChipsOf(liveDip)
+                    : [.. DipRule.Provisional.KeyedChipsOn(EquityBrief.Web.App.Universes.Offered.FirstOrDefault(universe => universe.Name == indexName)?.Code ?? EquityBrief.Web.App.Universes.Large.Code).Select(chip => new RuleChip(chip.Key, chip.Words))];
+                var dipHead = new PaperAccountSource(
+                    ListKey(family),
+                    family,
+                    liveDip is not null ? PaperAccountView.Live : PaperAccountView.Provisional,
+                    liveDip is not null ? "Live" : "Provisional",
+                    liveDip?.Candidate ?? SetupFamilies.Dips.Label + ", the page's list on provisional settings",
+                    null,
+                    false,
+                    [],
+                    null,
+                    liveDip?.Candidate ?? ReadApi.PageList + " " + family,
+                    Short: liveDip is not null ? "Live rule" : "Provisional rule",
+                    Changes: dipChips.Count > 0 ? string.Join(TabJoint, dipChips.Select(chip => chip.Words)) : null);
+                var dipRegistrations = RuleScreen.Registrations(family, large, indexName, register);
+
+                dipHead = dipHead with { Unfilled = Unfilled(rows.Where(dipHead.Keeps)) };
+                accounts.Add(liveDip is not null
+                    ? Started(dipHead, Of(rows.Where(dipHead.Keeps)), liveDip, [], [.. dipRegistrations.Where(row => FamilyRecords.IsLive(row.Candidate))])
+                    : dipHead with { Trades = Of(rows.Where(dipHead.Keeps)), Since = rows.Where(dipHead.Keeps).Select(row => (DateOnly?)row.Bought).Min(), Version = ProvisionalVersion, Earlier = [] });
+
+                foreach (var (row, tab) in versions)
+                {
+                    var version = new PaperAccountSource(RunScreen.Slug(row.Candidate), family, PaperAccountView.Variant, tab, row.Candidate, row.Candidate, false, [], null, row.Candidate, Short: TabShort(tab), Changes: TabChanges(tab));
+
+                    accounts.Add(Started(version with { Unfilled = Unfilled(rows.Where(version.Keeps)) }, Of(rows.Where(version.Keeps)), row, [], [.. dipRegistrations.Where(one => one.Candidate == row.Candidate)]));
+                }
+
+                continue;
+            }
+
             var (live, variants) = RuleScreen.Accounts(family, large, indexName, register, night, large ? null : provisional, asOf);
             var book = family == HeavyweightRule.Name;
             var pageList = large && SetupFamilies.InPageOrder.Any(swing => swing.Name == family);

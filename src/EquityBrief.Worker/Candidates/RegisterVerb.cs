@@ -204,6 +204,23 @@ public static class RegisterVerb
                     : await Said(await registrar.RegisterTogetherAsync(frozen, runId), output, error);
             }
 
+            // From 22.3 the short-term dip on any index: its live rule and the versions given, each one of its one-step
+            // neighbours on its sweep's grid or its market variant, and no rule kept in the background.
+            // see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
+            if (Given(IndexFamily) == Core.Families.DipRule.Name)
+            {
+                if (VerbArguments.Value(args, Replacing) is not null)
+                {
+                    return await RefusedAsync(registrar, runId, "a dip freeze keeps no rule in the background, so it takes no --replacing, and nothing was written.", error);
+                }
+
+                var (dips, refusedDips) = Dips.DipRules.Freeze(Given("--index"), live, variants, await registrar.RowsAsync(), at);
+
+                return dips is null
+                    ? await RefusedAsync(registrar, runId, refusedDips!, error)
+                    : await Said(await registrar.RegisterTogetherAsync(dips, runId), output, error);
+            }
+
             var (registrations, refused) = Indices.IndexRules.Freeze(Given(IndexFamily), Given("--index"), live, variants, await registrar.RowsAsync(), at, VerbArguments.Value(args, Replacing));
 
             return registrations is null

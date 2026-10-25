@@ -1,0 +1,14 @@
+# The remedy of 22.3, the short-term dip's freezes, as its PROGRESS entry prints it, on the operator's rulings and
+# answers of 2026-10-25. On each index the answer the 22.2 run states is recorded with its tester's verdict, the run whose
+# setting the freeze fixes, so the frozen card draws the figures its freeze followed; then the family is frozen at that
+# setting, the S&P 600's with the drop's volume level its second stage crossed, with every one-step neighbour meeting the
+# floors over the prices pulled from 2015-10-01 and the market variant as versions, at one instant an index: five rules on
+# the S&P 500, four on the S&P 400 and five on the S&P 600. No request to the provider, none to the SEC and no model
+# call. Run from main after the merge and before the night, when no night, local run, drain, labeller, history read,
+# ledger build or monthly run is writing, read the output for "remedy done", and restart the read surface after it.
+sweep-answer --run 20261024T060554Z --tester 20261024T060655Z
+register --index-family dip --index GSPC --parameters drop=-3,trend=50,exit=65,limit=10,stop=3,market=6,volume=0 --variants "drop=-3,trend=200,exit=65,limit=10,stop=3,market=6,volume=0;drop=-3,trend=50,exit=65,limit=7,stop=3,market=6,volume=0;drop=-3,trend=50,exit=65,limit=10,stop=4,market=6,volume=0;drop=-3,trend=50,exit=65,limit=10,stop=3,market=0,volume=0"
+sweep-answer --run 20261024T060843Z --tester 20261024T060946Z
+register --index-family dip --index MID --parameters drop=-3,trend=50,exit=65,limit=5,stop=3,market=5,volume=0 --variants "drop=-3,trend=200,exit=65,limit=5,stop=3,market=5,volume=0;drop=-3,trend=50,exit=65,limit=5,stop=4,market=5,volume=0;drop=-3,trend=50,exit=65,limit=5,stop=3,market=0,volume=0"
+sweep-answer --run 20261024T061128Z --tester 20261024T061254Z
+register --index-family dip --index SML --parameters drop=-3,trend=200,exit=65,limit=7,stop=3,market=1,volume=1.5 --variants "drop=-3,trend=200,exit=5,limit=7,stop=3,market=1,volume=1.5;drop=-3,trend=50,exit=65,limit=7,stop=3,market=1,volume=1.5;drop=-3,trend=200,exit=65,limit=5,stop=3,market=1,volume=1.5;drop=-3,trend=200,exit=65,limit=7,stop=3,market=0,volume=1.5"

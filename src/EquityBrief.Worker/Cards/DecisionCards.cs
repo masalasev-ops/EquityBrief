@@ -60,6 +60,7 @@ public sealed class DecisionCards : IComponent
             new StoreTouch(Store.IndexFamilyNight, Touch.Read),
             new StoreTouch(Store.IndexFamilyResult, Touch.Read),
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
+            new StoreTouch(Store.DipNight, Touch.Read),
             new StoreTouch(Store.DipResult, Touch.Read),
             new StoreTouch(Store.DipPick, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
@@ -123,6 +124,8 @@ public sealed class DecisionCards : IComponent
     ";
 
     const string DipRow = "SELECT entry, stop, time_limit, rsi, gates FROM dip_result WHERE index_code = $index AND session_date = $night AND ticker = $ticker;";
+
+    const string DipSettingsOn = "SELECT settings FROM dip_night WHERE index_code = $index AND session_date = $night;";
 
     const string LargeHeavyweights = @"
         SELECT ticker, sector, entry_close FROM heavyweight_holding
@@ -1007,19 +1010,29 @@ public sealed class DecisionCards : IComponent
 
     // A dip pick's plan as its step stored it: bought on the listing close's plan at the next open, its stop that many
     // typical moves under, no target, held to its time limit; and the gates its rule reads, in its own words, the report's
-    // naming the next date on file or saying the stored calendar holds none.
+    // naming the next date on file or saying the stored calendar holds none. From 22.3 the rule is the one the night's
+    // settings name, its card's, the provisional rule's where none is named.
+    // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
     static async Task<Plan> DipPlanAsync(SqliteConnection connection, SqliteTransaction transaction, string index, Pick pick, DateOnly night, CancellationToken cancellation)
     {
-        var setting = DipRule.Provisional;
+        var (rule, setting) = await DipSettingAsync(connection, transaction, index, night, cancellation);
 
         IReadOnlyList<string> Gates(string? next) =>
         [
             "floors, those the index families read on its index",
-            FormattableString.Invariant($"trend, the close above its {DipRule.TrendSessions}-session average"),
-            FormattableString.Invariant($"drop, its {DipRule.RsiSessions}-session RSI under {setting.RsiUnder:0.##}"),
+            FormattableString.Invariant($"trend, the close above its {DipRule.TrendSessions}-session average")
+                + (setting.FiftyOverLong ? FormattableString.Invariant($" with its {DipRule.FiftySessions}-session average above that") : string.Empty),
+            setting.FallMoves is { } fall
+                ? FormattableString.Invariant($"drop, a fall of at least {fall:0.##} typical moves over its {DipRule.DropFallSessions} sessions")
+                : FormattableString.Invariant($"drop, its {DipRule.RsiSessions}-session RSI under {setting.RsiUnder:0.##}"),
+            .. setting.VolumeUnder is { } volume
+                ? [FormattableString.Invariant($"drop's volume, its mean under {volume:0.##} times its {DipRule.VolumeSessions}-session average")]
+                : Array.Empty<string>(),
             FormattableString.Invariant($"report, none on the {setting.DropSessions} sessions to the listing nor due before its {setting.TimeLimit} sessions end")
                 + (next is null or DipRule.NoReportOnFile ? ", no report on file in the stored calendar" : $", the next on file on {next}"),
-            "market, its own setting, none while it is provisional",
+            setting.Market != DipRule.MarketOff
+                ? "market, its own setting, " + DipRule.MarketWordsOn(index, setting.Market)
+                : rule == Dips.DipFamily.ProvisionalRule ? "market, its own setting, none while it is provisional" : "market, its own setting, none",
         ];
 
         await using var command = Command(connection, transaction, DipRow, [("$index", index), ("$night", Stamp(night)), ("$ticker", pick.Ticker)]);
@@ -1033,6 +1046,31 @@ public sealed class DecisionCards : IComponent
         var next = FamilyRule.GatesOf(reader.GetString(4)).FirstOrDefault(gate => gate.Name == DipRule.ReportGate)?.Values.GetValueOrDefault("next");
 
         return new Plan(MoneyOrNone(reader, 0), MoneyOrNone(reader, 1), null, reader.IsDBNull(2) ? null : reader.GetInt32(2), Gates(next));
+    }
+
+    // The rule a dip night was drawn by on an index and its setting, as the night's settings state them; the provisional
+    // rule's where the night stored none it can read.
+    static async Task<(string Rule, DipSetting Setting)> DipSettingAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, CancellationToken cancellation)
+    {
+        await using var command = Command(connection, transaction, DipSettingsOn, [("$index", index), ("$night", Stamp(night))]);
+
+        if (await command.ExecuteScalarAsync(cancellation) is not string stored)
+        {
+            return (Dips.DipFamily.ProvisionalRule, DipRule.Provisional);
+        }
+
+        try
+        {
+            using var read = JsonDocument.Parse(stored);
+            var root = read.RootElement;
+            var rule = root.TryGetProperty("rule", out var named) && named.GetString() is { } name ? name : Dips.DipFamily.ProvisionalRule;
+
+            return (rule, root.TryGetProperty("setting", out var shortForm) && shortForm.GetString() is { } stated && DipSetting.FromShort(stated) is { } setting ? setting : DipRule.Provisional);
+        }
+        catch (JsonException)
+        {
+            return (Dips.DipFamily.ProvisionalRule, DipRule.Provisional);
+        }
     }
 
     // An S&P 400 or 600 pick's plan off its index's row, and its gates as the night's settings state its rule: the floors,

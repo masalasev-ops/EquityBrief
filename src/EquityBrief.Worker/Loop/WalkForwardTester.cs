@@ -495,6 +495,17 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         var qualityLay = ReadsQuality(standingRules, index)
             ? await QualityLay.ReadAsync(read, history, through, output.WriteLine, cancellation)
             : null;
+
+        // From 22.3 the short-term dip's history as its sweep reads it, the S&P 500's members beside an S&P 400's or 600's
+        // for the S&P 500's breadth and the index's own fund and the VIX for its market setting, only where a rule of the
+        // family stands on the index.
+        // see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
+        var dipRead = ReadsDip(standingRules, index)
+            ? IndexSweepRunner.DipRead.Of(
+                read,
+                large ? inputs : await history.ReadAsync(through, null, cancellation),
+                await history.SeriesOfAsync([IndexSweepRunner.DipFund(index), MarketCloses.Vix], through, cancellation))
+            : null;
         var rules = RuleTests.Walk(new RuleTestInputs(
             read,
             standingRules,
@@ -507,7 +518,8 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             output.WriteLine,
             pullbacks,
             await TonesAsync(read, cancellation),
-            qualityLay));
+            qualityLay,
+            dipRead));
         var tested = RuleTests.Judge(read, rules);
         var runId = FormattableString.Invariant($"{RulesVerb}-{index}-{started:yyyyMMddTHHmmssZ}");
 
@@ -552,6 +564,12 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     // see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions
     public static bool ReadsQuality(IReadOnlyList<Core.Candidates.RegisterRow> standing, string index) =>
         standing.Any(row => Core.Candidates.CandidateEvaluators.Find(row.Evaluator) is Core.Candidates.QualityCandidate rule && rule.Index == index);
+
+    // From 22.3 whether a run reads the short-term dip's history on an index: only where a rule of the family stands on it
+    // when the run begins, so the monthly run reads the family from its next run after a freeze.
+    // see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
+    public static bool ReadsDip(IReadOnlyList<Core.Candidates.RegisterRow> standing, string index) =>
+        standing.Any(row => Core.Candidates.CandidateEvaluators.Find(row.Evaluator) is Core.Candidates.DipCandidate rule && rule.Index == index);
 
     // A rule's line for the console.
     public static string RuleLine(RuleTested one) =>

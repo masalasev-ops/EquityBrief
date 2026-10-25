@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Bars;
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
@@ -17,10 +18,11 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Dips;
 
-// What the dip's step did on one index: the members it read, how many passed, how many it listed, how many it held
-// back for a trade still open or for a stock another family listed that night, the trades it kept and ended, or the
-// failure that stopped its part.
-public sealed record DipIndexOutcome(string Index, int Members, int Passed, int Listed, int HeldByATrade, int UnderAnother, int TradesKept, int TradesEnded, string? Fault = null);
+// What the dip's step did on one index for the rule its card draws: the members it read, how many passed, how many it
+// listed, how many it held back for a trade still open or for a stock another family listed that night, the trades it
+// kept and ended, or the failure that stopped its part; and from 22.3 the rules it kept on the index, the live rule and
+// its versions where a freeze stands.
+public sealed record DipIndexOutcome(string Index, int Members, int Passed, int Listed, int HeldByATrade, int UnderAnother, int TradesKept, int TradesEnded, string? Fault = null, int Rules = 1);
 
 // What the dip's step did on the night, an index at a time.
 public sealed record DipOutcome(DateOnly? Night, IReadOnlyList<DipIndexOutcome> Indices);
@@ -30,16 +32,22 @@ public sealed record DipOutcome(DateOnly? Night, IReadOnlyList<DipIndexOutcome> 
 // values that decided it, the family's list drawn last among the swing families, its trades kept and each open one
 // walked to its exit at the next open. It reads the members and their stored year with its own loader, none of the
 // history pulled before the year, and every other family's list and open trades through their own readers, and
-// writes only its own tables, so no other family's code, list or row moves. Each index's part is one transaction, so a
-// failure in it leaves none of its writes and is named on its row while the other indices go on.
+// writes only its own tables, so no other family's code, list or row moves. From 22.3 it keeps every rule of the
+// family standing registered on an index when the night started, the live rule first: the live rule's answers, list,
+// night and trades as the card draws them, and each version's trades under its own name beside them, each at its
+// registration's setting with its market setting read at its level on the night, a rule whose evaluator moved named
+// and not kept; the provisional rule only where none stands. Each index's part is one transaction, so a failure in it
+// leaves none of its writes and is named on its row while the other indices go on.
 // see: The short-term dip buys a stock in an uptrend after a sharp drop no report caused and sells the bounce within days
 // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
 // see: The dip buys at the next session's open and sells at the next open after its exit's close or its stop's, and at its last session's close
+// see: A dip rule is registered as the family on its index and kept by the dip's own step alone
 public sealed class DipFamily : IComponent
 {
     // The members and their stored year through its own loader, which series are marked suspect, the other families'
     // lists and open trades through their own readers, the company's value for a trade's cost, and its own four tables,
-    // which it alone writes.
+    // which it alone writes; and from 22.3 the register its rules stand in, the S&P 500's breadth the market reading
+    // stored and the market series a market setting reads.
     public static ComponentAccess Access => new(
         Stores:
         [
@@ -55,6 +63,9 @@ public sealed class DipFamily : IComponent
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
             new StoreTouch(Store.IndexFamilyTrade, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
+            new StoreTouch(Store.CandidateRegister, Touch.Read),
+            new StoreTouch(Store.MarketReading, Touch.Read),
+            new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.DipNight, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.DipResult, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.DipPick, Touch.Insert | Touch.Delete),
@@ -72,16 +83,25 @@ public sealed class DipFamily : IComponent
     // The rule a trade on the page's list is kept under before a freeze registers one.
     public const string ProvisionalRule = "provisional";
 
+    // Why a registered rule was not kept on a night: its evaluator's code moved since it was registered.
+    public const string Moved = "its evaluator's code moved since it was registered, so it is kept no further until it is registered again";
+
     // The indices the step reads, in the page's order of indices.
     public static IReadOnlyList<string> AllIndices { get; } = [IndexFamilies.LargeIndex, .. IndexFamilies.Indices];
 
     const string NewestSession = "SELECT MAX(session_date) FROM bar;";
 
+    const string ReadRegister = @"
+        SELECT id, candidate, rule, test, evaluator, parameters, evaluator_version, event, retires, registered_at, evidence
+        FROM candidate_register
+        ORDER BY id;
+    ";
+
     const string ClearTheNight = @"
         DELETE FROM dip_night WHERE index_code = $index AND session_date = $night;
         DELETE FROM dip_result WHERE index_code = $index AND session_date = $night;
         DELETE FROM dip_pick WHERE index_code = $index AND session_date = $night;
-        DELETE FROM dip_trade WHERE rule = $rule AND index_code = $index AND session_date = $night;
+        DELETE FROM dip_trade WHERE rule IN (SELECT value FROM json_each($rules)) AND index_code = $index AND session_date = $night;
     ";
 
     const string InsertNight = @"
@@ -121,11 +141,12 @@ public sealed class DipFamily : IComponent
         WHERE rule = $rule AND index_code = $index AND ticker = $ticker AND session_date = $session;
     ";
 
-    // Every trade the dip's page lists keep on any index that has not ended before the night, which its own list reads to
-    // hold a stock back, since a stock is free the night after its trade ends.
+    // Every trade a set of the dip's rules keeps on any index that has not ended before the night, which a rule's own
+    // list reads to hold a stock back, since a stock is free the night after its trade ends: the page's lists' on every
+    // index for the rules the cards draw, and a version's own for a version.
     const string DipTradesHeld = @"
         SELECT index_code, ticker, session_date, ended_on FROM dip_trade
-        WHERE rule = $rule AND session_date < $night AND (ended_on IS NULL OR ended_on >= $night)
+        WHERE rule IN (SELECT value FROM json_each($rules)) AND session_date < $night AND (ended_on IS NULL OR ended_on >= $night)
         ORDER BY session_date DESC;
     ";
 
@@ -166,6 +187,12 @@ public sealed class DipFamily : IComponent
 
     const string ValueOn = "SELECT company_value FROM member_reading WHERE index_code = $index AND session_date = $session AND ticker = $ticker;";
 
+    // From 22.3 what a market setting reads on the night: the S&P 500's breadth its market reading stored, and a market
+    // series' closes to the night, the index's own giving the exchange's sessions a fund's and the VIX's are read on.
+    const string LargeBreadthOn = "SELECT breadth FROM market_reading WHERE session_date = $night;";
+
+    const string SeriesCloses = "SELECT session_date, close FROM market_bar WHERE series = $series AND session_date <= $night ORDER BY session_date;";
+
     const string AppendRun = @"
         INSERT INTO run_log (
             run_id, stage, started_at, ended_at, outcome,
@@ -184,9 +211,30 @@ public sealed class DipFamily : IComponent
         this.databaseFile = databaseFile;
     }
 
+    // The rules the step keeps on an index on the night: where a rule of the family stands registered on it, every rule
+    // of the family standing at the instant the night reads the register at, the live rule first and the versions in the
+    // order they were registered, each at its registration's setting and one whose evaluator moved since named as not
+    // kept; and otherwise the provisional rule at the provisional setting.
+    // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
+    public static IReadOnlyList<(string Rule, DipSetting Setting, string? Fault)> RulesOn(string index, IReadOnlyList<RegisterRow> register, DateTimeOffset standingAt)
+    {
+        var family = ShadowColumn.StandingAt(register, standingAt)
+            .Where(row => CandidateEvaluators.Find(row.Evaluator) is DipCandidate rule && rule.Index == index)
+            .OrderBy(row => FamilyRecords.IsLive(row.Candidate) ? 0 : 1)
+            .ThenBy(row => row.Id)
+            .ToArray();
+
+        return family.Length == 0
+            ? [(ProvisionalRule, DipRule.Provisional, null)]
+            : [.. family.Select(row => CandidateEvaluators.Find(row.Evaluator) is DipCandidate rule
+                ? (row.Candidate, rule.SettingOf(CandidateEvaluator.Read(row.Parameters)), rule.Version == row.EvaluatorVersion ? (string?)null : Moved)
+                : (row.Candidate, DipRule.Provisional, Moved))];
+    }
+
     // The step over the three indices, each index's failure named on its own row while the others go on, and a failure
-    // outside every index's part named on the step's row: the dip never stops the night.
-    public async Task<DipOutcome> RunAsync(string runId, CancellationToken cancellation = default)
+    // outside every index's part named on the step's row: the dip never stops the night. The register is read at the
+    // instant given, the night's start or the instant a night run again names, and as it stands where none is given.
+    public async Task<DipOutcome> RunAsync(string runId, CancellationToken cancellation = default, DateTimeOffset? registerAt = null)
     {
         var startedAt = clock.UtcNow;
         var outcomes = new List<DipIndexOutcome>();
@@ -206,6 +254,11 @@ public sealed class DipFamily : IComponent
             }
 
             var night = Date(newest);
+            var register = await RegisterAsync(connection, cancellation);
+            var rulesOf = AllIndices.ToDictionary(index => index, index => RulesOn(index, register, registerAt ?? startedAt), StringComparer.Ordinal);
+
+            // The rules the cards draw on every index, whose trades on any index hold a stock back from the page's lists.
+            var cardRules = AllIndices.Select(index => rulesOf[index][0].Rule).Distinct(StringComparer.Ordinal).ToArray();
 
             read = night;
 
@@ -213,7 +266,7 @@ public sealed class DipFamily : IComponent
             {
                 try
                 {
-                    var (outcome, written) = await IndexNightAsync(connection, index, night, cancellation);
+                    var (outcome, written) = await IndexNightAsync(connection, index, night, rulesOf[index], cardRules, cancellation);
 
                     outcomes.Add(outcome);
                     rows += written;
@@ -221,9 +274,10 @@ public sealed class DipFamily : IComponent
                 catch (Exception failure) when (!cancellation.IsCancellationRequested)
                 {
                     var fault = IndexFamilies.Cause(failure);
+                    var (card, setting, _) = rulesOf[index][0];
 
-                    rows += await NotComputedAsync(connection, index, night, fault, cancellation);
-                    outcomes.Add(new DipIndexOutcome(index, 0, 0, 0, 0, 0, 0, 0, fault));
+                    rows += await NotComputedAsync(connection, index, night, fault, card, setting, cancellation);
+                    outcomes.Add(new DipIndexOutcome(index, 0, 0, 0, 0, 0, 0, 0, fault, rulesOf[index].Count));
                 }
             }
 
@@ -266,21 +320,34 @@ public sealed class DipFamily : IComponent
         string.Join("; ", outcomes.Select(outcome => outcome.Fault is { } fault
             ? $"{outcome.Index}: not computed tonight, {fault}"
             : FormattableString.Invariant(
-                $"{outcome.Index}: {outcome.Members} member(s) read, {outcome.Passed} passed, {outcome.Listed} listed, {outcome.HeldByATrade} held back by a trade still open, {outcome.UnderAnother} listed under another family, {outcome.TradesKept} trade(s) kept, {outcome.TradesEnded} ended")));
+                $"{outcome.Index}: {outcome.Members} member(s) read, {outcome.Passed} passed, {outcome.Listed} listed, {outcome.HeldByATrade} held back by a trade still open, {outcome.UnderAnother} listed under another family, {outcome.TradesKept} trade(s) kept, {outcome.TradesEnded} ended{(outcome.Rules > 1 ? FormattableString.Invariant($", {outcome.Rules} rules kept") : string.Empty)}")));
 
-    // The settings the night read the dip by on an index, the words its card states the rule in.
-    public static string Settings(DipSetting setting) => JsonSerializer.Serialize(new
+    // The settings the night read the dip by on an index, the rule its card draws and the words its card states the rule
+    // in, its market setting in the index's words.
+    public static string Settings(DipSetting setting, string rule = ProvisionalRule, string? index = null) => JsonSerializer.Serialize(new
     {
-        rule = ProvisionalRule,
+        rule,
         setting = setting.Short,
-        words = setting.Words,
+        words = setting.WordsOn(index),
         floors = "the price and dollar volume floors the index families read",
     });
 
-    // One index's part of the night: its members' answers, its list, its trades walked and kept, in one transaction.
-    async Task<(DipIndexOutcome Outcome, int Rows)> IndexNightAsync(SqliteConnection connection, string index, DateOnly night, CancellationToken cancellation)
+    // What a market setting reads on an index on the night, read once for every rule: the S&P 500's breadth, and the
+    // exchange's sessions to the night with the index's own fund's and the VIX's closes on them.
+    sealed record MarketInputs(double? LargeBreadth, IReadOnlyList<DateOnly> Calendar, IReadOnlyList<(DateOnly Session, double Close)> Fund, IReadOnlyList<(DateOnly Session, double Close)> Vix);
+
+    // One index's part of the night: what every rule reads read once, then every rule's answers, its list held back by
+    // every other family's list and open trade and by its own, the card's rule's answers, list and night stored and every
+    // rule's trades kept, in one transaction. A rule whose evaluator moved is not kept, and where the card's rule's moved
+    // its night names why. Its outcome is the card's rule's, with the rules kept beside it counted.
+    async Task<(DipIndexOutcome Outcome, int Rows)> IndexNightAsync(
+        SqliteConnection connection,
+        string index,
+        DateOnly night,
+        IReadOnlyList<(string Rule, DipSetting Setting, string? Fault)> rules,
+        IReadOnlyList<string> cardRules,
+        CancellationToken cancellation)
     {
-        var setting = DipRule.Provisional;
         var names = await NamesAsync(connection, index, night, cancellation);
         var inputs = IndexNightRead.Prepare(index, night, names, new Dictionary<string, IReadOnlyList<FiledIncome>>(StringComparer.Ordinal));
         var suspects = new HashSet<string>(StringComparer.Ordinal);
@@ -290,23 +357,31 @@ public sealed class DipFamily : IComponent
             suspects.Add(row.GetString(0));
         }
 
-        var answers = inputs is null ? [] : Answers(inputs, setting, suspects);
-        var ranked = DipRule.Ranked(answers);
-        var tickers = ranked.Select(answer => answer.Ticker).ToArray();
+        var market = rules.Any(rule => rule.Setting.Market != DipRule.MarketOff) ? await MarketAsync(connection, index, night, cancellation) : null;
+        var read = rules
+            .Select(rule =>
+            {
+                var gate = MarketGateOn(index, rule.Setting.Market, inputs, market, night);
+                var answers = inputs is null || rule.Fault is not null ? [] : Answers(inputs, rule.Setting, suspects, gate);
+
+                return (rule.Rule, rule.Setting, rule.Fault, Gate: gate, Answers: answers, Ranked: DipRule.Ranked(answers));
+            })
+            .ToArray();
+        var tickers = read.SelectMany(rule => rule.Ranked).Select(answer => answer.Ticker).Distinct(StringComparer.Ordinal).ToArray();
 
         // Every trade a stock still holds on any card of any index: the S&P 500's own lists', the index families' lists',
         // and the dip's own on every index, read after tonight's walk so a trade it ends before the night frees its stock.
         var (indexTrades, heldIn) = await IndexFamilies.OpenIndexTradesAsync(connection, night, tickers, cancellation);
-        var open = new Dictionary<string, (HeldTrade Trade, string Index)>(StringComparer.Ordinal);
+        var others = new Dictionary<string, (HeldTrade Trade, string Index)>(StringComparer.Ordinal);
 
         foreach (var (ticker, held) in await FamilyLister.OpenTradesAsync(connection, night, tickers, cancellation))
         {
-            open.TryAdd(ticker, (held, IndexFamilies.LargeIndex));
+            others.TryAdd(ticker, (held, IndexFamilies.LargeIndex));
         }
 
         foreach (var (ticker, held) in indexTrades)
         {
-            open.TryAdd(ticker, (held, heldIn[ticker]));
+            others.TryAdd(ticker, (held, heldIn[ticker]));
         }
 
         var listedTonight = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -318,73 +393,194 @@ public sealed class DipFamily : IComponent
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
-        await ExecuteAsync(connection, transaction, ClearTheNight, [("$index", index), ("$night", Stamp(night)), ("$rule", ProvisionalRule)], cancellation);
+        await ExecuteAsync(connection, transaction, ClearTheNight, [("$index", index), ("$night", Stamp(night)), ("$rules", JsonSerializer.Serialize(rules.Select(rule => rule.Rule)))], cancellation);
 
         var ended = await WalkAsync(connection, transaction, index, night, inputs?.Calendar ?? [], cancellation);
+        DipIndexOutcome? card = null;
+        var written = ended;
 
-        await foreach (var row in RowsAsync(connection, transaction, DipTradesHeld, [("$rule", ProvisionalRule), ("$night", Stamp(night))], cancellation))
+        foreach (var (rule, setting, fault, gate, answers, ranked) in read)
         {
-            open.TryAdd(row.GetString(1), (new HeldTrade(DipRule.Name, Date(row.GetString(2))), row.GetString(0)));
-        }
+            var first = card is null;
 
-        var picks = Draw(ranked, open, listedTonight);
-        var places = ranked.Select((answer, place) => (answer.Ticker, Place: place + 1)).ToDictionary(pair => pair.Ticker, pair => pair.Place, StringComparer.Ordinal);
-
-        await ExecuteAsync(connection, transaction, InsertNight,
-        [
-            ("$index", index), ("$night", Stamp(night)), ("$members", answers.Count), ("$market", setting.Market), ("$open", 1),
-            ("$settings", Settings(setting)), ("$passed", ranked.Count), ("$listed", picks.Count(pick => pick.State == FamilyList.Listed)),
-        ], cancellation);
-
-        foreach (var answer in answers)
-        {
-            await ExecuteAsync(connection, transaction, InsertResult,
-            [
-                ("$index", index), ("$night", Stamp(night)), ("$ticker", answer.Ticker), ("$passed", answer.Passed ? 1 : 0),
-                ("$place", places.TryGetValue(answer.Ticker, out var place) ? place : DBNull.Value),
-                ("$entry", Stored(answer.Entry)), ("$stop", Stored(answer.Stop)), ("$time_limit", (object?)answer.TimeLimit ?? DBNull.Value),
-                ("$rsi", (object?)answer.Rsi ?? DBNull.Value), ("$reason", (object?)answer.Reason ?? DBNull.Value), ("$gates", FamilyRule.GatesJson(answer.Gates)),
-            ], cancellation);
-        }
-
-        var kept = 0;
-        var byTicker = ranked.ToDictionary(answer => answer.Ticker, StringComparer.Ordinal);
-
-        foreach (var pick in picks)
-        {
-            await ExecuteAsync(connection, transaction, InsertPick,
-            [
-                ("$index", index), ("$night", Stamp(night)), ("$ticker", pick.Ticker), ("$state", pick.State),
-                ("$place", (object?)pick.Place ?? DBNull.Value), ("$listed_under", (object?)pick.ListedUnder ?? DBNull.Value),
-                ("$held_index", (object?)pick.HeldIndex ?? DBNull.Value), ("$held_family", (object?)pick.HeldBy?.Family ?? DBNull.Value),
-                ("$held_night", pick.HeldBy is { } held ? Stamp(held.Listed) : DBNull.Value),
-            ], cancellation);
-
-            if (pick.State == FamilyList.Listed && byTicker[pick.Ticker] is { Entry: { } entry, Stop: { } stop, TimeLimit: { } limit })
+            if (fault is not null)
             {
-                kept++;
-                await ExecuteAsync(connection, transaction, InsertTrade,
-                [
-                    ("$rule", ProvisionalRule), ("$index", index), ("$ticker", pick.Ticker), ("$night", Stamp(night)), ("$place", pick.Place!.Value),
-                    ("$entry", Money.ToStorage(entry)), ("$stop", Money.ToStorage(stop)), ("$time_limit", limit), ("$exit_average", setting.ExitAverage),
-                    ("$risk_moves", setting.StopMoves),
-                ], cancellation);
+                if (first)
+                {
+                    await ExecuteAsync(connection, transaction, InsertNotComputed,
+                    [
+                        ("$index", index), ("$night", Stamp(night)), ("$market", setting.Market), ("$settings", Settings(setting, rule, index)), ("$fault", fault),
+                    ], cancellation);
+                    card = new DipIndexOutcome(index, 0, 0, 0, 0, 0, 0, ended, fault, rules.Count);
+                    written++;
+                }
+
+                continue;
             }
+
+            // The card's rule gives way to the page's lists' trades on every index, and a version to its own trades alone,
+            // both to every other family's list and open trade.
+            var open = new Dictionary<string, (HeldTrade Trade, string Index)>(others, StringComparer.Ordinal);
+
+            await foreach (var row in RowsAsync(connection, transaction, DipTradesHeld, [("$rules", JsonSerializer.Serialize(first ? cardRules : [rule])), ("$night", Stamp(night))], cancellation))
+            {
+                open.TryAdd(row.GetString(1), (new HeldTrade(DipRule.Name, Date(row.GetString(2))), row.GetString(0)));
+            }
+
+            var picks = Draw(ranked, open, listedTonight);
+            var byTicker = ranked.ToDictionary(answer => answer.Ticker, StringComparer.Ordinal);
+            var kept = 0;
+
+            if (first)
+            {
+                var places = ranked.Select((answer, place) => (answer.Ticker, Place: place + 1)).ToDictionary(pair => pair.Ticker, pair => pair.Place, StringComparer.Ordinal);
+
+                await ExecuteAsync(connection, transaction, InsertNight,
+                [
+                    ("$index", index), ("$night", Stamp(night)), ("$members", answers.Count), ("$market", setting.Market), ("$open", gate.Passed ? 1 : 0),
+                    ("$settings", Settings(setting, rule, index)), ("$passed", ranked.Count), ("$listed", picks.Count(pick => pick.State == FamilyList.Listed)),
+                ], cancellation);
+
+                foreach (var answer in answers)
+                {
+                    await ExecuteAsync(connection, transaction, InsertResult,
+                    [
+                        ("$index", index), ("$night", Stamp(night)), ("$ticker", answer.Ticker), ("$passed", answer.Passed ? 1 : 0),
+                        ("$place", places.TryGetValue(answer.Ticker, out var place) ? place : DBNull.Value),
+                        ("$entry", Stored(answer.Entry)), ("$stop", Stored(answer.Stop)), ("$time_limit", (object?)answer.TimeLimit ?? DBNull.Value),
+                        ("$rsi", (object?)answer.Rsi ?? DBNull.Value), ("$reason", (object?)answer.Reason ?? DBNull.Value), ("$gates", FamilyRule.GatesJson(answer.Gates)),
+                    ], cancellation);
+                }
+
+                foreach (var pick in picks)
+                {
+                    await ExecuteAsync(connection, transaction, InsertPick,
+                    [
+                        ("$index", index), ("$night", Stamp(night)), ("$ticker", pick.Ticker), ("$state", pick.State),
+                        ("$place", (object?)pick.Place ?? DBNull.Value), ("$listed_under", (object?)pick.ListedUnder ?? DBNull.Value),
+                        ("$held_index", (object?)pick.HeldIndex ?? DBNull.Value), ("$held_family", (object?)pick.HeldBy?.Family ?? DBNull.Value),
+                        ("$held_night", pick.HeldBy is { } held ? Stamp(held.Listed) : DBNull.Value),
+                    ], cancellation);
+                }
+
+                written += 1 + answers.Count + picks.Count;
+            }
+
+            foreach (var pick in picks.Where(pick => pick.State == FamilyList.Listed))
+            {
+                if (byTicker[pick.Ticker] is { Entry: { } entry, Stop: { } stop, TimeLimit: { } limit })
+                {
+                    kept++;
+                    await ExecuteAsync(connection, transaction, InsertTrade,
+                    [
+                        ("$rule", rule), ("$index", index), ("$ticker", pick.Ticker), ("$night", Stamp(night)), ("$place", pick.Place!.Value),
+                        ("$entry", Money.ToStorage(entry)), ("$stop", Money.ToStorage(stop)), ("$time_limit", limit), ("$exit_average", setting.ExitLevel),
+                        ("$risk_moves", setting.StopMoves),
+                    ], cancellation);
+                }
+            }
+
+            written += kept;
+
+            card ??= new DipIndexOutcome(
+                index,
+                answers.Count,
+                ranked.Count,
+                picks.Count(pick => pick.State == FamilyList.Listed),
+                picks.Count(pick => pick.State == FamilyList.OpenTrade),
+                picks.Count(pick => pick.State == FamilyList.UnderAnother),
+                kept,
+                ended,
+                null,
+                rules.Count);
         }
 
         await transaction.CommitAsync(cancellation);
 
-        var outcome = new DipIndexOutcome(
-            index,
-            answers.Count,
-            ranked.Count,
-            picks.Count(pick => pick.State == FamilyList.Listed),
-            picks.Count(pick => pick.State == FamilyList.OpenTrade),
-            picks.Count(pick => pick.State == FamilyList.UnderAnother),
-            kept,
-            ended);
+        return (card!, written);
+    }
 
-        return (outcome, 1 + answers.Count + picks.Count + kept + ended);
+    // What a market setting reads on the night, read once an index: the S&P 500's breadth its market reading stored on
+    // the S&P 400 and 600, and the S&P 500 index's sessions to the night with the index's own fund's closes and the VIX's.
+    static async Task<MarketInputs> MarketAsync(SqliteConnection connection, string index, DateOnly night, CancellationToken cancellation)
+    {
+        double? large = index == IndexFamilies.LargeIndex
+            ? null
+            : await ScalarAsync(connection, null, LargeBreadthOn, [("$night", Stamp(night))], cancellation) is double breadth ? breadth : null;
+
+        async Task<IReadOnlyList<(DateOnly Session, double Close)>> ClosesAsync(string series)
+        {
+            var closes = new List<(DateOnly, double)>();
+
+            await foreach (var row in RowsAsync(connection, null, SeriesCloses, [("$series", series), ("$night", Stamp(night))], cancellation))
+            {
+                closes.Add((Date(row.GetString(0)), Statistic.FromPrice(Money.FromStorage(row.GetString(1)))));
+            }
+
+            return closes;
+        }
+
+        return new MarketInputs(
+            large,
+            [.. (await ClosesAsync(MarketCloses.Index)).Select(one => one.Session)],
+            await ClosesAsync(DipRule.FundOf(index)),
+            await ClosesAsync(MarketCloses.Vix));
+    }
+
+    // A rule's market gate on the night, every member reading the same: none where the setting reads none; the index's
+    // own breadth or the S&P 500's at the level's floor; or the index's own fund above its average, or the VIX above its
+    // median, on the night's session as the exchange's sessions to it read them; closed where the setting names a level
+    // the index does not hold or the night reads nothing for it.
+    // see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
+    static Gate MarketGateOn(string index, string key, IndexNightInputs? inputs, MarketInputs? market, DateOnly night)
+    {
+        if (key == DipRule.MarketOff)
+        {
+            return DipRule.NoMarket;
+        }
+
+        if (DipRule.MarketLevels(index).FirstOrDefault(level => level.Key == key) is not { } level || market is null)
+        {
+            return new Gate(DipRule.MarketGate, false, $"its market setting {key} is no level the index reads", FamilyRule.Values(("setting", key)));
+        }
+
+        var at = market.Calendar.ToList().IndexOf(night);
+
+        return level.Reads switch
+        {
+            DipRule.ReadsOwnBreadth => DipRule.MarketOn(level, inputs?.Breadth >= level.Floor, "the index's own breadth at " + FamilyRule.Figure(inputs?.Breadth)),
+            DipRule.ReadsLargeBreadth => DipRule.MarketOn(level, market.LargeBreadth >= level.Floor, "the S&P 500's breadth at " + FamilyRule.Figure(market.LargeBreadth)),
+            DipRule.ReadsFund => at >= 0 && DipRule.FundAboveItsAverage(market.Calendar, market.Fund)[at] is var above
+                ? DipRule.MarketOn(level, above, $"{DipRule.FundOf(index)} {(above ? "above" : "not above")} its average on the night")
+                : DipRule.MarketOn(level, false, "no session of the night in the market series"),
+            _ => at >= 0 && DipRule.VixAboveItsMedian(market.Calendar, market.Vix)[at] is var over
+                ? DipRule.MarketOn(level, over, $"the VIX {(over ? "above" : "not above")} its median on the night")
+                : DipRule.MarketOn(level, false, "no session of the night in the market series"),
+        };
+    }
+
+    // The register as it stands, every row in the order it was written.
+    static async Task<IReadOnlyList<RegisterRow>> RegisterAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        var rows = new List<RegisterRow>();
+
+        await foreach (var row in RowsAsync(connection, null, ReadRegister, [], cancellation))
+        {
+            rows.Add(new RegisterRow(
+                row.GetInt64(0),
+                row.GetString(1),
+                row.GetString(2),
+                row.GetString(3),
+                row.GetString(4),
+                row.GetString(5),
+                row.GetString(6),
+                row.GetString(7),
+                row.IsDBNull(8) ? null : row.GetString(8),
+                DateTimeOffset.ParseExact(row.GetString(9), "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
+                row.IsDBNull(10) ? null : row.GetString(10)));
+        }
+
+        return rows;
     }
 
     // The index's members on the night, each with its spans in the index, its stored year to the night and its report
@@ -435,12 +631,12 @@ public sealed class DipFamily : IComponent
     }
 
     // Each member holding a bar on the night read under the dip at a setting: its stored closes to the night and none
-    // before the store's year, its typical move on the night, the floors the index families read on it, each report on
-    // file by the sessions it falls from the night, the night's own sessions counted back and the exchange's counted
-    // ahead, the first session of the year behind the night its stored series misses, and whether its series is marked
-    // suspect.
+    // before the store's year, and from 22.3 its volumes beside them, its typical move on the night, the floors the index
+    // families read on it, each report on file by the sessions it falls from the night, the night's own sessions counted
+    // back and the exchange's counted ahead, the first session of the year behind the night its stored series misses,
+    // whether its series is marked suspect, and the market gate the setting's level read on the night.
     // see: Bars are never interpolated
-    public static IReadOnlyList<DipAnswer> Answers(IndexNightInputs inputs, DipSetting setting, IReadOnlySet<string> suspects)
+    public static IReadOnlyList<DipAnswer> Answers(IndexNightInputs inputs, DipSetting setting, IReadOnlySet<string> suspects, Gate? market = null)
     {
         var answers = new List<DipAnswer>();
 
@@ -455,9 +651,10 @@ public sealed class DipFamily : IComponent
 
             answers.Add(DipRule.Read(
                 new DipMember(
-                    series.Name.Ticker, closes, double.IsNaN(move) ? null : move, floors.Passed, floors.Words ?? floors.Reason, reports, next, DipRule.NoMarket,
+                    series.Name.Ticker, closes, double.IsNaN(move) ? null : move, floors.Passed, floors.Words ?? floors.Reason, reports, next, market ?? DipRule.NoMarket,
                     series.Gap[bar] ? Missing(series, bar, inputs.Calendar) : null,
-                    suspects.Contains(series.Name.Ticker)),
+                    suspects.Contains(series.Name.Ticker),
+                    setting.VolumeUnder is null ? null : [.. series.Bars[..(bar + 1)].Select(day => day.Volume)]),
                 setting));
         }
 
@@ -584,13 +781,14 @@ public sealed class DipFamily : IComponent
         return picks;
     }
 
-    // Each of the index's dip trades not yet ended, walked over its stock's bars since its listing at the scale the
-    // series has now: bought at the next session's open through the core's one pricing function, and sold at the next
-    // open after its exit's close or its stop's, or at its last session's close; a buy or a sale waiting where the
-    // stock's bars skip a session of the index's calendar or the store holds none yet; the count ended.
+    // Each of the index's dip trades not yet ended, every rule's, walked over its stock's bars since its listing at the
+    // scale the series has now: bought at the next session's open through the core's one pricing function, and sold at
+    // the next open after its exit's close or its stop's, its exit read by the level its rule stored, or at its last
+    // session's close; a buy or a sale waiting where the stock's bars skip a session of the index's calendar or the store
+    // holds none yet; the count ended.
     async Task<int> WalkAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, IReadOnlyList<DateOnly> calendar, CancellationToken cancellation)
     {
-        var trades = new List<(string Rule, string Ticker, DateOnly Session, decimal Entry, decimal Stop, int Limit, int Average)>();
+        var trades = new List<(string Rule, string Ticker, DateOnly Session, decimal Entry, decimal Stop, int Limit, int Exit)>();
 
         await foreach (var row in RowsAsync(connection, transaction, OpenTradesOf, [("$index", index), ("$night", Stamp(night))], cancellation))
         {
@@ -621,7 +819,7 @@ public sealed class DipFamily : IComponent
             var scale = bars[listing].Close / Statistic.FromPrice(trade.Entry);
             var close0 = bars[listing].Close;
             var stop = Statistic.FromPrice(trade.Stop) * scale;
-            var path = DipRule.Walk(close0, stop, trade.Limit, DipRule.Sessions([.. bars.Select(bar => (bar.Session, bar.Open, bar.Close))], listing, trade.Average, calendar));
+            var path = DipRule.Walk(close0, stop, trade.Limit, DipRule.Sessions([.. bars.Select(bar => (bar.Session, bar.Open, bar.Close))], listing, trade.Exit, calendar));
 
             if (path.BoughtOn is null)
             {
@@ -656,9 +854,10 @@ public sealed class DipFamily : IComponent
         return ended;
     }
 
-    // An index whose part of the night failed: a night row naming the failure where no earlier try of the night wrote
-    // one, and none where the store will not take it, since recording the failure is never what stops the night.
-    async Task<int> NotComputedAsync(SqliteConnection connection, string index, DateOnly night, string fault, CancellationToken cancellation)
+    // An index whose part of the night failed: a night row naming the failure under the rule its card draws where no
+    // earlier try of the night wrote one, and none where the store will not take it, since recording the failure is never
+    // what stops the night.
+    async Task<int> NotComputedAsync(SqliteConnection connection, string index, DateOnly night, string fault, string rule, DipSetting setting, CancellationToken cancellation)
     {
         try
         {
@@ -667,8 +866,8 @@ public sealed class DipFamily : IComponent
             command.CommandText = InsertNotComputed;
             command.Parameters.AddWithValue("$index", index);
             command.Parameters.AddWithValue("$night", Stamp(night));
-            command.Parameters.AddWithValue("$market", DipRule.Provisional.Market);
-            command.Parameters.AddWithValue("$settings", Settings(DipRule.Provisional));
+            command.Parameters.AddWithValue("$market", setting.Market);
+            command.Parameters.AddWithValue("$settings", Settings(setting, rule, index));
             command.Parameters.AddWithValue("$fault", fault);
 
             return await command.ExecuteNonQueryAsync(cancellation);
