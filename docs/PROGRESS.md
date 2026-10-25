@@ -8853,10 +8853,10 @@ Tests:      4 new, 2759 in all: the grid's 72 settings; one setting's walk over 
 Fixture:    quality-history.json, derived by hand: B sold at the second reshuffle, -6 per cent against the members' 3.75,
             an edge of -9.75 points; the tester's month -3.75 points; A sold on a filing, 2 per cent against 1.25.
 Claims:     1444, one new: section 17's grid of the history test.
-Ran:        each index from this branch's 897204b9, the checkout's own Debug build, over the live store read-only through
-            2026-10-23: the S&P 500 from 06:37:43Z to 06:38:05Z, run 20261025T063744Z; the S&P 400 from 06:38:05Z to
-            06:38:23Z, run 20261025T063805Z; the S&P 600 from 06:38:23Z to 06:38:48Z, run 20261025T063824Z; the same
-            figures as the runs over 897204b9's parent less its coverage table, between 06:33Z and 06:37Z.
+Ran:        each index from this branch's 87222cd5, the checkout's own Debug build, over the live store read-only through
+            2026-10-23: the S&P 500 from 06:47:38Z to 06:47:59Z, run 20261025T064739Z; the S&P 400 from 06:47:59Z to
+            06:48:18Z, run 20261025T064800Z; the S&P 600 from 06:48:18Z to 06:48:43Z, run 20261025T064819Z; the same
+            figures as the runs over the same code before its commits were folded into one, between 06:33Z and 06:39Z.
 Coverage:   at each year's first reshuffle no member's price over earnings could be read against its own last twelve
             quarters in 2019 or 2020, the pulled prices reaching back too few quarters, and few in 2021: on the S&P 500 0,
             0 and 36 of about 508 members, on the S&P 400 0, 0 and 18 of about 385, on the S&P 600 0, 0 and 33 of about
