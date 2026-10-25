@@ -110,6 +110,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Dip family"),
     ];
 
+    // 22.8's one: the fundamentals scorecard's step.
+    internal static string[] ScorerRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Fundamental scorer"),
+        CheckReach.Key(Scope.MatrixTable, "Fundamental scorer"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -153,6 +160,9 @@ public partial class ComponentAccess
 
             // 22.1, the short-term dip.
             .. DipRows,
+
+            // 22.8, the fundamentals scorecard.
+            .. ScorerRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

@@ -145,7 +145,11 @@ public sealed partial class SetupLedger : IComponent
         UPDATE setup
         SET revenue_growth = $revenue_growth, growth_change = $growth_change, gross_margin_change = $gross_margin_change,
             operating_margin_change = $operating_margin_change, cash_over_income = $cash_over_income, value_place = $value_place,
-            company_value = $company_value
+            company_value = $company_value, fundamentals_score = $fundamentals_score,
+            gross_profitability = $gross_profitability, return_on_assets = $return_on_assets,
+            return_on_assets_change = $return_on_assets_change, leverage_fall = $leverage_fall,
+            current_ratio_change = $current_ratio_change, share_fall = $share_fall, turnover_change = $turnover_change,
+            gross_margin_year_change = $gross_margin_year_change
         WHERE ticker = $ticker AND session_date = $session AND source = $source;
     ";
 
@@ -373,6 +377,7 @@ public sealed partial class SetupLedger : IComponent
             InsiderSpans = insiders.Spans,
             Releases = releases,
             LargeBreadth = await LargeBreadthOnAsync(connection, index, night, cancellation),
+            Gics = await GicsAsync(connection, history: false, cancellation),
         };
         var read = new Dictionary<string, IReadOnlyList<double?>?>(StringComparer.Ordinal);
 
@@ -430,6 +435,7 @@ public sealed partial class SetupLedger : IComponent
             InsiderSpans = insiders.Spans,
             Releases = releases,
             LargeBreadth = largeBreadth,
+            Gics = await GicsAsync(connection, history: true, cancellation),
         });
     }
 
@@ -488,6 +494,7 @@ public sealed partial class SetupLedger : IComponent
         var insiders = await InsidersAsync(connection, [Filers], names.Select(name => name.Ticker), night.AddDays(-InsiderReadings.WindowDays), cancellation);
         var releases = await ReleasesAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
         var largeBreadth = await LargeBreadthOnAsync(connection, index, night, cancellation);
+        var gics = await GicsAsync(connection, history: false, cancellation);
 
         // The S&P 500's heavyweights' rebalances the book stored from the oldest open heavyweights' setup to the night:
         // tonight's size cut is tonight's setups, and each later rebalance's buys end the setups the rule did not buy.
@@ -533,6 +540,7 @@ public sealed partial class SetupLedger : IComponent
                     InsiderSpans = insiders.Spans,
                     Releases = releases,
                     LargeBreadth = largeBreadth,
+                    Gics = gics,
                 };
                 var families = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, context)
                     .Select(family => live.Read.TryGetValue(family.Family, out var rule)
@@ -1380,6 +1388,7 @@ public sealed partial class SetupLedger : IComponent
             InsiderSpans = insiders.Spans,
             Releases = releases,
             LargeBreadth = largeBreadth is null ? null : LargeBreadthOver(calendar, largeBreadth),
+            Gics = await GicsAsync(connection, history: true, cancellation),
         };
 
         return new PreparedHistory(index, calendar, series, sessions, members, income, closes, opens, stopped, [.. calendar, .. after], past, market, context, heavyweights)
@@ -1717,6 +1726,7 @@ public sealed partial class SetupLedger : IComponent
         var largeBreadth = index == IndexFamilies.LargeIndex
             ? null
             : LargeBreadthOver(inputs.Sessions, SweepSwitches.LargeBreadth(await history.ReadAsync(through, null, cancellation), inputs.Sessions));
+        var gics = await GicsAsync(connection, history: true, cancellation);
         var findings = new List<string>();
         var read = 0;
 
@@ -1727,7 +1737,7 @@ public sealed partial class SetupLedger : IComponent
 
             foreach (var row in session)
             {
-                var (held, rebuilt) = LedgerPointInTime.Setup(index, cut, cutMarket, income, sectors, facts, row.Family, row.Ticker, insiders, releases, largeBreadth);
+                var (held, rebuilt) = LedgerPointInTime.Setup(index, cut, cutMarket, income, sectors, facts, row.Family, row.Ticker, insiders, releases, largeBreadth, gics);
 
                 if (!held)
                 {
@@ -2026,6 +2036,27 @@ public sealed partial class SetupLedger : IComponent
         }
 
         return new LedgerMarket(series);
+    }
+
+    // From 22.8 each name's GICS sector as the companies' rows file it, whatever sector its history carries: on a night the
+    // store's own rows, and over the history the pulled companies' and then the store's, a later row replacing an earlier.
+    // see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
+    internal static async Task<IReadOnlyDictionary<string, string?>> GicsAsync(SqliteConnection connection, bool history, CancellationToken cancellation)
+    {
+        var gics = new Dictionary<string, string?>(StringComparer.Ordinal);
+
+        foreach (var sql in history ? new[] { PulledSectors, Sectors } : [Sectors])
+        {
+            await using var command = Command(connection, null, sql, []);
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                gics[reader.GetString(0)] = reader.GetString(1);
+            }
+        }
+
+        return gics;
     }
 
     // Each name's sector: the one its history carries, else the newest the store files for it.
@@ -2357,8 +2388,9 @@ public sealed partial class SetupLedger : IComponent
 
     // The business readings, the valuation reading and from 22.2 the company's value of the night's setups read again for
     // the tickers given, once the filings refresh has stored what the archive posted before the session; the night's rows
-    // alone, each from the facts filed before the setup's session and the two over the closes the night's step read. It
-    // returns how many rows it read again.
+    // alone, each from the facts filed before the setup's session and the two over the closes the night's step read; and
+    // from 22.8 the scorecard's readings, over the store's own closes and the sector GICS files. It returns how many rows
+    // it read again.
     public async Task<int> BusinessAgainAsync(DateOnly session, IReadOnlyList<string> tickers, CancellationToken cancellation = default)
     {
         if (tickers.Count == 0)
@@ -2370,17 +2402,21 @@ public sealed partial class SetupLedger : IComponent
         await connection.OpenAsync(cancellation);
 
         var facts = await FactsAsync(connection, [Filers], tickers, cancellation);
+        var gics = await GicsAsync(connection, history: false, cancellation);
         var places = new Dictionary<string, double?>(StringComparer.Ordinal);
         var values = new Dictionary<string, double?>(StringComparer.Ordinal);
+        var cards = new Dictionary<string, Scorecard>(StringComparer.Ordinal);
 
         foreach (var ticker in tickers.Distinct(StringComparer.Ordinal))
         {
             var filed = facts.GetValueOrDefault(ticker) ?? [];
             var parts = ValuationReading.PartsOf(filed, session);
             var prices = await PricesOnAsync(connection, ticker, filed, session, cancellation);
+            var financial = FundamentalScorecard.IsFinancial(GicsSectors.On(ticker, gics.GetValueOrDefault(ticker), session));
 
             places[ticker] = prices is null ? null : ValuationReading.Place(parts, prices, session);
             values[ticker] = prices is null ? null : LedgerContext.CompanyValueOf(parts, prices, session);
+            cards[ticker] = FundamentalScorecard.Read(filed, session, financial, await StoredPricesAsync(connection, ticker, session, cancellation));
         }
 
         var read = 0;
@@ -2390,6 +2426,7 @@ public sealed partial class SetupLedger : IComponent
         foreach (var ticker in tickers.Distinct(StringComparer.Ordinal))
         {
             var business = FiledFacts.Read(facts.GetValueOrDefault(ticker) ?? [], session);
+            var scorecard = LedgerSetups.ScorecardReadings(cards[ticker]);
 
             await using var command = Command(connection, transaction, BusinessAgain,
             [
@@ -2403,6 +2440,7 @@ public sealed partial class SetupLedger : IComponent
                 ("$cash_over_income", (object?)business.CashOverIncome ?? DBNull.Value),
                 ("$value_place", (object?)places[ticker] ?? DBNull.Value),
                 ("$company_value", (object?)values[ticker] ?? DBNull.Value),
+                .. scorecard.Select(pair => ("$" + pair.Column, (object?)pair.Value ?? DBNull.Value)),
             ]);
 
             read += await command.ExecuteNonQueryAsync(cancellation);
@@ -2540,6 +2578,22 @@ public sealed partial class SetupLedger : IComponent
         var before = await BeforeTheYearAsync(connection, [(ticker, bars[0].Session, bars[0].Close)], new Dictionary<string, IReadOnlyList<FiledFactRow>>(StringComparer.Ordinal) { [ticker] = facts }, night, cancellation);
 
         return (before.GetValueOrDefault(ticker) ?? PriceHistory.None).Then(PriceHistory.Of(bars));
+    }
+
+    // A stock's closes the store holds to the night and no others, which the scorecard reads on a night.
+    static async Task<PriceHistory> StoredPricesAsync(SqliteConnection connection, string ticker, DateOnly night, CancellationToken cancellation)
+    {
+        var bars = new List<SweepBar>();
+
+        await using var command = Command(connection, null, StoredCloses, [("$ticker", ticker), ("$night", Stamp(night))]);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            bars.Add(new SweepBar(Date(reader.GetString(0)), 0m, 0m, Money.FromStorage(reader.GetString(1)), 0, RawClose: reader.IsDBNull(2) ? 0m : Money.FromStorage(reader.GetString(2))));
+        }
+
+        return PriceHistory.Of(bars);
     }
 
     // Each name's first stored session and its close there.

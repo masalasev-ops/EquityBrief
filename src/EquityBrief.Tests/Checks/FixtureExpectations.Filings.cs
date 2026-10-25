@@ -62,7 +62,7 @@ public partial class FixtureExpectations
                 // One quarter stated twice: the earlier filing is the one stored, whatever the later says.
                 Figure("2026-04-01", "2026-06-30", 100m, "2026-08-01", "a-1"),
                 Figure("2026-04-01", "2026-06-30", 120m, "2027-08-01", "a-2"),
-                // Nine months and a year are kept; six months are not a span the rule reads.
+                // Nine months and a year are kept, and from 22.8 six months, which the scorecard's four quarters read.
                 Figure("2025-10-01", "2026-06-30", 290m, "2026-08-01", "a-1"),
                 Figure("2025-10-01", "2026-09-30", 400m, "2026-11-01", "a-3", "10-K"),
                 Figure("2026-01-01", "2026-06-30", 190m, "2026-08-01", "a-1"),
@@ -70,8 +70,10 @@ public partial class FixtureExpectations
                 Figure("2014-10-01", "2014-12-31", 50m, "2015-02-01", "a-0"),
                 Figure("2014-10-02", "2015-01-01", 51m, "2015-02-01", "a-0"),
             ],
-            // A concept outside the six measures is not stored.
+            // A balance sheet's line stated for a period rather than the day it stands for is not stored.
             ["Assets"] = [Figure("2026-04-01", "2026-06-30", 999m, "2026-08-01")],
+            // A concept outside the measures and the lines is not stored.
+            ["Goodwill"] = [Figure("2026-06-30", "2026-06-30", 999m, "2026-08-01")],
         };
 
         var stored = FiledFacts.Stored(facts);
@@ -80,13 +82,17 @@ public partial class FixtureExpectations
             [
                 ("2014-10-02", "2015-01-01", 51m, "a-0"),
                 ("2025-10-01", "2026-06-30", 290m, "a-1"),
+                ("2026-01-01", "2026-06-30", 190m, "a-1"),
                 ("2026-04-01", "2026-06-30", 100m, "a-1"),
                 ("2025-10-01", "2026-09-30", 400m, "a-3"),
             ],
             stored.Select(row => (row.Start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), row.End.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), row.Value, row.Accession)).ToArray());
         Assert.All(stored, row => Assert.Equal("Revenues", row.Concept));
         Assert.Equal(new DateOnly(2015, 1, 1), FiledFacts.FirstPeriodEnd);
-        Assert.Equal(17, FiledFacts.Concepts.Count);
+
+        // The six measures' sixteen concepts and the cover's count, and from 22.8 the cost of sales's three and the balance
+        // sheet's seven.
+        Assert.Equal(27, FiledFacts.Concepts.Count);
     }
 
     // A filer's quarters as filed: revenue, gross profit and operating income for the quarter to 2026-06-30, the
@@ -229,21 +235,23 @@ public partial class FixtureExpectations
         Assert.Equal(expected.GetProperty("refreshed").EnumerateArray().Select(ticker => ticker.GetString()!).ToArray(), Query(store, "SELECT ticker FROM company WHERE cik = '0001601046' GROUP BY ticker;"));
 
         // Its facts worked out here from the capture with this test's own reading: each dollar figure of a measure's
-        // concept for a quarter, nine months or a year ending on or after 2015-01-01, the earliest filing of each period.
+        // concept for a quarter, six months, nine months or a year ending on or after 2015-01-01, and of a balance sheet
+        // line's for the day it stands for, the earliest filing of each period.
         using var capture = JsonDocument.Parse(File.ReadAllText(Path.Combine(Folder(), "company-facts-KEYS.json")));
         var worked = new SortedSet<string>(StringComparer.Ordinal);
 
         foreach (var concept in capture.RootElement.GetProperty("facts").GetProperty("us-gaap").EnumerateObject().Where(concept => FiledFacts.Concepts.Contains(concept.Name)))
         {
             var byPeriod = new Dictionary<(string Start, string End), (string Filed, string Accession, decimal Value)>();
+            var onADay = FiledFacts.OnADay.Contains(concept.Name);
 
-            foreach (var fact in concept.Value.GetProperty("units").GetProperty("USD").EnumerateArray().Where(fact => fact.TryGetProperty("start", out _)))
+            foreach (var fact in concept.Value.GetProperty("units").GetProperty("USD").EnumerateArray().Where(fact => fact.TryGetProperty("start", out _) != onADay))
             {
-                var start = fact.GetProperty("start").GetString()!;
                 var end = fact.GetProperty("end").GetString()!;
+                var start = onADay ? end : fact.GetProperty("start").GetString()!;
                 var days = DateOnly.Parse(end, CultureInfo.InvariantCulture).DayNumber - DateOnly.Parse(start, CultureInfo.InvariantCulture).DayNumber + 1;
 
-                if (string.CompareOrdinal(end, "2015-01-01") < 0 || !(days is >= 80 and <= 100 or >= 260 and <= 285 or >= 350 and <= 380))
+                if (string.CompareOrdinal(end, "2015-01-01") < 0 || !(onADay || days is >= 80 and <= 100 or >= 170 and <= 195 or >= 260 and <= 285 or >= 350 and <= 380))
                 {
                     continue;
                 }

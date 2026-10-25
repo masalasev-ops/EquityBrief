@@ -1,0 +1,27 @@
+{
+  "stage": "scorecard",
+  "derivation": "derived",
+  "tables": ["filed_fact", "fundamental_score"],
+  "derivedFrom": "22.8's nine checks worked by hand, not a run. Over the suite's constructed filer, whose fiscal year is the calendar's and whose newest quarter is its second, net income's four quarters are its six months of 60 plus its year of 100 less its six months a year before of 50, 110, and a year before 50 + 90 - 45 = 95; cash from operations' are 80 + 130 - 60 = 150; return on assets is 110 over the year's starting assets of 1,800 against 95 over 1,700; long-term debt is 400 over the year's average assets of 1,900 against 420 over 1,750; the current ratio is 900 over 600 against 800 over 560; the shares are 100 against 100; the gross margin is 580 over 1,200 against 470 over 1,020; sales are 1,200 over 1,800 against 1,020 over 1,700; every check passes; and gross profit over assets is 580 over the quarter's end assets of 2,000. Over the fixture's whole night of 2026-09-08 the refresh stores Keysight's captured facts alone, as filings.json derives, so Apple, Microsoft and Netflix hold no filed fact and read no quarter. Keysight's newest quarter filed before the session is the one to 2026-07-31, its 10-Q of 2026-09-02, and the capture states its net income, its revenue and its total assets only from its fiscal 2025, with no cash from operations, no gross profit or cost of sales and no other balance sheet line, so one of its nine checks can be read: its covers' count of 2026-08-27, 170,244,745, against the 171,856,249 of 2025-08-25, two days from a year before it, about 0.94 per cent fewer with no split between them, passes the share check; its four quarters' net income needs net income's nine months to 2025-07-31, which the capture does not state; the year before's sales need the fiscal year to 2024-10-31; and the rest need lines the capture does not hold. One check read gives no word.",
+  "night": "2026-09-08",
+  "filer": {
+    "income": 110,
+    "incomeYearBefore": 95,
+    "cash": 150,
+    "returnOnAssets": [0.0611111111, 0.0558823529],
+    "debtOverAssets": [0.2105263158, 0.24],
+    "currentRatio": [1.5, 1.4285714286],
+    "grossMargin": [0.4833333333, 0.4607843137],
+    "turnover": [0.6666666667, 0.6],
+    "grossProfitability": 0.29
+  },
+  "unfiled": ["AAPL", "MSFT", "NFLX"],
+  "unfiledSummary": "Not scored, as none of its quarters' filings is stored.",
+  "keysight": {
+    "ticker": "KEYS",
+    "quarter": "2026-07-31",
+    "applied": 1,
+    "passed": [7],
+    "summary": "Not scored, as only 1 of its checks could be read from its filings to 2026-07-31."
+  }
+}

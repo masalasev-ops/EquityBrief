@@ -177,6 +177,9 @@ public partial class ReadSurface
             // 22.6, Tonight in one minute and the page's words at its foot.
             .. TonightRows,
 
+            // 22.8, the fundamentals card on the chart page and the full page.
+            .. FundamentalsRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 

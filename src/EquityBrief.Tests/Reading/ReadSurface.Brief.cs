@@ -99,7 +99,7 @@ public partial class ReadSurface
                 new BriefStanding(FundamentalsRule.Name, BriefStates.NotClose, Missed: 2),
                 new BriefStanding(DipRule.Name, BriefStates.NotRead),
                 new BriefStanding(SetupFamilies.SectorHeavyweights.Name, BriefStates.NotHeld),
-            ]));
+            ]) with { Score = ScoreRowOf(EightOfNine()) });
         var pullback = SetupFamilies.Named(SetupFamilies.Pullback)!.Label;
 
         Assert.Equal($"XYZ is in an uptrend, 2.0 typical days' moves above its nearest support and 3.0 typical days' moves below its nearest resistance. Its business reads improving, from sales and operating margin. Tonight {pullback} picked it.", view.Summary);
@@ -111,8 +111,10 @@ public partial class ReadSurface
                 "Six months: its return ranks at the 73rd percentile of the S&P 500's stocks.",
             ],
             LinesOf(view, "chart"));
+        // From 22.8 the business panel opens on the fundamentals card's line, eight of nine on its filings to 2026-06-30.
         Assert.Equal(
             [
+                "Fundamentals: strong, 8 of 9 checks on its filings to 2026-06-30, in the card below.",
                 "Sales up 12.0% on a year in the quarter to 2026-06-30, faster than the +9.0% of the quarter before.",
                 "Operating margin 21.0%, wider than the 18.0% of a year earlier.",
                 "It trades at 18.4 times its last four quarters' earnings, the middle of its own range of 15.2 to 24.8.",
@@ -170,7 +172,7 @@ public partial class ReadSurface
             ["Trend: not read for the night.", "Its bands: no close is stored to read them against.", "Momentum: not read for the night.", "Six months: its return against the index's stocks is not read."],
             LinesOf(bare, "chart"));
         Assert.Equal(
-            ["Sales: too few quarters are stored to read them against a year earlier.", "Operating margin: too few quarters are stored to read it against a year earlier.", "Earnings multiple: not read for the night.", "The analysts' mean target: not stored."],
+            ["Fundamentals: not scored, as no scorecard is stored for it on the night.", "Sales: too few quarters are stored to read them against a year earlier.", "Operating margin: too few quarters are stored to read it against a year earlier.", "Earnings multiple: not read for the night.", "The analysts' mean target: not stored."],
             LinesOf(bare, "business"));
         Assert.Equal(
             ["Not among tonight's picks, and no levels plan is stored for the night.", "No stop is stored.", "No first sale is stored.", "No plan is stored to size."],
@@ -398,7 +400,7 @@ public partial class ReadSurface
 
         Assert.StartsWith("<div class=\"brief-read\" data-ticker=\"XYZ\"><p class=\"brief-summary\" data-summary>", drawn, StringComparison.Ordinal);
         Assert.Equal(["chart", "business", "way-in"], Regex.Matches(drawn, "<section class=\"brief-panel\" data-panel=\"([^\"]+)\">").Select(match => match.Groups[1].Value));
-        Assert.Equal(12, Regex.Matches(drawn, "<li data-line=").Count);
+        Assert.Equal(13, Regex.Matches(drawn, "<li data-line=").Count);
         Assert.Contains($"<li data-line=\"size\">Your account is not set: <a href=\"{MarkRenderer.AccountRoute}\">set your account's size and risk</a> to see a size.</li>", drawn, StringComparison.Ordinal);
         Assert.Contains("data-family=\"dip\" data-state=\"short\">", drawn, StringComparison.Ordinal);
         Assert.Contains("<p class=\"brief-watch\">Watch for: its report on 2026-11-05 falls inside a typical hold.</p>", drawn, StringComparison.Ordinal);

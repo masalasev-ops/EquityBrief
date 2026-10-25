@@ -729,7 +729,46 @@ public static class SchemaMigrations
         new Migration(106, "add setup's release readings, and create release_answer_edge", AddReleaseReadings),
         new Migration(107, "create analyst_request, analyst_view and analyst_rating", CreateAnalysts),
         new Migration(108, "add setup's short-term dip readings", AddDipReadings),
+        new Migration(109, "create fundamental_score, and add setup's fundamentals scorecard readings", AddScorecard),
     ];
+
+    // From 22.8: every member's fundamentals scorecard on each night, its nine checks with their figures as a list, its
+    // word, gross profit over total assets with its place on its index and its price over earnings beside its industry's
+    // median; and the scorecard's readings on the setups' table, a column a reading after every column before them, each
+    // row kept and the new columns null until a build or a night writes them. Nothing is copied and nothing is dropped.
+    // see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
+    const string AddScorecard = @"
+        CREATE TABLE fundamental_score (
+            index_code           TEXT NOT NULL,
+            session_date         TEXT NOT NULL,
+            ticker               TEXT NOT NULL,
+            quarter              TEXT,
+            year_before          TEXT,
+            awaited              TEXT,
+            financial            INTEGER NOT NULL,
+            passed               INTEGER NOT NULL,
+            applied              INTEGER NOT NULL,
+            word                 TEXT,
+            checks               TEXT NOT NULL,
+            gross_profitability  REAL,
+            gross_rank           INTEGER,
+            gross_ranked         INTEGER,
+            multiple             REAL,
+            industry             TEXT,
+            industry_multiple    REAL,
+            PRIMARY KEY (index_code, session_date, ticker)
+        ) STRICT;
+
+        ALTER TABLE setup ADD COLUMN fundamentals_score REAL;
+        ALTER TABLE setup ADD COLUMN gross_profitability REAL;
+        ALTER TABLE setup ADD COLUMN return_on_assets REAL;
+        ALTER TABLE setup ADD COLUMN return_on_assets_change REAL;
+        ALTER TABLE setup ADD COLUMN leverage_fall REAL;
+        ALTER TABLE setup ADD COLUMN current_ratio_change REAL;
+        ALTER TABLE setup ADD COLUMN share_fall REAL;
+        ALTER TABLE setup ADD COLUMN turnover_change REAL;
+        ALTER TABLE setup ADD COLUMN gross_margin_year_change REAL;
+    ";
 
     // From 22.2: the setup ledger's readings the short-term dip's grid reads that the catalogue did not hold, a column a
     // reading after every column before them, each row kept and the new columns null until a build or a night writes them.

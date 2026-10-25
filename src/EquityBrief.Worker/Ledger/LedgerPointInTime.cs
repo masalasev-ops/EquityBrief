@@ -49,8 +49,9 @@ public static class LedgerPointInTime
         string ticker,
         LedgerInsiders? insiders = null,
         IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? releases = null,
-        IReadOnlyDictionary<DateOnly, double>? largeBreadth = null) =>
-        Read(cut, income, sectors, facts, ticker, insiders, releases, largeBreadth) is { } read
+        IReadOnlyDictionary<DateOnly, double>? largeBreadth = null,
+        IReadOnlyDictionary<string, string?>? gics = null) =>
+        Read(cut, income, sectors, facts, ticker, insiders, releases, largeBreadth, gics) is { } read
             ? LedgerSetups.Readings(index, read.Name, read.Series[read.Name], Closes(read.Series[read.Name]), read.Bar, read.Sessions[read.At], read.Members, read.Calendar, read.At, market, read.Context, read.Series)
             : null;
 
@@ -69,9 +70,10 @@ public static class LedgerPointInTime
         string ticker,
         LedgerInsiders? insiders = null,
         IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? releases = null,
-        IReadOnlyDictionary<DateOnly, double>? largeBreadth = null)
+        IReadOnlyDictionary<DateOnly, double>? largeBreadth = null,
+        IReadOnlyDictionary<string, string?>? gics = null)
     {
-        if (Read(cut, income, sectors, facts, ticker, insiders, releases, largeBreadth) is not { } read)
+        if (Read(cut, income, sectors, facts, ticker, insiders, releases, largeBreadth, gics) is not { } read)
         {
             return (false, null);
         }
@@ -99,7 +101,8 @@ public static class LedgerPointInTime
         string ticker,
         LedgerInsiders? insiders,
         IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? releases,
-        IReadOnlyDictionary<DateOnly, double>? largeBreadth)
+        IReadOnlyDictionary<DateOnly, double>? largeBreadth,
+        IReadOnlyDictionary<string, string?>? gics)
     {
         var calendar = cut.Sessions;
 
@@ -138,6 +141,7 @@ public static class LedgerPointInTime
             InsiderSpans = insiders?.Spans ?? InsiderCoverage.None,
             Releases = releases,
             LargeBreadth = largeBreadth,
+            Gics = gics,
         });
     }
 

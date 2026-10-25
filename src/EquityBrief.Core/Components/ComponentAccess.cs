@@ -137,6 +137,7 @@ public enum Store
     QuarterAsk,
     FundamentalReading,
     MemberReading,
+    FundamentalScore,
     SwitchReading,
     NewsPulse,
     NewsArticle,

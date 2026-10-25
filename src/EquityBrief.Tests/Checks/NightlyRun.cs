@@ -1384,13 +1384,15 @@ public partial class NightlyRun
 
         var stages = RunLog(store, "night-with-no-queue").Select(row => row.Stage).ToArray();
 
+        // From 22.8 the filings step writes its refresh's row and then the scorecards' written again.
         Assert.Equal(EquityBrief.Worker.Backup.StoreBackup.NightStage, stages[^1]);
         Assert.Equal(NewsLabeller.NightStage, stages[^2]);
         Assert.Equal("report", stages[^3]);
         Assert.Equal(EquityBrief.Worker.Treasury.TreasuryReader.Stage, stages[^4]);
-        Assert.Equal(EquityBrief.Worker.Ledger.FilingsRefresher.Stage, stages[^5]);
-        Assert.Equal(EquityBrief.Worker.Quarters.QuarterFetcher.Stage, stages[^6]);
-        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^7]);
+        Assert.Equal(EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage, stages[^5]);
+        Assert.Equal(EquityBrief.Worker.Ledger.FilingsRefresher.Stage, stages[^6]);
+        Assert.Equal(EquityBrief.Worker.Quarters.QuarterFetcher.Stage, stages[^7]);
+        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^8]);
         Assert.DoesNotContain(EquityBrief.Api.Reading.RunScreen.QueueStage, stages);
 
         // The Treasury's step asked once and kept every session of the year the table publishes to the night's, 172 from
@@ -2317,9 +2319,9 @@ public partial class NightlyRun
         // the local run's samples count each index's members on the day before the
         // samples' day, which share a sample among the indices; and from 22.1 the
         // short-term dip reads each index's members on the session with its own
-        // loader.
+        // loader, and from 22.8 the fundamental scorer every member it scores.
         Assert.Equal(
-            ["CalendarFetcher", "DecisionCards", "DipFamily", "DividendKeeper", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "HeavyweightBook", "IndexFamilies", "LadderBuilder", "LocalRun.Probes", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi.Standing", "ReleaseFetch", "SecTickers", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower"],
+            ["CalendarFetcher", "DecisionCards", "DipFamily", "DividendKeeper", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "FundamentalScorer", "HeavyweightBook", "IndexFamilies", "LadderBuilder", "LocalRun.Probes", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi.Standing", "ReleaseFetch", "SecTickers", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower"],
             member.Order(StringComparer.Ordinal));
 
         // And the span form, read by nothing a night runs.

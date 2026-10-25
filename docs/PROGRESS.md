@@ -8600,3 +8600,82 @@ Verified:   `tools/ci.ps1` green over main at 99dca7dd, the 22.6 correction's tr
             the tree carrying this entry, 192 of 192 passed.
 Carried:    the sign-offs of phases 18, 19 and 20, each owed by a fresh session and discharged by no checkpoint of phase
             22; what becomes of business first, the operator's ruling.
+
+### 22.8 - the fundamentals scorecard: nine checks of every member's filings as first filed, stored each night and again after the refresh, its card beneath the brief read and on the full page, the brief read's line, and nine readings in the ledger   2026-10-25
+
+Queue:      done, 22.0, 22.1 and 22.2 with their records and the remedy run, the one-gate-short correction, 22.4, 22.5,
+            22.6 with its correction and 22.7's planning; in progress, 22.8 in this pull request, then its remedy from
+            main; next, the levels plan's entry and exit figure back on Tonight for each stock beside what its row
+            folds, on the operator's word of 2026-10-25 in `prompts/2026-10-25-22.6-correction-plan-diagram-back.md`,
+            as a 22.6 correction; then 22.9 before the night of 2026-10-26, 22.10 with each index's answer to the
+            operator, 22.11 and 22.3 on their word, 22.12, and the sign-offs of phases 18, 19 and 20 by fresh sessions.
+Limits:     no paid call and no provider call; migration 109 alone; no rule's version moves, asserted, the ledger's
+            readings version and the learned score's moving and neither pinned by a rule; business first's rows and
+            card as they were, its business readings asserted the same over facts holding the new lines and spans. On
+            the operator's answer the sources 22.2 edited are edited: the migrations, the ledger's readings, headings,
+            setups, night and point-in-time check, the monthly loop's readings, the read surface's routes and its page.
+            This checkpoint amends its own text and not its done condition, to what was built: debt over the year's
+            average assets, the share check's split-only basis, the newer quarter's 45 days, the second scoring after
+            the refresh, and nine readings for ten, the count of checks read measuring nothing of a business.
+Built:      the core's one scorecard over a filer's facts as first filed before the session: the four newest quarters
+            against the four before them, a flow's four quarters its year to date plus the fiscal year before less the
+            same span a year earlier, a balance sheet line read for the day it stands for, the nine checks after
+            Piotroski (2000), a financial company scored on seven, a check whose line is not stored passed over and
+            named, the word as a share of the checks that applied and none under five. The refresh keeps the four
+            balance sheet lines, the cost of sales and every flow's six months. `fundamental_score`, written by the
+            night's step after the member readings and again after its filings refresh: each check with its figures, a
+            newer quarter the calendar dates more than 45 days on, gross profit over assets with its place on its index
+            and the price over earnings beside its industry's median; `scores`, the step by hand. The card beneath the
+            brief read on every chart page and after the margins on the full page, the brief read's business panel
+            opening on its line. Nine readings at the catalogue's end, the debt's and the shares' read as falls, under
+            financial strength and earnings quality, which the monthly loop reads from its first run after 2026-11-07
+            and the learned score weighs only then. The scorer's catalogue and matrix rows, its store, section 17's
+            numbers, section 18's three rows, sections 15.9's and 15.22's cards with the brief read's fifth line,
+            figure 15.1 with the card its eleventh part, section 11's research and section 23's two sources, the
+            decision, the schema, the runbook's command and remedy, the guide, the roster and the changelog. Found while
+            building and fixed before this entry: the calendar dates a 52 or 53 week quarter by its month's end, AAPL's
+            to 2026-06-30 where its filing says 2026-06-27 and COST's to 2026-05-31 where its says 2026-05-10, so a
+            newer quarter is one ending more than 45 days on; the night's refresh stores a filing after the first
+            scoring, so the night scores again after it; the valuation reading's basis would carry each dividend into a
+            share count, so the share check brings the older count across splits alone; and the debt's and the shares'
+            changes ran against their heading's "stronger finances", so they are read as falls.
+Tests:      21 new, 2740 in all: each check on both sides of its threshold over a constructed filer, its four quarters
+            read from a second quarter's six-month span; a filing made on the session read from the next session's; a
+            financial company's seven; the cut points at 4, 5, 7 and 8 of nine and the shares of seven; a split and a
+            dividend's step; the archive's balance sheet lines as first filed; the business and valuation readings the
+            same over the new lines; the night's step over nine constructed members; the nine readings worked by hand
+            and rebuilt the same over the history cut at their session; the card's every sentence worked by hand, read
+            back off the chart page and the full page, and in the reader's words in every state it draws; and no source
+            a rule pins written by 22.8.
+Fixture:    scorecard.json, derived by hand: the constructed filer's four quarters and ratios, and the fixture's night,
+            where the refresh stores Keysight's captured facts alone, so Apple, Microsoft and Netflix read no quarter
+            and Keysight reads one check, its share check, its count of 2026-08-27 about 0.94 per cent under the one of
+            2025-08-25; the first derivation said none, the capture's older counts having been read short, and the
+            suite refused it.
+Claims:     1433, nine new: the scorer's catalogue and matrix rows, its store, section 17's numbers, section 18's
+            three rows and the card on the chart page and the full page. The plan predicted about 18, counting the ten
+            readings, which are no rows of a table the harness reads.
+Pins:       none move: no source a rule's version pins is one of the 31 22.8 writes, asserted.
+Screens:    read back from this branch's build over a scratch copy of 22.6's constructed S&P 500 store, migrated to 109
+            with two scorecards written into it: the chart page's card for a stock scored 8 of 9 with a newer quarter
+            awaited and for a bank scored 7 of 7, the full page's card and the brief read's business panel, at 1,440
+            pixels and a true 390 in both palettes, no page wider than its screen.
+Mutated:    the rule, stated before the runs: one mutation for each threshold and each property 22.8 adds, the smallest
+            edit undoing it where it is stated, made in the worktree and reverted with the editor, each run filtered to
+            the tests reading it. M1 the share check passing only under its tolerance; M2 a ratio the same as a year
+            before read as higher; M3 a quarter ending 45 days after the one scored read as newer; M4 the word strong
+            only above eight in nine; M5 no company read as financial; M6 a split's step under one not brought across;
+            M7 the card's sentence for a check not applying dropped; M8 the debt's fall read as its rise; M9 the
+            night's second scoring after its refresh dropped. Each red: M1 and M2 at the checks on both sides of their
+            thresholds; M3 at the night's step; M4 at the cut points and the night's step; M5 at the financial
+            company's checks and the night's step; M6 at the split; M7 at the card's financial company; M8 at the
+            readings worked by hand; M9 at the night's order and the fixture's cards.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2740 of 2740 tests ran with none failed,
+            migrations 0 to 109 with none pending, schema version 109, against `data-ci` and never `data`; the phase
+            report 64 tables, 1433 claims, 1433 passing, none out of scope and none unexamined, 1448 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    22.8's remedy from main after the merge, while no other writer runs: migration 109, the whole refresh of
+            the SEC's facts, about 2,121 free requests in about 28 minutes, the newest night's scorecards and the
+            ledger's night by hand, then the three ledger histories built again from 2019-01-02 to 2026-10-05 with
+            their checks, about two hours; then the levels plan's figure on Tonight and 22.9.

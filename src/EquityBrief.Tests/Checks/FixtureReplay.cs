@@ -112,6 +112,9 @@ public class FixtureReplay
         await new SwingReader(night, store.DatabaseFile).RunAsync(Index, "replay-swing-readings");
         await new FundamentalReader(night, store.DatabaseFile).RunAsync(Index, "replay-fundamental-readings");
         await new MemberReader(night, store.DatabaseFile).RunAsync(Index, "replay-member-readings");
+
+        // From 22.8 every member's scorecard, after the member reader in its step as the night runs it.
+        await new EquityBrief.Worker.Fundamentals.FundamentalScorer(night, store.DatabaseFile).RunAsync(Index, "replay-scores");
         await new FactsAssembler(night, store.DatabaseFile).RunAsync("replay-facts");
         await new ChangeDetector(night, store.DatabaseFile).RunAsync("replay-changes");
         await new ShortlistBuilder(night, store.DatabaseFile).RunAsync(Index, "replay-listings", Night);
@@ -160,6 +163,10 @@ public class FixtureReplay
 
         await ledgerAgain.BusinessAgainAsync(new DateOnly(2026, 9, 8), filings.Refreshed);
         await ledgerAgain.InsidersAgainAsync(new DateOnly(2026, 9, 8));
+
+        // From 22.8 the scorecards written again once the refresh has stored its facts.
+        await new EquityBrief.Worker.Fundamentals.FundamentalScorer(night, store.DatabaseFile)
+            .RunAsync(Index, "replay-filings", stage: EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage);
 
         // The Treasury's 10-year, after the filings refresh as the night reads it, from 18.2.
         await new EquityBrief.Worker.Treasury.TreasuryReader(night, store.DatabaseFile)

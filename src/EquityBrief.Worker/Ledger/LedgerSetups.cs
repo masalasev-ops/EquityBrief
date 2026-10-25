@@ -218,6 +218,29 @@ public sealed record LedgerContext(
 
         return ValuationReading.Place(parts, prices.GetValue(one, series => (BeforeTheYear?.GetValueOrDefault(ticker) ?? PriceHistory.None).Then(PriceHistory.Of(series.Bars))), session);
     }
+
+    readonly System.Collections.Concurrent.ConcurrentDictionary<(string Ticker, int Filed, bool Financial), Scorecard> scorecards = new();
+    readonly System.Runtime.CompilerServices.ConditionalWeakTable<SweepSeries, PriceHistory> ownPrices = new();
+
+    // From 22.8 each member's GICS sector as the companies' rows file it, which the scorecard reads a financial company by
+    // whatever sector the member's history carries; none where the readings are read without them, the sectors above
+    // standing in.
+    public IReadOnlyDictionary<string, string?>? Gics { get; init; }
+
+    // From 22.8 a member's fundamentals scorecard on a session, over its filer's facts filed before it and its own closes
+    // to it, which on a night are the store's year alone, a financial company's read as GICS filed its sector on the
+    // session; worked once for each count of the facts filed before a session.
+    // see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
+    public Scorecard Scorecard(SweepSeries one, DateOnly session)
+    {
+        var ticker = one.Name.Ticker;
+        var facts = Facts?.GetValueOrDefault(ticker) ?? [];
+        var filed = facts.Count(fact => fact.Filed < session);
+        var sector = Gics is { } gics ? gics.GetValueOrDefault(ticker) : Sectors.GetValueOrDefault(ticker);
+        var financial = FundamentalScorecard.IsFinancial(GicsSectors.On(ticker, sector, session));
+
+        return scorecards.GetOrAdd((ticker, filed, financial), _ => FundamentalScorecard.Read(facts, session, financial, ownPrices.GetValue(one, series => PriceHistory.Of(series.Bars))));
+    }
 }
 
 // The setups of one index on one session, family by family, through the sweep's own readings of the series: the
@@ -839,7 +862,37 @@ public static class LedgerSetups
         Set("vix_over_median", vix is null || market.Of(LedgerMarket.Index) is not { } sessionsHeld ? null : SeriesReadings.OverMedianBefore(vix, day, LedgerReadings.VixMedianSessions, quoted => SeriesReadings.At(sessionsHeld, quoted) is var place && place >= 0 && sessionsHeld[place].Session == quoted));
         Set("company_value", context.CompanyValue(one, day));
 
+        // The fundamentals scorecard's readings, through the core's one scorecard over the facts filed before the session.
+        // see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
+        foreach (var (column, value) in ScorecardReadings(context.Scorecard(one, day)))
+        {
+            Set(column, value);
+        }
+
         return readings;
+    }
+
+    // The ledger's readings of a scorecard by their columns: its share of the checks that applied, gross profit over
+    // assets, and each ratio a check weighs against its own a year before, the debt's and the shares' read as falls so
+    // each reads higher where the finances are stronger, as their heading does.
+    public static IReadOnlyList<(string Column, double? Value)> ScorecardReadings(Scorecard card)
+    {
+        var checks = card.Checks.ToDictionary(check => check.Number);
+
+        static double? Change(ScorecardCheck check) => check.Now is { } now && check.YearBefore is { } then ? now - then : null;
+
+        return
+        [
+            ("fundamentals_score", card.Applied >= FundamentalScorecard.FewestRead ? 1.0 * card.Passed / card.Applied : null),
+            ("gross_profitability", card.GrossProfitability),
+            ("return_on_assets", checks[3].Now),
+            ("return_on_assets_change", Change(checks[3])),
+            ("leverage_fall", Change(checks[5]) is { } rise ? -rise : null),
+            ("current_ratio_change", Change(checks[6])),
+            ("share_fall", checks[7].Now is { } more ? -more : null),
+            ("turnover_change", Change(checks[9])),
+            ("gross_margin_year_change", Change(checks[8])),
+        ];
     }
 
     // The largest fall of a single one of the drop's sessions, the close before it less its own, in the typical move

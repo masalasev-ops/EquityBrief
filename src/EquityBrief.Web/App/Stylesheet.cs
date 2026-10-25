@@ -1108,6 +1108,19 @@ th.tipped:hover .head-tip,th.tipped:focus-within .head-tip{display:block}
 .brief-watch{margin:10px 0 0}
 .brief-foot{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0;color:var(--soft);font-size:13px}
 @media (max-width:760px){.brief-panels{grid-template-columns:1fr}}
+/* From 22.8 the fundamentals card: each check a ticked, crossed or unscored sentence, and the lines not scored beneath. */
+.fundamentals-summary{margin:0 0 10px;font-size:15px;font-weight:600}
+.fundamentals-checks{list-style:none;margin:0;padding:0}
+.fundamentals-checks li{display:flex;gap:8px;margin:0 0 5px;overflow-wrap:anywhere}
+.fundamentals-checks li>span:last-child{min-width:0}
+.fundamentals-checks .check-mark{flex:0 0 1.1em;font-weight:700;color:var(--soft)}
+.fundamentals-checks li[data-answer='passed'] .check-mark{color:var(--up)}
+.fundamentals-checks li[data-answer='failed'] .check-mark{color:var(--down)}
+.fundamentals-awaited{margin:8px 0 0;color:var(--warn)}
+.fundamentals-context-head{font-size:13px;margin:12px 0 6px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2)}
+.fundamentals-context{margin:0;padding-left:18px}
+.fundamentals-context li{margin:0 0 4px;overflow-wrap:anywhere}
+.fundamentals-foot{margin:10px 0 0;color:var(--soft);font-size:13px}
 .chart-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
 .grid-group h3{font-size:13px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2)}
 .grid-group dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:3px 10px;margin:0}

@@ -39,8 +39,8 @@ public sealed record ChartGraphs(
 // The chart page as the shell draws it: the stock, the interval shown, its candles with the averages at each, the night's
 // bands, a listing rule's plan as lines, the report and ex-dividend marks, the stretches holding no daily row, the line
 // naming what the weekly and monthly charts read before the store's year, the grid's groups, the day the stock's
-// report was written, none where none is, and the written report's standing with the controls that write it again; and
-// from 20.12 its graphs.
+// report was written, none where none is, and the written report's standing with the controls that write it again; from
+// 20.12 its graphs; from 22.4 its brief read; and from 22.8 its fundamentals card.
 public sealed record ChartPageView(
     string Ticker,
     string Interval,
@@ -54,7 +54,8 @@ public sealed record ChartPageView(
     DateOnly? ReportWritten,
     ReportStandingView? Standing = null,
     ChartGraphs? Graphs = null,
-    BriefView? Brief = null);
+    BriefView? Brief = null,
+    FundamentalsView? Fundamentals = null);
 
 // The chart page, which every link opening a stock opens first, and the masthead it shares with the name page.
 // see: Every link that opens a stock opens its chart page first, and the chart page links to its report with the controls that write it again
@@ -158,6 +159,13 @@ public sealed partial class SinglePageApp
         if (view.Brief is { } brief)
         {
             region.Append(Cards.Computed("In brief", marks.BriefRead(ticker, brief), title: FormattableString.Invariant($"{Escaped(ticker)} in brief"), stamp: Cards.Night(bars.Count > 0 ? bars[^1].SessionDate : null), id: "brief", region: "chart-page-brief"));
+        }
+
+        // From 22.8 the fundamentals card beneath the brief read, every line written by code from the stored scorecard.
+        // see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
+        if (view.Fundamentals is { } fundamentals)
+        {
+            region.Append(Cards.Computed("Fundamentals", marks.Fundamentals(ticker, fundamentals), title: FormattableString.Invariant($"{Escaped(ticker)}'s fundamentals"), stamp: Cards.Night(bars.Count > 0 ? bars[^1].SessionDate : null), id: "fundamentals", region: "chart-page-fundamentals"));
         }
 
         var chart = new StringBuilder();

@@ -71,7 +71,8 @@ public sealed record BriefInputs(
     DateOnly? NextReport,
     IReadOnlyList<double> ReportMoves,
     EquityBrief.Core.Insiders.InsiderView? Insiders,
-    double? LevelsRewardToRisk = null);
+    double? LevelsRewardToRisk = null,
+    FundamentalScoreRow? Score = null);
 
 // A stock's brief read, written by code from templates over the figures the full page and the decision card already
 // work: each through the same core function, none worked out a second way, and a figure not stored said so in its line.
@@ -88,7 +89,7 @@ public static class BriefScreen
             Summary(inputs),
             [
                 new BriefPanel("chart", "The chart says", [Trend(member), Bands(member), Momentum(inputs.Latest), HalfYear(inputs)]),
-                new BriefPanel("business", "The business says", [Sales(inputs.Business), Margin(inputs.Business), Multiple(inputs.Business), Analysts(inputs.Analysts)]),
+                new BriefPanel("business", "The business says", [FundamentalsScreen.Line(inputs.Score), Sales(inputs.Business), Margin(inputs.Business), Multiple(inputs.Business), Analysts(inputs.Analysts)]),
                 new BriefPanel("way-in", "If you want in", WayIn(inputs, plan)),
             ],
             [.. inputs.Standing.Select(Chip)],

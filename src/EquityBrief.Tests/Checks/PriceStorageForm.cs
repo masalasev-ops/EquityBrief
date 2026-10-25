@@ -234,6 +234,7 @@ public class PriceStorageForm
                 "Distances.cs: InTypicalDays",
                 "ForwardReturnSeries.cs: BreakEven",
                 "ForwardReturnSeries.cs: ChangeFromEntry",
+                "FundamentalScorecard.cs: Ratio",
                 "MarkRenderer.cs: PlotValue",
                 "MarkRenderer.cs: Y",
                 "PaperAccount.cs: RoundTripOf",

@@ -3858,6 +3858,44 @@ internal static class Scope
             Verdict.Pass,
             "every fixture name's chart page opening on its brief, each line worked by the suite from the figure the store holds for it and read back off the page; each template worked by hand over constructed figures, the listing rule's plan where a rule lists the stock and the levels plan where none does, each chip read off the night's answers on the S&P 500 and the S&P 400, the line of what to watch for on both sides of each condition and nowhere else, each figure not stored said so, the panels stacked at a phone's width, and no source a rule pins written",
             ByReadSurface),
+        // 22.8, on the operator's ruling of 2026-10-24: the fundamentals scorecard's step, its store, section 17's numbers,
+        // section 18's three rows and its card on the chart page and the full page.
+        [CheckReach.Key(CatalogueTable, "Fundamental scorer")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the members, the bars, the calendar, the companies and the filed facts it reads and its own table it writes, each reconciled against the row",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Fundamental scorer")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Fundamental scores")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The fundamentals scorecard's numbers")] = new Scoped(
+            Verdict.Pass,
+            "each of the nine checks worked by hand on both sides of its threshold over a constructed filer whose four quarters read its six-month spans, a financial company's seven, the word's cut points at 4, 5, 7 and 8 of nine and at the shares of seven, a split between the two counts and a dividend's step, and the night's step over a constructed store of nine members storing each check with its figures, the places on gross profit over assets, the multiples and an industry's median over three members and none over two, and a newer quarter ending 46 days after the one scored and not one ending 45; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A quarter reported and not yet filed")] = new Scoped(
+            Verdict.Pass,
+            "the night's step over a constructed store storing as awaited a quarter the calendar says was reported two days before the night beside the score of the one before, and one ending 46 days after the one scored, while one ending 45 days after it and one reported after the night are not",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A line the scorecard needs not filed")] = new Scoped(
+            Verdict.Pass,
+            "a check whose line is not filed counted neither passed nor among the checks that applied and naming the line, debt read under a later concept in its order, four checks read giving no word, and the night's step storing a member filing only its net income, its cash and its assets with four checks read, no word and each of the five it could not read naming its line",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A financial company on the scorecard")] = new Scoped(
+            Verdict.Pass,
+            "a financial company's seven checks and its count worked by hand, the current ratio's and the gross margin's not applying, six of seven mixed and clearing the floor of seven in nine, and the night's step storing a bank filed in GICS's Financials sector on the night as seven of seven",
+            ByExpectations),
+        [CheckReach.Key("15.22 Chart", "Fundamentals")] = new Scoped(
+            Verdict.Pass,
+            "read back off the rendered chart page over a constructed store beneath the brief read: the word and the count, each check a ticked or crossed sentence with its figures, a check not read naming its line, a financial company's two saying they do not apply, a newer quarter reported and not yet filed named, the four lines not scored with a line holding nothing saying so, the brief read's business panel opening on the card's one line, and the plain-words check passing on the card",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Fundamentals")] = new Scoped(
+            Verdict.Pass,
+            "read back off the rendered name page over a constructed store after the margins, the same card as the chart page's read off the night's stored scorecard, and a stock with no scorecard stored saying so",
+            ByReadSurface),
         // 17.9, approval and the live alarm: the apply step's and the alarm's catalogue and matrix rows, five stores,
         // section 17's alarm and setting, section 18's two rows, the Loop page's three regions, Tonight's line and the
         // card's row for a rule standing at an approved change.
@@ -5812,6 +5850,8 @@ internal static class Scope
         ["Page history reader"] = "18.3",
         // 19.10's one, which the plan describes as the fill step.
         ["Trade filler"] = "19.10",
+        // 22.8's one, which the plan describes as the night's own step writing every member's scorecard.
+        ["Fundamental scorer"] = "22.8",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
@@ -5941,6 +5981,8 @@ internal static class Scope
         ["Dip results"] = "22.1",
         ["Dip picks"] = "22.1",
         ["Dip trades"] = "22.1",
+        // 22.8's one, which the plan names as the store of its own the night's step writes every scorecard to.
+        ["Fundamental scores"] = "22.8",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -6745,6 +6787,9 @@ internal static class Scope
         // 22.6's two, which the addendum names as Tonight in one minute and the page's words at its foot.
         [CheckReach.Key("15.7 Tonight", "Tonight in one minute")] = "22.6",
         [CheckReach.Key("15.7 Tonight", "Words used on this page")] = "22.6",
+        // 22.8's two, which the plan names as the chart page's card beneath the brief read and the full page's.
+        [CheckReach.Key("15.22 Chart", "Fundamentals")] = "22.8",
+        [CheckReach.Key("15.9 Name", "Fundamentals")] = "22.8",
 
     };
 
@@ -7632,6 +7677,10 @@ internal static class Scope
         ["No next session stored for a dip trade"] = "22.1",
         // 22.2's one, which the plan names as a failure row.
         ["A market series missing a session the dip's sweep reads"] = "22.2",
+        // 22.8's three, which the plan names as a quarter not yet filed, a line not stored and a financial company.
+        ["A quarter reported and not yet filed"] = "22.8",
+        ["A line the scorecard needs not filed"] = "22.8",
+        ["A financial company on the scorecard"] = "22.8",
     };
 
     // The two rows of the read and write matrix whose component already exists.
@@ -7840,6 +7889,8 @@ internal static class Scope
         ["The short-term dip"] = "22.1",
         // 22.2's grid, which the plan names as the sweep's grid row.
         ["The short-term dip's sweep grid"] = "22.2",
+        // 22.8's numbers, which the plan names as section 17's tolerance and cut points.
+        ["The fundamentals scorecard's numbers"] = "22.8",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

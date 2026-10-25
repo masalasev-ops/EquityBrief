@@ -110,9 +110,10 @@ public partial class FixtureExpectations
 
         Assert.Equal(0, await new WalkForwardTester(clock, store.DatabaseFile, store.Root, output).LinksAsync("GSPC", "2026-10"));
 
-        // One row a reading for the pullback alone, the family holding settled setups: the last factor's goes with winners
-        // over its thirty setups, and every other reading, held by none of them, too few.
-        Assert.Equal((long)LedgerReadings.Count, Scalar(store, "SELECT COUNT(*) FROM loop_link WHERE family = 'pullback' AND month = '2026-10' AND index_code = 'GSPC';"));
+        // One row a reading the month's run reads for the pullback alone, the family holding settled setups, the
+        // scorecard's readings of 22.8 joining only from December: the last factor's goes with winners over its thirty
+        // setups, and every other reading, held by none of them, too few.
+        Assert.Equal((long)LedgerReadings.IndexOf(LedgerReadings.ScorecardFirst), Scalar(store, "SELECT COUNT(*) FROM loop_link WHERE family = 'pullback' AND month = '2026-10' AND index_code = 'GSPC';"));
         Assert.Equal(0L, Scalar(store, "SELECT COUNT(*) FROM loop_link WHERE family <> 'pullback';"));
         Assert.Equal(
             ["alpha_six|30|1|goes with winners"],
@@ -124,5 +125,11 @@ public partial class FixtureExpectations
 
         // An index no run reads is refused with nothing written.
         Assert.Equal(2, await new WalkForwardTester(clock, store.DatabaseFile, store.Root, new StringWriter()).LinksAsync("NDX", "2026-10"));
+
+        // December's run reads the scorecard's readings beside every other.
+        var december = FixedClock.At(new DateTimeOffset(2026, 12, 5, 12, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        Assert.Equal(0, await new WalkForwardTester(december, store.DatabaseFile, store.Root, new StringWriter()).LinksAsync("GSPC", "2026-12"));
+        Assert.Equal((long)LedgerReadings.Count, Scalar(store, "SELECT COUNT(*) FROM loop_link WHERE family = 'pullback' AND month = '2026-12' AND index_code = 'GSPC';"));
     }
 }

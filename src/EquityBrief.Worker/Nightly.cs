@@ -423,8 +423,10 @@ public static class Nightly
             // they give it, from the quarters fetched on the nights before this one, before the listings
             // and the facts file that read them. It makes no request: the quarters it reads were asked
             // for after an earlier night's close. From 15.2 every member's readings follow, under a row of their own,
-            // since the state the quarters give a member is one of them.
+            // since the state the quarters give a member is one of them. From 22.8 every member's fundamentals scorecard
+            // follows, over the SEC's facts the refresh stored on the nights before this one.
             // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
+            // see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
             new("fundamental-readings", async () =>
             {
                 var outcome = await new FundamentalReader(clock, store.DatabaseFile)
@@ -432,9 +434,12 @@ public static class Nightly
 
                 await new Members.MemberReader(clock, store.DatabaseFile).RunAsync(indexCode, runId, night.Token, wider);
 
+                var scored = await new Fundamentals.FundamentalScorer(clock, store.DatabaseFile).RunAsync(indexCode, runId, night.Token, wider);
+
                 return $"{outcome.RowsWritten} row(s) for {outcome.Members} member(s), " +
-                    string.Join(", ", outcome.States.Select(state => $"{state.Value} {state.Key}"));
-            }),
+                    string.Join(", ", outcome.States.Select(state => $"{state.Value} {state.Key}")) +
+                    $"; {scored.Scored} member(s) scored on their filings, {scored.Worded} given a word";
+            }, [FundamentalReader.Stage, Members.MemberReader.Stage, Fundamentals.FundamentalScorer.Stage]),
             // Section 14's step 15. It runs before the facts file, which is the
             // order section 14 states, and the facts assembler reads the
             // listings from 5.4 onward for the same reason.
@@ -731,10 +736,13 @@ public static class Nightly
             // were and never touches the arithmetic. The ledger then reads the business readings of tonight's setups
             // again for the members refreshed, so they read every filing the archive posted before the session, and
             // from 19.13 the four insider readings of every setup and member's readings of the night, since the
-            // refresh's day is what lets the insider history reach the session. A night run again for an earlier
-            // session refreshes nothing, since the days it would read are today's.
+            // refresh's day is what lets the insider history reach the session. From 22.8 every member's scorecard is
+            // written again once the refresh has stored its facts, so tonight's scorecards read every filing the
+            // archive posted before the session as tonight's setups do. A night run again for an earlier session
+            // refreshes nothing, since the days it would read are today's.
             // see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
             // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+            // see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
             new("filings", async () =>
             {
                 if (!askForTheFirstName)
@@ -753,9 +761,11 @@ public static class Nightly
                 var ledger = new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile);
                 var readAgain = await ledger.BusinessAgainAsync(clock.SessionDateAt(clock.UtcNow), outcome.Refreshed);
                 var insidersAgain = await ledger.InsidersAgainAsync(clock.SessionDateAt(clock.UtcNow));
+                var scoredAgain = await new Fundamentals.FundamentalScorer(clock, store.DatabaseFile)
+                    .RunAsync(indexCode, runId, default, wider, Fundamentals.FundamentalScorer.AgainStage);
 
-                return FilingsRefresher.Detail(outcome) + FormattableString.Invariant($"; {readAgain} of tonight's setup(s) read again; {insidersAgain} setup and member reading row(s) given their insider readings again");
-            }),
+                return FilingsRefresher.Detail(outcome) + FormattableString.Invariant($"; {readAgain} of tonight's setup(s) read again; {insidersAgain} setup and member reading row(s) given their insider readings again; {scoredAgain.Scored} member(s) scored again on their filings");
+            }, [FilingsRefresher.Stage, Fundamentals.FundamentalScorer.AgainStage]),
             // Section 14's step 26, after the filings refresh. The Treasury's 10-year par yield for the session's year, one free
             // request to the Treasury and none to the provider, every session to the night's kept that the store does not
             // hold. It is handed no token from the night's deadline, and a refused or unreadable answer keeps nothing and

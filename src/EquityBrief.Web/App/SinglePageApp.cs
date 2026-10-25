@@ -1366,7 +1366,9 @@ public sealed partial class SinglePageApp : IComponent
         // The chart of what is behind the stock, from 19.2.
         BehindItView? behind = null,
         // A written report's standing with the controls that write it again, drawn under the masthead.
-        ReportStandingView? standing = null)
+        ReportStandingView? standing = null,
+        // The fundamentals scorecard's card, from 22.8.
+        FundamentalsView? fundamentals = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -1965,6 +1967,14 @@ public sealed partial class SinglePageApp : IComponent
                 withMargins.FetchedOn);
         }
 
+        // From 22.8 the fundamentals card the chart page draws beneath its brief read, in the business section after the
+        // margins.
+        // see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
+        if (fundamentals is { } scored)
+        {
+            Card("fundamentals", "fundamentals", "Fundamentals", Cards.Computed("Fundamentals", marks.Fundamentals(ticker, scored), title: "Nine checks of its filings as first filed", stamp: Cards.Night(session), id: "fundamentals", region: "fundamentals"));
+        }
+
         // The analysts' figures, after the margins, each labelled as theirs and dated by the fetch that kept it.
         // see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one
         if (report?.Analysts is { } analysts)
@@ -2195,16 +2205,16 @@ public sealed partial class SinglePageApp : IComponent
         "</details></section>";
 
     // The places of the name page's regions, in the order the page draws them, which is section 4's: how to read the
-    // page, the short version, the card, the latest quarter, what management said, the segments, the margins, the
-    // analysts, from 19.13 the insiders, the dividend's safety, the valuation, the earnings reactions, the chart, the long
-    // view, how it got here, the levels, the plan, how the rules read it, the risks, the two cases, the cycle, its group by
-    // price, the news, the calendar, the sources, and where the research stands.
+    // page, the short version, the card, the latest quarter, what management said, the segments, the margins, from 22.8
+    // the fundamentals, the analysts, from 19.13 the insiders, the dividend's safety, the valuation, the earnings
+    // reactions, the chart, the long view, how it got here, the levels, the plan, how the rules read it, the risks, the two
+    // cases, the cycle, its group by price, the news, the calendar, the sources, and where the research stands.
     // see: The name page answers a buyer's questions in the order a buyer asks them
     public static readonly string[] RegionOrder =
     [
-        "how-to-read", "short", "card", "quarter", "management", "segments", "margins", "analysts", "insiders", "dividend",
-        "valuation", "reactions", "chart", "long-view", "how-it-got-here", "levels", "plan", "rules", "risks", "two-cases",
-        "cycle", "peers", "news", "calendar", "sources", "research",
+        "how-to-read", "short", "card", "quarter", "management", "segments", "margins", "fundamentals", "analysts", "insiders",
+        "dividend", "valuation", "reactions", "chart", "long-view", "how-it-got-here", "levels", "plan", "rules", "risks",
+        "two-cases", "cycle", "peers", "news", "calendar", "sources", "research",
     ];
 
     // Where each written section is drawn, which is section 4's order: the short version

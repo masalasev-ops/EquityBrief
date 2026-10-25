@@ -83,10 +83,10 @@ public partial class FixtureExpectations
         Assert.Equal((1.0, 0.0), (LedgerReadings.Flag(true)!.Value, LedgerReadings.Flag(false)!.Value));
 
         // The catalogue names each column once, and from 20.8 holds the four release readings at its end, from 22.2 before
-        // the short-term dip's nine.
+        // the short-term dip's nine, and from 22.8 those before the fundamentals scorecard's nine.
         Assert.Equal(LedgerReadings.All.Count, LedgerReadings.All.Select(reading => reading.Column).Distinct(StringComparer.Ordinal).Count());
-        Assert.Equal(85, LedgerReadings.Count);
-        Assert.Equal(LedgerReleases.Columns, LedgerReadings.All.SkipLast(9).TakeLast(4).Select(reading => reading.Column));
+        Assert.Equal(94, LedgerReadings.Count);
+        Assert.Equal(LedgerReleases.Columns, LedgerReadings.All.SkipLast(18).TakeLast(4).Select(reading => reading.Column));
     }
 
     [Fact]

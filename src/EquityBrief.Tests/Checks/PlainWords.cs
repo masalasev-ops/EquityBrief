@@ -12,10 +12,11 @@ using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Tests.Checks;
 
-// plain-words, 22.5, and Tonight from 22.6. Each page section 15.23 names speaks in the reader's words: rendered, no card
-// of it draws a term of the word list in its visible text outside a glossary and the tooltips, and every card's first
-// visible element is its summary sentence. The code's own lists are held to section 15.23's tables word for word in both
-// directions, every step each setup's rule stores to its row, and the headings to the chart of what is behind a stock.
+// plain-words, 22.5, Tonight from 22.6 and the fundamentals card from 22.8. Each page section 15.23 names speaks in the
+// reader's words: rendered, no card of it draws a term of the word list in its visible text outside a glossary and the
+// tooltips, and every card's first visible element is its summary sentence. The code's own lists are held to section
+// 15.23's tables word for word in both directions, every step each setup's rule stores to its row, and the headings to the
+// chart of what is behind a stock.
 // see: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
 public partial class PlainWords
 {
@@ -39,11 +40,14 @@ public partial class PlainWords
     [
         (BriefPage, "22.5", ["chart-page-brief"], false),
         (TonightPage, "22.6", ["one-minute", "buy-points", "close-to-buy", "setups", "family", "heavyweights", "words"], true),
+        (FundamentalsPage, "22.8", ["chart-page-fundamentals", "fundamentals"], false),
     ];
 
     internal const string BriefPage = "The chart page's brief read";
 
     internal const string TonightPage = "Tonight";
+
+    internal const string FundamentalsPage = "The fundamentals card";
 
     // The card regions a covered page is read from.
     internal static string[] RegionsOf(string page) => Assert.Single(Covered, covered => covered.Page == page).Regions;
@@ -323,6 +327,10 @@ public partial class PlainWords
             var page = await client.GetStringAsync($"/screens/chart/{ticker}");
 
             Assert.Empty(FaultsOn(BriefPage, page, terms));
+
+            // From 22.8 the fundamentals card beneath the brief, and the same card on the stock's full page.
+            Assert.Empty(FaultsOn(FundamentalsPage, page, terms));
+            Assert.Empty(FaultsOn(FundamentalsPage, await client.GetStringAsync($"/screens/name/{ticker}"), terms));
         }
 
         // From 22.6 Tonight over the fixture's night, every card of it in the reader's words and opening on its summary.
