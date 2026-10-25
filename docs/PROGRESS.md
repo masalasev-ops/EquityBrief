@@ -9263,3 +9263,33 @@ Queue:      done, 22.11 on the S&P 500 and its records; in progress, 22.11 on th
             then the stop and report, and the sign-offs of phases 18, 19 and 20 by fresh sessions.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
+
+### 22.11 ruling - the operator's second answers: the S&P 400's quality frozen with its seven one-step neighbours alone, and each dip frozen with every neighbour meeting the floors over the prices pulled from 2015-10-01   2026-10-25
+
+Not a checkpoint entry: it lands nothing.
+Measured:   read-only over the operator's store through 2026-10-23, from a build of main's b3897c37 code, the branch then
+            carrying the ruling's documents alone: `sweep-index --family dip` on the S&P 600 from 20:10:10 UTC, run
+            20261025T201011Z, on the S&P 500 from 20:11:41, run 20261025T201142Z, and on the S&P 400 from 20:14:27, run
+            20261025T201428Z. Over the prices pulled from 2015-10-01 the S&P 400's answer is 22.2's, its live rule 546
+            trades at 0.024 risks after costs and 6 of 8 years above nothing. The S&P 500's 22.2 setting reads 515
+            trades at 0.060 in 7 of 8 years, against 511 at 0.052 over the older pull, and its sweep would run the trend
+            on the 200-session average alone, 523 at 0.063 in 6. The S&P 600's 22.2 setting with the volume level reads
+            317 at 0.057 in 6 of 8 as it did, and the volume level is kept on 5 of the 10 strongest settings rather than
+            6, so its sweep would run its first stage's proposal, the market at the index's own breadth of 0.40, 540 at
+            0.039. The neighbours meeting the floors: on the S&P 500 the trend at 200, 523 at 0.063, the time limit at
+            7, 549 at 0.056 in 6, and the stop at 4, 515 at 0.046 in 7; on the S&P 400 the trend at 200, 551 at 0.022
+            in 6, and the stop at 4, 546 at 0.017 in 6; and on the S&P 600 with the volume level kept, the exit on the
+            5-session average, 317 at 0.044 in 6, the trend with the 50 above the 200, 312 at 0.056 in 6, and the time
+            limit at 5, 331 at 0.041 in 6. The market variants: 936 at 0.028 in 5, 637 at 0.014 in 4, and 367 at 0.057
+            in 6 with the volume level kept.
+Ruled:      by the operator on 2026-10-25 at about 20:20 UTC, to two questions put after the first answers, word for
+            word in `prompts/2026-10-25-22.11-operator-answers-2.md`. 1, the S&P 400's quality proposal being two dials
+            from the starting setting, its price not read and sold on a filing, "Seven, as ruled": the starting setting
+            and its seven one-step neighbours, the proposal not run and its valuation-off neighbour run. 2, "22.2
+            settings, every neighbour": each dip's live rule at its 22.2 setting, and as versions every one-step
+            neighbour meeting the floors over the prices pulled from 2015-10-01 and the market variant, five rules on
+            the S&P 500, four on the S&P 400 and five on the S&P 600. The decision and 22.3's text say so, the prior
+            text in the changelog.
+Queue:      as the ruling entry above.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.

@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-25 - BUILD_PLAN.md - 22.3 registers every neighbour meeting the floors over the prices pulled from 2015-10-01
+Authorised by: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
+Was:
+> On the operator's rulings of 2026-10-25, word for word in `prompts/2026-10-25-22.11-ruling-quality-and-dip-freezes.md` and `prompts/2026-10-25-22.11-operator-answers.md`, ... and beside it as versions the one-step neighbours that meet the floors and the market variant, ...: on the S&P 500 the live rule, its stop at 4 typical moves and the market variant; on the S&P 400 the live rule, its trend on the 200-session average alone, its stop at 4 typical moves and the market variant; and on the S&P 600 the live rule and the market variant, with its exit on the first close above the 5-session average only where that neighbour, measured with the volume level kept read-only through the sweep's command, meets the floors, its figures in the remedy's entry.
+Now:
+> On the operator's rulings of 2026-10-25, word for word in ..., `prompts/2026-10-25-22.11-operator-answers.md` and `prompts/2026-10-25-22.11-operator-answers-2.md`, ... and beside it as versions the one-step neighbours that meet the floors over the prices pulled from 2015-10-01, read through the sweep's command run again read-only, and the market variant, ...: on the S&P 500 the live rule, its trend on the 200-session average alone, its time limit at 7 sessions, its stop at 4 typical moves and the market variant; on the S&P 400 the live rule, its trend on the 200-session average alone, its stop at 4 typical moves and the market variant; and on the S&P 600, each with the volume level kept, the live rule, its exit on the first close above the 5-session average, its trend with the 50 above the 200, its time limit at 5 sessions and the market variant, the figures of each in the remedy's entry.
+Why: the operator's second answers of 2026-10-25, given once each index's sweep was run again over the prices pulled from 2015-10-01, register every neighbour meeting the floors over that pull.
+
 ### 2026-10-25 - BUILD_PLAN.md - 22.3 freezes each index's dip at its 22.2 setting with the neighbours meeting the floors and the market variant, and the dip's rule reads every dial its sweep reads
 Authorised by: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
 Was:
