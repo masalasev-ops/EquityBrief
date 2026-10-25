@@ -37,8 +37,9 @@ public static partial class NameScreen
     // The plan column's rows, from the ladder's stored plan. Nothing here
     // derives a figure: each row is a price the ladder wrote and a sentence
     // saying what it is, and the sentences are assembled from stored values
-    // rather than computed from them.
-    public static IReadOnlyList<PlanRow> PlanRows(LadderRow? ladder)
+    // rather than computed from them. Read plain, as a buy point's fold on Tonight
+    // draws them, each sentence is in the reader's words.
+    public static IReadOnlyList<PlanRow> PlanRows(LadderRow? ladder, bool plain = false)
     {
         if (ladder is null)
         {
@@ -57,16 +58,17 @@ public static partial class NameScreen
                 ? decimal.Parse(stored, CultureInfo.InvariantCulture)
                 : null;
             var condition = tranche.GetProperty("condition").GetString();
+            var buyOn = plain ? PlainWords(condition) : Words(condition);
 
             rows.Add(new PlanRow(
                 low,
                 high,
                 PlanKind.Tranche,
                 stop is { } below
-                    ? $"buy on {Words(condition)}, stop on a daily close below {Figures.Price(below)}"
-                    : $"buy on {Words(condition)}, no stop beneath",
+                    ? $"buy on {buyOn}, stop on a daily close below {Figures.Price(below)}"
+                    : $"buy on {buyOn}, no stop beneath",
                 Traded: true,
-                BuyOn: Words(condition),
+                BuyOn: buyOn,
                 Stop: stop));
 
             // The stop is its own row, because it is a price a close is measured
@@ -88,8 +90,10 @@ public static partial class NameScreen
                 Price(exit, "highEdge"),
                 PlanKind.Exit,
                 traded
-                    ? ExitWords(fraction, trailing)
-                    : exit.GetProperty("reason").GetString() ?? "listed and not traded",
+                    ? plain ? PlainExitWords(fraction, trailing) : ExitWords(fraction, trailing)
+                    : exit.GetProperty("reason").GetString() is { } reason
+                        ? plain ? reason.Replace("the blended entry", "the average buy price", StringComparison.Ordinal) : reason
+                        : "listed and not traded",
                 traded,
                 Trails: traded && trailing));
         }
@@ -1169,6 +1173,17 @@ public static partial class NameScreen
         !trailing ? $"sell {fraction} of the position"
         : fraction == "1/1" ? "the whole position is held on a stop trailed under the price, not sold at a price"
         : $"the last {fraction} is held on a stop trailed under the price, not sold at a price";
+
+    // The same two in the reader's words, as a buy point's fold on Tonight draws the plan, every condition the enum
+    // carries its own arm as above.
+    // see: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
+    static string PlainWords(string? condition) =>
+        condition == nameof(TrancheCondition.SecondDayAfterAShock) ? "the second day after a shock, once the price has stayed above the first day's low" : Words(condition);
+
+    static string PlainExitWords(string? fraction, bool trailing) =>
+        !trailing ? ExitWords(fraction, trailing)
+        : fraction == "1/1" ? "the whole position is kept on a rising stop under the price, not sold at a price"
+        : $"the last {fraction} is kept on a rising stop under the price, not sold at a price";
 
     public static string Region(
         SinglePageApp page,
@@ -2355,6 +2370,42 @@ public static partial class NameScreen
                 closeStored ? close : null)
             + "</div></div></section>";
     }
+
+    // A buy point's entry and exit plan as its fold on Tonight draws it beneath its setup's own plan: the plan column and
+    // its two tables as the stock's full page draws them, from the plan the night shown stored and against that night's
+    // close, in the reader's words; a stock whose stored plan places nothing says why, and one the night stored no plan
+    // for, or no close, says so.
+    // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
+    public static string EntryAndExitPlan(MarkRenderer marks, string ticker, LadderRow? ladder, decimal? close)
+    {
+        var rows = PlanRows(ladder, plain: true);
+        var body = Invariant($"<section class=\"card-levels\" data-ticker=\"{Escaped(ticker)}\" data-plan-rows=\"{rows.Count}\"><h5>Entry and exit plan</h5>");
+
+        if (rows.Count > 0 && close is { } price)
+        {
+            return body
+                + "<div class=\"plan-grid\"><div class=\"fig\">" + marks.PlanColumn(ticker, price, rows, plain: true) + "</div><div>"
+                + marks.PlanTables(ticker, rows, plain: true) + "</div></div>"
+                + "<p class=\"card-note\">Worked from the stock's own support and resistance levels: it buys in the green zones below the price and sells in the orange zones above it, and the heavy line is where the whole idea is wrong.</p>"
+                + "</section>";
+        }
+
+        var why = ladder is null ? "no plan is stored for it on the night"
+            : rows.Count > 0 ? "no close is stored for it on the night"
+            : PlainReason(PlanReason(ladder, 0));
+
+        return body + Invariant($"<p class=\"degraded\" data-plan=\"none\">No entry and exit plan is drawn for {Escaped(ticker)}: {Escaped(why)}.</p>") + "</section>";
+    }
+
+    // The reason a stored plan places nothing, in the reader's words: the ladder's rule and the night's builder write it
+    // with the build's own terms for a zone it buys in and a trading day.
+    public static string PlainReason(string? reason) =>
+        reason is null
+            ? "its plan places nothing"
+            : reason
+                .Replace("no tranche is placed", "no zone to buy in is placed", StringComparison.Ordinal)
+                .Replace("this session", "this trading day", StringComparison.Ordinal)
+                .Replace("last session", "last trading day", StringComparison.Ordinal);
 
     // The reasons that fired for this name tonight, read back from the stored
     // listing. A name with no listing row, or one that fired nothing, has none,

@@ -101,7 +101,7 @@ public sealed record DecisionCardView(
 
 // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
 // see: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own
-// see: Each buy point's row folds its pick's card alone, and the levels plan stays on the stock's full page
+// see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
 // see: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
 public sealed partial class MarkRenderer
 {
@@ -110,9 +110,15 @@ public sealed partial class MarkRenderer
 
     public const string RecordReadsHigh = "Its settings were chosen on these same years, so the figures are optimistic.";
 
-    // What the card says beneath its plan, since the stock's full page draws the stock's levels as well.
-    public static string OnePlanSays(string setup) =>
-        $"This is the {setup}'s own plan and the only one shown. The support and resistance levels on the stock's full page are background, not a second plan.";
+    // What the card says beneath its plan: that its trade is sold by the setup's own exits alone, and where the stock's
+    // entry and exit plan, worked separately from its support and resistance levels, stands: below it where a buy point's
+    // fold draws it, on the stock's full page where the card is drawn without it, and nowhere for a stock of an index the
+    // night works no such plan for.
+    public static string OnePlanSays(string setup, bool below = false, string? index = null) =>
+        $"This is the {setup}'s own plan, and its trade is sold by these exits alone. " + (
+            below ? "The entry and exit plan below it is worked separately, from the stock's support and resistance levels."
+            : index is { } other ? $"No entry and exit plan is worked for the {other}'s stocks; it is read for the S&P 500's alone."
+            : "The entry and exit plan on the stock's full page is worked separately, from its support and resistance levels.");
 
     // The control on a pick's row that opens its card in place beneath the row.
     public static string CardToggle(DecisionCardView card) =>
@@ -125,12 +131,13 @@ public sealed partial class MarkRenderer
 
     // A pick's card in the reader's words: a sentence saying which setup picked the stock, when, and at about what price;
     // a ticked sentence for each step it passed, from the steps and values the night stored; the setup's own plan, the
-    // only plan the card draws, with the reward against the risk where the pick's row states it; the card's other
-    // checks, each advising and removing no pick; what could go wrong before the trade ends; the setup's record under the
-    // setup's own heading and never the stock's; the setups most like it; how the stock compares with its index's stocks
-    // tonight; the operator's own trades of the setup; the control recording a trade bought; and, where the card opens
-    // beneath a row, the link to the stock's full page, which alone draws the stock's levels.
-    public string DecisionCard(DecisionCardView card, FamilyPickCell? pick = null, bool linked = false)
+    // one its trade follows, with the reward against the risk where the pick's row states it; where a buy point's fold
+    // hands it, the stock's entry and exit plan beneath it; the card's other checks, each advising and removing no pick;
+    // what could go wrong before the trade ends; the setup's record under the setup's own heading and never the stock's;
+    // the setups most like it; how the stock compares with its index's stocks tonight; the operator's own trades of the
+    // setup; the control recording a trade bought; and, where the card opens beneath a row, the link to the stock's full
+    // page.
+    public string DecisionCard(DecisionCardView card, FamilyPickCell? pick = null, bool linked = false, string? levels = null)
     {
         var body = new StringBuilder();
         var setup = SetupOf(card.Family);
@@ -138,7 +145,8 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<div class=\"decision-card\" data-index=\"{Escaped(card.Index)}\" data-family=\"{Escaped(card.Family)}\" data-ticker=\"{Escaped(card.Ticker)}\" data-night=\"{DayOf(card.Night)}\">");
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary>{Escaped(CardSummary(card, setup))}</p>");
         body.Append(WhyItQualified(card));
-        body.Append(ThePlan(card, setup, pick));
+        body.Append(ThePlan(card, setup, pick, levels is not null));
+        body.Append(levels ?? string.Empty);
         body.Append(OtherChecks(card));
         body.Append(Hits(card));
         body.Append(RuleRecord(card));
@@ -262,13 +270,14 @@ public sealed partial class MarkRenderer
     static string PlanTile(string tile, string label, string figure, string? beneath, string? figureClass = null, string? extra = null) =>
         Formatted($"<div class=\"plan-tile\" data-tile=\"{tile}\"{extra}><span class=\"tile-label\">{Escaped(label)}</span><b{(figureClass is null ? string.Empty : Formatted($" class=\"{figureClass}\""))}>{Escaped(figure)}</b>{(beneath is null ? string.Empty : Formatted($"<span class=\"tile-under\">{Escaped(beneath)}</span>"))}</div>");
 
-    // The plan: the setup's own and the only one the card draws. The buy at the next trading day's open, the stop as a
-    // close below it, the target or the rising stop or the exit that ends a trade with none, and the time limit with the
-    // hold's last day; the reward against the risk where the pick's row states it; the plan in the operator's money where
-    // the account is set and the link to the settings page where it is not; the setup's management of the trade, each
-    // stop a close below it; and the line saying the stock's levels are no second plan.
+    // The plan: the setup's own, the one its trade follows. The buy at the next trading day's open, the stop as a close
+    // below it, the target or the rising stop or the exit that ends a trade with none, and the time limit with the hold's
+    // last day; the reward against the risk where the pick's row states it; the plan in the operator's money where the
+    // account is set and the link to the settings page where it is not; the setup's management of the trade, each stop a
+    // close below it; and the line saying the trade is sold by these exits alone and where the stock's entry and exit plan
+    // stands.
     // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
-    static string ThePlan(DecisionCardView card, string setup, FamilyPickCell? pick)
+    static string ThePlan(DecisionCardView card, string setup, FamilyPickCell? pick, bool levelsBelow = false)
     {
         var heavyweights = card.Family == EquityBrief.Core.Families.HeavyweightRule.Name;
         var dip = card.Family == EquityBrief.Core.Families.DipRule.Name;
@@ -338,7 +347,7 @@ public sealed partial class MarkRenderer
             body.Append("</ul>");
         }
 
-        body.Append(Invariant, $"<p class=\"card-note\">{Escaped(OnePlanSays(setup))}</p>");
+        body.Append(Invariant, $"<p class=\"card-note\">{Escaped(OnePlanSays(setup, levelsBelow, card.Index == "GSPC" ? null : new IndexMembers(card.Index, 0).Named))}</p>");
 
         return body.Append("</section>").ToString();
     }

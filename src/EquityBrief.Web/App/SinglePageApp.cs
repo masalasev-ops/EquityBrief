@@ -2620,7 +2620,8 @@ public sealed partial class SinglePageApp : IComponent
         bool closeOpen = false,
         bool newest = true,
         string? closeHref = null,
-        EndedTonightView? ended = null)
+        EndedTonightView? ended = null,
+        IReadOnlyDictionary<string, string>? plans = null)
     {
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
@@ -2685,7 +2686,8 @@ public sealed partial class SinglePageApp : IComponent
                 newest,
                 Universes.Large.Word,
                 selectedTicker,
-                ended));
+                ended,
+                plans: plans));
         }
         else if (families is null)
         {
@@ -2750,9 +2752,9 @@ public sealed partial class SinglePageApp : IComponent
         // The selected name's plan and level summary, which is what section 15.7
         // means by the common case needing no navigation: selecting a row draws its
         // plan beneath the list, on the same page, and brings it into view. On a night the families drew the list, from
-        // 22.6 no plan is drawn here: a pick's card beneath its row holds its one plan, and the levels plan stays on the
-        // stock's full page.
-        // see: Each buy point's row folds its pick's card alone, and the levels plan stays on the stock's full page
+        // 22.6 no plan is drawn here: a pick's card beneath its row holds its setup's own plan, and from the 22.6
+        // correction of 2026-10-25 the stock's entry and exit plan beneath it.
+        // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
         var byFamilies = families is not null;
 
         if (!byFamilies && selectedName.Length > 0 && selectedTicker is { } chosen)
