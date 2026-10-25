@@ -166,7 +166,7 @@ public class FixtureReplay
 
         // From 22.8 the scorecards written again once the refresh has stored its facts.
         await new EquityBrief.Worker.Fundamentals.FundamentalScorer(night, store.DatabaseFile)
-            .RunAsync(Index, "replay-filings", stage: EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage);
+            .RunAsync(Index, "replay-scores-again", stage: EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage);
 
         // The Treasury's 10-year, after the filings refresh as the night reads it, from 18.2.
         await new EquityBrief.Worker.Treasury.TreasuryReader(night, store.DatabaseFile)
