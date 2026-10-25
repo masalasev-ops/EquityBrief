@@ -241,8 +241,10 @@ public partial class ReadSurface
 
         // From the 19.2 correction of 2026-10-21 the row opens its fold rather than selecting itself, and carries the control
         // asking for a report it does not hold; with no name in the link no row is selected. From 22.6 a row folds its
-        // pick's card alone, and this night wrote none, so no row folds.
+        // pick's card, from the 22.6 correction of 2026-10-25 with the entry and exit plan drawn inside it, and this night
+        // wrote none, so no row folds and no plan is drawn.
         Assert.DoesNotContain("data-fold=", first, StringComparison.Ordinal);
+        Assert.DoesNotContain("card-levels", page, StringComparison.Ordinal);
         Assert.DoesNotContain("Open plan", first, StringComparison.Ordinal);
         Assert.DoesNotContain("data-select-href", first, StringComparison.Ordinal);
         Assert.Contains("data-report-state=\"unwritten\" data-researched=\"false\"", first, StringComparison.Ordinal);
