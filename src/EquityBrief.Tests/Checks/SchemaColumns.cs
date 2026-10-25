@@ -102,6 +102,9 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "Dip trades"),
     ];
 
+    // 22.8's one: every member's fundamentals scorecard on each night.
+    internal static string[] ScoreStoreRows => [CheckReach.Key(Scope.StoresTable, "Fundamental scores")];
+
     internal static CheckReach Reach => new(
         "schema-columns",
         ["docs/SCHEMA.md"],
@@ -221,6 +224,9 @@ public class SchemaColumns
             .. ReleaseAnswerStoreRows,
             // 22.1, the short-term dip's four tables.
             .. DipStoreRows,
+
+            // 22.8, the fundamentals scorecard's store.
+            .. ScoreStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

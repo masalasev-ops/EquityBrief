@@ -339,7 +339,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             var (exits, figures) = ExitProcedures.Autopsy(read, rule, output.WriteLine);
             var (conditions, spread) = ConditionProcedures.Run(read, rule, readings, output.WriteLine);
             var ideas = IdeaProcedures.Run(read, rule, readings, answered, output.WriteLine);
-            var (scored, fitted) = ScoreProcedures.Run(read, rule, readings, await FinishedAsync(databaseFile, rule.Family, cancellation), output.WriteLine);
+            var (scored, fitted) = ScoreProcedures.Run(read, rule, readings, await FinishedAsync(databaseFile, rule.Family, through, cancellation), output.WriteLine);
 
             proposals.AddRange(exits);
             proposals.AddRange(conditions);
@@ -720,8 +720,9 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     }
 
     // A family's finished setups on all three indices as the learned score learns on them, none on a store whose ledger
-    // holds none.
-    public static async Task<ScoreRows> FinishedAsync(string databaseFile, string family, CancellationToken cancellation = default)
+    // holds none; a run through a day before the scorecard's readings join the loop reads them as none.
+    // see: The fundamentals scorecard and the quality family join phase 22 ahead of the hold on new work, and the monthly run reads none of them before its first run after 2026-11-07
+    public static async Task<ScoreRows> FinishedAsync(string databaseFile, string family, DateOnly through, CancellationToken cancellation = default)
     {
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
@@ -731,7 +732,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         count.CommandText = FinishedCount;
         count.Parameters.AddWithValue("$family", family);
 
-        var rows = new ScoreRows(Convert.ToInt32(await count.ExecuteScalarAsync(cancellation), CultureInfo.InvariantCulture));
+        var rows = new ScoreRows(Convert.ToInt32(await count.ExecuteScalarAsync(cancellation), CultureInfo.InvariantCulture), through);
 
         await using var command = connection.CreateCommand();
 
@@ -745,7 +746,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         {
             for (var at = 0; at < readings.Length; at++)
             {
-                readings[at] = reader.IsDBNull(5 + at) ? null : reader.GetDouble(5 + at);
+                readings[at] = reader.IsDBNull(5 + at) || !EquityBrief.Core.Ledger.LedgerReadings.LoopReads(at, through) ? null : reader.GetDouble(5 + at);
             }
 
             rows.Add(

@@ -905,6 +905,24 @@ It records one run log row under `filings-whole`. Run without `--whole`, `filing
 
 From 17.12 the refresh stores beside the six measures the share count each filing's cover states, a row a day it stands for, which the ledger's valuation reading reads with each quarter's net income (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years). A filer stating its count a class at a time holds none in the archive's facts, and its reading is none. 17.12's remedy runs the whole refresh once after its migration and then builds each index's history again with `--again` from 2019-01-02 to 2026-10-05, since a row the build wrote before holds no such reading; the night's rows written before the migration keep none. The reading reaches twelve quarters back, about three years, where the bar store holds one: the build reads the closes before the store's year off the pulled bars merged with the store's, and the night off the newest pull holding each member's first stored session, brought to the store's scale, so a purge of that pull leaves the night's reading none for the members it held until a pull holds those years again.
 
+From 22.8 the refresh keeps beside them the four balance sheet lines, total assets, current assets, current liabilities and long-term debt, each for the day it stands for, the cost of sales beside gross profit, and every flow's six months, which a second quarter's cash flow statement alone states (see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it). The night's fundamental readings step then writes every member's scorecard to `fundamental_score`, its nine checks of its filer's facts as first filed before the session, and the ledger reads nine readings of it on every setup. `scores` runs that step by hand over the newest night the store holds, refused while a night holds the store:
+
+```
+dotnet run --project src/EquityBrief.Worker -- scores
+```
+
+22.8's remedy, from main after the merge and before the night, runs the file, which migrates to 109, runs the whole refresh, about 2,121 requests of the archive in about 28 minutes, writes the newest night's scorecards and runs the ledger's night step by hand, then builds each index's history again and checks it:
+
+```
+powershell -File tools/remedy.ps1 tools/remedies/2026-10-25-22.8-the-fundamentals-scorecard.txt
+tools/ledger-build.ps1 --index GSPC --from 2019-01-02 --through 2026-10-05 --again
+tools/ledger-build.ps1 --index MID --from 2019-01-02 --through 2026-10-05 --again
+tools/ledger-build.ps1 --index SML --from 2019-01-02 --through 2026-10-05 --again
+dotnet run --project src/EquityBrief.Worker -- ledger-check --index GSPC
+```
+
+each check run for MID and SML as for GSPC. A row written before 22.8 holds none of the nine readings until the history is built again with `--again`. No source a rule's version pins moves, so nothing is registered again and no record or paper account restarts.
+
 From 19.13 the same refresh reads the Form 4 and 4/A lines of each day's index it reads and asks the archive for each such filing whose line names a member's filer, one request a filing under the refresh's own limit, storing its table of shares a row a transaction in `insider_trade` under the issuer it names (see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted). A filing stored already is not asked again, so a day the limit stopped is read again the next night from the filings it had not reached, and each day read whole is recorded in `insider_read`; a filing the reader cannot read is named on the step's row with why and stores nothing. Once the refresh has stored its days, the ledger reads the four insider readings again for every setup of the night and every member's readings. The step's row counts the Form 4 filings asked beside the indexes, the 8-K pages and the facts.
 
 The history before the nightly reader is read by hand from the SEC's quarterly insider transactions data sets, one request a quarter and one for the page that lists them, from 2018q1 through the newest quarter posted, each quarter's Forms 4 and 4/A of every company the store knows, the night's and the pulled companies', stored and the quarter recorded once all of it is:

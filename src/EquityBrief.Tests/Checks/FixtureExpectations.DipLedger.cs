@@ -216,11 +216,15 @@ public partial class FixtureExpectations
         Assert.Null(large[LedgerReadings.IndexOf("large_breadth")]);
         Assert.Null(large[LedgerReadings.IndexOf("drop_against_sector")]);
 
-        // The nine stand at the catalogue's end in this order, after the release readings of 20.8.
+        // The nine stand in this order after the release readings of 20.8, and from 22.8 the scorecard's after them.
         Assert.Equal(
             ["rsi_two", "drop_fall", "drop_largest", "drop_volume", "drop_against_sector", "large_breadth", "fund_over_long", "vix_over_median", "company_value"],
-            LedgerReadings.All.TakeLast(9).Select(reading => reading.Column));
+            DipReadings.Select(reading => reading.Column));
+        Assert.Equal(LedgerReadings.ScorecardFirst, LedgerReadings.All[LedgerReadings.IndexOf("company_value") + 1].Column);
     }
+
+    // The dip's nine readings, the nine after the release readings.
+    static IEnumerable<LedgerReading> DipReadings => LedgerReadings.All.Skip(LedgerReadings.IndexOf("release_demand") + 1).Take(9);
 
     // Three S&P 400 members of one sector over 270 weekdays, each drifting at its own pace with a weekly wobble that drops
     // it four points on every fifth session, and the index, IJH and the VIX moving every session, so a reading taken past
@@ -281,7 +285,7 @@ public partial class FixtureExpectations
 
         Assert.True(held);
         Assert.Empty(LedgerPointInTime.Differences(stored.Readings, rebuilt!));
-        Assert.All(LedgerReadings.All.TakeLast(9), reading => Assert.NotNull(rebuilt![LedgerReadings.IndexOf(reading.Column)]));
+        Assert.All(DipReadings, reading => Assert.NotNull(rebuilt![LedgerReadings.IndexOf(reading.Column)]));
 
         // A stored VIX reading a hundredth over the one the cut reads is named with both figures, and nothing else is.
         var off = (double?[])stored.Readings.Clone();

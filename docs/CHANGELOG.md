@@ -26,6 +26,68 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-25 - BUILD_PLAN.md - 22.8's text states what was built: debt over the year's average assets, the share check's split-only basis, the newer quarter's 45 days, the night scoring again after its refresh, and nine readings
+Authorised by: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
+Was:
+> ... (5) long-term debt over total assets lower than a year ago, (6) ... and (7) no new shares over the year, the newest count the covers state at most 2 per cent above the one standing a year before, the two brought to one basis by each count's day's close as traded against its close at the store's scale; ...
+> A step of the night's own, after that refresh, writes every member's scorecard to a store of its own: each check's answer with its figures, the newest quarter it read and any newer one the calendar says was reported and no filing yet states, the word, ...
+> The ledger gains ten readings on every setup, appended at its catalogue's end: the score as a share of the checks that applied, the checks read, gross profit over total assets, return on assets and its change on a year, and the change on a year of long-term debt over assets, of current assets over current liabilities, of the share count, of sales over assets and of the gross margin over four quarters; ...
+Now:
+> ... (5) long-term debt over the year's average total assets lower than a year ago, as Piotroski scales it, (6) ... and (7) no new shares over the year, the newest count the covers state at most 2 per cent above the one standing a year before, the older brought across each split the store's closes show between the two, a session whose close as traded over its close at the store's scale steps by 1.4 or more, so a dividend moves neither; ...
+> A step of the night's own writes every member's scorecard to a store of its own, and writes it again after that refresh so tonight's scorecards read every filing posted before the session: ... any newer one the calendar says was reported and no filing yet states, one ending more than 45 days after it, the word, ...
+> The ledger gains nine readings on every setup, appended at its catalogue's end: the score as a share of the checks that applied, gross profit over total assets, return on assets and its change on a year, the fall on a year of long-term debt over the year's average assets and of the share count, so each reads higher where the finances are stronger as its heading on the chart of what is behind a stock does, and the change on a year of current assets over current liabilities, of sales over assets and of the gross margin over four quarters; ...
+Why: the build read the paper's own scaling of the debt check, found the valuation reading's basis carries each dividend into a count, found the calendar dates a 52 or 53 week quarter by its month's end up to three weeks from the filed quarter, found the refresh stores a filing after the night's first scoring, and found the count of checks read measures nothing of a business, so the ledger keeps the share alone; the text states each as built, and no done condition changes.
+
+### 2026-10-25 - ARCHITECTURE.html - the fundamentals scorecard: its scorer, its store, its night steps, its card on the chart page and the name page, its numbers, its three failure rows, its research and its two sources
+Authorised by: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
+Was:
+> Section 4: ... numbering from one up to twenty-six regions in the order of this table ... The other twenty need no paid call to be drawn, ... and thirteen of the twenty change every night.
+> The ledger's readings: ... the eighty-five readings of the stock, its business, its insiders and the market ...
+> Section 14, the reported quarters' step: ... Then store every member's readings of the three indices and the switches beside them, each through the one function the sweeps read it with (see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing).
+> Section 14, the filings step: ... then read the business readings of tonight's setups again for the members refreshed (see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit).
+> 15.22, In brief: ... and a footer saying code wrote it from tonight's stored figures and no model judged it (see: The chart page opens on a brief read written by code from stored figures, and no rule reads it)
+> Figure 15.1: twenty-nine parts, Margins tenth and Analysts eleventh, in a frame 1,216 high; its key twenty-nine lines.
+> Section 16, Setups: ... the eighty-five readings as they stood ...
+> Section 16, Filed facts: one row per filer, concept and period of the six measures, ... each a quarter, nine months or a year, and from 17.12 one per filer and day of the share count a filing's cover states, with the figure, the day and the form and accession of the first filing stating it
+Now:
+> Section 4: ... up to twenty-seven regions ... The other twenty-one need no paid call to be drawn, ... and fourteen of the twenty-one change every night; and a row, Fundamentals, after the margins, the chart page's card read off the stored scorecard, free and changing each night.
+> The ledger's readings: ... the ninety-four readings ..., and from 22.8 nine of the fundamentals scorecard's, its share of the checks that applied, gross profit over total assets, return on assets and its change on a year, the falls on a year in long-term debt over the year's average assets and in the share count, and the changes on a year in current assets over current liabilities, in sales over assets and in the gross margin over four quarters, which the monthly loop reads only from its first run after 2026-11-07.
+> Section 14, the reported quarters' step: the same, then From 22.8, then score every member of the three indices holding a bar on the night on nine checks of its filer's facts as first filed before the session, through the core's one scorecard, and store each check with its figures (see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it).
+> Section 14, the filings step: the same, then From 22.8, then score every member again, so tonight's scorecards read every filing the archive posted before the session as tonight's setups do (see: ...).
+> 15.22, In brief: the same, then ; from 22.8 the business panel opening on a fifth line, the fundamentals scorecard's word and count
+> Figure 15.1: thirty parts, Fundamentals eleventh after the margins, every part after it a row lower, in a frame 1,252 high; its key thirty lines, the eleventh the card.
+> Section 16, Setups: ... the ninety-four readings as they stood ...
+> Section 16, Filed facts: the same, and from 22.8 the cost of sales beside them, every measure's six months, and one per filer and day of each of the four balance sheet lines, ...
+> And new rows: section 7's and the matrix's Fundamental scorer; section 15.9's and 15.22's Fundamentals; section 15.23's pages table's fundamentals card; section 16's Fundamental scores; section 17's The fundamentals scorecard's numbers; section 18's A quarter reported and not yet filed, A line the scorecard needs not filed and A financial company on the scorecard; section 11.4's paragraph on the scorecard with its evidence and its judgement; and section 23's Piotroski (2000) and Novy-Marx (2013).
+Why: the operator's ruling of 2026-10-24 adds the scorecard of nine checks over every stock's filings as first filed, its card on the chart page and the full page and its readings in the ledger, as 22.8.
+
+### 2026-10-25 - SCHEMA.md - the fundamental scores' store, the setups' nine scorecard readings and the filed facts' new lines
+Authorised by: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
+Was:
+> filed_fact: `concept` ... one of the six measures' or from 17.12 the cover's share count; `period_start` the first day of the period, a quarter, nine months or a year, and for a share count the day it stands for; `period_end` ... and for a share count the day it stands for.
+Now:
+> filed_fact: `concept` ... and from 22.8 the cost of sales's or one of the four balance sheet lines'; `period_start` ... a quarter, nine months or a year and from 22.8 six months, and for a share count or a balance sheet line the day it stands for; `period_end` ... and for a share count or a balance sheet line the day it stands for; and the table's paragraph names the lines 22.8 keeps.
+> And new: the store `fundamental_score` with its paragraph, written by the fundamental scorer after the member readings and again after the filings refresh; its row in the writers table; and the setups' nine columns, `fundamentals_score` to `gross_margin_year_change`.
+Why: migration 109 creates the store and the columns, and the refresh keeps the lines the checks read.
+
+### 2026-10-25 - RUNBOOK.md - the scorecard's command and 22.8's remedy
+Authorised by: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
+Was:
+> The filings refresh's section went from 17.12's share counts to 19.13's insiders' filings, and named no scorecard.
+Now:
+> A paragraph after 17.12's: from 22.8 the refresh keeps the four balance sheet lines, the cost of sales and every flow's six months; the night writes every member's scorecard; `scores` runs that step by hand; and 22.8's remedy migrates to 109, runs the whole refresh, writes the newest night's scorecards, runs the ledger's night step and builds the three ledger histories again with their checks.
+Why: the remedy is what the change owes the operator's store, and the command is how a person writes the scorecards outside the night.
+
+### 2026-10-25 - .claude/rules/checks.md - fixture-expectations, read-surface and plain-words reach the fundamentals scorecard
+Authorised by: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
+Was:
+> fixture-expectations: ... NFLX one step short of the short-term dip at its trend |
+> read-surface: ... and the size line's sentence ending after its link |
+> plain-words: ... a word written all in capitals read as a ticker, left as it stands by the reader's words and read as no term by the check |
+Now:
+> Each row the same, then from 22.8 what its check asserts of the scorecard: fixture-expectations the nine checks, the night's step and the readings worked by hand and the fixture's night as the scorecard's file derives it; read-surface the card worked by hand and read back off the chart page and the full page; and plain-words the card in the reader's words in every state it draws.
+Why: each roster row says what its check asserts, and 22.8's tests extend all three.
+
 ### 2026-10-24 - BUILD_PLAN.md and ARCHITECTURE.html - phase 22 gains the fundamentals scorecard, the quality family, its history test and its freezes as 22.7 to 22.11, and its phase report moves to 22.12
 Authorised by: The fundamentals scorecard and the quality family join phase 22 ahead of the hold on new work, and the monthly run reads none of them before its first run after 2026-11-07
 Was:

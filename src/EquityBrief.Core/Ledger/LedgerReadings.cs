@@ -17,7 +17,7 @@ public static class LedgerReadings
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "ab6244bc6081";
+    public const string Version = "a47e1ae9a20e";
 
     // The reference high the pullback's readings are taken at, the live design's twenty sessions.
     public const int ReferenceHighSessions = 20;
@@ -137,7 +137,32 @@ public static class LedgerReadings
         new("fund_over_long", "the index's own fund's close over its 200-session average, SPY's on an S&P 500 row and IJH's and IJR's on the S&P 400's and 600's"),
         new("vix_over_median", "the VIX's close over the median of its closes on the 252 sessions of the exchange before the session, a session being a day the S&P 500's index closed"),
         new("company_value", "the base-10 logarithm of the company's value on the session as the valuation reading works it, the newest share count its filings' covers state for a day before the session times the session's close on that count's basis"),
+
+        // From 22.8 the fundamentals scorecard's readings, appended so every reading before them keeps its place, each read
+        // through the core's one scorecard over the filer's facts as first filed before the session and the member's own
+        // closes to it, and read by the monthly loop only from its first run after the run of 2026-11-07.
+        // see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
+        new("fundamentals_score", "the fundamentals scorecard's checks passed over the checks that applied and were read, none where fewer than five were read, after Piotroski (2000)"),
+        new("gross_profitability", "the four newest quarters' gross profit as first filed before the session over the total assets at the newest quarter's end, after Novy-Marx (2013)"),
+        new("return_on_assets", "the four newest quarters' net income over the total assets at the start of the four quarters"),
+        new("return_on_assets_change", "that return less the same a year before"),
+        new("leverage_fall", "the long-term debt over the year's average total assets a year before less the same at the newest quarter's end, higher where the debt fell"),
+        new("current_ratio_change", "the current assets over the current liabilities at the newest quarter's end less the same a year before"),
+        new("share_fall", "one less the newest share count the covers state over the one standing a year before it, brought across each split between them, higher where the shares fell"),
+        new("turnover_change", "the four newest quarters' sales over the total assets at their start less the same a year before"),
+        new("gross_margin_year_change", "the four newest quarters' gross profit over their sales less the same a year before"),
     ];
+
+    // The first of the scorecard's readings, and the run of the monthly loop after which it reads them: the run of
+    // 2026-11-07 reads none of them, as the operator ruled.
+    // see: The fundamentals scorecard and the quality family join phase 22 ahead of the hold on new work, and the monthly run reads none of them before its first run after 2026-11-07
+    public const string ScorecardFirst = "fundamentals_score";
+
+    public static DateOnly ScorecardLoopAfter { get; } = new(2026, 11, 7);
+
+    // Whether the monthly loop's run of the month a day falls in reads the reading at a place in the catalogue: November's
+    // runs read none of the scorecard's, and December's on read every one.
+    public static bool LoopReads(int place, DateOnly run) => place < IndexOf(ScorecardFirst) || new DateOnly(run.Year, run.Month, 1) > ScorecardLoopAfter;
 
     // The sessions the dip's drop readings are read over, and the volume's sessions before them.
     public const int DropSessions = 3;

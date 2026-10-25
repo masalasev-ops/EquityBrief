@@ -33,7 +33,7 @@ public static class ConditionProcedures
         var verdicts = read.Folds.Select(Judged).ToArray();
         var finishedUnits = Learning(read.AllFinished);
         var finished = Judged(read.AllFinished);
-        var spreads = ConditionSearch.Spreads(finishedUnits);
+        var spreads = ConditionSearch.Spreads(finishedUnits).Where(spread => readings.Reads(spread.Reading)).ToArray();
         var walks = new Dictionary<string, IReadOnlyList<(int Entry, double? Edge)>>(StringComparer.Ordinal);
 
         // The rule's walk with a condition set as the hooks an approval would store, on top of those it stands at, each

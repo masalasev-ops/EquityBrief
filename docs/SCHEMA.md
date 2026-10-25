@@ -145,6 +145,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `company` | QuarterFetcher | none | none |
 | `fundamental_reading` | FundamentalReader | none | FundamentalReader |
 | `member_reading` | MemberReader | none | MemberReader |
+| `fundamental_score` | FundamentalScorer | none | FundamentalScorer |
 | `switch_reading` | MemberReader | none | MemberReader |
 | `estimate_reading` | EstimatesFetcher | none | none |
 | `news_pulse` | NewsPulseCounter | none | NewsPulseCounter |
@@ -1653,6 +1654,15 @@ Grain: one row per index, family, stock and session a family's loose gates passe
 | `fund_over_long` | REAL | the index's own fund's close over its 200-session average, SPY's on an S&P 500 row and IJH's and IJR's on the S&P 400's and 600's |
 | `vix_over_median` | REAL | the VIX's close over the median of its closes on the 252 sessions of the exchange before the session |
 | `company_value` | REAL | the base-10 logarithm of the company's value on the session as the valuation reading works it, a statistic and never money |
+| `fundamentals_score` | REAL | from 22.8 the fundamentals scorecard's checks passed over the checks that applied and were read, null where fewer than five were read |
+| `gross_profitability` | REAL | the four newest quarters' gross profit as first filed before the session over the total assets at the newest quarter's end |
+| `return_on_assets` | REAL | the four newest quarters' net income over the total assets at the start of the four quarters |
+| `return_on_assets_change` | REAL | that return less the same a year before |
+| `leverage_fall` | REAL | the long-term debt over the year's average total assets a year before less the same at the newest quarter's end, higher where the debt fell |
+| `current_ratio_change` | REAL | the current assets over the current liabilities at the newest quarter's end less the same a year before |
+| `share_fall` | REAL | one less the newest share count the covers state over the one standing a year before it, brought across each split between them, higher where the shares fell |
+| `turnover_change` | REAL | the four newest quarters' sales over the total assets at their start less the same a year before |
+| `gross_margin_year_change` | REAL | the four newest quarters' gross profit over their sales less the same a year before |
 
 Primary key: `index_code`, `family`, `ticker`, `session_date`. Indexed on `index_code`, `settled` and `session_date`, which the step closing the windows reads by.
 
@@ -2031,9 +2041,9 @@ Grain: one row per filer, concept and period, as first filed.
 | Column | Type | Notes |
 |---|---|---|
 | `cik` | TEXT | the filer's CIK padded to ten digits |
-| `concept` | TEXT | the archive's concept the figure was filed under, one of the six measures' or from 17.12 the cover's share count |
-| `period_start` | TEXT | the first day of the period, a quarter, nine months or a year, and for a share count the day it stands for |
-| `period_end` | TEXT | the last day of the period, on or after 2015-01-01, and for a share count the day it stands for |
+| `concept` | TEXT | the archive's concept the figure was filed under, one of the six measures' or from 17.12 the cover's share count, and from 22.8 the cost of sales's or one of the four balance sheet lines' |
+| `period_start` | TEXT | the first day of the period, a quarter, nine months or a year and from 22.8 six months, and for a share count or a balance sheet line the day it stands for |
+| `period_end` | TEXT | the last day of the period, on or after 2015-01-01, and for a share count or a balance sheet line the day it stands for |
 | `dollars` | TEXT | decimal in code, the figure as the first filing stating the period states it, and for a share count the shares |
 | `filed` | TEXT | the day that filing was made |
 | `form` | TEXT | its form, as the archive names it |
@@ -2042,7 +2052,7 @@ Grain: one row per filer, concept and period, as first filed.
 
 Primary key: `cik`, `concept`, `period_start`, `period_end`.
 
-**The SEC's facts as first filed, written by the filings refresh and read by the night's ledger** (see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session). From 17.8 the index families read them as well, through the ledger's catalogue, for the fundamentals-first family on every index (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point), and from 20.11 each quarter's revenue among them as first filed before the session before the night for a drift rule stating the revenue level, through its filer's newest company row (see: A drift's revenue level on the S&P 400 and 600 reads a quarter only once its filing is stored, on the night and in its sweep alike). From 18.3 the name page reads each filing of the company's filer once, its form, its day and its accession, for the filings inside a move (see: A move's cause is research's where written, then the labelled news inside it and then the filings dated inside it). From 18.4 it reads the filer's figures for the periods ending in the 400 days before the night, filed on or before it, to check the latest quarter's lines against the provider's fetch (see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's). From 17.12 the share count a filing's cover states under the archive's entity taxonomy is stored beside the six measures, a row a day it stands for, which the ledger's valuation reading reads; the archive's facts carry only figures filed with no dimension, so a filer stating its count a class at a time holds none (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years). The night's refresh and the whole refresh by hand insert a period's figure only where none is stored, so a later filing stating it again changes nothing, and nothing updates or deletes a row.
+**The SEC's facts as first filed, written by the filings refresh and read by the night's ledger** (see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session). From 17.8 the index families read them as well, through the ledger's catalogue, for the fundamentals-first family on every index (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point), and from 20.11 each quarter's revenue among them as first filed before the session before the night for a drift rule stating the revenue level, through its filer's newest company row (see: A drift's revenue level on the S&P 400 and 600 reads a quarter only once its filing is stored, on the night and in its sweep alike). From 18.3 the name page reads each filing of the company's filer once, its form, its day and its accession, for the filings inside a move (see: A move's cause is research's where written, then the labelled news inside it and then the filings dated inside it). From 18.4 it reads the filer's figures for the periods ending in the 400 days before the night, filed on or before it, to check the latest quarter's lines against the provider's fetch (see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's). From 17.12 the share count a filing's cover states under the archive's entity taxonomy is stored beside the six measures, a row a day it stands for, which the ledger's valuation reading reads; the archive's facts carry only figures filed with no dimension, so a filer stating its count a class at a time holds none (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years). From 22.8 the refresh keeps beside them the cost of sales, every measure's six months, which a second quarter's cash flow statement alone states, and four lines of the balance sheet, total assets, current assets, current liabilities and long-term debt, each a row a day it stands for, which the fundamentals scorecard reads on the night, the setup ledger reads for its scorecard readings and the history test reads over the history; the revenue rule reads no six-month span and no balance sheet line, so every reading made before reads as it did (see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it). The night's refresh and the whole refresh by hand insert a period's figure only where none is stored, so a later filing stating it again changes nothing, and nothing updates or deletes a row.
 
 ### filed_fact_pull
 Grain: one row per filer each time the refresh asked for its facts.
@@ -2650,6 +2660,33 @@ Grain: one row per index, session and member of the S&P 500, 400 and 600 on the 
 Primary key: `index_code`, `session_date`, `ticker`.
 
 **The member reader writes it in the night after the fundamental readings, and is its own deleter** (see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it). A night run again for a session replaces that session's rows and no other's. Every reading is the one function the sweeps read it with, so a figure the page shows on a night is the one a sweep would have read there. Kept forever.
+
+### fundamental_score
+Grain: one row per index, session and member of the S&P 500, 400 and 600 holding a bar on the night, from 22.8.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | the index the member was scored in, `GSPC`, `MID` or `SML` |
+| `session_date` | TEXT | the night's session |
+| `ticker` | TEXT | |
+| `quarter` | TEXT | the end of the newest quarter whose filings the checks read, null where its filer's facts hold none filed before the session |
+| `year_before` | TEXT | the end of the quarter a year before it, null where none is filed |
+| `awaited` | TEXT | the end of a newer quarter the calendar says was reported on or before the session that no filing stored yet states, one ending more than 45 days after `quarter`, null where none is awaited |
+| `financial` | INTEGER | 1 where GICS files the company in its Financials sector on the session, scored on the seven checks that apply to it |
+| `passed` | INTEGER | the checks passed |
+| `applied` | INTEGER | the checks that applied and were read |
+| `word` | TEXT | `strong`, `mixed` or `weak`, read as a share of the checks that applied; null where fewer than five were read |
+| `checks` | TEXT | JSON: the nine checks in order, each its number, its answer, `passed`, `failed`, `not filed` or `not applying`, the amounts it weighed as decimal text, the two ratios it weighed in the invariant form and the line not filed |
+| `gross_profitability` | REAL | the four newest quarters' gross profit over the total assets at the newest quarter's end, a statistic |
+| `gross_rank` | INTEGER | its place on that figure among the index's members holding it, the highest first |
+| `gross_ranked` | INTEGER | the index's members holding it |
+| `multiple` | REAL | the price over the four newest quarters' earnings as the valuation reading works the company's value, null where those earnings are nothing or less or no count is filed |
+| `industry` | TEXT | the GICS industry the member's newest company fetch files, null where none is filed |
+| `industry_multiple` | REAL | the median multiple of the industry's members on the index holding one, null where fewer than three do |
+
+Primary key: `index_code`, `session_date`, `ticker`.
+
+**The fundamental scorer writes it in the night after the member readings and again after the filings refresh, and is its own deleter** (see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it). Each row is the core's one scorecard over the member's filer's facts as first filed before the session and the store's own closes, which the share check reads for the splits between its two counts, so a split before the store's first session is not seen. Each run, the night's second after its filings refresh among them and `scores` by hand, replaces its session's rows and no other's. The chart page and the full page read a stock's newest row on or before the night they draw. Kept forever.
 
 ### switch_reading
 Grain: one row per session the night read.

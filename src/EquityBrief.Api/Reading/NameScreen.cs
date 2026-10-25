@@ -1246,7 +1246,11 @@ public static partial class NameScreen
         // The SEC's facts as first filed for the name's filer, which the sources check the latest quarter's lines against.
         IReadOnlyList<EquityBrief.Core.Ledger.FiledFactRow>? filedFacts = null,
         // The chart of what is behind the stock, worked out from the readings the night stored, from 19.2.
-        BehindItView? behind = null)
+        BehindItView? behind = null,
+        // The scorecard the night stored for the stock and its own readings the ledger stored, which its fundamentals
+        // card is written from, from 22.8.
+        FundamentalScoreRow? score = null,
+        IReadOnlyList<double?>? scoreReadings = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1356,6 +1360,9 @@ public static partial class NameScreen
             shownPrice,
             live is not null,
             EquityBrief.Core.Report.DividendSafety.PaysNone(forwardRate, reportInputs?.Dividends ?? [], tilesNight));
+        var reportView = reportInputs is { } inputs
+            ? Report(ticker, inputs, filings, reading, shownPrice, forwardRate, bars, night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue))
+            : null;
 
         return page.NameRegion(
             marks,
@@ -1429,9 +1436,7 @@ public static partial class NameScreen
             headline: WrittenHeadline(accepted) ?? Headline(member?.Name ?? ticker, cards, Passed(listing, gates), missed, reading?.State, ladder?.TrendState),
             tiles: tiles,
             asksForQuotes: asksForQuotes,
-            report: reportInputs is { } inputs
-                ? Report(ticker, inputs, filings, reading, shownPrice, forwardRate, bars, night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue))
-                : null,
+            report: reportView,
             rawSegments: RawSegments(filings),
             history: historyInputs is { } inputsOfHistory
                 ? History(inputsOfHistory, bars, levels, typicalMove, ladder, reactions ?? [], reportInputs?.Dividends ?? [], year, live)
@@ -1442,7 +1447,8 @@ public static partial class NameScreen
             figuresChecked: checkedFigures.Conflicts,
             filedFactsHeld: checkedFigures.Compared > 0,
             behind: behind,
-            standing: Standing(staleness, newest, spend, priced, today, OwnWritten(accepted), IndustryWritten(accepted)));
+            standing: Standing(staleness, newest, spend, priced, today, OwnWritten(accepted), IndustryWritten(accepted)),
+            fundamentals: FundamentalsScreen.Of(score, Universes.ByCode(indexCode ?? string.Empty)?.Name, scoreReadings, reportView?.Analysts, reportView?.Insiders));
     }
 
     // The day a written report's own newest section was written, and the day its industry's cycle was, which is its

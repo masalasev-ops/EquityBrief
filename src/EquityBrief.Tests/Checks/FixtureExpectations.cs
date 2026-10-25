@@ -172,6 +172,8 @@ public partial class FixtureExpectations
             .. DipClaims,
             // 22.2, the dip's setups and its sweep: section 17's grid and section 18's row.
             .. DipLedgerClaims,
+            // 22.8, the fundamentals scorecard: section 17's numbers and section 18's three rows.
+            .. ScorecardClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

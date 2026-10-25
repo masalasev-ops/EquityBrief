@@ -337,11 +337,24 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
         view = view with { Standing = NameScreen.Standing(await read.StalenessAsync(ticker), NameScreen.Pass(await read.NewestPassAsync(ticker)), await SpendNow(read, caps, clock), await read.PaidCallSpendsAsync(), today, written, (await read.ThemeCycleAsync(ticker))?.AsOf) };
     }
 
-    // From 22.4 the brief read atop the page, on a night the store holds.
+    // From 22.4 the brief read atop the page, on a night the store holds, and from 22.8 the fundamentals card beneath it,
+    // its scorecard the newest the nights stored on or before it.
     // see: The chart page opens on a brief read written by code from stored figures, and no rule reads it
+    // see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
     if (night is { } briefed)
     {
-        view = view with { Brief = await BriefAsync(read, store, ticker, indexCode, briefed, member, indicators, report, reactions, cards) };
+        var score = await read.FundamentalScoreAsync(ticker, briefed);
+
+        view = view with
+        {
+            Brief = await BriefAsync(read, store, ticker, indexCode, briefed, member, indicators, report, reactions, cards, score),
+            Fundamentals = FundamentalsScreen.Of(
+                score,
+                Universes.ByCode(indexCode ?? string.Empty)?.Name,
+                indexCode is { } code ? await read.OwnLedgerReadingsAsync(code, briefed, ticker) : null,
+                report.Analysts,
+                report.Insiders),
+        };
     }
 
     var mast = new NameMast(member?.Name, member?.Sector, member?.Industry, NameScreen.DayChange(ticker, bars), Universes.ByCode(indexCode ?? string.Empty)?.Name);
@@ -595,7 +608,12 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // The filer's facts as first filed over the year before the page's night, which the sources check the latest
         // quarter's lines against.
         filedFacts: await read.FiledFactsAsync(ticker, (night ?? clock.SessionDateAt(clock.UtcNow)).AddDays(-EquityBrief.Core.Report.FiguresChecked.DaysRead), on),
-        behind: behind);
+        behind: behind,
+        // From 22.8 the fundamentals scorecard the newest night on or before the page's stored, and the stock's own
+        // readings its index's night stored, which the card in the business section is written from.
+        // see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
+        score: behindNight is { } scoredOn ? await read.FundamentalScoreAsync(ticker, scoredOn) : null,
+        scoreReadings: behindNight is { } readOn && await read.IndexOfAsync(ticker, readOn) is { } scoreIndex ? await read.OwnLedgerReadingsAsync(scoreIndex, readOn, ticker) : null);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -1226,7 +1244,7 @@ static async Task<IReadOnlyList<FamilyCardView>> WithNumbersAsync(ReadApi read, 
 // quarters' readings, its six-month return's place among its index's members off the ledger's readings of the night, and
 // its next report after the night.
 // see: The chart page opens on a brief read written by code from stored figures, and no rule reads it
-static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, string ticker, string? indexCode, DateOnly night, UniverseRow? member, IReadOnlyList<IndicatorRow> indicators, ReportView report, IReadOnlyList<ReactionRow> reactions, IReadOnlyList<DecisionCardRow> cards)
+static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, string ticker, string? indexCode, DateOnly night, UniverseRow? member, IReadOnlyList<IndicatorRow> indicators, ReportView report, IReadOnlyList<ReactionRow> reactions, IReadOnlyList<DecisionCardRow> cards, FundamentalScoreRow? score = null)
 {
     var large = indexCode == Universes.Large.Code;
     var gate = large ? await read.GateResultAsync(ticker, night) : null;
@@ -1299,7 +1317,8 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
         await read.NextReportAsync(ticker, night),
         [.. reactions.Select(row => row.MovePct)],
         report.Insiders,
-        gate?.LadderRewardToRisk));
+        gate?.LadderRewardToRisk,
+        score));
 }
 
 // A heavyweights card with its standing tonight, read off tonight's closes once: each holding's and each sector fund's

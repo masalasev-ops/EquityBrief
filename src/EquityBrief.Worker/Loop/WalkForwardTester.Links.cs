@@ -61,6 +61,10 @@ public sealed partial class WalkForwardTester
 
         var started = clock.UtcNow;
         var runMonth = month ?? FormattableString.Invariant($"{started:yyyy-MM}");
+
+        // The run's month's first day, by which the scorecard's readings are read or left none.
+        // see: The fundamentals scorecard and the quality family join phase 22 ahead of the hold on new work, and the monthly run reads none of them before its first run after 2026-11-07
+        var runDay = DateOnly.ParseExact(runMonth + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture);
         var links = new List<(string Family, ReadingLink Link)>();
         var settled = new List<(string Family, string Ticker, DateOnly Session, double Result, double Edge)>();
         IReadOnlyList<AnswerEdge>? answers = null;
@@ -103,7 +107,7 @@ public sealed partial class WalkForwardTester
 
                         for (var at = 0; at < readings.Length; at++)
                         {
-                            readings[at] = reader.IsDBNull(4 + at) ? null : reader.GetDouble(4 + at);
+                            readings[at] = reader.IsDBNull(4 + at) || !LedgerReadings.LoopReads(at, runDay) ? null : reader.GetDouble(4 + at);
                         }
 
                         var session = DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture);
@@ -117,7 +121,7 @@ public sealed partial class WalkForwardTester
                     }
                 }
 
-                links.AddRange(ReadingLinks.Of(setups).Select(link => (family, link)));
+                links.AddRange(ReadingLinks.Of(setups).Where(link => LedgerReadings.LoopReads(LedgerReadings.IndexOf(link.Reading), runDay)).Select(link => (family, link)));
             }
 
             // From 20.8 what each answer of each question came to over the settled setups whose release the ledger

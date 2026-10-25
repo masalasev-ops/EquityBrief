@@ -89,9 +89,55 @@ public static class ConceptAnswers
                     ? Counts(counted, cik, concept)
                     : (IReadOnlyList<ConceptFact>)[]
                 : filed is { } held && held.TryGetProperty(concept, out var holder) && holder.ValueKind is JsonValueKind.Object
-                    ? Figures(holder, cik, concept)
+                    ? Ledger.FiledFacts.OnADay.Contains(concept, StringComparer.Ordinal) ? OnADay(holder, cik, concept) : Figures(holder, cik, concept)
                     : (IReadOnlyList<ConceptFact>)[],
             StringComparer.Ordinal);
+    }
+
+    // From 22.8 the dollar figures a balance sheet's line holds, each for the day it stands for: a figure stated for a
+    // period rather than a day is passed over, and each is kept as a figure whose first and last days are that day.
+    // see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
+    static IReadOnlyList<ConceptFact> OnADay(JsonElement holder, string cik, string concept)
+    {
+        if (!holder.TryGetProperty("units", out var units) || units.ValueKind is not JsonValueKind.Object
+            || !units.TryGetProperty(Dollars, out var dollars)
+            || (dollars.ValueKind is JsonValueKind.Object && !dollars.EnumerateObject().Any()))
+        {
+            return [];
+        }
+
+        if (dollars.ValueKind is not JsonValueKind.Array)
+        {
+            throw new FormatException(
+                $"The archive holds the dollar figures for {concept} of CIK {cik} in neither an array nor an empty object, so they cannot be read.");
+        }
+
+        var days = new List<ConceptFact>();
+
+        foreach (var fact in dollars.EnumerateArray())
+        {
+            if (fact.ValueKind is not JsonValueKind.Object)
+            {
+                throw new FormatException($"A figure the archive holds for {concept} of CIK {cik} is not an object.");
+            }
+
+            if (Text(fact, "start") is not null)
+            {
+                continue;
+            }
+
+            days.Add(
+                Date(Text(fact, "end")) is { } day
+                && fact.TryGetProperty("val", out var value) && value.ValueKind is JsonValueKind.Number && value.TryGetDecimal(out var dollarsFiled)
+                && Date(Text(fact, "filed")) is { } filedOn
+                && Text(fact, "form") is { } form
+                && Text(fact, "accn") is { } accession
+                    ? new ConceptFact(day, day, dollarsFiled, filedOn, form, accession)
+                    : throw new FormatException(
+                        $"A figure the archive holds for {concept} of CIK {cik} carries no day, value, filing day, form or accession it can be read by."));
+        }
+
+        return days;
     }
 
     // The share counts one entity concept holds, each for the day it stands for: a count stated for a period rather than

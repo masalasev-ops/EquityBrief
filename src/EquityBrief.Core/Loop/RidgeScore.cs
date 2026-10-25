@@ -7,9 +7,14 @@ namespace EquityBrief.Core.Loop;
 
 // The ledger's finished setups of one family the score learns on, held a column a reading: each row's index, the session
 // it was read on and the session its path ended on, each weighable reading as the ledger stores it, not a number where
-// the ledger holds none, and its label, its edge in typical moves.
-public sealed class ScoreRows(int capacity = 0)
+// the ledger holds none, and its label, its edge in typical moves. Read for a monthly run of a month before the
+// scorecard's readings join the loop, it weighs none of theirs and its floor counts none of them.
+// see: The fundamentals scorecard and the quality family join phase 22 ahead of the hold on new work, and the monthly run reads none of them before its first run after 2026-11-07
+public sealed class ScoreRows(int capacity = 0, DateOnly? run = null)
 {
+    // The weighable readings the rows' run may weigh.
+    public int Weighs { get; } = run is { } day ? RidgeScore.Weighable.Count(at => LedgerReadings.LoopReads(at, day)) : RidgeScore.Weighable.Count;
+
     readonly List<string> indices = new(capacity);
     readonly List<DateOnly> sessions = new(capacity);
     readonly List<DateOnly?> ended = new(capacity);
@@ -203,7 +208,7 @@ public static class RidgeScore
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "1db76229d1c6";
+    public const string Version = "8aa7a51ba322";
 
     // The words every proposal of the score opens with, by which a run's proposals of it are told from the others'.
     public const string Proposal = "the learned score";
@@ -224,6 +229,9 @@ public static class RidgeScore
     public const int RowsAWeight = 10;
 
     public static int MinimumRows => RowsAWeight * (Weighable.Count + Shifted.Count);
+
+    // The floor for rows read for a run, counting only the readings it may weigh.
+    public static int MinimumRowsOf(ScoreRows rows) => RowsAWeight * (rows.Weighs + Shifted.Count);
 
     // The indices in the order their hundredths are written, and those whose shift from the S&P 500's is fitted.
     public static IReadOnlyList<string> Indices { get; } = ["GSPC", "MID", "SML"];
@@ -285,7 +293,7 @@ public static class RidgeScore
 
         var heldRows = learning.Where(row => covered.All(at => !double.IsNaN(rows.Reading(row, at)))).ToArray();
 
-        if (heldRows.Length < MinimumRows || covered.Count == 0)
+        if (heldRows.Length < MinimumRowsOf(rows) || covered.Count == 0)
         {
             return null;
         }

@@ -29,18 +29,19 @@ public static class IdeaProcedures
 
     // A fold's ask from what the rule listed and the trades it finished: the listings whose trade ended before the fold's
     // year with their readings, and the trades that ended before it, each read through the fold's view, so nothing of the
-    // year it is tested on or after it reaches the prompt.
+    // year it is tested on or after it reaches the prompt; and only the readings the run reads, where it names them.
     public static FoldAsk Ask(
         string family,
         LoopFold fold,
         IReadOnlyList<DateOnly> calendar,
         IReadOnlyList<RuleListing> listings,
         Func<int, IReadOnlyList<double?>> readingsOf,
-        IReadOnlyList<(DateOnly Ended, TradePath Path)> finished)
+        IReadOnlyList<(DateOnly Ended, TradePath Path)> finished,
+        Func<int, bool>? reads = null)
     {
         var units = ConditionProcedures.LearningUnits(fold, calendar, listings, readingsOf);
         TradePath[] paths = [.. new FoldView<(DateOnly Ended, TradePath Path)>(fold, finished, one => one.Ended, one => one.Ended).Learning.Select(one => one.Path)];
-        var prompt = IdeaPrompt.For(family, PathAutopsy.Read(paths), ConditionSearch.Spreads(units));
+        var prompt = IdeaPrompt.For(family, PathAutopsy.Read(paths), [.. ConditionSearch.Spreads(units).Where(spread => reads?.Invoke(spread.Reading) ?? true)]);
 
         return new FoldAsk(fold, prompt, IdeaPrompt.Key(prompt), units);
     }
@@ -57,7 +58,7 @@ public static class IdeaProcedures
                 .Select(one => (read.Calendar[one.Exit!.Value], ExitProcedures.Path(read, rule.Closes, one))),
         ];
 
-        return [.. read.Folds.Append(read.AllFinished).Select(fold => Ask(rule.Family, fold, read.Calendar, rule.Listings, ReadingsOf, finished))];
+        return [.. read.Folds.Append(read.AllFinished).Select(fold => Ask(rule.Family, fold, read.Calendar, rule.Listings, ReadingsOf, finished, readings.Reads))];
     }
 
     // The prompts the generator puts for a family's rule, in the order of its folds.

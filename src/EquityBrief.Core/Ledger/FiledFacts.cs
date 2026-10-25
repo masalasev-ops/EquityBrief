@@ -28,14 +28,35 @@ public sealed record BusinessReading(
 // each count's day, as first filed: the earliest filing stating the period or the day, and a later one stating it
 // again changes nothing. A quarter is read by the revenue rule over the measure's own concepts, a fiscal fourth quarter
 // being the year less its first nine months, and a reading takes only the facts filed before its session, so a
-// filing made on the session is read from the session after.
+// filing made on the session is read from the session after. From 22.8 the fundamentals scorecard's lines join them:
+// the cost of sales beside gross profit, every measure's six months, which a second quarter's cash flow statement
+// states and no other span gives, and four lines of the balance sheet, each stored for the day it stands for.
 // see: A quarter's revenue is read as first filed, a fiscal fourth quarter being the year less its first nine months
 // see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session
+// see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
 public static class FiledFacts
 {
     public static IReadOnlyList<string> Revenue => FirstFiledRevenue.Concepts;
 
     public static IReadOnlyList<string> GrossProfit { get; } = ["GrossProfit"];
+
+    // From 22.8 the cost of sales, which with revenue stands for gross profit where a filer states none.
+    public static IReadOnlyList<string> CostOfSales { get; } = ["CostOfRevenue", "CostOfGoodsAndServicesSold", "CostOfGoodsSold"];
+
+    // From 22.8 the balance sheet's four lines, each stated for the day it stands for: long-term debt under the concept
+    // holding the whole of it, the current maturities with it as Piotroski (2000) reads it, first, then with leases, then
+    // the part past a year alone.
+    public static IReadOnlyList<string> TotalAssets { get; } = ["Assets"];
+
+    public static IReadOnlyList<string> CurrentAssets { get; } = ["AssetsCurrent"];
+
+    public static IReadOnlyList<string> CurrentLiabilities { get; } = ["LiabilitiesCurrent"];
+
+    public static IReadOnlyList<string> LongTermDebt { get; } =
+        ["LongTermDebt", "LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities", "LongTermDebtNoncurrent", "LongTermDebtAndCapitalLeaseObligations"];
+
+    // The concepts stated in dollars for a day rather than a period.
+    public static IReadOnlyList<string> OnADay { get; } = [.. TotalAssets, .. CurrentAssets, .. CurrentLiabilities, .. LongTermDebt];
 
     public static IReadOnlyList<string> OperatingIncome { get; } = ["OperatingIncomeLoss"];
 
@@ -53,11 +74,19 @@ public static class FiledFacts
     public static IReadOnlyList<string> SharesOutstanding => ConceptAnswers.EntityCounts;
 
     public static IReadOnlyList<string> Concepts { get; } =
-        [.. Revenue, .. GrossProfit, .. OperatingIncome, .. NetIncome, .. OperatingCash, .. InterestExpense, .. SharesOutstanding];
+    [
+        .. Revenue, .. GrossProfit, .. OperatingIncome, .. NetIncome, .. OperatingCash, .. InterestExpense, .. SharesOutstanding,
+        .. CostOfSales, .. OnADay,
+    ];
 
     // The first period end stored: four years before the history the ledger is built over begins, enough for the
     // year before's quarter and the quarter before that of the history's first session.
     public static DateOnly FirstPeriodEnd { get; } = new(2015, 1, 1);
+
+    // The days six months span, its first and last both counted: wide enough for a fiscal calendar of 52 and 53 weeks,
+    // apart from a quarter's and nine months'.
+    public const int SixMonthsFewest = 170;
+    public const int SixMonthsMost = 195;
 
     // The rows a filer's facts store, one a concept a period, each as first filed.
     public static IReadOnlyList<FiledFactRow> Stored(IReadOnlyDictionary<string, IReadOnlyList<ConceptFact>> facts) =>
@@ -66,7 +95,9 @@ public static class FiledFacts
             .Where(concept => Concepts.Contains(concept.Key, StringComparer.Ordinal))
             .SelectMany(concept => concept.Value
                 .Where(fact => fact.End >= FirstPeriodEnd
-                    && (SharesOutstanding.Contains(concept.Key, StringComparer.Ordinal) ? fact.Start == fact.End : Kept(fact.Start, fact.End)))
+                    && (SharesOutstanding.Contains(concept.Key, StringComparer.Ordinal) || OnADay.Contains(concept.Key, StringComparer.Ordinal)
+                        ? fact.Start == fact.End
+                        : Kept(fact.Start, fact.End)))
                 .GroupBy(fact => (fact.Start, fact.End))
                 .Select(period => period
                     .OrderBy(fact => fact.Filed)
@@ -78,10 +109,12 @@ public static class FiledFacts
             .ThenBy(row => row.Start),
     ];
 
-    // A quarter, nine months or a year, the spans the revenue rule reads.
+    // A quarter, nine months or a year, the spans the revenue rule reads, and from 22.8 six months, which the
+    // scorecard's four quarters read and the revenue rule does not.
     public static bool Kept(DateOnly start, DateOnly end) =>
         FirstFiledRevenue.Days(start, end) is var days
         && ((days >= FirstFiledRevenue.QuarterFewest && days <= FirstFiledRevenue.QuarterMost)
+            || (days >= SixMonthsFewest && days <= SixMonthsMost)
             || (days >= FirstFiledRevenue.NineMonthsFewest && days <= FirstFiledRevenue.NineMonthsMost)
             || (days >= FirstFiledRevenue.YearFewest && days <= FirstFiledRevenue.YearMost));
 

@@ -58,7 +58,7 @@ public partial class FixtureExpectations
             var chips = Regex.Matches(brief, "data-family=\"([^\"]+)\" data-state=\"([^\"]+)\"").ToDictionary(match => match.Groups[1].Value, match => match.Groups[2].Value, StringComparer.Ordinal);
             var member = universe.Single(row => row.Ticker == ticker);
 
-            Assert.Equal(12, lines.Count);
+            Assert.Equal(13, lines.Count);
 
             // The trend, as the file states it.
             var trend = expected.GetProperty("trend").GetProperty(ticker).GetString()!;
@@ -195,6 +195,46 @@ public partial class FixtureExpectations
             Assert.Equal(
                 said.Count == 0 ? string.Empty : "Watch for: " + string.Join("; ", said) + ".",
                 Regex.Match(brief, "<p class=\"brief-watch\">(.*?)</p>").Groups[1].Value);
+
+            // From 22.8 the fundamentals card beneath the brief and on the full page, read back against the scorecard the
+            // night stored and the states the scorecard's file derives by hand: no filed fact for three of the names, and
+            // Keysight's capture reading its share check alone of the nine to its quarter of 2026-07-31.
+            var scorecard = Expected("scorecard");
+            var keysight = scorecard.GetProperty("keysight");
+            var stored = Query(store, $"SELECT ifnull(quarter, 'none'), applied, ifnull(word, 'none'), checks FROM fundamental_score WHERE ticker = '{ticker}' AND session_date = '{day}';").Single().Split('|', 4);
+            var summary = ticker == keysight.GetProperty("ticker").GetString()
+                ? keysight.GetProperty("summary").GetString()!
+                : scorecard.GetProperty("unfiledSummary").GetString()!;
+
+            Assert.Equal(scorecard.GetProperty("night").GetString(), day);
+            Assert.Equal(ticker == "KEYS" ? keysight.GetProperty("quarter").GetString() : "none", stored[0]);
+            Assert.Equal(ticker == "KEYS" ? keysight.GetProperty("applied").GetInt32().ToString(CultureInfo.InvariantCulture) : "0", stored[1]);
+            Assert.Equal("none", stored[2]);
+            Assert.Equal(ticker != "KEYS", scorecard.GetProperty("unfiled").EnumerateArray().Any(name => name.GetString() == ticker));
+            Assert.Equal("Fundamentals: " + char.ToLowerInvariant(summary[0]) + summary[1..], lines["fundamentals"]);
+
+            foreach (var (path, region) in new[] { ($"/screens/chart/{ticker}", "chart-page-fundamentals"), ($"/screens/name/{ticker}", "fundamentals") })
+            {
+                var card = Regex.Match(path.Contains("/chart/", StringComparison.Ordinal) ? page : WebUtility.HtmlDecode(await client.GetStringAsync(path)), $"<section class=\"card\"[^>]*data-card=\"{region}\".*?</section>", RegexOptions.Singleline).Value;
+                var answered = Regex.Matches(card, "<li data-check=\"(\\d)\" data-answer=\"([^\"]+)\">").Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}").ToArray();
+                var context = Regex.Matches(card, "<li data-line=\"([^\"]+)\"[^>]*>(.*?)</li>").ToDictionary(match => match.Groups[1].Value, match => match.Groups[2].Value, StringComparer.Ordinal);
+
+                Assert.Equal(summary, Regex.Match(card, "<p class=\"fundamentals-summary\" data-summary>(.*?)</p>").Groups[1].Value);
+
+                // Each check as stored, every one not filed but Keysight's share check, which passes; and each line not
+                // scored saying it reads nothing.
+                int[] passed = ticker == "KEYS" ? [.. keysight.GetProperty("passed").EnumerateArray().Select(number => number.GetInt32())] : [];
+
+                Assert.Equal(
+                    Core.Ledger.ScorecardText.ChecksOf(stored[3]).Select(check => $"{check.Number}|{Core.Ledger.ScorecardText.Word(check.Answer)}"),
+                    answered);
+                Assert.Equal(
+                    Enumerable.Range(1, 9).Select(number => $"{number}|{(passed.Contains(number) ? "passed" : "not filed")}"),
+                    answered);
+                Assert.Equal("Sales against a year before: not read from its filings.", context["sales"]);
+                Assert.Equal("Gross profit against assets: not read from its filings.", context["gross"]);
+                Assert.Equal("Price against earnings: not read, as it earned nothing over its last four quarters or no share count is filed.", context["price"]);
+            }
         }
     }
 }

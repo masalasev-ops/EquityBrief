@@ -53,6 +53,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "ledger-check" => await LedgerCheckRun(args),
     "ledger-next-open" => await LedgerNextOpenRun(args),
     "ledger-night" => await LedgerNightRun(),
+    "scores" => await ScoresRun(),
     "fill" => await FillRun(args),
     "filings" => await FilingsRun(args),
     "insiders-history" => await InsidersHistoryRun(args),
@@ -86,7 +87,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 51 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 52 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -174,6 +175,9 @@ static int NoVerb()
         "family and year with how often the next open fell under the stop or over the target, writing nothing, " +
         "'ledger-night' runs the setup ledger's night step over the newest night the store holds, as the night does, " +
         "writing that night's setups and every member's readings again and stating its time, refused while a night holds " +
+        "the store, " +
+        "'scores' scores every member of the three indices holding a bar on the newest night the store holds on the nine " +
+        "checks of its filings as first filed, as the night's step does, and states its time, refused while a night holds " +
         "the store, " +
         "'fill' prices every stored trade whose next session is stored at that session's open, as the night's step " +
         "does, with '--again' pricing every one again over what an earlier run wrote, " +
@@ -756,6 +760,35 @@ static async Task<int> LedgerNightRun()
     Console.WriteLine(FormattableString.Invariant($"ledger-night: {(outcome.Session is { } night ? night.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) : "no night")}, {EquityBrief.Worker.Ledger.SetupLedger.Detail(outcome.Indices)}, in {watch.Elapsed.TotalSeconds:0} s"));
 
     return outcome.Indices.Any(index => index.Fault is not null) ? 1 : 0;
+}
+
+// The fundamentals scorecard's step by hand over the newest night the store holds, every member of the three indices
+// holding a bar on it scored as the night's own step scores it; refused while a night holds the store, and no request
+// and no model call.
+// see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
+static async Task<int> ScoresRun()
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var clock = SystemClock.ForUnitedStatesSessions();
+
+    if (EquityBrief.Core.Configuration.NightLock.Holder(store.DataRoot) is { } holder)
+    {
+        Console.Error.WriteLine($"scores: the night holds the store ({holder}); run it once the night has finished.");
+
+        return 2;
+    }
+
+    var watch = System.Diagnostics.Stopwatch.StartNew();
+    var outcome = await new EquityBrief.Worker.Fundamentals.FundamentalScorer(clock, store.DatabaseFile).RunAsync(
+        EquityBrief.Worker.Indices.IndexFamilies.LargeIndex,
+        FormattableString.Invariant($"scores-{clock.UtcNow:yyyyMMddTHHmmssZ}"),
+        default,
+        [.. EquityBrief.Worker.Indices.IndexFamilies.Indices.Where(index => index != EquityBrief.Worker.Indices.IndexFamilies.LargeIndex)]);
+
+    Console.WriteLine(FormattableString.Invariant($"scores: {outcome.Night:yyyy-MM-dd}, {outcome.Members} member(s) read, {outcome.Scored} scored, {outcome.Worded} given a word, in {watch.Elapsed.TotalSeconds:0} s"));
+
+    return 0;
 }
 
 // The ledger's next-open check by hand, over one index's settled setups, reading the store and writing nothing.
