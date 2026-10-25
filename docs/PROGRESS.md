@@ -8999,3 +8999,42 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    `tools/remedies/2026-10-25-22.10-prices-from-2015.txt` from main after the merge, its comparison stated, then
             `tools/remedies/2026-10-25-22.10-the-older-pulls-removed.txt` and the three ledger histories built again with
             their checks, each with no other writer running; then the history test again on each index.
+
+### 22.10 - correction: an older pull holding only stocks no index holds that no newer pull does is removed with the rest, where the remedy kept standing any pull holding a stock no newer pull does   2026-10-25
+
+Ran:        `tools/remedies/2026-10-25-22.10-prices-from-2015.txt` from main's e7e3def3, 14:13:05 to 14:29:40 UTC, exit 0,
+            log `artifacts/remedy-22-10-pull.log` in the main checkout, the provider's count read before it 1,164 of
+            100,000 dated 2026-10-24: migration 111 in seconds; the S&P 500's pull history-pull-20261025T141335.4585061Z,
+            820 of 830 names answered, 1,899,599 bars and 30,150 prints, 963 requests as it stated; the S&P 400's
+            history-pull-20261025T141835.5967047Z, 756 of 759, 1,858,619 bars and 29,840 prints, 892 requests; the S&P
+            600's history-pull-20261025T142322.0081988Z, 1,194 of 1,212, 2,809,004 bars and 45,154 prints, 1,345 requests;
+            each name not answered the provider's refusal or a close of nought, as the older pulls named them.
+Compared:   the older pulls hold 2,192 stocks and the newer 2,270. 4,143,557 sessions both hold, 3,158,308 of them at the
+            store's scale; 65,674 more than a cent apart, 12,957 of them more than one per cent in 28 stocks; 8,553 whose
+            closes as traded differ. In ten stocks the newer stands above the older by one ratio from the pulls' start to a
+            distribution and level after it, the closes as traded the same: LEN 1.085 to 2025-01-17, KR 1.194 to
+            2022-10-20, FLEX 1.053 to 2024-01-02, DXC 1.062 to 2018-05-31, MLI, TPL, AIV, CBSH and HON 1.01 to 1.03, and
+            IBM 0.95 to 2021-11-03. On each event's day the newer's move stands on the move as traded where the older's
+            jumped against it: KR +3.5 per cent against +3.5 traded where the older read +23.5, HON +0.4 against +0.4 where
+            the older read +1.7, FLEX +4.0 across Nextracker's distribution, traded -21.6, where the older read +9.4. So
+            the provider has revised the factors it adjusts those closes by, and the newer reads the events better. In
+            COR, DOC, WFRD and ARCH the ratio drifts rather than stands before a ticker change, one pull reading another
+            company's closes under the code. The rest are a few sessions each in 2026, 61 in all, CPB, CPT, SLG, SLVM and
+            THRM six each where the older's last week came from a later older pull than its year. Three sessions the older
+            hold inside a newer series' span it lacks, 2023-04-06 for FAF, MOH and SLB, and three prints. Thirteen stocks
+            only older pulls hold, ARCH_old, BABY, BBG, COR_old, EE_old, FG_old, GRUB, IZQVD, MCDIF, OABI, SLMNP, TTSH and
+            WTRU, each in the S&P 400's or 600's pull of 2026-10-05's morning, history-pull-20261005T083827.9066337Z or
+            history-pull-20261005T084216.3432921Z, and none held by an index today: no membership row, no fund holding, no
+            member today and no stored bar, codes an earlier holdings match named before the match of that day.
+Found:      the runbook and the second remedy kept standing any older pull holding a stock no newer pull does, which keeps
+            those two pulls standing for stocks no reader reads; and the S&P 400's of them holds IIVI to 2023-06-30 where
+            the newer end it at its rename on 2022-09-07, 204 sessions the sweeps' history, reading each session from the
+            newest pull holding it, would join to the newer series at the older pull's scale.
+Corrected:  a stock the older hold and no newer pull does keeps its pull standing only where an index holds it today; the
+            runbook's sentence and the second remedy's header say so, its ten purges unchanged.
+Verified:   documents and a remedy's words alone, so no new full run: `tools/ci.ps1` green and `tools/verify-phase.ps1`
+            green over 0c191327, the code this tree carries, 2766 of 2766 tests and 1444 claims; the checks reading the
+            record, the changelog, the corpus and the remedy files ran filtered over the tree carrying this entry, 180 of
+            180 passed.
+Carried:    the ten purges from main after the merge, then the three ledger histories built again with their checks while no
+            other writer runs, and the history test again on each index.
