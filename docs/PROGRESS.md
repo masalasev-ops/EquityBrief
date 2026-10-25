@@ -8895,3 +8895,43 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    each index's answer to the operator, with the floors' reach and the valuation's; 22.11's freezes and 22.3 on
             their word.
+
+### 22.11 ruling - a quality book judged in months held, prices pulled from 2015-10-01, the history test run again, the quality freezes at each index's starting setting unless a setting meets the floors, and the dip's freezes at each index's 22.2 setting   2026-10-25
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-25 at about 12:57 UTC, on each index's quality answer and the two limits the 22.10
+            entry put to them, word for word in `prompts/2026-10-25-22.11-ruling-quality-and-dip-freezes.md`, in the
+            order "1, 2, 3, then 4 or the stop it names, then 5, then 22.12, then stop". 1, for the quality family alone
+            a setting meets the floors "where its book held stocks in at least 48 months and its monthly edge ... stands
+            above nothing in at least 6 of the 8 years, a year with no holdings counting as not above", a fold reading
+            the 48 months in proportion to the years it learns on, the heavyweights keeping theirs. 2, "Pull the history
+            from 2015-10-01 for every name each index held since, through the history pull's own command", the requests
+            counted against the day's allowance and the SEC facts' reach stated before any request, every session the
+            two pulls share compared at the store's scale before the old is removed, every reader named, no rule's
+            version moving, asserted, and the three ledger histories built again where a reading changes, a remedy
+            carrying the pull and the builds. 3, 22.10's test again on each index, each run an entry of its own. 4, a
+            setting meeting item 1's floors stops its index for their word; otherwise every index frozen at its starting
+            setting with its one-step neighbours as versions, the S&P 500 among them, each card drawing the frozen line
+            in points a holding. 5, each index's dip frozen at the setting its 22.2 run entry says it would run, the
+            S&P 600's with the drop's volume level its second stage crossed.
+Measured:   read-only on the operator's store: the pulled history 4,157,138 bars of 2,192 names under ten pulls, each from
+            2018-01-02; the key of `pulled_bar` and of `pulled_earnings` a name and a session, a session an earlier pull
+            holds keeping that pull's row; the SEC's facts kept from periods ending 2015-01-01, 1,195,849 of 2,095 filers.
+            From 2015-10-01 the S&P 500's membership names 830 names and the S&P 400's and 600's pulls ask about 760 and
+            1,210, each with 133 months of the earnings calendar, about 3,200 weighted calls at a weight of one, under the
+            operator's 5,000 a day and about 3 per cent of the day's 100,000, so the pull fits one day.
+Found:      every reader of the pulled bars but the sweeps' history reads the one pull holding a name's first stored
+            session, so under that key a pull from 2015-10-01 would store 2015 to 2017 under a pull none of them reads, and
+            the sweeps' history would join two pulls' scales at 2018. So the key carries the pull, each pull keeping its
+            whole span beside the other until the older is removed, and every reader reads one pull a name.
+Plan:       items 1 and 2 in one pull request filed under 22.10, whose history test they amend, ahead of 22.11: the quality
+            floors in months; migration 111 carrying the pull in the two tables' keys; the sweeps' history and the page's
+            earnings reading one pull a name; the comparison of two pulls' shared sessions; the history test's coverage
+            counting the members whose facts reach their twelve quarters; and two remedy files run from main with no
+            other writer running, the migration, the three pulls and the comparison first, and the old pulls' removal
+            and the three ledger histories with their checks once the comparison is stated. Item 3 as three 22.10 run
+            entries, item 4 as 22.11, item 5 as 22.3, then 22.12.
+Queue:      done, 22.9 and 22.10; in progress, items 1 and 2 in this pull request; next, item 2's remedies, item 3's runs,
+            22.11 or the stop it names, 22.3, 22.12, then the sign-offs of phases 18, 19 and 20 by fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
