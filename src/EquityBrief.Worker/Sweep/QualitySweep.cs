@@ -13,8 +13,9 @@ namespace EquityBrief.Worker.Sweep;
 
 // One member's reading on a session the quality family's history test reads: its scorecard's checks passed and applied
 // over its filer's facts as first filed before the session, its valuation's place against its own last twelve quarters,
-// and whether it closed above its 200-session average.
-public readonly record struct QualityReading(int Passed, int Applied, double? Place, bool AboveAverage);
+// whether it closed above its 200-session average, and whether those facts reach every quarter the valuation reads,
+// whatever the prices hold.
+public readonly record struct QualityReading(int Passed, int Applied, double? Place, bool AboveAverage, bool FactsReach = false);
 
 // One setting's book over the whole history: its holdings as walked, the same bought at the next open after each one's
 // round trip, and its months, the tester's unit.
@@ -59,9 +60,10 @@ public sealed class QualityLay
 
     public HeavyweightTape Tape => tape;
 
-    // What each reshuffle could read: the members answered, those with a score of five checks or more, those valued
-    // against their own quarters, and those the starting setting qualifies.
-    public IReadOnlyList<(DateOnly Session, int Answered, int Scored, int Valued, int Qualifying)> Coverage() =>
+    // What each reshuffle could read: the members answered, those with a score of five checks or more, those whose facts
+    // as first filed reach every quarter the valuation reads, those valued against their own quarters, and those the
+    // starting setting qualifies.
+    public IReadOnlyList<(DateOnly Session, int Answered, int Scored, int FactsReach, int Valued, int Qualifying)> Coverage() =>
     [
         .. reshuffles.Select(session =>
         {
@@ -71,6 +73,7 @@ public sealed class QualityLay
                 read.Calendar[session],
                 at.Length,
                 at.Count(one => one.Applied >= FundamentalScorecard.FewestRead),
+                at.Count(one => one.FactsReach),
                 at.Count(one => one.Place is not null),
                 at.Count(one => QualityRule.Answer(one.Passed, one.Applied, one.Place, one.AboveAverage, QualityRule.Starting).Passed));
         }),
@@ -132,8 +135,14 @@ public sealed class QualityLay
         var card = FundamentalScorecard.Read(facts, session, financial, prices);
         var passed = card.Checks.Count(check => check.Answer == CheckAnswer.Passed);
         var applied = card.Checks.Count(check => check.Answer is CheckAnswer.Passed or CheckAnswer.Failed);
+        var parts = ValuationReading.PartsOf(facts, session);
 
-        return new QualityReading(passed, applied, ValuationReading.Place(ValuationReading.PartsOf(facts, session), prices, session), !double.IsNaN(average200) && close > average200);
+        return new QualityReading(
+            passed,
+            applied,
+            ValuationReading.Place(parts, prices, session),
+            !double.IsNaN(average200) && close > average200,
+            ValuationReading.OldestDay(parts) is not null && parts.Counts.Any(count => count.Day < session));
     }
 
     // The first session after a day, on which a filing made that day is first read; none past the calendar's end.
@@ -316,35 +325,44 @@ public sealed class QualityLay
         return TradeCost.InPercent(value, entry, exit) / 100.0;
     }
 
-    // The proposal over every setting's figures: the best edge among those meeting the family floors, ties to the fewest
-    // dials moved from the starting setting and then the key; none where none meets them.
-    public static QualitySettings? Propose(IReadOnlyList<(QualitySettings Setting, HeavyweightFigures Figures)> read) =>
-        read.Where(one => one.Figures.MeetsFloors && one.Figures.Edge is not null)
-            .OrderByDescending(one => one.Figures.Edge)
-            .ThenBy(one => one.Setting.Changes(QualityRule.Starting))
-            .ThenBy(one => one.Setting.Key, StringComparer.Ordinal)
-            .Select(one => one.Setting)
-            .FirstOrDefault();
-
-    // The setting a fold chooses of the 72: the best edge among those meeting the floors in proportion to its years, ties
-    // as the proposal breaks them; none where none meets them.
-    public static QualitySettings? Choose(IReadOnlyList<(QualitySettings Setting, HeavyweightFigures Figures)> read, int years)
+    // A book's months as the floors read them, each by the session it opens on; where a fold is named only the months it
+    // learns on, those whose close, the session the next month opens on, falls before its year.
+    // see: A quality book meets its floors in months held, and a fold reads them in proportion to the years it learns on
+    public static QualityMonths MonthsOf(QualityBook book, IReadOnlyList<DateOnly> calendar, IReadOnlyList<int> reshuffles, LoopFold? fold = null)
     {
-        var (trades, yearsBeating) = LoopProcedures.Floors(years);
+        var closes = reshuffles.Zip(reshuffles.Skip(1)).ToDictionary(pair => pair.First, pair => pair.Second);
 
-        return read
-            .Where(one => one.Figures.Edge is not null && one.Figures.Trades >= trades && one.Figures.YearsBeating >= yearsBeating)
-            .OrderByDescending(one => one.Figures.Edge)
-            .ThenBy(one => one.Setting.Changes(QualityRule.Starting))
-            .ThenBy(one => one.Setting.Key, StringComparer.Ordinal)
-            .Select(one => one.Setting)
-            .FirstOrDefault();
+        return QualityRule.Months(
+            book.Months
+                .Where(month => fold is null || (closes.TryGetValue(month.Opens, out var close) && LoopFolds.Learns(fold, calendar[close])))
+                .Select(month => (calendar[month.Opens], month.Edge)),
+            SweepColumns.FirstScored.Year);
     }
 
-    // The grid as a procedure the tester runs year by year: each fold chooses among the 72 books on what ended before its
-    // year, and is tested on its choice's months in its year against the starting setting's.
+    // The proposal over every setting's figures: the best edge among those whose months meet the family's floors, ties to
+    // the fewest dials moved from the starting setting and then the key; none where none meets them.
+    public static QualitySettings? Propose(IReadOnlyList<(QualitySettings Setting, HeavyweightFigures Figures, QualityMonths Months)> read) =>
+        read.Where(one => QualityRule.MeetsFloors(one.Months) && one.Figures.Edge is not null)
+            .OrderByDescending(one => one.Figures.Edge)
+            .ThenBy(one => one.Setting.Changes(QualityRule.Starting))
+            .ThenBy(one => one.Setting.Key, StringComparer.Ordinal)
+            .Select(one => one.Setting)
+            .FirstOrDefault();
+
+    // The setting a fold chooses of the 72: the best edge among those whose months meet the floors in proportion to its
+    // years, ties as the proposal breaks them; none where none meets them.
+    public static QualitySettings? Choose(IReadOnlyList<(QualitySettings Setting, HeavyweightFigures Figures, QualityMonths Months)> read, int years) =>
+        read.Where(one => one.Figures.Edge is not null && QualityRule.MeetsFloors(one.Months, years))
+            .OrderByDescending(one => one.Figures.Edge)
+            .ThenBy(one => one.Setting.Changes(QualityRule.Starting))
+            .ThenBy(one => one.Setting.Key, StringComparer.Ordinal)
+            .Select(one => one.Setting)
+            .FirstOrDefault();
+
+    // The grid as a procedure the tester runs year by year: each fold chooses among the 72 books on the holdings and the
+    // months that ended before its year, and is tested on its choice's months in its year against the starting setting's.
     // see: A change is adopted only on test years the proposal never saw, and a search is judged as a procedure run year by year
-    public static LoopProposalRead Procedure(LoopRead read, IReadOnlyList<QualityBook> books)
+    public static LoopProposalRead Procedure(LoopRead read, IReadOnlyList<QualityBook> books, IReadOnlyList<int> reshuffles)
     {
         var current = books.Single(book => book.Setting == QualityRule.Starting);
 
@@ -354,7 +372,7 @@ public sealed class QualityLay
                 {
                     var learning = new FoldView<HeavyweightTrade>(fold, book.Costed, trade => read.Calendar[trade.Entry], trade => trade.End is { } end ? read.Calendar[end] : null).Learning;
 
-                    return (book.Setting, HeavyweightSweep.Figures(book.Setting.Key, learning));
+                    return (book.Setting, HeavyweightSweep.Figures(book.Setting.Key, learning), MonthsOf(book, read.Calendar, reshuffles, fold));
                 }),
             ],
             read.LearningYears(fold));

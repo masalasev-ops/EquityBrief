@@ -4,8 +4,8 @@ using EquityBrief.Data;
 
 namespace EquityBrief.Api.Reading;
 
-// The bars the chart page's weekly and monthly charts read before the store's year: the pull holding the stock's first
-// stored session, that pull's sessions before it, and the pull's close on that session, which with the store's own sets
+// The bars the chart page's weekly and monthly charts read before the store's year: the newest pull holding the stock's
+// first stored session, that pull's sessions before it, and the pull's close on that session, which with the store's own sets
 // the scale; or why none is read.
 public sealed record PulledSeries(string? Pull, decimal? PulledClose, IReadOnlyList<SessionBar> Sessions, string? Reason);
 
@@ -17,7 +17,10 @@ public sealed partial class ReadApi
     public const string NothingPulled = "no history was pulled for it before its first stored session";
     public const string NoCloseToScaleBy = "the pull holds no close on its first stored session to set the scale by";
 
-    const string PulledHolding = "SELECT pull, close FROM pulled_bar WHERE ticker = $ticker AND session_date = $first;";
+    // The newest pull holding the stock's first stored session, since from the 22.11 ruling a pull keeps its whole span
+    // beside an earlier pull's rows.
+    // see: A pull keeps its whole span beside an earlier pull's rows, and every reader reads the newest pull holding what it reads
+    const string PulledHolding = "SELECT pull, close FROM pulled_bar WHERE ticker = $ticker AND session_date = $first ORDER BY pull DESC LIMIT 1;";
 
     const string AnyPulled = "SELECT 1 FROM pulled_bar WHERE ticker = $ticker LIMIT 1;";
 

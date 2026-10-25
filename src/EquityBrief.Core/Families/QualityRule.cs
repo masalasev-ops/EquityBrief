@@ -1,6 +1,7 @@
 using System.Globalization;
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Ledger;
+using EquityBrief.Core.Sweep;
 
 namespace EquityBrief.Core.Families;
 
@@ -48,6 +49,11 @@ public sealed record QualitySettings(int ScoreFloorInNine, QualityValuation Valu
 // Whether a member qualifies, and why not where it does not.
 public sealed record QualityAnswer(bool Passed, string? Reason);
 
+// A quality book's months as its floors read them: the months it held stocks in, each of the history's eight years'
+// mean edge over the months it held in that year, none for a year it held nothing in, and the years that mean stands
+// above nothing in.
+public sealed record QualityMonths(int Held, double?[] YearEdge, int YearsAbove);
+
 // Quality at a fair price: the companies the fundamentals scorecard rates strongest that are not dear against their own
 // history, kept as a set of holdings reshuffled on the first night of each month, after Piotroski (2000) for the score
 // and its floor and Novy-Marx (2013) for profitable companies bought cheap.
@@ -90,6 +96,39 @@ public static class QualityRule
            from sale in FilingSales
            select new QualitySettings(floor, valuation, trend, book, sale),
     ];
+
+    // The floors a setting meets, read in its book's months rather than its holdings sold, since a book of ten sells too
+    // few holdings over the history for the family floors of trades: the months it held stocks in, and the years its
+    // monthly edge stands above nothing in, of the history's eight.
+    // see: A quality book meets its floors in months held, and a fold reads them in proportion to the years it learns on
+    public const int MonthsHeldFloor = 48;
+
+    public const int YearsAboveFloor = SweepMeasures.YearsBeating;
+
+    // A book's months, each by the session it opens on and its edge, none where it held nothing, read over the history's
+    // eight years from the first.
+    public static QualityMonths Months(IEnumerable<(DateOnly Opens, double? Edge)> months, int firstYear)
+    {
+        var held = months.Where(month => month.Edge is not null).ToArray();
+        var years = new double?[SweepFigures.Years];
+
+        foreach (var year in held.GroupBy(month => month.Opens.Year))
+        {
+            if (year.Key - firstYear is var at && at >= 0 && at < years.Length)
+            {
+                years[at] = year.Average(month => month.Edge!.Value);
+            }
+        }
+
+        return new QualityMonths(held.Length, years, years.Count(edge => edge > 0));
+    }
+
+    // Whether a book's months meet the floors, read in proportion to the years learned on where a fold learns on fewer
+    // than the history's eight, each rounded up.
+    public static bool MeetsFloors(QualityMonths months, int years = SweepFigures.Years) =>
+        months.Held >= Up(MonthsHeldFloor * years) && months.YearsAbove >= Up(YearsAboveFloor * years);
+
+    static int Up(int numerator) => (numerator + SweepFigures.Years - 1) / SweepFigures.Years;
 
     public const string NoWord = "too few checks read for a score";
     public const string UnderTheFloor = "a score under the floor";

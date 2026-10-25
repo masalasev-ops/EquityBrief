@@ -49,6 +49,7 @@ public sealed class HistoryPull(
         Stores:
         [
             new StoreTouch(Store.Membership, Touch.Read),
+            new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.PulledBar, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.PulledEarnings, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.PulledSurprise, Touch.Read | Touch.Insert | Touch.Delete),
@@ -122,18 +123,20 @@ public sealed class HistoryPull(
         ORDER BY ticker;
     ";
 
-    // Insert only. A session some earlier pull already holds for a name keeps that pull's row, so
-    // a second pull adds what the first did not reach and a purge of either removes its own rows.
+    // Insert only. From the 22.11 ruling each pull keeps its whole span beside an earlier pull's rows, so a pull reaching
+    // further back holds every session it is sent at its own scale, a reader reads the newest pull, and a purge of either
+    // removes its own rows.
+    // see: A pull keeps its whole span beside an earlier pull's rows, and every reader reads the newest pull holding what it reads
     const string InsertBar = @"
         INSERT INTO pulled_bar (ticker, session_date, open, high, low, close, raw_close, volume, pull)
         VALUES ($ticker, $session_date, $open, $high, $low, $close, $raw_close, $volume, $pull)
-        ON CONFLICT (ticker, session_date) DO NOTHING;
+        ON CONFLICT (ticker, session_date, pull) DO NOTHING;
     ";
 
     const string InsertEarnings = @"
         INSERT INTO pulled_earnings (ticker, event_date, timing, pull)
         VALUES ($ticker, $event_date, $timing, $pull)
-        ON CONFLICT (ticker, event_date) DO NOTHING;
+        ON CONFLICT (ticker, event_date, pull) DO NOTHING;
     ";
 
     // The surprises, one row a print the calendar answers over the span: the figures as filed, kept as text,
@@ -345,6 +348,26 @@ public sealed class HistoryPull(
 
                 return 1;
             }
+        }
+
+        // From the 22.11 ruling, the pulls made from a day on compared with those made before it, before the older are
+        // removed; it reads the store and writes nothing.
+        if (VerbArguments.Has(args, "--compare"))
+        {
+            if (VerbArguments.Value(args, "--since") is not { } since
+                || !DateOnly.TryParseExact(since, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day))
+            {
+                error.WriteLine("history-pull: name the day the newer pulls were made from with '--since <yyyy-MM-dd>'.");
+
+                return 2;
+            }
+
+            foreach (var line in PullComparison.Lines(await PullComparison.CompareAsync(databaseFile, day), day))
+            {
+                output.WriteLine(line);
+            }
+
+            return 0;
         }
 
         if (VerbArguments.Has(args, "--revenue"))

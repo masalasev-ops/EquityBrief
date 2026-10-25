@@ -118,7 +118,9 @@ static int NoVerb()
         "'--sector-etfs' the eleven sector funds' daily series, '--companies' each name's filer, GICS sector and quarterly " +
         "share counts with the days they were filed, '--splits' each name's splits, 'history-pull --revenue' each pulled " +
         "company's revenue as its filer filed it, 'history-pull --members --index <MID or SML>' the S&P 400's or 600's " +
-        "members today, survivors alone, which '--index' then gives every other pull its names from, and " +
+        "members today, survivors alone, which '--index' then gives every other pull its names from, " +
+        "'--compare --since <yyyy-MM-dd>' compares the pulls made from that day on with those made before it at the " +
+        "store's scale and writes nothing, and " +
         "'--purge <pull>' removes a pull whole, and " +
         "'quarters' runs the night's quarters step by hand, asking for the members due and the next of the fill, " +
         "'quarters --companies' asks instead every member no fetch has stored a company for, storing its filer, GICS " +

@@ -1,0 +1,14 @@
+# The remedy of the 22.11 ruling's second item, filed under 22.10 (prices pulled from 2015-10-01), as its PROGRESS entry
+# prints it. Migration 111 rebuilds pulled_bar and pulled_earnings with the pull in their keys, every row copied across
+# first, so a pull keeps its whole span beside an earlier pull's rows. The three bars pulls then ask every name each index
+# held from 2015-10-01 for its daily bars over the whole span, one request a name, and the earnings calendar once a
+# calendar month, about 3,200 weighted calls of the day's 100,000 at a weight of one, each pull stating its calls before
+# its first request. The comparison then reads every session the new pulls and the ten older ones share at the store's
+# scale and writes nothing; the older pulls are removed by 2026-10-25-22.10-the-older-pulls-removed.txt once its lines are
+# stated. No model call and no money beyond the subscription. Run from main after the merge, when no night, local run,
+# drain, labeller, history read or monthly run is writing, and restart the read surface after it.
+migrate
+history-pull --from 2015-10-01 --live
+history-pull --from 2015-10-01 --index MID --live
+history-pull --from 2015-10-01 --index SML --live
+history-pull --compare --since 2026-10-25

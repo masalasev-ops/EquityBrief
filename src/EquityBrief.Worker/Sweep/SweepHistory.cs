@@ -800,13 +800,19 @@ public sealed class SweepHistory : IComponent
         return (nights, without, namesWithout, namesMissing);
     }
 
+    // A stock's bars to the history's end; from the pulled history each session from the newest pull holding it, since
+    // from the 22.11 ruling a pull keeps its whole span beside an earlier pull's rows.
+    // see: A pull keeps its whole span beside an earlier pull's rows, and every reader reads the newest pull holding what it reads
     static async Task<SweepBar[]> BarsAsync(SqliteConnection connection, string table, string ticker, string through, CancellationToken cancellation)
     {
         var bars = new List<SweepBar>();
+        var newest = table == "pulled_bar"
+            ? " AND pull = (SELECT MAX(held.pull) FROM pulled_bar AS held WHERE held.ticker = pulled_bar.ticker AND held.session_date = pulled_bar.session_date)"
+            : string.Empty;
 
         await foreach (var row in RowsAsync(
             connection,
-            $"SELECT session_date, high, low, close, volume, open, raw_close FROM {table} WHERE ticker = $ticker AND session_date <= $through ORDER BY session_date;",
+            $"SELECT session_date, high, low, close, volume, open, raw_close FROM {table} WHERE ticker = $ticker AND session_date <= $through{newest} ORDER BY session_date;",
             [("$ticker", ticker), ("$through", through)],
             cancellation))
         {

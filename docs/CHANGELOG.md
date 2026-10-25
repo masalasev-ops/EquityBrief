@@ -26,6 +26,74 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-25 - ARCHITECTURE.html - Quality at a fair price's floors read in its book's months, and its coverage counting the members whose filings reach every quarter the valuation reads
+Authorised by: A quality book meets its floors in months held, and a fold reads them in proportion to the years it learns on
+Was:
+> Section 17's Quality at a fair price's history test: ... each holding bought at the next open and judged after its round trip against an equal-weighted hold of the members answered on the night it was chosen; the proposal the best edge among the settings meeting the family floors of 300 holdings and 6 of the 8 years above nothing, beside each year's edge with 2020, 2022, 2025 and 2026 named, ... (see: Quality at a fair price's history test walks the book over the pulled history on 72 settings an index and registers nothing) | the operator's ruling of 2026-10-24 named the grid's five dials and their levels and the years each answer names; the floors, the luck and the tester are the family sweeps' own. <b>Judgement:</b> each level, as ruled | fixture-expectations, one reshuffle's holdings worked by hand and their month equal to the tester's, the floor, the valuation and the trend on both sides at a reshuffle, and a sale on a filing worked by hand; the figures read off the document against the constants
+> Section 13: ... the edge without its five largest results, the proposal among the settings meeting the family floors, what luck alone passes over the 72, and the tester's verdict of the grid run as a procedure year by year in book months, inside each fold the 72 books read on what ended before its year; the report and its figures stand in the run folder, and each index's answer goes to the operator before any freeze.
+Now:
+> Section 17's row: ... the proposal the best edge among the settings whose book meets the family's floors in its months, stocks held in at least 48 months and the months' mean edge above nothing in at least 6 of the 8 years, a year holding nothing counting as not above, a fold reading both in proportion to the years it learns on, each rounded up, beside ... (see: ...) (see: A quality book meets its floors in months held, and a fold reads them in proportion to the years it learns on) | the operator's ruling of 2026-10-24 named the grid's five dials and their levels and the years each answer names, and their ruling of 2026-10-25 the floors in months held, since a book of 10 sells too few holdings for the swing families' floors of trades; the luck and the tester are the family sweeps' own. ... | ..., a sale on a filing worked by hand, and the floors in months worked by hand on both sides over the whole history and in proportion in a fold; the figures read off the document against the constants
+> Section 13: ... the proposal among the settings meeting the family's floors, which from the operator's ruling of 2026-10-25 read its book's months, the months it held stocks in and the years their mean edge stands above nothing (see: ...), what luck alone passes over the 72, and the tester's verdict ..., inside each fold the 72 books read on the holdings and the months that ended before its year; and at each year's first reshuffle the members answered, scored, whose filings as first filed reach every quarter the valuation reads, valued and qualifying. The report and its figures stand in the run folder, and each index's answer goes to the operator before any freeze.
+Why: the operator's ruling of 2026-10-25 judges a quality book in months held, since under the floors of trades no setting could ever be proposed, and asks each year's coverage stated again over the deeper history.
+
+### 2026-10-25 - ARCHITECTURE.html - the pulled bars and prints keyed by the pull as well, the history pull's comparison, and every reader taking the newest pull
+Authorised by: A pull keeps its whole span beside an earlier pull's rows, and every reader reads the newest pull holding what it reads
+Was:
+> The catalogue's History pull: reads ... identifier mapping feed, membership, pulled bars, pulled earnings, ... | ... | asks every name the index held ... and stores what comes back apart from the bar store and the calendar, each row carrying the run id of the pull that wrote it; a session one name misses ...
+> The matrix's History pull row: R under membership, a blank under bars, R W under pulled history, and W under the run log.
+> The catalogue's Sweep history: ... every name the index held with its membership spans and the sector it carries as filed today, its pulled bars scaled to the store's own over the sessions both hold and its stored bars ...
+> Section 16's Pulled history row: ... the two matched again by a later pull reading its quarter, each row carrying the run id of the pull that wrote it | ...
+> The chart page's reads: the stock's stored bars; on the weekly and monthly charts alone, one stock's pulled bars by the table's key, of the pull holding its first stored session and before it, ...
+Now:
+> The History pull reads the bar store as well, and its words: ... each row carrying the run id of the pull that wrote it, and from migration 111 every bar and print it is sent beside an earlier pull's rows; asked to compare, it reads every stock the pulls made from a day on and those made before it both hold, each session both hold at the store's scale by each side's close on the stock's first stored session in the bar store, and writes nothing (see: A pull keeps its whole span beside an earlier pull's rows, and every reader reads the newest pull holding what it reads); a session one name misses ...
+> The matrix's History pull row: R under bars.
+> The Sweep history: ... its pulled bars, from migration 111 each session from the newest pull holding it (see: ...), scaled to the store's own over the sessions both hold and its stored bars ...
+> The Pulled history row: ... each row carrying the run id of the pull that wrote it, and from migration 111 each pull keeping every bar and print it is sent beside an earlier pull's rows, read from the newest pull holding them (see: ...) | ...
+> The chart page's reads: ... of the newest pull holding its first stored session and before it, ...
+Why: the operator's ruling of 2026-10-25 pulls prices from 2015-10-01 and has the two pulls' shared sessions compared before the older is removed, which the table's key of a name and a session could not hold.
+
+### 2026-10-25 - SCHEMA.md - pulled_bar and pulled_earnings keyed by the pull as well, and the chart page's read of the newest pull
+Authorised by: A pull keeps its whole span beside an earlier pull's rows, and every reader reads the newest pull holding what it reads
+Was:
+> pulled_bar: Grain: one row per ticker per session a pull reached. ... Primary key: `ticker`, `session_date`.
+> ... From 19.11 the read API reads one stock's rows by the table's key, the pull holding its first stored session and its sessions before it, ...
+> ... is read again from the newest pull still holding them. A second pull inserts only the sessions no earlier pull holds, so each row belongs to exactly one pull.
+> pulled_earnings: Grain: one row per ticker per earnings report date a pull reached. ... Primary key: `ticker`, `event_date`.
+Now:
+> pulled_bar: Grain: one row per ticker per session per pull that reached it. ... Primary key: `ticker`, `session_date`, `pull`, from migration 111.
+> ... the newest pull holding its first stored session and its sessions before it, ...
+> ... is read again from the newest pull still holding them. From migration 111, on the operator's ruling of 2026-10-25, a second pull keeps every session it is sent beside an earlier pull's rows, its whole span at its own scale, each row belonging to the pull that wrote it; every reader above reads the newest pull holding a stock's first stored session and its sessions before it, and the sweeps' history each session from the newest pull holding it, so the two pulls' shared sessions are compared before the older is removed (see: ...).
+> pulled_earnings: Grain: one row per ticker per earnings report date per pull that reached it. ... Primary key: `ticker`, `event_date`, `pull`, from migration 111. The page history reader reads each print once, as the newest pull holding it files it.
+Why: the same ruling.
+
+### 2026-10-25 - RUNBOOK.md - a bars pull keeping its span beside an earlier pull's, and a pull reaching further back with its comparison and its remedies
+Authorised by: A pull keeps its whole span beside an earlier pull's rows, and every reader reads the newest pull holding what it reads
+Was:
+> ... so the eight lines cost about two thousand five hundred weighted calls of the day's hundred thousand. A name already pulled for the S&P 500's history keeps the rows that pull wrote. A name not served is named and the rest stored. Run them when no night is running.
+> The pull section went from removing a pull whole by its run id straight to what a purge removes.
+Now:
+> ... A name already pulled for the S&P 500's history keeps the rows that pull wrote, and from migration 111 a bars pull stores its own beside them, every reader reading the newest pull. ...
+> A paragraph before what a purge removes: a pull reaching further back, from the 22.11 ruling, `history-pull --compare --since <the day the newer pulls were made>` and what it prints, the older pulls removed by their purges once its lines are stated, and the two remedy files of the ruling.
+Why: the same ruling; the comparison is how the operator sees the two pulls agree before the older go.
+
+### 2026-10-25 - RUNBOOK.md - Quality at a fair price's history test reads its floors in months and states each year's coverage
+Authorised by: A quality book meets its floors in months held, and a fold reads them in proportion to the years it learns on
+Was:
+> ... the edge without its five largest results, the proposal among the settings meeting the family floors, what luck alone passes over the 72, and the tester's verdict of the grid run year by year:
+> It reads the live store read-only, the filed facts among what it reads, and writes its report and its figures into a run folder of its own and nothing else. Nothing it shows is adopted, ...
+Now:
+> ... the proposal among the settings meeting the family's floors, from the operator's ruling of 2026-10-25 read in its book's months, the months held and the years their mean edge stands above nothing (see: ...), what luck alone passes ...
+> ... into a run folder of its own and nothing else. Its coverage table states, at each year's first reshuffle, the members answered, scored, whose filings as first filed reach every quarter the valuation reads, valued against their own twelve quarters and qualifying at the starting setting, so a year the pulled prices do not reach shows as members whose filings reach and who are not valued. Nothing it shows is adopted, ...
+Why: the operator's ruling of 2026-10-25.
+
+### 2026-10-25 - .claude/rules/checks.md - fixture-expectations reaches the floors in months and the deeper pull
+Authorised by: A quality book meets its floors in months held, and a fold reads them in proportion to the years it learns on
+Was:
+> fixture-expectations: ... and a sale on a filing dropping the score worked by hand |
+Now:
+> The same, then from the 22.11 ruling the floors in months worked by hand on both sides, a year held in no month not above, the floors in proportion in a fold, a fold reading only the months closed before its year and the proposal and a fold's choice passing over a better edge a month short; a second pull keeping its whole span beside the first's rows, migration 111 keeping every pulled bar and print, the comparison worked by hand, the chart page and the sweeps' history reading the newest pull and the page history reader reading a print two pulls hold once; and no source a rule's version pins one they write.
+Why: the roster row says what its check asserts, and the ruling's first two items extend it, the deeper pull's under (see: A pull keeps its whole span beside an earlier pull's rows, and every reader reads the newest pull holding what it reads).
+
 ### 2026-10-25 - ARCHITECTURE.html - Quality at a fair price's history test: the sweep history reads the filed facts, section 13's paragraph and section 17's grid
 Authorised by: Quality at a fair price's history test walks the book over the pulled history on 72 settings an index and registers nothing
 Was:
