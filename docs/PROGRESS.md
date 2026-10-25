@@ -9170,3 +9170,53 @@ Carried:    `tools/remedies/2026-10-25-22.11-the-s-and-p-500-quality-freeze.txt`
             the night of 2026-10-26, when no other writer runs: the S&P 500's history test again so its run writes its
             answer file, that answer recorded, and the freeze, then the read surface restarted; the S&P 400's and 600's
             answers to the operator; 22.10's remedy record once the ledger's histories and checks end.
+
+### 22.10 - the remedies run from main: migration 111, prices pulled from 2015-10-01 for every name each index held, the two pulls compared, the older removed, and the three ledger histories built again with their checks   2026-10-25
+
+Not a checkpoint entry: it records 22.10's two remedies and what they measured, and lands nothing.
+Ran:        from main's e7e3def3, the merge of PR 557, `tools/remedies/2026-10-25-22.10-prices-from-2015.txt` from
+            14:13:05 to 14:29:40 UTC, then from main's c694351c, the merge of PR 558,
+            `tools/remedies/2026-10-25-22.10-the-older-pulls-removed.txt` from 15:03:55 to 15:13:42, each with no night,
+            local run, drain, labeller, history read or monthly run writing; then the three ledger histories with
+            `--again` over 2019-01-02 to 2026-10-05 from c694351c's clean copy from 15:15:37 UTC, and each index's
+            point-in-time check after them from the checkout's own build, all done at 18:06:27. No model call; the pulls
+            asked the provider 963, 892 and 1,345 weighted calls, 3,200 in all, each stated before its first request,
+            under the operator's 5,000 a day.
+Pulled:     migration 111 applied, 110 to 111. The S&P 500's pull answered 820 of 830 names, 1,899,599 bars and 30,150
+            prints, 17 names missing a session; the S&P 400's 756 of 759, 1,858,619 and 29,840, 18 missing a session;
+            the S&P 600's 1,194 of 1,212, 2,809,004 and 45,154, 68 missing a session. Of the 31 unanswered the provider
+            sent no session for 13, answered 404 for one and sent a close of 0 for 17.
+Compared:   the pulls made from 2026-10-25 against those before: the older hold 2,192 stocks and the newer 2,270; 13 the
+            older hold and no newer pull does, none of them held by an index today, so removed with their pulls on the
+            correction of PR 558. 4,143,557 sessions both hold, 3,158,308 at the store's scale and the rest with the newer
+            brought to the older; 65,674 more than a cent apart, 12,957 more than one per cent, the largest WFRD's 2019
+            sessions, the two closes 0.0211 and 30.5407 on 2019-08-22; 8,553 whose closes as traded differ; 3 sessions
+            the older hold inside a newer series' span that it does not, FAF, MOH and SLB on 2023-04-06; 66,755 prints the
+            older hold, 3 inside a newer series' span and held by no newer pull.
+Removed:    the ten older pulls, 4,157,138 bars and 66,755 prints, each by its own purge.
+Built:      the S&P 500's history wrote 343,457 setups over 1,950 sessions, 50,653 passing the live rule, in 24 minutes 55
+            seconds, against 338,110 and 49,831 before; the S&P 400's 249,906 and 35,194 in 33 minutes 34 seconds, against
+            249,926 and 35,200; the S&P 600's 343,897 and 39,986 in 44 minutes 22 seconds, against 343,895 and 39,984.
+            Each index's check rebuilt 200 of 200 sampled history setups with every reading the same, in 22, 18 and 27
+            minutes. The store stands at 5.77 gigabytes.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 22.11's tree at f90935a4, whose code this pull
+            request carries unchanged, 2775 of 2775 tests and the phase report 1444 claims, 1444 passing; this pull
+            request adds records alone.
+
+### 22.11 - the remedy run from main: the S&P 500's history test again, its answer recorded, and the family frozen at its starting setting with its seven versions   2026-10-25
+
+Not a checkpoint entry: it records 22.11's remedy and what it measured, and lands nothing.
+Ran:        from main's 9f494a52, the merge of PR 559 at 17:23 UTC, after the ledger's checks ended,
+            `tools/remedies/2026-10-25-22.11-the-s-and-p-500-quality-freeze.txt` from 18:07:03 to 18:07:44 with no night,
+            local run, drain, labeller, history read, ledger build or monthly run writing, the read surface stopped first
+            and started again from main's Release build after it. No request and no model call.
+Measured:   the S&P 500's history test again, run 20261025T180717Z, the same answer as 22.10's run of 15:14:02: the
+            starting setting's 106 holdings ended and 10 held, -3.791 points after its round trip, 93 months held and 2
+            years above nothing by its months, no setting meeting the floors, and the tester not passed at an adjusted p
+            of 0.625. Its answer recorded, none passed, at 106 holdings. The freeze registered 8 at one instant, the
+            family 8 of 9: the live rule at a score of 7 in 9, at or below its own median, the trend off, 10 held, sold at
+            reshuffles, as 635, and its seven versions as 636 to 642, each on `quality-500` at 88dcf3013d88. The S&P 400
+            and 600 stay provisional, their answers with the operator.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 22.11's tree at f90935a4, whose code this pull
+            request carries unchanged, 2775 of 2775 tests and the phase report 1444 claims, 1444 passing; this pull
+            request adds records alone.
