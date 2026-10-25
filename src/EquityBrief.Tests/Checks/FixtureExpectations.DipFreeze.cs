@@ -569,7 +569,7 @@ public partial class FixtureExpectations
         Assert.All(DipFreezeSources.Concat(DipRuleSources), path => Assert.True(File.Exists(Path.Combine(Repository.Root, path)), path));
         Assert.Empty(DipFreezeSources.Concat(DipRuleSources).Intersect(pinned, StringComparer.Ordinal));
         Assert.Empty(DipFreezeSources.Intersect(dip, StringComparer.Ordinal));
-        Assert.Superset(dip.ToHashSet(StringComparer.Ordinal), DipRuleSources.Where(path => !path.EndsWith("/DipCandidate.cs", StringComparison.Ordinal)).ToHashSet(StringComparer.Ordinal));
+        Assert.Subset(dip.ToHashSet(StringComparer.Ordinal), DipRuleSources.Where(path => !path.EndsWith("/DipCandidate.cs", StringComparison.Ordinal)).ToHashSet(StringComparer.Ordinal));
         Assert.NotEmpty(new[] { "src/EquityBrief.Worker/Indices/IndexFamilies.cs" }.Intersect(pinned, StringComparer.Ordinal));
     }
 }
