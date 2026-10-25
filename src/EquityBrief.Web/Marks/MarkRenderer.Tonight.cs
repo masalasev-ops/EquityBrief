@@ -267,9 +267,9 @@ public sealed partial class MarkRenderer
         ("News, 30 days", "The stories of the last 30 days the labeller read as good or bad for the company."),
     ];
 
-    // Tomorrow's buys: one table across every setup, each row folding beneath it the pick's card with, where the page hands
-    // one, the stock's entry and exit plan beneath its setup's own plan, closed until a press on the row or its Open plan
-    // opens it, the row the link names open; and one line on how to read it.
+    // Tomorrow's buys: one table across every setup, each row whose night wrote its pick's card folding the card beneath it
+    // with, where the page hands one, the stock's entry and exit plan drawn inside it beneath its setup's own plan, closed
+    // until a press on the row or its Open plan opens it, the row the link names open; and one line on how to read it.
     // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
     public string TomorrowsBuys(IReadOnlyList<BuyPointView> points, string? open, IReadOnlyDictionary<string, string>? links = null, IReadOnlyDictionary<string, string>? plans = null)
     {
@@ -298,8 +298,7 @@ public sealed partial class MarkRenderer
         {
             var pick = point.Pick;
             var row = pick.Row;
-            var levels = plans?.GetValueOrDefault(row.Ticker);
-            var folds = pick.Card is not null || levels is not null;
+            var folds = pick.Card is not null;
             var fold = FoldId(point.Family, row.Ticker);
             var opened = folds && string.Equals(row.Ticker, open, StringComparison.Ordinal);
 
@@ -317,7 +316,7 @@ public sealed partial class MarkRenderer
 
             if (folds)
             {
-                body.Append(Invariant, $"<tr class=\"fold-row\" id=\"{Escaped(fold)}\" data-fold-for=\"{Escaped(row.Ticker)}\"{(opened ? string.Empty : " hidden")}><td colspan=\"{TomorrowHeadings.Count}\"><div class=\"row-open\">{(pick.Card is { } card ? DecisionCard(card, pick, linked: true, levels: levels) : levels)}</div></td></tr>");
+                body.Append(Invariant, $"<tr class=\"fold-row\" id=\"{Escaped(fold)}\" data-fold-for=\"{Escaped(row.Ticker)}\"{(opened ? string.Empty : " hidden")}><td colspan=\"{TomorrowHeadings.Count}\"><div class=\"row-open\">{DecisionCard(pick.Card!, pick, linked: true, levels: plans?.GetValueOrDefault(row.Ticker))}</div></td></tr>");
             }
         }
 

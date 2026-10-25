@@ -8712,3 +8712,29 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    22.9 to 22.12 as 22.7's planning entry carries them, and the record of 22.8's remedy with its three ledger
             histories once they are built.
+
+### 22.6 - correction: a buy point folds only where its night wrote the pick's card, the entry and exit plan drawn inside the card alone   2026-10-25
+
+Queue:      done, the entry and exit plan's correction merged as PR 553; in progress, this correction; next, the S&P 600's
+            ledger history and the three checks after the operator's demo of the night of 2026-10-25, then 22.9 merged
+            before the night of 2026-10-26, 22.10, 22.11 and 22.3 on the operator's word, and 22.12.
+Found:      hosted CI over PR 553's head failed one test: on a constructed night that wrote no pick card, each buy
+            point's row now folded with the entry and exit plan alone, where the night's rows fold nothing. The
+            correction's own runs were filtered to the tests it extended, and the pull request merged before its full
+            suite ended; that run was stopped once the failure was read, so the entry before this one states figures no
+            run over its tree measured, and this entry's run is the one over the corrected tree.
+Corrected:  a row folds only where its night wrote the pick's card, and the entry and exit plan is drawn inside the card
+            alone, as the decision naming the fold states.
+Tests:      1 extended, 2742 in all: the night writing no card draws no fold and no entry and exit plan.
+Claims:     1433, none new.
+Pins:       none move: no source a rule's version pins is written.
+Mutated:    the rule, stated before the run: the property the correction restores broken by one edit, made in the worktree
+            and reverted with the editor, the run filtered to its test. M1 a row folding wherever a plan is handed with
+            no card, red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2742 of 2742 tests ran with none failed,
+            migrations 0 to 109 with none pending, schema version 109, against `data-ci` and never `data`; the phase
+            report 64 tables, 1433 claims, 1433 passing, none out of scope and none unexamined, 1448 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    as the entry before it carries, the S&P 400's ledger history built and the S&P 600's with the three checks
+            waiting for the operator's demo to end.
