@@ -393,6 +393,8 @@ public sealed class SweepAnswers(IClock clock, string databaseFile, string sweep
         static double? Number(JsonElement element, string name) =>
             element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number ? value.GetDouble() : null;
 
+        static double? Edge(JsonElement edge) => edge.ValueKind == JsonValueKind.Number ? edge.GetDouble() : null;
+
         var chosen = settings.Single(setting => setting.GetProperty("Key").GetString() == key).GetProperty("Figures");
         var tested = root.TryGetProperty("tested", out var verdict) && verdict.ValueKind == JsonValueKind.Object ? verdict : (JsonElement?)null;
 
@@ -401,7 +403,7 @@ public sealed class SweepAnswers(IClock clock, string databaseFile, string sweep
             chosen.GetProperty("Trades").GetInt32(),
             Number(chosen, "Edge"),
             chosen.GetProperty("YearEdge").EnumerateArray()
-                .Select((edge, place) => (Year: SweepColumns.FirstScored.Year + place, Edge: edge.ValueKind == JsonValueKind.Number ? edge.GetDouble() : (double?)null))
+                .Select((edge, place) => (Year: SweepColumns.FirstScored.Year + place, Edge: Edge(edge)))
                 .ToDictionary(pair => pair.Year, pair => pair.Edge),
             Number(chosen, "EdgeWithoutLargest"),
             settings.Length,
