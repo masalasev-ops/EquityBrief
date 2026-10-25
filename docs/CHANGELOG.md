@@ -26,6 +26,16 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-25 - BUILD_PLAN.md - 22.3 freezes each index's dip at its 22.2 setting with the neighbours meeting the floors and the market variant, and the dip's rule reads every dial its sweep reads
+Authorised by: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
+Was:
+> On the operator's word on each index's answer, a remedy registers each index's live dip rule at the setting they approve, with its one-step neighbours as variants and a market variant beside it, as the 20.11 freezes registered theirs, each rule's evaluator pinning the dip's own files, so no other rule's version moves; the family's luck correction counts its own rules alone. Each registered rule keeps its trades under its own name in the dip's trade table, written by the dip's own step, and its record from its registration. Paper trading gains ...
+> **Done when** the remedy's lines register the freezes over a register shaped as the operator's; each frozen rule's setting and its market variant are worked by hand on both sides; ...
+Now:
+> On the operator's rulings of 2026-10-25, ..., a remedy registers each index's live dip rule at the setting its 22.2 run says it would run, the S&P 600's with the drop's volume level its second stage crossed, and beside it as versions the one-step neighbours that meet the floors and the market variant, the same rule with its market setting off, ... within the nine rules a family keeps (see: ...): on the S&P 500 the live rule, its stop at 4 typical moves and the market variant; on the S&P 400 the live rule, its trend on the 200-session average alone, its stop at 4 typical moves and the market variant; and on the S&P 600 the live rule and the market variant, with its exit on the first close above the 5-session average only where that neighbour, measured with the volume level kept read-only through the sweep's command, meets the floors, its figures in the remedy's entry. The dip's rule reads every dial its sweep reads, ..., its provisional setting reading as it does. Each rule's evaluator pins the files the dip's step runs through, ...; the family's luck correction counts its own rules alone. Each registered rule keeps its trades under its own name ..., the card drawing the live rule's list and the line every frozen card draws from its index's recorded answer. Paper trading gains ...
+> **Done when** the remedy's lines register the freezes over a register shaped as the operator's; each new dial is worked by hand on both sides at a constructed session; each frozen rule's setting and its market variant are worked by hand on both sides; ...
+Why: the operator's answers of 2026-10-25 keep the nine-rule limit, so every one-step neighbour with the market variant, ten to twelve rules an index, cannot be registered, and the settings the 22.2 runs would run read dials the night's provisional rule does not.
+
 ### 2026-10-25 - ARCHITECTURE.html - the quality family's step keeps every rule of the family standing on an index under its own name, and section 17 names the S&P 500's freeze
 Authorised by: A quality rule is registered as the family on its index and kept by the family's own step alone
 Was:

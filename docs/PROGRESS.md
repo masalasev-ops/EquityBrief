@@ -9220,3 +9220,46 @@ Measured:   the S&P 500's history test again, run 20261025T180717Z, the same ans
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 22.11's tree at f90935a4, whose code this pull
             request carries unchanged, 2775 of 2775 tests and the phase report 1444 claims, 1444 passing; this pull
             request adds records alone.
+
+### 22.11 ruling - the S&P 400's and 600's quality frozen at their starting settings, the dip's freezes the live rule with the neighbours meeting the floors and the market variant, and the quality card's line opening as every frozen card's   2026-10-25
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-25 at about 20:00 UTC, answering 22.11's stop and 22.3's limit, word for word in
+            `prompts/2026-10-25-22.11-operator-answers.md`, in the order "22.11 on the S&P 400 and 600, 22.3, 22.12, and
+            stop". 1, the quality family on the S&P 400 and 600 frozen "at its starting setting, as the S&P 500 was,
+            with its seven one-step neighbours as versions", the S&P 400's proposal running as the starting setting's
+            valuation-off neighbour and the S&P 600's one setting meeting the floors not taken, "Each card draws the
+            frozen line from its own recorded figures". 2, the dip by option (a): "register the live rule, the one-step
+            neighbours that meet the floors, and the market variant ... The nine-rule limit stands", the S&P 500's the
+            live rule, the stop at 4 typical moves and the market variant, the S&P 400's the live rule, the 200-day
+            trend, the stop at 4 and the market variant, and the S&P 600's the live rule and the market variant with
+            "the 5-day exit with the volume level kept" measured "read-only through the sweep's command" and
+            registered "only if it meets the floors so measured", 22.3's text amended with its prior text to the
+            changelog. 3, the quality card's line opening "Its settings were fixed on 25 Oct after its history test
+            from 2019: ...", the rest unchanged, on all three indices.
+Found:      read on the branch from main's b3897c37, no request and no model call. `sweep-answer` records a quality
+            test's figures for its proposal where one meets the floors, so the S&P 400's and 600's cards would draw
+            their proposals' figures under a freeze at the starting setting; the ruled setting's route, which records a
+            setting the operator chose from among those a run read, reads no quality test. The dip's night reads its
+            provisional setting alone, its drop the 2-session RSI, its exit the 5-session average and no market
+            setting, so no setting its sweep would run can be kept by it as it stands. And the 22.2 run on the S&P 600
+            crossed the volume level on each of its ten strongest settings, among them three of the live rule's
+            one-step neighbours meeting the floors with it, the exit on the 5-session average, 317 trades and 0.044
+            risks after costs, the trend with the 50 above the 200, 312 and 0.056, and the time limit at 5 sessions,
+            331 and 0.041, beside the market variant, 367 and 0.057; the figures put to the operator read each
+            neighbour without the volume level, where the exit alone met the floors.
+Plan:       22.11 on the S&P 400 and 600 first, in one pull request: the line opening as the ruling words it, the
+            ruled setting's route reading a quality test's grid with its own tester's verdict, and a remedy running
+            each index's history test again from main, recording its answer at the starting setting as ruled and
+            freezing the family at it with its seven versions. Then 22.3 in a pull request of its own: the dip's rule
+            reading every dial its sweep reads through the functions the sweep reads them by, its provisional setting
+            unchanged; an evaluator on each index pinning the files the dip's step runs through; the step keeping each
+            standing rule's trades under its own name, its card drawing the live rule's list and the line every frozen
+            card draws from its recorded answer; paper trading's accounts and the monthly run's read of the family; and
+            a remedy recording each index's 22.2 answer with its tester's verdict and registering the S&P 500's and
+            400's freezes as ruled, the S&P 600's after the exit's measure, which goes to the operator beside the two
+            other neighbours meeting the floors with the volume level kept before its line is written. Then 22.12.
+Queue:      done, 22.11 on the S&P 500 and its records; in progress, 22.11 on the S&P 400 and 600; next, 22.3, 22.12,
+            then the stop and report, and the sign-offs of phases 18, 19 and 20 by fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
