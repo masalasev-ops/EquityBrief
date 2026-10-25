@@ -35,12 +35,12 @@ public partial class ReadSurface
         null,
         null);
 
-    // The line those figures give, worked by hand: fixed on the day of the freeze after a test from 2019, 412 holdings,
-    // 0.012 of the buy as 1.2 points behind, behind in all but one of the 7 years it held stocks in, and none of the
-    // settings beating luck.
+    // The line those figures give, worked by hand: its settings fixed on the day of the freeze after a test from 2019, as
+    // every frozen card's line opens, 412 holdings, 0.012 of the buy as 1.2 points behind, behind in all but one of the 7
+    // years it held stocks in, and none of the settings beating luck.
     const string MidQualityFixed =
         "<p class=\"family-frozen quality-fixed\" data-fixed=\"2026-09-30\" data-holdings=\"412\" data-edge=\"-0.012\" data-years=\"7\" data-ahead=\"1\" data-beat-luck=\"false\" data-tester-passed=\"none\">" +
-        "Fixed 30 Sep after its history test from 2019: 412 holdings, 1.2 points a holding behind an equal-weight hold of the index's stocks after costs, behind in 6 of the 7 years it had holdings. " +
+        "Its settings were fixed on 30 Sep after its history test from 2019: 412 holdings, 1.2 points a holding behind an equal-weight hold of the index's stocks after costs, behind in 6 of the 7 years it had holdings. " +
         "No setting beat luck, so treat it as a starting point rather than a proven edge.</p>";
 
     static string MidLive => Core.Candidates.FamilyRecords.LivePrefix + "S&P 400 quality rule at " + QualityRules.Short(QualityRule.Starting);

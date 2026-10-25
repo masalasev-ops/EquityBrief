@@ -26,6 +26,51 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-25 - ARCHITECTURE.html - section 17 names the S&P 400's and 600's quality freezes
+Authorised by: The S&P 400's and 600's quality rules are frozen at their starting settings on the operator's answer, as the S&P 500's was
+Was:
+> Section 17's Quality at a fair price's starting settings: ... the large cap index's live rule frozen at it, each setting of the history test's grid one dial from it a version beside it, and the mid and small cap indices' provisional at it until the operator rules on their answers (see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions) | ...; their ruling of 2026-10-25 froze each index at it where no setting met the floors. ...
+Now:
+> ... each index's live rule frozen at it, each setting of the history test's grid one dial from it a version beside it, the large cap index's where no setting met the floors (see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions) and the mid and small cap indices' on the operator's answer where some did (see: The S&amp;P 400's and 600's quality rules are frozen at their starting settings on the operator's answer, as the S&amp;P 500's was) | ...; their ruling of 2026-10-25 froze each index at it where no setting met the floors, and their answers of the same day froze the mid and small cap indices at it. ...
+Why: the operator's answers of 2026-10-25 freeze the S&P 400 and 600 at the starting setting with its seven one-step neighbours.
+
+### 2026-10-25 - RUNBOOK.md - a quality history test's ruled setting and the S&P 400's and 600's quality remedy
+Authorised by: The S&P 400's and 600's quality rules are frozen at their starting settings on the operator's answer, as the S&P 500's was
+Was:
+> ... A setting not among the strongest the search read and an entry the stage did not read on it are each refused with nothing written.
+> ... 22.11's remedy, on the operator's ruling of 2026-10-25, does this for the S&P 500 alone, ...: powershell -File tools/remedy.ps1 tools/remedies/2026-10-25-22.11-the-s-and-p-500-quality-freeze.txt
+Now:
+> ... A setting not among the strongest the search read and an entry the stage did not read on it are each refused with nothing written. From the operator's answers of 2026-10-25 a quality history test's run takes `--ruled` and `--setting` with no `--entry`, ..., and records that setting's figures in place of the proposal the run states, beside the run's own tester's verdict, ...; a setting the grid did not walk and an entry are each refused with nothing written (see: ...).
+> ... 22.11's remedy ...: powershell -File tools/remedy.ps1 tools/remedies/2026-10-25-22.11-the-s-and-p-500-quality-freeze.txt
+> The S&P 400's and 600's remedy, on the operator's answers of the same day, freezes each at the starting setting with its seven one-step neighbours ..., recording each index's answer at the starting setting as ruled ...; run it as the first: powershell -File tools/remedy.ps1 tools/remedies/2026-10-25-22.11-the-s-and-p-400-and-600-quality-freezes.txt
+Why: the operator's answers of 2026-10-25 freeze the S&P 400 and 600 at the starting setting, where the answer a run states is its proposal's, so the ruled setting's route reads a quality history test.
+
+### 2026-10-25 - .claude/rules/checks.md - fixture-expectations states the S&P 400's and 600's quality freezes
+Authorised by: The S&P 400's and 600's quality rules are frozen at their starting settings on the operator's answer, as the S&P 500's was
+Was:
+> fixture-expectations: ... and no source another rule's version pins one 22.11 writes, the quality rules' versions pinning the files their own step runs through as the evaluator pin reads them off the compiled code |
+Now:
+> fixture-expectations: ... as the evaluator pin reads them off the compiled code; and on the operator's answers of 2026-10-25 a quality history test's answer recorded as the run states it, its proposal's figures, and as ruled, its starting setting's with the run's own tester's verdict and the day of the ruling, a setting the grid did not walk and an entry each refused writing nothing, and the S&P 400's and 600's remedy lines freezing each index's family after the S&P 500's over a register shaped as the operator's stood, ... the S&P 400's valuation-off neighbour among them |
+Why: each roster row says what its check asserts, and the answers' tests extend fixture-expectations.
+
+### 2026-10-25 - BUILD_PLAN.md - 22.3 registers every neighbour meeting the floors over the prices pulled from 2015-10-01
+Authorised by: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
+Was:
+> On the operator's rulings of 2026-10-25, word for word in `prompts/2026-10-25-22.11-ruling-quality-and-dip-freezes.md` and `prompts/2026-10-25-22.11-operator-answers.md`, ... and beside it as versions the one-step neighbours that meet the floors and the market variant, ...: on the S&P 500 the live rule, its stop at 4 typical moves and the market variant; on the S&P 400 the live rule, its trend on the 200-session average alone, its stop at 4 typical moves and the market variant; and on the S&P 600 the live rule and the market variant, with its exit on the first close above the 5-session average only where that neighbour, measured with the volume level kept read-only through the sweep's command, meets the floors, its figures in the remedy's entry.
+Now:
+> On the operator's rulings of 2026-10-25, word for word in ..., `prompts/2026-10-25-22.11-operator-answers.md` and `prompts/2026-10-25-22.11-operator-answers-2.md`, ... and beside it as versions the one-step neighbours that meet the floors over the prices pulled from 2015-10-01, read through the sweep's command run again read-only, and the market variant, ...: on the S&P 500 the live rule, its trend on the 200-session average alone, its time limit at 7 sessions, its stop at 4 typical moves and the market variant; on the S&P 400 the live rule, its trend on the 200-session average alone, its stop at 4 typical moves and the market variant; and on the S&P 600, each with the volume level kept, the live rule, its exit on the first close above the 5-session average, its trend with the 50 above the 200, its time limit at 5 sessions and the market variant, the figures of each in the remedy's entry.
+Why: the operator's second answers of 2026-10-25, given once each index's sweep was run again over the prices pulled from 2015-10-01, register every neighbour meeting the floors over that pull.
+
+### 2026-10-25 - BUILD_PLAN.md - 22.3 freezes each index's dip at its 22.2 setting with the neighbours meeting the floors and the market variant, and the dip's rule reads every dial its sweep reads
+Authorised by: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
+Was:
+> On the operator's word on each index's answer, a remedy registers each index's live dip rule at the setting they approve, with its one-step neighbours as variants and a market variant beside it, as the 20.11 freezes registered theirs, each rule's evaluator pinning the dip's own files, so no other rule's version moves; the family's luck correction counts its own rules alone. Each registered rule keeps its trades under its own name in the dip's trade table, written by the dip's own step, and its record from its registration. Paper trading gains ...
+> **Done when** the remedy's lines register the freezes over a register shaped as the operator's; each frozen rule's setting and its market variant are worked by hand on both sides; ...
+Now:
+> On the operator's rulings of 2026-10-25, ..., a remedy registers each index's live dip rule at the setting its 22.2 run says it would run, the S&P 600's with the drop's volume level its second stage crossed, and beside it as versions the one-step neighbours that meet the floors and the market variant, the same rule with its market setting off, ... within the nine rules a family keeps (see: ...): on the S&P 500 the live rule, its stop at 4 typical moves and the market variant; on the S&P 400 the live rule, its trend on the 200-session average alone, its stop at 4 typical moves and the market variant; and on the S&P 600 the live rule and the market variant, with its exit on the first close above the 5-session average only where that neighbour, measured with the volume level kept read-only through the sweep's command, meets the floors, its figures in the remedy's entry. The dip's rule reads every dial its sweep reads, ..., its provisional setting reading as it does. Each rule's evaluator pins the files the dip's step runs through, ...; the family's luck correction counts its own rules alone. Each registered rule keeps its trades under its own name ..., the card drawing the live rule's list and the line every frozen card draws from its index's recorded answer. Paper trading gains ...
+> **Done when** the remedy's lines register the freezes over a register shaped as the operator's; each new dial is worked by hand on both sides at a constructed session; each frozen rule's setting and its market variant are worked by hand on both sides; ...
+Why: the operator's answers of 2026-10-25 keep the nine-rule limit, so every one-step neighbour with the market variant, ten to twelve rules an index, cannot be registered, and the settings the 22.2 runs would run read dials the night's provisional rule does not.
+
 ### 2026-10-25 - ARCHITECTURE.html - the quality family's step keeps every rule of the family standing on an index under its own name, and section 17 names the S&P 500's freeze
 Authorised by: A quality rule is registered as the family on its index and kept by the family's own step alone
 Was:
