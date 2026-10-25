@@ -9038,3 +9038,75 @@ Verified:   documents and a remedy's words alone, so no new full run: `tools/ci.
             180 passed.
 Carried:    the ten purges from main after the merge, then the three ledger histories built again with their checks while no
             other writer runs, and the history test again on each index.
+
+### 22.10 run - Quality at a fair price's history test on the S&P 500 again over the prices from 2015-10-01 under the floors in months, no setting meeting them   2026-10-25
+
+Not a checkpoint entry: it lands nothing.
+Queue:      as the 22.11 ruling entry's.
+Ran:        from main's c694351c, the checkout's own build, over the live store read-only through 2026-10-23 after the ten
+            older pulls' purges: `sweep-index --index GSPC --family quality` from 15:14:02 to 15:14:28 UTC, run
+            20261025T151402Z.
+Coverage:   at each year's first reshuffle the members answered, scored, whose filings reach every quarter the valuation
+            reads, valued and qualifying at the starting setting: 2019 530, 474, 404, 397 and 149; 2020 526, 481, 417, 411
+            and 97; 2021 521, 483, 426, 420 and 51; 2022 522, 490, 434, 426 and 110; 2023 511, 489, 440, 430 and 127; 2024
+            509, 488, 446, 437 and 121; 2025 507, 490, 445, 434 and 96; 2026 507, 490, 434, 425 and 101. So from 2019 the
+            valuation reads nearly every member whose filings reach.
+Results:    910 names over 94 reshuffles. The starting setting: 106 holdings ended and 10 held; edge -3.79 points after its
+            round trip, its own return 6.31 against the members' 10.10; by its holdings above nothing in 1 of 8 years, 2019
+            -9.9, 2020 3.6, 2021 -6.1, 2022 -5.4, 2023 -0.9, 2024 -2.4, 2025 -7.9 and 2026 -3.9; -5.56 without its five
+            largest; by its months 93 held and above nothing in 2 of 8 years, 2023 and 2024. No setting meets the floors in
+            months: every one holds 48 months or more and none stands above nothing in 6 years by its months. The
+            strongest by edge: floor 8, the cheapest third, the trend read, a book of 10, sold on a filing, 295 holdings,
+            +0.61 points, 5 years by its months; 14 of the 72 stand above nothing. No proposal; luck alone passes about
+            10.4 of 72. The tester: not passed, its adjusted p 0.625 over 57 months in 18 blocks, better in 0 of 4 counted
+            years, one fold, 2023's, choosing a setting.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    its freeze at the starting setting, as item 4 of the ruling states for an index no setting meets the floors on.
+
+### 22.10 run - Quality at a fair price's history test on the S&P 400 again over the prices from 2015-10-01 under the floors in months, four settings meeting them   2026-10-25
+
+Not a checkpoint entry: it lands nothing.
+Queue:      as the 22.11 ruling entry's.
+Ran:        from main's c694351c over the live store read-only through 2026-10-23: `sweep-index --index MID --family
+            quality` from 15:14:30 to 15:14:51 UTC, run 20261025T151430Z.
+Coverage:   at each year's first reshuffle, as above: 2019 381, 354, 301, 296 and 130; 2020 386, 370, 310, 305 and 61; 2021
+            387, 372, 325, 320 and 38; 2022 393, 377, 337, 331 and 119; 2023 388, 374, 333, 328 and 101; 2024 400, 388,
+            343, 336 and 88; 2025 398, 387, 345, 336 and 72; 2026 391, 382, 342, 329 and 86.
+Results:    759 names over 94 reshuffles. The starting setting: 113 holdings ended and 10 held; edge +2.24 points, its own
+            11.38 against 9.13; by its holdings above nothing in 2 of 8 years, 2019 -0.4, 2020 -9.8, 2021 -10.4, 2022 -0.2,
+            2023 5.2, 2024 -2.8, 2025 42.1 and 2026 -6.1; -3.63 without its five largest; by its months 93 held and above
+            nothing in 6 of 8, all but 2020 and 2025, so it meets the floors. Four settings meet them: the proposal, floor
+            7, the price not read, a book of 10, sold on a filing, 83 holdings, +2.41 points, 7 years by its months and
+            -5.08 without its five largest; the starting setting; the proposal sold at reshuffles, 83, +1.96; and the
+            price not read in a book of 20 sold at reshuffles, 152, -2.07. 20 of the 72 stand above nothing; luck alone
+            passes about 10.4. The tester: not passed, its adjusted p 0.906, better in 1 of 4 counted years, its folds
+            choosing floor 8 with the price not read in a book of 20 sold on a filing in 2023 to 2025 and the starting
+            setting in 2026.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    its answer to the operator before any freeze, as item 4 of the ruling states for an index a setting meets the
+            floors on.
+
+### 22.10 run - Quality at a fair price's history test on the S&P 600 again over the prices from 2015-10-01 under the floors in months, one setting meeting them   2026-10-25
+
+Not a checkpoint entry: it lands nothing.
+Queue:      as the 22.11 ruling entry's.
+Ran:        from main's c694351c over the live store read-only through 2026-10-23: `sweep-index --index SML --family
+            quality` from 15:14:53 to 15:15:23 UTC, run 20261025T151453Z.
+Coverage:   at each year's first reshuffle, as above: 2019 562, 533, 432, 419 and 139; 2020 573, 542, 453, 445 and 109;
+            2021 583, 549, 471, 463 and 63; 2022 584, 549, 475, 465 and 136; 2023 576, 546, 480, 472 and 131; 2024 583, 551,
+            484, 468 and 121; 2025 577, 544, 478, 472 and 95; 2026 575, 545, 482, 470 and 117.
+Results:    1,212 names over 94 reshuffles. The starting setting: 101 holdings ended and 10 held; edge +2.32 points, its
+            own 11.70 against 9.38; by its holdings above nothing in 5 of 8 years, 2019 -5.4, 2020 0.9, 2021 -2.7, 2022
+            -7.3, 2023 18.1, 2024 19.3, 2025 2.8 and 2026 2.6; -2.11 without its five largest; by its months 93 held and
+            above nothing in 5 of 8, short of the floors. One setting meets them, the proposal: floor 7, the price not
+            read, a book of 20, sold on a filing, 141 holdings, -2.48 points, 6 years by its months, 3 by its holdings and
+            -5.85 without its five largest. The strongest by edge: floor 7, the price not read, a book of 10, sold on a
+            filing, 72 holdings, +4.84 points, 7 years by its holdings and 5 by its months. 19 of the 72 stand above
+            nothing; luck alone passes about 10.4. The tester: not passed, its adjusted p 0.595, better in 2 of 4 counted
+            years, 3 of 5 folds within a step of its choice.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    its answer to the operator before any freeze, as item 4 of the ruling states for an index a setting meets the
+            floors on.
