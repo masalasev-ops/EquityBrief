@@ -8738,3 +8738,59 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    as the entry before it carries, the S&P 400's ledger history built and the S&P 600's with the three checks
             waiting for the operator's demo to end.
+
+### 22.9 - Quality at a fair price: each index's ten strongest scorecards at a price no higher than their own usual, chosen on each month's first night, bought at the next open, and its card on Tonight   2026-10-25
+
+Queue:      done, 22.8 and its remedy's migration, refresh and scoring, the S&P 500's and S&P 400's ledger histories built
+            again, and the 22.6 corrections of PRs 553 and 554; in progress, 22.9 in this pull request, then its remedy
+            from main before the night of 2026-10-26; next, the S&P 600's history and the three checks with 22.8's
+            remedy record, 22.10 with each index's answer to the operator, 22.11 and 22.3 on their word, 22.12, and the
+            sign-offs of phases 18, 19 and 20 by fresh sessions.
+Limits:     no paid call and no request of any kind; migration 110 alone; no rule's version moves, asserted over the 16
+            sources 22.9 writes or edits; business first's rows and card as they were, none of its sources edited.
+Built:      the family, its store word `quality`, on each of the three indices after the filings refresh scores every
+            member again: a scorecard of at least 7 in 9 of the checks that applied read as a share, the valuation's place
+            at its own median of 12 quarters or cheaper, ranked by the share and then the place, the top 10 held. Its first
+            night and each month's first choose at the close, each choice bought at the next open the store holds through
+            the core's one pricing function; a reshuffle sells one no longer qualifying, keeps one with no close that
+            night, and fills the places down the ranking; one that leaves the index is sold at its last close as a member.
+            Every member's growth is carried on its answer, so a holding's benchmark is an equal-weighted hold of the
+            members answered on its night, and its edge its return less that, after its round trip. `quality_night`,
+            `quality_result` and `quality_holding`, each index's part one transaction. Its card after the sector
+            heavyweights' on every index, its tile among the setups, its hue a blue on both grounds. The step's catalogue
+            and matrix rows, its three stores, section 17's starting settings, section 18's two rows, section 14's step,
+            section 11.4's research, the hue decision superseded with the ink among the bounds, the schema, the runbook's
+            remedy, the guide, the roster and the changelog. Found while building and fixed before this entry: the navy
+            first chosen for the light ground stood 14.7 from the ink; at a phone's width the table's last two columns
+            sat off the card, so its rows stack there; and a holding with no close on a reshuffle night was sold with no
+            price, so it is kept.
+Tests:      13 new, 2755 in all: the floor, the valuation and the order on both sides of each threshold; the reshuffle's
+            nights; the step over twelve constructed S&P 400 members, its first ten, a buy waiting for its session, the
+            next month's sale, keep and fill, a stock that left, one with no close, one it cannot score or value, a night
+            run again; a holding's result, benchmark, round trip and edge as quality.json derives them by hand; the card
+            read back off Tonight holding stocks, failed and before its first night; and no source a rule pins written.
+Fixture:    quality.json, derived by hand: Q03's result of -4 / 103, its benchmark 0.0209199, its round trip 0.0706154
+            per cent and its edge -6.0460980 points, Q01's gap of 1 / 101 and Q05's result of 1 / 105.
+Claims:     1443, ten new: the step's catalogue and matrix rows, its three stores, section 17's settings, section 18's
+            two rows, its card on Tonight and its step in section 14. The plan predicted about 10, naming all but the
+            step.
+Screens:    read back from this branch's build over two scratch copies of constructed stores migrated to 110 with quality
+            rows written into them: the card on the S&P 500, 400 and 600 at 1,440 pixels and a true 390 in both
+            palettes, no page wider than its screen, and the setups' tiles with its own.
+Mutated:    the rule, stated before the runs: one mutation for each threshold and each property 22.9 adds, the smallest
+            edit undoing it where it is stated, made in the worktree and reverted with the editor, each run filtered to
+            the tests reading it. M1 the floor read as a count of seven; M2 the median exclusive; M3 no reshuffle after the
+            first in a year; M4 a stock that left sold at the night's close; M5 the buy at the next close; M6 the
+            benchmark without its gap; M7 a holding with no close sold; M8 the card's change without its gap; M9 the place
+            ranked before the share; M10 the step after the Treasury's. Each red: M1 and M2 at the rule's thresholds; M3
+            at the reshuffle's nights and three step tests; M4 at the month's sale and the hand-worked figures; M5 at the
+            buy and the hand-worked figures; M6 at the hand-worked figures; M7 at the holding with no close; M8 at the
+            card's read-back; M9 at the order; M10 at the night's order.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2755 of 2755 tests ran with none failed,
+            migrations 0 to 110 with none pending, schema version 110, against `data-ci` and never `data`; the phase
+            report 64 tables, 1443 claims, 1443 passing, none out of scope and none unexamined, 1458 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    22.9's remedy from main after the merge and before the night of 2026-10-26: migration 110 alone, the night
+            choosing each index's first holdings, the read surface restarted after it; the S&P 600's ledger history and
+            the three checks with 22.8's remedy record; then 22.10.

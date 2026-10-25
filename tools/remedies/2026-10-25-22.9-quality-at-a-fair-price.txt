@@ -1,0 +1,7 @@
+# The remedy of 22.9 (Quality at a fair price), as its PROGRESS entry prints it. Migration 110 creates the family's three
+# stores, quality_night, quality_result and quality_holding, and touches no row of any other table. Nothing else runs:
+# the night reads the family after its filings refresh and chooses each index's first holdings on its own first night,
+# so no night before the remedy is read by it. No request to the provider, none to the SEC and no model call. Run from
+# main after the merge and before the night, when no night, local run, drain, labeller, history read or monthly run is
+# writing, and restart the read surface after it, since Tonight reads the three stores.
+migrate

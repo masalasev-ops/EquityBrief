@@ -105,6 +105,14 @@ public class SchemaColumns
     // 22.8's one: every member's fundamentals scorecard on each night.
     internal static string[] ScoreStoreRows => [CheckReach.Key(Scope.StoresTable, "Fundamental scores")];
 
+    // 22.9's three: Quality at a fair price's nights, its answers and its holdings.
+    internal static string[] QualityStoreRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Quality nights"),
+        CheckReach.Key(Scope.StoresTable, "Quality results"),
+        CheckReach.Key(Scope.StoresTable, "Quality holdings"),
+    ];
+
     internal static CheckReach Reach => new(
         "schema-columns",
         ["docs/SCHEMA.md"],
@@ -227,6 +235,9 @@ public class SchemaColumns
 
             // 22.8, the fundamentals scorecard's store.
             .. ScoreStoreRows,
+
+            // 22.9, Quality at a fair price's three stores.
+            .. QualityStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

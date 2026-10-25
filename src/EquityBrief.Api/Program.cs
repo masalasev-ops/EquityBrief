@@ -1693,7 +1693,8 @@ app.MapGet("/screens/tonight/{night?}", async (
                 request.Query["name"].FirstOrDefault(),
                 indexClose is null ? null : TonightScreen.IndexCloseToBuy(indexClose, await NextEventsAsync(read, dated), dated),
                 request.Query[MarkRenderer.CloseToBuyKey].FirstOrDefault() == MarkRenderer.CloseToBuyOpen,
-                ended: TonightScreen.EndedTonight(dated, [], indexTrades)),
+                ended: TonightScreen.EndedTonight(dated, [], indexTrades),
+                quality: await QualityCardAsync(read, reading.Code, dated, UniverseScreen.Rows(await read.UniverseAsync(reading.Code, dated)).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal))),
             "text/html; charset=utf-8");
     }
 
@@ -2098,7 +2099,8 @@ app.MapGet("/screens/tonight/{night?}", async (
             newest: await read.NewestNightAsync() == dated,
             closeHref: closeToBuy is null ? null : MarkRenderer.CloseToBuyHref(night is { Length: > 0 } ? SinglePageApp.NightRoute + night : "#/", reading.Word),
             ended: cards is null ? null : TonightScreen.EndedTonight(dated, PicksScreen.Cells(picks, dated), await read.DipTradesAsync(reading.Code, dated)),
-            plans: plans),
+            plans: plans,
+            quality: cards is null ? null : await QualityCardAsync(read, reading.Code, dated, cells)),
         "text/html; charset=utf-8");
 });
 
@@ -2245,6 +2247,24 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
             held is null ? (walkedOn.Size, walkedOn.RiskPercent, walkedOn.PositionCap) : null),
         "text/html; charset=utf-8");
 });
+
+// Quality at a fair price's card on an index as of a night, read off its own rows: its night, its last reshuffle, its
+// holdings open on the night or sold since that reshuffle, tonight's answers, and the answers of the last reshuffle and of
+// each night a holding was chosen on, which each change since is read from.
+// see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session
+async Task<QualityCardView> QualityCardAsync(ReadApi read, string index, DateOnly night, IReadOnlyDictionary<string, UniverseCell> cells)
+{
+    var last = await read.QualityLastReshuffleAsync(index, night);
+    var holdings = await read.QualityHoldingsAsync(index, night, last ?? night);
+    var answersOn = new Dictionary<DateOnly, IReadOnlyList<QualityResultRow>>();
+
+    foreach (var on in holdings.Select(holding => holding.ChosenOn).Append(last ?? night).Distinct())
+    {
+        answersOn[on] = await read.QualityResultsAsync(index, on);
+    }
+
+    return TonightScreen.Quality(index, night, await read.QualityNightAsync(index, night), last, holdings, await read.QualityResultsAsync(index, night), answersOn, cells);
+}
 
 // Each family's live or provisional rule's record so far on an index as of a night, as Paper trading counts it off the
 // same accounts: its finished trades against the count a verdict needs, a book's months against its own.

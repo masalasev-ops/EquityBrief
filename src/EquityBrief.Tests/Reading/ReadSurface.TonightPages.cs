@@ -9,7 +9,8 @@ namespace EquityBrief.Tests.Reading;
 // The Tonight pages the plain-words check reads, from 22.6: each drawn over a night the read-surface tests construct, so
 // every kind of card the page draws is read in the reader's words: picks and stocks one step short on the S&P 500, a
 // version chosen on its card, the sector heavyweights holding, the pick cards the night stored, an S&P 400 night with
-// its pick cards, a fixed breakout on the S&P 400 and an S&P 400 night whose market check closed.
+// its pick cards, a fixed breakout on the S&P 400 and an S&P 400 night whose market check closed, and from 22.9 Quality at
+// a fair price's card holding stocks and on a night its part failed.
 // see: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
 public partial class ReadSurface
 {
@@ -71,6 +72,18 @@ public partial class ReadSurface
             RecordFigured(frozen, "20261001T120000Z", "breakout", null, "none passed", "2026-10-01T12:00:00Z", MidBreakout);
             ReadByTheLiveBreakout(frozen, FreezeTheBreakout(frozen, "2026-10-02T12:00:00Z"));
             await Read("a fixed breakout on the S&P 400", frozen, $"/screens/tonight/{IndexNight}?universe=400");
+        }
+
+        using (var quality = UniversesStore())
+        {
+            QualityNightsOn(quality);
+            await Read("Quality at a fair price holding stocks", quality, $"/screens/tonight/{IndexNight}?universe=400");
+        }
+
+        using (var failed = UniversesStore())
+        {
+            QualityNightsOn(failed, "the store was busy");
+            await Read("Quality at a fair price failed on its night", failed, $"/screens/tonight/{IndexNight}?universe=400");
         }
 
         using (var closed = FixtureExpectations.ClosedIndexStore())

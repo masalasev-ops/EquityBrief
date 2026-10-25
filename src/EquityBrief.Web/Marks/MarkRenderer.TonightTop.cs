@@ -10,7 +10,7 @@ public sealed record BuyPointView(string Family, string Label, FamilyPickCell Pi
 // The parts tomorrow's buys shares with a setup's card: each row's fold and the control opening it, and the reward
 // against the risk as the plan states it.
 // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
-// see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them
+// see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the quality family's among them
 public sealed partial class MarkRenderer
 {
     // The id a buy point's fold and the control opening it share, the setup in it so a stock under two setups folds twice.

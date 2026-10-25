@@ -150,8 +150,8 @@ public partial class NightlyRun
         var stages = RunLog(store, "night-with-request");
 
         Assert.Equal(
-            [EquityBrief.Worker.Nights.NightClose.Stage, EquityBrief.Worker.Quarters.QuarterFetcher.Stage, EquityBrief.Worker.Ledger.FilingsRefresher.Stage, EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage, EquityBrief.Worker.Treasury.TreasuryReader.Stage, "report", NewsLabeller.NightStage, EquityBrief.Worker.Backup.StoreBackup.NightStage],
-            stages.Select(row => row.Stage).TakeLast(8));
+            [EquityBrief.Worker.Nights.NightClose.Stage, EquityBrief.Worker.Quarters.QuarterFetcher.Stage, EquityBrief.Worker.Ledger.FilingsRefresher.Stage, EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage, EquityBrief.Worker.Quality.QualityFamily.Stage, EquityBrief.Worker.Treasury.TreasuryReader.Stage, "report", NewsLabeller.NightStage, EquityBrief.Worker.Backup.StoreBackup.NightStage],
+            stages.Select(row => row.Stage).TakeLast(9));
         Assert.Equal("ok", stages[^3].Outcome);
         Assert.Equal(expected.GetProperty("line").GetString(), stages[^3].Detail);
         Assert.Equal(

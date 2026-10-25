@@ -394,9 +394,11 @@ public partial class ArchitectureConformance
         // sweep, section 18's row for a market series it reads missing a session and the Ledger page's dip counts, and 1422
         // from 22.4, the chart page's brief read, and 1424 from 22.6, Tonight in one minute and the page's words at its foot,
         // and 1433 from 22.8, the fundamentals scorecard's catalogue and matrix rows, its store, section 17's numbers,
-        // section 18's three and its card on the chart page and the name page.
+        // section 18's three and its card on the chart page and the name page, and 1443 from 22.9, Quality at a fair price's
+        // catalogue and matrix rows, its three stores, section 17's starting settings, section 18's two, its card on
+        // Tonight and its step in section 14.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1433),
+            (789, 853, 6, 4, 855, 876, 1443),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

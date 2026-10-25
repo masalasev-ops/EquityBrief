@@ -438,7 +438,7 @@ public partial class ReadSurface
         Assert.Contains("data-open=\"false\" data-breadth=\"0.42\" data-floor=\"0.45\"", before.Line, StringComparison.Ordinal);
         Assert.EndsWith(ClosedLine, before.Line, StringComparison.Ordinal);
         Assert.Contains(ClosedCard, before.Pullback, StringComparison.Ordinal);
-        Assert.Equal(["pullback: the market check closed", "breakout: listing tonight", "drift: the market check closed", "fundamentals: the market check closed", "heavyweight: rebalanced tonight"], before.Tiles);
+        Assert.Equal(["pullback: the market check closed", "breakout: listing tonight", "drift: the market check closed", "fundamentals: the market check closed", "heavyweight: rebalanced tonight", "quality: kept monthly"], before.Tiles);
 
         // From 20.11 each family's own check stored: the pullback's on the index's own breadth at 35 per cent and the
         // breakout's on the S&P 500's at 45 open, the drift's at 45 closed. Read alike for none, the line names the drift's
@@ -458,8 +458,9 @@ public partial class ReadSurface
         Assert.Contains("<li class=\"index-checks\" data-closed=\"drift\">the S&P 400's breadth: 42.0% of its members above their 200-day average; the market check closed the earnings drift list, the index's own breadth 42.0% below its floor of 45%, and left the others open</li>", mixed.Run, StringComparison.Ordinal);
 
         // Tonight's tiles by each family's own check: the drift's closed, the pullback's open with nothing listed, and the
-        // fundamentals-first family's, whose night stored no answer, read by the lists' state, open.
-        Assert.Equal(["pullback: nothing tonight", "breakout: listing tonight", "drift: the market check closed", "fundamentals: nothing tonight", "heavyweight: rebalanced tonight"], mixed.Tiles);
+        // fundamentals-first family's, whose night stored no answer, read by the lists' state, open; Quality at a fair price's
+        // reading no market check.
+        Assert.Equal(["pullback: nothing tonight", "breakout: listing tonight", "drift: the market check closed", "fundamentals: nothing tonight", "heavyweight: rebalanced tonight", "quality: kept monthly"], mixed.Tiles);
 
         // Every family's check read alike, the index's own breadth at the floor the night stored, closed: the lines as before
         // the parts were stored.

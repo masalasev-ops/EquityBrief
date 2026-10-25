@@ -39,7 +39,7 @@ public partial class PlainWords
     internal static readonly (string Page, string From, string[] Regions, bool Whole)[] Covered =
     [
         (BriefPage, "22.5", ["chart-page-brief"], false),
-        (TonightPage, "22.6", ["one-minute", "buy-points", "close-to-buy", "setups", "family", "heavyweights", "words"], true),
+        (TonightPage, "22.6", ["one-minute", "buy-points", "close-to-buy", "setups", "family", "heavyweights", "quality", "words"], true),
         (FundamentalsPage, "22.8", ["chart-page-fundamentals", "fundamentals"], false),
     ];
 

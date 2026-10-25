@@ -766,7 +766,20 @@ public static class Nightly
 
                 return FilingsRefresher.Detail(outcome) + FormattableString.Invariant($"; {readAgain} of tonight's setup(s) read again; {insidersAgain} setup and member reading row(s) given their insider readings again; {scoredAgain.Scored} member(s) scored again on their filings");
             }, [FilingsRefresher.Stage, Fundamentals.FundamentalScorer.AgainStage]),
-            // Section 14's step 26, after the filings refresh. The Treasury's 10-year par yield for the session's year, one free
+            // Section 14's step 26, after the filings refresh, from 22.9. Quality at a fair price on each index, reading every
+            // member's scorecard as the night's last scoring stored it and its price against its own earnings as the ledger's
+            // valuation reading stored it: the holdings carried, bought at their next open and, on the first night of a
+            // month, sold where they no longer qualify and chosen down the ranking. It makes no request, so a night run
+            // again for an earlier session reads it too, and a failure in an index's part is named on its row while the
+            // step goes on.
+            // see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session
+            new("quality", async () =>
+            {
+                var outcome = await new Quality.QualityFamily(clock, store.DatabaseFile).RunAsync(runId);
+
+                return Quality.QualityFamily.Detail(outcome.Indices);
+            }, [Quality.QualityFamily.Stage]),
+            // Section 14's step 27, after the quality family. The Treasury's 10-year par yield for the session's year, one free
             // request to the Treasury and none to the provider, every session to the night's kept that the store does not
             // hold. It is handed no token from the night's deadline, and a refused or unreadable answer keeps nothing and
             // stops no step. A night run again for an earlier session reads it too, since the table holds that session.
@@ -778,7 +791,7 @@ public static class Nightly
 
                 return Treasury.TreasuryReader.Detail(read, clock.SessionDateAt(clock.UtcNow));
             }),
-            // Section 14's step 27, after the Treasury's 10-year. The night asks for six reports taken
+            // Section 14's step 28, after the Treasury's 10-year. The night asks for six reports taken
             // in turn across the S&P 500's, 400's and 600's pages and leaves them queued: it writes a
             // row a name and starts no drain, and the off-peak run starts the drain five minutes after each
             // peak window ends, each pass

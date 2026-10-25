@@ -30,8 +30,9 @@ public partial class NightlyRun
         Assert.StartsWith("Evaluate the list reasons", steps[readings + 1], StringComparison.Ordinal);
         Assert.StartsWith("Close the arithmetic", steps[quarters - 1], StringComparison.Ordinal);
         Assert.StartsWith("Read the archive's daily index", steps[quarters + 1], StringComparison.Ordinal);
-        Assert.StartsWith("Ask the Treasury, and not the provider", steps[quarters + 2], StringComparison.Ordinal);
-        Assert.StartsWith("Ask for six reports taken in turn", steps[quarters + 3], StringComparison.Ordinal);
+        Assert.StartsWith("From 22.9, read Quality at a fair price", steps[quarters + 2], StringComparison.Ordinal);
+        Assert.StartsWith("Ask the Treasury, and not the provider", steps[quarters + 3], StringComparison.Ordinal);
+        Assert.StartsWith("Ask for six reports taken in turn", steps[quarters + 4], StringComparison.Ordinal);
 
         // And the night running it, over the fixture.
         using var store = new TemporaryStore();

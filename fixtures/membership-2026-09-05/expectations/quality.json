@@ -1,0 +1,16 @@
+{
+  "stage": "quality",
+  "derivation": "derived",
+  "tables": ["membership", "bar", "fundamental_score", "ledger_reading", "member_reading"],
+  "derivedFrom": "22.9's holdings worked by hand over constructed prices, not a run. Twelve S&P 400 members, Q01 to Q12, close at 100 plus their number on 26 October 2026, open a dollar above that close on 27 October and close two above it, and close four above it on 2 November, but Q03, which falls to 100; Q10 holds no bar on 27 October and Q05 leaves the index on 2 November. Q01 is chosen at 101 and bought at 102, a gap of 1 / 101. Q05 is bought at 106 on its close of 105 and sold at its last close as a member, 107: its growth 107 / 105 less one less its gap of 1 / 105, so 1 / 105. Q03 is bought at 104 on its close of 103 and sold at 100 when its score falls to 6 of 9: 100 / 103 - 1 - 1 / 103 = -4 / 103. Its benchmark is the members answered on 26 October, each its growth to 2 November, (104 + n) / (100 + n), Q03's 100 / 103 and Q05's 107 / 105 at its last answer, their mean 1.0303475, less one less the mean gap at the open of the eleven holding one, 1 / (100 + n) over every n but 10, 0.0094276: 0.0209199. Its round trip is half the published spread of a company over $2 billion at a price over $40, 0.072 per cent, paid at 104 and at 100 over 104: 0.0706154 per cent. Its edge is -4 / 103 less 0.0209199, in points, less 0.0706154: -6.0460980.",
+  "first": "2026-10-26",
+  "reshuffle": "2026-11-02",
+  "q01Gap": 0.009900990099009901,
+  "q05Result": 0.009523809523809525,
+  "q03": {
+    "result": -0.038834951456310676,
+    "benchmark": 0.020919874525569024,
+    "cost": 0.07061538461538461,
+    "edge": -6.046097982803355
+  }
+}

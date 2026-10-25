@@ -730,7 +730,69 @@ public static class SchemaMigrations
         new Migration(107, "create analyst_request, analyst_view and analyst_rating", CreateAnalysts),
         new Migration(108, "add setup's short-term dip readings", AddDipReadings),
         new Migration(109, "create fundamental_score, and add setup's fundamentals scorecard readings", AddScorecard),
+        new Migration(110, "create quality_night, quality_result and quality_holding", CreateQuality),
     ];
+
+    // From 22.9: Quality at a fair price's own three tables, a night's row an index, every member's answer with the figures
+    // that decided it and the growth carried to it, and its holdings, each keyed by the rule that keeps it, its starting
+    // rule until a freeze registers one, so a freeze needs none. The answers are read a member at a time by its newest
+    // answer before a night, which the second index serves.
+    // see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session
+    const string CreateQuality = @"
+        CREATE TABLE quality_night (
+            rule          TEXT NOT NULL,
+            index_code    TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            members       INTEGER NOT NULL,
+            scored        INTEGER NOT NULL,
+            qualified     INTEGER NOT NULL,
+            held          INTEGER NOT NULL,
+            reshuffle     INTEGER NOT NULL CHECK (reshuffle IN (0, 1)),
+            settings      TEXT NOT NULL,
+            fault         TEXT,
+            PRIMARY KEY (rule, index_code, session_date)
+        ) STRICT;
+
+        CREATE TABLE quality_result (
+            rule           TEXT NOT NULL,
+            index_code     TEXT NOT NULL,
+            session_date   TEXT NOT NULL,
+            ticker         TEXT NOT NULL,
+            passed         INTEGER NOT NULL,
+            place          INTEGER,
+            passed_checks  INTEGER NOT NULL,
+            applied        INTEGER NOT NULL,
+            value_place    REAL,
+            reason         TEXT,
+            carried        REAL NOT NULL,
+            PRIMARY KEY (rule, index_code, session_date, ticker)
+        ) STRICT;
+
+        CREATE INDEX quality_result_by_ticker ON quality_result (rule, index_code, ticker, session_date);
+
+        CREATE TABLE quality_holding (
+            rule          TEXT NOT NULL,
+            index_code    TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            chosen_on     TEXT NOT NULL,
+            buy_close     TEXT NOT NULL,
+            bought_on     TEXT,
+            fill          TEXT,
+            gap           REAL,
+            bench_gap     REAL,
+            members       INTEGER,
+            growth        REAL NOT NULL,
+            through       TEXT NOT NULL,
+            ended_on      TEXT,
+            sale          TEXT,
+            end_reason    TEXT NOT NULL CHECK (end_reason IN ('open', 'no longer qualifies', 'left the index')),
+            result        REAL,
+            benchmark     REAL,
+            cost          REAL,
+            edge          REAL,
+            PRIMARY KEY (rule, index_code, ticker, chosen_on)
+        ) STRICT;
+    ";
 
     // From 22.8: every member's fundamentals scorecard on each night, its nine checks with their figures as a list, its
     // word, gross profit over total assets with its place on its index and its price over earnings beside its industry's
