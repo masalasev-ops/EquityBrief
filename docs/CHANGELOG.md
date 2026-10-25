@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-25 - .claude/rules/checks.md - architecture-conformance reads phase 22's pair
+Authorised by: The short-term dip family is built as phase 22 ahead of the hold on new work, and phase 20's sign-off waits on none of it
+Was:
+> architecture-conformance: ... 20.11 to 20.13's rows, added on the operator's rulings after the plan stated its pair, among them, and the rows after its report named beside it |
+Now:
+> architecture-conformance: ... 20.11 to 20.13's rows, added on the operator's rulings after the plan stated its pair, among them, and the rows after its report named beside it; and from 22.12 phase 22's pair is read off the plan and checked the same way, counted from the claims measured after 22.6 as the plan restated it at 22.7 and each part up to 22.6 read against its count and the rows it landed, each row the phase added reached once and passing, its actual inside the range and short of the pair by what each part after 22.6 landed fewer than its count, each named with what it landed |
+Why: the roster row says what its check asserts, and 22.12's pair test extends it.
+
 ### 2026-10-25 - .claude/rules/checks.md - read-surface holds an open dip trade's target drawn as none on paper trading
 Corrects: paper trading drew an open dip trade's target as "it trails", where its plan holds no target and its stop never trails, found when 22.12 read the S&P 400's paper trading back against the store
 Was:

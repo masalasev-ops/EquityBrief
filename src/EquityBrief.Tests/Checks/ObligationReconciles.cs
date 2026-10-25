@@ -518,6 +518,8 @@ public class ObligationReconciles
         ["19"] = 0,
         // None: phase 20 opened no carried obligation of either form.
         ["20"] = 0,
+        // None: phase 22 opened no carried obligation of either form.
+        ["22"] = 0,
     };
 
     // The first phase whose report is read for the operating rows it opened.
