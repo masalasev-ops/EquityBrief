@@ -314,7 +314,10 @@ public partial class FixtureExpectations
         var benchmark = growth - 1.0 - benchGap;
         var trip = ((0.072 / 200 * 104) + (0.072 / 200 * 100)) / 104 * 100;
 
-        // The figures the fixture's expectations derive by hand, the same arithmetic.
+        // The figures the fixture's expectations derive by hand, the same arithmetic, over the nights it names.
+        Assert.Equal(QualityFirst, Expected("quality").GetProperty("first").GetString());
+        Assert.Equal(QualityReshuffle, Expected("quality").GetProperty("reshuffle").GetString());
+
         var expected = Expected("quality").GetProperty("q03");
 
         Assert.Equal(expected.GetProperty("result").GetDouble(), result, 12);
