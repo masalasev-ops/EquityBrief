@@ -163,4 +163,115 @@ public partial class FixtureExpectations
         // only at the second reshuffle, where its score has fallen.
         Assert.Contains("B|0|3|" + QualityFamily.NoLongerQualifies, Held(tape, onFiling));
     }
+
+    // A book's months, a run of years from 2019 each holding the same count of months, each month's edge given.
+    static List<(DateOnly Opens, double? Edge)> BookMonthsOver(int years, int perYear, Func<int, int, double?> edge) =>
+        [.. from year in Enumerable.Range(0, years) from month in Enumerable.Range(0, perYear) select (new DateOnly(2019 + year, month + 1, 2), edge(year, month))];
+
+    // The family's floors in months worked by hand, from the 22.11 ruling. Six months held in each of the eight years from
+    // 2019, 48 in all, each month's edge one point above nothing in the first six years and one below in the last two: 48
+    // months and 6 years meet the floors. A month fewer, 47, does not; nor does a sixth year whose months' mean is nought,
+    // three a point above and three a point below, since a year stands above nothing only above it. A year held in no month
+    // counts as not above. Inside a fold learning on three years the floors read 48 x 3 / 8 = 18 months and 6 x 3 / 8 = 2.25
+    // years, rounded up to 3: 18 months over three years each above nothing meet them, 17 do not, and two years above do not.
+    // see: A quality book meets its floors in months held, and a fold reads them in proportion to the years it learns on
+    [Fact]
+    public void AQualityBooksFloorsAreReadInItsMonthsHeldOnBothSidesAndInProportionInAFold()
+    {
+        var expected = Expected("quality-history").GetProperty("floors");
+        var meeting = BookMonthsOver(8, 6, (year, _) => year < 6 ? 0.01 : -0.01);
+        var read = QualityRule.Months(meeting, 2019);
+
+        Assert.Equal((expected.GetProperty("months").GetInt32(), expected.GetProperty("years").GetInt32()), (read.Held, read.YearsAbove));
+        Assert.True(QualityRule.MeetsFloors(read));
+        Assert.False(QualityRule.MeetsFloors(QualityRule.Months(meeting.Skip(1), 2019)));
+
+        var even = QualityRule.Months(BookMonthsOver(8, 6, (year, month) => year == 5 ? (month % 2 == 0 ? 0.01 : -0.01) : year < 6 ? 0.01 : -0.01), 2019);
+
+        Assert.Equal((48, 5), (even.Held, even.YearsAbove));
+        Assert.False(QualityRule.MeetsFloors(even));
+
+        // 2019 held in no month: seven months a year, 49 held, its year none and not above.
+        var empty = QualityRule.Months(BookMonthsOver(8, 7, (year, _) => year == 0 ? null : year < 7 ? 0.01 : -0.01), 2019);
+
+        Assert.Equal((49, 6), (empty.Held, empty.YearsAbove));
+        Assert.Null(empty.YearEdge[0]);
+
+        // A fold learning on three years.
+        var three = QualityRule.Months(BookMonthsOver(3, 6, (_, _) => 0.01), 2019);
+
+        Assert.Equal((expected.GetProperty("foldMonths").GetInt32(), expected.GetProperty("foldYears").GetInt32()), (three.Held, three.YearsAbove));
+        Assert.True(QualityRule.MeetsFloors(three, 3));
+        Assert.False(QualityRule.MeetsFloors(three));
+        Assert.False(QualityRule.MeetsFloors(QualityRule.Months(BookMonthsOver(3, 6, (_, _) => 0.01).Skip(1), 2019), 3));
+        Assert.False(QualityRule.MeetsFloors(QualityRule.Months(BookMonthsOver(3, 6, (year, _) => year < 2 ? 0.01 : -0.01), 2019), 3));
+    }
+
+    // The sources the 22.11 ruling's first two items write or edit, filed under 22.10.
+    static readonly string[] MonthsAndPullSources =
+    [
+        "src/EquityBrief.Core/Families/QualityRule.cs",
+        "src/EquityBrief.Worker/Sweep/QualitySweep.cs",
+        "src/EquityBrief.Worker/Sweep/IndexSweepRunner.Quality.cs",
+        "src/EquityBrief.Data/Migrations/SchemaMigrations.cs",
+        "src/EquityBrief.Worker/Bars/HistoryPull.cs",
+        "src/EquityBrief.Worker/Bars/PullComparison.cs",
+        "src/EquityBrief.Worker/Sweep/SweepHistory.cs",
+        "src/EquityBrief.Worker/Moves/PageHistoryReader.cs",
+        "src/EquityBrief.Api/Reading/ReadApi.Chart.cs",
+        "src/EquityBrief.Worker/Program.cs",
+    ];
+
+    // No source a rule's version pins is one the months floors and the deeper pull write, so no rule's version moves, the
+    // reader shown to find a source a rule pins.
+    [Fact]
+    public void NoSourceARulesVersionPinsIsOneTheMonthsFloorsAndTheDeeperPullWrite()
+    {
+        var pinned = EquityBrief.Core.Candidates.CandidateEvaluators.All
+            .SelectMany(evaluator => evaluator.OwnSources)
+            .Concat(EquityBrief.Core.Candidates.CandidateEvaluator.EvaluationSources)
+            .Concat(RuleHooks.Sources)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(pinned.Length >= 30, $"Read {pinned.Length} pinned source(s), expected at least 30.");
+        Assert.All(MonthsAndPullSources, path => Assert.True(File.Exists(Path.Combine(Repository.Root, path)), path));
+        Assert.Empty(MonthsAndPullSources.Intersect(pinned, StringComparer.Ordinal));
+        Assert.NotEmpty(new[] { "src/EquityBrief.Worker/Families/HeavyweightBook.cs", "src/EquityBrief.Worker/Indices/IndexFamilies.cs" }.Intersect(pinned, StringComparer.Ordinal));
+    }
+
+    static HeavyweightFigures EdgeOnly(string key, double edge) => new(key, 70, 10, edge, null, null, null, null, [], [], 0, null, null, null, null, null);
+
+    // A fold learns on a month only once its close has passed: of a book's months opening on 2021-11-01 and 2021-12-01, the
+    // first closes on 2021-12-01 and is learned on by the fold testing 2022, and the second closes on that fold's first
+    // session, 2022-01-03, and is not. The proposal and a fold's choice take the best edge a holding among the settings
+    // whose months meet the floors, passing over a better edge whose months fall a month short.
+    // see: A quality book meets its floors in months held, and a fold reads them in proportion to the years it learns on
+    [Fact]
+    public void AFoldReadsTheMonthsClosedBeforeItsYearAndTheProposalTakesOnlyTheSettingsMeetingTheFloors()
+    {
+        DateOnly[] calendar = [new(2021, 11, 1), new(2021, 12, 1), new(2022, 1, 3), new(2022, 2, 1)];
+        int[] reshuffles = [0, 1, 2, 3];
+        var book = new QualityBook(QualityRule.Starting, [], [], [(0, 0.02), (1, 0.03), (2, null)]);
+        var fold = new LoopFold(2022, new DateOnly(2022, 1, 3), new DateOnly(2022, 12, 30), true);
+
+        Assert.Equal(2, QualityLay.MonthsOf(book, calendar, reshuffles).Held);
+
+        var learned = QualityLay.MonthsOf(book, calendar, reshuffles, fold);
+
+        Assert.Equal((1, (double?)0.02), (learned.Held, learned.YearEdge[2]));
+
+        var other = QualityRule.Starting with { ScoreFloorInNine = 6 };
+        var meets = QualityRule.Months(BookMonthsOver(8, 6, (year, _) => year < 6 ? 0.01 : -0.01), 2019);
+        var short47 = QualityRule.Months(BookMonthsOver(8, 6, (year, _) => year < 6 ? 0.01 : -0.01).Skip(1), 2019);
+
+        Assert.Equal(QualityRule.Starting, QualityLay.Propose([(QualityRule.Starting, EdgeOnly(QualityRule.Starting.Key, 0.01), meets), (other, EdgeOnly(other.Key, 0.05), short47)]));
+        Assert.Equal(other, QualityLay.Propose([(QualityRule.Starting, EdgeOnly(QualityRule.Starting.Key, 0.01), meets), (other, EdgeOnly(other.Key, 0.05), meets)]));
+        Assert.Null(QualityLay.Propose([(QualityRule.Starting, EdgeOnly(QualityRule.Starting.Key, 0.01), short47)]));
+
+        var three = QualityRule.Months(BookMonthsOver(3, 6, (_, _) => 0.01), 2019);
+        var threeShort = QualityRule.Months(BookMonthsOver(3, 6, (_, _) => 0.01).Skip(1), 2019);
+
+        Assert.Equal(QualityRule.Starting, QualityLay.Choose([(QualityRule.Starting, EdgeOnly(QualityRule.Starting.Key, 0.01), three), (other, EdgeOnly(other.Key, 0.05), threeShort)], 3));
+    }
 }

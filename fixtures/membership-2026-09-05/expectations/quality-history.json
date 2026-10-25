@@ -2,7 +2,7 @@
   "stage": "quality-history",
   "derivation": "derived",
   "tables": ["filed_fact", "bar"],
-  "derivedFrom": "22.10's walk worked by hand over a constructed tape, not a run. Four members over six sessions, the first and the fourth each month's first: A closing at 100 and rising 2 a session, B at 50 falling 1, C at 20 rising 1 and D flat at 10. At the first reshuffle A scores 8 of 9, B 7 of 9, C 6 of 9 and D 9 of 9 dearer than its median; at the second B falls to 6 of 9 and C rises to 7. A book of two at the starting floor and valuation holds A and B from the first; at the second B is sold at its close of 47, 47 / 50 - 1 = -6 per cent, against the four members answered on its night from the first session to the fourth, A 6, B -6, C 15 and D 0 per cent, a mean of 3.75, an edge of -9.75 points; the tester's month from the first reshuffle to the second reads A's 6 less 3.75 and B's -6 less 3.75, a mean of -3.75 points. Sold on a filing, A's first session after a filing reading 5 of 9 sells it at that close of 102, 2 per cent, against the members' 2, -2, 5 and 0 per cent from its night, 1.25.",
+  "derivedFrom": "22.10's walk worked by hand over a constructed tape, not a run. Four members over six sessions, the first and the fourth each month's first: A closing at 100 and rising 2 a session, B at 50 falling 1, C at 20 rising 1 and D flat at 10. At the first reshuffle A scores 8 of 9, B 7 of 9, C 6 of 9 and D 9 of 9 dearer than its median; at the second B falls to 6 of 9 and C rises to 7. A book of two at the starting floor and valuation holds A and B from the first; at the second B is sold at its close of 47, 47 / 50 - 1 = -6 per cent, against the four members answered on its night from the first session to the fourth, A 6, B -6, C 15 and D 0 per cent, a mean of 3.75, an edge of -9.75 points; the tester's month from the first reshuffle to the second reads A's 6 less 3.75 and B's -6 less 3.75, a mean of -3.75 points. Sold on a filing, A's first session after a filing reading 5 of 9 sells it at that close of 102, 2 per cent, against the members' 2, -2, 5 and 0 per cent from its night, 1.25. From the 22.11 ruling the floors in months, worked by hand: six months held in each of the eight years from 2019 is 48 months, and a month's edge a point above nothing in the first six years and a point below in the last two puts 6 years above, meeting 48 months and 6 years; a fold learning on three years reads 48 x 3 / 8 = 18 months and 6 x 3 / 8 = 2.25 years rounded up to 3, which six months a year over three years each above nothing meet exactly.",
   "reshuffle": {
     "result": -0.06,
     "benchmark": 0.0375,
@@ -12,5 +12,11 @@
   "filing": {
     "result": 0.02,
     "benchmark": 0.0125
+  },
+  "floors": {
+    "months": 48,
+    "years": 6,
+    "foldMonths": 18,
+    "foldYears": 3
   }
 }

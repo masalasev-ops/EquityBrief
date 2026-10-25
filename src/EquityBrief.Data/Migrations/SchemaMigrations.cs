@@ -731,7 +731,49 @@ public static class SchemaMigrations
         new Migration(108, "add setup's short-term dip readings", AddDipReadings),
         new Migration(109, "create fundamental_score, and add setup's fundamentals scorecard readings", AddScorecard),
         new Migration(110, "create quality_night, quality_result and quality_holding", CreateQuality),
+        new Migration(111, "rebuild pulled_bar and pulled_earnings with the pull in their keys", PullInThePulledKeys),
     ];
+
+    // From the 22.11 ruling a pull keeps its whole span beside an earlier pull's rows, so a pull reaching further back
+    // stores every session it is sent and the older pull is compared with it before it is removed. A rebuild rather than
+    // an alter, because SQLite changes no primary key in place; every row is copied across first.
+    // see: A pull keeps its whole span beside an earlier pull's rows, and every reader reads the newest pull holding what it reads
+    const string PullInThePulledKeys = @"
+        CREATE TABLE pulled_bar_rebuilt (
+            ticker       TEXT    NOT NULL,
+            session_date TEXT    NOT NULL,
+            open         TEXT    NOT NULL,
+            high         TEXT    NOT NULL,
+            low          TEXT    NOT NULL,
+            close        TEXT    NOT NULL,
+            raw_close    TEXT    NOT NULL,
+            volume       INTEGER NOT NULL,
+            pull         TEXT    NOT NULL,
+            PRIMARY KEY (ticker, session_date, pull)
+        ) STRICT;
+
+        INSERT INTO pulled_bar_rebuilt (ticker, session_date, open, high, low, close, raw_close, volume, pull)
+        SELECT ticker, session_date, open, high, low, close, raw_close, volume, pull FROM pulled_bar;
+
+        DROP TABLE pulled_bar;
+
+        ALTER TABLE pulled_bar_rebuilt RENAME TO pulled_bar;
+
+        CREATE TABLE pulled_earnings_rebuilt (
+            ticker     TEXT NOT NULL,
+            event_date TEXT NOT NULL,
+            timing     TEXT NOT NULL,
+            pull       TEXT NOT NULL,
+            PRIMARY KEY (ticker, event_date, pull)
+        ) STRICT;
+
+        INSERT INTO pulled_earnings_rebuilt (ticker, event_date, timing, pull)
+        SELECT ticker, event_date, timing, pull FROM pulled_earnings;
+
+        DROP TABLE pulled_earnings;
+
+        ALTER TABLE pulled_earnings_rebuilt RENAME TO pulled_earnings;
+    ";
 
     // From 22.9: Quality at a fair price's own three tables, a night's row an index, every member's answer with the figures
     // that decided it and the growth carried to it, and its holdings, each keyed by the rule that keeps it, its starting

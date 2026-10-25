@@ -79,9 +79,13 @@ public sealed class PageHistoryReader(IClock clock, string databaseFile) : IComp
         ORDER BY event_date;
     ";
 
+    // Each print once, as the newest pull holding it files it, since from the 22.11 ruling a pull keeps its whole span
+    // beside an earlier pull's rows.
+    // see: A pull keeps its whole span beside an earlier pull's rows, and every reader reads the newest pull holding what it reads
     const string PulledPrints = @"
         SELECT event_date, timing FROM pulled_earnings
         WHERE ticker = $ticker
+          AND pull = (SELECT MAX(held.pull) FROM pulled_earnings AS held WHERE held.ticker = pulled_earnings.ticker AND held.event_date = pulled_earnings.event_date)
         ORDER BY event_date;
     ";
 

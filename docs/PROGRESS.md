@@ -8895,3 +8895,107 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    each index's answer to the operator, with the floors' reach and the valuation's; 22.11's freezes and 22.3 on
             their word.
+
+### 22.11 ruling - a quality book judged in months held, prices pulled from 2015-10-01, the history test run again, the quality freezes at each index's starting setting unless a setting meets the floors, and the dip's freezes at each index's 22.2 setting   2026-10-25
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-25 at about 12:57 UTC, on each index's quality answer and the two limits the 22.10
+            entry put to them, word for word in `prompts/2026-10-25-22.11-ruling-quality-and-dip-freezes.md`, in the
+            order "1, 2, 3, then 4 or the stop it names, then 5, then 22.12, then stop". 1, for the quality family alone
+            a setting meets the floors "where its book held stocks in at least 48 months and its monthly edge ... stands
+            above nothing in at least 6 of the 8 years, a year with no holdings counting as not above", a fold reading
+            the 48 months in proportion to the years it learns on, the heavyweights keeping theirs. 2, "Pull the history
+            from 2015-10-01 for every name each index held since, through the history pull's own command", the requests
+            counted against the day's allowance and the SEC facts' reach stated before any request, every session the
+            two pulls share compared at the store's scale before the old is removed, every reader named, no rule's
+            version moving, asserted, and the three ledger histories built again where a reading changes, a remedy
+            carrying the pull and the builds. 3, 22.10's test again on each index, each run an entry of its own. 4, a
+            setting meeting item 1's floors stops its index for their word; otherwise every index frozen at its starting
+            setting with its one-step neighbours as versions, the S&P 500 among them, each card drawing the frozen line
+            in points a holding. 5, each index's dip frozen at the setting its 22.2 run entry says it would run, the
+            S&P 600's with the drop's volume level its second stage crossed.
+Measured:   read-only on the operator's store: the pulled history 4,157,138 bars of 2,192 names under ten pulls, each from
+            2018-01-02; the key of `pulled_bar` and of `pulled_earnings` a name and a session, a session an earlier pull
+            holds keeping that pull's row; the SEC's facts kept from periods ending 2015-01-01, 1,195,849 of 2,095 filers.
+            From 2015-10-01 the S&P 500's membership names 830 names and the S&P 400's and 600's pulls ask about 760 and
+            1,210, each with 133 months of the earnings calendar, about 3,200 weighted calls at a weight of one, under the
+            operator's 5,000 a day and about 3 per cent of the day's 100,000, so the pull fits one day.
+Found:      every reader of the pulled bars but the sweeps' history reads the one pull holding a name's first stored
+            session, so under that key a pull from 2015-10-01 would store 2015 to 2017 under a pull none of them reads, and
+            the sweeps' history would join two pulls' scales at 2018. So the key carries the pull, each pull keeping its
+            whole span beside the other until the older is removed, and every reader reads one pull a name.
+Plan:       items 1 and 2 in one pull request filed under 22.10, whose history test they amend, ahead of 22.11: the quality
+            floors in months; migration 111 carrying the pull in the two tables' keys; the sweeps' history and the page's
+            earnings reading one pull a name; the comparison of two pulls' shared sessions; the history test's coverage
+            counting the members whose facts reach their twelve quarters; and two remedy files run from main with no
+            other writer running, the migration, the three pulls and the comparison first, and the old pulls' removal
+            and the three ledger histories with their checks once the comparison is stated. Item 3 as three 22.10 run
+            entries, item 4 as 22.11, item 5 as 22.3, then 22.12.
+Queue:      done, 22.9 and 22.10; in progress, items 1 and 2 in this pull request; next, item 2's remedies, item 3's runs,
+            22.11 or the stop it names, 22.3, 22.12, then the sign-offs of phases 18, 19 and 20 by fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 22.10 - Quality at a fair price judged in its book's months held, and the pulled history keyed by its pull, so prices pulled from 2015-10-01 stand beside the older pulls until the two are compared and the older removed   2026-10-25
+
+Queue:      done, 22.9, 22.10 and the 22.11 ruling above; in progress, the ruling's first two items in this pull request;
+            next, their two remedies from main, the history test again on each index, 22.11 or the stop it names, 22.3,
+            22.12, then the sign-offs of phases 18, 19 and 20 by fresh sessions.
+Limits:     no paid call and no request from this branch; the store read-only; no source a rule's version pins written,
+            asserted, so no rule's version moves.
+Built:      item 1, the family's floors in its book's months: 48 held and 6 of the 8 years whose months' mean edge stands
+            above nothing, a year held in no month not above, a fold reading both in proportion to its learning years
+            over the months closed before its year; the proposal and each fold's choice among the settings meeting them;
+            the report's months held and years above for every setting; and the coverage counting the members whose
+            filings as first filed reach every quarter the valuation reads. Item 2: migration 111 rebuilding
+            `pulled_bar` and `pulled_earnings` with the pull in their keys, every row copied across first, so a pull
+            keeps its whole span beside an earlier pull's; the sweeps' history reading each session from the newest pull
+            holding it, the chart page the newest pull holding a stock's first stored session where it took whichever
+            row came first, and the page history reader each print once as the newest pull files it;
+            `history-pull --compare --since <day>`, read-only; the two remedy files. Two decisions, sections 13, 16 and
+            17, the catalogue and the matrix, SCHEMA's keys, the runbook, the guide, the roster and the changelog.
+Readers:    after the pull every reader reads the newest pull, so the pull from 2015-10-01: the chart averages step for the
+            chart's averages before the store's year; the page history reader for each stock's typical earnings move and
+            its long view; the setup ledger's valuation reading, on a night and in its history build; the index
+            families, the rule cards, the heavyweights' book and the member readings for the sessions before a short
+            year; the read API for the chart page's weekly and monthly candles and longer performance and whether a pull
+            reaches before the year; and the sweeps' history for every sweep, the tester, the rule recorder's replay and
+            the ledger's history build. A night reads only the sessions it needs before the store's year, so its figures
+            move by the two pulls' difference at the store's scale alone, which the comparison states; the long view,
+            the chart page's longer candles and the valuations of 2019 to 2021 reach further back.
+Facts:      the history test run from this branch's tree before its commit over the live store read-only through
+            2026-10-23, 13:15Z to 13:19Z, runs 20261025T131531Z, 20261025T131650Z and 20261025T131748Z: the facts as
+            first filed reach every quarter the valuation reads at 2019's first reshuffle for 404 of the S&P 500's 508
+            members answered, 301 of the S&P 400's 381 and 432 of the S&P 600's 562, against 434, 337 and 475 at 2022's,
+            and none of them is valued in 2019 or 2020 since no pulled price reaches their quarters. So the facts reach
+            for 2019 within 30, 36 and 43 members of 2022 and the prices are what hold the valuation back; the pull goes
+            ahead. Under the months floors and the history before the pull each index already proposes a setting, the
+            S&P 500 floor 7, the cheapest third, the trend read, a book of 20, sold on a filing, +0.85 points; these are
+            not its answer, which the runs over the deeper history give.
+Cost:       the three bars pulls ask about 830, 760 and 1,210 names and 133 months of the calendar each, about 3,200
+            weighted calls at a weight of one, each stated by the pull before its first request; under the operator's
+            5,000 a day, so the pull fits one day.
+Tests:      7 new, 2766 in all, one rewritten: the floors in months worked by hand on both sides and in proportion in a
+            fold; a fold reading the months closed before its year and the proposal and a fold's choice among the
+            settings meeting the floors; no source a rule pins one this pass writes; migration 111 keeping every pulled
+            bar and print; a second pull keeping its whole span beside the first's, where it added only what the first
+            lacked; the comparison worked by hand; the chart page and the sweeps' history reading the newest pull; and a
+            print two pulls hold read once.
+Fixture:    quality-history.json gains the floors, derived by hand: 48 months and 6 years; a fold of three years 18
+            months and 3 years.
+Claims:     1444, none new: section 17's row of the history test states the floors in months.
+Mutated:    the rule, stated before the runs: one mutation for each property the pass adds, the smallest edit undoing it,
+            made in the worktree and reverted with the editor, each run filtered to the tests naming the property. M1 the
+            months held not read, red at both floors tests; M2 a year at nought counted above, red at the floors in
+            months; M3 a fold reading every month, red at the fold's months; M4 the sweeps' history reading every pull's
+            rows, red at the newest pull's read; M5 the chart page's pull unordered, red at the same; M6 the page history
+            reader reading every pull's prints, red at a print read once; M7 the comparison off the store's scale, red at
+            the comparison; M8 the rebuilt key without the pull, red at the second pull and the migration.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2766 of 2766 tests ran with none failed,
+            migrations 0 to 111 with none pending, schema version 111, against `data-ci` and never `data`; the phase
+            report 64 tables, 1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    `tools/remedies/2026-10-25-22.10-prices-from-2015.txt` from main after the merge, its comparison stated, then
+            `tools/remedies/2026-10-25-22.10-the-older-pulls-removed.txt` and the three ledger histories built again with
+            their checks, each with no other writer running; then the history test again on each index.

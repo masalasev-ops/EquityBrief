@@ -1,0 +1,20 @@
+# The second remedy of the 22.11 ruling's second item, filed under 22.10 (the older pulls removed), as its PROGRESS entry
+# prints it, run once the comparison of 2026-10-25-22.10-prices-from-2015.txt is stated and only where it names no stock
+# the older pulls hold that no newer pull does. It removes the ten bars pulls made from 2018 before the ruling, each whole
+# by its purge, their bars and their prints and nothing else, so every reader reads the pulls from 2015-10-01. Each
+# index's ledger history is then built again by hand with
+# tools/ledger-build.ps1 --index <GSPC, MID or SML> --from 2019-01-02 --through 2026-10-05 --again, which builds main's own
+# commit from a clean copy and so is not a worker command this file can run, since the valuation reading of the setups of
+# 2019 to 2021 reads the closes the new pulls reach, and checked with ledger-check --index <GSPC, MID or SML>. No request
+# to the provider and no model call. Run from main when no night, local run, drain, labeller, history read or monthly run
+# is writing.
+history-pull --purge history-pull-20260926T235929.5174577Z
+history-pull --purge history-pull-20261004T192038.8554739Z
+history-pull --purge history-pull-20261004T192320.6712510Z
+history-pull --purge history-pull-20261005T083827.9066337Z
+history-pull --purge history-pull-20261005T084216.3432921Z
+history-pull --purge history-pull-20261005T142844.3777093Z
+history-pull --purge history-pull-20261005T143412.3490172Z
+history-pull --purge history-pull-20261005T210555.8701225Z
+history-pull --purge history-pull-20261005T210919.5379655Z
+history-pull --purge history-pull-20261008T131808.7231082Z

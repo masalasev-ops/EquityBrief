@@ -3,6 +3,7 @@ using EquityBrief.Api.Reading;
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
+using EquityBrief.Data.Migrations;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker;
@@ -345,8 +346,11 @@ public class HistoryPullTests
         Assert.Contains("2 name(s) with a missing session, 1 day(s) held by fewer than half the names spanning them", HistoryPull.Detail(outcome), StringComparison.Ordinal);
     }
 
+    // From the 22.11 ruling a second pull keeps its whole span beside the first's rows, so a pull reaching further back
+    // holds every session it is sent at its own scale and the first is removed whole by its own purge.
+    // see: A pull keeps its whole span beside an earlier pull's rows, and every reader reads the newest pull holding what it reads
     [Fact]
-    public async Task ASecondPullAddsOnlyTheSessionsNoPullHoldsAndAPurgeRemovesItsOwnPullWholeAndNothingElse()
+    public async Task ASecondPullKeepsItsWholeSpanBesideTheFirstsRowsAndAPurgeRemovesItsOwnPullWholeAndNothingElse()
     {
         using var store = Seeded();
 
@@ -365,14 +369,15 @@ public class HistoryPullTests
         Assert.Equal(15, Sessions(later, Tonight).Count);
         Assert.Equal((2 * 15, 1), (first.BarsWritten, first.EarningsWritten));
 
-        // From 2026-07-01 all three are asked for the whole span, and only what the first pull does not
-        // hold is added: 47 less 15 for AAA and CCC, all 47 for BBB, and the two earlier prints.
+        // From 2026-07-01 all three are asked for the whole span and each keeps all of it beside the first pull's rows:
+        // 47 sessions for each of the three, and all three prints, AAA's of 2026-08-20 again among them.
         var second = await new HistoryPull(new ConstructedBars(all), new ConstructedPrints(Prints), Clock(), store.DatabaseFile).PullAsync(Index, From, "history-pull-b");
 
-        Assert.Equal(((2 * (SessionsInTheSpan - 15)) + SessionsInTheSpan, 2), (second.BarsWritten, second.EarningsWritten));
+        Assert.Equal((3 * SessionsInTheSpan, 3), (second.BarsWritten, second.EarningsWritten));
         Assert.Equal(
-            ["history-pull-a|30|1", $"history-pull-b|{(2 * (SessionsInTheSpan - 15)) + SessionsInTheSpan}|2"],
+            ["history-pull-a|30|1", $"history-pull-b|{3 * SessionsInTheSpan}|3"],
             Rows(store, "SELECT pull, (SELECT COUNT(*) FROM pulled_bar b WHERE b.pull = p.pull), (SELECT COUNT(*) FROM pulled_earnings e WHERE e.pull = p.pull) FROM (SELECT DISTINCT pull FROM pulled_bar) p ORDER BY pull;"));
+        Assert.Equal(["2"], Rows(store, "SELECT COUNT(*) FROM pulled_bar WHERE ticker = 'AAA' AND session_date = '2026-09-04';"));
 
         var barsBefore = Rows(store, "SELECT * FROM bar ORDER BY ticker, session_date;");
         var survivors = Rows(store, "SELECT ticker, session_date, pull FROM pulled_bar WHERE pull = 'history-pull-b' ORDER BY ticker, session_date;");
@@ -381,7 +386,7 @@ public class HistoryPullTests
 
         Assert.Equal(("history-pull-a", 30, 1), (purged.Pull, purged.Bars, purged.Earnings));
         Assert.Equal(survivors, Rows(store, "SELECT ticker, session_date, pull FROM pulled_bar ORDER BY ticker, session_date;"));
-        Assert.Equal(["AAA|2026-07-30|history-pull-b", "BBB|2026-08-05|history-pull-b"], Rows(store, "SELECT ticker, event_date, pull FROM pulled_earnings ORDER BY ticker, event_date;"));
+        Assert.Equal(["AAA|2026-07-30|history-pull-b", "AAA|2026-08-20|history-pull-b", "BBB|2026-08-05|history-pull-b"], Rows(store, "SELECT ticker, event_date, pull FROM pulled_earnings ORDER BY ticker, event_date;"));
         Assert.Equal(barsBefore, Rows(store, "SELECT * FROM bar ORDER BY ticker, session_date;"));
         Assert.Equal(
             ["history-purge|ok|0|0|{\"pull\":\"history-pull-a\",\"bars\":30,\"earnings\":1,\"surprises\":0,\"market\":0,\"companies\":0,\"counts\":0,\"splits\":0,\"revenue\":0,\"members\":0,\"income\":0,\"snapshots\":0,\"holdings\":0}"],
@@ -394,6 +399,124 @@ public class HistoryPullTests
 
         Assert.Equal(logged, Rows(store, "SELECT COUNT(*) FROM run_log;"));
         Assert.Equal(survivors, Rows(store, "SELECT ticker, session_date, pull FROM pulled_bar ORDER BY ticker, session_date;"));
+    }
+
+    // Migration 111 copies every pulled bar and print across into the tables keyed by the pull as well, so a store
+    // pulled before it keeps every row, and a second pull's row for the same session now stands beside the first's.
+    [Fact]
+    public void TheMigrationKeepsEveryPulledBarAndPrintAndLetsASecondPullHoldTheSameSession()
+    {
+        using var store = new TemporaryStore();
+
+        new MigrationRunner([.. SchemaMigrations.All.Where(migration => migration.Version < 111)]).Apply(store.DatabaseFile);
+
+        store.Execute(@"
+            INSERT INTO pulled_bar (ticker, session_date, open, high, low, close, raw_close, volume, pull) VALUES
+                ('AAA', '2018-01-02', '10', '11', '9', '10.5', '21', 100, 'history-pull-a'),
+                ('BBB', '2018-01-02', '20', '21', '19', '20.5', '20.5', 200, 'history-pull-a');
+            INSERT INTO pulled_earnings (ticker, event_date, timing, pull) VALUES ('AAA', '2018-01-25', 'after', 'history-pull-a');");
+
+        MigrationRunner.Standard().Apply(store.DatabaseFile);
+
+        Assert.Equal(
+            ["AAA|2018-01-02|10|11|9|10.5|21|100|history-pull-a", "BBB|2018-01-02|20|21|19|20.5|20.5|200|history-pull-a"],
+            Rows(store, "SELECT ticker, session_date, open, high, low, close, raw_close, volume, pull FROM pulled_bar ORDER BY ticker;"));
+        Assert.Equal(["AAA|2018-01-25|after|history-pull-a"], Rows(store, "SELECT ticker, event_date, timing, pull FROM pulled_earnings;"));
+
+        store.Execute(@"
+            INSERT INTO pulled_bar (ticker, session_date, open, high, low, close, raw_close, volume, pull) VALUES
+                ('AAA', '2018-01-02', '5', '5.5', '4.5', '5.25', '21', 100, 'history-pull-b');
+            INSERT INTO pulled_earnings (ticker, event_date, timing, pull) VALUES ('AAA', '2018-01-25', 'after', 'history-pull-b');");
+
+        Assert.Equal(["2", "2"], Rows(store, "SELECT COUNT(*) FROM pulled_bar WHERE ticker = 'AAA' UNION ALL SELECT COUNT(*) FROM pulled_earnings WHERE ticker = 'AAA';"));
+        Assert.Throws<Microsoft.Data.Sqlite.SqliteException>(() => store.Execute("INSERT INTO pulled_bar (ticker, session_date, open, high, low, close, raw_close, volume, pull) VALUES ('AAA', '2018-01-02', '1', '1', '1', '1', '1', 1, 'history-pull-b');"));
+    }
+
+    // Where two pulls hold the same sessions, the chart page reads the newest pull holding a stock's first stored session
+    // and that pull's sessions before it, and the sweeps' history each session from the newest pull holding it. AAA's first
+    // stored session is 2026-09-03, at 10.5; the older pull closes the three sessions to it at 10, 10 and 10.5, the newer,
+    // reaching a session further back, at 19, 20, 20 and 21, its own scale twice the store's, so read at the store's scale
+    // the newer's four come to 9.5, 10, 10 and 10.5.
+    // see: A pull keeps its whole span beside an earlier pull's rows, and every reader reads the newest pull holding what it reads
+    [Fact]
+    public async Task TheChartPageAndTheSweepsHistoryReadTheNewestPullWhereTwoHoldTheSameSessions()
+    {
+        using var store = Seeded();
+
+        store.Execute(@"
+            INSERT INTO pulled_bar (ticker, session_date, open, high, low, close, raw_close, volume, pull) VALUES
+                ('AAA', '2026-09-01', '10', '10', '10', '10', '10', 1, 'history-pull-a'),
+                ('AAA', '2026-09-02', '10', '10', '10', '10', '10', 1, 'history-pull-a'),
+                ('AAA', '2026-09-03', '10.5', '10.5', '10.5', '10.5', '10.5', 1, 'history-pull-a'),
+                ('AAA', '2026-08-31', '19', '19', '19', '19', '9.5', 1, 'history-pull-b'),
+                ('AAA', '2026-09-01', '20', '20', '20', '20', '10', 1, 'history-pull-b'),
+                ('AAA', '2026-09-02', '20', '20', '20', '20', '10', 1, 'history-pull-b'),
+                ('AAA', '2026-09-03', '21', '21', '21', '21', '10.5', 1, 'history-pull-b');");
+
+        var chart = await new ReadApi(store.DatabaseFile, Clock()).PulledSeriesAsync("AAA", new DateOnly(2026, 9, 3));
+
+        Assert.Equal(("history-pull-b", 21m), (chart.Pull, chart.PulledClose));
+        Assert.Equal([new DateOnly(2026, 8, 31), new DateOnly(2026, 9, 1), new DateOnly(2026, 9, 2)], chart.Sessions.Select(bar => bar.Session));
+        Assert.Equal([19m, 20m, 20m], chart.Sessions.Select(bar => bar.Close));
+
+        var history = await new EquityBrief.Worker.Sweep.SweepHistory(store.DatabaseFile).ReadAsync(Tonight);
+        var aaa = history.Names.Single(name => name.Ticker == "AAA");
+
+        Assert.Equal([new DateOnly(2026, 8, 31), new DateOnly(2026, 9, 1), new DateOnly(2026, 9, 2), new DateOnly(2026, 9, 3), new DateOnly(2026, 9, 4)], aaa.Bars.Select(bar => bar.Session));
+        Assert.Equal([9.5m, 10m, 10m, 10.5m, 11.5m], aaa.Bars.Select(bar => bar.Close));
+    }
+
+    // The comparison worked by hand over two older and two newer series and a stock each side alone holds. AAA's store
+    // close on its first stored session, 2026-09-03, is 10.5; the older pull closes it at 21, a factor of 0.5, the newer
+    // at 20.58, a factor of 10.5 / 20.58. On 2026-09-01 the older's 20 and the newer's 19.6 both read 10 at the store's
+    // scale; on 2026-09-02 the older's 21 reads 10.5 and the newer's 21 reads 10.71, 2.04 per cent apart, its close as
+    // traded 21.5 against 21. The older's 2026-08-31 falls inside the newer's span from 2026-08-28 and the newer lacks it.
+    // BBB, which the store holds no session of, closes at 50 and 52 in the older and 25 and 26 in the newer, a median
+    // ratio of 2, so its two sessions read alike. DDD only the older holds; EEE only the newer. Of the older's three
+    // prints, AAA's of 2026-09-02 falls inside AAA's newer span and no newer pull holds it; AAA's of 2026-08-20 and BBB's
+    // of 2026-07-15 fall outside their newer spans.
+    // see: A pull keeps its whole span beside an earlier pull's rows, and every reader reads the newest pull holding what it reads
+    [Fact]
+    public async Task TheComparisonReadsEverySharedSessionAtTheStoresScaleAndNamesWhatTheNewerPullsLack()
+    {
+        using var store = Seeded();
+
+        store.Execute(@"
+            INSERT INTO pulled_bar (ticker, session_date, open, high, low, close, raw_close, volume, pull) VALUES
+                ('AAA', '2026-08-31', '20', '20', '20', '20', '20', 1, 'history-pull-20261001T000000Z'),
+                ('AAA', '2026-09-01', '20', '20', '20', '20', '20', 1, 'history-pull-20261001T000000Z'),
+                ('AAA', '2026-09-02', '21', '21', '21', '21', '21', 1, 'history-pull-20261001T000000Z'),
+                ('AAA', '2026-09-03', '21', '21', '21', '21', '21', 1, 'history-pull-20261001T000000Z'),
+                ('BBB', '2026-07-01', '50', '50', '50', '50', '50', 1, 'history-pull-20261001T000000Z'),
+                ('BBB', '2026-07-02', '52', '52', '52', '52', '52', 1, 'history-pull-20261001T000000Z'),
+                ('DDD', '2026-06-01', '5', '5', '5', '5', '5', 1, 'history-pull-20261001T000000Z'),
+                ('AAA', '2026-08-28', '19.6', '19.6', '19.6', '19.6', '19.6', 1, 'history-pull-20261025T000000Z'),
+                ('AAA', '2026-09-01', '19.6', '19.6', '19.6', '19.6', '20', 1, 'history-pull-20261025T000000Z'),
+                ('AAA', '2026-09-02', '21', '21', '21', '21', '21.5', 1, 'history-pull-20261025T000000Z'),
+                ('AAA', '2026-09-03', '20.58', '20.58', '20.58', '20.58', '21', 1, 'history-pull-20261025T000000Z'),
+                ('BBB', '2026-07-01', '25', '25', '25', '25', '50', 1, 'history-pull-20261025T000000Z'),
+                ('BBB', '2026-07-02', '26', '26', '26', '26', '52', 1, 'history-pull-20261025T000000Z'),
+                ('EEE', '2015-10-01', '7', '7', '7', '7', '7', 1, 'history-pull-20261025T000000Z');
+            INSERT INTO pulled_earnings (ticker, event_date, timing, pull) VALUES
+                ('AAA', '2026-08-20', 'after', 'history-pull-20261001T000000Z'),
+                ('AAA', '2026-09-02', 'after', 'history-pull-20261001T000000Z'),
+                ('BBB', '2026-07-15', 'before', 'history-pull-20261001T000000Z');");
+
+        var held = Rows(store, "SELECT COUNT(*) FROM pulled_bar UNION ALL SELECT COUNT(*) FROM pulled_earnings UNION ALL SELECT COUNT(*) FROM run_log;");
+        var compared = await PullComparison.CompareAsync(store.DatabaseFile, new DateOnly(2026, 10, 25));
+
+        Assert.Equal((3, 3), (compared.OlderStocks, compared.NewerStocks));
+        Assert.Equal(["DDD"], compared.NotPulledAgain);
+        Assert.Equal((5, 3, 1, 1, 1), (compared.Shared, compared.AtTheStoreScale, compared.ApartByACent, compared.ApartByOnePerCent, compared.TradedApart));
+        Assert.Equal(["AAA 2026-09-02"], compared.Largest.Select(line => line[..14]));
+        Assert.Equal(1, compared.Missing);
+        Assert.Equal(["AAA 1 session(s), the first 2026-08-31"], compared.MissingNamed);
+        Assert.Equal((3, 1), (compared.OlderPrints, compared.PrintsMissing));
+        Assert.StartsWith("compared the pulls made from 2026-10-25 with those made before it: the older hold 3 stock(s) and the newer 3; 1 the older hold and no newer pull does: DDD", PullComparison.Lines(compared, new DateOnly(2026, 10, 25))[0], StringComparison.Ordinal);
+
+        // It writes nothing.
+        Assert.Equal(["14", "3"], held.Take(2));
+        Assert.Equal(held, Rows(store, "SELECT COUNT(*) FROM pulled_bar UNION ALL SELECT COUNT(*) FROM pulled_earnings UNION ALL SELECT COUNT(*) FROM run_log;"));
     }
 
     [Fact]
@@ -671,8 +794,9 @@ public class HistoryPullTests
         // pull reaches before the year for the books' next rebalance; and the member readings the same for each member's
         // year's high, which a breakout rule's checks read through the index families' read. And from the 20.3 correction
         // of 2026-10-22 the local run's pin reads when each such ticker of a release's filer was first stored, the pull's
-        // start for a pulled company's, as it carries a reading version's readings, by hand and never on a night.
-        Assert.Equal(["src/EquityBrief.Api/Reading/ReadApi.Chart.cs", "src/EquityBrief.Api/Reading/ReadApi.cs", "src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/Bars/HistoryPull.cs", "src/EquityBrief.Worker/Cards/RuleCards.cs", "src/EquityBrief.Worker/Cards/RuleRecorder.cs", "src/EquityBrief.Worker/Families/HeavyweightBook.cs", "src/EquityBrief.Worker/Indicators/ChartAverager.cs", "src/EquityBrief.Worker/Indices/IndexFamilies.cs", "src/EquityBrief.Worker/Insiders/InsiderTrades.cs", "src/EquityBrief.Worker/Ledger/FilingsRefresher.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.cs", "src/EquityBrief.Worker/Local/LocalRun.Carry.cs", "src/EquityBrief.Worker/Local/LocalRun.Probes.cs", "src/EquityBrief.Worker/Local/LocalRun.Reading.cs", "src/EquityBrief.Worker/Local/LocalRun.cs", "src/EquityBrief.Worker/Local/ReleaseAccuracy.cs", "src/EquityBrief.Worker/Local/ReleaseFetch.cs", "src/EquityBrief.Worker/Loop/WalkForwardTester.cs", "src/EquityBrief.Worker/Members/MemberReader.cs", "src/EquityBrief.Worker/Moves/PageHistoryReader.cs", "src/EquityBrief.Worker/Sweep/SweepHistory.cs"], found);
+        // start for a pulled company's, as it carries a reading version's readings, by hand and never on a night. And from
+        // the 22.11 ruling the pull's comparison reads the pulled bars and prints of two pulls by hand, writing nothing.
+        Assert.Equal(["src/EquityBrief.Api/Reading/ReadApi.Chart.cs", "src/EquityBrief.Api/Reading/ReadApi.cs", "src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/Bars/HistoryPull.cs", "src/EquityBrief.Worker/Bars/PullComparison.cs", "src/EquityBrief.Worker/Cards/RuleCards.cs", "src/EquityBrief.Worker/Cards/RuleRecorder.cs", "src/EquityBrief.Worker/Families/HeavyweightBook.cs", "src/EquityBrief.Worker/Indicators/ChartAverager.cs", "src/EquityBrief.Worker/Indices/IndexFamilies.cs", "src/EquityBrief.Worker/Insiders/InsiderTrades.cs", "src/EquityBrief.Worker/Ledger/FilingsRefresher.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.cs", "src/EquityBrief.Worker/Local/LocalRun.Carry.cs", "src/EquityBrief.Worker/Local/LocalRun.Probes.cs", "src/EquityBrief.Worker/Local/LocalRun.Reading.cs", "src/EquityBrief.Worker/Local/LocalRun.cs", "src/EquityBrief.Worker/Local/ReleaseAccuracy.cs", "src/EquityBrief.Worker/Local/ReleaseFetch.cs", "src/EquityBrief.Worker/Loop/WalkForwardTester.cs", "src/EquityBrief.Worker/Members/MemberReader.cs", "src/EquityBrief.Worker/Moves/PageHistoryReader.cs", "src/EquityBrief.Worker/Sweep/SweepHistory.cs"], found);
 
         // The reader is shown to find what it looks for: a query, a declaration of either store, and not a
         // word that only begins the same way.

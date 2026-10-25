@@ -500,4 +500,29 @@ public partial class FixtureExpectations
             PageRows(store, "SELECT ticker, prints, unread, first_print, printf('%.6f', median_move) FROM earnings_move;"));
         Assert.Equal([["GONE"]], PageRows(store, "SELECT ticker FROM long_view;"));
     }
+
+    // From the 22.11 ruling two pulls can hold the same print, and the reader reads it once as the newest pull files it:
+    // the older files it before the open, the newer after the close, so it reacts on the twenty-second session,
+    // (121 - 120) / 120, one print and not two.
+    // see: A pull keeps its whole span beside an earlier pull's rows, and every reader reads the newest pull holding what it reads
+    [Fact]
+    public async Task APrintTwoPullsHoldIsReadOnceAsTheNewestPullFilesIt()
+    {
+        var year = PageSessionsFrom(Date("2025-03-03"), 60);
+        using var store = new TemporaryStore().Migrated();
+
+        for (var at = 0; at < year.Count; at++)
+        {
+            store.Execute($"INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES ('GONE', '{Stamp(year[at])}', '{100 + at}', '{100 + at}', '{100 + at}', '{100 + at}', 1000, 'bulk', '2025-06-01T21:10:00Z', '{100 + at}');");
+        }
+
+        store.Execute($"INSERT INTO pulled_bar (ticker, session_date, open, high, low, close, raw_close, volume, pull) VALUES ('GONE', '{Stamp(year[0])}', '100', '100', '100', '100', '100', 1000, 'history-pull-a');");
+        store.Execute($"INSERT INTO pulled_earnings (ticker, event_date, timing, pull) VALUES ('GONE', '{Stamp(year[20])}', 'before', 'history-pull-a'), ('GONE', '{Stamp(year[20])}', 'after', 'history-pull-b');");
+
+        await new PageHistoryReader(FixedClock.At(new DateTimeOffset(2025, 6, 2, 23, 30, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile).RunAsync("page-history-test");
+
+        Assert.Equal(
+            [["GONE", "1", "0", Stamp(year[20]), (1.0 / 120 * 100).ToString("F6", CultureInfo.InvariantCulture)]],
+            PageRows(store, "SELECT ticker, prints, unread, first_print, printf('%.6f', median_move) FROM earnings_move;"));
+    }
 }
