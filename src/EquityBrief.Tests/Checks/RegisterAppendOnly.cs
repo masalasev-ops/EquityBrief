@@ -621,7 +621,28 @@ public class RegisterAppendOnly
         Assert.All(qualities, quality => Assert.DoesNotContain("src/EquityBrief.Worker/Filter/SwingFilter.cs", quality.OwnSources));
         Assert.All(qualities, quality => Assert.Equal(quality.Version, CandidateEvaluator.Pin([SourceOf(quality), .. OwnOf(quality)])));
 
-        foreach (var family in families.Cast<CandidateEvaluator>().Concat(books).Concat(qualities))
+        // From 22.3 each index's dip rule pins its rule's file first and every file the dip's own step runs through keeping
+        // its trades, read off the compiled code with the catalogue left out, and none of the shared sources, which the step
+        // never reads: the three pin the same sources and carry one version, and a change to the swing filter moves none.
+        // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
+        var dips = evaluators.OfType<DipCandidate>().ToArray();
+        var dipRuns = SourcesReached.From(
+            [
+                typeof(EquityBrief.Worker.Dips.DipFamily).GetMethod(nameof(EquityBrief.Worker.Dips.DipFamily.RunAsync))!,
+                typeof(DipCandidate).GetMethod(nameof(DipCandidate.SettingOf))!,
+            ])
+            .Where(path => path is not "src/EquityBrief.Core/Candidates/CandidateEvaluators.cs" && !path.EndsWith($"/{nameof(DipCandidate)}.cs", StringComparison.Ordinal))
+            .Distinct(StringComparer.Ordinal);
+
+        Assert.Equal(["GSPC", "MID", "SML"], dips.Select(dip => dip.Index).Order(StringComparer.Ordinal));
+        Assert.Equal(["dip-400", "dip-500", "dip-600"], dips.Select(dip => dip.Name).Order(StringComparer.Ordinal));
+        Assert.Single(dips.Select(dip => dip.Version).Distinct());
+        Assert.All(dips, dip => Assert.Equal("src/EquityBrief.Core/Families/DipRule.cs", dip.OwnSources[0]));
+        Assert.All(dips, dip => Assert.Equal(dipRuns.Order(StringComparer.Ordinal), dip.OwnSources.Order(StringComparer.Ordinal)));
+        Assert.All(dips, dip => Assert.DoesNotContain("src/EquityBrief.Worker/Filter/SwingFilter.cs", dip.OwnSources));
+        Assert.All(dips, dip => Assert.Equal(dip.Version, CandidateEvaluator.Pin([SourceOf(dip), .. OwnOf(dip)])));
+
+        foreach (var family in families.Cast<CandidateEvaluator>().Concat(books).Concat(qualities).Concat(dips))
         {
             var rule = family.OwnSources[0];
             var movedRule = OwnOf(family);
@@ -672,7 +693,11 @@ public class RegisterAppendOnly
         }
 
         Assert.All(indexRules, rule => Assert.Superset(indexFiles.Concat(families[0].OwnSources.Skip(1)).ToHashSet(StringComparer.Ordinal), rule.OwnSources.ToHashSet(StringComparer.Ordinal)));
-        Assert.All(evaluators.Where(evaluator => evaluator is not IndexRuleCandidate), evaluator => Assert.DoesNotContain(evaluator.OwnSources, path => indexFiles.Contains(path) || path.StartsWith("src/EquityBrief.Worker/Sweep/", StringComparison.Ordinal)));
+        // The dip's rules aside from 22.3: its step reads every index's members through the index night's reader and gives
+        // way to the index families' open trades through their own reader, so its rules pin those files as its step runs
+        // through them, and a change to them moves the dip's versions with the index rules'.
+        // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
+        Assert.All(evaluators.Where(evaluator => evaluator is not (IndexRuleCandidate or DipCandidate)), evaluator => Assert.DoesNotContain(evaluator.OwnSources, path => indexFiles.Contains(path) || path.StartsWith("src/EquityBrief.Worker/Sweep/", StringComparison.Ordinal)));
 
         foreach (var rule in indexRules)
         {

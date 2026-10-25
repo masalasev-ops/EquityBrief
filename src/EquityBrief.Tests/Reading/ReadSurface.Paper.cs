@@ -162,14 +162,15 @@ public partial class ReadSurface
         Assert.Contains("value=\"98765.43\"", page, StringComparison.Ordinal);
 
         // A tile a family's live or provisional rule in the one family order, the fundamentals-first family's provisional,
-        // and from 22.11 Quality at a fair price's after them, provisional where no freeze stands; every family's accounts in
-        // that order on the variants' select and the scorecard's, the pullback's two standing variants counted beside its rule.
+        // and from 22.11 Quality at a fair price's after them, provisional where no freeze stands, and from 22.3 the short-term
+        // dip's in the page's order before the sector heavyweights'; every family's accounts in that order on the variants'
+        // select and the scorecard's, the pullback's two standing variants counted beside its rule.
         Assert.Equal(
-            [("pullback", "live"), ("breakout", "live"), ("drift", "live"), ("fundamentals", "provisional"), ("heavyweight", "live"), ("quality", "provisional")],
+            [("pullback", "live"), ("breakout", "live"), ("drift", "live"), ("fundamentals", "provisional"), ("dip", "provisional"), ("heavyweight", "live"), ("quality", "provisional")],
             Regex.Matches(page, "<div class=\"paper-tile\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\"").Select(match => (match.Groups[1].Value, match.Groups[2].Value)));
         Assert.Contains("<option value=\"\">Pullback · live rule and 2 variants</option>", page, StringComparison.Ordinal);
         Assert.Equal(
-            ["", "breakout", "drift", "fundamentals", "heavyweight", "quality"],
+            ["", "breakout", "drift", "fundamentals", "dip", "heavyweight", "quality"],
             Regex.Matches(Regex.Match(page, "<select data-merge-key=\"rule\".*?</select>", RegexOptions.Singleline).Value, "<option value=\"([^\"]*)\"").Select(match => match.Groups[1].Value));
 
         // Within the breakout the live rule that passed and the variant within luck, each beside its own name; the
@@ -234,7 +235,7 @@ public partial class ReadSurface
         var options = Regex.Matches(lists, "<select data-merge-key=\"account\".*?</select>", RegexOptions.Singleline).Single().Value;
 
         Assert.Equal(
-            ["", "list-pullback", RunScreen.Slug("the swing filter with the market gate off, from version 1"), RunScreen.Slug("the swing filter with one-session arrival, from version 1"), "list-breakout", variantKey, "list-drift", "list-fundamentals", "list-heavyweight", "list-quality", "you"],
+            ["", "list-pullback", RunScreen.Slug("the swing filter with the market gate off, from version 1"), RunScreen.Slug("the swing filter with one-session arrival, from version 1"), "list-breakout", variantKey, "list-drift", "list-fundamentals", "list-dip", "list-heavyweight", "list-quality", "you"],
             Regex.Matches(options, "<option value=\"([^\"]*)\"").Select(match => match.Groups[1].Value));
         Assert.Contains($"<li data-family=\"breakout\" data-verdict=\"{RuleVerdict.Passed}\">", lists, StringComparison.Ordinal);
 

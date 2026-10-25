@@ -37,7 +37,7 @@ public sealed class SweepAnswers(IClock clock, string databaseFile, string sweep
     // The indices a run may name and the families a card draws, which are the answers a card can read.
     static readonly string[] IndexCodes = [EquityBrief.Worker.Indices.IndexFamilies.LargeIndex, "MID", "SML"];
 
-    static readonly string[] Families = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, HeavyweightRule.Name, QualityRule.Name];
+    static readonly string[] Families = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, HeavyweightRule.Name, QualityRule.Name, DipRule.Name];
 
     // From 22.11 the newest run in the sweep's folder that states an answer for a family on an index, by its folder's name,
     // which is the instant it started; none where no run states one. A remedy written before its run names it this way.

@@ -31,7 +31,7 @@ public static class BriefStates
 
 // The rule listing the stock tonight: its family, the decision card the night stored for the pick, none where it stored
 // none, and for the dip the sessions its exit's average of closes reads.
-public sealed record BriefListed(string Family, DecisionCardRow? Card, int? DipExitAverage = null);
+public sealed record BriefListed(string Family, DecisionCardRow? Card, int? DipExitLevel = null);
 
 // The answers the night stored that a stock's standing under each setup is read from: on the S&P 500 the swing filter's
 // row and the family evaluator's results with the night's picks; on every index the index families' results and picks,
@@ -406,7 +406,7 @@ public static class BriefScreen
         if (inputs.Listed is { Card: { Entry: { } entry } card } listed)
         {
             var steps = listed.Family == DipRule.Name
-                ? Management.ForDip(card.Stop, listed.DipExitAverage ?? DipRule.Provisional.ExitAverage, card.Cap)
+                ? Management.ForDip(card.Stop, listed.DipExitLevel ?? DipRule.Provisional.ExitLevel, card.Cap)
                 : Management.For(card.Stop, card.Target, card.Trail, card.Cap, listed.Family == HeavyweightRule.Name);
 
             return

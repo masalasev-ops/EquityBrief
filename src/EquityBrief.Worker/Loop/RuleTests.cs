@@ -41,8 +41,9 @@ public sealed record RuleTested(RuleUnderTest Rule, string Against, LoopEvidence
 // What the per-rule test walks an index's rules over: the history as it stood, the register's rules standing when the
 // run began, the setting an approval stored for each family, the market series, the heavyweights' history laid out, the
 // ledger's readings, the stored trees, the S&P 500's open filter version with its history, the progress line, the
-// pullback's candidates where they were read already, from 20.8 the release readings the drift's tone variant reads, and
-// from 22.11 Quality at a fair price's history laid out where a freeze stands on the index.
+// pullback's candidates where they were read already, from 20.8 the release readings the drift's tone variant reads, from
+// 22.11 Quality at a fair price's history laid out where a freeze stands on the index, and from 22.3 the short-term dip's
+// history as its sweep reads it where a freeze stands on the index.
 public sealed record RuleTestInputs(
     LoopRead Read,
     IReadOnlyList<RegisterRow> Standing,
@@ -55,7 +56,8 @@ public sealed record RuleTestInputs(
     Action<string> Progress,
     IdeaReplay? Candidates = null,
     ToneReleases? Tones = null,
-    QualityLay? Quality = null);
+    QualityLay? Quality = null,
+    IndexSweepRunner.DipRead? Dip = null);
 
 // From 20.8 the release readings the per-rule test walks the drift's tone variant over: for each reading version whose
 // history read is complete, each stock's results releases with their readings under it, read through the one reader of
@@ -199,7 +201,32 @@ public static class RuleTests
             Fundamentals(inputs, Candidates()),
             .. Heavyweights(inputs),
             .. (inputs.Quality is { } lay ? Quality(inputs.Standing, inputs.Read.Index, setting => lay.Book(setting).Months) : []),
+            .. (inputs.Dip is { } dip ? Dip(inputs.Standing, inputs.Read.Index, parameters => DipTrades(dip, parameters)) : []),
         ];
+    }
+
+    // From 22.3 the short-term dip on any index once a freeze stands on it: each registered rule's trades walked at its
+    // setting over the whole history, the live rule first, its time limit and the next open the sessions a block waits;
+    // none before a freeze, so the monthly run reads the family from its next run after one.
+    // see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
+    public static IEnumerable<RuleUnderTest> Dip(IReadOnlyList<RegisterRow> standing, string index, Func<IReadOnlyDictionary<string, double>, IReadOnlyList<(int Entry, double? Edge)>> trades)
+    {
+        foreach (var row in LiveFirst(standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is DipCandidate rule && rule.Index == index)))
+        {
+            var parameters = CandidateEvaluator.Read(row.Parameters);
+            var setting = ((DipCandidate)CandidateEvaluators.Find(row.Evaluator)!).SettingOf(parameters);
+
+            yield return new RuleUnderTest(DipRule.Name, row.Candidate, StandingOf(row), setting.WordsOn(index), LoopProcedures.Risks, setting.TimeLimit + 1, Trades: trades(parameters));
+        }
+    }
+
+    // A dip rule's trades over its sweep's history at the setting its registration states, walked by the sweep's own
+    // code, five a night and one open trade a stock, each after its round trip, by the session it was listed on.
+    public static IReadOnlyList<(int Entry, double? Edge)> DipTrades(IndexSweepRunner.DipRead dip, IReadOnlyDictionary<string, double> parameters)
+    {
+        var (setting, levels) = dip.SettingOf(parameters);
+
+        return [.. dip.TradesUnder(setting, levels).Select(trade => (trade.Listing.Session, new OwnProcedures.Walked(trade.Listing.Session, null, trade).Edge))];
     }
 
     // From 22.11 Quality at a fair price on any index once a freeze stands on it: each registered rule's book walked by the

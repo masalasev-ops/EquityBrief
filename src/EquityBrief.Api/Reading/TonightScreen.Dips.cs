@@ -1,5 +1,6 @@
 using System.Globalization;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Sweep;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 
@@ -19,8 +20,29 @@ public static partial class TonightScreen
         night.Fault is not null
             ? "the short-term dip's part of the night failed, so it lists nothing tonight and the Run page names the cause"
             : night.Market == DipRule.MarketOff
-                ? "the short-term dip reads its own market setting, none while it is provisional, and its list is open"
-                : $"the short-term dip reads its own market setting, {night.Market}, which {(night.MarketOpen ? "left its list open" : "closed its list")}";
+                ? RuleOf(night) == ProvisionalDip
+                    ? "the short-term dip reads its own market setting, none while it is provisional, and its list is open"
+                    : "the short-term dip reads its own market setting, none, and its list is open"
+                : $"the short-term dip reads its own market setting, {DipRule.MarketWordsOn(night.Index, night.Market)}, which {(night.MarketOpen ? "left its list open" : "closed its list")}";
+
+    // The rule the dip's card is drawn by on a night, as its night's settings name it: the provisional rule before a
+    // freeze and from 22.3 the live rule after one.
+    // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
+    public const string ProvisionalDip = "provisional";
+
+    public static string RuleOf(DipNightRow night)
+    {
+        try
+        {
+            using var stored = System.Text.Json.JsonDocument.Parse(night.Settings);
+
+            return stored.RootElement.TryGetProperty("rule", out var rule) && rule.GetString() is { } named ? named : ProvisionalDip;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return ProvisionalDip;
+        }
+    }
 
     // How many members a setup passed on the night, the dip's passes among them, each member counted once.
     public static int PassedWithDip(IEnumerable<string> passed, IReadOnlyList<IndexResultRow> dips) =>
@@ -62,9 +84,41 @@ public static partial class TonightScreen
     public static IReadOnlyList<FamilyCardView> WithDipChips(IReadOnlyList<FamilyCardView> cards, DipNightRow? night, string index) =>
         night is null
             ? cards
-            : [.. cards.Select(card => card.Family == DipRule.Name && card.RuleChoice is { } rule
+            : [.. cards.Select(card => card.Family == DipRule.Name && card.RuleChoice is { Chosen.Live: true } rule
                 ? card with { RuleChoice = rule with { Chips = [.. SettingOf(night).Setting.ChipsOn(index).Select(words => new RuleChipView(words, false))] } }
                 : card)];
+
+    // From 22.3 the dip's card where its night was drawn by a frozen rule: live since the day that rule was registered,
+    // the versions standing beside it, each pick's why naming it, and the line every frozen card draws from the answer
+    // its freeze followed, read against its family's freezes on the index as every frozen card's is; the cards as they
+    // were where the night was drawn by the provisional rule.
+    // see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
+    // see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
+    public static IReadOnlyList<FamilyCardView> WithDipFreeze(IReadOnlyList<FamilyCardView> cards, string index, IReadOnlyList<CandidateRow> register, IReadOnlyList<RecordedAnswer> answers, DipNightRow? night)
+    {
+        if (night is null || RuleOf(night) is var drawnBy && drawnBy == ProvisionalDip)
+        {
+            return cards;
+        }
+
+        var family = Core.Candidates.OwnStepCandidate.FamilyOn(DipRule.Name, index);
+        var at = PastTheNight(night.Session);
+        var (live, variants) = StandingRows(family, register, at);
+
+        if (live is null || live.Candidate != drawnBy)
+        {
+            return cards;
+        }
+
+        var (lineDrawn, lost, frozen) = SweepLines([.. answers.Where(answer => answer.Family == DipRule.Name)], new FamilyFreezes(live.Candidate, Freezes(family, register, at), null), false);
+
+        return
+        [
+            .. cards.Select(card => card.Family == DipRule.Name
+                ? card with { LiveSince = DateOnly.FromDateTime(live.RegisteredAt.UtcDateTime), Variants = variants, SweepFoundNone = lineDrawn, SweepLost = lost, Frozen = frozen }
+                : card),
+        ];
+    }
 
     // The dip's own market check as the page's top reads each family's, so its tile and the line say its own and never
     // the swing families' check.
@@ -117,7 +171,7 @@ public static partial class TonightScreen
 
                     var setting = SettingOf(night).Setting;
 
-                    return new FamilyPickCell(row, pick.Place ?? 0, answer.Entry, answer.Stop, null, false, null, DipWhy(answer, universe.Name, setting), [], Exit: ExitWords(setting));
+                    return new FamilyPickCell(row, pick.Place ?? 0, answer.Entry, answer.Stop, null, false, null, DipWhy(answer, universe.Name, setting, RuleOf(night) != ProvisionalDip), [], Exit: ExitWords(setting));
                 }),
         ];
 
@@ -139,17 +193,33 @@ public static partial class TonightScreen
             NotComputed: night.Fault is not null);
     }
 
-    // The exit a dip pick sells on, in the words its row draws where a target would stand.
+    // The exit a dip pick sells on, in the words its row draws where a target would stand, by its exit's dial.
     public static string ExitWords(DipSetting setting) =>
-        FormattableString.Invariant($"over its {setting.ExitAverage}-session average");
+        setting.ExitRsiAbove is { } level ? FormattableString.Invariant($"its {DipRule.RsiSessions}-session RSI over {level}")
+        : setting.ExitOnUpClose ? "its first up close"
+        : FormattableString.Invariant($"over its {setting.ExitAverage}-session average");
 
-    // Why the dip lists a stock tonight, its 2-session RSI as the night stored it and the rule that passed it, and how
-    // the trade is sold in words, since it has no target to draw.
-    static string DipWhy(IndexResultRow answer, string index, DipSetting setting) =>
-        (answer.OrderBy is { } rsi
-            ? string.Create(CultureInfo.InvariantCulture, $"Its {DipRule.RsiSessions}-session RSI closed at {rsi:0.0} after a sharp drop, above its {DipRule.TrendSessions}-session average with no report in the drop or before its time limit, every gate of the short-term dip passing on the {index}'s provisional setting.")
-            : $"Every gate of the short-term dip passed on the {index}'s provisional setting tonight.")
-        + string.Create(CultureInfo.InvariantCulture, $" Bought at the next open, it is sold at the next open after a close above its {setting.ExitAverage}-session average of closes or under its stop, or at the close of its {answer.Cap ?? setting.TimeLimit}th session where neither came.");
+    // Why the dip lists a stock tonight, its 2-session RSI as the night stored it and the rule that passed it, the
+    // provisional setting or from 22.3 the index's live rule, its drop and its trend as that rule reads them, and how the
+    // trade is sold in words, since it has no target to draw.
+    static string DipWhy(IndexResultRow answer, string index, DipSetting setting, bool live)
+    {
+        var rule = live ? $"the {index}'s live rule" : $"the {index}'s provisional setting";
+        var drop = setting.FallMoves is { } fall
+            ? string.Create(CultureInfo.InvariantCulture, $"after a fall of at least {fall:0.##} typical moves over {DipRule.DropFallSessions} sessions")
+            : "after a sharp drop";
+        var volume = setting.VolumeUnder is { } under ? string.Create(CultureInfo.InvariantCulture, $" on a mean volume under {under:0.##} times its {DipRule.VolumeSessions}-session average") : string.Empty;
+        var trend = string.Create(CultureInfo.InvariantCulture, $"above its {DipRule.TrendSessions}-session average")
+            + (setting.FiftyOverLong ? string.Create(CultureInfo.InvariantCulture, $" with its {DipRule.FiftySessions}-session average above that") : string.Empty);
+        var exit = setting.ExitRsiAbove is { } level ? string.Create(CultureInfo.InvariantCulture, $"its {DipRule.RsiSessions}-session RSI closes back above {level} or a close under its stop")
+            : setting.ExitOnUpClose ? "a close above the close before or under its stop"
+            : string.Create(CultureInfo.InvariantCulture, $"a close above its {setting.ExitAverage}-session average of closes or under its stop");
+
+        return (answer.OrderBy is { } rsi
+                ? string.Create(CultureInfo.InvariantCulture, $"Its {DipRule.RsiSessions}-session RSI closed at {rsi:0.0} {drop}{volume}, {trend} with no report in the drop or before its time limit, every gate of the short-term dip passing on {rule}.")
+                : $"Every gate of the short-term dip passed on {rule} tonight.")
+            + string.Create(CultureInfo.InvariantCulture, $" Bought at the next open, it is sold at the next open after {exit}, or at the close of its {answer.Cap ?? setting.TimeLimit}th session where neither came.");
+    }
 
     // The notes beneath the dip's picks: each stock it passed that a trade still open holds back, each one another family
     // listed tonight, which that family's row draws with the dip's label, and how many it passed beyond its five.
@@ -264,23 +334,31 @@ public static partial class TonightScreen
     // An index's setups on its Run page with the dip's row after every swing family's and before the sector heavyweights',
     // what it listed on the night and every trade its list has kept, provisional with its record waiting for its freeze;
     // the rows as they were on a night the dip did not read and before it kept a trade.
-    public static IReadOnlyList<FamilyRunRow> WithDipRun(IReadOnlyList<FamilyRunRow> rows, DipNightRow? night, IReadOnlyList<DipPickRow> picks, IReadOnlyList<IndexTradeRow> trades)
+    public static IReadOnlyList<FamilyRunRow> WithDipRun(IReadOnlyList<FamilyRunRow> rows, DipNightRow? night, IReadOnlyList<DipPickRow> picks, IReadOnlyList<IndexTradeRow> trades, IReadOnlyList<CandidateRow>? register = null)
     {
         if (night is null && trades.Count == 0)
         {
             return rows;
         }
 
+        // From 22.3 a night drawn by a frozen rule names the day it went live and the versions standing beside it, its
+        // trades counted from its freeze.
+        var live = night is not null && register is not null && RuleOf(night) is var drawnBy && drawnBy != ProvisionalDip
+            && StandingRows(Core.Candidates.OwnStepCandidate.FamilyOn(DipRule.Name, night.Index), register, PastTheNight(night.Session)) is { Live: { } standing } held && standing.Candidate == drawnBy
+            ? (Since: DateOnly.FromDateTime(standing.RegisteredAt.UtcDateTime), held.Variants)
+            : ((DateOnly Since, int Variants)?)null;
+        var counted = live is { } from ? [.. trades.Where(trade => trade.Listed >= from.Since)] : trades;
+
         var dip = new FamilyRunRow(
             DipRule.Name,
             SetupFamilies.Dips.Heading,
-            null,
-            0,
+            live?.Since,
+            live?.Variants ?? 0,
             picks.Count(pick => pick.State == FamilyList.Listed),
-            trades.Count,
-            trades.Count(trade => trade.EndedOn is null),
-            trades.Count(trade => trade.EndedOn is not null),
-            SetupFamilies.Provisional);
+            counted.Count,
+            counted.Count(trade => trade.EndedOn is null),
+            counted.Count(trade => trade.EndedOn is not null),
+            live is null ? SetupFamilies.Provisional : FormattableString.Invariant($"{counted.Count(trade => trade.EndedOn is not null)} finished since its freeze"));
         var at = rows.Select((row, place) => (row, place)).FirstOrDefault(one => one.row.Family == HeavyweightRule.Name).place;
 
         return rows.Any(row => row.Family == HeavyweightRule.Name) ? [.. rows.Take(at), dip, .. rows.Skip(at)] : [.. rows, dip];

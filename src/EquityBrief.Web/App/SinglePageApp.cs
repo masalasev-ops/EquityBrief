@@ -3924,15 +3924,15 @@ public sealed partial class SinglePageApp : IComponent
                 + Cards.Key(
                     "How to read it.",
                     DipTradesKey,
-                    "The setup is provisional: followed, and in no record until its freeze."),
+                    "Until its freeze the setup is provisional: followed, and in no record; from its freeze each trade is its live rule's and counts in its record."),
             title: Invariant($"The {universe.Possessive} short-term dip trades, newest first"),
-            lede: "Each listed by the short-term dip on its provisional settings, named with its index.",
+            lede: "Each listed by the short-term dip on its provisional settings or, from its freeze, its live rule, named with its index.",
             stamp: Cards.Night(night),
             region: "dip-picks");
     }
 
     // How a short-term dip trade is bought and sold, which its Past picks card and an index's key say.
-    static string DipTradesKey => Invariant($"A short-term dip trade is bought at the open of the session after the night that listed it and sold at the open after the first close above its {EquityBrief.Core.Families.DipRule.Provisional.ExitAverage}-session average of closes or under its stop, or at the close of its last session where neither came. Its result is what it made in multiples of what it risked at the listing close; its cost is its round trip at the published spread for its size and price, in the same units.");
+    static string DipTradesKey => Invariant($"A short-term dip trade is bought at the open of the session after the night that listed it and sold at the open after its exit's close or one under its stop, or at the close of its last session where neither came; its exit is the first close above its {EquityBrief.Core.Families.DipRule.Provisional.ExitAverage}-session average of closes on the provisional settings, and the one its live rule states after its freeze. Its result is what it made in multiples of what it risked at the listing close; its cost is its round trip at the published spread for its size and price, in the same units.");
 
     // Past picks' card of the fundamentals-first family's S&P 500 trades, which the index families' step lists and keeps
     // under the S&P 500 apart from its own families, each named with its index as the S&P 400's and 600's are, and

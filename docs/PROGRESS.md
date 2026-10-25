@@ -9324,3 +9324,79 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    `tools/remedies/2026-10-25-22.11-the-s-and-p-400-and-600-quality-freezes.txt` from main after the merge,
             when no other writer runs, then the read surface restarted; 22.3.
+
+### 22.11 - the remedy run from main: the S&P 400's and 600's history tests again, each answer recorded at the starting setting as ruled, and each family frozen at it with its seven versions   2026-10-25
+
+Not a checkpoint entry: it records 22.11's remedy on the S&P 400 and 600 and what it measured, and lands nothing.
+Ran:        from main's 91280a51, the merge of PR 561 at 21:40:49 UTC, after the local run's late slot ended at 21:40:34,
+            `tools/remedies/2026-10-25-22.11-the-s-and-p-400-and-600-quality-freezes.txt` from 21:41 to 21:44:09 with no
+            night, drain, labeller, history read, ledger build or monthly run writing, the read surface stopped first and
+            started again from main's Release build at 21:44:32. No request and no model call.
+Measured:   the S&P 400's history test again, run 20261025T214117Z, the same answer as 22.10's run of 15:14:30: the
+            starting setting's 113 holdings ended and 10 held, 2.244 points after its round trip, 93 months held and
+            above nothing in 6 years by its months, the proposal, the price not read and sold on a filing, at 2.412, and
+            the tester not passed at an adjusted p of 0.9059; its answer recorded at the starting setting as ruled, at
+            113 holdings. The S&P 600's, run 20261025T214207Z, the same as 22.10's of 15:14:53: 101 holdings ended and 10
+            held, 2.320 points, above nothing in 5 years by its months, the proposal at -2.479, and an adjusted p of
+            0.5946, not passed; recorded at the starting setting at 101 holdings. Each freeze registered 8 at one instant,
+            each family 8 of 9: the S&P 400's live rule as 643 and its seven versions as 644 to 650 on `quality-400`, and
+            the S&P 600's as 651 and 652 to 658 on `quality-600`, each at 88dcf3013d88.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over PR 561's tree at dd52d11d, whose code this pull
+            request carries unchanged, 2777 of 2777 tests and the phase report 1444 claims, 1444 passing.
+
+### 22.3 - the short-term dip frozen on every index at the setting its 22.2 run would run, with the neighbours meeting the floors and the market variant as versions, each rule kept by the dip's own step under its own name   2026-10-25
+
+Queue:      done, 22.11 on every index with its remedies; in progress, 22.3 in this pull request; next, its remedy from
+            main after the merge and before the night of 2026-10-26, 22.12, then the stop and report, and the sign-offs of
+            phases 18, 19 and 20 by fresh sessions.
+Limits:     no paid call and no request from this branch; no migration, the trade table keeping the exit's level where
+            the average's sessions stood; the store read-only; no other rule's version moves, asserted over the 20
+            sources 22.3 writes or edits.
+Built:      an evaluator a family on each index, `dip-500`, `dip-400` and `dip-600`, over the sweep's seven dials, its
+            version pinning the 37 files the dip's step runs through as the compiled code reaches them. The dip's rule
+            reads every dial its sweep reads, the drop as a fall in typical moves, the drop's volume, the exit on the
+            RSI back above 65 or the first up close, and the market setting at each of its index's levels, the fall,
+            the volume, the VIX's median and a fund's average through functions of its own that the sweep now reads
+            too, the provisional setting reading as it did. The index family form freezes the dip at a setting on the
+            grid with versions each a one-step neighbour or the market variant, at one instant, refusing what it cannot
+            write. The night keeps every rule standing on an index under its own name, the live rule's answers, list and
+            night as the card's and each version's trades beside them, a rule whose code moved not kept and the card's
+            night naming why; the decision cards word the dip's gates by the rule its night ran, and the rule cards keep
+            its funnel under that rule's name, found while building, where they kept it under the provisional rule's
+            whatever stood. The card draws the day
+            its rule went live, its versions' tabs, each pick's why and exit in that rule's words and the line every
+            frozen card draws; paper trading keeps an account for the live rule and each version; the monthly run walks
+            each standing rule by the sweep's own code from the run after the freeze; `sweep-answer` records a dip run.
+            Two decisions, 22.3's text, section 15's card and tiles, section 17's settings, the catalogue and the
+            matrix, the schema's two tables, the runbook's form and remedy, the guide, the roster and the changelog; and
+            22.10's and 22.11's text brought up to the rulings of 2026-10-25, on the operator's question.
+Tests:      12 new, 2789 in all, ten amended: each new dial on both sides at a constructed session; the fall and the
+            drop's volume equal to the ledger's readings over a constructed series; the remedy's lines over a register
+            shaped as the operator's stood after the quality freezes, 96 rules standing after them; the form's nine
+            refusals; the luck correction over the family's own rules on each index; the night over a constructed S&P
+            400 store, each rule under its own name and the market setting on both sides of the S&P 500's breadth floor,
+            the cards and the funnel under the live rule; a moved rule not kept; the monthly run from the run after the
+            freeze; a dip run's answer recorded; no source another rule pins written; the card and paper trading read
+            back off a frozen store. The evaluator pin and five tests holding no earlier source pinned amended for the
+            dip's own evaluators, and the paper pages' and Past picks' family lists and key for its accounts and words;
+            the fixture's paper accounts gaining the dip's provisional account.
+Fixture:    dip-freeze.json, derived by hand: the S&P 500's family 5 rules at a level of 0.05 / 5 = 0.01, the S&P 400's 4
+            at 0.0125 and the S&P 600's 5 at 0.01.
+Claims:     1444, none new, as the plan predicted: the rows 22.3 touches are amended in place.
+Mutated:    the rule, stated before the runs: one mutation for each property 22.3 adds, the smallest edit undoing it,
+            made in this checkout and reverted with the editor, each run filtered to the tests reading it. M1 a fall at
+            its floor refused; M2 the drop's volume not read; M3 the RSI's exit never firing; M4 the market setting read
+            as off at every level; M5 every rule's trades kept under the live rule's name; M6 a rule whose code moved
+            kept; M7 a version two steps from the live rule accepted; M8 the monthly run reading the dip on every
+            index; M9 the frozen card's line not drawn; M10 paper trading leaving out the versions; M11 the pin leaving
+            out the dip's step; M12 a dip run's answer refused; M13 the cards wording the provisional rule's gates; M14
+            the funnel kept under the provisional rule. Each red: M1, M2 and M3 at the dials' test; M4, M5, M13 and M14
+            at the night's; M6 at the moved rule's; M7 at the refusals'; M8 at the monthly run's; M9 at the card's; M10
+            at the frozen paper accounts'; M11 at the evaluator pin; M12 at the dip answer's.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2789 of 2789 tests ran with none failed,
+            migrations 0 to 111 with none pending, schema version 111, against `data-ci` and never `data`; the phase
+            report 64 tables, 1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    `tools/remedies/2026-10-25-22.3-the-dip-freezes.txt` from main after the merge and before the night of
+            2026-10-26, when no other writer runs, then the read surface restarted; 22.12.

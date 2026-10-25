@@ -35,18 +35,63 @@ public sealed partial class ReadApi
     ";
 
     // Every trade the dip's page list kept on an index on or before a night, its fill read where it was bought by the
-    // night and its end, its result and its cost only where it ended by the night.
+    // night and its end, its result and its cost only where it ended by the night; from 22.3 each under the rule its
+    // night's card was drawn by, the provisional rule's before a freeze and the live rule's after it.
+    // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
     const string DipTradesUpTo = @"
-        SELECT index_code, ticker, session_date, place, entry, stop, time_limit,
-               CASE WHEN ended_on <= $on THEN ended_on END,
-               CASE WHEN ended_on <= $on THEN result END,
-               CASE WHEN ended_on <= $on THEN cost END,
-               CASE WHEN bought_on <= $on THEN fill END,
-               CASE WHEN ended_on <= $on THEN end_reason END
-        FROM dip_trade
-        WHERE rule = 'provisional' AND index_code = $index AND session_date <= $on
-        ORDER BY session_date DESC, place, ticker;
+        SELECT t.index_code, t.ticker, t.session_date, t.place, t.entry, t.stop, t.time_limit,
+               CASE WHEN t.ended_on <= $on THEN t.ended_on END,
+               CASE WHEN t.ended_on <= $on THEN t.result END,
+               CASE WHEN t.ended_on <= $on THEN t.cost END,
+               CASE WHEN t.bought_on <= $on THEN t.fill END,
+               CASE WHEN t.ended_on <= $on THEN t.end_reason END
+        FROM dip_trade t
+        WHERE t.index_code = $index AND t.session_date <= $on
+          AND t.rule = COALESCE((SELECT json_extract(n.settings, '$.rule') FROM dip_night n WHERE n.index_code = t.index_code AND n.session_date = t.session_date), 'provisional')
+        ORDER BY t.session_date DESC, t.place, t.ticker;
     ";
+
+    // From 22.3 each trade a dip version kept on an index on a night, as a variant's picks are read when its tab is
+    // chosen: its rule, its stock, its place, its buy and stop at the listing close and no target.
+    const string DipVersionPicksOn = @"
+        SELECT t.rule, t.ticker, t.session_date, t.place, t.entry, t.stop
+        FROM dip_trade t
+        WHERE t.index_code = $index AND t.session_date = $on
+          AND t.rule <> COALESCE((SELECT json_extract(n.settings, '$.rule') FROM dip_night n WHERE n.index_code = t.index_code AND n.session_date = t.session_date), 'provisional')
+        ORDER BY t.rule, t.place, t.ticker;
+    ";
+
+    // From 22.3 the picks each dip version kept on an index's night, which its tab draws when chosen.
+    // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
+    public async Task<IReadOnlyList<RulePickRow>> DipVersionPicksAsync(string index, DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = DipVersionPicksOn;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<RulePickRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new RulePickRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetInt32(3),
+                Money.FromStorage(reader.GetString(4)),
+                Money.FromStorage(reader.GetString(5)),
+                null,
+                null,
+                "Every step of this version passed tonight."));
+        }
+
+        return rows;
+    }
 
     // The dip's night on an index, none for a night its step did not read.
     public async Task<DipNightRow?> DipNightAsync(string index, DateOnly on)

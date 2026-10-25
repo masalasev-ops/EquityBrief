@@ -285,8 +285,11 @@ public partial class FixtureExpectations
         // The dip's code and its tables: its rule, its step, its four tables and its words among the families.
         string[] dip = ["DipRule", "DipFamily", "dip_night", "dip_result", "dip_pick", "dip_trade", "SetupFamilies.Dips", "PageOrder"];
 
-        // Every source an evaluator pins, its own and the shared evaluation's, and the hooks'.
+        // Every source an evaluator pins, its own and the shared evaluation's, and the hooks', but from 22.3 the dip's own
+        // rules', which pin the files its step runs through.
+        // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
         var pinned = EquityBrief.Core.Candidates.CandidateEvaluators.All
+            .Where(evaluator => evaluator is not EquityBrief.Core.Candidates.DipCandidate)
             .SelectMany(evaluator => evaluator.OwnSources)
             .Concat(EquityBrief.Core.Candidates.CandidateEvaluator.EvaluationSources)
             .Concat(EquityBrief.Core.Loop.RuleHooks.Sources)

@@ -116,6 +116,10 @@ public sealed class RuleCards : IComponent
 
     const string DipNightOn = "SELECT fault FROM dip_night WHERE index_code = $index AND session_date = $night;";
 
+    // From 22.3 the rule a dip night was drawn by, as its settings name it: the provisional rule before a freeze and the
+    // live rule after one.
+    const string DipRuleOn = "SELECT json_extract(settings, '$.rule') FROM dip_night WHERE index_code = $index AND session_date = $night;";
+
     const string DipAnswers = "SELECT passed, reason FROM dip_result WHERE index_code = $index AND session_date = $night;";
 
     const string DipListed = "SELECT COUNT(*) FROM dip_pick WHERE index_code = $index AND session_date = $night AND state = 'listed';";
@@ -662,10 +666,11 @@ public sealed class RuleCards : IComponent
         return read;
     }
 
-    // The short-term dip's provisional rule on the index, from its own rows: what it listed and its funnel off the gate
-    // each member failed first, its row not evaluated where its part of the night failed, and none where its step did not
-    // read the night.
+    // The short-term dip's rule on the index its card was drawn by, the provisional rule or from 22.3 the live rule, from
+    // its own rows: what it listed and its funnel off the gate each member failed first, its row not evaluated where its
+    // part of the night failed, and none where its step did not read the night.
     // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+    // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
     async Task<int> DipAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, CancellationToken cancellation)
     {
         // No row where the step did not read the night, and a stored fault where its part failed.
@@ -693,8 +698,9 @@ public sealed class RuleCards : IComponent
         }
 
         var listed = Convert.ToInt32(await ScalarAsync(connection, DipListed, [("$index", index), ("$night", Stamp(night))], cancellation, transaction), CultureInfo.InvariantCulture);
+        var rule = await ScalarAsync(connection, DipRuleOn, [("$index", index), ("$night", Stamp(night))], cancellation, transaction) is string named ? named : ProvisionalRule;
 
-        await InsertNightsAsync(connection, transaction, index, night, [new RuleNightRow(index, DipRule.Name, ProvisionalRule, computed, listed, computed ? DipFunnel(answers) : null, null, computed ? answers.Count : null)], cancellation);
+        await InsertNightsAsync(connection, transaction, index, night, [new RuleNightRow(index, DipRule.Name, rule, computed, listed, computed ? DipFunnel(answers) : null, null, computed ? answers.Count : null)], cancellation);
 
         return 1;
     }

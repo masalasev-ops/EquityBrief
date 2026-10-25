@@ -125,6 +125,15 @@ public sealed partial class ReadApi
         "h.fill, h.bought_on, (SELECT b.open FROM bar b WHERE b.ticker = h.ticker AND b.session_date = h.bought_on), NULL, NULL, h.edge / 100.0 " +
         "FROM quality_holding h WHERE h.index_code = $index ORDER BY h.chosen_on, h.ticker;";
 
+    // From 22.3 every trade of the short-term dip on an index, under its rule's name and the provisional rule's under the
+    // page's list, in the swing trades' column order with its time limit as its cap and the fill its own step stored at
+    // the next open in the fills' place, its result at that fill and its round trip each in the risk its listing close set.
+    // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
+    static readonly string DipTradesOn =
+        $"SELECT CASE WHEN t.rule = '{TonightScreen.ProvisionalDip}' THEN '{PageList} {DipRule.Name}' ELSE t.rule END, '{DipRule.Name}', t.ticker, t.session_date, t.place, t.entry, t.stop, t.ended_on, t.result, NULL, NULL, t.time_limit, t.cost, NULL, t.risk_moves, " +
+        "t.fill, t.bought_on, (SELECT b.open FROM bar b WHERE b.ticker = t.ticker AND b.session_date = t.bought_on), NULL, t.past, NULL " +
+        "FROM dip_trade t WHERE t.index_code = $index ORDER BY t.session_date, t.place;";
+
     // A stock's company as its newest membership row names it, and its typical move and 200-session average on the night.
     const string PaperStocksOn = @"
         SELECT t.value,
@@ -242,6 +251,8 @@ public sealed partial class ReadApi
             large && reader.GetString(0) != FundamentalsRule.Name
                 ? null
                 : Swing(reader, PageList + " " + reader.GetString(0)));
+
+        await ReadAsync(DipTradesOn, reader => Swing(reader, reader.GetString(0)));
 
         await ReadAsync(QualityBooksOn, reader => Fill(reader, new(reader.GetString(0), QualityRule.Name, reader.GetString(1), Day(reader.GetString(2)), 0, Money.FromStorage(reader.GetString(3)), null, DayAt(reader, 4), Optional(reader, 5), true, null, Optional(reader, 6))
         {

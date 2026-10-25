@@ -1310,9 +1310,9 @@ Grain: one row per index and session the short-term dip's step read, from 22.1.
 | `index_code` | TEXT | `GSPC`, `MID` or `SML` |
 | `session_date` | TEXT | the session read, the newest any name holds on the night |
 | `members` | INTEGER | the index's members the step read, each holding a bar on the session |
-| `market` | TEXT | the dip's own market setting as the night read it, `off` while it reads none |
+| `market` | TEXT | the dip's own market setting as the night read it, `off` while it reads none; from 22.3 the key of the level the card's rule reads, as the sweep's market dial names it |
 | `market_open` | INTEGER | 1 where that setting left the dip's list open, which `off` always does, 0 otherwise |
-| `settings` | TEXT | JSON: the rule the night read the dip by, `provisional` until a freeze registers one, its setting in short and in words, and its floors, the words its card's description is written from |
+| `settings` | TEXT | JSON: the rule the night read the dip by, `provisional` until a freeze registers one and the live rule's name after it, its setting in short and in words, and its floors, the words its card's description is written from |
 | `passed` | INTEGER | how many members passed every gate |
 | `listed` | INTEGER | how many of those the dip's list listed |
 | `fault` | TEXT | null where the index's part was computed; otherwise the failure that stopped it, the row then holding 0 members, passes and listings and 0 in `market_open` |
@@ -1366,7 +1366,7 @@ Grain: one row per rule, index, stock and session a dip list kept a trade on, fr
 
 | Column | Type | Notes |
 |---|---|---|
-| `rule` | TEXT | the rule whose list kept the trade, `provisional` for the page's list until a freeze registers one |
+| `rule` | TEXT | the rule whose list kept the trade, `provisional` for the page's list until a freeze registers one, and from 22.3 each registered rule's name, the live rule's the page's list and each version's its own |
 | `index_code` | TEXT | the index whose list kept it |
 | `ticker` | TEXT | |
 | `session_date` | TEXT | the session it was listed on, its plan set at that close and bought at the next session's open |
@@ -1374,7 +1374,7 @@ Grain: one row per rule, index, stock and session a dip list kept a trade on, fr
 | `entry` | TEXT | decimal in code, the listing close its plan and its risk are set at |
 | `stop` | TEXT | decimal in code, its stop as the night placed it |
 | `time_limit` | INTEGER | the sessions it is held at most, the last sold at its own close |
-| `exit_average` | INTEGER | the sessions of the average of closes a close above sells on |
+| `exit_average` | INTEGER | the sessions of the average of closes a close above sells on; from 22.3 the exit dial's level as the sweep's keys state it, 65 for the 2-session RSI closing back above 65 and 1 for the first close above the close before, which no average reads |
 | `risk_moves` | REAL | the stop's distance under the listing close in the night's typical moves |
 | `bought_on` | TEXT | the session it was bought on, the one after its listing, null until that session is stored |
 | `fill` | TEXT | decimal in code, the open it was bought at, at the trade's own scale, null until its session is stored |
@@ -1388,7 +1388,7 @@ Grain: one row per rule, index, stock and session a dip list kept a trade on, fr
 
 Primary key: `rule`, `index_code`, `ticker`, `session_date`.
 
-**The dip's step writes it and is its own deleter** (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades). Each night it first walks every trade not yet ended over its stock's bars since its listing at the scale the series has now, buying it at the next session's open through the core's one pricing function and selling it at the next open after a close above its average or under its stop, or at its last session's close, a sale whose next session is not stored left held; then it keeps each listed row of tonight's list. A night run again replaces the trades it kept for that night. The rows are never deleted otherwise: the dip's Past picks and its record read them.
+**The dip's step writes it and is its own deleter** (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades). Each night it first walks every trade not yet ended over its stock's bars since its listing at the scale the series has now, buying it at the next session's open through the core's one pricing function and selling it at the next open after a close above its average or under its stop, or at its last session's close, a sale whose next session is not stored left held; then it keeps each listed row of tonight's list, and from 22.3 each standing rule's under that rule's name, its exit read by the level it stored (see: A dip rule is registered as the family on its index and kept by the dip's own step alone). A night run again replaces the trades it kept for that night under every rule it keeps. The rows are never deleted otherwise: the dip's Past picks and its record read them.
 
 ### decision_card
 Grain: one row per index, night, family and stock the family listed or the index's sector heavyweights' book bought.

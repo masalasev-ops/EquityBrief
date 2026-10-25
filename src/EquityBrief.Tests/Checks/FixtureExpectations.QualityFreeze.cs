@@ -377,8 +377,10 @@ public partial class FixtureExpectations
     [Fact]
     public void NoSourceAnotherRulesVersionPinsIsOne22Point11Writes()
     {
+        // The dip's rules aside from 22.3, registered after 22.11 and pinning the step-reading code it shares.
+        // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
         var pinned = CandidateEvaluators.All
-            .Where(evaluator => evaluator is not QualityCandidate)
+            .Where(evaluator => evaluator is not (QualityCandidate or DipCandidate))
             .SelectMany(evaluator => evaluator.OwnSources)
             .Concat(CandidateEvaluator.EvaluationSources)
             .Concat(Core.Loop.RuleHooks.Sources)

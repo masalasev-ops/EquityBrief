@@ -80,78 +80,20 @@ public sealed partial class IndexSweepRunner
     // 5-session average's exit, a time limit of 10 sessions, a stop of 4 typical moves and no market setting.
     public static IReadOnlyList<int> DipProvisional { get; } = [1, 0, 0, 2, 1, 0];
 
-    // The market dial's levels on an index: none; the index's own breadth at the four floors; on the S&P 400 and 600 the S&P
-    // 500's breadth at its floor; the index's own fund above its 200-session average; and the VIX above its own median of
-    // the 252 sessions before.
+    // The market dial's levels on an index, from 22.3 the dip's own rule's: none; the index's own breadth at the four
+    // floors; on the S&P 400 and 600 the S&P 500's breadth at its floor; the index's own fund above its 200-session
+    // average; and the VIX above its own median of the 252 sessions before.
+    // see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
     public static IReadOnlyList<MarketLevel> DipMarketLevels(string indexCode) =>
-    [
-        new("off", "no market setting"),
-        .. OwnBreadthFloors.Select(floor => new MarketLevel(
-            FormattableString.Invariant($"own {floor:0.00}"),
-            FormattableString.Invariant($"the index's own breadth at {floor * 100:0} per cent"))),
-        .. indexCode == IndexFamilies.LargeIndex
-            ? Array.Empty<MarketLevel>()
-            : [new MarketLevel(FormattableString.Invariant($"S&P 500 {LargeBreadthFloor:0.00}"), FormattableString.Invariant($"the S&P 500's breadth at {LargeBreadthFloor * 100:0} per cent"))],
-        new("fund trend", FormattableString.Invariant($"{DipFund(indexCode)} above its {FundTrendSessions}-session average")),
-        new("VIX", FormattableString.Invariant($"the VIX above its own median of the {VixMedianSessions} sessions before")),
-    ];
+        [.. DipRule.MarketLevels(indexCode).Select(level => new MarketLevel(level.Key, level.Words))];
 
     // The fund each index's own trend is read on.
-    public static string DipFund(string indexCode) => indexCode == IndexFamilies.LargeIndex ? "SPY" : IndexFunds[indexCode];
+    public static string DipFund(string indexCode) => DipRule.FundOf(indexCode);
 
     // Whether each session's VIX close stands above the median of its closes over the sessions before it on the exchange's
-    // calendar; a session missing its own close or any of those before it, or reached by fewer of them, reads nothing and
-    // is closed. Days the VIX is quoted that are no session of the exchange's are passed over.
-    public static bool[] VixAboveItsMedian(IReadOnlyList<DateOnly> calendar, SweepMarketSeries? vix, int over = VixMedianSessions)
-    {
-        var open = new bool[calendar.Count];
-
-        if (vix is null)
-        {
-            return open;
-        }
-
-        var quoted = vix.Closes.ToDictionary(one => one.Session, one => one.Close);
-        var closes = calendar.Select<DateOnly, double?>(session => quoted.TryGetValue(session, out var close) ? close : null).ToArray();
-        var window = new double[over];
-
-        for (var session = over; session < calendar.Count; session++)
-        {
-            if (closes[session] is not { } today)
-            {
-                continue;
-            }
-
-            var whole = true;
-
-            for (var back = 0; back < over; back++)
-            {
-                if (closes[session - over + back] is { } close)
-                {
-                    window[back] = close;
-                }
-                else
-                {
-                    whole = false;
-
-                    break;
-                }
-            }
-
-            if (!whole)
-            {
-                continue;
-            }
-
-            Array.Sort(window);
-
-            var median = over % 2 == 1 ? window[over / 2] : (window[(over / 2) - 1] + window[over / 2]) / 2;
-
-            open[session] = today > median;
-        }
-
-        return open;
-    }
+    // calendar, through the dip's own rule, which its night reads the VIX's level through too.
+    public static bool[] VixAboveItsMedian(IReadOnlyList<DateOnly> calendar, SweepMarketSeries? vix, int over = VixMedianSessions) =>
+        DipRule.VixAboveItsMedian(calendar, vix?.Closes, over);
 
     // The dip on an index's own history as its sweep and the tester's procedure both read it: the grid, each setting's
     // listings and their trades at the next open after their round trips, the benchmark of the same plan on every member,
@@ -160,6 +102,7 @@ public sealed partial class IndexSweepRunner
     {
         readonly double[][] closes;
         readonly double[][] opens;
+        readonly long[][] volumes;
         readonly double?[][] rsi;
         readonly int[][] gaps;
         readonly bool[][] clears;
@@ -186,6 +129,7 @@ public sealed partial class IndexSweepRunner
 
             closes = new double[count][];
             opens = new double[count][];
+            volumes = new long[count][];
             rsi = new double?[count][];
             gaps = new int[count][];
             clears = new bool[count][];
@@ -198,6 +142,7 @@ public sealed partial class IndexSweepRunner
 
                 closes[name] = [.. bars.Select(bar => Statistic.FromPrice(bar.Close))];
                 opens[name] = [.. bars.Select(bar => bar.Open > 0m ? Statistic.FromPrice(bar.Open) : 0)];
+                volumes[name] = [.. bars.Select(bar => bar.Volume)];
                 rsi[name] = DipRule.Rsi(closes[name]);
                 gaps[name] = new int[bars.Length + 1];
                 clears[name] = new bool[bars.Length];
@@ -234,7 +179,7 @@ public sealed partial class IndexSweepRunner
             var vix = market.FirstOrDefault(one => one.Series == "VIX");
             var open = new List<bool[]> { Enumerable.Repeat(true, read.Calendar.Length).ToArray() };
 
-            foreach (var floor in OwnBreadthFloors)
+            foreach (var floor in DipRule.OwnBreadthFloors)
             {
                 open.Add([.. read.Sessions.Select(one => one.Breadth >= floor)]);
             }
@@ -243,10 +188,10 @@ public sealed partial class IndexSweepRunner
             {
                 var largeBreadth = SweepSwitches.LargeBreadth(large, read.Calendar);
 
-                open.Add([.. Enumerable.Range(0, read.Calendar.Length).Select(at => at < largeBreadth.Length && largeBreadth[at] >= LargeBreadthFloor)]);
+                open.Add([.. Enumerable.Range(0, read.Calendar.Length).Select(at => at < largeBreadth.Length && largeBreadth[at] >= DipRule.LargeBreadthFloor)]);
             }
 
-            open.Add(FundAboveItsAverage(read.Calendar, fund));
+            open.Add(DipRule.FundAboveItsAverage(read.Calendar, fund?.Closes));
             open.Add(VixAboveItsMedian(read.Calendar, vix));
 
             return new DipRead(read, levels, [.. open]);
@@ -302,9 +247,33 @@ public sealed partial class IndexSweepRunner
             return Clears(indexCode, one, bar, [], IndexQuality.Off) && traded >= MemberReadings.LowestPrice;
         }
 
-        // A member's fall over the drop's sessions in its typical moves on the listing session, through the ledger's own
-        // reading of it, none where it holds too few sessions or no typical move.
-        public double FallOf(int name, int bar) => Ledger.LedgerContext.DropFall(Series[name], bar);
+        // A member's fall over the drop's sessions in its typical moves on the listing session, from 22.3 through the dip's
+        // own rule, which its night reads the fall through and the ledger's reading equals, none where it holds too few
+        // sessions or no typical move.
+        public double FallOf(int name, int bar) => DipRule.Fall(closes[name], bar, Series[name].Atr[bar]) ?? double.NaN;
+
+        // A setting a registration states as the grid's places and the second stage's levels it reads: each dial's level
+        // at its place on the grid, the market's its place, and the drop's volume where the setting reads it.
+        // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
+        public (int[] Setting, IReadOnlyList<DialLevel<FamilyListing>> Levels) SettingOf(IReadOnlyDictionary<string, double> parameters)
+        {
+            static int At(IReadOnlyList<double> levels, double level) => levels.ToList().IndexOf(level);
+
+            int[] setting =
+            [
+                At(DipDrops, parameters[Core.Candidates.DipCandidate.DropParameter]),
+                At(DipTrends, parameters[Core.Candidates.DipCandidate.TrendParameter]),
+                At(DipExits, parameters[Core.Candidates.DipCandidate.ExitParameter]),
+                At([.. DipLimits.Select<int, double>(limit => limit)], parameters[Core.Candidates.DipCandidate.LimitParameter]),
+                At(DipStops, parameters[Core.Candidates.DipCandidate.StopParameter]),
+                At(Grid.Dials[^1].Levels, parameters[Core.Candidates.DipCandidate.MarketParameter]),
+            ];
+
+            return (setting, parameters[Core.Candidates.DipCandidate.VolumeParameter] > 0 ? [.. Levels.Where(level => level.Dial == VolumeDial)] : []);
+        }
+
+        // The second stage's dial the drop's volume is read on.
+        public const string VolumeDial = "the drop's volume";
 
         // A setting's listings, the market dial aside: each member-session of the scored history its index held, holding the
         // 200 sessions its average reads with none missing, clearing the floors, its close above its average, its drop at
@@ -525,9 +494,9 @@ public sealed partial class IndexSweepRunner
         public bool NoSessionFellOver(FamilyListing listing, double moves) =>
             Ledger.LedgerSetups.DropLargest(Series[listing.Name], closes[listing.Name], listing.Bar) is not { } largest || largest <= moves;
 
-        // The drop's mean volume over the mean of the sessions before it, through the ledger's own reading of it, none where
-        // too few stand before it.
-        public double DropVolume(FamilyListing listing) => Ledger.LedgerSetups.DropVolume(Series[listing.Name], listing.Bar) ?? double.NaN;
+        // The drop's mean volume over the mean of the sessions before it, from 22.3 through the dip's own rule, which its
+        // night reads the drop's volume through and the ledger's reading equals, none where too few stand before it.
+        public double DropVolume(FamilyListing listing) => DipRule.DropVolume(volumes[listing.Name], listing.Bar) ?? double.NaN;
 
         // The median fall over the drop's sessions, in each member's own typical moves, of the members of a sector the index
         // held that session; none where fewer than two read one.
@@ -580,7 +549,7 @@ public sealed partial class IndexSweepRunner
             new("order", "the deepest fall in typical moves first", Instead: (listing, _) => [listing with { Order = FallOf(listing.Name, listing.Bar) is var fall && double.IsNaN(fall) ? double.NegativeInfinity : fall }]),
             new("order", "the largest company first", Instead: (listing, _) => [listing with { Order = ValueOf(listing) }]),
             new("the drop's largest session", FormattableString.Invariant($"no session down more than {DipLargestSessionMoves:0} typical moves"), Keep: listing => NoSessionFellOver(listing, DipLargestSessionMoves)),
-            new("the drop's volume", FormattableString.Invariant($"under {DipDropVolume:0.#} times its {DipVolumeSessions}-session average"), Keep: listing => DropVolume(listing) < DipDropVolume),
+            new(VolumeDial, FormattableString.Invariant($"under {DipDropVolume:0.#} times its {DipVolumeSessions}-session average"), Keep: listing => DropVolume(listing) < DipDropVolume),
             new("the drop against its sector", "its fall less its sector's median member's", Instead: (listing, setting) => FallsAgainstItsSector(listing, setting) ? [listing] : []),
         ];
     }

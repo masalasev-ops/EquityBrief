@@ -157,11 +157,15 @@ public static class RuleScreen
     {
         try
         {
-            return CandidateEvaluators.Find(row.Evaluator) is { } evaluator && KindOf(evaluator) is { } kind
+            // From 22.3 a dip rule's chips are its setting's own, its market setting in the words of its index.
+            // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
+            return CandidateEvaluators.Find(row.Evaluator) is DipCandidate dip
+                ? [.. dip.SettingOf(CandidateEvaluator.Read(row.Parameters)).KeyedChipsOn(dip.Index).Select(chip => new RuleChip(chip.Key, chip.Words))]
+                : CandidateEvaluators.Find(row.Evaluator) is { } evaluator && KindOf(evaluator) is { } kind
                 ? RuleChips.Of(kind, CandidateEvaluator.Read(row.Parameters))
                 : [];
         }
-        catch (Exception failure) when (failure is ArgumentException or JsonException or InvalidCastException)
+        catch (Exception failure) when (failure is ArgumentException or JsonException or InvalidCastException or KeyNotFoundException)
         {
             return [];
         }
@@ -468,6 +472,7 @@ public static class RuleScreen
                 BreakoutCandidate => RuleWords.Breakout(BreakoutCandidate.SettingsOf(parameters)),
                 DriftCandidate => RuleWords.Drift(DriftCandidate.SettingsOf(parameters)),
                 BookEvaluator book => RuleWords.Heavyweights(book.SettingsOf(parameters)),
+                DipCandidate dip => dip.SettingOf(parameters).WordsOn(dip.Index),
                 _ => null,
             };
         }
