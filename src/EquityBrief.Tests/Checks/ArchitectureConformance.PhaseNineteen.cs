@@ -167,10 +167,16 @@ public partial class ArchitectureConformance
     // section 17's grid of the dip's sweep, section 18's row for a market series it reads missing a session and the
     // Ledger page's dip counts, and 22.4's one, the chart page's brief read, and 22.6's two, Tonight in one minute and the
     // page's words at its foot, and 22.8's nine, the fundamentals scorecard's catalogue and matrix rows, its store, section
-    // 17's numbers, section 18's three and its card on the chart page and the full page, which phase 22's own pair counts
-    // once its report is written.
+    // 17's numbers, section 18's three and its card on the chart page and the full page, and 22.9's ten, Quality at a fair
+    // price's catalogue and matrix rows, its three stores, section 17's starting settings, section 18's two, its card on
+    // Tonight and its step in section 14, which phase 22's own pair counts once its report is written.
     internal static string[] AfterPhaseNineteen =>
     [
+        .. ComponentAccess.QualityRows,
+        .. SchemaColumns.QualityStoreRows,
+        .. FixtureExpectations.QualityClaims,
+        .. Reading.ReadSurface.QualityPageRows,
+        CheckReach.Key(NightlyRunSteps.Heading, NightlyRun.QualityStep),
         .. ComponentAccess.ScorerRows,
         .. SchemaColumns.ScoreStoreRows,
         .. FixtureExpectations.ScorecardClaims,

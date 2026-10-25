@@ -22,7 +22,7 @@ public partial class PlainWords
         var terms = Terms();
         var pages = await Reading.ReadSurface.TonightPagesForPlainWords();
 
-        Assert.Equal(9, pages.Count);
+        Assert.Equal(11, pages.Count);
         Assert.All(pages, page => Assert.Empty(Faults(page.Page, RegionsOf(TonightPage), terms)));
         Assert.All(RegionsOf(TonightPage), region => Assert.Contains(pages, page => page.Page.Contains($"data-card=\"{region}\"", StringComparison.Ordinal)));
         Assert.True(pages.Count(page => page.Page.Contains("<div class=\"decision-card\"", StringComparison.Ordinal)) >= 3, "Fewer than three constructed nights drew a pick's card.");

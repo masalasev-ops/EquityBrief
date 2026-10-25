@@ -26,6 +26,56 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-25 - ARCHITECTURE.html - Quality at a fair price: its step, its three stores, its card on Tonight, its starting settings, its two failure rows and its research
+Authorised by: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session
+Was:
+> Section 14's note: ... after the close under its own limit). Step 26 calls no model and makes one request a night, to the Treasury and not the provider, ...
+> Tonight's setups: ... That line counts its picks; or says "No picks. Closest:" with the stock nearest and the step it missed; or that the market check closed its list or its part was not computed; or for the sector heavyweights it counts the holdings with the trading days to its next reshuffle (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them)
+> 15.23's pages table, Tonight: ... a fixed breakout on the S&amp;P 400 and an S&amp;P 400 night whose market check closed; and a pick's card drawn over constructed figures in every part it draws
+Now:
+> Section 14's note: the same, then Quality at a fair price's step after it, from 22.9, calls no model and makes no request, reading only what the store holds (see: ...). Step 27 calls no model and makes one request a night, to the Treasury ...
+> Tonight's setups: the same, then From 22.9 Quality at a fair price's tile stands after the sector heavyweights' and counts its holdings in the same way, or before its first night says its first holdings are chosen then; and the card's title counts its tiles in words (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the quality family's among them)
+> 15.23's pages table, Tonight: ... and an S&amp;P 400 night whose market check closed; a pick's card drawn over constructed figures in every part it draws; and from 22.9 Quality at a fair price's card holding stocks, failed on its night and before its first
+> And new: section 11.4's paragraph on Quality at a fair price; section 14's step after the filings refresh; section 7's and the matrix's Quality family; section 15.7's Quality at a fair price's card; section 16's Quality nights, Quality results and Quality holdings; section 17's Quality at a fair price's starting settings; and section 18's A member the quality family cannot score or value and A quality buy whose next session is not stored.
+Why: the operator's ruling of 2026-10-24 adds Quality at a fair price, holding each index's ten strongest scorecards at a price no higher than their own usual and reshuffled monthly, as 22.9, its first holdings chosen on the night of 2026-10-26.
+
+### 2026-10-25 - ARCHITECTURE.html - Quality at a fair price's hue among the families', and the ink among the hues a family's stands apart from
+Authorised by: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the quality family's among them
+Was:
+> 15.5 Family tag: ... a word the palette holds no hue for keeps the tag's own ground (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them).
+> 15.6: <p>The pullback, the breakout, the drift, the fundamentals-first family, from 22.1 the short-term dip, and the sector heavyweights each carry a hue ... Each mark reads at 3 to 1 or more on every ground and stands 15 or more apart in OKLab times a hundred from the green, the orange, the red and every other family's, and each tint holds ink at 4.5 to 1, in both palettes. (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them)</p>
+Now:
+> 15.5 Family tag: the same, citing Each setup family has a hue of its own drawn as a mark and a tint beside its word, the quality family's among them.
+> 15.6: <p>The pullback, the breakout, the drift, the fundamentals-first family, from 22.1 the short-term dip, the sector heavyweights and from 22.9 Quality at a fair price each carry a hue ... stands 15 or more apart in OKLab times a hundred from the green, the orange, the red, from 22.9 the ink, and every other family's, ... (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the quality family's among them)</p>
+Why: 22.9 draws Quality at a fair price's card the setup families' way with a hue of its own, and the hue search found the widest margins on the light ground in navies 14.7 from the ink, so the ink joins the bound every family's hue already clears by 16.0 or more.
+
+### 2026-10-25 - SCHEMA.md - Quality at a fair price's three stores
+Authorised by: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session
+Was:
+> none of the three stores, and no row for them in the writers table.
+Now:
+> The stores `quality_night`, `quality_result` and `quality_holding` with their paragraphs, written by the quality family's step alone after the filings refresh, and their three rows in the writers table.
+Why: migration 110 creates the three stores Quality at a fair price writes each night.
+
+### 2026-10-25 - RUNBOOK.md - Quality at a fair price on the night and 22.9's remedy
+Authorised by: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session
+Was:
+> The section on the scorecard went from 22.8's remedy to 19.13's insiders' filings, and named no quality family.
+Now:
+> A paragraph after 22.8's: from 22.9 the night reads Quality at a fair price after the filings refresh, writing its three stores and making no request, its first night choosing each index's first holdings; and 22.9's remedy migrates to 110 and runs nothing else, the read surface restarted after it.
+Why: the remedy is what the change owes the operator's store, and the night itself chooses the first holdings.
+
+### 2026-10-25 - .claude/rules/checks.md - fixture-expectations, nightly-run, read-surface and plain-words reach Quality at a fair price
+Authorised by: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session
+Was:
+> fixture-expectations: ... and no source a rule's version pins one 22.8 writes |
+> nightly-run: ... one standing as read left as it is, over a constructed store |
+> read-surface: ... and a pick the night stored no plan for saying so in a line |
+> plain-words: ... and the check shown to fail the full page's own words for the same plan drawn there |
+Now:
+> Each row the same, then from 22.9 what its check asserts of Quality at a fair price: fixture-expectations its rule on both sides of each threshold, its step over a constructed S&P 400 store and a holding's figures as the quality file derives them; nightly-run its step's place after the filings refresh and its row's no call; read-surface its card read back off Tonight in each state, its hue held to the bounds with the ink among them and its step in the run page's groups; plain-words its card among Tonight's regions.
+Why: each roster row says what its check asserts, and 22.9's tests extend all four.
+
 ### 2026-10-25 - ARCHITECTURE.html - a buy point's fold draws the stock's entry and exit plan beneath its setup's own plan
 Authorised by: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
 Was:

@@ -556,7 +556,7 @@ public sealed partial class MarkRenderer
     // not yet tested, or a version chosen, tonight's count, the two sentences describing what it buys and why, and the
     // Showing list choosing the version the card is drawn by, the live setup first; the page's words at its foot read in
     // place of a guide the card once carried.
-    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them
+    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the quality family's among them
     // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
     public string FamilyCardHead(FamilyCardView card, string? about = null, string? count = null)
     {

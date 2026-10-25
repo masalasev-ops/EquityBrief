@@ -333,6 +333,12 @@ public class PinnedConstants
             new("The fundamentals scorecard's numbers","1.4", (decimal)Core.Ledger.FundamentalScorecard.SplitStep, "FundamentalScorecard.SplitStep"),
             new("The fundamentals scorecard's numbers","3", EquityBrief.Worker.Fundamentals.FundamentalScorer.IndustryFewest, "FundamentalScorer.IndustryFewest"),
             new("The fundamentals scorecard's numbers", "45", EquityBrief.Worker.Fundamentals.FundamentalScorer.NewerAfter, "FundamentalScorer.NewerAfter"),
+            // 22.9's Quality at a fair price, the figures in the row's order.
+            new("Quality at a fair price's starting settings", "7", Core.Families.QualityRule.Starting.ScoreFloorInNine, "QualityRule.Starting.ScoreFloorInNine"),
+            new("Quality at a fair price's starting settings", "9", Core.Ledger.FundamentalScorecard.Checks, "FundamentalScorecard.Checks"),
+            new("Quality at a fair price's starting settings", "0.5", (decimal)Core.Families.QualityRule.MedianPlace, "QualityRule.MedianPlace"),
+            new("Quality at a fair price's starting settings", "12", Core.Ledger.ValuationReading.Quarters, "ValuationReading.Quarters"),
+            new("Quality at a fair price's starting settings", "10", Core.Families.QualityRule.Starting.Holdings, "QualityRule.Starting.Holdings"),
             new("Stretch mark", "95", (decimal)Math.Round(Core.Cards.RuleStretch.Share * 100), "RuleStretch.Share in per cent"),
             new("Stretch mark", "30", Core.Cards.RuleStretch.CompletedStretchesFloor, "RuleStretch.CompletedStretchesFloor"),
             new("Stretch mark", "504", Core.Cards.RuleStretch.SessionsFloor, "RuleStretch.SessionsFloor"),

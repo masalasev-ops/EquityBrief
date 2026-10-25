@@ -43,6 +43,9 @@ public sealed partial class MarkRenderer
         [EquityBrief.Core.Families.HeavyweightRule.Name] = new(
             "Holds the biggest companies beating their sector; reshuffled monthly.",
             "Holds the biggest companies that are beating their own sector over the past year. It is reshuffled on the first trading day of each month, and a stock is sold when it stops leading. No stop and no target."),
+        [EquityBrief.Core.Families.QualityRule.Name] = new(
+            "Holds companies with strong fundamentals at a fair price; reshuffled monthly.",
+            "Holds the companies whose filings score strongest on nine checks and whose price over earnings is no higher than its own usual. It is reshuffled on the first trading day of each month, and a stock is sold when it no longer qualifies. No stop and no target."),
     };
 
     // A setup's words, its own label's where the list holds none for it.
@@ -228,7 +231,7 @@ public sealed partial class MarkRenderer
     {
         var body = new StringBuilder();
         var setups = tiles.Count;
-        var finding = tiles.Count(tile => tile.Family != EquityBrief.Core.Families.HeavyweightRule.Name && tile.Count > 0);
+        var finding = tiles.Count(tile => tile.Family != EquityBrief.Core.Families.HeavyweightRule.Name && tile.Family != EquityBrief.Core.Families.QualityRule.Name && tile.Count > 0);
         var summary = finding == 0
             ? Formatted($"None of the {setups} setups found a pick tonight; each tile says how close it came.")
             : Formatted($"{finding} of the {setups} setups found {(finding == 1 ? "a pick" : "picks")} tonight; each tile says what it looks for.");

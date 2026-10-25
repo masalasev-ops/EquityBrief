@@ -146,6 +146,9 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `fundamental_reading` | FundamentalReader | none | FundamentalReader |
 | `member_reading` | MemberReader | none | MemberReader |
 | `fundamental_score` | FundamentalScorer | none | FundamentalScorer |
+| `quality_night` | QualityFamily | none | QualityFamily |
+| `quality_result` | QualityFamily | none | QualityFamily |
+| `quality_holding` | QualityFamily | QualityFamily | QualityFamily |
 | `switch_reading` | MemberReader | none | MemberReader |
 | `estimate_reading` | EstimatesFetcher | none | none |
 | `news_pulse` | NewsPulseCounter | none | NewsPulseCounter |
@@ -2687,6 +2690,72 @@ Grain: one row per index, session and member of the S&P 500, 400 and 600 holding
 Primary key: `index_code`, `session_date`, `ticker`.
 
 **The fundamental scorer writes it in the night after the member readings and again after the filings refresh, and is its own deleter** (see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it). Each row is the core's one scorecard over the member's filer's facts as first filed before the session and the store's own closes, which the share check reads for the splits between its two counts, so a split before the store's first session is not seen. Each run, the night's second after its filings refresh among them and `scores` by hand, replaces its session's rows and no other's. The chart page and the full page read a stock's newest row on or before the night they draw. Kept forever.
+
+### quality_night
+Grain: one row per rule, index and session Quality at a fair price's step read, from 22.9.
+
+| Column | Type | Notes |
+|---|---|---|
+| `rule` | TEXT | the rule the night was read under, `provisional` until a freeze registers one |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `session_date` | TEXT | the night's session |
+| `members` | INTEGER | the index's members on the night |
+| `scored` | INTEGER | the members holding a bar on the night whose scorecard read any check |
+| `qualified` | INTEGER | the members that qualified |
+| `held` | INTEGER | the holdings open after the night |
+| `reshuffle` | INTEGER | 1 where the night reshuffled, the family's first night or the first it read in a month |
+| `settings` | TEXT | JSON: the rule, its floor in nine, how it reads the valuation, the trend, the holdings, whether it sells on a filing, and the words the card states the rule in |
+| `fault` | TEXT | the failure that stopped the index's part, null where none did |
+
+Primary key: `rule`, `index_code`, `session_date`.
+
+### quality_result
+Grain: one row per rule, index, session and member holding a bar on the night, from 22.9.
+
+| Column | Type | Notes |
+|---|---|---|
+| `rule` | TEXT | as `quality_night` |
+| `index_code` | TEXT | |
+| `session_date` | TEXT | |
+| `ticker` | TEXT | |
+| `passed` | INTEGER | 1 where the member qualified |
+| `place` | INTEGER | its place in the family's order among those that qualified, null where it did not |
+| `passed_checks` | INTEGER | its scorecard's checks passed on the night, as `fundamental_score` stored them |
+| `applied` | INTEGER | the checks that applied and were read |
+| `value_place` | REAL | the ledger's valuation reading of the member on the night, null where it read none |
+| `reason` | TEXT | why it did not qualify, null where it did |
+| `carried` | REAL | its growth carried from its first answer by the night's close over the close of its answer before, both as the store holds them on the night, 1 on its first; a statistic |
+
+Primary key: `rule`, `index_code`, `session_date`, `ticker`. A second index on `rule`, `index_code`, `ticker` and `session_date` serves a member's newest answer before a night.
+
+### quality_holding
+Grain: one row per rule, index, stock and night it was chosen, from 22.9.
+
+| Column | Type | Notes |
+|---|---|---|
+| `rule` | TEXT | as `quality_night` |
+| `index_code` | TEXT | |
+| `ticker` | TEXT | |
+| `chosen_on` | TEXT | the reshuffle's session it was chosen at |
+| `buy_close` | TEXT | decimal in code, its close that night at the store's scale |
+| `bought_on` | TEXT | the first session after it the store holds, null until it is stored |
+| `fill` | TEXT | decimal in code, its open on that session at the store's scale |
+| `gap` | REAL | the open over the choice's close less one, through the core's one pricing function |
+| `bench_gap` | REAL | the mean of the same over the members answered on the night it was chosen holding an open |
+| `members` | INTEGER | the members that mean read |
+| `growth` | REAL | its close over its choice's close, carried night by night |
+| `through` | TEXT | the session its growth was carried to |
+| `ended_on` | TEXT | the session it was sold at, null while held |
+| `sale` | TEXT | decimal in code, its close on that session |
+| `end_reason` | TEXT | `open`, `no longer qualifies` or `left the index` |
+| `result` | REAL | its growth less one less its gap, null while held or where it was sold before its buy |
+| `benchmark` | REAL | the members' mean carried growth from its choice to its sale less one less `bench_gap` |
+| `cost` | REAL | its round trip in per cent of its buy at the published table, its company valued as the member readings read it on the night it was chosen |
+| `edge` | REAL | its result less its benchmark in percentage points, less its round trip |
+
+Primary key: `rule`, `index_code`, `ticker`, `chosen_on`.
+
+**Quality at a fair price's step writes all three in the night after the filings refresh, and is their own deleter** (see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session). It reads the night's members, the store's bars to the night, the night's `fundamental_score` rows and the `value_place` reading of its `ledger_reading` rows, and a member's company value from its `member_reading` row of the night a holding was chosen. A night run again deletes its own night and answers and the holdings it chose, and reopens those it sold, before writing them again (see: A quality holding is sold at a reshuffle where it no longer qualifies and at its last close as a member, and is bought at the next open) (see: A quality holding's edge is its return less an equal-weighted hold of its index's members over the same sessions, after its round trip). Kept forever.
 
 ### switch_reading
 Grain: one row per session the night read.

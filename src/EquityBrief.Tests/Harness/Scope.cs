@@ -3896,6 +3896,48 @@ internal static class Scope
             Verdict.Pass,
             "read back off the rendered name page over a constructed store after the margins, the same card as the chart page's read off the night's stored scorecard, and a stock with no scorecard stored saying so",
             ByReadSurface),
+        // 22.9, on the operator's ruling of 2026-10-24: Quality at a fair price's step, its three stores, section 17's
+        // starting settings, section 18's two rows, its card on Tonight and its step in section 14.
+        [CheckReach.Key(CatalogueTable, "Quality family")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the members, the bars, the scorecards, the ledger's readings and the member readings it reads and its own three tables it writes, each reconciled against the row",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Quality family")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Quality nights")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Quality results")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Quality holdings")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Quality at a fair price's starting settings")] = new Scoped(
+            Verdict.Pass,
+            "the floor of 7 in 9, a share of the checks that applied, on both sides of it with four checks read giving no word, the valuation's place at 0.5 and a hair under it, the order by the score's share, the place and the ticker, a reshuffle on the first night and each month's first, and the step over a constructed store choosing the top 10 on its first night, keeping a holding still qualifying and selling one that fell under the floor at the next month's first session while filling the places down the ranking; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A member the quality family cannot score or value")] = new Scoped(
+            Verdict.Pass,
+            "the rule over four checks read giving no word and over no valuation's place giving none valued, and the step over a constructed store storing a member read so with its reason and choosing it on no reshuffle, and keeping a holding whose stock holds no close on a reshuffle night unanswered and unsold while one whose score fell is sold",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A quality buy whose next session is not stored")] = new Scoped(
+            Verdict.Pass,
+            "a holding whose stock holds no bar on the session after its choice left unbought and counted waiting on the step's row, then bought at the open of the first session the store holds after it",
+            ByExpectations),
+        [CheckReach.Key("15.7 Tonight", "Quality at a fair price's card")] = new Scoped(
+            Verdict.Pass,
+            "read back off the rendered page over a constructed store's S&P 400 night: the card after the sector heavyweights' with its tile among the setups and their count in words, its sentence, its three tiles with its holdings' change since the last reshuffle beside the index's stocks', each holding's score, place, change since bought and tonight's line, what the reshuffle chose, the next in line and its rule a click away; a night its part failed saying so and nothing else, and a store whose step read no night saying its first holdings come on its first night",
+            ByReadSurface),
+        [CheckReach.Key(NightlyRunSteps.Heading, Checks.NightlyRun.QualityStep)] = new Scoped(
+            Verdict.Pass,
+            "the night runs the step after the filings refresh and before the Treasury's 10-year, read off the document, the night's output and its run log's order, its row recording no model call and no request",
+            ByNight),
         // 17.9, approval and the live alarm: the apply step's and the alarm's catalogue and matrix rows, five stores,
         // section 17's alarm and setting, section 18's two rows, the Loop page's three regions, Tonight's line and the
         // card's row for a rule standing at an approved change.
@@ -5739,6 +5781,9 @@ internal static class Scope
         // the snake case the schema uses, so the plural store name matches
         // nothing until 8.1 mentions forward returns in prose.
         ["Forward returns"] = "5.5",
+        // 22.9 builds Quality at a fair price's step and the plan names it there by its label, so the catalogue's name
+        // for it matches nothing until 22.10's heading names the quality family's history test.
+        ["Quality family"] = "22.9",
     };
 
     // Derived earlier than the truth. An early due point fails the day the
@@ -5983,6 +6028,10 @@ internal static class Scope
         ["Dip trades"] = "22.1",
         // 22.8's one, which the plan names as the store of its own the night's step writes every scorecard to.
         ["Fundamental scores"] = "22.8",
+        // 22.9's three, which the plan names as Quality at a fair price's nights, answers and holdings.
+        ["Quality nights"] = "22.9",
+        ["Quality results"] = "22.9",
+        ["Quality holdings"] = "22.9",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -6790,6 +6839,8 @@ internal static class Scope
         // 22.8's two, which the plan names as the chart page's card beneath the brief read and the full page's.
         [CheckReach.Key("15.22 Chart", "Fundamentals")] = "22.8",
         [CheckReach.Key("15.9 Name", "Fundamentals")] = "22.8",
+        // 22.9's one, which the plan names as the family's card on Tonight.
+        [CheckReach.Key("15.7 Tonight", "Quality at a fair price's card")] = "22.9",
 
     };
 
@@ -7681,6 +7732,9 @@ internal static class Scope
         ["A quarter reported and not yet filed"] = "22.8",
         ["A line the scorecard needs not filed"] = "22.8",
         ["A financial company on the scorecard"] = "22.8",
+        // 22.9's two, which the plan names as a member the family cannot score or value and a buy waiting for its session.
+        ["A member the quality family cannot score or value"] = "22.9",
+        ["A quality buy whose next session is not stored"] = "22.9",
     };
 
     // The two rows of the read and write matrix whose component already exists.
@@ -7891,6 +7945,8 @@ internal static class Scope
         ["The short-term dip's sweep grid"] = "22.2",
         // 22.8's numbers, which the plan names as section 17's tolerance and cut points.
         ["The fundamentals scorecard's numbers"] = "22.8",
+        // 22.9's settings, which the plan names as section 17's starting settings of the family.
+        ["Quality at a fair price's starting settings"] = "22.9",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)
@@ -7934,6 +7990,8 @@ internal static class Scope
         ["Read the archive's daily index"] = "17.3",
         // 18.2's step, the Treasury's 10-year after the filings refresh.
         ["Ask the Treasury"] = "18.2",
+        // 22.9's step, Quality at a fair price after the filings refresh.
+        ["From 22.9, read Quality at a fair price"] = "22.9",
         ["Count the ordinary nights stored under the open filter version"] = "12.4",
         ["Evaluate the list reasons"] = "5.4",
         ["Ask for six reports taken in turn"] = "11.4",

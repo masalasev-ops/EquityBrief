@@ -97,7 +97,8 @@ public partial class FixtureExpectations
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{night}"));
 
         Assert.Contains($"<p class=\"market-line\" data-index=\"{expected.GetProperty("indexDrawn").GetString()}\" data-open=\"true\"", page, StringComparison.Ordinal);
-        Assert.Equal(cards, Regex.Matches(page, "<section class=\"family-card[^\"]*\" data-family=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+        // Quality at a fair price's card follows them from 22.9, a book read back by its own test.
+        Assert.Equal([.. cards, Core.Families.QualityRule.Name], Regex.Matches(page, "<section class=\"family-card[^\"]*\" data-family=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
 
         foreach (var family in cards.Where(family => family != Core.Families.HeavyweightRule.Name))
         {

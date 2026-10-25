@@ -26,7 +26,8 @@ public sealed partial class SinglePageApp
         string? open,
         EndedTonightView? ended,
         IReadOnlyDictionary<string, string>? links = null,
-        IReadOnlyDictionary<string, string>? plans = null)
+        IReadOnlyDictionary<string, string>? plans = null,
+        QualityCardView? quality = null)
     {
         var region = new StringBuilder();
 
@@ -41,8 +42,9 @@ public sealed partial class SinglePageApp
         region.Append(Cards.Computed("Tomorrow's buys", marks.TomorrowsBuys(points, open, links, plans), stamp: Cards.Night(night), id: "buy-points", region: "buy-points"));
         region.Append(marks.CloseToBuy(line.CloseRead ? closeToBuy ?? [] : null, closeOpen, newest, universe));
 
-        // The six setups: each tile's badge from its card's standing, and its line from tonight's picks, its holdings or
-        // the stock closest to it.
+        // The setups: each tile's badge from its card's standing, and its line from tonight's picks, its holdings or the
+        // stock closest to it; from 22.9 Quality at a fair price's tile after the sector heavyweights', the card's title
+        // counting the tiles in words.
         var liveSince = families.ToDictionary(card => card.Family, card => card.LiveSince, StringComparer.Ordinal);
         var tonight = families.ToDictionary(card => card.Family, card => TileLine(card, closeToBuy, line), StringComparer.Ordinal);
 
@@ -52,7 +54,16 @@ public sealed partial class SinglePageApp
             tonight[EquityBrief.Core.Families.HeavyweightRule.Name] = HeavyweightTileLine(heavyweights, night);
         }
 
-        region.Append(Cards.Computed("The six setups", marks.SixSetups(tiles, liveSince, tonight), stamp: Cards.Night(night), id: "setups", region: "setups"));
+        IReadOnlyList<SetupTileView> shown = tiles;
+
+        if (quality is not null)
+        {
+            shown = [.. tiles, new SetupTileView(EquityBrief.Core.Families.QualityRule.Name, EquityBrief.Core.Families.QualityRule.Label, quality.Cells.Count, quality.Cells.Count == 1 ? "holding" : "holdings", quality.Fault is null ? "kept monthly" : "not computed tonight")];
+            liveSince[EquityBrief.Core.Families.QualityRule.Name] = null;
+            tonight[EquityBrief.Core.Families.QualityRule.Name] = QualityTileLine(quality, night);
+        }
+
+        region.Append(Cards.Computed(SetupsTitle(shown.Count), marks.SixSetups(shown, liveSince, tonight), stamp: Cards.Night(night), id: "setups", region: "setups"));
 
         foreach (var card in families)
         {
@@ -64,9 +75,43 @@ public sealed partial class SinglePageApp
             region.Append(HeavyweightsCard(marks, heavyweights, night));
         }
 
+        if (quality is not null)
+        {
+            region.Append(FormattableString.Invariant($"<section class=\"card setup-card\" id=\"setup-{EquityBrief.Core.Families.QualityRule.Name}\" data-card=\"quality\" data-night=\"{night:yyyy-MM-dd}\"><div class=\"card-h\"><div>{marks.QualityCardHead(quality)}</div></div><div class=\"card-b\">{marks.QualityCard(quality)}</div></section>"));
+        }
+
         region.Append(Cards.Computed("Words used on this page", marks.WordsOnThisPage(), id: "words", region: "words"));
 
         return region.ToString();
+    }
+
+    // The setups card's title, its tiles counted in words.
+    static string SetupsTitle(int tiles) =>
+        "The " + (tiles switch { 5 => "five", 6 => "six", 7 => "seven", 8 => "eight", _ => tiles.ToString(System.Globalization.CultureInfo.InvariantCulture) }) + " setups";
+
+    // Quality at a fair price's tile line: its holdings and when it next reshuffles.
+    static string QualityTileLine(QualityCardView quality, DateOnly night)
+    {
+        if (quality.Fault is not null)
+        {
+            return "Not computed tonight.";
+        }
+
+        if (!quality.Read)
+        {
+            return "Its first holdings are chosen on its first night.";
+        }
+
+        var held = quality.Cells.Count == 1 ? "1 holding." : Invariant($"{quality.Cells.Count} holdings.");
+
+        if (quality.LastReshuffle == night)
+        {
+            return held + " Reshuffled tonight.";
+        }
+
+        return quality.DaysToNext is { } days
+            ? held + Invariant($" Next reshuffle in {days} trading {(days == 1 ? "day" : "days")}.")
+            : held + " Its next reshuffle is not read.";
     }
 
     // A setup's tile line tonight: its picks, or that its part of the night was not computed, or that the market check

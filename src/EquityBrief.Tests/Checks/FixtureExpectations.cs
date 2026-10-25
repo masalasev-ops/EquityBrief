@@ -174,6 +174,8 @@ public partial class FixtureExpectations
             .. DipLedgerClaims,
             // 22.8, the fundamentals scorecard: section 17's numbers and section 18's three rows.
             .. ScorecardClaims,
+            // 22.9, Quality at a fair price: section 17's starting settings and section 18's two rows.
+            .. QualityClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

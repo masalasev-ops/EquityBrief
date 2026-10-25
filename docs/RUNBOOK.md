@@ -923,6 +923,12 @@ dotnet run --project src/EquityBrief.Worker -- ledger-check --index GSPC
 
 each check run for MID and SML as for GSPC. A row written before 22.8 holds none of the nine readings until the history is built again with `--again`. No source a rule's version pins moves, so nothing is registered again and no record or paper account restarts.
 
+From 22.9 the night reads Quality at a fair price on each of the three indices after the filings refresh scores every member again, writing `quality_night`, `quality_result` and `quality_holding` and making no request (see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session). Its first night chooses each index's first holdings at that night's close, and a night run again for a session replaces what that session wrote. 22.9's remedy, from main after the merge and before the night, migrates to 110 and runs nothing else, so the first holdings are chosen by the night itself; restart the read surface after it, since Tonight reads the three stores:
+
+```
+powershell -File tools/remedy.ps1 tools/remedies/2026-10-25-22.9-quality-at-a-fair-price.txt
+```
+
 From 19.13 the same refresh reads the Form 4 and 4/A lines of each day's index it reads and asks the archive for each such filing whose line names a member's filer, one request a filing under the refresh's own limit, storing its table of shares a row a transaction in `insider_trade` under the issuer it names (see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted). A filing stored already is not asked again, so a day the limit stopped is read again the next night from the filings it had not reached, and each day read whole is recorded in `insider_read`; a filing the reader cannot read is named on the step's row with why and stores nothing. Once the refresh has stored its days, the ledger reads the four insider readings again for every setup of the night and every member's readings. The step's row counts the Form 4 filings asked beside the indexes, the 8-K pages and the facts.
 
 The history before the nightly reader is read by hand from the SEC's quarterly insider transactions data sets, one request a quarter and one for the page that lists them, from 2018q1 through the newest quarter posted, each quarter's Forms 4 and 4/A of every company the store knows, the night's and the pulled companies', stored and the quarter recorded once all of it is:

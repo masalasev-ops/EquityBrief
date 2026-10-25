@@ -180,6 +180,9 @@ public partial class ReadSurface
             // 22.8, the fundamentals card on the chart page and the full page.
             .. FundamentalsRows,
 
+            // 22.9, Quality at a fair price's card on Tonight.
+            .. QualityPageRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 

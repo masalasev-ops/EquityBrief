@@ -115,9 +115,9 @@ public partial class ReadSurface
         Assert.Contains("<div class=\"minute-line\" data-line=\"one-step\"><p class=\"minute-head\"><b>Which stocks are one step from qualifying is not read tonight.</b></p><p class=\"minute-said\">This index's night stores only the first step each stock missed.</p></div>", minute, StringComparison.Ordinal);
         Assert.DoesNotContain("S&P 500 members", page, StringComparison.Ordinal);
 
-        // Every card provisional, the fundamentals-first family's among them from 17.8, each rule written from the
-        // settings the night stored, the breakout's listing M1.
-        Assert.Equal(5, Regex.Matches(page, "<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Not yet tested</span>").Count);
+        // Every card provisional, the fundamentals-first family's among them from 17.8 and Quality at a fair price's from
+        // 22.9, each rule written from the settings the night stored, the breakout's listing M1.
+        Assert.Equal(6, Regex.Matches(page, "<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Not yet tested</span>").Count);
 
         var breakout = FamilyCardOf(page, "breakout");
 

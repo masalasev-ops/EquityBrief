@@ -79,16 +79,18 @@ internal static class ComponentVocabulary
     // sources column holds each stored filing's check of the exhibit its page names as the release beside its releases,
     // each what the SEC's page said of a filing kept. From 20.13 the fundamentals column holds the answers Yahoo and
     // TipRanks gave about a stock's analysts, each a provider's answer about a company, and the research requests column
-    // a chart page's asks for them beside the asks for a report, each a press's request the worker answers.
+    // a chart page's asks for them beside the asks for a report, each a press's request the worker answers. From 22.9 the
+    // computed tables column holds each member's answer under Quality at a fair price, the listings column its nights and
+    // the forward returns column its holdings, as the dip family's sit.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
         ("Bars", [DataStore.Bar, DataStore.MarketBar, DataStore.KeptBar, DataStore.LiveQuote, DataStore.TreasuryYield]),
         ("Calendar", [DataStore.Calendar]),
         ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.PulledIncome, DataStore.PulledSnapshot, DataStore.PulledHolding]),
-        ("Computed tables", [DataStore.Indicator, DataStore.ChartAverage, DataStore.EarningsMove, DataStore.LongView, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult, DataStore.IndexFamilyResult, DataStore.DipResult, DataStore.MemberReading, DataStore.SwitchReading, DataStore.FundamentalScore]),
-        ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick, DataStore.HeavyweightNight, DataStore.HeavyweightRuleNight, DataStore.IndexFamilyNight, DataStore.IndexFamilyPick, DataStore.DipNight, DataStore.DipPick, DataStore.IndexHeavyweightRuleNight, DataStore.SweepAnswer, DataStore.DecisionCard, DataStore.RuleNight, DataStore.FormingRow]),
-        ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade, DataStore.HeavyweightHolding, DataStore.HeavyweightRuleHolding, DataStore.IndexFamilyTrade, DataStore.DipTrade, DataStore.IndexHeavyweightHolding, DataStore.IndexRuleTrade, DataStore.IndexHeavyweightRuleHolding, DataStore.RuleRecord, DataStore.RulePick, DataStore.TradeFill, DataStore.Setup, DataStore.SetupNight, DataStore.LedgerSummary, DataStore.LedgerReading, DataStore.LoopRun, DataStore.LoopProposal, DataStore.LoopTest, DataStore.LoopFinding, DataStore.LoopReading, DataStore.LoopModel, DataStore.LoopReference, DataStore.LoopRule, DataStore.LoopRuleYear, DataStore.LoopLink, DataStore.ReleaseAnswerEdge, DataStore.LoopApplied, DataStore.ProvisionalSetting, DataStore.LoopAlarm]),
+        ("Computed tables", [DataStore.Indicator, DataStore.ChartAverage, DataStore.EarningsMove, DataStore.LongView, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult, DataStore.IndexFamilyResult, DataStore.DipResult, DataStore.MemberReading, DataStore.SwitchReading, DataStore.FundamentalScore, DataStore.QualityResult]),
+        ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick, DataStore.HeavyweightNight, DataStore.HeavyweightRuleNight, DataStore.IndexFamilyNight, DataStore.IndexFamilyPick, DataStore.DipNight, DataStore.DipPick, DataStore.IndexHeavyweightRuleNight, DataStore.SweepAnswer, DataStore.DecisionCard, DataStore.RuleNight, DataStore.FormingRow, DataStore.QualityNight]),
+        ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade, DataStore.HeavyweightHolding, DataStore.HeavyweightRuleHolding, DataStore.IndexFamilyTrade, DataStore.DipTrade, DataStore.IndexHeavyweightHolding, DataStore.IndexRuleTrade, DataStore.IndexHeavyweightRuleHolding, DataStore.RuleRecord, DataStore.RulePick, DataStore.TradeFill, DataStore.Setup, DataStore.SetupNight, DataStore.LedgerSummary, DataStore.LedgerReading, DataStore.LoopRun, DataStore.LoopProposal, DataStore.LoopTest, DataStore.LoopFinding, DataStore.LoopReading, DataStore.LoopModel, DataStore.LoopReference, DataStore.LoopRule, DataStore.LoopRuleYear, DataStore.LoopLink, DataStore.ReleaseAnswerEdge, DataStore.LoopApplied, DataStore.ProvisionalSetting, DataStore.LoopAlarm, DataStore.QualityHolding]),
         ("Facts", [DataStore.Facts]),
         ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk, DataStore.Company, DataStore.EstimateReading, DataStore.DividendReading, DataStore.EstimateTrend, DataStore.DividendEvent, DataStore.FiledFact, DataStore.FiledFactPull, DataStore.FilingDay, DataStore.InsiderTrade, DataStore.InsiderRead, DataStore.SecTicker, DataStore.AnalystView, DataStore.AnalystRating]),
         ("News", [DataStore.NewsPulse, DataStore.NewsArticle, DataStore.NewsLabel]),
@@ -248,6 +250,9 @@ internal static class ComponentVocabulary
         ["dip results"] = DataStore.DipResult,
         ["dip picks"] = DataStore.DipPick,
         ["dip trades"] = DataStore.DipTrade,
+        ["quality nights"] = DataStore.QualityNight,
+        ["quality results"] = DataStore.QualityResult,
+        ["quality holdings"] = DataStore.QualityHolding,
         ["sweep answers"] = DataStore.SweepAnswer,
         ["decision cards"] = DataStore.DecisionCard,
         ["rule records"] = DataStore.RuleRecord,

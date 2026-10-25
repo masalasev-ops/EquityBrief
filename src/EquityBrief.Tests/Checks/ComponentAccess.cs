@@ -117,6 +117,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Fundamental scorer"),
     ];
 
+    // 22.9's one: Quality at a fair price's step.
+    internal static string[] QualityRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Quality family"),
+        CheckReach.Key(Scope.MatrixTable, "Quality family"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -163,6 +170,9 @@ public partial class ComponentAccess
 
             // 22.8, the fundamentals scorecard.
             .. ScorerRows,
+
+            // 22.9, Quality at a fair price.
+            .. QualityRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),
