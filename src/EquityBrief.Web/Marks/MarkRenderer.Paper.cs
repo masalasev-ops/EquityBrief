@@ -635,7 +635,7 @@ public sealed partial class MarkRenderer
         }
 
         html.Append("<h4>Did it beat the easy alternative?</h4>");
-        html.Append(Invariant, $"<p class=\"sh-line\">{(head.Better is { } better && head.Counted is { } counted and > 0 ? Formatted($"Better in {better} of {counted} complete {(counted == 1 ? "year" : "years")}. ") : string.Empty)}Each box is a test year: did its {(book ? "holdings" : "trades")} beat {(book ? "their size cut" : "the same plan bought on every stock that night")}, and by how much, in {(book ? "points a month" : "risks a trade")}.</p>");
+        html.Append(Invariant, $"<p class=\"sh-line\">{(head.Better is { } better && head.Counted is { } counted and > 0 ? Formatted($"Better in {better} of {counted} complete {(counted == 1 ? "year" : "years")}. ") : string.Empty)}Each box is a test year: did its {(book ? "holdings" : "trades")} beat {(book ? BookAgainst(head.Family, "their") : "the same plan bought on every stock that night")}, and by how much, in {(book ? "points a month" : "risks a trade")}.</p>");
         html.Append("<div class=\"sh-years\">");
 
         foreach (var box in boxes)
@@ -690,6 +690,11 @@ public sealed partial class MarkRenderer
         return Formatted($"<figure class=\"luck\" data-place=\"{luck.Place.ToString("R", Invariant)}\" title=\"{said}\"><svg class=\"luck-scale\" viewBox=\"0 0 {Wide} 40\" role=\"img\" aria-label=\"{Escaped(luck.Zone)}, {said}\"><rect class=\"ls-easily\" x=\"0\" y=\"7\" width=\"{Number(easily - 2)}\" height=\"10\" rx=\"5\"></rect><rect class=\"ls-maybe\" x=\"{Number(easily)}\" y=\"7\" width=\"{Number(maybe - 2)}\" height=\"10\"></rect><rect class=\"ls-real\" x=\"{Number(easily + maybe)}\" y=\"7\" width=\"{Number(real)}\" height=\"10\" rx=\"5\"></rect><circle class=\"ls-mark\" cx=\"{Number(mark)}\" cy=\"12\" r=\"7\"></circle><text class=\"ls-word\" x=\"0\" y=\"34\">{Escaped(PaperAccount.EasilyLuck)}</text><text class=\"ls-word\" x=\"{Number(easily)}\" y=\"34\">{Escaped(PaperAccount.MaybeLuck)}</text><text class=\"ls-word\" x=\"{Number(Wide)}\" y=\"34\" text-anchor=\"end\">{Escaped(PaperAccount.Real)}</text></svg></figure>");
     }
 
+    // What a book's holdings are read against: the sector heavyweights' their size cut, and from 22.11 Quality at a fair
+    // price's the index's stocks over the same days.
+    static string BookAgainst(string family, string whose) =>
+        family == EquityBrief.Core.Families.QualityRule.Name ? "the index's stocks over the same days" : whose + " size cut";
+
     // The scorecard's half since it went live: its progress toward the count a verdict reads as a bar with where it counts
     // from, and its mean edge so far, not evidence yet until the count is met; a provisional rule's saying it keeps none.
     static string SinceLive(PaperAccountView head)
@@ -710,7 +715,7 @@ public sealed partial class MarkRenderer
         html.Append(Invariant, $"<svg class=\"sh-progress\" viewBox=\"0 0 300 10\" role=\"img\" aria-label=\"{progress.Counted} of {progress.Needed}\" data-share=\"{progress.Share.ToString("R", Invariant)}\"><rect class=\"sp-track\" x=\"0\" y=\"0\" width=\"300\" height=\"10\" rx=\"5\"></rect><rect class=\"sp-fill\" x=\"0\" y=\"0\" width=\"{Number(300 * progress.Share)}\" height=\"10\" rx=\"5\"></rect></svg>");
         html.Append(Invariant, $"<div class=\"sh-ends\"><span>{(head.Since is { } since ? Formatted($"counting from <span class=\"day\">{DayOf(since)}</span>") : "counting from its first trade")}</span><span>{progress.Needed} {(book ? "months" : "decided trades")} for a verdict</span></div>");
         html.Append(progress.MeanEdge is { } edge
-            ? Formatted($"<p class=\"sh-line\" data-edge=\"{edge.ToString("R", Invariant)}\">So far: {(book ? SignedTwo(edge * 100) + " points a holding against its size cut" : SignedTwo(edge) + " risks a trade against the same plan on every stock")}, over {progress.Edged} decided {(progress.Edged == 1 ? (book ? "holding" : "trade") : (book ? "holdings" : "trades"))} whose comparison is read.{(head.TooFew is null ? string.Empty : " Not evidence yet.")}</p>")
+            ? Formatted($"<p class=\"sh-line\" data-edge=\"{edge.ToString("R", Invariant)}\">So far: {(book ? SignedTwo(edge * 100) + " points a holding against " + BookAgainst(head.Family, "its") : SignedTwo(edge) + " risks a trade against the same plan on every stock")}, over {progress.Edged} decided {(progress.Edged == 1 ? (book ? "holding" : "trade") : (book ? "holdings" : "trades"))} whose comparison is read.{(head.TooFew is null ? string.Empty : " Not evidence yet.")}</p>")
             : "<p class=\"sh-line\" data-edge=\"none\">No decided trade has its comparison read yet, so there is nothing to read.</p>");
         html.Append("</div>");
 

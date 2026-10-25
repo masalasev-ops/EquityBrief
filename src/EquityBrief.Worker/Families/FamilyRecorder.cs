@@ -234,8 +234,9 @@ public sealed class FamilyRecorder : IComponent
         var kept = 0;
         var said = new List<string>();
 
-        // The S&P 500's family rules alone: an S&P 400's or 600's rule keeps its list in the index families' step.
-        foreach (var rule in standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is FamilyRuleEvaluator and not IndexRuleCandidate))
+        // The S&P 500's family rules alone: an S&P 400's or 600's rule keeps its list in the index families' step, and a rule
+        // its own family's step keeps, its holdings there.
+        foreach (var rule in standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is FamilyRuleEvaluator and not IndexRuleCandidate and not OwnStepCandidate))
         {
             var family = ((FamilyRuleEvaluator)CandidateEvaluators.Find(rule.Evaluator)!).Family;
             var cap = SetupFamilies.Named(family)?.CapSessions ?? 0;

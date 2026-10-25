@@ -33,6 +33,9 @@ public static class CandidateEvaluators
         new IndexBreakoutCandidate(Providers.FundHoldings.SmallCapIndex),
         new IndexDriftCandidate(Providers.FundHoldings.SmallCapIndex),
         new IndexHeavyweightCandidate(Providers.FundHoldings.SmallCapIndex),
+        new QualityCandidate(Families.QualityRule.LargeIndex),
+        new QualityCandidate(Providers.FundHoldings.MidCapIndex),
+        new QualityCandidate(Providers.FundHoldings.SmallCapIndex),
     ];
 
     public static CandidateEvaluator? Find(string name) =>

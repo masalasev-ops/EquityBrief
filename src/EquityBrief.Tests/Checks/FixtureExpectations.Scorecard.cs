@@ -507,11 +507,14 @@ public partial class FixtureExpectations
 
     // No source a rule's version pins is one 22.8 writes, so no existing rule's version moves and no record restarts, the
     // reader shown to find a source a rule pins; and the revenue rule every S&P 400 and 600 drift rule pins is among those
-    // pinned and not among those 22.8 writes.
+    // pinned and not among those 22.8 writes. From 22.11 the quality rules pin the scorecard and the readings their step
+    // reads, and no rule registered before them did.
+    // see: A quality rule is registered as the family on its index and kept by the family's own step alone
     [Fact]
     public void NoSourceARulesVersionPinsIsOne22Point8WritesSoNoExistingRulesVersionMoves()
     {
         var pinned = EquityBrief.Core.Candidates.CandidateEvaluators.All
+            .Where(evaluator => evaluator is not EquityBrief.Core.Candidates.QualityCandidate)
             .SelectMany(evaluator => evaluator.OwnSources)
             .Concat(EquityBrief.Core.Candidates.CandidateEvaluator.EvaluationSources)
             .Concat(EquityBrief.Core.Loop.RuleHooks.Sources)

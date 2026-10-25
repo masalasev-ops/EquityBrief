@@ -1,0 +1,12 @@
+# The remedy of 22.11 (the S&P 500's quality freeze), as its PROGRESS entry prints it, on the operator's ruling of
+# 2026-10-25. The S&P 500's history test is run again from main, about half a minute, so its run writes the answer file
+# 22.10's run did not, and that answer is recorded with its figures, so the frozen card reads the answer its freeze
+# followed. Then the family is frozen on the S&P 500 at its starting setting, a score of 7 in 9, at or below its own
+# usual price, the trend off, a book of 10 and sold at reshuffles, with its seven one-step neighbours as versions, eight
+# rules at one instant. The S&P 400 and 600 are not frozen here: each holds a setting meeting the floors, so their
+# answers go to the operator first. No request to the provider, none to the SEC and no model call. Run from main after
+# the merge and before the night, when no night, local run, drain, labeller, history read, ledger build or monthly run
+# is writing, read the output for "remedy done", and restart the read surface after it.
+sweep-index --index GSPC --family quality
+sweep-answer --newest quality --index GSPC
+register --index-family quality --index GSPC --parameters floor=7,valuation=1,trend=0,book=10,sale=0

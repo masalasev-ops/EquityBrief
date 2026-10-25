@@ -64,6 +64,9 @@ public static class QualityRule
 
     public const string Label = "Quality at a fair price";
 
+    // The S&P 500's code in the store, the first of the three indices the family reads.
+    public const string LargeIndex = "GSPC";
+
     public const string Description = "Holds the companies with the strongest fundamentals that are not expensive against their own history, reshuffled monthly.";
 
     // The valuation's place, the share of its own twelve quarters' earnings yields the newest stands above, a tie

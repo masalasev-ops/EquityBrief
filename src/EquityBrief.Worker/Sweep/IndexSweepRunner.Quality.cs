@@ -105,7 +105,7 @@ public sealed partial class IndexSweepRunner
                 started,
                 finished = clock.UtcNow,
             },
-            null);
+            new SweepAnswer(indexCode, Quality, null, proposal is not null));
         var (_, starting, startingMonths) = figures.Single(one => one.Setting == QualityRule.Starting);
 
         output.WriteLine(FormattableString.Invariant($"the starting setting: {starting.Trades} holding(s) ended and {starting.Open} held, edge {FamilySweepReport.Number(Points(starting.Edge))} points after its round trip, {startingMonths.Held} month(s) held, above nothing in {startingMonths.YearsAbove} year(s) by its months"));

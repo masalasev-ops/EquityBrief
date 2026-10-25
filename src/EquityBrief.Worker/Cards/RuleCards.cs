@@ -390,8 +390,8 @@ public sealed class RuleCards : IComponent
         }
 
         // The breakout's and the drift's rules, each evaluated over every member at its own settings for its funnel, and
-        // each breakout rule's forming members.
-        var familyRules = standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is FamilyRuleEvaluator and not IndexRuleCandidate).ToArray();
+        // each breakout rule's forming members; a rule its own family's step keeps draws on its family's own card.
+        var familyRules = standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is FamilyRuleEvaluator and not IndexRuleCandidate and not OwnStepCandidate).ToArray();
 
         if (familyRules.Length > 0)
         {

@@ -771,11 +771,13 @@ public static class Nightly
             // valuation reading stored it: the holdings carried, bought at their next open and, on the first night of a
             // month, sold where they no longer qualify and chosen down the ranking. It makes no request, so a night run
             // again for an earlier session reads it too, and a failure in an index's part is named on its row while the
-            // step goes on.
+            // step goes on. From 22.11 it keeps every rule of the family standing on an index when the night started, or at
+            // the instant a night run again names, each under its own name.
             // see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session
+            // see: A quality rule is registered as the family on its index and kept by the family's own step alone
             new("quality", async () =>
             {
-                var outcome = await new Quality.QualityFamily(clock, store.DatabaseFile).RunAsync(runId);
+                var outcome = await new Quality.QualityFamily(clock, store.DatabaseFile).RunAsync(runId, registerAt: registerAt ?? nightStartedAt);
 
                 return Quality.QualityFamily.Detail(outcome.Indices);
             }, [Quality.QualityFamily.Stage]),

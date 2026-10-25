@@ -9038,3 +9038,135 @@ Verified:   documents and a remedy's words alone, so no new full run: `tools/ci.
             180 passed.
 Carried:    the ten purges from main after the merge, then the three ledger histories built again with their checks while no
             other writer runs, and the history test again on each index.
+
+### 22.10 run - Quality at a fair price's history test on the S&P 500 again over the prices from 2015-10-01 under the floors in months, no setting meeting them   2026-10-25
+
+Not a checkpoint entry: it lands nothing.
+Queue:      as the 22.11 ruling entry's.
+Ran:        from main's c694351c, the checkout's own build, over the live store read-only through 2026-10-23 after the ten
+            older pulls' purges: `sweep-index --index GSPC --family quality` from 15:14:02 to 15:14:28 UTC, run
+            20261025T151402Z.
+Coverage:   at each year's first reshuffle the members answered, scored, whose filings reach every quarter the valuation
+            reads, valued and qualifying at the starting setting: 2019 530, 474, 404, 397 and 149; 2020 526, 481, 417, 411
+            and 97; 2021 521, 483, 426, 420 and 51; 2022 522, 490, 434, 426 and 110; 2023 511, 489, 440, 430 and 127; 2024
+            509, 488, 446, 437 and 121; 2025 507, 490, 445, 434 and 96; 2026 507, 490, 434, 425 and 101. So from 2019 the
+            valuation reads nearly every member whose filings reach.
+Results:    910 names over 94 reshuffles. The starting setting: 106 holdings ended and 10 held; edge -3.79 points after its
+            round trip, its own return 6.31 against the members' 10.10; by its holdings above nothing in 1 of 8 years, 2019
+            -9.9, 2020 3.6, 2021 -6.1, 2022 -5.4, 2023 -0.9, 2024 -2.4, 2025 -7.9 and 2026 -3.9; -5.56 without its five
+            largest; by its months 93 held and above nothing in 2 of 8 years, 2023 and 2024. No setting meets the floors in
+            months: every one holds 48 months or more and none stands above nothing in 6 years by its months. The
+            strongest by edge: floor 8, the cheapest third, the trend read, a book of 10, sold on a filing, 295 holdings,
+            +0.61 points, 5 years by its months; 14 of the 72 stand above nothing. No proposal; luck alone passes about
+            10.4 of 72. The tester: not passed, its adjusted p 0.625 over 57 months in 18 blocks, better in 0 of 4 counted
+            years, one fold, 2023's, choosing a setting.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    its freeze at the starting setting, as item 4 of the ruling states for an index no setting meets the floors on.
+
+### 22.10 run - Quality at a fair price's history test on the S&P 400 again over the prices from 2015-10-01 under the floors in months, four settings meeting them   2026-10-25
+
+Not a checkpoint entry: it lands nothing.
+Queue:      as the 22.11 ruling entry's.
+Ran:        from main's c694351c over the live store read-only through 2026-10-23: `sweep-index --index MID --family
+            quality` from 15:14:30 to 15:14:51 UTC, run 20261025T151430Z.
+Coverage:   at each year's first reshuffle, as above: 2019 381, 354, 301, 296 and 130; 2020 386, 370, 310, 305 and 61; 2021
+            387, 372, 325, 320 and 38; 2022 393, 377, 337, 331 and 119; 2023 388, 374, 333, 328 and 101; 2024 400, 388,
+            343, 336 and 88; 2025 398, 387, 345, 336 and 72; 2026 391, 382, 342, 329 and 86.
+Results:    759 names over 94 reshuffles. The starting setting: 113 holdings ended and 10 held; edge +2.24 points, its own
+            11.38 against 9.13; by its holdings above nothing in 2 of 8 years, 2019 -0.4, 2020 -9.8, 2021 -10.4, 2022 -0.2,
+            2023 5.2, 2024 -2.8, 2025 42.1 and 2026 -6.1; -3.63 without its five largest; by its months 93 held and above
+            nothing in 6 of 8, all but 2020 and 2025, so it meets the floors. Four settings meet them: the proposal, floor
+            7, the price not read, a book of 10, sold on a filing, 83 holdings, +2.41 points, 7 years by its months and
+            -5.08 without its five largest; the starting setting; the proposal sold at reshuffles, 83, +1.96; and the
+            price not read in a book of 20 sold at reshuffles, 152, -2.07. 20 of the 72 stand above nothing; luck alone
+            passes about 10.4. The tester: not passed, its adjusted p 0.906, better in 1 of 4 counted years, its folds
+            choosing floor 8 with the price not read in a book of 20 sold on a filing in 2023 to 2025 and the starting
+            setting in 2026.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    its answer to the operator before any freeze, as item 4 of the ruling states for an index a setting meets the
+            floors on.
+
+### 22.10 run - Quality at a fair price's history test on the S&P 600 again over the prices from 2015-10-01 under the floors in months, one setting meeting them   2026-10-25
+
+Not a checkpoint entry: it lands nothing.
+Queue:      as the 22.11 ruling entry's.
+Ran:        from main's c694351c over the live store read-only through 2026-10-23: `sweep-index --index SML --family
+            quality` from 15:14:53 to 15:15:23 UTC, run 20261025T151453Z.
+Coverage:   at each year's first reshuffle, as above: 2019 562, 533, 432, 419 and 139; 2020 573, 542, 453, 445 and 109;
+            2021 583, 549, 471, 463 and 63; 2022 584, 549, 475, 465 and 136; 2023 576, 546, 480, 472 and 131; 2024 583, 551,
+            484, 468 and 121; 2025 577, 544, 478, 472 and 95; 2026 575, 545, 482, 470 and 117.
+Results:    1,212 names over 94 reshuffles. The starting setting: 101 holdings ended and 10 held; edge +2.32 points, its
+            own 11.70 against 9.38; by its holdings above nothing in 5 of 8 years, 2019 -5.4, 2020 0.9, 2021 -2.7, 2022
+            -7.3, 2023 18.1, 2024 19.3, 2025 2.8 and 2026 2.6; -2.11 without its five largest; by its months 93 held and
+            above nothing in 5 of 8, short of the floors. One setting meets them, the proposal: floor 7, the price not
+            read, a book of 20, sold on a filing, 141 holdings, -2.48 points, 6 years by its months, 3 by its holdings and
+            -5.85 without its five largest. The strongest by edge: floor 7, the price not read, a book of 10, sold on a
+            filing, 72 holdings, +4.84 points, 7 years by its holdings and 5 by its months. 19 of the 72 stand above
+            nothing; luck alone passes about 10.4. The tester: not passed, its adjusted p 0.595, better in 2 of 4 counted
+            years, 3 of 5 folds within a step of its choice.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    its answer to the operator before any freeze, as item 4 of the ruling states for an index a setting meets the
+            floors on.
+
+### 22.11 - Quality at a fair price frozen on the S&P 500 at its starting setting with its seven one-step neighbours as versions, each rule kept by the family's own step under its own name   2026-10-25
+
+Queue:      done, 22.10 with its two remedies and the history test again on each index; in progress, 22.11 for the
+            S&P 500 in this pull request and the three ledger histories built again under 22.10's remedy; next, 22.11's
+            remedy from main after the merge and before the night of 2026-10-26, the S&P 400's and 600's quality answers
+            to the operator, 22.10's remedy record, 22.3 on the ruling's fifth item, 22.12, then the sign-offs of phases
+            18, 19 and 20 by fresh sessions.
+Limits:     no paid call and no request from this branch; no migration; the store read-only; the S&P 400 and 600 left
+            provisional, each holding a setting that meets the floors; no other rule's version moves, asserted over the
+            28 sources 22.11 writes or edits.
+Built:      an evaluator a family on each index, `quality-500`, `quality-400` and `quality-600`, whose family is the
+            family on its index, "quality on the S&P 500", over the history test's five dials, its version pinning the
+            files the family's own step runs through as the compiled code reaches them and none of the swing families'
+            shared sources, the step's failure words held in its own file so no index rule's file is among them. The
+            index family form freezes the family on an index at a setting on the grid, its live rule and each setting one
+            dial from it as a version at one instant, eight from the starting setting, refusing an index it carries no
+            rule for, a family already standing, other parameters, a setting off the grid and variants. The night keeps
+            every rule of the family standing on an index under its own name, each in a transaction of its own, the live
+            rule first, a rule reading the trend reading the night's 200-day average and one selling on a filing selling
+            at that close a holding whose score fell under its floor since the night before; a rule whose code moved is
+            not kept and its night names why; the provisional rule only where none stands. The family evaluator, the
+            recorder, the replay, the rule cards and the registrar's hooks pass it over. The card draws the live rule's
+            holdings, the day it went live and, from the answer the history test recorded before the freeze, its line in
+            the reader's words; paper trading keeps an account for the live rule and each version, the family's tile last,
+            both pickers listing it; the monthly run walks each standing rule's book from the run after the freeze;
+            `sweep-answer --newest <family> --index <index>`, and a quality run writing its answer file. Found while
+            building and fixed before this entry: the paper page's link reader read only the swing order, so choosing
+            the family in its pickers chose nothing. Two decisions, section 15's card and tiles, section 17's settings,
+            the catalogue and the matrix, the runbook's remedy, the guide, the roster and the changelog.
+Tests:      9 new, 2775 in all, nine amended: the remedy's line freezing the S&P 500 over a register shaped as the
+            operator's stood, 58 rules on 2026-10-23's copy, and the form's five refusals; the frozen setting on both
+            sides of each dial; the luck correction over the family's eight; the night over a constructed S&P 400 store
+            keeping the live rule and each version, the trend both sides of its average, a filing's sale and a moved rule
+            not kept; the monthly run reading the family from the run after the freeze; no source another rule pins
+            written; the card and paper trading read back off a frozen store. The evaluator pin, the five tests holding
+            no earlier source pinned and the three paper pages' family lists amended for the family's own evaluators and
+            its tile, and the fixture's paper accounts reading it through their expectations.
+Fixture:    quality-freeze.json, derived by hand: 8 rules and a level of 0.05 / 8 = 0.00625; the first night's holdings
+            under each rule, 10, 10, 10, 10, 11, 1, 10 and 5; and the filing's sale bought at 105 and sold at 106, the
+            version holding 9 and the live rule 10. paper-accounts.json gains the family's provisional account.
+Claims:     1444, none new, as the plan predicted.
+Mutated:    the rule, stated before the runs: one mutation for each property 22.11 adds, the smallest edit undoing it,
+            made in this checkout and reverted with the editor, each run filtered to the tests reading it. M1 the versions
+            two dials from the live setting; M2 the night keeping the provisional rule whatever stands; M3 no sale on a
+            filing; M4 a close at its average read as above it; M5 a rule's family read as the setup family alone; M6 the
+            monthly run reading the family on every index; M7 the card's years behind counted as those ahead; M8 the
+            paper page's link reader refusing the family; M9 every rule walked as a version; M10 the pin leaving out the
+            family's step. Each red: M1 at the remedy's freeze, the luck correction, the night and the monthly run; M2,
+            M3 and M4 at the night; M5 at the remedy's freeze and the luck correction; M6 and M9 at the monthly run; M7
+            at the card; M8 at the frozen paper accounts and the fixture's; M10 at the evaluator pin.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2775 of 2775 tests ran with none failed,
+            migrations 0 to 111 with none pending, schema version 111, against `data-ci` and never `data`; the phase
+            report 64 tables, 1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    `tools/remedies/2026-10-25-22.11-the-s-and-p-500-quality-freeze.txt` from main after the merge and before
+            the night of 2026-10-26, when no other writer runs: the S&P 500's history test again so its run writes its
+            answer file, that answer recorded, and the freeze, then the read surface restarted; the S&P 400's and 600's
+            answers to the operator; 22.10's remedy record once the ledger's histories and checks end.

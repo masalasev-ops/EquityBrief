@@ -1,0 +1,24 @@
+{
+  "stage": "quality-freeze",
+  "derivation": "derived",
+  "tables": ["candidate_register", "fundamental_score", "ledger_reading", "indicator", "bar"],
+  "derivedFrom": "22.11's freeze and night worked by hand, not a run. The history test's grid crosses the floor at 6, 7 or 8, the valuation off, at its median or in its cheapest third, the trend off or on, a book of 10 or 20 and the sale at reshuffles or also on a filing; one dial from the starting setting of 7, its median, off, 10 and reshuffles stand 2 + 2 + 1 + 1 + 1 = 7 settings, so the freeze writes 8 rules and the family's level is 0.05 / 8 = 0.00625. Over the quality store's twelve S&P 400 members, Q01 to Q05 at 8 of 9, Q06 to Q11 at 7 and Q12 at 6, their places 0.95 less a hundredth their number: a floor of 7 qualifies the eleven to Q11 and the ten first are held; a floor of 6 qualifies all twelve and still holds ten; a floor of 8 holds Q01 to Q05; the valuation off or in its cheapest third, every place at 0.83 or above 2/3, holds the same ten; a book of 20 holds the eleven; and the trend on holds Q01 alone, its close of 101 above its average of 100, Q02's 102 at its own and Q03's 103 under 103.5. On the second night Q04's score falls to 6 of 9; bought at that session's open of 105, the version selling on a filing sells it at that close of 106, holding 9, and the live rule holds 10.",
+  "rules": 8,
+  "level": 0.00625,
+  "firstNight": {
+    "live": 10,
+    "floor6": 10,
+    "valuationOff": 10,
+    "onFiling": 10,
+    "book20": 11,
+    "trend": 1,
+    "cheapestThird": 10,
+    "floor8": 5
+  },
+  "filingSale": {
+    "fill": "105",
+    "sale": "106",
+    "heldAfter": 9,
+    "liveHeld": 10
+  }
+}

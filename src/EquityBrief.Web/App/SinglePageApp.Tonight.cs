@@ -59,7 +59,7 @@ public sealed partial class SinglePageApp
         if (quality is not null)
         {
             shown = [.. tiles, new SetupTileView(EquityBrief.Core.Families.QualityRule.Name, EquityBrief.Core.Families.QualityRule.Label, quality.Cells.Count, quality.Cells.Count == 1 ? "holding" : "holdings", quality.Fault is null ? "kept monthly" : "not computed tonight")];
-            liveSince[EquityBrief.Core.Families.QualityRule.Name] = null;
+            liveSince[EquityBrief.Core.Families.QualityRule.Name] = quality.LiveSince;
             tonight[EquityBrief.Core.Families.QualityRule.Name] = QualityTileLine(quality, night);
         }
 

@@ -2205,8 +2205,14 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
     var paper = night is { } on ? await PaperAccountsAsync(read, reading, on, walkedOn) : null;
     var selector = night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.PaperRoute) : string.Empty;
 
-    // A family a key names, none where it names no family.
-    string? Family(string key) => request.Query[key].FirstOrDefault() is { } named && EquityBrief.Core.Families.SetupFamilies.Order.Contains(named) ? named : null;
+    // A family a key names, none where it names no family; from 22.11 Quality at a fair price's among them, whose accounts
+    // the page keeps after the setups'.
+    // see: A quality rule is registered as the family on its index and kept by the family's own step alone
+    string? Family(string key) =>
+        request.Query[key].FirstOrDefault() is { } named
+            && (EquityBrief.Core.Families.SetupFamilies.Order.Contains(named) || named == EquityBrief.Core.Families.QualityRule.Name)
+            ? named
+            : null;
 
     var link = new PaperLink(
         reading.Word,
@@ -2250,20 +2256,39 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
 
 // Quality at a fair price's card on an index as of a night, read off its own rows: its night, its last reshuffle, its
 // holdings open on the night or sold since that reshuffle, tonight's answers, and the answers of the last reshuffle and of
-// each night a holding was chosen on, which each change since is read from.
+// each night a holding was chosen on, which each change since is read from. From 22.11 the card draws the live rule's
+// rows where the night kept one, with the day it went live and the line its history test's recorded answer gives it.
 // see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session
+// see: A quality rule is registered as the family on its index and kept by the family's own step alone
 async Task<QualityCardView> QualityCardAsync(ReadApi read, string index, DateOnly night, IReadOnlyDictionary<string, UniverseCell> cells)
 {
-    var last = await read.QualityLastReshuffleAsync(index, night);
-    var holdings = await read.QualityHoldingsAsync(index, night, last ?? night);
+    var rule = await read.QualityCardRuleAsync(index, night);
+    var last = await read.QualityLastReshuffleAsync(index, night, rule);
+    var holdings = await read.QualityHoldingsAsync(index, night, last ?? night, rule);
     var answersOn = new Dictionary<DateOnly, IReadOnlyList<QualityResultRow>>();
 
     foreach (var on in holdings.Select(holding => holding.ChosenOn).Append(last ?? night).Distinct())
     {
-        answersOn[on] = await read.QualityResultsAsync(index, on);
+        answersOn[on] = await read.QualityResultsAsync(index, on, rule);
     }
 
-    return TonightScreen.Quality(index, night, await read.QualityNightAsync(index, night), last, holdings, await read.QualityResultsAsync(index, night), answersOn, cells);
+    DateOnly? liveSince = null;
+    QualityFixedView? fixedView = null;
+
+    if (rule != ReadApi.QualityProvisional
+        && (await read.RegisteredCandidatesAsync()).Where(row => row.Candidate == rule && row.Event == EquityBrief.Core.Candidates.CandidateFamily.Registered).OrderBy(row => row.RegisteredAt).LastOrDefault() is { } registered)
+    {
+        liveSince = DateOnly.FromDateTime(registered.RegisteredAt.UtcDateTime);
+
+        var answer = (await read.SweepAnswersAsync(index, registered.RegisteredAt.AddSeconds(1)))
+            .Where(one => one.Family == EquityBrief.Core.Families.QualityRule.Name)
+            .OrderBy(one => one.RecordedAt)
+            .LastOrDefault();
+
+        fixedView = TonightScreen.QualityFixed(liveSince.Value, answer);
+    }
+
+    return TonightScreen.Quality(index, night, await read.QualityNightAsync(index, night, rule), last, holdings, await read.QualityResultsAsync(index, night, rule), answersOn, cells, liveSince, fixedView);
 }
 
 // Each family's live or provisional rule's record so far on an index as of a night, as Paper trading counts it off the

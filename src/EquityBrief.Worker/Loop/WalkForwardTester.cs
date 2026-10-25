@@ -491,9 +491,13 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             pullbacks = replay;
         }
 
+        var standingRules = Core.Candidates.ShadowColumn.StandingAt(await RegisterAsync(databaseFile, cancellation), started);
+        var qualityLay = ReadsQuality(standingRules, index)
+            ? await QualityLay.ReadAsync(read, history, through, output.WriteLine, cancellation)
+            : null;
         var rules = RuleTests.Walk(new RuleTestInputs(
             read,
-            Core.Candidates.ShadowColumn.StandingAt(await RegisterAsync(databaseFile, cancellation), started),
+            standingRules,
             await StandingAsync(databaseFile, index, cancellation),
             market,
             await HeavyweightLay.ReadAsync(read, history, through, output.WriteLine, cancellation),
@@ -502,7 +506,8 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             filter,
             output.WriteLine,
             pullbacks,
-            await TonesAsync(read, cancellation)));
+            await TonesAsync(read, cancellation),
+            qualityLay));
         var tested = RuleTests.Judge(read, rules);
         var runId = FormattableString.Invariant($"{RulesVerb}-{index}-{started:yyyyMMddTHHmmssZ}");
 
@@ -541,6 +546,12 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
 
     static string RulesDetail(IReadOnlyList<RuleTested> tested, string index, string month, DateOnly through, int folds) =>
         FormattableString.Invariant($"{tested.Count(one => one.Passed)} of {tested.Count} rule(s) passed on the {DecisionCards.NameOf(index)} for {month} and {tested.Count(one => one.Why is not null)} not testable, through {through:yyyy-MM-dd}, over {folds} fold(s)");
+
+    // From 22.11 whether a run lays out Quality at a fair price's history on an index: only where a rule of the family stands
+    // on it when the run begins, so the monthly run reads the family from its next run after a freeze.
+    // see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions
+    public static bool ReadsQuality(IReadOnlyList<Core.Candidates.RegisterRow> standing, string index) =>
+        standing.Any(row => Core.Candidates.CandidateEvaluators.Find(row.Evaluator) is Core.Candidates.QualityCandidate rule && rule.Index == index);
 
     // A rule's line for the console.
     public static string RuleLine(RuleTested one) =>

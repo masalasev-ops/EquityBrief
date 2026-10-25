@@ -32,7 +32,15 @@ public sealed record QualityCardView(
     IReadOnlyList<string> Chosen,
     IReadOnlyList<QualitySoldCell> Sold,
     IReadOnlyList<QualityNextCell> Next,
-    string Rule);
+    string Rule,
+    DateOnly? LiveSince = null,
+    QualityFixedView? Fixed = null);
+
+// From 22.11 a fixed card's line, read off the answer its history test recorded before its freeze: the day its settings
+// were fixed, the first year its test read, its holdings, its edge a holding after costs as a fraction of the buy, the
+// years it had holdings in and those it came out ahead in, and whether more settings met the floors than luck alone
+// passes and whether its year-by-year test passed, none where the answer states neither.
+public sealed record QualityFixedView(DateOnly FixedOn, int FromYear, int Holdings, double? Edge, int YearsWithHoldings, int YearsAhead, bool? BeatLuck, bool? TesterPassed);
 
 // see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session
 // see: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
@@ -58,7 +66,9 @@ public sealed partial class MarkRenderer
 
         body.Append("<header class=\"fam-head\" data-family=\"quality\"><span class=\"fam-tag\" data-family=\"quality\"><span class=\"fam-swatch\" data-family=\"quality\"></span>");
         body.Append(Escaped(EquityBrief.Core.Families.QualityRule.Label)).Append("</span>");
-        body.Append(Invariant, $" <span class=\"status-pill provisional\" title=\"{Escaped(EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus)}\">Not yet tested</span>");
+        body.Append(card.LiveSince is { } since
+            ? FormattableString.Invariant($" <span class=\"status-pill live\" data-live-since=\"{DayOf(since)}\">Live since {since:d MMM yyyy}</span>")
+            : FormattableString.Invariant($" <span class=\"status-pill provisional\" title=\"{Escaped(EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus)}\">Not yet tested</span>"));
         body.Append(Invariant, $" <span class=\"fam-count\">{Escaped(card.Cells.Count == 1 ? "1 holding" : Formatted($"{card.Cells.Count} holdings"))}</span></header>");
         body.Append(Invariant, $"<p class=\"setup-about\">{Escaped(EquityBrief.Core.Families.QualityRule.Description)}</p>");
 
@@ -74,6 +84,13 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<section class=\"family-card quality-card\" data-family=\"quality\" data-index=\"{Escaped(card.Index)}\" data-holdings=\"{card.Cells.Count}\" ");
         body.Append(Invariant, $"data-last-reshuffle=\"{(card.LastReshuffle is { } last ? DayOf(last) : "none")}\" data-next-reshuffle=\"{(card.NextReshuffle is { } next ? DayOf(next) : "none")}\">");
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary>{Escaped(QualitySummary(card))}</p>");
+
+        if (card.Fixed is { } fixedOn)
+        {
+            body.Append(Invariant, $"<p class=\"family-frozen quality-fixed\" data-fixed=\"{DayOf(fixedOn.FixedOn)}\" data-holdings=\"{fixedOn.Holdings}\" data-edge=\"{(fixedOn.Edge is { } edge ? edge.ToString("R", Invariant) : "none")}\" ");
+            body.Append(Invariant, $"data-years=\"{fixedOn.YearsWithHoldings}\" data-ahead=\"{fixedOn.YearsAhead}\" data-beat-luck=\"{(fixedOn.BeatLuck is { } beat ? Flag(beat) : "none")}\" data-tester-passed=\"{(fixedOn.TesterPassed is { } passed ? Flag(passed) : "none")}\">");
+            body.Append(Escaped(QualityFixedLine(fixedOn))).Append("</p>");
+        }
 
         if (!card.Read || card.Fault is not null)
         {
@@ -122,7 +139,7 @@ public sealed partial class MarkRenderer
         foreach (var sold in card.Sold)
         {
             body.Append(Invariant, $"<p class=\"family-note quality-sold\" data-ticker=\"{Escaped(sold.Ticker)}\" data-sold-on=\"{DayOf(sold.On)}\">");
-            body.Append(Invariant, $"{Escaped(sold.Ticker)} was sold at the close of {sold.On:d MMM yyyy}: {Escaped(SoldWords(sold.Reason))}.</p>");
+            body.Append(Invariant, $"{Escaped(sold.Ticker)} was sold at the close of {sold.On:d MMM yyyy}: {Escaped(sold.Reason == "no longer qualifies" && sold.On != card.LastReshuffle ? "a filing dropped its score below its setting's bar" : SoldWords(sold.Reason))}.</p>");
         }
 
         if (card.Next.Count > 0)
@@ -139,10 +156,51 @@ public sealed partial class MarkRenderer
 
         body.Append("<details class=\"fold fam-rule\"><summary>The full rule, and how it will be tested</summary><div class=\"fold-b\">");
         body.Append(Invariant, $"<p class=\"record-said\">{Escaped(char.ToUpperInvariant(card.Rule[0]) + card.Rule[1..])}.</p>");
-        body.Append("<p class=\"record-said\">It has not been tested yet, so its holdings count toward nothing. Its test over the past seven years comes next, and its settings are fixed only on that answer.</p>");
+        body.Append(card.LiveSince is { } live
+            ? FormattableString.Invariant($"<p class=\"record-said\">Its settings were fixed on {live:d MMM yyyy} after its test over the past, and its record counts from then. Each version one setting from it runs beside it unseen, and the monthly test reads whether any does better.</p>")
+            : "<p class=\"record-said\">It has not been tested yet, so its holdings count toward nothing. Its test over the past seven years comes next, and its settings are fixed only on that answer.</p>");
         body.Append("</div></details>");
 
         return body.Append("</section>").ToString();
+    }
+
+    // The words a fixed card's line closes on where no setting its test read beat luck or passed the year-by-year test.
+    public const string QualityNoneBeatLuck = "No setting beat luck";
+
+    public const string QualityNonePassed = "No setting passed the year-by-year test";
+
+    // A fixed card's line in the reader's words, from its own recorded answer: the day its settings were fixed after its
+    // history test, its holdings and its edge a holding behind or ahead of an equal-weight hold of the index's stocks after
+    // costs, in how many of the years it had holdings, and where none beat luck or none passed the year-by-year test, that
+    // it is a starting point rather than a proven edge.
+    // see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
+    // see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions
+    public static string QualityFixedLine(QualityFixedView fixedOn)
+    {
+        var text = new StringBuilder();
+
+        text.Append(Invariant, $"Fixed {fixedOn.FixedOn:d MMM} after its history test from {fixedOn.FromYear}: {fixedOn.Holdings:#,0} holdings");
+
+        if (fixedOn.Edge is { } edge)
+        {
+            var behind = edge < 0;
+            var years = behind
+                ? fixedOn.YearsAhead == 0 ? "behind in every year it had holdings" : Formatted($"behind in {fixedOn.YearsWithHoldings - fixedOn.YearsAhead} of the {fixedOn.YearsWithHoldings} years it had holdings")
+                : fixedOn.YearsAhead == fixedOn.YearsWithHoldings ? "ahead in every year it had holdings" : Formatted($"ahead in {fixedOn.YearsAhead} of the {fixedOn.YearsWithHoldings} years it had holdings");
+
+            text.Append(Invariant, $", {Math.Abs(edge * 100):0.0} points a holding {(behind ? "behind" : "ahead of")} an equal-weight hold of the index's stocks after costs, {years}");
+        }
+
+        text.Append('.');
+
+        var none = fixedOn.BeatLuck == false ? QualityNoneBeatLuck : fixedOn.TesterPassed == false ? QualityNonePassed : null;
+
+        if (none is not null)
+        {
+            text.Append(' ').Append(none).Append(", ").Append(StartingPoint).Append('.');
+        }
+
+        return text.ToString();
     }
 
     // The card's sentence from tonight's figures.

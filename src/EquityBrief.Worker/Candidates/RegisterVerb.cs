@@ -187,6 +187,23 @@ public static class RegisterVerb
                 return await RefusedAsync(registrar, runId, unreadable.Message, error);
             }
 
+            // From 22.11 the quality family on any index: its live rule and the grid's settings one dial from it as its
+            // versions, which its freeze reads off the grid rather than taking them given.
+            // see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions
+            if (Given(IndexFamily) == Core.Families.QualityRule.Name)
+            {
+                if (variants.Count > 0 || VerbArguments.Value(args, Replacing) is not null)
+                {
+                    return await RefusedAsync(registrar, runId, "a quality freeze registers its versions off the history test's grid, one dial from its live rule, and keeps no rule in the background, so it takes neither --variants nor --replacing, and nothing was written.", error);
+                }
+
+                var (frozen, refusedFreeze) = Quality.QualityRules.Freeze(Given("--index"), live, await registrar.RowsAsync(), at);
+
+                return frozen is null
+                    ? await RefusedAsync(registrar, runId, refusedFreeze!, error)
+                    : await Said(await registrar.RegisterTogetherAsync(frozen, runId), output, error);
+            }
+
             var (registrations, refused) = Indices.IndexRules.Freeze(Given(IndexFamily), Given("--index"), live, variants, await registrar.RowsAsync(), at, VerbArguments.Value(args, Replacing));
 
             return registrations is null

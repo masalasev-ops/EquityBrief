@@ -174,6 +174,7 @@ public static class RuleScreen
         IndexBreakoutCandidate => RuleKind.IndexBreakout,
         IndexDriftCandidate => RuleKind.IndexDrift,
         IndexHeavyweightCandidate => RuleKind.IndexHeavyweights,
+        QualityCandidate => RuleKind.Quality,
         SwingFilterRule => RuleKind.Pullback,
         BreakoutCandidate => RuleKind.Breakout,
         DriftCandidate => RuleKind.Drift,
@@ -446,6 +447,7 @@ public static class RuleScreen
         evaluator switch
         {
             IndexRuleCandidate index => !large && index.SetupFamily == family && IndexRuleCandidate.NameOf(index.Index) == indexName,
+            OwnStepCandidate own => own.SetupFamily == family && OwnStepCandidate.NameOf(own.Index) == indexName,
             FamilyRuleEvaluator rule => large && rule.Family == family,
             BookEvaluator book => large && book.Family == family,
             SwingFilterRule => large && family == SetupFamilies.Pullback,

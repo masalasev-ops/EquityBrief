@@ -1017,10 +1017,10 @@ public sealed class CandidateRegistrar : IComponent
         }
 
         // A family rule whose trades are walked one at a time may state the engines' hooks beside its own parameters,
-        // each off where it is not stated; a heavyweights book reads none, so its hooks are refused as any parameter it
-        // does not read is.
+        // each off where it is not stated; a heavyweights book reads none, nor does a rule its own family's step keeps, so
+        // their hooks are refused as any parameter they do not read is.
         // see: Every engine's settings hooks land together and all default off, so the families' pins move once
-        var hooked = carried is FamilyRuleEvaluator and not IndexHeavyweightCandidate;
+        var hooked = carried is FamilyRuleEvaluator and not IndexHeavyweightCandidate and not OwnStepCandidate;
 
         if (hooked)
         {
