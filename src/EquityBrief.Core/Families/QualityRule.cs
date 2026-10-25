@@ -29,6 +29,20 @@ public sealed record QualitySettings(int ScoreFloorInNine, QualityValuation Valu
         QualityValuation.AtOrBelowMedian => "its price over earnings at or below its own median of 12 quarters",
         _ => "its price over earnings in the cheapest third of its own 12 quarters",
     };
+
+    // The setting as the history test's grid names it: the floor, the valuation, the trend, the book and the sale.
+    public string Key => string.Join(
+        "|",
+        "floor=" + ScoreFloorInNine.ToString(CultureInfo.InvariantCulture),
+        "valuation=" + Valuation switch { QualityValuation.Off => "off", QualityValuation.AtOrBelowMedian => "median", _ => "third" },
+        "trend=" + (Trend ? "on" : "off"),
+        "book=" + Holdings.ToString(CultureInfo.InvariantCulture),
+        "sale=" + (SellOnFiling ? "filing" : "reshuffle"));
+
+    // How many of the five dials stand apart from another setting's.
+    public int Changes(QualitySettings other) =>
+        (ScoreFloorInNine != other.ScoreFloorInNine ? 1 : 0) + (Valuation != other.Valuation ? 1 : 0) + (Trend != other.Trend ? 1 : 0)
+        + (Holdings != other.Holdings ? 1 : 0) + (SellOnFiling != other.SellOnFiling ? 1 : 0);
 }
 
 // Whether a member qualifies, and why not where it does not.
@@ -54,6 +68,28 @@ public static class QualityRule
     public const double CheapestThirdPlace = 2.0 / 3;
 
     public static QualitySettings Starting { get; } = new(7, QualityValuation.AtOrBelowMedian, Trend: false, Holdings: 10, SellOnFiling: false);
+
+    // The history test's dials, each level a setting may stand at.
+    public static IReadOnlyList<int> Floors { get; } = [6, 7, 8];
+
+    public static IReadOnlyList<QualityValuation> Valuations { get; } = [QualityValuation.Off, QualityValuation.AtOrBelowMedian, QualityValuation.CheapestThird];
+
+    public static IReadOnlyList<bool> Trends { get; } = [false, true];
+
+    public static IReadOnlyList<int> Books { get; } = [10, 20];
+
+    public static IReadOnlyList<bool> FilingSales { get; } = [false, true];
+
+    // The history test's grid, every crossing of the five dials: 72 settings, the starting one among them.
+    public static IReadOnlyList<QualitySettings> Grid { get; } =
+    [
+        .. from floor in Floors
+           from valuation in Valuations
+           from trend in Trends
+           from book in Books
+           from sale in FilingSales
+           select new QualitySettings(floor, valuation, trend, book, sale),
+    ];
 
     public const string NoWord = "too few checks read for a score";
     public const string UnderTheFloor = "a score under the floor";

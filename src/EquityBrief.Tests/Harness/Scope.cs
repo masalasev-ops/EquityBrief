@@ -3922,6 +3922,11 @@ internal static class Scope
             Verdict.Pass,
             "the floor of 7 in 9, a share of the checks that applied, on both sides of it with four checks read giving no word, the valuation's place at 0.5 and a hair under it, the order by the score's share, the place and the ticker, a reshuffle on the first night and each month's first, and the step over a constructed store choosing the top 10 on its first night, keeping a holding still qualifying and selling one that fell under the floor at the next month's first session while filling the places down the ranking; the figures read off the document against the constants",
             ByExpectations),
+        // 22.10, on the operator's ruling of 2026-10-24: section 17's grid of Quality at a fair price's history test.
+        [CheckReach.Key(LimitsTable, "Quality at a fair price's history test")] = new Scoped(
+            Verdict.Pass,
+            "the grid's settings each once with the starting one among them, one setting's walk over a constructed tape worked by hand, its holding's result, benchmark and edge and the tester's month over the same holdings, the floor, the valuation and the trend on both sides at a reshuffle, and a sale on a filing dropping the score worked by hand beside the same walk selling at reshuffles only; the figures read off the document against the constants",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "A member the quality family cannot score or value")] = new Scoped(
             Verdict.Pass,
             "the rule over four checks read giving no word and over no valuation's place giving none valued, and the step over a constructed store storing a member read so with its reason and choosing it on no reshuffle, and keeping a holding whose stock holds no close on a reshuffle night unanswered and unsold while one whose score fell is sold",
@@ -7947,6 +7952,8 @@ internal static class Scope
         ["The fundamentals scorecard's numbers"] = "22.8",
         // 22.9's settings, which the plan names as section 17's starting settings of the family.
         ["Quality at a fair price's starting settings"] = "22.9",
+        // 22.10's grid, which the plan names as section 17's grid of the history test.
+        ["Quality at a fair price's history test"] = "22.10",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

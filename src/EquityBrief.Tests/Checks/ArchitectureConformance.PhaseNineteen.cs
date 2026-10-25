@@ -169,9 +169,11 @@ public partial class ArchitectureConformance
     // page's words at its foot, and 22.8's nine, the fundamentals scorecard's catalogue and matrix rows, its store, section
     // 17's numbers, section 18's three and its card on the chart page and the full page, and 22.9's ten, Quality at a fair
     // price's catalogue and matrix rows, its three stores, section 17's starting settings, section 18's two, its card on
-    // Tonight and its step in section 14, which phase 22's own pair counts once its report is written.
+    // Tonight and its step in section 14, and 22.10's one, section 17's grid of its history test, which phase 22's own pair
+    // counts once its report is written.
     internal static string[] AfterPhaseNineteen =>
     [
+        .. FixtureExpectations.QualityHistoryClaims,
         .. ComponentAccess.QualityRows,
         .. SchemaColumns.QualityStoreRows,
         .. FixtureExpectations.QualityClaims,

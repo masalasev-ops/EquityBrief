@@ -8794,3 +8794,104 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    22.9's remedy from main after the merge and before the night of 2026-10-26: migration 110 alone, the night
             choosing each index's first holdings, the read surface restarted after it; the S&P 600's ledger history and
             the three checks with 22.8's remedy record; then 22.10.
+
+### 22.8 - the remedy run from main: migration 109, the whole refresh of the SEC's facts, the newest night's scorecards and ledger night, and the three ledger histories built again with their checks   2026-10-25
+
+Not a checkpoint entry: it records 22.8's remedy and what it measured, and lands nothing.
+Ran:        from main's 3b85160c, the merge of PR 552 at 02:05 UTC, `tools/remedies/2026-10-25-22.8-the-fundamentals-scorecard.txt`
+            between 02:06Z and 02:28Z with no night, local run, drain, labeller or monthly run writing: migration 109
+            applied, 108 to 109; the whole refresh; the scorecards of the night of 2026-10-23; and the ledger's night of
+            2026-10-23 by hand. Then the S&P 500's and the S&P 400's builds with `--again` over 2019-01-02 to 2026-10-05
+            from 02:35Z to 03:33:45Z from 3b85160c's clean copy, and, held for the operator's demo of that night, the S&P
+            600's from 05:04Z from main's c684ecb6, the merge of PR 554, and each index's point-in-time check after it from
+            the checkout's own build. The read surface started again from main's Release build after the remedy and after
+            the S&P 400's build. No request to the provider and no model call.
+Measured:   the refresh asked 2,121 filers and stored 515,719 facts in 1,123 seconds; the scorecards read 1,505 members,
+            scored 1,503 and gave 1,459 a word in 5 seconds; the ledger's night wrote 116 setups on the S&P 500, 124 on the
+            S&P 400 and 143 on the S&P 600 in 51 seconds. The S&P 500's build wrote 338,110 setups over 1,950 sessions,
+            49,831 passing the live rule, its quarters taking 22 minutes 44 seconds; the S&P 400's 249,926 and 35,200 in 34
+            minutes 10 seconds; the S&P 600's 343,895 and 39,984 in 26 minutes 55 seconds, each the same counts as 22.2's
+            builds, the nine readings moving no gate. Each index's check rebuilt 200 of 200 sampled history setups with
+            every reading the same. The store stands at 4.15 gigabytes.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 22.6 - record: the two corrections' stated runs, made over a later tree   2026-10-25
+
+Not a checkpoint entry: it records what the entries of PRs 553 and 554 stated of their runs, and lands nothing.
+Found:      each entry states `tools/ci.ps1` and `tools/verify-phase.ps1` green over the tree carrying it, the second with
+            2742 tests and 1433 claims. Both merged on the operator's word before those runs, and the operator's demo of
+            the night of 2026-10-24 held the machine's runs after them, so no local run was made over either tree. Hosted
+            CI failed over PR 553's head at the fold drawn on a night with no card, which PR 554 corrected, and passed
+            every check over PR 554's.
+Measured:   22.9's runs over 6ec6d00e, whose tree holds both corrections whole, ran 2755 of 2755 tests with none failed and
+            the phase report 1443 claims, 1443 passing.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 22.10 - Quality at a fair price's history test on each index: the book walked over the pulled history on 72 settings, every member scored and valued as first filed, and each index's answer   2026-10-25
+
+Queue:      done, 22.9 in PR 555 and its remedy, migration 110, from main after the merge with the read surface restarted,
+            and 22.8's three ledger histories and checks; in progress, 22.10 in this pull request; next, each index's answer to
+            the operator and 22.11 and 22.3 on their word, then 22.12 and the sign-offs of phases 18, 19 and 20 by fresh
+            sessions.
+Limits:     no paid call and no request; the store read-only, nothing written to it and nothing registered; no rule's
+            version moves, the sweep's sources none a rule pins.
+Built:      `sweep-index --index <GSPC, MID or SML> --family quality`: the history the index's own sweeps read, on
+            membership as it stood, and each member's filer's facts as first filed through the sweep history, its one
+            new read; every member scored and valued at each month's first session from 2019-01-02 by the core's own two
+            functions and again on the first session after each of its filings; the 72 settings' books walked as the
+            night's step walks its holdings, each holding bought at the next open and judged after its round trip against
+            an equal-weighted hold of the members answered on its night, each from its own open; the figures with each
+            year's edge and the edge without the five largest; the proposal among the settings meeting the family floors;
+            luck over the 72; the tester's verdict of the grid as a procedure year by year in book months; and what the
+            history could read at each year's first reshuffle. Section 13's paragraph, section 17's grid, the sweep
+            history's catalogue row, the decision, the runbook, the guide, the roster and the changelog.
+Tests:      4 new, 2759 in all: the grid's 72 settings; one setting's walk over a constructed tape of four members and two
+            reshuffles worked by hand with the tester's month; the floor, the valuation and the trend on both sides at a
+            reshuffle; and a sale on a filing worked by hand, one at the floor selling nothing.
+Fixture:    quality-history.json, derived by hand: B sold at the second reshuffle, -6 per cent against the members' 3.75,
+            an edge of -9.75 points; the tester's month -3.75 points; A sold on a filing, 2 per cent against 1.25.
+Claims:     1444, one new: section 17's grid of the history test.
+Ran:        each index from this branch's 897204b9, the checkout's own Debug build, over the live store read-only through
+            2026-10-23: the S&P 500 from 06:37:43Z to 06:38:05Z, run 20261025T063744Z; the S&P 400 from 06:38:05Z to
+            06:38:23Z, run 20261025T063805Z; the S&P 600 from 06:38:23Z to 06:38:48Z, run 20261025T063824Z; the same
+            figures as the runs over 897204b9's parent less its coverage table, between 06:33Z and 06:37Z.
+Coverage:   at each year's first reshuffle no member's price over earnings could be read against its own last twelve
+            quarters in 2019 or 2020, the pulled prices reaching back too few quarters, and few in 2021: on the S&P 500 0,
+            0 and 36 of about 508 members, on the S&P 400 0, 0 and 18 of about 385, on the S&P 600 0, 0 and 33 of about
+            575; from 2022 about 425, 331 and 464 are valued and 110, 119 and 136 qualify at the starting setting. So every
+            setting reading the valuation holds nothing before 2021, and the scorecard alone reads every year.
+S&P 500:    910 names. The starting setting: 74 holdings ended and 10 held; edge -5.16 points after its round trip, its own
+            return 3.80 against the members' 8.96; above nothing in 0 of 8 years; 2021 -9.5, 2022 -6.5, 2023 -1.8, 2024
+            -1.6, 2025 -8.3, 2026 -3.7, 2019 and 2020 none; -6.19 without its five largest. The strongest settings, both
+            with the trend read: floor 8, the cheapest third, a book of 10 and sold on a filing, 215 holdings, +1.1 points
+            in 4 years; floor 7, its own median, a book of 20, sold on a filing, 336, +1.1 in 5. 18 of the 72 stand above
+            nothing, none in 6 years. No proposal; luck alone passes about 10.4 of 72. The tester: no fold chose a
+            setting, adjusted p 1 over 57 months.
+S&P 400:    759 names. The starting setting: 69 holdings ended and 10 held; edge +11.61 points, its own 18.93 against
+            7.32; above nothing in 4 of 8; 2021 -2.6, 2022 3.0, 2023 11.0, 2024 10.0, 2025 43.1, 2026 -6.1; +0.25 without
+            its five largest. The strongest: floor 6, its own median, a book of 10, sold on a filing, 53 holdings, +15.1
+            in 4 years. 28 of 72 above nothing, none in 6 years. No proposal; the tester's folds chose none, p 1.
+S&P 600:    1,212 names. The starting setting: 71 holdings ended and 10 held; edge +9.83 points, its own 16.52 against
+            6.69; above nothing in 6 of 8, every year it held: 2021 15.9, 2022 6.0, 2023 3.0, 2024 28.5, 2025 3.1, 2026 4.9;
+            +1.75 without its five largest. The strongest: floor 6, its own median, a book of 10, sold on a filing, 51
+            holdings, +10.7 in 5 years; the starting setting sold on a filing, 71, +10.3 in 6. 32 of 72 above nothing, 4
+            in 6 years, none with 300 holdings. No proposal; the tester's folds chose none, p 1.
+Found:      the family floors of 300 holdings and 6 years above nothing are the swing families' and the heavyweights';
+            a book of 10 sells 50 to 75 holdings over the history, so no setting holding 10 meets them and the tester's
+            folds choose none on any index, its verdict reading the starting setting against itself. This and the
+            valuation's reach before 2021 are put to the operator with each answer; nothing is changed for them here.
+Mutated:    the rule, stated before the runs: one mutation for each property 22.10 adds to the walk, the smallest edit
+            undoing it where it is stated, made in the worktree and reverted with the editor, each run filtered to the
+            history test's tests. M1 a holding no longer qualifying kept at a reshuffle, red at the walk; M2 a filing's
+            sale made whatever the score, which survived until the filing test gained a filing at the floor, then red;
+            M3 the benchmark over the reshuffle's choices alone, red at the walk and the filing sale; M4 the order by the
+            place before the score's share, red at the reshuffle's thresholds.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2759 of 2759 tests ran with none failed,
+            migrations 0 to 110 with none pending, schema version 110, against `data-ci` and never `data`; the phase
+            report 64 tables, 1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    each index's answer to the operator, with the floors' reach and the valuation's; 22.11's freezes and 22.3 on
+            their word.

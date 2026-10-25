@@ -26,6 +26,31 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-25 - ARCHITECTURE.html - Quality at a fair price's history test: the sweep history reads the filed facts, section 13's paragraph and section 17's grid
+Authorised by: Quality at a fair price's history test walks the book over the pulled history on 72 settings an index and registers nothing
+Was:
+> The catalogue's Sweep history: reads ... calendar, gate results, heavyweight nights, companies | none | ... and from 20.11 each company's analysts as each fetch stored their counts with the day it fetched them, which the drift's sweep on an index's own history reads only from the session after a count was stored (see: ...); the sweep computes over what it read outside the store, ...
+Now:
+> The same, its reads ending companies, filed facts, and its words, after the analysts, and from 22.10 each member's filer's facts as first filed by the history's end, one statement a filer, which Quality at a fair price's history test scores and values each member from as of each session it reads (see: Quality at a fair price's history test walks the book over the pulled history on 72 settings an index and registers nothing).
+> And new: section 13's paragraph after the short-term dip's sweep on the history test by the same command naming the family, and section 17's row Quality at a fair price's history test.
+Why: the operator's ruling of 2026-10-24 tests the family's history on each index over 72 settings as 22.10 before any freeze, and the sweeps read the store only through the sweep history.
+
+### 2026-10-25 - RUNBOOK.md - Quality at a fair price's history test
+Authorised by: Quality at a fair price's history test walks the book over the pulled history on 72 settings an index and registers nothing
+Was:
+> The sweep section went from the short-term dip's search and tester to the rule's record on each pick's card.
+Now:
+> A paragraph after the dip's: `sweep-index --index <index> --family quality` tests the family's history over its 72 settings, reads the live store read-only and writes its report and figures into a run folder, nothing adopted, frozen or registered.
+Why: the command is how each index's answer is read before 22.11's freezes.
+
+### 2026-10-25 - .claude/rules/checks.md - fixture-expectations reaches Quality at a fair price's history test
+Authorised by: Quality at a fair price's history test walks the book over the pulled history on 72 settings an index and registers nothing
+Was:
+> fixture-expectations: ... and no source a rule's version pins one 22.9 writes |
+Now:
+> The same, then from 22.10 its history test: the grid's 72 settings, one setting's walk over a constructed tape worked by hand with the tester's month, the floor, the valuation and the trend on both sides at a reshuffle, and a sale on a filing worked by hand.
+Why: the roster row says what its check asserts, and 22.10's tests extend it.
+
 ### 2026-10-25 - ARCHITECTURE.html - Quality at a fair price: its step, its three stores, its card on Tonight, its starting settings, its two failure rows and its research
 Authorised by: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session
 Was:
