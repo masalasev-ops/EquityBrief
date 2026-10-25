@@ -1,6 +1,7 @@
 # The second remedy of the 22.11 ruling's second item, filed under 22.10 (the older pulls removed), as its PROGRESS entry
-# prints it, run once the comparison of 2026-10-25-22.10-prices-from-2015.txt is stated and only where it names no stock
-# the older pulls hold that no newer pull does. It removes the ten bars pulls made from 2018 before the ruling, each whole
+# prints it, run once the comparison of 2026-10-25-22.10-prices-from-2015.txt is stated and only where every stock it names
+# the older pulls hold and no newer pull does is held by no index today, which the 22.10 correction of the same day read
+# for the thirteen it named. It removes the ten bars pulls made from 2018 before the ruling, each whole
 # by its purge, their bars and their prints and nothing else, so every reader reads the pulls from 2015-10-01. Each
 # index's ledger history is then built again by hand with
 # tools/ledger-build.ps1 --index <GSPC, MID or SML> --from 2019-01-02 --through 2026-10-05 --again, which builds main's own

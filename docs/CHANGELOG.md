@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-25 - RUNBOOK.md - an older pull is kept standing only for a stock an index holds that no newer pull does
+Corrects: the runbook kept standing any older pull holding a stock no newer pull does, which the comparison of 2026-10-25 showed keeps two pulls standing for thirteen stocks no index holds and hands the sweeps' history IIVI's 204 sessions after 2022-09-07 at the older pull's scale.
+Was:
+> Each older pull is then removed by its purge once those lines are stated, and a stock the older hold that no newer pull does keeps the older pull standing until it is answered.
+Now:
+> Each older pull is then removed by its purge once those lines are stated, and a stock the older hold that no newer pull does keeps the older pull standing until it is answered where an index holds it today, its membership, its fund's holdings or its members today naming it; a stock no index holds is read by no reader, so it goes with its pull, since an older pull kept standing hands the sweeps' history its sessions a newer series lacks at the older pull's scale.
+Why: a pull is removed whole, so keeping one standing for a stock no reader reads keeps every other stock's sessions in it too.
+
 ### 2026-10-25 - ARCHITECTURE.html - Quality at a fair price's floors read in its book's months, and its coverage counting the members whose filings reach every quarter the valuation reads
 Authorised by: A quality book meets its floors in months held, and a fold reads them in proportion to the years it learns on
 Was:
