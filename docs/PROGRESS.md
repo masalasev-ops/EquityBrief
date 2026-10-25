@@ -8679,3 +8679,36 @@ Carried:    22.8's remedy from main after the merge, while no other writer runs:
             the SEC's facts, about 2,121 free requests in about 28 minutes, the newest night's scorecards and the
             ledger's night by hand, then the three ledger histories built again from 2019-01-02 to 2026-10-05 with
             their checks, about two hours; then the levels plan's figure on Tonight and 22.9.
+
+### 22.6 - correction: each S&P 500 buy point's fold draws the stock's entry and exit plan beneath its setup's own plan again, on the operator's word   2026-10-25
+
+Queue:      done, 22.8 merged as PR 552 and its remedy's four steps run from main; in progress, this correction, with
+            the three ledger histories built again beside it once the off-peak run has finished; next, 22.9 merged
+            before the night of 2026-10-26, then 22.10, 22.11 and 22.3 on the operator's word, and 22.12.
+Found:      the operator on 2026-10-25, word for word in `prompts/2026-10-25-22.6-correction-plan-diagram-back.md`: "why
+            did the graphical entry exit plan go away ? i want it back in the reports and the tonight page along with
+            what is there", and, shown that the stock's full page still draws it: "Can we have it on the tonight page as
+            well for each stock along with what is there ?" 22.6 had taken the levels plan out of each buy point's fold
+            on their addendum of 2026-10-24, so that a pick showed one stop.
+Corrected:  each row of tomorrow's buys on the S&P 500 folds its pick's card with the stock's entry and exit plan drawn
+            inside it straight beneath the setup's own plan: the plan column and its two tables as the full page draws
+            them, from the plan the night shown stored and against that night's close, in the reader's words; a plan
+            placing nothing, or none stored, says why in one line. The line beneath the setup's plan says the trade is
+            sold by the setup's exits alone and where the entry and exit plan stands; an S&P 400 or 600 card says none
+            is worked for its index's stocks. The decision naming the fold supersedes 22.6's, moved to Previously decided.
+Tests:      2 new and 2 extended, 2742 in all: tomorrow's buys reading F3's plan back beneath its card's own plan worked
+            by hand and F1's line where none is stored; the plan in the reader's words in every form a ladder takes, and
+            the check failing the full page's own words for it drawn there; and the card's line on each index.
+Claims:     1433, none new.
+Pins:       none move: no source a rule's version pins is written.
+Mutated:    the rule, stated before the runs: each property the correction adds broken in turn by one edit, made in the
+            worktree and reverted with the editor, each run filtered to its tests. M1 the fold handing the card no plan,
+            red; M2 the plan column naming the rising stop a trail when drawn plain, red in both plain-words tests; M3 the
+            exits' sentences in the full page's words when plain, red; M4 the card's line ignoring the plan below it, red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2742 of 2742 tests ran with none failed,
+            migrations 0 to 109 with none pending, schema version 109, against `data-ci` and never `data`; the phase
+            report 64 tables, 1433 claims, 1433 passing, none out of scope and none unexamined, 1448 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    22.9 to 22.12 as 22.7's planning entry carries them, and the record of 22.8's remedy with its three ledger
+            histories once they are built.

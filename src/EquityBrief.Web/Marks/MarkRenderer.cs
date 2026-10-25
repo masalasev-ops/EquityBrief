@@ -1391,7 +1391,10 @@ public sealed partial class MarkRenderer : IComponent
     // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
     // A name with no plan says why, in the reason its ladder stored, and what would bring a plan, in place of the figure.
     // see: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table
-    public string PlanColumn(string ticker, decimal close, IReadOnlyList<PlanRow> rows, string? reason = null, string? forms = null)
+    // Drawn plain, as a buy point's fold on Tonight draws it, the top exit's stop that follows the price up is named in the
+    // reader's words.
+    // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
+    public string PlanColumn(string ticker, decimal close, IReadOnlyList<PlanRow> rows, string? reason = null, string? forms = null, bool plain = false)
     {
         if (rows.Count == 0)
         {
@@ -1444,7 +1447,7 @@ public sealed partial class MarkRenderer : IComponent
                     right.Add((index, Y(row.HighEdge) + 10, [Formatted($"Buy {Zone(row)}"), .. Clauses(row.Detail)]));
                     break;
                 case PlanKind.Exit:
-                    right.Add((index, Y(row.LowEdge) - 2, [row.Trails ? Formatted($"Trail from {Zone(row)}") : Formatted($"Sell at {Zone(row)}"), .. Clauses(row.Detail)]));
+                    right.Add((index, Y(row.LowEdge) - 2, [row.Trails ? Formatted($"{(plain ? "Rising stop from" : "Trail from")} {Zone(row)}") : Formatted($"Sell at {Zone(row)}"), .. Clauses(row.Detail)]));
                     break;
                 case PlanKind.Invalidation:
                     left.Add((index, Y(row.LowEdge) - 5, [Formatted($"Invalidation {Price(row.LowEdge)}")]));
@@ -1632,8 +1635,9 @@ public sealed partial class MarkRenderer : IComponent
     // figure is read beside, each under its own heading. A tranche's zone, what it
     // is bought on and its stop are a column each, and the stop the invalidation
     // sits at says so. Every cell is a stored value, drawn at the places it is read
-    // at with the stored edges on its row.
-    public string PlanTables(string ticker, IReadOnlyList<PlanRow> rows)
+    // at with the stored edges on its row. Drawn plain, as a buy point's fold on Tonight draws it, a plan placing nothing
+    // to buy says so in the reader's words.
+    public string PlanTables(string ticker, IReadOnlyList<PlanRow> rows, bool plain = false)
     {
         var tranches = rows.Where(row => row.Kind == PlanKind.Tranche).ToArray();
         var exits = rows.Where(row => row.Kind == PlanKind.Exit).ToArray();
@@ -1646,7 +1650,7 @@ public sealed partial class MarkRenderer : IComponent
 
         if (tranches.Length == 0)
         {
-            html.Append("<p class=\"degraded\" data-entries=\"none\">The plan places no tranche.</p>");
+            html.Append(plain ? "<p class=\"degraded\" data-entries=\"none\">The plan places no zone to buy in.</p>" : "<p class=\"degraded\" data-entries=\"none\">The plan places no tranche.</p>");
         }
         else
         {
@@ -3258,7 +3262,7 @@ public sealed partial class MarkRenderer : IComponent
             // region is for whichever row is selected, and a row a reader cannot select is a row the
             // region can never be about. The address it selects carries the night as well as the name,
             // so a selected view of an earlier night is a link like every other view.
-            // see: Each buy point's row folds its pick's card alone, and the levels plan stays on the stock's full page
+            // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
             list.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-fired-count=\"{row.FiredCount}\" data-strength=\"{row.Strength}\" ");
             list.Append(Invariant, $"data-day-change=\"{Change(row.DayChangePct)}\" data-trend-state=\"{Escaped(row.TrendState ?? NotClassified)}\" ");
             list.Append(Invariant, $"data-selects=\"{Escaped(row.Ticker)}\" data-select-href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}\"{(row.RepeatOf is { } again ? Formatted($" data-repeat-of=\"{DayOf(again)}\"") : string.Empty)}>");

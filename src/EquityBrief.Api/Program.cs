@@ -1971,15 +1971,22 @@ app.MapGet("/screens/tonight/{night?}", async (
     }
 
     // On a night the families drew the list, every buy point folds its pick's card beneath its row, the one the hash names
-    // open, and no row is selected where it names none; the stock's levels plan is drawn on its full page alone. On a
-    // night before them, whichever row the reader selected, and the first row where they selected none: section 15.7's
-    // region is for whichever row is selected, and a row of either list can be selected.
-    // see: Each buy point's row folds its pick's card alone, and the levels plan stays on the stock's full page
+    // open, and no row is selected where it names none; from the 22.6 correction of 2026-10-25 the card draws the stock's
+    // entry and exit plan beneath its setup's own, the plan the night shown stored against that night's close. On a night
+    // before them, whichever row the reader selected, and the first row where they selected none: section 15.7's region
+    // is for whichever row is selected, and a row of either list can be selected.
+    // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
     var asked = request.Query["name"].FirstOrDefault();
     var pointed = cards is null ? [] : cards.SelectMany(card => card.Picks).Select(pick => pick.Row.Ticker).Distinct(StringComparer.Ordinal).ToArray();
     var opened = asked is { } named && pointed.Contains(named, StringComparer.Ordinal) ? named : null;
     var selection = cards is null ? TonightScreen.Selected(rows, asked, nearRows) : null;
     var selected = selection is { } chosen ? await PlanOf(chosen.Ticker) : string.Empty;
+    var plans = new Dictionary<string, string>(StringComparer.Ordinal);
+
+    foreach (var ticker in pointed)
+    {
+        plans[ticker] = NameScreen.EntryAndExitPlan(marks, ticker, await read.LadderAsync(ticker, dated), universe.FirstOrDefault(row => row.Ticker == ticker)?.Close);
+    }
 
     // The sector heavyweights' card, drawn after the swing families' on a night they drew the page, whatever the
     // market check read.
@@ -2090,7 +2097,8 @@ app.MapGet("/screens/tonight/{night?}", async (
             closeOpen: request.Query[MarkRenderer.CloseToBuyKey].FirstOrDefault() == MarkRenderer.CloseToBuyOpen,
             newest: await read.NewestNightAsync() == dated,
             closeHref: closeToBuy is null ? null : MarkRenderer.CloseToBuyHref(night is { Length: > 0 } ? SinglePageApp.NightRoute + night : "#/", reading.Word),
-            ended: cards is null ? null : TonightScreen.EndedTonight(dated, PicksScreen.Cells(picks, dated), await read.DipTradesAsync(reading.Code, dated))),
+            ended: cards is null ? null : TonightScreen.EndedTonight(dated, PicksScreen.Cells(picks, dated), await read.DipTradesAsync(reading.Code, dated)),
+            plans: plans),
         "text/html; charset=utf-8");
 });
 

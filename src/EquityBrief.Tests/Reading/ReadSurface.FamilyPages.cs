@@ -219,9 +219,10 @@ public partial class ReadSurface
 
     // 19.2, and from the 19.2 correction of 2026-10-21: Tonight opens on a tile a setup in the one family order and one
     // table of tonight's buy points across every setup, each tile's count and state worked by hand off the night the lister
-    // drew, and every row folding beneath it its pick's card, from 22.6 alone, each fold closed where the link names no
-    // row and the one a link names open, opened and closed by the control in its row's stock cell.
-    // see: Each buy point's row folds its pick's card alone, and the levels plan stays on the stock's full page
+    // drew, and every row folding beneath it its pick's card, from 22.6 with its setup's own plan and from the 22.6
+    // correction of 2026-10-25 the stock's entry and exit plan beneath it, each fold closed where the link names no row and
+    // the one a link names open, opened and closed by the control in its row's stock cell.
+    // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
     // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the short-term dip's among them
     [Fact]
     public async Task TonightOpensOnATileASetupAndOneTableOfBuyPointsEachFoldingItsPlanAndCardBeneathIt()
@@ -238,6 +239,9 @@ public partial class ReadSurface
         store.Execute(
             "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) VALUES " +
             $"('F3', '{TheSwitch}', '95.5', '97.25', 'support', 1, 3, 1, '[]'), ('F3', '{TheSwitch}', '110', '112', 'resistance', 1, 2, 1, '[]');");
+
+        // F3's close that night, at the 100 its plan is entered at, which its entry and exit plan is drawn against.
+        PickBar(store, "F3", TheSwitch, "100");
 
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
@@ -298,17 +302,38 @@ public partial class ReadSurface
                 .Select(match => match.Groups[1].Value));
         Assert.Equal("fold-pullback-f2", folds[1].Id);
 
-        // From 22.6 a pick's fold draws its setup's own plan alone: F3's night stored a levels plan of three rows over two
-        // bands, its tranche stopped at 94, and its fold draws none of it, one stop and one target, the 96 and 110 its
-        // pick stored, and a link to the stock's full page where the levels plan stays.
+        // From the 22.6 correction of 2026-10-25 a pick's fold draws the stock's entry and exit plan beneath its setup's own
+        // plan. F3's night stored a levels plan of three rows over two bands: a tranche from 95.50 to 97.25 bought on the
+        // price reaching it and stopped at 94, the stop the whole position is wrong under, and one exit from 110 to 112
+        // selling the whole position. Its fold draws the setup's own plan first, one stop and one target, the 96 and 110
+        // its pick stored, with the line saying the trade is sold by those exits alone; then the plan column of the three
+        // rows against F3's close that night and the plan's two tables in the reader's words; then the link to the stock's
+        // full page, where no level summary is repeated.
         var planned = folds.Single(fold => fold.Ticker == "F3").Body;
+        var close = Strings(store, $"SELECT close FROM bar WHERE ticker = 'F3' AND session_date = '{TheSwitch}';").Single();
+        var levels = Assert.Single(Blocks(planned, "<section class=\"card-levels\".*?</section>"));
 
-        Assert.DoesNotContain("selected-name", planned, StringComparison.Ordinal);
-        Assert.DoesNotContain("data-plan-rows", planned, StringComparison.Ordinal);
-        Assert.DoesNotContain("94.00", planned, StringComparison.Ordinal);
+        Assert.True(
+            planned.IndexOf("<section class=\"card-plan\"", StringComparison.Ordinal) is var plan and >= 0 && plan < planned.IndexOf("<section class=\"card-levels\"", StringComparison.Ordinal),
+            "F3's entry and exit plan is not drawn beneath its setup's own plan.");
         Assert.Single(Regex.Matches(planned, "<div class=\"plan-tile\" data-tile=\"stop\"><span class=\"tile-label\">Sell if it closes below</span><b class=\"loss\">96.00</b>"));
         Assert.Single(Regex.Matches(planned, "<div class=\"plan-tile\" data-tile=\"target\"><span class=\"tile-label\">Sell if it reaches</span><b class=\"gain\">110.00</b>"));
+        Assert.Contains($"<p class=\"card-note\">{EquityBrief.Web.Marks.MarkRenderer.OnePlanSays("pullback", below: true)}</p>", planned, StringComparison.Ordinal);
+        Assert.StartsWith("<section class=\"card-levels\" data-ticker=\"F3\" data-plan-rows=\"3\"><h5>Entry and exit plan</h5><div class=\"plan-grid\"><div class=\"fig\"><svg class=\"plan-column\"", levels, StringComparison.Ordinal);
+        Assert.Contains($"data-ticker=\"F3\" data-rows=\"3\" data-close=\"{close}\"", levels, StringComparison.Ordinal);
+        Assert.Equal(
+            ["tranche|95.5|97.25", "invalidation|94|94", "exit|110|112"],
+            Regex.Matches(levels, "<g class=\"plan-row\" data-kind=\"([^\"]+)\" data-low-edge=\"([^\"]+)\" data-high-edge=\"([^\"]+)\"").Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}|{match.Groups[3].Value}"));
+        Assert.Contains("<tr data-low-edge=\"95.5\" data-high-edge=\"97.25\"><td class=\"num\">95.50 to 97.25</td><td>the price reaching the zone</td><td>a daily close below 94.00, where the whole position is wrong</td></tr>", levels, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"num\">110.00 to 112.00</td><td>sell 1/1 of the position</td></tr>", levels, StringComparison.Ordinal);
+        Assert.DoesNotContain("level-summary", planned, StringComparison.Ordinal);
         Assert.Contains("<p class=\"card-full\"><a href=\"#/name/F3\">The stock's full page</a></p>", planned, StringComparison.Ordinal);
+
+        // A pick whose night stored no plan says so in the plan's place, F1 among the six.
+        Assert.Contains(
+            "<section class=\"card-levels\" data-ticker=\"F1\" data-plan-rows=\"0\"><h5>Entry and exit plan</h5><p class=\"degraded\" data-plan=\"none\">No entry and exit plan is drawn for F1: no plan is stored for it on the night.</p></section>",
+            folds.Single(fold => fold.Ticker == "F1").Body,
+            StringComparison.Ordinal);
 
         // F2 named in the link: its fold alone open, straight after its row and before F3's, its row selected and its
         // control saying it is open, every other control closed.

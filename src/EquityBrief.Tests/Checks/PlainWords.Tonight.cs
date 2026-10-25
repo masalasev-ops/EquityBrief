@@ -180,7 +180,9 @@ public partial class PlainWords
     }
 
     // A pick's card in every part and every form it draws speaks in the reader's words, opened beneath a row of tomorrow's
-    // buys as Tonight draws it; and its plan is the setup's own alone, one stop and at most one target, with no levels plan.
+    // buys as Tonight draws it; its plan is the setup's own, one stop and at most one target, with no level summary; and
+    // its line says the trade is sold by those exits alone and where the stock's entry and exit plan stands, on the stock's
+    // full page on the S&P 500 and worked for no stock of the S&P 400 or 600.
     [Fact]
     public void APicksCardSpeaksInTheReadersWordsInEveryPartAndFormItDraws()
     {
@@ -202,7 +204,12 @@ public partial class PlainWords
             Assert.True(System.Text.RegularExpressions.Regex.Matches(drawn, "data-tile=\"target\"").Count <= 1);
             Assert.DoesNotContain("level-summary", drawn, StringComparison.Ordinal);
             Assert.DoesNotContain("selected-name", drawn, StringComparison.Ordinal);
-            Assert.Contains(MarkRenderer.OnePlanSays(card.Family == HeavyweightRule.Name ? "sector heavyweights" : SetupFamilies.Named(card.Family)!.Label.ToLowerInvariant()), System.Net.WebUtility.HtmlDecode(drawn), StringComparison.Ordinal);
+            Assert.Contains(
+                MarkRenderer.OnePlanSays(
+                    card.Family == HeavyweightRule.Name ? "sector heavyweights" : SetupFamilies.Named(card.Family)!.Label.ToLowerInvariant(),
+                    index: card.Index == "GSPC" ? null : new IndexMembers(card.Index, 0).Named),
+                System.Net.WebUtility.HtmlDecode(drawn),
+                StringComparison.Ordinal);
         }
     }
 

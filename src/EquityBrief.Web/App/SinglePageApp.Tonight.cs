@@ -25,7 +25,8 @@ public sealed partial class SinglePageApp
         string universe,
         string? open,
         EndedTonightView? ended,
-        IReadOnlyDictionary<string, string>? links = null)
+        IReadOnlyDictionary<string, string>? links = null,
+        IReadOnlyDictionary<string, string>? plans = null)
     {
         var region = new StringBuilder();
 
@@ -37,7 +38,7 @@ public sealed partial class SinglePageApp
         var (tiles, points) = TopOf(families, heavyweights, line.Open, night, line.Checks, line.DipOpen);
 
         region.Append(Cards.Computed("Tonight in one minute", marks.OneMinute(new OneMinuteView(line, tiles, ended, null)), stamp: Cards.Night(night), id: "one-minute", region: "one-minute"));
-        region.Append(Cards.Computed("Tomorrow's buys", marks.TomorrowsBuys(points, open, links), stamp: Cards.Night(night), id: "buy-points", region: "buy-points"));
+        region.Append(Cards.Computed("Tomorrow's buys", marks.TomorrowsBuys(points, open, links, plans), stamp: Cards.Night(night), id: "buy-points", region: "buy-points"));
         region.Append(marks.CloseToBuy(line.CloseRead ? closeToBuy ?? [] : null, closeOpen, newest, universe));
 
         // The six setups: each tile's badge from its card's standing, and its line from tonight's picks, its holdings or
