@@ -9293,3 +9293,34 @@ Ruled:      by the operator on 2026-10-25 at about 20:20 UTC, to two questions p
 Queue:      as the ruling entry above.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
+
+### 22.11 - Quality at a fair price frozen on the S&P 400 and 600 at their starting settings on the operator's answers, each answer recorded at the starting setting as ruled, and the card's line opening as every frozen card's   2026-10-25
+
+Queue:      done, 22.11 on the S&P 500 and its records; in progress, 22.11 on the S&P 400 and 600 in this pull request;
+            next, its remedy from main after the merge, 22.3 on the two answers, 22.12, then the stop and report, and the
+            sign-offs of phases 18, 19 and 20 by fresh sessions.
+Limits:     no paid call and no request from this branch; no migration; the store read-only; no rule's version moves,
+            the quality evaluators' sources untouched.
+Built:      `sweep-answer`'s ruled setting reads a quality history test: `--ruled` and `--setting` with no `--entry`
+            record the setting named among those the grid walked, its holdings, its edge each year and without its five
+            largest, beside the run's settings, those meeting the floors against luck and its own tester's verdict, in
+            place of the proposal the run states; a setting the grid did not walk and an entry are refused writing
+            nothing. The quality card's frozen line opens "Its settings were fixed on", its day and the rest as before,
+            on every index. The remedy runs each index's history test again from main, records its answer at the
+            starting setting as ruled and freezes the family there with its seven one-step neighbours. The decision,
+            section 17's row, the runbook's ruled form and remedy, the guide, the roster and the changelog.
+Tests:      2 new, 2777 in all, one amended: the answer recorded as the run states it and as ruled, with its two
+            refusals; the remedy's lines over a register shaped as the operator's stood after the S&P 500's freeze, each
+            index's eight at one instant; the card's line read back word for word as it now opens.
+Claims:     1444, none new: section 17's row is amended in place.
+Mutated:    the rule, stated before the runs: one mutation for each property this pull request adds, the smallest edit
+            undoing it, made in this checkout and reverted with the editor, each run filtered to the tests reading it.
+            M1 the ruled setting read as the proposal; M2 a setting the grid did not walk recorded; M3 the line opening
+            "Fixed" again. Each red: M1 and M2 at the ruled answer's test, M3 at the frozen card's.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2777 of 2777 tests ran with none failed,
+            migrations 0 to 111 with none pending, schema version 111, against `data-ci` and never `data`; the phase
+            report 64 tables, 1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    `tools/remedies/2026-10-25-22.11-the-s-and-p-400-and-600-quality-freezes.txt` from main after the merge,
+            when no other writer runs, then the read surface restarted; 22.3.

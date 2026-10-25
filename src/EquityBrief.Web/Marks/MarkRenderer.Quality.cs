@@ -179,7 +179,7 @@ public sealed partial class MarkRenderer
     {
         var text = new StringBuilder();
 
-        text.Append(Invariant, $"Fixed {fixedOn.FixedOn:d MMM} after its history test from {fixedOn.FromYear}: {fixedOn.Holdings:#,0} holdings");
+        text.Append(Invariant, $"Its settings were fixed on {fixedOn.FixedOn:d MMM} after its history test from {fixedOn.FromYear}: {fixedOn.Holdings:#,0} holdings");
 
         if (fixedOn.Edge is { } edge)
         {

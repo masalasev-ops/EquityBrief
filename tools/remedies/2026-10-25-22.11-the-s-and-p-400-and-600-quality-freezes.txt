@@ -1,0 +1,15 @@
+# The remedy of 22.11 on the S&P 400 and 600, as its PROGRESS entry prints it, on the operator's answers of 2026-10-25.
+# On each index the history test is run again from main, about half a minute, so its run writes the answer file 22.10's
+# runs did not; its answer is recorded at the starting setting as the operator ruled, in place of the proposal the run
+# states, so the frozen card draws the figures of the setting its freeze fixes; and the family is frozen there at its
+# starting setting, a score of 7 in 9, at or below its own usual price, the trend off, a book of 10 and sold at
+# reshuffles, with its seven one-step neighbours as versions, eight rules at one instant. No request to the provider, none
+# to the SEC and no model call. Run from main after the merge and before the night, when no night, local run, drain,
+# labeller, history read, ledger build or monthly run is writing, read the output for "remedy done", and restart the read
+# surface after it.
+sweep-index --index MID --family quality
+sweep-answer --newest quality --index MID --ruled 2026-10-25 --setting "floor=7|valuation=median|trend=off|book=10|sale=reshuffle"
+register --index-family quality --index MID --parameters floor=7,valuation=1,trend=0,book=10,sale=0
+sweep-index --index SML --family quality
+sweep-answer --newest quality --index SML --ruled 2026-10-25 --setting "floor=7|valuation=median|trend=off|book=10|sale=reshuffle"
+register --index-family quality --index SML --parameters floor=7,valuation=1,trend=0,book=10,sale=0

@@ -26,6 +26,33 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-25 - ARCHITECTURE.html - section 17 names the S&P 400's and 600's quality freezes
+Authorised by: The S&P 400's and 600's quality rules are frozen at their starting settings on the operator's answer, as the S&P 500's was
+Was:
+> Section 17's Quality at a fair price's starting settings: ... the large cap index's live rule frozen at it, each setting of the history test's grid one dial from it a version beside it, and the mid and small cap indices' provisional at it until the operator rules on their answers (see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions) | ...; their ruling of 2026-10-25 froze each index at it where no setting met the floors. ...
+Now:
+> ... each index's live rule frozen at it, each setting of the history test's grid one dial from it a version beside it, the large cap index's where no setting met the floors (see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions) and the mid and small cap indices' on the operator's answer where some did (see: The S&amp;P 400's and 600's quality rules are frozen at their starting settings on the operator's answer, as the S&amp;P 500's was) | ...; their ruling of 2026-10-25 froze each index at it where no setting met the floors, and their answers of the same day froze the mid and small cap indices at it. ...
+Why: the operator's answers of 2026-10-25 freeze the S&P 400 and 600 at the starting setting with its seven one-step neighbours.
+
+### 2026-10-25 - RUNBOOK.md - a quality history test's ruled setting and the S&P 400's and 600's quality remedy
+Authorised by: The S&P 400's and 600's quality rules are frozen at their starting settings on the operator's answer, as the S&P 500's was
+Was:
+> ... A setting not among the strongest the search read and an entry the stage did not read on it are each refused with nothing written.
+> ... 22.11's remedy, on the operator's ruling of 2026-10-25, does this for the S&P 500 alone, ...: powershell -File tools/remedy.ps1 tools/remedies/2026-10-25-22.11-the-s-and-p-500-quality-freeze.txt
+Now:
+> ... A setting not among the strongest the search read and an entry the stage did not read on it are each refused with nothing written. From the operator's answers of 2026-10-25 a quality history test's run takes `--ruled` and `--setting` with no `--entry`, ..., and records that setting's figures in place of the proposal the run states, beside the run's own tester's verdict, ...; a setting the grid did not walk and an entry are each refused with nothing written (see: ...).
+> ... 22.11's remedy ...: powershell -File tools/remedy.ps1 tools/remedies/2026-10-25-22.11-the-s-and-p-500-quality-freeze.txt
+> The S&P 400's and 600's remedy, on the operator's answers of the same day, freezes each at the starting setting with its seven one-step neighbours ..., recording each index's answer at the starting setting as ruled ...; run it as the first: powershell -File tools/remedy.ps1 tools/remedies/2026-10-25-22.11-the-s-and-p-400-and-600-quality-freezes.txt
+Why: the operator's answers of 2026-10-25 freeze the S&P 400 and 600 at the starting setting, where the answer a run states is its proposal's, so the ruled setting's route reads a quality history test.
+
+### 2026-10-25 - .claude/rules/checks.md - fixture-expectations states the S&P 400's and 600's quality freezes
+Authorised by: The S&P 400's and 600's quality rules are frozen at their starting settings on the operator's answer, as the S&P 500's was
+Was:
+> fixture-expectations: ... and no source another rule's version pins one 22.11 writes, the quality rules' versions pinning the files their own step runs through as the evaluator pin reads them off the compiled code |
+Now:
+> fixture-expectations: ... as the evaluator pin reads them off the compiled code; and on the operator's answers of 2026-10-25 a quality history test's answer recorded as the run states it, its proposal's figures, and as ruled, its starting setting's with the run's own tester's verdict and the day of the ruling, a setting the grid did not walk and an entry each refused writing nothing, and the S&P 400's and 600's remedy lines freezing each index's family after the S&P 500's over a register shaped as the operator's stood, ... the S&P 400's valuation-off neighbour among them |
+Why: each roster row says what its check asserts, and the answers' tests extend fixture-expectations.
+
 ### 2026-10-25 - BUILD_PLAN.md - 22.3 registers every neighbour meeting the floors over the prices pulled from 2015-10-01
 Authorised by: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
 Was:

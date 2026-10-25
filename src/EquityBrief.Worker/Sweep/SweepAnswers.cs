@@ -216,23 +216,9 @@ public sealed class SweepAnswers(IClock clock, string databaseFile, string sweep
             // see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions
             if (root.TryGetProperty("family", out var named) && named.GetString() == QualityRule.Name && root.TryGetProperty("settings", out var grid))
             {
-                var settings = grid.EnumerateArray().ToArray();
                 var key = root.TryGetProperty("proposal", out var proposed) && proposed.ValueKind == JsonValueKind.String ? proposed.GetString()! : QualityRule.Starting.Key;
-                var chosen = settings.Single(setting => setting.GetProperty("Key").GetString() == key).GetProperty("Figures");
-                var tested = root.TryGetProperty("tested", out var verdict) && verdict.ValueKind == JsonValueKind.Object ? verdict : (JsonElement?)null;
 
-                return (new AnswerFigures(
-                    key,
-                    chosen.GetProperty("Trades").GetInt32(),
-                    Number(chosen, "Edge"),
-                    Years(chosen.GetProperty("YearEdge")),
-                    Number(chosen, "EdgeWithoutLargest"),
-                    settings.Length,
-                    settings.Count(setting => setting.GetProperty("meetsFloors").GetBoolean()),
-                    Number(root, "luck"),
-                    tested is null ? null : run,
-                    tested is { } judged ? Number(judged.GetProperty("verdict"), "Adjusted") : null,
-                    tested is { } passed ? passed.GetProperty("passed").GetBoolean() : null), null);
+                return (QualityFiguresOf(run, root, [.. grid.EnumerateArray()], key), null);
             }
 
             if (root.TryGetProperty("wouldRun", out var wouldRun) && wouldRun.TryGetProperty("figures", out var figures))
@@ -331,6 +317,27 @@ public sealed class SweepAnswers(IClock clock, string databaseFile, string sweep
                     .Select((edge, place) => (Year: SweepColumns.FirstScored.Year + place, Edge: Edge(edge)))
                     .ToDictionary(pair => pair.Year, pair => pair.Edge);
 
+            // From the answers of 2026-10-25 a quality family's history test: the ruled setting's figures among the settings
+            // its grid walked, read as the family's own answer reads its proposal's, beside the run's own tester's verdict;
+            // refused where the setting is not one the grid walked or an entry is named, which the family reads none of.
+            // see: The S&P 400's and 600's quality rules are frozen at their starting settings on the operator's answer, as the S&P 500's was
+            if (root.TryGetProperty("family", out var named) && named.GetString() == QualityRule.Name && root.TryGetProperty("settings", out var grid))
+            {
+                var walked = grid.EnumerateArray().ToArray();
+
+                if (ruled.Entry is not null)
+                {
+                    return (null, $"run {run} is a quality history test, which reads no entry, so a ruled setting on it names none");
+                }
+
+                if (walked.All(setting => setting.GetProperty("Key").GetString() != ruled.Setting))
+                {
+                    return (null, $"'{ruled.Setting}' is not a setting run {run}'s history test walked");
+                }
+
+                return (QualityFiguresOf(run, root, walked, ruled.Setting) with { RuledOn = ruled.On }, null);
+            }
+
             if (!root.TryGetProperty("strongestTen", out var strongest) || !root.TryGetProperty("afterCosts", out var afterCosts))
             {
                 return (null, $"run {run}'s figures hold no search's strongest settings to read a ruled setting from");
@@ -377,6 +384,33 @@ public sealed class SweepAnswers(IClock clock, string databaseFile, string sweep
 
     // The second stage's dial a drift's entry is read on, as its tries name it.
     const string EntryDial = "entry";
+
+    // A quality history test's figures for one setting of the grid it walked: its holdings, its edge, its edge each year
+    // and without its five largest, the settings walked and those meeting its floors against luck, and the run's own
+    // tester's verdict where it states one.
+    static AnswerFigures QualityFiguresOf(string run, JsonElement root, JsonElement[] settings, string key)
+    {
+        static double? Number(JsonElement element, string name) =>
+            element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number ? value.GetDouble() : null;
+
+        var chosen = settings.Single(setting => setting.GetProperty("Key").GetString() == key).GetProperty("Figures");
+        var tested = root.TryGetProperty("tested", out var verdict) && verdict.ValueKind == JsonValueKind.Object ? verdict : (JsonElement?)null;
+
+        return new AnswerFigures(
+            key,
+            chosen.GetProperty("Trades").GetInt32(),
+            Number(chosen, "Edge"),
+            chosen.GetProperty("YearEdge").EnumerateArray()
+                .Select((edge, place) => (Year: SweepColumns.FirstScored.Year + place, Edge: edge.ValueKind == JsonValueKind.Number ? edge.GetDouble() : (double?)null))
+                .ToDictionary(pair => pair.Year, pair => pair.Edge),
+            Number(chosen, "EdgeWithoutLargest"),
+            settings.Length,
+            settings.Count(setting => setting.GetProperty("meetsFloors").GetBoolean()),
+            Number(root, "luck"),
+            tested is null ? null : run,
+            tested is { } judged ? Number(judged.GetProperty("verdict"), "Adjusted") : null,
+            tested is { } passed ? passed.GetProperty("passed").GetBoolean() : null);
+    }
 
     // The tester's verdict on the family's search from a tester run's own figures: its run, its adjusted p and whether it
     // passed, the entry the run tested for the answer's family, and for the sector heavyweights for its design; refused
