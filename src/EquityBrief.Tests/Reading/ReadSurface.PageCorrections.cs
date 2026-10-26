@@ -11,8 +11,8 @@ using EquityBrief.Worker.Rules;
 
 namespace EquityBrief.Tests.Reading;
 
-// read-surface, the page corrections of 2026-10-26 on the operator's ruling of 2026-10-25: each moves a page alone, and
-// no source a rule's code version pins is one they write.
+// read-surface, the page corrections of 2026-10-26 on the operator's rulings of 2026-10-25 and 2026-10-26: each moves a
+// page alone, and no source a rule's code version pins is one they write.
 // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
 public partial class ReadSurface
 {
@@ -243,5 +243,45 @@ public partial class ReadSurface
             Assert.DoesNotContain("No variant is registered for this rule.", page, StringComparison.Ordinal);
             Assert.Equal(7, Regex.Matches(page, $"<tr data-account=\"[^\"]*{slug}-quality-rule-at[^\"]*\"[^>]*data-standing=\"variant\"").Count);
         }
+    }
+
+    // From the 20.11 correction of 2026-10-26 the Loop page reads the register as the page reads it on the S&P 500 as on
+    // the 400 and 600: the universes' store with a run for October, its sector heavyweights frozen on the S&P 500 the
+    // morning after its night of 2026-10-02 by the register's own verb. Read on its own evening the night read no rule
+    // of the family and the summary draws its rule today not read; run again at noon with the register as it stood, the
+    // summary draws the live rule's chips, worked by hand from its setting, the 10 largest over a 251-session look-back,
+    // 2 leaders against the fund with a beta of at least 1 and sold on losing the lead, where it read the register past
+    // the night's evening and drew the family not read.
+    [Fact]
+    public async Task TheSAndP500sLoopPageDrawsTheRulesItsNightReadOnANightRunAgainAfterAFreeze()
+    {
+        using var store = UniversesStore();
+
+        Run(store, "loop-test-GSPC-20261009T120000Z", "GSPC", "2026-10");
+
+        var (code, said) = await Checks.FixtureExpectations.RegisterVerbAt(store, FrozenAfterTheNight, Worker.Candidates.RegisterVerb.Family, HeavyweightRule.Name);
+
+        Assert.True(code == 0, said);
+
+        store.Execute(
+            "INSERT INTO index_family_night (index_code, session_date, members, breadth, market_open, settings, rebalanced) VALUES " +
+            $"('GSPC', '{IndexNight}', 2, 0.6, 1, '{IndexFamilies.Settings("GSPC").Replace("'", "''", StringComparison.Ordinal)}', 0);");
+
+        async Task<string> RuleToday()
+        {
+            using var host = new Host(store.Root);
+            using var client = host.CreateClient();
+
+            return Regex.Match(Card(WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=500")), "loop-summary"), "<tr data-family=\"heavyweight\".*?</td><td.*?</td>", RegexOptions.Singleline).Value;
+        }
+
+        Assert.EndsWith("<td class=\"degraded\">not read</td>", await RuleToday(), StringComparison.Ordinal);
+
+        RunAgainAt(store, "GSPC", RunAgainReadAt);
+
+        Assert.EndsWith(
+            "<td><span class=\"rule-chips\"><span class=\"chip\">10 largest</span><span class=\"chip\">251-session look-back</span><span class=\"chip\">2 leaders</span><span class=\"chip\">against the fund</span><span class=\"chip\">beta at least 1</span><span class=\"chip\">sold on losing the lead</span></span></td>",
+            await RuleToday(),
+            StringComparison.Ordinal);
     }
 }
