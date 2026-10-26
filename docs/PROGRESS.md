@@ -9850,3 +9850,27 @@ Queue:      done, phase 22 to its report, the corrections after it and the page 
             correction in its own pull request; next, the monthly run by hand on 2026-10-27 and its report, then the
             sign-offs of phases 18, 20 and 22 by fresh sessions when the operator says.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the correction's entry below.
+
+### 20.11 - correction: the S&P 500's Loop page reads the register at the instant the night read it, where a night run again after a freeze drew its families as they stood before it   2026-10-26
+
+Found:      by the operator on 2026-10-26 from the page corrections' report: the S&P 500's Loop page read the register
+            past the night's evening, so on a night run again its summary's rule today drew a rule frozen after the
+            evening as not read, or the rule it replaced, while the night's own families listed by it.
+Corrected:  the Loop page's summary reads each family's rule at the instant the index's night states it read the
+            register at, past the night's evening on a night run on its own evening, on the S&P 500 off its own
+            index's night as on the S&P 400 and 600. The roster is kept in step.
+Tests:      one new: the universes' store with a run for October and its sector heavyweights frozen on the S&P 500 the
+            morning after the night by the register's own verb, the summary drawing the family not read on the night as
+            it ran and the live rule's six chips, worked by hand from its setting, on the night run again at noon. 2802
+            in all.
+Claims:     none new.
+Pins:       none move, asserted: the source it edits is on the list no rule pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the test reading it. M1
+            the Loop page handing the S&P 500 no instant again; red, the night run again's row drawn not read.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2802 of 2802 tests ran with none failed,
+            migrations 0 to 111 with none pending, schema version 111, against `data-ci` and never `data`; the phase
+            report 64 tables, 1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the monthly run by hand on 2026-10-27 and its report; the sign-offs of phases 18, 20 and 22 by fresh
+            sessions.
