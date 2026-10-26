@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - docs/ARCHITECTURE.html - the Fundamentals family's card drawn as the operator's mockup
+Authorised by: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
+Was:
+> The Fundamentals family's card: ... its rule and how it will be tested behind a fold; each stock opening its chart page (see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better)</td></tr>
+Now:
+> The Fundamentals family's card: ... each stock opening its chart page (see: The Fundamentals family buys ...); and from the 22.13 correction of 2026-10-26 drawn as the operator's mockup: the header saying how soon it reads a new filing or results release and stamped with the night it was computed for once it has read one; the sentence set large; each tile a count with its line beneath and the bought drawn in the rise's green and the flagged in the waiting amber; the tabs a bar with the chosen tab on the family's tint and each list opening on a sentence saying what it lists; each list a table read a row at a time on a phone; what changed said with the figures the scorecard's checks compared and the sales growth's pace; a flagged stock's business now reading that its filing is not in yet with the score it was; and tonight's status in its colour with its line beneath (see: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary)</td></tr>
+Why: the operator's mockup of 2026-10-26, given after the card merged, draws the card this way; its words are kept in the local prompts archive beside the image.
+
 ### 2026-10-26 - docs/ARCHITECTURE.html - the stock page and the chart page name the Fundamentals family and none of the fundamentals-first family's rows
 Authorised by: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better
 Was:

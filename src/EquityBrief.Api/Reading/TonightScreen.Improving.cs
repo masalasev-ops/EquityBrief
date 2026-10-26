@@ -194,35 +194,87 @@ public static partial class TonightScreen
         _ => MarkRenderer.ImprovedWords,
     };
 
-    // What changed, in one sentence from the scorecard's own checks: the checks the newly read filing passes that the one
-    // before did not and those it no longer passes; or for a stock flagged from its release, what the release read.
+    // What changed on its new report, from the figures the night stored: its sales growth's pace where the step read it, then
+    // each check the newly read filing passes that the one before did not, with that check's own figures, and the checks it
+    // no longer passes; or for a stock flagged from its release, what the release's answers read.
     public static string ImprovingChanged(ImprovingResultRow row, string? checks)
     {
         if (row.Status == ImprovingRule.Flagged)
         {
+            var outlook = row.Outlook switch
+            {
+                "raised" => "a raised outlook",
+                "kept" => "an unchanged outlook",
+                { } other => "an outlook " + other,
+                null => "an outlook it gave",
+            };
+
             return row.Released is { } released
-                ? FormattableString.Invariant($"Its results release of {released:d MMM} reads results better than expected, its outlook {row.Outlook ?? "given"}.")
-                : "Its results release reads results better than expected.";
+                ? FormattableString.Invariant($"Its results release of {released:d MMM} reads results above expectations and {outlook}.")
+                : $"Its results release reads results above expectations and {outlook}.";
         }
 
-        if (row.BeforeChecks is not { } stored || checks is null)
+        var said = new List<string>();
+
+        if (row is { Growth: { } growth, GrowthChange: { } change } && change != 0)
         {
-            return FormattableString.Invariant($"Its new filing scores {row.PassedChecks} of {row.Applied}.");
+            said.Add($"Sales growth {(change > 0 ? "sped up" : "slowed")} from {Figures.Share(growth - change)} to {Figures.Share(growth)} on a year.");
         }
 
-        var before = ScorecardText.ChecksOf(stored).ToDictionary(check => check.Number, check => check.Answer);
-        var now = ScorecardText.ChecksOf(checks);
-        string[] gained = [.. now.Where(check => check.Answer == CheckAnswer.Passed && before.GetValueOrDefault(check.Number) != CheckAnswer.Passed).Select(check => CheckChanges[check.Number])];
-        string[] lost = [.. now.Where(check => check.Answer == CheckAnswer.Failed && before.GetValueOrDefault(check.Number) == CheckAnswer.Passed).Select(check => CheckChanges[check.Number])];
-
-        if (gained.Length == 0)
+        if (row.BeforeChecks is { } stored && checks is not null)
         {
-            return FormattableString.Invariant($"Its new filing scores {row.PassedChecks} of {row.Applied}, where the one before scored {row.BeforePassed} of {row.BeforeApplied}.");
+            var before = ScorecardText.ChecksOf(stored).ToDictionary(check => check.Number, check => check.Answer);
+            var now = ScorecardText.ChecksOf(checks);
+            string[] lost = [.. now.Where(check => check.Answer == CheckAnswer.Failed && before.GetValueOrDefault(check.Number) == CheckAnswer.Passed).Select(check => CheckChanges[check.Number])];
+
+            said.AddRange(now.Where(check => check.Answer == CheckAnswer.Passed && before.GetValueOrDefault(check.Number) != CheckAnswer.Passed).Select(Gained));
+
+            if (lost.Length > 0)
+            {
+                said.Add($"It no longer shows {ImprovingListed(lost)}.");
+            }
         }
 
-        return lost.Length == 0
-            ? $"Its new filing shows {ImprovingListed(gained)}, which the one before did not."
-            : $"Its new filing shows {ImprovingListed(gained)}, which the one before did not; it no longer shows {ImprovingListed(lost)}.";
+        if (said.Count > 0)
+        {
+            return string.Join(" ", said);
+        }
+
+        return row is { BeforePassed: { } beforePassed, BeforeApplied: { } beforeApplied }
+            ? FormattableString.Invariant($"Its new filing scores {row.PassedChecks} of {row.Applied}, where the one before scored {beforePassed} of {beforeApplied}.")
+            : FormattableString.Invariant($"Its new filing scores {row.PassedChecks} of {row.Applied}.");
+    }
+
+    // A check the newly read filing passes that the one before did not, in a sentence carrying the check's own figures, its
+    // year against the year before, as the scorecard stored them.
+    static string Gained(ScorecardCheck check)
+    {
+        static string Ratio(double value) => value.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+
+        return check.Number switch
+        {
+            1 => "Its profit over the last four quarters turned positive.",
+            2 => "Its cash from operations over the last four quarters turned positive.",
+            3 => check is { YearBefore: { } before, Now: { } now }
+                ? $"Return on assets rose from {Figures.Share(before)} to {Figures.Share(now)}."
+                : "Return on assets rose.",
+            4 => "It now brings in more cash than it reports as profit.",
+            5 => check is { YearBefore: { } before, Now: { } now }
+                ? $"Its long-term debt fell from {Figures.Share(before)} to {Figures.Share(now)} of its assets."
+                : "Its long-term debt fell against its assets.",
+            6 => check is { YearBefore: { } before, Now: { } now }
+                ? $"Current assets now cover current liabilities {Ratio(now)} times, up from {Ratio(before)}."
+                : "Current assets cover more of current liabilities.",
+            7 => check.Now is { } moved && moved < 0
+                ? $"Shares outstanding fell {Figures.Share(-moved)}."
+                : "It issued no new shares beyond the scorecard's allowance.",
+            8 => check is { YearBefore: { } before, Now: { } now }
+                ? $"Gross margin widened from {Figures.Share(before)} to {Figures.Share(now)}."
+                : "Gross margin widened.",
+            _ => check is { YearBefore: { } before, Now: { } now }
+                ? $"Sales rose to {Ratio(now)} times its assets, up from {Ratio(before)}."
+                : "Sales rose against its assets.",
+        };
     }
 
     // The line beneath a row's status: the filing and the release behind a buy, what a flag waits for, the check a stock
@@ -249,13 +301,27 @@ public static partial class TonightScreen
 
         return row.Reason switch
         {
-            ImprovingRule.UnderTheBar => checks is null
-                ? FormattableString.Invariant($"It needs {settings.BuyInNine} of 9.")
-                : FormattableString.Invariant($"It needs {settings.BuyInNine} of 9 and misses {ImprovingListed([.. ScorecardText.ChecksOf(checks).Where(check => check.Answer == CheckAnswer.Failed).Select(check => CheckChanges[check.Number])])}."),
-            ImprovingRule.NotFaster => "Its sales growth did not speed up on the quarter before.",
-            ImprovingRule.GrowthNotRead => "Its sales growth could not be read from its filings.",
+            ImprovingRule.UnderTheBar => FormattableString.Invariant($"Needs {settings.BuyInNine} of 9; {ChecksShort(row.PassedChecks, row.Applied, settings)}")
+                + (checks is null ? "." : $", missing {ImprovingListed([.. ScorecardText.ChecksOf(checks).Where(check => check.Answer == CheckAnswer.Failed).Select(check => CheckChanges[check.Number])])}.")
+                + (row.GrowthChange is { } change && change <= 0 ? " Its sales are still slowing too." : string.Empty),
+            ImprovingRule.NotFaster => FormattableString.Invariant($"Has {row.PassedChecks} of {row.Applied}, but its sales are still slowing."),
+            ImprovingRule.GrowthNotRead => FormattableString.Invariant($"Has {row.PassedChecks} of {row.Applied}, but its sales growth could not be read from its filings."),
             ImprovingRule.NoWord => "Too few of its checks could be read for a score.",
             _ => "It falls short of the bar.",
+        };
+    }
+
+    // How many more checks a stock needs to clear the bar, in words, read through the scorecard's own test of the bar.
+    static string ChecksShort(int passed, int applied, ImprovingSettings settings)
+    {
+        string[] words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+        var more = Enumerable.Range(1, Math.Max(applied - passed, 0)).FirstOrDefault(extra => FundamentalScorecard.Clears(passed + extra, applied, settings.BuyInNine));
+
+        return more switch
+        {
+            0 => "short of the bar",
+            1 => "one check short",
+            _ => words[more - 1] + " checks short",
         };
     }
 
