@@ -237,13 +237,16 @@ public static class ChartScreen
 
     public const string NightsMultiple = "Price to its four quarters' earnings, the night's";
 
-    // The grid with the stock's one earnings multiple: the scorecard's where it holds one, in the provider's place.
+    public const string ProvidersTrailing = "Price to earnings, the provider's trailing";
+
+    // The grid with the stock's one earnings multiple: the scorecard's where it holds one, in the provider's place, and the
+    // provider's own trailing figure gone with it.
     public static IReadOnlyList<GridGroup> WithFiledMultiple(IReadOnlyList<GridGroup> grid, FundamentalScoreRow? score) =>
         score?.Multiple is not { } filed
             ? grid
             : [.. grid.Select(group => group with
             {
-                Figures = [.. group.Figures.Select(figure => figure.Label == NightsMultiple
+                Figures = [.. group.Figures.Where(figure => figure.Label != ProvidersTrailing).Select(figure => figure.Label == NightsMultiple
                     ? new GridFigure(NightsMultiple, filed.ToString("0.0", CultureInfo.InvariantCulture) + ", " + MarkRenderer.FiledMultiple, filed.ToString("R", CultureInfo.InvariantCulture))
                     : figure)],
             })];
@@ -269,7 +272,9 @@ public static class ChartScreen
             quarter is { } newestQuarter
                 ? new GridFigure("Its newest quarter's multiple", FormattableString.Invariant($"{Figures.Multiple(newestQuarter.Multiple)} at {newestQuarter.Quarter:yyyy-MM-dd}"), newestQuarter.Multiple.ToString(CultureInfo.InvariantCulture))
                 : Missing("Its newest quarter's multiple"),
-            Multiple("Price to earnings, the provider's trailing", Text(multiples, "trailingPe")),
+
+            // The provider's own trailing figure only where the night read no multiple, so the grid states one.
+            .. (valuation?.Multiple is null ? new[] { Multiple(ProvidersTrailing, Text(multiples, "trailingPe")) } : []),
             Multiple("Price to earnings, the provider's forward", Text(multiples, "forwardPe")),
         ]);
     }

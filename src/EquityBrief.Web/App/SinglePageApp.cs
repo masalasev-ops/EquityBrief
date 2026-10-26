@@ -1476,14 +1476,15 @@ public sealed partial class SinglePageApp : IComponent
             $"<details class=\"rule-part\" id=\"{id}\" data-card=\"{id}\"><summary>{title}</summary>{markup}</details>";
 
         // Why it is here, present only when the name is on tonight's list or one gate short of it, beneath the line
-        // section 18 draws where the listing was written before the correction, and otherwise the line saying it is not.
+        // section 18 draws where the listing was written before the correction, and otherwise the line saying it is not,
+        // or, where the page's list holds it under a family, that family.
         // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
         var why = WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection)
             + (passed is { } filtered
                 ? marks.WhyItPassed(ticker, filtered)
                 : missed is { } oneShort
                     ? marks.WhyItIsClose(ticker, oneShort.Evening, oneShort.Gate)
-                    : marks.WhyItIsHere(ticker, firedReasons));
+                    : marks.WhyItIsHere(ticker, firedReasons, listedUnder is { Family: { } family } ? listedUnder.Heading ?? family : null));
 
         rules.Append(passed is not null || missed is not null || firedReasons.Count > 0
             ? Fold(
@@ -1499,9 +1500,12 @@ public sealed partial class SinglePageApp : IComponent
         // The trend state, in a word. Read off the ladder row rather than worked
         // out here, and a name with no row says so rather than showing nothing:
         // an absence stated and an absence drawn as emptiness are different
-        // things, and only the first is readable.
+        // things, and only the first is readable. A member of another index holds none by design, the plan being read for
+        // the S&P 500's members alone, and says that rather than that one is to come.
         var trend = trendState is null
-            ? "<p class=\"trend-state\" data-trend-state=\"none\">no ladder row for this name yet</p>"
+            ? mast?.Index is { } index && index != Universes.Large.Name
+                ? Invariant($"<p class=\"trend-state\" data-trend-state=\"none\" data-index=\"{Escaped(index)}\">no ladder row, the plan being read for the {Escaped(Universes.Large.Name)}'s members alone</p>")
+                : "<p class=\"trend-state\" data-trend-state=\"none\">no ladder row for this name yet</p>"
             : Invariant($"<p class=\"trend-state\" data-trend-state=\"{Escaped(trendState)}\" data-as-of=\"{trendAsOf:yyyy-MM-dd}\">trend {Escaped(trendState.Replace('_', ' '))}</p>");
 
         // The fact strip, the levels region's technical readings beneath the bands, stating seven things rather than one.

@@ -200,7 +200,9 @@ public static partial class NameScreen
         DateOnly? nextEvent,
         YearExtremes? year,
         IReadOnlyList<FilingRow> filings,
-        IReadOnlyList<IndicatorRow> indicators)
+        IReadOnlyList<IndicatorRow> indicators,
+        double? filedMultiple = null,
+        double? nightsMultiple = null)
     {
         var latest = indicators
             .GroupBy(row => row.Name, StringComparer.Ordinal)
@@ -225,15 +227,31 @@ public static partial class NameScreen
                 ? stated
                 : default;
 
+        // The stock's one earnings multiple, as every other part of the page states it: the scorecard's where it holds one,
+        // the night's reading of the provider's quarters otherwise, and the provider's own trailing figure, struck at its
+        // own price, only where neither is read; the provider's forward multiple named as its own beside it.
+        var forwardPe = Text(multiples, "forwardPe");
+        var (trailing, trailingValue, basis) = filedMultiple is { } filed
+            ? (filed.ToString("0.0", CultureInfo.InvariantCulture), filed.ToString("R", CultureInfo.InvariantCulture), "filed")
+            : nightsMultiple is { } read
+                ? (read.ToString("0.0", CultureInfo.InvariantCulture), read.ToString("R", CultureInfo.InvariantCulture), "night")
+                : (Tenths(Text(multiples, "trailingPe")), Text(multiples, "trailingPe") ?? "none", "provider");
+
         html.Append("<dl class=\"facts\">");
         Fact("Close", close is { } shownClose ? Read(shownClose) : NotOnFile);
         Fact("Market value", Scaled(newest is null ? null : Text(newest.RootElement, "marketCapitalisation")));
         Fact("Year's high", year is { } top ? Read(top.High) : NotOnFile, year is { } madeHigh ? $"on {Day(madeHigh.HighOn)}" : null);
         Fact("Year's low", year is { } bottom ? Read(bottom.Low) : NotOnFile, year is { } madeLow ? $"on {Day(madeLow.LowOn)}" : null);
         Fact("Next dated event", nextEvent is { } coming ? Day(coming) : NotOnFile);
-        // The provider's multiples, struck at its own price on its own earnings, named as its own beside the valuation's,
-        // which is the night's close over the newest four quarters' earnings and so a figure of another basis.
-        Fact("Price to earnings, the provider's", Tenths(Text(multiples, "trailingPe")), Text(multiples, "forwardPe") is { } forward ? $"forward {Tenths(forward)}" : null);
+
+        if (basis == "provider")
+        {
+            Fact("Price to earnings, the provider's", trailing, forwardPe is { } forward ? $"forward {Tenths(forward)}" : null);
+        }
+        else
+        {
+            Fact($"Price to earnings, {(basis == "filed" ? MarkRenderer.FiledMultiple : MarkRenderer.ProvidedMultiple)}", trailing, forwardPe is { } forward ? $"the provider's forward {Tenths(forward)}" : null);
+        }
         Fact("20-day average", Hundredths(latest, IndicatorSeries.Sma20));
         Fact("50-day average", Hundredths(latest, IndicatorSeries.Sma50));
         Fact("200-day average", Hundredths(latest, IndicatorSeries.Sma200));
@@ -261,7 +279,7 @@ public static partial class NameScreen
                 ? ratios
                 : default;
 
-        html.Append(CultureInfo.InvariantCulture, $" data-trailing-multiple=\"{Text(valuation, "trailingPe") ?? "none"}\"");
+        html.Append(CultureInfo.InvariantCulture, $" data-trailing-multiple=\"{trailingValue}\" data-multiple-basis=\"{basis}\"");
         html.Append(CultureInfo.InvariantCulture, $" data-forward-multiple=\"{Text(valuation, "forwardPe") ?? "none"}\"");
 
         // the year's high and low, each with the session it was made on, over the sessions the store holds
@@ -297,8 +315,9 @@ public static partial class NameScreen
             ? FormattableString.Invariant($"the year's high {Read(drawn.High)} on {Day(drawn.HighOn)} and low {Read(drawn.Low)} on {Day(drawn.LowOn)} over {drawn.Sessions} {(drawn.Sessions == 1 ? "session" : "sessions")}, ")
             : "the year's high and low not on file, ");
         html.Append(CultureInfo.InvariantCulture, $"next dated event: {(nextEvent is { } on ? Day(on) : "not on file")}, ");
-        html.Append(CultureInfo.InvariantCulture, $"the provider's trailing multiple {Tenths(Text(valuation, "trailingPe"))}, ");
-        html.Append(CultureInfo.InvariantCulture, $"its forward multiple {Tenths(Text(valuation, "forwardPe"))}");
+        html.Append((filedMultiple ?? nightsMultiple) is { } theMultiple
+            ? $"{MarkRenderer.EarningsMultiple(theMultiple, filed: basis == "filed")}, the provider's forward multiple {Tenths(Text(valuation, "forwardPe"))}"
+            : $"the provider's trailing multiple {trailing}, its forward multiple {Tenths(Text(valuation, "forwardPe"))}");
         html.Append("</p>");
 
         newest?.Dispose();
@@ -1407,7 +1426,9 @@ public static partial class NameScreen
                 nextEvent?.EventDate,
                 year,
                 filings,
-                indicators),
+                indicators,
+                score?.Multiple,
+                reportView?.Valuation?.Multiple),
             PlanRows(ladder),
             bars.Count > 0 ? bars[^1].Close : 0m,
             EventBook(ladder),

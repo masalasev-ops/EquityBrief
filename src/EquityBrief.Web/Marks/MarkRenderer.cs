@@ -2813,9 +2813,11 @@ public sealed partial class MarkRenderer : IComponent
     //
     // Each reason in a full sentence rather than a label, with the values that
     // made it true. A label is what the list row shows; a sentence is what the
-    // name page owes, because this is the page a reader acts from.
+    // name page owes, because this is the page a reader acts from. A name no
+    // reason fired for that the page's list holds under a family says the family,
+    // since that list is the page's and the swing filter's is one family's.
     // see: Every figure carries a plain-language key
-    public string WhyItIsHere(string ticker, IReadOnlyList<FiredReason> reasons)
+    public string WhyItIsHere(string ticker, IReadOnlyList<FiredReason> reasons, string? listedUnder = null)
     {
         var why = new StringBuilder();
 
@@ -2823,7 +2825,9 @@ public sealed partial class MarkRenderer : IComponent
 
         if (reasons.Count == 0)
         {
-            why.Append("<p class=\"degraded\" data-listed=\"false\">this name is not on tonight's list</p></section>");
+            why.Append(listedUnder is { } family
+                ? Formatted($"<p class=\"degraded\" data-listed=\"family\">the swing filter did not list this name; the page's list holds it under {Escaped(family)}</p></section>")
+                : "<p class=\"degraded\" data-listed=\"false\">this name is not on tonight's list</p></section>");
 
             return why.ToString();
         }

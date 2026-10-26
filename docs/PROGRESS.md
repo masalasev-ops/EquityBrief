@@ -9874,3 +9874,103 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the monthly run by hand on 2026-10-27 and its report; the sign-offs of phases 18, 20 and 22 by fresh
             sessions.
+
+### 18.5 ruling - the five defects found gathering the phase 18 sign-off corrected before its prompt   2026-10-26
+
+Not a checkpoint entry: it records the operator's ruling and lands nothing.
+Ruled:      by the operator on 2026-10-26, kept whole in `prompts/2026-10-26-18.5-phase-18-sign-off-correct-first.md`.
+            At about 12:20 UTC they asked "Can i get prompt for phase 18 sign off". Gathering it, the session read BX's,
+            RLI's, EPRT's and UNP's pages and exported files on the live app at 1440 pixels and found five defects on
+            phase 18's pages: the long view ticked four values evenly between its ends; "How the rules read it" saying
+            "this name is not on tonight's list" on four stocks the page's list held under Earnings drift; a reward to
+            risk bar's note past the axis's end cut at the figure's edge; the technical readings' "Price to earnings,
+            the provider's 26.6" beside 25.4 as filed with the SEC and the industry table's 19.2; and an S&P 400 or 600
+            page saying "no ladder row for this name yet" where its plan region says the plan is read for the S&P 500's
+            members alone. Asked how to go, they answered "Correct first (Recommended)": one correction pull request
+            with the five, each labelled from the record, gates over it, and the sign-off prompt after the merge with
+            its figures gathered again.
+Labelled:   read off the record: the rules region's line under 18.1, which placed why the name is here in it; the long
+            view's ticks, the reward to risk bars and the plan's words for an S&P 400 or 600 member under 18.3, which
+            built the long view, the bars, the ladder figure and the plan region's reason that the plan is read for the
+            S&P 500's members alone; and the technical readings' multiple and the chart page's grid under 22.8, whose
+            scorecard added the second figure and whose correction of 2026-10-26 left these two.
+Queue:      done, the Loop page's correction; in progress, these five corrections in one pull request; next, the phase
+            18 sign-off prompt after the merge, the monthly run by hand on 2026-10-27, and the sign-offs of phases 20
+            and 22 by fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.
+
+### 18.1 - correction: a stock's rules region names the family the page's list holds it under, where it said the name was not on tonight's list   2026-10-26
+
+Found:      gathering the phase 18 sign-off: BX's, RLI's, EPRT's and UNP's pages each drew "On the page's list for
+            2026-10-23 under Earnings drift" above and, in "How the rules read it", "this name is not on tonight's list",
+            the line reading the swing filter's listing alone where the page's list is drawn from the setup families.
+Corrected:  where no reason fired and the swing filter neither passed the name nor found it one gate short, a name the
+            page's list holds under a family reads "the swing filter did not list this name; the page's list holds it
+            under" that family; a name on no list still reads that it is not on tonight's list. The roster is kept in
+            step.
+Tests:      one new: over the universes' store, M1, listed under the S&P 400's breakout, naming it in its rules region with
+            no line saying it is not on tonight's list, and S1, on no list, saying it is not. 2803 in all.
+Claims:     none new.
+Pins:       none move, asserted: the two sources it edits join the list no rule pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the test reading it. M1
+            the region handed no family again; red, M1's region missing the family's line.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.
+
+### 18.3 - correction: the long view ticks at round values, a reward to risk bar past the axis's end says so inside the figure, and an S&P 400 or 600 member says why it holds no ladder row   2026-10-26
+
+Found:      gathering the phase 18 sign-off: BX's long view ticked 2, 66, 129 and 193 and EPRT's 7, 17, 26 and 36, four
+            values evenly between their ends, where the 18.2 correction of 2026-10-19 ticked every other report chart at
+            round values; BX's note for a bar past the axis's end showed "6.80, past the", the 60 pixels after the bars too
+            few for it; and EPRT's technical readings said "no ladder row for this name yet" where its plan region,
+            which 18.3 built, says the plan is read for the S&P 500's members alone.
+Corrected:  the long view's axis takes the round values every report chart takes, its rules stopping short of the levels'
+            names as before; the bars end short of the right by the widest note at the row note's eleven pixels, 60
+            pixels kept where every note is short; and an S&P 400 or 600 member holding no ladder row says "no ladder
+            row, the plan being read for the S&P 500's members alone", an S&P 500 member holding none still saying one is
+            to come. The architecture's Levels row and the roster are kept in step.
+Tests:      three new: CVX's long view ticked 100, 150 and 200, worked by hand; a bar past the axis's end saying so with
+            its 25 characters inside the figure's 640 and CVX's short notes keeping the rule at one at 322; and S1's and
+            AAA's technical readings over the universes' store. 2806 in all.
+Claims:     none new.
+Pins:       none move, asserted: the source it edits joins the list no rule pins.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, each filtered to the test reading
+            it. M2 the long view's four even ticks back; red at the tick values. M3 the room after the bars a flat 60
+            again; red, the note at 572 running past 640. M4 the chip's other index left unread; red at S1's chip.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.
+
+### 22.8 - correction: the technical readings and the chart page's grid state the stock's one earnings multiple, where they drew the provider's trailing figure beside it   2026-10-26
+
+Queue:      done, the Loop page's correction; in progress, these five corrections in one pull request, this the last;
+            next, the phase 18 sign-off prompt after the merge, the monthly run by hand on 2026-10-27, and the sign-offs
+            of phases 20 and 22 by fresh sessions.
+Found:      gathering the phase 18 sign-off: BX's technical readings drew "Price to earnings, the provider's 26.6", the
+            provider's own figure at its own price, beside its valuation line's 25.4 as filed with the SEC and its
+            industry table's 19.2 as the data provider reports, two figures named the provider's; the chart page's grid
+            drew the provider's trailing 26.6 beside the scorecard's 25.4. The 22.8 correction of 2026-10-26 had moved the
+            brief, the card, the grid's night's multiple, the valuation line and the numbers' sentence and left these two.
+Corrected:  the technical readings and the sentence beneath them state the page's one multiple: the scorecard's as filed
+            with the SEC where it holds one, the night's reading of the provider's quarters as the data provider reports
+            otherwise, and the provider's own trailing figure named as its own only where neither is read; the
+            provider's forward multiple stays named as its own. The chart page's grid draws the provider's trailing
+            figure only where the night read no multiple and the scorecard holds none. The industry table stays on the
+            provider's basis for every member, as the 22.8 correction kept it. The architecture's Levels and chart
+            figures rows, the fact strip's verdict note and the roster are kept in step.
+Tests:      one new: the fact strip worked on each basis, 25.4 filed and 19.2 the night's with no 26.6, and over the
+            universes' store AAA's chart grid and full page stating its scorecard's 25.4 with no provider's trailing
+            figure while BBB, holding neither, keeps the provider's named as its own. 2807 in all with the corrections
+            above.
+Claims:     none new: the two rows touched are amended in place.
+Pins:       none move, asserted: the two sources it edits join the list no rule pins.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each surface's property, each filtered to the test
+            reading it. M5 the technical readings never reading the scorecard's multiple; red at the filed tile. M6 the
+            chart grid keeping the provider's trailing figure beside the filed one; red at AAA's grid.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2807 of 2807 tests ran with none failed,
+            migrations 0 to 111 with none pending, schema version 111, against `data-ci` and never `data`; the phase
+            report 64 tables, 1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the phase 18 sign-off prompt after the merge, figures gathered again; the monthly run by hand on 2026-10-27
+            and its report; the sign-offs of phases 20 and 22 by fresh sessions.

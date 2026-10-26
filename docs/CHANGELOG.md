@@ -26,6 +26,54 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - docs/ARCHITECTURE.html - the Levels region's technical readings state the stock's one earnings multiple
+Corrects: gathering the phase 18 sign-off on 2026-10-26, BX's technical readings drew "Price to earnings, the provider's 26.6" beside its valuation line's 25.4 as filed with the SEC and its industry table's 19.2 as the data provider reports, two figures named the provider's, against the operator's ruling of 2026-10-25 of one earnings multiple a stock on every page
+Was:
+> the next dated event, the provider's multiples named as the provider's, the averages,
+Now:
+> the next dated event, the stock's one earnings multiple named by where it came from, the scorecard's as filed with the SEC where it holds one, the night's reading of the provider's quarters otherwise and the provider's own only where neither is read, beside the provider's forward multiple named as the provider's, the averages,
+Why: the row states what the region draws, and the correction changes it.
+
+### 2026-10-26 - docs/ARCHITECTURE.html - the chart page's grid states the provider's trailing multiple only where no other is read
+Corrects: gathering the phase 18 sign-off on 2026-10-26, the chart page's grid drew the provider's trailing multiple beside the scorecard's multiple as filed with the SEC, two trailing multiples of one stock, against the operator's ruling of 2026-10-25 of one earnings multiple a stock on every page
+Was:
+> its newest quarter's multiple; the provider's trailing and forward multiples; earnings:
+Now:
+> its newest quarter's multiple; the provider's forward multiple, and from the second 22.8 correction of 2026-10-26 its trailing one only where the night read no multiple and the scorecard holds none, so the grid states one; earnings:
+Why: the row states what the grid draws, and the correction changes it.
+
+### 2026-10-26 - .claude/rules/checks.md - read-surface holds the technical readings and the chart page's grid stating the stock's one earnings multiple
+Corrects: gathering the phase 18 sign-off on 2026-10-26, BX's technical readings and the chart page's grid drew the provider's trailing multiple beside the scorecard's as filed with the SEC
+Was:
+> read-surface: ... saying the plan is read for the S&P 500's members alone while an S&P 500 member says one is to come |
+Now:
+> read-surface: ... saying the plan is read for the S&P 500's members alone while an S&P 500 member says one is to come; and from the second 22.8 correction of 2026-10-26 the technical readings and the chart page's grid stating the stock's one earnings multiple, the scorecard's where it holds one, the night's reading of the provider's quarters otherwise and the provider's own only where neither is read |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
+### 2026-10-26 - docs/ARCHITECTURE.html - the Levels region's technical readings say why a member of the S&P 400 or 600 holds no ladder row
+Corrects: gathering the phase 18 sign-off on 2026-10-26, EPRT's technical readings said "no ladder row for this name yet" where its plan region says the plan is read for the S&P 500's members alone
+Was:
+> beneath them the night's technical readings: the trend state, the close, market capitalisation,
+Now:
+> beneath them the night's technical readings: the trend state, or for a member of the S&amp;P 400 or 600 that it holds no ladder row, the plan being read for the S&amp;P 500's members alone, the close, market capitalisation,
+Why: the row states what the region draws, and the correction changes it.
+
+### 2026-10-26 - .claude/rules/checks.md - read-surface holds the long view's ticks, the reward to risk bars' note and the ladder's words for an S&P 400 or 600 member
+Corrects: gathering the phase 18 sign-off on 2026-10-26, BX's and EPRT's long views ticked four values evenly between their ends, BX's note for a bar past the axis's end was cut at the figure's edge, and EPRT's technical readings said "no ladder row for this name yet"
+Was:
+> read-surface: ... a stock's rules region naming the family the page's list holds it under where the swing filter did not list it, and saying it is on no list where none holds it |
+Now:
+> read-surface: ... a stock's rules region naming the family the page's list holds it under where the swing filter did not list it, and saying it is on no list where none holds it; and from the 18.3 correction of 2026-10-26 the long view ticked at round values as every report chart is, a reward to risk bar past the axis's end saying so inside the figure while a plan whose notes are short keeps its axis, and an S&P 400 or 600 member holding no ladder row saying the plan is read for the S&P 500's members alone while an S&P 500 member says one is to come |
+Why: the roster row says what its check asserts, and the correction's tests extend it.
+
+### 2026-10-26 - .claude/rules/checks.md - read-surface holds a stock's rules region naming the family the page's list holds it under
+Corrects: gathering the phase 18 sign-off on 2026-10-26, BX's, RLI's, EPRT's and UNP's rules regions said "this name is not on tonight's list" beneath a page saying each was on it under Earnings drift
+Was:
+> read-surface: ... its summary drawing the sector heavyweights frozen the morning after the night not read on the night as it ran on its own evening and the live rule's chips on the night run again at noon |
+Now:
+> read-surface: ... its summary drawing the sector heavyweights frozen the morning after the night not read on the night as it ran on its own evening and the live rule's chips on the night run again at noon; and from the 18.1 correction of 2026-10-26 a stock's rules region naming the family the page's list holds it under where the swing filter did not list it, and saying it is on no list where none holds it |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
 ### 2026-10-26 - .claude/rules/checks.md - read-surface holds the S&P 500's Loop page reading the register as the page reads it
 Corrects: the S&P 500's Loop page read the register past the night's evening, so after a night run again following a freeze its summary drew the families as they stood before it, while paper trading and the S&P 400's and 600's Loop pages read it at the instant the night stated, found by the operator on 2026-10-26
 Was:
