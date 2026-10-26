@@ -2145,7 +2145,7 @@ public static class RunScreen
     static WorryItem[] CopyItems(NightView night, StoreCopyRead storeCopy)
     {
         const string copied = "The store was copied after the last night";
-        const string stillThere = "Every copy the last copy kept is still in its folder";
+        const string stillThere = CopiesStandWorry;
 
         if (storeCopy.Newest is not { } copy)
         {
@@ -2169,15 +2169,21 @@ public static class RunScreen
                     ? new WorryItem(copied, WorryItem.Failed, $"the copy tried at {At(tried)} was not made: {copy.Failed ?? "no reason was recorded"}")
                     : new WorryItem(copied, WorryItem.Failed, night.Started is { } start ? $"no copy has started since the night began at {At(start)}" : "no copy has started since the night");
 
-        var missing = copy.Missing ?? [];
+        // A copy gone from the folder is named only where no copy newer than it stands, with the newest that does.
+        var unreplaced = copy.Unreplaced ?? [];
+        var last = copy.Standing is { } standing
+            ? "The store's last copy is from " + standing.UtcDateTime.ToString("d MMM", CultureInfo.InvariantCulture) + "; no copy since."
+            : "No copy of the store stands in its folder.";
         var kept = copy.MadeAt is null
             ? new WorryItem(stillThere, WorryItem.NotRead, "no copy of the store has been made yet")
-            : missing.Count == 0
+            : unreplaced.Count == 0
                 ? new WorryItem(stillThere, WorryItem.Held, null)
-                : new WorryItem(stillThere, WorryItem.Failed, FormattableString.Invariant($"{missing.Count} gone from the folder, removed by no copy: {string.Join(", ", missing)}"));
+                : new WorryItem(stillThere, WorryItem.Failed, FormattableString.Invariant($"{unreplaced.Count} gone from the folder, removed by no copy: {string.Join(", ", unreplaced)}. {last}"));
 
         return [since, kept];
     }
+
+    public const string CopiesStandWorry = "Every copy gone from the folder has a newer copy standing";
 
     // The outcome of the row a copy writes as it starts, as the worker writes it.
     public const string CopyStarted = "started";
@@ -2322,6 +2328,23 @@ public static class RunScreen
         var startedAt = unfinished is null ? null : Stamp(unfinished.StartedAt);
         var gone = startedAt is { } since && now - since > EquityBrief.Core.Configuration.StoreCopies.EndsBy;
 
+        // The copies gone, the newest copy's and those an attempt after it found, and the newest copy the rows show
+        // standing: the newest copy and those its row kept, less any gone. A copy gone is a worry only where no copy
+        // newer than it stands.
+        // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+        string[] goneSince = notMade is null ? [] : Listed(Detail(notMade), "missing");
+        string[] allGone = [.. missing.Concat(goneSince).Distinct(StringComparer.Ordinal)];
+        DateTimeOffset[] stands =
+        [
+            .. (copy is null ? [] : new[] { copy })
+                .Concat(made.Row is { } keptRow ? Listed(Detail(keptRow), "kept") : [])
+                .Where(one => !allGone.Contains(one, StringComparer.Ordinal))
+                .Select(EquityBrief.Core.Configuration.StoreCopies.MadeAt)
+                .OfType<DateTimeOffset>(),
+        ];
+        DateTimeOffset? standingAt = stands.Length == 0 ? null : stands.Max();
+        string[] unreplaced = [.. allGone.Where(one => standingAt is not { } newest || EquityBrief.Core.Configuration.StoreCopies.MadeAt(one) is not { } at || at >= newest)];
+
         return new StoreCopyRead(new StoreCopyView(
             madeAt,
             copy,
@@ -2331,7 +2354,9 @@ public static class RunScreen
             notMade is null ? null : Text(Detail(notMade), "reason") ?? "no reason was recorded",
             startedAt,
             gone,
-            missing));
+            missing,
+            standingAt,
+            unreplaced));
     }
 
     static decimal Spent(string spend) =>

@@ -4,8 +4,8 @@ namespace EquityBrief.Web.Marks;
 // against the surface's own data root, or the folder's name alone where the store could not carry a path to it,
 // how many copies the folder keeps, the newest attempt where that attempt made no copy, with why, the newest copy
 // started after them that has written no end, whether its start is older than a copy's longest wait and an hour,
-// so it was ended before it finished, and the copies the newest copy found gone from the folder that no copy
-// removed.
+// so it was ended before it finished, the copies the newest copy found gone from the folder that no copy
+// removed, and the newest copy the rows show still standing, with the copies gone that no copy newer stands beside.
 public sealed record StoreCopyView(
     DateTimeOffset? MadeAt,
     string? Copy,
@@ -15,7 +15,9 @@ public sealed record StoreCopyView(
     string? Failed,
     DateTimeOffset? StartedAt = null,
     bool Gone = false,
-    IReadOnlyList<string>? Missing = null);
+    IReadOnlyList<string>? Missing = null,
+    DateTimeOffset? Standing = null,
+    IReadOnlyList<string>? Unreplaced = null);
 
 // The copies' rows as the surface read them, the newest copy among them or none where no row is recorded.
 public sealed record StoreCopyRead(StoreCopyView? Newest);

@@ -9582,3 +9582,27 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             the stock's line on its index's list never read; red, M2 drawn as on no list.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last of the four
             corrections' entries below.
+
+### 13.10 - correction: a copy gone from the store's copies' folder is a worry only where no newer copy stands, where every copy gone failed the checklist   2026-10-26
+
+Found:      by 22.12's read-back: the Run page's checklist failed "Every copy the last copy kept is still in its folder"
+            for the two copies of 2026-10-22, gone from the folder and removed by no copy, while the copies made after
+            them stood. Every night since wrote its copy, read off the store's rows: the night of 2026-10-21's at 00:16Z on
+            the 22nd, the 22nd's at 23:52Z, one by hand at 03:35Z on the 23rd and the 23rd's at 23:41Z, each ok, opened and
+            read. The folder held two of them on 2026-10-26, the copies of 2026-10-14 and 15, 2026-10-20 and 2026-10-22
+            having gone two at a time by no copy's hand.
+Corrected:  the item reads "Every copy gone from the folder has a newer copy standing", the copies gone being the
+            newest copy's and those a later attempt that made none found, and the copy standing the newest of the newest
+            copy and those its row kept less any gone; it names a copy gone only where no copy newer than it stands, with
+            the line "The store's last copy is from 17 Sep; no copy since." naming the newest that does. The line
+            beneath the checklist still names every copy gone. Nothing deletes or restores a copy. The decision is amended
+            in its own text on the ruling, and the runbook and the roster kept in step.
+Tests:      none new, two extended: the two copies the 18th's copy found gone held, older than it; an attempt on the 20th
+            finding the 18th's copy gone too failed, naming it with the 17th's the newest standing; and the item read held
+            off the rendered page under its new words.
+Claims:     none new.
+Pins:       none move: the page alone moves.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the test reading it. M1
+            every copy gone a worry whatever stands; red, the two older copies failing the item.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last of the four
+            corrections' entries below.

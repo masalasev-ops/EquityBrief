@@ -76,7 +76,27 @@ public partial class ReadSurface
         Assert.Equal(10, open.Count);
         Assert.Equal(("The store was copied after the last night", WorryItem.Held, "a copy started at 01:00 UTC on 2026-09-19 is waiting or copying"), (open[8].Item, open[8].State, open[8].Why));
         Assert.Equal((WorryItem.Failed, "the copy started at 01:00 UTC on 2026-09-19 was ended before it finished, and made none"), (past[8].State, past[8].Why));
-        Assert.Equal(("Every copy the last copy kept is still in its folder", WorryItem.Failed, "2 gone from the folder, removed by no copy: equitybrief-20260916T004000Z.db, equitybrief-20260915T003900Z.db"), (open[9].Item, open[9].State, open[9].Why));
+        // From the 13.10 correction of 2026-10-26 a copy gone is a worry only where no copy newer than it stands: the
+        // two the 18th's copy found gone are older than it, so the second item holds; an attempt on the 20th that made
+        // none and found the 18th's copy gone too leaves the 17th's the newest standing, and fails the item naming the
+        // 18th's alone with the line saying so.
+        Assert.Equal((RunScreen.CopiesStandWorry, WorryItem.Held, (string?)null), (open[9].Item, open[9].State, open[9].Why));
+
+        const string keptTwo = "{\"copy\":\"equitybrief-20260918T004500Z.db\",\"folder\":\"../copies\",\"elsewhere\":null,\"kept\":[\"equitybrief-20260918T004500Z.db\",\"equitybrief-20260917T004112Z.db\"],\"removed\":[],\"unread\":[],\"missing\":[\"equitybrief-20260916T004000Z.db\",\"equitybrief-20260915T003900Z.db\"],\"waited\":[]}";
+        const string notMade = "{\"copy\":\"equitybrief-20260920T004500Z.db\",\"reason\":\"the copy did not open and read as the store does\",\"missing\":[\"equitybrief-20260918T004500Z.db\"],\"waited\":[]}";
+        var newestGone = Items(RunScreen.StoreCopy(
+            [
+                EndedRow("backup-20260920T003000Z", "failed", "2026-09-20T00:30:00Z", "2026-09-20T00:50:00Z", notMade),
+                StartedRow("backup-20260920T003000Z", "2026-09-20T00:30:00Z"),
+                EndedRow("backup-20260918T003000Z", "ok", "2026-09-18T00:30:00Z", "2026-09-18T00:50:00Z", keptTwo),
+                StartedRow("backup-20260918T003000Z", "2026-09-18T00:30:00Z"),
+            ],
+            Path.GetTempPath(),
+            started));
+
+        Assert.Equal(
+            (WorryItem.Failed, "1 gone from the folder, removed by no copy: equitybrief-20260918T004500Z.db. The store's last copy is from 17 Sep; no copy since."),
+            (newestGone[9].State, newestGone[9].Why));
         Assert.Equal((WorryItem.NotRead, "no copy of the store is recorded yet"), (none[8].State, none[8].Why));
         Assert.Equal((WorryItem.NotRead, "no copy of the store is recorded yet"), (none[9].State, none[9].Why));
         Assert.Equal(8, RunScreen.Worries([], night, [], [], []).Count);
@@ -142,6 +162,6 @@ public partial class ReadSurface
         Assert.Contains("The copy started at 01:00 UTC on 2026-09-19 wrote no end: it was ended before it finished, and made none.", page, StringComparison.Ordinal);
         Assert.Contains("data-unfinished=\"gone\"", page, StringComparison.Ordinal);
         Assert.Contains("<li data-item=\"The store was copied after the last night\" data-state=\"held\">", page, StringComparison.Ordinal);
-        Assert.Contains("<li data-item=\"Every copy the last copy kept is still in its folder\" data-state=\"held\">", page, StringComparison.Ordinal);
+        Assert.Contains($"<li data-item=\"{RunScreen.CopiesStandWorry}\" data-state=\"held\">", page, StringComparison.Ordinal);
     }
 }

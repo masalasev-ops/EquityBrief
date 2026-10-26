@@ -26,6 +26,18 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - RUNBOOK.md and .claude/rules/checks.md - a copy gone from the folder is a worry only where no newer copy stands
+Authorised by: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+Was:
+> RUNBOOK, the night copies it: ... its checklist carries two items on the copies: the store copied after the night began, and every copy the last copy kept still in its folder. A copy ended from outside, ...
+
+> read-surface: ... and every copy the last copy kept still in its folder failed with each gone named, ...
+Now:
+> RUNBOOK, the night copies it: ... and every copy gone from the folder having a newer copy standing, which names a copy gone only where no copy newer than it stands, with the line "The store's last copy is from `<day> <month>`; no copy since." naming the newest that does. A copy ended from outside, ...
+
+> read-surface: ... and every copy gone from the folder having a newer copy standing, failed from the 13.10 correction of 2026-10-26 only where no copy newer than a copy gone stands, naming those gone with the line naming the date of the newest standing, and held where one does, ...
+Why: the operator's ruling of 2026-10-25, item 3, after the item failed for two copies of 2026-10-22 gone while the copies made after them stood; the decision is amended with it.
+
 ### 2026-10-26 - .claude/rules/checks.md - read-surface holds a name's short version by code reading its own index's list
 Corrects: an S&P 400 or 600 pick with no accepted short version read "Not on tonight's list" in the one code writes, reading the S&P 500's reasons alone, found when 22.12 read HIMS's and ZION's pages back against the store
 Was:
