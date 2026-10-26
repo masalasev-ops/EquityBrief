@@ -9733,3 +9733,21 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             the projection handing no worked ratio; red, M2's row missing $3.00.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
             below, this pull request's last.
+
+### 22.6 - correction: a buy whose setup sets no target says why on its risk line, where it read no target   2026-10-26
+
+Found:      by the operator on 2026-10-25 reading Friday's night run again: a breakout's and a short-term dip's risk line
+            read "no target", which 22.6 wrote there in place of "open", saying nothing of how the trade is sold.
+Corrected:  the line reads "No target: it sells on a rising stop" for a breakout and "No target: it sells on its exit
+            signal" for the dip, in tomorrow's buys and on each card's own picks. The ruling's "trailing stop" is
+            written as section 15.23's terms table writes it on Tonight. The roster is kept in step.
+Tests:      one new and two extended: over the S&P 400's night with a pick of each kind, the drift's M3 at RLI's plan
+            drawn $3.00, the breakout's M1 and the dip's M2 each saying why, no line reading no target and no term of
+            section 15.23's list on the page; and the breakout's and the dip's own tests reading the new words. 2797 in
+            all.
+Claims:     none new.
+Pins:       none move, asserted: the source it edits joins the list no rule pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the test reading it. M1
+            both lines reading no target again; red, M1's line missing its rising stop.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.

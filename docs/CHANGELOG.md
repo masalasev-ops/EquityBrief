@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - .claude/rules/checks.md - read-surface holds each buy's risk line saying why where its setup sets no target
+Corrects: a breakout's or a short-term dip's risk line read "no target" with nothing saying why, found by the operator reading Friday's night run again on 2026-10-25
+Was:
+> read-surface: ... the numbers' valuation sentence stating the scorecard's too |
+Now:
+> read-surface: ... the numbers' valuation sentence stating the scorecard's too; and from the 22.6 correction of 2026-10-26 each buy's risk line over an S&P 400 pick of each kind, the drift's worked from its plan to $3.00, the breakout's saying it has no target since it sells on a rising stop and the dip's since it sells on its exit signal, with no term of section 15.23's list on the page |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
 ### 2026-10-26 - .claude/rules/checks.md - read-surface holds an S&P 400 pick's reward to risk worked from the plan its night stored
 Authorised by: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
 Was:
