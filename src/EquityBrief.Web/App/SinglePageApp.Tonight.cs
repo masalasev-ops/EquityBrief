@@ -123,7 +123,7 @@ public sealed partial class SinglePageApp
 
     // The Fundamentals family's card as a setup card, its press from the tile scrolling to it.
     static string ImprovingSection(MarkRenderer marks, ImprovingCardView improving, DateOnly night) =>
-        FormattableString.Invariant($"<section class=\"card setup-card\" id=\"setup-{EquityBrief.Core.Families.ImprovingRule.Name}\" data-card=\"{EquityBrief.Core.Families.ImprovingRule.Name}\" data-night=\"{night:yyyy-MM-dd}\"><div class=\"card-h\"><div>{marks.ImprovingCardHead(improving)}</div></div><div class=\"card-b\">{marks.ImprovingCard(improving)}</div></section>");
+        FormattableString.Invariant($"<section class=\"card setup-card\" id=\"setup-{EquityBrief.Core.Families.ImprovingRule.Name}\" data-card=\"{EquityBrief.Core.Families.ImprovingRule.Name}\" data-night=\"{night:yyyy-MM-dd}\"><div class=\"card-h\"><div>{marks.ImprovingCardHead(improving)}</div>{(improving.Read ? Cards.Night(night) : string.Empty)}</div><div class=\"card-b\">{marks.ImprovingCard(improving)}</div></section>");
 
     // The Fundamentals family's tile line: tonight's picks and the stocks flagged and waiting for their filing.
     static string ImprovingTileLine(ImprovingCardView improving)

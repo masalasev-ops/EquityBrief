@@ -10145,3 +10145,41 @@ Carried:    22.13's remedy from main after the merge, migration 112 alone, befor
             surface restarted; that night's answer on each index, its flags, its buys and the first ten of each tab,
             read back on Tonight against the store and recorded in an entry of its own as the addendum to 22.12's
             report; then 22.14 and 22.15 on the operator's word.
+
+### 22.13 - correction: the Fundamentals card drawn as the operator's mockup, a tab bar over two tables, what changed said with each filing's own figures and each status in its colour   2026-10-26
+
+Queue:      done, 22.13 merged as 2872e308 and its remedy run at 17:54Z, the read surface restarted from main; in
+            progress, this correction; next, the night of 2026-10-26 and each index's answer read back on Tonight with
+            the remedy's record, the monthly run by hand on 2026-10-27, 22.14 and 22.15 on the operator's word, and the
+            sign-offs of phases 18, 20 and 22 by fresh sessions.
+Found:      the operator's mockup of 2026-10-26, given after the card merged with the words "Yes i want it to look like
+            this", both kept in the local prompts archive: a tab bar over tables where the build drew pills over lines.
+Corrected:  the header says how soon the card reads and carries the night it was computed for once it has read one; the
+            sentence is set large; each tile is a count with its line, the bought in the buying green and the flagged in
+            the caution amber; the tabs are a bar, the chosen one on the family's tint, each list opening on a sentence
+            saying what it lists; each list is a table, stacked a row at a time on a phone; what changed is said with the
+            figures each check compared and the sales growth's pace; a flagged stock reads its filing not in yet with the
+            score it was; tonight's status is in its colour with its line beneath. Where the mockup is not followed, a
+            rule is: the header says a new filing or results release is read by the next night, as the night reads them,
+            where the mockup said tomorrow morning; no figure is taken from a release, which is read as four worded
+            answers; the flag's rule stands; an outlook kept reads unchanged, the plain-words list keeping its other word
+            off the page; and Strongest businesses, which the mockup leaves out, is drawn in the same table form.
+Tests:      none new, 2819 in all: the card's read-back worked by hand for M1's figures, its growth from 10.0% to 12.0%,
+            return on assets from 10.4% to 11.8%, current assets 2.05 times from 1.95 and gross margin from 52.6% to
+            53.8%, with the tiles' lines, the tab bar, both lists' sentences and tables and each status's colour; and no
+            stamp before the family's first night.
+Claims:     none new: the card's row is amended in place.
+Pins:       none move: the four sources it edits stand among the 21 no rule pins, asserted.
+Screens:    over a copy of the S&P 400's constructed store with M1's figures, the card at 1,440 pixels and a true 390 in
+            both palettes, no page wider than its screen and the two tabs on one line at 390.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds that the card's
+            test reads, each run filtered to it. M14 return on assets said from its year to the year before; M15 a flagged
+            stock's business now read as a score; M16 a flagged status keyed as an improved one. Each red at the card's
+            read-back: M14 at M1's sentence, M15 and M16 at M2's row.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2819 of 2819 tests ran with none failed,
+            migrations 0 to 112 with none pending, schema version 112, against `data-ci` and never `data`; the phase
+            report 64 tables, 1454 claims, 1454 passing, none out of scope and none unexamined, 1469 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the night of 2026-10-26's answer on each index read back on Tonight, with the remedy's record, as the
+            addendum to 22.12's report; 22.14 and 22.15 on the operator's word.

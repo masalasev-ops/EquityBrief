@@ -54,7 +54,28 @@ public sealed partial class MarkRenderer
 
     public const string WorkedBy = "Worked by code from each company's filings as first filed with the SEC and from four answers the local model reads in each results release. No model judges the stock.";
 
-    // The card's header, as a setup card's: its name, not yet tested, tonight's picks, and what it finds.
+    // Beneath what the card finds, how soon it reads what a company sends.
+    public const string CheckedNightly = "Checked every night, so a new filing or results release is read by the next night.";
+
+    // What each column of the "Improving fastest" tab's table holds, in the order the columns are drawn.
+    static readonly (string Heading, string Says)[] ImprovingHeadings =
+    [
+        ("Stock", "The ticker opens the stock's chart page, and the company is named beneath it."),
+        ("Business now", "How many of the checks that apply its newest filing passes, and how many the filing before passed."),
+        ("What changed on its new report", "What its newly read filing shows that the one before did not, with the figures it filed; for a flagged stock, what its results release reads."),
+        ("Tonight", "What this setup does with the stock tonight, and why."),
+    ];
+
+    // What each column of the "Strongest businesses" tab's table holds.
+    static readonly (string Heading, string Says)[] StrongestHeadings =
+    [
+        ("Stock", "The ticker opens the stock's chart page, and the company is named beneath it."),
+        ("Business now", "How many of the checks that apply its newest filing passes."),
+        ("The business", "Its sales against a year before and how that pace moved, and its gross profit against its assets."),
+        ("Its price", "Its price against its own last twelve quarters, and what Quality at a fair price says of it."),
+    ];
+
+    // The card's header, as a setup card's: its name, not yet tested, tonight's picks, what it finds and how soon it reads.
     public string ImprovingCardHead(ImprovingCardView card)
     {
         var body = new StringBuilder();
@@ -62,15 +83,17 @@ public sealed partial class MarkRenderer
         body.Append("<header class=\"fam-head\" data-family=\"improving\"><span class=\"fam-tag\" data-family=\"improving\"><span class=\"fam-swatch\" data-family=\"improving\"></span>");
         body.Append(Escaped(EquityBrief.Core.Families.ImprovingRule.Label)).Append("</span>");
         body.Append(Invariant, $" <span class=\"status-pill provisional\" title=\"{Escaped(EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus)}\">Not yet tested</span>");
-        body.Append(Invariant, $" <span class=\"fam-count\">{Escaped(card.Bought == 1 ? "1 pick" : Formatted($"{card.Bought} picks"))}</span></header>");
-        body.Append(Invariant, $"<p class=\"setup-about\">{Escaped(EquityBrief.Core.Families.ImprovingRule.Description)}</p>");
+        body.Append(Invariant, $" <span class=\"fam-count\">{Escaped(card.Bought == 1 ? "1 pick tonight" : Formatted($"{card.Bought} picks tonight"))}</span></header>");
+        body.Append(Invariant, $"<p class=\"setup-about\">{Escaped(EquityBrief.Core.Families.ImprovingRule.Description)}<br>{Escaped(CheckedNightly)}</p>");
 
         return body.ToString();
     }
 
-    // The card: its sentence, four tiles, the two tabs, and how it picks and how it will be tested behind a fold.
+    // The card, as the operator's mockup of 2026-10-26 draws it: its sentence, four tiles, a tab bar over the two tabs' tables
+    // each opening on what it lists, and how it picks and how it will be tested behind a fold.
     public string ImprovingCard(ImprovingCardView card)
     {
+        var settings = EquityBrief.Core.Families.ImprovingRule.Starting;
         var body = new StringBuilder();
 
         body.Append(Invariant, $"<section class=\"family-card improving-card\" data-family=\"improving\" data-index=\"{Escaped(card.Index)}\" data-bought=\"{card.Bought}\" data-flagged=\"{card.Flagged}\" data-improving=\"{card.Improving.Count}\" data-holding=\"{card.Holding}\">");
@@ -85,15 +108,16 @@ public sealed partial class MarkRenderer
 
         body.Append(ImprovingTiles(card));
 
-        // The tabs: two radio inputs the stylesheet shows one panel under, their labels drawn as chips.
+        // The tabs: two radio inputs the stylesheet shows one panel under, their labels drawn as a tab bar.
         body.Append("<input type=\"radio\" class=\"improving-tab\" name=\"improving-tab\" id=\"improving-tab-fastest\" value=\"fastest\" checked>");
         body.Append("<input type=\"radio\" class=\"improving-tab\" name=\"improving-tab\" id=\"improving-tab-strongest\" value=\"strongest\">");
         body.Append("<nav class=\"improving-tabs\" aria-label=\"Choose a list\">");
-        body.Append(Invariant, $"<label class=\"chip\" for=\"improving-tab-fastest\" data-tab=\"fastest\">Improving fastest<span class=\"n\">{card.Improving.Count}</span></label>");
-        body.Append(Invariant, $"<label class=\"chip\" for=\"improving-tab-strongest\" data-tab=\"strongest\">Strongest businesses<span class=\"n\">{card.Strongest.Count}</span></label>");
+        body.Append("<label class=\"improving-tabname\" for=\"improving-tab-fastest\" data-tab=\"fastest\">Improving fastest</label>");
+        body.Append("<label class=\"improving-tabname\" for=\"improving-tab-strongest\" data-tab=\"strongest\">Strongest businesses</label>");
         body.Append("</nav>");
 
         body.Append(Invariant, $"<div class=\"improving-panel\" data-tab=\"fastest\" data-rows=\"{card.Improving.Count}\">");
+        body.Append(Invariant, $"<p class=\"improving-lead\">Companies whose business got better the most on their newest report, whatever their price. A company is bought when its filing lifts it to at least {settings.BuyInNine} of the 9 checks with sales growing faster than the quarter before.</p>");
 
         if (card.Improving.Count == 0)
         {
@@ -101,20 +125,21 @@ public sealed partial class MarkRenderer
         }
         else
         {
-            body.Append(ImprovingList(card.Improving.Take(ImprovingShown).ToArray(), 1));
+            body.Append(ImprovingTable(card.Improving.Take(ImprovingShown).ToArray()));
 
             if (card.Improving.Count > ImprovingShown)
             {
                 var rest = card.Improving.Count - ImprovingShown;
 
                 body.Append(Invariant, $"<details class=\"fold improving-more\" data-more=\"{rest}\"><summary>{Escaped(rest == 1 ? "1 more" : Formatted($"{rest} more"))}</summary>");
-                body.Append(ImprovingList(card.Improving.Skip(ImprovingShown).ToArray(), ImprovingShown + 1));
+                body.Append(ImprovingTable(card.Improving.Skip(ImprovingShown).ToArray()));
                 body.Append("</details>");
             }
         }
 
         body.Append("</div>");
         body.Append(Invariant, $"<div class=\"improving-panel\" data-tab=\"strongest\" data-rows=\"{card.Strongest.Count}\">");
+        body.Append(Invariant, $"<p class=\"improving-lead\">The index's {card.Strongest.Count} highest scores tonight, whatever their price, ties broken by gross profit against assets.</p>");
 
         if (card.Strongest.Count == 0)
         {
@@ -122,23 +147,32 @@ public sealed partial class MarkRenderer
         }
         else
         {
-            body.Append(Invariant, $"<p class=\"family-note\">The index's {card.Strongest.Count} highest scores tonight, ties broken by gross profit against assets.</p><ol class=\"improving-rows strongest-rows\">");
+            body.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table improving-table strongest-table\" data-rows=\"{card.Strongest.Count}\"><thead><tr>");
+
+            foreach (var (heading, says) in StrongestHeadings)
+            {
+                body.Append(TippedHeading(heading, says, null));
+            }
+
+            body.Append("</tr></thead><tbody>");
 
             foreach (var cell in card.Strongest)
             {
-                body.Append(Invariant, $"<li class=\"improving-row\" data-ticker=\"{Escaped(cell.Ticker)}\"><span class=\"improving-name\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(cell.Ticker)}\">{Escaped(cell.Ticker)}</a>{(cell.Company is { Length: > 0 } company ? Formatted($" <span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</span>");
-                body.Append(Invariant, $"<span class=\"improving-score\">{cell.Passed} of {cell.Applied}</span>");
-                body.Append(Invariant, $"<span class=\"improving-changed\">{Escaped(cell.Business)} {Escaped(cell.Price)}</span>");
+                body.Append(Invariant, $"<tr class=\"improving-row\" data-ticker=\"{Escaped(cell.Ticker)}\">");
+                body.Append(ImprovingStock(cell.Ticker, cell.Company));
+                body.Append(Invariant, $"<td class=\"improving-score\"><b>{cell.Passed} of {cell.Applied}</b></td>");
+                body.Append(Invariant, $"<td class=\"improving-changed\">{Escaped(cell.Business)}</td>");
+                body.Append(Invariant, $"<td class=\"improving-status\">{Escaped(cell.Price)}");
 
                 if (cell.Quality is { } quality)
                 {
-                    body.Append(Invariant, $"<span class=\"improving-status\" data-quality=\"{(quality == InTheQualityBook ? "held" : "dear")}\">{Escaped(quality)}.</span>");
+                    body.Append(Invariant, $"<span class=\"improving-quality\" data-quality=\"{(quality == InTheQualityBook ? "held" : "dear")}\">{Escaped(quality)}.</span>");
                 }
 
-                body.Append("</li>");
+                body.Append("</td></tr>");
             }
 
-            body.Append("</ol>");
+            body.Append("</tbody></table></div>");
         }
 
         body.Append("</div>");
@@ -147,27 +181,49 @@ public sealed partial class MarkRenderer
         return body.Append("</section>").ToString();
     }
 
-    // The rows of the "Improving fastest" tab, numbered from a place.
-    static string ImprovingList(IReadOnlyList<ImprovingRowCell> cells, int from)
+    // The "Improving fastest" tab's table: each stock, its business now against the filing before, what changed on its
+    // new report, and tonight's status in its colour with the line beneath it.
+    static string ImprovingTable(IReadOnlyList<ImprovingRowCell> cells)
     {
         var body = new StringBuilder();
 
-        body.Append(Invariant, $"<ol class=\"improving-rows\" start=\"{from}\">");
+        body.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table improving-table\" data-rows=\"{cells.Count}\"><thead><tr>");
+
+        foreach (var (heading, says) in ImprovingHeadings)
+        {
+            body.Append(TippedHeading(heading, says, null));
+        }
+
+        body.Append("</tr></thead><tbody>");
 
         foreach (var cell in cells)
         {
-            var score = cell is { BeforePassed: { } before, BeforeApplied: { } applied } && cell.Status != FlaggedWords
-                ? Formatted($"{cell.Passed} of {cell.Applied}, up from {before}{(applied != cell.Applied ? Formatted($" of {applied}") : string.Empty)}")
-                : Formatted($"{cell.Passed} of {cell.Applied}");
+            var state = cell.Status switch
+            {
+                BoughtWords => "bought",
+                FlaggedWords => "flagged",
+                HeldWords => "earlier",
+                _ => "improved",
+            };
+            var now = state == "flagged"
+                ? Formatted($"<b>filing not in yet</b><span class=\"improving-from\">was {cell.Passed} of {cell.Applied}</span>")
+                : cell is { BeforePassed: { } before, BeforeApplied: { } applied }
+                    ? Formatted($"<b>{cell.Passed} of {cell.Applied}</b><span class=\"improving-from\">up from {before}{(applied != cell.Applied ? Formatted($" of {applied}") : string.Empty)}</span>")
+                    : Formatted($"<b>{cell.Passed} of {cell.Applied}</b>");
 
-            body.Append(Invariant, $"<li class=\"improving-row\" data-ticker=\"{Escaped(cell.Ticker)}\" data-status=\"{Escaped(cell.Status)}\"><span class=\"improving-name\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(cell.Ticker)}\">{Escaped(cell.Ticker)}</a>{(cell.Company is { Length: > 0 } company ? Formatted($" <span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</span>");
-            body.Append(Invariant, $"<span class=\"improving-score\">{Escaped(score)}</span>");
-            body.Append(Invariant, $"<span class=\"improving-changed\">{Escaped(cell.Changed)}</span>");
-            body.Append(Invariant, $"<span class=\"improving-status\"><b>{Escaped(cell.Status)}.</b> {Escaped(cell.Line)}</span></li>");
+            body.Append(Invariant, $"<tr class=\"improving-row\" data-ticker=\"{Escaped(cell.Ticker)}\" data-status=\"{Escaped(cell.Status)}\">");
+            body.Append(ImprovingStock(cell.Ticker, cell.Company));
+            body.Append(Invariant, $"<td class=\"improving-score\">{now}</td>");
+            body.Append(Invariant, $"<td class=\"improving-changed\">{Escaped(cell.Changed)}</td>");
+            body.Append(Invariant, $"<td class=\"improving-status\" data-state=\"{state}\"><b>{Escaped(cell.Status)}</b><span>{Escaped(cell.Line)}</span></td></tr>");
         }
 
-        return body.Append("</ol>").ToString();
+        return body.Append("</tbody></table></div>").ToString();
     }
+
+    // A table's stock cell: the ticker opening its chart page and the company beneath it.
+    static string ImprovingStock(string ticker, string? company) =>
+        Formatted($"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(ticker)}\">{Escaped(ticker)}</a>{(company is { Length: > 0 } named ? Formatted($"<span class=\"co\">{Escaped(named)}</span>") : string.Empty)}</td>");
 
     // The card's sentence from tonight's figures.
     static string ImprovingSummary(ImprovingCardView card)
@@ -196,8 +252,8 @@ public sealed partial class MarkRenderer
         return improved == 0 ? opening : opening + " " + bought + "; " + flagged + ".";
     }
 
-    // The four tiles: bought at tomorrow's open, flagged and waiting for the filing, holding with its change since bought
-    // beside the index's stocks, and reporting this week.
+    // The four tiles, each a count with a line beneath: bought at tomorrow's open, flagged and waiting for the filing, the
+    // trades held with their change since bought beside the index's stocks, and the index's stocks reporting this week.
     static string ImprovingTiles(ImprovingCardView card)
     {
         static string Percent(double? figure) =>
@@ -206,12 +262,12 @@ public sealed partial class MarkRenderer
         var body = new StringBuilder();
 
         body.Append(Invariant, $"<div class=\"hw-tiles improving-tiles\" data-bought=\"{card.Bought}\" data-flagged=\"{card.Flagged}\" data-holding=\"{card.Holding}\" data-holding-since=\"{(card.HoldingSince is { } since ? since.ToString("R", Invariant) : "none")}\" data-members-since=\"{(card.MembersSince is { } members ? members.ToString("R", Invariant) : "none")}\" data-reporting=\"{(card.Reporting is { } reporting ? reporting.ToString(Invariant) : "none")}\">");
-        body.Append(Invariant, $"<div class=\"hw-tile\"><span class=\"tile-label\">Bought at tomorrow's open</span><b>{card.Bought}</b><span>{(card.Bought == 1 ? "stock" : "stocks")}</span></div>");
-        body.Append(Invariant, $"<div class=\"hw-tile\"><span class=\"tile-label\">Flagged, waiting for the filing</span><b>{card.Flagged}</b><span>from their results release</span></div>");
+        body.Append(Invariant, $"<div class=\"hw-tile\"><span class=\"tile-label\">Bought at tomorrow's open</span><b data-state=\"bought\">{card.Bought}</b><span>{(card.Bought switch { 0 => "no new filing lifted one over the bar", 1 => "its filing confirmed the improvement", _ => "their filing confirmed the improvement" })}</span></div>");
+        body.Append(Invariant, $"<div class=\"hw-tile\"><span class=\"tile-label\">Flagged, waiting for the filing</span><b data-state=\"flagged\">{card.Flagged}</b><span>results release read; filing usually within weeks</span></div>");
         body.Append(card.Holding == 0
             ? "<div class=\"hw-tile\"><span class=\"tile-label\">Holding</span><b>0</b><span>none bought yet</span></div>"
-            : FormattableString.Invariant($"<div class=\"hw-tile\"><span class=\"tile-label\">Holding {card.Holding}</span><b>{Percent(card.HoldingSince)}</b><span>since bought; the index's stocks {Percent(card.MembersSince)}</span></div>"));
-        body.Append(Invariant, $"<div class=\"hw-tile\"><span class=\"tile-label\">Reporting this week</span><b>{(card.Reporting is { } count ? count.ToString(Invariant) : "not read")}</b><span>in the next {ReportingDays} trading days</span></div>");
+            : FormattableString.Invariant($"<div class=\"hw-tile\"><span class=\"tile-label\">Holding</span><b>{card.Holding}</b><span>{Percent(card.HoldingSince)} since bought, the index's stocks {Percent(card.MembersSince)}</span></div>"));
+        body.Append(Invariant, $"<div class=\"hw-tile\"><span class=\"tile-label\">Reporting this week</span><b>{(card.Reporting is { } count ? count.ToString(Invariant) : "not read")}</b><span>of the index's stocks, in the next {ReportingDays} trading days</span></div>");
         body.Append("</div>");
 
         return body.ToString();

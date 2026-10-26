@@ -281,19 +281,33 @@ main{padding-block:8px 64px}
 .fam-tag[data-family='dip']{background:var(--fam-dip-tint)} .fam-swatch[data-family='dip']{background:var(--fam-dip)} .fam-edge[data-family='dip']{border-left-color:var(--fam-dip)}
 .fam-tag[data-family='quality']{background:var(--fam-quality-tint)} .fam-swatch[data-family='quality']{background:var(--fam-quality)} .fam-edge[data-family='quality']{border-left-color:var(--fam-quality)}
 .fam-tag[data-family='improving']{background:var(--fam-improving-tint)} .fam-swatch[data-family='improving']{background:var(--fam-improving)} .fam-edge[data-family='improving']{border-left-color:var(--fam-improving)}
-/* The Fundamentals card: two radio inputs choosing which of its two lists shows, their labels drawn as chips, and each list's rows as lines that wrap. */
+/* The Fundamentals card, as the operator's mockup draws it: its sentence set large, the bought count and word in the
+   buying green and the flagged in the caution amber, the word always beside each, two radio inputs choosing which of its two lists shows with their labels drawn as a
+   tab bar, the chosen tab on the family's tint with its hue for an edge, and each list a table, stacked a row at a time on
+   a phone. */
+.improving-card>.card-summary{font-size:18px;font-weight:600;line-height:1.4;color:var(--ink)}
+.improving-tiles b[data-state=bought]{color:var(--sup-ink)} .improving-tiles b[data-state=flagged]{color:var(--warn)}
 .improving-card>.improving-tab{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
-.improving-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 10px}
-.improving-tabs .chip{cursor:pointer}
-.improving-tab[value="fastest"]:checked~.improving-tabs .chip[for="improving-tab-fastest"],.improving-tab[value="strongest"]:checked~.improving-tabs .chip[for="improving-tab-strongest"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
-.improving-tab[value="fastest"]:checked~.improving-tabs .chip[for="improving-tab-fastest"] .n,.improving-tab[value="strongest"]:checked~.improving-tabs .chip[for="improving-tab-strongest"] .n{color:var(--surface);opacity:.75}
+.improving-tabs{display:flex;flex-wrap:wrap;gap:4px;margin:18px 0 0;border-bottom:1px solid var(--hair)}
+.improving-tabname{cursor:pointer;padding:9px 16px;margin-bottom:-1px;border:1px solid transparent;border-bottom:0;border-radius:8px 8px 0 0;font:600 15px var(--sans);color:var(--ink-2)}
+.improving-tab[value="fastest"]:checked~.improving-tabs .improving-tabname[for="improving-tab-fastest"],.improving-tab[value="strongest"]:checked~.improving-tabs .improving-tabname[for="improving-tab-strongest"]{background:var(--fam-improving-tint);border-color:var(--fam-improving);color:var(--ink);font-weight:700}
 .improving-tab[value="fastest"]:checked~.improving-panel[data-tab=strongest],.improving-tab[value="strongest"]:checked~.improving-panel[data-tab=fastest]{display:none}
-.improving-rows{margin:0;padding-left:1.6em}
-.improving-row{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;padding:7px 0;border-bottom:1px solid var(--hair)}
-.improving-row>span{min-width:0;overflow-wrap:anywhere}
-.improving-name{grid-column:1} .improving-score{grid-column:2;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.improving-changed,.improving-status{grid-column:1 / -1;color:var(--ink-2)}
-.improving-status b{color:var(--ink)}
+.improving-lead{color:var(--ink-2);margin:12px 0}
+.list-table.improving-table{min-width:0}
+.improving-table td{vertical-align:top;padding-top:10px;padding-bottom:10px;white-space:normal}
+.improving-table td.c-nm{width:14%} .improving-table td.improving-score{width:14%;font-variant-numeric:tabular-nums} .improving-table td.improving-status{width:30%}
+.improving-table td.improving-score b,.improving-table td.improving-status b{display:block;font-weight:600;color:var(--ink)}
+.improving-from{display:block;font-size:12.5px;color:var(--up)}
+.improving-status span,.improving-quality{display:block;font-size:12.5px;color:var(--ink-2)}
+.improving-table td.improving-status[data-state=bought] b{color:var(--sup-ink)} .improving-table td.improving-status[data-state=flagged] b{color:var(--warn)}
+@media (max-width:560px){
+ .improving-tabname{padding:8px 10px;font-size:14px}
+ .list-table.improving-table{display:block} .list-table.improving-table thead{display:none} .list-table.improving-table tbody{display:block}
+ .list-table.improving-table tr{display:grid;grid-template-areas:'nm score' 'changed changed' 'tonight tonight';grid-template-columns:minmax(0,1fr) auto;column-gap:12px;padding:8px 0;border-bottom:1px solid var(--hair)}
+ .list-table.improving-table td{display:block;width:auto;height:auto;border:0;padding:2px 0;white-space:normal}
+ .list-table.improving-table td.c-nm{grid-area:nm} .list-table.improving-table td.improving-score{grid-area:score;text-align:right}
+ .list-table.improving-table td.improving-changed{grid-area:changed;color:var(--ink-2)} .list-table.improving-table td.improving-status{grid-area:tonight}
+}
 @media (max-width:560px){
  .list-table.quality-table{min-width:0;display:block} .list-table.quality-table thead{display:none} .list-table.quality-table tbody{display:block}
  .list-table.quality-table tr{display:grid;grid-template-areas:'nm score since' 'place place place' 'tonight tonight tonight';grid-template-columns:minmax(0,1fr) auto auto;column-gap:12px;padding:8px 0;border-bottom:1px solid var(--hair)}

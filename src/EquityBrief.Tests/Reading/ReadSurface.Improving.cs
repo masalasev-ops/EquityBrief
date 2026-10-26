@@ -22,6 +22,15 @@ public partial class ReadSurface
     static string ScoredChecks(params int[] passed) =>
         "[" + string.Join(",", Enumerable.Range(1, 9).Select(number => FormattableString.Invariant($"{{\"number\":{number},\"answer\":\"{(passed.Contains(number) ? "passed" : "failed")}\"}}"))) + "]";
 
+    // M1's scorecard on the night with the figures each check compared: its year against the year before for the ratios, its
+    // cash against its profit and its shares against a year before; the first eight passed and the ninth failed.
+    const string M1Checks =
+        "[{\"number\":1,\"answer\":\"passed\",\"amount\":\"120\"},{\"number\":2,\"answer\":\"passed\",\"amount\":\"150\"}," +
+        "{\"number\":3,\"answer\":\"passed\",\"now\":\"0.118\",\"yearBefore\":\"0.104\"},{\"number\":4,\"answer\":\"passed\",\"amount\":\"150\",\"against\":\"120\"}," +
+        "{\"number\":5,\"answer\":\"passed\",\"now\":\"0.27\",\"yearBefore\":\"0.29\"},{\"number\":6,\"answer\":\"passed\",\"now\":\"2.05\",\"yearBefore\":\"1.95\"}," +
+        "{\"number\":7,\"answer\":\"passed\",\"amount\":\"100\",\"against\":\"101\",\"now\":\"-0.0099\"},{\"number\":8,\"answer\":\"passed\",\"now\":\"0.538\",\"yearBefore\":\"0.526\"}," +
+        "{\"number\":9,\"answer\":\"failed\",\"now\":\"0.6\",\"yearBefore\":\"0.62\"}]";
+
     // The family's night on the universes' store's S&P 400. M1's filing, read for the first time, lifted it from 5 of 9 to 8
     // of 9 with its sales growing faster, confirming its release before it, so it is bought; M3's lifted it from 5 of 9 to 7
     // of 9, short of the bar; M2's results release since its filing reads better with its outlook raised, so it is flagged.
@@ -50,7 +59,7 @@ public partial class ReadSurface
             $"('provisional', 'MID', 'M1', '{IndexNight}', '2026-10-01', '2026-09-29', 8, 9, 5, 9, '50', NULL, NULL, NULL, NULL, NULL, 1.0, '{IndexNight}', 0, 'open');");
         store.Execute(
             "INSERT INTO fundamental_score (index_code, session_date, ticker, quarter, financial, passed, applied, checks, gross_profitability) VALUES " +
-            $"('MID', '{IndexNight}', 'M1', '2026-08-31', 0, 8, 9, '{ScoredChecks(1, 2, 3, 4, 5, 6, 7, 8)}', 0.4), " +
+            $"('MID', '{IndexNight}', 'M1', '2026-08-31', 0, 8, 9, '{M1Checks}', 0.4), " +
             $"('MID', '{IndexNight}', 'M2', '2026-06-30', 0, 6, 9, '{ScoredChecks(1, 2, 3, 4, 5, 6)}', 0.2), " +
             $"('MID', '{IndexNight}', 'M3', '2026-08-31', 0, 7, 9, '{ScoredChecks(1, 2, 3, 4, 6, 7, 8)}', 0.3);");
 
@@ -99,43 +108,59 @@ public partial class ReadSurface
         Assert.Contains("1 pick tonight. 1 flagged, waiting for the filing.", setups, StringComparison.Ordinal);
         Assert.Contains(ImprovingRule.Looks, setups, StringComparison.Ordinal);
 
-        // Its header as a setup card's, not yet tested, and its sentence from tonight's figures.
+        // Its header as a setup card's, not yet tested, its picks tonight, how soon it reads, the night it was computed for,
+        // and its sentence from tonight's figures.
         Assert.Contains("Fundamentals</span> <span class=\"status-pill provisional\"", section, StringComparison.Ordinal);
-        Assert.Contains(ImprovingRule.Description, section, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"fam-count\">1 pick tonight</span>", section, StringComparison.Ordinal);
+        Assert.Contains($"{ImprovingRule.Description}<br>{EquityBrief.Web.Marks.MarkRenderer.CheckedNightly}</p>", section, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"stamp computed\">Computed for ", section, StringComparison.Ordinal);
         Assert.Contains("<p class=\"card-summary\" data-summary>Tonight 3 companies' businesses improved on a new report. 1 is bought at tomorrow's open; 1 more is flagged from its results release and waits for its filing.</p>", section, StringComparison.Ordinal);
 
-        // The four tiles. M3, held since its buy, rose 5.0%; the index's three stocks over the same nights by the mean of
-        // 10%, -3% and 5%, 4.0%.
+        // The four tiles, each a count and its line. M3, held since its buy, rose 5.0%; the index's three stocks over the
+        // same nights by the mean of 10%, -3% and 5%, 4.0%.
         var tiles = Assert.Single(Blocks(section, "<div class=\"hw-tiles improving-tiles\".*?</div></div>"));
 
-        Assert.Contains("<span class=\"tile-label\">Bought at tomorrow's open</span><b>1</b>", tiles, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"tile-label\">Flagged, waiting for the filing</span><b>1</b>", tiles, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"tile-label\">Holding 1</span><b><span class=\"gain\">+5.0%</span></b><span>since bought; the index's stocks <span class=\"gain\">+4.0%</span></span>", tiles, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"tile-label\">Reporting this week</span><b>1</b><span>in the next 5 trading days</span>", tiles, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"tile-label\">Bought at tomorrow's open</span><b data-state=\"bought\">1</b><span>its filing confirmed the improvement</span>", tiles, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"tile-label\">Flagged, waiting for the filing</span><b data-state=\"flagged\">1</b><span>results release read; filing usually within weeks</span>", tiles, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"tile-label\">Holding</span><b>1</b><span><span class=\"gain\">+5.0%</span> since bought, the index's stocks <span class=\"gain\">+4.0%</span></span>", tiles, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"tile-label\">Reporting this week</span><b>1</b><span>of the index's stocks, in the next 5 trading days</span>", tiles, StringComparison.Ordinal);
 
-        // Improving fastest, open first: M1 rose by three checks in nine and M3 by two; M2 flagged after them.
+        // The tab bar, Improving fastest open first under its sentence: M1 rose by three checks in nine and M3 by two; M2
+        // flagged after them.
         Assert.Contains("id=\"improving-tab-fastest\" value=\"fastest\" checked", section, StringComparison.Ordinal);
-        Assert.Equal(["M1", "M3", "M2"], Regex.Matches(Assert.Single(Blocks(section, "<div class=\"improving-panel\" data-tab=\"fastest\".*?</div>")), "<li class=\"improving-row\" data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Contains("<label class=\"improving-tabname\" for=\"improving-tab-fastest\" data-tab=\"fastest\">Improving fastest</label><label class=\"improving-tabname\" for=\"improving-tab-strongest\" data-tab=\"strongest\">Strongest businesses</label>", section, StringComparison.Ordinal);
 
-        var m1 = Assert.Single(Blocks(section, "<li class=\"improving-row\" data-ticker=\"M1\" data-status.*?</li>"));
-        var m2 = Assert.Single(Blocks(section, "<li class=\"improving-row\" data-ticker=\"M2\" data-status.*?</li>"));
-        var m3 = Assert.Single(Blocks(section, "<li class=\"improving-row\" data-ticker=\"M3\" data-status.*?</li>"));
+        var fastest = Assert.Single(Blocks(section, "<div class=\"improving-panel\" data-tab=\"fastest\".*?</table>"));
 
+        Assert.Contains("<p class=\"improving-lead\">Companies whose business got better the most on their newest report, whatever their price. A company is bought when its filing lifts it to at least 8 of the 9 checks with sales growing faster than the quarter before.</p>", fastest, StringComparison.Ordinal);
+        Assert.Equal(["Stock", "Business now", "What changed on its new report", "Tonight"], Regex.Matches(fastest, "<th[^>]* data-heading=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Equal(["M1", "M3", "M2"], Regex.Matches(fastest, "<tr class=\"improving-row\" data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+
+        var m1 = Assert.Single(Blocks(section, "<tr class=\"improving-row\" data-ticker=\"M1\" data-status.*?</tr>"));
+        var m2 = Assert.Single(Blocks(section, "<tr class=\"improving-row\" data-ticker=\"M2\" data-status.*?</tr>"));
+        var m3 = Assert.Single(Blocks(section, "<tr class=\"improving-row\" data-ticker=\"M3\" data-status.*?</tr>"));
+
+        // M1's sentence worked by hand from its rows: its growth of 12% from 12% less its speeding up of 2 points; the four
+        // checks its filing passes that the one before did not, each with the figures its own year and the year before
+        // stored; and the one it no longer passes.
         Assert.Contains("href=\"#/chart/M1\"", m1, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"improving-score\">8 of 9, up from 5</span>", m1, StringComparison.Ordinal);
-        Assert.Contains("Its new filing shows a higher return on assets, cash from operations above net income, more current assets against current liabilities and a wider gross margin, which the one before did not; it no longer shows more sales against its assets.", m1, StringComparison.Ordinal);
-        Assert.Contains("<b>Bought at tomorrow's open.</b> Its filing of 1 Oct confirmed the release of 29 Sep.", m1, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"improving-score\">7 of 9, up from 5</span>", m3, StringComparison.Ordinal);
-        Assert.Contains("<b>Improved, short of the bar.</b> It needs 8 of 9 and misses less long-term debt against its assets and more sales against its assets.", m3, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"improving-score\">6 of 9</span>", m2, StringComparison.Ordinal);
-        Assert.Contains("Its results release of 30 Sep reads results better than expected, its outlook raised.", m2, StringComparison.Ordinal);
-        Assert.Contains("<b>Flagged, waiting for its filing.</b> Bought only if its filing lifts it to 8 of 9.", m2, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"improving-score\"><b>8 of 9</b><span class=\"improving-from\">up from 5</span></td>", m1, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"improving-changed\">Sales growth sped up from 10.0% to 12.0% on a year. Return on assets rose from 10.4% to 11.8%. It now brings in more cash than it reports as profit. Current assets now cover current liabilities 2.05 times, up from 1.95. Gross margin widened from 52.6% to 53.8%. It no longer shows more sales against its assets.</td>", m1, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"improving-status\" data-state=\"bought\"><b>Bought at tomorrow's open</b><span>Its filing of 1 Oct confirmed the release of 29 Sep.</span></td>", m1, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"improving-score\"><b>7 of 9</b><span class=\"improving-from\">up from 5</span></td>", m3, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"improving-changed\">Sales growth sped up from 9.0% to 10.0% on a year. Current assets cover more of current liabilities. It issued no new shares beyond the scorecard's allowance. Gross margin widened. It no longer shows less long-term debt against its assets.</td>", m3, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"improving-status\" data-state=\"improved\"><b>Improved, short of the bar</b><span>Needs 8 of 9; one check short, missing less long-term debt against its assets and more sales against its assets.</span></td>", m3, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"improving-score\"><b>filing not in yet</b><span class=\"improving-from\">was 6 of 9</span></td>", m2, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"improving-changed\">Its results release of 30 Sep reads results above expectations and a raised outlook.</td>", m2, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"improving-status\" data-state=\"flagged\"><b>Flagged, waiting for its filing</b><span>Bought only if its filing lifts it to 8 of 9.</span></td>", m2, StringComparison.Ordinal);
 
-        // Strongest businesses: the index's three scores, highest first, with what the quality book says of each.
-        var strongest = Assert.Single(Blocks(section, "<div class=\"improving-panel\" data-tab=\"strongest\".*?</div>"));
+        // Strongest businesses under its own sentence: the index's three scores, highest first, each its business and its
+        // price apart, with what the quality book says of each.
+        var strongest = Assert.Single(Blocks(section, "<div class=\"improving-panel\" data-tab=\"strongest\".*?</table>"));
 
+        Assert.Contains("<p class=\"improving-lead\">The index's 3 highest scores tonight, whatever their price, ties broken by gross profit against assets.</p>", strongest, StringComparison.Ordinal);
         Assert.Equal(["M1", "M3", "M2"], Regex.Matches(strongest, "data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
-        Assert.Contains("Sales grew 12.0% on a year, faster than in the quarter before; gross profit was 40.0% of its assets. Its price is cheaper than in 9 of its own last 12 quarters.", strongest, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"improving-changed\">Sales grew 12.0% on a year, faster than in the quarter before; gross profit was 40.0% of its assets.</td><td class=\"improving-status\">Its price is cheaper than in 9 of its own last 12 quarters.", strongest, StringComparison.Ordinal);
         Assert.Contains(EquityBrief.Web.Marks.MarkRenderer.InTheQualityBook + ".", strongest, StringComparison.Ordinal);
         Assert.Contains(EquityBrief.Web.Marks.MarkRenderer.AboveItsUsualPrice + ".", strongest, StringComparison.Ordinal);
 
@@ -214,5 +239,8 @@ public partial class ReadSurface
 
         Assert.Contains("It has read no night yet: it reads its first on the first night after it was built.", before, StringComparison.Ordinal);
         Assert.Contains("Its first night has not run yet.", before, StringComparison.Ordinal);
+
+        // Before its first night the card is stamped with no night it was computed for.
+        Assert.DoesNotContain("stamp computed", Assert.Single(Blocks(before, "<section class=\"card setup-card\" id=\"setup-improving\".*?</section></div></section>")), StringComparison.Ordinal);
     }
 }
