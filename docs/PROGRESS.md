@@ -9819,3 +9819,34 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 64 tables, 1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the stop and report; the sign-offs of phases 18, 20 and 22 by fresh sessions.
+
+### 22.12 ruling - the S&P 500's Loop page reading the register as the night read it, then the monthly run by hand ahead of 2026-11-07   2026-10-26
+
+Not a checkpoint entry: it records the operator's ruling and lands nothing.
+Ruled:      by the operator at about 04:19 UTC on 2026-10-26, kept whole in
+            `prompts/2026-10-26-22.12-loop-page-register-then-monthly-by-hand.md`, after the page corrections merged:
+            "One correction, its own pull request, labelled under the checkpoint the record says built it. The S&P 500's
+            Loop page reads the register at midnight after the night, so after a night run again it draws the families
+            as they stood before a freeze, as paper trading did before PR 565. It reads the register at the instant the
+            night read it, as paper trading and the S&P 400's and 600's pages now do. A test over a night run again
+            after a freeze. No rule's code version moves, asserted; no paid call; no store write. Gates over the tree
+            before the merge." Then: "After item 1 merges, run the monthly run by hand from main's build on Tuesday
+            2026-10-27, after the night of 2026-10-26 has finished and while no other writer runs: no night, off-peak
+            run, labeller, drain, local run or ledger build. It takes about two and a half hours and must finish before
+            the night of 2026-10-27 at 6:45 pm ET, or not start." October's run of 2026-10-11 having run, "Run this one
+            as the runbook allows for a second run in a month; if it allows none, say so and stop before running
+            anything." It reads every family standing on each index; "No proposal is approved, applied or registered
+            by the run. No paid call. The local model's idea generator runs as it does in a monthly run." The report
+            gives each index's families with what the run tested for each, and the Loop page read back on each index
+            at 1440 pixels against the run's rows. "Stop after the report. Nothing else starts."
+Labelled:   read off the record: under 20.11, which in one commit had a night run again read the S&P 500's rules at
+            the instant it ran, stated that instant on the S&P 500's index night, and had the Loop page read the S&P
+            400's and 600's register at it while the S&P 500's stayed past the night's evening. The Loop page draws the
+            three swing families, the fundamentals-first family and the sector heavyweights, and no quality or dip
+            row. By the same reading the paper trading correction of 2026-10-26 filed under 22.11 corrects what 20.11
+            built: the same commit left paper trading's S&P 500 accounts past the night's evening, and 22.6 carried that
+            into each card's record so far.
+Queue:      done, phase 22 to its report, the corrections after it and the page corrections; in progress, this
+            correction in its own pull request; next, the monthly run by hand on 2026-10-27 and its report, then the
+            sign-offs of phases 18, 20 and 22 by fresh sessions when the operator says.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the correction's entry below.
