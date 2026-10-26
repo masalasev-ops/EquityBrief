@@ -12,8 +12,8 @@
 # an uncommitted or untracked file is never built and costs no night, into one
 # folder a commit under the data root's `nights/`, built once in Release and
 # run by every try of the night, the rest of one and the drain it starts. A copy
-# already holding the worker is run as it is, and a copy no night has used for a
-# week is removed.
+# already holding the worker is run as it is, and tools/nights-keep then keeps
+# three copies in the folder and removes the rest.
 #
 # What is refused. A checkout off main, or holding a commit origin/main does not
 # have, is refused before any worker exists, with the reason on stderr and in
@@ -152,7 +152,8 @@ else
 fi
 
 touch "$copy"
-find "$copies" -mindepth 1 -maxdepth 1 -type d -mtime +7 ! -path "$copy" -exec rm -rf {} + 2>/dev/null || true
+. "$root/tools/nights-keep"
+keep_nights "$copies" "$copy" "$data/night.build"
 printf '%s\n' "$commit" > "$data/night.build"
 
 echo "nightly: $note"

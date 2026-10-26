@@ -78,6 +78,9 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
                   remedies/      one file per remedy, named by date, checkpoint and what it does,
                                  committed with the change that owes it
                   run-bash.ps1   the one place a .ps1 hands its work to a bash script
+                  nights-keep    sourced by the five scripts that build a copy of main's commit, before
+                                 the worker starts: keeps three copies under the data root's nights/
+                                 and removes the rest
                   wrapper-probe  wrapper-probe.ps1   a script that prints on both streams
                                  and fails, so the suite can prove a wrapper returns both
 /fixtures         README.md      the folder's shape, not a corpus document

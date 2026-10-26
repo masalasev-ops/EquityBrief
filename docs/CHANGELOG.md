@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - RUNBOOK.md and CLAUDE.md - every run built from a copy keeps three copies under the folder of nights
+Authorised by: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
+Was:
+> RUNBOOK, Each night is built from a clean copy: ... A copy already built is run as it is, and one no night has used for a week is removed. The night records ...
+
+> RUNBOOK, the ledger's build: ... as `tools/nightly` builds a night, reusing the copy where a night built that commit already, and refuses a checkout off main or holding a commit origin/main lacks; ...
+
+> CLAUDE.md, the repository layout: run-bash.ps1 the one place a .ps1 hands its work to a bash script, then wrapper-probe
+Now:
+> RUNBOOK, Each night is built from a clean copy: ... A copy already built is run as it is. Once its copy is built or reused and touched, and before its worker starts, the script keeps three folders under `data/nights/`, its own copy, the one `night.build` names and the most recently touched besides those, and removes the rest with any partial build, naming on stderr in one line a copy it cannot remove and running on; nothing outside that folder is touched, and a copy removed is built again from git by the next run that needs it, `--resume` included. `tools/localrun`, `tools/monthly`, `tools/offpeak` and `tools/ledger-build` keep the folder the same way. The night records ...
+
+> RUNBOOK, the ledger's build: ... reusing the copy where a night built that commit already and keeping three copies in that folder as the night does, and refuses ...
+
+> CLAUDE.md, the repository layout: run-bash.ps1, then nights-keep, sourced by the five scripts that build a copy of main's commit, before the worker starts: keeps three copies under the data root's nights/ and removes the rest, then wrapper-probe
+Why: the operator's ruling of 2026-10-25, item 4, after 49 copies of about 150 MB each had built up by 2026-10-24 under a week's rule only the night applied; the decision is amended with it.
+
 ### 2026-10-25 - .claude/rules/checks.md - architecture-conformance reads phase 22's pair
 Authorised by: The short-term dip family is built as phase 22 ahead of the hold on new work, and phase 20's sign-off waits on none of it
 Was:

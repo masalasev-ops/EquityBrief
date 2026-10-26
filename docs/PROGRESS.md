@@ -9519,3 +9519,49 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 64 tables, 1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the sign-offs of phases 18, 20 and 22 by fresh sessions.
+
+### 22.12 ruling - the corrections after the phase report, one pull request, and every run built from a copy keeping three copies under the folder of nights   2026-10-26
+
+Not a checkpoint entry: it records the operator's ruling and lands nothing.
+Ruled:      by the operator at about 00:10 UTC on 2026-10-26, dated by them 2026-10-25, kept whole in
+            `prompts/2026-10-25-22.12-corrections-after-the-phase-report.md`, after 22.12 merged: "One pull request,
+            after 22.12's merges. Each correction labelled under the checkpoint that built what it corrects, read off
+            the record. No rule's code version moves, asserted; no paid call; the store read-only but for its own
+            remedy if one is owed." Its four items: one earnings multiple per stock on every page; a pick's summary
+            reading its own index's list; a missing store copy a worry only where no newer copy stands; and the folder
+            of night copies kept small, in its words: "In all five scripts, after a script has built or reused its copy
+            and touched it, and before it starts the worker, it keeps three folders under nights/ and removes the rest:
+            this run's copy, the copy data/night.build names, and the most recently touched copy besides those." It
+            ends: "Stop after the merge and report. Nothing else starts."
+Labelled:   read off the record: the folder of nights under 12.3, which built the night's copy and its week's
+            removal; the summary under 12.6, whose correction of 2026-09-30 built the short version written by code;
+            the copies' worry under 13.10, whose correction of 2026-10-08 built the item; and the multiple under 22.8,
+            whose scorecard added the second figure.
+Queue:      done, phase 22 to its report and Friday's night run again with the register as it stands, as the operator
+            asked; in progress, these four corrections in one pull request; next, the stop and report, and the sign-offs
+            of phases 18, 20 and 22 by fresh sessions when the operator says.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last of the four
+            corrections' entries below.
+
+### 12.3 - correction: every run built from a copy keeps three copies under the folder of nights and removes the rest, where the night alone removed any, a week old   2026-10-26
+
+Found:      by the operator on 2026-10-24: the data root's folder of nights held 49 commit copies back to 2026-10-15 at
+            about 150 MB each; only the night's script removed a copy, one no night had used for a week, its errors sent
+            nowhere, and the local run's, the monthly run's, the off-peak run's and the ledger build's scripts removed
+            none.
+Corrected:  `tools/nights-keep`, sourced and called by all five once a run's copy is built or reused and touched and
+            before its worker starts, keeps this run's copy, the copy `night.build` names and the most recently touched
+            copy besides those, removes every other folder there with any partial build, names in one line on stderr a
+            copy it cannot remove and carries on, and refuses any folder not named nights. The decision is amended in
+            its own text on the ruling; the runbook's two passages, CLAUDE.md's layout and store-never-deleted's stated
+            removals and its comment are kept in step.
+Tests:      two new: a constructed folder of six copies, a stale partial and a folder beside it, the three kept and the
+            rest removed, run again with nothing named, a folder not named nights refused whole, and on Windows a copy
+            held open named on stderr with the run carried on; each of the five scripts calling it between touching its
+            copy and starting the worker, and the night no longer removing by age.
+Claims:     none new.
+Pins:       none move: no shipped source moves.
+Mutated:    the rule, stated before the run: the operator's, the helper keeping two folders and not three, filtered to
+            the test reading it; red, the newest besides the two removed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last of the four
+            corrections' entries below.
