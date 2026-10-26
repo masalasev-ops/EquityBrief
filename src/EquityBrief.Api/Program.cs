@@ -1583,7 +1583,7 @@ app.MapGet("/screens/tonight/{night?}", async (
         indexCards = TonightScreen.WithDipChips(TonightScreen.WithDipLabels(indexCards, indexDipPicks), indexDipNight, reading.Code);
         // From 22.3 the dip's card where a frozen rule drew its night, with the line every frozen card draws.
         // see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
-        indexCards = TonightScreen.WithDipFreeze(indexCards, reading.Code, indexRegister, indexAnswers, indexDipNight);
+        indexCards = TonightScreen.WithDipFreeze(indexCards, reading.Code, indexRegister, indexAnswers, indexDipNight, indexAsOf);
 
         // Each setup's record so far as Paper trading counts it, its finished trades against what a verdict needs.
         var indexProgress = await PaperProgressAsync(read, reading, dated);
@@ -1929,6 +1929,11 @@ app.MapGet("/screens/tonight/{night?}", async (
 
     if (cards is not null && dipNight is not null && TonightScreen.DipCard(reading, dipNight, dipPicks, dipResults, dipMembers, researched, states, await read.FundamentalReadingsAsync(dated)) is { } dipCard)
     {
+        // The register and the answers read as of the instant the night read the register at where a night run again
+        // read it later, as the S&P 400's and 600's cards read them.
+        // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
+        var dipAsOf = TonightScreen.ReadAsOf(await read.IndexNightAsync(reading.Code, dated), dated);
+
         // A dip pick's card words its management by the setting the dip's night ran on.
         var dips = RuleScreen.WithRules(
             CardScreen.WithCards([dipCard], await read.DecisionCardsAsync(reading.Code, dated), cardContext with { Dip = TonightScreen.SettingOf(dipNight).Setting }),
@@ -1940,11 +1945,12 @@ app.MapGet("/screens/tonight/{night?}", async (
             await read.RuleNightsAsync(reading.Code, dated),
             [.. await read.RulePicksAsync(reading.Code, dated), .. await read.DipVersionPicksAsync(reading.Code, dated)],
             await read.FormingRowsAsync(reading.Code, dated),
-            dipNight.MarketOpen);
+            dipNight.MarketOpen,
+            asOf: dipAsOf);
 
         // From 22.3 the dip's card where a frozen rule drew its night, with the line every frozen card draws.
         // see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
-        cards = TonightScreen.WithDip(cards, TonightScreen.WithDipFreeze(TonightScreen.WithDipChips(dips, dipNight, reading.Code), reading.Code, register, answers, dipNight)[0]);
+        cards = TonightScreen.WithDip(cards, TonightScreen.WithDipFreeze(TonightScreen.WithDipChips(dips, dipNight, reading.Code), reading.Code, register, await read.SweepAnswersAsync(reading.Code, dipAsOf), dipNight, dipAsOf)[0]);
     }
 
     IReadOnlyList<EquityBrief.Web.Marks.CloseToBuyCell>? closeAcross = cards is null ? null : TonightScreen.CloseAcross(onThePage!, nearRows, familyResults, cells) is { } swingClose ? [.. swingClose, .. TonightScreen.DipCloseAcross(dipResults, dipMembers)] : null;
@@ -3166,7 +3172,8 @@ app.MapGet("/screens/run/{night?}", async (
                     runDipNight,
                     runDipPicks,
                     runDipTrades,
-                    indexRegister),
+                    indexRegister,
+                    indexAsOf),
                 indexRecords,
                 RuleScreen.Flagged(await read.RuleNightsAsync(reading.Code, dated), dated, indexRegister, indexAsOf)),
             "text/html; charset=utf-8");
@@ -3340,7 +3347,8 @@ app.MapGet("/screens/run/{night?}", async (
                     await read.DipNightAsync(Universes.Large.Code, dated),
                     await read.DipPicksAsync(Universes.Large.Code, dated),
                     await read.DipTradesAsync(Universes.Large.Code, dated),
-                    await read.RegisteredCandidatesAsync()),
+                    await read.RegisteredCandidatesAsync(),
+                    TonightScreen.ReadAsOf(await read.IndexNightAsync(Universes.Large.Code, dated), dated)),
             familyRecords: RunScreen.Named(
                 TonightScreen.FamilyRecordRows(await read.RegisteredCandidatesAsync(), await read.FamilyTradesAsync(dated), dated, await read.FamilyReplaysAsync()),
                 await read.RegisteredCandidatesAsync(),

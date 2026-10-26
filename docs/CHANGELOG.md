@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - .claude/rules/checks.md - read-surface holds a frozen dip's card and Run row reading the register as the page reads it
+Corrects: on Friday's night run again after the dip's freeze, the S&P 400 dip's card read provisional while the live rule drew its picks, reading the register past the night's evening, found by the operator on 2026-10-25
+Was:
+> read-surface: ... a pick holding labels drawing its counts on either |
+Now:
+> read-surface: ... a pick holding labels drawing its counts on either; and from the 22.3 correction of 2026-10-26 a frozen dip's card and its Run row reading the register as the page reads it, on the S&P 400's night and on the S&P 500's run again after the dip's freeze each live since the freeze, the S&P 400's with its three versions and its sweep's line |
+Why: the roster row says what its check asserts, and the correction's tests extend it.
+
 ### 2026-10-26 - .claude/rules/checks.md - read-surface holds an S&P 400 or 600 buy saying the news labels cover S&P 500 picks only
 Corrects: an S&P 400 or 600 pick read "no label" in tomorrow's buys though the labeller reads the S&P 500's list alone, found by the operator reading Friday's night run again on 2026-10-25
 Was:

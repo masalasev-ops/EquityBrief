@@ -9769,3 +9769,24 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             the page telling every index the labeller reads its list; red, none of the three rows saying why.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
             below, this pull request's last.
+
+### 22.3 - correction: a frozen dip's card and its Run row read the register at the instant the night read it, where a night run again after the freeze drew them provisional   2026-10-26
+
+Found:      by the operator on 2026-10-25 reading Friday's night run again with the register as it stood: the S&P 400's
+            dip card said provisional while its picks came from the live rule. The card and the Run row read the
+            register past the night's evening, before the freeze of 2026-10-25, where the swing cards beside them read it
+            at the instant the night stated; the S&P 500's dip card read its choice of rule the same way.
+Corrected:  the dip's card and its Run row read the register, and the card its sweep's answers, at the instant the
+            index's night states it read the register at, past the night's evening on a night run on its own evening; on
+            the S&P 500 off its own index's night as on the S&P 400 and 600. The roster is kept in step.
+Tests:      two new: the S&P 400's night run again after its dip's freeze, the card live since the freeze with its three
+            versions and its sweep's line and its Run row live; and the S&P 500's, its card and its Run row live since
+            the freeze. 2800 in all.
+Claims:     none new.
+Pins:       none move, asserted: the two sources it edits join the list no rule pins.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each surface's property, each filtered to the test
+            reading it. M1 the card reading the register past the night's evening whatever it is handed; red at its live
+            since. M2 the Run row the same; red at the row. M3 the S&P 500's page handing the night's evening; red at
+            its card.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.

@@ -67,16 +67,16 @@ public partial class ReadSurface
         "drop=-3,trend=50,exit=65,limit=5,stop=3,market=0,volume=0",
     ];
 
-    // The universes' store with the S&P 400 dip's answer recorded and its family frozen the day before its night, the
-    // night drawn by its live rule: M2 listed at its close of 50 with its stop at 44, kept by the live rule and by the
-    // version stopped at 4 typical moves.
-    static async Task<(TemporaryStore Store, string[] Rules)> FrozenDipStore()
+    // The universes' store with the S&P 400 dip's answer recorded and its family frozen the day before its night, or at
+    // the instant given, the night drawn by its live rule: M2 listed at its close of 50 with its stop at 44, kept by the
+    // live rule and by the version stopped at 4 typical moves.
+    static async Task<(TemporaryStore Store, string[] Rules)> FrozenDipStore(DateTimeOffset? frozenAt = null)
     {
         var store = UniversesStore();
 
         RecordFigured(store, "20261024T060843Z", DipRule.Name, null, SweepAnswer.PassedWord, "2026-09-30T11:00:00Z", MidDip);
 
-        var (code, said) = await FixtureExpectations.RegisterVerbAt(store, new DateTimeOffset(2026, 9, 30, 12, 0, 0, TimeSpan.Zero), RegisterVerb.IndexFamily, DipRule.Name, "--index", "MID", "--parameters", MidDipLive, "--variants", string.Join(";", MidDipVersions));
+        var (code, said) = await FixtureExpectations.RegisterVerbAt(store, frozenAt ?? new DateTimeOffset(2026, 9, 30, 12, 0, 0, TimeSpan.Zero), RegisterVerb.IndexFamily, DipRule.Name, "--index", "MID", "--parameters", MidDipLive, "--variants", string.Join(";", MidDipVersions));
 
         Assert.True(code == 0, said);
 

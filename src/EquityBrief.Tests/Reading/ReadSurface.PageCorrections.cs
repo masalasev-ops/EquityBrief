@@ -1,10 +1,12 @@
 using System.Net;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Candidates;
+using EquityBrief.Core.Families;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Web.Marks;
 using EquityBrief.Worker.Fills;
 using EquityBrief.Worker.Filter;
+using EquityBrief.Worker.Indices;
 using EquityBrief.Worker.Rules;
 
 namespace EquityBrief.Tests.Reading;
@@ -23,6 +25,8 @@ public partial class ReadSurface
         "src/EquityBrief.Web/Marks/MarkRenderer.Families.cs",
         "src/EquityBrief.Web/Marks/MarkRenderer.Tonight.cs",
         "src/EquityBrief.Web/App/SinglePageApp.Tonight.cs",
+        "src/EquityBrief.Api/Reading/TonightScreen.Dips.cs",
+        "src/EquityBrief.Api/Program.cs",
     ];
 
     // No source a rule's code version pins is one the page corrections write, so no rule's version moves: no candidate
@@ -108,12 +112,93 @@ public partial class ReadSurface
         // Drawn by the page's own renderer for an S&P 500 night and for an S&P 400 one: a pick holding no label and one
         // holding two good and one bad.
         static string Drawn(bool labelled, int? good, int? bad) => new MarkRenderer().TomorrowsBuys(
-            [new BuyPointView(Core.Families.DriftRule.Name, "Earnings drift", new FamilyPickCell(new ListingCell("X1", new DateOnly(2026, 10, 2), 0, 0, 50m, [], NewsPositive: good, NewsNegative: bad), 1, 50m, 47m, 56m, false, 2m, "its report beat", []))],
+            [new BuyPointView(DriftRule.Name, "Earnings drift", new FamilyPickCell(new ListingCell("X1", new DateOnly(2026, 10, 2), 0, 0, 50m, [], NewsPositive: good, NewsNegative: bad), 1, 50m, 47m, 56m, false, 2m, "its report beat", []))],
             null,
             labelled: labelled);
 
         Assert.Contains(None, Drawn(true, null, null), StringComparison.Ordinal);
         Assert.Contains(Covers, Drawn(false, null, null), StringComparison.Ordinal);
         Assert.All(new[] { Drawn(true, 2, 1), Drawn(false, 2, 1) }, drawn => Assert.Contains("<td class=\"news-counts\" data-positive=\"2\" data-negative=\"1\"><span class=\"np gain\">2 good</span> · <span class=\"nn loss\">1 bad</span></td>", drawn, StringComparison.Ordinal));
+    }
+
+    // The night of 2026-10-02 run again at noon on 2026-10-04 with the register as it stood, after a freeze registered
+    // the half hour before: the freeze's instant, and the instant the night read the register at.
+    static readonly DateTimeOffset FrozenAfterTheNight = new(2026, 10, 4, 11, 30, 0, TimeSpan.Zero);
+
+    static readonly DateTimeOffset RunAgainReadAt = new(2026, 10, 4, 12, 0, 0, TimeSpan.Zero);
+
+    // An index's night on the universes' store stating the instant a night run again read the register at, as the night
+    // writes it into its settings.
+    static void RunAgainAt(TemporaryStore store, string index, DateTimeOffset readAt) =>
+        store.Execute($"UPDATE index_family_night SET settings = '{IndexFamilies.Settings(index, registerAt: readAt).Replace("'", "''", StringComparison.Ordinal)}' WHERE index_code = '{index}' AND session_date = '{IndexNight}';");
+
+    // From the 22.3 correction of 2026-10-26 the dip's card and its Run row read the register as the page reads it: on the
+    // S&P 400's night run again after its dip was frozen, the dip's night drawn by the live rule, the card is live since
+    // the freeze with its three versions and the line its recorded answer gives, and its Run row live since the freeze,
+    // where both read the register past the night's evening and drew the provisional rule.
+    [Fact]
+    public async Task AFrozenDipsCardAndRunRowFollowTheRuleItsNightRanOnANightRunAgainAfterItsFreeze()
+    {
+        var (store, _) = await FrozenDipStore(FrozenAfterTheNight);
+
+        using (store)
+        {
+            RunAgainAt(store, "MID", RunAgainReadAt);
+
+            using var host = new Host(store.Root);
+            using var client = host.CreateClient();
+
+            var dip = FamilyCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")), DipRule.Name);
+
+            Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-04\" data-variants=\"3\"", dip, StringComparison.Ordinal);
+            Assert.Contains("Live since 4 Oct 2026", dip, StringComparison.Ordinal);
+            Assert.DoesNotContain(SetupFamilies.ProvisionalStatus, dip, StringComparison.Ordinal);
+            Assert.Contains("data-frozen=\"2026-10-04\" data-run=\"20261024T060843Z\" data-answer=\"passed\"", dip, StringComparison.Ordinal);
+
+            var run = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{IndexNight}?universe=400"));
+
+            Assert.Contains("<tr data-family=\"dip\" data-state=\"live\" data-live-since=\"2026-10-04\" data-variants=\"3\"", Assert.Single(Blocks(run, "<table class=\"list-table family-run\".*?</table>")), StringComparison.Ordinal);
+        }
+    }
+
+    // The same on the S&P 500's own page, which reads the instant off its own index's night: the families' night of
+    // 2026-10-02 run again after the S&P 500's dip was frozen at the VIX's setting, its dip's night drawn by the live rule
+    // listing F6.
+    [Fact]
+    public async Task TheSAndP500sFrozenDipCardAndRunRowFollowTheRuleItsNightRanOnANightRunAgainAfterItsFreeze()
+    {
+        using var store = await FamilyNightStore();
+
+        var (code, said) = await Checks.FixtureExpectations.RegisterVerbAt(store, FrozenAfterTheNight, Worker.Candidates.RegisterVerb.IndexFamily, DipRule.Name, "--index", "GSPC", "--parameters", "drop=-3,trend=50,exit=65,limit=10,stop=3,market=6,volume=0");
+
+        Assert.True(code == 0, said);
+
+        var live = Query(store, "SELECT candidate FROM candidate_register WHERE evaluator = 'dip-500' ORDER BY id;").Single();
+        var setting = new DipCandidate("GSPC").SettingOf(CandidateEvaluator.Read(Query(store, "SELECT parameters FROM candidate_register WHERE evaluator = 'dip-500';").Single()));
+
+        store.Execute(
+            "INSERT INTO dip_night (index_code, session_date, members, market, market_open, settings, passed, listed, fault) VALUES " +
+            $"('GSPC', '{TheSwitch}', 9, 'VIX', 1, '{Worker.Dips.DipFamily.Settings(setting, live, "GSPC").Replace("'", "''", StringComparison.Ordinal)}', 1, 1, NULL);");
+        store.Execute(
+            "INSERT INTO dip_result (index_code, session_date, ticker, passed, place, entry, stop, time_limit, rsi, reason, gates) VALUES " +
+            $"('GSPC', '{TheSwitch}', 'F6', 1, 1, '100', '94', 10, 4.0, NULL, '{DipGatesPassed()}');");
+        store.Execute(
+            "INSERT INTO dip_pick (index_code, session_date, ticker, state, place, listed_under, held_index, held_family, held_night) VALUES " +
+            $"('GSPC', '{TheSwitch}', 'F6', 'listed', 1, NULL, NULL, NULL, NULL);");
+        store.Execute(
+            "INSERT INTO index_family_night (index_code, session_date, members, breadth, market_open, settings, rebalanced) VALUES " +
+            $"('GSPC', '{TheSwitch}', 9, 0.6, 1, '{IndexFamilies.Settings("GSPC", registerAt: RunAgainReadAt).Replace("'", "''", StringComparison.Ordinal)}', 0);");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var dip = FamilyCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")), DipRule.Name);
+
+        Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-04\" data-variants=\"0\"", dip, StringComparison.Ordinal);
+        Assert.DoesNotContain(SetupFamilies.ProvisionalStatus, dip, StringComparison.Ordinal);
+
+        var run = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{TheSwitch}"));
+
+        Assert.Contains("<tr data-family=\"dip\" data-state=\"live\" data-live-since=\"2026-10-04\"", Assert.Single(Blocks(run, "<table class=\"list-table family-run\".*?</table>")), StringComparison.Ordinal);
     }
 }

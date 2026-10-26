@@ -91,10 +91,12 @@ public static partial class TonightScreen
     // From 22.3 the dip's card where its night was drawn by a frozen rule: live since the day that rule was registered,
     // the versions standing beside it, each pick's why naming it, and the line every frozen card draws from the answer
     // its freeze followed, read against its family's freezes on the index as every frozen card's is; the cards as they
-    // were where the night was drawn by the provisional rule.
+    // were where the night was drawn by the provisional rule. The register is read past the night's evening, or as of
+    // the instant given where the night read it later, as a night run again after a freeze does.
     // see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
     // see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
-    public static IReadOnlyList<FamilyCardView> WithDipFreeze(IReadOnlyList<FamilyCardView> cards, string index, IReadOnlyList<CandidateRow> register, IReadOnlyList<RecordedAnswer> answers, DipNightRow? night)
+    // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
+    public static IReadOnlyList<FamilyCardView> WithDipFreeze(IReadOnlyList<FamilyCardView> cards, string index, IReadOnlyList<CandidateRow> register, IReadOnlyList<RecordedAnswer> answers, DipNightRow? night, DateTimeOffset? asOf = null)
     {
         if (night is null || RuleOf(night) is var drawnBy && drawnBy == ProvisionalDip)
         {
@@ -102,7 +104,7 @@ public static partial class TonightScreen
         }
 
         var family = Core.Candidates.OwnStepCandidate.FamilyOn(DipRule.Name, index);
-        var at = PastTheNight(night.Session);
+        var at = asOf ?? PastTheNight(night.Session);
         var (live, variants) = StandingRows(family, register, at);
 
         if (live is null || live.Candidate != drawnBy)
@@ -334,7 +336,7 @@ public static partial class TonightScreen
     // An index's setups on its Run page with the dip's row after every swing family's and before the sector heavyweights',
     // what it listed on the night and every trade its list has kept, provisional with its record waiting for its freeze;
     // the rows as they were on a night the dip did not read and before it kept a trade.
-    public static IReadOnlyList<FamilyRunRow> WithDipRun(IReadOnlyList<FamilyRunRow> rows, DipNightRow? night, IReadOnlyList<DipPickRow> picks, IReadOnlyList<IndexTradeRow> trades, IReadOnlyList<CandidateRow>? register = null)
+    public static IReadOnlyList<FamilyRunRow> WithDipRun(IReadOnlyList<FamilyRunRow> rows, DipNightRow? night, IReadOnlyList<DipPickRow> picks, IReadOnlyList<IndexTradeRow> trades, IReadOnlyList<CandidateRow>? register = null, DateTimeOffset? asOf = null)
     {
         if (night is null && trades.Count == 0)
         {
@@ -342,9 +344,9 @@ public static partial class TonightScreen
         }
 
         // From 22.3 a night drawn by a frozen rule names the day it went live and the versions standing beside it, its
-        // trades counted from its freeze.
+        // trades counted from its freeze, the register read as its card reads it.
         var live = night is not null && register is not null && RuleOf(night) is var drawnBy && drawnBy != ProvisionalDip
-            && StandingRows(Core.Candidates.OwnStepCandidate.FamilyOn(DipRule.Name, night.Index), register, PastTheNight(night.Session)) is { Live: { } standing } held && standing.Candidate == drawnBy
+            && StandingRows(Core.Candidates.OwnStepCandidate.FamilyOn(DipRule.Name, night.Index), register, asOf ?? PastTheNight(night.Session)) is { Live: { } standing } held && standing.Candidate == drawnBy
             ? (Since: DateOnly.FromDateTime(standing.RegisteredAt.UtcDateTime), held.Variants)
             : ((DateOnly Since, int Variants)?)null;
         var counted = live is { } from ? [.. trades.Where(trade => trade.Listed >= from.Since)] : trades;
