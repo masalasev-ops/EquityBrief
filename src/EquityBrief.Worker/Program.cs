@@ -126,7 +126,8 @@ static int NoVerb()
         "'quarters --companies' asks instead every member no fetch has stored a company for, storing its filer, GICS " +
         "sector and share counts beside its quarters, 'quarters --refetch-unread' asks instead every member whose newest " +
         "fetch read no interest expense, 'quarters --refetch-unfiled' every member whose newest company row carries no " +
-        "filer, and 'quarters --refetch-lines' every member whose newest fetch read none of the " +
+        "filer, 'quarters --refetch-misfiled' every member whose newest company row carries a filer other than the SEC's " +
+        "own ticker file's, and 'quarters --refetch-lines' every member whose newest fetch read none of the " +
         "gross profit and the cash flow lines, each stating its asks and their weighted calls before the first request, '--most <n>' " +
         "caps the asks a run makes, and '--index <MID or SML>' asks a wider index's members, " +
         "'members' runs the night's membership and backfill steps by hand, the S&P 400's and 600's members read " +
@@ -1122,9 +1123,9 @@ static async Task<int> FilingsRun(string[] args)
     return outcome.Refusal is null ? 0 : 1;
 }
 
-// The SEC's own ticker file by hand, one request, kept under a run of its own for the quarters fetch to read where the
-// provider files no CIK; refused while a night holds the store.
-// see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+// The SEC's own ticker file by hand, one request, kept under a run of its own for the quarters fetch to read each
+// member's filer by; refused while a night holds the store.
+// see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none
 static async Task<int> SecTickersRun(string[] args)
 {
     var configuration = Configuration();

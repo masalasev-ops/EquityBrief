@@ -1,0 +1,28 @@
+# The remedy of 17.3's correction of 2026-10-26 (a member's filer is the one the SEC's own ticker file names for it), as
+# its PROGRESS entry prints it. No migration. The SEC's ticker file is read again, and each member whose newest company
+# row carries a filer other than the file's is asked again on each index, 40 asks on 2026-10-26 at eleven weighted calls
+# each, about 440 of the day's allowance, so its row carries the file's filer. The whole facts refresh then asks every
+# filer the store knows, about 2,160 requests and 20 minutes, the insiders' history is read again whole, each quarter
+# storing only the filings not stored, and the days since the newest quarter posted are read again, so the filers newly
+# linked have their facts and their Forms 4. The ledger filers' results releases are fetched again, every release stored
+# already skipped and every filer's submissions read again, and the new filers' names read; every release no reading under
+# the newest pin holds is then read by the local model with its names and dates removed, at about five seconds a release,
+# with LM Studio running and holding the model and the card held at 250 W as the runbook sets it. The ledger's night step
+# then runs over the newest night the store holds. Each index's ledger history is then built again by hand with
+# tools/ledger-build.ps1 --index <GSPC, MID or SML> --from 2019-01-02 --through 2026-10-05 --again, which builds main's own
+# commit from a clean copy and so is not a worker command this file can run, checked with ledger-check --index <GSPC, MID
+# or SML> and worked with loop-links --index <GSPC, MID or SML>. No source a rule's version pins moves, so nothing is
+# registered again and no record or paper account restarts. Requests of the provider for the refetch alone, the rest of
+# the SEC's archive, free and keyless, and no paid call. Run from main after the merge, when no night, local run, drain,
+# labeller or monthly run is writing, and restart the read surface after it.
+sec-tickers
+quarters --refetch-misfiled --live
+quarters --refetch-misfiled --index MID --live
+quarters --refetch-misfiled --index SML --live
+filings --whole
+insiders-history --again
+insiders --from 2026-10-01
+releases --history --from 2019-01-02
+releases --names
+releases --read --history
+ledger-night

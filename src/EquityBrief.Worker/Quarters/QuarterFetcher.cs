@@ -205,11 +205,22 @@ public sealed class QuarterFetcher : IComponent
 
     // The members whose newest company row carries no filer, the provider filing none for a ticker changed since it last
     // read the company; the verb's refetch asks them again so the fetch takes the filer the SEC's own ticker file names.
-    // see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+    // see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none
     const string FiledNoCik = @"
         SELECT c.ticker FROM company c
         WHERE c.fetched_at = (SELECT MAX(fetched_at) FROM company WHERE ticker = c.ticker)
           AND c.cik IS NULL;
+    ";
+
+    // The members whose newest company row carries a filer other than the one the SEC's own ticker file names for them at
+    // its newest read, as a row the provider's CIK filled before the file's filer was taken first; the verb's refetch asks
+    // them again so the fetch takes the file's.
+    // see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none
+    const string FiledOtherThanTheSec = @"
+        SELECT c.ticker FROM company c
+        WHERE c.fetched_at = (SELECT MAX(fetched_at) FROM company WHERE ticker = c.ticker)
+          AND c.cik IS NOT NULL
+          AND c.cik <> (SELECT s.cik FROM sec_ticker s WHERE s.ticker = c.ticker ORDER BY s.read_at DESC LIMIT 1);
     ";
 
     // One ask a member a night: a night run again keeps the ask it made rather than asking twice.
@@ -263,9 +274,10 @@ public sealed class QuarterFetcher : IComponent
     // With `--companies` it asks instead every member no fetch has stored a company for, as a fill, storing
     // whatever quarters the answer carries, which gives each member its sector, filer and counts at once. With
     // `--refetch-unread` it asks instead every member whose newest fetch read no interest expense, and with
-    // `--refetch-lines` every member whose newest fetch read none of the gross profit and the cash flow lines, and with
-    // `--refetch-unfiled` every member whose newest company row carries no filer, in the same way, stating its asks and
-    // their weighted calls before the first request; `--most` caps the asks a run makes.
+    // `--refetch-lines` every member whose newest fetch read none of the gross profit and the cash flow lines, with
+    // `--refetch-unfiled` every member whose newest company row carries no filer, and with `--refetch-misfiled` every member
+    // whose newest company row carries a filer other than the SEC's own ticker file's, in the same way, stating its asks
+    // and their weighted calls before the first request; `--most` caps the asks a run makes.
     public static async Task<int> RunAsync(
         string[] args,
         Func<NightFeeds> feeds,
@@ -278,11 +290,12 @@ public sealed class QuarterFetcher : IComponent
         var unread = VerbArguments.Has(args, "--refetch-unread");
         var lines = VerbArguments.Has(args, "--refetch-lines");
         var unfiled = VerbArguments.Has(args, "--refetch-unfiled");
+        var misfiled = VerbArguments.Has(args, "--refetch-misfiled");
         int? most = null;
 
-        if ((companies ? 1 : 0) + (unread ? 1 : 0) + (lines ? 1 : 0) + (unfiled ? 1 : 0) > 1)
+        if ((companies ? 1 : 0) + (unread ? 1 : 0) + (lines ? 1 : 0) + (unfiled ? 1 : 0) + (misfiled ? 1 : 0) > 1)
         {
-            error.WriteLine("quarters: --companies, --refetch-unread, --refetch-lines and --refetch-unfiled are four runs; give one of them.");
+            error.WriteLine("quarters: --companies, --refetch-unread, --refetch-lines, --refetch-unfiled and --refetch-misfiled are five runs; give one of them.");
 
             return 1;
         }
@@ -319,9 +332,10 @@ public sealed class QuarterFetcher : IComponent
                 companies: companies,
                 unread: unread,
                 most: most,
-                stating: unread || lines || unfiled ? line => output.WriteLine("quarters: " + line) : null,
+                stating: unread || lines || unfiled || misfiled ? line => output.WriteLine("quarters: " + line) : null,
                 lines: lines,
-                unfiled: unfiled);
+                unfiled: unfiled,
+                misfiled: misfiled);
 
         output.WriteLine("quarters: " + Detail(outcome));
 
@@ -342,7 +356,8 @@ public sealed class QuarterFetcher : IComponent
         int? most = null,
         Action<string>? stating = null,
         bool lines = false,
-        bool unfiled = false)
+        bool unfiled = false,
+        bool misfiled = false)
     {
         var startedAt = clock.UtcNow;
         var session = clock.SessionDateAt(startedAt);
@@ -356,10 +371,10 @@ public sealed class QuarterFetcher : IComponent
         var reports = await ReportsAsync(connection, session, cancellation);
         var first = await FirstNightAsync(connection, cancellation) ?? session;
         IReadOnlySet<string> withACompany = companies ? await TickersAsync(connection, WithACompany, cancellation) : new HashSet<string>(StringComparer.Ordinal);
-        IReadOnlySet<string> readNone = unread || lines || unfiled
-            ? await TickersAsync(connection, unread ? ReadNoInterest : lines ? ReadNoLines : FiledNoCik, cancellation)
+        IReadOnlySet<string> readNone = unread || lines || unfiled || misfiled
+            ? await TickersAsync(connection, unread ? ReadNoInterest : lines ? ReadNoLines : unfiled ? FiledNoCik : FiledOtherThanTheSec, cancellation)
             : new HashSet<string>(StringComparer.Ordinal);
-        var byHand = companies || unread || lines || unfiled;
+        var byHand = companies || unread || lines || unfiled || misfiled;
 
         // A member asked by hand is asked once a session, as a fill storing whatever quarters the answer carries.
         var due = byHand
@@ -384,6 +399,7 @@ public sealed class QuarterFetcher : IComponent
         var whose = unread ? "whose newest fetch read no interest expense"
             : lines ? "whose newest fetch read none of the gross profit and the cash flow lines"
             : unfiled ? "whose newest company row carries no filer"
+            : misfiled ? "whose newest company row carries a filer other than the SEC's own ticker file's"
             : "due";
 
         stating?.Invoke(FormattableString.Invariant(
@@ -674,16 +690,15 @@ public sealed class QuarterFetcher : IComponent
             await trend.ExecuteNonQueryAsync(cancellation);
         }
 
-        // The provider's CIK, and where it files none, as for a ticker changed since it last read the company, the filer the
-        // SEC's own ticker file names for it at its newest read.
-        // see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+        // The filer the SEC's own ticker file names for the ticker at its newest read, and the provider's CIK only where no read
+        // lists the ticker: the provider can file the company that used a ticker before, or a filer's number from before it
+        // re-formed under a new one.
+        // see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none
         var provided = Filer(fetched.Cik);
-        string? named = null;
+        string? named;
 
-        if (provided is null)
+        await using (var sec = connection.CreateCommand())
         {
-            await using var sec = connection.CreateCommand();
-
             sec.Transaction = (SqliteTransaction)transaction;
             sec.CommandText = SecFilerOf;
             sec.Parameters.AddWithValue("$ticker", ticker);
@@ -696,8 +711,8 @@ public sealed class QuarterFetcher : IComponent
             company.CommandText = InsertCompany;
             company.Parameters.AddWithValue("$ticker", ticker);
             company.Parameters.AddWithValue("$fetched_at", Instant(fetchedAt));
-            company.Parameters.AddWithValue("$cik", (object?)provided ?? (object?)named ?? DBNull.Value);
-            company.Parameters.AddWithValue("$cik_source", provided is not null ? "provider" : named is not null ? "sec" : DBNull.Value);
+            company.Parameters.AddWithValue("$cik", (object?)named ?? (object?)provided ?? DBNull.Value);
+            company.Parameters.AddWithValue("$cik_source", named is not null ? "sec" : provided is not null ? "provider" : DBNull.Value);
             company.Parameters.AddWithValue("$sector", (object?)fetched.Classification?.Sector ?? DBNull.Value);
             company.Parameters.AddWithValue("$industry_group", (object?)fetched.Classification?.IndustryGroup ?? DBNull.Value);
             company.Parameters.AddWithValue("$industry", (object?)fetched.Classification?.Industry ?? DBNull.Value);

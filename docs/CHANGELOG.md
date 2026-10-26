@@ -26,6 +26,52 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - docs/ARCHITECTURE.html - a member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none
+Authorised by: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none
+Corrects: 40 members' company rows carried a filer the SEC's own ticker file does not give them, IR's Trane Technologies' and RBC's Regal Rexnord's among them, because the quarters fetch took the provider's filer wherever its answer filed one, found by the first review of phase 20's sign-off.
+Was:
+> SEC tickers: "... and says why on its row (see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file)"
+> Quarter fetcher: "... the filer from the 17.3 correction of 2026-10-16 the one the SEC's own ticker file names at its newest read where the answer files none and the row saying which it took (see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file), and from 18.2 ..."; "... and <code>quarters --refetch-unfiled</code> every member whose newest company row carries no filer in the same way, once the SEC's ticker file is read (see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file). It records every ask ..."
+> 13.16, the monthly run: "... the SEC's facts asked whole, from the 17.3 correction of 2026-10-16 after the SEC's own ticker file is read, so a member whose ticker changed is matched to its filer at its next quarters fetch (see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file); every index's history ..."
+> SEC tickers' store: "... and read by the quarters fetch for a member the provider files no CIK for (see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file)"
+Now:
+> SEC tickers: "... and says why on its row (see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none)"
+> Quarter fetcher: "... the filer from the 17.3 correction of 2026-10-16 the one the SEC's own ticker file names at its newest read where the answer files none, and from its correction of 2026-10-26 wherever the file names one, the provider's only where it names none, the row saying which it took (see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none), and from 18.2 ..."; "... and <code>quarters --refetch-unfiled</code> every member whose newest company row carries no filer in the same way, once the SEC's ticker file is read, and from the 17.3 correction of 2026-10-26 <code>quarters --refetch-misfiled</code> every member whose newest company row carries a filer other than the file's (see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none). It records every ask ..."
+> 13.16, the monthly run: "... the SEC's facts asked whole, from the 17.3 correction of 2026-10-16 after the SEC's own ticker file is read, so a member's filer is the one the file names at its next quarters fetch (see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none); every index's history ..."
+> SEC tickers' store: "... and read by the quarters fetch for every member's filer (see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none)"
+Why: the provider can file the company that used a ticker before or a company's own number from before it re-formed under a new one, and the SEC's file names the filer each listed ticker files under now.
+
+### 2026-10-26 - docs/SCHEMA.md - the quarters fetch reads the SEC's filer for every member, and a company row's source says sec wherever the file lists its ticker
+Authorised by: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none
+Corrects: the same, 40 members' company rows carrying a filer the SEC's own ticker file does not give them.
+Was:
+> `sec_ticker`: "... the quarters fetch reads the newest read's filer for a member the provider files no CIK for (see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file)."
+> | `cik_source` | TEXT | from the 17.3 correction of 2026-10-16, where `cik` came from: `provider` for the provider's answer, `sec` for the SEC's own ticker file, null where `cik` is and on every row stored before (see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file) |
+Now:
+> `sec_ticker`: "... the quarters fetch reads the newest read's filer for every member, taking it wherever the read lists the member's ticker (see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none)."
+> | `cik_source` | TEXT | from the 17.3 correction of 2026-10-16, where `cik` came from: `provider` for the provider's answer, `sec` for the SEC's own ticker file, null where `cik` is and on every row stored before; from its correction of 2026-10-26 `sec` wherever the file lists the ticker and `provider` only where it does not (see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none) |
+Why: the quarters fetch takes the SEC's filer wherever the file names one, and the column says which it took.
+
+### 2026-10-26 - docs/RUNBOOK.md - a member whose company row carries another company's filer asked again by hand
+Authorised by: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none
+Corrects: the same, 40 members' company rows carrying a filer the SEC's own ticker file does not give them.
+Was:
+> **A member the provider files no CIK for is matched to its filer by the SEC's own ticker file, and asked again by hand once the file is read.**
+> "... held no filer, so their pages drew no share count of the filer's and no insider row and the ledger read none of their filings. `sec-tickers` reads ..."; "... (see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file). The quarters fetch, by night and by hand, then takes the newest read's filer where the provider's answer files none, and the company row's `cik_source` says which it took. `--refetch-unfiled` asks ... eleven an ask, before its first request; left to the night, ..."
+Now:
+> **A member's filer is the one the SEC's own ticker file names for it, and a member whose company row carries none or another is asked again by hand once the file is read.**
+> "... held no filer, so their pages drew no share count of the filer's and no insider row and the ledger read none of their filings. And where it files one, it can file the company that used the ticker before or the company's own number from before it re-formed under a new one: on 2026-10-26, 40 members' company rows carried a filer the SEC's file does not give them, IR's Trane Technologies' and RBC's Regal Rexnord's among them. `sec-tickers` reads ..."; "... (see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none). The quarters fetch, by night and by hand, then takes the newest read's filer wherever the read lists the member's ticker and the provider's CIK only where it does not, and the company row's `cik_source` says which it took. `--refetch-unfiled` asks ... eleven an ask, before its first request, and `--refetch-misfiled` asks in the same way each member whose newest company row carries a filer other than the newest read's; left to the night, ..."
+> Added: the three `quarters --refetch-misfiled` commands, and the paragraph on the correction's remedy with its commands.
+Why: the operator runs the refetch of the misfiled by hand once, as the correction's remedy does.
+
+### 2026-10-26 - .claude/rules/checks.md - fixture-expectations states the SEC's filer taken over the provider's
+Authorised by: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none
+Was:
+> `fixture-expectations`: ... and the month's report holding back a proposal reading a release reading whose years from the cutoff's year total the rule's exactly |
+Now:
+> Added without replacing anything: from the 17.3 correction of 2026-10-26 the quarters fetch taking the newest read's filer wherever it lists the member's ticker, over any filer the provider's answer files, and the provider's only where it lists none, and the refetch by hand of the misfiled asking only the members whose newest company row carries a filer other than the newest read's.
+Why: a roster row names what its check asserts, and the correction's test extends fixture-expectations'.
+
 ### 2026-10-26 - .claude/rules/checks.md - fixture-expectations holds the tone walk's hand-off and the month's report at nothing
 Corrects: the per-rule verb could hand the tone variant's walk none of the history's stocks and its test stayed green, and the month's report held a proposal at nothing in no test, both found by the first review of phase 20's sign-off as mutations that survived.
 Was:

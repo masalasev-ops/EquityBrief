@@ -2158,7 +2158,7 @@ Grain: one row per ticker per read of the SEC's own ticker file, from the 17.3 c
 
 Primary key: `ticker`, `run_id`.
 
-Append-only, a read's rows written in one write, by the SEC tickers step by hand and in the monthly run's facts step and never by the night; the quarters fetch reads the newest read's filer for a member the provider files no CIK for (see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file).
+Append-only, a read's rows written in one write, by the SEC tickers step by hand and in the monthly run's facts step and never by the night; the quarters fetch reads the newest read's filer for every member, taking it wherever the read lists the member's ticker (see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none).
 
 ### reading_pin
 Grain: one row per reading version the local run reads under, from 20.1, written by hand.
@@ -2615,7 +2615,7 @@ Grain: one row per ticker per storing fetch.
 | `strong_buy`, `buy`, `hold`, `sell`, `strong_sell` | INTEGER | from 15.2, the analysts' five rating counts the same answer files, null where it files none and on every row stored before |
 | `rating_mean` | REAL | from 18.2, the analysts' mean rating on the provider's scale from one, a strong sell, to five, a strong buy, a statistic, null where the answer files none and on every row stored before |
 | `target_price` | TEXT | from 18.2, decimal in code, the analysts' mean target price as the answer files it, null where it files none and on every row stored before |
-| `cik_source` | TEXT | from the 17.3 correction of 2026-10-16, where `cik` came from: `provider` for the provider's answer, `sec` for the SEC's own ticker file, null where `cik` is and on every row stored before (see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file) |
+| `cik_source` | TEXT | from the 17.3 correction of 2026-10-16, where `cik` came from: `provider` for the provider's answer, `sec` for the SEC's own ticker file, null where `cik` is and on every row stored before; from its correction of 2026-10-26 `sec` wherever the file lists the ticker and `provider` only where it does not (see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none) |
 
 Primary key: `ticker`, `fetched_at`.
 

@@ -10256,3 +10256,46 @@ Mutated:    the rule, stated before the runs: the review's two surviving mutatio
             before, and at the core's.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
             below, this pull request's last.
+
+### 17.3 - correction: a member's filer is the one the SEC's own ticker file names for it, and a member whose row carries another is asked again by hand   2026-10-26
+
+Found:      the first review of phase 20's sign-off: 40 of the 1,505 members of the three indices carried on their newest
+            company row a filer the SEC's ticker file of 2026-10-17 does not give them, the quarters fetch taking the
+            provider's CIK wherever its answer files one since the correction of 2026-10-16. IR's row carried Trane
+            Technologies' filer and RBC's Regal Rexnord's, so their filed facts, insider trades and results releases were
+            another company's; TT's carried a Trane Inc. filer that last filed in 2008; and the other 37 a former or an
+            unrelated company's, among them the numbers XOM, BLK and PNFP filed under before they re-formed under new
+            ones, whose filings since are read under no member.
+Corrected:  the quarters fetch takes the filer the SEC's own ticker file names for the ticker at its newest read wherever
+            a read lists it, the provider's CIK only where none does, and the row's `cik_source` says which it took;
+            `quarters --refetch-misfiled` asks again by hand, once a session, each member whose newest company row carries
+            a filer other than the file's. A decision on the operator's ruling supersedes the one of 2026-10-16, moved to
+            Previously decided with its reasoning; the architecture's rows for the SEC tickers step, the quarter fetcher
+            and the SEC tickers' store and section 13.16's monthly run; the schema's `sec_ticker` and `cik_source`; the
+            runbook's section with the refetch's commands and the remedy's; the roster's fixture-expectations row; and the
+            changelog.
+Tests:      none new, one extended: the quarters fetch's filer test gives the provider's answer a filer the file
+            contradicts and one for a ticker the file does not list, and a member a row holding another company's filer,
+            which the refetch of the misfiled asks once and on the next session not again. 2820 in all.
+Claims:     none new: the rows are amended in place.
+Pins:       none move: no source it edits is one an evaluator's version pins, read off every evaluator's sources.
+Remedy:     `tools/remedies/2026-10-26-17.3-correction-the-filer-the-sec-names.txt` from main after the merge, then each
+            index's history built again by hand, checked and its links worked, as the runbook gives them: the SEC's file
+            read again, the 40 asked again at about 440 weighted calls of the provider, the facts, the insiders' history
+            and the days from 2026-10-01 read again, the ledger filers' releases fetched again from 2019-01-02 with the
+            new filers' names, every release unread under pin 5 read by the local model, and the ledger's night step.
+            Past nights' rows stand as written.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, each filtered
+            to the filer test. S1 the provider's filer taken first: red at MSFT's row. S2 the row saying provider where the
+            file named the filer: red at AAPL's. S3 the refetch of the misfiled asking the members whose filer matches the
+            file's: red, it asked AAPL, BNY and MSFT. S4 the refetch of the misfiled asking those with no filer: red, it
+            asked ZZZZ. S5 the refetch reading every company row and not the newest alone: red, the next session asked
+            NFLX again.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2820 of 2820 tests ran
+            with none failed, migrations 0 to 112 with none pending, schema version 112, against `data-ci` and never
+            `data`; the phase report 64 tables, 1454 claims, 1454 passing, none out of scope and none unexamined, 1469
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the remedy's record, with what the newly linked filers stored and read and each index's history built again;
+            and a filer that re-formed under a new number, read under no member for the years before it re-formed, put
+            to the operator as a ruling of its own.
