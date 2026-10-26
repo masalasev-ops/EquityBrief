@@ -9790,3 +9790,32 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each sur
             its card.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
             below, this pull request's last.
+
+### 22.11 - correction: paper trading reads the register at the instant the night read it on the S&P 500 as on the 400 and 600, where a night run again after a freeze drew its frozen families provisional   2026-10-26
+
+Queue:      done, phase 22 to its report, the corrections after it and Friday's night run again; in progress, the gates
+            over main and these corrections in one pull request, this the last; next, the stop and report, and the
+            sign-offs of phases 18, 20 and 22 by fresh sessions when the operator says.
+Found:      by the operator on 2026-10-25 after Friday's night run again with the register as it stood: the S&P 500's
+            paper trading drew Quality at a fair price and the short-term dip each as its provisional rule, its picker
+            naming the provisional rule and its scorecard saying "No variant is registered for this rule." Its accounts
+            read the register past the night's evening, before the freezes of 2026-10-25, while the S&P 400's and
+            600's read it at the instant the night stated. 22.11 froze quality on the S&P 500, the first family there
+            whose rules a night run again reads after its freeze.
+Corrected:  paper trading's accounts and each card's record so far read the register at the instant the S&P 500's own
+            index night states, as the S&P 400's and 600's do, past the night's evening on a night run on its own
+            evening; the dip's accounts on the S&P 500 with them. The roster is kept in step.
+Tests:      one new: over the universes' store's night run again after quality was frozen on the S&P 500 and the S&P 400
+            the morning after, each index's paper trading drawing the family's tile live, both pickers listing it with
+            the live rule named, and the scorecard drawing the live rule with its seven versions and no line that no
+            variant is registered. 2801 in all with the corrections above.
+Claims:     none new.
+Pins:       none move, asserted: the source it edits is on the list no rule pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the test reading it. M1
+            the accounts handing the S&P 500 no instant again; red, its quality tile provisional.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2801 of 2801 tests ran with none failed,
+            migrations 0 to 111 with none pending, schema version 111, against `data-ci` and never `data`; the phase
+            report 64 tables, 1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the stop and report; the sign-offs of phases 18, 20 and 22 by fresh sessions.

@@ -201,4 +201,47 @@ public partial class ReadSurface
 
         Assert.Contains("<tr data-family=\"dip\" data-state=\"live\" data-live-since=\"2026-10-04\"", Assert.Single(Blocks(run, "<table class=\"list-table family-run\".*?</table>")), StringComparison.Ordinal);
     }
+
+    // From the 22.11 correction of 2026-10-26 paper trading reads the register as the page reads it on every index: on the
+    // universes' store's night run again after Quality at a fair price was frozen on the S&P 500 and on the S&P 400 the
+    // morning after it, the family's tile is its live rule's, both pickers list it, its rule's choice naming the live
+    // rule, and the scorecard draws the live rule with its seven versions and never the provisional rule's line that no
+    // variant is registered; the S&P 500's read off its own index's night, where it read the register past the night's
+    // evening.
+    [Fact]
+    public async Task PaperTradingDrawsAFrozenQualityRuleAndItsVersionsOnANightRunAgainAfterItsFreezeOnTheSAndP500AndThe400()
+    {
+        using var store = UniversesStore();
+
+        // A minute apart, since one register command writes under one run id an instant.
+        foreach (var (index, at) in new[] { ("GSPC", 0), ("MID", 1) })
+        {
+            var (code, said) = await Checks.FixtureExpectations.RegisterVerbAt(store, FrozenAfterTheNight.AddMinutes(at), Worker.Candidates.RegisterVerb.IndexFamily, QualityRule.Name, "--index", index, "--parameters", "floor=7,valuation=1,trend=0,book=10,sale=0");
+
+            Assert.True(code == 0, said);
+        }
+
+        store.Execute(
+            "INSERT INTO index_family_night (index_code, session_date, members, breadth, market_open, settings, rebalanced) VALUES " +
+            $"('GSPC', '{IndexNight}', 2, 0.6, 1, '{IndexFamilies.Settings("GSPC", registerAt: RunAgainReadAt).Replace("'", "''", StringComparison.Ordinal)}', 0);");
+        RunAgainAt(store, "MID", RunAgainReadAt);
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        foreach (var (word, slug) in new[] { ("500", "s-p-500"), ("400", "s-p-400") })
+        {
+            var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/paper?universe={word}&variants=quality&rule=quality"));
+            var rule = Regex.Match(page, "<select data-merge-key=\"rule\".*?</select>", RegexOptions.Singleline).Value;
+
+            Assert.Equal(
+                ("quality", "live"),
+                Regex.Matches(page, "<div class=\"paper-tile\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\"").Select(match => (match.Groups[1].Value, match.Groups[2].Value)).Last());
+            Assert.Contains("<option value=\"quality\" selected>Quality at a fair price · live rule</option>", rule, StringComparison.Ordinal);
+            Assert.Contains("<option value=\"quality\" selected>", Regex.Match(page, "<select data-merge-key=\"variants\".*?</select>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
+            Assert.Contains("<div class=\"score\" data-family=\"quality\" data-standing=\"live\"", page, StringComparison.Ordinal);
+            Assert.DoesNotContain("No variant is registered for this rule.", page, StringComparison.Ordinal);
+            Assert.Equal(7, Regex.Matches(page, $"<tr data-account=\"[^\"]*{slug}-quality-rule-at[^\"]*\"[^>]*data-standing=\"variant\"").Count);
+        }
+    }
 }

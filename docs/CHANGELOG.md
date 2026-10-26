@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - .claude/rules/checks.md - read-surface holds paper trading reading the register as the page reads it on every index
+Corrects: on Friday's night run again after the freezes, the S&P 500's paper trading drew quality and the dip as provisional rules with no variant registered, reading the register past the night's evening while the S&P 400's and 600's read it at the instant the night stated, found by the operator on 2026-10-25
+Was:
+> read-surface: ... the S&P 400's with its three versions and its sweep's line |
+Now:
+> read-surface: ... the S&P 400's with its three versions and its sweep's line; and from the 22.11 correction of 2026-10-26 paper trading reading the register as the page reads it on every index, on the night run again after Quality at a fair price was frozen on the S&P 500 and on the S&P 400 the family's tile live, both pickers listing it, its rule's choice naming the live rule and the scorecard drawing the live rule with its seven versions and never the line that no variant is registered |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
 ### 2026-10-26 - .claude/rules/checks.md - read-surface holds a frozen dip's card and Run row reading the register as the page reads it
 Corrects: on Friday's night run again after the dip's freeze, the S&P 400 dip's card read provisional while the live rule drew its picks, reading the register past the night's evening, found by the operator on 2026-10-25
 Was:

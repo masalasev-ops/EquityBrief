@@ -2321,7 +2321,7 @@ async Task<IReadOnlyDictionary<string, EquityBrief.Core.Cards.PaperProgress>> Pa
         large ? PicksScreen.Cells(await read.PicksAsync(night), night) : [],
         PaperScreen.Yours(await read.TakenTradesAsync(), reading.Code),
         large ? await read.FamilyReplaysAsync() : [],
-        large ? null : TonightScreen.ReadAsOf(indexNight, night));
+        TonightScreen.ReadAsOf(indexNight, night));
 
     return sources
         .Where(account => account.Standing is PaperAccountView.Live or PaperAccountView.Provisional)
@@ -2343,9 +2343,10 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
     var indexNight = await read.IndexNightAsync(reading.Code, night);
     var provisional = indexNight is null ? null : IndexRuleSettings.Read(indexNight.Settings);
     var register = await read.RegisteredCandidatesAsync();
-    // The register read as the night's page reads it, as of the instant a night run again read it at.
+    // The register read as the night's page reads it, as of the instant a night run again read it at, on the S&P 500 off
+    // its own index's night as on the S&P 400 and 600.
     // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
-    var sources = PaperScreen.Accounts(large, reading.Name, night, register, provisional, rows, cells, PaperScreen.Yours(await read.TakenTradesAsync(), reading.Code), large ? await read.FamilyReplaysAsync() : [], large ? null : TonightScreen.ReadAsOf(indexNight, night));
+    var sources = PaperScreen.Accounts(large, reading.Name, night, register, provisional, rows, cells, PaperScreen.Yours(await read.TakenTradesAsync(), reading.Code), large ? await read.FamilyReplaysAsync() : [], TonightScreen.ReadAsOf(indexNight, night));
     (string Ticker, DateOnly Session)[] bought = [.. sources.SelectMany(account => account.Trades.Select(one => (one.Trade.Ticker, one.Trade.Bought))).Distinct()];
 
     // The trades an account leaves out are read for their trade log's result so far, and walked by nothing.
