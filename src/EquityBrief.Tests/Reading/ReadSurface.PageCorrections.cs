@@ -32,6 +32,7 @@ public partial class ReadSurface
         "src/EquityBrief.Api/Program.cs",
         "src/EquityBrief.Web/Marks/MarkRenderer.cs",
         "src/EquityBrief.Web/App/SinglePageApp.cs",
+        "src/EquityBrief.Web/Marks/MarkRenderer.History.cs",
     ];
 
     // No source a rule's code version pins is one the page corrections write, so no rule's version moves: no candidate
@@ -308,5 +309,67 @@ public partial class ReadSurface
         Assert.Contains("<p class=\"degraded\" data-listed=\"family\">the swing filter did not list this name; the page's list holds it under Breakouts to a new high</p>", Why(m1), StringComparison.Ordinal);
         Assert.DoesNotContain("not on tonight's list", m1, StringComparison.Ordinal);
         Assert.Contains("<p class=\"degraded\" data-listed=\"false\">this name is not on tonight's list</p>", Why(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/S1/{IndexNight}"))), StringComparison.Ordinal);
+    }
+
+    // From the 18.3 correction of 2026-10-26 the long view's axis is ticked at round values as every report chart is, where
+    // it ticked four values evenly between its ends: CVX's closes from 86.34 to 211.55 and its trail at 217.78 take an axis
+    // from 75.83 to 228.29 with eight per cent of the span's room each side, a quarter of the span 38.1, so a step of 50
+    // and the ticks 100, 150 and 200, where it drew 76, 127, 177 and 228. Worked by hand.
+    [Fact]
+    public void TheLongViewTicksItsAxisAtRoundValues()
+    {
+        MonthEnd[] closes = [new(new DateOnly(2018, 1, 31), 86.3376m), new(new DateOnly(2022, 6, 30), 160m), new(new DateOnly(2026, 10, 9), 211.55m)];
+        LongViewLevel[] levels =
+        [
+            new(200.78m, 208.98m, "support", "Tranche 1, 200.78 to 208.98", "Tranche 1"),
+            new(217.78m, 217.78m, "resistance", "Trail begins, 217.78 to 217.78", "Trail begins"),
+            new(160m, 160m, "rule", "The year's low, 160.00 on 2026-04-14", "Year's low"),
+        ];
+        var drawn = new MarkRenderer().LongView("CVX", closes, levels);
+
+        Assert.Equal(["100", "150", "200"], Regex.Matches(drawn, "<text class=\"m-tick\" x=\"[^\"]+\" y=\"[^\"]+\" text-anchor=\"end\">([^<]+)</text>").Select(match => match.Groups[1].Value));
+        Assert.Equal(3, Regex.Matches(drawn, "<line class=\"m-gridline\"").Count);
+    }
+
+    // From the 18.3 correction of 2026-10-26 a reward to risk bar past the axis's end says so inside the figure, where BX's
+    // "6.80, past the axis's end" was cut at the figure's edge to "6.80, past the": the note's 25 characters at the row
+    // note's eleven pixels, about 6.2 a character, end inside the figure's 640, and a plan whose notes are short keeps its
+    // axis, CVX's rule at one at 322, two hundred and a third of the 366 the bars run over at an axis ending at three.
+    [Fact]
+    public void ARewardToRiskBarPastTheAxissEndSaysSoInsideTheFigure()
+    {
+        var marks = new MarkRenderer();
+        var past = marks.RewardToRiskBars("XYZ", [new TrancheShare(10m, 11m, 10.5m, 1, 9.5m, 1m, [new TargetReward(18.5m, 8m, 8m, false)])]);
+        var note = Regex.Match(past, "<text class=\"m-rownote\" x=\"([^\"]+)\" y=\"[^\"]+\">(8.00, past the axis's end)</text>");
+
+        Assert.True(note.Success, "The bar past the axis's end draws no note saying so.");
+        Assert.True(
+            double.Parse(note.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) + (note.Groups[2].Value.Length * 6.2) <= 640,
+            $"The note at {note.Groups[1].Value} runs past the figure's 640.");
+
+        var kept = marks.RewardToRiskBars("CVX", [new TrancheShare(200.78m, 208.98m, 204.88m, 1, 195.84m, 9.04m, [new TargetReward(217.78m, 12.90m, 1.4271m, true)])]);
+
+        Assert.Contains("data-axis=\"3\"", kept, StringComparison.Ordinal);
+        Assert.Contains("<line class=\"rk-one\" x1=\"322\"", kept, StringComparison.Ordinal);
+    }
+
+    // From the 18.3 correction of 2026-10-26 a member of the S&P 400 or 600 holding no ladder row says the plan is read for
+    // the S&P 500's members alone, as its plan region does, where it said "no ladder row for this name yet"; an S&P 500
+    // member holding none still says one is to come.
+    [Fact]
+    public async Task AMemberOfAnotherIndexSaysItHoldsNoLadderRowSinceThePlanIsReadForTheSAndP500Alone()
+    {
+        using var store = UniversesStore();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        static string Trend(string page) => Assert.Single(Blocks(page, "<p class=\"trend-state\".*?</p>"));
+
+        Assert.Equal(
+            "<p class=\"trend-state\" data-trend-state=\"none\" data-index=\"S&amp;P 600\">no ladder row, the plan being read for the S&amp;P 500's members alone</p>",
+            Trend(await client.GetStringAsync($"/screens/name/S1/{IndexNight}")));
+        Assert.Equal(
+            "<p class=\"trend-state\" data-trend-state=\"none\">no ladder row for this name yet</p>",
+            Trend(await client.GetStringAsync($"/screens/name/AAA/{IndexNight}")));
     }
 }

@@ -1500,9 +1500,12 @@ public sealed partial class SinglePageApp : IComponent
         // The trend state, in a word. Read off the ladder row rather than worked
         // out here, and a name with no row says so rather than showing nothing:
         // an absence stated and an absence drawn as emptiness are different
-        // things, and only the first is readable.
+        // things, and only the first is readable. A member of another index holds none by design, the plan being read for
+        // the S&P 500's members alone, and says that rather than that one is to come.
         var trend = trendState is null
-            ? "<p class=\"trend-state\" data-trend-state=\"none\">no ladder row for this name yet</p>"
+            ? mast?.Index is { } index && index != Universes.Large.Name
+                ? Invariant($"<p class=\"trend-state\" data-trend-state=\"none\" data-index=\"{Escaped(index)}\">no ladder row, the plan being read for the {Escaped(Universes.Large.Name)}'s members alone</p>")
+                : "<p class=\"trend-state\" data-trend-state=\"none\">no ladder row for this name yet</p>"
             : Invariant($"<p class=\"trend-state\" data-trend-state=\"{Escaped(trendState)}\" data-as-of=\"{trendAsOf:yyyy-MM-dd}\">trend {Escaped(trendState.Replace('_', ' '))}</p>");
 
         // The fact strip, the levels region's technical readings beneath the bands, stating seven things rather than one.

@@ -166,12 +166,11 @@ public sealed partial class MarkRenderer
         svg.Append(Formatted($"<svg class=\"long-view\" viewBox=\"0 0 {Number(ChartWide)} {Number(High)}\" role=\"img\" data-mark=\"long-view\" data-months=\"{closes.Count}\" data-axis-low=\"{low.ToString(Invariant)}\" data-axis-high=\"{top.ToString(Invariant)}\" aria-label=\"{Escaped(ticker)}'s month-end closes from {DayOf(closes[0].Session)} to {DayOf(closes[^1].Session)} with the plan's levels\">"));
         svg.Append(Legend(("lv-close", "Month-end close"), ("lv-sup", "Plan buys"), ("lv-res", "Plan sells or trails"), ("lv-rule", "Invalidation and year's range")));
 
-        for (var step = 0; step <= 3; step++)
+        // The axis ticked at round values as every report chart is, its rules stopping short of the levels' names.
+        foreach (var value in TickValues(low, top))
         {
-            var value = low + ((top - low) * step / 3);
-
             svg.Append(Formatted($"<line class=\"m-gridline\" x1=\"{Number(ChartLeft)}\" x2=\"{Number(ChartWide - Right)}\" y1=\"{Number(Y(value))}\" y2=\"{Number(Y(value))}\"/>"));
-            svg.Append(Formatted($"<text class=\"m-tick\" x=\"{Number(ChartLeft - 6)}\" y=\"{Number(Y(value) + 4)}\" text-anchor=\"end\">{value.ToString("0", Invariant)}</text>"));
+            svg.Append(Formatted($"<text class=\"m-tick\" x=\"{Number(ChartLeft - 6)}\" y=\"{Number(Y(value) + 4)}\" text-anchor=\"end\">{Unsigned(value, 4).ToString("0.####", Invariant)}</text>"));
         }
 
         // Each level's name at the line's end, at its own height where it can be and pushed down a line where another's
@@ -397,12 +396,17 @@ public sealed partial class MarkRenderer
         const double Most = 6;
         const double Label = 200;
         const double Foot = 10;
+        const double NoteCharacter = 6.2;
         var axis = Math.Min(Math.Max(3, bars.Max(item => Statistic.FromRatio(item.Target.RewardToRisk!.Value))), Most);
+        string Note(double ratio) => ratio.ToString("0.00", Invariant) + (ratio > axis ? ", past the axis's end" : string.Empty);
 
         // As tall as the bars it draws, a gap between one tranche's bars and the next's: a tranche stating no risk draws no
-        // bar and takes no room, and nothing is drawn beneath the last bar but the foot of the rule at one.
+        // bar and takes no room, and nothing is drawn beneath the last bar but the foot of the rule at one. The bars end
+        // short of the right by the widest note at the row note's eleven pixels, so a bar held at the axis's end says so
+        // inside the figure.
         var high = ChartTop + (bars.Length * (Bar + Gap)) + ((bars.Select(item => item.At).Distinct().Count() - 1) * 8) + Foot;
-        double X(double ratio) => Label + ((ChartWide - Label - ChartRight - 60) * Math.Min(ratio, axis) / axis);
+        var room = Math.Max(60, 6 + (bars.Max(item => Note(Statistic.FromRatio(item.Target.RewardToRisk!.Value)).Length) * NoteCharacter));
+        double X(double ratio) => Label + ((ChartWide - Label - ChartRight - room) * Math.Min(ratio, axis) / axis);
 
         var svg = new StringBuilder();
 
@@ -421,12 +425,11 @@ public sealed partial class MarkRenderer
 
             last = at;
             var ratio = Statistic.FromRatio(target.RewardToRisk!.Value);
-            var past = ratio > axis;
             var trail = target.TrailBegins ? ", where the trail begins" : string.Empty;
 
             svg.Append(Formatted($"<text class=\"m-row\" x=\"8\" y=\"{Number(y + 11)}\">Tranche {at + 1} to {Price(target.Target)}{(target.TrailBegins ? " (trail)" : string.Empty)}</text>"));
             svg.Append(Formatted($"<rect class=\"rk-bar{(ratio < 1 ? " rk-under" : string.Empty)}\" x=\"{Number(Label)}\" y=\"{Number(y)}\" width=\"{Number(Math.Max(X(ratio) - Label, 1))}\" height=\"{Number(Bar)}\" rx=\"2\" data-tranche=\"{at + 1}\" data-target=\"{target.Target.ToString(Invariant)}\" data-trail=\"{(target.TrailBegins ? "yes" : "no")}\" data-reward-to-risk=\"{target.RewardToRisk!.Value.ToString(Invariant)}\"><title>Tranche {at + 1}, bought at {Price(tranche.Buy)} with {Price(tranche.Risk!.Value)} at risk a share: {Price(target.Reward)} to {Price(target.Target)}{trail}, a reward to risk of {ratio.ToString("0.00", Invariant)}</title></rect>"));
-            svg.Append(Formatted($"<text class=\"m-rownote\" x=\"{Number(X(ratio) + 6)}\" y=\"{Number(y + 11)}\">{ratio.ToString("0.00", Invariant)}{(past ? ", past the axis's end" : string.Empty)}</text>"));
+            svg.Append(Formatted($"<text class=\"m-rownote\" x=\"{Number(X(ratio) + 6)}\" y=\"{Number(y + 11)}\">{Note(ratio)}</text>"));
             y += Bar + Gap;
         }
 

@@ -9917,3 +9917,26 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             the region handed no family again; red, M1's region missing the family's line.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
             below, this pull request's last.
+
+### 18.3 - correction: the long view ticks at round values, a reward to risk bar past the axis's end says so inside the figure, and an S&P 400 or 600 member says why it holds no ladder row   2026-10-26
+
+Found:      gathering the phase 18 sign-off: BX's long view ticked 2, 66, 129 and 193 and EPRT's 7, 17, 26 and 36, four
+            values evenly between their ends, where the 18.2 correction of 2026-10-19 ticked every other report chart at
+            round values; BX's note for a bar past the axis's end showed "6.80, past the", the 60 pixels after the bars too
+            few for it; and EPRT's technical readings said "no ladder row for this name yet" where its plan region,
+            which 18.3 built, says the plan is read for the S&P 500's members alone.
+Corrected:  the long view's axis takes the round values every report chart takes, its rules stopping short of the levels'
+            names as before; the bars end short of the right by the widest note at the row note's eleven pixels, 60
+            pixels kept where every note is short; and an S&P 400 or 600 member holding no ladder row says "no ladder
+            row, the plan being read for the S&P 500's members alone", an S&P 500 member holding none still saying one is
+            to come. The architecture's Levels row and the roster are kept in step.
+Tests:      three new: CVX's long view ticked 100, 150 and 200, worked by hand; a bar past the axis's end saying so with
+            its 25 characters inside the figure's 640 and CVX's short notes keeping the rule at one at 322; and S1's and
+            AAA's technical readings over the universes' store. 2806 in all.
+Claims:     none new.
+Pins:       none move, asserted: the source it edits joins the list no rule pins.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property, each filtered to the test reading
+            it. M2 the long view's four even ticks back; red at the tick values. M3 the room after the bars a flat 60
+            again; red, the note at 572 running past 640. M4 the chip's other index left unread; red at S1's chip.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.

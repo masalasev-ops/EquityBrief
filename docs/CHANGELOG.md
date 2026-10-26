@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - docs/ARCHITECTURE.html - the Levels region's technical readings say why a member of the S&P 400 or 600 holds no ladder row
+Corrects: gathering the phase 18 sign-off on 2026-10-26, EPRT's technical readings said "no ladder row for this name yet" where its plan region says the plan is read for the S&P 500's members alone
+Was:
+> beneath them the night's technical readings: the trend state, the close, market capitalisation,
+Now:
+> beneath them the night's technical readings: the trend state, or for a member of the S&amp;P 400 or 600 that it holds no ladder row, the plan being read for the S&amp;P 500's members alone, the close, market capitalisation,
+Why: the row states what the region draws, and the correction changes it.
+
+### 2026-10-26 - .claude/rules/checks.md - read-surface holds the long view's ticks, the reward to risk bars' note and the ladder's words for an S&P 400 or 600 member
+Corrects: gathering the phase 18 sign-off on 2026-10-26, BX's and EPRT's long views ticked four values evenly between their ends, BX's note for a bar past the axis's end was cut at the figure's edge, and EPRT's technical readings said "no ladder row for this name yet"
+Was:
+> read-surface: ... a stock's rules region naming the family the page's list holds it under where the swing filter did not list it, and saying it is on no list where none holds it |
+Now:
+> read-surface: ... a stock's rules region naming the family the page's list holds it under where the swing filter did not list it, and saying it is on no list where none holds it; and from the 18.3 correction of 2026-10-26 the long view ticked at round values as every report chart is, a reward to risk bar past the axis's end saying so inside the figure while a plan whose notes are short keeps its axis, and an S&P 400 or 600 member holding no ladder row saying the plan is read for the S&P 500's members alone while an S&P 500 member says one is to come |
+Why: the roster row says what its check asserts, and the correction's tests extend it.
+
 ### 2026-10-26 - .claude/rules/checks.md - read-surface holds a stock's rules region naming the family the page's list holds it under
 Corrects: gathering the phase 18 sign-off on 2026-10-26, BX's, RLI's, EPRT's and UNP's rules regions said "this name is not on tonight's list" beneath a page saying each was on it under Earnings drift
 Was:
