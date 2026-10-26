@@ -9874,3 +9874,28 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the monthly run by hand on 2026-10-27 and its report; the sign-offs of phases 18, 20 and 22 by fresh
             sessions.
+
+### 18.5 ruling - the five defects found gathering the phase 18 sign-off corrected before its prompt   2026-10-26
+
+Not a checkpoint entry: it records the operator's ruling and lands nothing.
+Ruled:      by the operator on 2026-10-26, kept whole in `prompts/2026-10-26-18.5-phase-18-sign-off-correct-first.md`.
+            At about 12:20 UTC they asked "Can i get prompt for phase 18 sign off". Gathering it, the session read BX's,
+            RLI's, EPRT's and UNP's pages and exported files on the live app at 1440 pixels and found five defects on
+            phase 18's pages: the long view ticked four values evenly between its ends; "How the rules read it" saying
+            "this name is not on tonight's list" on four stocks the page's list held under Earnings drift; a reward to
+            risk bar's note past the axis's end cut at the figure's edge; the technical readings' "Price to earnings,
+            the provider's 26.6" beside 25.4 as filed with the SEC and the industry table's 19.2; and an S&P 400 or 600
+            page saying "no ladder row for this name yet" where its plan region says the plan is read for the S&P 500's
+            members alone. Asked how to go, they answered "Correct first (Recommended)": one correction pull request
+            with the five, each labelled from the record, gates over it, and the sign-off prompt after the merge with
+            its figures gathered again.
+Labelled:   read off the record: the rules region's line under 18.1, which placed why the name is here in it; the long
+            view's ticks, the reward to risk bars and the plan's words for an S&P 400 or 600 member under 18.3, which
+            built the long view, the bars, the ladder figure and the plan region's reason that the plan is read for the
+            S&P 500's members alone; and the technical readings' multiple and the chart page's grid under 22.8, whose
+            scorecard added the second figure and whose correction of 2026-10-26 left these two.
+Queue:      done, the Loop page's correction; in progress, these five corrections in one pull request; next, the phase
+            18 sign-off prompt after the merge, the monthly run by hand on 2026-10-27, and the sign-offs of phases 20
+            and 22 by fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.
