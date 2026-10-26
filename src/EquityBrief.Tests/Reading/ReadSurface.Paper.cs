@@ -249,6 +249,15 @@ public partial class ReadSurface
         Assert.Contains(".too-few{display:block;font-size:12px;color:var(--soft)}", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains(".paper-log-since .too-few,.paper-heads .too-few{display:inline}", Stylesheet.Css, StringComparison.Ordinal);
 
+        // From the 22.11 correction of 2026-10-25 each family is named by its label in the selector and beside its
+        // verdict, the quality family's among them, and never by the word the store keeps it under.
+        var chips = Regex.Matches(heads, "<span class=\"fam-swatch\" data-family=\"([^\"]+)\"></span>([^<]+)</span>").Select(match => (Family: match.Groups[1].Value, Label: match.Groups[2].Value)).ToArray();
+
+        Assert.Equal(7, chips.Length);
+        Assert.All(chips, chip => Assert.NotEqual(chip.Family, chip.Label));
+        Assert.Contains(("quality", "Quality at a fair price"), chips);
+        Assert.Matches("<option value=\"list-quality\" title=\"Quality at a fair price, the page's list on its starting settings\">Quality at a fair price · ", options);
+
         // The settings are in no byte of the store, no run log row and no exported report.
         Assert.DoesNotContain("98765", await client.GetStringAsync("/exports/name/T6"), StringComparison.Ordinal);
 

@@ -358,7 +358,7 @@ public sealed partial class MarkRenderer
         html.Append(TippedHeading("Setup", "the setup family whose live or provisional rule bought it"));
         html.Append(TippedHeading("Bought", "its buy at the open of the session after the night that listed it, and that session", "r"));
         html.Append(TippedHeading("Stop", "its stop tonight: the plan's, or a trailing stop raised to the highest close since its listing less the distance it trails", "r"));
-        html.Append(TippedHeading("Target", "its plan's target, or that its stop trails and it has none, or none for a holding sold only at a rebalance", "r"));
+        html.Append(TippedHeading("Target", "its plan's target, or that its stop trails and it has none, or none for a holding sold only at a rebalance and a short-term dip sold on its exit", "r"));
         html.Append(TippedHeading("Last close", "tonight's close, and the sessions since its listing night against the sessions its plan gives it", "r"));
         html.Append(TippedHeading("So far", "its result at tonight's close in multiples of the risk its plan's close put up, with its move in per cent beneath; a holding's in per cent alone", "r"));
         html.Append(TippedHeading("Where it stands", "near its target or near its stop within one typical day's move of either, on track otherwise, or that its buy opened past its stop or its target; a holding's lead over its sector tonight"));
@@ -378,7 +378,9 @@ public sealed partial class MarkRenderer
                 : Formatted($"<td class=\"r num\">{(open?.Stop is { } stop ? Figures.Price(stop) : "<span class=\"degraded\">none</span>")}{(trade.Trails && open?.Stop is { } raised && trade.Stop is { } first && raised > first ? Formatted($"<span class=\"pb-day\">raised from {Figures.Price(first)}</span>") : string.Empty)}</td>"));
             html.Append(book
                 ? "<td class=\"r\"><span class=\"degraded\">none</span></td>"
-                : trade.Target is { } target ? Formatted($"<td class=\"r num\">{Figures.Price(target)}</td>") : "<td class=\"r\">it trails</td>");
+                : trade.Target is { } target ? Formatted($"<td class=\"r num\">{Figures.Price(target)}</td>")
+                : trade.Trails ? "<td class=\"r\">it trails</td>"
+                : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
             html.Append(Invariant, $"<td class=\"r num\">{(open?.Close is { } shut ? Figures.Price(shut) : "<span class=\"degraded\">not stored</span>")}<span class=\"pb-day\">{Held(open?.Held, trade.Cap)}</span></td>");
             html.Append(Invariant, $"<td class=\"r num\">{Result(book, (open?.Risks, open?.Fraction))}</td>");
             html.Append(Invariant, $"<td><span class=\"pb-standing {StandingClass(open?.Standing)}\" data-standing=\"{Escaped(open?.Standing ?? string.Empty)}\">{Escaped(Capitalised(open?.Standing ?? HeavyweightStandings.NotRead))}</span></td></tr>");
@@ -868,5 +870,7 @@ public sealed partial class MarkRenderer
     static string FamilyName(string family) =>
         family == HeavyweightRule.Name
             ? SetupFamilies.SectorHeavyweights.Heading
-            : SetupFamilies.Named(family)?.Label ?? family;
+            : family == QualityRule.Name
+                ? QualityRule.Label
+                : SetupFamilies.Named(family)?.Label ?? family;
 }

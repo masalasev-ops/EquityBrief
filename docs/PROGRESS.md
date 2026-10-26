@@ -9400,3 +9400,122 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    `tools/remedies/2026-10-25-22.3-the-dip-freezes.txt` from main after the merge and before the night of
             2026-10-26, when no other writer runs, then the read surface restarted; 22.12.
+
+### 22.3 - the remedy run from main: each index's dip answer recorded with its tester's verdict, and the dip frozen at its 22.2 setting with its versions   2026-10-25
+
+Not a checkpoint entry: it records 22.3's merge and remedy and what they measured, and lands nothing.
+Merged:     PR 562 by the operator at 23:25:55 UTC as 420e221f, over 13496c9c, before the gates over that commit
+            ended. The run over 5ad7e1b5 failed one test on both hosted runners, 2788 of 2789, the 22.3 test holding
+            the dip's own rule and step among the sources its rules pin asserting its two sets the wrong way round, so
+            it could pass on no platform, and the local run reached the same test; 13496c9c turns the assertion round,
+            its filtered run 8 of 8. The local run over 13496c9c was stopped at the merge. HOSTED
+Ran:        from main's 420e221f, `tools/remedies/2026-10-25-22.3-the-dip-freezes.txt` from 23:27:13 to 23:27:25 with
+            no night, local run, drain, labeller, history read, ledger build or monthly run writing, the read surface
+            stopped first and started again from main's Release build after it. No request and no model call.
+Measured:   each answer recorded with its tester's verdict: the S&P 500's run 20261024T060554Z passed at a fall of 3
+            moves, the 50-day above the 200-day, sold on the RSI over 65, 10 days at most, its stop 3 moves under and
+            the VIX above its own median, at 511 trades, its tester's run at an adjusted p of 0.3736, not passed; the
+            S&P 400's 20261024T060843Z at 5 days at most and the S&P 500's breadth at 45 per cent, at 546 trades, 0.0397,
+            not passed; the S&P 600's 20261024T061128Z above its 200-day, 7 days at most, the index's own breadth at 35
+            per cent and the drop's volume under 1.5 times its average, at 317 trades, 0.0764, not passed. Each freeze
+            registered at one instant, each at e8c0399ca425: the S&P 500's live rule as 659 and its four versions as 660
+            to 663 on `dip-500`, the family 5 of 9; the S&P 400's as 664 and 665 to 667 on `dip-400`, 4 of 9; the S&P
+            600's as 668 and 669 to 672 on `dip-600`, 5 of 9. The cards draw the frozen rules from their first night,
+            2026-10-26.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 22.12's report below, which
+            carries 22.3's code unchanged.
+
+### 22.11 - correction: Past picks and paper trading name the quality family by its label, where they named it by the word the store keeps it under   2026-10-25
+
+Found:      by 22.12's read-back of the S&P 400's Past picks and the S&P 500's paper trading against the store: Past
+            picks' line beside each family's verdict and its account selector, and paper trading's tile, chips and
+            scorecard, named the quality family "quality", the word the store keeps it under, where every other family is
+            named by its label, since each page's label read the swing families and the sector heavyweights alone.
+            Tonight's tile and card named it by its label.
+Corrected:  both pages' labels name the quality family "Quality at a fair price", as its card and its tile on Tonight
+            do: Past picks' selector, the line beside its verdict and an account's trade log, and paper trading's tile,
+            chart key, chips, variants' picker and scorecard.
+Tests:      none new, two extended, 2789 in all: Past picks over the constructed S&P 500 store naming each of its seven
+            families by its label beside its verdict, none by its word, and the quality family's account by its label and
+            its words in the selector; paper trading over the constructed frozen S&P 400 store naming no family by its
+            word on any of its 24 names, the quality family's tile by its label.
+Claims:     1444, none new.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each page's property, made in this checkout and
+            reverted with the editor, each filtered to the test reading it. M1 Past picks' label's quality branch never
+            taken; red, "quality" drawn beside its verdict. M2 paper trading's label's quality branch never taken; red,
+            "quality" drawn in 7 of its 24 names.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 22.12's report below, which
+            carries this correction unchanged.
+
+### 22.3 - correction: paper trading draws an open dip trade's target as none, where it drew that its stop trails   2026-10-25
+
+Found:      by 22.12's read-back of the S&P 400's paper trading against the store: ARMK and GME, the dip's open trades,
+            drew their target as "it trails", since what the system bought read any trade with no target as one whose
+            stop trails, where the dip's plan holds no target and its stop never trails. Past picks drew them as none.
+Corrected:  a trade with no target draws that it trails only where its stop trails, and none otherwise, as Past picks
+            draws it; the column's words under the pointer name the dip.
+Tests:      none new, one extended, 2789 in all: the dip's open trade drawn with its target as none and never as
+            trailing, beside a trade whose stop trails drawn as trailing.
+Claims:     1444, none new.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, made in this checkout and reverted
+            with the editor, filtered to the test reading it. M1 every trade with no target drawn as trailing; red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 22.12's report below, which
+            carries this correction unchanged.
+
+### 22.12 - the phase 22 report: every screen read back against the store, each index's dip and quality answers and freezes, the counts each checkpoint stated, the pair checked against the actual, and phase 22 opening no operating row   2026-10-25
+
+Queue:      done, 22.0 to 22.11 and 22.3 with their corrections, rulings and remedies, the dip frozen on every index at
+            23:27 UTC; in progress, this report and the two corrections its read-back found; next, the sign-offs of
+            phases 18, 20 and 22 by fresh sessions when the operator says.
+Screens:    captured on 2026-10-25 between 23:28Z and 23:38Z from main's Release build at 420e221f over the live store,
+            read-only, after 22.3's remedy, at 1,440 pixels and a true 390 in both palettes, 13 screens and 52 captures
+            with no page wider than its screen, the wide tables scrolling in their own boxes, laid out with what each
+            was read back against at https://claude.ai/artifact/5GzwnrzF4727BHcDQsY3pK. The pages draw the night of
+            2026-10-23: the S&P 500's five buys under the drift, the dip reading 503 and passing none; the S&P 400's
+            seven, HIMS under the dip at 27.71 with its stop at 20.39 and ARMK and GME held back by their open trades, the
+            dip's night 400, 3 and 1; the S&P 600's EPRT alone; NVDA's scorecard mixed, 7 of 9 on its filings to
+            2026-07-26, each figure its stored row's; the S&P 600 dip's 27,126 setups of 2026, 4,956 passing. The dip's and
+            quality's tiles and cards draw that night as it ran until the night of 2026-10-26 runs the frozen rules. The
+            read-back found Past picks and paper trading naming the quality family by its store word and paper trading
+            drawing a dip trade's target as trailing, the corrections above; and put to the operator: NVDA's chart page
+            stating two earnings multiples, 30.1 off the provider's earnings a share and 26.4 off the net income filed
+            with the SEC; an S&P 400 or 600 pick with no report reading "Not on tonight's list" in its short version, as
+            HIMS and ZION do, which predates phase 22; and the Run page's two store copies gone, as 20.10 found.
+Answers:    the dip, each frozen at its 22.2 run's setting with the neighbours meeting the floors over the prices
+            pulled from 2015-10-01 and the market variant, each at e8c0399ca425: the S&P 500's 659 and 660 to 663 at an
+            adjusted p of 0.3736, the S&P 400's 664 and 665 to 667 at 0.0397, the S&P 600's 668 and 669 to 672 at 0.0764,
+            none passing the tester. Quality at a fair price, each frozen at its starting setting with its seven one-step
+            neighbours, each at 88dcf3013d88: the S&P 500's 635 and 636 to 642, no setting meeting the floors; the S&P
+            400's 643 and 644 to 650, its proposal two dials away not run; the S&P 600's 651 and 652 to 658.
+Counts:     as each entry stated, tests new and in all, claims new and in all: 22.1 24, 2645, 13, 1396; 22.2 11, 2692, 3,
+            1421; 22.4 10, 2707, 1, 1422; 22.5 6, 2714, none, 1422; 22.6 5, 2719, 2, 1424; 22.8 21, 2740, 9, 1433; 22.9
+            13, 2755, 10, 1443; 22.10 11, 2766, 1, 1444; 22.11 11, 2777, none, 1444; 22.3 12, 2789, none, 1444; and this
+            report 1, 2790, none, 1444, the corrections between adding the rest.
+Pair:       before phase 22, 1383 claims on main at b6cb98dc, phase 20's 1405 less the 22 rows 20.11 to 20.13 landed
+            after it was measured; 1424 after 22.6, with those 22 beside phase 22's 19; the plan's pair after 22.12,
+            restated at 22.7 from the 1424 measured after 22.6, 1453 within 1438 to 1468; the actual 1444, inside the
+            range and 9 short of the pair, all at 22.8, whose count held the ten readings it adds to the ledger's
+            catalogue, which are no rows of a table the harness reads, and left out its catalogue and matrix rows,
+            which landed; 22.9 and 22.10 as counted and 22.11 and 22.12 none. The parts up to 22.6 against their counts:
+            22.1 and 22.2 as counted, 22.4 one fewer, its chips landing as words in the brief read's row, 22.5 forty
+            fewer, its word lists placed whole and held by the plain-words check, and 22.6 four fewer, its parts but the
+            minute and the words at the foot landing as clauses in the rows section 15.7 extends. Each part's rows named
+            with what it landed in `ArchitectureConformance.PhaseTwentyTwoLanded`.
+Operating:  phase 22 opened no operating row; `obligation-reconciles` states phase 22 at none.
+Tests:      one new, the pair; 2790 in all.
+Claims:     1444, none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: one mutation a property the report adds, each filtered to the test it was
+            predicted red at, made in this checkout and reverted with the editor. M1 22.8's count of more at none, at
+            the pair test; M2 22.6's rows left out of what it landed, at the pair test; M3 phase 22 stated as opening
+            one operating row, at the operating rows test. Each red: M1, 22.8 landing 9 against 18; M2, 22.6 landing none
+            against its 2; M3, phase 22 stated at one against the none the table holds. Not mutated: the screens, read
+            back by hand.
+Corrects:   the entries from 22.7's planning on name phase 19's sign-off among those owed; it was signed on
+            2026-10-22 over b6cb98dc, so those owed are phases 18, 20 and 22's.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2790 of 2790 tests ran with none failed,
+            migrations 0 to 111 with none pending, schema version 111, against `data-ci` and never `data`; the phase
+            report 64 tables, 1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the sign-offs of phases 18, 20 and 22 by fresh sessions.

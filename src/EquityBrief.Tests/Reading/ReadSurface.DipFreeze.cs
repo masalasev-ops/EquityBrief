@@ -2,10 +2,12 @@ using System.Net;
 using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Candidates;
+using EquityBrief.Core.Cards;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Tests.Harness;
+using EquityBrief.Web.Marks;
 using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Dips;
 
@@ -176,6 +178,18 @@ public partial class ReadSurface
             Assert.Contains("data-standing=\"live\"", AccountRowOf(page, ReadApi.PageList + "-" + DipRule.Name), StringComparison.Ordinal);
             Assert.Contains("data-standing=\"variant\"", stopped, StringComparison.Ordinal);
             Assert.Equal(3, Regex.Matches(page, "<tr data-account=\"[^\"]*s-p-400-dip-rule-at[^\"]*\"[^>]*data-standing=\"variant\"").Count);
+
+            // From the 22.3 correction of 2026-10-25 an open dip trade's target reads none, since its plan holds no target
+            // and its stop never trails, as Past picks reads it, where a trade whose stop trails reads that it trails.
+            static string Bought(decimal? target, bool trails) => new MarkRenderer().PaperBought(
+                new PaperPageView([], [new PaperBoughtView(ReadApi.PageList + "-" + DipRule.Name, DipRule.Name, "M2", null, new DateOnly(2026, 10, 1), new DateOnly(2026, 10, 2), 50m, 44m, target, trails, 5, null, null, null, [], null)], [], [], new PaperNotBought([]), [], null),
+                new PaperLink("400"));
+
+            var dipRow = Assert.Single(Blocks(Bought(null, false), "<tr data-ticker=\"M2\".*?</tr>"));
+
+            Assert.Contains("<td class=\"r\"><span class=\"degraded\">none</span></td><td class=\"r num\"><span class=\"degraded\">not stored</span>", dipRow, StringComparison.Ordinal);
+            Assert.DoesNotContain("it trails", dipRow, StringComparison.Ordinal);
+            Assert.Contains("<td class=\"r\">it trails</td>", Bought(null, true), StringComparison.Ordinal);
         }
     }
 }

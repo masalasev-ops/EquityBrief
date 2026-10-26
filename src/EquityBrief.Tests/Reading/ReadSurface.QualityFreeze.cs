@@ -114,5 +114,13 @@ public partial class ReadSurface
         Assert.Contains("data-standing=\"live\"", live, StringComparison.Ordinal);
         Assert.Contains("data-standing=\"variant\"", twenty, StringComparison.Ordinal);
         Assert.Equal(7, Regex.Matches(page, "<tr data-account=\"[^\"]*s-p-400-quality-rule-at[^\"]*\"[^>]*data-standing=\"variant\"").Count);
+
+        // From the 22.11 correction of 2026-10-25 the family is named by its label on its tile, its chip and its
+        // scorecard, and no family anywhere on the page by the word the store keeps it under.
+        var names = Regex.Matches(page, "<span class=\"(?:fam-swatch|paper-key-mark)\" data-family=\"([^\"]+)\"[^>]*></span>(?:&nbsp;| )?(?:<h3>)?([^<]+)").Select(match => (Family: match.Groups[1].Value, Name: match.Groups[2].Value.Trim())).ToArray();
+
+        Assert.True(names.Length >= 10, $"Read {names.Length} family name(s), expected at least 10.");
+        Assert.All(names, name => Assert.False(name.Name.StartsWith(name.Family + " ", StringComparison.Ordinal) || name.Name == name.Family, $"{name.Family} drawn as '{name.Name}'"));
+        Assert.Contains("<span class=\"fam-swatch\" data-family=\"quality\"></span>Quality at a fair price <span class=\"status-pill live\">", page, StringComparison.Ordinal);
     }
 }
