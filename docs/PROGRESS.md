@@ -10271,9 +10271,9 @@ Corrected:  the quarters fetch takes the filer the SEC's own ticker file names f
             `quarters --refetch-misfiled` asks again by hand, once a session, each member whose newest company row carries
             a filer other than the file's. A decision on the operator's ruling supersedes the one of 2026-10-16, moved to
             Previously decided with its reasoning; the architecture's rows for the SEC tickers step, the quarter fetcher
-            and the SEC tickers' store and section 13.16's monthly run; the schema's `sec_ticker` and `cik_source`; the
-            runbook's section with the refetch's commands and the remedy's; the roster's fixture-expectations row; and the
-            changelog.
+            and the SEC tickers' store and section 13.16's monthly run; the schema's `sec_ticker`, `cik` and `cik_source`;
+            the runbook's section with the refetch's commands and the remedy's; the roster's fixture-expectations row; the
+            guide's sentence on where the figures come from; and the changelog.
 Tests:      none new, one extended: the quarters fetch's filer test gives the provider's answer a filer the file
             contradicts and one for a ticker the file does not list, and a member a row holding another company's filer,
             which the refetch of the misfiled asks once and on the next session not again. 2820 in all.

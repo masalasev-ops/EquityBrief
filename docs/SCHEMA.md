@@ -2607,7 +2607,7 @@ Grain: one row per ticker per storing fetch.
 |---|---|---|
 | `ticker` | TEXT | |
 | `fetched_at` | TEXT | UTC instant of the fetch, the one its `reported_quarter` rows carry |
-| `cik` | TEXT | the company's filer at the filings archive, ten digits with the leading zeros: the provider's, or where it files none the filer the SEC's own ticker file names for the ticker at its newest read in `sec_ticker`, null where neither does |
+| `cik` | TEXT | the company's filer at the filings archive, ten digits with the leading zeros: the filer the SEC's own ticker file names for the ticker at its newest read in `sec_ticker` listing it, or where no read lists it the provider's, null where neither does |
 | `sector` | TEXT | the GICS sector the provider files, null where it files none |
 | `industry_group` | TEXT | the GICS industry group, null where none is filed |
 | `industry` | TEXT | the GICS industry, null where none is filed |

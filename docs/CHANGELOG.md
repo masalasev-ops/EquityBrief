@@ -46,9 +46,11 @@ Authorised by: A member's filer is the one the SEC's own ticker file names for i
 Corrects: the same, 40 members' company rows carrying a filer the SEC's own ticker file does not give them.
 Was:
 > `sec_ticker`: "... the quarters fetch reads the newest read's filer for a member the provider files no CIK for (see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file)."
+> | `cik` | TEXT | the company's filer at the filings archive, ten digits with the leading zeros: the provider's, or where it files none the filer the SEC's own ticker file names for the ticker at its newest read in `sec_ticker`, null where neither does |
 > | `cik_source` | TEXT | from the 17.3 correction of 2026-10-16, where `cik` came from: `provider` for the provider's answer, `sec` for the SEC's own ticker file, null where `cik` is and on every row stored before (see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file) |
 Now:
 > `sec_ticker`: "... the quarters fetch reads the newest read's filer for every member, taking it wherever the read lists the member's ticker (see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none)."
+> | `cik` | TEXT | the company's filer at the filings archive, ten digits with the leading zeros: the filer the SEC's own ticker file names for the ticker at its newest read in `sec_ticker` listing it, or where no read lists it the provider's, null where neither does |
 > | `cik_source` | TEXT | from the 17.3 correction of 2026-10-16, where `cik` came from: `provider` for the provider's answer, `sec` for the SEC's own ticker file, null where `cik` is and on every row stored before; from its correction of 2026-10-26 `sec` wherever the file lists the ticker and `provider` only where it does not (see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none) |
 Why: the quarters fetch takes the SEC's filer wherever the file names one, and the column says which it took.
 
