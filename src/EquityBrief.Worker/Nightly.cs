@@ -521,7 +521,7 @@ public static class Nightly
 
                 var evaluated = await new FamilyEvaluator(clock, store.DatabaseFile).RunAsync(runId, rules, night.Token, ReadingsTonightAsync);
                 var listed = await new FamilyLister(clock, store.DatabaseFile).RunAsync(runId, night.Token, ReadingsTonightAsync);
-                var hookReadings = rules.Standing.Any(rule => EquityBrief.Core.Loop.RuleHooks.Of(EquityBrief.Core.Candidates.CandidateEvaluator.Read(rule.Parameters)).ReadsReadings)
+                var hookReadings = FamilyRecorder.HooksReadReadings(rules.Standing)
                     ? await ReadingsTonightAsync(night.Token)
                     : null;
                 var kept = await new FamilyRecorder(clock, store.DatabaseFile).RunAsync(indexCode, runId, rules.Standing, night.Token, hookReadings);

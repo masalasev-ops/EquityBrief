@@ -9606,3 +9606,30 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             every copy gone a worry whatever stands; red, the two older copies failing the item.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last of the four
             corrections' entries below.
+
+### 22.3 - correction: the night reads hooks off the S&P 500 recorder's own rules alone, where a frozen dip's exit dial stopped every night at its swing filter   2026-10-26
+
+Found:      by the night of 2026-10-23 run again from main's bb3537a1 at 00:08Z on 2026-10-26 with the register as it
+            stood, as the operator asked: it stopped at its swing filter on each try, "The exit hook names 65, and the
+            menu numbers its exits 1 to 26, 0 being the rule's own." The step read the hooks of every standing family
+            rule to learn whether the night's readings were needed, a dip rule's among them, whose exit dial of 65, the
+            RSI's, the hooks read as an exit of the swing menu; the recorder after it reads only the S&P 500's own rules,
+            and 22.3's night test ran the dip's step and the cards and never this line. Every night with a dip frozen
+            would have stopped there, the night of 2026-10-26 among them. The run was stopped at 00:37Z on its second try,
+            its lock given up; the steps before the filter had written what the first run wrote.
+Corrected:  the recorder states the rules it keeps, the S&P 500's family rules but an S&P 400's or 600's and a rule its own
+            family's step keeps, and whether any of them reads the readings through its hooks, and the night asks it,
+            reading no standing rule's hooks of its own. No rule's version moves: the two files are among those no rule
+            pins.
+Tests:      two new: a dip rule's parameters refused by the hooks, the recorder keeping no dip rule and a breakout rule
+            scored on a reading, the night's question answered over both without reading the dip's, and the night asking
+            the recorder; and a whole night over the fixture with the S&P 500's dip frozen at the RSI's exit, its live
+            rule and a version registered before it, running every step, the dip's step reading the live rule.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edits undoing the property, each filtered to the test reading
+            it. M1 the recorder keeping a rule its own family's step keeps; red, the dip's rule kept. M2 the night's own
+            reading of every standing rule's hooks put back; red at the whole night, "step 'swing-filter' failed: The exit
+            hook names 65", the failure of 2026-10-26.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last of the four
+            corrections' entries below.

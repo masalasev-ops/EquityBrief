@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - .claude/rules/checks.md - fixture-expectations holds the night reading hooks off the recorder's own rules alone
+Corrects: the swing filter's step read the hooks of every standing family rule, a dip rule's among them, whose exit dial of 65 the hooks read as an exit the menu does not hold, so every night with a dip frozen stopped there, found when the night of 2026-10-23 was run again after 22.3's remedy
+Was:
+> fixture-expectations: ... and no source another rule's version pins one 22.3 writes, the dip's rules pinning the files their own step runs through |
+Now:
+> fixture-expectations: ... the dip's rules pinning the files their own step runs through; and from the 22.3 correction of 2026-10-26 the night reading hooks off the rules the S&P 500's family recorder keeps alone, a dip rule's exit dial, which the hooks would read as an exit the menu does not hold, read by none of them, and a rule the recorder keeps whose hook reads the readings still read, and a whole night over the fixture with the S&P 500's dip frozen at the RSI's exit running every step |
+Why: the roster row says what its check asserts, and the correction's tests extend it.
+
 ### 2026-10-26 - RUNBOOK.md and .claude/rules/checks.md - a copy gone from the folder is a worry only where no newer copy stands
 Authorised by: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
 Was:
