@@ -37,6 +37,9 @@ public sealed partial class MarkRenderer
         [EquityBrief.Core.Families.FundamentalsRule.Name] = new(
             "A growing, profitable company dips in an uptrend.",
             "A growing, profitable company whose cash backs its earnings, bought when it dips in an uptrend. It buys at the pullback's buy point."),
+        [EquityBrief.Core.Families.ImprovingRule.Name] = new(
+            EquityBrief.Core.Families.ImprovingRule.Looks,
+            EquityBrief.Core.Families.ImprovingRule.Description),
         [EquityBrief.Core.Families.DipRule.Name] = new(
             "A rising stock falls hard for a few days; bought for the bounce.",
             "A stock in a long uptrend falls hard for a few days with no earnings news, bought for the bounce. It is sold within days, once it closes back above its short average."),

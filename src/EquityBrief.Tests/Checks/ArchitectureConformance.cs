@@ -1450,7 +1450,8 @@ public partial class ArchitectureConformance
         // 257 at 22.6: Tonight in one minute and the page's words at its foot.
         // 259 at 22.8: the fundamentals card on the chart page and on the name page.
         // 260 at 22.9: Tonight's row for Quality at a fair price's card.
-        Assert.Equal(260, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 261 at 22.13: Tonight's row for the Fundamentals family's card.
+        Assert.Equal(261, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1613,7 +1614,8 @@ public partial class ArchitectureConformance
         // 658 at 22.6: Tonight in one minute and the page's words at its foot.
         // 660 at 22.8: the fundamentals card on the chart page and on the name page.
         // 661 at 22.9: Tonight's row for Quality at a fair price's card.
-        Assert.Equal(661, inDocument.Length);
+        // 662 at 22.13: Tonight's row for the Fundamentals family's card.
+        Assert.Equal(662, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

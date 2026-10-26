@@ -272,7 +272,7 @@ public sealed partial class SinglePageApp : IComponent
     // count and its state, and one table of tonight's buy points across every setup, each family's picks in its own order.
     // Where an S&P 400's or 600's families each read a check of their own that did not read alike, a tile says the check
     // closed by its own family's check.
-    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the quality family's among them
+    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the Fundamentals family's among them
     // see: Each frozen rule on the S&P 400 and 600 reads its market check at the level its own sweep chose
     public static (IReadOnlyList<SetupTileView> Tiles, IReadOnlyList<BuyPointView> Points) TopOf(
         IReadOnlyList<FamilyCardView> families,
@@ -2635,7 +2635,8 @@ public sealed partial class SinglePageApp : IComponent
         string? closeHref = null,
         EndedTonightView? ended = null,
         IReadOnlyDictionary<string, string>? plans = null,
-        QualityCardView? quality = null)
+        QualityCardView? quality = null,
+        ImprovingCardView? improving = null)
     {
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
@@ -2702,7 +2703,8 @@ public sealed partial class SinglePageApp : IComponent
                 selectedTicker,
                 ended,
                 plans: plans,
-                quality: quality));
+                quality: quality,
+                improving: improving));
         }
         else if (families is null)
         {
@@ -2821,7 +2823,8 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyList<CloseToBuyRow>? closeToBuy = null,
         bool closeOpen = false,
         EndedTonightView? ended = null,
-        QualityCardView? quality = null)
+        QualityCardView? quality = null,
+        ImprovingCardView? improving = null)
     {
         var region = new StringBuilder();
         var heading = "Tonight: " + universe.Titled;
@@ -2856,7 +2859,7 @@ public sealed partial class SinglePageApp : IComponent
         // see: The S&P 400's and 600's nights store every part's answer for every member, the market check its own
         var open = families.SelectMany(card => card.Picks).Any(pick => pick.Row.Ticker == selectedTicker) ? selectedTicker : null;
 
-        region.Append(TonightCards(marks, night, Invariant($"{RunRoute}{night:yyyy-MM-dd}{query}"), null, line, families, heavyweights, closeToBuy, closeOpen, false, universe.Word, open, ended, quality: quality));
+        region.Append(TonightCards(marks, night, Invariant($"{RunRoute}{night:yyyy-MM-dd}{query}"), null, line, families, heavyweights, closeToBuy, closeOpen, false, universe.Word, open, ended, quality: quality, improving: improving));
         region.Append("</section>");
 
         return region.ToString();
@@ -4101,9 +4104,10 @@ public sealed partial class SinglePageApp : IComponent
 
         var frozenSwing = frozen.Where(one => one.Family != EquityBrief.Core.Families.HeavyweightRule.Name).ToArray();
         var heavyweightsFrozen = frozen.Any(one => one.Family == EquityBrief.Core.Families.HeavyweightRule.Name);
+        // see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight
         string[] provisionalSwing =
         [
-            .. EquityBrief.Core.Families.SetupFamilies.OnEveryIndex.Where(family => frozenSwing.All(one => one.Family != family.Name)).Select(family => family.Heading),
+            .. EquityBrief.Core.Families.SetupFamilies.OnEveryIndex.Where(family => family.Name != EquityBrief.Core.Families.FundamentalsRule.Name && frozenSwing.All(one => one.Family != family.Name)).Select(family => family.Heading),
             .. dipKept ? [EquityBrief.Core.Families.SetupFamilies.Dips.Heading] : Array.Empty<string>(),
         ];
 

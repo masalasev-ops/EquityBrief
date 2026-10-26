@@ -3943,6 +3943,48 @@ internal static class Scope
             Verdict.Pass,
             "the night runs the step after the filings refresh and before the Treasury's 10-year, read off the document, the night's output and its run log's order, its row recording no model call and no request",
             ByNight),
+        // 22.13, on the operator's ruling: the Fundamentals family's step, its three stores, section 17's
+        // starting settings, section 18's two rows, its card on Tonight and its step in section 14.
+        [CheckReach.Key(CatalogueTable, "Improving family")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the members, the bars, the companies, the filed facts, the scorecards, the ledger's and the member readings and the release readings it reads and its own three tables it writes, each reconciled against the row",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Improving family")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Improving nights")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Improving results")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Improving trades")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The Fundamentals family's starting settings")] = new Scoped(
+            Verdict.Pass,
+            "the bar read as a share on both sides of it, the rise over the filing before, the sales growth speeding up, the hold and the flag on both sides of each, a filing first read on the night told from one read before, and the step over a constructed store buying a member at its next open, selling one whose score fell, one at its last session and one that left the index; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A filing the Fundamentals family cannot weigh")] = new Scoped(
+            Verdict.Pass,
+            "the rule over four checks read and over no sales growth read giving each its reason, and the step over a constructed store storing a member read so with its reason and buying nothing on it",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A Fundamentals buy whose next session is not stored")] = new Scoped(
+            Verdict.Pass,
+            "a trade whose stock holds no bar on the session after its choice left unbought and counted waiting on the step's row, then bought at the open of the first session the store holds after it",
+            ByExpectations),
+        [CheckReach.Key("15.7 Tonight", "The Fundamentals family's card")] = new Scoped(
+            Verdict.Pass,
+            "read back off the rendered page over a constructed store's night: the card in the fundamentals-first family's place with its tile in that slot, its sentence, its four tiles, the two tabs with each improver's score, what changed and its status, the strongest scores with the quality book's words, and its rule a click away; a night its part failed saying so, a store whose step read no night saying so, and the fundamentals-first family's card and tile drawn nowhere",
+            ByReadSurface),
+        [CheckReach.Key(NightlyRunSteps.Heading, Checks.NightlyRun.ImprovingStep)] = new Scoped(
+            Verdict.Pass,
+            "the night runs the step after Quality at a fair price's and before the Treasury's 10-year, read off the document, the night's output and its run log's order, its row recording no model call and no request",
+            ByNight),
         // 17.9, approval and the live alarm: the apply step's and the alarm's catalogue and matrix rows, five stores,
         // section 17's alarm and setting, section 18's two rows, the Loop page's three regions, Tonight's line and the
         // card's row for a rule standing at an approved change.
@@ -6037,6 +6079,10 @@ internal static class Scope
         ["Quality nights"] = "22.9",
         ["Quality results"] = "22.9",
         ["Quality holdings"] = "22.9",
+        // 22.13's three, which the plan names as the stores the Fundamentals family's step writes.
+        ["Improving nights"] = "22.13",
+        ["Improving results"] = "22.13",
+        ["Improving trades"] = "22.13",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -6846,6 +6892,8 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Fundamentals")] = "22.8",
         // 22.9's one, which the plan names as the family's card on Tonight.
         [CheckReach.Key("15.7 Tonight", "Quality at a fair price's card")] = "22.9",
+        // 22.13's one, which the plan names as the Fundamentals family's card in the fundamentals-first family's place.
+        [CheckReach.Key("15.7 Tonight", "The Fundamentals family's card")] = "22.13",
 
     };
 
@@ -7740,6 +7788,9 @@ internal static class Scope
         // 22.9's two, which the plan names as a member the family cannot score or value and a buy waiting for its session.
         ["A member the quality family cannot score or value"] = "22.9",
         ["A quality buy whose next session is not stored"] = "22.9",
+        // 22.13's two, which the plan names as a filing the family cannot weigh and a buy waiting for its session.
+        ["A filing the Fundamentals family cannot weigh"] = "22.13",
+        ["A Fundamentals buy whose next session is not stored"] = "22.13",
     };
 
     // The two rows of the read and write matrix whose component already exists.
@@ -7954,6 +8005,8 @@ internal static class Scope
         ["Quality at a fair price's starting settings"] = "22.9",
         // 22.10's grid, which the plan names as section 17's grid of the history test.
         ["Quality at a fair price's history test"] = "22.10",
+        // 22.13's settings, which the plan names as section 17's starting settings of the Fundamentals family.
+        ["The Fundamentals family's starting settings"] = "22.13",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)
@@ -7999,6 +8052,8 @@ internal static class Scope
         ["Ask the Treasury"] = "18.2",
         // 22.9's step, Quality at a fair price after the filings refresh.
         ["From 22.9, read Quality at a fair price"] = "22.9",
+        // 22.13's step, the Fundamentals family after Quality at a fair price.
+        ["From 22.13, read the Fundamentals family"] = "22.13",
         ["Count the ordinary nights stored under the open filter version"] = "12.4",
         ["Evaluate the list reasons"] = "5.4",
         ["Ask for six reports taken in turn"] = "11.4",

@@ -10062,3 +10062,68 @@ Planned:    with 22.13 in the build plan's phase 22 section after 22.12: 22.13 a
             pair.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
+
+### 22.13 - the Fundamentals family: a newly read filing lifting a company's scorecard to eight in nine bought at the next open, a better results release flagged, its card on Tonight in business first's place, and business first off Tonight, paper trading and Past picks   2026-10-26
+
+Queue:      done, PR 567 and the 22.13 ruling above; in progress, 22.13 in this pull request, then its remedy from main
+            before the night of 2026-10-26; next, that night's answer on each index read back on Tonight, the monthly
+            run by hand on 2026-10-27, 22.14 and 22.15 on the operator's word, and the sign-offs of phases 18, 20 and 22
+            by fresh sessions.
+Limits:     no paid call and no request of any kind; migration 112 alone; no other rule's version moves, asserted over
+            the 16 sources 22.13 writes or edits; business first's rule, rows and Run page row as they were, its card,
+            tile, buy points, passes, trades and accounts drawn no more on Tonight, Past picks and paper trading.
+Built:      the family, its store word `improving`, on each of the three indices in a step after Quality at a fair price's:
+            each member's scorecard as the night's last scoring stored it; for a member whose newest filing, filed on or
+            after the session the family last read and before the night's, is read for the first time, the score the
+            filing before held through the core's one scorecard over the filings as first filed before it; bought at the
+            next open through the core's one pricing function where the filing lifts it to 8 in 9 read as a share, above
+            the score before, with its sales growth faster than the quarter before as the ledger's readings store it;
+            flagged, buying nothing, where its newest results release, read through the one reader of the release
+            readings and accepted after its newest filing, reads results better with its outlook raised or kept; one
+            trade a stock, kept at 7 in 9 and sold at the close its score falls below, at its 126th session's close or at
+            its last close as a member; its result, benchmark, round trip and edge worked as a quality holding's.
+            `improving_night`, `improving_result` and `improving_trade`, each index's part one transaction. Its card on
+            every index in business first's place with its tile in that slot: the sentence, four tiles, the tabs
+            Improving fastest and Strongest businesses and the fold, each stock opening its chart page; its hue searched
+            beside the seven, a raspberry on the light ground and a mint on the dark. Business first's card, tile, buy
+            points, passes and stocks one step short off Tonight, its trades off Past picks and its accounts off paper
+            trading. The step's catalogue and matrix rows, its three stores, section 14's step, section 15's rows,
+            section 17's settings, section 18's two rows, section 11's rule, section 20's row, the decisions, the hue
+            decision superseded, the schema, the runbook's remedy, the guide, the roster and the changelog. The ruling's
+            "In the quality book" is written "Among Quality at a fair price's holdings", book standing in the word list
+            for holdings, and "Already held" as "Bought earlier", so the plain-words check passes.
+Tests:      11 new, 2818 in all: the bar, the rise, the sales growth, the hold and the flag on both sides of each; the
+            first-read window, the filing's day and the release a filing confirms; the improvers' order; the step over
+            eight constructed S&P 400 members, two bought, three improved short of the bar, one flagged, one not, a buy
+            waiting for its session, a sale on the score falling worked by hand, one at its 126th session, one on leaving
+            the index and a night run again; the card read back on Tonight, failed and before its first night; and no
+            source a rule pins written. Business first's two card tests now read it drawn nowhere and its Run page row
+            standing, and twelve tests of Tonight, paper trading and Past picks read the pages without it.
+Fixture:    improving.json, derived by hand: I01 chosen at 101, bought at 102 and sold at 100 when its score fell to 6 of
+            9, a result of -2 / 101, its benchmark 0.0224889 over the eight members answered on its night, its round
+            trip 0.0712941 per cent and its edge -4.3003789 points.
+Claims:     1454, ten new after phase 22's report, named beside its pair and counted in none of it: the step's
+            catalogue and matrix rows, its three stores, its step in section 14, its card on Tonight, section 17's
+            settings and section 18's two rows, as the plan's count.
+Pins:       none move: no source any rule's version pins is one of the 16 22.13 writes, asserted.
+Screens:    read back from this branch's build over two constructed stores migrated to 112, the S&P 400's night and the
+            S&P 500's with the family's rows written into them: the card in business first's place and its tile in that
+            slot at 1,440 pixels and a true 390 in both palettes, no page wider than its screen, business first's card
+            drawn nowhere.
+Mutated:    the rule, stated before the runs: one mutation for each threshold and each property 22.13 adds that a test
+            reads, the smallest edit undoing it, made on the branch and reverted with the editor, each run filtered to
+            the tests reading it. M1 the bar read as a count of eight; M2 the rise over the filing before dropped; M3 the
+            first-read window closing on the night's own day; M4 the hold read at the bar; M5 the time limit a session
+            late; M6 the flag reading a release whatever its day; M7 the flagged ranked before the filings. Each red: M1,
+            M2 and M4 at the rule's thresholds, M4 nowhere in the step, whose sale at 6 of 9 falls under either floor; M3
+            at the first-read window; M5 at the last session's test; M6 at the first night and the next night's flags;
+            M7 at the order and the card's read-back.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2818 of 2818 tests ran with none failed,
+            migrations 0 to 112 with none pending, schema version 112, against `data-ci` and never `data`; the phase
+            report 64 tables, 1454 claims, 1454 passing, none out of scope and none unexamined, 1469 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    22.13's remedy from main after the merge, migration 112 alone, before the night of 2026-10-26, and the read
+            surface restarted; that night's answer on each index, its flags, its buys and the first ten of each tab,
+            read back on Tonight against the store and recorded in an entry of its own as the addendum to 22.12's
+            report; then 22.14 and 22.15 on the operator's word.

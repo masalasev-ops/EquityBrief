@@ -173,6 +173,7 @@ public partial class ArchitectureConformance
     // counts once its report is written.
     internal static string[] AfterPhaseNineteen =>
     [
+        .. AfterPhaseTwentyTwo,
         .. FixtureExpectations.QualityHistoryClaims,
         .. ComponentAccess.QualityRows,
         .. SchemaColumns.QualityStoreRows,

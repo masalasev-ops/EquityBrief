@@ -438,7 +438,7 @@ public partial class ReadSurface
         Assert.Contains("data-open=\"false\" data-breadth=\"0.42\" data-floor=\"0.45\"", before.Line, StringComparison.Ordinal);
         Assert.EndsWith(ClosedLine, before.Line, StringComparison.Ordinal);
         Assert.Contains(ClosedCard, before.Pullback, StringComparison.Ordinal);
-        Assert.Equal(["pullback: the market check closed", "breakout: listing tonight", "drift: the market check closed", "fundamentals: the market check closed", "heavyweight: rebalanced tonight", "quality: kept monthly"], before.Tiles);
+        Assert.Equal(["pullback: the market check closed", "breakout: listing tonight", "drift: the market check closed", "improving: read nightly", "heavyweight: rebalanced tonight", "quality: kept monthly"], before.Tiles);
 
         // From 20.11 each family's own check stored: the pullback's on the index's own breadth at 35 per cent and the
         // breakout's on the S&P 500's at 45 open, the drift's at 45 closed. Read alike for none, the line names the drift's
@@ -450,7 +450,7 @@ public partial class ReadSurface
 
         var mixed = await Read();
 
-        Assert.StartsWith("<p class=\"market-line\" data-index=\"S&P 400\" data-open=\"true\" data-breadth=\"0.42\" data-floor=\"none\" data-passed=\"2\" data-members=\"3\" data-buy-points=\"1\" data-setups-listing=\"1\" data-setups=\"4\" data-close=\"0\" data-open-trades=\"0\" data-closed=\"drift\">", mixed.Line, StringComparison.Ordinal);
+        Assert.StartsWith("<p class=\"market-line\" data-index=\"S&P 400\" data-open=\"true\" data-breadth=\"0.42\" data-floor=\"none\" data-passed=\"2\" data-members=\"3\" data-buy-points=\"1\" data-setups-listing=\"1\" data-setups=\"3\" data-close=\"0\" data-open-trades=\"0\" data-closed=\"drift\">", mixed.Line, StringComparison.Ordinal);
         Assert.EndsWith("<b class=\"market-open\">Each setup checks the market its own way here; 2 of 3 left their lists open.</b> 42.0% of S&P 400 stocks are above their 200-day average. The earnings drift's check needs 45% and closed its list.</p>", mixed.Line, StringComparison.Ordinal);
         Assert.Contains("<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">No picks tonight. Of the 3 S&P 400 members read, 2 no setup.</span>", mixed.Pullback, StringComparison.Ordinal);
         Assert.DoesNotContain("market check closed", mixed.Pullback, StringComparison.Ordinal);
@@ -570,7 +570,7 @@ public partial class ReadSurface
         Assert.Contains("Each listed by a setup on the S&P 400's provisional settings, named with its index.", before, StringComparison.Ordinal);
 
         // The breakout frozen on the night and read by it: it alone is named frozen, from the day of its freeze, and the
-        // three other swing families provisional.
+        // two other swing families provisional, the fundamentals-first family named no more from 22.13.
         ReadByTheLiveBreakout(store, FreezeTheBreakout(store, "2026-10-02T12:00:00Z"));
 
         var frozen = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks?universe=400"));
@@ -578,7 +578,7 @@ public partial class ReadSurface
         Assert.DoesNotContain("Every rule of this index is provisional", frozen, StringComparison.Ordinal);
         Assert.Contains(
             "Breakouts to a new high is frozen, listing by its live rule from the night of its freeze, 2026-10-02, its live rule's record read on the Run page; " +
-            "Pullbacks to support, Earnings drift and Improving businesses in an uptrend are provisional, followed and in no record until a freeze. No share and no average is drawn here: each trade is a fact and is followed.",
+            "Pullbacks to support and Earnings drift are provisional, followed and in no record until a freeze. No share and no average is drawn here: each trade is a fact and is followed.",
             frozen,
             StringComparison.Ordinal);
         Assert.Contains("Each listed by a setup on the S&P 400, by its live rule from its freeze and on the provisional settings before it, named with its index.", frozen, StringComparison.Ordinal);

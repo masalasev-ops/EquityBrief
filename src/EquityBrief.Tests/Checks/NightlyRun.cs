@@ -47,6 +47,10 @@ public partial class NightlyRun
     internal const string QualityStep =
         "From 22.9, read Quality at a fair price on each of the three indices over every member holding a bar on the night, on its scorecard as the night's last scoring stored it and its price against its own earnings as the ledger's valuation reading stored it: carry each holding by the night's close, buy each one chosen before at the open of the first session after its choice the store holds, and on the family's first night and the first night it reads in a month sell each holding that no longer qualifies at the night's close and fill the places left down the ranking; a holding whose stock left the index is sold at its last close as a member, and each index's part is one transaction whose failure is named on its row while the step goes on (see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session).";
 
+    // Section 14's step after Quality at a fair price's, from 22.13, as the document states it.
+    internal const string ImprovingStep =
+        "From 22.13, read the Fundamentals family on each of the three indices over every member holding a bar on the night, on its scorecard as the night's last scoring stored it, and for a member whose newest filing is read for the first time the score its filing before held through the core's one scorecard over the filings as first filed, with its newest results release through the one reader of the release readings: carry each trade by the night's close, buy each one chosen before at the open of the first session after its choice the store holds, sell a trade at the night's close where its score fell under the hold floor or its last session closed and one whose stock left the index at its last close as a member, and store tonight's buys and flags; each index's part is one transaction whose failure is named on its row while the step goes on (see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better).";
+
     // The rows the 3.1 correction adds: the step, its component's catalogue and matrix rows, its store and the chart's
     // part drawing what it stores.
     internal static string[] ChartAverageRows =>
@@ -67,6 +71,9 @@ public partial class NightlyRun
 
             // 22.9, Quality at a fair price after the filings refresh.
             CheckReach.Key(NightlyRunSteps.Heading, QualityStep),
+
+            // 22.13, the Fundamentals family after Quality at a fair price.
+            CheckReach.Key(NightlyRunSteps.Heading, ImprovingStep),
 
             // 18.3, the page history reader that cannot finish while the night goes on.
             CheckReach.Key(Scope.FailureTable, "The page history reader cannot finish"),
@@ -1364,10 +1371,11 @@ public partial class NightlyRun
         // see: The Treasury's 10-year par yield is read once a night after the close and kept a session a row
         var steps = NightlyRunSteps.In(File.ReadAllText(Repository.Architecture));
 
-        Assert.StartsWith("Close the arithmetic", steps[^8], StringComparison.Ordinal);
-        Assert.StartsWith("Ask the provider for the reported quarters", steps[^7], StringComparison.Ordinal);
-        Assert.StartsWith("Read the archive's daily index", steps[^6], StringComparison.Ordinal);
-        Assert.StartsWith("From 22.9, read Quality at a fair price", steps[^5], StringComparison.Ordinal);
+        Assert.StartsWith("Close the arithmetic", steps[^9], StringComparison.Ordinal);
+        Assert.StartsWith("Ask the provider for the reported quarters", steps[^8], StringComparison.Ordinal);
+        Assert.StartsWith("Read the archive's daily index", steps[^7], StringComparison.Ordinal);
+        Assert.StartsWith("From 22.9, read Quality at a fair price", steps[^6], StringComparison.Ordinal);
+        Assert.StartsWith("From 22.13, read the Fundamentals family", steps[^5], StringComparison.Ordinal);
         Assert.StartsWith("Ask the Treasury, and not the provider, for its daily par yields", steps[^4], StringComparison.Ordinal);
         Assert.StartsWith("Ask for six reports taken in turn", steps[^3], StringComparison.Ordinal);
         Assert.StartsWith("Start no news labeller", steps[^2], StringComparison.Ordinal);
@@ -1384,28 +1392,31 @@ public partial class NightlyRun
         var quarters = output.IndexOf("  quarters:", StringComparison.Ordinal);
         var filings = output.IndexOf("  filings:", StringComparison.Ordinal);
         var quality = output.IndexOf("  quality:", StringComparison.Ordinal);
+        var improving = output.IndexOf("  improving:", StringComparison.Ordinal);
         var treasury = output.IndexOf("  treasury:", StringComparison.Ordinal);
 
         Assert.True(close >= 0 && quarters > close, $"The quarters step did not run after the close: {output}");
         Assert.True(filings > quarters, $"The filings refresh did not run after the quarters step: {output}");
         Assert.True(quality > filings, $"Quality at a fair price was not read after the filings refresh: {output}");
-        Assert.True(treasury > quality, $"The Treasury's 10-year was not read after Quality at a fair price: {output}");
+        Assert.True(improving > quality, $"The Fundamentals family was not read after Quality at a fair price: {output}");
+        Assert.True(treasury > improving, $"The Treasury's 10-year was not read after the Fundamentals family: {output}");
         Assert.True(output.IndexOf("  report:", StringComparison.Ordinal) > treasury, $"The night's request did not run after the Treasury's 10-year: {output}");
         Assert.DoesNotContain("  queue:", output, StringComparison.Ordinal);
 
         var stages = RunLog(store, "night-with-no-queue").Select(row => row.Stage).ToArray();
 
-        // From 22.8 the filings step writes its refresh's row and then the scorecards' written again, and from 22.9 the
-        // quality family's row follows them.
+        // From 22.8 the filings step writes its refresh's row and then the scorecards' written again, from 22.9 the
+        // quality family's row follows them, and from 22.13 the Fundamentals family's follows that.
         Assert.Equal(EquityBrief.Worker.Backup.StoreBackup.NightStage, stages[^1]);
         Assert.Equal(NewsLabeller.NightStage, stages[^2]);
         Assert.Equal("report", stages[^3]);
         Assert.Equal(EquityBrief.Worker.Treasury.TreasuryReader.Stage, stages[^4]);
-        Assert.Equal(EquityBrief.Worker.Quality.QualityFamily.Stage, stages[^5]);
-        Assert.Equal(EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage, stages[^6]);
-        Assert.Equal(EquityBrief.Worker.Ledger.FilingsRefresher.Stage, stages[^7]);
-        Assert.Equal(EquityBrief.Worker.Quarters.QuarterFetcher.Stage, stages[^8]);
-        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^9]);
+        Assert.Equal(EquityBrief.Worker.Improving.ImprovingFamily.Stage, stages[^5]);
+        Assert.Equal(EquityBrief.Worker.Quality.QualityFamily.Stage, stages[^6]);
+        Assert.Equal(EquityBrief.Worker.Fundamentals.FundamentalScorer.AgainStage, stages[^7]);
+        Assert.Equal(EquityBrief.Worker.Ledger.FilingsRefresher.Stage, stages[^8]);
+        Assert.Equal(EquityBrief.Worker.Quarters.QuarterFetcher.Stage, stages[^9]);
+        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^10]);
         Assert.DoesNotContain(EquityBrief.Api.Reading.RunScreen.QueueStage, stages);
 
         // The Treasury's step asked once and kept every session of the year the table publishes to the night's, 172 from
@@ -1414,8 +1425,9 @@ public partial class NightlyRun
         Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM treasury_yield WHERE session_date > '2026-09-08';"));
         Assert.Equal(1, Scalar(store, $"SELECT network_requests FROM run_log WHERE run_id = 'night-with-no-queue' AND stage = '{EquityBrief.Worker.Treasury.TreasuryReader.Stage}';"));
 
-        // The quality family's row records no model call and no request.
+        // The quality family's row and the Fundamentals family's record no model call and no request.
         Assert.Equal(0, Scalar(store, $"SELECT model_calls + network_requests FROM run_log WHERE run_id = 'night-with-no-queue' AND stage = '{EquityBrief.Worker.Quality.QualityFamily.Stage}';"));
+        Assert.Equal(0, Scalar(store, $"SELECT model_calls + network_requests FROM run_log WHERE run_id = 'night-with-no-queue' AND stage = '{EquityBrief.Worker.Improving.ImprovingFamily.Stage}';"));
 
         // The night's last line states that it called no model, and no row of the night says otherwise.
         Assert.Contains("nightly: green over a capture, 0 model calls, ", output, StringComparison.Ordinal);
@@ -1545,10 +1557,11 @@ public partial class NightlyRun
         var quarters = steps.ToList().FindIndex(step => step.StartsWith("Ask the provider for the reported quarters", StringComparison.Ordinal)) + 1;
         var filings = steps.ToList().FindIndex(step => step.StartsWith("Read the archive's daily index", StringComparison.Ordinal)) + 1;
         var quality = steps.ToList().FindIndex(step => step.StartsWith("From 22.9, read Quality at a fair price", StringComparison.Ordinal)) + 1;
+        var improving = steps.ToList().FindIndex(step => step.StartsWith("From 22.13, read the Fundamentals family", StringComparison.Ordinal)) + 1;
         var treasury = steps.ToList().FindIndex(step => step.StartsWith("Ask the Treasury", StringComparison.Ordinal)) + 1;
 
         Assert.Equal(steps.Count - 3, treasury);
-        Assert.Equal((close + 1, close + 2, close + 3, close + 4), (quarters, filings, quality, treasury));
+        Assert.Equal((close + 1, close + 2, close + 3, close + 4, close + 5), (quarters, filings, quality, improving, treasury));
         Assert.StartsWith("Ask for six reports taken in turn", steps[^3], StringComparison.Ordinal);
         Assert.StartsWith("Start no news labeller", steps[^2], StringComparison.Ordinal);
         Assert.StartsWith("Start the store's copy", steps[^1], StringComparison.Ordinal);
@@ -2337,9 +2350,10 @@ public partial class NightlyRun
         // samples' day, which share a sample among the indices; and from 22.1 the
         // short-term dip reads each index's members on the session with its own
         // loader, and from 22.8 the fundamental scorer every member it scores, and
-        // from 22.9 Quality at a fair price each index's members on the session.
+        // from 22.9 Quality at a fair price each index's members on the session, and
+        // from 22.13 the Fundamentals family each index's members on the session.
         Assert.Equal(
-            ["CalendarFetcher", "DecisionCards", "DipFamily", "DividendKeeper", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "FundamentalScorer", "HeavyweightBook", "IndexFamilies", "LadderBuilder", "LocalRun.Probes", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "QualityFamily", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi.Standing", "ReleaseFetch", "SecTickers", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower"],
+            ["CalendarFetcher", "DecisionCards", "DipFamily", "DividendKeeper", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "FundamentalScorer", "HeavyweightBook", "ImprovingFamily", "IndexFamilies", "LadderBuilder", "LocalRun.Probes", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "QualityFamily", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi.Standing", "ReleaseFetch", "SecTickers", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower"],
             member.Order(StringComparer.Ordinal));
 
         // And the span form, read by nothing a night runs.

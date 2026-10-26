@@ -63,6 +63,7 @@ public partial class ArchitectureConformance
     // 22.10's one, section 17's grid of its history test.
     internal static string[] AfterPhaseTwenty =>
     [
+        .. AfterPhaseTwentyTwo,
         .. FixtureExpectations.QualityHistoryClaims,
         .. ComponentAccess.QualityRows,
         .. SchemaColumns.QualityStoreRows,

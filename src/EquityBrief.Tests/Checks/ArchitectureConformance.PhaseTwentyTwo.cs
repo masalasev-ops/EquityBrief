@@ -34,8 +34,17 @@ public partial class ArchitectureConformance
         ("22.12", [], []),
     ];
 
-    // The rows the document gains after phase 22's report, named beside the pair and never counted in it: none.
-    internal static string[] AfterPhaseTwentyTwo => [];
+    // The rows the document gains after phase 22's report, named beside the pair and never counted in it: 22.13's ten, the
+    // Fundamentals family's catalogue and matrix rows, its three stores, its step in section 14, its card on Tonight,
+    // section 17's starting settings and section 18's two.
+    internal static string[] AfterPhaseTwentyTwo =>
+    [
+        .. ComponentAccess.ImprovingRows,
+        .. SchemaColumns.ImprovingStoreRows,
+        .. FixtureExpectations.ImprovingClaims,
+        .. Reading.ReadSurface.ImprovingPageRows,
+        CheckReach.Key(NightlyRunSteps.Heading, NightlyRun.ImprovingStep),
+    ];
 
     // The rows the document loses after phase 22's report: none.
     internal static string[] TakenOutAfterPhaseTwentyTwo => [];

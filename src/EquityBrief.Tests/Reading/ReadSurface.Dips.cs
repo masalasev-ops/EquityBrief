@@ -111,17 +111,19 @@ public partial class ReadSurface
         Assert.Contains("M1 also qualified here tonight and is shown once, under Breakouts to a new high, with both labels. One stock is one trade.", dip, StringComparison.Ordinal);
         Assert.Contains("M3 qualified tonight but its pullback trade from 2026-09-30 on the S&P 500's list is still open, so it is not listed. One stock, one trade.", dip, StringComparison.Ordinal);
 
-        // The cards in the page's order, the dip's after the fundamentals-first family's, each numbered among them.
+        // The cards in the page's order, the dip's after the drift's, the fundamentals-first family's drawn no more from 22.13,
+        // each numbered among them.
         Assert.Equal(
-            ["pullback", "breakout", "drift", "fundamentals", "dip"],
+            ["pullback", "breakout", "drift", "dip"],
             Regex.Matches(page, "<section class=\"family-card\" data-family=\"([^\"]+)\"").Select(match => match.Groups[1].Value).Distinct());
-        Assert.Contains("data-family=\"dip\" data-place=\"5\" data-of=\"5\"", page, StringComparison.Ordinal);
+        Assert.Contains("data-family=\"dip\" data-place=\"4\" data-of=\"4\"", page, StringComparison.Ordinal);
         Assert.Contains("<header class=\"fam-head\" data-family=\"dip\">", dip, StringComparison.Ordinal);
 
-        // The tiles: every swing family's by the check, the dip's by its own setting, listing with M3 held back, and from 22.9
-        // Quality at a fair price's, which reads no market check.
+        // The tiles: every swing family's by the check, the dip's by its own setting, listing with M3 held back, from 22.9
+        // Quality at a fair price's, which reads no market check, and from 22.13 the Fundamentals family's in the
+        // fundamentals-first family's slot, which reads none either.
         var tiles = Regex.Matches(Assert.Single(Blocks(page, "<nav class=\"setup-tiles\".*?</nav>")), "data-family=\"([^\"]+)\" data-card=\"[^\"]+\" data-count=\"[0-9]+\" data-state=\"([^\"]+)\"").Select(match => $"{match.Groups[1].Value}: {match.Groups[2].Value}");
-        Assert.Equal(["pullback: the market check closed", "breakout: listing tonight", "drift: the market check closed", "fundamentals: the market check closed", "dip: 1 held back by a trade still open", "heavyweight: rebalanced tonight", "quality: kept monthly"], tiles);
+        Assert.Equal(["pullback: the market check closed", "breakout: listing tonight", "drift: the market check closed", "improving: read nightly", "dip: 1 held back by a trade still open", "heavyweight: rebalanced tonight", "quality: kept monthly"], tiles);
 
         // The breakout's buy point of M1, the stock the dip gave way on, carries the dip's label beside the breakout's own in
         // tonight's table of buy points, and M1 is listed once there.

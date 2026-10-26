@@ -113,6 +113,14 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "Quality holdings"),
     ];
 
+    // 22.13's three: the Fundamentals family's nights, its answers and its trades.
+    internal static string[] ImprovingStoreRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Improving nights"),
+        CheckReach.Key(Scope.StoresTable, "Improving results"),
+        CheckReach.Key(Scope.StoresTable, "Improving trades"),
+    ];
+
     internal static CheckReach Reach => new(
         "schema-columns",
         ["docs/SCHEMA.md"],
@@ -238,6 +246,9 @@ public class SchemaColumns
 
             // 22.9, Quality at a fair price's three stores.
             .. QualityStoreRows,
+
+            // 22.13, the Fundamentals family's three stores.
+            .. ImprovingStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),
