@@ -378,13 +378,23 @@ public static partial class TonightScreen
 
         var stopped = results
             .Where(result => !result.Passed)
-            .GroupBy(result => result.Reason ?? "no reason stored", StringComparer.Ordinal)
+            .GroupBy(StoppedBy, StringComparer.Ordinal)
             .OrderByDescending(group => group.Count())
             .ThenBy(group => group.Key, StringComparer.Ordinal)
             .Select(group => FormattableString.Invariant($"{group.Count()} {group.Key}"));
 
         return FormattableString.Invariant($"No stock passed this setup tonight: of the {results.Count} {universe.Name} members read, ") + string.Join(", ", stopped) + ".";
     }
+
+    // Why a member stopped as its night stored it, a revenue part whose words say its quarter was not read before the night
+    // counted apart from one read and not above a year before.
+    public static string StoppedBy(IndexResultRow result) =>
+        result.Reason == EquityBrief.Core.Cards.RuleRows.RevenueNotAbove
+        && result.Gates is { } stored
+        && FamilyRule.GatesOf(stored).FirstOrDefault(gate => gate.Name == EquityBrief.Core.Cards.RuleRows.Revenue && !gate.Passed) is { } revenue
+        && !EquityBrief.Web.Marks.ReaderWords.RevenueRead(revenue.Reason)
+            ? EquityBrief.Web.Marks.ReaderWords.RevenueNotRead
+            : result.Reason ?? "no reason stored";
 
     // An index's sector heavyweights' card: the holdings open at the night's close in the order of their sectors, each
     // with the lead over its sector's members' mean in the index it was bought on, or that it was bought before its book

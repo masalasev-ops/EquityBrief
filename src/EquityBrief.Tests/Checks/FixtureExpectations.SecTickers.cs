@@ -7,11 +7,11 @@ using EquityBrief.Worker.Quarters;
 
 namespace EquityBrief.Tests.Checks;
 
-// fixture-expectations, the 17.3 correction of 2026-10-16: a member the provider files no CIK for, as it files none for
-// a ticker changed since it last read the company, is matched to its filer by the SEC's own ticker file, read as sent,
-// kept by the step that reads it and taken by the quarters fetch where the provider's answer files none, the step's
-// members being the tickers the three indices hold on its session alone.
-// see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+// fixture-expectations, 17.3's corrections of the filer: a member's filer is the one the SEC's own ticker file names for it,
+// read as sent, kept by the step that reads it and taken by the quarters fetch wherever the file names one, the
+// provider's CIK only where it names none, a row carrying another filer asked again by hand, and the step's members the
+// tickers the three indices hold on its session alone.
+// see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none
 public partial class FixtureExpectations
 {
     static string TickersCapture() =>
@@ -124,11 +124,11 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task TheQuartersFetchTakesTheSecFilerWhereTheProviderFilesNoneAndSaysWhichItTook()
+    public async Task TheQuartersFetchTakesTheSecFilerWhereverTheFileNamesOneAndTheProvidersOnlyWhereItNamesNone()
     {
         using var store = new TemporaryStore().Migrated();
 
-        foreach (var ticker in new[] { "AAPL", "BNY", "ZZZZ" })
+        foreach (var ticker in new[] { "AAPL", "BNY", "MSFT", "QQQQ", "ZZZZ" })
         {
             store.Execute($"INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', '{ticker}', '2020-01-02', NULL, '2026-09-01T23:30:00Z');");
         }
@@ -137,16 +137,19 @@ public partial class FixtureExpectations
 
         await new SecTickers(clock, store.DatabaseFile).ReadAsync(new RecordedSecTickersFeed(TickersCapture()), TextWriter.Null, "sec-tickers-constructed");
 
-        // The provider files Apple's CIK and none for BNY or ZZZZ, which the SEC's file does not list.
+        // The provider files Apple's own CIK, another filer's for MSFT, one for QQQQ, which the SEC's file does not list,
+        // and none for BNY or ZZZZ, the file listing BNY alone of the two.
         await new QuarterFetcher(
-            new FilerFundamentals(new Dictionary<string, string>(StringComparer.Ordinal) { ["AAPL"] = "320193" }),
+            new FilerFundamentals(new Dictionary<string, string>(StringComparer.Ordinal) { ["AAPL"] = "320193", ["MSFT"] = "999", ["QQQQ"] = "4242" }),
             new AClose(),
             () => 0,
             clock,
             store.DatabaseFile).RunAsync("GSPC", "quarters-20261016");
 
-        Assert.Equal("0000320193|provider", Text(store, "SELECT cik || '|' || cik_source FROM company WHERE ticker = 'AAPL';"));
+        Assert.Equal("0000320193|sec", Text(store, "SELECT cik || '|' || cik_source FROM company WHERE ticker = 'AAPL';"));
+        Assert.Equal("0000789019|sec", Text(store, "SELECT cik || '|' || cik_source FROM company WHERE ticker = 'MSFT';"));
         Assert.Equal("0001390777|sec", Text(store, "SELECT cik || '|' || cik_source FROM company WHERE ticker = 'BNY';"));
+        Assert.Equal("0000004242|provider", Text(store, "SELECT cik || '|' || cik_source FROM company WHERE ticker = 'QQQQ';"));
         Assert.Equal(1L, Scalar(store, "SELECT COUNT(*) FROM company WHERE ticker = 'ZZZZ' AND cik IS NULL AND cik_source IS NULL;"));
 
         // The refetch by hand of the members whose newest company row carries no filer asks ZZZZ alone on the next session,
@@ -159,5 +162,34 @@ public partial class FixtureExpectations
             store.DatabaseFile).RunAsync("GSPC", "quarters-unfiled", unfiled: true);
 
         Assert.Equal(["ZZZZ"], refetched.Asked.Select(ask => ask.Ticker));
+
+        // A member whose newest company row carries a filer other than the file's, as a row the provider's CIK filled before
+        // the file's was taken first: the refetch of such members asks NFLX alone, QQQQ's being a ticker the file does not
+        // list and ZZZZ's carrying none, and its new row carries the file's filer.
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', 'NFLX', '2020-01-02', NULL, '2026-09-01T23:30:00Z');");
+        store.Execute("INSERT INTO company (ticker, fetched_at, cik, cik_source) VALUES ('NFLX', '2026-10-01T00:00:00Z', '0000000077', 'provider');");
+
+        var said = new List<string>();
+        var misfiled = await new QuarterFetcher(
+            new FilerFundamentals(new Dictionary<string, string>(StringComparer.Ordinal) { ["NFLX"] = "77" }),
+            new AClose(),
+            () => 0,
+            FixedClock.At(new DateTimeOffset(2026, 10, 20, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync("GSPC", "quarters-misfiled", stating: said.Add, misfiled: true);
+
+        Assert.Equal(["NFLX"], misfiled.Asked.Select(ask => ask.Ticker));
+        Assert.Equal(["1 ask(s) of the 1 member(s) whose newest company row carries a filer other than the SEC's own ticker file's, at most 11 weighted call(s)"], said);
+        Assert.Equal("0001065280|sec", Text(store, "SELECT cik || '|' || cik_source FROM company WHERE ticker = 'NFLX' ORDER BY fetched_at DESC LIMIT 1;"));
+
+        // Run again on the next session, it asks none: NFLX's newest row carries the file's filer, whatever its earlier one
+        // carried.
+        var again = await new QuarterFetcher(
+            new FilerFundamentals(new Dictionary<string, string>(StringComparer.Ordinal) { ["NFLX"] = "77" }),
+            new AClose(),
+            () => 0,
+            FixedClock.At(new DateTimeOffset(2026, 10, 21, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync("GSPC", "quarters-misfiled-again", misfiled: true);
+
+        Assert.Empty(again.Asked);
     }
 }

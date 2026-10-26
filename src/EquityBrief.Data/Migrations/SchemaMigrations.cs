@@ -1347,10 +1347,10 @@ public static class SchemaMigrations
     ";
 
     // From the 17.3 correction of 2026-10-16: the SEC's own ticker file a read at a time, a row a ticker it lists, which
-    // the quarters fetch reads for a member the provider files no CIK for; and the column saying where a company row's
-    // CIK came from, the provider's answer or the SEC's file, null on a row written before it. Created and added empty,
-    // nothing copied and nothing dropped.
-    // see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+    // the quarters fetch reads for a member's filer; and the column saying where a company row's CIK came from, the
+    // provider's answer or the SEC's file, null on a row written before it. Created and added empty, nothing copied and
+    // nothing dropped.
+    // see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none
     const string AddSecTickers = @"
         CREATE TABLE sec_ticker (
             ticker   TEXT NOT NULL,

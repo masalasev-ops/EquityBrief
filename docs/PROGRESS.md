@@ -10183,3 +10183,119 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the night of 2026-10-26's answer on each index read back on Tonight, with the remedy's record, as the
             addendum to 22.12's report; 22.14 and 22.15 on the operator's word.
+
+### 20.10 ruling - the two defects the first review of phase 20's sign-off found corrected before it signs, this session building them   2026-10-26
+
+Not a checkpoint entry: it records the operator's ruling and lands nothing.
+Ruled:      by the operator on 2026-10-26 at about 20:13 UTC, kept whole in
+            `prompts/2026-10-26-20.10-phase-20-sign-off-correct-first.md`. The first review of phase 20's sign-off, by a
+            session that had committed no code, ran both gates green over main at d264d1a3 and found two defects. 40
+            members are linked to an SEC filer the SEC's own ticker file does not give them, the provider's CIK taken
+            wherever it files one: IR's results releases, filed facts and insider trades are Trane Technologies', RBC's
+            are Regal Rexnord's, and the other 38 read a former or an unrelated company's filer. And the S&P 600 drift's
+            stocks one step short read "Sales not up on a year earlier" where the quarter's revenue was never read, 25
+            of the 25 revenue misses since its freeze. Asked how the sign-off should go, they answered "Correct first
+            (Recommended)": the first by a ruling and correction of its own, each member's filer the one the SEC's own
+            list names, with a remedy fetching and reading the right documents and building the ledger again; the second
+            on the page alone, so no rule's version moves; and the test gap the review's sweep left closed. Asked who
+            builds them, they answered "This session", so a fresh session signs phase 20 after they merge.
+Labelled:   read off the record: the filer under 17.3, whose correction of 2026-10-16 took the provider's CIK wherever it
+            files one; the words for a revenue never read under 20.11, whose revenue level stores it under the reason of
+            one read and not up; and the tone walk's hand-off of each stock's releases and the month's report at nothing
+            under 20.8, whose tests read neither.
+Queue:      done, 22.13 and its card's correction; in progress, these corrections in one pull request; next, their
+            remedy from main, phase 20's sign-off by a fresh session, the night of 2026-10-26 with 22.13's read-back,
+            the monthly run by hand on 2026-10-27, 22.14 and 22.15 on the operator's word, and the sign-offs of phases
+            18 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.
+
+### 20.11 - correction: a drift's revenue step missed for a quarter its night never read says so, where its stocks one step short read that their sales were not up   2026-10-26
+
+Found:      the first review of phase 20's sign-off: the S&P 600 drift's stocks one step short read "Sales not up on a
+            year earlier" for every member its revenue step stopped, 13 on the night of 2026-10-23, CUBI, POOL, RHI and
+            NTST among them, where the words its night stored beside the step said a quarter was not read before the
+            night, 25 of the 25 revenue misses since its freeze; the revenue level stores both ways of missing under one
+            reason, its words alone telling them apart.
+Corrected:  on the page alone: each stock's line, among a card's stocks one step short, in its closest line, Tonight's
+            closest line and the table of stocks close to a buy point, reads the words its night stored beside the step,
+            "its quarter's sales not read yet" where a quarter was not read and "sales not up on a year earlier" where
+            both were; a card listing none counts the two apart; and the step's own words over many stocks read "no
+            quarter read with sales up on a year earlier", true of either. Section 15.23's word list and its paragraph,
+            the roster's read-surface row and the changelog.
+Tests:      one new, a drift card's lines and a card listing none worked over the three kinds of words the night
+            stores; and the frozen S&P 600 drift's test reads each of its three members' lines off the night's own
+            answers. 2820 in all.
+Claims:     none new.
+Pins:       none move, asserted: the two sources it edits that the page corrections' list did not hold join it.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, each filtered
+            to the tests reading it. N1 a stock's line read by the step's own words whatever its night stored: red at
+            both tests. N2 a card listing none counting a revenue never read as not above: red at the read-surface test.
+            N3 every stored revenue read as both quarters read: red at both.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.
+
+### 20.8 - correction: the per-rule verb says what each reading version hands the tone walk, and the walk's hand-off and the month's report at nothing are each held by a test   2026-10-26
+
+Found:      two mutations the first review of phase 20's sign-off swept survived. The per-rule verb handing the tone
+            variant's walk none of the history's stocks stayed green, its one test's history holding no release, so a
+            walk keeping nothing read alike either way; and a proposal reading a release reading held back only where its
+            years from the cutoff's year fall below the rule's stayed green at the month's report, its test working that
+            side alone. Each a property 20.8 or its correction of 2026-10-19 states that no test read.
+Corrected:  the per-rule verb says, for each reading version whose history read is complete, how many of the history's
+            stocks it hands the tone walk releases for and how many releases; the hand-off's test gives one of its three
+            stocks a filer and a release the version read and holds the line; and the month's report's test adds a
+            proposal reading the release's tone whose years from the cutoff's year total the rule's exactly, held back,
+            the RSI's condition still the one put. The roster's fixture-expectations row and the changelog.
+Tests:      none new, two extended. 2820 in all.
+Claims:     none new.
+Pins:       none move: the per-rule verb's source is one no rule pins, as 22.3's and 22.11's tests assert.
+Mutated:    the rule, stated before the runs: the review's two surviving mutations made again, each filtered to the tests
+            reading its property. T1 the verb handing the walk no stock's releases: red at the hand-off's test, where it
+            survived before. T2 a proposal held back only below nothing: red at the report's test, where it survived
+            before, and at the core's.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.
+
+### 17.3 - correction: a member's filer is the one the SEC's own ticker file names for it, and a member whose row carries another is asked again by hand   2026-10-26
+
+Found:      the first review of phase 20's sign-off: 40 of the 1,505 members of the three indices carried on their newest
+            company row a filer the SEC's ticker file of 2026-10-17 does not give them, the quarters fetch taking the
+            provider's CIK wherever its answer files one since the correction of 2026-10-16. IR's row carried Trane
+            Technologies' filer and RBC's Regal Rexnord's, so their filed facts, insider trades and results releases were
+            another company's; TT's carried a Trane Inc. filer that last filed in 2008; and the other 37 a former or an
+            unrelated company's, among them the numbers XOM, BLK and PNFP filed under before they re-formed under new
+            ones, whose filings since are read under no member.
+Corrected:  the quarters fetch takes the filer the SEC's own ticker file names for the ticker at its newest read wherever
+            a read lists it, the provider's CIK only where none does, and the row's `cik_source` says which it took;
+            `quarters --refetch-misfiled` asks again by hand, once a session, each member whose newest company row carries
+            a filer other than the file's. A decision on the operator's ruling supersedes the one of 2026-10-16, moved to
+            Previously decided with its reasoning; the architecture's rows for the SEC tickers step, the quarter fetcher
+            and the SEC tickers' store and section 13.16's monthly run; the schema's `sec_ticker`, `cik` and `cik_source`;
+            the runbook's section with the refetch's commands and the remedy's; the roster's fixture-expectations row; the
+            guide's sentence on where the figures come from; and the changelog.
+Tests:      none new, one extended: the quarters fetch's filer test gives the provider's answer a filer the file
+            contradicts and one for a ticker the file does not list, and a member a row holding another company's filer,
+            which the refetch of the misfiled asks once and on the next session not again. 2820 in all.
+Claims:     none new: the rows are amended in place.
+Pins:       none move: no source it edits is one an evaluator's version pins, read off every evaluator's sources.
+Remedy:     `tools/remedies/2026-10-26-17.3-correction-the-filer-the-sec-names.txt` from main after the merge, then each
+            index's history built again by hand, checked and its links worked, as the runbook gives them: the SEC's file
+            read again, the 40 asked again at about 440 weighted calls of the provider, the facts, the insiders' history
+            and the days from 2026-10-01 read again, the ledger filers' releases fetched again from 2019-01-02 with the
+            new filers' names, every release unread under pin 5 read by the local model, and the ledger's night step.
+            Past nights' rows stand as written.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, each filtered
+            to the filer test. S1 the provider's filer taken first: red at MSFT's row. S2 the row saying provider where the
+            file named the filer: red at AAPL's. S3 the refetch of the misfiled asking the members whose filer matches the
+            file's: red, it asked AAPL, BNY and MSFT. S4 the refetch of the misfiled asking those with no filer: red, it
+            asked ZZZZ. S5 the refetch reading every company row and not the newest alone: red, the next session asked
+            NFLX again.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2820 of 2820 tests ran
+            with none failed, migrations 0 to 112 with none pending, schema version 112, against `data-ci` and never
+            `data`; the phase report 64 tables, 1454 claims, 1454 passing, none out of scope and none unexamined, 1469
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the remedy's record, with what the newly linked filers stored and read and each index's history built again;
+            and a filer that re-formed under a new number, read under no member for the years before it re-formed, put
+            to the operator as a ruling of its own.

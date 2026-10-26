@@ -76,6 +76,12 @@ public partial class FixtureExpectations
 
         PinVersion(store, complete: true);
 
+        // A's filer and one release of it the version read, which the walk is handed as the history's own stock's; B and C
+        // hold no filer.
+        store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('A', '2021-01-04T00:00:00Z', '0000000001');");
+        store.Execute("INSERT INTO release_document (accession, cik, form, filed, accepted_at, exhibit, url, text_gzip, text_sha256, text_length, run_id, release) VALUES ('0000000001-22-000001', '0000000001', '8-K', '2022-02-10', '2022-02-10T21:05:00Z', 'ex99.htm', 'https://www.sec.gov/x.htm', zeroblob(4), 'x', 4, 'constructed', 1);");
+        ReadRelease(store, "0000000001-22-000001", 1, new Core.Releases.ReleaseAnswer("better", "raised", "confident", "stronger"));
+
         var registered = await RegisterVerbAt(store, new DateTimeOffset(2026, 10, 18, 12, 0, 0, TimeSpan.Zero), RegisterVerb.IndexVariants, "drift", "--index", "MID", "--variants", "readingVersion=1");
 
         Assert.Equal(0, registered.Code);
@@ -91,5 +97,8 @@ public partial class FixtureExpectations
         Assert.Equal(0, code);
         Assert.DoesNotContain(RuleTests.ReleaseReading, tone, StringComparison.Ordinal);
         Assert.Contains("against", tone, StringComparison.Ordinal);
+
+        // The version hands the walk the history's own stocks' releases: A's one, of the three stocks it holds.
+        Assert.Contains($"{WalkForwardTester.RulesVerb}: reading version 1 hands the tone walk the releases of 1 of the history's 3 stock(s), 1 release(s)", said);
     }
 }

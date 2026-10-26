@@ -299,6 +299,14 @@ public partial class FixtureExpectations
         Assert.Equal("its print's quarter and the same quarter a year before not both stored as first filed before tonight", RevenueWords(answers["R2"]));
         Assert.Equal("revenue -10.0% on the same quarter a year before, both as first filed", RevenueWords(answers["R3"]));
         Assert.Equal("no quarter of its revenue stored as first filed before tonight", RevenueWords(answers["R4"]));
+
+        // A page says each one-step-short stock's revenue by the words the night stored: R2's and R4's quarters not read,
+        // R3's sales read and not up.
+        string Said(string ticker) => Web.Marks.ReaderWords.MissedBy(DriftRule.Name, Core.Cards.RuleRows.Revenue, RevenueWords(answers[ticker]))!;
+
+        Assert.Equal(
+            [Web.Marks.ReaderWords.RevenueNotRead, Web.Marks.ReaderWords.RevenueNotUp, Web.Marks.ReaderWords.RevenueNotRead],
+            new[] { "R2", "R3", "R4" }.Select(Said));
     }
 
     [Fact]

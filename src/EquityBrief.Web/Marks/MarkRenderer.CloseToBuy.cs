@@ -69,7 +69,7 @@ public sealed partial class MarkRenderer
         foreach (var row in rows)
         {
             var cell = row.Cell;
-            var missed = ReaderWords.Missed(cell.Family, cell.Gate) ?? ReaderWords.Plain(cell.Gate);
+            var missed = ReaderWords.MissedBy(cell.Family, cell.Gate, cell.Words) ?? ReaderWords.Plain(cell.Gate);
 
             html.Append(Invariant, $"<tr data-ticker=\"{Escaped(cell.Ticker)}\" data-family=\"{Escaped(cell.Family)}\" data-gate=\"{Escaped(cell.Gate)}\" data-watched=\"{Flag(row.Watched)}\">");
             html.Append(Invariant, $"<td><span class=\"fam-tag\" data-family=\"{Escaped(cell.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(cell.Family)}\"></span>{Escaped(cell.Setup)}</span></td>");

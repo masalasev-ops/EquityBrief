@@ -7,9 +7,9 @@ namespace EquityBrief.Core.Providers;
 public sealed record SecTicker(string Ticker, string Cik, string Title);
 
 // The SEC's file of every listed ticker and its filer, one request, free and keyless; none where the archive holds no
-// such file, and a refusal throws. Read where the provider files no CIK for a member, as it files none for a ticker
-// changed since it last read the company, so the member's filer is the SEC's own.
-// see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+// such file, and a refusal throws. Read for every member's filer, the SEC's own wherever the file names one and the
+// provider's CIK only where it names none.
+// see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none
 public interface ISecTickersFeed
 {
     // The documents asked for, each one request.

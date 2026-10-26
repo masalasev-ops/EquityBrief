@@ -9,11 +9,11 @@ using Microsoft.Data.Sqlite;
 namespace EquityBrief.Worker.Ledger;
 
 // The SEC's own ticker file read whole, one request, free and keyless, by hand and by the monthly run's facts step and
-// never by the night, a row a ticker it lists under a run of its own, which the quarters fetch reads for a member the
-// provider files no CIK for, as it files none for a ticker changed since it last read the company. Each read keeps its
-// own rows, so the newest names the filer; the run's row says how many members the provider files no CIK for the file
-// names and which it does not, a member being a ticker any of the three indices holds on the session the step runs on.
-// see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+// never by the night, a row a ticker it lists under a run of its own, which the quarters fetch reads for each member's
+// filer, the provider's CIK taken only where the file names none. Each read keeps its own rows, so the newest names the
+// filer; the run's row says how many members the provider files no CIK for the file names and which it does not, a
+// member being a ticker any of the three indices holds on the session the step runs on.
+// see: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none
 public sealed class SecTickers(IClock clock, string databaseFile) : IComponent
 {
     public static ComponentAccess Access => new(
