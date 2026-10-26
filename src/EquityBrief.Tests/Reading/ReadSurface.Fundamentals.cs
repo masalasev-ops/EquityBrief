@@ -39,6 +39,14 @@ public partial class ReadSurface
             "INSERT INTO index_family_night (index_code, session_date, members, breadth, market_open, settings, rebalanced) VALUES " +
             $"('SML', '{IndexNight}', 2, 0.6, 1, '{IndexFamilies.Settings("SML")}', 0);");
 
+        // M1, listed under the breakout, qualified under the family too, M3's pullback trade held back is the family's, and
+        // the night stored M2's card under the family.
+        store.Execute($"UPDATE index_family_pick SET also = '[\"fundamentals\"]' WHERE index_code = 'MID' AND ticker = 'M1' AND family = 'breakout';");
+        store.Execute($"UPDATE index_family_pick SET held_family = 'fundamentals', held_index = 'MID' WHERE index_code = 'MID' AND ticker = 'M3' AND family = 'pullback';");
+        store.Execute(
+            "INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, cap) VALUES " +
+            $"('MID', '{IndexNight}', 'fundamentals', 'M2', 2, '50', '47', '56', 'provisional', '{{}}', '[]', NULL, 20);");
+
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
@@ -52,6 +60,26 @@ public partial class ReadSurface
         Assert.DoesNotContain("data-family=\"fundamentals\"", Assert.Single(Blocks(mid, "<table class=\"list-table buy-points\".*?</table>")), StringComparison.Ordinal);
         Assert.Contains("id=\"setup-improving\"", mid, StringComparison.Ordinal);
         Assert.Contains("data-passed=\"2\"", Assert.Single(Blocks(mid, "<p class=\"market-line\".*?</p>")), StringComparison.Ordinal);
+
+        // Nor is the family named on another family's card: no label beside M1's breakout row, and the note on M3 names
+        // the trade holding it back without naming its family.
+        Assert.DoesNotContain(SetupFamilies.FundamentalsFirst.Label, mid, StringComparison.Ordinal);
+        Assert.Contains("M3 qualified again tonight but its trade from 2026-09-30 on the S&P 400's list is still open, so it is not listed.", mid, StringComparison.Ordinal);
+
+        // Nor on the stock pages: M2's page says it is on no list, M1's names the breakout alone, and neither chart page
+        // draws the family's chip.
+        var m1 = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M1/{IndexNight}"));
+        var m2 = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M2/{IndexNight}"));
+
+        Assert.Contains("<p class=\"degraded\" data-listed=\"false\">this name is not on tonight's list</p>", m2, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-family=\"fundamentals\"", m2, StringComparison.Ordinal);
+        Assert.DoesNotContain("<section class=\"card-plan\"", m2, StringComparison.Ordinal);
+        Assert.Contains("data-family=\"breakout\" data-place=\"1\" data-also=\"\">", m1, StringComparison.Ordinal);
+
+        foreach (var ticker in new[] { "M1", "M2" })
+        {
+            Assert.DoesNotContain("data-family=\"fundamentals\"", WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/chart/{ticker}")), StringComparison.Ordinal);
+        }
 
         // The S&P 600: no card of the family either.
         var small = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=600"));

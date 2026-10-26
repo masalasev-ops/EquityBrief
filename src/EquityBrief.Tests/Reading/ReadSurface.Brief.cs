@@ -301,8 +301,9 @@ public partial class ReadSurface
         Assert.EndsWith($"Tonight it qualified for {pullback} but is not among tonight's picks.", held.Summary, StringComparison.Ordinal);
         Assert.Equal($"pullback|passed|{pullback}: qualified, not among tonight's picks", held.Chips[0]);
 
-        // K3: two of the pullback's gates missed, one step short of the breakout at its volume; the drift, the fundamentals-
-        // first family and the dip stored no answer for it, and the heavyweights' book holds nothing.
+        // K3: two of the pullback's gates missed, one step short of the breakout at its volume; the drift, from 22.13 the
+        // Fundamentals family in the fundamentals-first family's place, and the dip stored no answer for it, and the
+        // heavyweights' book holds nothing.
         var k3 = await Brief("K3");
 
         Assert.Equal(
@@ -310,7 +311,7 @@ public partial class ReadSurface
                 $"pullback|not-close|{pullback}: not close",
                 $"breakout|short|{breakout}: one step short: volume too light",
                 $"drift|not-read|{SetupFamilies.Named(DriftRule.Name)!.Label}: not read tonight",
-                $"fundamentals|not-read|{SetupFamilies.FundamentalsFirst.Label}: not read tonight",
+                $"improving|not-read|{ImprovingRule.Label}: not read tonight",
                 $"dip|not-read|{SetupFamilies.Dips.Label}: not read tonight",
                 $"heavyweight|not-held|{SetupFamilies.SectorHeavyweights.Label}: not in its holdings",
             ],

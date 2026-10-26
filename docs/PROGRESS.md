@@ -10070,8 +10070,9 @@ Queue:      done, PR 567 and the 22.13 ruling above; in progress, 22.13 in this 
             run by hand on 2026-10-27, 22.14 and 22.15 on the operator's word, and the sign-offs of phases 18, 20 and 22
             by fresh sessions.
 Limits:     no paid call and no request of any kind; migration 112 alone; no other rule's version moves, asserted over
-            the 16 sources 22.13 writes or edits; business first's rule, rows and Run page row as they were, its card,
-            tile, buy points, passes, trades and accounts drawn no more on Tonight, Past picks and paper trading.
+            the 21 sources 22.13 writes or edits; business first's rule, rows and Run page row as they were, its card,
+            tile, buy points, passes, trades and accounts drawn no more on Tonight, Past picks and paper trading, nor its
+            rows, labels, cards and chips on a stock's page and its chart page.
 Built:      the family, its store word `improving`, on each of the three indices in a step after Quality at a fair price's:
             each member's scorecard as the night's last scoring stored it; for a member whose newest filing, filed on or
             after the session the family last read and before the night's, is read for the first time, the score the
@@ -10087,29 +10088,40 @@ Built:      the family, its store word `improving`, on each of the three indices
             Improving fastest and Strongest businesses and the fold, each stock opening its chart page; its hue searched
             beside the seven, a raspberry on the light ground and a mint on the dark. Business first's card, tile, buy
             points, passes and stocks one step short off Tonight, its trades off Past picks and its accounts off paper
-            trading. The step's catalogue and matrix rows, its three stores, section 14's step, section 15's rows,
+            trading. A stock's page draws a line beneath its contents where the family buys it at the next open, keeps
+            a trade in it or flagged it, and its chart page the family's chip in business first's place, the summary
+            naming it and, for a stock it picked, a way in with no stop and its three sales; neither page draws business
+            first's rows, labels, cards or chips, and no label or note on another card of Tonight names it. The step's
+            catalogue and matrix rows, its three stores, section 14's step, section 15's rows,
             section 17's settings, section 18's two rows, section 11's rule, section 20's row, the decisions, the hue
             decision superseded, the schema, the runbook's remedy, the guide, the roster and the changelog. The ruling's
             "In the quality book" is written "Among Quality at a fair price's holdings", book standing in the word list
             for holdings, and "Already held" as "Bought earlier", so the plain-words check passes.
-Tests:      11 new, 2818 in all: the bar, the rise, the sales growth, the hold and the flag on both sides of each; the
+Tests:      12 new, 2819 in all: the bar, the rise, the sales growth, the hold and the flag on both sides of each; the
             first-read window, the filing's day and the release a filing confirms; the improvers' order; the step over
             eight constructed S&P 400 members, two bought, three improved short of the bar, one flagged, one not, a buy
             waiting for its session, a sale on the score falling worked by hand, one at its 126th session, one on leaving
-            the index and a night run again; the card read back on Tonight, failed and before its first night; and no
-            source a rule pins written. Business first's two card tests now read it drawn nowhere and its Run page row
-            standing, and twelve tests of Tonight, paper trading and Past picks read the pages without it.
+            the index and a night run again; the card read back on Tonight, failed and before its first night; the stock
+            and chart pages naming the family for a stock bought, kept and flagged; and no source a rule pins written.
+            Business first's two card tests now read it drawn nowhere, no label, note, row, card or chip of its on
+            Tonight's other cards or a stock's two pages, and its Run page row standing, and nineteen tests of Tonight,
+            paper trading, Past picks and the two pages read them without it. The first gate run over the checkpoint's
+            commit was red on four of those, still reading business first's tile, account and card, here corrected.
 Fixture:    improving.json, derived by hand: I01 chosen at 101, bought at 102 and sold at 100 when its score fell to 6 of
             9, a result of -2 / 101, its benchmark 0.0224889 over the eight members answered on its night, its round
-            trip 0.0712941 per cent and its edge -4.3003789 points.
+            trip 0.0712941 per cent and its edge -4.3003789 points. paper-accounts.json, setup-cards.json and
+            brief-read.json restated without business first's account, card and chip, the brief's Fundamentals chip
+            derived as not in its holdings from the step's stored answer on each fixture name.
 Claims:     1454, ten new after phase 22's report, named beside its pair and counted in none of it: the step's
             catalogue and matrix rows, its three stores, its step in section 14, its card on Tonight, section 17's
             settings and section 18's two rows, as the plan's count.
-Pins:       none move: no source any rule's version pins is one of the 16 22.13 writes, asserted.
+Pins:       none move: no source any rule's version pins is one of the 21 22.13 writes, asserted.
 Screens:    read back from this branch's build over two constructed stores migrated to 112, the S&P 400's night and the
             S&P 500's with the family's rows written into them: the card in business first's place and its tile in that
             slot at 1,440 pixels and a true 390 in both palettes, no page wider than its screen, business first's card
-            drawn nowhere.
+            drawn nowhere; and over a copy of the S&P 400's store with M1 picked by the family alone, M1's chart page
+            and its stock page at both widths in both palettes, the chip in the family's hue, the way in with no stop
+            and the stock page's line, no page wider than its screen.
 Mutated:    the rule, stated before the runs: one mutation for each threshold and each property 22.13 adds that a test
             reads, the smallest edit undoing it, made on the branch and reverted with the editor, each run filtered to
             the tests reading it. M1 the bar read as a count of eight; M2 the rise over the filing before dropped; M3 the
@@ -10117,9 +10129,15 @@ Mutated:    the rule, stated before the runs: one mutation for each threshold an
             late; M6 the flag reading a release whatever its day; M7 the flagged ranked before the filings. Each red: M1,
             M2 and M4 at the rule's thresholds, M4 nowhere in the step, whose sale at 6 of 9 falls under either floor; M3
             at the first-read window; M5 at the last session's test; M6 at the first night and the next night's flags;
-            M7 at the order and the card's read-back.
+            M7 at the order and the card's read-back. Then by the same rule for the six properties the stock and chart
+            pages and Tonight's notes add: M8 the stock page's line read for no buy; M9 business first's rows let back
+            into the stock page's reader; M10 its chip let back onto the chart page; M11 the way in for the family's buy
+            dropped; M12 its label and notes let back onto Tonight's other cards; M13 its cards let back onto a stock's
+            pages. Each red: M8 and M11 at the stock and chart pages' read-back; M9 at its card test and the dip's stock
+            given way on; M10 at its card test, the read-back, the S&P 500's brief and the fixture's brief; M12 and M13
+            at its card test.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
-            stated before that run: all six steps, 0 warnings, 0 errors, 2818 of 2818 tests ran with none failed,
+            stated before that run: all six steps, 0 warnings, 0 errors, 2819 of 2819 tests ran with none failed,
             migrations 0 to 112 with none pending, schema version 112, against `data-ci` and never `data`; the phase
             report 64 tables, 1454 claims, 1454 passing, none out of scope and none unexamined, 1469 placements and
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.

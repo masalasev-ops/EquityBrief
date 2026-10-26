@@ -233,7 +233,7 @@ public static partial class TonightScreen
         {
             var from = held.HeldNight is { } listed ? listed.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "an earlier night";
             var where = held.HeldIndex is { } code ? $" on the {Universes.ByCode(code)?.Possessive ?? code} list" : string.Empty;
-            var whose = held.HeldFamily is { } holder && holder != DipRule.Name
+            var whose = held.HeldFamily is { } holder && holder != DipRule.Name && !OutOfSight(holder)
                 ? $"its {(SetupFamilies.Named(holder)?.Label ?? holder).ToLowerInvariant()} trade from {from}{where}"
                 : $"its trade from {from}{where}";
 
@@ -242,9 +242,9 @@ public static partial class TonightScreen
 
         foreach (var shared in picks.Where(pick => pick.State == FamilyList.UnderAnother).OrderBy(pick => pick.Ticker, StringComparer.Ordinal))
         {
-            var under = shared.ListedUnder is { } first ? SetupFamilies.Named(first)?.Heading ?? first : "another setup";
-
-            notes.Add($"{shared.Ticker} also qualified here tonight and is shown once, under {under}, with both labels. One stock is one trade.");
+            notes.Add(shared.ListedUnder is { } first && OutOfSight(first)
+                ? $"{shared.Ticker} also qualified here tonight and is not listed: another setup's rule took it first. One stock is one trade."
+                : $"{shared.Ticker} also qualified here tonight and is shown once, under {(shared.ListedUnder is { } under ? SetupFamilies.Named(under)?.Heading ?? under : "another setup")}, with both labels. One stock is one trade.");
         }
 
         var past = picks.Where(pick => pick.State == FamilyList.PastFive).Select(pick => pick.Ticker).Order(StringComparer.Ordinal).ToArray();

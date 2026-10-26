@@ -457,10 +457,10 @@ public partial class ReadSurface
         Assert.Contains(ClosedCard, mixed.Drift, StringComparison.Ordinal);
         Assert.Contains("<li class=\"index-checks\" data-closed=\"drift\">the S&P 400's breadth: 42.0% of its members above their 200-day average; the market check closed the earnings drift list, the index's own breadth 42.0% below its floor of 45%, and left the others open</li>", mixed.Run, StringComparison.Ordinal);
 
-        // Tonight's tiles by each family's own check: the drift's closed, the pullback's open with nothing listed, and the
-        // fundamentals-first family's, whose night stored no answer, read by the lists' state, open; Quality at a fair price's
-        // reading no market check.
-        Assert.Equal(["pullback: nothing tonight", "breakout: listing tonight", "drift: the market check closed", "fundamentals: nothing tonight", "heavyweight: rebalanced tonight", "quality: kept monthly"], mixed.Tiles);
+        // Tonight's tiles by each family's own check: the drift's closed and the pullback's open with nothing listed; the
+        // Fundamentals family's in the fundamentals-first family's slot from 22.13 and Quality at a fair price's reading no
+        // market check.
+        Assert.Equal(["pullback: nothing tonight", "breakout: listing tonight", "drift: the market check closed", "improving: read nightly", "heavyweight: rebalanced tonight", "quality: kept monthly"], mixed.Tiles);
 
         // Every family's check read alike, the index's own breadth at the floor the night stored, closed: the lines as before
         // the parts were stored.

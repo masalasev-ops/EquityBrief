@@ -1370,7 +1370,9 @@ public sealed partial class SinglePageApp : IComponent
         // The fundamentals scorecard's card, from 22.8.
         FundamentalsView? fundamentals = null,
         // The scorecard's earnings multiple, which the page states in the provider's place wherever it holds one.
-        double? filedMultiple = null)
+        double? filedMultiple = null,
+        // Where the Fundamentals family bought the name on the night, keeps a trade in it or flagged it, from 22.13.
+        string? improving = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -2180,6 +2182,14 @@ public sealed partial class SinglePageApp : IComponent
         if (heavyweight is not null)
         {
             region.Append(Invariant($"<p class=\"listed-under heavyweight-held\">{Escaped(heavyweight)}</p>"));
+        }
+
+        // Where the Fundamentals family bought the name on the night, keeps a trade in it from an earlier night or flagged it
+        // on its results release.
+        // see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better
+        if (improving is not null)
+        {
+            region.Append(Invariant($"<p class=\"listed-under improving-held\">{Escaped(improving)}</p>"));
         }
 
         region.Append(body);

@@ -1284,7 +1284,10 @@ public static partial class NameScreen
         // The scorecard the night stored for the stock and its own readings the ledger stored, which its fundamentals
         // card is written from, from 22.8.
         FundamentalScoreRow? score = null,
-        IReadOnlyList<double?>? scoreReadings = null)
+        IReadOnlyList<double?>? scoreReadings = null,
+        // What the page says where the Fundamentals family bought the name on the night, keeps a trade in it or flagged it,
+        // from 22.13.
+        string? improving = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1487,7 +1490,8 @@ public static partial class NameScreen
             behind: behind,
             standing: Standing(staleness, newest, spend, priced, today, OwnWritten(accepted), IndustryWritten(accepted)),
             fundamentals: FundamentalsScreen.Of(score, Universes.ByCode(indexCode ?? string.Empty)?.Name, scoreReadings, reportView?.Analysts, reportView?.Insiders),
-            filedMultiple: score?.Multiple);
+            filedMultiple: score?.Multiple,
+            improving: improving);
     }
 
     // The numbers with their last sentence, their valuation's, stating the scorecard's multiple where it holds one, as the

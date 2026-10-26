@@ -274,7 +274,7 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
     var reactions = await read.ReactionsAsync(ticker);
     var priceDrawn = live?.Price ?? (bars.Count > 0 ? bars[^1].Close : null);
     var indicators = await read.IndicatorsAsync(ticker, DateOnly.MinValue, DateOnly.MaxValue);
-    IReadOnlyList<DecisionCardRow> cards = night is { } listed ? await read.DecisionCardsOfAsync(ticker, listed) : [];
+    IReadOnlyList<DecisionCardRow> cards = night is { } listed ? await CardsOfTheName(read, ticker, listed) : [];
     var report = NameScreen.Report(
         ticker,
         reportInputs,
@@ -522,7 +522,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
 
     if (behindNight is { } behindOn && await read.IndexOfAsync(ticker, behindOn) is { } behindCode && Universes.ByCode(behindCode) is { } behindIndex)
     {
-        var listedBy = (await read.DecisionCardsOfAsync(ticker, behindOn)).FirstOrDefault()?.Family;
+        var listedBy = (await CardsOfTheName(read, ticker, behindOn)).FirstOrDefault()?.Family;
         var (behindModel, behindPassed, behindUnread) = listedBy is null ? (null, false, null) : await read.RidgeScoreAsync(behindCode, listedBy, behindOn);
 
         behind = BehindScreen.Of(ticker, behindIndex.Name, await read.LedgerReadingsAsync(behindCode, behindOn), behindModel, behindPassed, behindUnread);
@@ -591,7 +591,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // rating counts as its newest fetch on or before that night filed them.
         memberReading: await read.MemberReadingAsync(ticker, on),
         ratings: await read.RatingsAsync(ticker, on),
-        decisionCards: night is { } cardsOn ? await read.DecisionCardsOfAsync(ticker, cardsOn) : null,
+        decisionCards: night is { } cardsOn ? await CardsOfTheName(read, ticker, cardsOn) : null,
         // The account and the taken trades on tonight's page alone: an export and an earlier night's page draw neither.
         cardContext: export ? null : cardContext,
         warmed: await read.ChartAveragesAsync(ticker),
@@ -614,7 +614,11 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // readings its index's night stored, which the card in the business section is written from.
         // see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it
         score: behindNight is { } scoredOn ? await read.FundamentalScoreAsync(ticker, scoredOn) : null,
-        scoreReadings: behindNight is { } readOn && await read.IndexOfAsync(ticker, readOn) is { } scoreIndex ? await read.OwnLedgerReadingsAsync(scoreIndex, readOn, ticker) : null);
+        scoreReadings: behindNight is { } readOn && await read.IndexOfAsync(ticker, readOn) is { } scoreIndex ? await read.OwnLedgerReadingsAsync(scoreIndex, readOn, ticker) : null,
+        // From 22.13 where the Fundamentals family bought the name on the night, keeps a trade in it or flagged it.
+        improving: night is { } improvedOn && await read.IndexOfAsync(ticker, improvedOn) is { } improvingIndex
+            ? TonightScreen.OnTheFundamentalsCard(ticker, improvedOn, await read.ImprovingResultsAsync(improvingIndex, improvedOn), await read.ImprovingTradesAsync(improvingIndex, improvedOn))
+            : null);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -627,18 +631,30 @@ static async Task<EquityBrief.Core.Filter.FilterSettings> FilterSettingsOf(ReadA
         : EquityBrief.Core.Filter.FilterSettings.Proposed;
 
 // A name's rows on the page's list for a night: the S&P 500's own families', the families its own index's step drew,
-// the S&P 500's fundamentals-first family among them, and the short-term dip's on that index, its label on the row of
-// the family it gave way to.
+// and the short-term dip's on that index, its label on the row of the family it gave way to; from 22.13 none of the
+// fundamentals-first family's and its label on no row, its rule running out of sight.
 // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
+// see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight
 static async Task<IReadOnlyList<FamilyPickRow>> PicksOfTheName(ReadApi read, string ticker, DateOnly night)
 {
     var index = await read.IndexOfAsync(ticker, night);
 
-    return TonightScreen.WithDipPicks(
-        [.. await read.FamilyPicksAsync(night), .. index is null ? [] : await read.IndexPicksAsync(index, night)],
-        index is null ? [] : await read.DipPicksAsync(index, night),
-        ticker);
+    return
+    [
+        .. TonightScreen.WithDipPicks(
+                [.. await read.FamilyPicksAsync(night), .. index is null ? [] : await read.IndexPicksAsync(index, night)],
+                index is null ? [] : await read.DipPicksAsync(index, night),
+                ticker)
+            .Where(pick => pick.Family != EquityBrief.Core.Families.FundamentalsRule.Name)
+            .Select(pick => pick with { Also = [.. pick.Also.Where(name => name != EquityBrief.Core.Families.FundamentalsRule.Name)] }),
+    ];
 }
+
+// A stock's cards on a night as its page and its chart page draw them: from 22.13 none of the fundamentals-first family's,
+// its rule running out of sight.
+// see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight
+static async Task<IReadOnlyList<DecisionCardRow>> CardsOfTheName(ReadApi read, string ticker, DateOnly night) =>
+    [.. (await read.DecisionCardsOfAsync(ticker, night)).Where(card => card.Family != EquityBrief.Core.Families.FundamentalsRule.Name)];
 
 // The plan a filter version's trade gate reads, by its word, read off the version's stored settings as Past
 // picks reads it, and section 17's proposed input where no version row is stored, which is what the filter
@@ -1280,7 +1296,9 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
             await read.IndexPicksAsync(index, night),
             await read.DipResultsAsync(index, night),
             await read.DipPicksAsync(index, night),
-            held));
+            held,
+            await read.ImprovingResultsAsync(index, night),
+            await read.ImprovingTradesAsync(index, night)));
         readings = await read.LedgerReadingsAsync(index, night);
     }
 

@@ -290,8 +290,8 @@ public partial class ReadSurface
     }
 
     // A stock the dip gave way to on its own index's list is drawn on its page under that list's family with the dip's label:
-    // M1 under the S&P 400's breakout, and BBB under the S&P 500's fundamentals-first family, which the index families'
-    // step draws apart from the S&P 500's own lists.
+    // M1 under the S&P 400's breakout; and from 22.13 BBB, which it gave way on to the S&P 500's fundamentals-first family,
+    // under no family, that family's rule running out of sight.
     [Fact]
     public async Task AStockTheDipGaveWayToOnItsOwnIndexsListIsDrawnOnItsPageUnderThatFamilyWithTheDipsLabel()
     {
@@ -314,9 +314,9 @@ public partial class ReadSurface
             "<p class=\"listed-under\" data-night=\"2026-10-02\" data-family=\"breakout\" data-place=\"1\" data-also=\"Short-term dip\">On the page's list for 2026-10-02 under <b>Breakouts to a new high</b>, at place 1; it also qualified as a short-term dip.</p>",
             Assert.Single(Blocks(m1, "<p class=\"listed-under\".*?</p>")));
 
-        var bbb = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/BBB/{IndexNight}")), "<p class=\"listed-under\".*?</p>"));
+        var bbb = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/BBB/{IndexNight}"));
 
-        Assert.Contains("data-family=\"fundamentals\" data-place=\"1\" data-also=\"Short-term dip\"", bbb, StringComparison.Ordinal);
-        Assert.Contains($"under <b>{SetupFamilies.Named("fundamentals")!.Heading}</b>, at place 1; it also qualified as a short-term dip.", bbb, StringComparison.Ordinal);
+        Assert.Empty(Blocks(bbb, "<p class=\"listed-under\".*?</p>"));
+        Assert.DoesNotContain(SetupFamilies.Named("fundamentals")!.Heading, bbb, StringComparison.Ordinal);
     }
 }

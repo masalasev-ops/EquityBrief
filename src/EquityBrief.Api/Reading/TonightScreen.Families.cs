@@ -163,7 +163,7 @@ public static partial class TonightScreen
     // its words are the figures its own gates stored.
     static FamilyPickCell PickOf(SetupFamily family, FamilyPickRow pick, ListingCell row, GateResultRow? gate, FamilyResultRow? result)
     {
-        var also = pick.Also.Select(name => SetupFamilies.Named(name)?.Label ?? name).ToArray();
+        var also = AlsoLabels(pick.Also);
 
         if (family.Name != SetupFamilies.Pullback && result is not null)
         {
@@ -444,6 +444,15 @@ public static partial class TonightScreen
         return (live, standing.Count(row => row != live && !FamilyRecords.IsBackground(row.Candidate)));
     }
 
+    // Whether a family's list is kept out of the page's sight: from 22.13 the fundamentals-first family's, whose rule keeps
+    // running, so a note or a label on another family's row names it nowhere.
+    // see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight
+    public static bool OutOfSight(string family) => family == FundamentalsRule.Name;
+
+    // The labels of the other families a pick qualified under, none of a family kept out of sight.
+    public static string[] AlsoLabels(IEnumerable<string> also) =>
+        [.. also.Where(name => !OutOfSight(name)).Select(name => SetupFamilies.Named(name)?.Label ?? name)];
+
     // The notes beneath a family's picks: each stock it passed that a trade still open holds back, each one
     // the page lists under an earlier family, and how many it passed beyond the five it lists.
     // see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order
@@ -455,7 +464,7 @@ public static partial class TonightScreen
         {
             var from = held.HeldNight is { } listed ? listed.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "an earlier night";
             var where = held.HeldIndex is { } code ? $" on the {Universes.ByCode(code)?.Possessive ?? code} list" : string.Empty;
-            var whose = held.HeldFamily is { } holder && holder != family.Name
+            var whose = held.HeldFamily is { } holder && holder != family.Name && !OutOfSight(holder)
                 ? $"its {(SetupFamilies.Named(holder)?.Label ?? holder).ToLowerInvariant()} trade from {from}{where}"
                 : $"its trade from {from}{where}";
 
@@ -464,9 +473,9 @@ public static partial class TonightScreen
 
         foreach (var shared in own.Where(pick => pick.State == FamilyList.UnderAnother).OrderBy(pick => pick.Ticker, StringComparer.Ordinal))
         {
-            var under = listedUnder.TryGetValue(shared.Ticker, out var first) ? SetupFamilies.Named(first)?.Heading ?? first : "another setup";
-
-            notes.Add($"{shared.Ticker} also qualified here tonight and is shown once, under {under}, with both labels. One stock is one trade.");
+            notes.Add(listedUnder.TryGetValue(shared.Ticker, out var first) && OutOfSight(first)
+                ? $"{shared.Ticker} also qualified here tonight and is not listed: another setup's rule took it first. One stock is one trade."
+                : $"{shared.Ticker} also qualified here tonight and is shown once, under {(first is null ? "another setup" : SetupFamilies.Named(first)?.Heading ?? first)}, with both labels. One stock is one trade.");
         }
 
         var past = own.Where(pick => pick.State == FamilyList.PastFive).Select(pick => pick.Ticker).Order(StringComparer.Ordinal).ToArray();

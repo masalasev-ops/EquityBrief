@@ -384,6 +384,12 @@ public partial class PlainWords
         views.Add(BriefScreen.Of(Reading.ReadSurface.BriefOf(Reading.ReadSurface.BriefMember(), standing: [.. states.Select(state => new BriefStanding(SetupFamilies.Pullback, state)), new BriefStanding(HeavyweightRule.Name, BriefStates.Held)])));
         views.Add(BriefScreen.Of(Reading.ReadSurface.BriefOf(Reading.ReadSurface.BriefMember(), standing: [new BriefStanding(HeavyweightRule.Name, BriefStates.NotHeld), new BriefStanding(SetupFamilies.Pullback, BriefStates.Passed)])));
 
+        // From 22.13 the Fundamentals family's four states, its buy with the way in it reads, and each in its summary.
+        foreach (var state in new[] { BriefStates.Bought, BriefStates.Held, BriefStates.Flagged, BriefStates.NotHeld })
+        {
+            views.Add(BriefScreen.Of(Reading.ReadSurface.BriefOf(Reading.ReadSurface.BriefMember(), standing: [new BriefStanding(ImprovingRule.Name, state)], account: account)));
+        }
+
         foreach (var (setup, step, _, _) in ReaderWords.Steps)
         {
             views.Add(BriefScreen.Of(Reading.ReadSurface.BriefOf(Reading.ReadSurface.BriefMember(), standing: [new BriefStanding(setup, BriefStates.Short, step, 1)])));

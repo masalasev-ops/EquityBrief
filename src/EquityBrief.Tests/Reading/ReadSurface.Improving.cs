@@ -146,6 +146,49 @@ public partial class ReadSurface
 
     const string MarkRendererWorkedBy = EquityBrief.Web.Marks.MarkRenderer.WorkedBy;
 
+    // The stock page and the chart page name the Fundamentals family where it bought a stock on the night, keeps a trade in
+    // it from an earlier night or flagged it: M1 bought, M3 kept since its buy and M2 flagged.
+    [Fact]
+    public async Task TheStockAndChartPagesNameTheFundamentalsFamilyWhereItBoughtKeepsOrFlaggedAStock()
+    {
+        using var store = UniversesStore();
+
+        ImprovingNightOn(store);
+
+        // M1 picked by this family alone and M2 in no book, so each summary names this family.
+        store.Execute("DELETE FROM index_family_pick WHERE index_code = 'MID' AND ticker = 'M1';");
+        store.Execute("DELETE FROM index_heavyweight_holding WHERE index_code = 'MID' AND ticker = 'M2';");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        async Task<string> Name(string ticker) => WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{ticker}/{IndexNight}"));
+        async Task<string> Brief(string ticker) => Regex.Match(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/chart/{ticker}")), "<div class=\"brief-read\".*?<p class=\"brief-foot\">", RegexOptions.Singleline).Value;
+
+        // The stock page's line beneath the contents, worked from the rows above: M1's filing of 1 Oct lifting it from 5 of 9
+        // to 8 of 9, M3 bought on 2 Oct and kept at 7 of 9, and M2's release of 30 Sep waiting for its filing.
+        Assert.Contains("<p class=\"listed-under improving-held\">Fundamentals buys it at the next open: its filing of 2026-10-01 lifted its score to 8 of 9, from 5 of 9.</p>", await Name("M1"), StringComparison.Ordinal);
+        Assert.Contains("<p class=\"listed-under improving-held\">Fundamentals bought it on 2026-10-02 and keeps it while its score stays at 7 of 9 or more.</p>", await Name("M3"), StringComparison.Ordinal);
+        Assert.Contains("<p class=\"listed-under improving-held\">Fundamentals flagged it: its results release of 2026-09-30 reads results better than expected. It is bought only if its filing lifts it to 8 of 9.</p>", await Name("M2"), StringComparison.Ordinal);
+
+        // The chart page's chip in the fundamentals-first family's place, its summary and, for the stock it bought, its way in
+        // with no stop.
+        var m1 = await Brief("M1");
+        var m2 = await Brief("M2");
+        var m3 = await Brief("M3");
+
+        Assert.Contains("data-family=\"improving\" data-state=\"bought\"><span class=\"fam-swatch\" data-family=\"improving\"></span>Fundamentals: bought at tomorrow's open</span>", m1, StringComparison.Ordinal);
+        Assert.Contains("data-family=\"improving\" data-state=\"flagged\"><span class=\"fam-swatch\" data-family=\"improving\"></span>Fundamentals: flagged, waiting for its filing</span>", m2, StringComparison.Ordinal);
+        Assert.Contains("data-family=\"improving\" data-state=\"held\"><span class=\"fam-swatch\" data-family=\"improving\"></span>Fundamentals: in its holdings</span>", m3, StringComparison.Ordinal);
+        Assert.All(new[] { m1, m2, m3 }, brief => Assert.DoesNotContain("data-family=\"fundamentals\"", brief, StringComparison.Ordinal));
+        Assert.Contains("Tonight Fundamentals picked it.", m1, StringComparison.Ordinal);
+        Assert.Contains("Tonight Fundamentals flagged it from its results release, waiting for its filing.", m2, StringComparison.Ordinal);
+        Assert.Contains("Tonight it is in the Fundamentals setup's holdings.", m3, StringComparison.Ordinal);
+        Assert.Contains("Picked tonight by Fundamentals: buy at the next open.", m1, StringComparison.Ordinal);
+        Assert.Contains("It sets no stop: it sells at the close when a new filing drops its score under 7 of 9.", m1, StringComparison.Ordinal);
+        Assert.Contains("Otherwise at the close of its 126th trading day, or of its last day in the index.", m1, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task TheFundamentalsFamilysCardSaysItsPartFailedAndBeforeItsFirstNightThatItHasReadNone()
     {

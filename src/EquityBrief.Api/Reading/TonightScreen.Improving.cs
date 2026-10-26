@@ -139,6 +139,35 @@ public static partial class TonightScreen
             read?.Settings ?? ImprovingRule.Starting.Words);
     }
 
+    // What a stock's page says where the Fundamentals family bought it on its night, keeps a trade in it from an earlier
+    // night or flagged it on its results release, and nothing where it did none of these.
+    public static string? OnTheFundamentalsCard(string ticker, DateOnly night, IReadOnlyList<ImprovingResultRow> tonight, IReadOnlyList<ImprovingTradeRow> trades)
+    {
+        var settings = ImprovingRule.Starting;
+        var row = tonight.FirstOrDefault(one => one.Ticker == ticker);
+
+        if (row is { Status: ImprovingRule.Bought, Filed: { } filed })
+        {
+            return FormattableString.Invariant($"Fundamentals buys it at the next open: its filing of {filed:yyyy-MM-dd} lifted its score to {row.PassedChecks} of {row.Applied}") +
+                (row is { BeforePassed: { } before, BeforeApplied: { } applied } ? FormattableString.Invariant($", from {before} of {applied}.") : ".");
+        }
+
+        if (trades.FirstOrDefault(one => one.Ticker == ticker && one.EndReason == ImprovingRule.Open && one.ChosenOn < night) is { } open)
+        {
+            return (open.BoughtOn is { } bought
+                    ? FormattableString.Invariant($"Fundamentals bought it on {bought:yyyy-MM-dd}")
+                    : FormattableString.Invariant($"Fundamentals chose it on {open.ChosenOn:yyyy-MM-dd}"))
+                + FormattableString.Invariant($" and keeps it while its score stays at {settings.HoldInNine} of 9 or more.");
+        }
+
+        return row is { Status: ImprovingRule.Flagged }
+            ? (row.Released is { } released
+                ? FormattableString.Invariant($"Fundamentals flagged it: its results release of {released:yyyy-MM-dd} reads results better than expected. ")
+                : "Fundamentals flagged it: its results release reads results better than expected. ")
+              + FormattableString.Invariant($"It is bought only if its filing lifts it to {settings.BuyInNine} of 9.")
+            : null;
+    }
+
     // The last day "reporting this week" counts: the fifth trading day after the night on the exchange's calendar.
     public static DateOnly ReportingThrough(DateOnly night)
     {

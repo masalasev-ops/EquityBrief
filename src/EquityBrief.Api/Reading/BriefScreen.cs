@@ -13,7 +13,8 @@ namespace EquityBrief.Api.Reading;
 
 // One setup's standing tonight on a stock's index as the night's stored answers give it: on the list under it, passed
 // and held off the list, one step short naming the step, not close, no recent report, or for the sector heavyweights
-// held or not held in its book; and not read where the night stored no answer for the stock.
+// held or not held in its book; from 22.13 for the Fundamentals family bought at the next open, held from an earlier
+// night, flagged on its results release or not held; and not read where the night stored no answer for the stock.
 public sealed record BriefStanding(string Family, string State, string? Step = null, int Missed = 0);
 
 // The states a setup's chip names.
@@ -26,6 +27,8 @@ public static class BriefStates
     public const string NoReport = "no-report";
     public const string Held = "held";
     public const string NotHeld = "not-held";
+    public const string Bought = "bought";
+    public const string Flagged = "flagged";
     public const string NotRead = "not-read";
 }
 
@@ -34,9 +37,9 @@ public static class BriefStates
 public sealed record BriefListed(string Family, DecisionCardRow? Card, int? DipExitLevel = null);
 
 // The answers the night stored that a stock's standing under each setup is read from: on the S&P 500 the swing filter's
-// row and the family evaluator's results with the night's picks; on every index the index families' results and picks,
-// on the S&P 500 the fundamentals-first family's alone; the dip's results and picks; and whether the heavyweights' book
-// holds the stock, none where the night kept no book.
+// row and the family evaluator's results with the night's picks; on the S&P 400 and 600 the index families' results and
+// picks, from 22.13 the fundamentals-first family's on no index; the dip's results and picks; whether the heavyweights'
+// book holds the stock, none where the night kept no book; and from 22.13 the Fundamentals family's answers and trades.
 public sealed record BriefAnswers(
     string Ticker,
     bool Large,
@@ -47,7 +50,9 @@ public sealed record BriefAnswers(
     IReadOnlyList<FamilyPickRow> IndexPicks,
     IReadOnlyList<IndexResultRow> DipResults,
     IReadOnlyList<DipPickRow> DipPicks,
-    bool? Held);
+    bool? Held,
+    IReadOnlyList<ImprovingResultRow>? ImprovingResults = null,
+    IReadOnlyList<ImprovingTradeRow>? ImprovingTrades = null);
 
 // What a stock's brief read is written from, each read as the full page or the decision card reads it: the stock's
 // membership row with its trend and nearest bands, the newest value of each indicator series, its reported quarters'
@@ -99,8 +104,10 @@ public static class BriefScreen
     // Each setup's standing on the stock's index tonight in the page's order, read off the answer the night stored for the
     // stock by the function its card reads it with: on the list from the night's picks; one step short as the card's table
     // of the stocks one gate short counts it; no recent report where the S&P 500 drift's answer stops at its report;
-    // held where the heavyweights' book holds it; and not read where the night stored no answer for the stock.
+    // held where the heavyweights' book holds it; and not read where the night stored no answer for the stock. From 22.13
+    // the fundamentals-first family's standing is read on no index and the Fundamentals family's stands in its place.
     // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+    // see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight
     public static IReadOnlyList<BriefStanding> Standing(BriefAnswers answers)
     {
         var ticker = answers.Ticker;
@@ -133,7 +140,7 @@ public static class BriefScreen
             }
         }
 
-        IReadOnlyList<SetupFamily> indexFamilies = answers.Large ? [SetupFamilies.FundamentalsFirst] : SetupFamilies.OnEveryIndex;
+        IReadOnlyList<SetupFamily> indexFamilies = answers.Large ? [] : SetupFamilies.InPageOrder;
 
         foreach (var family in indexFamilies.Select(one => one.Name))
         {
@@ -146,6 +153,16 @@ public static class BriefScreen
                 : TonightScreen.IndexCloseAcross([result], [])?.FirstOrDefault() is { } close ? new BriefStanding(family, BriefStates.Short, close.Gate, 1)
                 : new BriefStanding(family, BriefStates.NotClose));
         }
+
+        var improving = answers.ImprovingResults?.FirstOrDefault(one => one.Ticker == ticker);
+
+        standing.Add(new BriefStanding(
+            ImprovingRule.Name,
+            improving is { Status: ImprovingRule.Bought } ? BriefStates.Bought
+            : answers.ImprovingTrades?.Any(trade => trade.Ticker == ticker && trade.EndReason == ImprovingRule.Open) == true ? BriefStates.Held
+            : improving is { Status: ImprovingRule.Flagged } ? BriefStates.Flagged
+            : improving is null ? BriefStates.NotRead
+            : BriefStates.NotHeld));
 
         var dip = answers.DipResults.FirstOrDefault(one => one.Ticker == ticker);
 
@@ -214,11 +231,11 @@ public static class BriefScreen
         { } state => $"Its business reads {state}, from sales and operating margin",
     };
 
-    // The rules' standing tonight: the setup listing it, or the one holding it, or the one it is fewest steps short of in
-    // the page's order, or that none is close.
+    // The rules' standing tonight: the setup listing it or buying it, or the one holding it, or the one flagging it, or the
+    // one it is fewest steps short of in the page's order, or that none is close.
     static string StandingPhrase(IReadOnlyList<BriefStanding> standing)
     {
-        if (standing.FirstOrDefault(one => one.State is BriefStates.Listed) is { } listed)
+        if (standing.FirstOrDefault(one => one.State is BriefStates.Listed or BriefStates.Bought) is { } listed)
         {
             return $"Tonight {Label(listed.Family)} picked it";
         }
@@ -226,6 +243,11 @@ public static class BriefScreen
         if (standing.FirstOrDefault(one => one.State is BriefStates.Held) is { } held)
         {
             return $"Tonight it is in the {Label(held.Family)} setup's holdings";
+        }
+
+        if (standing.FirstOrDefault(one => one.State is BriefStates.Flagged) is { } flagged)
+        {
+            return $"Tonight {Label(flagged.Family)} flagged it from its results release, waiting for its filing";
         }
 
         if (standing.FirstOrDefault(one => one.State is BriefStates.Passed) is { } passed)
@@ -431,6 +453,22 @@ public static class BriefScreen
             ];
         }
 
+        // From 22.13 a stock the Fundamentals family bought tonight: its buy at the next open, and its sale by its score, its
+        // time or its leaving the index, since it sets no stop.
+        // see: A Fundamentals trade is held while its score stays at seven in nine, and judged against an equal-weighted hold of its index's members after its round trip
+        if (inputs.Standing.FirstOrDefault(one => one.State == BriefStates.Bought) is { } bought)
+        {
+            var settings = ImprovingRule.Starting;
+
+            return
+            [
+                new BriefLine("buy", $"Picked tonight by {Label(bought.Family)}: buy at the next open."),
+                new BriefLine("stop", Invariant($"It sets no stop: it sells at the close when a new filing drops its score under {settings.HoldInNine} of 9.")),
+                new BriefLine("exit", Invariant($"Otherwise at the close of its {settings.Sessions}th trading day, or of its last day in the index.")),
+                Size(inputs.Account, null),
+            ];
+        }
+
         if (!inputs.LadderWorked)
         {
             return
@@ -503,6 +541,8 @@ public static class BriefScreen
             BriefStates.NoReport => "no recent report",
             BriefStates.Held => "in its holdings",
             BriefStates.NotHeld => "not in its holdings",
+            BriefStates.Bought => "bought at tomorrow's open",
+            BriefStates.Flagged => "flagged, waiting for its filing",
             _ => "not read tonight",
         });
 
@@ -536,7 +576,9 @@ public static class BriefScreen
 
     static string Label(string family) =>
         SetupFamilies.Named(family)?.Label
-        ?? (family == SetupFamilies.SectorHeavyweights.Name ? SetupFamilies.SectorHeavyweights.Label : family);
+        ?? (family == SetupFamilies.SectorHeavyweights.Name ? SetupFamilies.SectorHeavyweights.Label
+            : family == ImprovingRule.Name ? ImprovingRule.Label
+            : family);
 
     // One step short, naming the step missed in the reader's words where the word list holds it.
     static string StepShort(string family, string? step) => ReaderWords.Missed(family, step) is { } words ? "one step short: " + words : "one step short";

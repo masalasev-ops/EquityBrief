@@ -385,6 +385,11 @@ public partial class FixtureExpectations
         "src/EquityBrief.Web/Marks/MarkRenderer.Families.cs",
         "src/EquityBrief.Web/Marks/MarkRenderer.Tonight.cs",
         "src/EquityBrief.Web/Marks/MarkRenderer.TonightTop.cs",
+        "src/EquityBrief.Api/Reading/NameScreen.cs",
+        "src/EquityBrief.Api/Reading/BriefScreen.cs",
+        "src/EquityBrief.Api/Reading/TonightScreen.Families.cs",
+        "src/EquityBrief.Api/Reading/TonightScreen.Indices.cs",
+        "src/EquityBrief.Api/Reading/TonightScreen.Dips.cs",
     ];
 
     // No source any rule's version pins is one 22.13 writes, so no existing rule's version moves, the reader shown to find a

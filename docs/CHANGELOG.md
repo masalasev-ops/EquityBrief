@@ -26,6 +26,30 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - docs/ARCHITECTURE.html - the stock page and the chart page name the Fundamentals family and none of the fundamentals-first family's rows
+Authorised by: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better
+Was:
+> <p><b>Reads:</b> the facts, ladder, levels, ... and the kept dividends with the bars' raw closes the chart's ex-dividend marks read, from 18.3.</p>
+> The setup the page lists the name under: ... and its label among the setups the name qualified under where the dip gave way on it (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades)</td></tr>
+> <p><b>Reads:</b> the stock's stored bars; ... the ledger's readings of its index on the night; and its next report. It asks for the delayed quote
+> In brief: ... its multiple line stating the scorecard's multiple as filed with the SEC against its industry's median wherever the scorecard holds one and the provider's against its own quarters' range otherwise, each named by where it came from</td></tr>
+Now:
+> <p><b>Reads:</b> the facts, ladder, levels, ... and the kept dividends with the bars' raw closes the chart's ex-dividend marks read, from 18.3; and the Fundamentals family's answers and trades of the night, for whether it bought, keeps or flagged the name, from 22.13.</p>
+> The setup the page lists the name under: ... where the dip gave way on it (see: The dip lists last ...); from 22.13 none of the fundamentals-first family's rows and cards while its rule runs out of sight (see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight); and beneath it from 22.13 a line naming the Fundamentals family where it buys the stock at the next open or keeps a trade in it or flagged it on its results release, with the filing and the scores it was read on (see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better)</td></tr>
+> <p><b>Reads:</b> the stock's stored bars; ... and its next report; and from 22.13 the Fundamentals family's answers and trades on the stock's index, and none of the fundamentals-first family's. It asks for the delayed quote
+> In brief: ... each named by where it came from; from 22.13 the fundamentals-first family's chip drawn on no index and the Fundamentals family's chip in its place; that chip reading bought at tomorrow's open or in its holdings or flagged and waiting for its filing or not in its holdings; the summary naming that family where it picked or keeps or flagged the stock; and for a stock it picked the way in reading its buy at the next open with no stop and its sale on a new filing's score under the bar it is kept at or at the end of its time or at its last close in the index (see: A Fundamentals trade is held while its score stays at seven in nine, and judged against an equal-weighted hold of its index's members after its round trip)</td></tr>
+Why: a stock the Fundamentals card buys opens its chart page, whose chips and way in knew no such family and named business first's chip on every stock, and its stock page said it was on no list while it would have named business first's rows and cards, which the operator's rulings of 2026-10-26 take out of sight.
+
+### 2026-10-26 - docs/ARCHITECTURE.html - Tonight's cards name the fundamentals-first family in no label and no note
+Authorised by: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight
+Was:
+> A family's card: ... (see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing)</td></tr>
+> The short-term dip's card: ... (see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions)</td></tr>
+Now:
+> A family's card: ... (see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing); and from 22.13 no label or note naming the fundamentals-first family, a stock held back for its trade noted without naming it (see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight)</td></tr>
+> The short-term dip's card: ... the market variant as versions); and from 22.13 a note on a stock it gave way on to the fundamentals-first family or held back for that family's trade naming no family, since Tonight draws that family's list no more (see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight)</td></tr>
+Why: the family's rule keeps running, so another family's row could still carry its label and a note could still name its list or its trade, which Tonight draws no more.
+
 ### 2026-10-26 - docs/ARCHITECTURE.html - section 14's note names the Fundamentals family's step and the Treasury's as step 28
 Authorised by: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better
 Was:

@@ -149,13 +149,18 @@ public partial class FixtureExpectations
             var closest = expected.GetProperty("closest").TryGetProperty(ticker, out var near) ? near.GetString() : null;
             var closestWords = expected.GetProperty("closestWords").TryGetProperty(ticker, out var stepWords) ? stepWords.GetString() : null;
 
+            // From 22.13 the Fundamentals family's chip in the fundamentals-first family's place: its night answered the name
+            // with no status, no filing read for the first time and nothing flagged, and it keeps no trade.
+            Assert.Equal(["|0|0"], Query(store, $"SELECT ifnull(status, '') || '|' || first_read || '|' || flagged FROM improving_result WHERE index_code = 'GSPC' AND session_date = '{day}' AND ticker = '{ticker}';"));
+            Assert.Equal(["0"], Query(store, $"SELECT COUNT(*) FROM improving_trade WHERE ticker = '{ticker}';"));
+
             Assert.Equal(
                 new Dictionary<string, string>(StringComparer.Ordinal)
                 {
                     [SetupFamilies.Pullback] = BriefStates.NotClose,
                     [BreakoutRule.Name] = BriefStates.NotClose,
                     [DriftRule.Name] = BriefStates.NoReport,
-                    [FundamentalsRule.Name] = BriefStates.NotClose,
+                    [ImprovingRule.Name] = BriefStates.NotHeld,
                     [DipRule.Name] = closest is null ? BriefStates.NotClose : BriefStates.Short,
                     [SetupFamilies.SectorHeavyweights.Name] = BriefStates.NotHeld,
                 },
