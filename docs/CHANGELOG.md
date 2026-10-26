@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - .claude/rules/checks.md - fixture-expectations holds the tone walk's hand-off and the month's report at nothing
+Corrects: the per-rule verb could hand the tone variant's walk none of the history's stocks and its test stayed green, and the month's report held a proposal at nothing in no test, both found by the first review of phase 20's sign-off as mutations that survived.
+Was:
+> fixture-expectations: ... a night run again writing what it wrote, and no source a rule's version pins one 22.13 writes |
+Now:
+> fixture-expectations: ... and no source a rule's version pins one 22.13 writes; and from the 20.8 correction of 2026-10-26 the per-rule verb's line saying what each complete reading version hands the tone walk, read off a history holding one stock's release, and the month's report holding back a proposal reading a release reading whose years from the cutoff's year total the rule's exactly |
+Why: each roster row says what its check asserts, and the correction's tests extend fixture-expectations'.
+
 ### 2026-10-26 - docs/ARCHITECTURE.html - a drift's revenue step missed for a quarter never read says so, and the step's own words hold for either way it is missed
 Corrects: the S&P 600 drift's stocks one step short read "Sales not up on a year earlier" where the quarter's revenue was never read, 25 of the 25 revenue misses since its freeze, found by the first review of phase 20's sign-off.
 Was:

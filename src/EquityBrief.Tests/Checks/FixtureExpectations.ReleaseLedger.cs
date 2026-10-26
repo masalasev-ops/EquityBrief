@@ -509,6 +509,19 @@ public partial class FixtureExpectations
             }
         }
 
+        // A third, the release's tone between the two in strength, its years from the cutoff's year totalling the rule's
+        // exactly, 3.0 and 0.75 against 3.0 and 0.75.
+        store.Execute(
+            "INSERT INTO loop_proposal (run_id, index_code, family, proposal, words, current_words, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, detectable, stable_folds, passed, finding, change) "
+            + FormattableString.Invariant($"VALUES ('{Run}', 'GSPC', 'drift', 'winners against losers, ranked 3', 'also requires release_tone at or above 1', 'the rule today', 'risks', 56, 19, 0.0015, 1, 1, 4, 3, 1.5, 1, 0.1, 3, 1, NULL, '{LoopChange.OfHooks(new Dictionary<string, double>(StringComparer.Ordinal) { ["also_release_tone_above"] = 1 }).Json}');"));
+
+        foreach (var (year, units, proposed, current) in new[] { (2022, 10, 2.0, 1.0), (2023, 12, 1.5, 2.0), (2024, 8, 1.5, 0.5), (2025, 20, 3.0, 3.0), (2026, 6, 0.75, 0.75) })
+        {
+            store.Execute(
+                "INSERT INTO loop_test (run_id, index_code, family, proposal, year, complete, chosen, current_units, proposed_units, current_total, proposed_total) "
+                + FormattableString.Invariant($"VALUES ('{Run}', 'GSPC', 'drift', 'winners against losers, ranked 3', {year}, 1, 'a', {units}, {units}, {current}, {proposed});"));
+        }
+
         var run = new MonthlyRun(clock, store.DatabaseFile, store.Root, output, []);
         var report = Path.Combine(store.Root, MonthlyRun.Folder, "2026-11", MonthlyRun.ReportFile);
 
@@ -532,6 +545,12 @@ public partial class FixtureExpectations
         Assert.Contains(
             "  drift: winners against losers, ranked 1: also requires release_results at or above 1. Held back: it reads a release reading, and its total less the rule's over the test years from the cutoff's year, 2025, is not above nothing, so it is not put to you." + Environment.NewLine
             + "    Before the local model's cutoff of 2025-01-31, which it may have known the outcome of: 2022 to 2024, +1.500 risks over 30 units; from it, the years relied on: 2025 to 2026, -2.500 risks over 26 units.",
+            text,
+            StringComparison.Ordinal);
+
+        // The third, at nothing from the cutoff's year, is held back too, so the RSI's condition is still the one put.
+        Assert.Contains(
+            "  drift: winners against losers, ranked 3: also requires release_tone at or above 1. Held back: it reads a release reading, and its total less the rule's over the test years from the cutoff's year, 2025, is not above nothing, so it is not put to you.",
             text,
             StringComparison.Ordinal);
     }

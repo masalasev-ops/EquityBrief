@@ -10234,3 +10234,25 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             N3 every stored revenue read as both quarters read: red at both.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
             below, this pull request's last.
+
+### 20.8 - correction: the per-rule verb says what each reading version hands the tone walk, and the walk's hand-off and the month's report at nothing are each held by a test   2026-10-26
+
+Found:      two mutations the first review of phase 20's sign-off swept survived. The per-rule verb handing the tone
+            variant's walk none of the history's stocks stayed green, its one test's history holding no release, so a
+            walk keeping nothing read alike either way; and a proposal reading a release reading held back only where its
+            years from the cutoff's year fall below the rule's stayed green at the month's report, its test working that
+            side alone. Each a property 20.8 or its correction of 2026-10-19 states that no test read.
+Corrected:  the per-rule verb says, for each reading version whose history read is complete, how many of the history's
+            stocks it hands the tone walk releases for and how many releases; the hand-off's test gives one of its three
+            stocks a filer and a release the version read and holds the line; and the month's report's test adds a
+            proposal reading the release's tone whose years from the cutoff's year total the rule's exactly, held back,
+            the RSI's condition still the one put. The roster's fixture-expectations row and the changelog.
+Tests:      none new, two extended. 2820 in all.
+Claims:     none new.
+Pins:       none move: the per-rule verb's source is one no rule pins, as 22.3's and 22.11's tests assert.
+Mutated:    the rule, stated before the runs: the review's two surviving mutations made again, each filtered to the tests
+            reading its property. T1 the verb handing the walk no stock's releases: red at the hand-off's test, where it
+            survived before. T2 a proposal held back only below nothing: red at the report's test, where it survived
+            before, and at the core's.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.

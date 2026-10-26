@@ -506,6 +506,15 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
                 large ? inputs : await history.ReadAsync(through, null, cancellation),
                 await history.SeriesOfAsync([IndexSweepRunner.DipFund(index), MarketCloses.Vix], through, cancellation))
             : null;
+        var tones = await TonesAsync(read, cancellation);
+
+        // What each complete reading version hands the tone variant's walk: the history's stocks it holds a filer's releases
+        // for, and how many releases, so a walk handed none is said rather than read as a variant keeping nothing.
+        foreach (var (version, stocks) in tones.Versions.OrderBy(pair => pair.Key))
+        {
+            output.WriteLine(FormattableString.Invariant($"{RulesVerb}: reading version {version} hands the tone walk the releases of {stocks.Count} of the history's {read.Series.Length} stock(s), {stocks.Values.Sum(releases => releases.Count)} release(s)"));
+        }
+
         var rules = RuleTests.Walk(new RuleTestInputs(
             read,
             standingRules,
@@ -517,7 +526,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             filter,
             output.WriteLine,
             pullbacks,
-            await TonesAsync(read, cancellation),
+            tones,
             qualityLay,
             dipRead));
         var tested = RuleTests.Judge(read, rules);
