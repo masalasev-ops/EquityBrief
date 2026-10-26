@@ -572,4 +572,79 @@ public partial class FixtureExpectations
         Assert.Subset(dip.ToHashSet(StringComparer.Ordinal), DipRuleSources.Where(path => !path.EndsWith("/DipCandidate.cs", StringComparison.Ordinal)).ToHashSet(StringComparer.Ordinal));
         Assert.NotEmpty(new[] { "src/EquityBrief.Worker/Indices/IndexFamilies.cs" }.Intersect(pinned, StringComparer.Ordinal));
     }
+
+    // From the 22.3 correction of 2026-10-26 the night reads hooks only off the rules the S&P 500's recorder keeps: a dip
+    // rule's exit dial of 65, read as a hook, names an exit the menu does not hold, and stopped the night of 2026-10-23 run
+    // again at its swing filter; a breakout rule whose hook scores on the readings is still read, so the night reads them.
+    [Fact]
+    public void TheNightReadsHooksOffTheRecordersOwnRulesAloneSoADipsExitDialStopsNoNight()
+    {
+        var at = new DateTimeOffset(2026, 10, 25, 23, 27, 0, TimeSpan.Zero);
+
+        RegisterRow Row(long id, CandidateEvaluator evaluator, IReadOnlyDictionary<string, double> parameters) =>
+            new(id, "rule " + id, "rule", "test", evaluator.Name, CandidateEvaluator.Write(parameters), evaluator.Version, "registered", null, at, null);
+
+        var dip = Row(1, new DipCandidate(MarketCloses.Index), new Dictionary<string, double>
+        {
+            [DipCandidate.DropParameter] = -3,
+            [DipCandidate.TrendParameter] = 50,
+            [DipCandidate.ExitParameter] = DipRule.RsiExit,
+            [DipCandidate.LimitParameter] = 10,
+            [DipCandidate.StopParameter] = 3,
+            [DipCandidate.MarketParameter] = 6,
+            [DipCandidate.VolumeParameter] = 0,
+        });
+        var scored = Row(2, CandidateEvaluators.All.OfType<BreakoutCandidate>().First(), new Dictionary<string, double>
+        {
+            [Core.Loop.RuleHooks.ScorePrefix + Core.Ledger.LedgerReadings.All[0].Column] = 1,
+        });
+
+        Assert.Throws<ArgumentException>(() => Core.Loop.RuleHooks.Of(CandidateEvaluator.Read(dip.Parameters)));
+        Assert.False(EquityBrief.Worker.Families.FamilyRecorder.Keeps(dip));
+        Assert.True(EquityBrief.Worker.Families.FamilyRecorder.Keeps(scored));
+        Assert.False(EquityBrief.Worker.Families.FamilyRecorder.HooksReadReadings([dip]));
+        Assert.True(EquityBrief.Worker.Families.FamilyRecorder.HooksReadReadings([dip, scored]));
+
+        // The swing filter's step asks the recorder, and reads no standing rule's hooks of its own.
+        var nightly = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Nightly.cs"));
+
+        Assert.Contains("FamilyRecorder.HooksReadReadings(rules.Standing)", nightly, StringComparison.Ordinal);
+        Assert.DoesNotContain("rules.Standing.Any(", nightly, StringComparison.Ordinal);
+    }
+
+    // A whole night over the fixture with the S&P 500's dip frozen at the RSI's exit runs every step: its live rule and a
+    // version beside it registered before the night, the dip's step reading the live rule.
+    [Fact]
+    public async Task AWholeNightOverTheFixtureRunsEveryStepWithTheSAndP500sDipFrozenAtTheRsisExit()
+    {
+        var evaluator = new DipCandidate(MarketCloses.Index);
+
+        static string Parameters(double stop) => CandidateEvaluator.Write(new Dictionary<string, double>
+        {
+            [DipCandidate.DropParameter] = -3,
+            [DipCandidate.TrendParameter] = 50,
+            [DipCandidate.ExitParameter] = DipRule.RsiExit,
+            [DipCandidate.LimitParameter] = 10,
+            [DipCandidate.StopParameter] = stop,
+            [DipCandidate.MarketParameter] = 0,
+            [DipCandidate.VolumeParameter] = 0,
+        });
+
+        var (store, code, output, error) = await FixtureReplay.NightAsync(before: migrated =>
+        {
+            foreach (var (id, candidate, stop) in new[] { (1L, "the live S&P 500 dip rule", 3.0), (2L, "the S&P 500 dip rule at a stop of 4", 4.0) })
+            {
+                migrated.Execute(
+                    "INSERT INTO candidate_register (id, candidate, rule, test, evaluator, parameters, evaluator_version, event, retires, registered_at, evidence) VALUES " +
+                    $"({id}, '{candidate}', 'rule', 'test', '{evaluator.Name}', '{Parameters(stop)}', '{evaluator.Version}', '{CandidateFamily.Registered}', NULL, '2026-09-08T12:00:00Z', NULL);");
+            }
+        });
+
+        using (store)
+        {
+            Assert.True(code == 0, output + error);
+            Assert.DoesNotContain("The exit hook names", output + error, StringComparison.Ordinal);
+            Assert.Equal(["the live S&P 500 dip rule"], Query(store, "SELECT json_extract(settings, '$.rule') FROM dip_night WHERE index_code = 'GSPC';"));
+        }
+    }
 }

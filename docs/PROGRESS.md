@@ -9519,3 +9519,153 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 64 tables, 1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the sign-offs of phases 18, 20 and 22 by fresh sessions.
+
+### 22.12 ruling - the corrections after the phase report, one pull request, and every run built from a copy keeping three copies under the folder of nights   2026-10-26
+
+Not a checkpoint entry: it records the operator's ruling and lands nothing.
+Ruled:      by the operator at about 00:10 UTC on 2026-10-26, dated by them 2026-10-25, kept whole in
+            `prompts/2026-10-25-22.12-corrections-after-the-phase-report.md`, after 22.12 merged: "One pull request,
+            after 22.12's merges. Each correction labelled under the checkpoint that built what it corrects, read off
+            the record. No rule's code version moves, asserted; no paid call; the store read-only but for its own
+            remedy if one is owed." Its four items: one earnings multiple per stock on every page; a pick's summary
+            reading its own index's list; a missing store copy a worry only where no newer copy stands; and the folder
+            of night copies kept small, in its words: "In all five scripts, after a script has built or reused its copy
+            and touched it, and before it starts the worker, it keeps three folders under nights/ and removes the rest:
+            this run's copy, the copy data/night.build names, and the most recently touched copy besides those." It
+            ends: "Stop after the merge and report. Nothing else starts."
+Labelled:   read off the record: the folder of nights under 12.3, which built the night's copy and its week's
+            removal; the summary under 12.6, whose correction of 2026-09-30 built the short version written by code;
+            the copies' worry under 13.10, whose correction of 2026-10-08 built the item; and the multiple under 22.8,
+            whose scorecard added the second figure. A fifth, found by the night of 2026-10-23 run again after the ruling,
+            the night's reading of a frozen dip's exit dial as a hook, under 22.3, which froze the dip, and carried in the
+            same pull request since every night with a dip frozen stopped on it, the night of 2026-10-26 among them.
+Queue:      done, phase 22 to its report and Friday's night run again with the register as it stands, as the operator
+            asked; in progress, these four corrections in one pull request; next, the stop and report, and the sign-offs
+            of phases 18, 20 and 22 by fresh sessions when the operator says.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 22.8 correction's
+            entry below, this pull request's last.
+
+### 12.3 - correction: every run built from a copy keeps three copies under the folder of nights and removes the rest, where the night alone removed any, a week old   2026-10-26
+
+Found:      by the operator on 2026-10-24: the data root's folder of nights held 49 commit copies back to 2026-10-15 at
+            about 150 MB each; only the night's script removed a copy, one no night had used for a week, its errors sent
+            nowhere, and the local run's, the monthly run's, the off-peak run's and the ledger build's scripts removed
+            none.
+Corrected:  `tools/nights-keep`, sourced and called by all five once a run's copy is built or reused and touched and
+            before its worker starts, keeps this run's copy, the copy `night.build` names and the most recently touched
+            copy besides those, removes every other folder there with any partial build, names in one line on stderr a
+            copy it cannot remove and carries on, and refuses any folder not named nights. The decision is amended in
+            its own text on the ruling; the runbook's two passages, CLAUDE.md's layout and store-never-deleted's stated
+            removals and its comment are kept in step.
+Tests:      two new: a constructed folder of six copies, a stale partial and a folder beside it, the three kept and the
+            rest removed, run again with nothing named, a folder not named nights refused whole, and on Windows a copy
+            held open named on stderr with the run carried on; each of the five scripts calling it between touching its
+            copy and starting the worker, and the night no longer removing by age.
+Claims:     none new.
+Pins:       none move: no shipped source moves.
+Mutated:    the rule, stated before the run: the operator's, the helper keeping two folders and not three, filtered to
+            the test reading it; red, the newest besides the two removed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 22.8 correction's
+            entry below, this pull request's last.
+
+### 12.6 - correction: a name's short version by code reads its own index's list, where it read the S&P 500's reasons alone and said an S&P 400 or 600 pick was on no list   2026-10-26
+
+Found:      by 22.12's read-back: HIMS, the S&P 400's dip pick, and ZION, its drift pick, each with no accepted short
+            version, read "Not on tonight's list." in the one code writes, which read the swing filter and the S&P 500's
+            reasons alone and never the setup listing the stock on its own index.
+Corrected:  where no S&P 500 reason fired, the summary reads the stock's own line on its index's list, the one its page
+            draws beneath the headline, and says "On tonight's S&P 400 list under Short dips in an uptrend.", dated where
+            the page is for an earlier night; it says the stock is on no list only where no list of its index holds it.
+Tests:      one new: over the constructed S&P 400 night, M2 under the dip and M1 under the breakout each on tonight's S&P
+            400 list under its setup, and M3, which the pullback passed and held back for its open trade, on none.
+Claims:     none new: section 15's row states the summary from why the name is or is not on the list, as it stands.
+Pins:       none move: the page alone moves.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the test reading it. M1
+            the stock's line on its index's list never read; red, M2 drawn as on no list.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 22.8 correction's
+            entry below, this pull request's last.
+
+### 13.10 - correction: a copy gone from the store's copies' folder is a worry only where no newer copy stands, where every copy gone failed the checklist   2026-10-26
+
+Found:      by 22.12's read-back: the Run page's checklist failed "Every copy the last copy kept is still in its folder"
+            for the two copies of 2026-10-22, gone from the folder and removed by no copy, while the copies made after
+            them stood. Every night since wrote its copy, read off the store's rows: the night of 2026-10-21's at 00:16Z on
+            the 22nd, the 22nd's at 23:52Z, one by hand at 03:35Z on the 23rd and the 23rd's at 23:41Z, each ok, opened and
+            read. The folder held two of them on 2026-10-26, the copies of 2026-10-14 and 15, 2026-10-20 and 2026-10-22
+            having gone two at a time by no copy's hand.
+Corrected:  the item reads "Every copy gone from the folder has a newer copy standing", the copies gone being the
+            newest copy's and those a later attempt that made none found, and the copy standing the newest of the newest
+            copy and those its row kept less any gone; it names a copy gone only where no copy newer than it stands, with
+            the line "The store's last copy is from 17 Sep; no copy since." naming the newest that does. The line
+            beneath the checklist still names every copy gone. Nothing deletes or restores a copy. The decision is amended
+            in its own text on the ruling, and the runbook and the roster kept in step.
+Tests:      none new, two extended: the two copies the 18th's copy found gone held, older than it; an attempt on the 20th
+            finding the 18th's copy gone too failed, naming it with the 17th's the newest standing; and the item read held
+            off the rendered page under its new words.
+Claims:     none new.
+Pins:       none move: the page alone moves.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the test reading it. M1
+            every copy gone a worry whatever stands; red, the two older copies failing the item.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 22.8 correction's
+            entry below, this pull request's last.
+
+### 22.3 - correction: the night reads hooks off the S&P 500 recorder's own rules alone, where a frozen dip's exit dial stopped every night at its swing filter   2026-10-26
+
+Found:      by the night of 2026-10-23 run again from main's bb3537a1 at 00:08Z on 2026-10-26 with the register as it
+            stood, as the operator asked: it stopped at its swing filter on each try, "The exit hook names 65, and the
+            menu numbers its exits 1 to 26, 0 being the rule's own." The step read the hooks of every standing family
+            rule to learn whether the night's readings were needed, a dip rule's among them, whose exit dial of 65, the
+            RSI's, the hooks read as an exit of the swing menu; the recorder after it reads only the S&P 500's own rules,
+            and 22.3's night test ran the dip's step and the cards and never this line. Every night with a dip frozen
+            would have stopped there, the night of 2026-10-26 among them. The run was stopped at 00:37Z on its second try,
+            its lock given up; the steps before the filter had written what the first run wrote.
+Corrected:  the recorder states the rules it keeps, the S&P 500's family rules but an S&P 400's or 600's and a rule its own
+            family's step keeps, and whether any of them reads the readings through its hooks, and the night asks it,
+            reading no standing rule's hooks of its own. No rule's version moves: the two files are among those no rule
+            pins.
+Tests:      two new: a dip rule's parameters refused by the hooks, the recorder keeping no dip rule and a breakout rule
+            scored on a reading, the night's question answered over both without reading the dip's, and the night asking
+            the recorder; and a whole night over the fixture with the S&P 500's dip frozen at the RSI's exit, its live
+            rule and a version registered before it, running every step, the dip's step reading the live rule.
+Claims:     none new.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edits undoing the property, each filtered to the test reading
+            it. M1 the recorder keeping a rule its own family's step keeps; red, the dip's rule kept. M2 the night's own
+            reading of every standing rule's hooks put back; red at the whole night, "step 'swing-filter' failed: The exit
+            hook names 65", the failure of 2026-10-26.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 22.8 correction's
+            entry below, this pull request's last.
+
+### 22.8 - correction: one earnings multiple a stock on every page, the scorecard's as filed with the SEC wherever it holds one and the provider's named as its otherwise   2026-10-26
+
+Queue:      done, phase 22 to its report; in progress, the corrections after it in one pull request, this the last;
+            next, Friday's night run again from main after the merge, as the operator asked, then the stop and report,
+            and the sign-offs of phases 18, 20 and 22 by fresh sessions when the operator says.
+Found:      by 22.12's read-back of NVDA's chart page: its brief read stated 30.1 times its last four quarters'
+            earnings, the provider's earnings a share, and its fundamentals card 26.4, the scorecard's over the net income
+            and the shares filed with the SEC, the same words naming two figures; the chart page's grid, the full page's
+            valuation line, its band's night dot and its numbers' valuation sentence stated the provider's too.
+Corrected:  one phrase for the multiple, named by where it came from. Wherever the scorecard holds a multiple, the brief
+            read, the card, the chart page's grid, the full page's valuation line and its numbers' valuation sentence
+            state it, "26.4 times its last four quarters' earnings, as filed with the SEC", the brief against its
+            industry's median and the band drawing the provider's quarters alone, named as the provider's, with no dot
+            for the night; where it holds none, the provider's, "30.1 times its last four quarters' earnings, as the data
+            provider reports", against its own quarters' range. The industry table stays on the provider's basis for every
+            member and its key says so. Six rows of the architecture, the roster and the changelog are kept in step.
+Tests:      none new, five extended: F1's chart and full pages over the constructed store stating 20.0 as filed and no
+            other multiple of the night; MSFT's full page over the replayed store, its provider's 24.5 replaced by the
+            scorecard's 21.7 on its valuation line with no night dot, and the numbers' last sentence worked on both sides;
+            the brief worked by hand on both sides; the card's lines; and the valuation line with no scorecard naming the
+            provider. 2795 in all with the four corrections' and the hook correction's above.
+Claims:     1444, none new: the six rows touched are amended in place.
+Pins:       none move: the pages alone move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each surface's property, each filtered to the tests
+            reading it. M1 the brief never reading the scorecard's multiple; red at the brief and the chart page. M2 the
+            full page's valuation line never reading it; first run red for a store fault of the test's own, a scorecard
+            row the replay had already stored, and on its repair red at the filed line missing.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2795 of 2795 tests ran with none failed,
+            migrations 0 to 111 with none pending, schema version 111, against `data-ci` and never `data`; the phase
+            report 64 tables, 1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    Friday's night run again from main after the merge; the sign-offs of phases 18, 20 and 22 by fresh sessions.

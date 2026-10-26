@@ -143,7 +143,7 @@ public static class FundamentalsScreen
             ? Invariant($"; its industry's median on the {index} is {median:0.0}")
             : "; its industry's median is not read";
 
-        return new BriefLine("price", Invariant($"It trades at {multiple:0.0} times its last four quarters' earnings{own}{industry}."), multiple.ToString("R", CultureInfo.InvariantCulture));
+        return new BriefLine("price", $"It trades at {MarkRenderer.EarningsMultiple(multiple, filed: true)}{own}{industry}.", multiple.ToString("R", CultureInfo.InvariantCulture));
     }
 
     static BriefLine Estimates(AnalystReading? analysts, InsiderView? insiders)

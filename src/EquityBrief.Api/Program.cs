@@ -354,6 +354,7 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
                 indexCode is { } code ? await read.OwnLedgerReadingsAsync(code, briefed, ticker) : null,
                 report.Analysts,
                 report.Insiders),
+            Grid = ChartScreen.WithFiledMultiple(view.Grid, score),
         };
     }
 

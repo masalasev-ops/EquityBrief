@@ -117,6 +117,8 @@ else
 fi
 
 touch "$copy"
+. "$root/tools/nights-keep"
+keep_nights "$copies" "$copy" "$data/night.build"
 
 echo "localrun: $note"
 

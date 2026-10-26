@@ -26,6 +26,82 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - ARCHITECTURE.html and .claude/rules/checks.md - one earnings multiple a stock on every page
+Corrects: the chart page's brief read stated NVDA at 30.1 times its last four quarters' earnings, the provider's, and its fundamentals card at 26.4, the scorecard's over the net income and the shares filed with the SEC, the same words naming two figures, found when 22.12 read NVDA's pages back against the store
+Was:
+> Valuation (the regions): ... each quarter's as a line in its band with the night's beside it; and its industry's ...
+
+> Multiple band: ... the night's multiple as a dot at the right, so where the stock trades in its own range reads at a glance. Fewer than two ...
+
+> Valuation (the name page): the night's multiple against its own quarters' range in a sentence or why none was read, and the multiple band; and where ...
+
+> In brief: ... from 22.8 the business panel opening on a fifth line, the fundamentals scorecard's word and count
+
+> Fundamentals: ... its price over earnings against its own last twelve quarters and its industry's median; ...
+
+> The figures: ... valuation: the night's multiple against its own quarters'; its newest quarter's multiple; ...
+
+> read-surface: ... and on none where none does |
+Now:
+> Valuation (the regions): ... with the night's beside it; from the 22.8 correction of 2026-10-26 the scorecard's multiple as filed with the SEC in the provider's place wherever the scorecard holds one and the band then drawing the quarters alone; and its industry's ...
+
+> Multiple band: ... the night's multiple as a dot at the right where the page states the provider's, so where the stock trades in its own range reads at a glance; from the 22.8 correction of 2026-10-26 the quarters alone named as the provider's where the page states the scorecard's multiple as filed with the SEC. Fewer than two ...
+
+> Valuation (the name page): ... and the multiple band; from the 22.8 correction of 2026-10-26 the scorecard's multiple as filed with the SEC in that sentence in the provider's place wherever the scorecard holds one and in the numbers' valuation sentence too, the band then drawing the quarters alone; and where ...
+
+> In brief: ... the fundamentals scorecard's word and count; and from the 22.8 correction of 2026-10-26 its multiple line stating the scorecard's multiple as filed with the SEC against its industry's median wherever the scorecard holds one and the provider's against its own quarters' range otherwise, each named by where it came from
+
+> Fundamentals: ... its price over earnings as filed with the SEC against its own last twelve quarters and its industry's median; ...
+
+> The figures: ... valuation: the night's multiple against its own quarters' as the provider reports it or from the 22.8 correction of 2026-10-26 the scorecard's as filed with the SEC wherever the scorecard holds one; its newest quarter's multiple; ...
+
+> read-surface: ... and on none where none does; and from the 22.8 correction of 2026-10-26 one earnings multiple a stock on every page, the scorecard's as filed with the SEC on the brief read, the card, the chart page's grid and the full page's valuation line wherever the scorecard holds one with no other multiple of the night on either page and the band drawing no dot for the night, and the provider's named as its otherwise, the numbers' valuation sentence stating the scorecard's too |
+Why: the operator's ruling of 2026-10-25, item 1: where the scorecard holds a multiple from filings every page draws that one, and where it holds none the brief read draws the provider's, each named by where it came from.
+
+### 2026-10-26 - .claude/rules/checks.md - fixture-expectations holds the night reading hooks off the recorder's own rules alone
+Corrects: the swing filter's step read the hooks of every standing family rule, a dip rule's among them, whose exit dial of 65 the hooks read as an exit the menu does not hold, so every night with a dip frozen stopped there, found when the night of 2026-10-23 was run again after 22.3's remedy
+Was:
+> fixture-expectations: ... and no source another rule's version pins one 22.3 writes, the dip's rules pinning the files their own step runs through |
+Now:
+> fixture-expectations: ... the dip's rules pinning the files their own step runs through; and from the 22.3 correction of 2026-10-26 the night reading hooks off the rules the S&P 500's family recorder keeps alone, a dip rule's exit dial, which the hooks would read as an exit the menu does not hold, read by none of them, and a rule the recorder keeps whose hook reads the readings still read, and a whole night over the fixture with the S&P 500's dip frozen at the RSI's exit running every step |
+Why: the roster row says what its check asserts, and the correction's tests extend it.
+
+### 2026-10-26 - RUNBOOK.md and .claude/rules/checks.md - a copy gone from the folder is a worry only where no newer copy stands
+Authorised by: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+Was:
+> RUNBOOK, the night copies it: ... its checklist carries two items on the copies: the store copied after the night began, and every copy the last copy kept still in its folder. A copy ended from outside, ...
+
+> read-surface: ... and every copy the last copy kept still in its folder failed with each gone named, ...
+Now:
+> RUNBOOK, the night copies it: ... and every copy gone from the folder having a newer copy standing, which names a copy gone only where no copy newer than it stands, with the line "The store's last copy is from `<day> <month>`; no copy since." naming the newest that does. A copy ended from outside, ...
+
+> read-surface: ... and every copy gone from the folder having a newer copy standing, failed from the 13.10 correction of 2026-10-26 only where no copy newer than a copy gone stands, naming those gone with the line naming the date of the newest standing, and held where one does, ...
+Why: the operator's ruling of 2026-10-25, item 3, after the item failed for two copies of 2026-10-22 gone while the copies made after them stood; the decision is amended with it.
+
+### 2026-10-26 - .claude/rules/checks.md - read-surface holds a name's short version by code reading its own index's list
+Corrects: an S&P 400 or 600 pick with no accepted short version read "Not on tonight's list" in the one code writes, reading the S&P 500's reasons alone, found when 22.12 read HIMS's and ZION's pages back against the store
+Was:
+> read-surface: ... where a trade whose stop trails reads that it trails |
+Now:
+> read-surface: ... where a trade whose stop trails reads that it trails; and from the 12.6 correction of 2026-10-26 a name's short version by code reading its own index's list, on tonight's S&P 400 list under the setup listing it where a list of its index holds it and on none where none does |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
+### 2026-10-26 - RUNBOOK.md and CLAUDE.md - every run built from a copy keeps three copies under the folder of nights
+Authorised by: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
+Was:
+> RUNBOOK, Each night is built from a clean copy: ... A copy already built is run as it is, and one no night has used for a week is removed. The night records ...
+
+> RUNBOOK, the ledger's build: ... as `tools/nightly` builds a night, reusing the copy where a night built that commit already, and refuses a checkout off main or holding a commit origin/main lacks; ...
+
+> CLAUDE.md, the repository layout: run-bash.ps1 the one place a .ps1 hands its work to a bash script, then wrapper-probe
+Now:
+> RUNBOOK, Each night is built from a clean copy: ... A copy already built is run as it is. Once its copy is built or reused and touched, and before its worker starts, the script keeps three folders under `data/nights/`, its own copy, the one `night.build` names and the most recently touched besides those, and removes the rest with any partial build, naming on stderr in one line a copy it cannot remove and running on; nothing outside that folder is touched, and a copy removed is built again from git by the next run that needs it, `--resume` included. `tools/localrun`, `tools/monthly`, `tools/offpeak` and `tools/ledger-build` keep the folder the same way. The night records ...
+
+> RUNBOOK, the ledger's build: ... reusing the copy where a night built that commit already and keeping three copies in that folder as the night does, and refuses ...
+
+> CLAUDE.md, the repository layout: run-bash.ps1, then nights-keep, sourced by the five scripts that build a copy of main's commit, before the worker starts: keeps three copies under the data root's nights/ and removes the rest, then wrapper-probe
+Why: the operator's ruling of 2026-10-25, item 4, after 49 copies of about 150 MB each had built up by 2026-10-24 under a week's rule only the night applied; the decision is amended with it.
+
 ### 2026-10-25 - .claude/rules/checks.md - architecture-conformance reads phase 22's pair
 Authorised by: The short-term dip family is built as phase 22 ahead of the hold on new work, and phase 20's sign-off waits on none of it
 Was:

@@ -1,0 +1,36 @@
+# Sourced by the five scripts that build the main checkout's commit into the data root's folder of nights, and
+# called once a script has built or reused its copy and touched it, before it starts the worker. It keeps three
+# folders there and removes the rest: this run's copy, the copy night.build names, and the most recently touched
+# copy besides those. A .partial folder is removed too, since the run that built one has moved it into place before
+# it calls this. A copy that cannot be removed is named in one line on stderr and the run carries on. Nothing
+# outside the folder of nights is touched, and a copy removed is built again from git by the next run that needs
+# it, --resume included.
+# see: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
+keep_nights() {
+    local copies="$1" copy="$2" build="$3" named="" newest="" folder
+
+    case "$copies" in
+        */nights) ;;
+        *)
+            echo "nights: $copies is not the data root's folder of nights, so no copy was removed" >&2
+            return 0
+            ;;
+    esac
+
+    if [ -s "$build" ]; then
+        named="$copies/$(tr -d '[:space:]' < "$build" | cut -c1-12)"
+    fi
+
+    newest="$(ls -1td "$copies"/*/ 2>/dev/null | sed 's:/*$::' | grep -v '\.partial$' | grep -v -x -F -e "$copy" -e "${named:-$copy}" | head -n 1 || true)"
+
+    for folder in "$copies"/*/; do
+        folder="${folder%/}"
+        [ -d "$folder" ] || continue
+
+        case "$folder" in
+            "$copy" | "$named" | "$newest") continue ;;
+        esac
+
+        rm -rf "$folder" 2>/dev/null || echo "nights: could not remove $folder" >&2
+    done
+}

@@ -160,6 +160,15 @@ public sealed class FamilyRecorder : IComponent
         bool Benchmarked,
         int Exit);
 
+    // The S&P 500's family rules the recorder keeps: an S&P 400's or 600's rule keeps its list in the index families' step,
+    // and a rule its own family's step keeps, its holdings there, its parameters naming dials of its own and no hook.
+    public static bool Keeps(RegisterRow rule) =>
+        CandidateEvaluators.Find(rule.Evaluator) is FamilyRuleEvaluator and not IndexRuleCandidate and not OwnStepCandidate;
+
+    // Whether a rule the recorder keeps reads the night's readings through its hooks, so the night reads them for it.
+    public static bool HooksReadReadings(IEnumerable<RegisterRow> standing) =>
+        standing.Where(Keeps).Any(rule => RuleHooks.Of(CandidateEvaluator.Read(rule.Parameters)).ReadsReadings);
+
     // The night's records; the readings a rule whose hooks read them is listed by, one member's at a time, where the
     // night supplies them.
     public async Task<FamilyRecordsOutcome> RunAsync(string indexCode, string runId, IReadOnlyList<RegisterRow> standing, CancellationToken cancellation = default, Func<string, IReadOnlyList<double?>?>? readings = null)
@@ -234,9 +243,7 @@ public sealed class FamilyRecorder : IComponent
         var kept = 0;
         var said = new List<string>();
 
-        // The S&P 500's family rules alone: an S&P 400's or 600's rule keeps its list in the index families' step, and a rule
-        // its own family's step keeps, its holdings there.
-        foreach (var rule in standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is FamilyRuleEvaluator and not IndexRuleCandidate and not OwnStepCandidate))
+        foreach (var rule in standing.Where(Keeps))
         {
             var family = ((FamilyRuleEvaluator)CandidateEvaluators.Find(rule.Evaluator)!).Family;
             var cap = SetupFamilies.Named(family)?.CapSessions ?? 0;

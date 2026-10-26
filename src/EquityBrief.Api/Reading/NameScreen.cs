@@ -1379,6 +1379,8 @@ public static partial class NameScreen
             ? Report(ticker, inputs, filings, reading, shownPrice, forwardRate, bars, night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue))
             : null;
 
+        says = WithFiledMultiple(says, score?.Multiple);
+
         return page.NameRegion(
             marks,
             ticker,
@@ -1463,8 +1465,16 @@ public static partial class NameScreen
             filedFactsHeld: checkedFigures.Compared > 0,
             behind: behind,
             standing: Standing(staleness, newest, spend, priced, today, OwnWritten(accepted), IndustryWritten(accepted)),
-            fundamentals: FundamentalsScreen.Of(score, Universes.ByCode(indexCode ?? string.Empty)?.Name, scoreReadings, reportView?.Analysts, reportView?.Insiders));
+            fundamentals: FundamentalsScreen.Of(score, Universes.ByCode(indexCode ?? string.Empty)?.Name, scoreReadings, reportView?.Analysts, reportView?.Insiders),
+            filedMultiple: score?.Multiple);
     }
+
+    // The numbers with their last sentence, their valuation's, stating the scorecard's multiple where it holds one, as the
+    // rest of the page does.
+    public static NumbersSayView? WithFiledMultiple(NumbersSayView? says, double? filed) =>
+        filed is { } multiple && says is { Sentences.Count: > 1 } said && said.State != EquityBrief.Core.Quarters.FundamentalState.NoFundamentalsYet
+            ? said with { Sentences = [.. said.Sentences.Take(said.Sentences.Count - 1), $"At tonight's close it trades at {MarkRenderer.EarningsMultiple(multiple, filed: true)}."] }
+            : says;
 
     // The day a written report's own newest section was written, and the day its industry's cycle was, which is its
     // theme's and written by a theme pass on a day of its own.

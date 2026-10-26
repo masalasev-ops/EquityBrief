@@ -117,7 +117,7 @@ public partial class ReadSurface
             [
                 "Sales grew 12.0% on a year in the newest quarter, faster than in the quarter before.",
                 "Gross profit was 29.0% of its assets, 2nd of the 5 S&P 500 stocks with the figure.",
-                "It trades at 20.0 times its last four quarters' earnings, cheaper than in 6 of its own last 12 quarters; its industry's median on the S&P 500 is 25.0.",
+                "It trades at 20.0 times its last four quarters' earnings, as filed with the SEC, cheaper than in 6 of its own last 12 quarters; its industry's median on the S&P 500 is 25.0.",
                 "Over 30 days 5 analysts raised and 2 cut their estimate for the year; over 90 days insiders bought $0 and sold $250,000 in the open market.",
             ],
             view.Context.Select(line => line.Words));
@@ -232,7 +232,7 @@ public partial class ReadSurface
         // A multiple with no place of its own and no industry's median, and insiders with no trade.
         var partly = FundamentalsScreen.Of(ScoreRowOf(EightOfNine()) with { IndustryMultiple = null }, "S&P 500", new double?[LedgerReadings.Count], null, ScoreInsiders(0m));
 
-        Assert.Equal("It trades at 20.0 times its last four quarters' earnings; its industry's median is not read.", partly.Context[2].Words);
+        Assert.Equal("It trades at 20.0 times its last four quarters' earnings, as filed with the SEC; its industry's median is not read.", partly.Context[2].Words);
         Assert.Equal("The analysts' changes to their estimates over 30 days are not stored; insiders made no open-market trade over 90 days.", partly.Context[3].Words);
         Assert.Equal("Sales against a year before: not read from its filings.", partly.Context[0].Words);
     }
@@ -276,7 +276,7 @@ public partial class ReadSurface
         Assert.Equal("Its quarter to 2026-09-30 has been reported, but its filing is not stored yet; these checks read the quarter to 2026-06-30.", f1.Awaited);
         Assert.Equal(["sales", "gross", "price", "estimates"], f1.Context.Keys);
         Assert.Equal("Gross profit was 29.0% of its assets, 2nd of the 5 S&P 500 stocks with the figure.", f1.Context["gross"]);
-        Assert.StartsWith("It trades at 20.0 times its last four quarters' earnings", f1.Context["price"], StringComparison.Ordinal);
+        Assert.StartsWith("It trades at 20.0 times its last four quarters' earnings, as filed with the SEC", f1.Context["price"], StringComparison.Ordinal);
         Assert.EndsWith("; its industry's median on the S&P 500 is 25.0.", f1.Context["price"], StringComparison.Ordinal);
         Assert.Equal("Fundamentals: strong, 8 of 9 checks on its filings to 2026-06-30, in the card below.", BriefOfPage(chart).Lines["fundamentals"]);
 
@@ -289,6 +289,22 @@ public partial class ReadSurface
         Assert.Equal(f1.Awaited, onName.Awaited);
         Assert.Equal(f1.Context["gross"], onName.Context["gross"]);
         Assert.Equal(Array.IndexOf(Web.App.SinglePageApp.RegionOrder, "margins") + 1, Array.IndexOf(Web.App.SinglePageApp.RegionOrder, "fundamentals"));
+
+        // From the 22.8 correction of 2026-10-26 one earnings multiple a stock on every page: the scorecard's, 20.0 filed with
+        // the SEC, on F1's brief read, its card, its chart page's grid and its full page, and no other multiple of the night.
+        Assert.Equal("It trades at 20.0 times its last four quarters' earnings, as filed with the SEC; its industry's median on the S&P 500 is 25.0.", BriefOfPage(chart).Lines["multiple"]);
+        Assert.Contains("20.0, as filed with the SEC", chart, StringComparison.Ordinal);
+
+        var nameOfF1 = System.Net.WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/F1"));
+
+        foreach (var page in new[] { chart, nameOfF1 })
+        {
+            Assert.All(
+                System.Text.RegularExpressions.Regex.Matches(page, @"(\d+\.\d) times its last four quarters' earnings(, as [A-Za-z ]+)?").Select(match => (match.Groups[1].Value, match.Groups[2].Value)),
+                stated => Assert.Equal(("20.0", ", as filed with the SEC"), stated));
+            Assert.DoesNotMatch(@"Tonight \d+\.\dx", page);
+            Assert.DoesNotContain(", as the data provider reports, against", page, StringComparison.Ordinal);
+        }
 
         // N1, no scorecard stored: both pages say so.
         var n1 = FundamentalsOfPage(System.Net.WebUtility.HtmlDecode(await client.GetStringAsync("/screens/chart/N1")), "chart-page-fundamentals");

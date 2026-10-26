@@ -235,6 +235,19 @@ public static class ChartScreen
         ]);
     }
 
+    public const string NightsMultiple = "Price to its four quarters' earnings, the night's";
+
+    // The grid with the stock's one earnings multiple: the scorecard's where it holds one, in the provider's place.
+    public static IReadOnlyList<GridGroup> WithFiledMultiple(IReadOnlyList<GridGroup> grid, FundamentalScoreRow? score) =>
+        score?.Multiple is not { } filed
+            ? grid
+            : [.. grid.Select(group => group with
+            {
+                Figures = [.. group.Figures.Select(figure => figure.Label == NightsMultiple
+                    ? new GridFigure(NightsMultiple, filed.ToString("0.0", CultureInfo.InvariantCulture) + ", " + MarkRenderer.FiledMultiple, filed.ToString("R", CultureInfo.InvariantCulture))
+                    : figure)],
+            })];
+
     static GridGroup Valuation(ChartInputs inputs, JsonDocument? newest)
     {
         var valuation = inputs.Report.Valuation;
@@ -249,10 +262,10 @@ public static class ChartScreen
         return new GridGroup("valuation", "Valuation",
         [
             valuation?.Multiple is { } night
-                ? new GridFigure("Price to its four quarters' earnings, the night's", night.ToString("0.0", CultureInfo.InvariantCulture)
+                ? new GridFigure(NightsMultiple, night.ToString("0.0", CultureInfo.InvariantCulture) + ", " + MarkRenderer.ProvidedMultiple
                     + (valuation.Low is { } low && valuation.High is { } high ? FormattableString.Invariant($", against {low:0.0} to {high:0.0} over its own quarters") : string.Empty),
                     night.ToString(CultureInfo.InvariantCulture))
-                : Missing("Price to its four quarters' earnings, the night's"),
+                : Missing(NightsMultiple),
             quarter is { } newestQuarter
                 ? new GridFigure("Its newest quarter's multiple", FormattableString.Invariant($"{Figures.Multiple(newestQuarter.Multiple)} at {newestQuarter.Quarter:yyyy-MM-dd}"), newestQuarter.Multiple.ToString(CultureInfo.InvariantCulture))
                 : Missing("Its newest quarter's multiple"),

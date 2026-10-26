@@ -655,7 +655,7 @@ public partial class ReadSurface
         var valued = await NameRoute(store, "MSFT");
 
         Assert.Contains(
-            "<p class=\"valuation-line\" data-multiple=\"24.5\" data-position=\"in the lower half of its range\">At the night's close it trades at 24.5 times its last four quarters' earnings, against 20.1 to 30.2 over its own quarters: in the lower half of its range.</p>",
+            "<p class=\"valuation-line\" data-multiple=\"24.5\" data-position=\"in the lower half of its range\">At the night's close it trades at 24.5 times its last four quarters' earnings, as the data provider reports, against 20.1 to 30.2 over its own quarters: in the lower half of its range.</p>",
             WebUtility.HtmlDecode(valued),
             StringComparison.Ordinal);
         Assert.Contains("data-mark=\"peer-dots\" data-members=\"3\"", valued, StringComparison.Ordinal);
@@ -664,6 +664,27 @@ public partial class ReadSurface
             Regex.Matches(Regex.Match(valued, "<table class=\"peer-value-table\".*?</table>", RegexOptions.Singleline).Value, "<tr data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
         Assert.Contains("<tr data-ticker=\"MSFT\" class=\"key-row\" data-own=\"yes\">", valued, StringComparison.Ordinal);
         Assert.Contains("<td>The median</td><td class=\"num\">24.5 of 3</td>", valued, StringComparison.Ordinal);
+
+        // From the 22.8 correction of 2026-10-26 a scorecard holding a multiple, 21.7 over the net income and the shares
+        // filed with the SEC, is the one the page states for the night: on its valuation line, in the numbers' last sentence
+        // and on no dot of the band, which draws the provider's quarters alone and names them as the provider's.
+        Assert.Equal([""], Rows(store, "SELECT COALESCE(multiple, '') FROM fundamental_score WHERE ticker = 'MSFT' AND session_date = '2026-09-08';").Select(row => row[0]));
+        store.Execute("UPDATE fundamental_score SET multiple = 21.7, industry_multiple = 25.0 WHERE ticker = 'MSFT' AND session_date = '2026-09-08';");
+
+        var scored = WebUtility.HtmlDecode(await NameRoute(store, "MSFT"));
+
+        Assert.Contains("<p class=\"valuation-line\" data-multiple=\"21.7\" data-source=\"filed\">At the night's close it trades at 21.7 times its last four quarters' earnings, as filed with the SEC.</p>", scored, StringComparison.Ordinal);
+        Assert.DoesNotContain("class=\"mb-night\"", scored, StringComparison.Ordinal);
+
+        // The numbers' last sentence, their valuation's, is the scorecard's where it holds one and the provider's where not.
+        var says = new NumbersSayView("steady", "Its business reads steady.", null, ["Sales grew.", "At tonight's close it trades at 24.5 times its last four quarters' earnings, the middle of the 20.1 to 30.2 range of its last 12 quarters."], []);
+
+        Assert.Equal(["Sales grew.", "At tonight's close it trades at 21.7 times its last four quarters' earnings, as filed with the SEC."], EquityBrief.Api.Reading.NameScreen.WithFiledMultiple(says, 21.7)!.Sentences);
+        Assert.Same(says, EquityBrief.Api.Reading.NameScreen.WithFiledMultiple(says, null));
+        Assert.Contains("Each quarter's multiple, as the data provider reports", scored, StringComparison.Ordinal);
+        Assert.All(
+            Regex.Matches(scored, @"(\d+\.\d) times its last four quarters' earnings").Select(match => match.Groups[1].Value),
+            stated => Assert.Equal("21.7", stated));
 
         // KEYS, whose filing's segments sum to the company's revenue: its two groups' revenue and the total read back, each
         // with its bar, the filing's table folded beneath and the region dated by the filing. Read off the page against the
