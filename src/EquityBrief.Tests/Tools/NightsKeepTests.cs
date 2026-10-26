@@ -12,6 +12,9 @@ public class NightsKeepTests
 
     const string Call = "keep_nights \"$copies\" \"$copy\" \"$data/night.build\"";
 
+    // The data root's folder of nights, as the scripts name it.
+    const string Nights = "nights";
+
     // The helper sourced and called as a script calls it, over the folders named.
     static ShellResult Keep(string bash, string copies, string copy, string build) =>
         Shell.Run(bash, ["-c", ". \"$1\" && keep_nights \"$2\" \"$3\" \"$4\"", "keep", Forward(Repository.Tool("nights-keep")), Forward(copies), Forward(copy), Forward(build)]);
@@ -34,7 +37,7 @@ public class NightsKeepTests
 
         using var root = new TemporaryDirectory();
         var data = Path.Combine(root.Path, "data");
-        var nights = Path.Combine(data, "nights");
+        var nights = Path.Combine(data, Nights);
         var beside = Path.Combine(data, "beside");
         var build = Path.Combine(data, "night.build");
         var start = new DateTime(2026, 10, 20, 12, 0, 0, DateTimeKind.Utc);
@@ -84,7 +87,7 @@ public class NightsKeepTests
 
         // A folder that is not the data root's folder of nights is refused whole, named on stderr, and nothing in it
         // removed.
-        var other = Keep(bash, data, Path.Combine(data, "nights"), build);
+        var other = Keep(bash, data, nights, build);
 
         Assert.True(other.ExitCode == 0, other.Output);
         Assert.Equal(["beside", "nights"], Folders(data));

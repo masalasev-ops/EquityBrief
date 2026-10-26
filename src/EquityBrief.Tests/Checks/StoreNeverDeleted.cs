@@ -269,7 +269,7 @@ public class StoreNeverDeleted
             .OrderBy(site => site, StringComparer.Ordinal)
             .ToArray();
 
-        // Eight, every one a folder or file inside a temporary directory the test itself made.
+        // Ten, every one a folder or file inside a temporary directory the test itself made.
         Assert.Equal(
             [
                 "FilingsArchiveTests.cs: Directory.Delete(folder)",
@@ -277,6 +277,8 @@ public class StoreNeverDeleted
                 "FixtureExpectations.StoreBackup.cs: File.Delete(Path.Combine(folder, made.Copy!))",
                 "NightlyRun.Script.cs: Directory.Delete(Root)",
                 "NightlyRun.Script.cs: Directory.Delete(folder.Path)",
+                // A constructed folder of nights' night.build, so the copies are kept with no copy named.
+                "NightsKeepTests.cs: File.Delete(build)",
                 "ReadSurface.Drain.cs: File.Delete(Path.Combine(build, WorkerDrainLauncher.Assembly))",
                 "ReadSurface.NightBuild.cs: File.Delete(Path.Combine(data, NightBuild.CommitFileName))",
                 "ReadSurface.NightBuild.cs: File.Delete(Path.Combine(made, WorkerDrainLauncher.Assembly))",
