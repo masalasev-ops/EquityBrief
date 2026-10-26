@@ -216,13 +216,16 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task AnSAndP400PicksRowSaysARewardToRiskItsNightDidNotStoreIsNotStoredRatherThanNone()
+    public async Task AnSAndP400PicksRiskLineWorksItsRatioFromThePlanItsNightStoredAndSaysNotStoredOnlyWhereNoneCanBeWorked()
     {
-        // M2 listed by the S&P 400's drift with a stop and a target, the night storing no reward to risk for the drift's
-        // rows: its row says the ratio is not stored, where the breakout's M1, trailing with no target, reads open.
+        // M2 listed by the S&P 400's drift at RLI's plan of 2026-10-23, bought about 64.83 with its stop at 60.76 and its
+        // target at 77.03, the night storing no reward to risk for the drift's rows. From the 15.1 correction of
+        // 2026-10-26 its row works the ratio from the plan, worked here by hand: 12.20 above the buy against 4.07 under
+        // it, 2.99754 to four places 2.9975, drawn as $3.00. A plan whose stop is not under its buy gives none, and its
+        // row says not stored.
         using var store = UniversesStore();
 
-        store.Execute($"UPDATE index_family_result SET passed = 1, place = 1, entry = '40', stop = '37.85', target = '44.05', cap = 60, reason = NULL WHERE index_code = 'MID' AND session_date = '{IndexNight}' AND ticker = 'M2' AND family = 'drift';");
+        store.Execute($"UPDATE index_family_result SET passed = 1, place = 1, entry = '64.83', stop = '60.76', target = '77.03', cap = 60, reason = NULL WHERE index_code = 'MID' AND session_date = '{IndexNight}' AND ticker = 'M2' AND family = 'drift';");
         store.Execute($"INSERT INTO index_family_pick (index_code, session_date, ticker, family, state, place, also, held_index, held_family, held_night) VALUES ('MID', '{IndexNight}', 'M2', 'drift', 'listed', 1, '[]', NULL, NULL, NULL);");
 
         using var host = new Host(store.Root);
@@ -230,8 +233,16 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
 
-        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\"><span class=\"degraded\">not stored</span></td>", PickRowOf(page, "M2"), StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">no target</td>", PickRowOf(page, "M1"), StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"2.9975\">$3.00</td>", PickRowOf(page, "M2"), StringComparison.Ordinal);
+        Assert.Equal(2.9975m, EquityBrief.Core.Cards.PlanRatio.Of(64.83m, 60.76m, 77.03m));
+
+        store.Execute($"UPDATE index_family_result SET stop = '64.83' WHERE index_code = 'MID' AND session_date = '{IndexNight}' AND ticker = 'M2' AND family = 'drift';");
+
+        var none = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
+
+        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\"><span class=\"degraded\">not stored</span></td>", PickRowOf(none, "M2"), StringComparison.Ordinal);
+        Assert.Null(EquityBrief.Core.Cards.PlanRatio.Of(64.83m, 64.83m, 77.03m));
+        Assert.Null(EquityBrief.Core.Cards.PlanRatio.Of(64.83m, 60.76m, 64.83m));
     }
 
     [Fact]

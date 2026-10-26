@@ -9669,3 +9669,153 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 64 tables, 1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    Friday's night run again from main after the merge; the sign-offs of phases 18, 20 and 22 by fresh sessions.
+
+### 22.12 ruling - the gates over main before the night of 2026-10-26, and the page corrections after Friday's night run again in one pull request   2026-10-26
+
+Not a checkpoint entry: it records the operator's ruling and lands nothing.
+Ruled:      by the operator at about 02:20 UTC on 2026-10-26, dated by them 2026-10-25, kept whole in
+            `prompts/2026-10-25-22.12-before-mondays-night-and-three-page-corrections.md`, after the corrections of
+            2026-10-26 merged: "Gates over main, owed before the night of 2026-10-26. PR 564 merged before its local
+            gates finished; the second local run was stopped at the merge. Run `tools/ci.ps1` and
+            `tools/verify-phase.ps1` over main at 6e687e0a while no other writer runs, and record both in a dated entry
+            with their figures. If either fails, stop and report before the night." Then: "one pull request, each
+            correction labelled under the checkpoint that built what it corrects, read off the record. No rule's code
+            version moves, asserted; no paid call; no store write." Its three page items: every buy's risk line reading
+            its own stored plan, "Risk $1 to make $3.00" where the plan holds an entry, a stop and a target, and where a
+            setup sets no target the line saying why; an S&P 400 or 600 pick's news line reading "News labels cover S&P
+            500 picks only"; and a frozen family's card reading the register as the page reads it, its status following
+            the rule its night ran after a night run again. At about 02:25 UTC the operator added to the third: "The same
+            holds on paper trading's rule scorecard and its pickers: after a re-run that reads the register as it
+            stands, a frozen family's setup picker lists its live rule and each version, and the scorecard draws the
+            live rule's card with its versions, not the provisional rule's "No variant is registered for this rule." A
+            test over a re-run night of the frozen quality family." It ends: "Stop after the merge and report. Nothing
+            else starts."
+Gates:      over main at 6e687e0a from 02:23 UTC, no night, local run, off-peak run, ledger build, monthly run or
+            history read writing: `tools/ci.ps1` green, all six steps, 0 warnings, 0 errors, 2795 of 2795 tests ran with
+            none failed, migrations 0 to 111 with none pending, schema version 111, against `data-ci` and never `data`;
+            and `tools/verify-phase.ps1` green over the suite result `tools/ci.ps1` wrote over that commit, 64 tables,
+            1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and verdicts reconciled
+            against a floor of 34, 44 checks on the roster run and passed, and the 22.8 correction's entry stating each
+            figure as the run measured. The night of 2026-10-26 builds from a main both gates passed over.
+Labelled:   read off the record: the risk line's ratio under 15.1, whose correction of 2026-10-07 made a ratio the night
+            did not store beside a stop and a target say "not stored" and worked none on any screen; the line's words
+            where a setup sets no target under 22.6, which wrote "no target" there in place of "open"; the news line
+            under 19.3, which drew the news cell in the buy points; the dip's card and its Run row under 22.3, which
+            froze the dip and drew both live from its freeze; and paper trading's scorecard and pickers under 22.11, which
+            froze quality on the S&P 500, the first family there whose rules a night run again reads after its freeze,
+            while that index's accounts are read past the night's evening and the S&P 400's and 600's at the instant
+            the night read the register. The breakout's line reads "No target: it sells on a rising stop" and not the
+            ruling's "trailing stop": section 15.23's terms table writes "trailing" as "rising" on Tonight and
+            `plain-words` refuses it there, and the target column beside it reads "rising stop, no target".
+Queue:      done, phase 22 to its report, the corrections after it and Friday's night run again; in progress, the gates
+            over main and these corrections in one pull request; next, the stop and report, and the sign-offs of phases
+            18, 20 and 22 by fresh sessions when the operator says.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.
+
+### 15.1 - correction: an S&P 400's or 600's pick works its reward to risk from the plan its night stored, where every plan but the pullback's read not stored   2026-10-26
+
+Found:      by the operator on 2026-10-25 reading Friday's night run again: an S&P 400 or 600 pick read "Risk $1 to make:
+            not stored" where its night stored its entry, its stop and its target. The index's night stores a ratio for
+            the pullback alone, and the 15.1 correction of 2026-10-07 had every other plan say not stored, with no
+            screen working one out.
+Corrected:  where the night stored no ratio and the plan holds a stop under its entry and a target above it, the page
+            works the ratio from them by one function in the core, rounded to a stored price's places as a family's
+            trade gate rounds the ratio it stores, and draws it as the S&P 500's stored ratio reads, "$3.00" at RLI's
+            plan of 2026-10-23; the pullback's stored ratio is drawn as before, and a plan giving none still says not
+            stored. The screen decision is amended in its own text on the ruling, and the roster kept in step.
+Tests:      one new and one rewritten: the drift's M2 at RLI's plan worked by hand to 2.9975 and drawn $3.00, and a plan
+            whose stop is not under its buy saying not stored; and no source a rule's version pins one these
+            corrections write, the reader shown to find two a rule pins. 2796 in all.
+Claims:     none new.
+Pins:       none move, asserted: the two sources it writes are among those no rule pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the test reading it. M1
+            the projection handing no worked ratio; red, M2's row missing $3.00.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.
+
+### 22.6 - correction: a buy whose setup sets no target says why on its risk line, where it read no target   2026-10-26
+
+Found:      by the operator on 2026-10-25 reading Friday's night run again: a breakout's and a short-term dip's risk line
+            read "no target", which 22.6 wrote there in place of "open", saying nothing of how the trade is sold.
+Corrected:  the line reads "No target: it sells on a rising stop" for a breakout and "No target: it sells on its exit
+            signal" for the dip, in tomorrow's buys and on each card's own picks. The ruling's "trailing stop" is
+            written as section 15.23's terms table writes it on Tonight. The roster is kept in step.
+Tests:      one new and two extended: over the S&P 400's night with a pick of each kind, the drift's M3 at RLI's plan
+            drawn $3.00, the breakout's M1 and the dip's M2 each saying why, no line reading no target and no term of
+            section 15.23's list on the page; and the breakout's and the dip's own tests reading the new words. 2797 in
+            all.
+Claims:     none new.
+Pins:       none move, asserted: the source it edits joins the list no rule pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the test reading it. M1
+            both lines reading no target again; red, M1's line missing its rising stop.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.
+
+### 19.3 - correction: an S&P 400's or 600's buy holding no label says the news labels cover S&P 500 picks only, where it read no label   2026-10-26
+
+Found:      by the operator on 2026-10-25 reading Friday's night run again: an S&P 400 or 600 pick read "no label" in
+            tomorrow's buys, the news cell 19.3 drew there, while the labeller reads the S&P 500's list alone and labels
+            none of them.
+Corrected:  a buy holding no label on an S&P 400 or 600 night reads "News labels cover S&P 500 picks only"; an S&P 500
+            buy holding none still reads no label, and a pick holding labels draws its counts on any index. Nothing
+            about the labeller changes and no call is added. The roster is kept in step.
+Tests:      one new: the S&P 400's night with a pick of each kind, each of its three rows saying the labels cover S&P
+            500 picks only and none saying no label, and the buys drawn by the page's own renderer for each side, no
+            label on the S&P 500's and its counts on either. 2798 in all.
+Claims:     none new.
+Pins:       none move, asserted: the three sources it edits join the list no rule pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the test reading it. M1
+            the page telling every index the labeller reads its list; red, none of the three rows saying why.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.
+
+### 22.3 - correction: a frozen dip's card and its Run row read the register at the instant the night read it, where a night run again after the freeze drew them provisional   2026-10-26
+
+Found:      by the operator on 2026-10-25 reading Friday's night run again with the register as it stood: the S&P 400's
+            dip card said provisional while its picks came from the live rule. The card and the Run row read the
+            register past the night's evening, before the freeze of 2026-10-25, where the swing cards beside them read it
+            at the instant the night stated; the S&P 500's dip card read its choice of rule the same way.
+Corrected:  the dip's card and its Run row read the register, and the card its sweep's answers, at the instant the
+            index's night states it read the register at, past the night's evening on a night run on its own evening; on
+            the S&P 500 off its own index's night as on the S&P 400 and 600. The roster is kept in step.
+Tests:      two new: the S&P 400's night run again after its dip's freeze, the card live since the freeze with its three
+            versions and its sweep's line and its Run row live; and the S&P 500's, its card and its Run row live since
+            the freeze. 2800 in all.
+Claims:     none new.
+Pins:       none move, asserted: the two sources it edits join the list no rule pins.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each surface's property, each filtered to the test
+            reading it. M1 the card reading the register past the night's evening whatever it is handed; red at its live
+            since. M2 the Run row the same; red at the row. M3 the S&P 500's page handing the night's evening; red at
+            its card.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.
+
+### 22.11 - correction: paper trading reads the register at the instant the night read it on the S&P 500 as on the 400 and 600, where a night run again after a freeze drew its frozen families provisional   2026-10-26
+
+Queue:      done, phase 22 to its report, the corrections after it and Friday's night run again; in progress, the gates
+            over main and these corrections in one pull request, this the last; next, the stop and report, and the
+            sign-offs of phases 18, 20 and 22 by fresh sessions when the operator says.
+Found:      by the operator on 2026-10-25 after Friday's night run again with the register as it stood: the S&P 500's
+            paper trading drew Quality at a fair price and the short-term dip each as its provisional rule, its picker
+            naming the provisional rule and its scorecard saying "No variant is registered for this rule." Its accounts
+            read the register past the night's evening, before the freezes of 2026-10-25, while the S&P 400's and
+            600's read it at the instant the night stated. 22.11 froze quality on the S&P 500, the first family there
+            whose rules a night run again reads after its freeze.
+Corrected:  paper trading's accounts and each card's record so far read the register at the instant the S&P 500's own
+            index night states, as the S&P 400's and 600's do, past the night's evening on a night run on its own
+            evening; the dip's accounts on the S&P 500 with them. The roster is kept in step.
+Tests:      one new: over the universes' store's night run again after quality was frozen on the S&P 500 and the S&P 400
+            the morning after, each index's paper trading drawing the family's tile live, both pickers listing it with
+            the live rule named, and the scorecard drawing the live rule with its seven versions and no line that no
+            variant is registered. 2801 in all with the corrections above.
+Claims:     none new.
+Pins:       none move, asserted: the source it edits is on the list no rule pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the test reading it. M1
+            the accounts handing the S&P 500 no instant again; red, its quality tile provisional.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2801 of 2801 tests ran with none failed,
+            migrations 0 to 111 with none pending, schema version 111, against `data-ci` and never `data`; the phase
+            report 64 tables, 1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the stop and report; the sign-offs of phases 18, 20 and 22 by fresh sessions.

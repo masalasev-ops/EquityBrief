@@ -95,7 +95,7 @@ public partial class ReadSurface
         var first = PickRowOf(page, "K1");
 
         Assert.Contains("<td class=\"r num plan-buy\" data-buy=\"50\">50.00</td><td class=\"r num plan-stop\" data-stop=\"47\">47.00</td><td class=\"r num plan-target\" data-target=\"none\">rising stop, no target</td>", first, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">no target</td>", first, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">No target: it sells on a rising stop</td>", first, StringComparison.Ordinal);
 
         // From 22.6 why each qualified, the breakout's template worked by hand off the figures its gates stored: K1 closed
         // at 50 over its 126-day high of 49.5 on 2.1 times its volume, its ranges at 0.8 of the 20 days before; K2, stored

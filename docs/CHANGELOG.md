@@ -26,6 +26,46 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - .claude/rules/checks.md - read-surface holds paper trading reading the register as the page reads it on every index
+Corrects: on Friday's night run again after the freezes, the S&P 500's paper trading drew quality and the dip as provisional rules with no variant registered, reading the register past the night's evening while the S&P 400's and 600's read it at the instant the night stated, found by the operator on 2026-10-25
+Was:
+> read-surface: ... the S&P 400's with its three versions and its sweep's line |
+Now:
+> read-surface: ... the S&P 400's with its three versions and its sweep's line; and from the 22.11 correction of 2026-10-26 paper trading reading the register as the page reads it on every index, on the night run again after Quality at a fair price was frozen on the S&P 500 and on the S&P 400 the family's tile live, both pickers listing it, its rule's choice naming the live rule and the scorecard drawing the live rule with its seven versions and never the line that no variant is registered |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
+### 2026-10-26 - .claude/rules/checks.md - read-surface holds a frozen dip's card and Run row reading the register as the page reads it
+Corrects: on Friday's night run again after the dip's freeze, the S&P 400 dip's card read provisional while the live rule drew its picks, reading the register past the night's evening, found by the operator on 2026-10-25
+Was:
+> read-surface: ... a pick holding labels drawing its counts on either |
+Now:
+> read-surface: ... a pick holding labels drawing its counts on either; and from the 22.3 correction of 2026-10-26 a frozen dip's card and its Run row reading the register as the page reads it, on the S&P 400's night and on the S&P 500's run again after the dip's freeze each live since the freeze, the S&P 400's with its three versions and its sweep's line |
+Why: the roster row says what its check asserts, and the correction's tests extend it.
+
+### 2026-10-26 - .claude/rules/checks.md - read-surface holds an S&P 400 or 600 buy saying the news labels cover S&P 500 picks only
+Corrects: an S&P 400 or 600 pick read "no label" in tomorrow's buys though the labeller reads the S&P 500's list alone, found by the operator reading Friday's night run again on 2026-10-25
+Was:
+> read-surface: ... with no term of section 15.23's list on the page |
+Now:
+> read-surface: ... with no term of section 15.23's list on the page; and from the 19.3 correction of 2026-10-26 a buy holding no label saying the news labels cover S&P 500 picks only on an S&P 400 night, each of its three rows, and no label on an S&P 500 night, a pick holding labels drawing its counts on either |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
+### 2026-10-26 - .claude/rules/checks.md - read-surface holds each buy's risk line saying why where its setup sets no target
+Corrects: a breakout's or a short-term dip's risk line read "no target" with nothing saying why, found by the operator reading Friday's night run again on 2026-10-25
+Was:
+> read-surface: ... the numbers' valuation sentence stating the scorecard's too |
+Now:
+> read-surface: ... the numbers' valuation sentence stating the scorecard's too; and from the 22.6 correction of 2026-10-26 each buy's risk line over an S&P 400 pick of each kind, the drift's worked from its plan to $3.00, the breakout's saying it has no target since it sells on a rising stop and the dip's since it sells on its exit signal, with no term of section 15.23's list on the page |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
+### 2026-10-26 - .claude/rules/checks.md - read-surface holds an S&P 400 pick's reward to risk worked from the plan its night stored
+Authorised by: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
+Was:
+> read-surface: ... and an S&P 400 pick's row draws the business state its night stored and says not read only where none was stored, and a reward to risk its night did not store beside a stop and a target says not stored rather than none; ...
+Now:
+> read-surface: ... and a reward to risk its night did not store beside a stop and a target is worked from the plan its night stored from the 15.1 correction of 2026-10-26, at RLI's plan worked by hand to $3.00, and says not stored rather than none only where that plan gives none; ...
+Why: the operator's ruling of 2026-10-25, item 2, after an S&P 400 or 600 pick's risk line read "not stored" where its night stored its entry, its stop and its target; the decision is amended with it.
+
 ### 2026-10-26 - ARCHITECTURE.html and .claude/rules/checks.md - one earnings multiple a stock on every page
 Corrects: the chart page's brief read stated NVDA at 30.1 times its last four quarters' earnings, the provider's, and its fundamentals card at 26.4, the scorecard's over the net income and the shares filed with the SEC, the same words naming two figures, found when 22.12 read NVDA's pages back against the store
 Was:

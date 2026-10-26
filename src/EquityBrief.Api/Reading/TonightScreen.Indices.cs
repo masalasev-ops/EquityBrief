@@ -73,6 +73,8 @@ public static partial class TonightScreen
                             Queue: queue.GetValueOrDefault(pick.Ticker),
                             Business: Business(readingBy.GetValueOrDefault(pick.Ticker)));
 
+                        // The pullback's ratio as its night stored it, and every other plan holding an entry, a stop and a
+                        // target worked from them, since no other family's night stores one.
                         return new FamilyPickCell(
                             row,
                             pick.Place ?? 0,
@@ -80,7 +82,9 @@ public static partial class TonightScreen
                             answer.Stop,
                             answer.Target,
                             family.Trails,
-                            family.Name == SetupFamilies.Pullback && answer.OrderBy is { } ratio ? Statistic.ToPrice(ratio) : null,
+                            family.Name == SetupFamilies.Pullback && answer.OrderBy is { } ratio
+                                ? Statistic.ToPrice(ratio)
+                                : answer is { Entry: { } entry, Stop: { } stop, Target: { } target } ? EquityBrief.Core.Cards.PlanRatio.Of(entry, stop, target) : null,
                             IndexWhy(family, settings, universe.Name),
                             [.. pick.Also.Select(name => SetupFamilies.Named(name)?.Label ?? name)]);
                     }),

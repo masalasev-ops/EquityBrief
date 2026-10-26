@@ -21,9 +21,15 @@ public sealed partial class MarkRenderer
     static string FoldToggle(string fold, bool opened) =>
         Formatted($" <button type=\"button\" class=\"card-toggle fold-toggle\" aria-expanded=\"{(opened ? "true" : "false")}\" aria-controls=\"{Escaped(fold)}\" title=\"open this pick's plan and checks\">Open plan</button>");
 
-    // A pick's reward to risk as its plan states it, open where the plan trails its stop or sells on an exit in words.
+    // A pick's reward to risk as its plan states it, and where its setup sets no target why: its stop rising with the
+    // price, or its exit in words.
     static string RewardCell(FamilyPickCell pick) =>
         pick.RewardToRisk is { } ratio
             ? Formatted($"<td class=\"r num\" data-reward-to-risk=\"{ratio.ToString(Invariant)}\">${Figures.Ratio(ratio)}</td>")
-            : $"<td class=\"r num\" data-reward-to-risk=\"none\">{(pick.Trailing || pick.Exit is not null ? "no target" : pick.Stop is not null && pick.Target is not null ? "<span class=\"degraded\">not stored</span>" : "<span class=\"degraded\">none</span>")}</td>";
+            : $"<td class=\"r num\" data-reward-to-risk=\"none\">{(pick.Trailing ? NoTargetRising : pick.Exit is not null ? NoTargetExit : pick.Stop is not null && pick.Target is not null ? "<span class=\"degraded\">not stored</span>" : "<span class=\"degraded\">none</span>")}</td>";
+
+    // What a pick's risk line says where its setup sets no target.
+    const string NoTargetRising = "No target: it sells on a rising stop";
+
+    const string NoTargetExit = "No target: it sells on its exit signal";
 }
