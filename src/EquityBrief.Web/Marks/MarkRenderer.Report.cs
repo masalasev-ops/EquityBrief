@@ -661,9 +661,16 @@ public sealed partial class MarkRenderer
     // ---- valuation ----
 
     // Multiple band: each quarter's own multiple as a line within the band of their low and high, and the night's multiple
-    // as a dot at the right. Fewer than two quarters holding a multiple say so.
-    public string MultipleBand(string ticker, ValuationView valuation)
+    // as a dot at the right, where the page states the provider's; where it states the scorecard's, filed with the SEC, the
+    // quarters alone, named as the provider's, so the page states one multiple for the night. Fewer than two quarters
+    // holding a multiple say so.
+    public string MultipleBand(string ticker, ValuationView valuation, bool nightFiled = false)
     {
+        if (nightFiled)
+        {
+            valuation = valuation with { Multiple = null };
+        }
+
         var quarters = valuation.Quarters;
 
         if (quarters.Count < 2)
@@ -683,7 +690,9 @@ public sealed partial class MarkRenderer
         var svg = new StringBuilder();
 
         svg.Append(Formatted($"<svg class=\"multiple-band\" viewBox=\"0 0 {Number(ChartWide)} {Number(ChartHigh)}\" role=\"img\" data-mark=\"multiple-band\" data-quarters=\"{quarters.Count}\" aria-label=\"The multiple of each quarter within their range, and tonight's\">"));
-        svg.Append(Legend(("mb-line", "Each quarter's multiple"), ("mb-band", "Their range"), ("mb-night", "Tonight's multiple")));
+        svg.Append(nightFiled
+            ? Legend(("mb-line", "Each quarter's multiple, " + ProvidedMultiple), ("mb-band", "Their range"))
+            : Legend(("mb-line", "Each quarter's multiple"), ("mb-band", "Their range"), ("mb-night", "Tonight's multiple")));
         svg.Append(Ticks(low, high, Y, "x"));
         svg.Append(Formatted($"<rect class=\"mb-band\" x=\"{Number(ChartLeft)}\" y=\"{Number(Y(bandHigh))}\" width=\"{Number(X(quarters.Count) - ChartLeft)}\" height=\"{Number(Math.Max(Y(bandLow) - Y(bandHigh), 1))}\" data-low=\"{bandLow.ToString(Invariant)}\" data-high=\"{bandHigh.ToString(Invariant)}\"/>"));
         svg.Append(Formatted($"<polyline class=\"mb-line\" fill=\"none\" points=\"{string.Join(' ', quarters.Select((quarter, at) => Number(X(at)) + "," + Number(Y(EquityBrief.Core.Prices.Statistic.FromRatio(quarter.Multiple)))))}\"/>"));

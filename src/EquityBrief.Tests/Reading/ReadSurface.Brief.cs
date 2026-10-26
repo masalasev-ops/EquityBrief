@@ -117,10 +117,16 @@ public partial class ReadSurface
                 "Fundamentals: strong, 8 of 9 checks on its filings to 2026-06-30, in the card below.",
                 "Sales up 12.0% on a year in the quarter to 2026-06-30, faster than the +9.0% of the quarter before.",
                 "Operating margin 21.0%, wider than the 18.0% of a year earlier.",
-                "It trades at 18.4 times its last four quarters' earnings, the middle of its own range of 15.2 to 24.8.",
+                "It trades at 20.0 times its last four quarters' earnings, as filed with the SEC; its industry's median on the S&P 500 is 25.0.",
                 "The analysts' mean target, as fetched on 2026-10-20: 120.00, 20.0% above the price; over 30 days 5 raised and 2 cut their estimate for the year.",
             ],
             LinesOf(view, "business"));
+
+        // From the 22.8 correction of 2026-10-26 a stock the scorecard holds no multiple for has the provider's, named as its,
+        // against its own quarters' range.
+        var unscored = BriefScreen.Of(BriefOf(BriefMember(), PullbackListed(), account: new AccountSettings(100_000m, 1m, 0.5m), report: new DateOnly(2026, 11, 5), moves: [-6.0, 8.0, 5.0], sold: 250_000m, standing: []));
+
+        Assert.Contains("It trades at 18.4 times its last four quarters' earnings, as the data provider reports, the middle of its own range of 15.2 to 24.8.", LinesOf(unscored, "business"));
         Assert.Equal(
             [
                 $"Picked tonight by {pullback}: buy at the next open, near tonight's close of 100.00.",

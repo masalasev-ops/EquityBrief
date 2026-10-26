@@ -13,6 +13,18 @@ public sealed partial class MarkRenderer
 {
     public const string FundamentalsFooter = "Worked by code from the company's filings as first filed with the SEC. No model judged it.";
 
+    public const string FiledMultiple = "as filed with the SEC";
+
+    public const string ProvidedMultiple = "as the data provider reports";
+
+    // A stock's earnings multiple in the words every page gives it, named by where it came from: the scorecard's, over the
+    // net income and the shares filed with the SEC, which a page states wherever the scorecard holds one, or the provider's.
+    public static string EarningsMultiple(double multiple, bool filed) =>
+        FormattableString.Invariant($"{multiple:0.0} times its last four quarters' earnings, {(filed ? FiledMultiple : ProvidedMultiple)}");
+
+    public static string EarningsMultiple(decimal multiple, bool filed) =>
+        FormattableString.Invariant($"{multiple:0.0} times its last four quarters' earnings, {(filed ? FiledMultiple : ProvidedMultiple)}");
+
     // The fundamentals card: the sentence with the word and the count, each check ticked or crossed as a sentence with
     // its figures, a newer quarter reported and not yet filed where one is, and the four lines not scored.
     // see: The fundamentals scorecard scores every member on nine checks of its filings as first filed, and only the quality family's rule reads it

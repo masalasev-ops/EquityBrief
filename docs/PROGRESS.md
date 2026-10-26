@@ -9536,12 +9536,14 @@ Ruled:      by the operator at about 00:10 UTC on 2026-10-26, dated by them 2026
 Labelled:   read off the record: the folder of nights under 12.3, which built the night's copy and its week's
             removal; the summary under 12.6, whose correction of 2026-09-30 built the short version written by code;
             the copies' worry under 13.10, whose correction of 2026-10-08 built the item; and the multiple under 22.8,
-            whose scorecard added the second figure.
+            whose scorecard added the second figure. A fifth, found by the night of 2026-10-23 run again after the ruling,
+            the night's reading of a frozen dip's exit dial as a hook, under 22.3, which froze the dip, and carried in the
+            same pull request since every night with a dip frozen stopped on it, the night of 2026-10-26 among them.
 Queue:      done, phase 22 to its report and Friday's night run again with the register as it stands, as the operator
             asked; in progress, these four corrections in one pull request; next, the stop and report, and the sign-offs
             of phases 18, 20 and 22 by fresh sessions when the operator says.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last of the four
-            corrections' entries below.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 22.8 correction's
+            entry below, this pull request's last.
 
 ### 12.3 - correction: every run built from a copy keeps three copies under the folder of nights and removes the rest, where the night alone removed any, a week old   2026-10-26
 
@@ -9563,8 +9565,8 @@ Claims:     none new.
 Pins:       none move: no shipped source moves.
 Mutated:    the rule, stated before the run: the operator's, the helper keeping two folders and not three, filtered to
             the test reading it; red, the newest besides the two removed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last of the four
-            corrections' entries below.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 22.8 correction's
+            entry below, this pull request's last.
 
 ### 12.6 - correction: a name's short version by code reads its own index's list, where it read the S&P 500's reasons alone and said an S&P 400 or 600 pick was on no list   2026-10-26
 
@@ -9580,8 +9582,8 @@ Claims:     none new: section 15's row states the summary from why the name is o
 Pins:       none move: the page alone moves.
 Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the test reading it. M1
             the stock's line on its index's list never read; red, M2 drawn as on no list.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last of the four
-            corrections' entries below.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 22.8 correction's
+            entry below, this pull request's last.
 
 ### 13.10 - correction: a copy gone from the store's copies' folder is a worry only where no newer copy stands, where every copy gone failed the checklist   2026-10-26
 
@@ -9604,8 +9606,8 @@ Claims:     none new.
 Pins:       none move: the page alone moves.
 Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the test reading it. M1
             every copy gone a worry whatever stands; red, the two older copies failing the item.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last of the four
-            corrections' entries below.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 22.8 correction's
+            entry below, this pull request's last.
 
 ### 22.3 - correction: the night reads hooks off the S&P 500 recorder's own rules alone, where a frozen dip's exit dial stopped every night at its swing filter   2026-10-26
 
@@ -9631,5 +9633,39 @@ Mutated:    the rule, stated before the runs: the smallest edits undoing the pro
             it. M1 the recorder keeping a rule its own family's step keeps; red, the dip's rule kept. M2 the night's own
             reading of every standing rule's hooks put back; red at the whole night, "step 'swing-filter' failed: The exit
             hook names 65", the failure of 2026-10-26.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last of the four
-            corrections' entries below.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 22.8 correction's
+            entry below, this pull request's last.
+
+### 22.8 - correction: one earnings multiple a stock on every page, the scorecard's as filed with the SEC wherever it holds one and the provider's named as its otherwise   2026-10-26
+
+Queue:      done, phase 22 to its report; in progress, the corrections after it in one pull request, this the last;
+            next, Friday's night run again from main after the merge, as the operator asked, then the stop and report,
+            and the sign-offs of phases 18, 20 and 22 by fresh sessions when the operator says.
+Found:      by 22.12's read-back of NVDA's chart page: its brief read stated 30.1 times its last four quarters'
+            earnings, the provider's earnings a share, and its fundamentals card 26.4, the scorecard's over the net income
+            and the shares filed with the SEC, the same words naming two figures; the chart page's grid, the full page's
+            valuation line, its band's night dot and its numbers' valuation sentence stated the provider's too.
+Corrected:  one phrase for the multiple, named by where it came from. Wherever the scorecard holds a multiple, the brief
+            read, the card, the chart page's grid, the full page's valuation line and its numbers' valuation sentence
+            state it, "26.4 times its last four quarters' earnings, as filed with the SEC", the brief against its
+            industry's median and the band drawing the provider's quarters alone, named as the provider's, with no dot
+            for the night; where it holds none, the provider's, "30.1 times its last four quarters' earnings, as the data
+            provider reports", against its own quarters' range. The industry table stays on the provider's basis for every
+            member and its key says so. Six rows of the architecture, the roster and the changelog are kept in step.
+Tests:      none new, five extended: F1's chart and full pages over the constructed store stating 20.0 as filed and no
+            other multiple of the night; MSFT's full page over the replayed store, its provider's 24.5 replaced by the
+            scorecard's 21.7 on its valuation line with no night dot, and the numbers' last sentence worked on both sides;
+            the brief worked by hand on both sides; the card's lines; and the valuation line with no scorecard naming the
+            provider. 2795 in all with the four corrections' and the hook correction's above.
+Claims:     1444, none new: the six rows touched are amended in place.
+Pins:       none move: the pages alone move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each surface's property, each filtered to the tests
+            reading it. M1 the brief never reading the scorecard's multiple; red at the brief and the chart page. M2 the
+            full page's valuation line never reading it; first run red for a store fault of the test's own, a scorecard
+            row the replay had already stored, and on its repair red at the filed line missing.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2795 of 2795 tests ran with none failed,
+            migrations 0 to 111 with none pending, schema version 111, against `data-ci` and never `data`; the phase
+            report 64 tables, 1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    Friday's night run again from main after the merge; the sign-offs of phases 18, 20 and 22 by fresh sessions.

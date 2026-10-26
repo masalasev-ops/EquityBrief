@@ -26,6 +26,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - ARCHITECTURE.html and .claude/rules/checks.md - one earnings multiple a stock on every page
+Corrects: the chart page's brief read stated NVDA at 30.1 times its last four quarters' earnings, the provider's, and its fundamentals card at 26.4, the scorecard's over the net income and the shares filed with the SEC, the same words naming two figures, found when 22.12 read NVDA's pages back against the store
+Was:
+> Valuation (the regions): ... each quarter's as a line in its band with the night's beside it; and its industry's ...
+
+> Multiple band: ... the night's multiple as a dot at the right, so where the stock trades in its own range reads at a glance. Fewer than two ...
+
+> Valuation (the name page): the night's multiple against its own quarters' range in a sentence or why none was read, and the multiple band; and where ...
+
+> In brief: ... from 22.8 the business panel opening on a fifth line, the fundamentals scorecard's word and count
+
+> Fundamentals: ... its price over earnings against its own last twelve quarters and its industry's median; ...
+
+> The figures: ... valuation: the night's multiple against its own quarters'; its newest quarter's multiple; ...
+
+> read-surface: ... and on none where none does |
+Now:
+> Valuation (the regions): ... with the night's beside it; from the 22.8 correction of 2026-10-26 the scorecard's multiple as filed with the SEC in the provider's place wherever the scorecard holds one and the band then drawing the quarters alone; and its industry's ...
+
+> Multiple band: ... the night's multiple as a dot at the right where the page states the provider's, so where the stock trades in its own range reads at a glance; from the 22.8 correction of 2026-10-26 the quarters alone named as the provider's where the page states the scorecard's multiple as filed with the SEC. Fewer than two ...
+
+> Valuation (the name page): ... and the multiple band; from the 22.8 correction of 2026-10-26 the scorecard's multiple as filed with the SEC in that sentence in the provider's place wherever the scorecard holds one and in the numbers' valuation sentence too, the band then drawing the quarters alone; and where ...
+
+> In brief: ... the fundamentals scorecard's word and count; and from the 22.8 correction of 2026-10-26 its multiple line stating the scorecard's multiple as filed with the SEC against its industry's median wherever the scorecard holds one and the provider's against its own quarters' range otherwise, each named by where it came from
+
+> Fundamentals: ... its price over earnings as filed with the SEC against its own last twelve quarters and its industry's median; ...
+
+> The figures: ... valuation: the night's multiple against its own quarters' as the provider reports it or from the 22.8 correction of 2026-10-26 the scorecard's as filed with the SEC wherever the scorecard holds one; its newest quarter's multiple; ...
+
+> read-surface: ... and on none where none does; and from the 22.8 correction of 2026-10-26 one earnings multiple a stock on every page, the scorecard's as filed with the SEC on the brief read, the card, the chart page's grid and the full page's valuation line wherever the scorecard holds one with no other multiple of the night on either page and the band drawing no dot for the night, and the provider's named as its otherwise, the numbers' valuation sentence stating the scorecard's too |
+Why: the operator's ruling of 2026-10-25, item 1: where the scorecard holds a multiple from filings every page draws that one, and where it holds none the brief read draws the provider's, each named by where it came from.
+
 ### 2026-10-26 - .claude/rules/checks.md - fixture-expectations holds the night reading hooks off the recorder's own rules alone
 Corrects: the swing filter's step read the hooks of every standing family rule, a dip rule's among them, whose exit dial of 65 the hooks read as an exit the menu does not hold, so every night with a dip frozen stopped there, found when the night of 2026-10-23 was run again after 22.3's remedy
 Was:

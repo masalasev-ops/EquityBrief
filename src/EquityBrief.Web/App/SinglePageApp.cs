@@ -1368,7 +1368,9 @@ public sealed partial class SinglePageApp : IComponent
         // A written report's standing with the controls that write it again, drawn under the masthead.
         ReportStandingView? standing = null,
         // The fundamentals scorecard's card, from 22.8.
-        FundamentalsView? fundamentals = null)
+        FundamentalsView? fundamentals = null,
+        // The scorecard's earnings multiple, which the page states in the provider's place wherever it holds one.
+        double? filedMultiple = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -2056,10 +2058,12 @@ public sealed partial class SinglePageApp : IComponent
         {
             var valued = new StringBuilder();
 
-            valued.Append(valuation.Multiple is { } multiple
-                ? Invariant($"<p class=\"valuation-line\" data-multiple=\"{multiple}\" data-position=\"{Escaped(valuation.Position ?? "none")}\">At the night's close it trades at {multiple:0.0} times its last four quarters' earnings, against {valuation.Low:0.0} to {valuation.High:0.0} over its own quarters: {Escaped(valuation.Position ?? "not placed")}.</p>")
-                : Invariant($"<p class=\"degraded\" data-absent=\"multiple\">No multiple was read on the night: {Escaped(valuation.NotRead ?? "the night stored no reading of its quarters")}.</p>"));
-            valued.Append("<div class=\"fig\">").Append(marks.MultipleBand(ticker, valuation)).Append("</div>");
+            valued.Append(filedMultiple is { } filed
+                ? Invariant($"<p class=\"valuation-line\" data-multiple=\"{filed}\" data-source=\"filed\">At the night's close it trades at {Escaped(MarkRenderer.EarningsMultiple(filed, filed: true))}.</p>")
+                : valuation.Multiple is { } multiple
+                    ? Invariant($"<p class=\"valuation-line\" data-multiple=\"{multiple}\" data-position=\"{Escaped(valuation.Position ?? "none")}\">At the night's close it trades at {Escaped(MarkRenderer.EarningsMultiple(multiple, filed: false))}, against {valuation.Low:0.0} to {valuation.High:0.0} over its own quarters: {Escaped(valuation.Position ?? "not placed")}.</p>")
+                    : Invariant($"<p class=\"degraded\" data-absent=\"multiple\">No multiple was read on the night: {Escaped(valuation.NotRead ?? "the night stored no reading of its quarters")}.</p>"));
+            valued.Append("<div class=\"fig\">").Append(marks.MultipleBand(ticker, valuation, nightFiled: filedMultiple is not null)).Append("</div>");
 
             if (valuation.Peers is { } peerValues)
             {
@@ -2069,7 +2073,10 @@ public sealed partial class SinglePageApp : IComponent
 
             valued.Append(Cards.Key(
                 "How to read it.",
-                "Each quarter's multiple is the close after its report over its four quarters' earnings a share, from one fetch, and the band is their range; the dot at the right is the night's close over the newest four quarters' earnings. Beneath, each S&P 500 member sharing the stock's industry on the night, with the stock's own row marked: its multiple as the night read it, its dividend's yield at its close and its newest quarter's sales on a year earlier, and the median of each over the members holding it.",
+                (filedMultiple is null
+                    ? "Each quarter's multiple is the close after its report over its four quarters' earnings a share, from one fetch, and the band is their range; the dot at the right is the night's close over the newest four quarters' earnings."
+                    : "Each quarter's multiple is the close after its report over its four quarters' earnings a share, as the data provider reports, from one fetch, and the band is their range; the night's multiple stated above is the scorecard's, the night's close over the net income and the shares filed with the SEC.")
+                + " Beneath, each S&P 500 member sharing the stock's industry on the night, with the stock's own row marked: its multiple as the night read it, as the data provider reports for every member, its dividend's yield at its close and its newest quarter's sales on a year earlier, and the median of each over the members holding it.",
                 "A multiple near the bottom of its own range or of its industry's says the market pays less for its earnings than it has or than it does for its peers; it is not a forecast, and nothing on the page is decided by it."));
 
             Card("valuation", "valuation", "Valuation", Cards.Computed(

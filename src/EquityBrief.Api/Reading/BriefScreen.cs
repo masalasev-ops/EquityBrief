@@ -89,7 +89,7 @@ public static class BriefScreen
             Summary(inputs),
             [
                 new BriefPanel("chart", "The chart says", [Trend(member), Bands(member), Momentum(inputs.Latest), HalfYear(inputs)]),
-                new BriefPanel("business", "The business says", [FundamentalsScreen.Line(inputs.Score), Sales(inputs.Business), Margin(inputs.Business), Multiple(inputs.Business), Analysts(inputs.Analysts)]),
+                new BriefPanel("business", "The business says", [FundamentalsScreen.Line(inputs.Score), Sales(inputs.Business), Margin(inputs.Business), Multiple(inputs), Analysts(inputs.Analysts)]),
                 new BriefPanel("way-in", "If you want in", WayIn(inputs, plan)),
             ],
             [.. inputs.Standing.Select(Chip)],
@@ -337,8 +337,21 @@ public static class BriefScreen
             newer.Margin.ToString(CultureInfo.InvariantCulture));
     }
 
-    static BriefLine Multiple(Readings? business)
+    // The stock's one earnings multiple: the scorecard's where it holds one, against its industry's median, and the
+    // provider's otherwise, against the range of its own quarters as the provider reports them.
+    static BriefLine Multiple(BriefInputs inputs)
     {
+        if (inputs.Score is { Multiple: { } filed } score)
+        {
+            var industry = score.IndustryMultiple is { } median && inputs.IndexName is { } index
+                ? Invariant($"; its industry's median on the {index} is {median:0.0}")
+                : string.Empty;
+
+            return new BriefLine("multiple", $"It trades at {MarkRenderer.EarningsMultiple(filed, filed: true)}{industry}.", filed.ToString("R", CultureInfo.InvariantCulture));
+        }
+
+        var business = inputs.Business;
+
         if (business?.Valuation is not { Multiple: { } multiple, Low: { } low, High: { } high, Position: { } position })
         {
             return new BriefLine("multiple", business?.Valuation.Absent is { } absent
@@ -348,7 +361,7 @@ public static class BriefScreen
 
         return new BriefLine(
             "multiple",
-            Invariant($"It trades at {multiple:0.0} times its last four quarters' earnings, {position} of its own range of {low:0.0} to {high:0.0}."),
+            $"It trades at {MarkRenderer.EarningsMultiple(multiple, filed: false)}, " + Invariant($"{position} of its own range of {low:0.0} to {high:0.0}."),
             multiple.ToString(CultureInfo.InvariantCulture));
     }
 
