@@ -9565,3 +9565,20 @@ Mutated:    the rule, stated before the run: the operator's, the helper keeping 
             the test reading it; red, the newest besides the two removed.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last of the four
             corrections' entries below.
+
+### 12.6 - correction: a name's short version by code reads its own index's list, where it read the S&P 500's reasons alone and said an S&P 400 or 600 pick was on no list   2026-10-26
+
+Found:      by 22.12's read-back: HIMS, the S&P 400's dip pick, and ZION, its drift pick, each with no accepted short
+            version, read "Not on tonight's list." in the one code writes, which read the swing filter and the S&P 500's
+            reasons alone and never the setup listing the stock on its own index.
+Corrected:  where no S&P 500 reason fired, the summary reads the stock's own line on its index's list, the one its page
+            draws beneath the headline, and says "On tonight's S&P 400 list under Short dips in an uptrend.", dated where
+            the page is for an earlier night; it says the stock is on no list only where no list of its index holds it.
+Tests:      one new: over the constructed S&P 400 night, M2 under the dip and M1 under the breakout each on tonight's S&P
+            400 list under its setup, and M3, which the pullback passed and held back for its open trade, on none.
+Claims:     none new: section 15's row states the summary from why the name is or is not on the list, as it stands.
+Pins:       none move: the page alone moves.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the test reading it. M1
+            the stock's line on its index's list never read; red, M2 drawn as on no list.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last of the four
+            corrections' entries below.

@@ -4303,7 +4303,9 @@ public sealed partial class MarkRenderer : IComponent
     // open on, and the entry, stop and target of the trade the swing filter's trade gate read. No model is
     // asked and nothing is stored, so it follows the night the page draws. The list is the one the page's
     // night drew, dated where the page is for an earlier night and called tonight's where it is not, as the
-    // page's reasons are, since the newest bar can be a night the list has not yet been drawn for.
+    // page's reasons are, since the newest bar can be a night the list has not yet been drawn for. A setup on the
+    // stock's own index listing it names that index's list and the setup, so it reads as not on a list only where no
+    // list of its index holds it.
     // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
     public string ShortVersionByCode(
         string ticker,
@@ -4313,9 +4315,12 @@ public sealed partial class MarkRenderer : IComponent
         (DateOnly Evening, EquityBrief.Core.Filter.MissedGate Gate)? missed,
         IReadOnlyList<FiredReason> fired,
         NumbersSayView? says,
-        GatesView? gates)
+        GatesView? gates,
+        ListedUnderView? listedUnder = null,
+        string? index = null)
     {
         var list = earlierNight is { } on ? "the list on " + on.ToString("yyyy-MM-dd", Invariant) : "tonight's list";
+        var indexList = index is null ? list : earlierNight is { } dated ? "the " + index + " list on " + dated.ToString("yyyy-MM-dd", Invariant) : "tonight's " + index + " list";
 
         var why = passed is { } through
             ? FormattableString.Invariant($"On the list on {through.Evening:yyyy-MM-dd}: the swing filter passed it on all five gates{(gates?.Family is { Length: > 0 } family ? ", a " + family + " setup" : string.Empty)}.")
@@ -4323,7 +4328,9 @@ public sealed partial class MarkRenderer : IComponent
                 ? FormattableString.Invariant($"Close to a buy point on {near.Evening:yyyy-MM-dd}: one gate short, the {near.Gate.Gate} gate, {near.Gate.Words}. It is not a pick.")
                 : fired.Count > 0
                     ? FormattableString.Invariant($"On {list} for {Counted(fired.Count, "reason", "reasons")}: {string.Join(", ", fired.Select(one => one.Name))}.")
-                    : FormattableString.Invariant($"Not on {list}.");
+                    : listedUnder is { Family: { } listedFamily } listing
+                        ? $"On {indexList} under {listing.Heading ?? listedFamily}."
+                        : FormattableString.Invariant($"Not on {list}.");
 
         var business = says is null
             ? "No reading of its reported quarters is stored for this night."

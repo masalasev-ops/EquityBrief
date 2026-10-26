@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - .claude/rules/checks.md - read-surface holds a name's short version by code reading its own index's list
+Corrects: an S&P 400 or 600 pick with no accepted short version read "Not on tonight's list" in the one code writes, reading the S&P 500's reasons alone, found when 22.12 read HIMS's and ZION's pages back against the store
+Was:
+> read-surface: ... where a trade whose stop trails reads that it trails |
+Now:
+> read-surface: ... where a trade whose stop trails reads that it trails; and from the 12.6 correction of 2026-10-26 a name's short version by code reading its own index's list, on tonight's S&P 400 list under the setup listing it where a list of its index holds it and on none where none does |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
 ### 2026-10-26 - RUNBOOK.md and CLAUDE.md - every run built from a copy keeps three copies under the folder of nights
 Authorised by: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
 Was:

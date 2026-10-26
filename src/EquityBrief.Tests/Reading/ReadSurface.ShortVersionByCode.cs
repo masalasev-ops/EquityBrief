@@ -173,6 +173,31 @@ public partial class ReadSurface
         AssertDrawnByCode(page, MarkRenderer.ShortVersionNoResearch);
     }
 
+    // From the 12.6 correction of 2026-10-26 an S&P 400 pick reads its own index's list in its short version by code:
+    // M2, listed by the short-term dip on the constructed S&P 400 night, is on tonight's S&P 400 list under the dip, M1
+    // under the breakout, and M3, which the pullback passed but held back for its open trade so that no list of its index
+    // holds it, is on none.
+    [Fact]
+    public async Task AnIndexPickReadsItsOwnIndexsListInItsShortVersionByCode()
+    {
+        var (store, _) = await FrozenDipStore();
+
+        using (store)
+        {
+            using var host = new Host(store.Root);
+
+            var dip = CodeSummary(await NameRoute(host, "M2"));
+            var breakout = CodeSummary(await NameRoute(host, "M1"));
+            var unlisted = CodeSummary(await NameRoute(host, "M3"));
+
+            Assert.Equal(("M2", MarkRenderer.ShortVersionNoResearch), (dip.Groups[1].Value, dip.Groups[2].Value));
+            Assert.Equal(["M1", "M3"], new[] { breakout.Groups[1].Value, unlisted.Groups[1].Value });
+            Assert.Equal("On tonight's S&P 400 list under Short dips in an uptrend.", Part(dip, "why"));
+            Assert.Equal($"On tonight's S&P 400 list under {EquityBrief.Core.Families.SetupFamilies.Named(EquityBrief.Core.Families.BreakoutRule.Name)!.Heading}.", Part(breakout, "why"));
+            Assert.Equal("Not on tonight's list.", Part(unlisted, "why"));
+        }
+    }
+
     [Fact]
     public async Task ANameWithAnAcceptedShortVersionDrawsTheModelsAndNotOneWrittenByCode()
     {
