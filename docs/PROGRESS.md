@@ -10183,3 +10183,29 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the night of 2026-10-26's answer on each index read back on Tonight, with the remedy's record, as the
             addendum to 22.12's report; 22.14 and 22.15 on the operator's word.
+
+### 20.10 ruling - the two defects the first review of phase 20's sign-off found corrected before it signs, this session building them   2026-10-26
+
+Not a checkpoint entry: it records the operator's ruling and lands nothing.
+Ruled:      by the operator on 2026-10-26 at about 20:13 UTC, kept whole in
+            `prompts/2026-10-26-20.10-phase-20-sign-off-correct-first.md`. The first review of phase 20's sign-off, by a
+            session that had committed no code, ran both gates green over main at d264d1a3 and found two defects. 40
+            members are linked to an SEC filer the SEC's own ticker file does not give them, the provider's CIK taken
+            wherever it files one: IR's results releases, filed facts and insider trades are Trane Technologies', RBC's
+            are Regal Rexnord's, and the other 38 read a former or an unrelated company's filer. And the S&P 600 drift's
+            stocks one step short read "Sales not up on a year earlier" where the quarter's revenue was never read, 25
+            of the 25 revenue misses since its freeze. Asked how the sign-off should go, they answered "Correct first
+            (Recommended)": the first by a ruling and correction of its own, each member's filer the one the SEC's own
+            list names, with a remedy fetching and reading the right documents and building the ledger again; the second
+            on the page alone, so no rule's version moves; and the test gap the review's sweep left closed. Asked who
+            builds them, they answered "This session", so a fresh session signs phase 20 after they merge.
+Labelled:   read off the record: the filer under 17.3, whose correction of 2026-10-16 took the provider's CIK wherever it
+            files one; the words for a revenue never read under 20.11, whose revenue level stores it under the reason of
+            one read and not up; and the tone walk's hand-off of each stock's releases and the month's report at nothing
+            under 20.8, whose tests read neither.
+Queue:      done, 22.13 and its card's correction; in progress, these corrections in one pull request; next, their
+            remedy from main, phase 20's sign-off by a fresh session, the night of 2026-10-26 with 22.13's read-back,
+            the monthly run by hand on 2026-10-27, 22.14 and 22.15 on the operator's word, and the sign-offs of phases
+            18 and 22.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.
