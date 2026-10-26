@@ -9974,3 +9974,91 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the phase 18 sign-off prompt after the merge, figures gathered again; the monthly run by hand on 2026-10-27
             and its report; the sign-offs of phases 20 and 22 by fresh sessions.
+
+### 22.13 ruling - the Fundamentals family built now to run with the night of 2026-10-26, and business first leaving Tonight   2026-10-26
+
+Not a checkpoint entry: it records the operator's two rulings of 2026-10-26 and their answers, and lands nothing.
+Queue:      done, PR 567, the five phase 18 corrections, merged; in progress, 22.13 in one pull request with this entry;
+            next, its remedy from main, the night of 2026-10-26 and each index's answer read back on Tonight, the
+            monthly run by hand on 2026-10-27, 22.14 and 22.15 on the operator's word, and the sign-offs of phases 18,
+            20 and 22 by fresh sessions.
+Ruled:      by the operator on 2026-10-26 at about 14:50 UTC, kept whole in
+            `prompts/2026-10-26-ruling-fundamentals-family.md`, in these words: "Ruling: the Fundamentals family, built
+            now to run with the night of 2026-10-26 (2026-10-26). Land this word for word in
+            prompts/2026-10-26-ruling-fundamentals-family.md and a ruling entry, with
+            prompts/2026-10-26-ruling-business-first.md if not already landed. Build it as checkpoint 22.13 after phase
+            22's report, its report an addendum to 22.12's; the sign-offs stay owed. The operator's words: "I want a
+            card, where stocks are presented based on improving fundamentals or good fundamentals ... i want it to
+            evaluate everyday in case some other businesses have earnings and they seem to be solid." Deadline: merged
+            with both local gates and hosted CI green, and its remedy run from main, by 5:30 pm ET today, before the
+            5:40 pm local run. If it cannot be, say so by 3:00 pm ET and it runs from the night of 2026-10-27 instead;
+            nothing is merged during a night or a local run. 1. A family of its own on every index: store word
+            `improving`, label "Fundamentals", description "Finds companies whose business is strong or getting
+            stronger, read from their filings with the SEC and their results releases." Its step runs every night after
+            the scorecard's and the quality family's, reading only: the fundamentals scorecard each member holds tonight
+            and the score its previous filing held, through the core's one scoring function, as first filed; each
+            member's newest results release reading through the one reader of the release readings (add the step to the
+            components rules-choose-the-stocks names as reading them, as the check requires). 2. Its starting settings,
+            marked starting in section 17: Flagged: a member whose results release accepted since its last stored
+            filing reads results "better" and outlook "raised" or "kept". A flag buys nothing. Bought, at the next open
+            through the core's one pricing function: a member whose newest filing, read tonight for the first time,
+            lifts its score to at least 8 of the 9 checks that apply (read as a share, as the quality family reads it),
+            above its previous filing's score, with sales growth over a year faster than the quarter before. A flag is
+            not required. Held while its score stays at 7 of 9 or better. Sold at the close of the night a new filing
+            drops it below 7, at the close of its 126th session, or at its last close as a member of its index,
+            whichever comes first. No stop and no target. Judged as the quality family is: its percent return against an
+            equal-weighted hold of the index's members over the same sessions, in points, after its round trip. One
+            trade a stock within the family; a stock it holds may also be held by another family. Marked "Not yet
+            tested" until its freeze; its picks count toward nothing before it, the night's report requests read none
+            of them, and paper trading gains its account at the freeze. 3. Tonight's card, in place of business
+            first's, built to the canvas "Fundamentals card" (prompts/2026-10-26-fundamentals-card-mockup.html, which
+            the operator saves there); its figures are placeholders. In the reader's words: The tile, in business
+            first's slot: "Fundamentals", "Not yet tested", "A company whose business is strong or getting stronger,
+            read from its filings and results release.", then "n picks tonight. n flagged, waiting for the filing."
+            Pressing it scrolls to the card. The card's opening sentence, written by code from tonight's figures:
+            "Tonight n companies' businesses improved on a new report. n are bought at tomorrow's open; n more are
+            flagged from their results release and wait for their filing." Four tiles: bought at tomorrow's open;
+            flagged, waiting for the filing; holding, with its change since bought against the index's stocks;
+            reporting this week. Tab "Improving fastest", the default: the members whose newest filing or release
+            improved most, ranked by the score's rise then by sales growth's speeding up, the first 10 drawn and the
+            rest in a fold. Each row: the stock, its score now and what it was ("8 of 9, up from 5"), one sentence of
+            what changed written by code from the scorecard's own checks and figures, and its status: "Bought at
+            tomorrow's open" with "Its filing of dd mmm confirmed the release of dd mmm.", "Flagged, waiting for its
+            filing" with "Bought only if its filing lifts it to 8 of 9.", or "Improved, short of the bar" naming the
+            check it misses. Tab "Strongest businesses": the index's 10 highest scores tonight, ties by gross profit to
+            assets, each with its business in one sentence and its price against its own past, marked "In the quality
+            book" where Quality at a fair price holds it, and saying "It trades above its usual price, so the quality
+            book does not hold it" where that is why. The fold "How it picks, and how it will be tested", stating item
+            2 in plain words, and "Worked by code from each company's filings as first filed with the SEC and from four
+            answers the local model reads in each results release. No model judges the stock." Each stock opens its
+            chart page. 1440 and a true 390 pixels in both palettes; the plain-words check passes. 4. Business first
+            leaves Tonight's tiles, cards, and paper trading's and Past picks' family lists now. Its rule keeps running
+            and recording out of sight, unchanged, until the history-test checkpoint makes its check a pullback
+            version, as the business-first ruling states. Nothing retired. 5. After tonight's night, before anything
+            else: report the night's answer on each index (flags, buys, the first ten of each tab), read back on
+            Tonight against the store. The history test over the pulled history and the freeze on the operator's word
+            follow as their own checkpoints, as 22.10 and 22.11 did, with business first's change. Limits: no paid
+            call; no other rule's code version moves, asserted; the migration's remedy run from main while no other
+            writer runs; Tuesday's monthly run keeps its time, this pull request merged before it starts or after it
+            finishes."
+Ruled too:  the same day, kept whole in `prompts/2026-10-26-ruling-business-first.md`, in these words: "Ruling: business
+            first is not a fundamentals family (2026-10-26). The operator's words: "I am not willing to have
+            fundamentals based on pullback settings." Business first buys only where its index's pullback stands, so it
+            is a pullback with a business check and not a fundamentals family. It stops being a family on every index:
+            its card and tile leave Tonight, paper trading and Past picks, its open trades running out under their own
+            plans and its record kept and readable. The fundamentals family reads the business alone, with no chart
+            setup and no pullback setting. Its business check (revenue growth over 0%, either margin up, cash at least
+            1 times income) stays as a version of each index's pullback, named "Pullback, business growing", within the
+            pullback family's nine rules. Where a family has no room, say so and stop before retiring anything. No other
+            rule's code version moves. Land this word for word in prompts/2026-10-26-ruling-business-first.md beside the
+            Fundamentals ruling. Its pullback-version change is built with the Fundamentals family's history test, as
+            item 4 of the Fundamentals ruling says; today only the card and tile leave Tonight while its rule keeps
+            running out of sight."
+Answered:   at about 15:00 UTC through the question tool, word for word in `prompts/2026-10-26-22.13-operator-answers.md`:
+            the business-first ruling's text, which no file or session on the machine held, and "Build from the words"
+            for the card, the mockup not being saved.
+Planned:    with 22.13 in the build plan's phase 22 section after 22.12: 22.13 as built, 22.14, the history test with
+            business first's pullback version, and 22.15, the freezes, the claims 22.13 adds named beside phase 22's
+            pair.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
