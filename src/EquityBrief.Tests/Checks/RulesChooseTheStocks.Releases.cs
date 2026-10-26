@@ -32,13 +32,14 @@ public partial class RulesChooseTheStocks
 
         // The scope, by name: the local run writes them, its accuracy report and the read surface read them, and the night's
         // family evaluator and the S&P 400's and 600's families hand them to the drift, as the replay and the cards reading
-        // the evaluator's inputs do; and from 20.8 the setup ledger reads them for its four release readings and the
-        // walk-forward tester for the tone variant's walk and what each answer came to, through the one reader as every
-        // deciding read is.
-        Assert.Equal(["FamilyEvaluator", "FamilyReplay", "IndexFamilies", "LocalRun", "ReadApi", "ReleaseAccuracy", "RuleCards", "SetupLedger", "WalkForwardTester"], reading);
-        Assert.Equal(["FamilyEvaluator"], Deciding.Where(one => one.Access.On(DataStore.ReleaseReading) != Touch.None).Select(one => one.Name));
+        // the evaluator's inputs do; from 20.8 the setup ledger reads them for its four release readings and the
+        // walk-forward tester for the tone variant's walk and what each answer came to; and from 22.13 the Fundamentals
+        // family's step reads each member's newest release for its flag, which buys nothing; each through the one reader as
+        // every deciding read is.
+        Assert.Equal(["FamilyEvaluator", "FamilyReplay", "ImprovingFamily", "IndexFamilies", "LocalRun", "ReadApi", "ReleaseAccuracy", "RuleCards", "SetupLedger", "WalkForwardTester"], reading);
+        Assert.Equal(["FamilyEvaluator", "ImprovingFamily"], Deciding.Where(one => one.Access.On(DataStore.ReleaseReading) != Touch.None).Select(one => one.Name));
         Assert.Equal(
-            ["FamilyEvaluator", "IndexFamilies", "SetupLedger", "WalkForwardTester"],
+            ["FamilyEvaluator", "ImprovingFamily", "IndexFamilies", "SetupLedger", "WalkForwardTester"],
             PickMaking.Where(one => one.Access.On(DataStore.ReleaseReading) != Touch.None).Select(one => one.Name).Order(StringComparer.Ordinal));
 
         var sources = SourcesUnderTheFolders();

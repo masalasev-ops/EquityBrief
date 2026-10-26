@@ -27,9 +27,16 @@ public sealed partial class SinglePageApp
         EndedTonightView? ended,
         IReadOnlyDictionary<string, string>? links = null,
         IReadOnlyDictionary<string, string>? plans = null,
-        QualityCardView? quality = null)
+        QualityCardView? quality = null,
+        ImprovingCardView? improving = null)
     {
         var region = new StringBuilder();
+
+        // The fundamentals-first family's card, tile, buy points and stocks one step short are drawn no more, its rule
+        // running out of sight; the Fundamentals family's tile stands in its slot and its card in its place.
+        // see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight
+        families = [.. families.Where(card => card.Family != EquityBrief.Core.Families.FundamentalsRule.Name)];
+        closeToBuy = closeToBuy is null ? null : [.. closeToBuy.Where(row => row.Cell.Family != EquityBrief.Core.Families.FundamentalsRule.Name)];
 
         // The page's links: what ran tonight, and on the S&P 500 the watch list with how many it holds.
         region.Append(Invariant($"<p class=\"tonight-links\"><a class=\"market-run\" href=\"{Escaped(runHref)}\">What ran tonight</a>"));
@@ -56,18 +63,43 @@ public sealed partial class SinglePageApp
 
         IReadOnlyList<SetupTileView> shown = tiles;
 
+        // The Fundamentals family's tile in the fundamentals-first family's slot, after the drift's and before the dip's.
+        // see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better
+        if (improving is not null)
+        {
+            var slot = tiles.TakeWhile(tile => tile.Family != EquityBrief.Core.Families.DipRule.Name && tile.Family != EquityBrief.Core.Families.HeavyweightRule.Name).Count();
+
+            shown = [.. tiles.Take(slot), new SetupTileView(EquityBrief.Core.Families.ImprovingRule.Name, EquityBrief.Core.Families.ImprovingRule.Label, improving.Bought, improving.Bought == 1 ? "pick" : "picks", improving.Fault is null ? "read nightly" : "not computed tonight"), .. tiles.Skip(slot)];
+            liveSince[EquityBrief.Core.Families.ImprovingRule.Name] = null;
+            tonight[EquityBrief.Core.Families.ImprovingRule.Name] = ImprovingTileLine(improving);
+        }
+
         if (quality is not null)
         {
-            shown = [.. tiles, new SetupTileView(EquityBrief.Core.Families.QualityRule.Name, EquityBrief.Core.Families.QualityRule.Label, quality.Cells.Count, quality.Cells.Count == 1 ? "holding" : "holdings", quality.Fault is null ? "kept monthly" : "not computed tonight")];
+            shown = [.. shown, new SetupTileView(EquityBrief.Core.Families.QualityRule.Name, EquityBrief.Core.Families.QualityRule.Label, quality.Cells.Count, quality.Cells.Count == 1 ? "holding" : "holdings", quality.Fault is null ? "kept monthly" : "not computed tonight")];
             liveSince[EquityBrief.Core.Families.QualityRule.Name] = quality.LiveSince;
             tonight[EquityBrief.Core.Families.QualityRule.Name] = QualityTileLine(quality, night);
         }
 
         region.Append(Cards.Computed(SetupsTitle(shown.Count), marks.SixSetups(shown, liveSince, tonight), stamp: Cards.Night(night), id: "setups", region: "setups"));
 
+        // The Fundamentals family's card in the fundamentals-first family's place, before the dip's.
+        var improvingDrawn = improving is null;
+
         foreach (var card in families)
         {
+            if (!improvingDrawn && card.Family == EquityBrief.Core.Families.DipRule.Name)
+            {
+                region.Append(ImprovingSection(marks, improving!, night));
+                improvingDrawn = true;
+            }
+
             region.Append(SetupCard(marks, card, night));
+        }
+
+        if (!improvingDrawn)
+        {
+            region.Append(ImprovingSection(marks, improving!, night));
         }
 
         if (heavyweights is not null)
@@ -88,6 +120,27 @@ public sealed partial class SinglePageApp
     // The setups card's title, its tiles counted in words.
     static string SetupsTitle(int tiles) =>
         "The " + (tiles switch { 5 => "five", 6 => "six", 7 => "seven", 8 => "eight", _ => tiles.ToString(System.Globalization.CultureInfo.InvariantCulture) }) + " setups";
+
+    // The Fundamentals family's card as a setup card, its press from the tile scrolling to it.
+    static string ImprovingSection(MarkRenderer marks, ImprovingCardView improving, DateOnly night) =>
+        FormattableString.Invariant($"<section class=\"card setup-card\" id=\"setup-{EquityBrief.Core.Families.ImprovingRule.Name}\" data-card=\"{EquityBrief.Core.Families.ImprovingRule.Name}\" data-night=\"{night:yyyy-MM-dd}\"><div class=\"card-h\"><div>{marks.ImprovingCardHead(improving)}</div></div><div class=\"card-b\">{marks.ImprovingCard(improving)}</div></section>");
+
+    // The Fundamentals family's tile line: tonight's picks and the stocks flagged and waiting for their filing.
+    static string ImprovingTileLine(ImprovingCardView improving)
+    {
+        if (improving.Fault is not null)
+        {
+            return "Not computed tonight.";
+        }
+
+        if (!improving.Read)
+        {
+            return "Its first night has not run yet.";
+        }
+
+        return (improving.Bought == 1 ? "1 pick tonight." : Invariant($"{improving.Bought} picks tonight."))
+            + (improving.Flagged == 1 ? " 1 flagged, waiting for the filing." : Invariant($" {improving.Flagged} flagged, waiting for the filing."));
+    }
 
     // Quality at a fair price's tile line: its holdings and when it next reshuffles.
     static string QualityTileLine(QualityCardView quality, DateOnly night)

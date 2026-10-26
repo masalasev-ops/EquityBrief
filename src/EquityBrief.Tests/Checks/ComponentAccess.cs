@@ -124,6 +124,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Quality family"),
     ];
 
+    // 22.13's one: the Fundamentals family's step.
+    internal static string[] ImprovingRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Improving family"),
+        CheckReach.Key(Scope.MatrixTable, "Improving family"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -173,6 +180,9 @@ public partial class ComponentAccess
 
             // 22.9, Quality at a fair price.
             .. QualityRows,
+
+            // 22.13, the Fundamentals family.
+            .. ImprovingRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

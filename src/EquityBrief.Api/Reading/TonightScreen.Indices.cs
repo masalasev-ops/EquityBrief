@@ -86,7 +86,7 @@ public static partial class TonightScreen
                                 ? Statistic.ToPrice(ratio)
                                 : answer is { Entry: { } entry, Stop: { } stop, Target: { } target } ? EquityBrief.Core.Cards.PlanRatio.Of(entry, stop, target) : null,
                             IndexWhy(family, settings, universe.Name),
-                            [.. pick.Also.Select(name => SetupFamilies.Named(name)?.Label ?? name)]);
+                            AlsoLabels(pick.Also));
                     }),
             ];
 

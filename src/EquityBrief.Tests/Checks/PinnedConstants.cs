@@ -339,6 +339,13 @@ public class PinnedConstants
             new("Quality at a fair price's starting settings", "0.5", (decimal)Core.Families.QualityRule.MedianPlace, "QualityRule.MedianPlace"),
             new("Quality at a fair price's starting settings", "12", Core.Ledger.ValuationReading.Quarters, "ValuationReading.Quarters"),
             new("Quality at a fair price's starting settings", "10", Core.Families.QualityRule.Starting.Holdings, "QualityRule.Starting.Holdings"),
+            // 22.13's Fundamentals family, the figures in the row's order.
+            new("The Fundamentals family's starting settings", "8", Core.Families.ImprovingRule.Starting.BuyInNine, "ImprovingRule.Starting.BuyInNine"),
+            new("The Fundamentals family's starting settings", "9", Core.Ledger.FundamentalScorecard.Checks, "FundamentalScorecard.Checks"),
+            new("The Fundamentals family's starting settings", "7", Core.Families.ImprovingRule.Starting.HoldInNine, "ImprovingRule.Starting.HoldInNine"),
+            new("The Fundamentals family's starting settings", "9", Core.Ledger.FundamentalScorecard.Checks, "FundamentalScorecard.Checks"),
+            new("The Fundamentals family's starting settings", "7", Core.Families.ImprovingRule.Starting.HoldInNine, "ImprovingRule.Starting.HoldInNine"),
+            new("The Fundamentals family's starting settings", "126", Core.Families.ImprovingRule.Starting.Sessions, "ImprovingRule.Starting.Sessions"),
             // 22.10's history test, the figures in the row's order.
             new("Quality at a fair price's history test", "72", Core.Families.QualityRule.Grid.Count, "QualityRule.Grid's settings"),
             new("Quality at a fair price's history test", "6", Core.Families.QualityRule.Floors[0], "QualityRule.Floors[0]"),

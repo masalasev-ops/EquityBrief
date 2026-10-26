@@ -178,6 +178,8 @@ public partial class FixtureExpectations
             .. QualityClaims,
             // 22.10, its history test: section 17's grid.
             .. QualityHistoryClaims,
+            // 22.13, the Fundamentals family: section 17's starting settings and section 18's two rows.
+            .. ImprovingClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

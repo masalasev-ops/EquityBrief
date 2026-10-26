@@ -149,6 +149,9 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `quality_night` | QualityFamily | none | QualityFamily |
 | `quality_result` | QualityFamily | none | QualityFamily |
 | `quality_holding` | QualityFamily | QualityFamily | QualityFamily |
+| `improving_night` | ImprovingFamily | none | ImprovingFamily |
+| `improving_result` | ImprovingFamily | none | ImprovingFamily |
+| `improving_trade` | ImprovingFamily | ImprovingFamily | ImprovingFamily |
 | `switch_reading` | MemberReader | none | MemberReader |
 | `estimate_reading` | EstimatesFetcher | none | none |
 | `news_pulse` | NewsPulseCounter | none | NewsPulseCounter |
@@ -2756,6 +2759,89 @@ Grain: one row per rule, index, stock and night it was chosen, from 22.9.
 Primary key: `rule`, `index_code`, `ticker`, `chosen_on`.
 
 **Quality at a fair price's step writes all three in the night after the filings refresh, and is their own deleter** (see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session). It reads the night's members, the store's bars to the night, the night's `fundamental_score` rows and the `value_place` reading of its `ledger_reading` rows, and a member's company value from its `member_reading` row of the night a holding was chosen. A night run again deletes its own night and answers and the holdings it chose, and reopens those it sold, before writing them again (see: A quality holding is sold at a reshuffle where it no longer qualifies and at its last close as a member, and is bought at the next open) (see: A quality holding's edge is its return less an equal-weighted hold of its index's members over the same sessions, after its round trip). Kept forever.
+
+### improving_night
+Grain: one row per rule, index and session the Fundamentals family's step read, from 22.13.
+
+| Column | Type | Notes |
+|---|---|---|
+| `rule` | TEXT | the rule the night was read under, `provisional` until a freeze registers one |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `session_date` | TEXT | the night's session |
+| `members` | INTEGER | the index's members on the night |
+| `scored` | INTEGER | the members holding a bar on the night whose scorecard read any check |
+| `first_read` | INTEGER | the members whose newest filing the night read for the first time |
+| `improved` | INTEGER | the members among them whose filing lifted the score above the one before |
+| `bought` | INTEGER | the trades chosen at the night's close |
+| `flagged` | INTEGER | the members flagged from their results release |
+| `held` | INTEGER | the trades open after the night |
+| `settings` | TEXT | JSON: the rule, the score a filing must lift a stock to and the one it is held at, each in nine, the sessions it is held at most, and the words the card states the rule in |
+| `fault` | TEXT | the failure that stopped the index's part, null where none did |
+
+Primary key: `rule`, `index_code`, `session_date`.
+
+### improving_result
+Grain: one row per rule, index, session and member holding a bar on the night, from 22.13.
+
+| Column | Type | Notes |
+|---|---|---|
+| `rule` | TEXT | as `improving_night` |
+| `index_code` | TEXT | |
+| `session_date` | TEXT | |
+| `ticker` | TEXT | |
+| `passed_checks` | INTEGER | its scorecard's checks passed on the night, as `fundamental_score` stored them |
+| `applied` | INTEGER | the checks that applied and were read |
+| `filed` | TEXT | the day the newest filing the scorecard reads was first filed, null where it reads none |
+| `first_read` | INTEGER | 1 where the night read that filing for the first time |
+| `before_passed` | INTEGER | the checks the filing before it passed, through the core's one scorecard over the filings as first filed before it, null where the filing was not first read on the night |
+| `before_applied` | INTEGER | the checks that applied to it |
+| `before_checks` | TEXT | JSON: its nine checks as `fundamental_score` stores a scorecard's |
+| `growth` | REAL | the ledger's reading of its sales over a year on the night, a statistic |
+| `growth_change` | REAL | the ledger's reading of how much faster its sales grew than in the quarter before, a statistic |
+| `released` | TEXT | the day in New York the SEC accepted its newest results release the night may read, null where none is read |
+| `outlook` | TEXT | that release's outlook, `raised` or `kept`, where it was flagged, null otherwise |
+| `flagged` | INTEGER | 1 where that release was accepted after its newest filing and reads results better with its outlook raised or kept |
+| `status` | TEXT | `bought`, `improved`, `flagged` or `held`, null where none applies |
+| `reason` | TEXT | why a member whose filing raised its score was not bought, null otherwise |
+| `carried` | REAL | its growth carried from its first answer by the night's close over the close of its answer before, both as the store holds them on the night, 1 on its first; a statistic |
+
+Primary key: `rule`, `index_code`, `session_date`, `ticker`. A second index on `rule`, `index_code`, `ticker` and `session_date` serves a member's newest answer before a night.
+
+### improving_trade
+Grain: one row per rule, index, stock and night it was chosen, from 22.13.
+
+| Column | Type | Notes |
+|---|---|---|
+| `rule` | TEXT | as `improving_night` |
+| `index_code` | TEXT | |
+| `ticker` | TEXT | |
+| `chosen_on` | TEXT | the night its filing was read and it was chosen |
+| `filed` | TEXT | the day that filing was first filed |
+| `released` | TEXT | the day of the results release the filing confirmed, one accepted after its quarter ended and on or before the filing, null where none was |
+| `passed_checks` | INTEGER | its score when chosen |
+| `applied` | INTEGER | the checks that applied then |
+| `before_passed` | INTEGER | the score its filing before held |
+| `before_applied` | INTEGER | the checks that applied to it |
+| `buy_close` | TEXT | decimal in code, its close that night at the store's scale |
+| `bought_on` | TEXT | the first session after it the store holds, null until it is stored |
+| `fill` | TEXT | decimal in code, its open on that session at the store's scale |
+| `gap` | REAL | the open over the choice's close less one, through the core's one pricing function |
+| `bench_gap` | REAL | the mean of the same over the members answered on the night it was chosen holding an open |
+| `members` | INTEGER | the members that mean read |
+| `growth` | REAL | its close over its choice's close, carried night by night |
+| `through` | TEXT | the session its growth was carried to |
+| `sessions` | INTEGER | the sessions it was held to that session, its buy's counted first, each a session the store holds a bar of the stock for |
+| `ended_on` | TEXT | the session it was sold at, null while held |
+| `sale` | TEXT | decimal in code, its close on that session |
+| `end_reason` | TEXT | `open`, `score fell`, `time limit` or `left the index` |
+| `result` | REAL | its growth less one less its gap, null while held or where it was sold before its buy |
+| `benchmark` | REAL | the members' mean carried growth from its choice to its sale less one less `bench_gap` |
+| `cost` | REAL | its round trip in per cent of its buy at the published table, its company valued as the member readings read it on the night it was chosen |
+| `edge` | REAL | its result less its benchmark in percentage points, less its round trip |
+
+Primary key: `rule`, `index_code`, `ticker`, `chosen_on`.
+
+**The Fundamentals family's step writes all three in the night after Quality at a fair price's, and is their own deleter** (see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better). It reads the night's members, the store's bars to the night, the night's `fundamental_score` rows, the `revenue_growth` and `growth_change` readings of its `ledger_reading` rows, each member's filer's `filed_fact` rows by its newest `company` row, its newest results release through the one reader of the release readings, and a member's company value from its `member_reading` row of the night a trade was chosen. A night run again deletes its own night and answers and the trades it chose, and reopens those it sold, before writing them again (see: A Fundamentals trade is held while its score stays at seven in nine, and judged against an equal-weighted hold of its index's members after its round trip). Kept forever.
 
 ### switch_reading
 Grain: one row per session the night read.

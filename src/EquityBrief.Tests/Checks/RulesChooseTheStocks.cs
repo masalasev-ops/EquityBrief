@@ -52,16 +52,19 @@ public partial class RulesChooseTheStocks
         (nameof(SweepPointInTime), SweepPointInTime.Access),
         (nameof(DipFamily), DipFamily.Access),
         (nameof(QualityFamily), QualityFamily.Access),
+        (nameof(EquityBrief.Worker.Improving.ImprovingFamily), EquityBrief.Worker.Improving.ImprovingFamily.Access),
     ];
 
     // The folders the deciding components' code runs through, in the core and in the worker, and the worker's folders of
-    // the short-term dip's step and Quality at a fair price's, whose rules sit among the core's families.
+    // the short-term dip's step, Quality at a fair price's and the Fundamentals family's, whose rules sit among the core's
+    // families.
     internal static readonly string[] Folders =
     [
         .. new[] { "Candidates", "Families", "Filter", "Indicators", "Ladders", "Ledger", "Levels", "Loop", "Quarters", "Returns", "Rules", "Shortlist", "Sweep", "Swings", "Volume" }
             .SelectMany(folder => new[] { $"src/EquityBrief.Core/{folder}", $"src/EquityBrief.Worker/{folder}" }),
         "src/EquityBrief.Worker/Dips",
         "src/EquityBrief.Worker/Quality",
+        "src/EquityBrief.Worker/Improving",
     ];
 
     // Where a model's output is stored, by the store an access declaration names and by the table a query names.

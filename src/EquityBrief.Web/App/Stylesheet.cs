@@ -8,7 +8,7 @@ namespace EquityBrief.Web.App;
 // The marks draw with the tokens' names rather than with values, so both palettes restyle
 // every picture without a mark knowing which one is showing.
 // see: Green means support or a gain and red a stop or a loss, with orange for resistance
-// see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the quality family's among them
+// see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the Fundamentals family's among them
 // see: Not yet measured is drawn as a dashed outline, never as a pale value
 public static class Stylesheet
 {
@@ -52,7 +52,7 @@ public static class Stylesheet
  --fam-pullback:#084e6c; --fam-pullback-tint:rgba(8,78,108,.16); --fam-breakout:#70639e; --fam-breakout-tint:rgba(112,99,158,.16);
  --fam-drift:#663d05; --fam-drift-tint:rgba(102,61,5,.16); --fam-fundamentals:#274fe7; --fam-fundamentals-tint:rgba(39,79,231,.16);
  --fam-heavyweight:#851473; --fam-heavyweight-tint:rgba(133,20,115,.16); --fam-dip:#e000e8; --fam-dip-tint:rgba(224,0,232,.16);
- --fam-quality:#0c8ee8; --fam-quality-tint:rgba(12,142,232,.16);
+ --fam-quality:#0c8ee8; --fam-quality-tint:rgba(12,142,232,.16); --fam-improving:#fc3484; --fam-improving-tint:rgba(252,52,132,.16);
  --serif:Charter,"Iowan Old Style",Georgia,"Times New Roman",serif;
  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
  /* The column, at its widest: the widest picture a screen draws, with the card's side padding
@@ -74,7 +74,7 @@ public static class Stylesheet
  --fam-pullback:#4097bd; --fam-pullback-tint:rgba(64,151,189,.18); --fam-breakout:#9d58e9; --fam-breakout-tint:rgba(157,88,233,.18);
  --fam-drift:#90693e; --fam-drift-tint:rgba(144,105,62,.18); --fam-fundamentals:#8ec4fc; --fam-fundamentals-tint:rgba(142,196,252,.18);
  --fam-heavyweight:#f478dc; --fam-heavyweight-tint:rgba(244,120,220,.18); --fam-dip:#d8009c; --fam-dip-tint:rgba(216,0,156,.18);
- --fam-quality:#0058f8; --fam-quality-tint:rgba(0,88,248,.18);
+ --fam-quality:#0058f8; --fam-quality-tint:rgba(0,88,248,.18); --fam-improving:#10fc78; --fam-improving-tint:rgba(16,252,120,.18);
 }}
 :root[data-theme='dark']:not([data-eb-theme='light']),:root[data-eb-theme='dark']{
  --page:#121416; --surface:#1a1d20; --plot:#16191b; --ink:#e8e5dd; --ink-2:#c3c0b8; --soft:#9ea3a9; --hair:#2d3237; --hair-2:#3d434a;
@@ -89,7 +89,7 @@ public static class Stylesheet
  --fam-pullback:#4097bd; --fam-pullback-tint:rgba(64,151,189,.18); --fam-breakout:#9d58e9; --fam-breakout-tint:rgba(157,88,233,.18);
  --fam-drift:#90693e; --fam-drift-tint:rgba(144,105,62,.18); --fam-fundamentals:#8ec4fc; --fam-fundamentals-tint:rgba(142,196,252,.18);
  --fam-heavyweight:#f478dc; --fam-heavyweight-tint:rgba(244,120,220,.18); --fam-dip:#d8009c; --fam-dip-tint:rgba(216,0,156,.18);
- --fam-quality:#0058f8; --fam-quality-tint:rgba(0,88,248,.18);
+ --fam-quality:#0058f8; --fam-quality-tint:rgba(0,88,248,.18); --fam-improving:#10fc78; --fam-improving-tint:rgba(16,252,120,.18);
 }
 /* The names the marks draw with, each the token of the same kind, so every mark follows the palette. */
 :root{ --muted:var(--soft); --rule:var(--hair); --panel:var(--plot); --support:var(--sup); --resistance:var(--res); }
@@ -280,6 +280,20 @@ main{padding-block:8px 64px}
 .fam-tag[data-family='heavyweight']{background:var(--fam-heavyweight-tint)} .fam-swatch[data-family='heavyweight']{background:var(--fam-heavyweight)} .fam-edge[data-family='heavyweight']{border-left-color:var(--fam-heavyweight)}
 .fam-tag[data-family='dip']{background:var(--fam-dip-tint)} .fam-swatch[data-family='dip']{background:var(--fam-dip)} .fam-edge[data-family='dip']{border-left-color:var(--fam-dip)}
 .fam-tag[data-family='quality']{background:var(--fam-quality-tint)} .fam-swatch[data-family='quality']{background:var(--fam-quality)} .fam-edge[data-family='quality']{border-left-color:var(--fam-quality)}
+.fam-tag[data-family='improving']{background:var(--fam-improving-tint)} .fam-swatch[data-family='improving']{background:var(--fam-improving)} .fam-edge[data-family='improving']{border-left-color:var(--fam-improving)}
+/* The Fundamentals card: two radio inputs choosing which of its two lists shows, their labels drawn as chips, and each list's rows as lines that wrap. */
+.improving-card>.improving-tab{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+.improving-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 10px}
+.improving-tabs .chip{cursor:pointer}
+.improving-tab[value="fastest"]:checked~.improving-tabs .chip[for="improving-tab-fastest"],.improving-tab[value="strongest"]:checked~.improving-tabs .chip[for="improving-tab-strongest"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.improving-tab[value="fastest"]:checked~.improving-tabs .chip[for="improving-tab-fastest"] .n,.improving-tab[value="strongest"]:checked~.improving-tabs .chip[for="improving-tab-strongest"] .n{color:var(--surface);opacity:.75}
+.improving-tab[value="fastest"]:checked~.improving-panel[data-tab=strongest],.improving-tab[value="strongest"]:checked~.improving-panel[data-tab=fastest]{display:none}
+.improving-rows{margin:0;padding-left:1.6em}
+.improving-row{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;padding:7px 0;border-bottom:1px solid var(--hair)}
+.improving-row>span{min-width:0;overflow-wrap:anywhere}
+.improving-name{grid-column:1} .improving-score{grid-column:2;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.improving-changed,.improving-status{grid-column:1 / -1;color:var(--ink-2)}
+.improving-status b{color:var(--ink)}
 @media (max-width:560px){
  .list-table.quality-table{min-width:0;display:block} .list-table.quality-table thead{display:none} .list-table.quality-table tbody{display:block}
  .list-table.quality-table tr{display:grid;grid-template-areas:'nm score since' 'place place place' 'tonight tonight tonight';grid-template-columns:minmax(0,1fr) auto auto;column-gap:12px;padding:8px 0;border-bottom:1px solid var(--hair)}

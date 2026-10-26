@@ -945,6 +945,12 @@ From 22.9 the night reads Quality at a fair price on each of the three indices a
 powershell -File tools/remedy.ps1 tools/remedies/2026-10-25-22.9-quality-at-a-fair-price.txt
 ```
 
+From 22.13 the night reads the Fundamentals family on each of the three indices after Quality at a fair price's step, writing `improving_night`, `improving_result` and `improving_trade` and making no request (see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better). Its first night reads the filings filed since the session before it, and a night run again for a session replaces what that session wrote. The fundamentals-first family's card, tile and trades leave Tonight, paper trading and Past picks with it, its rule running unchanged (see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight). 22.13's remedy, from main after the merge and before the night, migrates to 112 and runs nothing else; restart the read surface after it, since Tonight reads the three stores:
+
+```
+powershell -File tools/remedy.ps1 tools/remedies/2026-10-26-22.13-the-fundamentals-family.txt
+```
+
 From 22.11 a quality family is frozen on an index by the index family form, naming the family, the index and its live setting's five dials, `floor` in nine, `valuation` 0 off, 1 at or below its own median or 2 in its cheapest third, `trend` 1 on, `book` and `sale` 1 also on a filing; the form registers the live rule and every setting of the history test's grid one dial from it as a version at one instant, eight rules from the starting setting, and takes neither `--variants` nor `--replacing` (see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions). The night keeps each rule standing on the index under its own name from its next night, the provisional rule no longer kept there (see: A quality rule is registered as the family on its index and kept by the family's own step alone). Before the freeze the index's history test is run again from main and its answer recorded, so the card draws the answer its freeze followed. 22.11's remedy, on the operator's ruling of 2026-10-25, does this for the S&P 500 alone, the S&P 400's and 600's answers going to the operator first; run it from main after the merge and before the night, read the output for "remedy done", and restart the read surface after it:
 
 ```

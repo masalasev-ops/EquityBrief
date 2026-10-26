@@ -165,7 +165,9 @@ public static class PaperScreen
         var accounts = new List<PaperAccountSource>();
         var replayed = large ? replays ?? [] : [];
 
-        foreach (var family in SetupFamilies.PageOrder)
+        // The fundamentals-first family keeps no account, its rule running out of sight.
+        // see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight
+        foreach (var family in SetupFamilies.PageOrder.Where(family => family != FundamentalsRule.Name))
         {
             // From 22.3 the short-term dip's in the page's order, after the swing families' and before the sector
             // heavyweights': its live rule's trades from its freeze, or the provisional rule's from its first, and each

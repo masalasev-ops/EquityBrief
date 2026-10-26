@@ -97,11 +97,11 @@ public partial class ReadSurface
         Assert.Contains($"<section class=\"tonight\" data-night=\"{IndexNight}\" data-universe=\"400\" data-index-code=\"MID\"", page, StringComparison.Ordinal);
 
         // The line: the S&P 400's own breadth against the floor, the members a setup passed, M1 and M3, of the three,
-        // the one buy point across the four setups, the fundamentals-first family's among them from 17.8, and no open
+        // the one buy point across the three setups, the fundamentals-first family's drawn no more from 22.13, and no open
         // trade before the night, the trades' link keeping the index.
         var line = Assert.Single(Blocks(page, "<p class=\"market-line\".*?</p>"));
 
-        Assert.StartsWith("<p class=\"market-line\" data-index=\"S&P 400\" data-open=\"true\" data-breadth=\"0.52\" data-floor=\"0.45\" data-passed=\"2\" data-members=\"3\" data-buy-points=\"1\" data-setups-listing=\"1\" data-setups=\"4\" data-close=\"none\" data-open-trades=\"0\">", line, StringComparison.Ordinal);
+        Assert.StartsWith("<p class=\"market-line\" data-index=\"S&P 400\" data-open=\"true\" data-breadth=\"0.52\" data-floor=\"0.45\" data-passed=\"2\" data-members=\"3\" data-buy-points=\"1\" data-setups-listing=\"1\" data-setups=\"3\" data-close=\"none\" data-open-trades=\"0\">", line, StringComparison.Ordinal);
         Assert.Contains("<b class=\"market-open\">The market is healthy enough to buy.</b> 52.0% of S&P 400 stocks are above their 200-day average. The setups only buy when at least 45% are, because buying when most stocks are falling has lost money in the past.", line, StringComparison.Ordinal);
 
         // From 22.6 Tonight in one minute, worked by hand: one pick, the breakout's, the three other setups finding none, 2 of
@@ -110,13 +110,14 @@ public partial class ReadSurface
         // each stock missed.
         var minute = Assert.Single(Blocks(page, "<div class=\"one-minute\".*?</div></div></div>"));
 
-        Assert.Contains("<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>1 new pick to buy at tomorrow's open, all from the breakout.</b></p><p class=\"minute-said\">2 of the 3 S&P 400 stocks qualified under some setup tonight. The other 3 setups found nothing new.</p></div>", minute, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"minute-line\" data-line=\"picks\"><p class=\"minute-head\"><b>1 new pick to buy at tomorrow's open, all from the breakout.</b></p><p class=\"minute-said\">2 of the 3 S&P 400 stocks qualified under some setup tonight. The other 2 setups found nothing new.</p></div>", minute, StringComparison.Ordinal);
         Assert.Contains("<div class=\"minute-line\" data-line=\"open\"><p class=\"minute-head\"><b>No trade from an earlier night is still open.</b></p><p class=\"minute-said\">None ended tonight. <a href=\"#/picks?status=open&universe=400\">See them on Past picks</a></p></div>", minute, StringComparison.Ordinal);
         Assert.Contains("<div class=\"minute-line\" data-line=\"one-step\"><p class=\"minute-head\"><b>Which stocks are one step from qualifying is not read tonight.</b></p><p class=\"minute-said\">This index's night stores only the first step each stock missed.</p></div>", minute, StringComparison.Ordinal);
         Assert.DoesNotContain("S&P 500 members", page, StringComparison.Ordinal);
 
-        // Every card provisional, the fundamentals-first family's among them from 17.8 and Quality at a fair price's from
-        // 22.9, each rule written from the settings the night stored, the breakout's listing M1.
+        // Every card provisional, Quality at a fair price's among them from 22.9 and from 22.13 the Fundamentals family's in
+        // the fundamentals-first family's place, each rule written from the settings the night stored, the breakout's listing
+        // M1.
         Assert.Equal(6, Regex.Matches(page, "<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Not yet tested</span>").Count);
 
         var breakout = FamilyCardOf(page, "breakout");
@@ -402,14 +403,14 @@ public partial class ReadSurface
         Assert.Contains($"<p class=\"degraded\" data-index-night=\"not-computed\">{Words}</p>", page, StringComparison.Ordinal);
         Assert.DoesNotContain("breadth", page[..page.IndexOf(Words, StringComparison.Ordinal)], StringComparison.Ordinal);
 
-        foreach (var family in new[] { "pullback", "breakout", "drift", "fundamentals" })
+        foreach (var family in new[] { "pullback", "breakout", "drift" })
         {
             Assert.Contains(Words, FamilyCardOf(page, family), StringComparison.Ordinal);
         }
 
-        // The paragraph, the four swing cards, the fundamentals-first family's among them from 17.8, and the heavyweights'
-        // card, which lists none of the book's holdings.
-        Assert.Equal(6, Regex.Matches(page, Regex.Escape(Words)).Count);
+        // The paragraph, the three swing cards, the fundamentals-first family's drawn no more from 22.13, and the
+        // heavyweights' card, which lists none of the book's holdings.
+        Assert.Equal(5, Regex.Matches(page, Regex.Escape(Words)).Count);
         Assert.DoesNotContain("data-ticker=\"S1\"", page, StringComparison.Ordinal);
 
         var run = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{IndexNight}?universe=600"));

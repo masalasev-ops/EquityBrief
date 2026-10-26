@@ -732,7 +732,86 @@ public static class SchemaMigrations
         new Migration(109, "create fundamental_score, and add setup's fundamentals scorecard readings", AddScorecard),
         new Migration(110, "create quality_night, quality_result and quality_holding", CreateQuality),
         new Migration(111, "rebuild pulled_bar and pulled_earnings with the pull in their keys", PullInThePulledKeys),
+        new Migration(112, "create improving_night, improving_result and improving_trade", CreateImproving),
     ];
+
+    // The Fundamentals family's own three tables, a night's row an index, every member's answer with the figures that
+    // decided it and the growth carried to it, and its trades, each keyed by the rule that keeps it, its starting rule until
+    // a freeze registers one, so a freeze needs none. The answers are read a member at a time by its newest answer before a
+    // night, which the second index serves.
+    // see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better
+    const string CreateImproving = @"
+        CREATE TABLE improving_night (
+            rule          TEXT NOT NULL,
+            index_code    TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            members       INTEGER NOT NULL,
+            scored        INTEGER NOT NULL,
+            first_read    INTEGER NOT NULL,
+            improved      INTEGER NOT NULL,
+            bought        INTEGER NOT NULL,
+            flagged       INTEGER NOT NULL,
+            held          INTEGER NOT NULL,
+            settings      TEXT NOT NULL,
+            fault         TEXT,
+            PRIMARY KEY (rule, index_code, session_date)
+        ) STRICT;
+
+        CREATE TABLE improving_result (
+            rule            TEXT NOT NULL,
+            index_code      TEXT NOT NULL,
+            session_date    TEXT NOT NULL,
+            ticker          TEXT NOT NULL,
+            passed_checks   INTEGER NOT NULL,
+            applied         INTEGER NOT NULL,
+            filed           TEXT,
+            first_read      INTEGER NOT NULL CHECK (first_read IN (0, 1)),
+            before_passed   INTEGER,
+            before_applied  INTEGER,
+            before_checks   TEXT,
+            growth          REAL,
+            growth_change   REAL,
+            released        TEXT,
+            outlook         TEXT,
+            flagged         INTEGER NOT NULL CHECK (flagged IN (0, 1)),
+            status          TEXT CHECK (status IN ('bought', 'improved', 'flagged', 'held')),
+            reason          TEXT,
+            carried         REAL NOT NULL,
+            PRIMARY KEY (rule, index_code, session_date, ticker)
+        ) STRICT;
+
+        CREATE INDEX improving_result_by_ticker ON improving_result (rule, index_code, ticker, session_date);
+
+        CREATE TABLE improving_trade (
+            rule            TEXT NOT NULL,
+            index_code      TEXT NOT NULL,
+            ticker          TEXT NOT NULL,
+            chosen_on       TEXT NOT NULL,
+            filed           TEXT NOT NULL,
+            released        TEXT,
+            passed_checks   INTEGER NOT NULL,
+            applied         INTEGER NOT NULL,
+            before_passed   INTEGER NOT NULL,
+            before_applied  INTEGER NOT NULL,
+            buy_close       TEXT NOT NULL,
+            bought_on       TEXT,
+            fill            TEXT,
+            gap             REAL,
+            bench_gap       REAL,
+            members         INTEGER,
+            growth          REAL NOT NULL,
+            through         TEXT NOT NULL,
+            sessions        INTEGER NOT NULL,
+            ended_on        TEXT,
+            sale            TEXT,
+            end_reason      TEXT NOT NULL CHECK (end_reason IN ('open', 'score fell', 'time limit', 'left the index')),
+            result          REAL,
+            benchmark       REAL,
+            cost            REAL,
+            edge            REAL,
+            PRIMARY KEY (rule, index_code, ticker, chosen_on)
+        ) STRICT;
+    ";
 
     // From the 22.11 ruling a pull keeps its whole span beside an earlier pull's rows, so a pull reaching further back
     // stores every session it is sent and the older pull is compared with it before it is removed. A rebuild rather than

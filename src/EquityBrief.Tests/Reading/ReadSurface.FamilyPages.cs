@@ -223,7 +223,7 @@ public partial class ReadSurface
     // correction of 2026-10-25 the stock's entry and exit plan beneath it, each fold closed where the link names no row and
     // the one a link names open, opened and closed by the control in its row's stock cell.
     // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
-    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the quality family's among them
+    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the Fundamentals family's among them
     [Fact]
     public async Task TonightOpensOnATileASetupAndOneTableOfBuyPointsEachFoldingItsPlanAndCardBeneathIt()
     {
@@ -262,12 +262,17 @@ public partial class ReadSurface
                 ("pullback", "5", "5 picks tonight.", "1 held back by a trade still open"),
                 ("breakout", "2", "2 picks tonight.", "listing tonight"),
                 ("drift", "0", "No picks tonight.", "nothing tonight"),
+                ("improving", "0", "Its first night has not run yet.", "read nightly"),
                 ("heavyweight", "0", "0 holdings. Next reshuffle in 2 trading days.", "rebalance in 2 sessions"),
                 ("quality", "0", "Its first holdings are chosen on its first night.", "kept monthly"),
             ],
             Regex.Matches(tiles, "<button type=\"button\" class=\"setup-tile fam-edge\" data-family=\"([^\"]+)\" data-card=\"\\1\" data-count=\"(\\d+)\" data-state=\"([^\"]+)\">.*?<span class=\"tile-tonight\">([^<]+)</span></button>", RegexOptions.Singleline)
                 .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[4].Value, match.Groups[3].Value)));
-        Assert.Equal(SetupFamilies.Order.Where(family => family != SetupFamilies.FundamentalsFirst.Name).Append(QualityRule.Name), Regex.Matches(tiles, "class=\"setup-tile fam-edge\" data-family=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+
+        // From 22.13 the Fundamentals family's tile in the fundamentals-first family's slot, after the drift's.
+        Assert.Equal(
+            [.. SetupFamilies.InPageOrder.Select(family => family.Name), ImprovingRule.Name, HeavyweightRule.Name, QualityRule.Name],
+            Regex.Matches(tiles, "class=\"setup-tile fam-edge\" data-family=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
 
         // The counts read back against the store: the listed rows a family, and the held-back one the pullback's.
         Assert.Equal(["breakout 2", "pullback 5"], Strings(store, $"SELECT family || ' ' || COUNT(*) FROM family_pick WHERE session_date = '{TheSwitch}' AND state = 'listed' GROUP BY family ORDER BY family;"));

@@ -781,7 +781,20 @@ public static class Nightly
 
                 return Quality.QualityFamily.Detail(outcome.Indices);
             }, [Quality.QualityFamily.Stage]),
-            // Section 14's step 27, after the quality family. The Treasury's 10-year par yield for the session's year, one free
+            // Section 14's step 27, after the quality family. The Fundamentals family on each index, reading every member's
+            // scorecard as the night's last scoring stored it, the score a newly read filing's previous filing held through
+            // the core's one scorecard, and its newest results release through the one reader of the release readings: its
+            // trades carried, bought at their next open and sold, and tonight's buys and flags stored. It makes no request,
+            // so a night run again for an earlier session reads it too, and a failure in an index's part is named on its row
+            // while the step goes on.
+            // see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better
+            new("improving", async () =>
+            {
+                var outcome = await new Improving.ImprovingFamily(clock, store.DatabaseFile).RunAsync(runId);
+
+                return Improving.ImprovingFamily.Detail(outcome.Indices);
+            }, [Improving.ImprovingFamily.Stage]),
+            // Section 14's step 28, after the Fundamentals family. The Treasury's 10-year par yield for the session's year, one free
             // request to the Treasury and none to the provider, every session to the night's kept that the store does not
             // hold. It is handed no token from the night's deadline, and a refused or unreadable answer keeps nothing and
             // stops no step. A night run again for an earlier session reads it too, since the table holds that session.
@@ -793,7 +806,7 @@ public static class Nightly
 
                 return Treasury.TreasuryReader.Detail(read, clock.SessionDateAt(clock.UtcNow));
             }),
-            // Section 14's step 28, after the Treasury's 10-year. The night asks for six reports taken
+            // Section 14's step 29, after the Treasury's 10-year. The night asks for six reports taken
             // in turn across the S&P 500's, 400's and 600's pages and leaves them queued: it writes a
             // row a name and starts no drain, and the off-peak run starts the drain five minutes after each
             // peak window ends, each pass

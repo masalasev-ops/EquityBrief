@@ -26,6 +26,100 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - docs/ARCHITECTURE.html - the stock page and the chart page name the Fundamentals family and none of the fundamentals-first family's rows
+Authorised by: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better
+Was:
+> <p><b>Reads:</b> the facts, ladder, levels, ... and the kept dividends with the bars' raw closes the chart's ex-dividend marks read, from 18.3.</p>
+> The setup the page lists the name under: ... and its label among the setups the name qualified under where the dip gave way on it (see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades)</td></tr>
+> <p><b>Reads:</b> the stock's stored bars; ... the ledger's readings of its index on the night; and its next report. It asks for the delayed quote
+> In brief: ... its multiple line stating the scorecard's multiple as filed with the SEC against its industry's median wherever the scorecard holds one and the provider's against its own quarters' range otherwise, each named by where it came from</td></tr>
+Now:
+> <p><b>Reads:</b> the facts, ladder, levels, ... and the kept dividends with the bars' raw closes the chart's ex-dividend marks read, from 18.3; and the Fundamentals family's answers and trades of the night, for whether it bought, keeps or flagged the name, from 22.13.</p>
+> The setup the page lists the name under: ... where the dip gave way on it (see: The dip lists last ...); from 22.13 none of the fundamentals-first family's rows and cards while its rule runs out of sight (see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight); and beneath it from 22.13 a line naming the Fundamentals family where it buys the stock at the next open or keeps a trade in it or flagged it on its results release, with the filing and the scores it was read on (see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better)</td></tr>
+> <p><b>Reads:</b> the stock's stored bars; ... and its next report; and from 22.13 the Fundamentals family's answers and trades on the stock's index, and none of the fundamentals-first family's. It asks for the delayed quote
+> In brief: ... each named by where it came from; from 22.13 the fundamentals-first family's chip drawn on no index and the Fundamentals family's chip in its place; that chip reading bought at tomorrow's open or in its holdings or flagged and waiting for its filing or not in its holdings; the summary naming that family where it picked or keeps or flagged the stock; and for a stock it picked the way in reading its buy at the next open with no stop and its sale on a new filing's score under the bar it is kept at or at the end of its time or at its last close in the index (see: A Fundamentals trade is held while its score stays at seven in nine, and judged against an equal-weighted hold of its index's members after its round trip)</td></tr>
+Why: a stock the Fundamentals card buys opens its chart page, whose chips and way in knew no such family and named business first's chip on every stock, and its stock page said it was on no list while it would have named business first's rows and cards, which the operator's rulings of 2026-10-26 take out of sight.
+
+### 2026-10-26 - docs/ARCHITECTURE.html - Tonight's cards name the fundamentals-first family in no label and no note
+Authorised by: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight
+Was:
+> A family's card: ... (see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing)</td></tr>
+> The short-term dip's card: ... (see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions)</td></tr>
+Now:
+> A family's card: ... (see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing); and from 22.13 no label or note naming the fundamentals-first family, a stock held back for its trade noted without naming it (see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight)</td></tr>
+> The short-term dip's card: ... the market variant as versions); and from 22.13 a note on a stock it gave way on to the fundamentals-first family or held back for that family's trade naming no family, since Tonight draws that family's list no more (see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight)</td></tr>
+Why: the family's rule keeps running, so another family's row could still carry its label and a note could still name its list or its trade, which Tonight draws no more.
+
+### 2026-10-26 - docs/ARCHITECTURE.html - section 14's note names the Fundamentals family's step and the Treasury's as step 28
+Authorised by: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better
+Was:
+> ... reading only what the store holds (see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session). Step 27 calls no model and makes one request a night, to the Treasury and not the
+Now:
+> ... reading only what the store holds (see: Quality at a fair price holds the companies the scorecard rates strongest that are not dear against their own history, reshuffled on each month's first session), and the Fundamentals family's after that, from 22.13, calls no model and makes no request, reading the release readings through their one reader (see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better). Step 28 calls no model and makes one request a night, to the Treasury and not the
+Why: 22.13's step runs before the Treasury's, so the Treasury's is now the 28th of the night's steps.
+
+### 2026-10-26 - docs/ARCHITECTURE.html - section 15.5's family tag, section 15.6's hues and Tonight's setups cite the hue decision naming the Fundamentals family
+Authorised by: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the Fundamentals family's among them
+Was:
+> (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the quality family's among them)
+> <p>The pullback, the breakout, the drift, the fundamentals-first family, from 22.1 the short-term dip, the sector heavyweights and from 22.9 Quality at a fair price each carry a hue
+Now:
+> (see: Each setup family has a hue of its own drawn as a mark and a tint beside its word, the Fundamentals family's among them)
+> <p>The pullback, the breakout, the drift, the fundamentals-first family, from 22.1 the short-term dip, the sector heavyweights, from 22.9 Quality at a fair price and from 22.13 the Fundamentals family each carry a hue
+Why: 22.13 draws the Fundamentals family's card and tile in a hue of its own, and the decision naming the hues is superseded by one naming it.
+
+### 2026-10-26 - docs/ARCHITECTURE.html - Tonight's rows draw the Fundamentals family in the fundamentals-first family's place
+Authorised by: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight
+Was:
+> The fundamentals-first family's card: ... (see: A setup's card draws its live picks as rows of its own, each ticker opening its chart page)</td></tr>
+> Tonight's setups: ... or before its first night says its first holdings are chosen then; and the card's title counts its tiles in words (see: Each setup family
+Now:
+> The fundamentals-first family's card: ... (see: A setup's card draws its live picks as rows of its own, each ticker opening its chart page); from 22.13 drawn no more with its tile and its rows, the Fundamentals family's card standing in its place while its rule runs out of sight (see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight)</td></tr>
+> Tonight's setups: ... or before its first night says its first holdings are chosen then; from 22.13 the Fundamentals family's tile stands in the fundamentals-first family's slot and its line counts tonight's picks and the stocks flagged and waiting for their filing; and the card's title counts its tiles in words (see: Each setup family
+Why: the operator's rulings of 2026-10-26 take business first off Tonight and put the Fundamentals family's card and tile in its place.
+
+### 2026-10-26 - docs/ARCHITECTURE.html - Past picks and paper trading draw no trade and no account of the fundamentals-first family
+Authorised by: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight
+Was:
+> ... provisional and in no share, and nothing where it has listed none (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point).</p>
+> The tiles: ... from the session its series starts where that is later; the tiles one beneath another on a phone</td></tr>
+Now:
+> ... provisional and in no share, and nothing where it has listed none (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point). From 22.13 no index's page draws a trade the fundamentals-first family kept, its rule running out of sight (see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight).</p>
+> The tiles: ... from the session its series starts where that is later; the tiles one beneath another on a phone; and from 22.13 no tile of the fundamentals-first family's, its rule running out of sight (see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight)</td></tr>
+Why: the operator's rulings of 2026-10-26 take business first off paper trading's and Past picks' lists of families.
+
+### 2026-10-26 - docs/ARCHITECTURE.html - section 20's phase 22 row names the Fundamentals family and 22.0 to 22.15
+Authorised by: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better
+Was:
+> ... reshuffled monthly, its history test on each index and its freezes on the operator's word</td><td>the dip's card on Tonight for each index</td><td>...</td><td>the build plan's phase 22 checkpoints, 22.0 to 22.12</td></tr>
+Now:
+> ... reshuffled monthly, its history test on each index and its freezes on the operator's word; and, on their ruling of 2026-10-26, a family reading the business alone that buys a company whose newly read filing lifts its scorecard to eight in nine and flags one whose results release reads better, in the fundamentals-first family's place on Tonight, with its history test and its freeze on the operator's word</td><td>the dip's card on Tonight for each index</td><td>...</td><td>the build plan's phase 22 checkpoints, 22.0 to 22.15</td></tr>
+Why: 22.13 is built after phase 22's report on the operator's ruling, with 22.14 and 22.15 planned after it.
+
+### 2026-10-26 - docs/BUILD_PLAN.md - what is the operator's in phase 22 names the Fundamentals family's answers and freeze
+Authorised by: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better
+Was:
+> ... any request beyond the one whole refresh the planning pass states; and any migration beyond the two it names.
+Now:
+> ... any request beyond the one whole refresh the planning pass states; and any migration beyond the two it names. From the rulings of 2026-10-26: each index's answer from the Fundamentals family's history test and its freeze; and any retirement where the pullback family has no room for business first's version.
+Why: the rulings of 2026-10-26 leave the family's freeze and any retirement to the operator.
+
+### 2026-10-26 - .claude/rules/checks.md - fixture-expectations, nightly-run, read-surface, plain-words and rules-choose-the-stocks state 22.13
+Authorised by: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better
+Was:
+> fixture-expectations: ... and a whole night over the fixture with the S&P 500's dip frozen at the RSI's exit running every step |
+> nightly-run: ... and from 22.9 Quality at a fair price's step after the filings refresh and before the Treasury's 10-year, read off section 14, the night's output and its run log's order, its row recording no model call and no request |
+> read-surface: ... the scorecard's where it holds one, the night's reading of the provider's quarters otherwise and the provider's own only where neither is read |
+> plain-words: ... and from 22.9 Quality at a fair price's card among Tonight's regions, read over a store holding stocks and one whose part failed |
+> rules-choose-the-stocks: ... the ledger for its four catalogue readings and the tester for the tone variant's walk and what each answer came to |
+Now:
+> fixture-expectations: ... running every step; and from 22.13 the Fundamentals family: its bar of eight in nine read as a share, its rise over the filing before, its sales growth speeding up, its hold at seven in nine and its flag on both sides of each, ... and no source a rule's version pins one 22.13 writes |
+> nightly-run: ... its row recording no model call and no request; and from 22.13 the Fundamentals family's step after Quality at a fair price's and before the Treasury's 10-year, read the same way, its row recording no model call and no request |
+> read-surface: ... the provider's own only where neither is read; and from 22.13 the Fundamentals family's card on Tonight in the fundamentals-first family's place read back over a constructed S&P 400 store, ... and its paper trading accounts gone while its Run page row stands |
+> plain-words: ... one whose part failed; and from 22.13 the Fundamentals family's card among Tonight's regions |
+> rules-choose-the-stocks: ... what each answer came to; and from 22.13 the Fundamentals family's step a second deciding component reading them, each member's newest release through the one reader for its flag, which buys nothing, its folder among those scanned |
+Why: each roster row says what its check asserts, and 22.13's tests extend these five.
+
 ### 2026-10-26 - docs/ARCHITECTURE.html - the Levels region's technical readings state the stock's one earnings multiple
 Corrects: gathering the phase 18 sign-off on 2026-10-26, BX's technical readings drew "Price to earnings, the provider's 26.6" beside its valuation line's 25.4 as filed with the SEC and its industry table's 19.2 as the data provider reports, two figures named the provider's, against the operator's ruling of 2026-10-25 of one earnings multiple a stock on every page
 Was:

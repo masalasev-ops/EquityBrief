@@ -183,6 +183,9 @@ public partial class ReadSurface
             // 22.9, Quality at a fair price's card on Tonight.
             .. QualityPageRows,
 
+            // 22.13, the Fundamentals family's card on Tonight.
+            .. ImprovingPageRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 
