@@ -9940,3 +9940,37 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             again; red, the note at 572 running past 640. M4 the chip's other index left unread; red at S1's chip.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
             below, this pull request's last.
+
+### 22.8 - correction: the technical readings and the chart page's grid state the stock's one earnings multiple, where they drew the provider's trailing figure beside it   2026-10-26
+
+Queue:      done, the Loop page's correction; in progress, these five corrections in one pull request, this the last;
+            next, the phase 18 sign-off prompt after the merge, the monthly run by hand on 2026-10-27, and the sign-offs
+            of phases 20 and 22 by fresh sessions.
+Found:      gathering the phase 18 sign-off: BX's technical readings drew "Price to earnings, the provider's 26.6", the
+            provider's own figure at its own price, beside its valuation line's 25.4 as filed with the SEC and its
+            industry table's 19.2 as the data provider reports, two figures named the provider's; the chart page's grid
+            drew the provider's trailing 26.6 beside the scorecard's 25.4. The 22.8 correction of 2026-10-26 had moved the
+            brief, the card, the grid's night's multiple, the valuation line and the numbers' sentence and left these two.
+Corrected:  the technical readings and the sentence beneath them state the page's one multiple: the scorecard's as filed
+            with the SEC where it holds one, the night's reading of the provider's quarters as the data provider reports
+            otherwise, and the provider's own trailing figure named as its own only where neither is read; the
+            provider's forward multiple stays named as its own. The chart page's grid draws the provider's trailing
+            figure only where the night read no multiple and the scorecard holds none. The industry table stays on the
+            provider's basis for every member, as the 22.8 correction kept it. The architecture's Levels and chart
+            figures rows, the fact strip's verdict note and the roster are kept in step.
+Tests:      one new: the fact strip worked on each basis, 25.4 filed and 19.2 the night's with no 26.6, and over the
+            universes' store AAA's chart grid and full page stating its scorecard's 25.4 with no provider's trailing
+            figure while BBB, holding neither, keeps the provider's named as its own. 2807 in all with the corrections
+            above.
+Claims:     none new: the two rows touched are amended in place.
+Pins:       none move, asserted: the two sources it edits join the list no rule pins.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each surface's property, each filtered to the test
+            reading it. M5 the technical readings never reading the scorecard's multiple; red at the filed tile. M6 the
+            chart grid keeping the provider's trailing figure beside the filed one; red at AAA's grid.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before that run: all six steps, 0 warnings, 0 errors, 2807 of 2807 tests ran with none failed,
+            migrations 0 to 111 with none pending, schema version 111, against `data-ci` and never `data`; the phase
+            report 64 tables, 1444 claims, 1444 passing, none out of scope and none unexamined, 1459 placements and
+            verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the phase 18 sign-off prompt after the merge, figures gathered again; the monthly run by hand on 2026-10-27
+            and its report; the sign-offs of phases 20 and 22 by fresh sessions.

@@ -33,6 +33,8 @@ public partial class ReadSurface
         "src/EquityBrief.Web/Marks/MarkRenderer.cs",
         "src/EquityBrief.Web/App/SinglePageApp.cs",
         "src/EquityBrief.Web/Marks/MarkRenderer.History.cs",
+        "src/EquityBrief.Api/Reading/NameScreen.cs",
+        "src/EquityBrief.Api/Reading/ChartScreen.cs",
     ];
 
     // No source a rule's code version pins is one the page corrections write, so no rule's version moves: no candidate
@@ -371,5 +373,53 @@ public partial class ReadSurface
         Assert.Equal(
             "<p class=\"trend-state\" data-trend-state=\"none\">no ladder row for this name yet</p>",
             Trend(await client.GetStringAsync($"/screens/name/AAA/{IndexNight}")));
+    }
+
+    // From the second 22.8 correction of 2026-10-26 the Levels region's technical readings and the chart page's grid
+    // state the stock's one earnings multiple, where BX's page read the provider's 26.6 there beside 25.4 as filed with
+    // the SEC and the industry table's 19.2: the scorecard's where it holds one, the night's reading of the provider's
+    // quarters otherwise, and the provider's own trailing figure only where neither is read, its forward multiple named
+    // as its own.
+    [Fact]
+    public async Task TheTechnicalReadingsAndTheChartGridStateTheStocksOneEarningsMultiple()
+    {
+        FilingRow[] provider = [new FilingRow("XYZ", new DateOnly(2026, 8, 1), "{\"valuation\":{\"trailingPe\":\"26.6\",\"forwardPe\":\"15.9\"}}", "provider")];
+
+        var filed = NameScreen.FactStrip("XYZ", 117.97m, null, null, provider, [], filedMultiple: 25.4, nightsMultiple: 19.2);
+
+        Assert.Contains("<dt>Price to earnings, as filed with the SEC</dt><dd>25.4 <small>the provider's forward 15.9</small></dd>", filed, StringComparison.Ordinal);
+        Assert.Contains("data-trailing-multiple=\"25.4\" data-multiple-basis=\"filed\"", filed, StringComparison.Ordinal);
+        Assert.Contains("25.4 times its last four quarters' earnings, as filed with the SEC, the provider's forward multiple 15.9</p>", filed, StringComparison.Ordinal);
+        Assert.DoesNotContain("26.6", filed, StringComparison.Ordinal);
+
+        var read = NameScreen.FactStrip("XYZ", 117.97m, null, null, provider, [], nightsMultiple: 19.2);
+
+        Assert.Contains("<dt>Price to earnings, as the data provider reports</dt><dd>19.2 <small>the provider's forward 15.9</small></dd>", read, StringComparison.Ordinal);
+        Assert.Contains("19.2 times its last four quarters' earnings, as the data provider reports, the provider's forward multiple 15.9</p>", read, StringComparison.Ordinal);
+        Assert.DoesNotContain("26.6", read, StringComparison.Ordinal);
+
+        // The chart page over the universes' store: AAA's scorecard holds 25.4, its grid states it and not the provider's
+        // trailing 26.6; BBB, no scorecard and no night's reading, keeps the provider's figure named as its own.
+        using var store = UniversesStore();
+
+        store.Execute(
+            "INSERT INTO fundamentals (ticker, filing_date, fetched_at, payload, source) VALUES " +
+            "('AAA', '2026-07-31', '2026-09-01T23:00:00Z', '{\"valuation\":{\"trailingPe\":\"26.6\",\"forwardPe\":\"15.9\"}}', '{}'), " +
+            "('BBB', '2026-07-31', '2026-09-01T23:00:00Z', '{\"valuation\":{\"trailingPe\":\"26.6\",\"forwardPe\":\"15.9\"}}', '{}');");
+        store.Execute($"INSERT INTO fundamental_score (index_code, session_date, ticker, financial, passed, applied, checks, multiple) VALUES ('GSPC', '{IndexNight}', 'AAA', 0, 7, 9, '[]', 25.4);");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        async Task<string> Valuation(string ticker) =>
+            Regex.Match(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/chart/{ticker}")), "<section class=\"grid-group\" data-group=\"valuation\">.*?</section>", RegexOptions.Singleline).Value;
+
+        var aaa = await Valuation("AAA");
+
+        Assert.Contains("25.4, as filed with the SEC", aaa, StringComparison.Ordinal);
+        Assert.DoesNotContain(ChartScreen.ProvidersTrailing, aaa, StringComparison.Ordinal);
+        Assert.Contains("<dt>Price to earnings, the provider's forward</dt>", aaa, StringComparison.Ordinal);
+        Assert.Contains($"<dt>{ChartScreen.ProvidersTrailing}</dt>", await Valuation("BBB"), StringComparison.Ordinal);
+        Assert.Contains("<dt>Price to earnings, as filed with the SEC</dt><dd>25.4 <small>the provider's forward 15.9</small></dd>", WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/AAA/{IndexNight}")), StringComparison.Ordinal);
     }
 }

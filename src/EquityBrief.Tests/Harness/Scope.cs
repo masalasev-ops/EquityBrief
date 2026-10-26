@@ -1038,7 +1038,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Fact strip, the multiples")] = new Scoped(
             Verdict.Pass,
-            "the trailing and forward multiples, each drawn beside the earnings basis it was struck on, and each copied from the provider rather than computed from a close this payload does not carry",
+            "the stock's one trailing multiple as the rest of the page states it, the scorecard's as filed with the SEC where it holds one, the night's reading of the provider's quarters otherwise and the provider's own only where neither is read, each named by where it came from, and the provider's forward multiple named as its own",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Fact strip, the averages")] = new Scoped(
             Verdict.Pass,
