@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - .claude/rules/checks.md - read-surface holds a stock's rules region naming the family the page's list holds it under
+Corrects: gathering the phase 18 sign-off on 2026-10-26, BX's, RLI's, EPRT's and UNP's rules regions said "this name is not on tonight's list" beneath a page saying each was on it under Earnings drift
+Was:
+> read-surface: ... its summary drawing the sector heavyweights frozen the morning after the night not read on the night as it ran on its own evening and the live rule's chips on the night run again at noon |
+Now:
+> read-surface: ... its summary drawing the sector heavyweights frozen the morning after the night not read on the night as it ran on its own evening and the live rule's chips on the night run again at noon; and from the 18.1 correction of 2026-10-26 a stock's rules region naming the family the page's list holds it under where the swing filter did not list it, and saying it is on no list where none holds it |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
 ### 2026-10-26 - .claude/rules/checks.md - read-surface holds the S&P 500's Loop page reading the register as the page reads it
 Corrects: the S&P 500's Loop page read the register past the night's evening, so after a night run again following a freeze its summary drew the families as they stood before it, while paper trading and the S&P 400's and 600's Loop pages read it at the instant the night stated, found by the operator on 2026-10-26
 Was:

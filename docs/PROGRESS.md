@@ -9899,3 +9899,21 @@ Queue:      done, the Loop page's correction; in progress, these five correction
             and 22 by fresh sessions.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
             below, this pull request's last.
+
+### 18.1 - correction: a stock's rules region names the family the page's list holds it under, where it said the name was not on tonight's list   2026-10-26
+
+Found:      gathering the phase 18 sign-off: BX's, RLI's, EPRT's and UNP's pages each drew "On the page's list for
+            2026-10-23 under Earnings drift" above and, in "How the rules read it", "this name is not on tonight's list",
+            the line reading the swing filter's listing alone where the page's list is drawn from the setup families.
+Corrected:  where no reason fired and the swing filter neither passed the name nor found it one gate short, a name the
+            page's list holds under a family reads "the swing filter did not list this name; the page's list holds it
+            under" that family; a name on no list still reads that it is not on tonight's list. The roster is kept in
+            step.
+Tests:      one new: over the universes' store, M1, listed under the S&P 400's breakout, naming it in its rules region with
+            no line saying it is not on tonight's list, and S1, on no list, saying it is not. 2803 in all.
+Claims:     none new.
+Pins:       none move, asserted: the two sources it edits join the list no rule pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the test reading it. M1
+            the region handed no family again; red, M1's region missing the family's line.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.

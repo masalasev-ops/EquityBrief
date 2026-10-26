@@ -1,7 +1,10 @@
 using System.Net;
 using System.Text.RegularExpressions;
+using EquityBrief.Api.Reading;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Ladders;
+using EquityBrief.Core.Moves;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Web.Marks;
 using EquityBrief.Worker.Fills;
@@ -27,6 +30,8 @@ public partial class ReadSurface
         "src/EquityBrief.Web/App/SinglePageApp.Tonight.cs",
         "src/EquityBrief.Api/Reading/TonightScreen.Dips.cs",
         "src/EquityBrief.Api/Program.cs",
+        "src/EquityBrief.Web/Marks/MarkRenderer.cs",
+        "src/EquityBrief.Web/App/SinglePageApp.cs",
     ];
 
     // No source a rule's code version pins is one the page corrections write, so no rule's version moves: no candidate
@@ -283,5 +288,25 @@ public partial class ReadSurface
             "<td><span class=\"rule-chips\"><span class=\"chip\">10 largest</span><span class=\"chip\">251-session look-back</span><span class=\"chip\">2 leaders</span><span class=\"chip\">against the fund</span><span class=\"chip\">beta at least 1</span><span class=\"chip\">sold on losing the lead</span></span></td>",
             await RuleToday(),
             StringComparison.Ordinal);
+    }
+
+    // From the 18.1 correction of 2026-10-26 a stock's rules region says which family the page's list holds it under where
+    // the swing filter did not list it: M1, on the S&P 400's list under its breakout, where it read "this name is not on
+    // tonight's list" beneath a page saying it was on it; S1, on no list, still reads that it is not.
+    [Fact]
+    public async Task AStocksRulesRegionNamesTheFamilyThePagesListHoldsItUnderWhereTheSwingFilterDidNotListIt()
+    {
+        using var store = UniversesStore();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        static string Why(string page) => Assert.Single(Blocks(page, "<section class=\"why-it-is-here\".*?</section>"));
+
+        var m1 = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M1/{IndexNight}"));
+
+        Assert.Contains("On the page's list for 2026-10-02 under <b>Breakouts to a new high</b>, at place 1.", m1, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"degraded\" data-listed=\"family\">the swing filter did not list this name; the page's list holds it under Breakouts to a new high</p>", Why(m1), StringComparison.Ordinal);
+        Assert.DoesNotContain("not on tonight's list", m1, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"degraded\" data-listed=\"false\">this name is not on tonight's list</p>", Why(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/S1/{IndexNight}"))), StringComparison.Ordinal);
     }
 }
