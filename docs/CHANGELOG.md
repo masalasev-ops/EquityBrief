@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - .claude/rules/checks.md - read-surface holds an S&P 400 pick's reward to risk worked from the plan its night stored
+Authorised by: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
+Was:
+> read-surface: ... and an S&P 400 pick's row draws the business state its night stored and says not read only where none was stored, and a reward to risk its night did not store beside a stop and a target says not stored rather than none; ...
+Now:
+> read-surface: ... and a reward to risk its night did not store beside a stop and a target is worked from the plan its night stored from the 15.1 correction of 2026-10-26, at RLI's plan worked by hand to $3.00, and says not stored rather than none only where that plan gives none; ...
+Why: the operator's ruling of 2026-10-25, item 2, after an S&P 400 or 600 pick's risk line read "not stored" where its night stored its entry, its stop and its target; the decision is amended with it.
+
 ### 2026-10-26 - ARCHITECTURE.html and .claude/rules/checks.md - one earnings multiple a stock on every page
 Corrects: the chart page's brief read stated NVDA at 30.1 times its last four quarters' earnings, the provider's, and its fundamentals card at 26.4, the scorecard's over the net income and the shares filed with the SEC, the same words naming two figures, found when 22.12 read NVDA's pages back against the store
 Was:

@@ -9712,3 +9712,24 @@ Queue:      done, phase 22 to its report, the corrections after it and Friday's 
             18, 20 and 22 by fresh sessions when the operator says.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
             below, this pull request's last.
+
+### 15.1 - correction: an S&P 400's or 600's pick works its reward to risk from the plan its night stored, where every plan but the pullback's read not stored   2026-10-26
+
+Found:      by the operator on 2026-10-25 reading Friday's night run again: an S&P 400 or 600 pick read "Risk $1 to make:
+            not stored" where its night stored its entry, its stop and its target. The index's night stores a ratio for
+            the pullback alone, and the 15.1 correction of 2026-10-07 had every other plan say not stored, with no
+            screen working one out.
+Corrected:  where the night stored no ratio and the plan holds a stop under its entry and a target above it, the page
+            works the ratio from them by one function in the core, rounded to a stored price's places as a family's
+            trade gate rounds the ratio it stores, and draws it as the S&P 500's stored ratio reads, "$3.00" at RLI's
+            plan of 2026-10-23; the pullback's stored ratio is drawn as before, and a plan giving none still says not
+            stored. The screen decision is amended in its own text on the ruling, and the roster kept in step.
+Tests:      one new and one rewritten: the drift's M2 at RLI's plan worked by hand to 2.9975 and drawn $3.00, and a plan
+            whose stop is not under its buy saying not stored; and no source a rule's version pins one these
+            corrections write, the reader shown to find two a rule pins. 2796 in all.
+Claims:     none new.
+Pins:       none move, asserted: the two sources it writes are among those no rule pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the test reading it. M1
+            the projection handing no worked ratio; red, M2's row missing $3.00.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.
