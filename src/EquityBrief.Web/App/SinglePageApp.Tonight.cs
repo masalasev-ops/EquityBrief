@@ -191,7 +191,7 @@ public sealed partial class SinglePageApp
         }
 
         return closeToBuy?.FirstOrDefault(row => row.Cell.Family == card.Family) is { } nearest
-            ? Invariant($"No picks. Closest: {nearest.Cell.Ticker}, {ReaderWords.Missed(card.Family, nearest.Cell.Gate) ?? "one step short"}.")
+            ? Invariant($"No picks. Closest: {nearest.Cell.Ticker}, {ReaderWords.MissedBy(card.Family, nearest.Cell.Gate, nearest.Cell.Words) ?? "one step short"}.")
             : "No picks tonight.";
     }
 

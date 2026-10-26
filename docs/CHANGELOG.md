@@ -26,6 +26,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - docs/ARCHITECTURE.html - a drift's revenue step missed for a quarter never read says so, and the step's own words hold for either way it is missed
+Corrects: the S&P 600 drift's stocks one step short read "Sales not up on a year earlier" where the quarter's revenue was never read, 25 of the 25 revenue misses since its freeze, found by the first review of phase 20's sign-off.
+Was:
+> <tr><td>drift</td><td>revenue</td><td>sales up on a year earlier</td><td>sales not up on a year earlier</td></tr>
+> ... From 22.5 the pick card's plan sentences speak these words wherever they are drawn, a session a trading day, the cap a time limit and a rebalance a reshuffle.</p>
+Now:
+> <tr><td>drift</td><td>revenue</td><td>sales up on a year earlier</td><td>no quarter read with sales up on a year earlier</td></tr>
+> ... a rebalance a reshuffle. From the 20.11 correction of 2026-10-26 a drift's revenue step on the S&amp;P 400 and 600 is missed two ways, told apart by the words its night stored beside it: one stock's line says "sales not up on a year earlier" where both quarters were read and "its quarter's sales not read yet" where one was not, and the step's own words below, true of either, name it over many stocks.</p>
+Why: the night stores a revenue never read under the same step as one read and not up, its words alone telling them apart, so the page reads the words.
+
+### 2026-10-26 - .claude/rules/checks.md - read-surface states a drift's revenue step missed for a quarter never read
+Corrects: the same, the S&P 600 drift's stocks one step short said to have sales not up where the quarter's revenue was never read.
+Was:
+> read-surface: ... and the fundamentals-first family's card, tile, buy points, passes and Past picks trades drawn nowhere and its paper trading accounts gone while its Run page row stands |
+Now:
+> read-surface: ... while its Run page row stands; and from the 20.11 correction of 2026-10-26 a drift's revenue step missed for a quarter its night never read said so on each stock's line and counted apart where a card lists none, one whose two quarters were read and whose sales were not up said so, and the step's own words over many stocks true of either |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
 ### 2026-10-26 - docs/ARCHITECTURE.html - the Fundamentals family's card drawn as the operator's mockup
 Authorised by: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
 Was:

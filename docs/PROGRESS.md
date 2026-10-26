@@ -10209,3 +10209,28 @@ Queue:      done, 22.13 and its card's correction; in progress, these correction
             18 and 22.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
             below, this pull request's last.
+
+### 20.11 - correction: a drift's revenue step missed for a quarter its night never read says so, where its stocks one step short read that their sales were not up   2026-10-26
+
+Found:      the first review of phase 20's sign-off: the S&P 600 drift's stocks one step short read "Sales not up on a
+            year earlier" for every member its revenue step stopped, 13 on the night of 2026-10-23, CUBI, POOL, RHI and
+            NTST among them, where the words its night stored beside the step said a quarter was not read before the
+            night, 25 of the 25 revenue misses since its freeze; the revenue level stores both ways of missing under one
+            reason, its words alone telling them apart.
+Corrected:  on the page alone: each stock's line, among a card's stocks one step short, in its closest line, Tonight's
+            closest line and the table of stocks close to a buy point, reads the words its night stored beside the step,
+            "its quarter's sales not read yet" where a quarter was not read and "sales not up on a year earlier" where
+            both were; a card listing none counts the two apart; and the step's own words over many stocks read "no
+            quarter read with sales up on a year earlier", true of either. Section 15.23's word list and its paragraph,
+            the roster's read-surface row and the changelog.
+Tests:      one new, a drift card's lines and a card listing none worked over the three kinds of words the night
+            stores; and the frozen S&P 600 drift's test reads each of its three members' lines off the night's own
+            answers. 2820 in all.
+Claims:     none new.
+Pins:       none move, asserted: the two sources it edits that the page corrections' list did not hold join it.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, each filtered
+            to the tests reading it. N1 a stock's line read by the step's own words whatever its night stored: red at
+            both tests. N2 a card listing none counting a revenue never read as not above: red at the read-surface test.
+            N3 every stored revenue read as both quarters read: red at both.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.

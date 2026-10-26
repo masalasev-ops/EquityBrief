@@ -78,7 +78,7 @@ public static class ReaderWords
         ("drift", "trade", "a reward worth the risk", "reward not worth the risk"),
         ("drift", "floors", "price and trading high enough", "price or trading too low"),
         ("drift", "profit", "profitable over its last four quarters", "not profitable over its last four quarters"),
-        ("drift", "revenue", "sales up on a year earlier", "sales not up on a year earlier"),
+        ("drift", "revenue", "sales up on a year earlier", "no quarter read with sales up on a year earlier"),
         ("drift", "setup", "a fresh report it jumped on", "no fresh report it jumped on"),
         ("drift", "tone", "its results release read better, its outlook not cut", "its results release not read better, or its outlook cut"),
         ("drift", "release read", "its results release read", "its results release not read"),
@@ -122,6 +122,23 @@ public static class ReaderWords
     // A step of a setup a stock passed, in the reader's words, none for a step the list does not hold.
     public static string? Passed(string setup, string? step) =>
         step is { Length: > 0 } named && Steps.FirstOrDefault(one => one.Setup == setup && one.Step == named) is { Passed: { } words } ? words : null;
+
+    // A drift's revenue step is missed two ways, told apart by the words its night stored beside the step: both quarters
+    // read and the sales not up, or a quarter not read before the night. One stock's line says which, and the step's own
+    // words, true of either, name it over many stocks.
+    public const string RevenueNotUp = "sales not up on a year earlier";
+
+    public const string RevenueNotRead = "its quarter's sales not read yet";
+
+    // A missed step of a setup for one stock, the words its night stored beside the step deciding a revenue step's.
+    public static string? MissedBy(string setup, string? step, string? stored) =>
+        setup == EquityBrief.Core.Families.DriftRule.Name && step == EquityBrief.Core.Cards.RuleRows.Revenue && stored is { } words
+            ? RevenueRead(words) ? RevenueNotUp : RevenueNotRead
+            : Missed(setup, step);
+
+    // Whether a revenue step's stored words read both quarters: they open on the change measured between them.
+    public static bool RevenueRead(string stored) =>
+        System.Text.RegularExpressions.Regex.IsMatch(stored, @"^revenue [+\-]?\d", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
 
     // The build's phrasings a sentence the core or the night wrote may carry, each with the reader's words a page draws in
     // its place, in the order they are read: the longer phrase before any shorter one it holds.

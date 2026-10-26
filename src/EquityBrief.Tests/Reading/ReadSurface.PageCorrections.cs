@@ -35,6 +35,8 @@ public partial class ReadSurface
         "src/EquityBrief.Web/Marks/MarkRenderer.History.cs",
         "src/EquityBrief.Api/Reading/NameScreen.cs",
         "src/EquityBrief.Api/Reading/ChartScreen.cs",
+        "src/EquityBrief.Web/Marks/ReaderWords.cs",
+        "src/EquityBrief.Web/Marks/MarkRenderer.CloseToBuy.cs",
     ];
 
     // No source a rule's code version pins is one the page corrections write, so no rule's version moves: no candidate

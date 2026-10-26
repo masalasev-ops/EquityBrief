@@ -899,7 +899,7 @@ public sealed partial class MarkRenderer
 
         if (card.Close is { Count: > 0 } close)
         {
-            said += FormattableString.Invariant($" The closest, {close[0].Ticker}, missed one step: {StepMissed(card.Family, close[0].Gate)}.");
+            said += FormattableString.Invariant($" The closest, {close[0].Ticker}, missed one step: {StepMissed(card.Family, close[0].Gate, close[0].Words)}.");
         }
 
         var flagged = card.RuleChoice?.Stretch is { Flagged: true };
@@ -907,8 +907,9 @@ public sealed partial class MarkRenderer
         return Formatted($"<span class=\"family-empty-line{(flagged ? " flagged" : string.Empty)}\" data-picks=\"0\" data-flagged=\"{Flag(flagged)}\">{Escaped(said)}</span>");
     }
 
-    // A step a stock missed in the reader's words, the build's own name rewritten where the word list holds none for it.
-    static string StepMissed(string family, string step) => ReaderWords.Missed(family, step) ?? ReaderWords.Plain(step);
+    // A step a stock missed in the reader's words, the build's own name rewritten where the word list holds none for it,
+    // and for one stock the words its night stored beside the step deciding which way it was missed.
+    static string StepMissed(string family, string step, string? stored = null) => ReaderWords.MissedBy(family, step, stored) ?? ReaderWords.Plain(step);
 
     // A step a stock passed in the reader's words.
     static string StepPassed(string family, string step) => ReaderWords.Passed(family, step) ?? ReaderWords.Plain(step);
@@ -1061,7 +1062,7 @@ public sealed partial class MarkRenderer
 
         foreach (var (row, at) in rows.Select((row, at) => (row, at + 1)))
         {
-            var missed = StepMissed(family, row.Gate);
+            var missed = StepMissed(family, row.Gate, row.Words);
 
             body.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-gate=\"{Escaped(row.Gate)}\"><td class=\"place\">{at}</td>");
             body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>{(row.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
