@@ -272,9 +272,10 @@ public sealed partial class MarkRenderer
 
     // Tomorrow's buys: one table across every setup, each row whose night wrote its pick's card folding the card beneath it
     // with, where the page hands one, the stock's entry and exit plan drawn inside it beneath its setup's own plan, closed
-    // until a press on the row or its Open plan opens it, the row the link names open; and one line on how to read it.
+    // until a press on the row or its Open plan opens it, the row the link names open; and one line on how to read it. An
+    // index the labeller reads no list of says so in each row holding no label.
     // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
-    public string TomorrowsBuys(IReadOnlyList<BuyPointView> points, string? open, IReadOnlyDictionary<string, string>? links = null, IReadOnlyDictionary<string, string>? plans = null)
+    public string TomorrowsBuys(IReadOnlyList<BuyPointView> points, string? open, IReadOnlyDictionary<string, string>? links = null, IReadOnlyDictionary<string, string>? plans = null, bool labelled = true)
     {
         var body = new StringBuilder();
         var summary = points.Count == 0
@@ -314,7 +315,7 @@ public sealed partial class MarkRenderer
             body.Append(PriceCell("stop", pick.Stop, null));
             body.Append(PriceCell("target", pick.Target, pick.Trailing ? "rising stop, no target" : pick.Exit is { } exit ? ReaderWords.Plain(exit) : null));
             body.Append(RewardCell(pick));
-            body.Append(PickNewsCell(pick));
+            body.Append(PickNewsCell(pick, labelled));
             body.Append("</tr>");
 
             if (folds)

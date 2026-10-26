@@ -9751,3 +9751,21 @@ Mutated:    the rule, stated before the run: the smallest edit undoing the prope
             both lines reading no target again; red, M1's line missing its rising stop.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
             below, this pull request's last.
+
+### 19.3 - correction: an S&P 400's or 600's buy holding no label says the news labels cover S&P 500 picks only, where it read no label   2026-10-26
+
+Found:      by the operator on 2026-10-25 reading Friday's night run again: an S&P 400 or 600 pick read "no label" in
+            tomorrow's buys, the news cell 19.3 drew there, while the labeller reads the S&P 500's list alone and labels
+            none of them.
+Corrected:  a buy holding no label on an S&P 400 or 600 night reads "News labels cover S&P 500 picks only"; an S&P 500
+            buy holding none still reads no label, and a pick holding labels draws its counts on any index. Nothing
+            about the labeller changes and no call is added. The roster is kept in step.
+Tests:      one new: the S&P 400's night with a pick of each kind, each of its three rows saying the labels cover S&P
+            500 picks only and none saying no label, and the buys drawn by the page's own renderer for each side, no
+            label on the S&P 500's and its counts on either. 2798 in all.
+Claims:     none new.
+Pins:       none move, asserted: the three sources it edits join the list no rule pins.
+Mutated:    the rule, stated before the run: the smallest edit undoing the property, filtered to the test reading it. M1
+            the page telling every index the labeller reads its list; red, none of the three rows saying why.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last correction's entry
+            below, this pull request's last.

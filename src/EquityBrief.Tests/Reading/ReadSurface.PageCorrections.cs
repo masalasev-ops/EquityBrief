@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Tests.Harness;
+using EquityBrief.Web.Marks;
 using EquityBrief.Worker.Fills;
 using EquityBrief.Worker.Filter;
 using EquityBrief.Worker.Rules;
@@ -19,6 +20,9 @@ public partial class ReadSurface
         "src/EquityBrief.Core/Cards/PlanRatio.cs",
         "src/EquityBrief.Api/Reading/TonightScreen.Indices.cs",
         "src/EquityBrief.Web/Marks/MarkRenderer.TonightTop.cs",
+        "src/EquityBrief.Web/Marks/MarkRenderer.Families.cs",
+        "src/EquityBrief.Web/Marks/MarkRenderer.Tonight.cs",
+        "src/EquityBrief.Web/App/SinglePageApp.Tonight.cs",
     ];
 
     // No source a rule's code version pins is one the page corrections write, so no rule's version moves: no candidate
@@ -79,5 +83,37 @@ public partial class ReadSurface
 
         // In the reader's words: no term of section 15.23's list reaches the page.
         Assert.Empty(Checks.PlainWords.FaultsOn(Checks.PlainWords.TonightPage, page, Checks.PlainWords.Terms()));
+    }
+
+    // From the 19.3 correction of 2026-10-26 a buy holding no label says why on an S&P 400 or 600 night, the labeller
+    // reading the S&P 500's list alone, and says no label on the S&P 500's; a pick holding labels draws its counts on
+    // either, as the labeller would count them were the operator to widen its list.
+    [Fact]
+    public async Task ABuyHoldingNoLabelSaysTheLabelsCoverSAndP500PicksOnlyOffTheSAndP500AndNoLabelOnIt()
+    {
+        const string Covers = "<td class=\"news-counts\" data-positive=\"none\" data-negative=\"none\"><span class=\"degraded\">News labels cover S&amp;P 500 picks only</span></td>";
+        const string None = "<td class=\"news-counts\" data-positive=\"none\" data-negative=\"none\"><span class=\"degraded\">no label</span></td>";
+
+        using (var store = EachKindStore())
+        {
+            using var host = new Host(store.Root);
+            using var client = host.CreateClient();
+
+            var page = await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400");
+
+            Assert.Equal(3, Regex.Matches(Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>")), Regex.Escape(Covers)).Count);
+            Assert.DoesNotContain(">no label<", page, StringComparison.Ordinal);
+        }
+
+        // Drawn by the page's own renderer for an S&P 500 night and for an S&P 400 one: a pick holding no label and one
+        // holding two good and one bad.
+        static string Drawn(bool labelled, int? good, int? bad) => new MarkRenderer().TomorrowsBuys(
+            [new BuyPointView(Core.Families.DriftRule.Name, "Earnings drift", new FamilyPickCell(new ListingCell("X1", new DateOnly(2026, 10, 2), 0, 0, 50m, [], NewsPositive: good, NewsNegative: bad), 1, 50m, 47m, 56m, false, 2m, "its report beat", []))],
+            null,
+            labelled: labelled);
+
+        Assert.Contains(None, Drawn(true, null, null), StringComparison.Ordinal);
+        Assert.Contains(Covers, Drawn(false, null, null), StringComparison.Ordinal);
+        Assert.All(new[] { Drawn(true, 2, 1), Drawn(false, 2, 1) }, drawn => Assert.Contains("<td class=\"news-counts\" data-positive=\"2\" data-negative=\"1\"><span class=\"np gain\">2 good</span> · <span class=\"nn loss\">1 bad</span></td>", drawn, StringComparison.Ordinal));
     }
 }

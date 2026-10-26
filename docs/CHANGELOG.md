@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-26 - .claude/rules/checks.md - read-surface holds an S&P 400 or 600 buy saying the news labels cover S&P 500 picks only
+Corrects: an S&P 400 or 600 pick read "no label" in tomorrow's buys though the labeller reads the S&P 500's list alone, found by the operator reading Friday's night run again on 2026-10-25
+Was:
+> read-surface: ... with no term of section 15.23's list on the page |
+Now:
+> read-surface: ... with no term of section 15.23's list on the page; and from the 19.3 correction of 2026-10-26 a buy holding no label saying the news labels cover S&P 500 picks only on an S&P 400 night, each of its three rows, and no label on an S&P 500 night, a pick holding labels drawing its counts on either |
+Why: the roster row says what its check asserts, and the correction's test extends it.
+
 ### 2026-10-26 - .claude/rules/checks.md - read-surface holds each buy's risk line saying why where its setup sets no target
 Corrects: a breakout's or a short-term dip's risk line read "no target" with nothing saying why, found by the operator reading Friday's night run again on 2026-10-25
 Was:
