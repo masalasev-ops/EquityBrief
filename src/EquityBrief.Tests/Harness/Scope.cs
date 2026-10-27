@@ -3969,6 +3969,11 @@ internal static class Scope
             Verdict.Pass,
             "the bar read as a share on both sides of it, the rise over the filing before, the sales growth speeding up, the hold and the flag on both sides of each, a filing first read on the night told from one read before, and the step over a constructed store buying a member at its next open, selling one whose score fell, one at its last session and one that left the index; the figures read off the document against the constants",
             ByExpectations),
+        // 22.14, on the operator's ruling of 2026-10-27: section 17's grid of the Fundamentals family's history test.
+        [CheckReach.Key(LimitsTable, "The Fundamentals family's history test")] = new Scoped(
+            Verdict.Pass,
+            "the grid's settings each once with the starting one among them, one filing's trade over a constructed tape worked by hand, its result, benchmark and edge and the tester's month over the same trade, each dial on both sides with the starting setting buying where the night's own answer does, the sales on a falling score, at the time limit and on leaving the index, and a constructed filer replayed night by night with the flag that stood the night before; the figures read off the document against the constants",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "A filing the Fundamentals family cannot weigh")] = new Scoped(
             Verdict.Pass,
             "the rule over four checks read and over no sales growth read giving each its reason, and the step over a constructed store storing a member read so with its reason and buying nothing on it",

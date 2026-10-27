@@ -811,6 +811,14 @@ dotnet run --project src/EquityBrief.Worker -- sweep-index --index MID --family 
 
 It reads the live store read-only, the filed facts among what it reads, and writes its report and its figures into a run folder of its own and nothing else. Its coverage table states, at each year's first reshuffle, the members answered, scored, whose filings as first filed reach every quarter the valuation reads, valued against their own twelve quarters and qualifying at the starting setting, so a year the pulled prices do not reach shows as members whose filings reach and who are not valued. Nothing it shows is adopted, frozen or registered; each index's answer goes to the operator, and a freeze is 22.11's remedy on their word.
 
+From 22.14 the Fundamentals family's history is tested on each of the three indices by naming its family (see: The Fundamentals family's history test walks its trades over the pulled history on 144 settings an index and registers nothing). `improving` replays every night from the first scored session, scoring each member's newly read filings as first filed with the score its filing before held, its sales growth's change and the flag its release raised the night before, walks the trades of each of the 144 settings section 17 states, and states the first year the release readings reach, the starting setting's trades and edge, each year's edge, the edge without its five largest results, the proposal among the settings meeting the quality family's floors in months, what luck alone passes over the 144 and the tester's verdict of the grid run year by year:
+
+```
+dotnet run --project src/EquityBrief.Worker -- sweep-index --index GSPC --family improving
+```
+
+It reads the live store read-only, the filed facts and the release readings among what it reads, and writes its report and its figures into a run folder of its own and nothing else. Its coverage table states each year's filings first read, scored, rising, at the starting bar, speeding up and flagged the night before, and the releases read, so a year the readings do not reach shows filings no flag stood for. Nothing it shows is adopted, frozen or registered; each index's answer goes to the operator, and a freeze is 22.15's remedy on their word.
+
 ### The rule's record on each pick's card
 
 Each pick's card draws the record of the rule that picked it, replayed at its one setting over the pulled history with the sweep's own walk, each trade after its cost at the published table (see: A rule's record is replayed at its one setting by the sweep's own code over the pulled history, after costs on every index). The replay is run by hand, every index or one, and a freeze's remedy runs it again so the record follows the rule a card names:

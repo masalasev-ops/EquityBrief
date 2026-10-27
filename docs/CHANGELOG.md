@@ -26,6 +26,44 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-27 - docs/ARCHITECTURE.html - the Fundamentals family's history test: section 13's paragraph, section 17's grid and the tester's release read
+Authorised by: The Fundamentals family's history test walks its trades over the pulled history on 144 settings an index and registers nothing
+Was:
+> 13.9: (nothing: the paragraph is added after Quality at a fair price's history test's)
+> 17: (nothing: the row is added after the Fundamentals family's starting settings)
+> Walk-forward tester: "... and keeps one whose version's history read is not complete not testable (see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff)</td></tr>"
+Now:
+> 13.9: "From 22.14 the Fundamentals family's history is tested on each of the three indices by the same command naming its family ... and each index's answer goes to the operator before any freeze."
+> 17, The Fundamentals family's history test: "on each of the three indices, every night replayed from the first scored session on membership as it stood, over 144 settings: ... and the first year the release readings reach (see: ...)"
+> Walk-forward tester: "... not testable (see: ...); and from 22.14 it reads each filer's releases through the same reader under the same version for the Fundamentals family's history test, the flag standing the night before a filing is read (see: The Fundamentals family's history test walks its trades over the pulled history on 144 settings an index and registers nothing)</td></tr>"
+Why: the operator's ruling of 2026-10-27 names the history test's grid, its floors and the years each answer names.
+
+### 2026-10-27 - docs/RUNBOOK.md - the Fundamentals family's history test by hand
+Authorised by: The Fundamentals family's history test walks its trades over the pulled history on 144 settings an index and registers nothing
+Was:
+> (nothing: the paragraph and its command are added after Quality at a fair price's history test's)
+Now:
+> "From 22.14 the Fundamentals family's history is tested on each of the three indices by naming its family ... `sweep-index --index GSPC --family improving` ... and a freeze is 22.15's remedy on their word."
+Why: the history test is run by hand on each index and its answer goes to the operator.
+
+### 2026-10-27 - .claude/rules/checks.md - fixture-expectations and rules-choose-the-stocks state the Fundamentals family's history test
+Authorised by: The Fundamentals family's history test walks its trades over the pulled history on 144 settings an index and registers nothing
+Was:
+> fixture-expectations: "... and never one whose scorecard read no check |"
+> rules-choose-the-stocks: "... its folder among those scanned |"
+Now:
+> fixture-expectations: "... and never one whose scorecard read no check; and from 22.14 the Fundamentals family's history test: the grid's 144 settings, one filing's trade over a constructed tape of four members worked by hand, ... with the flag that stood the night before |"
+> rules-choose-the-stocks: "... its folder among those scanned; and from 22.14 the walk-forward tester reading each filer's releases through the same reader for the flags of that family's history test |"
+Why: the two checks reach what 22.14 adds.
+
+### 2026-10-27 - docs/BUILD_PLAN.md - 22.14 carries the operator's grid and floors
+Authorised by: The Fundamentals family's history test walks its trades over the pulled history on 144 settings an index and registers nothing
+Was:
+> 22.14: "... and goes to the operator with nothing registered. Beside it the fundamentals-first family's business check, ..."
+Now:
+> 22.14: "... and goes to the operator with nothing registered. On the operator's word of 2026-10-27, ... each answer naming 2020, 2022, 2025 and 2026. Beside it the fundamentals-first family's business check, ..."
+Why: the operator's ruling of 2026-10-27 sets the grid and the floors the plan's checkpoint is built to.
+
 ### 2026-10-27 - docs/ARCHITECTURE.html - the Fundamentals family's starting settings name the 22.13 correction in their source
 Corrects: section 17's value cell stated the correction's checkpoint and day in digits, which the pinned figures' check reads as settings no constant holds, found by the checkpoint script over the 22.13 correction's tree before the merge.
 Was:
