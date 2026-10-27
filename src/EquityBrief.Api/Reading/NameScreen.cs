@@ -1495,7 +1495,9 @@ public static partial class NameScreen
         // The newest results release's opening line, which the box management speaks in opens on.
         EquityBrief.Core.Report.ReleaseOpening? newestRelease = null,
         // The history pulled before the store's year, read where the stored year holds no band on a side.
-        PulledSeries? pulled = null)
+        PulledSeries? pulled = null,
+        // The newest pass that wrote one section asked for alone, as its run log row's detail holds it.
+        string? aloneDetail = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1728,7 +1730,45 @@ public static partial class NameScreen
                 Newest(indicators, IndicatorSeries.Sma50),
                 Newest(indicators, IndicatorSeries.Sma200),
                 swingLows ?? []),
-            olderBands: OlderBandsOf(bars, levels, pulled, typicalMove));
+            olderBands: OlderBandsOf(bars, levels, pulled, typicalMove),
+            aloneLine: Alone(aloneDetail));
+    }
+
+    // What the newest pass writing one section asked for alone came to, in one line: written again, not written with why,
+    // or the local model not reached with why; none where no section was asked for alone.
+    // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+    public static AloneLine? Alone(string? detail)
+    {
+        if (string.IsNullOrWhiteSpace(detail))
+        {
+            return null;
+        }
+
+        using var document = JsonDocument.Parse(detail);
+        var root = document.RootElement;
+
+        if (Text(root, "alone") is not { } section
+            || Text(root, "outcome") is not { } outcome
+            || !DateOnly.TryParseExact(Text(root, "asOf"), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var asOf))
+        {
+            return null;
+        }
+
+        var why = root.TryGetProperty("notWritten", out var lines) && lines.ValueKind == JsonValueKind.Array
+            ? lines.EnumerateArray().Where(line => Text(line, "section") == section).Select(line => Text(line, "reason")).FirstOrDefault()
+            : null;
+        var wrote = root.TryGetProperty("written", out var drafts) && drafts.ValueKind == JsonValueKind.Array
+            && drafts.EnumerateArray().Any(draft => Text(draft, "section") == section);
+        var asked = Invariant($"{section} was asked for again alone on the local model on {asOf:yyyy-MM-dd}");
+
+        return new AloneLine(
+            section,
+            outcome,
+            asOf,
+            outcome == ReadApi.PassWritten && wrote ? Invariant($"{section} was written again alone on the local model on {asOf:yyyy-MM-dd}.")
+            : outcome == ReadApi.PassUnavailable ? asked + ", and the local model was not reached: " + (Text(root, "reason") ?? why ?? "its run says why") + "."
+            : why is not null ? asked + ", and it was not written: " + why + "."
+            : asked + (Text(root, "reason") is { } reason ? ": " + reason + "." : "."));
     }
 
     // The bands the pulled history turned at, for a side the stored year's bands leave empty, at the store's scale: the

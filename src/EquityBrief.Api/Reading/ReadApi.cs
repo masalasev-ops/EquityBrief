@@ -5813,6 +5813,30 @@ public sealed partial class ReadApi : IComponent
         return await command.ExecuteScalarAsync() as string;
     }
 
+    // The newest pass that wrote one of the name's sections asked for alone, its detail as the pass wrote it, which the
+    // research region says what came of beside the report's own pass.
+    // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+    const string NewestAloneForName = @"
+        SELECT detail FROM run_log
+        WHERE stage = $research
+          AND CASE WHEN json_valid(detail) THEN json_extract(detail, '$.ticker') END = $ticker
+          AND CASE WHEN json_valid(detail) THEN json_extract(detail, '$.alone') END IS NOT NULL
+        ORDER BY rowid DESC
+        LIMIT 1;
+    ";
+
+    public async Task<string?> NewestAloneAsync(string ticker)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestAloneForName;
+        command.Parameters.AddWithValue("$research", ResearchStage);
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        return await command.ExecuteScalarAsync() as string;
+    }
+
     // The documents the given ids name, as stored. An id no row holds is not returned,
     // and the page says so for it rather than drawing a link to nothing.
     public async Task<IReadOnlyList<CitedDocumentRow>> CitedDocumentsAsync(IReadOnlyCollection<string> ids)

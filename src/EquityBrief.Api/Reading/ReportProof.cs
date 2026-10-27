@@ -32,7 +32,7 @@ public static partial class ReportProof
     // Each rule by its key and what it holds, in the order the operator's corrections state them.
     public static IReadOnlyList<(string Rule, string Says)> Rules { get; } =
     [
-        ("directions", "Every written sentence is held to the directions the stored latest quarter states, a contradicted one withheld and a beat or a miss against the stored estimate given the stored side."),
+        ("directions", "Every drawn sentence of a section held to the stored latest quarter, read against its directions again, states none they contradict, a contradicted one withheld and a beat or a miss against the stored estimate given the stored side."),
         ("markers", "No bracketed source marker is drawn in a written section, and its sources are listed by title beneath it."),
         ("abbreviations", "Every abbreviation a written section uses is spelled out where first used."),
         ("short-version", "The short version opens on the pick for a picked stock and on the quarter for any other, before what worked and what did not."),
@@ -44,8 +44,9 @@ public static partial class ReportProof
         ("next-report", "A picked stock's card states its next report, estimated where none is on file."),
         ("rules-family", "How the rules read it opens on the checks of the family that picked the stock."),
         ("trend-words", "A trend gate that failed is said in plain words."),
-        ("news-matched", "The news region draws and counts only the company's own stories."),
-        ("industry", "The peer group is labelled as the provider's classification or the stock's override, and a mismatch with the page's own text is flagged."),
+        ("news-matched", "The news region states how many stories it left out as another company's, and its counts add up over the stories it kept."),
+        ("industry-label", "The peer group is labelled as the provider's classification or the stock's override."),
+        ("industry-mismatch", "A peer group naming none of the business the page's own account describes is flagged, and one naming it is not."),
         ("newest-quarter", "A newer quarter's results release stored before its filing is read by code into the latest quarter, labelled so."),
         ("rerun-alone", "A failed section can be written again alone on the local model."),
         ("model-labels", "The page names the model each job ran on and whether it is paid or local."),
@@ -61,7 +62,28 @@ public static partial class ReportProof
         void Add(string rule, bool? passed, string? why = null) =>
             verdicts.Add(new ProofVerdict(rule, passed switch { true => Passed, false => Failed, null => Unexamined }, why));
 
-        Add("directions", written && page.Contains("data-snapshot-of=", StringComparison.Ordinal) ? true : null, written ? null : "no written section is drawn");
+        // Every drawn sentence of a section held to stored directions read against them again, a withheld sentence's place
+        // saying what the figures show and so read apart.
+        var held = HeldSection().Matches(page).ToArray();
+        var contradicted = held
+            .SelectMany(section =>
+            {
+                var facts = WebUtility.HtmlDecode(section.Groups[1].Value)
+                    .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(fact => fact.Split('|'))
+                    .Where(parts => parts.Length == 3 && int.TryParse(parts[2], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out _))
+                    .Select(parts => new EquityBrief.Core.Research.DirectionFact(parts[0], parts[1], int.Parse(parts[2], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture), string.Empty))
+                    .ToArray();
+
+                return ProseOf().Matches(section.Groups[2].Value)
+                    .Select(match => WebUtility.HtmlDecode(Regex.Replace(match.Groups[1].Value, "<[^>]+>", " ")))
+                    .SelectMany(paragraph => SentenceBreak().Split(paragraph))
+                    .Where(sentence => !sentence.Contains(EquityBrief.Core.Research.Directions.WithheldOpens, StringComparison.Ordinal)
+                        && EquityBrief.Core.Research.Directions.Clashes(sentence, facts).Count > 0);
+            })
+            .FirstOrDefault();
+
+        Add("directions", held.Length == 0 ? null : contradicted is null, held.Length == 0 ? "no written section is held to a stored latest quarter" : contradicted is null ? null : "drawn against the stored figures: " + contradicted);
         Add("markers", written ? !MarkerOf().IsMatch(prose) : null, written ? (MarkerOf().Match(prose) is { Success: true } marker ? "a marker is drawn: " + marker.Value : null) : "no written section is drawn");
         Add("abbreviations", written ? Unspelled(prose) is not { } missing : null, written ? Unspelled(prose) : "no written section is drawn");
 
@@ -85,11 +107,41 @@ public static partial class ReportProof
         var trendFailed = page.Contains("not an uptrend", StringComparison.Ordinal);
 
         Add("trend-words", trendFailed ? page.Contains("class=\"trend-why\"", StringComparison.Ordinal) : null, trendFailed ? null : "no trend gate failed on the page");
-        Add("news-matched", page.Contains("class=\"news-region\"", StringComparison.Ordinal) ? true : null, page.Contains("class=\"news-region\"", StringComparison.Ordinal) ? null : "no news region is drawn");
 
-        var peers = page.Contains("S&amp;P 500 members on the night, ", StringComparison.Ordinal);
+        // The news region states how many stories it left out as another company's, and its counts add up over the stories
+        // it kept: every story is an opinion or in the whole list, and every one in the whole list is positive, negative,
+        // neutral or not labelled.
+        var news = NewsRegion().Match(page);
+        int Count(string name) => int.Parse(news.Groups[name].Value, CultureInfo.InvariantCulture);
+        var leftOutStated = news.Success && news.Groups["left"].Success;
+        var adds = leftOutStated
+            && Count("articles") == Count("all") + Count("opinion")
+            && Count("all") == Count("positive") + Count("negative") + Count("neutral") + Count("unlabelled");
 
-        Add("industry", peers ? page.Contains("the provider's classification", StringComparison.Ordinal) || page.Contains("the industry set for the stock", StringComparison.Ordinal) : null, peers ? null : "no peer group is drawn");
+        Add(
+            "news-matched",
+            news.Success ? adds : null,
+            !news.Success ? "no news region is drawn" : !leftOutStated ? "the region states no count of the stories it left out" : adds ? null : "its counts do not add up over the stories it kept");
+
+        var group = PeerGroup().Match(page);
+
+        Add("industry-label", group.Success ? group.Groups[2].Value.StartsWith("the provider's classification", StringComparison.Ordinal) || group.Groups[2].Value.StartsWith("the industry set for the stock", StringComparison.Ordinal) : null, group.Success ? null : "no peer group is drawn");
+
+        // The group read against the page's own account of what the company sells, as the page reads it.
+        var industry = group.Success ? WebUtility.HtmlDecode(group.Groups[1].Value) : null;
+        var sells = SectionProse(page, EquityBrief.Web.Marks.MarkRenderer.WhatItSells);
+        var business = industry is null || sells is null ? null : EquityBrief.Core.Report.IndustryCheck.Mismatch(industry, sells);
+        var flagged = page.Contains("class=\"notice industry-mismatch\"", StringComparison.Ordinal);
+
+        Add(
+            "industry-mismatch",
+            industry is null || sells is null ? null : (business is not null) == flagged,
+            industry is null ? "no peer group is drawn"
+            : sells is null ? "the page draws no account of what the company sells"
+            : (business is not null) == flagged ? null
+            : business is not null ? "the group " + industry + " names none of " + business + " and no flag is drawn"
+            : "a flag is drawn where the group names the business");
+
         var quarterCard = QuarterCard().Match(page);
         var newestRelease = ReleaseDay().Matches(page).Select(match => match.Groups[1].Value).DefaultIfEmpty(string.Empty).Max(StringComparer.Ordinal)!;
 
@@ -97,6 +149,7 @@ public static partial class ReportProof
             "newest-quarter",
             !quarterCard.Success ? null : quarterCard.Groups[1].Value == "Reported" || string.CompareOrdinal(newestRelease, quarterCard.Groups[2].Value) <= 0,
             !quarterCard.Success ? "no latest quarter is drawn" : quarterCard.Groups[1].Value == "Filed" && string.CompareOrdinal(newestRelease, quarterCard.Groups[2].Value) > 0 ? "a results release of " + newestRelease + " is newer than the filing of " + quarterCard.Groups[2].Value + " the quarter is read from" : null);
+
         var unwritten = Unwritten().Matches(page)
             .Select(match => WebUtility.HtmlDecode(match.Groups[1].Value))
             .Where(section => section != EquityBrief.Core.Research.ClaimRules.CycleSection)
@@ -181,6 +234,33 @@ public static partial class ReportProof
     // The latest quarter's card: whether it is dated as filed or as reported, and its day.
     [GeneratedRegex("id=\"quarter\"><div class=\"spine\">.*?<span class=\"dl-k\">(Filed|Reported)</span><b>(\\d{4}-\\d{2}-\\d{2})</b>", RegexOptions.Singleline)]
     private static partial Regex QuarterCard();
+
+    // A written section's drawn prose, joined, none where the page draws no such section or it holds no prose.
+    static string? SectionProse(string page, string section)
+    {
+        var drawn = Regex.Match(page, "<section class=\"written-section\"[^>]*data-section=\"" + Regex.Escape(WebUtility.HtmlEncode(section)) + "\"[^>]*>(.*?)</section>", RegexOptions.Singleline);
+        var prose = drawn.Success
+            ? string.Join(" ", ProseOf().Matches(drawn.Groups[1].Value).Select(match => WebUtility.HtmlDecode(Regex.Replace(match.Groups[1].Value, "<[^>]+>", " ")))).Trim()
+            : string.Empty;
+
+        return prose.Length == 0 ? null : prose;
+    }
+
+    // A written section held to the stored directions, with the directions it was held to and its body.
+    [GeneratedRegex("<section class=\"written-section\"[^>]*?data-directions=\"([^\"]*)\"[^>]*>(.*?)</section>", RegexOptions.Singleline)]
+    private static partial Regex HeldSection();
+
+    // Where a sentence ends and the next begins, as the page's own reader cuts a section's prose.
+    [GeneratedRegex("(?<=[.!?][\"”']?)\\s+(?=[A-Z\"“])")]
+    private static partial Regex SentenceBreak();
+
+    // The news region's counts and the count of the stories it left out.
+    [GeneratedRegex("<div class=\"news-region\"[^>]*?data-articles=\"(?<articles>\\d+)\" data-all=\"(?<all>\\d+)\" data-positive=\"(?<positive>\\d+)\" data-negative=\"(?<negative>\\d+)\" data-neutral=\"(?<neutral>\\d+)\" data-opinion=\"(?<opinion>\\d+)\" data-unlabelled=\"(?<unlabelled>\\d+)\"(?: data-left-out=\"(?<left>\\d+)\")?")]
+    private static partial Regex NewsRegion();
+
+    // The peer group's label: the group and what the page says it is.
+    [GeneratedRegex("<div class=\"sub\">Against (.+?)'s S&amp;P 500 members on the night, ([^<]*)</div>")]
+    private static partial Regex PeerGroup();
 
     // Each section the research region draws as left out or not written.
     [GeneratedRegex("<p class=\"(?:left-out|not-written)\" data-section=\"([^\"]+)\">")]

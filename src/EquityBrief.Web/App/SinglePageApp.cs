@@ -1415,7 +1415,9 @@ public sealed partial class SinglePageApp : IComponent
         // Why the trend rule read the stock as it did, in plain words, none where it read an uptrend.
         string? trendWhy = null,
         // The bands the pulled history turned at, for a side the stored year holds none on, marked older.
-        IReadOnlyList<EquityBrief.Core.Report.OlderBand>? olderBands = null)
+        IReadOnlyList<EquityBrief.Core.Report.OlderBand>? olderBands = null,
+        // What the newest section asked for alone came to, none where none was asked for.
+        AloneLine? aloneLine = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -2269,7 +2271,7 @@ public sealed partial class SinglePageApp : IComponent
         // or not written with the reason for each, and the controls with what research
         // has cost stated beside them before any is pressed; then which model ran each job.
         // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
-        var research = marks.LeftOut(ticker, leftOut ?? [], researchState, notWritten, paused, pass, controls, cost)
+        var research = marks.LeftOut(ticker, leftOut ?? [], researchState, notWritten, paused, pass, controls, cost, aloneLine)
             + MarkRenderer.ModelJobsTable(MarkRenderer.ModelJobs(sections, news, report?.Release, paidModels ?? new HashSet<string>(StringComparer.Ordinal)));
 
         Card(

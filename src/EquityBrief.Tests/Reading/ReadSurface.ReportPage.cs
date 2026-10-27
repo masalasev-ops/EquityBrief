@@ -309,11 +309,139 @@ public partial class ReadSurface
         Assert.Equal(ReportProof.Unexamined, Verdict(ReportProof.Evaluate("CCC", Cycle), "rerun-alone"));
         Assert.Equal(ReportProof.Passed, Verdict(ReportProof.Evaluate("CCC", Filed.Replace(">Filed<", ">Reported<").Replace("2026-07-24", "2026-10-22") + Release), "newest-quarter"));
 
+        // Each drawn sentence of a section held to the stored quarter is read against its directions again: ROP's bear
+        // case calling a margin of 28.7% against 28.4% narrower fails where drawn as written, passes as the page draws it,
+        // its place withheld, and a page holding no section held to a stored quarter is unexamined.
+        var widened = new EquityBrief.Core.Research.DirectionFact("operating margin", EquityBrief.Core.Research.Directions.Margin, 1, "28.7% against 28.4% a year earlier");
+        var bear = new WrittenCell("The two cases", "The bear case: the operating margin was slightly narrower than a year earlier.", new DateOnly(2026, 10, 26), "deepseek-flash", []);
+        var drawnBear = new MarkRenderer().WrittenSection("CCC", bear, [], facts: [widened]);
+        const string AsWritten = "<section class=\"written-section\" data-ticker=\"CCC\" data-section=\"The two cases\" data-directions=\"operating margin|margin|1\"><p class=\"prose\">The bear case: the operating margin was slightly narrower than a year earlier.</p></section>";
+
+        Assert.Contains("data-directions=\"operating margin|margin|1\"", drawnBear, StringComparison.Ordinal);
+        Assert.Equal(ReportProof.Passed, Verdict(ReportProof.Evaluate("CCC", drawnBear), "directions"));
+        Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", AsWritten), "directions"));
+        Assert.Equal(ReportProof.Unexamined, Verdict(held, "directions"));
+
+        // The news region states the stories it left out and its counts add up over the stories it kept: seven, six in the
+        // whole list and one opinion, the six one positive, one negative, one neutral and three not labelled.
+        const string News = "<div class=\"news-region\" data-ticker=\"CCC\" data-articles=\"7\" data-all=\"6\" data-positive=\"1\" data-negative=\"1\" data-neutral=\"1\" data-opinion=\"1\" data-unlabelled=\"3\" data-left-out=\"35\">";
+
+        Assert.Equal(ReportProof.Passed, Verdict(ReportProof.Evaluate("CCC", News), "news-matched"));
+        Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", News.Replace("data-unlabelled=\"3\"", "data-unlabelled=\"2\"")), "news-matched"));
+        Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", News.Replace(" data-left-out=\"35\"", string.Empty)), "news-matched"));
+        Assert.Equal(ReportProof.Unexamined, Verdict(held, "news-matched"));
+
+        // The peer group is read against the page's own account of what the company sells: ROP's application software in a
+        // group of electronic equipment makers is flagged, and a page drawing the flag where the group names the business
+        // fails as one drawing none where it does not.
+        const string Peers = "<div class=\"sub\">Against Electronic Equipment, Instruments &amp; Components's S&amp;P 500 members on the night, the provider's classification</div>";
+        var sells = new MarkRenderer().WrittenSection("CCC", new WrittenCell(MarkRenderer.WhatItSells, "Roper sells vertical application software and network software to niche markets.", new DateOnly(2026, 10, 26), "deepseek-flash", []), []);
+        var flag = MarkRenderer.IndustryMismatch("Electronic Equipment, Instruments & Components", "Roper sells vertical application software and network software to niche markets.");
+
+        Assert.NotEqual(string.Empty, flag);
+        Assert.Equal(ReportProof.Passed, Verdict(ReportProof.Evaluate("CCC", Peers + flag + sells), "industry-mismatch"));
+        Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", Peers + sells), "industry-mismatch"));
+        Assert.Equal(ReportProof.Passed, Verdict(ReportProof.Evaluate("CCC", Peers + sells), "industry-label"));
+        Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", Peers.Replace("the provider's classification", "a group")), "industry-label"));
+        Assert.Equal(ReportProof.Unexamined, Verdict(ReportProof.Evaluate("CCC", Peers), "industry-mismatch"));
+
         var counted = ReportProof.Counted([held, broken]).Single(rule => rule.Rule == "one-value");
 
         Assert.Equal((1, 1, 0), (counted.Passed, counted.Failed, counted.Unexamined));
         Assert.Equal(["BBB"], counted.Failing);
         Assert.Contains("unexamined is never counted as a pass", ReportProof.Html(new ProofReport(DateTimeOffset.UnixEpoch, "GSPC", null, ReportProof.Counted([held, broken]), [held, broken])), StringComparison.Ordinal);
+    }
+
+    // A quarter reported after the newest filing the store holds is dated by its report and labelled as the results
+    // release's, and its segments say they are the older filing's: MSFT's newest filing taken out of a replayed store, as
+    // a release stands before its filing is stored.
+    // see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+    [Fact]
+    public async Task AQuarterReportedAfterTheNewestStoredFilingIsDatedByItsReportAndLabelledAsTheReleases()
+    {
+        using var store = await FixtureReplay.ReplayedAsync();
+
+        var filed = Rows(store, "SELECT filing_date FROM fundamentals WHERE ticker = 'MSFT' ORDER BY filing_date DESC;").Select(row => row[0]).ToArray();
+        var reported = Rows(store, "SELECT report_date FROM reported_quarter WHERE ticker = 'MSFT' AND fetched_at = (SELECT MAX(fetched_at) FROM reported_quarter WHERE ticker = 'MSFT') ORDER BY period_end DESC LIMIT 1;").Single()[0];
+
+        // As stored, the quarter is the newest filing's.
+        Assert.Contains($"<div class=\"lbl\">The latest quarter</div><div class=\"dl\"><span class=\"dl-k\">Filed</span><b>{filed[0]}</b><span>from the filing</span>", await NameRoute(store, "MSFT"), StringComparison.Ordinal);
+
+        store.Execute($"DELETE FROM fundamentals WHERE ticker = 'MSFT' AND filing_date = '{filed[0]}';");
+
+        var page = await NameRoute(store, "MSFT");
+
+        Assert.Contains($"<div class=\"lbl\">The latest quarter</div><div class=\"dl\"><span class=\"dl-k\">Reported</span><b>{reported}</b><span>from the results release, filing not stored yet</span>", page, StringComparison.Ordinal);
+        Assert.Equal(filed.Length > 1, page.Contains("<span>from the filing before the newest quarter, whose filing is not stored yet</span>", StringComparison.Ordinal));
+        Assert.Equal(ReportProof.Passed, ReportProof.Evaluate("MSFT", page).Verdicts.Single(verdict => verdict.Rule == "newest-quarter").Verdict);
+    }
+
+    // A next report the night has passed is said as reported, with the one after it not announced, in the snapshot and in
+    // the estimate's line beneath the numbers; and a results release newer than the one the guidance was read from opens
+    // the box management speaks in on its own first line.
+    // see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+    [Fact]
+    public async Task AReportTheNightHasPassedIsSaidAsReportedAndANewerReleaseOpensTheBoxManagementSpeaksIn()
+    {
+        using var store = await WithFundamentals(withTheArchive: true);
+
+        var filings = await Api(store).FundamentalsAsync(Name);
+
+        using var payload = System.Text.Json.JsonDocument.Parse(StoredPayload(store, Name));
+
+        var estimated = payload.RootElement.GetProperty("estimated");
+        var reportDate = DateOnly.ParseExact(estimated.GetProperty("reportDate").GetString()!, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        var periodEnd = estimated.GetProperty("periodEnd").GetString();
+
+        // The night before the report the next report stands as stored, and on its day it is reported.
+        var before = NameScreen.Numbers(filings, new ConceptFigures(null, reportDate.AddDays(-1), null, null));
+        var after = NameScreen.Numbers(filings, new ConceptFigures(null, reportDate, null, null));
+
+        Assert.DoesNotContain("data-reportDate=\"reported\"", before, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"<div><dt>Next report</dt><dd data-reportDate=\"reported\"><b>not announced</b><small>the quarter to {periodEnd} was reported on {reportDate:yyyy-MM-dd}</small></dd></div>"), after, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"The quarter to {periodEnd} was reported on {reportDate:yyyy-MM-dd}, and the next report is not announced."), after, StringComparison.Ordinal);
+
+        // A release a year after the guidance's opens the box on its dateline's sentence; one before it does not.
+        var newer = EquityBrief.Core.Report.ReleaseOpening.Of("ex99.htm", reportDate.AddDays(400), "https://www.sec.gov/ex99.htm", "Cupertino, California, October 30, 2027 ... Apple today announced financial results for its fiscal 2027 fourth quarter. Revenue rose.");
+        var released = NameScreen.Numbers(filings, new ConceptFigures(null, reportDate, null, null), newer);
+
+        Assert.Contains("<blockquote class=\"guidance release-opening\"", released, StringComparison.Ordinal);
+        Assert.Contains("Cupertino, California, October 30, 2027 ... Apple today announced financial results for its fiscal 2027 fourth quarter.", WebUtility.HtmlDecode(released), StringComparison.Ordinal);
+
+        if (payload.RootElement.TryGetProperty("guidance", out var guidance) && guidance.TryGetProperty("filedOn", out var guidedOn) && guidedOn.GetString() is { Length: 10 } guided)
+        {
+            var older = EquityBrief.Core.Report.ReleaseOpening.Of("ex99.htm", DateOnly.ParseExact(guided, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture), "https://www.sec.gov/ex99.htm", "Cupertino, California, July 30, 2026 ... Apple today announced financial results.");
+
+            Assert.DoesNotContain("release-opening", NameScreen.Numbers(filings, new ConceptFigures(null, reportDate, null, null), older), StringComparison.Ordinal);
+        }
+    }
+
+    // The short version opens on the pick as code writes it from the card, then on the quarter, each a labelled paragraph,
+    // and a stock no family picked opens on the quarter; ROP's quarter to September, its operating margin 28.7% against
+    // 28.4% a year earlier.
+    // see: The short version opens on the pick and then the quarter as code writes them, before what worked and what did not
+    [Fact]
+    public void TheShortVersionOpensOnThePickThenTheQuarterAndOnTheQuarterAloneForAStockNotPicked()
+    {
+        var quarter = new EquityBrief.Core.Report.LatestQuarter(
+            new DateOnly(2026, 9, 30),
+            new DateOnly(2026, 10, 22),
+            new DateOnly(2025, 9, 30),
+            [
+                new EquityBrief.Core.Report.QuarterLine(EquityBrief.Core.Report.QuarterLines.Revenue, 2_171_800_000m, 2_167_000_000m, 4_800_000m, 0.2, 2_017_500_000m, 7.6, null, null, false, null, null, null),
+                new EquityBrief.Core.Report.QuarterLine(EquityBrief.Core.Report.QuarterLines.OperatingIncome, 623_300_000m, null, null, null, 573_000_000m, 8.8, 28.7, 28.4, false, null, null, null),
+            ]);
+        var card = new DecisionCardView("GSPC", new DateOnly(2026, 10, 26), EquityBrief.Core.Families.SetupFamilies.Pullback, "ROP", "The pullback on the S&P 500", 441.65m, 420.10m, 478.74m, [], null, Cap: 63);
+
+        static string[] Parts(string lead) => [.. System.Text.RegularExpressions.Regex.Matches(lead, "data-part=\"([a-z]+)\"").Select(match => match.Groups[1].Value)];
+
+        var picked = MarkRenderer.ShortVersionLead(card, quarter);
+
+        Assert.Equal(["pick", "quarter"], Parts(picked));
+        Assert.Contains("buy at the next open, at about 441.65; sell at a close below 420.10; sell at 478.74", WebUtility.HtmlDecode(picked), StringComparison.Ordinal);
+        Assert.Contains("an operating margin of 28.7% against 28.4% a year earlier", picked, StringComparison.Ordinal);
+        Assert.Equal(["quarter"], Parts(MarkRenderer.ShortVersionLead(null, quarter)));
+        Assert.Equal(string.Empty, MarkRenderer.ShortVersionLead(null, null));
     }
 
     // Where the stored year holds no band above the close, the pulled sessions' turns above it are read at the store's

@@ -95,9 +95,13 @@ public static partial class Directions
         return clashes;
     }
 
+    // The words a withheld sentence's place opens on, which say what it said and what the figures show and so state the
+    // contradicted direction themselves.
+    public const string WithheldOpens = "A sentence is withheld here";
+
     // What a sentence the figures contradict is replaced by where it is drawn.
     public static string Withheld(IReadOnlyList<DirectionClash> clashes) =>
-        "A sentence is withheld here: it said " + string.Join(" and ", clashes.Select(clash => Invariant($"the {clash.Fact.Concept}{(clash.Fact.Kind == Margin ? " was" : string.Empty)} {Said(clash.Fact.Kind, -clash.Fact.Sign)}"))) + ", where the stored figures show " + string.Join(" and ", clashes.Select(clash => Invariant($"{clash.Fact.Stated}, {Said(clash.Fact.Kind, clash.Fact.Sign)}"))) + ".";
+        WithheldOpens + ": it said " + string.Join(" and ", clashes.Select(clash => Invariant($"the {clash.Fact.Concept}{(clash.Fact.Kind == Margin ? " was" : string.Empty)} {Said(clash.Fact.Kind, -clash.Fact.Sign)}"))) + ", where the stored figures show " + string.Join(" and ", clashes.Select(clash => Invariant($"{clash.Fact.Stated}, {Said(clash.Fact.Kind, clash.Fact.Sign)}"))) + ".";
 
     static string Said(string kind, int sign) => kind switch
     {

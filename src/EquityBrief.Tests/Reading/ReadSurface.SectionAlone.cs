@@ -97,6 +97,26 @@ public partial class ReadSurface
     }
 
     [Fact]
+    public void TheResearchRegionSaysWhatTheNewestSectionAskedForAloneCameTo()
+    {
+        // Written again; not written with the local model's reason; and the local model not reached, each in one line
+        // beside the report's own pass, read off the pass's row as the runner writes it.
+        const string Written = "{\"ticker\":\"ROP\",\"asOf\":\"2026-10-28\",\"outcome\":\"ok\",\"reason\":null,\"written\":[{\"section\":\"What management said\",\"version\":3,\"model\":\"google/gemma-4-26b-a4b-qat\",\"retry\":false}],\"notWritten\":[],\"alone\":\"What management said\"}";
+        const string Held = "{\"ticker\":\"ROP\",\"asOf\":\"2026-10-28\",\"outcome\":\"ok\",\"reason\":null,\"written\":[],\"notWritten\":[{\"section\":\"The risks\",\"reason\":\"the machine cannot hold it\"}],\"alone\":\"The risks\"}";
+        const string Unreached = "{\"ticker\":\"ROP\",\"asOf\":\"2026-10-28\",\"outcome\":\"unavailable\",\"reason\":\"the local model is unavailable: refused\",\"written\":[],\"notWritten\":[{\"section\":\"The risks\",\"reason\":\"the local model is unavailable: refused\"}],\"alone\":\"The risks\"}";
+
+        Assert.Equal("What management said was written again alone on the local model on 2026-10-28.", NameScreen.Alone(Written)!.Line);
+        Assert.Equal("The risks was asked for again alone on the local model on 2026-10-28, and it was not written: the machine cannot hold it.", NameScreen.Alone(Held)!.Line);
+        Assert.Equal("The risks was asked for again alone on the local model on 2026-10-28, and the local model was not reached: the local model is unavailable: refused.", NameScreen.Alone(Unreached)!.Line);
+        Assert.Null(NameScreen.Alone("{\"ticker\":\"ROP\",\"asOf\":\"2026-10-28\",\"outcome\":\"ok\"}"));
+        Assert.Null(NameScreen.Alone(null));
+
+        var drawn = new MarkRenderer().LeftOut("ROP", [], alone: NameScreen.Alone(Written));
+
+        Assert.Contains("<p class=\"research-alone\" data-section=\"What management said\" data-outcome=\"ok\" data-as-of=\"2026-10-28\">", drawn, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void TheQueuePageStatesASectionAskedForAloneAsStartingNowAheadOfAReportWaitingForThePeakToEnd()
     {
         // A Tuesday at 07:00 UTC, inside the fixture's peak window from 06:00 to 10:00: the report asked first waits for the

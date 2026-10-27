@@ -663,7 +663,9 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
             && (!levels.Any(level => level.Role == EquityBrief.Core.Levels.LevelSeries.Resistance && level.LowEdge > bars[^1].Close)
                 || !levels.Any(level => level.Role == EquityBrief.Core.Levels.LevelSeries.Support && level.HighEdge < bars[^1].Close))
             ? await read.PulledSeriesAsync(ticker, bars[0].SessionDate)
-            : null);
+            : null,
+        // The newest pass that wrote one section asked for alone, which the research region says what came of.
+        aloneDetail: await read.NewestAloneAsync(ticker));
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }

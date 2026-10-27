@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-27 - docs/ARCHITECTURE.html - the rule for a section written again alone says the research region states what came of it
+Authorised by: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+Was:
+> "... the request it writes taken at once and the pass it starts asking no paid model and moving nothing to one (see: ...)."
+Now:
+> "... the request it writes taken at once and the pass it starts asking no paid model and moving nothing to one, and the research region says what the newest such pass came to beside the report's own (see: ...)."
+Why: the operator's report page corrections of 2026-10-27, the tenth part: a section asked for alone whose local model was not reached settled its request as refused, and the name page said nothing of it.
+
+### 2026-10-27 - docs/RUNBOOK.md - the proof's unexamined rule no longer names a rule not yet built
+Corrects: the paragraph said a rule could be unexamined because it was not yet built, and every rule the proof holds is built; found writing the proof's last two rules.
+Was:
+> "... a rule that cannot be read on a page, its region not drawn there or the rule not yet built, is unexamined there and is never counted as a pass ..."
+Now:
+> "... a rule that cannot be read on a page, its region not drawn there or nothing on it the rule reads, is unexamined there and is never counted as a pass ..."
+Why: a reader of the runbook would look for rules the proof does not hold.
+
 ### 2026-10-27 - docs/SCHEMA.md - research_request gains the section a press asks to have written again alone
 Authorised by: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
 Was:

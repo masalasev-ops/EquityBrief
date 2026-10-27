@@ -1145,6 +1145,10 @@ public sealed record SourceCell(string Id, string Title, string Url, DateOnly? P
 // outcome, the session it ran on, and the one line that says what happened.
 public sealed record ResearchPassLine(string Outcome, DateOnly AsOf, string Line);
 
+// What the newest pass writing one section asked for alone came to, as the research region states it beside the report's
+// own pass: the section, the outcome, the session it ran on, and the one line that says what happened.
+public sealed record AloneLine(string Section, string Outcome, DateOnly AsOf, string Line);
+
 // A control that starts a research pass for the name, and what it asks for.
 public sealed record ResearchControl(string Kind, string Label, bool Refresh, bool PaidForLocal);
 
@@ -4041,7 +4045,8 @@ public sealed partial class MarkRenderer : IComponent
         ResearchPausedLine? paused = null,
         ResearchPassLine? pass = null,
         IReadOnlyList<ResearchControl>? controls = null,
-        ResearchCost? cost = null)
+        ResearchCost? cost = null,
+        AloneLine? alone = null)
     {
         var region = new StringBuilder();
         var unwritten = notWritten ?? [];
@@ -4067,6 +4072,13 @@ public sealed partial class MarkRenderer : IComponent
         if (pass is not null)
         {
             region.Append(Invariant, $"<p class=\"research-pass\" data-outcome=\"{Escaped(pass.Outcome)}\" data-as-of=\"{pass.AsOf:yyyy-MM-dd}\">{Escaped(CountsInWords(pass.Line))}</p>");
+        }
+
+        // What the newest section asked for alone came to, beside the report's own pass.
+        // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+        if (alone is not null)
+        {
+            region.Append(Invariant, $"<p class=\"research-alone\" data-section=\"{Escaped(alone.Section)}\" data-outcome=\"{Escaped(alone.Outcome)}\" data-as-of=\"{alone.AsOf:yyyy-MM-dd}\">{Escaped(alone.Line)}</p>");
         }
 
         // Research paused, section 15.9's state, from 6.7: one line saying research is
@@ -4200,6 +4212,14 @@ public sealed partial class MarkRenderer : IComponent
 
     static string Flag(bool value) => value ? "true" : "false";
 
+    // The directions a written section's sentences were held to, on its element, so the proof reads every drawn sentence
+    // against them again; none where the page holds no stored latest quarter to hold them to.
+    // see: Every report page rule is held over every name's drawn page and reported passed, failed or unexamined with the pages each failed on
+    static string HeldTo(IReadOnlyList<EquityBrief.Core.Research.DirectionFact>? facts) =>
+        facts is { Count: > 0 }
+            ? " data-directions=\"" + Escaped(string.Join(";", facts.Select(fact => fact.Concept + "|" + fact.Kind + "|" + fact.Sign.ToString(Invariant)))) + "\""
+            : string.Empty;
+
     static string Capitalised(string line) =>
         line.Length == 0 ? line : char.ToUpperInvariant(line[0]) + line[1..];
 
@@ -4224,7 +4244,7 @@ public sealed partial class MarkRenderer : IComponent
         var drawn = new StringBuilder();
 
         drawn.Append(Invariant, $"<section class=\"written-section\" data-ticker=\"{Escaped(ticker)}\" data-section=\"{Escaped(section.Section)}\" ");
-        drawn.Append(Invariant, $"data-as-of=\"{section.AsOf:yyyy-MM-dd}\" data-model=\"{Escaped(section.Model)}\">");
+        drawn.Append(Invariant, $"data-as-of=\"{section.AsOf:yyyy-MM-dd}\" data-model=\"{Escaped(section.Model)}\"{HeldTo(facts)}>");
         drawn.Append(Invariant, $"<h3>{Escaped(section.Section)}</h3>");
 
         // Parts code writes before the written prose, and the label the prose is read under after them.
@@ -7304,7 +7324,7 @@ public sealed partial class MarkRenderer : IComponent
 
         var region = new StringBuilder();
 
-        region.Append(Invariant, $"<div class=\"news-region\" data-ticker=\"{Escaped(view.Ticker)}\" data-articles=\"{view.Rows.Count}\" data-all=\"{view.All}\" data-positive=\"{view.Positive}\" data-negative=\"{view.Negative}\" data-neutral=\"{view.Neutral}\" data-opinion=\"{view.Opinion}\" data-unlabelled=\"{view.Unlabelled}\">");
+        region.Append(Invariant, $"<div class=\"news-region\" data-ticker=\"{Escaped(view.Ticker)}\" data-articles=\"{view.Rows.Count}\" data-all=\"{view.All}\" data-positive=\"{view.Positive}\" data-negative=\"{view.Negative}\" data-neutral=\"{view.Neutral}\" data-opinion=\"{view.Opinion}\" data-unlabelled=\"{view.Unlabelled}\" data-left-out=\"{view.OtherCompanies}\">");
 
         if (view.Rows.Count == 0)
         {
