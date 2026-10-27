@@ -88,8 +88,10 @@ public static class ImprovingRule
         storedQuarter is not { } quarter || releasedOn > quarter.AddMonths(3);
 
     // Whether a release was accepted on one of the sessions a flag reads, the night's own and the 62 before it, counted on
-    // the exchange's calendar from the release's day.
-    public static bool Recent(DateOnly releasedOn, DateOnly night) => SessionsFrom(releasedOn, night) <= FlagSessions;
+    // the exchange's calendar from the release's day, or by the counter given, as a history reading years the exchange's
+    // table does not hold counts its own sessions.
+    public static bool Recent(DateOnly releasedOn, DateOnly night, Func<DateOnly, DateOnly, int>? sessionsFrom = null) =>
+        (sessionsFrom ?? SessionsFrom)(releasedOn, night) <= FlagSessions;
 
     // The exchange's sessions from a day through the night, each counted where it is a session.
     public static int SessionsFrom(DateOnly from, DateOnly night)
@@ -107,8 +109,8 @@ public static class ImprovingRule
     // Whether a member's results release flags it: its scorecard read a check, the release was accepted after the newest
     // filing the scorecard reads, reports a quarter newer than the newest filing stored, was accepted on one of the last
     // sessions a flag reads, and reads better with its outlook raised or kept.
-    public static bool FlagStands(int applied, DateOnly releasedOn, DateOnly? filedOn, DateOnly? storedQuarter, DateOnly night, ReleaseAnswer answer) =>
-        applied > 0 && After(releasedOn, filedOn) && Newer(releasedOn, storedQuarter) && Recent(releasedOn, night) && Flags(answer);
+    public static bool FlagStands(int applied, DateOnly releasedOn, DateOnly? filedOn, DateOnly? storedQuarter, DateOnly night, ReleaseAnswer answer, Func<DateOnly, DateOnly, int>? sessionsFrom = null) =>
+        applied > 0 && After(releasedOn, filedOn) && Newer(releasedOn, storedQuarter) && Recent(releasedOn, night, sessionsFrom) && Flags(answer);
 
     // The release a filing confirmed: one accepted after its quarter ended and on or before the filing's day, none
     // otherwise.

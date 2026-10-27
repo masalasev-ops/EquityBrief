@@ -34,8 +34,9 @@ public partial class RulesChooseTheStocks
         // family evaluator and the S&P 400's and 600's families hand them to the drift, as the replay and the cards reading
         // the evaluator's inputs do; from 20.8 the setup ledger reads them for its four release readings and the
         // walk-forward tester for the tone variant's walk and what each answer came to; and from 22.13 the Fundamentals
-        // family's step reads each member's newest release for its flag, which buys nothing; each through the one reader as
-        // every deciding read is.
+        // family's step reads each member's newest release for its flag, which buys nothing, the tester reading each filer's
+        // releases for the flags of that family's history test from 22.14; each through the one reader as every deciding
+        // read is.
         Assert.Equal(["FamilyEvaluator", "FamilyReplay", "ImprovingFamily", "IndexFamilies", "LocalRun", "ReadApi", "ReleaseAccuracy", "RuleCards", "SetupLedger", "WalkForwardTester"], reading);
         Assert.Equal(["FamilyEvaluator", "ImprovingFamily"], Deciding.Where(one => one.Access.On(DataStore.ReleaseReading) != Touch.None).Select(one => one.Name));
         Assert.Equal(
