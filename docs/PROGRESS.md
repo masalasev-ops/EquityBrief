@@ -10395,3 +10395,26 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 3a6ff15
             169 passed.
 Carried:    a filer that re-formed under a new number, read under no member for the years before it re-formed, put to
             the operator as a ruling of its own.
+
+### 22.14 ruling - the Fundamentals family's stale flags first, its filings read where the SEC's facts lack them, then its history test on the operator's grid and floors, then a stop for 22.15   2026-10-27
+
+Not a checkpoint entry: it records the operator's ruling and lands nothing.
+Ruled:      by the operator on 2026-10-27 at about 04:40 UTC, kept whole in
+            `prompts/2026-10-27-22.14-finish-phase-22-stale-flags-22.14-22.15.md`, to run after the monthly run by hand of
+            that day. First the stale flags: a report of each flagged member's newest release and newest stored filing,
+            with whether the SEC's archive holds a later filing the store lacks; how many members on each index read an
+            older quarter than their newest filing and why the refresh missed them, the refresh fixed with a remedy from
+            main; a flag standing only for a release reporting a quarter newer than the member's newest stored filing and
+            accepted within the last 63 sessions; a member whose scorecard read no check never ranked or flagged, its row
+            reading "No checks could be read from its filings"; and Tonight's card read back after the night. Then 22.14
+            on a grid of 144 settings an index with the quality family's floors, business first's check registered as the
+            pullback version "Pullback, business growing" and business first ending as a family. Then a stop for 22.15,
+            each index's freeze waiting on the operator's word.
+Labelled:   read off the record: a filing the refresh cannot read from the SEC's facts under 17.3, which built the refresh;
+            the flag's bounds and a member whose scorecard read no check under 22.13, whose family they correct; and the
+            history test under 22.14.
+Queue:      done, the 17.3 correction and its remedy (PRs 570 and 572) and the monthly run of 2026-10-27; in progress,
+            the stale flags; next, 22.14, then 22.15 on the operator's word, and the sign-offs of phases 18, 20 and 22 by
+            fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
