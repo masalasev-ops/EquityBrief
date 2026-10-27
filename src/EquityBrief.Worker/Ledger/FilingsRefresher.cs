@@ -422,7 +422,12 @@ public sealed class FilingsRefresher : IComponent
 
                 var dayRead = 0;
 
-                foreach (var report in Reports(SecEdgarDailyIndex.Parse(text, day)).Values.Where(one => tickersOf.ContainsKey(SecEdgarArchive.Padded(one.Cik))).OrderBy(one => one.Accession, StringComparer.Ordinal))
+                // A report filed for several registrants together is listed once for each of them, so each member's own
+                // line is read, and not only the first the index lists for the report.
+                foreach (var report in SecEdgarDailyIndex.Parse(text, day)
+                    .Where(one => SecEdgarDailyIndex.Reports.Contains(one.Form, StringComparer.Ordinal) && tickersOf.ContainsKey(SecEdgarArchive.Padded(one.Cik)))
+                    .DistinctBy(one => (SecEdgarArchive.Padded(one.Cik), one.Accession))
+                    .OrderBy(one => one.Accession, StringComparer.Ordinal))
                 {
                     var cik = SecEdgarArchive.Padded(report.Cik);
 

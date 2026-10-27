@@ -363,4 +363,43 @@ public partial class NightlyCost
         Assert.Equal(["2026-10-05", "2026-10-06", "2026-10-07"], again.Asked);
         Assert.Equal(0, repeat.Instances);
     }
+
+    // A report filed for several registrants together is listed once for each, the index ordering them by name, so a
+    // member's report whose first line is another registrant's is still read by hand under the member's own line.
+    [Fact]
+    public async Task AMembersReportFiledWithOtherRegistrantsIsReadByHandUnderItsOwnLine()
+    {
+        using var store = FilingsStore();
+
+        store.Execute("INSERT INTO filing_day (day, run_id, read_at, posted, filings, members, refreshed) VALUES ('2026-10-05', 'earlier', '2026-10-05T23:40:00.000Z', 1, 0, 0, 0);");
+
+        var monday = new DateOnly(2026, 10, 5);
+        var feed = RecordedFilingsRefreshFeed.Of(
+            new Dictionary<DateOnly, string>
+            {
+                [monday] = DayIndex(
+                    monday,
+                    ("0000000998", "AAA CAROLINAS LLC", "10-Q", "0000000101-26-000011"),
+                    ("0000000101", "AAA INC", "10-Q", "0000000101-26-000011")),
+            },
+            listings: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["0000000101-26-000011"] = ListingOf("aaa-20260630.htm", "aaa-20260630_htm.xml"),
+            },
+            instances: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["0000000101-26-000011"] = EquityBrief.Tests.Providers.SecEdgarInstanceTests.Abbott,
+            });
+
+        var clock = FixedClock.At(new DateTimeOffset(2026, 10, 6, 14, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+        var outcome = await new FilingsRefresher(feed, clock, store.DatabaseFile, pause: NoPause).InstancesAsync(monday, Index, null, "combined-by-hand");
+
+        Assert.Equal(["2026-10-05", "0000000101-26-000011 index.json", "0000000101-26-000011 aaa-20260630_htm.xml"], feed.Asked);
+        Assert.Equal(["AAA"], outcome.Refreshed);
+        Assert.Equal(1, outcome.Instances);
+        Assert.Equal(
+            ["2026-10-05|10-Q|928000000"],
+            FilingRows(store, "SELECT filed || '|' || form || '|' || dollars FROM filed_fact WHERE cik = '0000000101' AND concept = 'NetIncomeLoss' AND period_start = '2026-04-01';"));
+        Assert.Empty(FilingRows(store, "SELECT concept FROM filed_fact WHERE cik = '0000000998';"));
+    }
 }
