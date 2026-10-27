@@ -268,7 +268,7 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
     var member = indexCode is null ? null : (await read.UniverseAsync(indexCode, night)).FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal));
     var quote = session is { } open ? await read.NewestQuoteAsync(ticker, open.Open, open.Close) : null;
     var quoteSession = session is { } window ? new QuoteSession(window.Open, window.Close, RegularSession.IsOpen(clock.UtcNow, clock.SessionZone)) : null;
-    var live = quoteSession is { IsOpen: true } ? quote : null;
+    var live = SinglePageApp.QuoteDrawn(quote, quoteSession, null, bars.Count > 0 ? bars[^1].SessionDate : null);
     var reportInputs = await read.ReportInputsAsync(ticker, null, through);
     var fundamentals = await read.FundamentalsAsync(ticker);
     var reactions = await read.ReactionsAsync(ticker);
@@ -802,10 +802,27 @@ app.MapGet(SinglePageApp.QuoteRoute + "{ticker}", async (string ticker, ReadApi 
     var named = ticker.ToUpperInvariant();
 
     if (RegularSession.On(clock.SessionDateAt(now), clock.SessionZone) is not { } session
-        || !RegularSession.IsOpen(now, clock.SessionZone)
         || await read.NewestQuoteAsync(named, session.Open, session.Close) is not { } quote)
     {
         return Results.Json(new { live = false });
+    }
+
+    // Once the session has closed, its last quote where the bars hold no close of the session yet, marked closed, which
+    // the page's script draws once and asks no more.
+    if (!RegularSession.IsOpen(now, clock.SessionZone))
+    {
+        var window = new QuoteSession(session.Open, session.Close, false);
+
+        return (await read.BarsAsync(named, window.Day, DateOnly.MaxValue)).Count > 0
+            ? Results.Json(new { live = false })
+            : Results.Json(new
+            {
+                live = false,
+                closed = true,
+                askedAt = quote.AskedAt.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
+                price = SinglePageApp.PriceNow([], null, quote, closed: true),
+                asOf = SinglePageApp.QuoteAsOf(quote, quote.Night, closed: true),
+            });
     }
 
     // The tiles at the quote's price, worked by the functions the page's own tiles are.

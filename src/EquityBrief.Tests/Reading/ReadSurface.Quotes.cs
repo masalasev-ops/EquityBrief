@@ -13,13 +13,14 @@ using EquityBrief.Worker.Quotes;
 namespace EquityBrief.Tests.Reading;
 
 // read-surface, 18.1: the masthead draws the delayed quote the quote job stored for the session the page is opened in,
-// with its own time, its change on the previous close and that it is delayed, and the last stored close outside the
-// session; a press asking for a quote is refused without the page's own header and outside the session and writes
+// with its own time, its change on the previous close and that it is delayed, marked live; once the session closes, the
+// session's last quote marked closed until the bars hold the session's close, and the last stored close marked closed
+// after; a press asking for a quote is refused without the page's own header and outside the session and writes
 // nothing inside the interval of the name's newest ask; the newest quote is read back with the tiles and each band's
 // distance at its price; the headline carries no figure; the contents' written and filed entries carry their days for
 // the page's script to mark new; and the Run page states the session's quotes against the cap.
 // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
-// see: The masthead carries the index and sector beside the price the page draws, a delayed quote in the session and the last stored close outside it
+// see: The masthead marks its price LIVE while the session is open and CLOSED outside it, the session's last quote standing until the bars hold its close
 public partial class ReadSurface
 {
     // The rows 18.1 adds that this check reaches: the range bar among the marks, the name page's eight parts, the
@@ -104,16 +105,40 @@ public partial class ReadSurface
         }
 
         // Each host below starts at an instant of its own, since a start of the surface writes a row keyed on its instant.
-        // After the close: the last stored close and its session, with nothing marked live; the route stays, and the
-        // script asks nothing outside the session's edges.
+        // After the close, while the bars hold no close of the session: the session's last quote, marked closed with its
+        // own time and day rather than live, the tiles and the bands' distances at its price; the route stays, and the
+        // script reads it once more and asks nothing after the session's close.
         using (var host = new PassHost(store.Root) { Clock = FixedClock.At(AfterTheClose, SessionZones.UnitedStates) })
         {
             using var client = host.CreateClient();
             var page = await client.GetStringAsync($"/screens/name/{name}");
 
-            Assert.Contains("<span class=\"m-price\" data-live=\"no\"><span class=\"m-px\">", page, StringComparison.Ordinal);
+            Assert.Contains(
+                "<span class=\"m-price\" data-live=\"no\"><span class=\"pill closed\">CLOSED</span><span class=\"m-px\" data-price=\"231.40\">231.40</span><span class=\"m-chg gain\" data-change=\"1.50\">+1.50 (+0.65%)</span></span>",
+                page,
+                StringComparison.Ordinal);
             Assert.DoesNotContain("LIVE", page, StringComparison.Ordinal);
-            Assert.Contains($"<span class=\"m-when\">As of the close of {night}, the last stored price. Levels and the plan come from completed sessions to {night}</span>", page, StringComparison.Ordinal);
+            Assert.Contains(
+                $"<span class=\"m-when\">Closed. The session's last quote, of 10:43 ET on 2026-10-07, delayed about 15 minutes; the night stores the day's close. Previous close <span data-previous-close=\"229.90\">229.90</span>. Levels and the plan come from completed sessions to {night}</span>",
+                page,
+                StringComparison.Ordinal);
+            Assert.Contains("<div class=\"lead-tiles\" data-live=\"yes\">", page, StringComparison.Ordinal);
+            Assert.Contains(atTheQuote, page, StringComparison.Ordinal);
+            Assert.Contains("if (now >= close) {", new SinglePageApp().Shell("EquityBrief"), StringComparison.Ordinal);
+        }
+
+        // Once the night stores the session's bar, its close is the price, marked closed, and the quote is drawn no more.
+        store.Execute(
+            "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES " +
+            $"('{name}', '2026-10-07', '230.00', '232.00', '229.00', '231.10', 1000, 'bulk', '2026-10-07T23:10:00Z', '231.10');");
+
+        using (var host = new PassHost(store.Root) { Clock = FixedClock.At(AfterTheClose.AddHours(4), SessionZones.UnitedStates) })
+        {
+            using var client = host.CreateClient();
+            var page = await client.GetStringAsync($"/screens/name/{name}");
+
+            Assert.Contains("<span class=\"m-price\" data-live=\"no\"><span class=\"pill closed\">CLOSED</span><span class=\"m-px\">231.10</span>", page, StringComparison.Ordinal);
+            Assert.Contains("<span class=\"m-when\">As of the close of 2026-10-07, the last stored price.", page, StringComparison.Ordinal);
             Assert.Contains("<div class=\"lead-tiles\" data-live=\"no\">", page, StringComparison.Ordinal);
             Assert.DoesNotContain(atTheQuote, page, StringComparison.Ordinal);
         }
@@ -126,14 +151,15 @@ public partial class ReadSurface
             Assert.DoesNotContain("data-quote-route", await client.GetStringAsync($"/screens/name/{name}"), StringComparison.Ordinal);
         }
 
-        // A quote asked in another session is not this one's, and the page draws the close.
+        // A quote asked in another session is not this one's, and the page draws the close, marked as the last close while
+        // the session is open.
         store.Execute("UPDATE live_quote SET asked_at = '2026-10-06T14:55:00Z';");
 
         using (var host = new PassHost(store.Root) { Clock = FixedClock.At(InTheSession.AddSeconds(1), SessionZones.UnitedStates) })
         {
             using var client = host.CreateClient();
 
-            Assert.Contains("<span class=\"m-price\" data-live=\"no\">", await client.GetStringAsync($"/screens/name/{name}"), StringComparison.Ordinal);
+            Assert.Contains("<span class=\"m-price\" data-live=\"no\"><span class=\"pill closed\">LAST CLOSE</span>", await client.GetStringAsync($"/screens/name/{name}"), StringComparison.Ordinal);
         }
     }
 
@@ -229,13 +255,17 @@ public partial class ReadSurface
                 root.GetProperty("distances").EnumerateArray().Select(band => $"{band.GetProperty("low").GetString()} {band.GetProperty("high").GetString()} {band.GetProperty("away").GetString()} {band.GetProperty("value").GetString()}"));
         }
 
-        // After the close, none.
+        // After the close, the session's last quote marked closed, where the bars hold no close of the session.
         using (var host = new PassHost(store.Root) { Clock = FixedClock.At(AfterTheClose, SessionZones.UnitedStates) })
         {
             using var client = host.CreateClient();
             using var reply = JsonDocument.Parse(await client.GetStringAsync(SinglePageApp.QuoteRoute + name));
+            var root = reply.RootElement;
 
-            Assert.False(reply.RootElement.GetProperty("live").GetBoolean());
+            Assert.False(root.GetProperty("live").GetBoolean());
+            Assert.True(root.GetProperty("closed").GetBoolean());
+            Assert.StartsWith("<span class=\"pill closed\">CLOSED</span><span class=\"m-px\" data-price=\"231.40\">231.40</span>", root.GetProperty("price").GetString(), StringComparison.Ordinal);
+            Assert.StartsWith("Closed. The session's last quote, of 10:43 ET on 2026-10-07", root.GetProperty("asOf").GetString(), StringComparison.Ordinal);
         }
     }
 

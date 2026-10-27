@@ -26,6 +26,26 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-27 - docs/ARCHITECTURE.html - the masthead's price marked LIVE in the session and CLOSED outside it, the session's last quote standing until the bars hold its close
+Authorised by: The masthead marks its price LIVE while the session is open and CLOSED outside it, the session's last quote standing until the bars hold its close
+Was:
+> section 4: "and the price now: in the regular session the newest delayed quote stored inside it, marked live, with its own time, its change on the previous close, that it is delayed about 15 minutes and the previous close, and outside it the last stored close with its session; the line beneath says the levels and the plan come from completed sessions to the night they were computed on (see: The masthead carries the index and sector beside the price the page draws, a delayed quote in the session and the last stored close outside it)."
+>
+> 15.9's Masthead row: "on tonight's page in the regular session the newest delayed quote stored inside it, marked LIVE with its own time and its signed change on the previous close; elsewhere the last stored close as of its session (see: The masthead carries the index and sector beside the price the page draws, a delayed quote in the session and the last stored close outside it);"
+Now:
+> section 4: "and the price now with a pill saying what it is: in the regular session the newest delayed quote stored inside it, marked LIVE, with its own time, its change on the previous close, that it is delayed about 15 minutes and the previous close; once the session closes its last quote marked CLOSED with its own time and day until the bars hold the session's close; and otherwise the last stored close with its session, marked CLOSED, or LAST CLOSE inside the session before a quote is stored; ..." citing the new decision.
+>
+> 15.9's Masthead row: "...; once the session closes, its last quote marked CLOSED with its own time and day until the bars hold the session's close; elsewhere the last stored close as of its session marked CLOSED, or LAST CLOSE inside the session before a quote is stored (see: The masthead marks its price LIVE while the session is open and CLOSED outside it, the session's last quote standing until the bars hold its close);"
+Why: the operator's report page corrections of 2026-10-27, the fifth part: after the close the page set the price back to the session before's stored close while a newer quote was stored, and a page left open past the close stayed marked live.
+
+### 2026-10-27 - docs/RUNBOOK.md - the masthead after the close draws the session's last quote marked CLOSED until the night stores the close
+Authorised by: The masthead marks its price LIVE while the session is open and CLOSED outside it, the session's last quote standing until the bars hold its close
+Was:
+> Outside the session, on a page for an earlier night and in the exported file nothing is asked and the masthead draws the last stored close.
+Now:
+> Outside the session, on a page for an earlier night and in the exported file nothing is asked. Once the session has closed, tonight's page draws the session's last quote marked CLOSED with its own time until the night stores the session's close, and the last stored close marked CLOSED after it (see: ...).
+Why: the operator's report page corrections of 2026-10-27, the fifth part.
+
 ### 2026-10-27 - docs/ARCHITECTURE.html - the Fundamentals family's history test: section 13's paragraph, section 17's grid and the tester's release read
 Authorised by: The Fundamentals family's history test walks its trades over the pulled history on 144 settings an index and registers nothing
 Was:

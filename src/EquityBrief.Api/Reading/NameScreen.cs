@@ -1379,9 +1379,9 @@ public static partial class NameScreen
                 indicators.Where(row => row.Name == name).Select(row => row.BarCount).DefaultIfEmpty(0).Max()))
             .ToArray();
 
-        // The price the masthead draws, the stored quote where the page is tonight's and drawn inside the session, and the
-        // last close otherwise, which the tiles are worked at.
-        var live = night is null && quoteSession is { IsOpen: true } ? quote : null;
+        // The price the masthead draws, the stored quote where the page is tonight's and drawn inside the session or after
+        // a close the bars do not hold yet, and the last close otherwise, which the tiles are worked at.
+        var live = SinglePageApp.QuoteDrawn(quote, quoteSession, night, bars.Count > 0 ? bars[^1].SessionDate : null);
         var cards = (decisionCards ?? [])
             .OrderBy(card => EquityBrief.Core.Families.SetupFamilies.OrderOf(card.Family))
             .Select(card => CardScreen.View(card, cardContext))

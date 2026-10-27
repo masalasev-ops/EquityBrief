@@ -953,6 +953,7 @@ main .name,.exported .name{max-width:1000px;margin-inline:auto}
 .m-ix{font:500 13px var(--sans);color:var(--ink-2)}
 .m-price{display:inline-flex;align-items:baseline;gap:8px}
 .pill.live{border-color:var(--ink);color:var(--ink);font-weight:700;letter-spacing:.06em}
+.pill.closed{color:var(--ink-2);font-weight:700;letter-spacing:.06em}
 .pill.new{margin-left:8px;border-color:var(--accent);color:var(--ink);font-size:10.5px;padding:0 6px}
 .lead{margin:22px 0 4px}
 .lead-line{font:600 24px/1.3 var(--serif);margin:0 0 14px;max-width:62ch}

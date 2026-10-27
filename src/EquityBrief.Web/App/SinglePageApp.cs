@@ -30,7 +30,11 @@ public sealed record LiveQuoteView(
     IReadOnlyList<QuoteDistance> Distances);
 
 // The session the masthead's quote is asked in: its open and close, and whether the page is drawn inside it.
-public sealed record QuoteSession(DateTimeOffset Open, DateTimeOffset Close, bool IsOpen);
+public sealed record QuoteSession(DateTimeOffset Open, DateTimeOffset Close, bool IsOpen)
+{
+    // The New York day the session trades on.
+    public DateOnly Day => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(Open, SinglePageApp.NewYork).DateTime);
+}
 
 // The one sentence under the masthead, carrying no figure, whether a model wrote it or code did, which it says, and the
 // day a written one was written.
@@ -221,9 +225,18 @@ public sealed partial class SinglePageApp : IComponent
     // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
     public const string QuoteRoute = "/quotes/";
 
-    // The price the masthead draws: the delayed quote marked as such with its change on the previous close in the session,
-    // and outside it the last stored close with its change on the day.
-    public static string PriceNow(IReadOnlyList<ChartBar> bars, NameMast? mast, LiveQuoteView? quote)
+    // The quote the masthead draws on tonight's page: the newest of the session while it is open, and once it has closed the
+    // session's last where the stored bars hold no close of that session yet, which is then the newest price there is.
+    // see: The masthead marks its price LIVE while the session is open and CLOSED outside it, the session's last quote standing until the bars hold its close
+    public static LiveQuoteView? QuoteDrawn(LiveQuoteView? quote, QuoteSession? session, DateOnly? night, DateOnly? lastStored) =>
+        night is null && quote is { } quoted && session is { } window && (window.IsOpen || lastStored is not { } stored || window.Day > stored)
+            ? quoted
+            : null;
+
+    // The price the masthead draws, with a pill saying what it is: LIVE for the delayed quote taken while the session is open,
+    // with its change on the previous close; CLOSED once the market is shut, for the session's last quote or the last
+    // stored close; and LAST CLOSE for the stored close while the session is open and no quote is stored yet.
+    public static string PriceNow(IReadOnlyList<ChartBar> bars, NameMast? mast, LiveQuoteView? quote, bool closed = false)
     {
         if (quote is { } quoted)
         {
@@ -233,23 +246,32 @@ public sealed partial class SinglePageApp : IComponent
                 ? Invariant($"<span class=\"m-chg{hue}\" data-change=\"{amount.ToString(CultureInfo.InvariantCulture)}\">{amount.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}{(quoted.ChangePercent is { } percent ? Invariant($" ({percent.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}%)") : string.Empty)}</span>")
                 : string.Empty;
 
-            return Invariant($"<span class=\"pill live\">LIVE</span><span class=\"m-px\" data-price=\"{quoted.Price.ToString(CultureInfo.InvariantCulture)}\">{Figures.Price(quoted.Price)}</span>{change}");
+            return Invariant($"{(closed ? ClosedPill : LivePill)}<span class=\"m-px\" data-price=\"{quoted.Price.ToString(CultureInfo.InvariantCulture)}\">{Figures.Price(quoted.Price)}</span>{change}");
         }
 
-        return (bars.Count > 0 ? Invariant($"<span class=\"m-px\">{bars[^1].Close.ToString(CultureInfo.InvariantCulture)}</span>") : string.Empty)
+        return (bars.Count > 0 ? (closed ? ClosedPill : LastClosePill) + Invariant($"<span class=\"m-px\">{bars[^1].Close.ToString(CultureInfo.InvariantCulture)}</span>") : string.Empty)
             + (mast?.DayChangePct is { } day
                 ? Invariant($"<span class=\"m-chg {MarkRenderer.Hue(day)}\">{(Math.Round(day, 2) == 0 ? 0 : day).ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}% on the day</span>")
                 : string.Empty);
     }
 
+    public const string LivePill = "<span class=\"pill live\">LIVE</span>";
+
+    public const string ClosedPill = "<span class=\"pill closed\">CLOSED</span>";
+
+    public const string LastClosePill = "<span class=\"pill closed\">LAST CLOSE</span>";
+
     // The line under a quote: its own time in New York, that it is delayed, the previous close, and the session the levels
-    // and the plan are read through.
-    public static string QuoteAsOf(LiveQuoteView quote, DateOnly? levelsThrough) =>
-        Invariant($"Quote of {TimeZoneInfo.ConvertTime(quote.QuotedAt, NewYork).ToString("HH:mm", CultureInfo.InvariantCulture)} ET, delayed about 15 minutes")
+    // and the plan are read through; once the session has closed, that the market is closed and the quote is the session's
+    // last stored, with its day.
+    public static string QuoteAsOf(LiveQuoteView quote, DateOnly? levelsThrough, bool closed = false) =>
+        (closed
+            ? Invariant($"Closed. The session's last quote, of {TimeZoneInfo.ConvertTime(quote.QuotedAt, NewYork).ToString("HH:mm", CultureInfo.InvariantCulture)} ET on {DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(quote.QuotedAt, NewYork).DateTime):yyyy-MM-dd}, delayed about 15 minutes; the night stores the day's close")
+            : Invariant($"Quote of {TimeZoneInfo.ConvertTime(quote.QuotedAt, NewYork).ToString("HH:mm", CultureInfo.InvariantCulture)} ET, delayed about 15 minutes"))
         + (quote.PreviousClose is { } previous ? Invariant($". Previous close <span data-previous-close=\"{previous.ToString(CultureInfo.InvariantCulture)}\">{Figures.Price(previous)}</span>") : string.Empty)
         + (levelsThrough is { } through ? Invariant($". Levels and the plan come from completed sessions to {through:yyyy-MM-dd}") : string.Empty);
 
-    static readonly TimeZoneInfo NewYork = EquityBrief.Core.Time.SessionZones.ResolveSessionZone(EquityBrief.Core.Time.SessionZones.UnitedStates);
+    internal static readonly TimeZoneInfo NewYork = EquityBrief.Core.Time.SessionZones.ResolveSessionZone(EquityBrief.Core.Time.SessionZones.UnitedStates);
     // The press running the rest of a night left unfinished, from tonight's notice or the Run page.
     // see: A night left unfinished is run to its end from the step it stopped at by a press or a command, and one night runs at a time under a lock file
     public const string NightResumeRoute = "/night/resume";
@@ -571,8 +593,9 @@ public sealed partial class SinglePageApp : IComponent
         addEventListener('hashchange', show);
         // A name page shown inside the regular session asks for its delayed quote once the interval since the name's
         // newest ask has passed, and reads the newest stored quote back every fifteen seconds while it is shown, drawing
-        // the masthead's price, its line, the tiles and each band's distance at it. A page about an earlier night, the
-        // exported file and a page outside the session carry no route and ask for nothing.
+        // the masthead's price, its line, the tiles and each band's distance at it. Once the session closes it reads the
+        // route once more, draws the session's last quote marked closed and stops. A page about an earlier night, the
+        // exported file and a page on a day with no session carry no route and ask for nothing.
         // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
         let quoteTimer = null;
         function quoting() {
@@ -588,7 +611,19 @@ public sealed partial class SinglePageApp : IComponent
           async function tick() {
             const now = Date.now();
             if (!document.body.contains(head)) { clearInterval(quoteTimer); quoteTimer = null; return; }
-            if (document.visibilityState !== 'visible' || now < open || now >= close) { return; }
+            if (document.visibilityState !== 'visible' || now < open) { return; }
+            if (now >= close) {
+              clearInterval(quoteTimer); quoteTimer = null;
+              const last = await fetch(route).then((response) => response.ok ? response.json() : null).catch(() => null);
+              if (!last || !last.closed) { return; }
+              for (const place of [identity, head]) {
+                const price = place.querySelector('.m-price');
+                if (price) { price.innerHTML = last.price; price.setAttribute('data-live', 'no'); }
+                const when = place.querySelector('.m-when');
+                if (when) { when.innerHTML = last.asOf; }
+              }
+              return;
+            }
             if (now - asked >= every) {
               asked = now;
               await fetch(route, { method: 'POST', headers: { '{{{PassHeader}}}': '{{{PassHeaderValue}}}' } }).catch(() => { });
