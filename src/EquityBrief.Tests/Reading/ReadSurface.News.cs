@@ -108,9 +108,9 @@ public partial class ReadSurface
         // six of them under the all tab since the opinion piece sits in its own; one positive, the article labelled
         // twice reading its newer label, one negative and one neutral, with one answered unreadably, one refused
         // by admissibility and one holding no label, the three holding no label under the unlabelled tab as well,
-        // so the three directions and the unlabelled tab make up all.
+        // so the three directions and the unlabelled tab make up all; and none of its stories named another company.
         Assert.Equal(
-            " data-ticker=\"AG\" data-articles=\"7\" data-all=\"6\" data-positive=\"1\" data-negative=\"1\" data-neutral=\"1\" data-opinion=\"1\" data-unlabelled=\"3\"",
+            " data-ticker=\"AG\" data-articles=\"7\" data-all=\"6\" data-positive=\"1\" data-negative=\"1\" data-neutral=\"1\" data-opinion=\"1\" data-unlabelled=\"3\" data-left-out=\"0\"",
             Regex.Match(card, "<div class=\"news-region\"([^>]*)>").Groups[1].Value);
         Assert.Contains("aria-label=\"1 positive against 1 negative over the thirty days before\"", card, StringComparison.Ordinal);
         Assert.Equal(

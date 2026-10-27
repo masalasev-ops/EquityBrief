@@ -71,11 +71,12 @@ public partial class ReadSurface
             "AND version = (SELECT MAX(version) FROM research_section s WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted') " +
             "ORDER BY section;");
 
-    // A written section as the page drew it, or none.
+    // A written section as the page drew it, or none, with the directions it was held to where the page holds a stored
+    // latest quarter.
     static Match WrittenOnThePage(string page, string section) =>
         Regex.Match(
             page,
-            $"<section class=\"written-section\" data-ticker=\"[^\"]*\" data-section=\"{Regex.Escape(WebUtility.HtmlEncode(section))}\" data-as-of=\"([^\"]*)\" data-model=\"([^\"]*)\">(.*?)</section>",
+            $"<section class=\"written-section\" data-ticker=\"[^\"]*\" data-section=\"{Regex.Escape(WebUtility.HtmlEncode(section))}\" data-as-of=\"([^\"]*)\" data-model=\"([^\"]*)\"(?: data-directions=\"[^\"]*\")?>(.*?)</section>",
             RegexOptions.Singleline);
 
     // Every accepted section but the cause, which the moves table draws, and the headline, which leads the page, is drawn
