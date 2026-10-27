@@ -72,10 +72,10 @@ public partial class NightlyCost
         + string.Concat(items.Select(item => $"Item {item}: constructed<br />"))
         + "</div>\n</div>";
 
-    // A filer's facts holding one quarter of revenue, filed on the day given.
-    internal static string OneQuarter(string cik, string filed) =>
+    // A filer's facts holding one quarter of revenue, filed on the day given under the report named, or the filer's first.
+    internal static string OneQuarter(string cik, string filed, string? accession = null) =>
         "{\"cik\":" + cik.TrimStart('0') + ",\"facts\":{\"us-gaap\":{\"Revenues\":{\"units\":{\"USD\":["
-        + "{\"start\":\"2026-04-01\",\"end\":\"2026-06-30\",\"val\":1000,\"filed\":\"" + filed + "\",\"form\":\"10-Q\",\"accn\":\"" + cik + "-26-000001\"}"
+        + "{\"start\":\"2026-04-01\",\"end\":\"2026-06-30\",\"val\":1000,\"filed\":\"" + filed + "\",\"form\":\"10-Q\",\"accn\":\"" + (accession ?? cik + "-26-000001") + "\"}"
         + "]}}}}}";
 
     static IReadOnlyList<string> FilingRows(TemporaryStore store, string sql)
@@ -168,7 +168,7 @@ public partial class NightlyCost
             {
                 [FilingsSession] = DayIndex(FilingsSession, ("0000000103", "CCC INC", "10-K", "0000000103-26-000013")),
             },
-            facts: new Dictionary<string, string>(StringComparer.Ordinal) { ["0000000103"] = OneQuarter("0000000103", "2026-10-07") });
+            facts: new Dictionary<string, string>(StringComparer.Ordinal) { ["0000000103"] = OneQuarter("0000000103", "2026-10-07", "0000000103-26-000013") });
 
         var after = await new FilingsRefresher(second, FixedClock.At(new DateTimeOffset(2026, 10, 8, 23, 30, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile, pause: NoPause)
             .NightAsync(Index, "night-second");
@@ -222,6 +222,12 @@ public partial class NightlyCost
 
         public Task<string?> OwnershipAsync(string cik, string accession, CancellationToken cancellation = default) =>
             throw new InvalidOperationException("no insider's filing is asked of a refusing archive");
+
+        public Task<string?> FilingListingAsync(string cik, string accession, CancellationToken cancellation = default) =>
+            throw new InvalidOperationException("no report's listing is asked of a refusing archive");
+
+        public Task<string?> FilingDocumentAsync(string cik, string accession, string file, CancellationToken cancellation = default) =>
+            throw new InvalidOperationException("no report's instance is asked of a refusing archive");
     }
 
     [Fact]
@@ -247,5 +253,113 @@ public partial class NightlyCost
         Assert.Empty(archive.Asked);
         Assert.Empty(limited.Days);
         Assert.Empty(FilingRows(store, "SELECT day FROM filing_day;"));
+    }
+
+    // A listing of a report's documents, its instance among them.
+    static string ListingOf(params string[] names) =>
+        "{\"directory\":{\"item\":[" + string.Join(",", names.Select(name => "{\"name\":\"" + name + "\"}")) + "]}}";
+
+    [Fact]
+    public async Task AReportTheFactsAnswerCarriesNoFigureOfIsReadFromItsOwnInstanceAndOneItCarriesIsNot()
+    {
+        using var store = FilingsStore();
+
+        var tuesday = new DateOnly(2026, 10, 6);
+
+        // On the Tuesday AAA and BBB each file a 10-Q: the facts answer carries AAA's and not yet BBB's, holding only an
+        // earlier report of its, and the archive holds BBB's listing and its instance, Abbott's served under BBB's report.
+        var feed = RecordedFilingsRefreshFeed.Of(
+            new Dictionary<DateOnly, string>
+            {
+                [tuesday] = DayIndex(tuesday, ("0000000101", "AAA INC", "10-Q", "0000000101-26-000001"), ("0000000102", "BBB INC", "10-Q", "0000000102-26-000005")),
+            },
+            facts: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["0000000101"] = OneQuarter("0000000101", "2026-10-06"),
+                ["0000000102"] = OneQuarter("0000000102", "2026-08-01"),
+            },
+            listings: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["0000000102-26-000005"] = ListingOf("bbb-20260630.htm", "bbb-20260630_htm.xml", "bbb-20260630_lab.xml", "FilingSummary.xml"),
+            },
+            instances: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["0000000102-26-000005"] = EquityBrief.Tests.Providers.SecEdgarInstanceTests.Abbott,
+            });
+
+        var night = FixedClock.At(new DateTimeOffset(2026, 10, 7, 23, 30, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+        var outcome = await new FilingsRefresher(feed, night, store.DatabaseFile, pause: NoPause).NightAsync(Index, "night-instance");
+
+        // Each filer's facts once, and BBB's report alone read from its listing and the instance it names.
+        Assert.Equal(
+            ["0000000101", "0000000102", "0000000102-26-000005 index.json", "0000000102-26-000005 bbb-20260630_htm.xml"],
+            feed.Asked.Where(asked => !asked.StartsWith("2026-", StringComparison.Ordinal)));
+        Assert.Equal((1, 2, 2, 10), (outcome.Instances, outcome.InstanceDocuments, outcome.FactsAsked, outcome.Documents));
+        Assert.Equal(["AAA", "BBB"], outcome.Refreshed);
+
+        // Its figures stored as first filed under the report's accession, filing day and form.
+        Assert.Equal(
+            ["2025-01-01|2025-06-30|3104000000", "2025-04-01|2025-06-30|1779000000", "2026-01-01|2026-06-30|2005000000", "2026-04-01|2026-06-30|928000000"],
+            FilingRows(store, "SELECT period_start || '|' || period_end || '|' || dollars FROM filed_fact WHERE cik = '0000000102' AND concept = 'NetIncomeLoss' ORDER BY period_start, period_end;"));
+        Assert.Equal(
+            ["2026-10-06|10-Q|0000000102-26-000005"],
+            FilingRows(store, "SELECT DISTINCT filed || '|' || form || '|' || accession FROM filed_fact WHERE cik = '0000000102' AND concept <> 'Revenues';"));
+        Assert.Empty(FilingRows(store, "SELECT concept FROM filed_fact WHERE cik = '0000000101' AND concept <> 'Revenues';"));
+        Assert.Contains("10 document(s) asked of the archive", FilingRows(store, "SELECT detail FROM run_log WHERE run_id = 'night-instance';").Single(), StringComparison.Ordinal);
+        Assert.Contains("2 of them a report's listing or instance, 1 report(s) the facts answer carried no figure of read from their own instance", FilingRows(store, "SELECT detail FROM run_log WHERE run_id = 'night-instance';").Single(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheMembersReportsTheStoreHoldsNoFactOfAreReadByHandFromTheirOwnInstance()
+    {
+        using var store = FilingsStore();
+
+        // The refresh has read through 2026-10-07. On 2026-10-05 AAA's 10-Q, stored already, BBB's 10-K/A, stored not at
+        // all, and a report of a filer that is no member; the archive posted no index for the other days.
+        store.Execute("INSERT INTO filing_day (day, run_id, read_at, posted, filings, members, refreshed) VALUES ('2026-10-07', 'earlier', '2026-10-07T23:40:00.000Z', 1, 0, 0, 0);");
+        store.Execute("INSERT INTO filed_fact (cik, concept, period_start, period_end, dollars, filed, form, accession, run_id) VALUES ('0000000101', 'Revenues', '2026-04-01', '2026-06-30', '1000', '2026-10-05', '10-Q', '0000000101-26-000007', 'earlier');");
+
+        var monday = new DateOnly(2026, 10, 5);
+        var feed = RecordedFilingsRefreshFeed.Of(
+            new Dictionary<DateOnly, string>
+            {
+                [monday] = DayIndex(
+                    monday,
+                    ("0000000101", "AAA INC", "10-Q", "0000000101-26-000007"),
+                    ("0000000102", "BBB INC", "10-K/A", "0000000102-26-000008"),
+                    ("0000000999", "NOT A MEMBER INC", "10-Q", "0000000999-26-000009")),
+            },
+            listings: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["0000000102-26-000008"] = ListingOf("bbb-20260630.htm", "bbb-20260630_htm.xml"),
+            },
+            instances: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["0000000102-26-000008"] = EquityBrief.Tests.Providers.SecEdgarInstanceTests.Abbott,
+            });
+
+        var clock = FixedClock.At(new DateTimeOffset(2026, 10, 8, 14, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+        var outcome = await new FilingsRefresher(feed, clock, store.DatabaseFile, pause: NoPause).InstancesAsync(new DateOnly(2026, 10, 1), Index, null, "instances-by-hand");
+
+        // Every weekday's index from the first through the newest read, and BBB's report alone read from its instance.
+        Assert.Equal(
+            ["2026-10-01", "2026-10-02", "2026-10-05", "0000000102-26-000008 index.json", "0000000102-26-000008 bbb-20260630_htm.xml", "2026-10-06", "2026-10-07"],
+            feed.Asked);
+        Assert.Equal(["BBB"], outcome.Refreshed);
+        Assert.Equal((1, 2, 7), (outcome.Instances, outcome.InstanceDocuments, outcome.Documents));
+        Assert.Equal(
+            ["2026-10-05|10-K/A|928000000"],
+            FilingRows(store, "SELECT filed || '|' || form || '|' || dollars FROM filed_fact WHERE cik = '0000000102' AND concept = 'NetIncomeLoss' AND period_start = '2026-04-01';"));
+        Assert.Empty(FilingRows(store, "SELECT concept FROM filed_fact WHERE cik IN ('0000000101', '0000000999') AND accession <> '0000000101-26-000007';"));
+        Assert.Equal(
+            ["ok|7"],
+            FilingRows(store, $"SELECT outcome || '|' || network_requests FROM run_log WHERE run_id = 'instances-by-hand' AND stage = '{FilingsRefresher.InstancesStage}';"));
+
+        // Run again, the report now stored is not asked for.
+        var again = RecordedFilingsRefreshFeed.Of(new Dictionary<DateOnly, string> { [monday] = DayIndex(monday, ("0000000102", "BBB INC", "10-K/A", "0000000102-26-000008")) });
+        var repeat = await new FilingsRefresher(again, clock, store.DatabaseFile, pause: NoPause).InstancesAsync(monday, Index, null, "instances-again");
+
+        Assert.Equal(["2026-10-05", "2026-10-06", "2026-10-07"], again.Asked);
+        Assert.Equal(0, repeat.Instances);
     }
 }

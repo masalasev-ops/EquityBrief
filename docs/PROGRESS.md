@@ -10418,3 +10418,43 @@ Queue:      done, the 17.3 correction and its remedy (PRs 570 and 572) and the m
             fresh sessions.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 17.3 - correction: a report the archive's facts answer carries no figure of is read from its own XBRL instance, and net income under a third concept   2026-10-27
+
+Found:      the stale flags' report on the operator's word, read-only over the store and the SEC's own list of each filer's
+            reports. Over every member the night of 2026-10-26 scored, 145 read an older quarter than a report the SEC
+            lists for their filer, 68 on the S&P 500, 41 on the S&P 400 and 36 on the S&P 600: 120 because the archive's
+            facts answer, the refresh's one source, holds no figure of the report, 108 of them second-quarter 10-Qs filed
+            from 2026-07-28 to 2026-08-06, Abbott's answer ending at its 10-Q of 2026-04-29 though it filed one on
+            2026-07-28 whose own XBRL instance the archive holds; 22 filed on the session itself and read from the next
+            night, as every filing is; and BKNG's, VTRS's and ACT's, whose answer holds their second quarter's net income
+            under net income available to the common holders alone. The parser and the store passed over nothing.
+Corrected:  where the night's refresh asks a filer's facts for a 10-Q, a 10-K or an amendment to either and the answer
+            carries no figure of that report, it asks for the listing of the report's documents and the instance it
+            names, two requests under the same limit, and stores each figure stated with no dimension as first filed
+            under the report; `filings --instances --from <day>` reads by hand each member's report since a day that the
+            store holds no fact of; and net income is read under a third concept after net income and profit. The
+            decision, the hard rule's carve-out in CLAUDE.md, the architecture's catalogue and stores rows, the schema,
+            the runbook, the guide's sentence on where the figures come from, the roster's nightly-cost row and the
+            changelog.
+Tests:      6 new: Abbott's instance, trimmed and every element as served, read as the facts answer reads a filing, each
+            figure once, a segment's passed over and the share count's bare unit read; the figures no context or number
+            can carry passed over; the instance found in a listing; the third concept read for a quarter stating neither
+            of the first two; the night reading a report from its instance only where the answer carries none of it; and
+            the by-hand pass reading only the members' reports the store holds no fact of. A test of the night's
+            constructed answers named its report's accession, which it now must.
+Claims:     none new: the rows are amended in place.
+Pins:       none move: no source it edits is one an evaluator's version pins; the frozen quality rules read the scorecard
+            through the facts, so their inputs gain the quarters a filing states under the third concept alone.
+Remedy:     `tools/remedies/2026-10-27-17.3-correction-reports-read-from-their-own-instance.txt` from main after the
+            merge: the whole refresh, storing the third concept for every filer; the reports the store lacks read from
+            2026-01-02; and the newest night's scorecards and ledger night again. The ledger's history reads them from its
+            next build, the monthly run of 2026-11-07.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, each filtered
+            to the tests reading it. I1 the answer read as carrying every report: red at the night's test. I2 as carrying
+            none: red at both night tests, the carried report's listing asked. I3 the by-hand pass reading a stored report:
+            red. I4 a figure under a segment read: red at the odd figures' test. I5 a unit's bare name refused: red at
+            both instance tests. I6 the first XML document taken for the instance: red at the listing's test. I7 the third
+            concept dropped: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.

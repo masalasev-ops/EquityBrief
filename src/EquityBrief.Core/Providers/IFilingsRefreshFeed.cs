@@ -25,6 +25,13 @@ public interface IFilingsRefreshFeed
     // names, none where it holds no such filing.
     // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
     Task<string?> OwnershipAsync(string cik, string accession, CancellationToken cancellation = default);
+
+    // From the 17.3 correction of 2026-10-27 a report's listing of its documents and the document named in it, each one
+    // request, none where the archive holds no such document.
+    // see: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance
+    Task<string?> FilingListingAsync(string cik, string accession, CancellationToken cancellation = default);
+
+    Task<string?> FilingDocumentAsync(string cik, string accession, string file, CancellationToken cancellation = default);
 }
 
 // The SEC's quarterly insider transactions data sets: the page listing every quarter's file and one quarter's file

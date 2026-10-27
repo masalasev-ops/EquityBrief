@@ -26,6 +26,53 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-27 - CLAUDE.md - the filings refresh's carve-out names the listing and the instance of a report the facts answer carries no figure of
+Authorised by: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance
+Was:
+> ... and from 19.13 for each Form 4 or 4/A filed by a member's insiders, one request a filing, so it follows the filings calendar rather than the index, free, from the SEC rather than the provider and bounded by its own limit, on the operator's rulings of 2026-10-09 and 2026-10-16, ...
+Now:
+> ... and from 19.13 for each Form 4 or 4/A filed by a member's insiders, one request a filing, and from the 17.3 correction of 2026-10-27 for the listing and the XBRL instance of each such report whose facts the archive's answer carries no figure of, so it follows the filings calendar rather than the index, free, from the SEC rather than the provider and bounded by its own limit, on the operator's rulings of 2026-10-09, 2026-10-16 and 2026-10-27, ...
+> Added: the decision's citation among the rule's citations.
+Why: the hard rule names every request the night's path makes, and the refresh now asks for a report's listing and instance where the facts answer carries none of it.
+
+### 2026-10-27 - docs/ARCHITECTURE.html - the filings refresher reads a report the facts answer carries no figure of from its own instance
+Authorised by: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance
+Corrects: the archive's facts answer held no figure of 120 members' newest reports on 2026-10-27, so their scorecards read an older quarter and their releases flagged against it, found reporting the stale flags on the operator's word.
+Was:
+> Filings refresher: "... and asks the archive for those members' facts alone, storing each fact not yet stored as first filed; bounded by its own limit and never by the night's deadline, a refusal leaving the facts as they were; and by hand asks every filer the store knows once, the whole refresh the monthly run repeats; from 19.13 ..."
+> Filed facts: "... with the figure, the day and the form and accession of the first filing stating it</td><td>forever, written by the filings refresh, the night's and the whole one by hand, a period inserted only where none is stored, ..."
+Now:
+> Filings refresher: "... storing each fact not yet stored as first filed; from the 17.3 correction of 2026-10-27 a report the archive's facts answer carries no figure of is read from the listing of its documents and the XBRL instance it names, each figure with no dimension stored as first filed under the report (see: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance); bounded by its own limit and never by the night's deadline, a refusal leaving the facts as they were; and by hand asks every filer the store knows once, the whole refresh the monthly run repeats, and from the same correction reads from its instance each member's report filed since a day that the store holds no fact of; from 19.13 ..."
+> Filed facts: "... of the first filing stating it; from the 17.3 correction of 2026-10-27 a report the archive's facts answer carries no figure of stored from its own XBRL instance, and net income read where a filing states neither net income nor profit under net income available to the common holders</td><td>forever, written by the filings refresh, the night's, the whole one by hand and from the same correction its reading of reports' instances by hand, a period inserted only where none is stored, ..."
+Why: the archive lists every report and holds its own instance from the day it is filed, where the facts answer it builds from them can lag.
+
+### 2026-10-27 - docs/SCHEMA.md - filed facts from a report's own instance, and net income under a third concept
+Authorised by: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance
+Corrects: the same, and BKNG's, VTRS's and ACT's second-quarter net income, which the facts answer holds under net income available to the common holders alone.
+Was:
+> filed_fact: "... so a later filing stating it again changes nothing, and nothing updates or deletes a row."
+> | `accession` | TEXT | the filing that set the night's ask off, null for the whole refresh |
+Now:
+> filed_fact: "... and nothing updates or deletes a row. From the 17.3 correction of 2026-10-27 a report the archive's facts answer carries no figure of is read from its own XBRL instance, ... and net income is read under a third concept, net income available to the common holders, where a filing states neither of the first two (see: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance)."
+> | `accession` | TEXT | the filing that set the night's ask off, null for the whole refresh; from the 17.3 correction of 2026-10-27 also the report whose own instance was read |
+Why: the table's rows come from the report's own instance where the facts answer lacks it, stored the same way.
+
+### 2026-10-27 - docs/RUNBOOK.md - a report read from its own instance, and `filings --instances --from`
+Authorised by: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance
+Was:
+> (nothing: the paragraph is added before the share count's)
+Now:
+> Added: the paragraph on a report the facts answer carries no figure of read from its own instance, the `filings --instances --from 2026-01-02` command and net income's third concept.
+Why: the operator reads the reports the store lacks by hand once, as the correction's remedy does.
+
+### 2026-10-27 - .claude/rules/checks.md - nightly-cost states a report read from its own instance
+Authorised by: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance
+Was:
+> `nightly-cost`: ... a refusal leaving the facts as they were and a step past its limit asking the archive for nothing; and from 18.2 ...
+Now:
+> Added without replacing anything: from the 17.3 correction of 2026-10-27 a report the facts answer carries no figure of read from its listing and the instance it names while one the answer carries is not, and by hand a member's report the store holds no fact of read the same way while a stored one, a non-member's and a report read before are not.
+Why: a roster row names what its check asserts, and the correction's tests extend nightly-cost's.
+
 ### 2026-10-26 - docs/ARCHITECTURE.html - a member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none
 Authorised by: A member's filer is the one the SEC's own ticker file names for it, and the provider's only where the file names none
 Corrects: 40 members' company rows carried a filer the SEC's own ticker file does not give them, IR's Trane Technologies' and RBC's Regal Rexnord's among them, because the quarters fetch took the provider's filer wherever its answer filed one, found by the first review of phase 20's sign-off.
