@@ -10572,3 +10572,106 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    BKNG, VTRS, ACT and TRUP, whose filings state net income under a concept the facts are not read under, as the
             third concept's entry puts to the operator.
+
+### 22.14 run - the Fundamentals family's history test built and run on the S&P 500 over its 144 settings, no setting meeting the floors   2026-10-27
+
+Not a checkpoint entry: it builds 22.14's history test and runs it on the S&P 500, and lands nothing; 22.14 lands with
+its pullback version, which waits on the operator's word.
+Queue:      done, PRs 573 and 574 and their remedies; in progress, 22.14's history test, this pull request; next, the
+            operator's word on each index's answer for 22.15 and on the pullback version, then the report page's fixes
+            in one pull request, on the operator's word of 2026-10-27.
+Built:      `sweep-index --family improving` on each of the three indices: every night from 2019-01-02 replayed on
+            membership as it stood, each member's scorecard worked out by the core's one scorecard over its filer's facts
+            as first filed on the first session after each filing day and after the GICS moves; a newly read filing with
+            the score the filing before held, its sales growth's change by the ledger's own reading and the flag that
+            stood the night before, its newest release read under the newest complete reading version through the one
+            reader of the release readings by the family's own rule; the operator's 144 settings walked as the night's
+            step walks its trades; each trade bought at the next open and judged after its round trip against an
+            equal-weighted hold of the members answered on its night; the floors read in months as ruled for the quality
+            family; the report and its figures in the run folder. The flag rule takes its session counter, the night's the
+            exchange's table and the history's its own calendar, since the table holds no year before 2025. The decision,
+            the architecture's section 13 paragraph, section 17's grid and the tester's catalogue row, the plan's 22.14
+            with the grid and the floors, the runbook's command, the guide, the roster's two rows and the changelog.
+Tests:      5 new: the grid's 144 settings with the starting one among them; one filing's trade worked by hand, its
+            result, benchmark and edge and the tester's month as the improving history file derives them; each dial on
+            both sides with the starting setting buying where the night's own answer does; the sales on a falling score,
+            at the time limit and on leaving the index; and a constructed filer replayed night by night, its filing read on
+            the session after its day with the flag that stood the night before, the history's sessions counted as the
+            exchange's table counts them. 2834 in all.
+Claims:     1 new, section 17's grid, named after phase 22's report beside 22.13's ten.
+Pins:       none move: the family is registered under no version and no rule pins a source this edits, asserted.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the history test adds, each
+            filtered to the tests reading it. H1 a flag asked first ignored: red at the dials' test. H2 the rise read at
+            or above: red at the dials' and the trade's tests, C bought. H3 the hold a point lower: red at the trade's and
+            the sales' tests, A kept. H4 the time limit a session late: red at the sales' test. H5 a stock that left the
+            index kept: red there too. H6 a filing read on its own day: red at the replay's test. H7 the flag read on the
+            night the filing is read: red there too. H8 a trade judged against the stocks chosen: red at the trade's test.
+Ran:        from the branch's own build of 9290e856's code, over the live store read-only through 2026-10-26:
+            `sweep-index --index GSPC --family improving` from 18:25:09 to 18:25:42 UTC, run 20261027T182510Z.
+Readings:   the releases read under reading version 5, its model's cutoff 2025-01-31, reach 2019, so no year is without
+            flags; a release before the cutoff was read by a model whose training may hold what followed it.
+Coverage:   each year's members' filings first read, those flagged the night before and the releases read: 2019 1,940,
+            583 and 2,475; 2020 1,962, 328 and 2,476; 2021 1,963, 722 and 2,471; 2022 1,957, 621 and 2,474; 2023 1,961,
+            622 and 2,507; 2024 1,961, 639 and 2,556; 2025 1,954, 702 and 2,515; 2026 1,521, 618 and 1,985.
+Results:    910 names over 1,965 nights. The starting setting: 508 trades ended and 50 held; edge +0.36 points after its
+            round trip, its own return 5.56 against the members' 5.20; by its trades above nothing in 5 of 8 years, 2019
+            +1.0, 2020 -0.9, 2021 -3.8, 2022 +2.3, 2023 -2.3, 2024 +3.7, 2025 +0.9 and 2026 +0.5; -0.74 without its five
+            largest; by its months 93 held and above nothing in 5 of 8 years. No setting meets the floors: every one holds
+            93 months and none stands above nothing in more than 5 years by its months. The strongest by edge: buy at 9,
+            no flag asked, the rise and the growth asked, held at 7, 63 sessions, 298 trades, +0.53 points, -0.30 without
+            its five largest, 4 years by its months. No proposal; luck alone passes about 20.8 of 144. The tester: not
+            passed, its adjusted p 1 over 57 months in 18 blocks, better in 0 of 4 counted years, no fold choosing a
+            setting.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    its answer to the operator for 22.15, and 22.14's pullback version on the operator's word.
+
+### 22.14 run - the Fundamentals family's history test on the S&P 400 over its 144 settings, 20 settings meeting the floors   2026-10-27
+
+Not a checkpoint entry: it lands nothing.
+Ran:        from the same build, over the live store read-only through 2026-10-26: `sweep-index --index MID --family
+            improving` from 18:25:42 to 18:27:00 UTC, run 20261027T182542Z.
+Readings:   as the S&P 500's: version 5, its cutoff 2025-01-31, reaching 2019.
+Coverage:   each year's members' filings first read, those flagged the night before and the releases read: 2019 1,414,
+            309 and 2,113; 2020 1,475, 166 and 2,190; 2021 1,504, 424 and 2,244; 2022 1,511, 409 and 2,248; 2023 1,494,
+            377 and 2,340; 2024 1,513, 408 and 2,393; 2025 1,525, 396 and 2,358; 2026 1,173, 354 and 1,865.
+Results:    759 names over 1,965 nights. The starting setting: 357 trades ended and 28 held; edge +0.58 points after its
+            round trip, its own return 5.36 against the members' 4.78; by its trades above nothing in 5 of 8 years, 2019
+            +12.8, 2020 -4.8, 2021 +1.6, 2022 +0.2, 2023 -3.7, 2024 +1.8, 2025 -5.4 and 2026 +7.9; -1.27 without its
+            five largest; by its months 93 held and above nothing in 4 of 8 years. 20 settings meet the floors. The
+            proposal: buy at 7 with a flag the night before and the rise asked, the growth not, held at 7, 63 sessions,
+            517 trades ended and 29 held, +1.18 points, its own return 3.55 against the members' 2.37, by its trades above
+            nothing in 5 of 8 years, 2019 +2.1, 2020 -0.9, 2021 +3.0, 2022 +2.5, 2023 +2.1, 2024 -0.5, 2025 -1.1 and 2026
+            +1.1, +0.35 without its five largest, by its months 93 held and above nothing in 7 of 8 years. Luck alone
+            passes about 20.8 of 144. The tester: not passed, its adjusted p 0.69 over 57 months in 18 blocks, better in 1
+            of 4 counted years; its folds chose four settings in five years, each asking a flag first.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+Carried:    its answer to the operator for 22.15.
+
+### 22.14 run - the Fundamentals family's history test on the S&P 600 over its 144 settings, 52 settings meeting the floors   2026-10-27
+
+Not a checkpoint entry: it lands nothing.
+Ran:        from the same build, over the live store read-only through 2026-10-26: `sweep-index --index SML --family
+            improving` from 18:27:00 to 18:28:19 UTC, run 20261027T182701Z.
+Readings:   as the S&P 500's: version 5, its cutoff 2025-01-31, reaching 2019.
+Coverage:   each year's members' filings first read, those flagged the night before and the releases read: 2019 2,110,
+            342 and 2,885; 2020 2,182, 178 and 3,038; 2021 2,219, 416 and 3,135; 2022 2,225, 365 and 3,102; 2023 2,189,
+            371 and 3,021; 2024 2,210, 410 and 2,905; 2025 2,205, 440 and 2,813; 2026 1,660, 411 and 2,195.
+Results:    1,212 names over 1,965 nights. The starting setting: 365 trades ended and 26 held; edge +0.46 points after its
+            round trip, its own return 7.38 against the members' 6.92; by its trades above nothing in 5 of 8 years, 2019
+            +2.0, 2020 +1.2, 2021 -4.9, 2022 +2.3, 2023 -0.1, 2024 0.0, 2025 +5.8 and 2026 -1.7; -0.95 without its five
+            largest; by its months 92 held and above nothing in 4 of 8 years. 52 settings meet the floors. The proposal:
+            buy at 9 with a flag the night before, the rise and the growth asked, held at 6, 252 sessions, 51 trades ended
+            and 11 held, +13.26 points, its own return 22.76 against the members' 9.50, by its trades above nothing in 7
+            of 8 years, 2019 +4.4 over 2 trades, 2020 +10.5 over 3, 2021 +2.4 over 5, 2022 +3.1 over 7, 2023 +37.6 over 9,
+            2024 +15.8 over 9, 2025 -1.1 over 7 and 2026 +14.4 over 9, +2.10 without its five largest, by its months 92
+            held and above nothing in 7 of 8 years. Luck alone passes about 20.8 of 144. The tester: not passed, its
+            adjusted p 0.064 over 57 months in 18 blocks against a bar of 0.0042, better in 3 of 4 counted years, every
+            fold choosing the proposal.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2834 of 2834 tests ran
+            with none failed, migrations 0 to 112 with none pending, schema version 112, against `data-ci` and never
+            `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    its answer to the operator for 22.15.
