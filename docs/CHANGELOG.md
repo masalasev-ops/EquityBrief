@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-27 - docs/ARCHITECTURE.html - section 4 gains the rules every name's page holds
+Authorised by: Every report page rule is held over every name's drawn page and reported passed, failed or unexamined with the pages each failed on
+Was:
+> section 4 passed from the key beneath its table of regions straight to "What the numbers say, pattern by pattern".
+Now:
+> a heading, "The rules every name's page holds", and nine paragraphs between the two, stating each rule of the operator's report page corrections in words that hold on any night, each citing its decision: the written sentences held to the stored latest quarter's directions, the markers taken out with the sources listed by title and the abbreviations spelled out, the short version opening on the pick and the quarter, one value a concept, the masthead's pill, the pick's stop and target on the chart with its exit in the plan and its next report estimated, the rules opening on the family that picked the stock, the news matched to the company with the peer group labelled and checked and the industry cycle's sources held to the company or its industry, and the models named with every rule read back over every page.
+Why: the operator's report page corrections of 2026-10-27 asked for the general rules to be appended to the report page's section, worded to hold on any day with no dated figures.
+
+### 2026-10-27 - docs/ARCHITECTURE.html - three citations of the news labels' decision carried to the decision superseding it
+Authorised by: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
+Was:
+> section 4's News row, 15.7's The list row and 15.9's News row each cited "(see: The news labels alone name the model that wrote them)".
+Now:
+> each cites "(see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label)", their words otherwise unchanged.
+Why: the operator's report page corrections of 2026-10-27, the eleventh part, superseded the decision; what the three rows state stands under the new one.
+
 ### 2026-10-27 - docs/ARCHITECTURE.html - the masthead's price marked LIVE in the session and CLOSED outside it, the session's last quote standing until the bars hold its close
 Authorised by: The masthead marks its price LIVE while the session is open and CLOSED outside it, the session's last quote standing until the bars hold its close
 Was:

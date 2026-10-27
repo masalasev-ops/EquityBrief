@@ -4,7 +4,9 @@ namespace EquityBrief.Web.Marks;
 
 // One line of a stock's brief read: what it states, its words, the stored figure it reads where it reads one, and a link
 // after its words where it points somewhere, with the words that end the line after the link.
-public sealed record BriefLine(string Key, string Words, string? Figure = null, string? Href = null, string? LinkWords = null, string? After = null);
+// A line carrying a concept the page draws one value of names it and its value as drawn, which the check reading the page
+// back compares with every other place the concept is drawn.
+public sealed record BriefLine(string Key, string Words, string? Figure = null, string? Href = null, string? LinkWords = null, string? After = null, string? Concept = null, string? ConceptValue = null);
 
 // One of the brief read's three panels: what the chart says, what the business says, and the way in.
 public sealed record BriefPanel(string Key, string Heading, IReadOnlyList<BriefLine> Lines);
@@ -36,7 +38,8 @@ public sealed partial class MarkRenderer
 
             foreach (var line in panel.Lines)
             {
-                var figure = line.Figure is { } held ? Formatted($" data-figure=\"{Escaped(held)}\"") : string.Empty;
+                var figure = (line.Figure is { } held ? Formatted($" data-figure=\"{Escaped(held)}\"") : string.Empty)
+                    + (line.Concept is { } concept && line.ConceptValue is { } conceptValue ? Formatted($" data-concept=\"{Escaped(concept)}\" data-concept-value=\"{Escaped(conceptValue)}\"") : string.Empty);
                 var link = line.Href is { } href ? Formatted($" <a href=\"{Escaped(href)}\">{Escaped(line.LinkWords ?? href)}</a>{Escaped(line.After ?? string.Empty)}") : string.Empty;
 
                 html.Append(Formatted($"<li data-line=\"{Escaped(line.Key)}\"{figure}>{Escaped(line.Words)}{link}</li>"));

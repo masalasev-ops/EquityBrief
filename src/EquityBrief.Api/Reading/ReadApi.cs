@@ -127,7 +127,9 @@ public sealed record WrittenSectionRow(string Section, int Version, DateOnly AsO
 // One document a written section cites, as stored, less the body: the dates-and-sources
 // region draws what it was, when it was published and where it is, and a reader follows
 // the link for the text.
-public sealed record CitedDocumentRow(string Id, string Url, string Title, DateOnly? PublishedOn, string Admissibility);
+// A cited document as the page lists it, with the opening of its stored text, which says whether the industry cycle's
+// source names the company or its industry.
+public sealed record CitedDocumentRow(string Id, string Url, string Title, DateOnly? PublishedOn, string Admissibility, string Opening = "");
 
 // The date one of a name's accepted sections was written on, as of a night, which is
 // what tonight's header counts fresh prose against reused from.
@@ -407,7 +409,8 @@ public sealed record ShapeProposalRow(
 
 public sealed record TriggerReads(int? ConfirmationNights, string? ConfirmationVersion, int WiderMembers = 0, int RatedFourTimes = 0);
 
-// A stored article of a name with the newest label written for it under any profile, or none.
+// A stored article of a name with the newest label written for it under any profile, or none, and its stored text, which
+// says whether it is the name's own story.
 public sealed record NewsArticleRow(
     string ArticleId,
     string Title,
@@ -421,7 +424,8 @@ public sealed record NewsArticleRow(
     string? Direction,
     string? Reason,
     string? Model,
-    string? Profile);
+    string? Profile,
+    string Text = "");
 
 // One of the news labeller's own rows: its run, its outcome, when it ran and the detail naming the night.
 public sealed record LabellerRunRow(string RunId, string Outcome, string StartedAt, string EndedAt, string Detail);
@@ -920,6 +924,13 @@ public sealed partial class ReadApi : IComponent
         this.clock = clock;
     }
 
+    // The settings key an operator's industry for a stock is read under, one entry a ticker, and the overrides read from
+    // it, which the valuation's peers and the page's group read in the provider's industry's place.
+    // see: A stock's industry group is the provider's until an override is set and is checked against the page's own text, and the industry cycle reads only sources naming the company or its industry
+    public const string IndustryOverridesKey = "EquityBrief:IndustryOverrides";
+
+    public IReadOnlyDictionary<string, string> IndustryOverrides { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
     // The stage and outcome the spend cap writes a paid call under. The worker's own
     // constants cannot be referenced from here, so they are stated and `read-surface`
     // asserts the two agree.
@@ -1074,7 +1085,7 @@ public sealed partial class ReadApi : IComponent
     // however many a page cites. No body: a page links to a document rather than
     // reprinting it.
     const string CitedDocuments = @"
-        SELECT id, url, title, published_on, admissibility
+        SELECT id, url, title, published_on, admissibility, substr(IFNULL(body, ''), 1, 6000)
         FROM source_document
         WHERE id IN (SELECT value FROM json_each($ids))
         ORDER BY published_on DESC, id;
@@ -2707,7 +2718,7 @@ public sealed partial class ReadApi : IComponent
     // see: A news article is stored once per member with its admissibility judged, and a label is never overwritten
     const string NewsForName = @"
         SELECT a.article_id, a.title, a.source, a.published_at, a.link, a.admissibility,
-               l.outcome, l.cause, l.kind, l.direction, l.reason, l.model, l.profile
+               l.outcome, l.cause, l.kind, l.direction, l.reason, l.model, l.profile, a.text
         FROM news_article a
         LEFT JOIN news_label l ON l.rowid = (
             SELECT n.rowid FROM news_label n
@@ -2718,18 +2729,18 @@ public sealed partial class ReadApi : IComponent
     ";
 
     // Every name's positive and negative stories of the thirty days before a night, counted as the name page's
-    // bar counts them: the newest label of each article, labelled, opinion pieces left out.
+    // bar counts them: the newest label of each article, labelled, opinion pieces left out, and the company's own
+    // stories alone, read off each story's title and text against the company's name.
+    // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
     const string NewsCountsOn = @"
-        SELECT a.ticker,
-               SUM(CASE WHEN l.direction = 'positive' THEN 1 ELSE 0 END),
-               SUM(CASE WHEN l.direction = 'negative' THEN 1 ELSE 0 END)
+        SELECT a.ticker, l.direction, a.title, a.text,
+               (SELECT MAX(m.name) FROM membership m WHERE m.ticker = a.ticker)
         FROM news_article a
         JOIN news_label l ON l.rowid = (
             SELECT n.rowid FROM news_label n
             WHERE n.ticker = a.ticker AND n.article_id = a.article_id
             ORDER BY n.labelled_at DESC, n.rowid DESC LIMIT 1)
-        WHERE a.published_at >= $from AND a.published_at < $to AND l.outcome = $labelled AND l.kind <> $opinion
-        GROUP BY a.ticker;
+        WHERE a.published_at >= $from AND a.published_at < $to AND l.outcome = $labelled AND l.kind <> $opinion;
     ";
 
     // The store's copies, each attempt's own row, newest first.
@@ -2788,7 +2799,8 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(9) ? null : reader.GetString(9),
                 reader.IsDBNull(10) ? null : reader.GetString(10),
                 reader.IsDBNull(11) ? null : reader.GetString(11),
-                reader.IsDBNull(12) ? null : reader.GetString(12)));
+                reader.IsDBNull(12) ? null : reader.GetString(12),
+                reader.IsDBNull(13) ? string.Empty : reader.GetString(13)));
         }
 
         return rows;
@@ -2811,7 +2823,18 @@ public sealed partial class ReadApi : IComponent
 
         while (await reader.ReadAsync())
         {
-            counts[reader.GetString(0)] = (reader.GetInt32(1), reader.GetInt32(2));
+            var ticker = reader.GetString(0);
+            var company = reader.IsDBNull(4) ? null : reader.GetString(4);
+
+            if (company is not null && !EquityBrief.Core.News.StoryMatch.IsAbout(reader.GetString(2), reader.IsDBNull(3) ? string.Empty : reader.GetString(3), ticker, company))
+            {
+                continue;
+            }
+
+            var (positive, negative) = counts.GetValueOrDefault(ticker);
+            var direction = reader.IsDBNull(1) ? null : reader.GetString(1);
+
+            counts[ticker] = (positive + (direction == "positive" ? 1 : 0), negative + (direction == "negative" ? 1 : 0));
         }
 
         return counts;
@@ -2841,6 +2864,69 @@ public sealed partial class ReadApi : IComponent
         }
 
         return rows;
+    }
+
+    // The models the paid lane ran: those the spend cap's calls and the news labeller's runs name in the run log, which is
+    // what tells a page's paid model from a local one. A model no such row names is one the local lane ran.
+    // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
+    const string PaidModelNames = @"
+        SELECT DISTINCT json_extract(detail, '$.model') FROM run_log
+        WHERE (stage LIKE $call OR stage = $labels) AND json_valid(detail);
+    ";
+
+    // A name's two newest swing lows confirmed by a night, newest first, which the trend rule compares.
+    const string NewestSwingLows = @"
+        SELECT session_date, price FROM swing
+        WHERE ticker = $ticker AND direction = 'low' AND confirmed_on <= $night
+        ORDER BY session_date DESC
+        LIMIT 2;
+    ";
+
+    public async Task<IReadOnlyList<EquityBrief.Core.Report.SwingLow>> SwingLowsAsync(string ticker, DateOnly night)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestSwingLows;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var lows = new List<EquityBrief.Core.Report.SwingLow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            lows.Add(new EquityBrief.Core.Report.SwingLow(
+                DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                decimal.Parse(reader.GetString(1), CultureInfo.InvariantCulture)));
+        }
+
+        return lows;
+    }
+
+    public async Task<IReadOnlySet<string>> PaidModelsAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = PaidModelNames;
+        command.Parameters.AddWithValue("$call", PaidCallStage + ":%");
+        command.Parameters.AddWithValue("$labels", NewsLabelling.Stage);
+
+        var models = new HashSet<string>(StringComparer.Ordinal);
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            if (!reader.IsDBNull(0) && reader.GetValue(0) is string model && model.Length > 0)
+            {
+                models.Add(model);
+            }
+        }
+
+        return models;
     }
 
     // The store's copies as their own rows record them, newest first.
@@ -5709,7 +5795,8 @@ public sealed partial class ReadApi : IComponent
                 reader.GetString(1),
                 reader.GetString(2),
                 reader.IsDBNull(3) ? null : DateOnly.ParseExact(reader.GetString(3), "yyyy-MM-dd", CultureInfo.InvariantCulture),
-                reader.GetString(4)));
+                reader.GetString(4),
+                reader.IsDBNull(5) ? string.Empty : reader.GetString(5)));
         }
 
         return rows;

@@ -143,7 +143,12 @@ public static class FundamentalsScreen
             ? Invariant($"; its industry's median on the {index} is {median:0.0}")
             : "; its industry's median is not read";
 
-        return new BriefLine("price", $"It trades at {MarkRenderer.EarningsMultiple(multiple, filed: true)}{own}{industry}.", multiple.ToString("R", CultureInfo.InvariantCulture));
+        return new BriefLine(
+            "price",
+            $"It trades at {MarkRenderer.EarningsMultiple(multiple, filed: true)}{own}{industry}.",
+            multiple.ToString("R", CultureInfo.InvariantCulture),
+            Concept: score.IndustryMultiple is null || score.Industry is null ? null : EquityBrief.Core.Report.ConceptCheck.MedianOf(score.Industry),
+            ConceptValue: score.IndustryMultiple is { } drawnMedian ? drawnMedian.ToString("0.0", CultureInfo.InvariantCulture) : null);
     }
 
     static BriefLine Estimates(AnalystReading? analysts, InsiderView? insiders)

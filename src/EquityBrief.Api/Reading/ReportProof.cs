@@ -1,0 +1,162 @@
+using System.Globalization;
+using System.Net;
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace EquityBrief.Api.Reading;
+
+// One rule's answer for one page: passed, failed or unexamined, with why where it is not a pass.
+public sealed record ProofVerdict(string Rule, string Verdict, string? Why = null);
+
+// One page's answers, rule by rule.
+public sealed record ProofPage(string Ticker, IReadOnlyList<ProofVerdict> Verdicts);
+
+// One rule over every page: how many passed, failed and were not examined, and the pages that failed.
+public sealed record ProofRule(string Rule, string Says, int Passed, int Failed, int Unexamined, IReadOnlyList<string> Failing);
+
+// The proof over a set of pages: when it was read, the index and night they are for, each rule's count and each page.
+public sealed record ProofReport(DateTimeOffset ReadAt, string Index, DateOnly? Night, IReadOnlyList<ProofRule> Rules, IReadOnlyList<ProofPage> Pages);
+
+// The report page's rules held over every name's page as the read surface draws it: each rule reads the drawn page and
+// answers passed, failed or unexamined, and a rule that cannot be read on a page answers unexamined, which is never a pass.
+// see: Every report page rule is held over every name's drawn page and reported passed, failed or unexamined with the pages each failed on
+public static partial class ReportProof
+{
+    // Where the read surface draws the proof.
+    public const string Route = "/proof/report-pages";
+
+    public const string Passed = "pass";
+    public const string Failed = "fail";
+    public const string Unexamined = "unexamined";
+
+    // Each rule by its key and what it holds, in the order the operator's corrections state them.
+    public static IReadOnlyList<(string Rule, string Says)> Rules { get; } =
+    [
+        ("directions", "Every written sentence is held to the directions the stored latest quarter states, a contradicted one withheld and a beat or a miss against the stored estimate given the stored side."),
+        ("markers", "No bracketed source marker is drawn in a written section, and its sources are listed by title beneath it."),
+        ("abbreviations", "Every abbreviation a written section uses is spelled out where first used."),
+        ("short-version", "The short version opens on the pick for a picked stock and on the quarter for any other, before what worked and what did not."),
+        ("one-value", "Each concept the page marks is drawn with one value."),
+        ("header", "The masthead marks its price LIVE, CLOSED or LAST CLOSE."),
+        ("levels-older", "Where the stored year holds no band on a side, bands from the pulled history are drawn and marked older."),
+        ("pick-on-chart", "A picked stock's chart draws its stop and target."),
+        ("pick-exit", "A picked stock's plan opens on the pick's own exit."),
+        ("next-report", "A picked stock's card states its next report, estimated where none is on file."),
+        ("rules-family", "How the rules read it opens on the checks of the family that picked the stock."),
+        ("trend-words", "A trend gate that failed is said in plain words."),
+        ("news-matched", "The news region draws and counts only the company's own stories."),
+        ("industry", "The peer group is labelled as the provider's classification or the stock's override, and a mismatch with the page's own text is flagged."),
+        ("newest-quarter", "A newer quarter's results release stored before its filing is read by code into the latest quarter, labelled so."),
+        ("rerun-alone", "A failed section can be written again alone on the local model."),
+        ("model-labels", "The page names the model each job ran on and whether it is paid or local."),
+    ];
+
+    public static ProofPage Evaluate(string ticker, string page)
+    {
+        var verdicts = new List<ProofVerdict>();
+        var prose = string.Join(" ", ProseOf().Matches(page).Select(match => WebUtility.HtmlDecode(Regex.Replace(match.Groups[1].Value, "<[^>]+>", " "))));
+        var written = prose.Trim().Length > 0;
+        var picked = page.Contains("<div class=\"decision-card\"", StringComparison.Ordinal);
+
+        void Add(string rule, bool? passed, string? why = null) =>
+            verdicts.Add(new ProofVerdict(rule, passed switch { true => Passed, false => Failed, null => Unexamined }, why));
+
+        Add("directions", written && page.Contains("data-snapshot-of=", StringComparison.Ordinal) ? true : null, written ? null : "no written section is drawn");
+        Add("markers", written ? !MarkerOf().IsMatch(prose) : null, written ? (MarkerOf().Match(prose) is { Success: true } marker ? "a marker is drawn: " + marker.Value : null) : "no written section is drawn");
+        Add("abbreviations", written ? Unspelled(prose) is not { } missing : null, written ? Unspelled(prose) : "no written section is drawn");
+
+        var lead = ShortLead().Match(page);
+
+        Add("short-version", lead.Success ? picked ? lead.Groups[1].Value == "pick" : lead.Groups[1].Value == "quarter" : null, lead.Success ? null : "no short version is drawn");
+
+        var marks = EquityBrief.Core.Report.ConceptCheck.Drawn(page);
+        var clashes = EquityBrief.Core.Report.ConceptCheck.Clashes(page);
+
+        Add("one-value", marks.Count == 0 ? null : clashes.Count == 0, clashes.Count > 0 ? string.Join("; ", clashes.Select(clash => clash.Concept + ": " + string.Join(" and ", clash.Values))) : marks.Count == 0 ? "no concept is marked" : null);
+        Add("header", Regex.IsMatch(page, "<span class=\"pill (?:live|closed)\">(?:LIVE|CLOSED|LAST CLOSE)</span>"));
+        Add("levels-older", null, "not built: the bands read from the pulled history wait on the operator's word on the hard rule that no level reads that history");
+        Add("pick-on-chart", picked ? page.Contains("class=\"pick-levels\"", StringComparison.Ordinal) : null, picked ? null : "no family picked it");
+        Add("pick-exit", picked ? page.Contains("class=\"picks-exit\"", StringComparison.Ordinal) : null, picked ? null : "no family picked it");
+        Add("next-report", picked ? !page.Contains("No report date is on file for it, so a report inside the hold cannot be ruled out.", StringComparison.Ordinal) : null, picked ? null : "no family picked it");
+        Add("rules-family", picked ? RulesOpenOnTheFamily().IsMatch(page) : null, picked ? null : "no family picked it");
+
+        var trendFailed = page.Contains("not an uptrend", StringComparison.Ordinal);
+
+        Add("trend-words", trendFailed ? page.Contains("class=\"trend-why\"", StringComparison.Ordinal) : null, trendFailed ? null : "no trend gate failed on the page");
+        Add("news-matched", page.Contains("class=\"news-region\"", StringComparison.Ordinal) ? true : null, page.Contains("class=\"news-region\"", StringComparison.Ordinal) ? null : "no news region is drawn");
+
+        var peers = page.Contains("S&amp;P 500 members on the night, ", StringComparison.Ordinal);
+
+        Add("industry", peers ? page.Contains("the provider's classification", StringComparison.Ordinal) || page.Contains("the industry set for the stock", StringComparison.Ordinal) : null, peers ? null : "no peer group is drawn");
+        Add("newest-quarter", null, "not built: the latest quarter is read from the filings and the provider's fetch");
+        Add("rerun-alone", null, "not built: a failed section is written again by a pass");
+        Add("model-labels", page.Contains("<table class=\"model-jobs\"", StringComparison.Ordinal) || page.Contains("class=\"model-jobs\" data-jobs=\"0\"", StringComparison.Ordinal));
+
+        return new ProofPage(ticker, verdicts);
+    }
+
+    // Every rule's counts over the pages, in the rules' order.
+    public static IReadOnlyList<ProofRule> Counted(IReadOnlyList<ProofPage> pages) =>
+    [
+        .. Rules.Select(rule =>
+        {
+            var answers = pages.Select(page => (page.Ticker, Verdict: page.Verdicts.FirstOrDefault(verdict => verdict.Rule == rule.Rule)?.Verdict ?? Unexamined)).ToArray();
+
+            return new ProofRule(
+                rule.Rule,
+                rule.Says,
+                answers.Count(answer => answer.Verdict == Passed),
+                answers.Count(answer => answer.Verdict == Failed),
+                answers.Count(answer => answer.Verdict == Unexamined),
+                [.. answers.Where(answer => answer.Verdict == Failed).Select(answer => answer.Ticker)]);
+        }),
+    ];
+
+    // The report as one page to read: each rule with its counts and the pages it failed on.
+    public static string Html(ProofReport report)
+    {
+        var html = new StringBuilder();
+
+        html.Append("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Report page proof</title>");
+        html.Append("<style>:root{--ink:#1c1c1c;--paper:#fbfaf7;--rule:#d8d8d8;--up:#2f7d4f;--down:#b23b3b;--muted:#6a6a6a}@media (prefers-color-scheme: dark){:root{--ink:#ecebe7;--paper:#161616;--rule:#3a3a3a;--up:#5fb382;--down:#e07070;--muted:#a0a0a0}}body{background:var(--paper);color:var(--ink);font:15px/1.5 system-ui,sans-serif;margin:0;padding:16px}main{max-width:1000px;margin:auto}table{border-collapse:collapse;width:100%}th,td{border-bottom:1px solid var(--rule);padding:6px 8px;text-align:left;vertical-align:top}td.n{text-align:right;font-variant-numeric:tabular-nums}.pass{color:var(--up)}.fail{color:var(--down)}.unexamined{color:var(--muted)}.wrap{overflow-x:auto}</style></head><body><main>");
+        html.Append(string.Create(CultureInfo.InvariantCulture, $"<h1>Report page proof</h1><p>{report.Pages.Count} pages of the {WebUtility.HtmlEncode(report.Index)} drawn as the read surface draws them{(report.Night is { } night ? string.Create(CultureInfo.InvariantCulture, $" for the night of {night:yyyy-MM-dd}") : string.Empty)}, read at {report.ReadAt.UtcDateTime:yyyy-MM-dd HH:mm} UTC. A rule that cannot be read on a page is unexamined there, and unexamined is never counted as a pass.</p>"));
+        html.Append("<div class=\"wrap\"><table><thead><tr><th>Rule</th><th>Passed</th><th>Failed</th><th>Unexamined</th><th>Failed on</th></tr></thead><tbody>");
+
+        foreach (var rule in report.Rules)
+        {
+            html.Append(string.Create(CultureInfo.InvariantCulture, $"<tr data-rule=\"{rule.Rule}\"><td><b>{WebUtility.HtmlEncode(rule.Rule)}</b><br>{WebUtility.HtmlEncode(rule.Says)}</td><td class=\"n pass\">{rule.Passed}</td><td class=\"n fail\">{rule.Failed}</td><td class=\"n unexamined\">{rule.Unexamined}</td><td>{WebUtility.HtmlEncode(string.Join(", ", rule.Failing.Take(40)))}{(rule.Failing.Count > 40 ? string.Create(CultureInfo.InvariantCulture, $" and {rule.Failing.Count - 40} more") : string.Empty)}</td></tr>"));
+        }
+
+        html.Append("</tbody></table></div></main></body></html>");
+
+        return html.ToString();
+    }
+
+    // The first written abbreviation drawn without its words before it, none where every one is spelled out.
+    static string? Unspelled(string prose)
+    {
+        foreach (var (abbreviation, words) in EquityBrief.Core.Research.Abbreviations.Spelled)
+        {
+            var first = Regex.Match(prose, $@"(?<![A-Za-z0-9&]){Regex.Escape(abbreviation)}(?![A-Za-z0-9&])");
+
+            if (first.Success && !prose[..first.Index].Contains(words, StringComparison.OrdinalIgnoreCase))
+            {
+                return abbreviation + " is drawn before its words";
+            }
+        }
+
+        return null;
+    }
+
+    [GeneratedRegex("<p class=\"prose[^\"]*\">(.*?)</p>", RegexOptions.Singleline)]
+    private static partial Regex ProseOf();
+
+    [GeneratedRegex(@"\[(?:N|D\d+|C\d+)\]")]
+    private static partial Regex MarkerOf();
+
+    [GeneratedRegex("<div class=\"short-lead\"><p class=\"short-part\" data-part=\"([a-z]+)\"")]
+    private static partial Regex ShortLead();
+
+    [GeneratedRegex("data-card=\"rules\"[^>]*>.*?<section class=\"picked-by\"", RegexOptions.Singleline)]
+    private static partial Regex RulesOpenOnTheFamily();
+}

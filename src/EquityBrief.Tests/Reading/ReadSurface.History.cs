@@ -463,8 +463,25 @@ public partial class ReadSurface
             Assert.Contains("tag.textContent = 'price now ' + reply.priceText;", shell, StringComparison.Ordinal);
         }
 
-        // After the close the figure draws the close and the distance from it, not the quote's.
+        // After the close, while the bars hold no close of the session, the session's last quote stands and the figure's
+        // distance is still the quote's.
+        // see: The masthead marks its price LIVE while the session is open and CLOSED outside it, the session's last quote standing until the bars hold its close
         using (var host = new PassHost(store.Root) { Clock = FixedClock.At(AfterTheClose, SessionZones.UnitedStates) })
+        {
+            using var client = host.CreateClient();
+            var page = await client.GetStringAsync($"/screens/name/{name}");
+            var figure = Regex.Match(page, "<svg class=\"ladder-figure\"[^>]*>.*?</svg>", RegexOptions.Singleline).Value;
+
+            Assert.Contains("data-at=\"quote\"", figure, StringComparison.Ordinal);
+            Assert.Equal("7.7", Regex.Match(figure, rung, RegexOptions.Singleline).Groups[1].Value);
+        }
+
+        // Once the night stores the session's bar, the figure draws the close and the distance from it, not the quote's.
+        store.Execute(
+            "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES " +
+            $"('{name}', '2026-10-07', '230.00', '232.00', '229.00', '231.10', 1000, 'bulk', '2026-10-07T23:10:00Z', '231.10');");
+
+        using (var host = new PassHost(store.Root) { Clock = FixedClock.At(AfterTheClose.AddHours(4), SessionZones.UnitedStates) })
         {
             using var client = host.CreateClient();
             var page = await client.GetStringAsync($"/screens/name/{name}");

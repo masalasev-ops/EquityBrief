@@ -11,7 +11,7 @@ namespace EquityBrief.Tests.Reading;
 // labeller line with its count toward the nights its limits settle from, each read off the rendered page over
 // a constructed store whose counts are worked by hand; and from the 18.4 correction of 2026-10-11 the articles
 // holding no label under a tab of their own after opinion.
-// see: The news labels alone name the model that wrote them
+// see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
 // see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
 public partial class ReadSurface
 {

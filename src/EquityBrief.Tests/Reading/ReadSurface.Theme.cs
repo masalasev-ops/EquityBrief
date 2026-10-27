@@ -18,17 +18,19 @@ public partial class ReadSurface
 
     const string Instruments = "Scientific & Technical Instruments";
 
+    // The cycle cites two pages, each naming a word of its industry's own name, the fewest it is written over.
     static void ThemeCycle(TemporaryStore store, int version, string asOf, string status, string prose)
     {
         store.Execute(
             "INSERT INTO theme_section VALUES " +
-            $"('{Instruments}', '{ClaimRules.CycleSection}', {version}, '{asOf}', 'deepseek-flash', '{status}', '{prose}', '[\"theme-page-1\"]', NULL, '[\"{Instruments}\"]');");
+            $"('{Instruments}', '{ClaimRules.CycleSection}', {version}, '{asOf}', 'deepseek-flash', '{status}', '{prose}', '[\"theme-page-1\",\"theme-page-2\"]', NULL, '[\"{Instruments}\"]');");
     }
 
     static void ThemeDocument(TemporaryStore store) =>
         store.Execute(
             "INSERT INTO source_document (id, url, title, published_on, fetched_at, body, admissibility) VALUES " +
-            "('theme-page-1', 'https://www.semiconductors.org/a-page', 'A page on the industry', '2026-09-01', '2026-09-08T21:10:00Z', 'The industry text.', 'accepted');");
+            "('theme-page-1', 'https://www.semiconductors.org/a-page', 'A page on the industry', '2026-09-01', '2026-09-08T21:10:00Z', 'The scientific instruments industry text.', 'accepted'), " +
+            "('theme-page-2', 'https://www.example.org/another-page', 'Another page on the industry', '2026-09-02', '2026-09-08T21:10:00Z', 'Orders for technical instruments.', 'accepted');");
 
     static IReadOnlyList<Match> NotWrittenLines(string page, string section) =>
         [.. Regex.Matches(page, $"<p class=\"not-written\" data-section=\"{Regex.Escape(WebUtility.HtmlEncode(section))}\">([^<]*)</p>").Cast<Match>()];
@@ -42,7 +44,7 @@ public partial class ReadSurface
         // stored page, and a newer draft still waiting on the checker, which no page draws.
         store.Execute($"UPDATE membership SET industry = '{Instruments}' WHERE ticker = 'AAPL';");
         ThemeDocument(store);
-        ThemeCycle(store, 1, "2026-09-08", "accepted", "Orders across the industry are turning up from a low [D1].");
+        ThemeCycle(store, 1, "2026-09-08", "accepted", "Orders across the industry are turning up from a low [D1][D2].");
         ThemeCycle(store, 2, "2026-09-09", "pending", "A draft nobody has checked [D1].");
 
         foreach (var ticker in new[] { "KEYS", "AAPL" })
@@ -53,7 +55,7 @@ public partial class ReadSurface
             Assert.True(drawn.Success, $"{ticker}'s page draws no industry cycle.");
             Assert.Equal("2026-09-08", drawn.Groups[1].Value);
             Assert.Equal("deepseek-flash", drawn.Groups[2].Value);
-            Assert.Contains("Orders across the industry are turning up from a low [D1].", WebUtility.HtmlDecode(drawn.Groups[3].Value), StringComparison.Ordinal);
+            Assert.Contains("Orders across the industry are turning up from a low.", WebUtility.HtmlDecode(drawn.Groups[3].Value), StringComparison.Ordinal);
             Assert.DoesNotContain("A draft nobody has checked", page, StringComparison.Ordinal);
 
             // The page it cites is among the name's sources, with its date and link.
@@ -62,6 +64,22 @@ public partial class ReadSurface
 
         // A member of another industry draws none.
         Assert.False(WrittenOnThePage(await ResearchedPage(store, "MSFT", AWeekLater), ClaimRules.CycleSection).Success);
+
+        // Where a page it cites names neither the company nor a word of its industry, that page leaves the cycle's sources,
+        // and with fewer than two left the cycle says so in place of its paragraph.
+        // see: A stock's industry group is the provider's until an override is set and is checked against the page's own text, and the industry cycle reads only sources naming the company or its industry
+        store.Execute("UPDATE source_document SET title = 'Bond markets this week', body = 'Yields moved.', url = 'https://www.example.org/bonds' WHERE id = 'theme-page-2';");
+        store.Execute($"INSERT INTO company (ticker, fetched_at, industry) VALUES ('KEYS', '2026-09-30T00:00:00Z', '{Instruments}');");
+
+        // Read through the page's own route, which reads the industry the page names the stock by.
+        using var host = new Host(store.Root, FixedClock.At(AWeekLater, SessionZones.UnitedStates));
+        using var client = host.CreateClient();
+
+        var thin = WrittenOnThePage(await client.GetStringAsync("/screens/name/KEYS"), ClaimRules.CycleSection);
+
+        Assert.True(thin.Success);
+        Assert.Contains("Not enough relevant sources: 1 of the 2 documents it rests on name the company or its industry", WebUtility.HtmlDecode(thin.Groups[3].Value), StringComparison.Ordinal);
+        Assert.DoesNotContain("data-document=\"theme-page-2\"", thin.Groups[3].Value, StringComparison.Ordinal);
     }
 
     [Fact]

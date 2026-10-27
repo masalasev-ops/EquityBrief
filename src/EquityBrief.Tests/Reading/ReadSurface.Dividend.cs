@@ -46,15 +46,22 @@ public partial class ReadSurface
             Assert.Contains("<p class=\"dividend-source\">As of the newest fetch of the company's figures.", drawn.Groups[2].Value, StringComparison.Ordinal);
             Assert.DoesNotContain(FundamentalsFetcher.Provider, Regex.Replace(page, "<[^>]+>", " "), StringComparison.OrdinalIgnoreCase);
 
-            foreach (var part in new[] { "forwardAnnualRate", "forwardYield", "payoutRatio", "exDividendDate", "payDate" })
+            foreach (var part in new[] { "forwardAnnualRate", "payoutRatio", "exDividendDate", "payDate" })
             {
                 Assert.Contains($"data-{part}=\"{dividend.GetProperty(part).GetString()}\"", drawn.Groups[2].Value, StringComparison.Ordinal);
             }
 
             decimal Stored(string part) => decimal.Parse(dividend.GetProperty(part).GetString()!, CultureInfo.InvariantCulture);
 
+            // The yield is worked at the stored close over the rate, as every place on the page draws it, and the provider's
+            // own stands beside it only where the price it was struck at stands far from the close.
+            // see: Each concept a page draws holds one value worked at the stored close beside the provider's own marked stale where struck far from it, and a check flags any concept drawn twice
+            var yieldCell = Regex.Match(drawn.Groups[2].Value, "<td class=\"num\" data-concept=\"yield-at-the-close\" data-concept-value=\"([0-9.]+%)\">([0-9.]+%)");
+
+            Assert.True(yieldCell.Success, $"{ticker}'s yield is not worked at the close");
+            Assert.Equal(yieldCell.Groups[1].Value, yieldCell.Groups[2].Value);
+            Assert.Contains("<th>Yield at the close of ", drawn.Groups[2].Value, StringComparison.Ordinal);
             Assert.Contains($">{Figures.PerShare(Stored("forwardAnnualRate"))}</td>", drawn.Groups[2].Value, StringComparison.Ordinal);
-            Assert.Contains($">{Figures.Percent(Stored("forwardYield"))}</td>", drawn.Groups[2].Value, StringComparison.Ordinal);
             Assert.Contains($">{Figures.Percent(Stored("payoutRatio"))}</td>", drawn.Groups[2].Value, StringComparison.Ordinal);
             Assert.Contains($">{dividend.GetProperty("exDividendDate").GetString()}</td>", drawn.Groups[2].Value, StringComparison.Ordinal);
         }

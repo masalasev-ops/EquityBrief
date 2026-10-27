@@ -98,10 +98,13 @@ public sealed partial class ReadApi
     ";
 
     // The industry's S&P 500 members on the night and the stock's own row whatever its index: each close, the night's
-    // reading of its quarters and the forward rate its newest fetch on or before the night kept.
+    // reading of its quarters, the forward rate its newest fetch on or before the night kept, and its scorecard's multiple
+    // over the earnings filed with the SEC, which is the one multiple every part of the page reads.
+    // see: Each concept a page draws holds one value worked at the stored close beside the provider's own marked stale where struck far from it, and a check flags any concept drawn twice
     const string PeerValuesOf = @"
         SELECT m.ticker, m.close, f.readings,
-               (SELECT d.forward_rate FROM dividend_reading d WHERE d.ticker = m.ticker AND substr(d.fetched_at, 1, 10) <= $night ORDER BY d.fetched_at DESC LIMIT 1)
+               (SELECT d.forward_rate FROM dividend_reading d WHERE d.ticker = m.ticker AND substr(d.fetched_at, 1, 10) <= $night ORDER BY d.fetched_at DESC LIMIT 1),
+               (SELECT s.multiple FROM fundamental_score s WHERE s.ticker = m.ticker AND s.session_date = m.session_date AND s.index_code = m.index_code)
         FROM member_reading m
         LEFT JOIN fundamental_reading f ON f.ticker = m.ticker AND f.session_date = m.session_date
         WHERE m.session_date = $night
@@ -332,10 +335,11 @@ public sealed partial class ReadApi
             command.Parameters.AddWithValue("$ticker", ticker);
             command.Parameters.AddWithValue("$night", Day(night));
 
-            industry = await command.ExecuteScalarAsync() as string;
+            industry = IndustryOverrides.TryGetValue(ticker, out var overridden) ? overridden : await command.ExecuteScalarAsync() as string;
         }
 
         var peers = new List<PeerValue>();
+        var filed = new List<double?>();
 
         if (industry is not null)
         {
@@ -358,7 +362,15 @@ public sealed partial class ReadApi
                     MoneyAt(reader, 1) is { } close ? EquityBrief.Core.Tiles.NameTiles.Yield(MoneyAt(reader, 3), close)?.Percent : null,
                     readings?.Trajectory.Quarters is [var newestQuarter, ..] ? Statistic.FromRatio(newestQuarter.SalesGrowth) * 100 : null,
                     false));
+                filed.Add(reader.IsDBNull(4) ? null : reader.GetDouble(4));
             }
+        }
+
+        // The table reads one basis: the scorecards' multiples over the earnings filed with the SEC where the night scored
+        // any of the industry's members, and the provider's quarters' otherwise, as on a night before the scorecard.
+        if (filed.Any(multiple => multiple is not null))
+        {
+            peers = [.. peers.Select((peer, at) => peer with { Multiple = filed[at] })];
         }
 
         var (insiders, spans) = await InsidersAsync(connection, ticker, night);

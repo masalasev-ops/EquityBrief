@@ -23,13 +23,18 @@ namespace EquityBrief.Core.Providers;
 // cannot be turned back into one. So an article could not have been stored as a
 // document a claim rests on, and nothing would have said so until the runner at
 // 6.8 tried.
+//
+// American is the tickers of the listings the feed tags it with on the American exchange alone, which is what a story is
+// attributed to a member by: a listing on another exchange is another company's however its letters read.
+// see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
 public sealed record NewsArticle(
     DateTimeOffset Published,
     string Title,
     string Url,
     string Channel,
     IReadOnlyList<string> Symbols,
-    string Text);
+    string Text,
+    IReadOnlyList<string>? American = null);
 
 // The news feed of section 5, behind an interface so the nightly path and the
 // suite meet the same shape.
@@ -69,7 +74,7 @@ public static class NewsAttribution
 
         foreach (var article in articles)
         {
-            foreach (var symbol in article.Symbols)
+            foreach (var symbol in article.American ?? article.Symbols)
             {
                 if (!byName.TryGetValue(symbol, out var forName))
                 {
@@ -153,18 +158,24 @@ public sealed class RecordedNewsFeed(string response) : INewsFeed
             throw new FormatException("An article carries no date this feed will accept.");
         }
 
-        var symbols = entry.TryGetProperty("symbols", out var tickers) && tickers.ValueKind is JsonValueKind.Array
+        var tagged = entry.TryGetProperty("symbols", out var tickers) && tickers.ValueKind is JsonValueKind.Array
             ? tickers.EnumerateArray()
                 .Where(one => one.ValueKind is JsonValueKind.String)
                 .Select(one => one.GetString()!)
-                // "AAPL.US" as delivered. The exchange suffix is dropped here
-                // because every store in this system keys on the ticker alone,
-                // and carrying both forms would leave two spellings of one name.
-                .Select(one => one.Split('.')[0])
-                .Where(one => one.Length > 0)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray()
             : [];
+
+        // "AAPL.US" as delivered. The exchange suffix is dropped here because every store in this system keys on the
+        // ticker alone, and carrying both forms would leave two spellings of one name; the symbols count every company
+        // the story names, and the American ones alone are what it is attributed to a member by.
+        // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+        static string[] Tickers(IEnumerable<string> listed) =>
+        [
+            .. listed
+                .Select(one => one.Split('.')[0])
+                .Where(one => one.Length > 0)
+                .Distinct(StringComparer.OrdinalIgnoreCase),
+        ];
 
         var link = Text(entry, "link");
 
@@ -173,8 +184,9 @@ public sealed class RecordedNewsFeed(string response) : INewsFeed
             Text(entry, "title"),
             link,
             Channel(link),
-            symbols,
-            Text(entry, "content"));
+            Tickers(tagged),
+            Text(entry, "content"),
+            Tickers(tagged.Where(EquityBrief.Core.News.StoryMatch.American)));
     }
 
     // The domain, lowercased and without a leading www. What this is not is the

@@ -739,7 +739,7 @@ public sealed partial class MarkRenderer
         if (peers.MedianMultiple is { } median)
         {
             svg.Append(Formatted($"<line class=\"pd-median\" x1=\"{Number(X(median))}\" x2=\"{Number(X(median))}\" y1=\"18\" y2=\"50\" data-median=\"{median.ToString(Invariant)}\"><title>The median, {median.ToString("0.0", Invariant)} times</title></line>"));
-            svg.Append(Formatted($"<text class=\"m-tick\" x=\"{Number(X(median))}\" y=\"62\" text-anchor=\"middle\">median {median.ToString("0.0", Invariant)}x</text>"));
+            svg.Append(Formatted($"<text class=\"m-tick\" x=\"{Number(X(median))}\" y=\"62\" text-anchor=\"middle\" data-concept=\"{Escaped(EquityBrief.Core.Report.ConceptCheck.MedianOf(peers.Industry))}\" data-concept-value=\"{median.ToString("0.0", Invariant)}\">median {median.ToString("0.0", Invariant)}x</text>"));
         }
 
         foreach (var row in held.OrderBy(row => row.Own))

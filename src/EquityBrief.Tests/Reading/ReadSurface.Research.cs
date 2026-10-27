@@ -232,7 +232,7 @@ public partial class ReadSurface
 
         Assert.True(line.Success);
         Assert.Equal(
-            "The two cases is left out: " + NameScreen.Refused(stored),
+            "The two cases are left out: " + NameScreen.Refused(stored),
             WebUtility.HtmlDecode(line.Groups[1].Value));
     }
 
@@ -393,7 +393,7 @@ public partial class ReadSurface
         var line = Regex.Match(region, $"<p class=\"not-written\" data-section=\"{Regex.Escape(WebUtility.HtmlEncode(section))}\">([^<]*)</p>");
 
         Assert.True(line.Success, $"no line for {section}");
-        Assert.Equal($"{section} is not written: {reason}", WebUtility.HtmlDecode(line.Groups[1].Value));
+        Assert.Equal($"{section} {MarkRenderer.IsOrAre(section)} not written: {reason}", WebUtility.HtmlDecode(line.Groups[1].Value));
     }
 
     sealed class NothingAnswers : HttpMessageHandler

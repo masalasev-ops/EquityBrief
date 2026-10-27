@@ -76,7 +76,7 @@ public partial class ReadSurface
             ("epsActual", Stored("earnings", "epsActual"), Figures.PerShare, Stored("earnings", "epsEstimate") is { } estimate ? "against an estimate of " + Figures.PerShare(Of(estimate)) : null),
             ("grossMargin", Stored("quarter", "grossMargin"), Figures.Percent, null),
             ("netMargin", Stored("quarter", "netMargin"), Figures.Percent, null),
-            ("marketCapitalisation", Stored("marketCapitalisation"), value => Figures.Money(value, currency), null),
+            ("marketCapitalisation", Stored("marketCapitalisation"), value => Figures.Money(value, currency), "as the provider states it"),
             ("trailingPe", Stored("valuation", "trailingPe"), Figures.Multiple, Stored("epsBases", "trailing") is { } trailing ? "trailing earnings of " + Figures.PerShare(Of(trailing)) + " a share" : null),
             ("forwardPe", Stored("valuation", "forwardPe"), Figures.Multiple, Stored("epsBases", "nextYear") is { } nextYear ? "next year's estimate " + Figures.PerShare(Of(nextYear)) + " a share" : null),
             ("cash", Stored("balanceSheet", "cash"), value => Figures.Money(value, currency), null),

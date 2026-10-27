@@ -1076,6 +1076,8 @@ svg text{font-family:var(--sans)}
 .m-legend-sup{fill:var(--sup-ink)} .m-legend-res{fill:var(--res-ink)}
 .m-tick-sup{fill:var(--sup-ink)} .m-tick-res{fill:var(--res-ink)}
 .m-now{stroke:var(--ink);stroke-width:.8;opacity:.55}
+.m-pick{stroke-width:1.2;fill:none} .m-pick-stop{stroke:var(--down)} .m-pick-target{stroke:var(--up)}
+.m-tick-pick-stop{fill:var(--down)} .m-tick-pick-target{fill:var(--up)} .m-pick-beyond{font:500 11px var(--sans);fill:var(--ink-2)}
 .m-tick{font-size:10.5px;fill:var(--soft);font-variant-numeric:tabular-nums}
 .m-cap{font-size:11px;fill:var(--ink-2)}
 .m-head{font-size:10.5px;font-weight:600;letter-spacing:.1em;fill:var(--ink)}

@@ -581,7 +581,8 @@ public sealed record NewsView(
     string? Model,
     string? Profile,
     string? Why,
-    string? WhyCode);
+    string? WhyCode,
+    int OtherCompanies = 0);
 
 // How one section of one report came out, as the Run page draws it: passed first time or on retry, left out
 // with why, or not warranted where it stood from an earlier day; what its own calls cost, a trial's left out;
@@ -843,7 +844,7 @@ public sealed record ListingCell(
     // The positive and negative stories of the thirty days before the night, counted as the name page's bar
     // counts them, the newest label of each article with opinion pieces left out; null where the labeller has
     // labelled nothing of the name's, which the cell says.
-    // see: The news labels alone name the model that wrote them
+    // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
     int? NewsPositive = null,
     int? NewsNegative = null);
 
@@ -1138,7 +1139,7 @@ public sealed record WrittenCell(string Section, string Prose, DateOnly AsOf, st
 public sealed record RiskLines(string? Up, string? Worse);
 
 // One document a written section cites, as a page draws it.
-public sealed record SourceCell(string Id, string Title, string Url, DateOnly? PublishedOn);
+public sealed record SourceCell(string Id, string Title, string Url, DateOnly? PublishedOn, string Opening = "");
 
 // What the newest pass for a name came to, as the research region states it: its
 // outcome, the session it ran on, and the one line that says what happened.
@@ -1201,7 +1202,10 @@ public sealed record PriceAxis(double Low, double High)
 // to go looking for the meaning of, so it carries both.
 public sealed record ChartMarker(DateOnly Session, string Says, string Href);
 
-public sealed record ChartFrame(double? Scale = null, IReadOnlyList<ChartMarker>? Markers = null, IReadOnlyList<ChartEvent>? Events = null);
+public sealed record ChartFrame(double? Scale = null, IReadOnlyList<ChartMarker>? Markers = null, IReadOnlyList<ChartEvent>? Events = null, ChartPick? Pick = null);
+
+// A pick's own stop and target, which the level chart draws as rules across its pane and names in its column.
+public sealed record ChartPick(string Family, decimal? Stop, decimal? Target);
 
 // One entry of a page's contents: where it sits as a reader counts down the page, what the
 // card calls itself, the card's own id, which is what the entry links to, and for a written or
@@ -2659,6 +2663,47 @@ public sealed partial class MarkRenderer : IComponent
 
         svg.Append(Invariant, $"<line class=\"m-now\" x1=\"{Margin}\" y1=\"{Number(now)}\" x2=\"{Width - Margin}\" y2=\"{Number(now)}\" stroke-dasharray=\"4 3\"/>");
 
+        // A pick's stop and target as rules across the pane, the stop in the stop's hue and the target in the gain's, each
+        // named in the column like a band's edge; one the axis does not reach is named beneath the pane's own title, since
+        // nothing is written inside the plot.
+        // see: A pick's card estimates the next report from the company's own a year before and places it in the hold, and restates the fill and its reward to risk once the open prints
+        var pickNames = new List<(double Y, string Text, string Kind)>();
+
+        if (frame?.Pick is { } pick)
+        {
+            svg.Append(Invariant, $"<g class=\"pick-levels\" data-family=\"{Escaped(pick.Family)}\">");
+
+            var beyond = new List<string>();
+
+            foreach (var (kind, level) in new[] { ("stop", pick.Stop), ("target", pick.Target) })
+            {
+                if (level is not { } price)
+                {
+                    continue;
+                }
+
+                var y = At(axis, PlotValue(price));
+
+                if (y >= 0 && y <= PriceHeight)
+                {
+                    svg.Append(Invariant, $"<line class=\"m-pick m-pick-{kind}\" data-{kind}=\"{price.ToString(Invariant)}\" x1=\"{Margin}\" y1=\"{Number(y)}\" x2=\"{Width - Margin}\" y2=\"{Number(y)}\" stroke-dasharray=\"8 4\"><title>The pick's {kind}, {Price(price)}</title></line>");
+                    pickNames.Add((y, kind + " " + Price(price), kind));
+                }
+                else
+                {
+                    beyond.Add(Formatted($"the pick's {kind}, {Price(price)}, {(y < 0 ? "above" : "below")} the chart"));
+                }
+            }
+
+            // A level the axis does not reach is named in the row above the pane, outside the plot.
+            if (beyond.Count > 0)
+            {
+                svg.Append(Invariant, $"<text class=\"m-pick-beyond\" x=\"{Width - Margin}\" y=\"-6\" text-anchor=\"end\">{Escaped(string.Join("; ", beyond))}</text>");
+            }
+
+            svg.Append("</g>");
+        }
+
         svg.Append(Invariant, $"<g class=\"price-column\" data-close=\"{bars[^1].Close.ToString(Invariant)}\">");
         svg.Append(Invariant, $"<line class=\"m-axisline\" x1=\"{Width + 1}\" y1=\"0\" x2=\"{Width + 1}\" y2=\"{PriceHeight}\"/>");
 
@@ -2666,6 +2711,14 @@ public sealed partial class MarkRenderer : IComponent
 
         svg.Append(Invariant, $"<rect class=\"m-nowtag\" x=\"{Width + 4}\" y=\"{Number(now - 11)}\" width=\"{AxisWidth - 6}\" height=\"22\" rx=\"2\"/>");
         svg.Append(Invariant, $"<text class=\"m-nowtag-t\" x=\"{Width + 9}\" y=\"{Number(now + 5)}\">{Price(bars[^1].Close)}</text>");
+
+        // The pick's stop and target named first, before any band's edge takes their place in the column.
+        foreach (var (y, text, kind) in pickNames.Where(name => placed.All(other => Math.Abs(other - name.Y) >= 18)))
+        {
+            placed.Add(y);
+            svg.Append(Invariant, $"<line class=\"m-axisline\" x1=\"{Width + 1}\" y1=\"{Number(y)}\" x2=\"{Width + 5}\" y2=\"{Number(y)}\"/>");
+            svg.Append(Invariant, $"<text class=\"m-tick m-tick-pick-{kind}\" x=\"{Width + 9}\" y=\"{Number(y + 5)}\">{Escaped(text)}</text>");
+        }
 
         foreach (var (y, text, nearest) in named.OrderBy(price => Math.Abs(price.Y - now)))
         {
@@ -3365,7 +3418,7 @@ public sealed partial class MarkRenderer : IComponent
 
             // The positive and negative stories of the thirty days before, as the name page's bar counts
             // them, on the first list alone: the labeller reads that list and no other.
-            // see: The news labels alone name the model that wrote them
+            // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
             if (!oneGateShort)
             {
                 list.Append(row.NewsPositive is { } positive && row.NewsNegative is { } negative
@@ -4026,17 +4079,17 @@ public sealed partial class MarkRenderer : IComponent
             region.Append(Invariant, $"{Escaped(paused.Line)}</p>");
         }
 
-        // Each reason as a pass stored it, its counts read as a reader reads them.
+        // Each reason as a pass stored it, its counts read as a reader reads them, the verb agreeing with the section's name.
         foreach (var section in leftOut)
         {
             region.Append(Invariant, $"<p class=\"left-out\" data-section=\"{Escaped(section.Section)}\">");
-            region.Append(Invariant, $"{Escaped(section.Section)} is left out: {Escaped(CountsInWords(section.Reason))}</p>");
+            region.Append(Invariant, $"{Escaped(section.Section)} {IsOrAre(section.Section)} left out: {Escaped(CountsInWords(section.Reason))}</p>");
         }
 
         foreach (var section in unwritten)
         {
             region.Append(Invariant, $"<p class=\"not-written\" data-section=\"{Escaped(section.Section)}\">");
-            region.Append(Invariant, $"{Escaped(section.Section)} is not written: {Escaped(CountsInWords(section.Reason))}</p>");
+            region.Append(Invariant, $"{Escaped(section.Section)} {IsOrAre(section.Section)} not written: {Escaped(CountsInWords(section.Reason))}</p>");
         }
 
         // The controls, each a form the page's own script sends, with what it asks for on
@@ -4144,13 +4197,23 @@ public sealed partial class MarkRenderer : IComponent
     // [D2] is checkable only where [D2] says which document it is.
     // see: A research record is written and dated per section, not as a whole
     // see: Every researched claim must name a stored source document
-    public string WrittenSection(string ticker, WrittenCell section, IReadOnlyList<SourceCell> documents, string dated = "written on", RiskLines? riskLines = null)
+    public string WrittenSection(string ticker, WrittenCell section, IReadOnlyList<SourceCell> documents, string dated = "written on", RiskLines? riskLines = null, IReadOnlyList<EquityBrief.Core.Research.DirectionFact>? facts = null, string? lead = null, string? proseLabel = null)
     {
+        // The section as a reader reads it, held to the stored directions, its markers out and its abbreviations spelled
+        // out; the stored prose is what its markers are read from.
+        var stored = section;
+
+        section = section with { Prose = Readable(section.Prose, facts) };
+
         var drawn = new StringBuilder();
 
         drawn.Append(Invariant, $"<section class=\"written-section\" data-ticker=\"{Escaped(ticker)}\" data-section=\"{Escaped(section.Section)}\" ");
         drawn.Append(Invariant, $"data-as-of=\"{section.AsOf:yyyy-MM-dd}\" data-model=\"{Escaped(section.Model)}\">");
         drawn.Append(Invariant, $"<h3>{Escaped(section.Section)}</h3>");
+
+        // Parts code writes before the written prose, and the label the prose is read under after them.
+        drawn.Append(lead ?? string.Empty);
+        drawn.Append(proseLabel is { } proseHeading ? Formatted($"<p class=\"short-part-label\"><b>{Escaped(proseHeading)}</b></p>") : string.Empty);
 
         var whole = section.Prose.Split(new[] { "\r\n\r\n", "\n\n" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
@@ -4249,17 +4312,19 @@ public sealed partial class MarkRenderer : IComponent
         }
 
         // A sentence resting on the night's own figures cites them as [N], which is listed beside the documents and
-        // links to the card drawing them.
+        // links to the card drawing them. The markers are read from the stored prose and drawn nowhere: the sources are
+        // listed by title beneath the section.
         // see: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state
-        var citesNight = section.Prose.Contains(Core.Research.ClaimRules.NightMark, StringComparison.Ordinal);
+        // see: A written section is drawn without its bracketed markers, its sources listed by title beneath it and every abbreviation spelled out where first used
+        var citesNight = stored.Prose.Contains(Core.Research.ClaimRules.NightMark, StringComparison.Ordinal);
 
         if (section.SourceIds.Count > 0 || citesNight)
         {
-            drawn.Append(Invariant, $"<ol class=\"section-sources\" data-cites=\"{section.SourceIds.Count}\">");
+            drawn.Append(Invariant, $"<div class=\"sub sources-sub\">Sources</div><ul class=\"section-sources\" data-cites=\"{section.SourceIds.Count}\">");
 
             if (citesNight)
             {
-                drawn.Append("<li data-marker=\"N\">[N] <a href=\"#quarter\">the figures the night stored</a>, computed by the night or copied by code from a filing or the provider</li>");
+                drawn.Append("<li data-marker=\"N\"><a href=\"#quarter\">the figures the night stored</a>, computed by the night or copied by code from a filing or the provider</li>");
             }
 
             for (var at = 0; at < section.SourceIds.Count; at++)
@@ -4267,17 +4332,17 @@ public sealed partial class MarkRenderer : IComponent
                 var id = section.SourceIds[at];
                 var document = documents.FirstOrDefault(one => string.Equals(one.Id, id, StringComparison.Ordinal));
 
-                drawn.Append(Invariant, $"<li data-marker=\"D{at + 1}\" data-document=\"{Escaped(id)}\">[D{at + 1}] ");
+                drawn.Append(Invariant, $"<li data-marker=\"D{at + 1}\" data-document=\"{Escaped(id)}\">");
                 drawn.Append(document is null ? "a document the store does not hold" : Link(document));
                 drawn.Append("</li>");
             }
 
-            drawn.Append("</ol>");
+            drawn.Append("</ul>");
         }
 
         if (section.Claims is { Count: > 0 } claims)
         {
-            drawn.Append(ClaimSources(section.Prose, claims));
+            drawn.Append(ClaimSources(stored.Prose, claims));
         }
 
         drawn.Append("</section>");
@@ -4517,16 +4582,19 @@ public sealed partial class MarkRenderer : IComponent
 
         var drawn = new StringBuilder();
 
-        drawn.Append(Invariant, $"<ol class=\"section-sources claim-sources\" data-claims=\"{cited.Length}\">");
+        // The regions the cited claims come from, by title, each once and linked to the region drawing it, in the order the
+        // claims are numbered.
+        // see: A written section is drawn without its bracketed markers, its sources listed by title beneath it and every abbreviation spelled out where first used
+        var regions = cited.Select(number => claims[number - 1].Region).Distinct(StringComparer.Ordinal).ToArray();
 
-        foreach (var number in cited)
+        drawn.Append(Invariant, $"<div class=\"sub sources-sub\">Sources</div><ul class=\"section-sources claim-sources\" data-claims=\"{cited.Length}\" data-regions=\"{regions.Length}\">");
+
+        foreach (var region in regions)
         {
-            var claim = claims[number - 1];
-
-            drawn.Append(Invariant, $"<li data-marker=\"C{number}\">[C{number}] {Escaped(claim.Text)} <a href=\"#{ClaimAnchor(claim.Region)}\">{Escaped(claim.Region)}</a></li>");
+            drawn.Append(Invariant, $"<li data-region=\"{Escaped(region)}\"><a href=\"#{ClaimAnchor(region)}\">{Escaped(region)}</a></li>");
         }
 
-        return drawn.Append("</ol>").ToString();
+        return drawn.Append("</ul>").ToString();
     }
 
     // A paragraph of one of the two columns the risks close on.
@@ -6585,11 +6653,14 @@ public sealed partial class MarkRenderer : IComponent
             Stored(view.DollarVolume),
             view.DollarVolume is { } dollars ? Figures.Money(dollars)
                 : barred ? Short(Formatted($"not available: fewer than {MemberReadings.DollarVolumeSessions} sessions held")) : noBar);
+        // The company's value is the page's one market value, marked so the check reading the page finds every place it is
+        // drawn.
+        // see: Each concept a page draws holds one value worked at the stored close beside the provider's own marked stale where struck far from it, and a check flags any concept drawn twice
         Row(
             "company-value",
             "Its company's value, the share count filed before the night times the close",
             Stored(view.CompanyValue),
-            view.CompanyValue is { } value ? Figures.Money(value)
+            view.CompanyValue is { } value ? Formatted($"<span data-concept=\"{EquityBrief.Core.Report.ConceptCheck.MarketValue}\" data-concept-value=\"{Escaped(Figures.Money(value))}\">{Figures.Money(value)}</span>")
                 : barred ? Short("not available: no share count filed before the night") : noBar);
         Row(
             "cost",
@@ -6621,9 +6692,11 @@ public sealed partial class MarkRenderer : IComponent
             "Its reported quarters' state",
             view.State ?? "none",
             view.State is { } state ? Escaped(state.Replace('_', ' ')) : Short("none stored for the night"));
+        // The high a breakout reads, over the sessions before the night with the night left out, which is a window of its own
+        // and not the year's high the rest of the page draws over the stored year to the night.
         Row(
             "year-high",
-            Formatted($"Highest high of the {MemberReadings.YearSessions} sessions before the night"),
+            Formatted($"The high a breakout reads: the highest high of the {MemberReadings.YearSessions} sessions before the night, the night left out, not the year's high the page draws"),
             Stored(view.YearHigh),
             view.YearHigh is { } high && view.SinceHigh is { } since ? Formatted($"{Price(high)}, made {Counted(since, "session", "sessions")} before the night")
                 : barred ? Short("not available: too few sessions before the night held") : noBar);
@@ -6898,6 +6971,15 @@ public sealed partial class MarkRenderer : IComponent
     // "(s)" takes its singular at one and its plural at any other count.
     public static string CountsInWords(string stored) =>
         Regex.Replace(stored, @"\b(\d{1,3}(?:,\d{3})+|\d+) ([A-Za-z]+)\(s\)", count => count.Groups[1].Value + " " + count.Groups[2].Value + (count.Groups[1].Value == "1" ? string.Empty : "s"));
+
+    // The verb a section's name takes: a name opening on "The" whose noun before any comma ends in an s is plural, as the
+    // two cases and the dated calendar items are, and every other name is singular.
+    public static string IsOrAre(string section)
+    {
+        var head = section.Split(',')[0].Trim();
+
+        return head.StartsWith("The ", StringComparison.Ordinal) && head.EndsWith('s') ? "are" : "is";
+    }
 
     // A sentence a rule stored, read as a reader reads it: its counts in words, and each figure it wrote past two places
     // or at a thousand or more read as a price is, so a card's "the target at 441.815" reads 441.82 as the plan beside it.
@@ -7191,8 +7273,15 @@ public sealed partial class MarkRenderer : IComponent
     // piece in the opinion tab alone and in no count, an article holding no label in the unlabelled tab beside
     // all, the model that wrote the labels named once, and where the name holds no label for the night one line
     // saying why. The tabs are radio inputs the stylesheet reads, so the region carries no script of its own.
-    // see: The news labels alone name the model that wrote them
+    // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
     // see: A label's reason is one sentence holding no digit, and an answer code cannot read is asked once more and then kept as unreadable with its cause
+    // How many stories the feed tagged the name with name another company, left out of the list and every count.
+    // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+    static string OtherCompanies(NewsView view) =>
+        view.OtherCompanies > 0
+            ? Formatted($"<p class=\"news-others\" data-left-out=\"{view.OtherCompanies}\">{view.OtherCompanies} {(view.OtherCompanies == 1 ? "story" : "stories")} the feed tagged {Escaped(view.Ticker)} with {(view.OtherCompanies == 1 ? "names" : "name")} neither the company nor its American listing, and {(view.OtherCompanies == 1 ? "is" : "are")} left out of the list and the counts.</p>")
+            : string.Empty;
+
     public string NewsRegion(NewsView view)
     {
         const double Wide = 520;
@@ -7203,7 +7292,8 @@ public sealed partial class MarkRenderer : IComponent
 
         if (view.Rows.Count == 0)
         {
-            region.Append(Invariant, $"<p class=\"news-none\" data-why=\"{Escaped(view.WhyCode ?? "none")}\">{Escaped(view.Why ?? $"No article naming {view.Ticker} was stored in the thirty days before this night.")}</p></div>");
+            region.Append(Invariant, $"<p class=\"news-none\" data-why=\"{Escaped(view.WhyCode ?? "none")}\">{Escaped(view.Why ?? $"No article naming {view.Ticker} was stored in the thirty days before this night.")}</p>");
+            region.Append(OtherCompanies(view)).Append("</div>");
 
             return region.ToString();
         }
@@ -7217,6 +7307,7 @@ public sealed partial class MarkRenderer : IComponent
         region.Append(Invariant, $"<rect class=\"nb-positive\" x=\"0\" y=\"1\" width=\"{Number(positiveWidth)}\" height=\"12\" rx=\"6\"></rect>");
         region.Append(Invariant, $"<rect class=\"nb-negative\" x=\"{Number(positiveWidth)}\" y=\"1\" width=\"{Number(total == 0 ? 0 : Wide - positiveWidth)}\" height=\"12\" rx=\"6\"></rect></svg>");
         region.Append(Invariant, $"<p class=\"news-counts-line\"><b>{view.Positive}</b> positive, <b>{view.Negative}</b> negative and <b>{view.Neutral}</b> neutral over the thirty days before, opinion pieces counted in none.</p>");
+        region.Append(OtherCompanies(view));
 
         if (view.Why is { } why)
         {

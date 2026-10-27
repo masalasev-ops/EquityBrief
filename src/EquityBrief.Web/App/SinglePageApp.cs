@@ -1407,13 +1407,35 @@ public sealed partial class SinglePageApp : IComponent
         // The scorecard's earnings multiple, which the page states in the provider's place wherever it holds one.
         double? filedMultiple = null,
         // Where the Fundamentals family bought the name on the night, keeps a trade in it or flagged it, from 22.13.
-        string? improving = null)
+        string? improving = null,
+        // The models the run log names on a priced call or a labeller's run, which tell each job's paid model from a local one.
+        IReadOnlySet<string>? paidModels = null,
+        // Why the trend rule read the stock as it did, in plain words, none where it read an uptrend.
+        string? trendWhy = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
         var documents = sources ?? [];
+
+        // The directions the stored latest quarter states, which every written sentence is held to where it is drawn.
+        // see: A written sentence stating a direction the stored latest quarter contradicts is withheld where it is drawn, and a beat or a miss another source states against it is named beside it
+        var directions = EquityBrief.Core.Research.Directions.Of(report?.Quarter);
         var session = bars.Count > 0 ? bars[^1].SessionDate : (DateOnly?)null;
         var company = mast?.Company is { Length: > 0 } named ? named : ticker;
+
+        // The documents the industry cycle cites whose title, address and stored text name neither the company nor a word of
+        // its industry: they leave the cycle's sources, and the page's list where no other section cites them. A page that
+        // holds no industry for the stock has nothing to hold them to, and keeps them.
+        // see: A stock's industry group is the provider's until an override is set and is checked against the page's own text, and the industry cycle reads only sources naming the company or its industry
+        var cycleWritten = sections.FirstOrDefault(section => string.Equals(section.Section, EquityBrief.Core.Research.ClaimRules.CycleSection, StringComparison.Ordinal));
+        var irrelevant = cycleWritten is null || mast?.Industry is not { Length: > 0 }
+            ? []
+            : cycleWritten.SourceIds
+                .Where(id => documents.FirstOrDefault(document => string.Equals(document.Id, id, StringComparison.Ordinal)) is { } cited
+                    && !EquityBrief.Core.Report.IndustryCheck.Relevant(cited.Title, cited.Url + " " + cited.Opening, mast?.Company, mast?.Industry))
+                .ToHashSet(StringComparer.Ordinal);
+
+        documents = [.. documents.Where(document => !irrelevant.Contains(document.Id) || sections.Any(section => !string.Equals(section.Section, EquityBrief.Core.Research.ClaimRules.CycleSection, StringComparison.Ordinal) && section.SourceIds.Contains(document.Id, StringComparer.Ordinal)))];
 
         // The cards, held apart from the region so the contents can be written from what was
         // drawn and still stand above it. A card records itself as it is added, at the place
@@ -1449,6 +1471,28 @@ public sealed partial class SinglePageApp : IComponent
                     continue;
                 }
 
+                // The short version opens on the pick and the quarter, written by code, and its prose follows under its own
+                // label; for a pick, a paragraph opening on the levels' plan is left to the plan region, which opens on the
+                // pick's own exit.
+                // see: The short version opens on the pick and then the quarter as code writes them, before what worked and what did not
+                var shortVersion = string.Equals(name, MarkRenderer.TheShortVersion, StringComparison.Ordinal);
+                var lead = shortVersion ? MarkRenderer.ShortVersionLead(decision, report?.Quarter) : null;
+                var shown = shortVersion && decision is not null
+                    ? section with { Prose = string.Join("\n\n", section.Prose.Split(["\r\n\r\n", "\n\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Where(paragraph => !paragraph.StartsWith("The plan ", StringComparison.Ordinal))) }
+                    : section;
+
+                // The industry cycle reads only the sources naming the company or its industry, and where fewer than two do it
+                // says so in place of its paragraph.
+                // see: A stock's industry group is the provider's until an override is set and is checked against the page's own text, and the industry cycle reads only sources naming the company or its industry
+                if (string.Equals(name, EquityBrief.Core.Research.ClaimRules.CycleSection, StringComparison.Ordinal))
+                {
+                    var relevant = shown.SourceIds.Where(id => !irrelevant.Contains(id)).ToArray();
+
+                    shown = relevant.Length < EquityBrief.Core.Report.IndustryCheck.FewestSources
+                        ? shown with { Prose = Invariant($"Not enough relevant sources: {relevant.Length} of the {shown.SourceIds.Count} documents it rests on name the company or its industry, and the industry cycle is written over {EquityBrief.Core.Report.IndustryCheck.FewestSources} or more."), SourceIds = relevant }
+                        : shown with { SourceIds = relevant };
+                }
+
                 Card(
                     place,
                     SectionId(name),
@@ -1457,7 +1501,7 @@ public sealed partial class SinglePageApp : IComponent
                         name,
                         "Written",
                         section.AsOf,
-                        marks.WrittenSection(ticker, section, documents, riskLines: string.Equals(name, MarkRenderer.TheRisks, StringComparison.Ordinal) ? history?.Risk : null),
+                        marks.WrittenSection(ticker, shown, documents, riskLines: string.Equals(name, MarkRenderer.TheRisks, StringComparison.Ordinal) ? history?.Risk : null, facts: directions, lead: lead, proseLabel: lead is { Length: > 0 } ? "What worked and what did not." : null),
                         section: name,
                         id: SectionId(name),
                         role: role),
@@ -1585,13 +1629,18 @@ public sealed partial class SinglePageApp : IComponent
                     "These are facts about its trading and its quarters as they stood on the night. The S&amp;P 400's and 600's rules read the price, the dollar volume and the profit gate before they list a name, and the rest are readings their sweeps test."));
 
         // The swing filter's answer for the name, whatever the name: each gate with whether it passed
-        // and why, the setup and the trigger, the trade read both ways and the exclusions.
+        // and why, the setup and the trigger, the trade read both ways and the exclusions, and why the trend rule read
+        // it as it did in plain words. Where a setup family picked the name and the filter did not, its summary says so.
+        // see: How the rules read it opens on the checks of the family that picked the stock, and every input that failed is named in plain words
+        var notThisFilter = decision is not null && passed is null;
         var gatesPart = gates is null
             ? string.Empty
             : Fold(
                 "gates",
-                "Its gates: where it stands against the swing filter",
-                marks.GatesTable(ticker, gates) + Cards.Key(
+                notThisFilter ? "Its gates: where it stands against the swing filter, this name was not picked by this filter" : "Its gates: where it stands against the swing filter",
+                marks.GatesTable(ticker, gates)
+                + (trendWhy is { } plain ? Invariant($"<p class=\"trend-why\">{Escaped(plain)}</p>") : string.Empty)
+                + Cards.Key(
                     "How to read it.",
                     "Each gate is one question the swing filter asks of every member each night, in order: the market's breadth, the trend and strength, a setup, a trigger new on the night, and a trade worth taking. A name passes only where all five pass and no exclusion applies. The trade is read from the ladder's first tranche and from the swing plan that night's live rule used, and the plan marked as read decides the gate. An alternative plan being tested in the background is not drawn: how it would have traded a stock is the evaluation it waits for.",
                     gates.Rule == EquityBrief.Core.Shortlist.ListRules.Filter
@@ -1600,11 +1649,20 @@ public sealed partial class SinglePageApp : IComponent
 
         rules.Append(gatesPart).Append(swingPart).Append(memberPart);
 
+        // A stock a setup family picked opens on that family's own checks, before why it is here and the swing filter's
+        // gates.
+        if (decision is { } pickedBy)
+        {
+            rules.Insert(0, marks.PickedBy(pickedBy));
+        }
+
         Card("rules", "rules", "How the rules read it", Cards.Computed(
             "How the rules read it",
             rules.ToString(),
             title: "What the swing filter and the readings made of it",
-            lede: "Each part folds open: why it is here, its gates, its swing readings and its member readings, as the night stored them.",
+            lede: decision is null
+                ? "Each part folds open: why it is here, its gates, its swing readings and its member readings, as the night stored them."
+                : "First the checks of the setup that picked it; then each part folds open: why it is here, its gates, its swing readings and its member readings, as the night stored them.",
             stamp: Cards.Night(gates?.Session ?? session),
             id: "rules",
             region: "rules"));
@@ -1689,7 +1747,7 @@ public sealed partial class SinglePageApp : IComponent
         var chart = new StringBuilder();
 
         chart.Append("<div class=\"fig row-fig\">");
-        chart.Append(marks.LevelChart(ticker, bars, averages, bands, new ChartFrame(Scale: Scale, Markers: MarkRenderer.MovesOnTheChart(ticker, moves), Events: history?.Events)));
+        chart.Append(marks.LevelChart(ticker, bars, averages, bands, new ChartFrame(Scale: Scale, Markers: MarkRenderer.MovesOnTheChart(ticker, moves), Events: history?.Events, Pick: decision is { } chartPick ? new ChartPick(chartPick.Family, chartPick.Stop, chartPick.Target) : null)));
 
         if (bars.Count > 0 && profile.Count > 0)
         {
@@ -1788,6 +1846,14 @@ public sealed partial class SinglePageApp : IComponent
         // see: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table
         var planned = new StringBuilder();
 
+        // A pick's own exit first, the family's target, stop and time limit, so the plan never reads as no exit for a stock
+        // a family bought; the levels' plan beneath it is a buyer's without the pick.
+        // see: A pick's card estimates the next report from the company's own a year before and places it in the hold, and restates the fill and its reward to risk once the open prints
+        if (decision is { } pick)
+        {
+            planned.Append(marks.PicksOwnExit(pick));
+        }
+
         if (plan.Count == 0)
         {
             planned.Append(marks.PlanColumn(ticker, close, plan, history?.NoPlan ?? history?.PlanReason, history?.PlanForms));
@@ -1863,7 +1929,7 @@ public sealed partial class SinglePageApp : IComponent
         // What was written about the company in the thirty days before the night, each article with the
         // label the labeller wrote for it, after its group by price; drawn for every member the page is
         // handed stories for.
-        // see: The news labels alone name the model that wrote them
+        // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
         if (news is { } stories)
         {
             Card("news", "news", "News", Cards.Computed(
@@ -1926,7 +1992,7 @@ public sealed partial class SinglePageApp : IComponent
                     MarkRenderer.WhatManagementSaid,
                     "Written",
                     managed.AsOf,
-                    marks.WrittenSection(ticker, managed, documents) + (releaseRead ?? string.Empty),
+                    marks.WrittenSection(ticker, managed, documents, facts: directions) + (releaseRead ?? string.Empty),
                     section: MarkRenderer.WhatManagementSaid,
                     id: SectionId(MarkRenderer.WhatManagementSaid)),
                 managed.AsOf);
@@ -1970,7 +2036,7 @@ public sealed partial class SinglePageApp : IComponent
                 if (sections.FirstOrDefault(section => string.Equals(section.Section, part, StringComparison.Ordinal)) is { } partWritten)
                 {
                     segmentBody.Append(Invariant($"<div class=\"written-part\" id=\"{SectionId(part)}\" data-section=\"{Escaped(part)}\"><div class=\"dl\"><span class=\"dl-k\">Written</span><b>{Cards.Day(partWritten.AsOf)}</b></div>"));
-                    segmentBody.Append(marks.WrittenSection(ticker, partWritten, documents)).Append("</div>");
+                    segmentBody.Append(marks.WrittenSection(ticker, partWritten, documents, facts: directions)).Append("</div>");
                 }
             }
 
@@ -2099,16 +2165,21 @@ public sealed partial class SinglePageApp : IComponent
         {
             var valued = new StringBuilder();
 
+            // The night's multiple is the page's one trailing multiple, marked so the check reading the page finds it, and a
+            // line beneath says which earnings each multiple the region draws divides by.
+            // see: Each concept a page draws holds one value worked at the stored close beside the provider's own marked stale where struck far from it, and a check flags any concept drawn twice
             valued.Append(filedMultiple is { } filed
-                ? Invariant($"<p class=\"valuation-line\" data-multiple=\"{filed}\" data-source=\"filed\">At the night's close it trades at {Escaped(MarkRenderer.EarningsMultiple(filed, filed: true))}.</p>")
+                ? Invariant($"<p class=\"valuation-line\" data-multiple=\"{filed}\" data-source=\"filed\" data-concept=\"{EquityBrief.Core.Report.ConceptCheck.TrailingMultiple}\" data-concept-value=\"{filed.ToString("0.0", CultureInfo.InvariantCulture)}\">At the night's close it trades at {Escaped(MarkRenderer.EarningsMultiple(filed, filed: true))}.</p>")
                 : valuation.Multiple is { } multiple
-                    ? Invariant($"<p class=\"valuation-line\" data-multiple=\"{multiple}\" data-position=\"{Escaped(valuation.Position ?? "none")}\">At the night's close it trades at {Escaped(MarkRenderer.EarningsMultiple(multiple, filed: false))}, against {valuation.Low:0.0} to {valuation.High:0.0} over its own quarters: {Escaped(valuation.Position ?? "not placed")}.</p>")
+                    ? Invariant($"<p class=\"valuation-line\" data-multiple=\"{multiple}\" data-position=\"{Escaped(valuation.Position ?? "none")}\" data-concept=\"{EquityBrief.Core.Report.ConceptCheck.TrailingMultiple}\" data-concept-value=\"{multiple.ToString("0.0", CultureInfo.InvariantCulture)}\">At the night's close it trades at {Escaped(MarkRenderer.EarningsMultiple(multiple, filed: false))}, against {valuation.Low:0.0} to {valuation.High:0.0} over its own quarters: {Escaped(valuation.Position ?? "not placed")}.</p>")
                     : Invariant($"<p class=\"degraded\" data-absent=\"multiple\">No multiple was read on the night: {Escaped(valuation.NotRead ?? "the night stored no reading of its quarters")}.</p>"));
+            valued.Append(Invariant($"<p class=\"valuation-key\">Which earnings each multiple divides by: {(filedMultiple is null ? "the night's multiple, the close over the provider's four quarters' earnings a share, adjusted as the provider files them" : "the night's multiple, the close over the net income a share filed with the SEC under GAAP")}; each quarter's multiple in the band, the close after its report over the provider's four quarters' earnings, adjusted; the members' multiples beneath, their scorecards' over the earnings filed with the SEC where the night scored them; and the forward multiple in the numbers, the close over the analysts' estimate for next year.</p>"));
             valued.Append("<div class=\"fig\">").Append(marks.MultipleBand(ticker, valuation, nightFiled: filedMultiple is not null)).Append("</div>");
 
             if (valuation.Peers is { } peerValues)
             {
-                valued.Append(Invariant($"<div class=\"sub\">Against {Escaped(peerValues.Industry)}'s S&amp;P 500 members on the night</div><div class=\"fig\">")).Append(marks.PeerDots(ticker, peerValues)).Append("</div>");
+                valued.Append(Invariant($"<div class=\"sub\">Against {Escaped(peerValues.Industry)}'s S&amp;P 500 members on the night, {(mast?.Industry is { } provided && !string.Equals(provided, peerValues.Industry, StringComparison.Ordinal) ? Invariant($"the industry set for the stock in place of the provider's {Escaped(provided)}") : "the provider's classification")}</div><div class=\"fig\">")).Append(marks.PeerDots(ticker, peerValues)).Append("</div>");
+                valued.Append(MarkRenderer.IndustryMismatch(peerValues.Industry, sections.FirstOrDefault(section => string.Equals(section.Section, MarkRenderer.WhatItSells, StringComparison.Ordinal))?.Prose));
                 valued.Append(marks.PeerTable(peerValues));
             }
 
@@ -2117,7 +2188,7 @@ public sealed partial class SinglePageApp : IComponent
                 (filedMultiple is null
                     ? "Each quarter's multiple is the close after its report over its four quarters' earnings a share, from one fetch, and the band is their range; the dot at the right is the night's close over the newest four quarters' earnings."
                     : "Each quarter's multiple is the close after its report over its four quarters' earnings a share, as the data provider reports, from one fetch, and the band is their range; the night's multiple stated above is the scorecard's, the night's close over the net income and the shares filed with the SEC.")
-                + " Beneath, each S&P 500 member sharing the stock's industry on the night, with the stock's own row marked: its multiple as the night read it, as the data provider reports for every member, its dividend's yield at its close and its newest quarter's sales on a year earlier, and the median of each over the members holding it.",
+                + " Beneath, each S&P 500 member sharing the stock's industry on the night, with the stock's own row marked: its multiple as the night read it, its scorecard's over the earnings filed with the SEC where the night scored the industry's members and the data provider's otherwise, its dividend's yield at its close and its newest quarter's sales on a year earlier, and the median of each over the members holding it.",
                 "A multiple near the bottom of its own range or of its industry's says the market pays less for its earnings than it has or than it does for its peers; it is not a forecast, and nothing on the page is decided by it."));
 
             Card("valuation", "valuation", "Valuation", Cards.Computed(
@@ -2181,8 +2252,10 @@ public sealed partial class SinglePageApp : IComponent
 
         // Where the research stands, what the newest pass came to, the sections left out
         // or not written with the reason for each, and the controls with what research
-        // has cost stated beside them before any is pressed.
-        var research = marks.LeftOut(ticker, leftOut ?? [], researchState, notWritten, paused, pass, controls, cost);
+        // has cost stated beside them before any is pressed; then which model ran each job.
+        // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
+        var research = marks.LeftOut(ticker, leftOut ?? [], researchState, notWritten, paused, pass, controls, cost)
+            + MarkRenderer.ModelJobsTable(MarkRenderer.ModelJobs(sections, news, report?.Release, paidModels ?? new HashSet<string>(StringComparer.Ordinal)));
 
         Card(
             "research",
@@ -2226,6 +2299,11 @@ public sealed partial class SinglePageApp : IComponent
         {
             region.Append(Invariant($"<p class=\"listed-under improving-held\">{Escaped(improving)}</p>"));
         }
+
+        // Every concept the page drew with two different values, said above the cards where any is, read back off the
+        // drawn page itself so no part can draw a second value unseen.
+        // see: Each concept a page draws holds one value worked at the stored close beside the provider's own marked stale where struck far from it, and a check flags any concept drawn twice
+        region.Append(MarkRenderer.ConceptClashes(EquityBrief.Core.Report.ConceptCheck.Clashes(region.ToString() + body)));
 
         region.Append(body);
 

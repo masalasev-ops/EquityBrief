@@ -167,11 +167,13 @@ public static partial class TonightScreen
                 + FormattableString.Invariant($" and keeps it while its score stays at {settings.HoldInNine} of 9 or more.");
         }
 
+        // A note of the Fundamentals family's own, which says so and that only that family's buy waits on the filing.
+        // see: How the rules read it opens on the checks of the family that picked the stock, and every input that failed is named in plain words
         return row is { Status: ImprovingRule.Flagged }
             ? (row.Released is { } released
                 ? FormattableString.Invariant($"Fundamentals flagged it: its results release of {released:yyyy-MM-dd} reads results better than expected. ")
                 : "Fundamentals flagged it: its results release reads results better than expected. ")
-              + FormattableString.Invariant($"It is bought only if its filing lifts it to {settings.BuyInNine} of 9.")
+              + FormattableString.Invariant($"The Fundamentals family buys it only if its filing lifts it to {settings.BuyInNine} of 9, and that buy waits for the filing; no other family's buy waits on it.")
             : null;
     }
 

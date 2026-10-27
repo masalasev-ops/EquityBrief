@@ -465,7 +465,7 @@ public partial class ReadSurface
             pass: new ResearchPassLine("ok", new DateOnly(2026, 10, 17), "the newest research pass for this name ran on 2026-10-17 over 12 document(s)"));
         var read = WebUtility.HtmlDecode(drawn);
 
-        Assert.Contains("The two cases is left out: refused at its third retry: a figure no fact holds, 1 figure named</p>", read, StringComparison.Ordinal);
+        Assert.Contains("The two cases are left out: refused at its third retry: a figure no fact holds, 1 figure named</p>", read, StringComparison.Ordinal);
         Assert.Contains("The industry cycle is not written: the theme could not be refreshed: declined for lack of industry sources: the searches found 5 pages about Insurance - Property & Casualty, from federalreserve.gov, spglobal.com and statista.com</p>", read, StringComparison.Ordinal);
         Assert.Contains("the searches found 1 page about Farm Products, from statista.com</p>", read, StringComparison.Ordinal);
         Assert.Contains("ran on 2026-10-17 over 12 documents</p>", read, StringComparison.Ordinal);

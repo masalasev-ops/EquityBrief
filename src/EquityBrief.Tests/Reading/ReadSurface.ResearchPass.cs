@@ -105,10 +105,11 @@ public partial class ReadSurface
             Assert.Equal(row[2], WebUtility.HtmlDecode(drawn.Groups[2].Value));
 
             // Every paragraph the section drew, whatever it was drawn inside: a section broken
-            // into parts is the prose cut, so the parts joined back up are what was stored.
+            // into parts is the prose cut, so the parts joined back up are what was stored, as a reader reads it, its
+            // markers out and its abbreviations spelled out.
             var paragraphs = Regex.Matches(drawn.Groups[3].Value, "<p class=\"prose[^\"]*\">([^<]*)</p>").Select(match => WebUtility.HtmlDecode(match.Groups[1].Value));
 
-            Assert.Equal(Regex.Replace(row[3], @"\s+", " ").Trim(), Regex.Replace(string.Join(" ", paragraphs), @"\s+", " ").Trim());
+            Assert.Equal(Regex.Replace(MarkRenderer.Readable(row[3], null), @"\s+", " ").Trim(), Regex.Replace(string.Join(" ", paragraphs), @"\s+", " ").Trim());
             Assert.Contains($"<p class=\"written-by\">written on {row[1]}</p>", drawn.Groups[3].Value, StringComparison.Ordinal);
             Assert.Single(Regex.Matches(page, $"<section class=\"written-section\" data-ticker=\"KEYS\" data-section=\"{Regex.Escape(WebUtility.HtmlEncode(row[0]))}\""));
         }
@@ -192,21 +193,18 @@ public partial class ReadSurface
         Assert.InRange(Regex.Matches(body, "<p class=\"prose\">").Count, 1, 6);
         Assert.DoesNotContain("<script", body, StringComparison.OrdinalIgnoreCase);
 
-        // Written last from the accepted claims, each claim it cites listed beneath it once, in the order of its number,
-        // with a link to the region drawing it, read against the claims its row stores.
+        // Written last from the accepted claims, the regions its cited claims come from listed beneath it by title, each
+        // once in the order of the claims' numbers and linked to the region drawing it, read against the claims its row
+        // stores, and no marker drawn.
+        // see: A written section is drawn without its bracketed markers, its sources listed by title beneath it and every abbreviation spelled out where first used
         var claims = AcceptedClaims.Read(Rows(store, "SELECT parts FROM research_section WHERE ticker = 'KEYS' AND section = 'The short version' AND status = 'accepted';").Single()[0])!;
         int[] cited = [.. ClaimRules.Sentences(stored[3]).SelectMany(sentence => sentence.ClaimsCited).Distinct().Order()];
-        var listed = Regex.Matches(body, "<li data-marker=\"C(\\d+)\">\\[C\\d+\\] (.*?) <a href=\"#([^\"]+)\">").ToArray();
+        var listed = Regex.Matches(body, "<li data-region=\"([^\"]+)\"><a href=\"#([^\"]+)\">").ToArray();
 
         Assert.NotEmpty(cited);
-        Assert.Equal(cited, listed.Select(match => int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture)));
-        Assert.All(listed, match =>
-        {
-            var claim = claims[int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) - 1];
-
-            Assert.Equal(claim.Text, WebUtility.HtmlDecode(match.Groups[2].Value));
-            Assert.Equal(MarkRenderer.ClaimAnchor(claim.Region), match.Groups[3].Value);
-        });
+        Assert.Equal(cited.Select(number => claims[number - 1].Region).Distinct(), listed.Select(match => WebUtility.HtmlDecode(match.Groups[1].Value)));
+        Assert.All(listed, match => Assert.Equal(MarkRenderer.ClaimAnchor(WebUtility.HtmlDecode(match.Groups[1].Value)), match.Groups[2].Value));
+        Assert.DoesNotMatch(@"\[C\d+\]", body);
 
         // A name with no research draws no short version at all, and the page says why above it.
         using var replayed = await FixtureReplay.ReplayedAsync();
@@ -270,9 +268,11 @@ public partial class ReadSurface
         // Six a side, the most the section's ask allows each case.
         Assert.Equal([6, 6], [.. cases.Select(one => one.Rows.Count)]);
 
-        // Each case is its own paragraph cut at its sentences, unchanged and in the order written.
-        Assert.Equal([.. paragraphs], [.. cases.Select(one => string.Join(" ", one.Rows))]);
-        Assert.All(cases.SelectMany(one => one.Rows), row => Assert.Matches(@"(?:\[D\d+\](?: \[N\])?|\[N\])\.$", row));
+        // Each case is its own paragraph cut at its sentences, in the order written, as a reader reads it: its markers taken
+        // out, which the sources beneath the section list by title.
+        // see: A written section is drawn without its bracketed markers, its sources listed by title beneath it and every abbreviation spelled out where first used
+        Assert.Equal([.. paragraphs.Select(paragraph => MarkRenderer.Readable(paragraph, null))], [.. cases.Select(one => string.Join(" ", one.Rows))]);
+        Assert.All(cases.SelectMany(one => one.Rows), row => Assert.DoesNotMatch(@"\[(?:N|D\d+|C\d+)\]", row));
 
         var marks = new MarkRenderer();
 
@@ -285,10 +285,10 @@ public partial class ReadSurface
 
         Assert.Equal(["The case for", "The case against"], [.. one.Select(half => half.Label ?? "no label")]);
         Assert.Equal(
-            ["The bull case is that orders doubled [D1].", "It needs the next report to hold them [D1]."],
+            ["The bull case is that orders doubled.", "It needs the next report to hold them."],
             one[0].Rows);
         Assert.Equal(
-            ["The bear case is that supply governs revenue [D2].", "It needs supply to loosen [D2]."],
+            ["The bear case is that supply governs revenue.", "It needs supply to loosen."],
             one[1].Rows);
 
         // What the writer set after the case against is read in the case it was set in, and nothing
@@ -367,7 +367,7 @@ public partial class ReadSurface
         Assert.Equal(4, risks.Length);
         Assert.Contains("<table class=\"risks-table\" data-parts=\"4\"><tr><th>Risk</th><th>What would confirm it</th></tr>", written.Value, StringComparison.Ordinal);
         Assert.Equal(4, table.Count);
-        Assert.Equal([.. risks], [.. table.Select(row => row.Risk + " " + row.Confirmation)]);
+        Assert.Equal([.. risks.Select(risk => MarkRenderer.Readable(risk, null))], [.. table.Select(row => row.Risk + " " + row.Confirmation)]);
 
         // Each column beneath the table opens on the line the plan computes and then draws the writer's lines, a claim
         // to a row, each opening on its column's words, read off the page as the route serves it, which reads the bands
@@ -409,23 +409,23 @@ public partial class ReadSurface
             "The first risk is that supply is short [D1]. That risk would be confirmed by a fall in units [D1]. " +
             "The second risk is that the price is high [D2]. That risk would be confirmed by a lower multiple [D2].";
 
+        // Each drawn as a reader reads it, its markers taken out.
         Assert.Equal(
             [
-                ("The first risk is that supply is short [D1].", "That risk would be confirmed by a fall in units [D1]."),
-                ("The second risk is that the price is high [D2].", "That risk would be confirmed by a lower multiple [D2]."),
+                ("The first risk is that supply is short.", "That risk would be confirmed by a fall in units."),
+                ("The second risk is that the price is high.", "That risk would be confirmed by a lower multiple."),
             ],
             RiskRows(marks.WrittenSection("KEYS", RisksCell(EveryOneConfirmed), [])));
 
-        // Prose the writer broke into paragraphs is a part to a paragraph, unchanged and in the
-        // order it was written.
+        // Prose the writer broke into paragraphs is a part to a paragraph, in the order it was written.
         const string AParagraphEach =
             "The first risk is that supply is short [D1]. That risk would be confirmed by a fall in units [D1].\n\n" +
             "The second risk is that the price is high [D2].";
 
         var each = RisksDrawn(marks.WrittenSection("KEYS", RisksCell(AParagraphEach), []));
 
-        Assert.Equal([.. AParagraphEach.Split("\n\n")], [.. each.Select(RiskWhole)]);
-        Assert.Equal("That risk would be confirmed by a fall in units [D1].", each[0].Confirmation);
+        Assert.Equal([.. AParagraphEach.Split("\n\n").Select(MarkRenderer.Unmarked)], [.. each.Select(RiskWhole)]);
+        Assert.Equal("That risk would be confirmed by a fall in units.", each[0].Confirmation);
 
         // A section run together as one paragraph is cut where its own prose says a risk starts,
         // and what would confirm each is set apart from it. Nothing is dropped or reworded by
@@ -439,9 +439,9 @@ public partial class ReadSurface
         var together = RisksDrawn(marks.WrittenSection("KEYS", RisksCell(RunTogether), []));
 
         Assert.Equal(3, together.Count);
-        Assert.Equal(RunTogether, string.Join(" ", together.Select(RiskWhole)));
-        Assert.Equal("These are the risks. The first risk is that supply is short [D1].", together[0].Risk);
-        Assert.Equal("That risk would be confirmed by a fall in units [D1].", together[0].Confirmation);
+        Assert.Equal(MarkRenderer.Unmarked(RunTogether), string.Join(" ", together.Select(RiskWhole)));
+        Assert.Equal("These are the risks. The first risk is that supply is short.", together[0].Risk);
+        Assert.Equal("That risk would be confirmed by a fall in units.", together[0].Confirmation);
         Assert.Null(together[2].Confirmation);
 
         // A section that says nowhere a risk starts is drawn a claim to a row rather than a risk to a
@@ -453,7 +453,7 @@ public partial class ReadSurface
         Assert.Empty(RisksDrawn(run));
         Assert.Empty(RiskRows(run));
         Assert.DoesNotContain("class=\"risks\"", run, StringComparison.Ordinal);
-        Assert.Equal(["The company faces the risk that supply is short [D1].", "That would show as a fall in units [D1]."], ClaimRowsDrawn(run));
+        Assert.Equal(["The company faces the risk that supply is short.", "That would show as a fall in units."], ClaimRowsDrawn(run));
 
         // And a section of another name written in the same shape is drawn as prose: the parts
         // are this section's and not every section's.
@@ -481,20 +481,21 @@ public partial class ReadSurface
 
         var second = RisksDrawn(marks.WrittenSection("KEYS", RisksCell(FromTheSecond), []));
 
+        // Drawn as a reader reads them, the markers taken out.
         Assert.Equal(3, second.Count);
-        Assert.Equal(FromTheSecond, string.Join(" ", second.Select(RiskWhole)));
-        Assert.Equal("The clearest risk is that supply is short [D1].", second[0].Risk);
-        Assert.Equal("That risk would be confirmed by a fall in units [D1].", second[0].Confirmation);
-        Assert.Equal("A second risk is that the price is high [D2].", second[1].Risk);
-        Assert.Equal("That risk would be confirmed by a lower multiple [D2].", second[1].Confirmation);
-        Assert.Equal("A third risk is concentration [D1].", second[2].Risk);
+        Assert.Equal(MarkRenderer.Unmarked(FromTheSecond), string.Join(" ", second.Select(RiskWhole)));
+        Assert.Equal("The clearest risk is that supply is short.", second[0].Risk);
+        Assert.Equal("That risk would be confirmed by a fall in units.", second[0].Confirmation);
+        Assert.Equal("A second risk is that the price is high.", second[1].Risk);
+        Assert.Equal("That risk would be confirmed by a lower multiple.", second[1].Confirmation);
+        Assert.Equal("A third risk is concentration.", second[2].Risk);
 
         // One numbered risk is two parts where it is the second, since the prose says where the
         // second starts.
         const string OneNumbered = "The clearest risk is that supply is short [D1]. A second risk is that the price is high [D2].";
 
         Assert.Equal(
-            ["The clearest risk is that supply is short [D1].", "A second risk is that the price is high [D2]."],
+            ["The clearest risk is that supply is short.", "A second risk is that the price is high."],
             [.. RisksDrawn(marks.WrittenSection("KEYS", RisksCell(OneNumbered), [])).Select(RiskWhole)]);
 
         // Numbered from the third: two risks stand before it and the prose says nowhere where the
@@ -507,7 +508,7 @@ public partial class ReadSurface
         Assert.Empty(RisksDrawn(third));
         Assert.DoesNotContain("class=\"risks\"", third, StringComparison.Ordinal);
         Assert.Equal(
-            ["Supply is short [D1].", "The price is high [D2].", "A third risk is concentration [D1].", "A fourth risk is the cycle [D2]."],
+            ["Supply is short.", "The price is high.", "A third risk is concentration.", "A fourth risk is the cycle."],
             ClaimRowsDrawn(third));
     }
 
@@ -572,11 +573,12 @@ public partial class ReadSurface
             WebUtility.HtmlDecode(Regex.Match(page, "<p class=\"not-written\" data-section=\"The industry cycle\">([^<]*)</p>").Groups[1].Value));
     }
 
+    // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
     [Fact]
-    public async Task NoModelThatWroteASectionIsNamedInThePagesWords()
+    public async Task EachModelThatWroteASectionIsNamedInTheJobsTableAndNowhereElseInThePagesWords()
     {
-        // The store keeps the model that wrote each section and the element each is drawn in
-        // carries it, and the words a reader reads name none of them.
+        // The store keeps the model that wrote each section and the element each is drawn in carries it; the table of jobs
+        // beneath where the research stands names each, and the rest of the words a reader reads name none of them.
         using var store = await FixtureReplay.ResearchedAsync();
 
         var page = await ResearchedPage(store, "KEYS", AWeekLater);
@@ -585,7 +587,11 @@ public partial class ReadSurface
         Assert.Equal(2, models.Length);
         Assert.All(models, model => Assert.Contains($"data-model=\"{WebUtility.HtmlEncode(model)}\"", page, StringComparison.Ordinal));
 
-        var words = WebUtility.HtmlDecode(Regex.Replace(Regex.Replace(page, @"<(script|style)[^>]*>[\s\S]*?</\1>", " "), "<[^>]+>", " "));
+        var table = Regex.Match(page, "<table class=\"model-jobs\".*?</table>", RegexOptions.Singleline).Value;
+
+        Assert.All(models, model => Assert.Contains($"<td>{WebUtility.HtmlEncode(model)}</td>", table, StringComparison.Ordinal));
+
+        var words = WebUtility.HtmlDecode(Regex.Replace(Regex.Replace(page.Replace(table, " ", StringComparison.Ordinal), @"<(script|style)[^>]*>[\s\S]*?</\1>", " "), "<[^>]+>", " "));
 
         Assert.DoesNotContain(models, model => words.Contains(model, StringComparison.Ordinal));
     }
@@ -770,7 +776,7 @@ public partial class ReadSurface
 
         Assert.Contains("<p class=\"research-pass\" data-outcome=\"ok\" data-as-of=\"2026-09-08\">the newest research pass for this name ran on 2026-09-08</p>", page, StringComparison.Ordinal);
         Assert.Equal(
-            $"The two cases is not written: {ProseWriter.NothingHanded}",
+            $"The two cases are not written: {ProseWriter.NothingHanded}",
             WebUtility.HtmlDecode(Regex.Match(page, "<p class=\"not-written\" data-section=\"The two cases\">([^<]*)</p>").Groups[1].Value));
     }
 
@@ -966,10 +972,11 @@ public partial class ReadSurface
         Assert.EndsWith(capLine, WebUtility.HtmlDecode(line.Groups[1].Value), StringComparison.Ordinal);
         Assert.StartsWith("the pass on 2026-09-08 was stopped by the spend cap before a cap was reached", WebUtility.HtmlDecode(line.Groups[1].Value), StringComparison.Ordinal);
 
-        foreach (var section in new[] { "The cause of each large move", "The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The short version" })
+        // The verb agrees with each section's name: the dated calendar items, the two cases and the risks are plural.
+        foreach (var (section, verb) in new[] { ("The cause of each large move", "is"), ("The dated calendar items", "are"), ("The two cases", "are"), ("The risks, each with what would confirm it", "are"), ("The short version", "is") })
         {
             Assert.Equal(
-                $"{section} is not written: {capLine}",
+                $"{section} {verb} not written: {capLine}",
                 WebUtility.HtmlDecode(Regex.Match(page, $"<p class=\"not-written\" data-section=\"{Regex.Escape(section)}\">([^<]*)</p>").Groups[1].Value));
         }
     }

@@ -11,11 +11,24 @@ using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Spending;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
+using ConceptCheck = EquityBrief.Core.Report.ConceptCheck;
+using OneValue = EquityBrief.Core.Report.OneValue;
+using ProviderFigure = EquityBrief.Core.Report.ProviderFigure;
 
 namespace EquityBrief.Api.Reading;
 
 // One member a name's peers table draws, as the annotator stored it on the name's reading row.
 public sealed record StoredPick(string Ticker, bool SameIndustry, double? Likeness, int Sessions);
+
+// What each concept's one value is worked from on a page: the night's stored close and its session, the company's value
+// at that close from the shares filed before the night, and the scorecard's multiple over the earnings filed with the SEC.
+// see: Each concept a page draws holds one value worked at the stored close beside the provider's own marked stale where struck far from it, and a check flags any concept drawn twice
+public sealed record ConceptFigures(decimal? Close, DateOnly? CloseOn, decimal? CompanyValue, double? FiledMultiple, double? NightsMultiple = null)
+{
+    // The one trailing multiple: the scorecard's where it holds one, and the night's reading of the provider's quarters
+    // otherwise.
+    public double? Trailing => FiledMultiple ?? NightsMultiple;
+}
 
 // The projection from stored rows to what a mark takes.
 //
@@ -33,6 +46,18 @@ public static partial class NameScreen
     // The three averages drawn on a price axis. The momentum readings are not
     // among them for the reason the level builder gives: an RSI is not a price.
     static readonly string[] Averages = [IndicatorSeries.Sma20, IndicatorSeries.Sma50, IndicatorSeries.Sma200];
+
+    // The provider's own figure of a concept the page works out, beside the worked one only where read back to its price
+    // it stands too far from the stored close: what the provider states and the price it was struck at.
+    // see: Each concept a page draws holds one value worked at the stored close beside the provider's own marked stale where struck far from it, and a check flags any concept drawn twice
+    static string StaleNote(ProviderFigure? provider, string drawn) =>
+        provider is { Stale: true } stale && drawn.Length > 0
+            ? Invariant($"; the provider states {Escaped(drawn)}, struck at a price of about {Figures.Price(stale.StruckAt)}, stale against the close and not drawn")
+            : string.Empty;
+
+    // A stored figure as a number, none where it is none or not a number.
+    static decimal? Number(string? stored) =>
+        stored is not null && decimal.TryParse(stored, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) ? value : null;
 
     // The plan column's rows, from the ladder's stored plan. Nothing here
     // derives a figure: each row is a price the ladder wrote and a sentence
@@ -202,7 +227,8 @@ public static partial class NameScreen
         IReadOnlyList<FilingRow> filings,
         IReadOnlyList<IndicatorRow> indicators,
         double? filedMultiple = null,
-        double? nightsMultiple = null)
+        double? nightsMultiple = null,
+        ConceptFigures? figures = null)
     {
         var latest = indicators
             .GroupBy(row => row.Name, StringComparer.Ordinal)
@@ -229,7 +255,11 @@ public static partial class NameScreen
 
         // The stock's one earnings multiple, as every other part of the page states it: the scorecard's where it holds one,
         // the night's reading of the provider's quarters otherwise, and the provider's own trailing figure, struck at its
-        // own price, only where neither is read; the provider's forward multiple named as its own beside it.
+        // own price, only where neither is read; the forward multiple worked at the close over the analysts' estimate for
+        // next year where the page is handed the close, and the provider's own otherwise, named as its own.
+        // see: Each concept a page draws holds one value worked at the stored close beside the provider's own marked stale where struck far from it, and a check flags any concept drawn twice
+        var nextYear = newest is not null && newest.RootElement.TryGetProperty("epsBases", out var epsBases) && epsBases.ValueKind == JsonValueKind.Object ? Number(Text(epsBases, "nextYear")) : null;
+        var forwardWorked = figures is null ? null : OneValue.Multiple(figures.Close, nextYear);
         var forwardPe = Text(multiples, "forwardPe");
         var (trailing, trailingValue, basis) = filedMultiple is { } filed
             ? (filed.ToString("0.0", CultureInfo.InvariantCulture), filed.ToString("R", CultureInfo.InvariantCulture), "filed")
@@ -239,18 +269,33 @@ public static partial class NameScreen
 
         html.Append("<dl class=\"facts\">");
         Fact("Close", close is { } shownClose ? Read(shownClose) : NotOnFile);
-        Fact("Market value", Scaled(newest is null ? null : Text(newest.RootElement, "marketCapitalisation")));
-        Fact("Year's high", year is { } top ? Read(top.High) : NotOnFile, year is { } madeHigh ? $"on {Day(madeHigh.HighOn)}" : null);
-        Fact("Year's low", year is { } bottom ? Read(bottom.Low) : NotOnFile, year is { } madeLow ? $"on {Day(madeLow.LowOn)}" : null);
-        Fact("Next dated event", nextEvent is { } coming ? Day(coming) : NotOnFile);
 
-        if (basis == "provider")
+        if (figures?.CompanyValue is { } companyValue)
         {
-            Fact("Price to earnings, the provider's", trailing, forwardPe is { } forward ? $"forward {Tenths(forward)}" : null);
+            html.Append(Invariant($"<div><dt>Market value</dt><dd data-concept=\"{ConceptCheck.MarketValue}\" data-concept-value=\"{Escaped(Figures.Money(companyValue))}\">{Escaped(Figures.Money(companyValue))} <small>the shares filed before the night times the close</small></dd></div>"));
         }
         else
         {
-            Fact($"Price to earnings, {(basis == "filed" ? MarkRenderer.FiledMultiple : MarkRenderer.ProvidedMultiple)}", trailing, forwardPe is { } forward ? $"the provider's forward {Tenths(forward)}" : null);
+            Fact("Market value", Scaled(newest is null ? null : Text(newest.RootElement, "marketCapitalisation")));
+        }
+
+        html.Append(year is { } high
+            ? Invariant($"<div><dt>Year's high</dt><dd data-concept=\"{ConceptCheck.YearsHigh}\" data-concept-value=\"{Read(high.High)}\">{Read(high.High)} <small>on {Day(high.HighOn)}</small></dd></div>")
+            : Invariant($"<div><dt>Year's high</dt><dd>{NotOnFile}</dd></div>"));
+        Fact("Year's low", year is { } bottom ? Read(bottom.Low) : NotOnFile, year is { } madeLow ? $"on {Day(madeLow.LowOn)}" : null);
+        Fact("Next dated event", nextEvent is { } coming ? Day(coming) : NotOnFile);
+
+        var forwardNote = forwardWorked is { } worked
+            ? Invariant($"forward {worked.ToString("0.0", CultureInfo.InvariantCulture)} at the close over the analysts' estimate for next year")
+            : forwardPe is { } forward ? (basis == "provider" ? $"forward {Tenths(forward)}" : $"the provider's forward {Tenths(forward)}") : null;
+
+        if (basis == "provider")
+        {
+            Fact("Price to earnings, the provider's", trailing, forwardNote);
+        }
+        else
+        {
+            Fact($"Price to earnings, {(basis == "filed" ? MarkRenderer.FiledMultiple : MarkRenderer.ProvidedMultiple)}", trailing, forwardNote);
         }
         Fact("20-day average", Hundredths(latest, IndicatorSeries.Sma20));
         Fact("50-day average", Hundredths(latest, IndicatorSeries.Sma50));
@@ -310,13 +355,13 @@ public static partial class NameScreen
         // order the row lists them, at the places the grid reads them at. A strip
         // whose attributes and words disagree is two statements, so both come from
         // the values above.
-        html.Append(CultureInfo.InvariantCulture, $"close {(close is { } closed ? Read(closed) : NotOnFile)}, market capitalisation {Scaled(capitalisation)}, ");
+        html.Append(CultureInfo.InvariantCulture, $"close {(close is { } closed ? Read(closed) : NotOnFile)}, market capitalisation {(figures?.CompanyValue is { } worth ? Figures.Money(worth) : Scaled(capitalisation))}, ");
         html.Append(year is { } drawn
             ? FormattableString.Invariant($"the year's high {Read(drawn.High)} on {Day(drawn.HighOn)} and low {Read(drawn.Low)} on {Day(drawn.LowOn)} over {drawn.Sessions} {(drawn.Sessions == 1 ? "session" : "sessions")}, ")
             : "the year's high and low not on file, ");
         html.Append(CultureInfo.InvariantCulture, $"next dated event: {(nextEvent is { } on ? Day(on) : "not on file")}, ");
         html.Append((filedMultiple ?? nightsMultiple) is { } theMultiple
-            ? $"{MarkRenderer.EarningsMultiple(theMultiple, filed: basis == "filed")}, the provider's forward multiple {Tenths(Text(valuation, "forwardPe"))}"
+            ? $"{MarkRenderer.EarningsMultiple(theMultiple, filed: basis == "filed")}, " + (forwardWorked is { } forwardAtTheClose ? Invariant($"the forward multiple {forwardAtTheClose.ToString("0.0", CultureInfo.InvariantCulture)} at the close over the analysts' estimate for next year") : $"the provider's forward multiple {Tenths(Text(valuation, "forwardPe"))}")
             : $"the provider's trailing multiple {trailing}, its forward multiple {Tenths(Text(valuation, "forwardPe"))}");
         html.Append("</p>");
 
@@ -389,7 +434,7 @@ public static partial class NameScreen
     // consensus estimate is drawn beside it and named for what it is: what analysts
     // expect rather than what management said.
     // see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
-    public static string Numbers(IReadOnlyList<FilingRow> filings)
+    public static string Numbers(IReadOnlyList<FilingRow> filings, ConceptFigures? figures = null)
     {
         var html = new System.Text.StringBuilder();
 
@@ -423,7 +468,7 @@ public static partial class NameScreen
                 $"{filings.Count} {(filings.Count == 1 ? "filing" : "filings")}, fewer than the {QuartersShown} quarters this section states.</p>");
         }
 
-        html.Append(Snapshot(newest.RootElement, currency));
+        html.Append(Snapshot(newest.RootElement, currency, figures));
 
         html.Append(Invariant($"<div class=\"sub\">The last {shown} quarters</div><div class=\"tbl-wrap\">"));
         html.Append("<table class=\"numbers-quarters\"><tr><th>Quarter</th><th>Revenue</th>");
@@ -433,7 +478,7 @@ public static partial class NameScreen
         {
             using var payload = JsonDocument.Parse(filing.Payload);
 
-            var quarter = payload.RootElement.TryGetProperty("quarter", out var figures) ? figures : default;
+            var quarter = payload.RootElement.TryGetProperty("quarter", out var stated) ? stated : default;
             var period = Text(payload.RootElement, "periodEnd") ?? string.Empty;
 
             html.Append(CultureInfo.InvariantCulture, $"<tr data-period-end=\"{period}\" data-filed=\"{Day(filing.FilingDate)}\">");
@@ -470,9 +515,9 @@ public static partial class NameScreen
         }
 
         html.Append("<div class=\"sub\">Balance sheet</div>").Append(Sheet(newest.RootElement, filings[0].FilingDate, currency));
-        html.Append("<div class=\"sub\">Valuation</div>").Append(Valuation(newest.RootElement));
+        html.Append("<div class=\"sub\">Valuation</div>").Append(Valuation(newest.RootElement, figures));
 
-        var dividend = Dividend(filings[0].Ticker, newest.RootElement, Attribution(filings[0].Source));
+        var dividend = Dividend(filings[0].Ticker, newest.RootElement, Attribution(filings[0].Source), figures);
 
         if (dividend.Length > 0)
         {
@@ -585,7 +630,7 @@ public static partial class NameScreen
     // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
     // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
     // see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one
-    static string Snapshot(JsonElement payload, string currency)
+    static string Snapshot(JsonElement payload, string currency, ConceptFigures? figures = null)
     {
         JsonElement Part(string name) =>
             payload.TryGetProperty(name, out var part) && part.ValueKind == JsonValueKind.Object ? part : default;
@@ -642,13 +687,40 @@ public static partial class NameScreen
                 : null);
         Row("Gross margin, that quarter", "grossMargin", Text(quarter, "grossMargin"), Figures.Percent);
         Row("Net margin, that quarter", "netMargin", Text(quarter, "netMargin"), Figures.Percent);
-        Row("Market value", "marketCapitalisation", Text(payload, "marketCapitalisation"), Money);
+
+        // Each concept's one value worked at the stored close, where the page is handed the close, with the provider's own
+        // figure of it beside it only where read back to its price it stands too far from the close; the provider's figure
+        // as it states it otherwise.
+        // see: Each concept a page draws holds one value worked at the stored close beside the provider's own marked stale where struck far from it, and a check flags any concept drawn twice
+        void Concept(string label, string key, string concept, string drawn, string beneath, ProviderFigure? provider, string providerDrawn) =>
+            html.Append(Invariant($"<div><dt>{Escaped(label)}</dt><dd data-{key}=\"worked\" data-concept=\"{concept}\" data-concept-value=\"{Escaped(drawn)}\"><b>{Escaped(drawn)}</b><small>{Escaped(beneath)}{StaleNote(provider, providerDrawn)}</small></dd></div>"));
+
+        var close = figures?.Close;
+        var atTheClose = figures?.CloseOn is { } closedOn ? Invariant($"the close of {closedOn:yyyy-MM-dd}") : "the stored close";
+        var shares = figures?.CompanyValue is { } worth && close is { } price && price > 0 ? worth / price : default(decimal?);
+
+        if (figures?.CompanyValue is { } companyValue)
+        {
+            var stated = Number(Text(payload, "marketCapitalisation"));
+
+            Concept("Market value", "marketCapitalisation", ConceptCheck.MarketValue, Money(companyValue), "the shares filed before the night times " + atTheClose, OneValue.StruckValue(stated, shares, close), stated is { } value ? Money(value) : string.Empty);
+        }
+        else
+        {
+            Row("Market value", "marketCapitalisation", Text(payload, "marketCapitalisation"), Money, "as the provider states it");
+        }
 
         // A company paying none files a rate of zero, which is said as none rather than drawn as a
         // dividend of nothing.
         if (Text(dividend, "forwardAnnualRate") is { } rate && decimal.Parse(rate, NumberStyles.Float, CultureInfo.InvariantCulture) == 0)
         {
             html.Append(Invariant($"<div><dt>Dividend, a share a year</dt><dd data-forwardAnnualRate=\"{rate}\"><b>none paid</b></dd></div>"));
+        }
+        else if (Number(Text(dividend, "forwardAnnualRate")) is { } annual && OneValue.Yield(annual, close) is { } worked)
+        {
+            var stated = Number(Text(dividend, "forwardYield"));
+
+            html.Append(Invariant($"<div><dt>Dividend, a share a year</dt><dd data-forwardAnnualRate=\"{annual}\"><b>{Escaped(Figures.PerShare(annual))}</b><small data-concept=\"{ConceptCheck.YieldAtTheClose}\" data-concept-value=\"{ConceptCheck.Yield(worked)}\">a yield of {ConceptCheck.Yield(worked)} at {Escaped(atTheClose)}{StaleNote(OneValue.StruckYield(stated, annual, close), stated is { } yield ? Figures.Percent(yield) : string.Empty)}</small></dd></div>"));
         }
         else
         {
@@ -660,18 +732,56 @@ public static partial class NameScreen
                 Text(dividend, "forwardYield") is { } yield ? "a yield of " + Drawn(yield, Figures.Percent) + ", as the provider states it" : null);
         }
 
-        Row(
-            "Price to earnings, trailing",
-            "trailingPe",
-            Text(valuation, "trailingPe"),
-            Figures.Multiple,
-            Text(bases, "trailing") is { } trailing ? "trailing earnings of " + Drawn(trailing, Figures.PerShare) + " a share" : null);
-        Row(
-            "Price to earnings, forward",
-            "forwardPe",
-            Text(valuation, "forwardPe"),
-            Figures.Multiple,
-            Text(bases, "nextYear") is { } nextYear ? "next year's estimate " + Drawn(nextYear, Figures.PerShare) + " a share" : null);
+        var trailingEarnings = Number(Text(bases, "trailing"));
+        var nextYearEarnings = Number(Text(bases, "nextYear"));
+        var trailingMultiple = figures?.Trailing ?? OneValue.Multiple(close, trailingEarnings);
+
+        if (figures is not null && trailingMultiple is { } trailingWorked)
+        {
+            Concept(
+                "Price to earnings, trailing",
+                "trailingPe",
+                ConceptCheck.TrailingMultiple,
+                trailingWorked.ToString("0.0", CultureInfo.InvariantCulture),
+                figures.FiledMultiple is not null
+                    ? atTheClose + " over the net income a share filed with the SEC, as reported under GAAP"
+                    : figures.NightsMultiple is not null
+                        ? atTheClose + " over the provider's four newest quarters' earnings a share, adjusted"
+                        : atTheClose + " over the trailing earnings of " + Drawn(Text(bases, "trailing"), Figures.PerShare) + " a share the provider files, adjusted",
+                OneValue.StruckMultiple(Number(Text(valuation, "trailingPe")), trailingEarnings, close),
+                Drawn(Text(valuation, "trailingPe"), Figures.Multiple));
+        }
+        else
+        {
+            Row(
+                "Price to earnings, trailing",
+                "trailingPe",
+                Text(valuation, "trailingPe"),
+                Figures.Multiple,
+                Text(bases, "trailing") is { } trailing ? "trailing earnings of " + Drawn(trailing, Figures.PerShare) + " a share" : null);
+        }
+
+        if (figures is not null && OneValue.Multiple(close, nextYearEarnings) is { } forwardWorked)
+        {
+            Concept(
+                "Price to earnings, forward",
+                "forwardPe",
+                ConceptCheck.ForwardMultiple,
+                forwardWorked.ToString("0.0", CultureInfo.InvariantCulture),
+                atTheClose + " over the analysts' estimate for next year, " + Drawn(Text(bases, "nextYear"), Figures.PerShare) + " a share",
+                OneValue.StruckMultiple(Number(Text(valuation, "forwardPe")), nextYearEarnings, close),
+                Drawn(Text(valuation, "forwardPe"), Figures.Multiple));
+        }
+        else
+        {
+            Row(
+                "Price to earnings, forward",
+                "forwardPe",
+                Text(valuation, "forwardPe"),
+                Figures.Multiple,
+                Text(bases, "nextYear") is { } nextYear ? "next year's estimate " + Drawn(nextYear, Figures.PerShare) + " a share" : null);
+        }
+
         Row("Cash", "cash", Text(sheet, "cash"), Money);
         Row("Net debt", "netDebt", Text(sheet, "netDebt"), Money);
 
@@ -716,7 +826,7 @@ public static partial class NameScreen
     // fetched before the part existed says the part is absent and why, as any other part does,
     // because that absence is the store's and a payer drawn as paying none would be wrong.
     // see: The numbers section draws the dividend the provider files from the newest filing alone, and nothing for a company paying none
-    static string Dividend(string ticker, JsonElement payload, IReadOnlyDictionary<string, string> source)
+    static string Dividend(string ticker, JsonElement payload, IReadOnlyDictionary<string, string> source, ConceptFigures? figures = null)
     {
         if (!payload.TryGetProperty("dividend", out var dividend) || dividend.ValueKind != JsonValueKind.Object)
         {
@@ -739,9 +849,28 @@ public static partial class NameScreen
         var html = new System.Text.StringBuilder();
 
         html.Append(Invariant($"<div class=\"numbers-dividend\" data-dividend=\"paid\" data-source=\"{Escaped(from)}\">"));
-        html.Append("<div class=\"tbl-wrap\"><table class=\"numbers-dividend-table\"><tr><th>Forward annual rate</th><th>Forward yield, as the provider states it</th><th>Payout ratio</th><th>Ex-dividend date</th><th>Pay date</th></tr><tr>");
-        html.Append(Cell(dividend, "forwardAnnualRate", Figures.PerShare));
-        html.Append(Cell(dividend, "forwardYield", Figures.Percent));
+
+        // The yield worked at the stored close where the page is handed it, the provider's own beside it read back to its
+        // price only where it stands too far from the close.
+        // see: Each concept a page draws holds one value worked at the stored close beside the provider's own marked stale where struck far from it, and a check flags any concept drawn twice
+        var annual = Number(rate);
+        var worked = figures is null ? null : EquityBrief.Core.Report.OneValue.Yield(annual, figures.Close);
+
+        if (worked is { } yieldAtTheClose)
+        {
+            var stated = Number(Text(dividend, "forwardYield"));
+
+            html.Append(Invariant($"<div class=\"tbl-wrap\"><table class=\"numbers-dividend-table\"><tr><th>Forward annual rate</th><th>Yield at the close{(figures?.CloseOn is { } on ? Invariant($" of {on:yyyy-MM-dd}") : string.Empty)}</th><th>Payout ratio</th><th>Ex-dividend date</th><th>Pay date</th></tr><tr>"));
+            html.Append(Cell(dividend, "forwardAnnualRate", Figures.PerShare));
+            html.Append(Invariant($"<td class=\"num\" data-concept=\"{ConceptCheck.YieldAtTheClose}\" data-concept-value=\"{ConceptCheck.Yield(yieldAtTheClose)}\">{ConceptCheck.Yield(yieldAtTheClose)}{(OneValue.StruckYield(stated, annual, figures!.Close) is { Stale: true } stale ? Invariant($"<small>the provider states {Escaped(Figures.Percent(stale.Value))}, struck at a price of about {Figures.Price(stale.StruckAt)}, stale against the close</small>") : string.Empty)}</td>"));
+        }
+        else
+        {
+            html.Append("<div class=\"tbl-wrap\"><table class=\"numbers-dividend-table\"><tr><th>Forward annual rate</th><th>Forward yield, as the provider states it</th><th>Payout ratio</th><th>Ex-dividend date</th><th>Pay date</th></tr><tr>");
+            html.Append(Cell(dividend, "forwardAnnualRate", Figures.PerShare));
+            html.Append(Cell(dividend, "forwardYield", Figures.Percent));
+        }
+
         html.Append(Cell(dividend, "payoutRatio", Figures.Percent));
 
         foreach (var date in new[] { "exDividendDate", "payDate" })
@@ -1000,7 +1129,7 @@ public static partial class NameScreen
     // The valuation on each earnings basis, with the basis beside the ratio. Both
     // are stored values, and the basis is drawn because a multiple without the
     // earnings figure it was struck on is a number nobody can check.
-    static string Valuation(JsonElement payload)
+    static string Valuation(JsonElement payload, ConceptFigures? figures = null)
     {
         if (!payload.TryGetProperty("valuation", out var valuation) || valuation.ValueKind != JsonValueKind.Object)
         {
@@ -1016,12 +1145,50 @@ public static partial class NameScreen
 
         html.Append("<div class=\"tbl-wrap\">");
         html.Append("<table class=\"numbers-valuation\"><tr><th>Basis</th><th>Earnings per share</th><th>Price to earnings</th></tr>");
-        html.Append(CultureInfo.InvariantCulture, $"<tr data-basis=\"trailing\"><td>trailing</td>{Cell(bases, "trailing", Figures.PerShare)}{Cell(valuation, "trailingPe", Figures.Multiple)}</tr>");
-        html.Append(CultureInfo.InvariantCulture, $"<tr data-basis=\"forward\"><td>next year</td>{Cell(bases, "nextYear", Figures.PerShare)}{Cell(valuation, "forwardPe", Figures.Multiple)}</tr>");
+
+        if (figures is null)
+        {
+            html.Append(CultureInfo.InvariantCulture, $"<tr data-basis=\"trailing\"><td>trailing</td>{Cell(bases, "trailing", Figures.PerShare)}{Cell(valuation, "trailingPe", Figures.Multiple)}</tr>");
+            html.Append(CultureInfo.InvariantCulture, $"<tr data-basis=\"forward\"><td>next year</td>{Cell(bases, "nextYear", Figures.PerShare)}{Cell(valuation, "forwardPe", Figures.Multiple)}</tr>");
+            html.Append("</table></div>");
+
+            return html.ToString();
+        }
+
+        // Each multiple worked at the stored close on the earnings it names, the provider's own beside it read back to its
+        // price, and a key saying which earnings each divides by.
+        // see: Each concept a page draws holds one value worked at the stored close beside the provider's own marked stale where struck far from it, and a check flags any concept drawn twice
+        var close = figures.Close;
+        var trailing = Number(Text(bases, "trailing"));
+        var nextYear = Number(Text(bases, "nextYear"));
+
+        string Worked(string concept, double? multiple, ProviderFigure? provider, string providerDrawn) =>
+            multiple is { } value
+                ? Invariant($"<td class=\"num\" data-concept=\"{concept}\" data-concept-value=\"{value.ToString("0.0", CultureInfo.InvariantCulture)}\">{value.ToString("0.0", CultureInfo.InvariantCulture)}{(provider is { Stale: true } ? Invariant($"<small>{StaleNote(provider, providerDrawn).TrimStart(';', ' ')}</small>") : string.Empty)}</td>")
+                : "<td class=\"degraded\">not worked: no earnings stored</td>";
+
+        if (figures.FiledMultiple is { } filed)
+        {
+            html.Append(Invariant($"<tr data-basis=\"filed\"><td>trailing, as filed with the SEC under GAAP</td><td class=\"degraded\">the net income and shares filed</td>{Worked(ConceptCheck.TrailingMultiple, filed, null, string.Empty)}</tr>"));
+            html.Append(Invariant($"<tr data-basis=\"trailing\"><td>trailing, as the provider files it, adjusted</td>{Cell(bases, "trailing", Figures.PerShare)}<td class=\"num\">{Escaped(Drawn(Text(valuation, "trailingPe"), Figures.Multiple))}{(OneValue.StruckMultiple(Number(Text(valuation, "trailingPe")), trailing, close) is { Stale: true } stale ? Invariant($"<small>struck at a price of about {Figures.Price(stale.StruckAt)}, stale against the close</small>") : string.Empty)}</td></tr>"));
+        }
+        else
+        {
+            html.Append(Invariant($"<tr data-basis=\"trailing\"><td>trailing, the provider's earnings, adjusted</td>{Cell(bases, "trailing", Figures.PerShare)}{Worked(ConceptCheck.TrailingMultiple, figures.NightsMultiple ?? OneValue.Multiple(close, trailing), OneValue.StruckMultiple(Number(Text(valuation, "trailingPe")), trailing, close), Drawn(Text(valuation, "trailingPe"), Figures.Multiple))}</tr>"));
+        }
+
+        html.Append(Invariant($"<tr data-basis=\"forward\"><td>next year, the analysts' estimate</td>{Cell(bases, "nextYear", Figures.PerShare)}{Worked(ConceptCheck.ForwardMultiple, OneValue.Multiple(close, nextYear), OneValue.StruckMultiple(Number(Text(valuation, "forwardPe")), nextYear, close), Drawn(Text(valuation, "forwardPe"), Figures.Multiple))}</tr>"));
         html.Append("</table></div>");
+        html.Append(Invariant($"<p class=\"valuation-key\">{Escaped(ValuationKey(figures))}</p>"));
 
         return html.ToString();
     }
+
+    // The one line saying which earnings each multiple divides by.
+    public static string ValuationKey(ConceptFigures figures) =>
+        (figures.CloseOn is { } on ? Invariant($"Each multiple is the close of {on:yyyy-MM-dd} over the earnings it names: ") : "Each multiple is the stored close over the earnings it names: ")
+        + (figures.FiledMultiple is not null ? "the trailing one over the net income a share filed with the SEC, under GAAP; " : "the trailing one over the provider's trailing earnings, adjusted; ")
+        + "the forward one over the analysts' estimate for next year, adjusted as analysts state it; and the provider's own multiples over its own earnings at a price of its own, drawn only where they agree with the close.";
 
     // One figure, drawn at the places it is read at, with the stored text on the
     // cell as well so a test reads back what was written rather than what was
@@ -1287,7 +1454,11 @@ public static partial class NameScreen
         IReadOnlyList<double?>? scoreReadings = null,
         // What the page says where the Fundamentals family bought the name on the night, keeps a trade in it or flagged it,
         // from 22.13.
-        string? improving = null)
+        string? improving = null,
+        // The models the run log names on a priced call or a labeller's run, which tell each job's paid model from a local one.
+        IReadOnlySet<string>? paidModels = null,
+        // The name's two newest swing lows confirmed by the night, which the trend rule compares.
+        IReadOnlyList<EquityBrief.Core.Report.SwingLow>? swingLows = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1382,10 +1553,17 @@ public static partial class NameScreen
         // The price the masthead draws, the stored quote where the page is tonight's and drawn inside the session or after
         // a close the bars do not hold yet, and the last close otherwise, which the tiles are worked at.
         var live = SinglePageApp.QuoteDrawn(quote, quoteSession, night, bars.Count > 0 ? bars[^1].SessionDate : null);
-        var cards = (decisionCards ?? [])
-            .OrderBy(card => EquityBrief.Core.Families.SetupFamilies.OrderOf(card.Family))
-            .Select(card => CardScreen.View(card, cardContext))
-            .FirstOrDefault();
+        var cards = WithEstimatedReport(
+            (decisionCards ?? [])
+                .OrderBy(card => EquityBrief.Core.Families.SetupFamilies.OrderOf(card.Family))
+                .Select(card => CardScreen.View(card, cardContext))
+                .FirstOrDefault(),
+            [.. (readQuarters ?? []).Select(quarter => quarter.ReportDate).OfType<DateOnly>()]);
+
+        // Once the open after the card's night prints, the fill and the reward against the risk at it.
+        cards = cards is { } filled
+            ? filled with { Fill = EquityBrief.Core.Cards.CardLines.Filled(filled.Night, filled.Entry, filled.Stop, filled.Target, bars.Select(bar => (bar.SessionDate, bar.Open))) }
+            : null;
         decimal? shownPrice = live?.Price ?? (bars.Count > 0 ? bars[^1].Close : null);
         var quarters = tileQuarters ?? [];
         var tilesNight = night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue);
@@ -1402,6 +1580,16 @@ public static partial class NameScreen
             : null;
 
         says = WithFiledMultiple(says, score?.Multiple);
+
+        // What each concept's one value is worked from: the night's close and the company's value at it from the member
+        // readings, the bars' newest close where the night stored none, and the scorecard's multiple.
+        // see: Each concept a page draws holds one value worked at the stored close beside the provider's own marked stale where struck far from it, and a check flags any concept drawn twice
+        var concepts = new ConceptFigures(
+            memberReading?.Close ?? (bars.Count > 0 ? bars[^1].Close : null),
+            memberReading?.SessionDate ?? (bars.Count > 0 ? bars[^1].SessionDate : null),
+            memberReading?.CompanyValue,
+            score?.Multiple,
+            reportView?.Valuation?.Multiple);
 
         return page.NameRegion(
             marks,
@@ -1431,12 +1619,13 @@ public static partial class NameScreen
                 filings,
                 indicators,
                 score?.Multiple,
-                reportView?.Valuation?.Multiple),
+                reportView?.Valuation?.Multiple,
+                concepts),
             PlanRows(ladder),
             bars.Count > 0 ? bars[^1].Close : 0m,
             EventBook(ladder),
             Arithmetic(ladder),
-            says is null ? Numbers(filings) : marks.NumbersSay(says, Numbers(filings)),
+            says is null ? Numbers(filings, concepts) : marks.NumbersSay(says, Numbers(filings, concepts)),
             cells,
             listing?.ListedBy == ListRules.Filter ? [] : FiredReasons(listing),
             previousOnTheList,
@@ -1447,7 +1636,7 @@ public static partial class NameScreen
             notWritten,
             spend is null ? null : Paused(spend),
             Written(accepted),
-            [.. (cited ?? []).Select(document => new SourceCell(document.Id, document.Title, document.Url, document.PublishedOn))],
+            [.. (cited ?? []).Select(document => new SourceCell(document.Id, document.Title, document.Url, document.PublishedOn, document.Opening))],
             PassLine(newest, spend, today),
             Controls(staleness, newest, notWritten, spend, priced, today),
             spend is null || priced is null ? null : Cost(priced, spend),
@@ -1474,7 +1663,10 @@ public static partial class NameScreen
             warmed is { Count: > 0 } ? new AveragesFrom(warmed[0].Pull, warmed[0].Reason) : null,
             quote: live,
             quoteSession: quoteSession,
-            headline: WrittenHeadline(accepted) ?? Headline(member?.Name ?? ticker, cards, Passed(listing, gates), missed, reading?.State, ladder?.TrendState),
+            // A written headline the stored directions contradict gives way to the one code writes.
+            // see: A written sentence stating a direction the stored latest quarter contradicts is withheld where it is drawn, and a beat or a miss another source states against it is named beside it
+            headline: (WrittenHeadline(accepted) is { } writtenHeadline && EquityBrief.Core.Research.Directions.Clashes(writtenHeadline.Sentence, EquityBrief.Core.Research.Directions.Of(reportView?.Quarter)).Count == 0 ? writtenHeadline : null)
+                ?? Headline(member?.Name ?? ticker, cards, Passed(listing, gates), missed, reading?.State, ladder?.TrendState),
             tiles: tiles,
             asksForQuotes: asksForQuotes,
             report: reportView,
@@ -1491,8 +1683,39 @@ public static partial class NameScreen
             standing: Standing(staleness, newest, spend, priced, today, OwnWritten(accepted), IndustryWritten(accepted)),
             fundamentals: FundamentalsScreen.Of(score, Universes.ByCode(indexCode ?? string.Empty)?.Name, scoreReadings, reportView?.Analysts, reportView?.Insiders),
             filedMultiple: score?.Multiple,
-            improving: improving);
+            improving: improving,
+            paidModels: paidModels,
+            trendWhy: EquityBrief.Core.Report.TrendWords.Why(
+                ladder?.TrendState,
+                bars.Count > 0 ? bars[^1].Close : null,
+                Newest(indicators, IndicatorSeries.Sma50),
+                Newest(indicators, IndicatorSeries.Sma200),
+                swingLows ?? []));
     }
+
+    // A card whose night found no report on file reads one estimated from the company's own report a year before, with
+    // whether it falls inside the hold, in place of the line saying none is on file.
+    // see: A pick's card estimates the next report from the company's own a year before and places it in the hold, and restates the fill and its reward to risk once the open prints
+    public static DecisionCardView? WithEstimatedReport(DecisionCardView? card, IReadOnlyList<DateOnly> reported) =>
+        card is { } drawn
+        && drawn.Lines.FirstOrDefault(line => line.Name == EquityBrief.Core.Cards.CardLines.EarningsName && line.Words.StartsWith("No report date is on file for it, ", StringComparison.Ordinal)) is { } none
+        && EquityBrief.Core.Cards.CardLines.EstimatedReport(reported, drawn.Night) is { } estimate
+            ? drawn with
+            {
+                Lines =
+                [
+                    .. drawn.Lines.Select(line => line == none
+                        ? EquityBrief.Core.Cards.CardLines.EstimatedEarnings(estimate, drawn.Night, drawn.Cap) is var estimated
+                            ? new CardLineView(line.Number, line.Name, estimated.Mark, estimated.Words)
+                            : line
+                        : line),
+                ],
+            }
+            : card;
+
+    // An indicator's newest value the rows hold.
+    static double? Newest(IReadOnlyList<IndicatorRow> indicators, string name) =>
+        indicators.Where(row => string.Equals(row.Name, name, StringComparison.Ordinal) && row.Value is not null).OrderBy(row => row.SessionDate).LastOrDefault()?.Value;
 
     // The numbers with their last sentence, their valuation's, stating the scorecard's multiple where it holds one, as the
     // rest of the page does.
