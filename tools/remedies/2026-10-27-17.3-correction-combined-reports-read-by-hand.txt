@@ -1,0 +1,10 @@
+# The remedy of 17.3's second correction of 2026-10-27 (a member's report filed with other registrants is read by hand
+# under its own line), as its PROGRESS entry prints it. No migration. The pass by hand reads every weekday's index from
+# 2026-01-02 through the newest the refresh has read again, about 210 requests, and reads from its own instance each
+# member's report the store still holds no fact of, two requests a report, about 30 reports on 2026-10-27, the reports
+# read by the correction before it held already and not asked. Then the newest night's scorecards are written again and
+# the ledger's night step runs over it. Requests of the SEC's archive alone, free and keyless; no request of the provider
+# and no model call. Run from main after the merge, when no night, local run, drain, labeller or monthly run is writing.
+filings --instances --from 2026-01-02
+scores
+ledger-night

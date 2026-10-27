@@ -10523,3 +10523,52 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the remedy's record, and each index's card read back on Tonight after the night of 2026-10-27 with its counts
             and rows from the corrected rule.
+
+### 17.3 - the remedy run from main: each member's report the store lacked read from its own instance, the scorecards and the ledger's night again   2026-10-27
+
+Not a checkpoint entry: it records the remedy of 17.3's correction of 2026-10-27 and what it measured, and lands nothing.
+Ran:        from main's f6f6765e, the merge of PR 573 at 17:12 UTC on 2026-10-27, with no night, local run, drain,
+            labeller or monthly run writing, the monthly run of the same day having finished at 14:32:41:
+            `tools/remedies/2026-10-27-17.3-correction-reports-read-from-their-own-instance.txt` from 17:13:41 to 17:17:08
+            UTC. The read surface started again from main's Release build at 17:13 before it. No paid call and no request
+            of the provider.
+Measured:   the pass read 211 days of the archive's index from 2026-01-02 through 2026-10-23, found 147 members' reports
+            the store held no fact of and read 145 from their own instance, storing 1,681 facts over 503 documents in 157
+            seconds; the other two read nothing past their listing, which named no instance or which the archive did not
+            hold. The scorecards scored 1,503 of 1,505 members of the
+            night of 2026-10-26 in 6 seconds and the ledger's night took 34. Against the SEC's own lists read that morning,
+            the members whose scorecard reads an older quarter than a report their filer filed fall from 145 to 51: 32 filed
+            on 2026-10-26 or later, read from the next night as every filing is; 4 stored whose net income the scorecard
+            cannot read, BKNG, VTRS, ACT and TRUP; and 15 never read, AEP, D, DTE, DUK, ETR, FRT, LNT, MAA, NEE, PPL, REG
+            and SO on the S&P 500 and AAL, FR and RYN on the S&P 400, each a report filed for several registrants together,
+            the entry below's correction.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+Carried:    each index's card read back on Tonight after the night of 2026-10-27, as the 22.13 correction's entry carries.
+
+### 17.3 - correction: a member's report filed with other registrants is read by hand under its own line, where the pass read only the first line the day's index lists for it   2026-10-27
+
+Found:      the remedy's own measurement in the entry above: 15 members' reports stayed unread, every one filed for several
+            registrants together, a utility with its operating companies, a trust with its operating partnership, AAL
+            with American Airlines. The day's index lists such a report once for each registrant, ordered by name, and the
+            pass by hand kept one line a report, the first, which was another registrant's, so the member's was never
+            asked. The night's refresh reads each member's own filing by its accession and was not affected.
+Corrected:  the pass by hand reads every line the day's index lists for a member's filer, once a filer and report.
+Tests:      1 new: a day's index listing a combined 10-Q under a subsidiary first and the member second, the member's report
+            read from its own instance under its own filer and nothing stored under the subsidiary's. 2829 in all.
+Claims:     none new.
+Pins:       none move: the refresh's file is pinned by no rule's version, and the readings' version stands at
+            a47e1ae9a20e.
+Remedy:     `tools/remedies/2026-10-27-17.3-correction-combined-reports-read-by-hand.txt` from main after the merge: the
+            pass by hand again from 2026-01-02, reading only the reports still not held, then the newest night's scorecards
+            and ledger night again.
+Mutated:    the rule, stated before the run: undo the property the correction adds, each member's own line read. C1 the
+            first line a report taken again, the members kept after it: red at the combined filing's test, the member's
+            report never asked; the single filer's test green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2829 of 2829 tests ran
+            with none failed, migrations 0 to 112 with none pending, schema version 112, against `data-ci` and never
+            `data`; the phase report 64 tables, 1454 claims, 1454 passing, none out of scope and none unexamined, 1469
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    BKNG, VTRS, ACT and TRUP, whose filings state net income under a concept the facts are not read under, as the
+            third concept's entry puts to the operator.
