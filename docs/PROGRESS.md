@@ -10299,3 +10299,59 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the remedy's record, with what the newly linked filers stored and read and each index's history built again;
             and a filer that re-formed under a new number, read under no member for the years before it re-formed, put
             to the operator as a ruling of its own.
+
+### 22.12 - the phase 22 report, amended: the night of 2026-10-26's Fundamentals answer on each index read back on Tonight against the store, and 22.13's remedy   2026-10-27
+
+Queue:      done, PRs 568 to 570 merged, 22.13's remedy run and the night of 2026-10-26 run; in progress, this
+            amendment; next, the 17.3 correction's remedy by the session that built it, the monthly run by hand on
+            2026-10-27, 22.14 and 22.15 on the operator's word, and the sign-offs of phases 18, 20 and 22 by fresh
+            sessions.
+Remedy:     `tools/remedies/2026-10-26-22.13-the-fundamentals-family.txt` run from main at 2872e308 on 2026-10-26 at
+            17:54 UTC with no other writer running: migration 112 applied, the schema from 111 to 112, no other table
+            touched. The read surface restarted from main's Release build at 17:55, again at 19:05 after the card's
+            correction merged as d264d1a3, and at 22:18 after the 17.3 correction merged as b676c2a9.
+Night:      night-20261026T230034Z, built from b676c2a97f38; the Fundamentals step from 00:02:13 to 00:02:17 UTC on
+            2026-10-27 with no fault on any index; the night's last step at 00:02:19, its store's copy left waiting for
+            the off-peak run.
+Read back:  each index's Tonight page fetched from the read surface between 00:03 and 00:08 UTC, read-only, and its
+            Fundamentals card read against the night's rows of `improving_night`, `improving_result`, `improving_trade`,
+            `fundamental_score` and Quality at a fair price's holdings and results. Every row of both tabs stands in the
+            store's order with the store's score and status, and the sentence and the tiles' counts are the night's. The
+            Holding tile counts trades bought, none yet, where the night's row counts the trades open after it, the one
+            chosen tonight among them.
+            - S&P 500: 503 members, 498 scored, 15 filings read for the first time and 4 raising the score. Bought: TXN,
+              9 of 9 up from 8, its filing of 23 Oct after its release of 21 Oct, chosen at the close of 298.12. Flagged:
+              33. Improving fastest, 37 rows, its first ten DOW 7 of 9 up from 4, HAL 8 of 8 up from 6 and KMI 8 of 8 up
+              from 7, each improved and short of the bar, DOW one check short and HAL's and KMI's sales slowing; then TXN;
+              then CDNS, KO, BIIB, SRE, VMC and ETR flagged. Strongest businesses: IDXX, APP, PODD, BBY, AAPL, MU, ADSK,
+              DXCM, LLY and ROST; PODD, MU and ADSK among Quality at a fair price's holdings, and BBY, AAPL and ROST above
+              their usual price.
+            - S&P 400: 400 members, 396 scored, 5 filings read for the first time and none raising the score. Bought:
+              none. Flagged: 18. Improving fastest, 18 rows, every one flagged, its first ten SUI, AA, AMKR, FCFS, CCK,
+              KNX, GEF, AVTR, EXLS and TRU. Strongest businesses: CHWY, MSM, M, ROKU, ULS, WTS, FIVE, GMED, BSY and G;
+              MSM above its usual price and none among the holdings.
+            - S&P 600: 602 members, 587 scored, 7 filings read for the first time and 1 raising the score. Bought: IART,
+              8 of 9 up from 6, its filing of 23 Oct after its release of 21 Oct, chosen at the close of 12.10. Flagged:
+              14. Improving fastest, 15 rows, its first ten IART, then DK, REYN, FELE, CTS, AGYS, ACT, KN, ZWS and CUBI
+              flagged. Strongest businesses: SONO, MTCH, WWW, VSXY, QTWO, DV, PCRX, URBN, KSS and VCEL; URBN and KSS
+              above their usual price and none among the holdings.
+Misfiled:   of the 40 members the 17.3 correction found carrying another filer, DOW and OZK carry the SEC's own from
+            tonight, the quarters fetch storing their awaited quarter at 23:46 and 23:47 UTC; DOW's 7 of 9 and its 4 of 9
+            before are both read off Dow Inc's own filings. No other of the 40 stands on either tab of any index.
+Found:      the SEC's structured facts lag its filings for some filers. KO's 10-Q of 2026-07-29 (0001628280-26-050503)
+            and CDNS's of the same day stand in the SEC's list of each one's filings and not in the facts the SEC answers
+            for it, which end at their 10-Qs of 30 Apr and 1 May; the store holds what those facts answered on
+            2026-10-25, the parser and the store passing over none. Over the members scored tonight, those whose newest
+            filed quarter ends before 2026-05-15 while the provider reports a later one are 68 of 498 on the S&P 500, 37
+            of 396 on the S&P 400 and 33 of 587 on the S&P 600, two of them checked at the SEC and the rest not. Among
+            them stand 25 of the S&P 500's 33 flags, 10 of the S&P 400's 18 and 7 of the S&P 600's 14, flagged on
+            releases as old as IDA's of 30 Apr and reading "filing not in yet" of a filing the SEC may already hold. Their
+            scores rest on an earlier quarter's filing, and none can be bought on a filing the facts do not carry. Seen
+            too: GEF, flagged on the S&P 400 with a scorecard that read no check, reads "was 0 of 0".
+Put:        to the operator: whether a filing the SEC lists and its facts do not carry is read another way or named on
+            the card; whether a flag ends at a bound, since one resting on a filing the facts never carry stands every
+            night; and GEF's "was 0 of 0".
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 3a6ff153, the tree main took at b676c2a9, as the
+            17.3 correction's entry above records, 2820 of 2820 tests; documents alone change here, so the checks
+            reading them run filtered over the tree carrying this entry, 618 of 618 passed.
+Carried:    the three questions put; 22.14 and 22.15 on the operator's word.
