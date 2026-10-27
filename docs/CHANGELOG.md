@@ -26,6 +26,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-27 - CLAUDE.md - the hard rule on pulled history names the older bands the name page draws
+Authorised by: Where the stored year holds no band on a side the name page draws bands read from the pulled history, marked older and read by nothing else
+Was:
+> "...that no page reads but the chart page, which reads one stock's pulled bars at the store's scale for its weekly and monthly candles and its longer performance and hands them to no rule, level, listing or gate, on the operator's ruling of 2026-10-16, and Tonight's heavyweights cards, ..."
+Now:
+> "...that no page reads but the chart page, which reads one stock's pulled bars at the store's scale for its weekly and monthly candles and its longer performance and hands them to no rule, level, listing or gate, on the operator's ruling of 2026-10-16, and the name page, which reads one stock's pulled bars at the store's scale for the older bands it draws where the stored year holds no band on a side of the close and hands them to no rule, level, plan, listing or gate, on the operator's ruling of 2026-10-27, and Tonight's heavyweights cards, ..."
+Why: the operator's report page corrections of 2026-10-27, the sixth part: where the stored year has no band above the price or below it, bands are read from the pulled history the long view already uses and marked older.
+
+### 2026-10-27 - docs/ARCHITECTURE.html - what the numbers say gains the pattern for a quarter reported and not yet filed
+Authorised by: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+Was:
+> the patterns table listed "awaited" and then "sales", and no pattern for a quarter whose release is out and whose filing is not stored.
+Now:
+> a row after "awaited": "reported | The quarter to {quarter} was reported on {day} in its results release and its filing is not stored yet, so these read the quarter to {quarter}.", held word for word to the renderer's own list as every row of the table is.
+Why: the operator's report page corrections of 2026-10-27, the third part: ROP's page still awaited the quarter to September after its release of October 22 had reported it.
+
+### 2026-10-27 - docs/ARCHITECTURE.html - section 4's rows for the short version, the news and where the research stands state the report page's corrections
+Authorised by: The short version opens on the pick and then the quarter as code writes them, before what worked and what did not
+Was:
+> The short version: "Three paragraphs of at most five sentences each, written last from the claims the other written regions were accepted with: what happened, what matters and what the plan does, said as the plan's own claims say it, each sentence citing its claims, which are listed beneath it with a link to the region drawing each, and no figure the tiles show; ..."
+>
+> News: "What was written about the company in the thirty days before the night: each article with the kind of story ..."
+>
+> Where the research stands: "What the newest pass came to and what research has cost, each written region left out or not written with its reason, and the control that asks for a report, ..."
+Now:
+> The short version opens "For a stock a family picked, a paragraph code writes from its card first and then for every stock one code writes from the latest quarter, the written prose after them read as what worked and what did not (see: ...); three paragraphs ..., the regions they come from listed beneath it by title with a link to each, ...".
+>
+> News reads "What was written about the company in the thirty days before the night, its own stories alone with a line counting those left out (see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted): ...".
+>
+> Where the research stands adds "a table of the model each job behind the page ran on and whether it is paid or local".
+Why: the operator's report page corrections of 2026-10-27, its second, eighth and eleventh parts, under the decisions each names (see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted) (see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label).
+
 ### 2026-10-27 - docs/ARCHITECTURE.html - section 4 gains the rules every name's page holds
 Authorised by: Every report page rule is held over every name's drawn page and reported passed, failed or unexamined with the pages each failed on
 Was:

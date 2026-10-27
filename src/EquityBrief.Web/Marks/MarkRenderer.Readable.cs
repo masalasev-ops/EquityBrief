@@ -50,7 +50,8 @@ public sealed partial class MarkRenderer
 
         if (contradicted.Length > 0)
         {
-            var opener = Openers.FirstOrDefault(words => sentence.StartsWith(words, StringComparison.Ordinal));
+            var opener = Openers.FirstOrDefault(words => sentence.StartsWith(words, StringComparison.Ordinal))
+                ?? (RiskOpener().Match(sentence) is { Success: true } risk ? risk.Value : null);
 
             return (opener is null ? string.Empty : opener + ": ") + Directions.Withheld(contradicted);
         }
@@ -137,4 +138,8 @@ public sealed partial class MarkRenderer
 
     [GeneratedRegex(@"\s*\[(?:N|D\d+|C\d+)\]")]
     private static partial Regex Marker();
+
+    // The words a risk opens on with its place, which the risks are cut into parts at.
+    [GeneratedRegex(@"^(?:The|A) (?:first|second|third|fourth|fifth|sixth|clearest|biggest|main) risk")]
+    private static partial Regex RiskOpener();
 }

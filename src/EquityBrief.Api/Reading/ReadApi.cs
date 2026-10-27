@@ -2874,6 +2874,45 @@ public sealed partial class ReadApi : IComponent
         WHERE (stage LIKE $call OR stage = $labels) AND json_valid(detail);
     ";
 
+    // The filer's newest results release accepted by the end of a night, its exhibit, the day the SEC accepted it and its
+    // stored text, whose opening line the page's management box quotes.
+    // see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+    const string NewestReleaseText = @"
+        SELECT d.exhibit, d.accepted_at, d.url, d.text_gzip
+        FROM release_document d
+        WHERE d.cik = (SELECT c.cik FROM company c WHERE c.ticker = $ticker AND c.cik IS NOT NULL ORDER BY c.fetched_at DESC LIMIT 1)
+          AND d.release = 1 AND substr(d.accepted_at, 1, 10) <= $night
+        ORDER BY d.accepted_at DESC
+        LIMIT 1;
+    ";
+
+    public async Task<EquityBrief.Core.Report.ReleaseOpening?> NewestReleaseOpeningAsync(string ticker, DateOnly night)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestReleaseText;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync() || reader.IsDBNull(3))
+        {
+            return null;
+        }
+
+        using var compressed = new MemoryStream((byte[])reader.GetValue(3));
+        using var unzipped = new System.IO.Compression.GZipStream(compressed, System.IO.Compression.CompressionMode.Decompress);
+        using var text = new StreamReader(unzipped, System.Text.Encoding.UTF8);
+
+        return EquityBrief.Core.Report.ReleaseOpening.Of(
+            reader.GetString(0),
+            DateOnly.FromDateTime(DateTimeOffset.Parse(reader.GetString(1), CultureInfo.InvariantCulture).UtcDateTime),
+            reader.GetString(2),
+            await text.ReadToEndAsync());
+    }
+
     // A name's two newest swing lows confirmed by a night, newest first, which the trend rule compares.
     const string NewestSwingLows = @"
         SELECT session_date, price FROM swing

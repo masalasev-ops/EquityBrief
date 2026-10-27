@@ -55,6 +55,10 @@ public static partial class NameScreen
             ? Invariant($"; the provider states {Escaped(drawn)}, struck at a price of about {Figures.Price(stale.StruckAt)}, stale against the close and not drawn")
             : string.Empty;
 
+    // A stored report day the night has reached, none where it is ahead of the night, not a day or no night is known.
+    static DateOnly? ReportedBy(string? reportDate, DateOnly? night) =>
+        night is { } on && DateOnly.TryParseExact(reportDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day) && day <= on ? day : null;
+
     // A stored figure as a number, none where it is none or not a number.
     static decimal? Number(string? stored) =>
         stored is not null && decimal.TryParse(stored, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) ? value : null;
@@ -434,7 +438,7 @@ public static partial class NameScreen
     // consensus estimate is drawn beside it and named for what it is: what analysts
     // expect rather than what management said.
     // see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
-    public static string Numbers(IReadOnlyList<FilingRow> filings, ConceptFigures? figures = null)
+    public static string Numbers(IReadOnlyList<FilingRow> filings, ConceptFigures? figures = null, EquityBrief.Core.Report.ReleaseOpening? newestRelease = null)
     {
         var html = new System.Text.StringBuilder();
 
@@ -492,13 +496,32 @@ public static partial class NameScreen
 
         html.Append("</table></div>");
 
+        // The newest results release's opening line, where the release is newer than the one the guidance was read from, so
+        // the box management speaks in opens on the newest quarter's words.
+        // see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+        if (newestRelease is { } release
+            && (!newest.RootElement.TryGetProperty("guidance", out var guided) || guided.ValueKind != JsonValueKind.Object
+                || !DateOnly.TryParseExact(Text(guided, "filedOn"), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var guidedOn)
+                || release.AcceptedOn > guidedOn))
+        {
+            html.Append(Invariant($"<blockquote class=\"guidance release-opening\" data-exhibit=\"{Escaped(release.Exhibit)}\" data-accepted=\"{release.AcceptedOn:yyyy-MM-dd}\"><p class=\"guidance-heading\">The newest results release, accepted {release.AcceptedOn:yyyy-MM-dd}, opens</p><p>{Escaped(release.Line)}</p><p class=\"guidance-source\">From {Escaped(release.Exhibit)}, the exhibit to that day's results announcement. Management's own words, not a figure this report computed.</p></blockquote>"));
+        }
+
         html.Append(Guidance(newest.RootElement, Attribution(filings[0].Source)));
 
         // Every other figure the filing carries, closed beneath the snapshot, which states the
         // ones a reader wants first.
         html.Append("<details class=\"numbers-detail\"><summary>Every figure from the filing</summary>");
 
-        if (newest.RootElement.TryGetProperty("estimated", out var estimated)
+        if (newest.RootElement.TryGetProperty("estimated", out var reported)
+            && reported.ValueKind == JsonValueKind.Object
+            && ReportedBy(Text(reported, "reportDate"), figures?.CloseOn) is { } reportedOn)
+        {
+            // A report the night has passed is said as reported, and the next as not announced.
+            // see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+            html.Append(Invariant($"<p class=\"estimate\" data-estimated-quarter=\"{Text(reported, "periodEnd")}\" data-reported=\"{reportedOn:yyyy-MM-dd}\">The quarter to {Text(reported, "periodEnd")} was reported on {reportedOn:yyyy-MM-dd}, and the next report is not announced.</p>"));
+        }
+        else if (newest.RootElement.TryGetProperty("estimated", out var estimated)
             && estimated.ValueKind == JsonValueKind.Object)
         {
             html.Append(CultureInfo.InvariantCulture,
@@ -677,14 +700,24 @@ public static partial class NameScreen
             Text(earnings, "epsActual"),
             Figures.PerShare,
             Text(earnings, "epsEstimate") is { } expected ? "against an estimate of " + Drawn(expected, Figures.PerShare) : null);
-        Row(
-            "Next report",
-            "reportDate",
-            Text(estimated, "reportDate"),
-            _ => Text(estimated, "reportDate")!,
-            Text(estimated, "epsEstimate") is { } consensus
-                ? "consensus " + Drawn(consensus, Figures.PerShare) + " a share" + (Text(estimated, "periodEnd") is { } next ? ", for the quarter to " + next : string.Empty)
-                : null);
+        // A report the night has passed is no longer the next: the row says the quarter was reported and that the one after
+        // it is not announced.
+        // see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+        if (ReportedBy(Text(estimated, "reportDate"), figures?.CloseOn) is { } reportedOn)
+        {
+            html.Append(Invariant($"<div><dt>Next report</dt><dd data-reportDate=\"reported\"><b>not announced</b><small>the quarter to {Escaped(Text(estimated, "periodEnd") ?? "its end")} was reported on {reportedOn:yyyy-MM-dd}</small></dd></div>"));
+        }
+        else
+        {
+            Row(
+                "Next report",
+                "reportDate",
+                Text(estimated, "reportDate"),
+                _ => Text(estimated, "reportDate")!,
+                Text(estimated, "epsEstimate") is { } consensus
+                    ? "consensus " + Drawn(consensus, Figures.PerShare) + " a share" + (Text(estimated, "periodEnd") is { } next ? ", for the quarter to " + next : string.Empty)
+                    : null);
+        }
         Row("Gross margin, that quarter", "grossMargin", Text(quarter, "grossMargin"), Figures.Percent);
         Row("Net margin, that quarter", "netMargin", Text(quarter, "netMargin"), Figures.Percent);
 
@@ -703,7 +736,7 @@ public static partial class NameScreen
         {
             var stated = Number(Text(payload, "marketCapitalisation"));
 
-            Concept("Market value", "marketCapitalisation", ConceptCheck.MarketValue, Money(companyValue), "the shares filed before the night times " + atTheClose, OneValue.StruckValue(stated, shares, close), stated is { } value ? Money(value) : string.Empty);
+            Concept("Market value", "marketCapitalisation", ConceptCheck.MarketValue, Figures.Money(companyValue), "the shares filed before the night times " + atTheClose, OneValue.StruckValue(stated, shares, close), stated is { } value ? Figures.Money(value) : string.Empty);
         }
         else
         {
@@ -1458,7 +1491,11 @@ public static partial class NameScreen
         // The models the run log names on a priced call or a labeller's run, which tell each job's paid model from a local one.
         IReadOnlySet<string>? paidModels = null,
         // The name's two newest swing lows confirmed by the night, which the trend rule compares.
-        IReadOnlyList<EquityBrief.Core.Report.SwingLow>? swingLows = null)
+        IReadOnlyList<EquityBrief.Core.Report.SwingLow>? swingLows = null,
+        // The newest results release's opening line, which the box management speaks in opens on.
+        EquityBrief.Core.Report.ReleaseOpening? newestRelease = null,
+        // The history pulled before the store's year, read where the stored year holds no band on a side.
+        PulledSeries? pulled = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1625,7 +1662,7 @@ public static partial class NameScreen
             bars.Count > 0 ? bars[^1].Close : 0m,
             EventBook(ladder),
             Arithmetic(ladder),
-            says is null ? Numbers(filings, concepts) : marks.NumbersSay(says, Numbers(filings, concepts)),
+            says is null ? Numbers(filings, concepts, newestRelease) : marks.NumbersSay(says, Numbers(filings, concepts, newestRelease)),
             cells,
             listing?.ListedBy == ListRules.Filter ? [] : FiredReasons(listing),
             previousOnTheList,
@@ -1690,7 +1727,27 @@ public static partial class NameScreen
                 bars.Count > 0 ? bars[^1].Close : null,
                 Newest(indicators, IndicatorSeries.Sma50),
                 Newest(indicators, IndicatorSeries.Sma200),
-                swingLows ?? []));
+                swingLows ?? []),
+            olderBands: OlderBandsOf(bars, levels, pulled, typicalMove));
+    }
+
+    // The bands the pulled history turned at, for a side the stored year's bands leave empty, at the store's scale: the
+    // store's first close over the pull's close on that session.
+    // see: Where the stored year holds no band on a side the name page draws bands read from the pulled history, marked older and read by nothing else
+    static IReadOnlyList<EquityBrief.Core.Report.OlderBand> OlderBandsOf(IReadOnlyList<BarRow> bars, IReadOnlyList<LevelRow> levels, PulledSeries? pulled, double? typicalMove)
+    {
+        if (bars.Count == 0 || pulled is not { PulledClose: { } pulledClose, Sessions.Count: > 0 } || pulledClose <= 0 || typicalMove is not { } move)
+        {
+            return [];
+        }
+
+        var close = bars[^1].Close;
+        var above = !levels.Any(level => level.Role == EquityBrief.Core.Levels.LevelSeries.Resistance && level.LowEdge > close);
+        var below = !levels.Any(level => level.Role == EquityBrief.Core.Levels.LevelSeries.Support && level.HighEdge < close);
+
+        return above || below
+            ? EquityBrief.Core.Report.OlderBands.Of([.. pulled.Sessions.Select(session => (session.Session, session.High, session.Low))], bars[0].Close / pulledClose, close, Statistic.ToPrice(move), above, below)
+            : [];
     }
 
     // A card whose night found no report on file reads one estimated from the company's own report a year before, with
@@ -1840,11 +1897,18 @@ public static partial class NameScreen
             .Concat(readings.Valuation.Quarters)
             .ToHashSet();
 
+        // The awaited quarter's line moves on once the quarter is reported, its filing not stored yet.
+        // see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+        var reported = readings.Awaited is { } awaited && readings.ReadFrom is { } readFrom
+            && quarters.FirstOrDefault(quarter => quarter.PeriodEnd == awaited && quarter.FilingDate is null) is { ReportDate: { } reportedOn }
+                ? EquityBrief.Core.Quarters.NumbersSay.Reported(awaited, reportedOn, readFrom)
+                : null;
+
         return new NumbersSayView(
             readings.State,
             EquityBrief.Core.Quarters.NumbersSay.Heading(readings.State),
             readings.ReadFrom,
-            EquityBrief.Core.Quarters.NumbersSay.Sentences(readings),
+            [.. EquityBrief.Core.Quarters.NumbersSay.Sentences(readings).Select(sentence => reported is not null && EquityBrief.Core.Quarters.NumbersSay.IsAwaited(sentence) ? reported : sentence)],
             [
                 .. quarters
                     .Where(quarter => read.Contains(quarter.PeriodEnd))

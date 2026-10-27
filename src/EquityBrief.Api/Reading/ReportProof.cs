@@ -74,7 +74,9 @@ public static partial class ReportProof
 
         Add("one-value", marks.Count == 0 ? null : clashes.Count == 0, clashes.Count > 0 ? string.Join("; ", clashes.Select(clash => clash.Concept + ": " + string.Join(" and ", clash.Values))) : marks.Count == 0 ? "no concept is marked" : null);
         Add("header", Regex.IsMatch(page, "<span class=\"pill (?:live|closed)\">(?:LIVE|CLOSED|LAST CLOSE)</span>"));
-        Add("levels-older", null, "not built: the bands read from the pulled history wait on the operator's word on the hard rule that no level reads that history");
+        var sideEmpty = !page.Contains("data-role=\"resistance\"", StringComparison.Ordinal) || !page.Contains("data-role=\"support\"", StringComparison.Ordinal);
+
+        Add("levels-older", sideEmpty ? page.Contains("<table class=\"older-bands\"", StringComparison.Ordinal) ? true : null : null, sideEmpty ? page.Contains("<table class=\"older-bands\"", StringComparison.Ordinal) ? null : "no band on a side and no pulled history turned there" : "the stored year holds bands on both sides");
         Add("pick-on-chart", picked ? page.Contains("class=\"pick-levels\"", StringComparison.Ordinal) : null, picked ? null : "no family picked it");
         Add("pick-exit", picked ? page.Contains("class=\"picks-exit\"", StringComparison.Ordinal) : null, picked ? null : "no family picked it");
         Add("next-report", picked ? !page.Contains("No report date is on file for it, so a report inside the hold cannot be ruled out.", StringComparison.Ordinal) : null, picked ? null : "no family picked it");
@@ -88,7 +90,13 @@ public static partial class ReportProof
         var peers = page.Contains("S&amp;P 500 members on the night, ", StringComparison.Ordinal);
 
         Add("industry", peers ? page.Contains("the provider's classification", StringComparison.Ordinal) || page.Contains("the industry set for the stock", StringComparison.Ordinal) : null, peers ? null : "no peer group is drawn");
-        Add("newest-quarter", null, "not built: the latest quarter is read from the filings and the provider's fetch");
+        var quarterCard = QuarterCard().Match(page);
+        var newestRelease = ReleaseDay().Matches(page).Select(match => match.Groups[1].Value).DefaultIfEmpty(string.Empty).Max(StringComparer.Ordinal)!;
+
+        Add(
+            "newest-quarter",
+            !quarterCard.Success ? null : quarterCard.Groups[1].Value == "Reported" || string.CompareOrdinal(newestRelease, quarterCard.Groups[2].Value) <= 0,
+            !quarterCard.Success ? "no latest quarter is drawn" : quarterCard.Groups[1].Value == "Filed" && string.CompareOrdinal(newestRelease, quarterCard.Groups[2].Value) > 0 ? "a results release of " + newestRelease + " is newer than the filing of " + quarterCard.Groups[2].Value + " the quarter is read from" : null);
         Add("rerun-alone", null, "not built: a failed section is written again by a pass");
         Add("model-labels", page.Contains("<table class=\"model-jobs\"", StringComparison.Ordinal) || page.Contains("class=\"model-jobs\" data-jobs=\"0\"", StringComparison.Ordinal));
 
@@ -159,4 +167,12 @@ public static partial class ReportProof
 
     [GeneratedRegex("data-card=\"rules\"[^>]*>.*?<section class=\"picked-by\"", RegexOptions.Singleline)]
     private static partial Regex RulesOpenOnTheFamily();
+
+    // The latest quarter's card: whether it is dated as filed or as reported, and its day.
+    [GeneratedRegex("id=\"quarter\"><div class=\"spine\">.*?<span class=\"dl-k\">(Filed|Reported)</span><b>(\\d{4}-\\d{2}-\\d{2})</b>", RegexOptions.Singleline)]
+    private static partial Regex QuarterCard();
+
+    // Each results release the page draws management's words from, by the day it was filed or accepted.
+    [GeneratedRegex("(?:data-guidance=\"[^\"]*\"[^>]*?data-filed|class=\"guidance release-opening\"[^>]*?data-accepted)=\"(\\d{4}-\\d{2}-\\d{2})\"")]
+    private static partial Regex ReleaseDay();
 }

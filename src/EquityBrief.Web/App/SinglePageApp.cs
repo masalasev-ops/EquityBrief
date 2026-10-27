@@ -1411,7 +1411,9 @@ public sealed partial class SinglePageApp : IComponent
         // The models the run log names on a priced call or a labeller's run, which tell each job's paid model from a local one.
         IReadOnlySet<string>? paidModels = null,
         // Why the trend rule read the stock as it did, in plain words, none where it read an uptrend.
-        string? trendWhy = null)
+        string? trendWhy = null,
+        // The bands the pulled history turned at, for a side the stored year holds none on, marked older.
+        IReadOnlyList<EquityBrief.Core.Report.OlderBand>? olderBands = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -1836,6 +1838,10 @@ public sealed partial class SinglePageApp : IComponent
         }
 
         levelled.Append("<div class=\"tbl-wrap\">").Append(marks.LevelSummary(ticker, summary, absent, bars.Count > 0 ? bars[^1].Close : null)).Append("</div>");
+
+        // Where the stored year holds no band on a side, the bands the pulled history turned at, marked older.
+        // see: Where the stored year holds no band on a side the name page draws bands read from the pulled history, marked older and read by nothing else
+        levelled.Append(MarkRenderer.OlderBandsTable(olderBands ?? [], bars.Count > 0 ? bars[^1].Close : null));
         levelled.Append(technicals);
 
         Card("levels", "levels", "Levels", Cards.Computed("Levels", levelled.ToString(), title: "The bands above and below the price, and the technical readings", stamp: Cards.Night(session), id: "levels", region: "levels"));
@@ -1962,19 +1968,26 @@ public sealed partial class SinglePageApp : IComponent
             "Growth that slows quarter by quarter reads as a business losing pace even while each quarter still grows."));
         quarterBody.Append(numbers);
 
+        // A quarter reported after the newest filing the store holds is the results release's, and is labelled so until its
+        // filing is stored, where it read as the older filing's.
+        // see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+        var releasedFirst = report?.Quarter is { Reported: { } reportedOn } && (filedOn is null || reportedOn > filedOn) ? report.Quarter.Reported : null;
+
         Card("quarter", "quarter", "The latest quarter", Cards.Dated(
             "The latest quarter",
-            "Filed",
-            filedOn,
+            releasedFirst is null ? "Filed" : "Reported",
+            releasedFirst ?? filedOn,
             quarterBody + Cards.Key(
                 "Where these come from.",
-                "Each figure is from the company's own filing, dated as the filing is, as the newest fetch of its quarters stored it. The estimate is the analysts' average kept before the results were released, placed by the calendar's report time: before the open, after the close, or the start of the report day where no time is stated.",
+                releasedFirst is null
+                    ? "Each figure is from the company's own filing, dated as the filing is, as the newest fetch of its quarters stored it. The estimate is the analysts' average kept before the results were released, placed by the calendar's report time: before the open, after the close, or the start of the report day where no time is stated."
+                    : "Each figure is from the results release, as the newest fetch of its quarters stored it, the filing of the quarter not stored yet; once it is, the figures checked under the sources set the filing's against these. The estimate is the analysts' average kept before the results were released, placed by the calendar's report time: before the open, after the close, or the start of the report day where no time is stated.",
                 "These are the company's reported results. Nothing in the plan is computed from them."),
             title: report?.Quarter is { } latest ? "The quarter to " + Cards.Day(latest.Quarter) + ", line by line" : "The latest quarter, line by line",
             filed: true,
-            note: "from the filing",
+            note: releasedFirst is null ? "from the filing" : "from the results release, filing not stored yet",
             id: "quarter"),
-            filedOn);
+            releasedFirst ?? filedOn);
 
         // What management said with its results, the written section read from the newest and the previous results
         // releases, after the quarter where section 4 lists it; and from 20.3 beneath it the newest results release's four
@@ -2054,7 +2067,7 @@ public sealed partial class SinglePageApp : IComponent
                 segmentBody.ToString(),
                 title: "What it sells and where the revenue comes from",
                 filed: filedOn is not null,
-                note: filedOn is null ? null : "from the filing",
+                note: filedOn is null ? null : report?.Quarter is { Reported: { } newer } && newer > filedOn ? "from the filing before the newest quarter, whose filing is not stored yet" : "from the filing",
                 id: "segments"),
                 segmentsNew);
         }

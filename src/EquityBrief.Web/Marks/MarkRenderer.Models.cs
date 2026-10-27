@@ -45,6 +45,24 @@ public sealed partial class MarkRenderer
                 + string.Join("; ", clashes.Select(clash => Escaped(clash.Concept.Replace('-', ' ')) + " drawn as " + string.Join(" and ", clash.Values.Select(Escaped))))
                 + ".</p>";
 
+    // The older bands beneath the stored year's, each with its role, its edges and the session the pulled prices turned at,
+    // under a line saying they are read from the history before the stored year and that nothing but this page reads them;
+    // nothing where none is drawn.
+    // see: Where the stored year holds no band on a side the name page draws bands read from the pulled history, marked older and read by nothing else
+    public static string OlderBandsTable(IReadOnlyList<EquityBrief.Core.Report.OlderBand> bands, decimal? price)
+    {
+        if (bands.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var rows = string.Join(string.Empty, bands.Select(band =>
+            FormattableString.Invariant($"<tr class=\"band older\" data-older-role=\"{Escaped(band.Role)}\" data-low-edge=\"{band.Low.ToString(Invariant)}\" data-high-edge=\"{band.High.ToString(Invariant)}\" data-made-on=\"{band.MadeOn:yyyy-MM-dd}\"><td>{Escaped(band.Role)}, older</td><td class=\"num\">{Price(band.Low)} to {Price(band.High)}</td><td>{band.MadeOn:yyyy-MM-dd}</td></tr>")));
+
+        return Formatted($"<div class=\"sub\">Older bands, from the history before the stored year</div><p class=\"older-bands-note\">The stored year holds no band on {(bands.Any(band => band.Role == "resistance") && bands.Any(band => band.Role == "support") ? "either side" : bands.Any(band => band.Role == "resistance") ? "the side above the price" : "the side below the price")}, so these are the prices the history pulled before it turned at{(price is { } at ? Formatted($", read against {Price(at)}") : string.Empty)}. They are older and drawn here alone: no rule, plan or listing reads them.</p>")
+            + "<div class=\"tbl-wrap\"><table class=\"older-bands\"><thead><tr><th>Band</th><th>Edges</th><th>Turned at on</th></tr></thead><tbody>" + rows + "</tbody></table></div>";
+    }
+
     // The section a page's own account of the business is read from.
     public const string WhatItSells = "What the company sells";
 

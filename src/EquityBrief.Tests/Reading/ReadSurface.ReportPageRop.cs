@@ -85,6 +85,24 @@ public partial class ReadSurface
         Assert.Equal(new DateOnly(2027, 1, 26), estimate.Estimated);
         Assert.Equal("note", EquityBrief.Core.Cards.CardLines.EstimatedEarnings(estimate, RopNight, 60).Mark);
 
+        // The management box opens on the newest release's own first line, its dateline and what it reports, read from the
+        // release's stored text as ROP's of 2026-10-22 begins.
+        var opening = EquityBrief.Core.Report.ReleaseOpening.Of(
+            "a2026q3earningsrelease.htm",
+            new DateOnly(2026, 10, 22),
+            "https://www.sec.gov/Archives/edgar/data/882835/000088283526000042/a2026q3earningsrelease.htm",
+            "EX-99.1 2 a2026q3earningsrelease.htm EX-99.1 Document Roper Technologies announces third quarter financial results Increases full year DEPS guidance Sarasota, Florida, October 22, 2026 ... Roper Technologies, Inc. (Nasdaq: ROP) reported financial results for the third quarter ended September 30, 2026. Third quarter 2026 highlights");
+
+        Assert.Equal("Sarasota, Florida, October 22, 2026 ... Roper Technologies, Inc. (Nasdaq: ROP) reported financial results for the third quarter ended September 30, 2026.", opening!.Line);
+        Assert.Null(EquityBrief.Core.Report.ReleaseOpening.Of("x.htm", new DateOnly(2026, 10, 22), "u", "No dateline here at all."));
+
+        // The numbers' awaited line moves on once the quarter is reported: ROP's quarter to 2026-09-30, reported on
+        // 2026-10-22 and not yet filed, while the readings read the quarter to 2026-06-30.
+        var reported = EquityBrief.Core.Quarters.NumbersSay.Reported(new DateOnly(2026, 9, 30), new DateOnly(2026, 10, 22), new DateOnly(2026, 6, 30));
+
+        Assert.Equal("The quarter to 2026-09-30 was reported on 2026-10-22 in its results release and its filing is not stored yet, so these read the quarter to 2026-06-30.", reported);
+        Assert.Equal("reported", EquityBrief.Core.Quarters.NumbersSay.PatternOf(reported));
+
         // The year's high the page draws and the high a breakout reads are two windows: 471.98 over the stored year to the
         // night, 478.74 over the sessions before it.
         var page = "<dd data-concept=\"years-high\" data-concept-value=\"471.98\">471.98</dd>";

@@ -267,6 +267,71 @@ public partial class ReadSurface
         Assert.Empty(EquityBrief.Core.Research.Directions.Of(null));
     }
 
+    // The proof reads each rule back off a drawn page: a marker left in the prose fails, two values of one concept fail, a
+    // masthead's pill passes, a rule whose region is not drawn or that is not built is unexamined, and the counts over
+    // several pages name the pages each rule failed on, unexamined counted apart from a pass.
+    // see: Every report page rule is held over every name's drawn page and reported passed, failed or unexamined with the pages each failed on
+    [Fact]
+    public void TheProofReadsEachRuleBackOffADrawnPageAndCountsUnexaminedApart()
+    {
+        const string Held = "<span class=\"m-price\" data-live=\"no\"><span class=\"pill closed\">CLOSED</span></span><p class=\"prose\">Revenue rose.</p><dd data-concept=\"market-value\" data-concept-value=\"$45.3B\"></dd>";
+        const string Broken = "<p class=\"prose\">Revenue rose [D1]. Adjusted DEPS rose.</p><dd data-concept=\"market-value\" data-concept-value=\"$45.3B\"></dd><span data-concept=\"market-value\" data-concept-value=\"$35.5B\"></span>";
+
+        var held = ReportProof.Evaluate("AAA", Held);
+        var broken = ReportProof.Evaluate("BBB", Broken);
+
+        string Verdict(ProofPage page, string rule) => page.Verdicts.Single(verdict => verdict.Rule == rule).Verdict;
+
+        Assert.Equal((ReportProof.Passed, ReportProof.Failed), (Verdict(held, "markers"), Verdict(broken, "markers")));
+        Assert.Equal((ReportProof.Passed, ReportProof.Failed), (Verdict(held, "one-value"), Verdict(broken, "one-value")));
+        Assert.Equal((ReportProof.Passed, ReportProof.Failed), (Verdict(held, "abbreviations"), Verdict(broken, "abbreviations")));
+        Assert.Equal((ReportProof.Passed, ReportProof.Failed), (Verdict(held, "header"), Verdict(broken, "header")));
+        Assert.Equal(ReportProof.Unexamined, Verdict(held, "rules-family"));
+        Assert.Equal(ReportProof.Unexamined, Verdict(held, "levels-older"));
+        Assert.Equal(ReportProof.Unexamined, Verdict(held, "newest-quarter"));
+        Assert.Equal(ReportProof.Rules.Count, held.Verdicts.Count);
+
+        // A quarter dated by an older filing beside a newer results release fails, and one labelled as the release's passes.
+        const string Release = "<blockquote class=\"guidance\" data-guidance=\"located\" data-exhibit=\"a.htm\" data-filed=\"2026-10-22\">";
+        const string Filed = "<section class=\"card spined fund\" id=\"quarter\"><div class=\"spine\"><div class=\"lbl\">The latest quarter</div><div class=\"dl\"><span class=\"dl-k\">Filed</span><b>2026-07-24</b><span>from the filing</span></div></div></section>";
+
+        Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", Filed + Release), "newest-quarter"));
+        Assert.Equal(ReportProof.Passed, Verdict(ReportProof.Evaluate("CCC", Filed), "newest-quarter"));
+        Assert.Equal(ReportProof.Passed, Verdict(ReportProof.Evaluate("CCC", Filed.Replace(">Filed<", ">Reported<").Replace("2026-07-24", "2026-10-22") + Release), "newest-quarter"));
+
+        var counted = ReportProof.Counted([held, broken]).Single(rule => rule.Rule == "one-value");
+
+        Assert.Equal((1, 1, 0), (counted.Passed, counted.Failed, counted.Unexamined));
+        Assert.Equal(["BBB"], counted.Failing);
+        Assert.Contains("unexamined is never counted as a pass", ReportProof.Html(new ProofReport(DateTimeOffset.UnixEpoch, "GSPC", null, ReportProof.Counted([held, broken]), [held, broken])), StringComparison.Ordinal);
+    }
+
+    // Where the stored year holds no band above the close, the pulled sessions' turns above it are read at the store's
+    // scale: a pulled high of 240 that is the highest of the ten sessions either side of it, at a scale of two, is a turn at
+    // 480, and with a typical day's move of 10 a band from 475 to 480, marked as resistance and older; a turn below the close
+    // is read only where the year holds no band below it either.
+    // see: Where the stored year holds no band on a side the name page draws bands read from the pulled history, marked older and read by nothing else
+    [Fact]
+    public void ASideTheStoredYearLeavesEmptyReadsTheTurnsOfThePulledHistoryMarkedOlder()
+    {
+        var first = new DateOnly(2024, 1, 2);
+        var pulled = Enumerable.Range(0, 41)
+            .Select(day => (first.AddDays(day), High: day == 20 ? 240m : 200m + (day % 3), Low: day == 30 ? 150m : 190m))
+            .ToArray();
+
+        var above = EquityBrief.Core.Report.OlderBands.Of(pulled, 2m, 441.65m, 10m, above: true, below: false);
+
+        Assert.Equal([new EquityBrief.Core.Report.OlderBand("resistance", 475m, 480m, first.AddDays(20))], above);
+        Assert.Empty(EquityBrief.Core.Report.OlderBands.Of(pulled, 2m, 441.65m, 10m, above: false, below: false));
+
+        var both = EquityBrief.Core.Report.OlderBands.Of(pulled, 2m, 441.65m, 10m, above: true, below: true);
+
+        Assert.Contains(both, band => band is { Role: "support", Low: 300m, High: 305m });
+        Assert.Contains("<table class=\"older-bands\">", MarkRenderer.OlderBandsTable(both, 441.65m), StringComparison.Ordinal);
+        Assert.Contains("no rule, plan or listing reads them", MarkRenderer.OlderBandsTable(both, 441.65m), StringComparison.Ordinal);
+        Assert.Equal(string.Empty, MarkRenderer.OlderBandsTable([], 441.65m));
+    }
+
     // Every fixture name's page draws each concept it marks with one value, and its masthead, its numbers and its valuation
     // carry the marks the check reads.
     [Fact]

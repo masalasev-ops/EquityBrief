@@ -495,6 +495,19 @@ The name page carries a link, *Export this report as a file*, and the browser sa
 
 The file is the name page's own region, drawn by the same code from the same store, in a document that needs nothing else to be read: its styles are inline, it fetches nothing, every disclosure is open, and a link to another of the application's pages is kept as its words. It opens in the light palette whatever the machine prefers, and its one script switches it to the dark palette and back at the press beside its opening line; every figure draws with scripts off (see: A single report is exported as one self-contained file in the page's design, opening light with a dark toggle and stamped with the price it was exported at). Its masthead's price is the one the page drew at the export, the delayed quote stored inside the session where one is, marked "at export" rather than live, and the last close outside it, and its opening line states the instant it was exported at in New York's time. It leaves out the research controls and the pause, which are the application asking the operator something rather than part of the report. It is named for the name and the newest session its figures are from, `EquityBrief-KEYS-2026-09-08.html`, so two exports on different nights are two files, and its opening line states that session. Nothing is written to the store by an export.
 
+### Reading the report page's rules over every name
+
+The read surface draws every member's page of an index as tonight's page draws it and reads each report page rule back off each one, at `/proof/report-pages` for the S&P 500, `/proof/report-pages?index=MID` and `?index=SML` for the S&P 400 and 600, and with `&format=json` the same answers as JSON. Each rule is counted passed, failed and unexamined over the pages, with the pages it failed on; a rule that cannot be read on a page, its region not drawn there or the rule not yet built, is unexamined there and is never counted as a pass (see: Every report page rule is held over every name's drawn page and reported passed, failed or unexamined with the pages each failed on). It writes nothing and asks no provider and no model, and it draws every page of the index in turn, so it takes as long as opening each one would: run it from a browser or keep its two answers beside each other:
+
+```
+curl -s http://localhost:5152/proof/report-pages > artifacts/report-proof.html
+curl -s "http://localhost:5152/proof/report-pages?format=json" > artifacts/report-proof.json
+```
+
+### Setting a stock's industry in place of the provider's
+
+The valuation's peers and the page's group read the industry the provider files for a stock, labelled as the provider's classification. An industry set for a stock in the read surface's own settings stands in its place, one entry a ticker under `EquityBrief:IndustryOverrides`, in `src/EquityBrief.Api/appsettings.json` or as an environment variable, `EquityBrief__IndustryOverrides__ROP=Software`; the page then labels its group as set for the stock in place of the provider's. A page whose own account of what the company sells describes a business its group names nothing of says so beside the group either way (see: A stock's industry group is the provider's until an override is set and is checked against the page's own text, and the industry cycle reads only sources naming the company or its industry). The setting is read as the read surface starts, so restart it after changing one; no rule, pick or scorecard reads it.
+
 ### Counting the swing filter's shape
 
 ```

@@ -654,7 +654,16 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // Which models the paid lane ran, so each job's model is named paid or local.
         paidModels: await read.PaidModelsAsync(),
         // The two newest swing lows the night confirmed, which say in plain words why the trend rule read the stock as it did.
-        swingLows: (night ?? (bars.Count > 0 ? bars[^1].SessionDate : (DateOnly?)null)) is { } swungBy ? await read.SwingLowsAsync(ticker, swungBy) : null);
+        swingLows: (night ?? (bars.Count > 0 ? bars[^1].SessionDate : (DateOnly?)null)) is { } swungBy ? await read.SwingLowsAsync(ticker, swungBy) : null,
+        // The newest results release accepted by the night, whose opening line the management box quotes.
+        newestRelease: (night ?? (bars.Count > 0 ? bars[^1].SessionDate : (DateOnly?)null)) is { } releasedBy ? await read.NewestReleaseOpeningAsync(ticker, releasedBy) : null,
+        // The history pulled before the store's year, read only where the stored year holds no band on a side of the close.
+        // see: Where the stored year holds no band on a side the name page draws bands read from the pulled history, marked older and read by nothing else
+        pulled: bars.Count > 0
+            && (!levels.Any(level => level.Role == EquityBrief.Core.Levels.LevelSeries.Resistance && level.LowEdge > bars[^1].Close)
+                || !levels.Any(level => level.Role == EquityBrief.Core.Levels.LevelSeries.Support && level.HighEdge < bars[^1].Close))
+            ? await read.PulledSeriesAsync(ticker, bars[0].SessionDate)
+            : null);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }

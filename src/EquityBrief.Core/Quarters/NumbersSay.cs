@@ -20,6 +20,7 @@ public static partial class NumbersSay
     [
         ("heading", "What the numbers say: {state}, read from sales and operating margin alone"),
         ("awaited", "The quarter to {quarter} is awaited, so these read the quarter to {quarter}."),
+        ("reported", "The quarter to {quarter} was reported on {day} in its results release and its filing is not stored yet, so these read the quarter to {quarter}."),
         ("sales", "Sales {change} on a year earlier in the quarter to {quarter}, and {change} in the quarter to {quarter}."),
         ("sales rose", "rose {percent}"),
         ("sales fell", "fell {percent}"),
@@ -49,6 +50,14 @@ public static partial class NumbersSay
 
     // The heading a state is drawn under.
     public static string Heading(string state) => Fill("heading", state);
+
+    // The awaited quarter's line once its results release is out and its filing is not yet stored: the line moves on from
+    // awaiting a quarter already reported.
+    // see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+    public static string Reported(DateOnly awaited, DateOnly reportedOn, DateOnly from) => Fill("reported", Date(awaited), Date(reportedOn), Date(from));
+
+    // Whether a sentence is the awaited quarter's line.
+    public static bool IsAwaited(string sentence) => PatternOf(sentence) == "awaited";
 
     // The sentences one night's readings give, in the order the block draws them: the quarter awaited
     // where one is, then the trajectory, the record, the quality and the valuation.
