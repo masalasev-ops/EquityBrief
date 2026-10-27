@@ -10,7 +10,9 @@ namespace EquityBrief.Core.Providers;
 // the capture named for its accession, and a filer's facts the capture whose own CIK is the one asked for, read off
 // the capture rather than off its name; from 19.13 an insider's Form 4 or 4/A is the capture named for its accession.
 // A page, a filer or a Form 4 the refresh asks for that no capture holds refuses by name, since a replay runs over a set
-// that should be complete and an absence there is a fault in the fixture.
+// that should be complete and an absence there is a fault in the fixture. A report's listing and its instance are each
+// the capture named for its accession, and one no capture is named for is answered with none, the archive's own answer
+// for a filing with no instance, so the refresh stores what the facts answer carried.
 public sealed class RecordedFilingsRefreshFeed : IFilingsRefreshFeed
 {
     public const string DayPrefix = "daily-index-";
@@ -27,6 +29,10 @@ public sealed class RecordedFilingsRefreshFeed : IFilingsRefreshFeed
 
     public const string OwnershipExtension = ".txt";
 
+    public const string ListingPrefix = "filing-listing-";
+
+    public const string InstancePrefix = "instance-";
+
     readonly IReadOnlyDictionary<DateOnly, string> days;
 
     readonly IReadOnlyDictionary<string, string> pages;
@@ -35,18 +41,26 @@ public sealed class RecordedFilingsRefreshFeed : IFilingsRefreshFeed
 
     readonly IReadOnlyDictionary<string, string> ownerships;
 
+    readonly IReadOnlyDictionary<string, string> listings;
+
+    readonly IReadOnlyDictionary<string, string> instances;
+
     readonly List<string> asked = [];
 
     RecordedFilingsRefreshFeed(
         IReadOnlyDictionary<DateOnly, string> days,
         IReadOnlyDictionary<string, string> pages,
         IReadOnlyDictionary<string, string> facts,
-        IReadOnlyDictionary<string, string> ownerships)
+        IReadOnlyDictionary<string, string> ownerships,
+        IReadOnlyDictionary<string, string>? listings = null,
+        IReadOnlyDictionary<string, string>? instances = null)
     {
         this.days = days;
         this.pages = pages;
         this.facts = facts;
         this.ownerships = ownerships;
+        this.listings = listings ?? new Dictionary<string, string>(StringComparer.Ordinal);
+        this.instances = instances ?? new Dictionary<string, string>(StringComparer.Ordinal);
     }
 
     public int Documents => asked.Count;
@@ -88,16 +102,28 @@ public sealed class RecordedFilingsRefreshFeed : IFilingsRefreshFeed
             File.ReadAllText,
             StringComparer.Ordinal);
 
-        return new(days, pages, facts, ownerships);
+        var listings = Directory.GetFiles(folder, ListingPrefix + "*.json").ToDictionary(
+            path => Path.GetFileNameWithoutExtension(path)[ListingPrefix.Length..],
+            File.ReadAllText,
+            StringComparer.Ordinal);
+
+        var instances = Directory.GetFiles(folder, InstancePrefix + "*.xml").ToDictionary(
+            path => Path.GetFileNameWithoutExtension(path)[InstancePrefix.Length..],
+            File.ReadAllText,
+            StringComparer.Ordinal);
+
+        return new(days, pages, facts, ownerships, listings, instances);
     }
 
     // A refresh over constructed answers: the days' indexes, the pages by accession, the facts by CIK and the insiders'
-    // filings by accession.
+    // filings by accession; and the reports' listings and their instances, each by accession.
     public static RecordedFilingsRefreshFeed Of(
         IReadOnlyDictionary<DateOnly, string> days,
         IReadOnlyDictionary<string, string>? pages = null,
         IReadOnlyDictionary<string, string>? facts = null,
-        IReadOnlyDictionary<string, string>? ownerships = null) =>
+        IReadOnlyDictionary<string, string>? ownerships = null,
+        IReadOnlyDictionary<string, string>? listings = null,
+        IReadOnlyDictionary<string, string>? instances = null) =>
         new(
             days,
             pages ?? new Dictionary<string, string>(StringComparer.Ordinal),
@@ -105,7 +131,23 @@ public sealed class RecordedFilingsRefreshFeed : IFilingsRefreshFeed
                 pair => SecEdgarArchive.Padded(pair.Key),
                 pair => pair.Value,
                 StringComparer.Ordinal),
-            ownerships ?? new Dictionary<string, string>(StringComparer.Ordinal));
+            ownerships ?? new Dictionary<string, string>(StringComparer.Ordinal),
+            listings,
+            instances);
+
+    public Task<string?> FilingListingAsync(string cik, string accession, CancellationToken cancellation = default)
+    {
+        asked.Add(accession + " " + SecEdgarInstance.Listing);
+
+        return Task.FromResult(listings.TryGetValue(accession, out var listing) ? listing : null);
+    }
+
+    public Task<string?> FilingDocumentAsync(string cik, string accession, string file, CancellationToken cancellation = default)
+    {
+        asked.Add(accession + " " + file);
+
+        return Task.FromResult(instances.TryGetValue(accession, out var instance) ? instance : null);
+    }
 
     public Task<string?> OwnershipAsync(string cik, string accession, CancellationToken cancellation = default)
     {

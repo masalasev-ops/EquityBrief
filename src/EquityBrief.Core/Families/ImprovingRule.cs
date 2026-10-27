@@ -73,6 +73,43 @@ public static class ImprovingRule
     // Whether a release was accepted after a filing: its day in New York later than the filing's day.
     public static bool After(DateOnly releasedOn, DateOnly? filedOn) => filedOn is not { } filed || releasedOn > filed;
 
+    // The sessions a flag's release may stand back from the night: the night's own and the 62 before it.
+    // see: A Fundamentals flag stands only for a release reporting a quarter newer than the member's newest stored filing, accepted within the last 63 sessions
+    public const int FlagSessions = 63;
+
+    // The quarter the newest filing the store holds of a member states: the latest end of a span a figure filed before the
+    // night is for, none where none is stored.
+    public static DateOnly? NewestQuarter(IReadOnlyList<FiledFactRow> facts, DateOnly night) =>
+        facts.Where(fact => fact.Filed < night && fact.Start < fact.End).Select(fact => (DateOnly?)fact.End).Max();
+
+    // Whether a release reports a quarter newer than the one the newest stored filing states: accepted after the end of
+    // the quarter that follows it, which no release of the stored quarter or an older one is.
+    public static bool Newer(DateOnly releasedOn, DateOnly? storedQuarter) =>
+        storedQuarter is not { } quarter || releasedOn > quarter.AddMonths(3);
+
+    // Whether a release was accepted on one of the sessions a flag reads, the night's own and the 62 before it, counted on
+    // the exchange's calendar from the release's day.
+    public static bool Recent(DateOnly releasedOn, DateOnly night) => SessionsFrom(releasedOn, night) <= FlagSessions;
+
+    // The exchange's sessions from a day through the night, each counted where it is a session.
+    public static int SessionsFrom(DateOnly from, DateOnly night)
+    {
+        var sessions = 0;
+
+        for (var day = from; day <= night; day = day.AddDays(1))
+        {
+            sessions += ExchangeClosures.IsSession(day) ? 1 : 0;
+        }
+
+        return sessions;
+    }
+
+    // Whether a member's results release flags it: its scorecard read a check, the release was accepted after the newest
+    // filing the scorecard reads, reports a quarter newer than the newest filing stored, was accepted on one of the last
+    // sessions a flag reads, and reads better with its outlook raised or kept.
+    public static bool FlagStands(int applied, DateOnly releasedOn, DateOnly? filedOn, DateOnly? storedQuarter, DateOnly night, ReleaseAnswer answer) =>
+        applied > 0 && After(releasedOn, filedOn) && Newer(releasedOn, storedQuarter) && Recent(releasedOn, night) && Flags(answer);
+
     // The release a filing confirmed: one accepted after its quarter ended and on or before the filing's day, none
     // otherwise.
     public static DateOnly? Confirmed(DateOnly? releasedOn, DateOnly? quarter, DateOnly? filedOn) =>

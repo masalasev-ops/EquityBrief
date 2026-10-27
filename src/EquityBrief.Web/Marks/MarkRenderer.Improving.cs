@@ -39,6 +39,9 @@ public sealed partial class MarkRenderer
     // The stocks the "Strongest businesses" tab draws.
     public const int StrongestShown = 10;
 
+    // What a row of a member whose scorecard read no check says in its score's place.
+    public const string NoChecksRead = "No checks could be read from its filings";
+
     // The trading days "Reporting this week" counts after the night.
     public const int ReportingDays = 5;
 
@@ -205,7 +208,9 @@ public sealed partial class MarkRenderer
                 HeldWords => "earlier",
                 _ => "improved",
             };
-            var now = state == "flagged"
+            var now = cell.Applied == 0
+                ? Formatted($"<b>{NoChecksRead}</b>")
+                : state == "flagged"
                 ? Formatted($"<b>filing not in yet</b><span class=\"improving-from\">was {cell.Passed} of {cell.Applied}</span>")
                 : cell is { BeforePassed: { } before, BeforeApplied: { } applied }
                     ? Formatted($"<b>{cell.Passed} of {cell.Applied}</b><span class=\"improving-from\">up from {before}{(applied != cell.Applied ? Formatted($" of {applied}") : string.Empty)}</span>")

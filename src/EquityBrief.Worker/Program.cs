@@ -187,8 +187,9 @@ static int NoVerb()
         "does, with '--again' pricing every one again over what an earlier run wrote, " +
         "'filings' reads the archive's daily index for the days since the refresh last read one and asks the facts of " +
         "the members of the three indices that filed a report, an amendment or a results announcement, as the night's " +
-        "step does, and 'filings --whole' asks every filer the store knows for its facts once, each storing every fact " +
-        "not yet stored as first filed, " +
+        "step does, 'filings --whole' asks every filer the store knows for its facts once, each storing every fact " +
+        "not yet stored as first filed, and 'filings --instances --from <yyyy-MM-dd>' reads each member's report filed " +
+        "since that day that the store holds no fact of from its own XBRL instance, " +
         "'insiders-history' reads each quarter of the SEC's insider data sets from 2018q1 through the newest posted that " +
         "no earlier read recorded, one request a quarter and one for the page listing them, and stores every company's " +
         "Forms 4 and 4/A, with '--from <quarter>' and '--through <quarter>' as 2026q3 bounding the quarters and " +
@@ -1111,6 +1112,39 @@ static async Task<int> FilingsRun(string[] args)
             + (whole.Refusal is null ? string.Empty : "; stopped on the archive's refusal: " + whole.Refusal));
 
         return whole.Refusal is null ? 0 : 1;
+    }
+
+    // Each member's report filed since a day that the store holds no fact of, read from its own XBRL instance; refused
+    // while a night holds the store.
+    // see: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance
+    if (args.Contains("--instances", StringComparer.Ordinal))
+    {
+        if (EquityBrief.Core.Configuration.NightLock.Holder(store.DataRoot) is { } holder)
+        {
+            Console.Error.WriteLine($"filings: the night holds the store ({holder}); run it once the night has finished.");
+
+            return 2;
+        }
+
+        if (!DateOnly.TryParseExact(VerbArguments.Value(args, "--from") ?? string.Empty, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var from))
+        {
+            Console.Error.WriteLine("filings: name the first day with '--from <yyyy-MM-dd>'.");
+
+            return 2;
+        }
+
+        var read = await refresher.InstancesAsync(
+            from,
+            EquityBrief.Worker.Indices.IndexFamilies.LargeIndex,
+            [.. EquityBrief.Worker.Indices.IndexFamilies.Indices.Where(index => index != EquityBrief.Worker.Indices.IndexFamilies.LargeIndex)],
+            runId,
+            Console.Out);
+
+        Console.WriteLine(FormattableString.Invariant($"filings: {read.Instances} report(s) read from their own instance, {read.Facts} fact(s) stored, {read.Documents} document(s) asked, in {read.Seconds:0} s")
+            + (read.Unread is { Count: > 0 } notRead ? FormattableString.Invariant($"; {notRead.Count} not read: ") + string.Join("; ", notRead.Take(5)) : string.Empty)
+            + (read.Refusal is null ? string.Empty : "; stopped on the archive's refusal: " + read.Refusal));
+
+        return read.Refusal is null ? 0 : 1;
     }
 
     var outcome = await refresher.NightAsync(

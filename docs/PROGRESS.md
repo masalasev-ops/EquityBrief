@@ -10395,3 +10395,131 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 3a6ff15
             169 passed.
 Carried:    a filer that re-formed under a new number, read under no member for the years before it re-formed, put to
             the operator as a ruling of its own.
+
+### 22.14 ruling - the Fundamentals family's stale flags first, its filings read where the SEC's facts lack them, then its history test on the operator's grid and floors, then a stop for 22.15   2026-10-27
+
+Not a checkpoint entry: it records the operator's ruling and lands nothing.
+Ruled:      by the operator on 2026-10-27 at about 04:40 UTC, kept whole in
+            `prompts/2026-10-27-22.14-finish-phase-22-stale-flags-22.14-22.15.md`, to run after the monthly run by hand of
+            that day. First the stale flags: a report of each flagged member's newest release and newest stored filing,
+            with whether the SEC's archive holds a later filing the store lacks; how many members on each index read an
+            older quarter than their newest filing and why the refresh missed them, the refresh fixed with a remedy from
+            main; a flag standing only for a release reporting a quarter newer than the member's newest stored filing and
+            accepted within the last 63 sessions; a member whose scorecard read no check never ranked or flagged, its row
+            reading "No checks could be read from its filings"; and Tonight's card read back after the night. Then 22.14
+            on a grid of 144 settings an index with the quality family's floors, business first's check registered as the
+            pullback version "Pullback, business growing" and business first ending as a family. Then a stop for 22.15,
+            each index's freeze waiting on the operator's word.
+Labelled:   read off the record: a filing the refresh cannot read from the SEC's facts under 17.3, which built the refresh;
+            the flag's bounds and a member whose scorecard read no check under 22.13, whose family they correct; and the
+            history test under 22.14.
+Queue:      done, the 17.3 correction and its remedy (PRs 570 and 572) and the monthly run of 2026-10-27; in progress,
+            the stale flags; next, 22.14, then 22.15 on the operator's word, and the sign-offs of phases 18, 20 and 22 by
+            fresh sessions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 17.3 - correction: a report the archive's facts answer carries no figure of is read from its own XBRL instance, and net income under a third concept   2026-10-27
+
+Found:      the stale flags' report on the operator's word, read-only over the store and the SEC's own list of each filer's
+            reports. Over every member the night of 2026-10-26 scored, 145 read an older quarter than a report the SEC
+            lists for their filer, 68 on the S&P 500, 41 on the S&P 400 and 36 on the S&P 600: 120 because the archive's
+            facts answer, the refresh's one source, holds no figure of the report, 108 of them second-quarter 10-Qs filed
+            from 2026-07-28 to 2026-08-06, Abbott's answer ending at its 10-Q of 2026-04-29 though it filed one on
+            2026-07-28 whose own XBRL instance the archive holds; 22 filed on the session itself and read from the next
+            night, as every filing is; and BKNG's, VTRS's and ACT's, whose answer holds their second quarter's net income
+            under net income available to the common holders alone. The parser and the store passed over nothing.
+Corrected:  where the night's refresh asks a filer's facts for a 10-Q, a 10-K or an amendment to either and the answer
+            carries no figure of that report, it asks for the listing of the report's documents and the instance it
+            names, two requests under the same limit, and stores each figure stated with no dimension as first filed
+            under the report; `filings --instances --from <day>` reads by hand each member's report since a day that the
+            store holds no fact of; and net income is read under a third concept after net income and profit. The
+            decision, the hard rule's carve-out in CLAUDE.md, the architecture's catalogue and stores rows, the schema,
+            the runbook, the guide's sentence on where the figures come from, the roster's nightly-cost row and the
+            changelog.
+Tests:      6 new: Abbott's instance, trimmed and every element as served, read as the facts answer reads a filing, each
+            figure once, a segment's passed over and the share count's bare unit read; the figures no context or number
+            can carry passed over; the instance found in a listing; the third concept read for a quarter stating neither
+            of the first two; the night reading a report from its instance only where the answer carries none of it; and
+            the by-hand pass reading only the members' reports the store holds no fact of. A test of the night's
+            constructed answers named its report's accession, which it now must.
+Claims:     none new: the rows are amended in place.
+Pins:       none move: no source it edits is one an evaluator's version pins; the frozen quality rules read the scorecard
+            through the facts, so their inputs gain the quarters a filing states under the third concept alone.
+Remedy:     `tools/remedies/2026-10-27-17.3-correction-reports-read-from-their-own-instance.txt` from main after the
+            merge: the whole refresh, storing the third concept for every filer; the reports the store lacks read from
+            2026-01-02; and the newest night's scorecards and ledger night again. The ledger's history reads them from its
+            next build, the monthly run of 2026-11-07.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, each filtered
+            to the tests reading it. I1 the answer read as carrying every report: red at the night's test. I2 as carrying
+            none: red at both night tests, the carried report's listing asked. I3 the by-hand pass reading a stored report:
+            red. I4 a figure under a segment read: red at the odd figures' test. I5 a unit's bare name refused: red at
+            both instance tests. I6 the first XML document taken for the instance: red at the listing's test. I7 the third
+            concept dropped: red.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 17.3 - correction: the third net income concept taken out before the merge, so neither the readings' version nor any quality rule's moves   2026-10-27
+
+Found:      the checkpoint script over eeddf711, the tree carrying the entries above, refused the third concept twice:
+            the ledger readings' version stood off the pin of its sources, the facts' file the concept is named in being
+            one of them, and the facts' concepts numbered 28 against the 27 their test states. Moving the readings'
+            version moves the version of each of the 24 quality rules too, since their evaluator pins the readings'
+            file whole, its version's line among its lines, and a rule whose version moved stalls until it is
+            registered again, which the operator's limits rule out.
+Corrected:  net income read under net income and profit alone, as before the correction, and the test of the third
+            concept taken out with it; the decision, the architecture's filed facts row, the schema and the runbook no
+            longer read it, and the changelog. The remedy no longer runs the whole refresh, which it ran only to store
+            the third concept for every filer. The comments the correction added state no date and no checkpoint.
+Tests:      one fewer, the third concept's.
+Claims:     none.
+Pins:       none move: the readings' version stands at a47e1ae9a20e, held to its sources by its own test, and no
+            rule's moves.
+Remedy:     `tools/remedies/2026-10-27-17.3-correction-reports-read-from-their-own-instance.txt` from main after the
+            merge: the reports the store lacks read from 2026-01-02 from their own instances, then the newest night's
+            scorecards and ledger night again.
+Mutated:    I7 goes with the concept it undid; I1 to I6 stand as the entry above records them, over code this entry
+            leaves as it was.
+Carried:    BKNG, VTRS and ACT, whose 10-Qs state net income under net income available to the common holders alone,
+            their scorecards reading their newest quarter stating net income under one of the first two, put to the
+            operator: read the concept, moving the readings' version and registering the 24 quality rules again, or not.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 22.13 - correction: a Fundamentals flag stands only for a release of a newer quarter within 63 sessions, and a scorecard reading no check is never ranked or flagged   2026-10-27
+
+Found:      the same report, each flag of the night of 2026-10-26 against its stored filing. Of the S&P 500's 33, 23 rested
+            on a report the store lacked, 1 on a report filed that day, 2, BKNG and VTRS, on one stored whose net income
+            the scorecard could not read, and 7 on none later; of the S&P 400's 18, 11, 2, none and 5; of the S&P 600's
+            14, 6, 3, 1, ACT, and 4. IDA's flag rested on a release of 2026-04-30; DK's and DIOD's on releases of
+            2026-08-07 and 2026-08-11 for the quarter their filings of 2026-08-05 already stated; and GEF's on a scorecard
+            that read no check, its row reading "was 0 of 0".
+Corrected:  a release flags only where the scorecard read a check, it was accepted after the newest filing the scorecard
+            reads, it reports a quarter newer than the newest filing stored, being accepted after the end of the quarter
+            that follows that filing's, and it was accepted on the night's session or one of the 62 before it; the card
+            ranks no member whose scorecard read no check, one flagged before the correction among them, and draws a trade
+            held in one after the ranked rows saying no checks could be read from its filings. The decision, the
+            architecture's paragraph, catalogue, card and settings rows, section 17's figure pinned, the schema's column,
+            the roster's fixture-expectations and read-surface rows, the guide's flag and the changelog. Section 17's
+            settings row names the correction in its source column, since the pinned figures' check reads every digit its
+            value cell states.
+Tests:      3 new: the flag's bounds worked on both sides, the release on the following quarter's last day and the day
+            after, the 63rd session back and the 64th, counted by hand off the exchange's closures; the family's step over
+            five members, two flagging and three not, one for each bound; and the card over a night holding a member
+            flagged at 0 of 0 and a trade held in one. 2828 in all, the third concept's test gone with it.
+Claims:     none new: the rows are amended in place.
+Pins:       none move: the four sources it edits are 22.13's own, which no rule pins, as 22.13's test asserts, and the
+            family is registered under no version.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, each filtered
+            to the tests reading it. G1 a release's quarter newer once past the stored quarter's end: red at both rule
+            tests, J02 flagging. G2 the following quarter's last day read as newer: red at the bounds' test. G3 the 63rd
+            session back left out: red at both, J04 not flagging. G4 the check read dropped: red at both, J05 flagging. G5
+            a filing made on the night read as stored: red at the bounds' test. G6 a member reading no check ranked: red at
+            the card's test, M4 drawn. G7 a held one's row drawn with its score: red there too.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2828 of 2828 tests ran
+            with none failed, migrations 0 to 112 with none pending, schema version 112, against `data-ci` and never
+            `data`; the phase report 64 tables, 1454 claims, 1454 passing, none out of scope and none unexamined, 1469
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the remedy's record, and each index's card read back on Tonight after the night of 2026-10-27 with its counts
+            and rows from the corrected rule.

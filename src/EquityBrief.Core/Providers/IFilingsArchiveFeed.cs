@@ -55,6 +55,12 @@ public enum ArchiveDocument
     CurrentFilings,
 
     SubmissionsPage,
+
+    // A filing's listing of its documents, and the XBRL instance among them, which the filings refresh reads for a report
+    // the facts answer carries no figure of.
+    FilingListing,
+
+    XbrlInstance,
 }
 
 // One document the archive is asked for.

@@ -48,9 +48,16 @@ public static partial class TonightScreen
         var byTicker = tonight.ToDictionary(row => row.Ticker, StringComparer.Ordinal);
         string? Company(string ticker) => cells.TryGetValue(ticker, out var cell) ? cell.Name : null;
 
-        var ranked = ImprovingRule.Ranked(
-            tonight.Where(row => row.Status is not null),
-            row => (row is { BeforePassed: { } before, BeforeApplied: { } applied } && row.Status != ImprovingRule.Flagged ? ImprovingRule.Rise(row.PassedChecks, row.Applied, before, applied) : null, row.GrowthChange, row.Ticker));
+        // A member whose scorecard read no check is never ranked: a trade held in one is drawn after the ranked rows, its row
+        // saying no check could be read.
+        // see: A Fundamentals flag stands only for a release reporting a quarter newer than the member's newest stored filing, accepted within the last 63 sessions
+        IReadOnlyList<ImprovingResultRow> ranked =
+        [
+            .. ImprovingRule.Ranked(
+                tonight.Where(row => row.Status is not null && row.Applied > 0),
+                row => (row is { BeforePassed: { } before, BeforeApplied: { } applied } && row.Status != ImprovingRule.Flagged ? ImprovingRule.Rise(row.PassedChecks, row.Applied, before, applied) : null, row.GrowthChange, row.Ticker)),
+            .. tonight.Where(row => row.Status == ImprovingRule.Held && row.Applied == 0).OrderBy(row => row.Ticker, StringComparer.Ordinal),
+        ];
 
         ImprovingRowCell[] improving =
         [

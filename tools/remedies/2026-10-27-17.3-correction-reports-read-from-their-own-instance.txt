@@ -1,0 +1,11 @@
+# The remedy of 17.3's correction of 2026-10-27 (a report the archive's facts answer carries no figure of is read from
+# its own XBRL instance), as its PROGRESS entries print it. No migration. Each member's report filed since 2026-01-02
+# that the store holds no fact of is read from its own instance: every weekday's index from that day through the newest
+# the refresh has read, about 200 requests, and two for each report, about 120 reports on 2026-10-27. Then the newest
+# night's scorecards are written again and the ledger's night step runs over it. The ledger's history reads the new
+# facts from its next build, the monthly run of 2026-11-07. Requests of the SEC's archive alone, free and keyless; no
+# request of the provider and no model call. Run from main after the merge, when no night, local run, drain, labeller
+# or monthly run is writing, and restart the read surface after it.
+filings --instances --from 2026-01-02
+scores
+ledger-night

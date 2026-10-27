@@ -78,6 +78,35 @@ public partial class ReadSurface
         store.Execute($"INSERT INTO quality_holding (rule, index_code, ticker, chosen_on, buy_close, growth, through, end_reason) VALUES ('provisional', 'MID', 'M1', '{IndexNight}', '50', 1.0, '{IndexNight}', 'open');");
     }
 
+    // A member whose scorecard read no check is never ranked or flagged: a stored night flagging one at 0 of 0 draws it
+    // nowhere, and a trade held in one is drawn after the ranked rows, its score's place saying no check could be read.
+    // see: A Fundamentals flag stands only for a release reporting a quarter newer than the member's newest stored filing, accepted within the last 63 sessions
+    [Fact]
+    public async Task AMemberWhoseScorecardReadNoCheckIsNeverRankedAndAHeldOnesRowSaysNoCheckCouldBeRead()
+    {
+        using var store = UniversesStore();
+
+        ImprovingNightOn(store);
+        store.Execute(
+            "INSERT INTO improving_result (rule, index_code, session_date, ticker, passed_checks, applied, filed, first_read, before_passed, before_applied, before_checks, growth, growth_change, released, outlook, flagged, status, reason, carried) VALUES " +
+            $"('provisional', 'MID', '{IndexNight}', 'M4', 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, '2026-09-30', 'kept', 1, 'flagged', NULL, 1.0), " +
+            $"('provisional', 'MID', '{IndexNight}', 'M5', 0, 0, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 'held', NULL, 1.0);");
+        store.Execute(
+            "INSERT INTO improving_trade (rule, index_code, ticker, chosen_on, filed, released, passed_checks, applied, before_passed, before_applied, buy_close, bought_on, fill, gap, bench_gap, members, growth, through, sessions, end_reason) VALUES " +
+            "('provisional', 'MID', 'M5', '2026-10-01', '2026-09-30', NULL, 8, 9, 5, 9, '48', '2026-10-02', '48', 0.0, 0.0, 3, 1.0, '2026-10-02', 1, 'open');");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
+        var section = Assert.Single(Blocks(page, "<section class=\"card setup-card\" id=\"setup-improving\".*?</section></div></section>"));
+
+        Assert.DoesNotContain("data-ticker=\"M4\"", section, StringComparison.Ordinal);
+        Assert.Contains($"<td class=\"improving-score\"><b>{EquityBrief.Web.Marks.MarkRenderer.NoChecksRead}</b></td>", section, StringComparison.Ordinal);
+        Assert.True(section.IndexOf("data-ticker=\"M5\"", StringComparison.Ordinal) > section.IndexOf("data-ticker=\"M3\"", StringComparison.Ordinal));
+        Assert.DoesNotContain("was 0 of 0", section, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task TheFundamentalsFamilysCardReadsBackOffTonightInTheFundamentalsFirstFamilysPlace()
     {
