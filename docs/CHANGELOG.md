@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-27 - docs/ARCHITECTURE.html - the Fundamentals family's starting settings name the 22.13 correction in their source
+Corrects: section 17's value cell stated the correction's checkpoint and day in digits, which the pinned figures' check reads as settings no constant holds, found by the checkpoint script over the 22.13 correction's tree before the merge.
+Was:
+> The Fundamentals family's starting settings: "... buying nothing, from the 22.13 correction of 2026-10-27 only for a release reporting a quarter newer than the newest filing stored and accepted within the last 63 sessions and never for a scorecard reading no check; one trade a stock; ...</td><td>the operator's ruling of 2026-10-26 named the family, its bar, its hold, its time limit, its flag and its benchmark, the score after Piotroski (2000). Judgement: ..."
+Now:
+> The Fundamentals family's starting settings: "... buying nothing, and only for a release reporting a quarter newer than the newest filing stored and accepted within the last 63 sessions, never for a scorecard reading no check; one trade a stock; ...</td><td>the operator's ruling of 2026-10-26 named the family, its bar, its hold, its time limit, its flag and its benchmark, the score after Piotroski (2000), and their word of 2026-10-27, as the 22.13 correction, bounded the flag. Judgement: ..."
+Why: a setting's value states its figures alone, and where it came from belongs in its source.
+
 ### 2026-10-27 - docs/ARCHITECTURE.html - the filed facts' row no longer reads net income under a third concept
 Corrects: reading net income under net income available to the common holders moves the ledger readings' version and with it every quality rule's, found by the checkpoint script over the 22.13 correction's tree before the merge.
 Was:

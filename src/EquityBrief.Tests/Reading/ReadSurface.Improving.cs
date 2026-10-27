@@ -78,10 +78,8 @@ public partial class ReadSurface
         store.Execute($"INSERT INTO quality_holding (rule, index_code, ticker, chosen_on, buy_close, growth, through, end_reason) VALUES ('provisional', 'MID', 'M1', '{IndexNight}', '50', 1.0, '{IndexNight}', 'open');");
     }
 
-    // From the 22.13 correction of 2026-10-27, on the operator's word: a member whose scorecard read no check is never ranked
-    // or flagged. A night stored before the correction can hold one flagged at 0 of 0, as GEF's of 2026-10-26 was, and the
-    // card draws it nowhere; a trade held in one is drawn after the ranked rows, its score's place saying no check could be
-    // read.
+    // A member whose scorecard read no check is never ranked or flagged: a stored night flagging one at 0 of 0 draws it
+    // nowhere, and a trade held in one is drawn after the ranked rows, its score's place saying no check could be read.
     // see: A Fundamentals flag stands only for a release reporting a quarter newer than the member's newest stored filing, accepted within the last 63 sessions
     [Fact]
     public async Task AMemberWhoseScorecardReadNoCheckIsNeverRankedAndAHeldOnesRowSaysNoCheckCouldBeRead()

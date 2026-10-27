@@ -10500,11 +10500,12 @@ Corrected:  a release flags only where the scorecard read a check, it was accept
             ranks no member whose scorecard read no check, one flagged before the correction among them, and draws a trade
             held in one after the ranked rows saying no checks could be read from its filings. The decision, the
             architecture's paragraph, catalogue, card and settings rows, section 17's figure pinned, the schema's column,
-            the roster's fixture-expectations and read-surface rows and the changelog.
+            the roster's fixture-expectations and read-surface rows and the changelog. Section 17's settings row names the
+            correction in its source column, since the pinned figures' check reads every digit its value cell states.
 Tests:      3 new: the flag's bounds worked on both sides, the release on the following quarter's last day and the day
             after, the 63rd session back and the 64th, counted by hand off the exchange's closures; the family's step over
             five members, two flagging and three not, one for each bound; and the card over a night holding a member
-            flagged at 0 of 0 and a trade held in one. 2829 in all.
+            flagged at 0 of 0 and a trade held in one. 2828 in all, the third concept's test gone with it.
 Claims:     none new: the rows are amended in place.
 Pins:       none move: the four sources it edits are 22.13's own, which no rule pins, as 22.13's test asserts, and the
             family is registered under no version.
@@ -10515,7 +10516,7 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             a filing made on the night read as stored: red at the bounds' test. G6 a member reading no check ranked: red at
             the card's test, M4 drawn. G7 a held one's row drawn with its score: red there too.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
-            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2829 of 2829 tests ran
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2828 of 2828 tests ran
             with none failed, migrations 0 to 112 with none pending, schema version 112, against `data-ci` and never
             `data`; the phase report 64 tables, 1454 claims, 1454 passing, none out of scope and none unexamined, 1469
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.

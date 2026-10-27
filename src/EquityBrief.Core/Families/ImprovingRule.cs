@@ -73,8 +73,7 @@ public static class ImprovingRule
     // Whether a release was accepted after a filing: its day in New York later than the filing's day.
     public static bool After(DateOnly releasedOn, DateOnly? filedOn) => filedOn is not { } filed || releasedOn > filed;
 
-    // From the 22.13 correction of 2026-10-27 the sessions a flag's release may stand back from the night: the night's own
-    // and the 62 before it.
+    // The sessions a flag's release may stand back from the night: the night's own and the 62 before it.
     // see: A Fundamentals flag stands only for a release reporting a quarter newer than the member's newest stored filing, accepted within the last 63 sessions
     public const int FlagSessions = 63;
 

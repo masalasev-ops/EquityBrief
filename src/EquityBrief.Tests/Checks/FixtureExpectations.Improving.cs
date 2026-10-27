@@ -114,10 +114,9 @@ public partial class FixtureExpectations
         Assert.True(ImprovingRule.After(friday, null));
     }
 
-    // From the 22.13 correction of 2026-10-27, on the operator's word: a release reports a quarter newer than the newest
-    // stored filing's only once accepted after the end of the quarter that follows it, and a flag reads the night's session
-    // and the 62 before it, the sessions counted by hand off the exchange's closures of 2026-07-03 and 2026-09-07: the
-    // 63rd back from 2026-10-26 is 2026-07-29 and the 64th 2026-07-28.
+    // A release reports a quarter newer than the newest stored filing's only once accepted after the end of the quarter
+    // that follows it, and a flag reads the night's session and the 62 before it, the sessions counted by hand off the
+    // exchange's closures between them.
     // see: A Fundamentals flag stands only for a release reporting a quarter newer than the member's newest stored filing, accepted within the last 63 sessions
     [Fact]
     public void AFlagsReleaseReportsANewerQuarterOnlyAfterTheFollowingQuarterEndsAndStandsWithinSixtyThreeSessions()
@@ -156,10 +155,9 @@ public partial class FixtureExpectations
         Assert.True(ImprovingRule.FlagStands(9, new DateOnly(2026, 7, 29), new DateOnly(2026, 5, 1), new DateOnly(2026, 3, 31), night, better));
     }
 
-    // The family's step over five S&P 400 members, each 8 of 9 with a release reading better and its outlook raised: J01's
-    // release of 2026-10-21 follows its June quarter by more than a quarter and flags; J02's of 2026-08-07 reports the
-    // quarter its filing of 2026-08-05 stores; J03's, its March quarter's next, stands 64 sessions back and J04's 63; and
-    // J05's scorecard read no check.
+    // The family's step over five members, each 8 of 9 with a release reading better and its outlook raised: J01's release
+    // follows its stored quarter by more than a quarter and flags; J02's reports the quarter its stored filing states;
+    // J03's newer release stands 64 sessions back and J04's 63; and J05's scorecard read no check.
     [Fact]
     public async Task AFlagStandsOnlyForAReleaseOfANewerQuarterWithinSixtyThreeSessionsAndNeverForAScorecardReadingNoCheck()
     {
