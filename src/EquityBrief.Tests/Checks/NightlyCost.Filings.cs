@@ -267,7 +267,8 @@ public partial class NightlyCost
         var tuesday = new DateOnly(2026, 10, 6);
 
         // On the Tuesday AAA and BBB each file a 10-Q: the facts answer carries AAA's and not yet BBB's, holding only an
-        // earlier report of its, and the archive holds BBB's listing and its instance, Abbott's served under BBB's report.
+        // earlier report of its, and the archive holds BBB's listing and its instance, the captured one served under BBB's
+        // report.
         var feed = RecordedFilingsRefreshFeed.Of(
             new Dictionary<DateOnly, string>
             {
@@ -314,7 +315,7 @@ public partial class NightlyCost
     {
         using var store = FilingsStore();
 
-        // The refresh has read through 2026-10-07. On 2026-10-05 AAA's 10-Q, stored already, BBB's 10-K/A, stored not at
+        // The refresh has read through the Wednesday. On the Monday AAA's 10-Q, stored already, BBB's 10-K/A, stored not at
         // all, and a report of a filer that is no member; the archive posted no index for the other days.
         store.Execute("INSERT INTO filing_day (day, run_id, read_at, posted, filings, members, refreshed) VALUES ('2026-10-07', 'earlier', '2026-10-07T23:40:00.000Z', 1, 0, 0, 0);");
         store.Execute("INSERT INTO filed_fact (cik, concept, period_start, period_end, dollars, filed, form, accession, run_id) VALUES ('0000000101', 'Revenues', '2026-04-01', '2026-06-30', '1000', '2026-10-05', '10-Q', '0000000101-26-000007', 'earlier');");

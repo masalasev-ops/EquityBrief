@@ -10459,6 +10459,33 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
 
+### 17.3 - correction: the third net income concept taken out before the merge, so neither the readings' version nor any quality rule's moves   2026-10-27
+
+Found:      the checkpoint script over eeddf711, the tree carrying the entries above, refused the third concept twice:
+            the ledger readings' version stood off the pin of its sources, the facts' file the concept is named in being
+            one of them, and the facts' concepts numbered 28 against the 27 their test states. Moving the readings'
+            version moves the version of each of the 24 quality rules too, since their evaluator pins the readings'
+            file whole, its version's line among its lines, and a rule whose version moved stalls until it is
+            registered again, which the operator's limits rule out.
+Corrected:  net income read under net income and profit alone, as before the correction, and the test of the third
+            concept taken out with it; the decision, the architecture's filed facts row, the schema and the runbook no
+            longer read it, and the changelog. The remedy no longer runs the whole refresh, which it ran only to store
+            the third concept for every filer. The comments the correction added state no date and no checkpoint.
+Tests:      one fewer, the third concept's.
+Claims:     none.
+Pins:       none move: the readings' version stands at a47e1ae9a20e, held to its sources by its own test, and no
+            rule's moves.
+Remedy:     `tools/remedies/2026-10-27-17.3-correction-reports-read-from-their-own-instance.txt` from main after the
+            merge: the reports the store lacks read from 2026-01-02 from their own instances, then the newest night's
+            scorecards and ledger night again.
+Mutated:    I7 goes with the concept it undid; I1 to I6 stand as the entry above records them, over code this entry
+            leaves as it was.
+Carried:    BKNG, VTRS and ACT, whose 10-Qs state net income under net income available to the common holders alone,
+            their scorecards reading their newest quarter stating net income under one of the first two, put to the
+            operator: read the concept, moving the readings' version and registering the 24 quality rules again, or not.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
 ### 22.13 - correction: a Fundamentals flag stands only for a release of a newer quarter within 63 sessions, and a scorecard reading no check is never ranked or flagged   2026-10-27
 
 Found:      the same report, each flag of the night of 2026-10-26 against its stored filing. Of the S&P 500's 33, 23 rested

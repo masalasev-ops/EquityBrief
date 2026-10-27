@@ -60,10 +60,7 @@ public static class FiledFacts
 
     public static IReadOnlyList<string> OperatingIncome { get; } = ["OperatingIncomeLoss"];
 
-    // From the 17.3 correction of 2026-10-27 net income available to the common holders read where a filing states
-    // neither of the first two, as some state the quarter's income under it alone.
-    // see: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance
-    public static IReadOnlyList<string> NetIncome { get; } = ["NetIncomeLoss", "ProfitLoss", "NetIncomeLossAvailableToCommonStockholdersBasic"];
+    public static IReadOnlyList<string> NetIncome { get; } = ["NetIncomeLoss", "ProfitLoss"];
 
     public static IReadOnlyList<string> OperatingCash { get; } =
         ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"];

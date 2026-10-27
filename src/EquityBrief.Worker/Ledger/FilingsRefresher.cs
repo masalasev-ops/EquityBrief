@@ -17,8 +17,8 @@ public sealed record FilingDayRead(DateOnly Day, bool Posted, int Filings, int M
 // What one refresh did: the days it read, the first day the archive had not posted where it stopped, the members it
 // refreshed, the facts it stored, the documents it asked for of each kind, the members a limit left and the archive's
 // refusal where one stopped it; from 19.13 the insiders' filings it asked for, the transactions it stored and the filings
-// it could not read with why; from the 17.3 correction of 2026-10-27 the reports it read from their own XBRL instance and
-// the documents those reads asked for.
+// it could not read with why; and the reports it read from their own XBRL instance and the documents those reads asked
+// for.
 public sealed record FilingsOutcome(
     IReadOnlyList<FilingDayRead> Days,
     DateOnly? NotYetPosted,
@@ -55,9 +55,9 @@ public sealed record FilingsOutcome(
 // why. The whole refresh asks every filer the store knows once, which the monthly run's catch-all repeats. From 19.13
 // each day's Form 4 and 4/A filings of the members' filers are read after its facts by the insiders' reader, one request
 // a filing under the same limit, and a day is recorded read once both are done; a filing stored already is not asked
-// again, so a day the limit stopped is read again from where it stopped. From the 17.3 correction of 2026-10-27 a
-// report the archive's facts answer carries no figure of is read from its own XBRL instance, two documents a report,
-// and by hand the reports filed since a day that the store holds no fact of are read the same way.
+// again, so a day the limit stopped is read again from where it stopped. A report the archive's facts answer carries no
+// figure of is read from its own XBRL instance, two documents a report, and by hand the reports filed since a day that
+// the store holds no fact of are read the same way.
 // see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
 // see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session
 // see: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance

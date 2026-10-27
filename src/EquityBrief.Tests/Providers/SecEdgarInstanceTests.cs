@@ -3,12 +3,11 @@ using EquityBrief.Core.Providers;
 
 namespace EquityBrief.Tests.Providers;
 
-// A report's own XBRL instance, read where the archive's facts answer carries no figure of the report. The capture is
-// Abbott's 10-Q of 2026-07-28 (0001628280-26-050134), which the facts answer for CIK 1800 did not hold on 2026-10-27,
-// trimmed to the contexts, units and figures the test reads, each element as the archive served it: its contexts and
-// units in the instance's own namespace with no prefix, its share count's unit the bare name "shares", and its net
-// income stated twice for each period and once more under a segment. The figures expected were read off the capture
-// by hand.
+// A report's own XBRL instance, read where the archive's facts answer carries no figure of the report. The capture is a
+// served 10-Q's instance, trimmed to the contexts, units and figures the test reads, each element as the archive served
+// it: its contexts and units in the instance's own namespace with no prefix, its share count's unit the bare name
+// "shares", and its net income stated twice for each period and once more under a segment. The figures expected were
+// read off the capture by hand.
 // see: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance
 public class SecEdgarInstanceTests
 {
@@ -164,28 +163,6 @@ public class SecEdgarInstanceTests
         Assert.Throws<FormatException>(() => SecEdgarInstance.Facts("not an instance", Accession, Filed, "10-Q", FiledFacts.Concepts));
     }
 
-    // Net income available to the common holders, the one name some reports state the quarter's income under, read for a
-    // quarter whose filing states neither net income nor profit, and passed over where its filing states net income.
-    [Fact]
-    public void NetIncomeAvailableToTheCommonHoldersIsReadOnlyWhereAFilingStatesNeitherNetIncomeNorProfit()
-    {
-        var filed = new DateOnly(2026, 8, 6);
-        var facts = new[]
-        {
-            new Core.Families.FiledRevenue("NetIncomeLossAvailableToCommonStockholdersBasic", new(2026, 4, 1), new(2026, 6, 30), 70m, filed, "10-Q", "a"),
-            new Core.Families.FiledRevenue("NetIncomeLossAvailableToCommonStockholdersBasic", new(2026, 1, 1), new(2026, 3, 31), 60m, filed.AddMonths(-3), "10-Q", "b"),
-            new Core.Families.FiledRevenue("NetIncomeLoss", new(2026, 1, 1), new(2026, 3, 31), 65m, filed.AddMonths(-3), "10-Q", "b"),
-        };
-
-        var quarters = Core.Families.FirstFiledRevenue.Quarters(facts, FiledFacts.NetIncome);
-
-        Assert.Equal(
-            ["2026-03-31|65|NetIncomeLoss", "2026-06-30|70|NetIncomeLossAvailableToCommonStockholdersBasic"],
-            quarters.Select(quarter => FormattableString.Invariant($"{quarter.End:yyyy-MM-dd}|{quarter.Value}|{quarter.Concept}")));
-        Assert.Equal("NetIncomeLossAvailableToCommonStockholdersBasic", FiledFacts.NetIncome[^1]);
-        Assert.Contains("NetIncomeLossAvailableToCommonStockholdersBasic", FiledFacts.Concepts);
-    }
-
     [Fact]
     public void TheInstanceIsTheOneAnInlineReportIsExtractedIntoOrTheOneXmlDocumentThatIsNoLinkbase()
     {
@@ -194,7 +171,7 @@ public class SecEdgarInstanceTests
             + string.Join(",", names.Select(name => "{\"name\":\"" + name + "\",\"type\":\"text.gif\"}"))
             + "]}}";
 
-        // Abbott's listing, its documents as the archive named them.
+        // The captured report's listing, its documents as the archive named them.
         Assert.Equal(
             "abt-20260630_htm.xml",
             SecEdgarInstance.InstanceFile(Listing(

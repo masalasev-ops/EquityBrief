@@ -1114,8 +1114,8 @@ static async Task<int> FilingsRun(string[] args)
         return whole.Refusal is null ? 0 : 1;
     }
 
-    // From the 17.3 correction of 2026-10-27 each member's report filed since a day that the store holds no fact of, read
-    // from its own XBRL instance; refused while a night holds the store.
+    // Each member's report filed since a day that the store holds no fact of, read from its own XBRL instance; refused
+    // while a night holds the store.
     // see: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance
     if (args.Contains("--instances", StringComparer.Ordinal))
     {

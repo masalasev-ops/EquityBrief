@@ -142,8 +142,7 @@ public sealed class SecEdgarFilingsArchiveFeed(
     public Task<string?> OwnershipAsync(string cik, string accession, CancellationToken cancellation = default) =>
         FetchAsync(new ArchiveRequest(ArchiveDocument.Ownership, SecEdgarArchive.DocumentHost, SecEdgarOwnership.PathOf(cik, accession)), cancellation);
 
-    // From the 17.3 correction of 2026-10-27 a report's listing of its documents and its XBRL instance, each one document
-    // through the same agent and transport.
+    // A report's listing of its documents and its XBRL instance, each one document through the same agent and transport.
     // see: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance
     public Task<string?> FilingListingAsync(string cik, string accession, CancellationToken cancellation = default) =>
         FetchAsync(SecEdgarArchive.Request(ArchiveDocument.FilingListing, SecEdgarArchive.Padded(cik), accession, SecEdgarInstance.Listing), cancellation);

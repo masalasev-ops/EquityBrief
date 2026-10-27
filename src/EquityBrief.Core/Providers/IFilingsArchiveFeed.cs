@@ -56,8 +56,8 @@ public enum ArchiveDocument
 
     SubmissionsPage,
 
-    // From the 17.3 correction of 2026-10-27 a filing's listing of its documents, and the XBRL instance among them, which
-    // the filings refresh reads for a report the facts answer carries no net income of.
+    // A filing's listing of its documents, and the XBRL instance among them, which the filings refresh reads for a report
+    // the facts answer carries no figure of.
     FilingListing,
 
     XbrlInstance,

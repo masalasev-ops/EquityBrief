@@ -10,11 +10,9 @@ namespace EquityBrief.Core.Providers;
 // the capture named for its accession, and a filer's facts the capture whose own CIK is the one asked for, read off
 // the capture rather than off its name; from 19.13 an insider's Form 4 or 4/A is the capture named for its accession.
 // A page, a filer or a Form 4 the refresh asks for that no capture holds refuses by name, since a replay runs over a set
-// that should be complete and an absence there is a fault in the fixture. From the 17.3 correction of 2026-10-27 a
-// report's listing and its instance are each the capture named for its accession; a fixture captured before the refresh
-// read an instance holds neither, and one it holds no capture of is answered
-// with none, the archive's own answer for a filing with no instance, so the refresh stores what the facts answer
-// carried, as it did when those fixtures were captured.
+// that should be complete and an absence there is a fault in the fixture. A report's listing and its instance are each
+// the capture named for its accession, and one no capture is named for is answered with none, the archive's own answer
+// for a filing with no instance, so the refresh stores what the facts answer carried.
 public sealed class RecordedFilingsRefreshFeed : IFilingsRefreshFeed
 {
     public const string DayPrefix = "daily-index-";
@@ -118,8 +116,7 @@ public sealed class RecordedFilingsRefreshFeed : IFilingsRefreshFeed
     }
 
     // A refresh over constructed answers: the days' indexes, the pages by accession, the facts by CIK and the insiders'
-    // filings by accession; and from the 17.3 correction of 2026-10-27 the reports' listings and their instances, each by
-    // accession.
+    // filings by accession; and the reports' listings and their instances, each by accession.
     public static RecordedFilingsRefreshFeed Of(
         IReadOnlyDictionary<DateOnly, string> days,
         IReadOnlyDictionary<string, string>? pages = null,

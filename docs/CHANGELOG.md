@@ -26,6 +26,30 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-27 - docs/ARCHITECTURE.html - the filed facts' row no longer reads net income under a third concept
+Corrects: reading net income under net income available to the common holders moves the ledger readings' version and with it every quality rule's, found by the checkpoint script over the 22.13 correction's tree before the merge.
+Was:
+> Filed facts: "...; from the 17.3 correction of 2026-10-27 a report the archive's facts answer carries no figure of stored from its own XBRL instance, and net income read where a filing states neither net income nor profit under net income available to the common holders</td>"
+Now:
+> Filed facts: "...; from the 17.3 correction of 2026-10-27 a report the archive's facts answer carries no figure of stored from its own XBRL instance</td>"
+Why: the operator's limits hold every other rule's version where it stands, so the concept is put to them rather than read.
+
+### 2026-10-27 - docs/SCHEMA.md - filed facts no longer read net income under a third concept
+Corrects: reading net income under net income available to the common holders moves the ledger readings' version and with it every quality rule's, found by the checkpoint script over the 22.13 correction's tree before the merge.
+Was:
+> "... each figure with no dimension stored the same way under the report's accession, filing day and form; and net income is read under a third concept, net income available to the common holders, where a filing states neither of the first two (see: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance)."
+Now:
+> "... each figure with no dimension stored the same way under the report's accession, filing day and form (see: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance)."
+Why: the operator's limits hold every other rule's version where it stands, so the concept is put to them rather than read.
+
+### 2026-10-27 - docs/RUNBOOK.md - the third net income concept taken out of the instances' paragraph
+Corrects: reading net income under net income available to the common holders moves the ledger readings' version and with it every quality rule's, found by the checkpoint script over the 22.13 correction's tree before the merge.
+Was:
+> "It records one run log row under `filings-instances` naming the reports read, the facts stored and any it could not read. From the same correction net income is read under a third concept, net income available to the common holders, where a filing states neither of the first two, as BKNG's, VTRS's and ACT's second-quarter 10-Qs do in the facts answer; the whole refresh stores it for every filer."
+Now:
+> "It records one run log row under `filings-instances` naming the reports read, the facts stored and any it could not read."
+Why: the operator's limits hold every other rule's version where it stands, so the concept is put to them rather than read.
+
 ### 2026-10-27 - docs/ARCHITECTURE.html - a Fundamentals flag stands only for a release of a newer quarter within 63 sessions, and never for a scorecard reading no check
 Authorised by: A Fundamentals flag stands only for a release reporting a quarter newer than the member's newest stored filing, accepted within the last 63 sessions
 Corrects: on the night of 2026-10-26 flags rested on filings the store lacked, on a release of 2026-04-30, on releases for the quarter the stored filing already stated, and GEF's on a scorecard that read no check, reported on the operator's word.
