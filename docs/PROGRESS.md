@@ -10355,3 +10355,43 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 3a6ff15
             17.3 correction's entry above records, 2820 of 2820 tests; documents alone change here, so the checks
             reading them run filtered over the tree carrying this entry, 618 of 618 passed.
 Carried:    the three questions put; 22.14 and 22.15 on the operator's word.
+
+### 17.3 - the remedy run from main: the SEC's ticker file read again, the members carrying another filer asked again, their facts, Forms 4 and releases read, and the three ledger histories built again with their checks   2026-10-27
+
+Not a checkpoint entry: it records the remedy of 17.3's correction of 2026-10-26 and what it measured, and lands nothing.
+Ran:        from main's a157928b, PR 571's merge over b676c2a9, the merge of PR 570 at 22:15 UTC on 2026-10-26, once the
+            night of 2026-10-26 and its store's copy had finished at 00:48:53 UTC and with no night, local run, drain,
+            labeller or monthly run writing: `tools/remedies/2026-10-26-17.3-correction-the-filer-the-sec-names.txt` from
+            00:49:47 to 07:01:28 UTC on 2026-10-27, its history read waiting while the off-peak drain held its lock from
+            04:12; `scores` and `ledger-night` by hand over the night of 2026-10-26; each index's build with `--again`
+            over 2019-01-02 to 2026-10-05 from a157928b's clean copy from 07:03 to 09:06; and each index's point-in-time
+            check, the S&P 600's beside the S&P 500's and the S&P 400's, from 09:06 to 12:06. Each `loop-links` run read
+            for over five minutes through a store the builds had pushed out of the disk's cache and was stopped before it
+            wrote, its transaction never begun, since the monthly run of 2026-10-27 works the links as its first step. The
+            read surface started again from main's Release build at 12:18. No paid call.
+Measured:   the SEC's file listed 10,430 tickers. The night of 2026-10-26 had stored DOW's and OZK's awaited quarters under
+            the file's filer at 23:46 and 23:47; the refetch asked the other 38, 12 on the S&P 500, 8 on the S&P 400 and 18
+            on the S&P 600, every one stored, at 418 weighted calls, and all 40 now carry the file's filer, no member
+            another. The whole refresh asked 2,151 filers and stored 9,328 facts in 1,572 seconds; the insiders' history
+            stored 19,509 transactions in 146 seconds and the days from 2026-10-01 to 2026-10-23 another 252 in 301
+            seconds; the release fetch read 2,027 filers and stored 3,316 releases over 9,654 requests, each new filer's
+            names written with its releases, so the names step had none to read; the local model read the 3,316 under pin
+            5, 3,309 read and 7 refused, at a median of 3.1 seconds, none cut, and the pin's history stands complete. The
+            ledger's night of 2026-10-26 took 1,573 seconds through a store the copy had pushed out of the cache; the
+            scorecards scored 1,503 of 1,505 members in 13 seconds; and the night again took 47. The S&P 500's build wrote
+            343,448 setups over 1,950 sessions, 50,654 passing the live rule, in 30 minutes 42 seconds, against 343,457
+            and 50,653 before; the S&P 400's 249,867 and 35,200 in 46 minutes 22 seconds, against 249,906 and 35,194; the
+            S&P 600's 343,999 and 39,990 in 45 minutes 32 seconds, against 343,897 and 39,986. Each index's check rebuilt
+            200 of 200 sampled history setups with every reading the same, in 68, 105 and 115 minutes. Over the 40, the
+            history holds 14,120 setups against 14,058, 10,093 reading a release's tone against 4,414, 9,303 a scorecard
+            against 10,358 and 9,238 a revenue growth against 9,408: the companies the provider filed none or another
+            company for read their own filings now, TT 641 scorecards against none and IR's and RBC's their own; and the
+            filers that re-formed under new numbers read nothing from before, XOM 0 scorecards against 799, BLK 14
+            against 768, PNFP 0 against 606, UNIT 1 against 520 and NWE 200 against 695; OZK's bank files with its bank
+            regulator and not the SEC, 0 against 560.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 3a6ff153, the tree main took at b676c2a9 and
+            carries unchanged in its code at a157928b, 2820 of 2820 tests and the phase report 1454 claims, 1454 passing;
+            records alone change here, so the checks reading them run filtered over the tree carrying this entry, 169 of
+            169 passed.
+Carried:    a filer that re-formed under a new number, read under no member for the years before it re-formed, put to
+            the operator as a ruling of its own.
