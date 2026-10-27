@@ -228,7 +228,8 @@ public static partial class ReportProof
     [GeneratedRegex("<div class=\"short-lead\"><p class=\"short-part\" data-part=\"([a-z]+)\"")]
     private static partial Regex ShortLead();
 
-    [GeneratedRegex("data-card=\"rules\"[^>]*>.*?<section class=\"picked-by\"", RegexOptions.Singleline)]
+    // The rules card's body opening on the picking family's own checks.
+    [GeneratedRegex("data-card=\"rules\"><div class=\"card-h\">.*?</div><div class=\"card-b\"><section class=\"picked-by\"", RegexOptions.Singleline)]
     private static partial Regex RulesOpenOnTheFamily();
 
     // The latest quarter's card: whether it is dated as filed or as reported, and its day.

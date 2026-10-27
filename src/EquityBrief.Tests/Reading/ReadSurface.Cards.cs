@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using EquityBrief.Api.Reading;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
@@ -346,6 +347,12 @@ public partial class ReadSurface
                 ["how-to-read", "s-the-short-version", "card"],
                 Regex.Matches(named, "<section class=\"(?:card[^\"]*|absent)\" id=\"([^\"]+)\"").Select(match => match.Groups[1].Value).Take(3));
             LinesReadBack(card, top.Groups[1].Value, pressed: false);
+
+            // How the rules read it opens on the checks of the family that picked it, before the swing filter's gates, and
+            // the proof reads it so.
+            // see: How the rules read it opens on the checks of the family that picked the stock, and every input that failed is named in plain words
+            Assert.Matches(new Regex($"data-card=\"rules\"><div class=\"card-h\">.*?</div><div class=\"card-b\"><section class=\"picked-by\" data-family=\"{card.Family}\"", RegexOptions.Singleline), named);
+            Assert.Equal(ReportProof.Passed, ReportProof.Evaluate(card.Ticker, named).Verdicts.Single(verdict => verdict.Rule == "rules-family").Verdict);
         }
 
         return rows;

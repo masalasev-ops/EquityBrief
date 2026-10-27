@@ -349,6 +349,11 @@ public partial class ReadSurface
 
         Assert.Equal((1, 1, 0), (counted.Passed, counted.Failed, counted.Unexamined));
         Assert.Equal(["BBB"], counted.Failing);
+
+        // A rule neither page can be read for counts both as unexamined and neither as passed.
+        var unread = ReportProof.Counted([held, broken]).Single(rule => rule.Rule == "rules-family");
+
+        Assert.Equal((0, 0, 2), (unread.Passed, unread.Failed, unread.Unexamined));
         Assert.Contains("unexamined is never counted as a pass", ReportProof.Html(new ProofReport(DateTimeOffset.UnixEpoch, "GSPC", null, ReportProof.Counted([held, broken]), [held, broken])), StringComparison.Ordinal);
     }
 
