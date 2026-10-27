@@ -43,7 +43,7 @@ Was:
 > Section 4's row "Where the research stands": "What the newest pass came to and what research has cost, each written region left out or not written with its reason, a table of the model each job behind the page ran on ..."
 > Section 15.9's row "Sections left out": "one line per section the checker left out or the newest pass did not write, each naming what refused it and never the words of the draft that was refused (see: A refused draft's own words are kept on the row and drawn on the evidence page, and never on the name page)"
 Now:
-> "... each written region left out or not written with its reason and the control that has the local model write it again alone, a table of the model ..."; and the row "Sections left out" adds "; beneath each of the name's own, where the page states what research costs, the control that has the local model write it again alone at no cost, whatever the day (see: ...)". The rules every name's page holds gain a sentence saying the same before the models' table.
+> "... each written region left out or not written with its reason and the control that has the local model write it again alone, a table of the model ..."; and the row "Sections left out" adds "; and where the page states what research costs, beneath each of the name's own the control that has the local model write it again alone at no cost and whatever the day (see: ...)". The rules every name's page holds gain a sentence saying the same before the models' table.
 Why: the operator's report page corrections of 2026-10-27, the tenth part: ROP's sections left out could be written again only by the paid regenerate, held to once a name a day.
 
 ### 2026-10-27 - docs/RUNBOOK.md - the research verb's flags name `--section`
