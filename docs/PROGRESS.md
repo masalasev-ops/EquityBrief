@@ -10458,3 +10458,39 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             concept dropped: red.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 22.13 - correction: a Fundamentals flag stands only for a release of a newer quarter within 63 sessions, and a scorecard reading no check is never ranked or flagged   2026-10-27
+
+Found:      the same report, each flag of the night of 2026-10-26 against its stored filing. Of the S&P 500's 33, 23 rested
+            on a report the store lacked, 1 on a report filed that day, 2, BKNG and VTRS, on one stored whose net income
+            the scorecard could not read, and 7 on none later; of the S&P 400's 18, 11, 2, none and 5; of the S&P 600's
+            14, 6, 3, 1, ACT, and 4. IDA's flag rested on a release of 2026-04-30; DK's and DIOD's on releases of
+            2026-08-07 and 2026-08-11 for the quarter their filings of 2026-08-05 already stated; and GEF's on a scorecard
+            that read no check, its row reading "was 0 of 0".
+Corrected:  a release flags only where the scorecard read a check, it was accepted after the newest filing the scorecard
+            reads, it reports a quarter newer than the newest filing stored, being accepted after the end of the quarter
+            that follows that filing's, and it was accepted on the night's session or one of the 62 before it; the card
+            ranks no member whose scorecard read no check, one flagged before the correction among them, and draws a trade
+            held in one after the ranked rows saying no checks could be read from its filings. The decision, the
+            architecture's paragraph, catalogue, card and settings rows, section 17's figure pinned, the schema's column,
+            the roster's fixture-expectations and read-surface rows and the changelog.
+Tests:      3 new: the flag's bounds worked on both sides, the release on the following quarter's last day and the day
+            after, the 63rd session back and the 64th, counted by hand off the exchange's closures; the family's step over
+            five members, two flagging and three not, one for each bound; and the card over a night holding a member
+            flagged at 0 of 0 and a trade held in one. 2829 in all.
+Claims:     none new: the rows are amended in place.
+Pins:       none move: the four sources it edits are 22.13's own, which no rule pins, as 22.13's test asserts, and the
+            family is registered under no version.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, each filtered
+            to the tests reading it. G1 a release's quarter newer once past the stored quarter's end: red at both rule
+            tests, J02 flagging. G2 the following quarter's last day read as newer: red at the bounds' test. G3 the 63rd
+            session back left out: red at both, J04 not flagging. G4 the check read dropped: red at both, J05 flagging. G5
+            a filing made on the night read as stored: red at the bounds' test. G6 a member reading no check ranked: red at
+            the card's test, M4 drawn. G7 a held one's row drawn with its score: red there too.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2829 of 2829 tests ran
+            with none failed, migrations 0 to 112 with none pending, schema version 112, against `data-ci` and never
+            `data`; the phase report 64 tables, 1454 claims, 1454 passing, none out of scope and none unexamined, 1469
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the remedy's record, and each index's card read back on Tonight after the night of 2026-10-27 with its counts
+            and rows from the corrected rule.

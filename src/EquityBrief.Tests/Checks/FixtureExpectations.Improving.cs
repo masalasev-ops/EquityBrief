@@ -114,6 +114,95 @@ public partial class FixtureExpectations
         Assert.True(ImprovingRule.After(friday, null));
     }
 
+    // From the 22.13 correction of 2026-10-27, on the operator's word: a release reports a quarter newer than the newest
+    // stored filing's only once accepted after the end of the quarter that follows it, and a flag reads the night's session
+    // and the 62 before it, the sessions counted by hand off the exchange's closures of 2026-07-03 and 2026-09-07: the
+    // 63rd back from 2026-10-26 is 2026-07-29 and the 64th 2026-07-28.
+    // see: A Fundamentals flag stands only for a release reporting a quarter newer than the member's newest stored filing, accepted within the last 63 sessions
+    [Fact]
+    public void AFlagsReleaseReportsANewerQuarterOnlyAfterTheFollowingQuarterEndsAndStandsWithinSixtyThreeSessions()
+    {
+        var june = new DateOnly(2026, 6, 30);
+        var night = new DateOnly(2026, 10, 26);
+        var better = new ReleaseAnswer("better", "raised", "confident", "stronger");
+
+        Assert.False(ImprovingRule.Newer(new DateOnly(2026, 9, 30), june));
+        Assert.True(ImprovingRule.Newer(new DateOnly(2026, 10, 1), june));
+        Assert.False(ImprovingRule.Newer(new DateOnly(2026, 8, 7), june));
+        Assert.True(ImprovingRule.Newer(new DateOnly(2026, 8, 7), null));
+
+        Assert.True(ImprovingRule.Recent(new DateOnly(2026, 7, 29), night));
+        Assert.False(ImprovingRule.Recent(new DateOnly(2026, 7, 28), night));
+        Assert.Equal(63, ImprovingRule.SessionsFrom(new DateOnly(2026, 7, 29), night));
+
+        // The newest stored filing's quarter is the latest span ending before the night's filings, a balance sheet's day
+        // and a filing made on the night itself passed over.
+        FiledFactRow[] facts =
+        [
+            new("NetIncomeLoss", new DateOnly(2026, 4, 1), june, 1m, new DateOnly(2026, 8, 5), "10-Q", "q2"),
+            new("Revenues", new DateOnly(2026, 1, 1), june, 2m, new DateOnly(2026, 8, 5), "10-Q", "q2"),
+            new("Assets", new DateOnly(2026, 9, 30), new DateOnly(2026, 9, 30), 3m, new DateOnly(2026, 10, 20), "10-Q", "q3"),
+            new("NetIncomeLoss", new DateOnly(2026, 7, 1), new DateOnly(2026, 9, 30), 4m, night, "10-Q", "q3"),
+        ];
+
+        Assert.Equal(june, ImprovingRule.NewestQuarter(facts, night));
+        Assert.Null(ImprovingRule.NewestQuarter([], night));
+
+        // Every part of a flag together: a check read, after the scorecard's filing, a newer quarter, recent and better.
+        Assert.True(ImprovingRule.FlagStands(9, new DateOnly(2026, 10, 21), new DateOnly(2026, 8, 5), june, night, better));
+        Assert.False(ImprovingRule.FlagStands(0, new DateOnly(2026, 10, 21), new DateOnly(2026, 8, 5), june, night, better));
+        Assert.False(ImprovingRule.FlagStands(9, new DateOnly(2026, 8, 7), new DateOnly(2026, 8, 5), june, night, better));
+        Assert.False(ImprovingRule.FlagStands(9, new DateOnly(2026, 7, 28), new DateOnly(2026, 5, 1), new DateOnly(2026, 3, 31), night, better));
+        Assert.True(ImprovingRule.FlagStands(9, new DateOnly(2026, 7, 29), new DateOnly(2026, 5, 1), new DateOnly(2026, 3, 31), night, better));
+    }
+
+    // The family's step over five S&P 400 members, each 8 of 9 with a release reading better and its outlook raised: J01's
+    // release of 2026-10-21 follows its June quarter by more than a quarter and flags; J02's of 2026-08-07 reports the
+    // quarter its filing of 2026-08-05 stores; J03's, its March quarter's next, stands 64 sessions back and J04's 63; and
+    // J05's scorecard read no check.
+    [Fact]
+    public async Task AFlagStandsOnlyForAReleaseOfANewerQuarterWithinSixtyThreeSessionsAndNeverForAScorecardReadingNoCheck()
+    {
+        using var store = new TemporaryStore().Migrated();
+        var growthAt = LedgerReadings.IndexOf("revenue_growth");
+        var changeAt = LedgerReadings.IndexOf("growth_change");
+
+        store.Execute("INSERT INTO reading_pin (model, model_file, sha256, size, modified, runtime_name, runtime_version, prompt_version, temperature, seed, answer_tokens, context, cutoff, written_at, history_completed_at, run_id) VALUES ('m', 'f', 'h', 1, '2026-10-18T00:00:00.0000000Z', 'r', 'v', 'p', 0, 1, 1, 1, '2025-01-31', '2026-10-18T00:00:00Z', '2026-10-19T00:00:00Z', 'constructed');");
+
+        foreach (var (number, quarter, filed, released, applied) in new[]
+        {
+            (1, "2026-06-30", "2026-08-05", "2026-10-21", 9),
+            (2, "2026-06-30", "2026-08-05", "2026-08-07", 9),
+            (3, "2026-03-31", "2026-05-01", "2026-07-28", 9),
+            (4, "2026-03-31", "2026-05-01", "2026-07-29", 9),
+            (5, "2026-06-30", "2026-08-05", "2026-10-21", 0),
+        })
+        {
+            var ticker = FormattableString.Invariant($"J{number:00}");
+            var cik = FormattableString.Invariant($"00000008{number:00}");
+            var start = quarter == "2026-06-30" ? "2026-04-01" : "2026-01-01";
+            var readings = Enumerable.Repeat<double?>(null, LedgerReadings.Count).ToArray();
+
+            readings[growthAt] = 0.1;
+            readings[changeAt] = 0.02;
+            store.Execute(FormattableString.Invariant($"INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('MID', '{ticker}', '2024-01-02', NULL, '2024-01-02T00:00:00Z');"));
+            store.Execute(FormattableString.Invariant($"INSERT INTO company (ticker, fetched_at, cik) VALUES ('{ticker}', '2026-08-01T23:40:00.000Z', '{cik}');"));
+            store.Execute(FormattableString.Invariant($"INSERT INTO member_reading (index_code, session_date, ticker, company_value) VALUES ('MID', '{ImprovingFirst}', '{ticker}', '3000000000');"));
+            store.Execute(FormattableString.Invariant($"INSERT INTO filed_fact (cik, concept, period_start, period_end, dollars, filed, form, accession, run_id) VALUES ('{cik}', 'NetIncomeLoss', '{start}', '{quarter}', '1000000', '{filed}', '10-Q', 'g{number:00}', 'constructed');"));
+            store.Execute(FormattableString.Invariant($"INSERT INTO fundamental_score (index_code, session_date, ticker, quarter, financial, passed, applied, checks) VALUES ('MID', '{ImprovingFirst}', '{ticker}', '{quarter}', 0, {(applied == 0 ? 0 : 8)}, {applied}, '[]');"));
+            store.Execute(FormattableString.Invariant($"INSERT INTO ledger_reading (index_code, session_date, ticker, readings, pin) VALUES ('MID', '{ImprovingFirst}', '{ticker}', '{System.Text.Json.JsonSerializer.Serialize(readings)}', 'test');"));
+            QualityBar(store, ticker, ImprovingFirst, 100m + number, 100m + number);
+            ImprovingRelease(store, cik, FormattableString.Invariant($"s{number:00}"), released + "T12:00:00Z", "raised");
+        }
+
+        await new ImprovingFamily(QualityClock(ImprovingFirst), store.DatabaseFile).RunAsync("improving-flags");
+
+        Assert.Equal(
+            [$"J01|{ImprovingRule.Flagged}|1", "J02|null|0", "J03|null|0", $"J04|{ImprovingRule.Flagged}|1", "J05|null|0"],
+            FamilyRows(store, $"SELECT ticker, status, flagged FROM improving_result WHERE index_code = 'MID' AND session_date = '{ImprovingFirst}' ORDER BY ticker;"));
+        Assert.Equal(["2"], FamilyRows(store, $"SELECT flagged FROM improving_night WHERE index_code = 'MID' AND session_date = '{ImprovingFirst}';"));
+    }
+
     // The improvers' order: the score's rise, the larger first and none last; then how much faster its sales grew, none
     // last; then the ticker.
     [Fact]

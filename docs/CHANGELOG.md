@@ -26,6 +26,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-27 - docs/ARCHITECTURE.html - a Fundamentals flag stands only for a release of a newer quarter within 63 sessions, and never for a scorecard reading no check
+Authorised by: A Fundamentals flag stands only for a release reporting a quarter newer than the member's newest stored filing, accepted within the last 63 sessions
+Corrects: on the night of 2026-10-26 flags rested on filings the store lacked, on a release of 2026-04-30, on releases for the quarter the stored filing already stated, and GEF's on a scorecard that read no check, reported on the operator's word.
+Was:
+> 11, the Fundamentals family: "... beside it a member whose results release since its newest filing reads results better and its outlook raised or kept is flagged and bought on nothing (see: The Fundamentals family buys a company ...)."
+> Improving family: "... and flags one whose release since its newest filing reads better with its outlook raised or kept, buying nothing on a flag; ..."
+> The Fundamentals family's card: "... and tonight's status in its colour with its line beneath (see: ..."
+> The Fundamentals family's starting settings: "... a flag where a results release since its newest filing reads results better and its outlook raised or kept, buying nothing; one trade a stock; ... (see: A Fundamentals trade is held ...)</td>"
+Now:
+> 11, the Fundamentals family: "... is flagged and bought on nothing (see: ...). From the 22.13 correction of 2026-10-27 a flag stands only where the release reports a quarter newer than the newest filing the store holds of the member, being accepted after the end of the quarter that follows that filing's, and was accepted on the night's session or one of the 62 before it; a member whose scorecard read no check is never ranked or flagged (see: A Fundamentals flag stands only for a release reporting a quarter newer than the member's newest stored filing, accepted within the last 63 sessions)."
+> Improving family: "... reads better with its outlook raised or kept, from the 22.13 correction of 2026-10-27 only a release reporting a quarter newer than the newest filing stored and accepted within the last 63 sessions and never a member whose scorecard read no check, buying nothing on a flag; ..."
+> The Fundamentals family's card: "... and tonight's status in its colour with its line beneath; and from the 22.13 correction of 2026-10-27 a member whose scorecard read no check never ranked, a trade held in one drawn after the ranked rows with its score's place saying no checks could be read from its filings (see: ..."
+> The Fundamentals family's starting settings: "... a flag where a results release since its newest filing reads results better and its outlook raised or kept, buying nothing, from the 22.13 correction of 2026-10-27 only for a release reporting a quarter newer than the newest filing stored and accepted within the last 63 sessions and never for a scorecard reading no check; one trade a stock; ... (see: A Fundamentals trade is held ...) (see: A Fundamentals flag stands only for a release reporting a quarter newer than the member's newest stored filing, accepted within the last 63 sessions)</td>"
+Why: the operator's word of 2026-10-27 bounds the flag and leaves a scorecard reading no check out of the family.
+
+### 2026-10-27 - docs/SCHEMA.md - a Fundamentals result's flag bounded
+Authorised by: A Fundamentals flag stands only for a release reporting a quarter newer than the member's newest stored filing, accepted within the last 63 sessions
+Was:
+> | `flagged` | INTEGER | 1 where that release was accepted after its newest filing and reads results better with its outlook raised or kept |
+Now:
+> | `flagged` | INTEGER | 1 where that release was accepted after its newest filing and reads results better with its outlook raised or kept; from the 22.13 correction of 2026-10-27 only where it also reports a quarter newer than the newest filing stored and was accepted within the last 63 sessions, and never where the scorecard read no check |
+Why: the column states what sets it.
+
+### 2026-10-27 - .claude/rules/checks.md - fixture-expectations and read-surface state the Fundamentals flag's bounds and a scorecard reading no check
+Authorised by: A Fundamentals flag stands only for a release reporting a quarter newer than the member's newest stored filing, accepted within the last 63 sessions
+Was:
+> `fixture-expectations`: ... and the refetch by hand of the misfiled asking only the members whose newest company row carries a filer other than the newest read's |
+> `read-surface`: ... and the step's own words over many stocks true of either |
+Now:
+> Added without replacing anything: to fixture-expectations, from the 22.13 correction of 2026-10-27 a Fundamentals flag's release worked on both sides of the end of the quarter after the stored filing's and of the 63rd session back, and the family's step over a constructed store flagging only the members whose release reports a newer quarter within them and never one whose scorecard read no check; to read-surface, the Fundamentals card leaving unranked a member whose scorecard read no check, one flagged before the correction among them, and drawing a trade held in one after the ranked rows with no checks read.
+Why: a roster row names what its check asserts, and the correction's tests extend both.
+
 ### 2026-10-27 - CLAUDE.md - the filings refresh's carve-out names the listing and the instance of a report the facts answer carries no figure of
 Authorised by: A report the archive's facts answer carries no figure of is read from the report's own XBRL instance
 Was:

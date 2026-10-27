@@ -410,8 +410,10 @@ public sealed class ImprovingFamily : IComponent
                 answer = ImprovingRule.Answer(score.Passed, score.Applied, earlierCard.Passed, earlierCard.Applied, change, settings);
             }
 
-            // Its newest results release the night may read, flagged where it was accepted after the newest filing the
-            // scorecard reads and reads better with its outlook raised or kept.
+            // Its newest results release the night may read, flagged where the scorecard read a check, it was accepted after
+            // the newest filing the scorecard reads, reports a quarter newer than the newest filing stored, was accepted on
+            // one of the last sessions a flag reads, and reads better with its outlook raised or kept.
+            // see: A Fundamentals flag stands only for a release reporting a quarter newer than the member's newest stored filing, accepted within the last 63 sessions
             DateOnly? released = null;
             string? outlook = null;
             var flagged = false;
@@ -419,7 +421,7 @@ public sealed class ImprovingFamily : IComponent
             if (filer is not null && await ReleaseReadings.NewestAsync(connection, filer, night, cancellation) is { } release)
             {
                 released = clock.SessionDateAt(release.Accepted);
-                flagged = ImprovingRule.After(released.Value, filed) && ImprovingRule.Flags(release.Answer);
+                flagged = ImprovingRule.FlagStands(score.Applied, released.Value, filed, ImprovingRule.NewestQuarter(held, night), night, release.Answer);
                 outlook = flagged ? release.Answer.Outlook : null;
             }
 

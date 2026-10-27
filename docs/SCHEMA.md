@@ -2800,7 +2800,7 @@ Grain: one row per rule, index, session and member holding a bar on the night, f
 | `growth_change` | REAL | the ledger's reading of how much faster its sales grew than in the quarter before, a statistic |
 | `released` | TEXT | the day in New York the SEC accepted its newest results release the night may read, null where none is read |
 | `outlook` | TEXT | that release's outlook, `raised` or `kept`, where it was flagged, null otherwise |
-| `flagged` | INTEGER | 1 where that release was accepted after its newest filing and reads results better with its outlook raised or kept |
+| `flagged` | INTEGER | 1 where that release was accepted after its newest filing and reads results better with its outlook raised or kept; from the 22.13 correction of 2026-10-27 only where it also reports a quarter newer than the newest filing stored and was accepted within the last 63 sessions, and never where the scorecard read no check |
 | `status` | TEXT | `bought`, `improved`, `flagged` or `held`, null where none applies |
 | `reason` | TEXT | why a member whose filing raised its score was not bought, null otherwise |
 | `carried` | REAL | its growth carried from its first answer by the night's close over the close of its answer before, both as the store holds them on the night, 1 on its first; a statistic |
