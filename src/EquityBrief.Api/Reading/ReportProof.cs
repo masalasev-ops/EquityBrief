@@ -97,7 +97,17 @@ public static partial class ReportProof
             "newest-quarter",
             !quarterCard.Success ? null : quarterCard.Groups[1].Value == "Reported" || string.CompareOrdinal(newestRelease, quarterCard.Groups[2].Value) <= 0,
             !quarterCard.Success ? "no latest quarter is drawn" : quarterCard.Groups[1].Value == "Filed" && string.CompareOrdinal(newestRelease, quarterCard.Groups[2].Value) > 0 ? "a results release of " + newestRelease + " is newer than the filing of " + quarterCard.Groups[2].Value + " the quarter is read from" : null);
-        Add("rerun-alone", null, "not built: a failed section is written again by a pass");
+        var unwritten = Unwritten().Matches(page)
+            .Select(match => WebUtility.HtmlDecode(match.Groups[1].Value))
+            .Where(section => section != EquityBrief.Core.Research.ClaimRules.CycleSection)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        var bare = unwritten.FirstOrDefault(section => !page.Contains("<form class=\"research-control section-again\" method=\"post\" action=\"/passes/" + Uri.EscapeDataString(ticker) + "\" data-kind=\"section\" data-section=\"" + WebUtility.HtmlEncode(section) + "\"", StringComparison.Ordinal));
+
+        Add(
+            "rerun-alone",
+            unwritten.Length == 0 ? null : bare is null,
+            unwritten.Length == 0 ? "no section of the name's own is left out or not written" : bare is null ? null : bare + " is drawn with no control writing it again alone");
         Add("model-labels", page.Contains("<table class=\"model-jobs\"", StringComparison.Ordinal) || page.Contains("class=\"model-jobs\" data-jobs=\"0\"", StringComparison.Ordinal));
 
         return new ProofPage(ticker, verdicts);
@@ -171,6 +181,10 @@ public static partial class ReportProof
     // The latest quarter's card: whether it is dated as filed or as reported, and its day.
     [GeneratedRegex("id=\"quarter\"><div class=\"spine\">.*?<span class=\"dl-k\">(Filed|Reported)</span><b>(\\d{4}-\\d{2}-\\d{2})</b>", RegexOptions.Singleline)]
     private static partial Regex QuarterCard();
+
+    // Each section the research region draws as left out or not written.
+    [GeneratedRegex("<p class=\"(?:left-out|not-written)\" data-section=\"([^\"]+)\">")]
+    private static partial Regex Unwritten();
 
     // Each results release the page draws management's words from, by the day it was filed or accepted.
     [GeneratedRegex("(?:data-guidance=\"[^\"]*\"[^>]*?data-filed|class=\"guidance release-opening\"[^>]*?data-accepted)=\"(\\d{4}-\\d{2}-\\d{2})\"")]

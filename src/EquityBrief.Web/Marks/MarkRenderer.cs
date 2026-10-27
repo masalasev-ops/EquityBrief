@@ -4079,17 +4079,22 @@ public sealed partial class MarkRenderer : IComponent
             region.Append(Invariant, $"{Escaped(paused.Line)}</p>");
         }
 
-        // Each reason as a pass stored it, its counts read as a reader reads them, the verb agreeing with the section's name.
+        // Each reason as a pass stored it, its counts read as a reader reads them, the verb agreeing with the section's name;
+        // beneath each of the name's own, where the page states what research costs, the control that writes it again
+        // alone on the local model.
+        // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
         foreach (var section in leftOut)
         {
             region.Append(Invariant, $"<p class=\"left-out\" data-section=\"{Escaped(section.Section)}\">");
             region.Append(Invariant, $"{Escaped(section.Section)} {IsOrAre(section.Section)} left out: {Escaped(CountsInWords(section.Reason))}</p>");
+            region.Append(cost is null ? string.Empty : AgainAlone(ticker, section.Section));
         }
 
         foreach (var section in unwritten)
         {
             region.Append(Invariant, $"<p class=\"not-written\" data-section=\"{Escaped(section.Section)}\">");
             region.Append(Invariant, $"{Escaped(section.Section)} {IsOrAre(section.Section)} not written: {Escaped(CountsInWords(section.Reason))}</p>");
+            region.Append(cost is null ? string.Empty : AgainAlone(ticker, section.Section));
         }
 
         // The controls, each a form the page's own script sends, with what it asks for on
@@ -4113,6 +4118,17 @@ public sealed partial class MarkRenderer : IComponent
 
         return region.ToString();
     }
+
+    // What the control beneath a section left out says, its cost in its own words since the local model costs nothing.
+    public const string AgainAloneLabel = "Write it again alone on the local model, at no cost";
+
+    // The control that asks for one of the name's own sections to be written again alone on the local model, as a form the
+    // page's own script sends; none for the industry cycle, which its theme's pass writes.
+    // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+    static string AgainAlone(string ticker, string section) =>
+        string.Equals(section, EquityBrief.Core.Research.ClaimRules.CycleSection, StringComparison.Ordinal)
+            ? string.Empty
+            : Formatted($"<form class=\"research-control section-again\" method=\"post\" action=\"/passes/{Uri.EscapeDataString(ticker)}\" data-kind=\"section\" data-section=\"{Escaped(section)}\"><input type=\"hidden\" name=\"section\" value=\"{Escaped(section)}\"><button type=\"submit\">{AgainAloneLabel}</button></form>");
 
     // A control as a form the page's own script sends, with what it asks for on the form.
     static string ControlForm(string ticker, ResearchControl control) =>

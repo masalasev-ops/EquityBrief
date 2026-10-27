@@ -1098,7 +1098,9 @@ public sealed partial class SinglePageApp : IComponent
             const box = document.createElement('div');
             box.className = 'confirm key';
             const line = document.createElement('p');
-            line.textContent = 'Put this report in the queue? The worker starts on it at once and writes it at the off-peak rate. ' + (cost ? cost.textContent : '');
+            line.textContent = form.dataset.kind === 'section'
+              ? 'Write ' + form.dataset.section + ' again alone on the local model? The worker starts on it at once, and the local model costs nothing.'
+              : 'Put this report in the queue? The worker starts on it at once and writes it at the off-peak rate. ' + (cost ? cost.textContent : '');
             const go = document.createElement('button');
             go.type = 'button'; go.className = 'btn'; go.textContent = 'Queue it';
             const stop = document.createElement('button');

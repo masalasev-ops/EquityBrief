@@ -138,7 +138,10 @@ public static class QueueTimes
             }
         }
 
-        foreach (var row in rows.Where(row => row.State == ResearchRequests.Outstanding))
+        // A section asked for alone is taken before the rest and at once, since the local model writes it and it waits
+        // for no off-peak hour; the rest follow in the queue's order.
+        // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+        foreach (var row in rows.Where(row => row.State == ResearchRequests.Outstanding).OrderBy(row => row.Section is null))
         {
             if (cursor is not { } from)
             {
@@ -146,7 +149,7 @@ public static class QueueTimes
             }
             else
             {
-                var starts = OffPeak(from);
+                var starts = row.Section is null ? OffPeak(from) : from;
                 var basis = ahead > 0
                     ? TimeBasis.Estimated
                     : run is not null ? TimeBasis.OffPeakRun
@@ -200,7 +203,11 @@ public static class QueueTimes
 
         var ends = time.Ends is { } end ? ", and is expected to end about " + At(end) : string.Empty;
 
-        return time.Basis switch
+        // A request for one section alone says which, before when it is written.
+        // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+        var alone = row.Section is { } section ? System.Net.WebUtility.HtmlEncode(section) + " alone on the local model: " : string.Empty;
+
+        return alone + time.Basis switch
         {
             TimeBasis.Now => "starts now" + ends,
             TimeBasis.PeakEnds => "starts " + At(time.Starts!.Value) + ", when the peak window ends" + ends,

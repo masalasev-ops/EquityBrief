@@ -733,7 +733,16 @@ public static class SchemaMigrations
         new Migration(110, "create quality_night, quality_result and quality_holding", CreateQuality),
         new Migration(111, "rebuild pulled_bar and pulled_earnings with the pull in their keys", PullInThePulledKeys),
         new Migration(112, "create improving_night, improving_result and improving_trade", CreateImproving),
+        new Migration(113, "add research_request's section", AddResearchRequestSection),
     ];
+
+    // The one section a press asked to have written again alone on the local model, null on every request that asked for
+    // a report, which every request before the column did. A section asked for alone asks for no rewrite and is the local
+    // lane's.
+    // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+    const string AddResearchRequestSection = @"
+        ALTER TABLE research_request ADD COLUMN section TEXT CHECK (section IS NULL OR (length(section) > 0 AND refresh = 0 AND lane = 'local'));
+    ";
 
     // The Fundamentals family's own three tables, a night's row an index, every member's answer with the figures that
     // decided it and the growth carried to it, and its trades, each keyed by the rule that keeps it, its starting rule until

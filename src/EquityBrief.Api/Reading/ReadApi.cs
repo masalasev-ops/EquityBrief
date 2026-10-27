@@ -1071,11 +1071,16 @@ public sealed partial class ReadApi : IComponent
     // A press that found nothing to do and one refused because a pass was running are
     // passed over too. Neither wrote or tried anything, and read as the newest they
     // would take the lines of the pass that did off the page.
+    //
+    // A pass that wrote one section asked for alone is passed over as well: it is no report, and the report's own lines
+    // stand beside it.
+    // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
     const string NewestPassForName = @"
         SELECT detail FROM run_log
         WHERE stage IN ($prose, $research)
           AND outcome NOT IN ($not_warranted, $already_running)
           AND CASE WHEN json_valid(detail) THEN json_extract(detail, '$.ticker') END = $ticker
+          AND CASE WHEN json_valid(detail) THEN json_extract(detail, '$.alone') END IS NULL
         ORDER BY rowid DESC
         LIMIT 1;
     ";
@@ -6548,8 +6553,8 @@ public sealed partial class ReadApi : IComponent
     // states rather than thrown, because a reader pressing twice has asked a
     // reasonable question.
     const string Ask = @"
-        INSERT INTO research_request (ticker, asked_at, asked_from, lane, state, refresh)
-        VALUES ($ticker, $asked_at, $asked_from, $lane, 'outstanding', $refresh);
+        INSERT INTO research_request (ticker, asked_at, asked_from, lane, state, refresh, section)
+        VALUES ($ticker, $asked_at, $asked_from, $lane, 'outstanding', $refresh, $section);
     ";
 
     // Only a request nobody has started. The state is named in the statement
@@ -6567,15 +6572,17 @@ public sealed partial class ReadApi : IComponent
     ";
 
     const string Queue = @"
-        SELECT ticker, asked_at, asked_from, lane, state, settled_at, run_id, reason
+        SELECT ticker, asked_at, asked_from, lane, state, settled_at, run_id, reason, section
         FROM research_request
         ORDER BY asked_at, ticker;
     ";
 
     // A press asking for every section to be written again carries `refresh`, which the drain
-    // hands the pass as the operator's own ask.
+    // hands the pass as the operator's own ask, and one asking for one section alone carries the
+    // section, on the local lane and asking for no rewrite.
     // see: Nothing expires on a timer
-    public async Task<RequestWritten> AskAsync(string ticker, string from, string lane, bool refresh = false)
+    // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+    public async Task<RequestWritten> AskAsync(string ticker, string from, string lane, bool refresh = false, string? section = null)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
@@ -6584,8 +6591,9 @@ public sealed partial class ReadApi : IComponent
         command.Parameters.AddWithValue("$ticker", ticker);
         command.Parameters.AddWithValue("$asked_at", clock.UtcNow.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$asked_from", from);
-        command.Parameters.AddWithValue("$lane", lane);
-        command.Parameters.AddWithValue("$refresh", refresh ? 1 : 0);
+        command.Parameters.AddWithValue("$lane", section is null ? lane : ResearchRequests.Local);
+        command.Parameters.AddWithValue("$refresh", refresh && section is null ? 1 : 0);
+        command.Parameters.AddWithValue("$section", (object?)section ?? DBNull.Value);
 
         try
         {
@@ -6616,7 +6624,11 @@ public sealed partial class ReadApi : IComponent
                 $"{ticker} was asked for earlier in this same second and that request is {earlier}, so nothing was added: press again and a new request is written.");
         }
 
-        return new RequestWritten(true, refresh ? $"{ticker} is in the queue, to have every section written again." : $"{ticker} is in the queue.");
+        return new RequestWritten(
+            true,
+            section is not null ? $"{ticker} is in the queue, to have {section} written again alone on the local model."
+            : refresh ? $"{ticker} is in the queue, to have every section written again."
+            : $"{ticker} is in the queue.");
     }
 
     // SQLite's extended code for a primary key refusing a row, as against a unique index.
@@ -7083,7 +7095,8 @@ public sealed partial class ReadApi : IComponent
                 reader.GetString(4),
                 reader.IsDBNull(5) ? null : RequestedAt(reader.GetString(5)),
                 reader.IsDBNull(6) ? null : reader.GetString(6),
-                reader.IsDBNull(7) ? null : reader.GetString(7)));
+                reader.IsDBNull(7) ? null : reader.GetString(7),
+                reader.IsDBNull(8) ? null : reader.GetString(8)));
         }
 
         return rows;

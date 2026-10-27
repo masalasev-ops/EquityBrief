@@ -7,7 +7,7 @@ public sealed record RequestWritten(bool Written, string Line);
 // name, and the line the reply carries.
 public sealed record QuoteAsk(bool Written, DateTimeOffset AskedAt, string Line);
 
-// One row of the queue, as a screen reads it.
+// One row of the queue, as a screen reads it, with the one section it asked for alone where it asked for one.
 public sealed record RequestRow(
     string Ticker,
     DateTimeOffset AskedAt,
@@ -16,7 +16,8 @@ public sealed record RequestRow(
     string State,
     DateTimeOffset? SettledAt,
     string? RunId,
-    string? Reason);
+    string? Reason,
+    string? Section = null);
 
 // The words a request is written in, held apart from the statements that write
 // them. The read surface and the worker both spell these states, and the surface

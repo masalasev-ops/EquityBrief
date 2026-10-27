@@ -26,6 +26,34 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-27 - docs/SCHEMA.md - research_request gains the section a press asks to have written again alone
+Authorised by: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+Was:
+> "| `run_id` | TEXT | the pass's run, written by RequestDrain when it settles the request, null before; last but two because SQLite appends |"
+> "| `reason` | TEXT | why, in words, for `refused` and `withdrawn` and null otherwise; last but one because SQLite appends |"
+> "| `refresh` | INTEGER | ... written by ReadApi on the insert; last because SQLite appends |"
+> "Declared column sets, ...: ReadApi inserts `ticker`, `asked_at`, `asked_from`, `lane`, `state` and `refresh` for a press, ..."
+Now:
+> `run_id` last but three, `reason` last but two and `refresh` last but one, and a row after them: "| `section` | TEXT | the one section a press on the name page asked to have written again alone on the local model, which the drain takes at once and hands the pass; null on a request for a report, on every row written before the column and on the night's own request; constrained in the table to a request on the local lane asking for no rewrite; written by ReadApi on the insert; last because SQLite appends (see: ...) |"; and ReadApi inserts `ticker`, `asked_at`, `asked_from`, `lane`, `state`, `refresh` and `section` for a press.
+Why: the operator's report page corrections of 2026-10-27, the tenth part: a section left out is written again alone on the local model, which migration 113 gives the request a column for.
+
+### 2026-10-27 - docs/ARCHITECTURE.html - the research rows name the control that writes a section left out again alone
+Authorised by: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+Was:
+> Section 4's row "Where the research stands": "What the newest pass came to and what research has cost, each written region left out or not written with its reason, a table of the model each job behind the page ran on ..."
+> Section 15.9's row "Sections left out": "one line per section the checker left out or the newest pass did not write, each naming what refused it and never the words of the draft that was refused (see: A refused draft's own words are kept on the row and drawn on the evidence page, and never on the name page)"
+Now:
+> "... each written region left out or not written with its reason and the control that has the local model write it again alone, a table of the model ..."; and the row "Sections left out" adds "; beneath each of the name's own, where the page states what research costs, the control that has the local model write it again alone at no cost, whatever the day (see: ...)". The rules every name's page holds gain a sentence saying the same before the models' table.
+Why: the operator's report page corrections of 2026-10-27, the tenth part: ROP's sections left out could be written again only by the paid regenerate, held to once a name a day.
+
+### 2026-10-27 - docs/RUNBOOK.md - the research verb's flags name `--section`
+Authorised by: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+Was:
+> "... and which the drain adds to every regenerate a press asks for. `--live` and `--fixture <folder>` choose the source for one run, as they do for the night."
+Now:
+> the same with a sentence between them: "`--section <section>` writes one of the name's own sections again alone on the local model, the one a press beneath a section left out asks for: it makes no paid call, runs no trial or review, moves nothing to the paid path and runs whatever the day, and the drain hands it to the pass with nothing else and takes such a request at once, inside a peak window too (see: ...)."
+Why: the operator's report page corrections of 2026-10-27, the tenth part.
+
 ### 2026-10-27 - CLAUDE.md - the hard rule on pulled history names the older bands the name page draws
 Authorised by: Where the stored year holds no band on a side the name page draws bands read from the pulled history, marked older and read by nothing else
 Was:

@@ -792,7 +792,22 @@ app.MapPost(SinglePageApp.PassRoute + "{ticker}", async (string ticker, HttpRequ
     // research stands and no pass has run for it today.
     var refresh = string.Equals(form?["refresh"].FirstOrDefault(), "true", StringComparison.Ordinal);
 
-    var started = await read.AskAsync(ticker, from, Lane(builder.Configuration), refresh);
+    // A press asking for one of the name's own sections to be written again alone on the local model, which the page
+    // offers beneath each section left out; the industry cycle, its theme's, and a name no section carries are refused.
+    // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+    var section = form?["section"].FirstOrDefault();
+
+    if (section is not null
+        && (!EquityBrief.Core.Research.ClaimRules.Sections.Contains(section, StringComparer.Ordinal)
+            || string.Equals(section, EquityBrief.Core.Research.ClaimRules.CycleSection, StringComparison.Ordinal)))
+    {
+        return Results.Content(
+            $"<p class=\"pass-refused\" data-refused=\"section\">no pass was started: {System.Net.WebUtility.HtmlEncode(section)} is not one of {System.Net.WebUtility.HtmlEncode(ticker)}'s own sections, which are the ones written again alone</p>",
+            "text/html; charset=utf-8",
+            statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    var started = await read.AskAsync(ticker, from, Lane(builder.Configuration), refresh, section);
     var drain = started.Written ? launcher.Start() : null;
     var line = drain is null ? started.Line : started.Line + " " + drain.Line;
 

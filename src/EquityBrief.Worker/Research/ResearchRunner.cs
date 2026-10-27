@@ -19,7 +19,11 @@ namespace EquityBrief.Worker.Research;
 //
 // `AtPeak` is the operator's Write now press confirmed inside a peak window: the industry's
 // pass the report waits on is written at the peak price too, rather than refused until it ends.
-public sealed record ResearchPassRequest(bool Refresh = false, bool PaidForLocal = false, bool AtPeak = false);
+//
+// `Section` is the name page's ask for one section the checker left out to be written again
+// alone on the local model: the pass writes that section alone, makes no paid call, refreshes
+// no theme, moves nothing to the paid path and is held to no day.
+public sealed record ResearchPassRequest(bool Refresh = false, bool PaidForLocal = false, bool AtPeak = false, string? Section = null);
 
 public sealed record ResearchPassOutcome(
     string Ticker,
@@ -32,7 +36,8 @@ public sealed record ResearchPassOutcome(
     int Fetched,
     int Admitted,
     string? Reason,
-    IReadOnlyList<string>? LeftForThePaidPath = null);
+    IReadOnlyList<string>? LeftForThePaidPath = null,
+    string? Alone = null);
 
 // The research runner. One pass for one name, when the name is opened and asked.
 //
@@ -126,6 +131,10 @@ public sealed class ResearchRunner(
     // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
     public const string RegeneratedToday = "a report for this name was already written today, and a report is regenerated once a day";
 
+    // Why a section asked for alone that is not one of the name's own sections starts nothing.
+    // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+    public const string NotOwnSection = "the section asked for alone is not one of the name's own sections, so nothing was written";
+
     // The window a document a pass keeps may be dated inside, which is the stored year: a
     // move's cause rests on a document inside that move, and no stored move is older than the
     // bars kept. The news a pass asks for is narrower, the windows the rule hands a section
@@ -190,8 +199,10 @@ public sealed class ResearchRunner(
     // A pass the model could not be reached for on a call of the report's own did not run
     // to the end, whatever else it wrote: a trial's or a review's call is no part of it. Asked
     // for a regenerate, only a pass that wrote some of the name's own sections counts, its
-    // industry's cycle being its theme pass's.
+    // industry's cycle being its theme pass's. A pass that wrote one section asked for alone
+    // is no report and never counts.
     // see: A regenerate on the day a report was written writes only the sections that report left out, and a report the connection cut is not the day's
+    // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
     // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
     const string RanOnSession = @"
         SELECT COUNT(*) FROM run_log AS ran
@@ -200,6 +211,7 @@ public sealed class ResearchRunner(
           AND CASE WHEN json_valid(ran.detail) THEN json_extract(ran.detail, '$.ticker') END = $ticker
           AND CASE WHEN json_valid(ran.detail) THEN json_extract(ran.detail, '$.asOf') END = $as_of
           AND ($own = 0 OR json_array_length(json_extract(ran.detail, '$.written')) > 0)
+          AND CASE WHEN json_valid(ran.detail) THEN json_extract(ran.detail, '$.alone') END IS NULL
           AND NOT EXISTS (
               SELECT 1 FROM run_log AS asked
               WHERE asked.run_id = ran.run_id
@@ -288,10 +300,12 @@ public sealed class ResearchRunner(
         // spends no regenerate; a plain open after it still starts nothing.
         // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
         // see: A regenerate on the day a report was written writes only the sections that report left out, and a report the connection cut is not the day's
+        // A section asked for alone is held to no day: neither a report written today nor a regenerate stops it.
+        // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
         var newest = await NewestAsync(connection, ticker, cancellation);
-        var ranToday = asked.Refresh
+        var ranToday = asked.Section is null && (asked.Refresh
             ? await RanTodayAsync(connection, ticker, asOf, ownSections: true, cancellation)
-            : !asked.PaidForLocal && await RanTodayAsync(connection, ticker, asOf, ownSections: false, cancellation);
+            : !asked.PaidForLocal && await RanTodayAsync(connection, ticker, asOf, ownSections: false, cancellation));
         var fillLeftOut = ranToday && asked.Refresh && newest.Values.Any(one => one.Status == ClaimChecker.Fallback && one.AsOf == asOf);
 
         if (ranToday && !fillLeftOut)
@@ -307,6 +321,18 @@ public sealed class ResearchRunner(
 
         foreach (var section in ClaimRules.Sections)
         {
+            // A section asked for alone is the one section the pass writes, and the industry cycle, the theme's and not
+            // the name's, is never asked for alone.
+            if (asked.Section is { } alone)
+            {
+                if (string.Equals(section, alone, StringComparison.Ordinal) && !string.Equals(section, ClaimRules.CycleSection, StringComparison.Ordinal))
+                {
+                    warranted.Add(section);
+                }
+
+                continue;
+            }
+
             // The industry cycle is judged by the theme's newest version, and it is never one
             // of the name's own sections: a theme written today by another member of the
             // industry is not bought again.
@@ -332,7 +358,7 @@ public sealed class ResearchRunner(
 
         if (warranted.Count == 0 && !themeWanted)
         {
-            return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, NotWarranted, verdict.State, [], verdict.Line, notWritten), 0, 0, cancellation);
+            return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, NotWarranted, verdict.State, [], asked.Section is null ? verdict.Line : NotOwnSection, notWritten), 0, 0, cancellation);
         }
 
         // What the pass's row says it warranted, in figure 12.2's order: the name's own
@@ -341,7 +367,10 @@ public sealed class ResearchRunner(
             ? [.. ClaimRules.Sections.Where(section => section == ClaimRules.CycleSection || warranted.Contains(section, StringComparer.Ordinal))]
             : warranted;
 
-        var local = asked.PaidForLocal ? [] : warranted.Where(section => localLane.Contains(section, StringComparer.Ordinal)).ToList();
+        // A section asked for alone is written by the local model whatever lane it is written in otherwise.
+        List<string> local = asked.Section is not null
+            ? [.. warranted]
+            : asked.PaidForLocal ? [] : warranted.Where(section => localLane.Contains(section, StringComparer.Ordinal)).ToList();
         var paid = warranted.Except(local, StringComparer.Ordinal).ToList();
 
         // A pass whose paid lane has work asks whether the research model answers before
@@ -529,8 +558,9 @@ public sealed class ResearchRunner(
             {
                 // A section the machine cannot hold is left for the paid path, in this
                 // pass, which is what section 18 says happens to it. The writer's own
-                // row names the section and the reason; this pass writes it.
-                if (left.Reason.StartsWith(ProseWriter.CannotHold, StringComparison.Ordinal))
+                // row names the section and the reason; this pass writes it. A section
+                // asked for alone is never moved to the paid path and stays left out.
+                if (left.Reason.StartsWith(ProseWriter.CannotHold, StringComparison.Ordinal) && asked.Section is null)
                 {
                     paid.Add(left.Section);
                     local.Remove(left.Section);
@@ -667,18 +697,26 @@ public sealed class ResearchRunner(
             }
         }
 
+        // A section asked for alone that the local model could not be reached for came to nothing the pass could write, so
+        // the pass is unavailable with the local model's reason, as a pass is whose paid model does not answer.
+        // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+        var unreached = asked.Section is { } sought
+            ? notWritten.FirstOrDefault(line => line.Section == sought && line.Reason.StartsWith(ProseWriter.Unavailable, StringComparison.Ordinal))?.Reason
+            : null;
+
         var outcome = new ResearchPassOutcome(
             ticker,
             asOf,
-            paused ? Paused : Written,
+            paused ? Paused : unreached is not null ? Unavailable : Written,
             verdict.State,
             recorded,
             written,
             notWritten,
             intake.Rows.Count,
             intake.Admitted.Count,
-            unread.Count == 0 ? null : string.Join("; ", unread),
-            leftForThePaidPath);
+            unreached ?? (unread.Count == 0 ? null : string.Join("; ", unread)),
+            leftForThePaidPath,
+            asked.Section);
 
         // Measured off the store: the documents this pass stored and the sections the
         // paid lane inserted. The prose writer's rows are on its own row.
@@ -1029,6 +1067,7 @@ public sealed class ResearchRunner(
             written = outcome.Written.Select(section => new { section = section.Section, version = section.Version, model = section.Model, retry = section.Retry }),
             notWritten = outcome.NotWritten.Select(section => new { section = section.Section, reason = section.Reason }),
             leftForThePaidPath = outcome.LeftForThePaidPath ?? [],
+            alone = outcome.Alone,
             fetched = outcome.Fetched,
             admitted = outcome.Admitted,
             documents,

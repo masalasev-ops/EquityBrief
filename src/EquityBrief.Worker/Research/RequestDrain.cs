@@ -17,8 +17,9 @@ namespace EquityBrief.Worker.Research;
 // One request the drain took, as the worker reads it. The instant it was claimed at is
 // carried with it, because the run that settles it is one that started at or after that
 // instant and an earlier pass's run is not this request's. `Refresh` is a press that asked
-// for every section to be written again.
-public sealed record TakenRequest(string Ticker, string AskedAt, string Lane, DateTimeOffset ClaimedAt, bool Refresh = false);
+// for every section to be written again, and `Section` one that asked for one section the
+// checker left out to be written again alone on the local model.
+public sealed record TakenRequest(string Ticker, string AskedAt, string Lane, DateTimeOffset ClaimedAt, bool Refresh = false, string? Section = null);
 
 // The worker's half of the request store: taking the oldest request nobody has started,
 // and saying what came of it.
@@ -63,8 +64,25 @@ public sealed class RequestDrain : IComponent
             WHERE state = 'outstanding'
             ORDER BY asked_at, ticker
             LIMIT 1)
-        RETURNING ticker, asked_at, lane, refresh;
+        RETURNING ticker, asked_at, lane, refresh, section;
     ";
+
+    // The oldest request for one section alone nobody has started, which the drain takes ahead of any wait for the
+    // off-peak hours, since the local model writes it and it spends nothing.
+    // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+    const string ClaimAlone = @"
+        UPDATE research_request
+        SET state = 'writing'
+        WHERE (ticker, asked_at) = (
+            SELECT ticker, asked_at FROM research_request
+            WHERE state = 'outstanding' AND section IS NOT NULL
+            ORDER BY asked_at, ticker
+            LIMIT 1)
+        RETURNING ticker, asked_at, lane, refresh, section;
+    ";
+
+    // Whether the named stock's outstanding request asks for one section alone.
+    const string AloneOutstanding = "SELECT 1 FROM research_request WHERE ticker = $ticker AND state = 'outstanding' AND section IS NOT NULL;";
 
     // The run is written at the settle rather than at the claim, because a pass names its
     // own run from the instant it starts and this cannot know that before it runs.
@@ -552,6 +570,21 @@ public sealed class RequestDrain : IComponent
                 break;
             }
 
+            // A section asked for alone is written by the local model and spends nothing, so it is taken at once, ahead of
+            // any wait for the off-peak hours.
+            // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+            if (await ClaimAloneAsync(connection, clock.UtcNow, cancellation) is { } alone)
+            {
+                taken++;
+
+                if (await WriteAsync(connection, alone, clock, pass, atPeak: false, cancellation))
+                {
+                    written++;
+                }
+
+                continue;
+            }
+
             // Every pass is paid at the off-peak rate. A pass's paid calls come at its end, so a
             // request is taken only where the longest pass the store holds would end before the
             // next peak window opens. A drain started inside a window, or whose next pass could
@@ -598,13 +631,16 @@ public sealed class RequestDrain : IComponent
 
     public const string AtPeakFlag = "--at-peak";
 
+    // The flag a pass is started with to write one named section alone on the local model.
+    public const string SectionFlag = "--section";
+
     // The named stock's request nobody has started, taken and marked in one statement as the queue's claim is,
     // whatever its place in the queue.
     const string ClaimNamed = @"
         UPDATE research_request
         SET state = 'writing'
         WHERE ticker = $ticker AND state = 'outstanding'
-        RETURNING ticker, asked_at, lane, refresh;
+        RETURNING ticker, asked_at, lane, refresh, section;
     ";
 
     // The operator's Write now press: the one named request written now, ahead of every older one, and
@@ -627,7 +663,9 @@ public sealed class RequestDrain : IComponent
 
         await connection.OpenAsync(cancellation);
 
-        if (!atPeak)
+        // A section asked for alone spends nothing and waits for no off-peak hour.
+        // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+        if (!atPeak && !await AloneAsync(connection, ticker, cancellation))
         {
             var now = clock.UtcNow;
             var startsAt = ResearchPricing.StartFor(pricings, now, await LongestPassAsync(connection, cancellation));
@@ -663,11 +701,14 @@ public sealed class RequestDrain : IComponent
         // writes whole whatever lane the request names.
         // see: Nothing expires on a timer
         // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
+        // A request for one section alone hands the pass that section and nothing that would move it to the paid model.
+        // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
         string[] verb =
         [
             "research", "--ticker", request.Ticker,
-            .. request.Lane == "paid" || request.Refresh ? ["--paid-for-local"] : Array.Empty<string>(),
-            .. request.Refresh ? ["--refresh"] : Array.Empty<string>(),
+            .. request.Section is { } alone ? [SectionFlag, alone] : Array.Empty<string>(),
+            .. request.Section is null && (request.Lane == "paid" || request.Refresh) ? ["--paid-for-local"] : Array.Empty<string>(),
+            .. request.Section is null && request.Refresh ? ["--refresh"] : Array.Empty<string>(),
             .. atPeak ? [AtPeakFlag] : Array.Empty<string>(),
         ];
 
@@ -712,14 +753,32 @@ public sealed class RequestDrain : IComponent
 
             await using var reader = await command.ExecuteReaderAsync(cancellation);
 
-            taken = await reader.ReadAsync(cancellation)
-                ? new TakenRequest(reader.GetString(0), reader.GetString(1), reader.GetString(2), at, reader.GetInt64(3) == 1)
-                : null;
+            taken = await reader.ReadAsync(cancellation) ? Taken(reader, at) : null;
         }
 
         await transaction.CommitAsync(cancellation);
 
         return taken;
+    }
+
+    // The oldest request nobody has started, in the queue's order.
+    public static Task<TakenRequest?> ClaimAsync(SqliteConnection connection, DateTimeOffset at, CancellationToken cancellation = default) =>
+        TakeAsync(connection, Claim, at, cancellation);
+
+    // The oldest request for one section alone nobody has started, claimed as the queue's claim is.
+    // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+    public static Task<TakenRequest?> ClaimAloneAsync(SqliteConnection connection, DateTimeOffset at, CancellationToken cancellation = default) =>
+        TakeAsync(connection, ClaimAlone, at, cancellation);
+
+    // Whether the named stock's outstanding request asks for one section alone.
+    static async Task<bool> AloneAsync(SqliteConnection connection, string ticker, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = AloneOutstanding;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        return await command.ExecuteScalarAsync(cancellation) is not null;
     }
 
     // Taken inside a transaction that holds the write lock from its start and commits as a statement of its own,
@@ -732,7 +791,7 @@ public sealed class RequestDrain : IComponent
     // that holds. A read placed before the write would take a shared lock first and then need to raise it, which
     // is the wait the driver does not cover, so the begin stays immediate.
     // see: A writer waits up to ten minutes for another, and a pass stores what it fetched in one write
-    public static async Task<TakenRequest?> ClaimAsync(SqliteConnection connection, DateTimeOffset at, CancellationToken cancellation = default)
+    static async Task<TakenRequest?> TakeAsync(SqliteConnection connection, string statement, DateTimeOffset at, CancellationToken cancellation)
     {
         await using var transaction = connection.BeginTransaction(deferred: false);
         TakenRequest? taken;
@@ -740,19 +799,22 @@ public sealed class RequestDrain : IComponent
         await using (var command = connection.CreateCommand())
         {
             command.Transaction = transaction;
-            command.CommandText = Claim;
+            command.CommandText = statement;
 
             await using var reader = await command.ExecuteReaderAsync(cancellation);
 
-            taken = await reader.ReadAsync(cancellation)
-                ? new TakenRequest(reader.GetString(0), reader.GetString(1), reader.GetString(2), at, reader.GetInt64(3) == 1)
-                : null;
+            taken = await reader.ReadAsync(cancellation) ? Taken(reader, at) : null;
         }
 
         await transaction.CommitAsync(cancellation);
 
         return taken;
     }
+
+    // A claimed row as the drain carries it: its key, its lane, whether it asked for a rewrite and the section it asked
+    // for alone.
+    static TakenRequest Taken(SqliteDataReader reader, DateTimeOffset at) =>
+        new(reader.GetString(0), reader.GetString(1), reader.GetString(2), at, reader.GetInt64(3) == 1, reader.IsDBNull(4) ? null : reader.GetString(4));
 
     // The run is handed in rather than read again here, so the row this settles under is
     // the one the state was decided from and the two cannot come to disagree.

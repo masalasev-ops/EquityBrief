@@ -297,6 +297,16 @@ public partial class ReadSurface
 
         Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", Filed + Release), "newest-quarter"));
         Assert.Equal(ReportProof.Passed, Verdict(ReportProof.Evaluate("CCC", Filed), "newest-quarter"));
+
+        // A section left out with no control writing it again alone fails, one with it passes, and the industry cycle,
+        // its theme's, asks for none.
+        const string LeftOut = "<p class=\"left-out\" data-section=\"The risks\">The risks are left out: refused.</p>";
+        const string Cycle = "<p class=\"not-written\" data-section=\"The industry cycle\">The industry cycle is not written: no source.</p>";
+        var again = new MarkRenderer().LeftOut("CCC", [new LeftOutSection("CCC", "The risks", "refused.")], cost: new ResearchCost(1, 0.05m, 0.05m, "within the caps"));
+
+        Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", LeftOut + Cycle), "rerun-alone"));
+        Assert.Equal(ReportProof.Passed, Verdict(ReportProof.Evaluate("CCC", again + Cycle), "rerun-alone"));
+        Assert.Equal(ReportProof.Unexamined, Verdict(ReportProof.Evaluate("CCC", Cycle), "rerun-alone"));
         Assert.Equal(ReportProof.Passed, Verdict(ReportProof.Evaluate("CCC", Filed.Replace(">Filed<", ">Reported<").Replace("2026-07-24", "2026-10-22") + Release), "newest-quarter"));
 
         var counted = ReportProof.Counted([held, broken]).Single(rule => rule.Rule == "one-value");
