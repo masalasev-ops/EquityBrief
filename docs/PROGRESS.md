@@ -10675,3 +10675,21 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    its answer to the operator for 22.15.
+
+### 22.14 run - correction: the history test's expectation names only the tables the fixture's replay fills   2026-10-27
+
+Not a checkpoint entry: it corrects what the run entries above carried into shipped source, and lands nothing.
+Found:      the checkpoint script over 5682a6f0, the tree PR 575 merged as 2f122f7f at 18:42 UTC while its gates still
+            ran: 2833 of 2834 passed, fixture-replay refusing the history test's expectation, which named the release
+            readings among its tables though the fixture's replay fills none of them.
+Corrected:  the expectation names the filed facts and the bars alone, the tables the replay fills and the history test
+            reads beside the releases.
+Tests:      none new; 2834 in all.
+Claims:     none new.
+Mutated:    the rule, stated before the run: undo the property the correction restores. R1 the release readings named
+            again: red at fixture-replay's check of every table an expectation names.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2834 of 2834 tests ran
+            with none failed, migrations 0 to 112 with none pending, schema version 112, against `data-ci` and never
+            `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
