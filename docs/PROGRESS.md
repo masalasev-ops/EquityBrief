@@ -10500,8 +10500,9 @@ Corrected:  a release flags only where the scorecard read a check, it was accept
             ranks no member whose scorecard read no check, one flagged before the correction among them, and draws a trade
             held in one after the ranked rows saying no checks could be read from its filings. The decision, the
             architecture's paragraph, catalogue, card and settings rows, section 17's figure pinned, the schema's column,
-            the roster's fixture-expectations and read-surface rows and the changelog. Section 17's settings row names the
-            correction in its source column, since the pinned figures' check reads every digit its value cell states.
+            the roster's fixture-expectations and read-surface rows, the guide's flag and the changelog. Section 17's
+            settings row names the correction in its source column, since the pinned figures' check reads every digit its
+            value cell states.
 Tests:      3 new: the flag's bounds worked on both sides, the release on the following quarter's last day and the day
             after, the 63rd session back and the 64th, counted by hand off the exchange's closures; the family's step over
             five members, two flagging and three not, one for each bound; and the card over a night holding a member
