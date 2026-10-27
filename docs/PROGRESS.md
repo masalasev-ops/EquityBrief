@@ -10693,3 +10693,34 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 112 with none pending, schema version 112, against `data-ci` and never
             `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+
+### 18.4 ruling - the report page's sections fixed for every name, each a general rule held by a check over every stored page, in one pull request   2026-10-27
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      the operator's instruction of 2026-10-27, about 17:55 UTC, word for word in
+            `prompts/2026-10-27-report-page-fixes-every-name.md`: the report page's defects ROP showed first, fixed for
+            every name's page as general rules, adding to what exists and removing no capability, with no change to how
+            picks are chosen, the paper-trading ledger or the scorecard, and with code or the local model alone, no paid
+            model call and no analysts' ratings call, any fix seeming to need one stopped with its cost put first. Twelve
+            parts: written sections checking their own directional claims against the stored figures, naming both
+            sources where two disagree on a beat or a miss, their sources listed by title beneath them in place of
+            bracketed codes, and a release's abbreviations spelled out; the short version opening on the pick, then the
+            quarter, then what worked and what did not, the headline held to the same check; the newest quarter read
+            from its results release by code where the release is stored before the filing, labelled so, the awaited
+            and next report lines moving on once a quarter is reported, the quote box reading the newest release's
+            opening line, and the cross-check filling once the filing arrives; one value a concept on the page, worked
+            from the stored close and the filed shares or earnings, a provider's value dated and priced and labelled
+            stale where old, a key to the valuation's earnings and a check flagging any concept shown twice; the
+            header saying closed or live as the quote is; levels read from the pulled history where the year holds
+            none, the pick's target and stop on the chart, the plan naming the family's own exit, the fill and its
+            reward to risk restated, and an estimated next report date; the rules section opening on the family that
+            picked the name, every failing input named in plain words; news matched to the company and its exchange,
+            every story passing labelled and counted again; the industry overridable and labelled as the provider's,
+            its group checked against the page's own text, and the industry cycle's sources held to the company's or
+            its industry's terms; a failed piece run again alone on the local model; each job's model named; and every
+            rule held by a check over every name's stored page, reported pass, fail or unexamined with the names
+            affected, ROP kept as a frozen fixture.
+Queue:      done, PRs 573 to 576; in progress, this pull request; next, the operator's word on 22.14's pullback version
+            and on 22.15's freezes.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
