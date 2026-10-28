@@ -11194,9 +11194,12 @@ Corrected:  each job of the model table names the profile it ran under and that 
             against the hold, a declared date with the company's own estimate beside it where the two differ; what worked
             and what did not keeps four sentences a paragraph chosen by demand, cost, segments and the main risk; every
             written section's sources and the page's are held to the company and the industry the page reads it under over
-            the whole stored text; the peer check reads the company's own segments and revenue lines, a group flagged where
-            more than half the quarter's revenue is in a business it names none of, health insurers named among the health
-            care providers; ROP's group is set to Software in the read surface's settings on the operator's approval; and
+            the whole stored text; the peer check reads the company's own clean segment table, its release's revenue lines
+            or its filing's segments summing to its revenue, a group flagged where more than half the quarter's revenue is
+            in a business it names none of, a channel and a device's therapies naming no business and health insurers and
+            investment banks named among the health care providers and the capital markets, a first reading that took
+            tables as filed having flagged BAX, GS, HRL, PH and SJM, none of them now; ROP's group is set to Software in the
+            read surface's settings on the operator's approval; and
             the drift's open floor is replayed beside its live rule by the record command's own form, registered as no rule,
             the S&P 500's drift card drawing the newest run beneath its record. The proof adds sources-test, quarter-wait,
             segments-scale, model-table, cost-figures, fill-against-plan, next-report-hold and short-priority, counts a rule
@@ -11208,6 +11211,19 @@ Replayed:   `rule-record --open-floor --print` over the pulled history from 2019
             stored record of 2026-10-16 standing at 2,251 and 0.021 to 2026-10-15; skipping a fill whose reward to risk at
             the open is under 1, 2,027 trades at 0.109, 31.3 per cent won, 353 listings skipped. Nothing was written: the run
             that writes the row and sets the session it is followed forward from goes from main's clean copy after the merge.
+Proof:      over the S&P 500's 503 pages of the night of 2026-10-27, drawn from the branch over the live store from 19:15 to
+            19:24 UTC, each rule passed, failed and unexamined: directions 195, 0, 308; markers 204, 0, 299; abbreviations
+            204, 0, 299; short-version 42, 0, 461; held-trade 20, 0, 483; what-worked 42, 0, 461; own-limit 41, 0, 462;
+            one-value 503, 0, 0; header 503, 0, 0; levels-older 61, 0, 442; pick-on-chart 26, 0, 477; levels-cover 26, 0,
+            477; pick-exit 6, 0, 497; next-report 6, 0, 497; next-report-estimated 160, 0, 343; rules-family 6, 0, 497;
+            trend-words 401, 0, 102; news-matched 503, 0, 0; news-labelled 503, 0, 0, the relabel through; industry-label
+            500, 0, 3; industry-mismatch 145, 0, 358, no group proposed, ROP's set to Software; sources-relevant 500, 0, 3;
+            sources-test 198, 0, 305; newest-quarter 457, 45, 1; quarter-wait 45, 0, 458, 42 of the 45 expected to clear on
+            2026-10-28, the night after they reported, UDR on 2026-11-02, PRU on 2026-11-03 and COR on 2026-11-05, each a
+            release filed ahead of the calendar's report date; segments-release 15, 0, 382 and 106 open; segments-scale 145,
+            0, 358; rerun-alone 19, 0, 484; model-labels 503, 0, 0; model-table 503, 0, 0; cost-figures 41, 0, 462;
+            fill-against-plan 20, 0, 483, 3 of the 20 held trades filling under 1, BX at 0.79 on a plan of 0.78, KEY at
+            0.96 on 1.44 and MMM at 0.70 on 0.73; next-report-hold 26, 0, 477; short-priority 42, 0, 461.
 Tests:      12 new, 5 rewritten for the rules they now hold; 2907 in all.
 Claims:     none new: the report page's rules are paragraphs of section 4, and the rule recorder's catalogue and matrix rows
             are amended in place.
