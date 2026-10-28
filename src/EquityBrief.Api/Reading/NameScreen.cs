@@ -1704,7 +1704,7 @@ public static partial class NameScreen
             quoteSession: quoteSession,
             // A written headline the stored directions contradict gives way to the one code writes.
             // see: A written sentence stating a direction the stored latest quarter contradicts is withheld where it is drawn, and a beat or a miss another source states against it is named beside it
-            headline: (WrittenHeadline(accepted) is { } writtenHeadline && EquityBrief.Core.Research.Directions.Clashes(writtenHeadline.Sentence, EquityBrief.Core.Research.Directions.Of(reportView?.Quarter)).Count == 0 ? writtenHeadline : null)
+            headline: (WrittenHeadline(accepted) is { } writtenHeadline && EquityBrief.Core.Research.Directions.Clashes(writtenHeadline.Sentence, EquityBrief.Core.Research.Directions.For(reportView?.Quarter, writtenHeadline.WrittenOn)).Count == 0 ? writtenHeadline : null)
                 ?? Headline(member?.Name ?? ticker, cards, Passed(listing, gates), missed, reading?.State, ladder?.TrendState),
             tiles: tiles,
             asksForQuotes: asksForQuotes,

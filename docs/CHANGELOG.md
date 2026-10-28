@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-28 - docs/ARCHITECTURE.html - the rule holding written sentences to the stored quarter holds only sections written after its report, each sentence read alone
+Authorised by: A written sentence stating a direction the stored latest quarter contradicts is withheld where it is drawn, and a beat or a miss another source states against it is named beside it
+Was:
+> "Every written sentence is read against the directions the stored latest quarter states, each from its own line: ..."
+Now:
+> "Every sentence of a section written on or after the day the stored latest quarter was reported is read alone, its markers out, against the directions that quarter states, each from its own line, and a section written before that day speaks of an earlier quarter and is held to none: ..."
+Why: the proof over the S&P 500's 503 pages on the night of 2026-10-27 failed GM's: its short version of 2026-10-11, written of the quarter before the one reported on 2026-10-21, joined its sentences by a marker and a line break, so the page read them as one and passed over them, and held to the newer quarter it would have been withheld as wrong.
+
 ### 2026-10-27 - docs/ARCHITECTURE.html - the rule for a section written again alone says the research region states what came of it
 Authorised by: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
 Was:

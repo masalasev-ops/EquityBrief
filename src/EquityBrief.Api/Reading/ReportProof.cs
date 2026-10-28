@@ -142,13 +142,27 @@ public static partial class ReportProof
             : business is not null ? "the group " + industry + " names none of " + business + " and no flag is drawn"
             : "a flag is drawn where the group names the business");
 
+        // A release reports a quarter newer than the card's where it was accepted after the end of the quarter that follows
+        // the card's own; one accepted before that is the card's own quarter's, filed beside it.
         var quarterCard = QuarterCard().Match(page);
         var newestRelease = ReleaseDay().Matches(page).Select(match => match.Groups[1].Value).DefaultIfEmpty(string.Empty).Max(StringComparer.Ordinal)!;
+        string? following = null;
+
+        if (QuarterTitle().Match(page) is { Success: true } titled)
+        {
+            var next = DateOnly.ParseExact(titled.Groups[1].Value, "yyyy-MM-dd", CultureInfo.InvariantCulture).AddMonths(3);
+
+            following = new DateOnly(next.Year, next.Month, DateTime.DaysInMonth(next.Year, next.Month)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        }
+
+        var newer = following is not null && string.CompareOrdinal(newestRelease, following) > 0;
 
         Add(
             "newest-quarter",
-            !quarterCard.Success ? null : quarterCard.Groups[1].Value == "Reported" || string.CompareOrdinal(newestRelease, quarterCard.Groups[2].Value) <= 0,
-            !quarterCard.Success ? "no latest quarter is drawn" : quarterCard.Groups[1].Value == "Filed" && string.CompareOrdinal(newestRelease, quarterCard.Groups[2].Value) > 0 ? "a results release of " + newestRelease + " is newer than the filing of " + quarterCard.Groups[2].Value + " the quarter is read from" : null);
+            !quarterCard.Success || following is null ? null : quarterCard.Groups[1].Value == "Reported" || !newer,
+            !quarterCard.Success ? "no latest quarter is drawn"
+            : following is null ? "the latest quarter names no quarter"
+            : quarterCard.Groups[1].Value == "Filed" && newer ? "a results release of " + newestRelease + ", after the quarter to " + following + " ended, is newer than the quarter the filing of " + quarterCard.Groups[2].Value + " reports" : null);
 
         var unwritten = Unwritten().Matches(page)
             .Select(match => WebUtility.HtmlDecode(match.Groups[1].Value))
@@ -266,6 +280,10 @@ public static partial class ReportProof
     // Each section the research region draws as left out or not written.
     [GeneratedRegex("<p class=\"(?:left-out|not-written)\" data-section=\"([^\"]+)\">")]
     private static partial Regex Unwritten();
+
+    // The quarter the latest quarter's card reads.
+    [GeneratedRegex("<h2>The quarter to (\\d{4}-\\d{2}-\\d{2}), line by line</h2>")]
+    private static partial Regex QuarterTitle();
 
     // Each results release the page draws management's words from, by the day it was filed or accepted.
     [GeneratedRegex("(?:data-guidance=\"[^\"]*\"[^>]*?data-filed|class=\"guidance release-opening\"[^>]*?data-accepted)=\"(\\d{4}-\\d{2}-\\d{2})\"")]

@@ -1423,9 +1423,10 @@ public sealed partial class SinglePageApp : IComponent
         var sections = written ?? [];
         var documents = sources ?? [];
 
-        // The directions the stored latest quarter states, which every written sentence is held to where it is drawn.
+        // The directions the stored latest quarter states, which every sentence of a section written on or after that
+        // quarter's report is held to where it is drawn; a section written before it speaks of an earlier quarter.
         // see: A written sentence stating a direction the stored latest quarter contradicts is withheld where it is drawn, and a beat or a miss another source states against it is named beside it
-        var directions = EquityBrief.Core.Research.Directions.Of(report?.Quarter);
+        IReadOnlyList<EquityBrief.Core.Research.DirectionFact> HeldTo(WrittenCell section) => EquityBrief.Core.Research.Directions.For(report?.Quarter, section.AsOf);
         var session = bars.Count > 0 ? bars[^1].SessionDate : (DateOnly?)null;
         var company = mast?.Company is { Length: > 0 } named ? named : ticker;
 
@@ -1507,7 +1508,7 @@ public sealed partial class SinglePageApp : IComponent
                         name,
                         "Written",
                         section.AsOf,
-                        marks.WrittenSection(ticker, shown, documents, riskLines: string.Equals(name, MarkRenderer.TheRisks, StringComparison.Ordinal) ? history?.Risk : null, facts: directions, lead: lead, proseLabel: lead is { Length: > 0 } ? "What worked and what did not." : null),
+                        marks.WrittenSection(ticker, shown, documents, riskLines: string.Equals(name, MarkRenderer.TheRisks, StringComparison.Ordinal) ? history?.Risk : null, facts: HeldTo(shown), lead: lead, proseLabel: lead is { Length: > 0 } ? "What worked and what did not." : null),
                         section: name,
                         id: SectionId(name),
                         role: role),
@@ -2009,7 +2010,7 @@ public sealed partial class SinglePageApp : IComponent
                     MarkRenderer.WhatManagementSaid,
                     "Written",
                     managed.AsOf,
-                    marks.WrittenSection(ticker, managed, documents, facts: directions) + (releaseRead ?? string.Empty),
+                    marks.WrittenSection(ticker, managed, documents, facts: HeldTo(managed)) + (releaseRead ?? string.Empty),
                     section: MarkRenderer.WhatManagementSaid,
                     id: SectionId(MarkRenderer.WhatManagementSaid)),
                 managed.AsOf);
@@ -2053,7 +2054,7 @@ public sealed partial class SinglePageApp : IComponent
                 if (sections.FirstOrDefault(section => string.Equals(section.Section, part, StringComparison.Ordinal)) is { } partWritten)
                 {
                     segmentBody.Append(Invariant($"<div class=\"written-part\" id=\"{SectionId(part)}\" data-section=\"{Escaped(part)}\"><div class=\"dl\"><span class=\"dl-k\">Written</span><b>{Cards.Day(partWritten.AsOf)}</b></div>"));
-                    segmentBody.Append(marks.WrittenSection(ticker, partWritten, documents, facts: directions)).Append("</div>");
+                    segmentBody.Append(marks.WrittenSection(ticker, partWritten, documents, facts: HeldTo(partWritten))).Append("</div>");
                 }
             }
 

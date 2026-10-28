@@ -291,11 +291,13 @@ public partial class ReadSurface
         Assert.Equal(ReportProof.Unexamined, Verdict(held, "newest-quarter"));
         Assert.Equal(ReportProof.Rules.Count, held.Verdicts.Count);
 
-        // A quarter dated by an older filing beside a newer results release fails, and one labelled as the release's passes.
+        // A quarter dated by an older filing beside a release accepted after the following quarter ended fails, one beside
+        // its own quarter's release filed the day after the filing passes, and one labelled as the release's passes.
         const string Release = "<blockquote class=\"guidance\" data-guidance=\"located\" data-exhibit=\"a.htm\" data-filed=\"2026-10-22\">";
-        const string Filed = "<section class=\"card spined fund\" id=\"quarter\"><div class=\"spine\"><div class=\"lbl\">The latest quarter</div><div class=\"dl\"><span class=\"dl-k\">Filed</span><b>2026-07-24</b><span>from the filing</span></div></div></section>";
+        const string Filed = "<section class=\"card spined fund\" id=\"quarter\"><div class=\"spine\"><div class=\"lbl\">The latest quarter</div><div class=\"dl\"><span class=\"dl-k\">Filed</span><b>2026-07-24</b><span>from the filing</span></div></div><div class=\"main\"><h2>The quarter to 2026-06-30, line by line</h2></div></section>";
 
         Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", Filed + Release), "newest-quarter"));
+        Assert.Equal(ReportProof.Passed, Verdict(ReportProof.Evaluate("CCC", Filed + Release.Replace("2026-10-22", "2026-07-25")), "newest-quarter"));
         Assert.Equal(ReportProof.Passed, Verdict(ReportProof.Evaluate("CCC", Filed), "newest-quarter"));
 
         // A section left out with no control writing it again alone fails, one with it passes, and the industry cycle,
@@ -355,6 +357,28 @@ public partial class ReadSurface
 
         Assert.Equal((0, 0, 2), (unread.Passed, unread.Failed, unread.Unexamined));
         Assert.Contains("unexamined is never counted as a pass", ReportProof.Html(new ProofReport(DateTimeOffset.UnixEpoch, "GSPC", null, ReportProof.Counted([held, broken]), [held, broken])), StringComparison.Ordinal);
+    }
+
+    // Sentences joined by a marker after the full stop and a line break are each read alone, as GM's short version holds
+    // them, so a sentence about an adjusted figure leaves its neighbour read; and a section written before the latest
+    // quarter was reported speaks of an earlier quarter and is held to nothing.
+    // see: A written sentence stating a direction the stored latest quarter contradicts is withheld where it is drawn, and a beat or a miss another source states against it is named beside it
+    [Fact]
+    public void SentencesJoinedByAMarkerAreReadAloneAndASectionWrittenBeforeTheQuarterIsHeldToNothing()
+    {
+        var quarter = new EquityBrief.Core.Report.LatestQuarter(
+            new DateOnly(2026, 9, 30),
+            new DateOnly(2026, 10, 21),
+            new DateOnly(2025, 9, 30),
+            [new EquityBrief.Core.Report.QuarterLine(EquityBrief.Core.Report.QuarterLines.NetIncome, 1_300_000_000m, null, null, null, 1_100_000_000m, 18.2, 6.9, 5.8, false, null, null, null)]);
+        const string Short = "\"Adjusted operating income\" rose and its adjusted margin widened from a year earlier. [C7]\nNet income attributable to stockholders fell from a year earlier. [C9]";
+
+        var held = MarkRenderer.Readable(Short, EquityBrief.Core.Research.Directions.For(quarter, new DateOnly(2026, 10, 22)));
+
+        Assert.Equal("\"Adjusted operating income\" rose and its adjusted margin widened from a year earlier. A sentence is withheld here: it said the net income fell, where the stored figures show +18.2% on a year earlier, rose.", held);
+        Assert.Empty(EquityBrief.Core.Research.Directions.For(quarter, new DateOnly(2026, 10, 11)));
+        Assert.NotEmpty(EquityBrief.Core.Research.Directions.For(quarter, new DateOnly(2026, 10, 21)));
+        Assert.Equal("\"Adjusted operating income\" rose and its adjusted margin widened from a year earlier. Net income attributable to stockholders fell from a year earlier.", MarkRenderer.Readable(Short, EquityBrief.Core.Research.Directions.For(quarter, new DateOnly(2026, 10, 11))));
     }
 
     // A quarter reported after the newest filing the store holds is dated by its report and labelled as the results

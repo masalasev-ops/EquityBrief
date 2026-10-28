@@ -63,6 +63,11 @@ public static partial class Directions
         return facts;
     }
 
+    // The directions a section written on a day is held to: the latest quarter's where it was written on or after the day
+    // that quarter was reported, and none where it was written before, since it then speaks of an earlier quarter.
+    public static IReadOnlyList<DirectionFact> For(LatestQuarter? quarter, DateOnly? writtenOn) =>
+        quarter is { Reported: { } reported } && writtenOn is { } written && written < reported ? [] : Of(quarter);
+
     // Each direction a sentence states that the facts contradict.
     public static IReadOnlyList<DirectionClash> Clashes(string sentence, IReadOnlyList<DirectionFact> facts)
     {

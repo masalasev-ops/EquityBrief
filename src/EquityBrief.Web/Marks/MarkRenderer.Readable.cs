@@ -26,9 +26,11 @@ public sealed partial class MarkRenderer
         var paragraphs = prose.Split(["\r\n\r\n", "\n\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         var read = new List<string>(paragraphs.Length);
 
+        // Sentences are cut with their markers out, since a marker standing after a sentence's full stop would otherwise
+        // join it to the next and a run of them would be read as one sentence.
         foreach (var paragraph in paragraphs)
         {
-            var sentences = Sentence().Split(paragraph);
+            var sentences = Sentence().Split(Unmarked(paragraph));
 
             read.Add(string.Join(" ", sentences.Select(sentence => Held(sentence, facts ?? []))));
         }
