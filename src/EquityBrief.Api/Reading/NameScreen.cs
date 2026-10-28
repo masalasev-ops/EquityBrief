@@ -609,7 +609,7 @@ public static partial class NameScreen
 
                 // The segments and revenue lines the industry check reads off the filing's table.
                 // see: A stock's industry group is checked against the company's own segments and revenue lines and not its description
-                lines = EquityBrief.Core.Report.IndustryCheck.Lines(segments, breakdown);
+                lines = EquityBrief.Core.Report.IndustryCheck.Lines(segments);
             }
         }
 
@@ -1681,7 +1681,7 @@ public static partial class NameScreen
             {
                 ReleaseSegments = released,
                 CommentaryFromFiling = commentaryFromRelease == false,
-                BusinessLines = released is { Clean: true, Rows.Count: > 0 } ? EquityBrief.Core.Report.IndustryCheck.Lines(released, null) : reportView.BusinessLines,
+                BusinessLines = released is { Clean: true, Rows.Count: > 0 } ? EquityBrief.Core.Report.IndustryCheck.Lines(released) : reportView.BusinessLines,
             };
         }
 

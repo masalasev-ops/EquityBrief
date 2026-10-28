@@ -396,7 +396,7 @@ public partial class ReadSurface
             ],
             null);
         var sells = new MarkRenderer().SegmentsTable(ropSegments, "USD");
-        var flag = MarkRenderer.IndustryMismatch("Electronic Equipment, Instruments & Components", EquityBrief.Core.Report.IndustryCheck.Lines(ropSegments, null));
+        var flag = MarkRenderer.IndustryMismatch("Electronic Equipment, Instruments & Components", EquityBrief.Core.Report.IndustryCheck.Lines(ropSegments));
 
         Assert.NotEqual(string.Empty, flag);
         Assert.Equal(ReportProof.Passed, Verdict(ReportProof.Evaluate("CCC", Peers + flag + sells), "industry-mismatch"));

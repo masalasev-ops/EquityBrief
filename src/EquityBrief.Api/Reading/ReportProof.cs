@@ -81,7 +81,7 @@ public static partial class ReportProof
         ("news-matched", "The news region states how many stories it left out as another company's, and its counts add up over the stories it kept."),
         ("news-labelled", "Every story the news region keeps that admissibility admitted is labelled."),
         ("industry-label", "The peer group is labelled as the provider's classification or the stock's override."),
-        ("industry-mismatch", "A peer group naming none of the business that the company's own segments and revenue lines put more than half the quarter's revenue in is flagged, and one naming it is not."),
+        ("industry-mismatch", "A peer group naming none of the business that the company's own clean segment table puts more than half the quarter's revenue in is flagged, and one naming it is not."),
         ("sources-relevant", "The page's sources list is held to the documents naming the company or its industry, the rest folded apart beneath it, and says where fewer than two remain."),
         ("sources-test", "Each written section's own sources list is held to the documents naming the company or its industry in their whole text, as the page's list is, and no document stands in one list and is folded apart in another."),
         ("newest-quarter", "A newer quarter's results release stored before its filing is read by code into the latest quarter, labelled so."),
@@ -244,8 +244,7 @@ public static partial class ReportProof
 
         Add("industry-label", group.Success ? group.Groups[2].Value.StartsWith("the provider's classification", StringComparison.Ordinal) || group.Groups[2].Value.StartsWith("the industry set for the stock", StringComparison.Ordinal) : null, group.Success ? null : "no peer group is drawn");
 
-        // The group read against the segments and revenue lines the page draws: a clean segment table's rows, the release's
-        // first, or the filing's table as filed, its groupings' lines naming revenue.
+        // The group read against the segments and revenue lines the page draws in a clean segment table, the release's first.
         var industry = group.Success ? WebUtility.HtmlDecode(group.Groups[1].Value) : null;
         var lines = DrawnBusinessLines(page);
         var business = industry is null || lines.Count == 0 ? null : EquityBrief.Core.Report.IndustryCheck.Mismatch(industry, lines);
@@ -728,40 +727,12 @@ public static partial class ReportProof
     [GeneratedRegex("<tr data-segment=\"(?<segment>[^\"]+)\"><td>[^<]*</td><td class=\"num\" data-revenue=\"(?<revenue>-?[0-9.]+)\">(?<drawn>[^<]*)</td>")]
     private static partial Regex SegmentRow();
 
-    // The filing's segment table as filed, and each of its lines with its grouping and figure.
-    [GeneratedRegex("<table class=\"numbers-segments\"[^>]*>(?<rows>.*?)</table>", RegexOptions.Singleline)]
-    private static partial Regex RawSegmentsOf();
-
-    [GeneratedRegex("<tr data-segment=\"(?<group>[^\"]+)\"><td>(?<line>[^<]*)</td><td class=\"num\" data-segment-figure=\"(?<figure>-?[0-9.]+)\"")]
-    private static partial Regex RawSegmentRow();
-
-    // The segments and revenue lines the page draws, read as the industry check reads them: the first clean segment table's
-    // rows, and where none is drawn the filing's table as filed, each grouping's lines naming revenue but the company's own.
-    static IReadOnlyList<EquityBrief.Core.Report.BusinessLine> DrawnBusinessLines(string page)
-    {
-        if (SegmentTableOf().Match(page) is { Success: true } clean)
-        {
-            return
-            [
-                .. SegmentRow().Matches(clean.Groups["rows"].Value)
-                    .Select(row => new EquityBrief.Core.Report.BusinessLine(WebUtility.HtmlDecode(row.Groups["segment"].Value), decimal.Parse(row.Groups["revenue"].Value, NumberStyles.Number | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture))),
-            ];
-        }
-
-        if (RawSegmentsOf().Match(page) is { Success: true } raw)
-        {
-            return
-            [
-                .. RawSegmentRow().Matches(raw.Groups["rows"].Value)
-                    .Where(row => row.Groups["group"].Value != "The company" && Regex.IsMatch(row.Groups["line"].Value, "revenue|sales|premium", RegexOptions.IgnoreCase))
-                    .Select(row => new EquityBrief.Core.Report.BusinessLine(
-                        WebUtility.HtmlDecode(row.Groups["group"].Value) + " " + WebUtility.HtmlDecode(row.Groups["line"].Value),
-                        decimal.Parse(row.Groups["figure"].Value, NumberStyles.Number | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture))),
-            ];
-        }
-
-        return [];
-    }
+    // The segments the page draws, read as the industry check reads them: the first clean segment table's rows, the
+    // release's where the page draws one; none where it draws no clean table.
+    static IReadOnlyList<EquityBrief.Core.Report.BusinessLine> DrawnBusinessLines(string page) =>
+        SegmentTableOf().Match(page) is { Success: true } clean
+            ? [.. SegmentRow().Matches(clean.Groups["rows"].Value).Select(row => new EquityBrief.Core.Report.BusinessLine(WebUtility.HtmlDecode(row.Groups["segment"].Value), decimal.Parse(row.Groups["revenue"].Value, NumberStyles.Number | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture)))]
+            : [];
 
     // Each results release the page draws management's words from, by the day it was filed or accepted.
     [GeneratedRegex("(?:data-guidance=\"[^\"]*\"[^>]*?data-filed|class=\"guidance release-opening\"[^>]*?data-accepted)=\"(\\d{4}-\\d{2}-\\d{2})\"")]

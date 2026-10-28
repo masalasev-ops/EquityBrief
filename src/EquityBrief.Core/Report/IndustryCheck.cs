@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-using EquityBrief.Core.Providers;
 
 namespace EquityBrief.Core.Report;
 
@@ -16,56 +15,37 @@ public sealed record BusinessLine(string Words, decimal Revenue);
 // see: A stock's industry group is checked against the company's own segments and revenue lines and not its description
 public static class IndustryCheck
 {
-    // Each business word a company's lines use, with the words an industry group carrying that business is named by. A
-    // health insurer is classified among the health care providers, managed care being both, so that group names
-    // insurance.
+    // Each business word a company's segments use, with the words an industry group carrying that business is named by. A
+    // health insurer is classified among the health care providers, managed care being both, and an investment bank among
+    // the capital markets, so those groups name insurance and banking. A segment named for a channel, retail, or for
+    // therapies a device delivers names no business of its own, so neither word is read.
     static readonly (string Business, string[] Says, string[] Named)[] Businesses =
     [
         ("software", ["software"], ["Software", "IT Services", "Information Technology Services", "Application", "Systems Software"]),
         ("semiconductors", ["semiconductor", "semiconductors", "chips"], ["Semiconductor"]),
-        ("banking", ["bank", "banks", "banking", "deposits", "loans"], ["Bank", "Banks", "Thrifts", "Financ"]),
+        ("banking", ["bank", "banks", "banking", "deposits", "loans"], ["Bank", "Banks", "Thrifts", "Financ", "Capital Markets"]),
         ("insurance", ["insurance", "insurer", "underwriting", "premiums"], ["Insurance", "Health Care Providers"]),
-        ("medicines", ["pharmaceutical", "pharmaceuticals", "drug", "drugs", "therapies", "biotechnology"], ["Pharmaceutical", "Biotechnology", "Life Sciences", "Drug"]),
+        ("medicines", ["pharmaceutical", "pharmaceuticals", "drug", "drugs", "biotechnology"], ["Pharmaceutical", "Biotechnology", "Life Sciences", "Drug"]),
         ("medical devices", ["medical device", "medical devices", "surgical", "diagnostic"], ["Health Care Equipment", "Medical", "Diagnostic", "Health Care Supplies", "Life Sciences"]),
         ("oil and gas", ["oil", "natural gas", "crude", "refining", "drilling"], ["Oil", "Gas", "Energy"]),
         ("utilities", ["electricity", "electric utility", "utility", "utilities", "power generation"], ["Utilit", "Electric", "Power"]),
         ("real estate", ["real estate", "properties", "REIT", "leases"], ["REIT", "Real Estate"]),
         ("aerospace and defense", ["aerospace", "defense", "aircraft"], ["Aerospace", "Defense"]),
-        ("retail", ["retail", "stores", "retailer"], ["Retail", "Stores", "Distributors"]),
+        ("retail", ["stores", "retailer"], ["Retail", "Stores", "Distributors"]),
         ("restaurants", ["restaurant", "restaurants"], ["Restaurants", "Hotels"]),
     ];
 
     // The share of the quarter's revenue a business's lines must carry for the lines to describe it, more than half.
     public const double MostOfRevenue = 0.5;
 
-    // The words a filing's line names revenue by, which the lines read are those of.
-    static readonly Regex RevenueLine = new(@"revenue|sales|premium", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-
     // The lines the check reads: a clean segment table's segments with their revenue, the release's where it read one and
-    // the filing's otherwise; and where neither stands, the filing's table as filed, each grouping's lines naming revenue
-    // for the quarter, the grouping's label beside the line's words. None where the page holds no segment table.
-    public static IReadOnlyList<BusinessLine> Lines(SegmentReading? clean, SegmentBreakdown? filed)
-    {
-        if (clean is { Clean: true, Rows.Count: > 0 } table)
-        {
-            return [.. table.Rows.Select(row => new BusinessLine(row.Segment, row.Revenue))];
-        }
-
-        if (filed is not { Periods.Count: > 0 } breakdown)
-        {
-            return [];
-        }
-
-        var shortest = breakdown.Periods.Min(period => period.Months);
-        var ended = breakdown.Periods.Where(period => period.Months == shortest).Max(period => period.Ended);
-
-        return
-        [
-            .. breakdown.Groups.SelectMany(group => group.Figures
-                .Where(figure => figure.Value is not null && figure.Period.Months == shortest && figure.Period.Ended == ended && RevenueLine.IsMatch(figure.LineItem))
-                .Select(figure => new BusinessLine(group.Label + " " + figure.LineItem, figure.Value!.Value))),
-        ];
-    }
+    // the filing's otherwise, whose revenue sums to the company's and so apportions it. A table as filed that sums to no
+    // total is not read, its groupings overlapping and its lines naming revenue for some segments alone, and none is read
+    // where the page holds no clean table.
+    public static IReadOnlyList<BusinessLine> Lines(SegmentReading? clean) =>
+        clean is { Clean: true, Rows.Count: > 0 } table
+            ? [.. table.Rows.Select(row => new BusinessLine(row.Segment, row.Revenue))]
+            : [];
 
     // The business the lines carrying most of the quarter's revenue name and the share they carry, none where no business
     // carries more than half. A line is counted under the first business whose words it uses.

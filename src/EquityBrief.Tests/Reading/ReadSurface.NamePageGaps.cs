@@ -340,10 +340,12 @@ public partial class ReadSurface
         Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate("ROP", sources), "sources-test"));
     }
 
-    // The peer check reads the company's own segments and revenue lines: ROP's software segments, 78 per cent of its quarter,
-    // are flagged against Electronic Equipment and stand under the override to Software; the 18 pages the description's
-    // words flagged are flagged no longer, their segments and revenue lines putting no business the list names past half
-    // their revenue in a group naming none of it, a health insurer's premiums standing among the health care providers.
+    // The peer check reads the company's own segments: ROP's software segments, 78 per cent of its quarter, are flagged
+    // against Electronic Equipment and stand under the override to Software; the 18 pages the description's words flagged
+    // are flagged no longer, nor the five a first reading of segment lines flagged, BAX's therapies, GS's investment
+    // banking, HRL's and SJM's retail channel and PH's aerospace lines in a table summing to no total: a table as filed is not
+    // read, a channel and a device's therapies name no business, and a health insurer and an investment bank stand among the
+    // health care providers and the capital markets.
     // see: A stock's industry group is checked against the company's own segments and revenue lines and not its description
     [Fact]
     public void ThePeerCheckReadsTheCompanysOwnSegmentsAndFlagsRopAndNoneOfTheEighteen()
@@ -353,33 +355,49 @@ public partial class ReadSurface
         Assert.Equal(("software", 0.776), IndustryCheck.Mismatch("Electronic Equipment, Instruments & Components", rop) is { } flagged ? (flagged.Business, Math.Round(flagged.Share, 3)) : default);
         Assert.Null(IndustryCheck.Mismatch("Software", rop));
 
+        // Each page as the check reads it, its clean segment table's rows, and none where its only table is the filing's as
+        // filed, summing to no total.
         var mustNotFlag = new (string Ticker, string Group, BusinessLine[] Lines)[]
         {
             ("ADM", "Food Products", [new("Ag Services and Oilseeds", 17_916_000_000m), new("Carbohydrate Solutions", 2_757_000_000m), new("Nutrition", 1_902_000_000m), new("Other Business", 106_000_000m)]),
-            ("BDX", "Health Care Equipment & Supplies", [new("Operating Segments | Medical Essentials Revenues", 1_675_000_000m), new("Operating Segments | Connected Care Revenues", 1_224_000_000m), new("Operating Segments | BioPharma Systems Revenues", 670_000_000m), new("Operating Segments | Interventional Revenues", 1_414_000_000m), new("United States Revenues", 3_081_000_000m), new("International Revenues", 1_902_000_000m), new("Medication Delivery Solutions | Operating Segments | Medical Essentials Revenues", 1_164_000_000m), new("Specimen Management | Operating Segments | Medical Essentials Revenues", 511_000_000m)]),
+            ("BDX", "Health Care Equipment & Supplies", []),
             ("BX", "Capital Markets", []),
             ("DGX", "Health Care Providers & Services", [new("DIS business", 2_978_000_000m), new("All other operating segments", 65_000_000m)]),
             ("DHR", "Health Care Equipment & Supplies", []),
             ("ECL", "Chemicals", []),
             ("ETN", "Electrical Equipment", [new("Electrical Americas", 3_951_000_000m), new("Electrical Global", 2_517_000_000m), new("Aerospace", 1_222_000_000m), new("Mobility", 841_000_000m)]),
-            ("HPQ", "Technology Hardware, Storage & Peripherals", [new("Total segment net revenue Products net revenue", 15_679_000_000m), new("Personal Systems | Total segment net revenue Products net revenue", 11_767_000_000m), new("Printing | Total segment net revenue Products net revenue", 3_912_000_000m), new("Commercial PS | Personal Systems | Total segment net revenue Products net revenue", 8_579_000_000m), new("Supplies | Printing | Total segment net revenue Products net revenue", 2_536_000_000m)]),
-            ("HUM", "Health Care Providers & Services", [new("External Revenues Total revenues", 40_614_000_000m), new("Product Premiums revenue", 38_834_000_000m), new("Service Services revenue", 1_780_000_000m), new("Operating Segments | Insurance Total revenues", 39_140_000_000m), new("Operating Segments | CenterWell Total revenues", 6_790_000_000m), new("Operating Segments | Product | Insurance Premiums revenue", 38_834_000_000m), new("Intersegment revenues Total revenues", -5_211_000_000m)]),
-            ("JBL", "Electronic Equipment, Instruments & Components", [new("Operating Segments Net revenue", 8_751_000_000m), new("Regulated Industries | Operating Segments Net revenue", 3_181_000_000m), new("Intelligent Infrastructure | Operating Segments Net revenue", 4_169_000_000m), new("Connected Living and Digital Commerce | Operating Segments Net revenue", 1_401_000_000m)]),
+            ("HPQ", "Technology Hardware, Storage & Peripherals", []),
+            ("HUM", "Health Care Providers & Services", []),
+            ("JBL", "Electronic Equipment, Instruments & Components", []),
             ("JNJ", "Pharmaceuticals", []),
             ("LUV", "Passenger Airlines", []),
             ("MAR", "Hotels, Restaurants & Leisure", [new("Net fee revenues", 1_547_000_000m), new("Owned, leased, and other", 466_000_000m), new("Reimbursements", 5_058_000_000m)]),
-            ("MDT", "Health Care Equipment & Supplies", [new("Operating Segments Total net sales", 8_884_000_000m), new("Cardiovascular | Operating Segments Total net sales", 3_927_000_000m), new("Cardiovascular | Electrophysiology Therapies | Operating Segments Total net sales", 2_218_000_000m), new("Neuroscience | Operating Segments Total net sales", 2_678_000_000m), new("Medical Surgical | Surgical & Endoscopy | Operating Segments Total net sales", 1_740_000_000m), new("Diabetes | Operating Segments Total net sales", 843_000_000m)]),
+            ("MDT", "Health Care Equipment & Supplies", []),
             ("MMM", "Industrial Conglomerates", []),
-            ("NTAP", "Technology Hardware, Storage & Peripherals", [new("U.S. Net revenues", 930_000_000m)]),
+            ("NTAP", "Technology Hardware, Storage & Peripherals", []),
             ("PEP", "Beverages", [new("PepsiCo Foods North America", 6_504_000_000m), new("PepsiCo Beverages North America", 7_706_000_000m), new("International Beverage Franchise", 1_401_000_000m), new("Europe, Middle East & Africa (Segment)", 5_413_000_000m), new("Latin America Foods (Segment)", 3_021_000_000m), new("Asia Pacific Foods (Segment)", 1_229_000_000m)]),
             ("URI", "Trading Companies & Distributors", [new("Equipment rentals", 4_316_000_000m), new("Sales of rental equipment", 348_000_000m), new("Sales of new equipment", 84_000_000m), new("Contractor supplies sales", 47_000_000m), new("Service and other revenues", 98_000_000m)]),
         };
+        var nowNot = new (string Ticker, string Group, BusinessLine[] Lines)[]
+        {
+            ("BAX", "Health Care Equipment & Supplies", []),
+            ("GS", "Capital Markets", []),
+            ("HRL", "Food Products", [new("Retail", 1_779_434_000m), new("Foodservice", 1_003_158_000m), new("International", 178_740_000m)]),
+            ("PH", "Machinery", []),
+            ("SJM", "Food Products", [new("U.S. Retail Coffee", 807_800_000m), new("U.S. Retail Frozen Handheld and Spreads", 499_300_000m), new("U.S. Retail Pet Foods", 371_700_000m), new("Sweet Baked Snacks", 236_500_000m), new("Away From Home", 203_700_000m), new("Other", 100_300_000m)]),
+        };
 
         Assert.Equal(18, mustNotFlag.Length);
-        Assert.All(mustNotFlag, page => Assert.True(IndustryCheck.Mismatch(page.Group, page.Lines) is null, page.Ticker + " is flagged"));
+        Assert.All([.. mustNotFlag, .. nowNot], page => Assert.True(IndustryCheck.Mismatch(page.Group, page.Lines) is null, page.Ticker + " is flagged"));
 
-        // HUM's premiums carry most of its revenue, which reads as insurance: named among the health care providers.
-        Assert.Equal("insurance", IndustryCheck.Business(mustNotFlag.Single(page => page.Ticker == "HUM").Lines)?.Business);
+        // A table as filed summing to no total gives the check nothing to read; a clean one gives it its rows.
+        Assert.Empty(IndustryCheck.Lines(new SegmentReading("R4.htm", new DateOnly(2026, 6, 30), 3, 40_867_000_000m, 47_700_000_000m, [], "the segments' revenue does not sum to the company's within rounding")));
+        Assert.Equal(rop, IndustryCheck.Lines(RopReleaseSegments()));
+
+        // A health insurer's and an investment bank's own segments, read as insurance and banking, are named by their groups.
+        Assert.Null(IndustryCheck.Mismatch("Health Care Providers & Services", [new("Insurance", 39_140_000_000m), new("CenterWell", 6_790_000_000m)]));
+        Assert.Null(IndustryCheck.Mismatch("Capital Markets", [new("Global Banking & Markets", 15_520_000_000m), new("Asset & Wealth Management", 4_597_000_000m)]));
+        Assert.Equal("banking", IndustryCheck.Business([new("Global Banking & Markets", 15_520_000_000m), new("Asset & Wealth Management", 4_597_000_000m)])?.Business);
 
         // The proof reads the lines off the drawn table, the release's own clean one for ROP.
         const string Peers = "<div class=\"sub\">Against Electronic Equipment, Instruments &amp; Components's S&amp;P 500 members on the night, the provider's classification</div>";
