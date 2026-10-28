@@ -1,7 +1,7 @@
 using System.Buffers.Binary;
 using System.Numerics;
 
-namespace EquityBrief.Worker.Cloudflare;
+namespace EquityBrief.Core.Cloudflare;
 
 // BLAKE3's 32-byte hash, written from the function's own reference implementation, since Cloudflare Pages names each
 // uploaded file by the BLAKE3 hash of its contents in base64 followed by its extension and the framework carries none.

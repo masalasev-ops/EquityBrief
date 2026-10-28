@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using EquityBrief.Core.Cloudflare;
+using EquityBrief.Core.Providers;
 
 namespace EquityBrief.Worker.Cloudflare;
 
@@ -18,7 +19,7 @@ public sealed class SitePublisher(
     IReadOnlyList<string> secretsFiles,
     IReadOnlyList<string> roots,
     Func<ProcessStartInfo, TimeSpan, (int ExitCode, IReadOnlyList<string> Lines)>? run = null,
-    Func<HttpClient>? http = null)
+    Func<string, string, ICloudflarePagesFeed>? feed = null)
 {
     // How long the read surface may take to write the copy before it is stopped.
     public static readonly TimeSpan CopyTakesAtMost = TimeSpan.FromHours(2);
@@ -136,19 +137,19 @@ public sealed class SitePublisher(
         }
         else
         {
-            var pages = new CloudflarePages(http?.Invoke() ?? new HttpClient { Timeout = TimeSpan.FromMinutes(10) }, token, account, PublishedSite.Project);
+            var pages = feed?.Invoke(token, account) ?? CloudflarePagesFeed.Live(token, account, PublishedSite.Project);
 
             try
             {
                 var files = Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories)
                     .Where(file => Path.GetRelativePath(folder, file) != PublishedSite.HeadersFile)
-                    .Select(file => CloudflarePages.FileOf(folder, file))
+                    .Select(file => PagesFiles.Of(folder, file))
                     .ToArray();
                 var deployed = await pages.DeployAsync(files, File.ReadAllText(Path.Combine(folder, PublishedSite.HeadersFile)), Say);
 
                 Say($"Uploaded to the Cloudflare Pages project '{PublishedSite.Project}': {deployed}");
             }
-            catch (Exception failed) when (failed is InvalidOperationException or HttpRequestException or TaskCanceledException or IOException)
+            catch (Exception failed) when (failed is InvalidOperationException or TaskCanceledException or IOException)
             {
                 Say("The upload failed: " + pages.Scrubbed(failed.Message));
                 outcome = 1;

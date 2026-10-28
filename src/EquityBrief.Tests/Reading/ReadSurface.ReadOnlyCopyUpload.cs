@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using EquityBrief.Core.Cards;
 using EquityBrief.Core.Cloudflare;
+using EquityBrief.Core.Providers;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Worker.Cloudflare;
 
@@ -45,8 +46,8 @@ public partial class ReadSurface
         Assert.Equal("6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85", Convert.ToHexStringLower(Blake3.Hash("abc"u8)));
 
         // The key the host's own tool gives a page of these bytes, read off its module.
-        Assert.Equal("94e5cce432e666735e8263a075eecd7c", CloudflarePages.HashOf("<p>EquityBrief</p>"u8.ToArray(), "/screens/x.html"));
-        Assert.NotEqual(CloudflarePages.HashOf("<p>EquityBrief</p>"u8.ToArray(), "/screens/x.html"), CloudflarePages.HashOf("<p>EquityBrief</p>"u8.ToArray(), "/screens/x.txt"));
+        Assert.Equal("94e5cce432e666735e8263a075eecd7c", PagesFiles.HashOf("<p>EquityBrief</p>"u8.ToArray(), "/screens/x.html"));
+        Assert.NotEqual(PagesFiles.HashOf("<p>EquityBrief</p>"u8.ToArray(), "/screens/x.html"), PagesFiles.HashOf("<p>EquityBrief</p>"u8.ToArray(), "/screens/x.txt"));
     }
 
     [Fact]
@@ -54,12 +55,12 @@ public partial class ReadSurface
     {
         PagesFile Of(int bytes, int at) => new($"/{at}.html", at.ToString("x32", System.Globalization.CultureInfo.InvariantCulture), "text/html", new byte[bytes]);
 
-        var large = CloudflarePages.Buckets([Of(30 << 20, 1), Of(30 << 20, 2), Of(10 << 20, 3)]);
+        var large = PagesFiles.Buckets([Of(30 << 20, 1), Of(30 << 20, 2), Of(10 << 20, 3)]);
 
         Assert.Equal([2, 1], large.Select(bucket => bucket.Count));
-        Assert.All(large, bucket => Assert.True(bucket.Sum(file => (long)file.Bytes.Length) <= CloudflarePages.BucketBytes));
+        Assert.All(large, bucket => Assert.True(bucket.Sum(file => (long)file.Bytes.Length) <= PagesFiles.BucketBytes));
 
-        var many = CloudflarePages.Buckets([.. Enumerable.Range(0, 2500).Select(at => Of(10, at))]);
+        var many = PagesFiles.Buckets([.. Enumerable.Range(0, 2500).Select(at => Of(10, at))]);
 
         Assert.Equal([1000, 1000, 500], many.Select(bucket => bucket.Count));
     }
@@ -118,7 +119,7 @@ public partial class ReadSurface
         var host = new PagesHost(new HashSet<string>([files[1].Hash], StringComparer.Ordinal));
         var said = new List<string>();
 
-        var deployed = await new CloudflarePages(new HttpClient(host), Token, Account, PublishedSite.Project).DeployAsync(files, "/*\n  X-Robots-Tag: noindex\n", said.Add);
+        var deployed = await new CloudflarePagesFeed(new HttpClient(host), Token, Account, PublishedSite.Project).DeployAsync(files, "/*\n  X-Robots-Tag: noindex\n", said.Add);
 
         Assert.Equal("https://abc.equitybrief.pages.dev", deployed);
 
@@ -158,11 +159,11 @@ public partial class ReadSurface
         const string Token = "a-cloudflare-token-for-the-suite";
         var never = new PagesHost(new HashSet<string>(StringComparer.Ordinal));
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => new CloudflarePages(new HttpClient(never), Token, "account", PublishedSite.NeverProject).DeployAsync([], string.Empty, _ => { }));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => new CloudflarePagesFeed(new HttpClient(never), Token, "account", PublishedSite.NeverProject).DeployAsync([], string.Empty, _ => { }));
         Assert.Empty(never.Asked);
 
         var failing = new PagesHost(new HashSet<string>(StringComparer.Ordinal), projectExists: true, failOn: "/upload-token");
-        var pages = new CloudflarePages(new HttpClient(failing), Token, "account", PublishedSite.Project);
+        var pages = new CloudflarePagesFeed(new HttpClient(failing), Token, "account", PublishedSite.Project);
         var failed = await Assert.ThrowsAsync<InvalidOperationException>(() => pages.DeployAsync([], string.Empty, _ => { }));
 
         Assert.Contains("could not ask for an upload token: the host answered 400, 8000000: refused for (withheld)", failed.Message, StringComparison.Ordinal);
@@ -276,7 +277,7 @@ public partial class ReadSurface
         }
 
         var host = new PagesHost(new HashSet<string>(StringComparer.Ordinal), projectExists: true);
-        var publisher = new SitePublisher(data, worker, [], [], Surface, () => new HttpClient(host));
+        var publisher = new SitePublisher(data, worker, [], [], Surface, (token, account) => new CloudflarePagesFeed(new HttpClient(host), token, account, PublishedSite.Project));
         var said = new List<string>();
 
         // Written and read, and nothing sent: the folder written again whole, the surface beside the worker started with
@@ -307,7 +308,7 @@ public partial class ReadSurface
             File.WriteAllText(Path.Combine(start.ArgumentList[2], "index.html"), "<form action=\"/passes/X\"></form>");
 
             return (0, []);
-        }, () => new HttpClient(host));
+        }, (token, account) => new CloudflarePagesFeed(new HttpClient(host), token, account, PublishedSite.Project));
         var asked = host.Asked.Count;
 
         Assert.Equal(1, await refusing.RunAsync(upload: true, "token", "account", said.Add));

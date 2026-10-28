@@ -76,6 +76,12 @@ if (args.Length > 0 && args[0] == ComparisonFiles.Verb)
 // setting, none of the operator's own trades, no live quote and no TipRanks ratings, and no control asking for any.
 // see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
 var copying = args.Length > 0 && args[0] == PublishedSite.Verb;
+var copyServer = copying ? new InProcessServer() : null;
+
+if (copyServer is not null)
+{
+    builder.WebHost.UseServer(copyServer);
+}
 
 builder.Services.AddSingleton<IClock>(SystemClock.ForUnitedStatesSessions());
 builder.Services.AddSingleton(_ =>
@@ -3527,11 +3533,11 @@ app.MapGet("/screens/run/{night?}", async (
         "text/html; charset=utf-8");
 });
 
-// The read-only copy: started with its verb and the folder to write, the surface answers on a loopback address the system
-// picks, asks itself for each screen the copy holds as the live shell does, writes the copy into the folder and stops,
-// recording no start and writing nothing to the store. Each line it prints is one the worker's report carries.
+// The read-only copy: started with its verb and the folder to write, the surface runs on a server inside its own process
+// with no socket, asks itself for each screen the copy holds as the live shell does, writes the copy into the folder and
+// stops, recording no start and writing nothing to the store. Each line it prints is one the worker's report carries.
 // see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
-if (copying)
+if (copyServer is not null)
 {
     if (args.Length < 2 || string.IsNullOrWhiteSpace(args[1]))
     {
@@ -3541,14 +3547,9 @@ if (copying)
         return;
     }
 
-    app.Urls.Clear();
-    app.Urls.Add("http://127.0.0.1:0");
     await app.StartAsync();
 
-    var bound = app.Services.GetRequiredService<Microsoft.AspNetCore.Hosting.Server.IServer>()
-        .Features.Get<Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature>()!.Addresses.First();
-    using var surface = new HttpClient { BaseAddress = new Uri(bound), Timeout = TimeSpan.FromMinutes(10) };
-    var copied = await SiteCopyCommand.WriteAsync(surface, app.Services.GetRequiredService<ReadApi>(), Path.GetFullPath(args[1]), line => Console.WriteLine($"{PublishedSite.Verb}: {line}"));
+    var copied = await SiteCopyCommand.WriteAsync(copyServer.AskAsync, app.Services.GetRequiredService<ReadApi>(), Path.GetFullPath(args[1]), line => Console.WriteLine($"{PublishedSite.Verb}: {line}"));
 
     await app.StopAsync();
 

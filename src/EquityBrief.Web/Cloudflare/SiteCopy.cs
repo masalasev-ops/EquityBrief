@@ -259,15 +259,18 @@ public static partial class SiteCopy
         return held.Contains(route) ? route : null;
     }
 
-    // A fragment with every control the copy cannot answer taken out: every form with its presses and its fields, a
-    // choice of a view the copy does not hold left as the words of the one chosen, the folds' Hide control, the night's
+    // A fragment with every control the copy cannot answer taken out: every form with its presses and its fields, a column
+    // of Watch presses with its heading, a choice of a view the copy does not hold left as the words of the one chosen, the folds' Hide control, the night's
     // date arrows and calendar and when the next night runs, the export link, every line stating research spend against
     // its caps, the controls that write a report again, a card's and a brief's line asking for the account's settings,
     // Yahoo's firm actions and the TipRanks section; and every attribute naming an address of the surface, a live quote's
     // session or a row's pick.
     public static string Clean(string fragment)
     {
-        var text = Removed(fragment, "form", _ => true);
+        var text = WatchCell().Replace(fragment, string.Empty);
+
+        text = Removed(text, "th", start => AttributeOf(start, "data-heading") == "Watch");
+        text = Removed(text, "form", _ => true);
 
         text = Removed(text, "select", start => HasAttribute(start, "data-rule-choice") || HasAttribute(start, "data-merge-key") || HasAttribute(start, "data-compare"), Chosen);
         text = Removed(text, "button", start => HasClass(start, "fold-hide"));
@@ -280,6 +283,10 @@ public static partial class SiteCopy
 
         return SurfaceAttribute().Replace(text, string.Empty);
     }
+
+    // A table's cell holding nothing but a stock's Watch press, which goes with its column's heading.
+    [GeneratedRegex(@"<td><form class=""watch-control[^""]*""[^>]*>.*?</form></td>", RegexOptions.Singleline)]
+    private static partial Regex WatchCell();
 
     // When the next night runs, which the date line names before it runs and the copy, made after it, does not.
     [GeneratedRegex(@" · tonight's night runs at <time class=""night-due""[^>]*>[^<]*</time>")]

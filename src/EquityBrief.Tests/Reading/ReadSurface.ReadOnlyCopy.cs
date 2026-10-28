@@ -102,6 +102,7 @@ public partial class ReadSurface
             + "<button type=\"button\" class=\"card-toggle\" aria-controls=\"c1\">Open plan</button><tr data-select-href=\"#/?name=ROP\" data-ticker=\"ROP\"></tr>"
             + "<p class=\"card-money degraded\" data-account=\"unset\">Your account is not set: <a href=\"#/account\">set your account's size and risk</a>.</p><p class=\"card-money\" data-account=\"set\">kept money</p>"
             + "<ul><li data-line=\"stop\">Its stop</li><li data-line=\"size\">Your account is not set: <a href=\"#/account\">set it</a></li></ul>"
+            + "<table class=\"close-table\"><tr><th>Stock</th><th class=\"tipped\" tabindex=\"0\" data-heading=\"Watch\"><span class=\"th-t\">Watch</span></th></tr><tr><td>MRVL</td><td><form class=\"watch-control close-watch\" method=\"post\" action=\"/watch/\" data-ticker=\"MRVL\"><button type=\"submit\">Watch</button></form></td></tr></table>"
             + "<p class=\"date-line\">Night of 2026-10-27 · tonight's night runs at <time class=\"night-due\" datetime=\"2026-10-28T23:00Z\" title=\"23:00 UTC\">19:00 ET</time></p></section>";
 
         var copied = SiteCopy.Clean(Fragment);
@@ -113,7 +114,7 @@ public partial class ReadSurface
 
         // What reads in the browser alone stays: the pick's card's control, the fold, the analysts' figure, a span beside the
         // removed picker, the row and the version the card was drawn at, in words.
-        foreach (var kept in new[] { "<span class=\"kept-span\">kept</span>", "class=\"card-toggle\"", "<details><summary>Fold</summary><p>inside</p></details>", "<h3>The analysts</h3><div class=\"fig\"></div>", "data-ticker=\"ROP\"", "Showing <span class=\"chosen\">Version 2</span>", "<p class=\"card-money\" data-account=\"set\">kept money</p>", "<p class=\"date-line\">Night of 2026-10-27</p>", "<ul><li data-line=\"stop\">Its stop</li></ul>" })
+        foreach (var kept in new[] { "<span class=\"kept-span\">kept</span>", "class=\"card-toggle\"", "<details><summary>Fold</summary><p>inside</p></details>", "<h3>The analysts</h3><div class=\"fig\"></div>", "data-ticker=\"ROP\"", "Showing <span class=\"chosen\">Version 2</span>", "<p class=\"card-money\" data-account=\"set\">kept money</p>", "<p class=\"date-line\">Night of 2026-10-27</p>", "<ul><li data-line=\"stop\">Its stop</li></ul>", "<table class=\"close-table\"><tr><th>Stock</th></tr><tr><td>MRVL</td></tr></table>" })
         {
             Assert.Contains(kept, copied, StringComparison.Ordinal);
         }
@@ -211,7 +212,14 @@ public partial class ReadSurface
         var before = StoreBytesHash(store.DatabaseFile);
         var said = new List<string>();
 
-        var copied = await SiteCopyCommand.WriteAsync(client, new ReadApi(store.DatabaseFile, SystemClock.ForUnitedStatesSessions()), folder.Path, said.Add);
+        async Task<(int, string)> Ask(string route)
+        {
+            using var answer = await client.GetAsync(route);
+
+            return ((int)answer.StatusCode, await answer.Content.ReadAsStringAsync());
+        }
+
+        var copied = await SiteCopyCommand.WriteAsync(Ask, new ReadApi(store.DatabaseFile, SystemClock.ForUnitedStatesSessions()), folder.Path, said.Add);
 
         // Nothing refused, and the store's file not touched by a byte.
         Assert.Empty(copied.Refused);

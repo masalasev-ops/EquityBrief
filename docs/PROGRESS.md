@@ -11072,17 +11072,18 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 ### 18.4 - correction: a read-only copy of the site on Cloudflare Pages, written by the read surface the worker starts, read before anything leaves the machine and uploaded only when asked   2026-10-28
 
 Not a checkpoint entry: it builds into shipped source what the ruling above asks under 18.4, and lands nothing.
-Built:      the worker's publish-site verb starts the read surface built beside it with the same verb, which answers on a
-            loopback address only it knows, asks itself for each screen as the live shell does and writes each under the
-            data root's site folder, drawn as an export draws a report: no account file read, none of the operator's own
-            trades, no live quote and no TipRanks rating, and no start recorded or anything else written to the store. It
-            holds the newest night's Tonight, Past picks, Paper trading, the Ledger, the reports index, the universe list
-            and the Loop on each index, the views the first four link on their own screen, each paper account's trade log
-            and every page of the universe list and of each sector's; a chart page for each stock Tonight or Paper trading
-            links; a stock page for each of those and every stock with a written report, each earlier dated version on the
-            page of the first night that drew it and listed on the stock's page. Each screen loses its forms, presses,
-            choices of views not held, date arrows, the next night's time, export link, spend lines, the account lines,
-            Yahoo's firm actions, the TipRanks section and every attribute naming the surface's address; a stock's price
+Built:      the worker's publish-site verb starts the read surface built beside it with the same verb, which runs on a
+            server inside its own process with no socket, asks itself for each screen as the live shell does and writes
+            each under the data root's site folder, drawn as an export draws a report: no account file read, none of the
+            operator's own trades, no live quote and no TipRanks rating, and no start recorded or anything else written
+            to the store. It holds the newest night's Tonight, Past picks, Paper trading, the Ledger, the reports index,
+            the universe list and the Loop on each index, the views the first four link on their own screen, each paper
+            account's trade log and every page of the universe list and of each sector's; a chart page for each stock
+            Tonight or Paper trading links; a stock page for each of those and every stock with a written report, each
+            earlier dated version on the page of the first night that drew it and listed on the stock's page. Each screen
+            loses its forms, presses, the Watch column, choices of views not held, date arrows, the next night's time,
+            export link, spend lines, the account lines, Yahoo's firm actions, the TipRanks section and every attribute
+            naming the surface's address; a stock's price
             and its analysts are marked as of the night's close; every link resolves to a held file, a stock's chart not
             held opening its page, or reads "Not in this copy". The copy's own shell names it a read-only copy in its title
             and its bar, carries the banner and fetches only its files from its own list, the host's headers allowing no
@@ -11090,15 +11091,17 @@ Built:      the worker's publish-site verb starts the read surface built beside 
             forms, the surface's addresses, the press header, scripts, the secrets files' values, the machine's paths, the
             account's settings and a card's plan sized on an account, writes the report beside the folder and uploads only
             with --upload, a report refusing nothing and the token and account the secrets file holds, by Cloudflare Pages'
-            direct upload: project read and made where missing, an upload token, the files the host lacks by their BLAKE3
-            keys in buckets, every hash confirmed and the deployment made on main, the token in a header alone and every
-            message scrubbed of it; the project premarketdesk refused before any request. tools/publish-site builds main's
-            commit as the off-peak run does and the read surface into it, removing nothing. Everything the copy is made by
-            sits in a Cloudflare folder of each project, apart from the surface's own switches. The five scheduled tasks
-            moved into Task Scheduler's folder \EquityBrief\, each registered there from its exported definition, read back
-            alike with its next run unchanged, and only then removed from the root; the runbook names the folder in every
-            registration, and the copy's task is registered disabled once this merges.
-Drawn:      the hand run from the branch over the live store at 14:21 UTC, nothing uploaded: 871 files, 275,174,333 bytes,
+            direct upload through a feed of its own, the nightly-cost check's list of files that may hold a client gaining
+            it as its twenty-seventh: project read and made where missing, an upload token, the files the host lacks by
+            their BLAKE3 keys in buckets, every hash confirmed and the deployment made on main, the token in a header alone
+            and every message scrubbed of it; the project premarketdesk refused before any request. tools/publish-site
+            builds main's commit as the off-peak run does and the read surface into it, removing nothing. Everything the
+            copy is made by sits in a Cloudflare folder of each project, apart from the surface's own switches and the
+            feed, which sits with the other feeds. The five scheduled tasks moved into Task Scheduler's folder
+            \EquityBrief\, each registered there from its exported definition, read back alike with its next run
+            unchanged, and only then removed from the root; the runbook names the folder in every registration, and the
+            copy's task is registered disabled once this merges.
+Drawn:      the hand run from the branch over the live store at 14:48 UTC, nothing uploaded: 871 files, 275,255,565 bytes,
             868 screens of the night of 2026-10-27; the S&P 500's 44 reports with 60 versions, the S&P 400's 12 with 12 and
             the S&P 600's 19 with 26; no form, no address of the surface, no press header, one page carrying scripts, the
             shell's two inline; no secret, path or account setting found; nothing refused. 10,503 links read "Not in this
@@ -11112,7 +11115,8 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             route's key, C4 the shell fetching the surface's route, C5 the paper page reading the account file, C7 the
             check refusing no form, C8 the verb uploading without the flag, C9 every file sent whatever the host lacks,
             C10 BLAKE3 at six rounds, C11 the report written inside the folder, C12 the folder not removed before it is
-            written again and C13 a failure said with the token in it: each red at the tests reading it. C6, the cards
+            written again, C13 a failure said with the token in it and C14 the Watch column kept: each red at the tests
+            reading it, C9, C10 and C13 run again once the upload and the hash moved to the feed and red there. C6, the cards
             reading the account and the taken trades in the copy, survived: an unreachable boundary, the fixture's night
             drawing no decision card, so the folder check now refuses a card's plan sized on an account, which the live
             store's cards reach. C10's first form, permuting the message after the last round, survived as equivalent,

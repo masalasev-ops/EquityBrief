@@ -56,7 +56,7 @@ Authorised by: A read-only copy of the site is published to Cloudflare Pages fro
 Was:
 > (nothing; the section named the app and the exported report alone)
 Now:
-> a paragraph after the export's: the read-only copy is neither surface but the app's own screens saved as files, written by the read surface the worker's publish-site verb starts, drawn as an export draws a report, every control and address of the surface taken out, every link resolved or reading "Not in this copy", read for anything that must not leave the machine and uploaded to a Pages project of its own only with the upload flag, and no step of the night.
+> a paragraph after the export's: the read-only copy is neither surface but the app's own screens saved as files, written by the read surface the worker's publish-site verb starts on a server inside its own process, drawn as an export draws a report, every control and address of the surface taken out, every link resolved or reading "Not in this copy", read for anything that must not leave the machine and uploaded to a Pages project of its own only with the upload flag, and no step of the night.
 Why: the architecture describes every surface a reader is shown, and the copy is shown to readers outside the machine.
 
 ### 2026-10-28 - CLAUDE.md - the hard rule's carve-out for the name page's older bands reads them out as far as a picked or held stock's target or stop

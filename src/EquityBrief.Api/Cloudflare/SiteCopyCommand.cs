@@ -13,7 +13,7 @@ public sealed record SiteCopyWritten(
     IReadOnlyList<string> Refused);
 
 // The read-only copy on Cloudflare Pages, written by the read surface's own verb. Each screen the copy holds is asked of
-// the surface as the live shell asks for it, over a loopback address only this process answers on: Tonight, Past picks,
+// the surface as the live shell asks for it, inside this process and over no network: Tonight, Past picks,
 // Paper trading, the Ledger, the reports index, the universe list and the Loop on each index, the views each of those links
 // on its own screen and every page of the universe list; a chart page for every stock Tonight or Paper trading links on any
 // index; a stock page for each of those and for every stock with a written report, with each earlier dated version of a
@@ -45,7 +45,7 @@ public static class SiteCopyCommand
         + "  Referrer-Policy: no-referrer\n"
         + "  X-Robots-Tag: noindex\n";
 
-    public static async Task<SiteCopyWritten> WriteAsync(HttpClient surface, ReadApi read, string folder, Action<string> say)
+    public static async Task<SiteCopyWritten> WriteAsync(Func<string, Task<(int Status, string Body)>> surface, ReadApi read, string folder, Action<string> say)
     {
         var refused = new List<string>();
 
@@ -78,16 +78,14 @@ public static class SiteCopyCommand
                 return null;
             }
 
-            using var answer = await surface.GetAsync(server);
+            var (status, text) = await surface(server);
 
-            if (!answer.IsSuccessStatusCode)
+            if (status is < 200 or >= 300)
             {
-                refused.Add($"{route} answered {(int)answer.StatusCode}, so it is not held");
+                refused.Add($"{route} answered {status}, so it is not held");
 
                 return null;
             }
-
-            var text = await answer.Content.ReadAsStringAsync();
 
             drawn[route] = text;
             order.Add(route);
