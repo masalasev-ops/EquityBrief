@@ -4249,17 +4249,18 @@ public sealed partial class MarkRenderer : IComponent
             Prose = Readable(section.Prose, facts, number => DocumentNoun(number >= 1 && number <= stored.SourceIds.Count ? documents.FirstOrDefault(one => string.Equals(one.Id, stored.SourceIds[number - 1], StringComparison.Ordinal)) : null)),
         };
 
-        // What worked and what did not is drawn at most so many sentences a paragraph, its first ones.
+        // What worked and what did not is drawn at most so many sentences a paragraph, its first ones, and an abbreviation
+        // whose spelled-out first use fell among the sentences left out is spelled out where it is now first used.
         // see: What worked and what did not is drawn four sentences a paragraph at most
         if (sentencesAParagraph is { } most)
         {
             section = section with
             {
-                Prose = string.Join(
+                Prose = EquityBrief.Core.Research.Abbreviations.SpelledOut(string.Join(
                     "\n\n",
                     section.Prose
                         .Split(["\r\n\r\n", "\n\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                        .Select(paragraph => string.Join(" ", Sentence().Split(paragraph).Take(most)))),
+                        .Select(paragraph => string.Join(" ", Sentence().Split(paragraph).Take(most))))),
             };
         }
 

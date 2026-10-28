@@ -102,6 +102,14 @@ public partial class ReadSurface
         Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("ROP", drawn), "what-worked"));
         Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("ROP", new MarkRenderer().WrittenSection("ROP", section, [], proseLabel: "What worked and what did not.")), "what-worked"));
         Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate("ROP", "<p class=\"prose\">Revenue rose.</p>"), "what-worked"));
+
+        // An abbreviation spelled out in a sentence the cap leaves out is spelled out where it is next used, as IT's short
+        // version needed for EBITDA.
+        var spelled = new WrittenCell(MarkRenderer.TheShortVersion, "One worked. Two worked. Three did not. Four did not. Adjusted EBITDA rose.\n\nEBITDA margins widened.", new DateOnly(2026, 10, 26), "deepseek-flash", []);
+        var capped = new MarkRenderer().WrittenSection("IT", spelled, [], proseLabel: "What worked and what did not.", sentencesAParagraph: MarkRenderer.WhatWorkedSentences);
+
+        Assert.Contains("earnings before interest, taxes, depreciation and amortization (EBITDA) margins widened.", WebUtility.HtmlDecode(capped), StringComparison.Ordinal);
+        Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("IT", capped), "abbreviations"));
     }
 
     // Older bands read out from the history pulled before the store's year as far as a pick's target and stop: turns at

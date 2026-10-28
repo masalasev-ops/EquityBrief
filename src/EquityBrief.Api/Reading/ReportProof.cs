@@ -68,7 +68,7 @@ public static partial class ReportProof
     public static ProofPage Evaluate(string ticker, string page)
     {
         var verdicts = new List<ProofVerdict>();
-        var prose = string.Join(" ", ProseOf().Matches(page).Concat(CauseOf().Matches(page)).Select(match => WebUtility.HtmlDecode(Regex.Replace(match.Groups[1].Value, "<[^>]+>", " "))));
+        var prose = string.Join(" ", ProseOf().Matches(page).Select(match => match.Groups[1].Value).Concat(CauseOf().Matches(page).Select(match => match.Groups["said"].Value)).Select(said => WebUtility.HtmlDecode(Regex.Replace(said, "<[^>]+>", " "))));
         var written = prose.Trim().Length > 0;
         var picked = page.Contains("<div class=\"decision-card\"", StringComparison.Ordinal);
 
@@ -395,8 +395,9 @@ public static partial class ReportProof
     [GeneratedRegex(@"(?<![A-Za-z0-9\[\-])D\d{1,2}(?![A-Za-z0-9\]\-])")]
     private static partial Regex BareLabelOf();
 
-    // A move's cause as the moves table draws it.
-    [GeneratedRegex("<td class=\"cause\"[^>]*>(.*?)</td>", RegexOptions.Singleline)]
+    // A move's written cause as the moves table draws it, in the column the cause section fills or in a row whose cause the
+    // research wrote; a story's title or a filing a row names is the document's own and none of the page's writing.
+    [GeneratedRegex("<td class=\"cause\" data-cause=\"written\"[^>]*>(?<said>.*?)</td>|data-cause=\"research\">(?:(?!</tr>).)*?<td class=\"cause\"[^>]*>(?<said>.*?)</td>", RegexOptions.Singleline)]
     private static partial Regex CauseOf();
 
     // A move's written cause held to the stored directions, with the directions and its words.

@@ -355,13 +355,18 @@ public partial class ReadSurface
         // A move's cause is read as a section's prose is: one drawn as written beside the directions it is held to fails,
         // its place withheld passes, and a document's label used as a word fails the markers as a bracketed one does, in a
         // section and in a cause alike.
-        const string CauseAsWritten = "<td class=\"cause\" data-directions=\"revenue|estimate|1\">Revenue came in a fraction below the consensus estimate.</td>";
-        const string CauseWithheld = "<td class=\"cause\" data-directions=\"revenue|estimate|1\">A sentence is withheld here: its source counted the revenue a miss against its own consensus, where the stored figures put the revenue at +0.2% against the estimate the page draws, a beat.</td>";
+        const string CauseAsWritten = "<td class=\"cause\" data-cause=\"written\" data-directions=\"revenue|estimate|1\">Revenue came in a fraction below the consensus estimate.</td>";
+        const string CauseWithheld = "<td class=\"cause\" data-cause=\"written\" data-directions=\"revenue|estimate|1\">A sentence is withheld here: its source counted the revenue a miss against its own consensus, where the stored figures put the revenue at +0.2% against the estimate the page draws, a beat.</td>";
 
         Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", CauseAsWritten), "directions"));
         Assert.Equal(ReportProof.Passed, Verdict(ReportProof.Evaluate("CCC", CauseWithheld), "directions"));
         Assert.Equal(ReportProof.Passed, Verdict(ReportProof.Evaluate("CCC", CauseWithheld), "markers"));
-        Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", "<td class=\"cause\">Revenue rose [D7].</td>"), "markers"));
+        Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", "<td class=\"cause\" data-cause=\"written\">Revenue rose [D7].</td>"), "markers"));
+        Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", "<tr id=\"move-CCC-1\" data-cause=\"research\"><td>2026-10-26</td><td class=\"cause\">Revenue rose [D7].</td></tr>"), "markers"));
+
+        // A story's title a row names is the story's own words and none of the page's writing, so its abbreviation is not
+        // the page's to spell out.
+        Assert.Equal(ReportProof.Unexamined, Verdict(ReportProof.Evaluate("CCC", "<tr id=\"move-CCC-1\" data-cause=\"news\"><td>2026-10-26</td><td class=\"cause\"><a href=\"https://x.example/\">EBITDA beats</a></td></tr>"), "abbreviations"));
         Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", "<p class=\"prose\">Revenue rose, while D1 gives the reason.</p>"), "markers"));
 
         // The news region states the stories it left out and its counts add up over the stories it kept: seven, six in the
