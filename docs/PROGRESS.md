@@ -11247,3 +11247,9 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 114 with none pending, schema version 114, against `data-ci` and never
             `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the open floor's first written run, `rule-record --open-floor` from main's clean copy after the merge, which
+            sets the session the record is followed forward from and puts the line on the drift's card; the 106 pages whose
+            release states no segment table read, open until their filings are stored or a reading of those tables is
+            built, the local model's try at them standing as a measurement; the 45 pages waiting on their newest quarter,
+            each clearing as its page states; the written sections, which nothing here writes again; and the copy's nightly
+            task, enabled on the operator's word.
