@@ -85,16 +85,19 @@ public partial class ReadSurface
         Assert.Equal(new DateOnly(2027, 1, 26), estimate.Estimated);
         Assert.Equal("note", EquityBrief.Core.Cards.CardLines.EstimatedEarnings(estimate, RopNight, 60).Mark);
 
-        // The management box opens on the newest release's own first line, its dateline and what it reports, read from the
-        // release's stored text as ROP's of 2026-10-22 begins.
+        // The management box opens on the newest release's sentence saying what the company reported, read from the
+        // release's stored text as ROP's of 2026-10-22 begins: its headline's present tense is passed over for the sentence
+        // its dateline opens.
         var opening = EquityBrief.Core.Report.ReleaseOpening.Of(
             "a2026q3earningsrelease.htm",
             new DateOnly(2026, 10, 22),
             "https://www.sec.gov/Archives/edgar/data/882835/000088283526000042/a2026q3earningsrelease.htm",
-            "EX-99.1 2 a2026q3earningsrelease.htm EX-99.1 Document Roper Technologies announces third quarter financial results Increases full year DEPS guidance Sarasota, Florida, October 22, 2026 ... Roper Technologies, Inc. (Nasdaq: ROP) reported financial results for the third quarter ended September 30, 2026. Third quarter 2026 highlights");
+            "EX-99.1 2 a2026q3earningsrelease.htm EX-99.1 Document Roper Technologies announces third quarter financial results Increases full year DEPS guidance Sarasota, Florida, October 22, 2026 ... Roper Technologies, Inc. (Nasdaq: ROP) reported financial results for the third quarter ended September 30, 2026. Third quarter 2026 highlights",
+            "Roper Technologies",
+            "ROP");
 
-        Assert.Equal("Sarasota, Florida, October 22, 2026 ... Roper Technologies, Inc. (Nasdaq: ROP) reported financial results for the third quarter ended September 30, 2026.", opening!.Line);
-        Assert.Null(EquityBrief.Core.Report.ReleaseOpening.Of("x.htm", new DateOnly(2026, 10, 22), "u", "No dateline here at all."));
+        Assert.Equal("Roper Technologies, Inc. (Nasdaq: ROP) reported financial results for the third quarter ended September 30, 2026.", opening!.Line);
+        Assert.Null(EquityBrief.Core.Report.ReleaseOpening.Of("x.htm", new DateOnly(2026, 10, 22), "u", "Roper Technologies will hold its call on Thursday, October 22, 2026 at 8:00 a.m.", "Roper Technologies", "ROP"));
 
         // The numbers' awaited line moves on once the quarter is reported: ROP's quarter to 2026-09-30, reported on
         // 2026-10-22 and not yet filed, while the readings read the quarter to 2026-06-30.

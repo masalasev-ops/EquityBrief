@@ -384,7 +384,7 @@ public partial class ReadSurface
     // A quarter reported after the newest filing the store holds is dated by its report and labelled as the results
     // release's, and its segments say they are the older filing's: MSFT's newest filing taken out of a replayed store, as
     // a release stands before its filing is stored.
-    // see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+    // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
     [Fact]
     public async Task AQuarterReportedAfterTheNewestStoredFilingIsDatedByItsReportAndLabelledAsTheReleases()
     {
@@ -407,8 +407,8 @@ public partial class ReadSurface
 
     // A next report the night has passed is said as reported, with the one after it not announced, in the snapshot and in
     // the estimate's line beneath the numbers; and a results release newer than the one the guidance was read from opens
-    // the box management speaks in on its own first line.
-    // see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+    // the box management speaks in on its sentence saying what the company reported.
+    // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
     [Fact]
     public async Task AReportTheNightHasPassedIsSaidAsReportedAndANewerReleaseOpensTheBoxManagementSpeaksIn()
     {
@@ -430,19 +430,72 @@ public partial class ReadSurface
         Assert.Contains(FormattableString.Invariant($"<div><dt>Next report</dt><dd data-reportDate=\"reported\"><b>not announced</b><small>the quarter to {periodEnd} was reported on {reportDate:yyyy-MM-dd}</small></dd></div>"), after, StringComparison.Ordinal);
         Assert.Contains(FormattableString.Invariant($"The quarter to {periodEnd} was reported on {reportDate:yyyy-MM-dd}, and the next report is not announced."), after, StringComparison.Ordinal);
 
-        // A release a year after the guidance's opens the box on its dateline's sentence; one before it does not.
-        var newer = EquityBrief.Core.Report.ReleaseOpening.Of("ex99.htm", reportDate.AddDays(400), "https://www.sec.gov/ex99.htm", "Cupertino, California, October 30, 2027 ... Apple today announced financial results for its fiscal 2027 fourth quarter. Revenue rose.");
+        // A release a year after the guidance's opens the box on its sentence saying what the company reported; one before
+        // it does not.
+        var newer = EquityBrief.Core.Report.ReleaseOpening.Of("ex99.htm", reportDate.AddDays(400), "https://www.sec.gov/ex99.htm", "Cupertino, California, October 30, 2027 ... Apple today announced financial results for its fiscal 2027 fourth quarter. Revenue rose.", "Apple Inc.", "AAPL");
         var released = NameScreen.Numbers(filings, new ConceptFigures(null, reportDate, null, null), newer);
 
         Assert.Contains("<blockquote class=\"guidance release-opening\"", released, StringComparison.Ordinal);
-        Assert.Contains("Cupertino, California, October 30, 2027 ... Apple today announced financial results for its fiscal 2027 fourth quarter.", WebUtility.HtmlDecode(released), StringComparison.Ordinal);
+        Assert.Contains("opens</p><p>Apple today announced financial results for its fiscal 2027 fourth quarter.</p>", WebUtility.HtmlDecode(released), StringComparison.Ordinal);
 
         if (payload.RootElement.TryGetProperty("guidance", out var guidance) && guidance.TryGetProperty("filedOn", out var guidedOn) && guidedOn.GetString() is { Length: 10 } guided)
         {
-            var older = EquityBrief.Core.Report.ReleaseOpening.Of("ex99.htm", DateOnly.ParseExact(guided, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture), "https://www.sec.gov/ex99.htm", "Cupertino, California, July 30, 2026 ... Apple today announced financial results.");
+            var older = EquityBrief.Core.Report.ReleaseOpening.Of("ex99.htm", DateOnly.ParseExact(guided, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture), "https://www.sec.gov/ex99.htm", "Cupertino, California, July 30, 2026 ... Apple today announced financial results.", "Apple Inc.", "AAPL");
 
             Assert.DoesNotContain("release-opening", NameScreen.Numbers(filings, new ConceptFigures(null, reportDate, null, null), older), StringComparison.Ordinal);
         }
+    }
+
+    // The box management speaks in quotes the newest release's sentence saying what the company reported, read by its
+    // name, its ticker or its listing past a headline, its bullets and its dateline: each line below read by hand off the
+    // stored release it is cut from, as the store held each on 2026-10-28, where the dateline the box read before found no
+    // line in a release whose city is written in capitals and quoted a conference call's day in others.
+    // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
+    [Fact]
+    public void TheBoxManagementSpeaksInQuotesTheSentenceInWhichTheReleaseSaysWhatTheCompanyReported()
+    {
+        static string? Line(string text, string company, string ticker) =>
+            EquityBrief.Core.Report.ReleaseOpening.Of("ex99.htm", new DateOnly(2026, 10, 28), "u", text, company, ticker)?.Line;
+
+        // A city in capitals, a dash either side of its day, and a conference call's day later in the text.
+        Assert.Equal(
+            "Everpure (NYSE: P), the company revolutionizing storage and data management, today announced financial results for its second quarter fiscal year 2027 ended August 2, 2026.",
+            Line("EX-99.1 Document Exhibit 99.1 Everpure Announces Second Quarter Fiscal 2027 Financial Results Total revenue growth of 38% year-over-year SANTA CLARA, Calif. – August 26, 2026 – Everpure (NYSE: P), the company revolutionizing storage and data management, today announced financial results for its second quarter fiscal year 2027 ended August 2, 2026. “Q2 marks eight straight quarters of accelerating revenue growth.” The company will host an investor day on Wednesday, September 23, 2026.", "Everpure, Inc.", "P"));
+
+        // Highlights in bullets, one of them "on a reported basis", before a city whose day stands in brackets.
+        Assert.Equal(
+            "Allegion plc (NYSE: ALLE), a leading global security products and solutions provider, today reported financial results for its third quarter (ended Sept. 30, 2026).",
+            Line("EX-99.1 PRESS RELEASE DATED OCTOBER 22, 2026 Document Allegion (NYSE: ALLE) Reports Q3-2026 Financial Results Quarterly Financial Highlights • Revenues of $1,172.6 million, up 9.6% on a reported basis and up 7.2% on an organic basis • Operating margin of 24.3%, compared with 21.8% DUBLIN (Oct. 22, 2026) – Allegion plc (NYSE: ALLE), a leading global security products and solutions provider, today reported financial results for its third quarter (ended Sept. 30, 2026). Revenues rose.", "Allegion PLC", "ALLE"));
+
+        // The name ending in "Inc." before its listing, which no full stop there cuts.
+        Assert.Equal(
+            "Allison Transmission Holdings Inc. (NYSE: ALSN), today reported second quarter net sales of $1,566 million with an adjusted EBITDA margin of 26 percent and net cash provided by operating activities of $312 million.",
+            Line("INDIANAPOLIS, August 3, 2026 – Allison Transmission Holdings Inc. (NYSE: ALSN), today reported second quarter net sales of $1,566 million with an adjusted EBITDA margin of 26 percent and net cash provided by operating activities of $312 million. Net income rose.", "ALLISON TRANSMISSION HOLDINGS", "ALSN"));
+
+        // A headline in the present tense after a day the exhibit is dated by: the past tense the release opens on.
+        Assert.Equal(
+            "Southern Company today reported second-quarter earnings of $1.2 billion, or $1.03 per share, in 2026 compared with earnings of $0.9 billion.",
+            Line("EX-99.1 Document July 30, 2026 Southern Company reports second-quarter 2026 earnings ATLANTA – Southern Company today reported second-quarter earnings of $1.2 billion, or $1.03 per share, in 2026 compared with earnings of $0.9 billion. Adjusted earnings rose.", "Southern Company", "SO"));
+
+        // A headline in capitals running into its city and its state with no day between.
+        Assert.Equal(
+            "National Fuel Gas Company (“National Fuel” or the “Company”) (NYSE:NFG) today announced consolidated results for the third quarter of its 2026 fiscal year.",
+            Line("Silverstein Chief Financial Officer 716-857-6987 NATIONAL FUEL REPORTS THIRD QUARTER FISCAL 2026 EARNINGS WILLIAMSVILLE, N.Y. National Fuel Gas Company (“National Fuel” or the “Company”) (NYSE:NFG) today announced consolidated results for the third quarter of its 2026 fiscal year. Net income rose.", "NATIONAL FUEL GAS", "NFG"));
+
+        // A present tense where no past tense says it, straight after its dateline's day.
+        Assert.Equal(
+            "L3Harris Technologies (NYSE: LHX) reports second quarter 2026 results.",
+            Line("L3Harris Technologies Reports Robust Second Quarter 2026 Results MELBOURNE, Fla., July 29, 2026 \x2014 L3Harris Technologies (NYSE: LHX) reports second quarter 2026 results. Revenue rose.", "L3Harris Technologies Inc", "LHX"));
+
+        // A bullet straight after the sentence ends it.
+        Assert.Equal(
+            "Abbott today announced financial results for the third quarter ended Sept. 30, 2026.",
+            Line("Abbott Reports Third-Quarter 2026 Results ABBOTT PARK, Ill., Oct. 21, 2026 \x2014 Abbott today announced financial results for the third quarter ended Sept. 30, 2026. • Third-quarter sales increased 14.5 percent on a reported basis.", "Abbott Laboratories", "ABT"));
+
+        // None where the release says it nowhere: highlights alone after the dateline and a conference call's day; and a
+        // sentence running on from a headline is none of the release's own.
+        Assert.Null(Line("Visa Reports Fiscal Fourth Quarter and Full-Year 2026 Results San Francisco, October 27, 2026 – Visa (NYSE: V) Fiscal Fourth Quarter Results: • GAAP net income of $6.0B or $3.19 per share • Net revenue of $12.1B, an increase of 13%. Visa will host a conference call on Tuesday, October 27, 2026 at 5:00 p.m.", "Visa Inc. Class A", "V"));
+        Assert.Null(Line("Mercury General Corporation Announces Second Quarter Results and Declares Quarterly Dividend Los Angeles, California Mercury General Corporation (NYSE: MCY) reported today for the second quarter of 2026: Consolidated Highlights", "Mercury General Corporation", "MCY"));
     }
 
     // The short version opens on the pick as code writes it from the card, then on the quarter, each a labelled paragraph,

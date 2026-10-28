@@ -53,7 +53,7 @@ public static partial class NumbersSay
 
     // The awaited quarter's line once its results release is out and its filing is not yet stored: the line moves on from
     // awaiting a quarter already reported.
-    // see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+    // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
     public static string Reported(DateOnly awaited, DateOnly reportedOn, DateOnly from) => Fill("reported", Date(awaited), Date(reportedOn), Date(from));
 
     // Whether a sentence is the awaited quarter's line.

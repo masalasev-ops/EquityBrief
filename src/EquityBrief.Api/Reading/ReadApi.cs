@@ -2880,10 +2880,11 @@ public sealed partial class ReadApi : IComponent
     ";
 
     // The filer's newest results release accepted by the end of a night, its exhibit, the day the SEC accepted it and its
-    // stored text, whose opening line the page's management box quotes.
-    // see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+    // stored text, whose opening line the page's management box quotes, with the member's name the line is read by.
+    // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
     const string NewestReleaseText = @"
-        SELECT d.exhibit, d.accepted_at, d.url, d.text_gzip
+        SELECT d.exhibit, d.accepted_at, d.url, d.text_gzip,
+               COALESCE((SELECT m.name FROM membership m WHERE m.ticker = $ticker AND m.name IS NOT NULL ORDER BY m.joined DESC LIMIT 1), $ticker)
         FROM release_document d
         WHERE d.cik = (SELECT c.cik FROM company c WHERE c.ticker = $ticker AND c.cik IS NOT NULL ORDER BY c.fetched_at DESC LIMIT 1)
           AND d.release = 1 AND substr(d.accepted_at, 1, 10) <= $night
@@ -2915,7 +2916,9 @@ public sealed partial class ReadApi : IComponent
             reader.GetString(0),
             DateOnly.FromDateTime(DateTimeOffset.Parse(reader.GetString(1), CultureInfo.InvariantCulture).UtcDateTime),
             reader.GetString(2),
-            await text.ReadToEndAsync());
+            await text.ReadToEndAsync(),
+            reader.GetString(4),
+            ticker);
     }
 
     // A name's two newest swing lows confirmed by a night, newest first, which the trend rule compares.

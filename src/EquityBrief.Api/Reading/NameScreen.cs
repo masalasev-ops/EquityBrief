@@ -498,7 +498,7 @@ public static partial class NameScreen
 
         // The newest results release's opening line, where the release is newer than the one the guidance was read from, so
         // the box management speaks in opens on the newest quarter's words.
-        // see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+        // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
         if (newestRelease is { } release
             && (!newest.RootElement.TryGetProperty("guidance", out var guided) || guided.ValueKind != JsonValueKind.Object
                 || !DateOnly.TryParseExact(Text(guided, "filedOn"), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var guidedOn)
@@ -518,7 +518,7 @@ public static partial class NameScreen
             && ReportedBy(Text(reported, "reportDate"), figures?.CloseOn) is { } reportedOn)
         {
             // A report the night has passed is said as reported, and the next as not announced.
-            // see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+            // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
             html.Append(Invariant($"<p class=\"estimate\" data-estimated-quarter=\"{Text(reported, "periodEnd")}\" data-reported=\"{reportedOn:yyyy-MM-dd}\">The quarter to {Text(reported, "periodEnd")} was reported on {reportedOn:yyyy-MM-dd}, and the next report is not announced.</p>"));
         }
         else if (newest.RootElement.TryGetProperty("estimated", out var estimated)
@@ -702,7 +702,7 @@ public static partial class NameScreen
             Text(earnings, "epsEstimate") is { } expected ? "against an estimate of " + Drawn(expected, Figures.PerShare) : null);
         // A report the night has passed is no longer the next: the row says the quarter was reported and that the one after
         // it is not announced.
-        // see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+        // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
         if (ReportedBy(Text(estimated, "reportDate"), figures?.CloseOn) is { } reportedOn)
         {
             html.Append(Invariant($"<div><dt>Next report</dt><dd data-reportDate=\"reported\"><b>not announced</b><small>the quarter to {Escaped(Text(estimated, "periodEnd") ?? "its end")} was reported on {reportedOn:yyyy-MM-dd}</small></dd></div>"));
@@ -1938,7 +1938,7 @@ public static partial class NameScreen
             .ToHashSet();
 
         // The awaited quarter's line moves on once the quarter is reported, its filing not stored yet.
-        // see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+        // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
         var reported = readings.Awaited is { } awaited && readings.ReadFrom is { } readFrom
             && quarters.FirstOrDefault(quarter => quarter.PeriodEnd == awaited && quarter.FilingDate is null) is { ReportDate: { } reportedOn }
                 ? EquityBrief.Core.Quarters.NumbersSay.Reported(awaited, reportedOn, readFrom)

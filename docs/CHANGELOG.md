@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-28 - docs/ARCHITECTURE.html - the box management speaks in opens on the sentence in which the newest release says what the company reported
+Authorised by: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
+Was:
+> "... and the box management speaks in opens on the newest results release's own first line where that release is newer than the one the guidance was read from (see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported)."
+Now:
+> "... and the box management speaks in opens on the sentence in which the newest results release says what the company reported, where that release is newer than the one the guidance was read from (see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported)."
+Why: the pages read back after the merge of 2026-10-28 drew no line for ALLE and a conference call's day for P: the first line was read as a dateline whose city is written in small letters, and over the S&P 500's 501 newest releases that read found no line in 299 and a conference call's weekday and hour in 106.
+
 ### 2026-10-28 - docs/ARCHITECTURE.html - the rule holding written sentences to the stored quarter holds only sections written after its report, each sentence read alone
 Authorised by: A written sentence stating a direction the stored latest quarter contradicts is withheld where it is drawn, and a beat or a miss another source states against it is named beside it
 Was:
