@@ -118,8 +118,10 @@ public partial class ReadSurface
 
             if (named.Contains(session))
             {
+                // Drawn as a section's sentences are, its marker out.
                 Assert.Equal("written", cell.Groups[1].Value);
-                Assert.Equal(cause[2], WebUtility.HtmlDecode(cell.Groups[2].Value));
+                Assert.Equal(cause[2].Replace(" [D1]", string.Empty, StringComparison.Ordinal), WebUtility.HtmlDecode(cell.Groups[2].Value));
+                Assert.Contains("[D1]", cause[2], StringComparison.Ordinal);
             }
             else
             {

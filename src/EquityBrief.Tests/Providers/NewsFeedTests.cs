@@ -222,7 +222,7 @@ public class NewsFeedTests
 
         // Every article reaches every American listing it names, and no name it does not: a listing on another exchange is
         // another company's however its letters read.
-        // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+        // see: A story is a member's where its title or its opening names the company by its name or its American listing, and no other story is drawn or counted
         foreach (var article in articles)
         {
             foreach (var symbol in article.American!)

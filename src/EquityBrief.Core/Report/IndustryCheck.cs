@@ -6,7 +6,7 @@ namespace EquityBrief.Core.Report;
 // among a stated list, against the words an industry carrying that business names it by. A group naming none of them is
 // a mismatch, which the page flags beside the group, the group being the provider's classification and an operator's
 // override standing in its place where one is set.
-// see: A stock's industry group is the provider's until an override is set and is checked against the page's own text, and the industry cycle reads only sources naming the company or its industry
+// see: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening
 public static class IndustryCheck
 {
     // Each business word a company's description uses, with the words an industry group carrying that business is named by.
@@ -42,6 +42,25 @@ public static class IndustryCheck
             .FirstOrDefault();
     }
 
+    // The industry group a business is proposed under where the stock's group names none of it, in the classification's own
+    // words, which the operator approves before any override is set; the business itself where the list names no group.
+    public static string Proposed(string business) => business switch
+    {
+        "software" => "Software",
+        "semiconductors" => "Semiconductors & Semiconductor Equipment",
+        "banking" => "Banks",
+        "insurance" => "Insurance",
+        "medicines" => "Pharmaceuticals",
+        "medical devices" => "Health Care Equipment & Supplies",
+        "oil and gas" => "Oil, Gas & Consumable Fuels",
+        "utilities" => "Electric Utilities",
+        "real estate" => "Real Estate Management & Development",
+        "aerospace and defense" => "Aerospace & Defense",
+        "retail" => "Specialty Retail",
+        "restaurants" => "Hotels, Restaurants & Leisure",
+        _ => business,
+    };
+
     // The business the text describes where the industry group names none of the words a group carrying it is named by,
     // and none where the two agree or either is not read.
     public static string? Mismatch(string? industry, string? text) =>
@@ -50,11 +69,12 @@ public static class IndustryCheck
             ? business
             : null;
 
-    // Whether a source the industry cycle rests on is about the company or its industry: its title or text names the
-    // company, or one of the words the industry's own name is made of.
+    // Whether a source is about the company or its industry: its title or the opening of its text names the company, or one
+    // of the words the industry's own name is made of, as a story is read as a member's; a source naming either only
+    // further in, a market's roundup listing the company among others, is about something else.
     public static bool Relevant(string title, string text, string? company, string? industry)
     {
-        var read = title + " " + text;
+        var read = title + " " + (text.Length > News.StoryMatch.Opening ? text[..News.StoryMatch.Opening] : text);
         var words = (industry ?? string.Empty)
             .Split([' ', ',', '&', '-', '/'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Where(word => word.Length >= 4 && !Common.Contains(word))

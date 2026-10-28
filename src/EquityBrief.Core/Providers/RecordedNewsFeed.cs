@@ -26,7 +26,7 @@ namespace EquityBrief.Core.Providers;
 //
 // American is the tickers of the listings the feed tags it with on the American exchange alone, which is what a story is
 // attributed to a member by: a listing on another exchange is another company's however its letters read.
-// see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+// see: A story is a member's where its title or its opening names the company by its name or its American listing, and no other story is drawn or counted
 public sealed record NewsArticle(
     DateTimeOffset Published,
     string Title,
@@ -168,7 +168,7 @@ public sealed class RecordedNewsFeed(string response) : INewsFeed
         // "AAPL.US" as delivered. The exchange suffix is dropped here because every store in this system keys on the
         // ticker alone, and carrying both forms would leave two spellings of one name; the symbols count every company
         // the story names, and the American ones alone are what it is attributed to a member by.
-        // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+        // see: A story is a member's where its title or its opening names the company by its name or its American listing, and no other story is drawn or counted
         static string[] Tickers(IEnumerable<string> listed) =>
         [
             .. listed

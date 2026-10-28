@@ -1649,8 +1649,8 @@ public sealed partial class MarkRenderer : IComponent
     // is bought on and its stop are a column each, and the stop the invalidation
     // sits at says so. Every cell is a stored value, drawn at the places it is read
     // at with the stored edges on its row. Drawn plain, as a buy point's fold on Tonight draws it, a plan placing nothing
-    // to buy says so in the reader's words.
-    public string PlanTables(string ticker, IReadOnlyList<PlanRow> rows, bool plain = false)
+    // to buy says so in the reader's words. A plan placing no exit for a stock picked or held names that trade's exits.
+    public string PlanTables(string ticker, IReadOnlyList<PlanRow> rows, bool plain = false, DecisionCardView? trade = null, bool held = false)
     {
         var tranches = rows.Where(row => row.Kind == PlanKind.Tranche).ToArray();
         var exits = rows.Where(row => row.Kind == PlanKind.Exit).ToArray();
@@ -1696,7 +1696,7 @@ public sealed partial class MarkRenderer : IComponent
 
         if (exits.Length == 0)
         {
-            html.Append("<p class=\"degraded\" data-exits=\"none\">The plan places no exit.</p>");
+            html.Append(NoPlanExitLine(trade, held));
         }
         else
         {
@@ -2680,7 +2680,7 @@ public sealed partial class MarkRenderer : IComponent
 
         if (frame?.Pick is { } pick)
         {
-            svg.Append(Invariant, $"<g class=\"pick-levels\" data-family=\"{Escaped(pick.Family)}\">");
+            svg.Append(Invariant, $"<g class=\"pick-levels\" data-family=\"{Escaped(pick.Family)}\" data-pick-stop=\"{(pick.Stop is { } pickStop ? pickStop.ToString(Invariant) : "none")}\" data-pick-target=\"{(pick.Target is { } pickTarget ? pickTarget.ToString(Invariant) : "none")}\">");
 
             var beyond = new List<string>();
 
@@ -4238,13 +4238,30 @@ public sealed partial class MarkRenderer : IComponent
     // [D2] is checkable only where [D2] says which document it is.
     // see: A research record is written and dated per section, not as a whole
     // see: Every researched claim must name a stored source document
-    public string WrittenSection(string ticker, WrittenCell section, IReadOnlyList<SourceCell> documents, string dated = "written on", RiskLines? riskLines = null, IReadOnlyList<EquityBrief.Core.Research.DirectionFact>? facts = null, string? lead = null, string? proseLabel = null)
+    public string WrittenSection(string ticker, WrittenCell section, IReadOnlyList<SourceCell> documents, string dated = "written on", RiskLines? riskLines = null, IReadOnlyList<EquityBrief.Core.Research.DirectionFact>? facts = null, string? lead = null, string? proseLabel = null, int? sentencesAParagraph = null)
     {
         // The section as a reader reads it, held to the stored directions, its markers out and its abbreviations spelled
         // out; the stored prose is what its markers are read from.
         var stored = section;
 
-        section = section with { Prose = Readable(section.Prose, facts) };
+        section = section with
+        {
+            Prose = Readable(section.Prose, facts, number => DocumentNoun(number >= 1 && number <= stored.SourceIds.Count ? documents.FirstOrDefault(one => string.Equals(one.Id, stored.SourceIds[number - 1], StringComparison.Ordinal)) : null)),
+        };
+
+        // What worked and what did not is drawn at most so many sentences a paragraph, its first ones.
+        // see: What worked and what did not is drawn four sentences a paragraph at most
+        if (sentencesAParagraph is { } most)
+        {
+            section = section with
+            {
+                Prose = string.Join(
+                    "\n\n",
+                    section.Prose
+                        .Split(["\r\n\r\n", "\n\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .Select(paragraph => string.Join(" ", Sentence().Split(paragraph).Take(most)))),
+            };
+        }
 
         var drawn = new StringBuilder();
 
@@ -4394,6 +4411,9 @@ public sealed partial class MarkRenderer : IComponent
     // The section a reader reads first, and the one a model's draft is most often left out of.
     public const string TheShortVersion = "The short version";
 
+    // The most sentences a paragraph of the short version's what worked and what did not is drawn with.
+    public const int WhatWorkedSentences = 4;
+
     // Why a short version written by code stands where the model's would, each read from the record the
     // page already reads the section's state from: the checker left the model's draft out, the pass named
     // it not written, or no research has been written for the name, which implies no model at all.
@@ -4428,12 +4448,19 @@ public sealed partial class MarkRenderer : IComponent
         GatesView? gates,
         ListedUnderView? listedUnder = null,
         string? index = null,
-        DecisionCardView? card = null)
+        DecisionCardView? card = null,
+        HeldTradeView? held = null)
     {
         var list = earlierNight is { } on ? "the list on " + on.ToString("yyyy-MM-dd", Invariant) : "tonight's list";
         var indexList = index is null ? list : earlierNight is { } dated ? "the " + index + " list on " + dated.ToString("yyyy-MM-dd", Invariant) : "tonight's " + index + " list";
 
-        var why = passed is { } through
+        // A stock a family holds a trade in opens on that trade, before why it is or is not listed.
+        // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
+        var holding = card is null && held is { } trade
+            ? FormattableString.Invariant($"Held on the trade the {SetupOf(trade.Card.Family)} picked it for on {trade.Pick.Night:yyyy-MM-dd}, {PickStatus.Words(trade.Pick.Status).ToLowerInvariant()}{(trade.Pick.Buy is { } fill ? ", bought at " + Price(fill) : string.Empty)}{(trade.RewardToRisk is { } heldRatio ? FormattableString.Invariant($", its reward to risk at the fill {heldRatio:0.00}") : string.Empty)}. ")
+            : string.Empty;
+
+        var why = holding + (passed is { } through
             ? FormattableString.Invariant($"On the list on {through.Evening:yyyy-MM-dd}: the swing filter passed it on all five gates{(gates?.Family is { Length: > 0 } family ? ", a " + family + " setup" : string.Empty)}.")
             : missed is { } near
                 ? FormattableString.Invariant($"Close to a buy point on {near.Evening:yyyy-MM-dd}: one gate short, the {near.Gate.Gate} gate, {near.Gate.Words}. It is not a pick.")
@@ -4441,7 +4468,7 @@ public sealed partial class MarkRenderer : IComponent
                     ? FormattableString.Invariant($"On {list} for {Counted(fired.Count, "reason", "reasons")}: {string.Join(", ", fired.Select(one => one.Name))}.")
                     : listedUnder is { Family: { } listedFamily } listing
                         ? $"On {indexList} under {listing.Heading ?? listedFamily}."
-                        : FormattableString.Invariant($"Not on {list}.");
+                        : FormattableString.Invariant($"Not on {list}."));
 
         var business = says is null
             ? "No reading of its reported quarters is stored for this night."
@@ -4469,7 +4496,9 @@ public sealed partial class MarkRenderer : IComponent
                 ? Formatted($"{Capitalised(PlanWords(FilterSettings.LadderWord))}, the plan the trade gate read: reward to risk {ratio:0.00}, its stop {moves:0.00} typical moves below the entry.")
                 : card is not null
                     ? Formatted($"Its trade is the one the {SetupOf(card.Family)} picked it for{(card.Entry is { } price ? Formatted($", in at about {Price(price)}") : string.Empty)}, drawn on its card below with its exit.")
-                    : "No plan with an entry, a stop and a target is stored for this night.";
+                    : held is { Card: var heldCard } heldTrade
+                        ? FormattableString.Invariant($"Its trade is the one the {SetupOf(heldCard.Family)} picked it for on {heldTrade.Pick.Night:yyyy-MM-dd}, sold{(heldCard.Target is { } aim ? Formatted($" at {Price(aim)},") : string.Empty)}{(heldCard.Stop is { } floor ? Formatted($" at a close below {Price(floor)}") : string.Empty)}{(heldCard.Cap is { } most ? Formatted($" or after {most} trading days") : string.Empty)}, drawn on its short card below.")
+                        : "No plan with an entry, a stop and a target is stored for this night.";
 
         var drawn = new StringBuilder();
 
@@ -5573,7 +5602,13 @@ public sealed partial class MarkRenderer : IComponent
     // reported and the filings filed inside it, or that neither the stored news nor the filings hold one, with a line
     // beneath the table naming the days the news labels cover.
     // see: A move's cause is research's where written, then the labelled news inside it and then the filings dated inside it
-    public string MovesTable(string ticker, IReadOnlyList<MoveCell> moves, CauseSource? cause = null, (DateTimeOffset First, DateTimeOffset Last)? labelsCover = null)
+    //
+    // A written cause is drawn as a written section's sentences are: its markers out, a document's label the writer used as
+    // a word named as the kind of document it is, and a sentence the latest quarter contradicts withheld where the move
+    // ended on or after the day that quarter was reported, the directions it is held to marked on its cell.
+    // see: A document's label a writer used as a word is drawn as the kind of document it names, in a section and in a move's cause alike
+    // see: A written sentence the stored latest quarter contradicts is withheld where it is drawn, and two sources disagreeing on a beat or a miss are named in one sentence in its place
+    public string MovesTable(string ticker, IReadOnlyList<MoveCell> moves, CauseSource? cause = null, (DateTimeOffset First, DateTimeOffset Last)? labelsCover = null, Func<DateOnly, IReadOnlyList<EquityBrief.Core.Research.DirectionFact>>? heldOn = null, Func<int, string>? documents = null)
     {
         var table = new StringBuilder();
 
@@ -5588,7 +5623,7 @@ public sealed partial class MarkRenderer : IComponent
 
         if (moves.Any(move => move.Taken is not null))
         {
-            return table.Append(TakenCauses(ticker, moves, cause, labelsCover)).Append("</section>").ToString();
+            return table.Append(TakenCauses(ticker, moves, cause, labelsCover, heldOn, documents)).Append("</section>").ToString();
         }
 
         table.Append("<div class=\"tbl-wrap\">");
@@ -5617,7 +5652,9 @@ public sealed partial class MarkRenderer : IComponent
             {
                 if (move.Cause is { Length: > 0 } written)
                 {
-                    table.Append("<td class=\"cause\" data-cause=\"written\">").Append(Escaped(written)).Append("</td>");
+                    var facts = heldOn?.Invoke(move.SessionDate);
+
+                    table.Append(Invariant, $"<td class=\"cause\" data-cause=\"written\"{HeldTo(facts)}>").Append(Escaped(Readable(written, facts, documents))).Append("</td>");
                 }
                 else
                 {
@@ -5653,7 +5690,7 @@ public sealed partial class MarkRenderer : IComponent
 
     // The table of moves with each one's cause as the core took it and where it came from, and the line naming the days
     // the news labels cover.
-    string TakenCauses(string ticker, IReadOnlyList<MoveCell> moves, CauseSource? cause, (DateTimeOffset First, DateTimeOffset Last)? labelsCover)
+    string TakenCauses(string ticker, IReadOnlyList<MoveCell> moves, CauseSource? cause, (DateTimeOffset First, DateTimeOffset Last)? labelsCover, Func<DateOnly, IReadOnlyList<EquityBrief.Core.Research.DirectionFact>>? heldOn, Func<int, string>? documents)
     {
         var table = new StringBuilder();
 
@@ -5670,7 +5707,9 @@ public sealed partial class MarkRenderer : IComponent
             table.Append(Invariant, $"<td>{(move.Sessions == 1 ? "one session" : $"{move.Sessions} sessions")}</td>");
             table.Append(ChangeCell(move.ChangePct));
             table.Append(GroupCell(move.Group));
-            table.Append("<td class=\"cause\">").Append(CauseWords(taken)).Append("</td>");
+            var facts = taken.Kind == EquityBrief.Core.Moves.MoveCauses.Research ? heldOn?.Invoke(move.SessionDate) : null;
+
+            table.Append(Invariant, $"<td class=\"cause\"{HeldTo(facts)}>").Append(CauseWords(taken, facts, documents)).Append("</td>");
             table.Append("<td class=\"cause-source\">").Append(Escaped(CauseSourceWords(taken, cause))).Append("</td></tr>");
         }
 
@@ -5685,9 +5724,9 @@ public sealed partial class MarkRenderer : IComponent
 
     // What a move's cause says, by where it was taken from: research's sentences, the labelled stories with the results
     // and filings inside the move beneath them, those results and filings alone, or that none was found.
-    static string CauseWords(EquityBrief.Core.Moves.MoveCause taken) => taken.Kind switch
+    static string CauseWords(EquityBrief.Core.Moves.MoveCause taken, IReadOnlyList<EquityBrief.Core.Research.DirectionFact>? facts = null, Func<int, string>? documents = null) => taken.Kind switch
     {
-        EquityBrief.Core.Moves.MoveCauses.Research => Escaped(taken.Written ?? string.Empty),
+        EquityBrief.Core.Moves.MoveCauses.Research => Escaped(Readable(taken.Written ?? string.Empty, facts, documents)),
         EquityBrief.Core.Moves.MoveCauses.News => string.Join(
             "; ",
             taken.Stories.Take(3).Select(story => FormattableString.Invariant($"<a href=\"{Sent(story.Link)}\" rel=\"noopener\">{Sent(story.Title)}</a> ({Escaped(story.Source)}, {story.Published.UtcDateTime:yyyy-MM-dd}, {Escaped(story.Direction)})")))
@@ -7321,11 +7360,12 @@ public sealed partial class MarkRenderer : IComponent
     // saying why. The tabs are radio inputs the stylesheet reads, so the region carries no script of its own.
     // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
     // see: A label's reason is one sentence holding no digit, and an answer code cannot read is asked once more and then kept as unreadable with its cause
-    // How many stories the feed tagged the name with name another company, left out of the list and every count.
-    // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+    // How many stories the feed tagged the name with name neither the company nor its American listing in their title or
+    // opening, left out of the list and every count.
+    // see: A story is a member's where its title or its opening names the company by its name or its American listing, and no other story is drawn or counted
     static string OtherCompanies(NewsView view) =>
         view.OtherCompanies > 0
-            ? Formatted($"<p class=\"news-others\" data-left-out=\"{view.OtherCompanies}\">{view.OtherCompanies} {(view.OtherCompanies == 1 ? "story" : "stories")} the feed tagged {Escaped(view.Ticker)} with {(view.OtherCompanies == 1 ? "names" : "name")} neither the company nor its American listing, and {(view.OtherCompanies == 1 ? "is" : "are")} left out of the list and the counts.</p>")
+            ? Formatted($"<p class=\"news-others\" data-left-out=\"{view.OtherCompanies}\">{view.OtherCompanies} {(view.OtherCompanies == 1 ? "story" : "stories")} the feed tagged {Escaped(view.Ticker)} with {(view.OtherCompanies == 1 ? "names" : "name")} neither the company nor its American listing in {(view.OtherCompanies == 1 ? "its" : "their")} title or opening, and {(view.OtherCompanies == 1 ? "is" : "are")} left out of the list and the counts.</p>")
             : string.Empty;
 
     public string NewsRegion(NewsView view)

@@ -9,7 +9,8 @@ namespace EquityBrief.Web.Marks;
 // the fetch they came from and the currency they are in; the twelve newest quarters' margins; the segment table the rule
 // made of the filing's; the analysts' figures; the dividend's safety, or whether the company pays none with what it paid in
 // the whole year before the night's; and the valuation, the night's multiple against its own quarters' and the stock's
-// industry's members'.
+// industry's members'. A quarter its results release reports before its filing is stored carries the release's own segment
+// table, and whether the segment commentary was written from the filing's segments before that table was read.
 public sealed record ReportView(
     LatestQuarter? Quarter,
     IReadOnlyList<QuarterGrowth> Growth,
@@ -24,7 +25,9 @@ public sealed record ReportView(
     ReleaseReadingView? Release = null,
     bool PaysNone = false,
     DividendYear? PaidLastYear = null,
-    IReadOnlyList<QuarterIncome>? Income = null);
+    IReadOnlyList<QuarterIncome>? Income = null,
+    SegmentReading? ReleaseSegments = null,
+    bool CommentaryFromFiling = false);
 
 // From 20.3 the newest results release's reading a name's page draws under what management said: the day the SEC accepted
 // it in New York, its four words, and the reading version and the model it was read under.

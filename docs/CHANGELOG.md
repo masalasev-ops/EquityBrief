@@ -26,6 +26,82 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-28 - CLAUDE.md - the hard rule's carve-out for the name page's older bands reads them out as far as a picked or held stock's target or stop
+Authorised by: Older bands are read out as far as a pick's stop and target, marked older and read by nothing else
+Was:
+> "... and the name page, which reads one stock's pulled bars at the store's scale for the older bands it draws where the stored year holds no band on a side of the close and hands them to no rule, level, plan, listing or gate, on the operator's ruling of 2026-10-27, ..."
+Now:
+> "... and the name page, which reads one stock's pulled bars at the store's scale for the older bands it draws where the stored year holds no band on a side of the close, or none as far as a picked or held stock's target or stop, and hands them to no rule, level, plan, listing or gate, on the operator's rulings of 2026-10-27 and 2026-10-28, ..."
+Why: ROP's stored year held support bands alone and its two older resistance bands stopped at 450.02, while its earnings drift's target stood at 529.64; read out to the target the page draws eight, the furthest from 534.45 to 540.29, and the carve-out has to name the wider read.
+
+### 2026-10-28 - docs/ARCHITECTURE.html - older bands are read out as far as a picked or held stock's target or stop
+Authorised by: Older bands are read out as far as a pick's stop and target, marked older and read by nothing else
+Was:
+> "Where the stored year holds no band on a side of the close, the levels draw beneath their own the swing highs above it or the swing lows below it that the history pulled before the year turned at, at the store's scale and marked older, which no rule, level, plan, listing or gate reads (see: Where the stored year holds no band on a side the name page draws bands read from the pulled history, marked older and read by nothing else)."
+Now:
+> "Where the stored year holds no band on a side of the close, or none as far as a picked or held stock's target above or its stop below, the levels draw beneath their own the swing highs above it or the swing lows below it that the history pulled before the year turned at, read out past the stored bands as far as that target or stop, at the store's scale and marked older, which no rule, level, plan, listing or gate reads (see: Older bands are read out as far as a pick's stop and target, marked older and read by nothing else)."
+Why: ROP's page on 2026-10-28 drew older resistance up to 450.02 beneath a target of 529.64, so nothing showed what the price had turned at between the two; the branch's page draws eight older bands, the furthest from 534.45 to 540.29.
+
+### 2026-10-28 - docs/ARCHITECTURE.html - a stock held on a family's open trade is drawn with that trade first, and the list-before key names each setup's own limit
+Authorised by: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
+Was:
+> the paragraph did not exist; the short version, the card, the plan and the chart drew a held stock as one no family picked, and the key beneath the nights the list picked a stock before named one limit of 63 sessions for every row
+Now:
+> "A stock a family holds an open trade in, picked on an earlier night and listed under no family on the page's night, is drawn with that trade as a pick is drawn with its card: ... (see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart). The nights the list picked the stock before are each followed to the end of that night's own setup's limit, and the key beneath them names each setup's limit."
+Why: the earnings drift picked ROP on 2026-10-26 and its trade filled at the open of 2026-10-27 at 434.12, and the page of the nights after opened on the quarter, said its plan placed no exit of its own and drew no stop or target; the branch's page opens on the trade, its stop 406.46, its target 529.64, its last day about 22 Jan 2027 after 60 sessions and its reward to risk at the fill 3.45, where the key had said 63.
+
+### 2026-10-28 - docs/ARCHITECTURE.html - what worked and what did not is drawn four sentences a paragraph at most
+Authorised by: What worked and what did not is drawn four sentences a paragraph at most
+Was:
+> "... and then on the written prose, read as what worked and what did not, a written paragraph opening on the levels' plan left to the plan region for a pick (see: The short version opens on the pick and then the quarter as code writes them, before what worked and what did not)."
+Now:
+> the same, followed by "Each paragraph of what worked and what did not is drawn with its first four sentences (see: What worked and what did not is drawn four sentences a paragraph at most)."
+Why: the operator's ruling of 2026-10-28 caps each paragraph at four sentences, the stored prose unchanged and the proof failing a longer paragraph.
+
+### 2026-10-28 - docs/ARCHITECTURE.html - a newer quarter's segments are read from its results release, and a next report not announced is given the day it is estimated at
+Authorised by: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so
+Was:
+> "... and the segments read from the older filing say whose they are; a next report the night has passed is said as reported with the one after it not announced, what the numbers say ..."
+> the component catalogue's Facts assembler: reads "..., fundamentals, fundamentals snapshots, fundamental readings"; and its read and write matrix row with no read of the companies
+Now:
+> "... and the segments read from the older filing say whose they are; the newest results release's own segment table is read by code, ... (see: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so); a next report the night has passed is said as reported with the one after it not announced, and with the day it is estimated at, from the company's own report of the same quarter a year before, marked estimated (see: The page estimates a next report not on file from the company's own report of the same quarter a year before, marked estimated); what the numbers say ..."
+> the Facts assembler reads "..., fundamental readings, reported quarters, companies, release documents" and "A quarter its results release reports before its filing is stored carries the release's own segment table in place of the older filing's segments, ..."; its matrix row reads the companies
+Why: ROP reported its quarter to 2026-09-30 on 2026-10-22 and its filing was not stored by 2026-10-28, so its segments and the facts its segment commentary is written from were the quarter to 2026-06-30's; the release's own table reads Application Software 1,239.7, Network Software 446.1 and Technology Enabled Products 486.0 million, summing to the 2,171.8 million reported, and its next report now reads estimated about 2027-01-26 from its report of 2026-01-27.
+
+### 2026-10-28 - docs/ARCHITECTURE.html - a contradicted beat or miss is withheld with both sources named in one sentence, a move's cause held as a section is, and a document's label used as a word drawn as its kind
+Authorised by: A written sentence the stored latest quarter contradicts is withheld where it is drawn, and two sources disagreeing on a beat or a miss are named in one sentence in its place
+Was:
+> "A margin's or a year's change the stored figures contradict is withheld with what the sentence said and what the figures show, and a beat or a miss another source states against the stored estimate keeps its sentence with the stored side named beside it; a sentence about a segment, ... (see: A written sentence stating a direction the stored latest quarter contradicts is withheld where it is drawn, and a beat or a miss another source states against it is named beside it). ... (see: A written section is drawn without its bracketed markers, its sources listed by title beneath it and every abbreviation spelled out where first used)."
+Now:
+> "A sentence the stored figures contradict is withheld, a margin's or a year's change with what the sentence said and what the figures show, and a beat or a miss its own source counted against another consensus with the two sources named in one sentence in its place; a move's written cause is held the same way where the move ended on or after that day, and a sentence about a segment, ... (see: A written sentence the stored latest quarter contradicts is withheld where it is drawn, and two sources disagreeing on a beat or a miss are named in one sentence in its place). ... (see: A written section is drawn without its bracketed markers, its sources listed by title beneath it and every abbreviation spelled out where first used); a document's label a writer used as a word, in a section or a move's cause, is drawn as the kind of document it names, the results release or the quarterly filing among them (see: A document's label a writer used as a word is drawn as the kind of document it names, in a section and in a move's cause alike)."
+Why: ROP's page of 2026-10-28 kept "revenue fell just short of the consensus" with a correction after it, beside a revenue 0.2% over its estimate, drew its move of 2026-10-26's cause as written, and read "while D1 gives organic growth" in its segment commentary; the branch's page withholds five such sentences with both sources named and draws D1 as the results release.
+
+### 2026-10-28 - docs/ARCHITECTURE.html - a story is a member's where its title or its opening names the company, and the labeller labels every story the region keeps
+Authorised by: A story is a member's where its title or its opening names the company by its name or its American listing, and no other story is drawn or counted
+Was:
+> section 4's News: "... its own stories alone with a line counting those left out (see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted)"
+> "The news region draws and counts only the company's own stories: those the feed tags with the company's American listing whose title or text names the company or its ticker beside an American exchange or a ticker's own marks, with a line saying how many of the stories it was tagged with were left out (see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted)."
+Now:
+> section 4's News cites "(see: A story is a member's where its title or its opening names the company by its name or its American listing, and no other story is drawn or counted)"
+> "The news region draws and counts only the company's own stories: those the feed tags with the company's American listing whose title or the opening of whose text names the company or its ticker beside an American exchange or a ticker's own marks, a ticker standing in a bracketed listing of another exchange being that exchange's, ... The labeller labels on the local model every story the region keeps that admissibility admitted, and the proof fails a page drawing one it has not labelled yet."
+Why: ROP's page of 2026-10-28 kept DAT's freight stories, which name Roper only in their closing lines, and Roche's own release of 2026-10-27, whose dateline lists "(SIX: RO, ROP; OTCQX: RHHBY)"; the stricter match leaves them out and the relabel on the local model labels every stored story once.
+
+### 2026-10-28 - docs/ARCHITECTURE.html - the sources list and the industry cycle read only documents naming the company or its industry in their opening, and the proof proposes a group for each mismatch
+Authorised by: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening
+Was:
+> "... and a group naming none of the business the page's own text describes is flagged; the industry cycle reads only sources naming the company or a word of its industry, and says it has too few where fewer than two remain (see: A stock's industry group is the provider's until an override is set and is checked against the page's own text, and the industry cycle reads only sources naming the company or its industry)."
+Now:
+> "... and a group naming none of the business the page's own text describes is flagged, the proof listing each such page with a group proposed from that text for the operator to approve and setting none; the industry cycle and the page's sources list read only documents whose title, address or opening names the company or a word of its industry, the list folding the rest beneath it, and each says it has too few where fewer than two remain (see: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening)."
+Why: ROP's sources list of 2026-10-28 listed Roche's releases and a market roundup among sixteen documents; the branch's list keeps ten and folds six beneath it, and the proof proposes Software for ROP's electronic equipment group.
+
+### 2026-10-28 - RUNBOOK.md - setting a stock's industry cites the decision that supersedes its own and names the proof's list of groups to approve
+Authorised by: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening
+Was:
+> "... says so beside the group either way (see: A stock's industry group is the provider's until an override is set and is checked against the page's own text, and the industry cycle reads only sources naming the company or its industry). The setting is read as the read surface starts, ..."
+Now:
+> "... says so beside the group either way (see: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening). The report page proof, `/proof/report-pages`, lists every such page under "Peer groups to approve" with the group proposed from the page's own account; it sets nothing, and an override goes in only once you approve one. The setting is read as the read surface starts, ..."
+Why: the operator's ruling of 2026-10-28 asks for every mismatched name with a proposed group, for approval before any override is set.
+
 ### 2026-10-28 - CLAUDE.md - the hard rule's carve-out for the news labeller names the local model under a pin of its own
 Authorised by: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own
 Was:

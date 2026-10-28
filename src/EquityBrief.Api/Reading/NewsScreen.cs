@@ -102,7 +102,7 @@ public static class NewsScreen
     // it, the counts the tabs and the bar draw, the model that wrote the newest label, and where the name
     // holds no label the one line saying why, read off the labeller's run for the night and the night's list.
     // The articles are the company's own, those the feed tagged it with that name another company counted apart.
-    // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+    // see: A story is a member's where its title or its opening names the company by its name or its American listing, and no other story is drawn or counted
     public static NewsView Build(string ticker, DateOnly night, IReadOnlyList<NewsArticleRow> articles, bool listed, LabellerRunRow? run, int otherCompanies = 0)
     {
         var rows = new List<NewsRow>(articles.Count);

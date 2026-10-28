@@ -280,7 +280,7 @@ public sealed class NewsLabeller : IComponent
 
                     // The member's own stories alone, newest first and every one of them in the run: a story the feed
                     // tagged with another company's listing of the same ticker is never sent.
-                    // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+                    // see: A story is a member's where its title or its opening names the company by its name or its American listing, and no other story is drawn or counted
                     // see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run
                     var own = (await ArticlesAsync(connection, ticker, from, to, cancellation))
                         .Where(article => StoryMatch.IsAbout(article.Title, article.Text, ticker, company))

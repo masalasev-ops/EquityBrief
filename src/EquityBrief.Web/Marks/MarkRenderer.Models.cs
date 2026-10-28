@@ -48,7 +48,7 @@ public sealed partial class MarkRenderer
     // The older bands beneath the stored year's, each with its role, its edges and the session the pulled prices turned at,
     // under a line saying they are read from the history before the stored year and that nothing but this page reads them;
     // nothing where none is drawn.
-    // see: Where the stored year holds no band on a side the name page draws bands read from the pulled history, marked older and read by nothing else
+    // see: Older bands are read out as far as a pick's stop and target, marked older and read by nothing else
     public static string OlderBandsTable(IReadOnlyList<EquityBrief.Core.Report.OlderBand> bands, decimal? price)
     {
         if (bands.Count == 0)
@@ -68,7 +68,7 @@ public sealed partial class MarkRenderer
 
     // The line flagging an industry group that names none of the business the page's own text describes, none where they
     // agree or either is not read.
-    // see: A stock's industry group is the provider's until an override is set and is checked against the page's own text, and the industry cycle reads only sources naming the company or its industry
+    // see: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening
     public static string IndustryMismatch(string? industry, string? sells) =>
         EquityBrief.Core.Report.IndustryCheck.Mismatch(industry, sells) is { } business
             ? Formatted($"<p class=\"notice industry-mismatch\" data-industry=\"{Escaped(industry!)}\" data-business=\"{Escaped(business)}\">The page's own account of what the company sells describes {Escaped(business)}, which the group {Escaped(industry!)} does not name: the group is the provider's classification, and an override set for the stock stands in its place.</p>")
