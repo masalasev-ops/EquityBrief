@@ -2163,7 +2163,7 @@ static IConfiguration Configuration() => WorkerConfiguration.Build();
 // the newest night's list, labelled by the news job's profile through the spend cap, every call and every dollar
 // on this run's own rows. A refusal at the settings or a model that does not answer stops it before any call,
 // written as its own row where the store is there to hold it.
-// see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
+// see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own
 // The local run, as tools/localrun starts it at its two slots and by hand: '--slot early' or '--slot late', '--pin' or
 // '--twice', one form a run. A profile the settings cannot read refuses before the store is opened.
 // see: The local run is a process of its own at two slots outside the night and refuses any model file or prompt but its pin, whatever runtime answers
@@ -2425,14 +2425,8 @@ static async Task<int> CompareLabelsVerb()
         return 1;
     }
 
-    var budget = configuration[ModelProfiles.JobField(ModelProfiles.NewsJob, ModelProfiles.AnswerTokensField)];
-
-    if (!int.TryParse(budget, NumberStyles.None, CultureInfo.InvariantCulture, out var answerTokens) || answerTokens <= 0)
-    {
-        Console.Error.WriteLine($"compare-labels: the news job's answer budget is '{budget}', which is not a whole number of tokens above zero.");
-
-        return 1;
-    }
+    // The local model is asked at the labeller's own budget.
+    var answerTokens = EquityBrief.Core.News.NewsLabelling.AnswerTokens;
 
     LocalModelSettings settings;
 
@@ -2518,15 +2512,15 @@ static async Task<int> LabelNews(string[] args)
         session = NightSession.NewestStored(store.DatabaseFile) ?? clock.SessionDateAt(clock.UtcNow);
     }
 
-    ResearchModelSettings news;
+    // The labeller asks the local model alone, under its own pin, and no paid profile: no paid call and no paid fallback.
+    // see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own
+    LocalModelSettings local;
     NewsLimits limits;
-    SpendCaps caps;
 
     try
     {
-        news = NewsLane.Settings(configuration);
+        local = LocalLane.Settings(configuration);
         limits = NewsLane.Limits(configuration);
-        caps = ResearchLane.Caps(configuration);
     }
     catch (InvalidOperationException refusal)
     {
@@ -2536,26 +2530,50 @@ static async Task<int> LabelNews(string[] args)
         return 1;
     }
 
-    var cap = new SpendCap(OpenAiCompatibleResearchFeed.Live(news), caps, clock, store.DatabaseFile);
+    var labeller = new NewsLabeller(LmStudioReadingFeed.Live(local), local, limits, clock, store.DatabaseFile, store.DataRoot);
 
-    // Asked whether the model answers, which bills nothing: one that is not there stops the run here with its
-    // line, and never another profile in its place.
-    if (await cap.UnreachableAsync() is { } unreachable)
+    // '--pin' writes the version the labeller labels under.
+    if (args.Contains("--pin"))
     {
-        var line = $"the news job's model, {news.Profile}, did not answer: {unreachable}";
+        Console.WriteLine(await labeller.PinAsync(runId));
 
-        Console.Error.WriteLine("label-news: " + line);
-        await NewsLabeller.RefusedAsync(store.DatabaseFile, runId, clock.UtcNow, line, session);
-
-        return 1;
+        return 0;
     }
 
-    var outcome = await new NewsLabeller(cap, news, limits, clock, store.DatabaseFile).RunAsync(session, runId);
+    // '--all' labels every admitted story the store holds once, the member's own, newest first, in a batch that stops
+    // before the instant '--until' names, the next writer's slot, and starts while no night or drain holds the store.
+    if (args.Contains("--all"))
+    {
+        if (Argument(args, "--until") is not { } written
+            || !DateTimeOffset.TryParseExact(written, "yyyy-MM-dd'T'HH:mm'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var until))
+        {
+            Console.Error.WriteLine("label-news: '--all' needs '--until yyyy-MM-ddTHH:mmZ', the instant before the next writer's slot the batch stops at.");
+
+            return 1;
+        }
+
+        if (LocalLocks.Holder(store.DataRoot) is { } holder)
+        {
+            Console.Error.WriteLine($"label-news: {holder} holds the store, so no batch starts while it writes.");
+
+            return 1;
+        }
+
+        var batch = await labeller.EveryStoryAsync(until, runId);
+
+        Console.WriteLine(
+            FormattableString.Invariant($"label-news: {runId} over every stored story on the local model {local.Model}: {batch.NamesReached} of {batch.Names} name(s) reached, ") +
+            FormattableString.Invariant($"{batch.Labelled} labelled, {batch.UnreadableCount} unreadable, {batch.NotAnswered} not answered, stopped by {batch.Stop}"));
+
+        return 0;
+    }
+
+    var outcome = await labeller.RunAsync(session, runId);
 
     Console.WriteLine(
-        FormattableString.Invariant($"label-news: {runId} over the night of {session:yyyy-MM-dd} on {news.Profile}: {outcome.NamesReached} of {outcome.Names} name(s) reached, ") +
-        FormattableString.Invariant($"{outcome.Labelled} labelled, {outcome.UnreadableCount} unreadable, {outcome.RefusedByAdmissibility} refused by admissibility, ") +
-        FormattableString.Invariant($"{outcome.AlreadyLabelled} labelled before, {outcome.Cost} this run and {outcome.MonthCost} this month, stopped by {outcome.Stop}"));
+        FormattableString.Invariant($"label-news: {runId} over the night of {session:yyyy-MM-dd} on the local model {local.Model}: {outcome.NamesReached} of {outcome.Names} name(s) reached, ") +
+        FormattableString.Invariant($"{outcome.Labelled} labelled, {outcome.UnreadableCount} unreadable, {outcome.NotAnswered} not answered, {outcome.RefusedByAdmissibility} refused by admissibility, ") +
+        FormattableString.Invariant($"{outcome.AlreadyLabelled} labelled before, nothing spent, stopped by {outcome.Stop}"));
 
     return 0;
 }
@@ -2588,28 +2606,11 @@ static async Task<int> BackupRun(string[] args)
         store.DataRoot,
         store.DatabaseFile,
         StoreCopies.Folder(configuration[StoreCopies.FolderKey], store.DataRoot),
-        NewsLane.Limits(configuration).TimeLimit,
-        labellerPricing: NewsPricing(configuration)).RunAsync(args.Contains(EquityBrief.Worker.Backup.StoreBackup.AfterTheLabeller));
+        NewsLane.Limits(configuration).TimeLimit).RunAsync(args.Contains(EquityBrief.Worker.Backup.StoreBackup.AfterTheLabeller));
 
     Console.WriteLine("backup: " + outcome.Detail);
 
     return outcome.Outcome == EquityBrief.Worker.Backup.StoreBackup.Copied ? 0 : 1;
-}
-
-// The news profile's prices, which name its peak windows, read without its key, since the copy waits through the windows
-// the labeller waits through and calls no model; none where the settings state no prices the copy can read, and the copy
-// then waits for the labeller's limit alone.
-// see: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels
-static EquityBrief.Core.Providers.ResearchPricing? NewsPricing(IConfiguration configuration)
-{
-    try
-    {
-        return NewsLane.Profile(configuration)?.Pricing;
-    }
-    catch (InvalidOperationException)
-    {
-        return null;
-    }
 }
 
 // The articles of the last days stored at once, one dated query a day, for the names the index holds, run by hand on

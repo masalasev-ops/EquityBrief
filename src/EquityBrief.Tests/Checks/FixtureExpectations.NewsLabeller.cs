@@ -2,26 +2,33 @@ using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.News;
 using EquityBrief.Core.Providers;
+using EquityBrief.Core.Releases;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
 using EquityBrief.Worker.Filter;
+using EquityBrief.Worker.Local;
 using EquityBrief.Worker.News;
-using EquityBrief.Worker.Research;
 
 namespace EquityBrief.Tests.Checks;
 
-// fixture-expectations, 12.6: the news labeller. The instruction's reading of an answer worked by hand; the
-// labeller over a constructed store labelling tonight's list in its order, asking once more and keeping an
-// unreadable answer with its cause, sending no article admissibility refused or outside the window, never
-// overwriting a label and writing rows of its own after a switch; its stops before the call that would pass
-// the month limit, at the time limit and inside a peak window, a retry judged by each as a first call is; and
-// the counter keeping each member's articles judged as they are stored and dropping them past thirty-one days.
-// see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
+// fixture-expectations, 12.6 and 18.4: the news labeller on the local model. The instruction's keys and the reading of
+// an answer worked by hand; the labeller over a constructed store labelling tonight's list in its order and the names a
+// report is written for under its own pin, the answer asked for in the instruction's schema, an empty or cut-off answer
+// asked once more and an unreadable one kept with its cause, sending no article admissibility refused or outside the
+// window, never overwriting a label and leaving a paid label standing beside its own; labelling nothing with no pin or
+// one that differs; waiting for the local model's lock inside its time limit and stopping where the lock outlasts it;
+// stopping at its time limit and before the local run's next slot; leaving a story the runtime does not answer for the
+// next run and stopping where the runtime is gone; its month limit reading nothing spent; every stored story labelled
+// once in batches that stop at their instant; and the counter keeping each member's articles judged as they are stored.
+// see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own
+// see: The news labeller waits for the local model's lock and stops before the local run's next slot, its time limit counted from its start
 // see: A label's reason is one sentence holding no digit, and an answer code cannot read is asked once more and then kept as unreadable with its cause
 // see: A news article is stored once per member with its admissibility judged, and a label is never overwritten
 public partial class FixtureExpectations
 {
     const string Good = "{\"kind\":\"results\",\"direction\":\"positive\",\"reason\":\"Quarterly sales came in ahead of what the company had guided.\"}";
+
+    const string LabellerModel = "google/gemma-4-26b-a4b-qat";
 
     static string LabelAnswer(string kind, string direction, string reason) =>
         JsonSerializer.Serialize(new { kind, direction, reason });
@@ -37,19 +44,52 @@ public partial class FixtureExpectations
         // Words around the object are read past, and the kind and direction are read whatever their case.
         Assert.Equal("deal", NewsInstruction.Read("Here is the label:\n" + LabelAnswer("Deal", "NEUTRAL", "The company agreed to buy a smaller rival.") + "\nDone.").Label!.Kind);
 
-        // Each cause, by the first check it fails.
+        // A line break written inside the reason, which no JSON reader takes, is read as a space and the reason as one
+        // line, while two sentences either side of one are still two.
+        var broken = NewsInstruction.Read("{\n  \"kind\": \"other\",\n  \"direction\": \"neutral\",\n  \"reason\": \"The article reports board appointments at another bank and holds no news \n  of the company.\"\n}");
+
+        Assert.Equal(("other", "neutral", "The article reports board appointments at another bank and holds no news of the company."), (broken.Label!.Kind, broken.Label.Direction, broken.Label.Reason));
+        Assert.Equal(NewsInstruction.NotOneSentence, NewsInstruction.Read("{\"kind\":\"results\",\"direction\":\"positive\",\"reason\":\"Sales rose.\nMargins widened.\"}").Cause);
+
+        // Each cause, by the first check it fails; a readable name is no key, so an answer giving one is outside the set.
         Assert.Equal(NewsInstruction.NotJson, NewsInstruction.Read("positive, because sales rose").Cause);
         Assert.Equal(NewsInstruction.KindOutsideTheSet, NewsInstruction.Read(LabelAnswer("rumour", "positive", "A rival said so.")).Cause);
+        Assert.Equal(NewsInstruction.KindOutsideTheSet, NewsInstruction.Read(LabelAnswer("legal or regulatory", "negative", "A regulator opened an inquiry.")).Cause);
         Assert.Equal(NewsInstruction.DirectionOutsideTheSet, NewsInstruction.Read(LabelAnswer("results", "mixed", "Sales rose and margins fell.")).Cause);
         Assert.Equal(NewsInstruction.DigitInTheReason, NewsInstruction.Read(LabelAnswer("results", "positive", "Sales rose by 5 percent on the year.")).Cause);
         Assert.Equal(NewsInstruction.NotOneSentence, NewsInstruction.Read(LabelAnswer("results", "positive", "Sales rose. Margins widened too.")).Cause);
         Assert.Equal(NewsInstruction.NotOneSentence, NewsInstruction.Read(LabelAnswer("results", "positive", "")).Cause);
 
-        // The nine kinds and the three directions are the brief's words, and the seven causes are correction 2's.
+        // From version 2 the nine kinds are one-word keys, the brief's words kept as their readable names, each version 1
+        // label's kind read as its key one to one; the instruction gives each key its line, and the schema holds the
+        // answer to the keys and the directions.
+        Assert.Equal(["results", "guidance", "product", "legal", "deal", "analyst", "management", "opinion", "other"], NewsInstruction.Kinds);
+        Assert.Equal(
+            ["results", "guidance", "product", "legal or regulatory", "deal", "analyst change", "management", "opinion or promotional", "other"],
+            NewsInstruction.Kinds.Select(NewsInstruction.NameOf));
+        Assert.Equal(NewsInstruction.Kinds, NewsInstruction.Kinds.Select(kind => NewsInstruction.KeyOf(NewsInstruction.NameOf(kind))));
+        Assert.Equal(("legal", "analyst", "opinion", "results"), (NewsInstruction.KeyOf("legal or regulatory"), NewsInstruction.KeyOf("analyst change"), NewsInstruction.KeyOf("opinion or promotional"), NewsInstruction.KeyOf("results")));
+        Assert.True(NewsInstruction.IsOpinion("opinion or promotional") && NewsInstruction.IsOpinion("opinion") && !NewsInstruction.IsOpinion("other") && !NewsInstruction.IsOpinion(null));
+        Assert.All(NewsInstruction.KindsWritten, kind => Assert.Contains(kind.Key + ": " + kind.Covers + ".", NewsInstruction.System, StringComparison.Ordinal));
+        Assert.Contains("opinion: commentary, promotion or a recommendation, not a report of something that happened.", NewsInstruction.System, StringComparison.Ordinal);
+
+        var schema = NewsInstruction.Schema();
+
+        Assert.Equal(NewsInstruction.Kinds, schema["properties"]!["kind"]!["enum"]!.AsArray().Select(key => key!.GetValue<string>()));
+        Assert.Equal(NewsInstruction.Directions, schema["properties"]!["direction"]!["enum"]!.AsArray().Select(direction => direction!.GetValue<string>()));
+
+        // The reason's pattern refuses a digit and nothing else: a stop, a comma, a question and a line break inside an
+        // answer pass it, and code reads the one sentence.
+        var reasonPattern = schema["properties"]!["reason"]!["pattern"]!.GetValue<string>();
+
+        Assert.All(
+            ["Sales rose, and the company said why.", "Did sales rise? The company said so.", "Sales rose\nagain.", "Sales rose", ""],
+            reason => Assert.Matches(reasonPattern, reason));
+        Assert.All(["Sales rose 5 percent.", "Sales rose in 2026.", "Q3 sales rose."], reason => Assert.DoesNotMatch(reasonPattern, reason));
         Assert.Equal(9, NewsInstruction.Kinds.Length);
         Assert.Equal(["positive", "negative", "neutral"], NewsInstruction.Directions);
         Assert.Equal(7, NewsInstruction.Causes.Length);
-        Assert.Equal(1, NewsInstruction.Version);
+        Assert.Equal((2, 1), (NewsInstruction.Version, NewsInstruction.PaidVersion));
         Assert.Contains("no digit", NewsInstruction.System, StringComparison.Ordinal);
     }
 
@@ -76,17 +116,94 @@ public partial class FixtureExpectations
         return store;
     }
 
-    static NewsLabeller Labeller(TemporaryStore store, IResearchModelFeed model, ResearchModelSettings? settings = null, NewsLimits? limits = null, IClock? clock = null, Func<TimeSpan, CancellationToken, Task>? wait = null)
+    // The local profile the labeller asks, its model file a stand-in of a few bytes in a models folder under the store's
+    // root, and the pin written for it as the pinning run writes one; the part a test names written as it differs.
+    static LocalModelSettings LabellerSettings(TemporaryStore store, int context = 50176)
     {
-        var at = clock ?? FixedClock.At(new DateTimeOffset(2026, 9, 8, 23, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+        var folder = Path.Combine(store.Root, "models");
+        var file = Path.Combine(folder, "lmstudio-community", "gemma", "model.gguf");
 
-        return new NewsLabeller(
-            new SpendCap(model, Core.Spending.SpendCaps.Default, at, store.DatabaseFile),
-            settings ?? Providers.ResearchModelFeedTests.Pinned(),
+        if (!File.Exists(file))
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+            File.WriteAllText(file, "a stand-in for the model's weights");
+        }
+
+        return new LocalModelSettings("gemma-4", "http://127.0.0.1:1234/v1/", LabellerModel, 30, context, 30)
+        {
+            ModelFile = "lmstudio-community/gemma/model.gguf",
+            ModelsFolder = folder,
+        };
+    }
+
+    static void PinFor(TemporaryStore store, LocalModelSettings settings, string? model = null, int? version = null, int? context = null, long? size = null)
+    {
+        var folder = LocalModelFile.FolderOf(settings);
+        var facts = LocalModelFile.Facts(folder, settings.ModelFile!)!;
+        var sha = LocalModelFile.HashAsync(folder, settings.ModelFile!, CancellationToken.None).GetAwaiter().GetResult();
+
+        store.Execute(
+            "INSERT INTO label_pin (model, model_file, sha256, size, modified, runtime_name, runtime_version, instruction_version, temperature, seed, answer_tokens, context, written_at, run_id) VALUES " +
+            FormattableString.Invariant($"('{model ?? settings.Model}', '{settings.ModelFile}', '{(size is null ? sha : new string('0', 64))}', {size ?? facts.Size}, '{facts.Modified.UtcDateTime:yyyy-MM-ddTHH:mm:ss.fffffffZ}', 'llama.cpp', '2.62.1', {version ?? NewsInstruction.Version}, 0, {ReadingSettings.Seed}, {NewsLabelling.AnswerTokens}, {context ?? settings.ContextTokens}, '2026-09-08T22:00:00Z', 'label-news-pin');"));
+    }
+
+    static NewsLabeller Labeller(TemporaryStore store, IReadingModelFeed model, LocalModelSettings? settings = null, NewsLimits? limits = null, IClock? clock = null, Func<TimeSpan, CancellationToken, Task>? wait = null) =>
+        new(
+            model,
+            settings ?? LabellerSettings(store),
             limits ?? NewsLimits.Default,
-            at,
+            clock ?? FixedClock.At(new DateTimeOffset(2026, 9, 8, 23, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates),
             store.DatabaseFile,
+            store.Root,
             wait ?? ((_, _) => Task.CompletedTask));
+
+    static ReadingReply Answered(string content, string finish = "stop") =>
+        new(LabellerModel, content, finish, 900, 40, 0, "llama.cpp", "2.62.1", 1.1);
+
+    // The local model as a script: each call answers with the next reply, a null one as the runtime refusing the call,
+    // and moves the clock by a step where the test gives one; the model made ready and released as the runtime is.
+    sealed class LocalAnswers(CallClock? clock, TimeSpan step, params ReadingReply?[] replies) : IReadingModelFeed
+    {
+        readonly Queue<ReadingReply?> script = new(replies);
+
+        public List<ReadingRequest> Asked { get; } = [];
+
+        public int Requests => Asked.Count;
+
+        public bool Prepared { get; private set; }
+
+        public bool? ReleasedLoaded { get; private set; }
+
+        public Exception? Gone { get; init; }
+
+        public Task<bool> PrepareAsync(CancellationToken cancellation = default)
+        {
+            if (Gone is { } gone)
+            {
+                throw gone;
+            }
+
+            Prepared = true;
+
+            return Task.FromResult(true);
+        }
+
+        public Task ReleaseAsync(bool loadedHere, CancellationToken cancellation = default)
+        {
+            ReleasedLoaded = loadedHere;
+
+            return Task.CompletedTask;
+        }
+
+        public Task<ReadingReply> AskAsync(ReadingRequest request, CancellationToken cancellation = default)
+        {
+            Asked.Add(request);
+            clock?.Advance(step);
+
+            return script.Count == 0
+                ? throw new InvalidOperationException("the labeller asked past the test's script")
+                : script.Dequeue() is { } reply ? Task.FromResult(reply) : throw new ReadingRefused(ReleaseAnswers.RuntimeRefused, "the runtime refused the call");
+        }
     }
 
     // A clock that stands still until a call or a wait moves it on, so how long a run takes is a number the test
@@ -100,7 +217,7 @@ public partial class FixtureExpectations
         public void Advance(TimeSpan by) => UtcNow += by;
     }
 
-    // A wait that moves the clock by what it is asked to wait, as the labeller's own wait moves the machine's.
+    // A wait that moves the clock by what it is asked to wait, as a process's own wait moves the machine's.
     static Func<TimeSpan, CancellationToken, Task> Moving(CallClock clock) => (span, _) =>
     {
         clock.Advance(span);
@@ -112,62 +229,81 @@ public partial class FixtureExpectations
         JsonDocument.Parse(Text(store, $"SELECT detail FROM run_log WHERE run_id = '{runId}' AND stage = '{NewsLabeller.Stage}';")).RootElement;
 
     [Fact]
-    public async Task TheLabellerLabelsTonightsListInItsOrderAsksOnceMoreKeepsAnUnreadableAnswerWithItsCauseAndNeverOverwrites()
+    public async Task TheLabellerLabelsTonightsListOnTheLocalModelUnderItsPinAsksOnceMoreOnAnEmptyOrCutOffAnswerAndNeverOverwrites()
     {
         using var store = await NewsStore();
 
+        var settings = LabellerSettings(store);
+
+        PinFor(store, settings);
+
+        // A paid label written before the switch, which stands beside the local one.
+        store.Execute(
+            "INSERT INTO news_label (ticker, article_id, profile, instruction_version, model, outcome, cause, kind, direction, reason, labelled_at, run_id) VALUES " +
+            "('ZZB', 'b1', 'deepseek', 1, 'deepseek-flash', 'labelled', NULL, 'results', 'positive', 'A paid label.', '2026-09-08T04:00:00Z', 'label-news-paid');");
+
         // Worked by hand: ZZB's two admitted articles of the window newest first, then ZZC's one; b3 is refused by
-        // admissibility and b4 is outside the window, so neither is sent, and ZZD is not on the list. b1 is read
-        // first time, b2 after one retry, and c1 fails twice on a kind outside the set.
-        var model = new ScriptedModel(
-            Good,
-            "no json here",
-            LabelAnswer("guidance", "negative", "The company lowered what it expects for the year."),
-            LabelAnswer("rumour", "positive", "A rival said so."),
-            LabelAnswer("rumour", "positive", "A rival said so again."));
+        // admissibility and b4 is outside the window, so neither is sent, and ZZD is not on the list. b1 is read first
+        // time, b2 after an empty answer, and c1 is cut off at the budget twice.
+        var model = new LocalAnswers(
+            null,
+            TimeSpan.Zero,
+            Answered(Good),
+            Answered(string.Empty),
+            Answered(LabelAnswer("guidance", "negative", "The company lowered what it expects for the year.")),
+            Answered("{\"kind\":\"other\",\"direction\":\"neutral\",\"reason\":\"The company", ReleaseAnswers.BudgetReached),
+            Answered("{\"kind\":\"other\",\"direction\":\"neutral\",\"reason\":\"The company", ReleaseAnswers.BudgetReached));
 
-        var outcome = await Labeller(store, model).RunAsync(new DateOnly(2026, 9, 8), "label-news-one");
+        var outcome = await Labeller(store, model, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-one");
 
-        Assert.Equal((3, 3, 2, 1, 1, 0, NewsLabeller.Finished), (outcome.Names, outcome.NamesReached, outcome.Labelled, outcome.UnreadableCount, outcome.RefusedByAdmissibility, outcome.AlreadyLabelled, outcome.Stop));
-        Assert.Equal(5, model.Requests);
-        Assert.Equal(["b1", "b2", "b2", "c1", "c1"], model.Asked.Select(request => request.DocumentIds.Single()));
-        Assert.All(model.Asked, request => Assert.Equal((NewsInstruction.Lane, NewsInstruction.Section, NewsInstruction.System), (request.Lane, request.Section, request.System)));
-        Assert.Contains("Company: ZZB (ZZB)", model.Asked[0].Prompt, StringComparison.Ordinal);
-        Assert.Contains("Title: ZZB beats", model.Asked[0].Prompt, StringComparison.Ordinal);
+        Assert.Equal((3, 3, 2, 1, 1, 0, 0, NewsLabeller.Finished), (outcome.Names, outcome.NamesReached, outcome.Labelled, outcome.UnreadableCount, outcome.RefusedByAdmissibility, outcome.AlreadyLabelled, outcome.NotAnswered, outcome.Stop));
+        Assert.Equal(["b1", "b2", "b2", "c1", "c1"], model.Asked.Select(request => request.Text.Split('\n')[1]["Title: ".Length..]).Select(title => title switch { "ZZB beats" => "b1", "ZZB guides" => "b2", _ => "c1" }));
+        Assert.True(model.Prepared && model.ReleasedLoaded == true);
 
-        var profile = Providers.ResearchModelFeedTests.PinnedProfile;
+        // Each request asks the profile's model under the pin's seed and budget, the instruction's own words, and the
+        // schema holding the answer to the keys.
+        Assert.All(model.Asked, request => Assert.Equal((LabellerModel, NewsInstruction.System, ReadingSettings.Seed, NewsLabelling.AnswerTokens), (request.Model, request.Instruction, request.Seed, request.AnswerTokens)));
+        Assert.All(model.Asked, request => Assert.Equal(NewsInstruction.Kinds, request.Schema!["properties"]!["kind"]!["enum"]!.AsArray().Select(key => key!.GetValue<string>())));
+        Assert.StartsWith("Company: ZZB (ZZB)\nTitle: ZZB beats", model.Asked[0].Text, StringComparison.Ordinal);
 
         Assert.Equal(
-            ["b1|labelled|results|positive", "b2|labelled|guidance|negative", "c1|unreadable||"],
-            TextRows(store, $"SELECT article_id || '|' || outcome || '|' || COALESCE(kind, '') || '|' || COALESCE(direction, '') FROM news_label WHERE profile = '{profile}' ORDER BY ticker, article_id;"));
-        Assert.Equal(NewsInstruction.KindOutsideTheSet, Text(store, "SELECT cause FROM news_label WHERE article_id = 'c1';"));
-        Assert.Equal(1, Scalar(store, "SELECT instruction_version FROM news_label WHERE article_id = 'b1';"));
-        Assert.Equal("label-news-one", Text(store, "SELECT run_id FROM news_label WHERE article_id = 'b1';"));
+            ["b1|labelled|results|positive|google/gemma-4-26b-a4b-qat", "b2|labelled|guidance|negative|google/gemma-4-26b-a4b-qat", "c1|unreadable|||google/gemma-4-26b-a4b-qat"],
+            TextRows(store, "SELECT article_id || '|' || outcome || '|' || COALESCE(kind, '') || '|' || COALESCE(direction, '') || '|' || model FROM news_label WHERE profile = 'gemma-4' AND instruction_version = 2 ORDER BY ticker, article_id;"));
+        Assert.Equal(NewsInstruction.CutOff, Text(store, "SELECT cause FROM news_label WHERE article_id = 'c1' AND profile = 'gemma-4';"));
+        Assert.Equal("A paid label.", Text(store, "SELECT reason FROM news_label WHERE article_id = 'b1' AND profile = 'deepseek';"));
 
-        // Each call is a row of its own under the run, and the run's own row counts the night.
-        Assert.Equal(5, Scalar(store, "SELECT COUNT(*) FROM run_log WHERE run_id = 'label-news-one' AND stage LIKE 'research call: news label%';"));
-
+        // The run's own row names the local profile and its model, spends nothing and names the pin it labelled under.
         var row = LabellerRow(store, "label-news-one");
 
-        Assert.Equal((3, 3, 2, 1, 1, NewsLabeller.Finished), (row.GetProperty("names").GetInt32(), row.GetProperty("reached").GetInt32(), row.GetProperty("labelled").GetInt32(), row.GetProperty("unreadable").GetProperty(NewsInstruction.KindOutsideTheSet).GetInt32(), row.GetProperty("refusedByAdmissibility").GetInt32(), row.GetProperty("stop").GetString()));
+        Assert.Equal(("gemma-4", LabellerModel, true, "0", NewsLabeller.Finished), (row.GetProperty("profile").GetString(), row.GetProperty("model").GetString(), row.GetProperty("local").GetBoolean(), row.GetProperty("cost").GetString(), row.GetProperty("stop").GetString()));
+        Assert.Equal(1, row.GetProperty("pin").GetInt64());
+        Assert.Equal("0", Text(store, "SELECT spend FROM run_log WHERE run_id = 'label-news-one' AND stage = 'news-labels';"));
         Assert.Equal(5, Scalar(store, "SELECT model_calls FROM run_log WHERE run_id = 'label-news-one' AND stage = 'news-labels';"));
 
-        // Run again under the same profile, nothing is sent: every article of the window is labelled or
-        // unreadable under it, and the unreadable one is not paid for again.
-        var again = new ScriptedModel(Good, Good, Good);
-        var second = await Labeller(store, again).RunAsync(new DateOnly(2026, 9, 8), "label-news-two");
+        // Run again, nothing is asked: every article of the window is labelled or unreadable under the profile.
+        var again = new LocalAnswers(null, TimeSpan.Zero);
+        var second = await Labeller(store, again, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-two");
 
         Assert.Equal((0, 0, 3), (again.Requests, second.Labelled, second.AlreadyLabelled));
+    }
 
-        // After a switch the new profile writes rows of its own and the first profile's rows stand as written.
-        var switched = new ScriptedModel(LabelAnswer("results", "neutral", "The quarter was as expected."), LabelAnswer("guidance", "neutral", "The outlook was kept."), LabelAnswer("management", "neutral", "A chief was named."));
-        var third = await Labeller(store, switched, Providers.ResearchModelFeedTests.PinnedClaude()).RunAsync(new DateOnly(2026, 9, 8), "label-news-three");
+    // An answer that arrives whole and fails a check is kept as unreadable with its cause after the one ask, since the
+    // same story under the same seed answers the same way again: b1's reason holds a digit, and b2 and c1 are read.
+    [Fact]
+    public async Task AnAnswerArrivingWholeThatCodeCannotReadIsKeptUnreadableWithoutASecondAsk()
+    {
+        using var store = await NewsStore();
 
-        Assert.Equal((3, 3, 0), (switched.Requests, third.Labelled, third.UnreadableCount));
-        Assert.Equal(3, Scalar(store, $"SELECT COUNT(*) FROM news_label WHERE profile = '{Providers.ResearchModelFeedTests.ClaudeProfile}';"));
-        Assert.Equal("Quarterly sales came in ahead of what the company had guided.", Text(store, $"SELECT reason FROM news_label WHERE article_id = 'b1' AND profile = '{profile}';"));
-        Assert.Equal("The quarter was as expected.", Text(store, $"SELECT reason FROM news_label WHERE article_id = 'b1' AND profile = '{Providers.ResearchModelFeedTests.ClaudeProfile}';"));
-        Assert.Equal(6, Scalar(store, "SELECT COUNT(*) FROM news_label;"));
+        var settings = LabellerSettings(store);
+
+        PinFor(store, settings);
+
+        var model = new LocalAnswers(null, TimeSpan.Zero, Answered(LabelAnswer("results", "positive", "Sales rose by 5 percent.")), Answered(Good), Answered(Good));
+        var outcome = await Labeller(store, model, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-whole");
+
+        Assert.Equal((3, 2, 1), (model.Requests, outcome.Labelled, outcome.UnreadableCount));
+        Assert.Equal(NewsInstruction.DigitInTheReason, Text(store, "SELECT cause FROM news_label WHERE article_id = 'b1' AND profile = 'gemma-4';"));
+        Assert.Equal(1, LabellerRow(store, "label-news-whole").GetProperty("unreadable").GetProperty(NewsInstruction.DigitInTheReason).GetInt32());
     }
 
     // Worked by hand over the constructed store: ZZB holds 24 stories of its own in the window, b1 and b2 and 22 more from
@@ -180,6 +316,10 @@ public partial class FixtureExpectations
     public async Task TheLabellerLabelsEachNameAReportIsWrittenForAfterTheListAndEveryOneOfANamesOwnStoriesInOneRun()
     {
         using var store = await NewsStore();
+
+        var settings = LabellerSettings(store);
+
+        PinFor(store, settings);
 
         void Article(string ticker, string id, DateOnly published) =>
             store.Execute(
@@ -202,108 +342,245 @@ public partial class FixtureExpectations
         Request("ZZE", "2026-09-07T23:05:00Z", "written");
         Request("ZZF", "2026-09-08T23:06:00Z", "refused");
 
-        var model = new ScriptedModel(Enumerable.Repeat(Good, 26).ToArray());
-        var outcome = await Labeller(store, model).RunAsync(new DateOnly(2026, 9, 8), "label-news-reports");
+        var model = new LocalAnswers(null, TimeSpan.Zero, [.. Enumerable.Repeat<ReadingReply?>(Answered(Good), 26)]);
+        var outcome = await Labeller(store, model, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-reports");
 
         Assert.Equal((4, 4, 26, 0, 1, NewsLabeller.Finished), (outcome.Names, outcome.NamesReached, outcome.Labelled, outcome.UnreadableCount, outcome.RefusedByAdmissibility, outcome.Stop));
         Assert.Equal(26, model.Requests);
 
-        var asked = model.Asked.Select(request => request.DocumentIds.Single()).ToArray();
+        var titles = model.Asked.Select(request => request.Text.Split('\n')[1]["Title: ".Length..]).ToArray();
 
-        Assert.Equal(["b1", "b2", "b31", "b30"], asked[..4]);
-        Assert.Equal(24, asked.Count(id => id.StartsWith('b')));
-        Assert.Equal("b10", asked[23]);
-        Assert.Equal(["c1", "d1"], asked[24..]);
+        Assert.Equal(["ZZB beats", "ZZB guides", "ZZB story b31", "ZZB story b30"], titles[..4]);
+        Assert.Equal(24, titles.Count(title => title.StartsWith("ZZB", StringComparison.Ordinal)));
+        Assert.Equal("ZZB story b10", titles[23]);
+        Assert.Equal(["ZZC names a chief", "ZZD is not on the list"], titles[24..]);
         Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM news_label WHERE ticker IN ('ZZE', 'ZZF');"));
         Assert.Equal(24, Scalar(store, "SELECT COUNT(*) FROM news_label WHERE ticker = 'ZZB' AND outcome = 'labelled';"));
     }
 
+    // No pin labels nothing and names how one is written; a pin the run differs from in the model, its file, the
+    // instruction's version or the window labels nothing and names the part; the run's row says why either way, and no
+    // call is made.
     [Fact]
-    public async Task TheLabellerStopsBeforeTheCallThatWouldPassItsMonthLimitAndAtItsTimeLimitAndWaitsOutAPeakWindow()
+    public async Task TheLabellerLabelsNothingWhereNoPinIsWrittenOrThePinDiffers()
     {
         using var store = await NewsStore();
 
-        // The month's limit already reached by the labeller's own earlier runs: nothing is asked.
-        store.Execute("INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES ('label-news-earlier', 'research call: news label, ZZB x', '2026-09-02T23:00:00Z', '2026-09-02T23:00:01Z', 'ok', 0, 1, 1, '5', '{}');");
+        var settings = LabellerSettings(store);
+        var none = new LocalAnswers(null, TimeSpan.Zero);
+        var unpinned = await Labeller(store, none, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-unpinned");
 
-        var reached = new ScriptedModel(Good, Good, Good);
-        var atTheLimit = await Labeller(store, reached).RunAsync(new DateOnly(2026, 9, 8), "label-news-limit");
+        Assert.Equal((NewsLabeller.NoPin, 0, 0, false), (unpinned.Stop, unpinned.Labelled, none.Requests, none.Prepared));
+        Assert.Contains("label-news --pin", LabellerRow(store, "label-news-unpinned").GetProperty("why").GetString(), StringComparison.Ordinal);
 
-        Assert.Equal((0, NewsLabeller.MonthLimitReached, 5m), (reached.Requests, atTheLimit.Stop, atTheLimit.MonthCost));
+        foreach (var (pin, part) in (IEnumerable<(Action Write, string Part)>)[
+            (() => PinFor(store, settings, version: 1), ReadingPins.PromptPart),
+            (() => PinFor(store, settings, model: "qwen/qwen3.5-9b"), ReadingPins.ModelPart),
+            (() => PinFor(store, settings, context: 60160), ReadingPins.WindowPart),
+            (() => PinFor(store, settings, size: 7), ReadingPins.FilePart)])
+        {
+            pin();
 
-        store.Execute("DELETE FROM run_log WHERE run_id = 'label-news-earlier';");
+            var asked = new LocalAnswers(null, TimeSpan.Zero);
+            var differs = await Labeller(store, asked, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-" + part.Replace(' ', '-').Replace("'", string.Empty, StringComparison.Ordinal));
 
-        // A limit the first call's ceiling would pass: nothing is asked, and the stop names the limit.
-        var tiny = new ScriptedModel(Good, Good, Good);
-        var wouldPass = await Labeller(store, tiny, limits: new NewsLimits(0.0000001m, TimeSpan.FromMinutes(20))).RunAsync(new DateOnly(2026, 9, 8), "label-news-tiny");
+            Assert.Equal((NewsLabeller.PinDiffers, 0, 0), (differs.Stop, differs.Labelled, asked.Requests));
+            Assert.StartsWith(part + " differs from label pin ", LabellerRow(store, "label-news-" + part.Replace(' ', '-').Replace("'", string.Empty, StringComparison.Ordinal)).GetProperty("why").GetString(), StringComparison.Ordinal);
+        }
 
-        Assert.Equal((0, NewsLabeller.MonthLimitReached, 0), (tiny.Requests, wouldPass.Stop, wouldPass.Labelled));
-        Assert.Equal(NewsLabeller.MonthLimitReached, LabellerRow(store, "label-news-tiny").GetProperty("stop").GetString());
-
-        // The time limit, passed before the first article: every name is left for the next night.
-        var late = new ScriptedModel(Good, Good, Good);
-        var outOfTime = await Labeller(store, late, limits: new NewsLimits(5m, TimeSpan.Zero)).RunAsync(new DateOnly(2026, 9, 8), "label-news-time");
-
-        Assert.Equal((0, NewsLabeller.TimeLimitPassed, 1), (late.Requests, outOfTime.Stop, outOfTime.NamesReached));
-
-        // A peak window of the profile open, the recorded profile's being weekdays from 01:00 to 04:00 and 06:00 to 10:00
-        // UTC, and a wait that does not see it end: nothing is asked, and the run stops naming the window.
-        var stuck = new ScriptedModel(Good, Good, Good);
-        var neverEnds = await Labeller(store, stuck, clock: FixedClock.At(new DateTimeOffset(2026, 9, 8, 2, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates)).RunAsync(new DateOnly(2026, 9, 8), "label-news-stuck");
-
-        Assert.Equal((0, NewsLabeller.PeakWindowOpened), (stuck.Requests, neverEnds.Stop));
         Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM news_label;"));
-
-        // Started at 02:00 inside the window, the labeller waits two hours to its end at 04:00, as the drain does, and then
-        // labels every article; its row says it waited once for 120 minutes.
-        var peakClock = new CallClock(new DateTimeOffset(2026, 9, 8, 2, 0, 0, TimeSpan.Zero));
-        var peak = new ScriptedModel(Good, Good, Good);
-        var inPeak = await Labeller(store, peak, clock: peakClock, wait: Moving(peakClock)).RunAsync(new DateOnly(2026, 9, 8), "label-news-peak");
-
-        Assert.Equal((3, NewsLabeller.Finished, 3, 1, TimeSpan.FromHours(2)), (peak.Requests, inPeak.Stop, inPeak.Labelled, inPeak.PeakWaits, inPeak.Waited));
-        Assert.Equal((1, 120), (LabellerRow(store, "label-news-peak").GetProperty("peakWaits").GetInt32(), LabellerRow(store, "label-news-peak").GetProperty("waitedMinutes").GetInt32()));
     }
 
+    // Worked by hand over a limit of twenty minutes, each call three: another local process holds the local model's lock
+    // for a quarter of an hour, as the local run or its history read does, and the labeller waits for it, then asks b1
+    // at fifteen minutes and b2 at eighteen, and c1, at twenty-one, is past the limit counted from the start. A run whose
+    // lock is held past its limit asks nothing, so the drain after it starts when it always did, and c1 waits again.
     [Fact]
-    public async Task ALabellerStartedInsideAPeakWindowLabelsForItsLimitAfterItsEndWithItsWaitLeftOutOfTheCount()
+    public async Task TheLabellerWaitsForTheLocalModelsLockInsideItsTimeLimitAndStopsWhereTheLockOutlastsIt()
     {
-        // Worked by hand over a limit of twenty minutes, each call ten minutes: started at 02:00 on Tuesday 2026-09-08,
-        // it waits to 04:00, labels ZZB's b1 by 04:10 and b2 by 04:20, and stops before ZZC's c1 at twenty minutes of
-        // labelling; counted from its start, the two hours it waited would have stopped it before its first call.
-        using (var store = await NewsStore())
-        {
-            var clock = new CallClock(new DateTimeOffset(2026, 9, 8, 2, 0, 0, TimeSpan.Zero));
-            var model = new PricedModel(clock, TimeSpan.FromMinutes(10), 0.01m, Good, Good, Good);
-            var outcome = await Labeller(store, model, limits: new NewsLimits(5m, TimeSpan.FromMinutes(20)), clock: clock, wait: Moving(clock)).RunAsync(new DateOnly(2026, 9, 8), "label-news-after-window");
+        using var store = await NewsStore();
 
-            Assert.Equal((2, NewsLabeller.TimeLimitPassed, 2, TimeSpan.FromHours(2)), (model.Requests, outcome.Stop, outcome.Labelled, outcome.Waited));
-            Assert.Equal(["b1", "b2"], TextRows(store, "SELECT article_id FROM news_label ORDER BY article_id;"));
+        var settings = LabellerSettings(store);
+
+        PinFor(store, settings);
+
+        var clock = new CallClock(new DateTimeOffset(2026, 9, 9, 4, 5, 0, TimeSpan.Zero));
+        var held = await LocalLocks.TakeAsync(store.Root, null, clock, (_, _) => Task.CompletedTask, CancellationToken.None);
+        var waits = 0;
+
+        Task Wait(TimeSpan span, CancellationToken cancellation)
+        {
+            waits++;
+            clock.Advance(TimeSpan.FromMinutes(15));
+            held?.Dispose();
+            held = null;
+
+            return Task.CompletedTask;
         }
 
-        // Started a second before the window's end it waits that second, and started at its end it waits none.
-        foreach (var (start, waited, waits) in new[]
-        {
-            (new DateTimeOffset(2026, 9, 8, 3, 59, 59, TimeSpan.Zero), TimeSpan.FromSeconds(1), 1),
-            (new DateTimeOffset(2026, 9, 8, 4, 0, 0, TimeSpan.Zero), TimeSpan.Zero, 0),
-        })
-        {
-            using var store = await NewsStore();
+        var model = new LocalAnswers(clock, TimeSpan.FromMinutes(3), Answered(Good), Answered(Good));
+        var outcome = await Labeller(store, model, settings, NewsLimits.Default, clock, Wait).RunAsync(new DateOnly(2026, 9, 8), "label-news-waited");
 
-            var clock = new CallClock(start);
-            var outcome = await Labeller(store, new ScriptedModel(Good, Good, Good), clock: clock, wait: Moving(clock)).RunAsync(new DateOnly(2026, 9, 8), "label-news-edge");
+        Assert.Equal((1, TimeSpan.FromMinutes(15), 2, 2, NewsLabeller.TimeLimitPassed), (waits, outcome.Waited, model.Requests, outcome.Labelled, outcome.Stop));
+        Assert.Equal(15, LabellerRow(store, "label-news-waited").GetProperty("waitedMinutes").GetInt32());
 
-            Assert.Equal((NewsLabeller.Finished, 3, waits, waited), (outcome.Stop, outcome.Labelled, outcome.PeakWaits, outcome.Waited));
+        using (await LocalLocks.TakeAsync(store.Root, null, clock, (_, _) => Task.CompletedTask, CancellationToken.None))
+        {
+            var none = new LocalAnswers(clock, TimeSpan.FromMinutes(3));
+            var blocked = await Labeller(store, none, settings, NewsLimits.Default, clock, Moving(clock)).RunAsync(new DateOnly(2026, 9, 8), "label-news-lock-held");
+
+            Assert.Equal((NewsLabeller.LockHeld, TimeSpan.FromMinutes(20), 0, false), (blocked.Stop, blocked.Waited, none.Requests, none.Prepared));
+            Assert.Contains("the next run takes these stories up", LabellerRow(store, "label-news-lock-held").GetProperty("why").GetString(), StringComparison.Ordinal);
         }
+
+        Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM news_label WHERE article_id = 'c1';"));
+    }
+
+    // Worked by hand from ten to midday, each call eight minutes: b1 is asked then and b2 at two minutes to, and c1, at a
+    // minute past the local run's early slot, waits for the next run, inside the labeller's twenty minutes.
+    [Fact]
+    public async Task TheLabellerStopsBeforeTheLocalRunsNextSlot()
+    {
+        DateTimeOffset At(int day, int hour, int minute) => new(2026, 9, day, hour, minute, 0, TimeSpan.Zero);
+
+        Assert.Equal(
+            [At(9, 12, 5), At(9, 12, 5), At(9, 21, 40), At(10, 12, 5)],
+            new[] { At(9, 4, 5), At(9, 12, 5), At(9, 12, 6), At(9, 21, 41) }.Select(NewsLabelling.NextLocalSlotStart));
+
+        using var store = await NewsStore();
+
+        var settings = LabellerSettings(store);
+
+        PinFor(store, settings);
+
+        var clock = new CallClock(At(9, 11, 50));
+        var model = new LocalAnswers(clock, TimeSpan.FromMinutes(8), Answered(Good), Answered(Good));
+        var outcome = await Labeller(store, model, settings, NewsLimits.Default, clock).RunAsync(new DateOnly(2026, 9, 8), "label-news-slot");
+
+        Assert.Equal((2, 2, NewsLabeller.NextLocalSlot), (model.Requests, outcome.Labelled, outcome.Stop));
+        Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM news_label WHERE article_id = 'c1';"));
+    }
+
+    // Worked by hand over a limit of twenty minutes, each call fifteen: b1 asked at the start and b2 at fifteen minutes are
+    // labelled, and c1, at thirty, is past the limit and waits for the next run.
+    [Fact]
+    public async Task TheLabellerStopsAtItsTimeLimitAndLeavesTheRestForTheNextRun()
+    {
+        using var store = await NewsStore();
+
+        var settings = LabellerSettings(store);
+
+        PinFor(store, settings);
+
+        var clock = new CallClock(new DateTimeOffset(2026, 9, 9, 4, 5, 0, TimeSpan.Zero));
+        var model = new LocalAnswers(clock, TimeSpan.FromMinutes(15), Answered(Good), Answered(Good));
+        var outcome = await Labeller(store, model, settings, NewsLimits.Default, clock).RunAsync(new DateOnly(2026, 9, 8), "label-news-limit");
+
+        Assert.Equal((2, 2, NewsLabeller.TimeLimitPassed), (model.Requests, outcome.Labelled, outcome.Stop));
+        Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM news_label WHERE article_id = 'c1';"));
+    }
+
+    // A story the runtime refuses twice is left with no row and asked again by the next run; a runtime gone stops the run
+    // where it is, its row naming the model unreachable and why; and nothing of the night's moves either way.
+    [Fact]
+    public async Task AStoryTheRuntimeDoesNotAnswerIsTakenUpByTheNextRunAndARuntimeGoneStopsTheRun()
+    {
+        using var store = await NewsStore();
+
+        var settings = LabellerSettings(store);
+
+        PinFor(store, settings);
+
+        var nightRows = Scalar(store, "SELECT COUNT(*) FROM run_log;");
+        var refusing = new LocalAnswers(null, TimeSpan.Zero, null, null, Answered(Good), Answered(Good));
+        var first = await Labeller(store, refusing, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-refusing");
+
+        Assert.Equal((4, 2, 1, NewsLabeller.Finished), (refusing.Requests, first.Labelled, first.NotAnswered, first.Stop));
+        Assert.Equal(["b2", "c1"], TextRows(store, "SELECT article_id FROM news_label ORDER BY article_id;"));
+        Assert.Equal(1, LabellerRow(store, "label-news-refusing").GetProperty("notAnswered").GetInt32());
+
+        var next = new LocalAnswers(null, TimeSpan.Zero, Answered(Good));
+        var second = await Labeller(store, next, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-taken-up");
+
+        Assert.Equal((1, 1), (next.Requests, second.Labelled));
+        Assert.Equal(["b1", "b2", "c1"], TextRows(store, "SELECT article_id FROM news_label ORDER BY article_id;"));
+
+        var gone = new LocalAnswers(null, TimeSpan.Zero) { Gone = new ReadingRuntimeUnavailable(ReadingRuntimeUnavailable.NotRunning, "nothing answered at the runtime's address") };
+        var stopped = await Labeller(store, gone, settings).RunAsync(new DateOnly(2026, 9, 9), "label-news-gone");
+
+        Assert.Equal((NewsLabeller.ModelUnreachable, 0), (stopped.Stop, stopped.Labelled));
+        Assert.Equal("nothing answered at the runtime's address", LabellerRow(store, "label-news-gone").GetProperty("why").GetString());
+        Assert.Equal(nightRows, Scalar(store, "SELECT COUNT(*) FROM run_log WHERE run_id NOT LIKE 'label-news-%';"));
+    }
+
+    // The month's limit read as it always was, off the labeller's own rows: on the local model they spend nothing, so a
+    // month holding no paid labeller's spend runs, and a month the paid labeller spent its limit in labels nothing.
+    [Fact]
+    public async Task TheLabellersMonthLimitReadsNothingSpentOnTheLocalModel()
+    {
+        using var store = await NewsStore();
+
+        var settings = LabellerSettings(store);
+
+        PinFor(store, settings);
+
+        var labels = new LocalAnswers(null, TimeSpan.Zero, Answered(Good), Answered(Good), Answered(Good));
+        var ran = await Labeller(store, labels, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-month");
+
+        Assert.Equal((3, 0m, 0m), (ran.Labelled, ran.Cost, ran.MonthCost));
+
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES " +
+            "('label-news-20260901T010000Z', 'research call: news label, ZZA a1', '2026-09-01T01:00:00Z', '2026-09-01T01:00:01Z', 'ok', 0, 1, 1, '5', '{}');");
+
+        var held = new LocalAnswers(null, TimeSpan.Zero);
+        var stopped = await Labeller(store, held, settings).RunAsync(new DateOnly(2026, 9, 8), "label-news-month-spent");
+
+        Assert.Equal((NewsLabeller.MonthLimitReached, 0, 5m), (stopped.Stop, held.Requests, stopped.MonthCost));
+    }
+
+    // Every admitted story the store holds, newest first and the member's own, whatever list or window: a first batch
+    // ending two minutes in, each call a minute, labels c1 and d1; a second, each call a quarter of an hour, labels b1, b2
+    // and b4 past the labeller's twenty minutes, since a batch stops at its instant and not at the time limit, and none
+    // twice; b3, refused by admissibility, is sent by neither, and the paid label on b2 stands beside its own.
+    [Fact]
+    public async Task EveryStoredStoryIsLabelledOnceInBatchesThatStopAtTheirInstant()
+    {
+        using var store = await NewsStore();
+
+        var settings = LabellerSettings(store);
+
+        PinFor(store, settings);
+
+        store.Execute(
+            "INSERT INTO news_label (ticker, article_id, profile, instruction_version, model, outcome, cause, kind, direction, reason, labelled_at, run_id) VALUES " +
+            "('ZZB', 'b2', 'deepseek', 1, 'deepseek-flash', 'labelled', NULL, 'guidance', 'negative', 'A paid label.', '2026-09-08T04:00:00Z', 'label-news-paid');");
+
+        var clock = new CallClock(new DateTimeOffset(2026, 9, 9, 5, 0, 0, TimeSpan.Zero));
+        var first = new LocalAnswers(clock, TimeSpan.FromMinutes(1), Answered(Good), Answered(Good));
+        var batch = await Labeller(store, first, settings, NewsLimits.Default, clock).EveryStoryAsync(clock.UtcNow.AddMinutes(2), "label-news-all-one");
+
+        Assert.Equal((2, NewsLabeller.BatchEnded), (batch.Labelled, batch.Stop));
+        Assert.Equal(["c1", "d1"], TextRows(store, "SELECT article_id FROM news_label WHERE profile = 'gemma-4' ORDER BY article_id;"));
+        Assert.Equal(NewsLabelling.EveryStory, LabellerRow(store, "label-news-all-one").GetProperty("session").GetString());
+
+        var rest = new LocalAnswers(clock, TimeSpan.FromMinutes(15), Answered(Good), Answered(Good), Answered(Good));
+        var second = await Labeller(store, rest, settings, NewsLimits.Default, clock).EveryStoryAsync(clock.UtcNow.AddHours(5), "label-news-all-two");
+
+        Assert.Equal((3, 3, NewsLabeller.Finished), (rest.Requests, second.Labelled, second.Stop));
+        Assert.Equal(["b1", "b2", "b4", "c1", "d1"], TextRows(store, "SELECT article_id FROM news_label WHERE profile = 'gemma-4' ORDER BY article_id;"));
+        Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM news_label WHERE article_id = 'b3';"));
+        Assert.Equal("A paid label.", Text(store, "SELECT reason FROM news_label WHERE article_id = 'b2' AND profile = 'deepseek';"));
     }
 
     [Fact]
     public void ALabellersLatestEndCountsItsLimitOverTheHoursOutsideThePeakWindows()
     {
         // Worked by hand over the recorded profile's windows, 01:00 to 04:00 and 06:00 to 10:00 UTC on weekdays, and a
-        // limit of twenty minutes: started at 01:35 on Wednesday 2026-10-07, as the night of 2026-10-06 started it, it
-        // ends at 04:20; at 23:30 on the Tuesday before, off peak with an hour and a half to the window, at 23:50; at 05:50,
-        // ten minutes before the second window, at 10:10 after it; a second before 04:00, at 04:20; on Saturday 2026-10-03,
-        // which names no window, twenty minutes after its start; and with no prices, which name no window, the same.
+        // limit of twenty minutes: started at 01:35 on a Wednesday, inside the first window, it ends at 04:20; at 23:30 on
+        // the Tuesday before, off peak with an hour and a half to the window, at 23:50; at 05:50, ten minutes before the
+        // second window, at 10:10 after it; a second before 04:00, at 04:20; on a Saturday, which names no window, twenty
+        // minutes after its start; and with no prices, which name no window, the same.
         var pricing = Providers.ResearchModelFeedTests.Pinned().Pricing;
         var limit = TimeSpan.FromMinutes(20);
 
@@ -318,204 +595,6 @@ public partial class FixtureExpectations
         Assert.Equal(At(2026, 10, 7, 6, 0), NewsLabelling.EndsBy(At(2026, 10, 7, 5, 40), limit, pricing));
         Assert.Equal(At(2026, 10, 3, 2, 20), NewsLabelling.EndsBy(At(2026, 10, 3, 2, 0), limit, pricing));
         Assert.Equal(At(2026, 10, 7, 1, 55), NewsLabelling.EndsBy(At(2026, 10, 7, 1, 35), limit, null));
-    }
-
-    // A model priced at its own ceiling, every call the same, that answers each call with the next of its texts and
-    // moves the clock by a step as it answers, so the spend so far and the instant a retry is judged at are the
-    // test's own.
-    sealed class PricedModel(CallClock clock, TimeSpan step, decimal each, params string[] texts) : IResearchModelFeed
-    {
-        readonly ResearchModelSettings settings = Providers.ResearchModelFeedTests.Pinned();
-
-        public int Requests { get; private set; }
-
-        public int Probes => 0;
-
-        public string Identity => settings.Identity;
-
-        public Task<string?> UnreachableAsync(CancellationToken cancellation = default) => Task.FromResult<string?>(null);
-
-        public Task<ResearchAnswer> CompleteAsync(ModelRequest request, CancellationToken cancellation = default)
-        {
-            var text = texts[Requests++];
-
-            clock.Advance(step);
-
-            return Task.FromResult(new ResearchAnswer(settings.Model, text, 100, 0, 100, 50, 0, "stop", clock.UtcNow));
-        }
-
-        public decimal Price(ResearchAnswer answer) => each;
-
-        public decimal Ceiling(ModelRequest request) => each;
-    }
-
-    static readonly DateTimeOffset RetryEvening = new(2026, 9, 8, 23, 0, 0, TimeSpan.Zero);
-
-    // The news store's list labelled from an instant, each call costing a cent and moving the clock by a step, the
-    // first article's first answer unreadable and every answer after it a label.
-    static async Task<(NewsLabelOutcome Outcome, int Calls)> LabelledWithARetryAsync(TemporaryStore store, DateTimeOffset start, TimeSpan step, NewsLimits limits, string runId)
-    {
-        var clock = new CallClock(start);
-        var model = new PricedModel(clock, step, 0.01m, "no json here", Good, Good, Good, Good);
-        var outcome = await Labeller(store, model, limits: limits, clock: clock, wait: Moving(clock)).RunAsync(new DateOnly(2026, 9, 8), runId);
-
-        return (outcome, model.Requests);
-    }
-
-    [Fact]
-    public async Task ARetryThatWouldPassTheMonthLimitIsNotAskedAndItsArticleIsLeftUnlabelled()
-    {
-        // Worked by hand, a call and its ceiling a cent each. At a limit of a cent and a half the first call is asked,
-        // nothing having been spent, and its retry is not, a cent spent and a cent more passing it: one call, the
-        // month at a cent, and no row for the article.
-        using (var store = await NewsStore())
-        {
-            var (outcome, calls) = await LabelledWithARetryAsync(store, RetryEvening, TimeSpan.Zero, new NewsLimits(0.015m, TimeSpan.FromMinutes(20)), "label-news-retry-month");
-
-            Assert.Equal((1, NewsLabeller.MonthLimitReached, 0.01m, 0, 0), (calls, outcome.Stop, outcome.MonthCost, outcome.Labelled, outcome.UnreadableCount));
-            Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM news_label;"));
-            Assert.Equal(NewsLabeller.MonthLimitReached, LabellerRow(store, "label-news-retry-month").GetProperty("stop").GetString());
-        }
-
-        // At two cents the retry reaches the limit and does not pass it, so it is asked and labels the article, and
-        // the next article's first call is the one refused.
-        using (var store = await NewsStore())
-        {
-            var (outcome, calls) = await LabelledWithARetryAsync(store, RetryEvening, TimeSpan.Zero, new NewsLimits(0.02m, TimeSpan.FromMinutes(20)), "label-news-retry-month-reached");
-
-            Assert.Equal((2, NewsLabeller.MonthLimitReached, 0.02m, 1), (calls, outcome.Stop, outcome.MonthCost, outcome.Labelled));
-            Assert.Equal(["b1"], TextRows(store, "SELECT article_id FROM news_label;"));
-        }
-    }
-
-    [Fact]
-    public async Task ARetryAtTheTimeLimitIsNotAskedAndItsArticleIsLeftUnlabelled()
-    {
-        // Worked by hand over a limit of twenty minutes: a first answer taking twenty minutes cannot be read, and the
-        // retry, judged as the limit is reached, is not asked.
-        using (var store = await NewsStore())
-        {
-            var (outcome, calls) = await LabelledWithARetryAsync(store, RetryEvening, TimeSpan.FromMinutes(20), new NewsLimits(5m, TimeSpan.FromMinutes(20)), "label-news-retry-time");
-
-            Assert.Equal((1, NewsLabeller.TimeLimitPassed, 0, 0), (calls, outcome.Stop, outcome.Labelled, outcome.UnreadableCount));
-            Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM news_label;"));
-            Assert.Equal(NewsLabeller.TimeLimitPassed, LabellerRow(store, "label-news-retry-time").GetProperty("stop").GetString());
-        }
-
-        // One taking a second less leaves the retry its second: it is asked and labels the article, and the next
-        // article is the one the limit stops.
-        using (var store = await NewsStore())
-        {
-            var (outcome, calls) = await LabelledWithARetryAsync(store, RetryEvening, TimeSpan.FromMinutes(20) - TimeSpan.FromSeconds(1), new NewsLimits(5m, TimeSpan.FromMinutes(20)), "label-news-retry-time-inside");
-
-            Assert.Equal((2, NewsLabeller.TimeLimitPassed, 1), (calls, outcome.Stop, outcome.Labelled));
-            Assert.Equal(["b1"], TextRows(store, "SELECT article_id FROM news_label;"));
-        }
-    }
-
-    [Fact]
-    public async Task ARetryReachingAPeakWindowWaitsForItsEndAndIsAsked()
-    {
-        // Worked by hand over a limit of an hour: the recorded profile's peak window opens at 01:00 UTC on a weekday. A run
-        // starting at 00:50 on Wednesday 2026-09-09 asks its first call off peak, the answer arrives at 01:00 and cannot be
-        // read, and the retry, judged inside the window, waits three hours to 04:00 and is asked; it labels b1, and b2 and
-        // c1 follow, ten minutes of labelling before the window and thirty after it.
-        var tenToOne = new DateTimeOffset(2026, 9, 9, 0, 50, 0, TimeSpan.Zero);
-        var hour = new NewsLimits(5m, TimeSpan.FromHours(1));
-
-        using (var store = await NewsStore())
-        {
-            var (outcome, calls) = await LabelledWithARetryAsync(store, tenToOne, TimeSpan.FromMinutes(10), hour, "label-news-retry-peak");
-
-            Assert.Equal((4, NewsLabeller.Finished, 3, 0, 1, TimeSpan.FromHours(3)), (calls, outcome.Stop, outcome.Labelled, outcome.UnreadableCount, outcome.PeakWaits, outcome.Waited));
-            Assert.Equal(["b1", "b2", "c1"], TextRows(store, "SELECT article_id FROM news_label ORDER BY article_id;"));
-            Assert.Equal(NewsLabeller.Finished, LabellerRow(store, "label-news-retry-peak").GetProperty("stop").GetString());
-        }
-
-        // An answer arriving a second before the window leaves the retry off peak: it is asked at once and labels the
-        // article, and the next article's first call, judged inside the window, waits for its end and is asked.
-        using (var store = await NewsStore())
-        {
-            var (outcome, calls) = await LabelledWithARetryAsync(store, tenToOne, TimeSpan.FromMinutes(10) - TimeSpan.FromSeconds(1), hour, "label-news-retry-peak-before");
-
-            Assert.Equal((4, NewsLabeller.Finished, 3, 1), (calls, outcome.Stop, outcome.Labelled, outcome.PeakWaits));
-            Assert.Equal(new DateTimeOffset(2026, 9, 9, 4, 0, 0, TimeSpan.Zero) - (tenToOne + (2 * (TimeSpan.FromMinutes(10) - TimeSpan.FromSeconds(1)))), outcome.Waited);
-        }
-    }
-
-    // A model that answers once and then nothing: the labeller stops where it is naming the model, the label
-    // before it kept and nothing asked again. A run refused before it asked writes its own row, and nothing of
-    // the night's moves either way.
-    [Fact]
-    public async Task AModelThatStopsAnsweringStopsTheLabellerWhereItIsAndARefusedRunWritesItsOwnRowAndNoneOfTheNights()
-    {
-        using var store = await NewsStore();
-
-        var nightRows = Scalar(store, "SELECT COUNT(*) FROM run_log;");
-        var gateRows = Scalar(store, "SELECT COUNT(*) FROM gate_result;");
-        var listingRows = Scalar(store, "SELECT COUNT(*) FROM listing;");
-
-        var model = new AnsweringOnce(Good);
-        var outcome = await Labeller(store, model).RunAsync(new DateOnly(2026, 9, 8), "label-news-gone");
-
-        Assert.Equal((2, 1, 1, NewsLabeller.ModelUnreachable), (model.Requests, outcome.Labelled, outcome.NamesReached, outcome.Stop));
-        Assert.Equal(["b1"], TextRows(store, "SELECT article_id FROM news_label ORDER BY article_id;"));
-        Assert.Equal(NewsLabeller.ModelUnreachable, LabellerRow(store, "label-news-gone").GetProperty("stop").GetString());
-
-        await NewsLabeller.RefusedAsync(store.DatabaseFile, "label-news-refused", new DateTimeOffset(2026, 9, 8, 23, 0, 0, TimeSpan.Zero), "the news job's model, claude-haiku, did not answer: no route to the host");
-
-        Assert.Equal("refused", Text(store, "SELECT outcome FROM run_log WHERE run_id = 'label-news-refused';"));
-        Assert.Contains("did not answer", Text(store, "SELECT detail FROM run_log WHERE run_id = 'label-news-refused';"), StringComparison.Ordinal);
-
-        Assert.Equal(
-            (nightRows, gateRows, listingRows),
-            (Scalar(store, "SELECT COUNT(*) FROM run_log WHERE run_id NOT LIKE 'label-news-%';"), Scalar(store, "SELECT COUNT(*) FROM gate_result;"), Scalar(store, "SELECT COUNT(*) FROM listing;")));
-    }
-
-    [Fact]
-    public async Task ACapTheFirstCallWouldPassMakesNoCallAndTheLabellerNamesTheCapAsItsStop()
-    {
-        using var store = await NewsStore();
-
-        var model = new ScriptedModel(Good, Good, Good);
-        var at = FixedClock.At(new DateTimeOffset(2026, 9, 8, 23, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates);
-        var tiny = new SpendCap(model, new Core.Spending.SpendCaps(0.000001m, 0.000001m), at, store.DatabaseFile);
-
-        var outcome = await new NewsLabeller(tiny, Providers.ResearchModelFeedTests.Pinned(), NewsLimits.Default, at, store.DatabaseFile).RunAsync(new DateOnly(2026, 9, 8), "label-news-cap");
-
-        Assert.Equal((0, 0, NewsLabeller.CapPaused), (model.Requests, outcome.Labelled, outcome.Stop));
-        Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM news_label;"));
-        Assert.Equal((NewsLabeller.CapPaused, 0), (LabellerRow(store, "label-news-cap").GetProperty("stop").GetString(), Scalar(store, "SELECT model_calls FROM run_log WHERE run_id = 'label-news-cap' AND stage = 'news-labels';")));
-    }
-
-    // A feed that answers its first request and is gone for every one after.
-    sealed class AnsweringOnce(string first) : IResearchModelFeed
-    {
-        readonly ResearchModelSettings settings = Providers.ResearchModelFeedTests.Pinned();
-
-        public int Requests { get; private set; }
-
-        public int Probes => 0;
-
-        public string Identity => settings.Identity;
-
-        public Task<string?> UnreachableAsync(CancellationToken cancellation = default) => Task.FromResult<string?>(null);
-
-        public Task<ResearchAnswer> CompleteAsync(ModelRequest request, CancellationToken cancellation = default)
-        {
-            Requests++;
-
-            if (Requests > 1)
-            {
-                throw new ResearchModelUnavailable("the model went away after its first answer");
-            }
-
-            return Task.FromResult(new ResearchAnswer(settings.Model, first, 100, 0, 100, 50, 0, "stop", new DateTimeOffset(2026, 9, 8, 23, 0, 30, TimeSpan.Zero)));
-        }
-
-        public decimal Price(ResearchAnswer answer) => settings.Pricing.Price(answer);
-
-        public decimal Ceiling(ModelRequest request) => settings.Pricing.Ceiling(request, settings.AnswerTokens);
     }
 
     [Fact]

@@ -29,7 +29,10 @@ public static class NewsScreen
         decimal Cost,
         decimal MonthCost,
         decimal? MonthLimit,
-        string? Refused);
+        string? Refused,
+        bool Local = false,
+        int NotAnswered = 0,
+        string? Why = null);
 
     public static RunDetail Detail(LabellerRunRow run)
     {
@@ -61,7 +64,10 @@ public static class NewsScreen
                 Money(root, "cost") ?? 0m,
                 Money(root, "monthCost") ?? 0m,
                 Money(root, "monthLimit"),
-                Text(root, "refused"));
+                Text(root, "refused"),
+                root.TryGetProperty("local", out var local) && local.ValueKind == JsonValueKind.True,
+                Whole(root, "notAnswered"),
+                Text(root, "why"));
         }
         catch (JsonException)
         {
@@ -110,7 +116,7 @@ public static class NewsScreen
                 _ => string.Equals(article.Admissibility, Admissibility.Accepted, StringComparison.Ordinal) ? NewsRow.Unlabelled : NewsRow.Refused,
             };
             var labelled = state == NewsRow.Labelled;
-            var opinion = labelled && string.Equals(article.Kind, NewsInstruction.Opinion, StringComparison.Ordinal);
+            var opinion = labelled && NewsInstruction.IsOpinion(article.Kind);
             var tabs = opinion ? "opinion" : labelled ? "all " + article.Direction : "all " + NewsRow.Unlabelled;
 
             rows.Add(new NewsRow(
@@ -120,7 +126,7 @@ public static class NewsScreen
                 article.PublishedAt.Length >= 10 ? article.PublishedAt[..10] : article.PublishedAt,
                 article.Link,
                 state,
-                labelled ? article.Kind : null,
+                labelled && article.Kind is { } kind ? NewsInstruction.NameOf(kind) : null,
                 labelled ? article.Direction : null,
                 labelled ? article.Reason : null,
                 state == NewsRow.Unreadable ? article.Cause : null,
@@ -150,12 +156,15 @@ public static class NewsScreen
             newest?.Profile,
             why,
             code,
-            otherCompanies);
+            otherCompanies,
+            newest?.LabelVersion is { } version && version >= NewsInstruction.Version,
+            run is null ? 0 : articles.Count(article => article.Outcome == NewsLabelling.Labelled && string.Equals(article.LabelRun, run.RunId, StringComparison.Ordinal)));
     }
 
     // Why a name holding articles holds no label for the night, in one line: the labeller has not run for
     // the night; it was refused before it asked, its key missing or its model not answering; the name was not
-    // on the list, which is all the labeller reads; or the stop that came before this name.
+    // on the list or a report's, which is all the labeller reads; or the stop that came before this name, its
+    // pin and the local model's lock among them.
     static (string? Why, string? Code) Why(string ticker, bool listed, LabellerRunRow? run, IReadOnlyList<NewsRow> rows)
     {
         if (run is null)
@@ -176,7 +185,7 @@ public static class NewsScreen
 
         if (!listed)
         {
-            return ($"{ticker} was not on the list this night, and the labeller reads the names on the list alone.", "not-listed");
+            return ($"{ticker} was not on the list this night, and the labeller reads the names on the list and those a report is written for.", "not-listed");
         }
 
         return detail.Stop switch
@@ -186,6 +195,10 @@ public static class NewsScreen
             NewsLabelling.TimeLimitPassed => ("The labeller's time limit came before this name, so its articles wait for the next night.", "time-limit"),
             NewsLabelling.PeakWindowOpened => ("A peak window of the news profile opened before this name, so its articles wait for the next night.", "peak"),
             NewsLabelling.CapPaused => ("The day or month cap paused the labeller before this name, so its articles wait.", "cap"),
+            NewsLabelling.NoPin => ("No label pin is written for the local model, so nothing was labelled; one is written with label-news --pin.", "pin"),
+            NewsLabelling.PinDiffers => ("The local model, its file, the instruction or its window differs from the label pin, so nothing was labelled until a pin is written for it.", "pin"),
+            NewsLabelling.LockHeld => ("Another local process held the local model when the labeller ran, so this name's articles wait for the next run.", "lock"),
+            NewsLabelling.NextLocalSlot => ("The local run's next slot came before this name, so its articles wait for the next run.", "slot"),
             _ => rows.All(row => row.State is NewsRow.Refused or NewsRow.Unreadable)
                 ? ("The labeller reached this name and every article was refused by admissibility or could not be read.", "reached")
                 : ("The labeller reached this name and labelled none of its articles.", "reached"),
@@ -217,7 +230,10 @@ public static class NewsScreen
             detail.Reached,
             detail.Names,
             detail.Stop,
-            detail.Refused);
+            detail.Refused,
+            detail.Local,
+            detail.NotAnswered,
+            detail.Why);
     }
 
     // The nights the labeller ran, against the twenty its time limit, its month limit and the share of
@@ -228,10 +244,11 @@ public static class NewsScreen
     // owes: The share of the labeller's answers refused for a digit read after twenty nights
     public static TriggerLine Trigger(IReadOnlyList<LabellerRunRow> runs)
     {
+        // A batch over every stored story labels no night, so it counts toward none and its hours stay out of the median.
         var ran = runs
             .Where(run => !string.Equals(run.Outcome, Refused, StringComparison.Ordinal))
             .Select(run => (Run: run, Detail: Detail(run)))
-            .Where(pair => pair.Detail.Session is not null)
+            .Where(pair => pair.Detail.Session is not null && !string.Equals(pair.Detail.Session, NewsLabelling.EveryStory, StringComparison.Ordinal))
             .ToArray();
         var nights = ran.Select(pair => pair.Detail.Session!).Distinct(StringComparer.Ordinal).Count();
 

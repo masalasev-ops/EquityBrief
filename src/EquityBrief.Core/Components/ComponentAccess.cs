@@ -94,6 +94,7 @@ public enum Store
     InsiderRead,
     SecTicker,
     ReadingPin,
+    LabelPin,
     ReleaseDocument,
     ReleaseCheck,
     ReleaseDay,

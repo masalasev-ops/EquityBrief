@@ -76,8 +76,9 @@ public sealed class LocalComparison(
     public const string FactsNotHeld = "its night's facts file is no longer held whole";
     public const string ClaimsNotHeld = "the claims it was written from are not stored";
 
-    // Each article a profile labelled under the instruction's version that the store still holds, with the company's
-    // name the labeller sends, the oldest label first.
+    // Each article a profile labelled under the paid labeller's instruction's version that the store still holds, with
+    // the company's name the labeller sends, the oldest label first: the paid labels stand under the version before the
+    // keys, each kind read as its key one to one.
     const string PaidLabels = @"
         SELECT b.ticker, b.article_id, b.kind, b.direction, b.reason, a.title, a.text,
                COALESCE((SELECT m.name FROM membership m WHERE m.ticker = b.ticker AND m.name IS NOT NULL ORDER BY m.joined DESC LIMIT 1), b.ticker)
@@ -159,7 +160,7 @@ public sealed class LocalComparison(
                         try
                         {
                             var reply = await feed.AskAsync(
-                                new ReadingRequest(settings.Model, NewsInstruction.System, NewsInstruction.Prompt(article.Company, article.Ticker, article.Title, article.Text), ReadingSettings.Seed, answerTokens),
+                                new ReadingRequest(settings.Model, NewsInstruction.System, NewsInstruction.Prompt(article.Company, article.Ticker, article.Title, article.Text), ReadingSettings.Seed, answerTokens, NewsInstruction.Schema()),
                                 cancellation);
 
                             model ??= reply.Model;
@@ -198,6 +199,13 @@ public sealed class LocalComparison(
         }
 
         var agreement = LabelAgreement.Of(pairs);
+
+        // The stories the two labels disagree on by kind, each with both keys, which the file lists and the run prints.
+        var disagreeing = articles
+            .Zip(pairs, (article, pair) => (article, pair))
+            .Where(both => both.pair.Local is { } local && !string.Equals(local.Kind, both.article.Label.Kind, StringComparison.Ordinal))
+            .Select(both => new { ticker = both.article.Ticker, articleId = both.article.ArticleId, title = both.article.Title, paid = both.article.Label.Kind, local = both.pair.Local!.Kind })
+            .ToArray();
         var file = await WriteAsync("labels", started, new
         {
             comparedAt = Instant(started),
@@ -216,10 +224,16 @@ public sealed class LocalComparison(
             both = agreement.Both,
             reasons = agreement.Reasons,
             reasonsWithoutDigit = agreement.ReasonsWithoutDigit,
+            kindDisagreements = disagreeing,
             articles = rows,
         }, cancellation);
 
         output.WriteLine(Said(paidProfile, articles.Count, agreement, model ?? settings.Model, runtime, stopped, file));
+
+        foreach (var story in disagreeing)
+        {
+            output.WriteLine($"  {story.ticker} {story.articleId}: {paidProfile} {story.paid}, local {story.local}: {story.title}");
+        }
 
         return new LabelComparisonOutcome(paidProfile, agreement, model, runtime, stopped, file);
     }
@@ -570,7 +584,7 @@ public sealed class LocalComparison(
 
         command.CommandText = PaidLabels;
         command.Parameters.AddWithValue("$profile", paidProfile);
-        command.Parameters.AddWithValue("$version", NewsInstruction.Version);
+        command.Parameters.AddWithValue("$version", NewsInstruction.PaidVersion);
         command.Parameters.AddWithValue("$labelled", NewsLabelling.Labelled);
 
         var articles = new List<PaidArticle>();
@@ -585,7 +599,7 @@ public sealed class LocalComparison(
                 reader.GetString(5),
                 reader.GetString(6),
                 reader.GetString(7),
-                new NewsLabel(reader.GetString(2), reader.GetString(3), reader.GetString(4))));
+                new NewsLabel(NewsInstruction.KeyOf(reader.GetString(2)), reader.GetString(3), reader.GetString(4))));
         }
 
         return articles;

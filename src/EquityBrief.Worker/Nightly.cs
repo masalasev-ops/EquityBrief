@@ -842,7 +842,7 @@ public static class Nightly
             // the labeller's own run and never the night's, the fifth carve-out of the nightly rule. The step
             // writes the night's row saying so, and a night run again for an earlier session says its list
             // is not tonight's.
-            // see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
+            // see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own
             new("label-news", async () =>
             {
                 var started = clock.UtcNow;

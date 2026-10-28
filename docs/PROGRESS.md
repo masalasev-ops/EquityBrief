@@ -10852,3 +10852,73 @@ Carried:    the filers the box's read showed holding no recent release, which no
             400's and 19 of the 600's, the oldest PTON's of 2005 and CHRD's of 2010 Chordiant Software's, read on
             2026-10-28, put to the operator. The segments read from a release's tables and the quarters fetch's asks for
             COR, SMCI, BA and V stand as PR 577 carried them, put to the operator.
+
+### 18.4 ruling - the news labeller labels on the local model under a pin of its own, each kind a one-word key, and every stored story is labelled once on it   2026-10-28
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      the operator's addendum of 2026-10-28, about 03:00 UTC, after PR 578: "The labeller needs to move to local
+            and all stale labels need to be relabelled." First each kind a one-word key the model answers with, its
+            readable name kept for the pages and mapped in code, the answer held to the keys by LM Studio's structured
+            output under the labeller's own pin, each stored paid label's kind mapped to its key one to one, and the
+            comparison run again and reported before switching, stopping if more than 5 in 100 still come back outside
+            the set. Then LM Studio under its own pin, the answer read as one closed set, one retry on an empty or
+            cut-off answer and then the story left unlabelled with its reason, "No paid call from the labeller from now
+            on; no paid fallback", a run where LM Studio does not answer labelling nothing, saying so on the Run page
+            and leaving the stories to the next run, in the off-peak run and never overlapping the local run's two slots
+            or a history read. Every stored story labelled once on the local model from main after the merge while no
+            other writer runs, its count and time stated before it starts, in batches stopping before the next
+            local-run slot, the paid labels kept beside the new ones, every page reading the local label where one
+            stands and each label carrying its model. The Run page and the news region naming the local model and the
+            count labelled tonight, the money limit staying in the settings and reading nothing spent; no paid call, the
+            news labels read by no component that decides a pick, and no rule's code version moving. Asked why the
+            comparison's local answers were refused: "i cannot have local refuse. Find the reason to fix it."
+Queue:      done, PRs 573 to 578; in progress, this pull request; next, the report page's remaining defects for every
+            name's page in a pull request of its own, then the operator's word on 22.14's pullback version, on 22.15's
+            freezes and on the quarters fetch's asks for COR, SMCI, BA and V.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - correction: the news labeller labels on the local model under a pin of its own, each kind a one-word key the runtime holds it to, and every stored story is labelled once on it   2026-10-28
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Found:      the comparison of 2026-10-28 over the 1,016 stories deepseek labelled that the store held, on Gemma 4 under
+            the kinds by their readable names: 241 refused by the runtime as not in the model's format, deterministic at
+            temperature nought, where the schema held the reason to a pattern bounding its length with line breaks
+            excluded; none refused with the pattern held to no digit alone, and 142 of 441 cut off at the budget where
+            it also forbade a stop before the last. The 20.5 comparison had 50 of 264 answer a kind outside the set.
+Corrected:  the labeller asks the local model alone, under a label pin written by `label-news --pin`, and labels nothing
+            where the model, its file, the instruction or the window differs from it; each kind is a one-word key, the
+            schema holding the answer to the keys and the directions and the reason to no digit, and a line break in an
+            answer is read as a space; an empty or cut-off answer is asked once more, a story the runtime does not answer
+            is left for the next run, and a runtime gone stops the run. It waits for the local model's lock within its
+            time limit, counted from its start, and stops before the local run's next slot, so the drain after it is
+            never held up longer than it was. `label-news --all --until` labels every stored story once in batches. The
+            pages draw the local label where one stands, the Run page and the news region name the local model and the
+            count labelled tonight, a batch counting toward no night, and the month limit reads nothing spent. Over the
+            1,137 stories deepseek labelled
+            that the store holds, on the local model under the keys: 1,136 labelled, none refused by the runtime and
+            none outside the set, one not JSON for a line break inside its reason, which code now reads; the kind
+            agreeing on 774, the direction on 919 and both on 669. The batch would ask 37,551 stories over 1,475
+            names, about ten hours at the comparison's 0.94 seconds a story.
+Tests:      2 new, the labeller's twelve rewritten for the local model; 2857 in all.
+Claims:     none new: three of section 18's rows retitled in place, for the local model not answering, the pin and the
+            lock, and the rest amended in place.
+Pins:       none move; no rule's code version and no readings version moves, held by the filter's, the scorer's and
+            the ledger readings' pin tests, the last of which turned the first run red where the slot's reading was
+            written into the availability rule's file, so it is the labeller's own.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, each
+            filtered to the tests reading it. M1 the schema's kinds by their names, M2 a paid kind read as itself, M3 the
+            reason's pattern admitting a digit, M4 a line break left in the answer, M5 no part read as differing from the
+            pin, M6 the lock waited for past the limit, M7 the wait left out of the limit, M8 no stop at the local run's
+            slot, M9 a batch held to the time limit, M10 a whole answer asked again, M11 the comparison reading the
+            labels under the keys' version, M12 no line for the lock, M13 a batch counted as a night, M14 the paid label
+            drawn before the local one, M15 the local run's line never drawn, M16 a run starting at a slot read past it:
+            each red at the tests reading it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2857 of 2857 tests ran
+            with none failed, migrations 0 to 114 with none pending, schema version 114, against `data-ci` and never
+            `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the relabel itself, run by hand from main after the merge in batches between the writers' slots, its
+            figures read off its runs' rows. The filers holding no recent release, the segments read from a release's
+            tables and the quarters fetch's asks for COR, SMCI, BA and V stand as the entry above carried them.

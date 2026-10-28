@@ -26,7 +26,7 @@ public interface IDrainLauncher
         new(false, "The rest of the night was not started, because this surface holds no way to start the worker.");
 
     // The news labeller, which the night starts after the close as a process of its own.
-    // see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
+    // see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own
     DrainStart StartTheLabeller() =>
         new(false, "The labeller was not started, because this surface holds no way to start the worker.");
 

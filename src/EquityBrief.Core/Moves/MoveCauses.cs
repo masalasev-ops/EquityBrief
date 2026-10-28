@@ -59,7 +59,7 @@ public static class MoveCauses
         CauseStory[] inside =
         [
             .. stories
-                .Where(story => !string.Equals(story.Kind, NewsInstruction.Opinion, StringComparison.Ordinal))
+                .Where(story => !NewsInstruction.IsOpinion(story.Kind))
                 .Where(story => story.Published > window.From && story.Published <= window.Through)
                 .OrderByDescending(story => story.Published),
         ];

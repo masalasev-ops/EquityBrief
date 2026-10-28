@@ -5,17 +5,19 @@ using EquityBrief.Core.Families;
 using EquityBrief.Core.News;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Quarters;
+using EquityBrief.Core.Releases;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
-using EquityBrief.Worker.Research;
+using EquityBrief.Worker.Local;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.News;
 
 // What one run of the labeller came to: the names it reached, the labels written, the answers kept as
-// unreadable by cause, the articles not sent for their admissibility, the ones labelled already, what the
-// run cost and what the month has, what stopped it, and the peak windows it waited out and for how long.
+// unreadable by cause, the stories the runtime did not answer, which the next run takes up, the articles not sent for
+// their admissibility, the ones labelled already, what the run cost and what the month has, nothing on the local
+// model, what stopped it, and how long it waited for the local model's lock.
 public sealed record NewsLabelOutcome(
     int Names,
     int NamesReached,
@@ -27,27 +29,51 @@ public sealed record NewsLabelOutcome(
     decimal MonthCost,
     string Stop,
     int LabelsDropped,
-    int PeakWaits = 0,
+    int NotAnswered = 0,
     TimeSpan Waited = default)
 {
     public int UnreadableCount => Unreadable.Values.Sum();
 }
 
-// The news labeller. A process of its own the night starts after the close, as it starts the drain, and run
-// by hand: it reads tonight's list in the order it is drawn and then each name a report is written for, for each
-// name its own stored, admitted articles of the thirty days before the night, newest first and every one of them,
-// not yet labelled by the active profile under the instruction's version, and asks the profile's model for a
-// label one article at a time through the spend cap. Every call and every dollar sits on this run and never on
-// the night's.
+// A version the labeller labels under, as its pin's row holds it: the model, its file by its path under LM Studio's
+// models folder with the file's SHA-256, size and last-modified instant, the runtime that answered the probe kept as a
+// record, the instruction's version, the seed, the answer's budget and the window the model is loaded at.
+public sealed record LabelPin(
+    long Id,
+    string Model,
+    string File,
+    string Sha256,
+    long Size,
+    DateTimeOffset Modified,
+    string RuntimeName,
+    string RuntimeVersion,
+    int InstructionVersion,
+    int Seed,
+    int AnswerTokens,
+    int Context,
+    DateTimeOffset WrittenAt);
+
+// The news labeller. A process of its own the off-peak run starts, and run by hand: it reads tonight's list in the order
+// it is drawn and then each name a report is written for, for each name its own stored, admitted articles of the thirty
+// days before the night, newest first and every one of them, not yet labelled by the local profile under the
+// instruction's version, and asks the local model for a label one article at a time under the labeller's own pin, the
+// answer held by the runtime's structured output to the instruction's keys and to a reason with no digit. No paid
+// model is asked and nothing is spent. Every call sits on this run and never on the night's.
 //
-// Before it asks anything it stops where the month's limit is already reached, and before each call, a retry
-// among them, where the call would pass it, where its time limit has passed, where a peak window of the
-// profile has opened, or where the day or month cap pauses the call; what is left waits for the next night,
-// and the row says which stop and how many names it reached. An answer code cannot read is asked once more
-// and then kept as unreadable with its cause, so it is not paid for again under that profile and version; a
-// retry a stop refuses leaves the article unlabelled for the next night. A label is never overwritten: the
-// insert ignores a conflict, and after a switch the new profile writes rows of its own.
-// see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
+// It labels nothing where no pin is written or the model, its file, the instruction or the window differs from the
+// newest pin, and the row says which part. It takes the local model's lock, so it never overlaps the local run, its
+// history read or another local process, and waits for it where another holds it, to its time limit and no further, so
+// the drain the off-peak run starts after it is never held up for longer. Before each call it stops where its time
+// limit, counted from its start with the wait inside it, has passed, where the local run's next slot has come, and where
+// the month's limit is already reached, which on the local model reads nothing spent; what is left waits for the next
+// run, and the row says which stop and how many names it reached. A batch over every stored story stops at the instant
+// it is given rather than at the time limit. An answer cut off at its budget or empty is asked once more and an answer
+// code cannot read is kept as unreadable with its cause, so it is not asked again under that profile and version; a
+// story the runtime does not answer is left with no row for the next run, and a runtime gone stops the run there. A
+// label is never overwritten: the insert ignores a conflict, and after a switch the new profile writes rows of its own,
+// the paid profile's labels standing beside them.
+// see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own
+// see: The news labeller waits for the local model's lock and stops before the local run's next slot, its time limit counted from its start
 // see: A label's reason is one sentence holding no digit, and an answer code cannot read is asked once more and then kept as unreadable with its cause
 // see: A news article is stored once per member with its admissibility judged, and a label is never overwritten
 public sealed class NewsLabeller : IComponent
@@ -64,9 +90,10 @@ public sealed class NewsLabeller : IComponent
             new StoreTouch(Store.NewsArticle, Touch.Read),
             new StoreTouch(Store.NewsLabel, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.ResearchRequest, Touch.Read),
+            new StoreTouch(Store.LabelPin, Touch.Read | Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
         ],
-        Feeds: [Feed.ResearchModel]);
+        Feeds: [Feed.LocalModel]);
 
     // The labeller's own run, the stage the night records starting it under, the outcomes a label row carries
     // and the stops, each the word the Core holds for the read surface to draw by.
@@ -81,6 +108,16 @@ public sealed class NewsLabeller : IComponent
     public const string PeakWindowOpened = NewsLabelling.PeakWindowOpened;
     public const string CapPaused = NewsLabelling.CapPaused;
     public const string ModelUnreachable = NewsLabelling.ModelUnreachable;
+    public const string NoPin = NewsLabelling.NoPin;
+    public const string PinDiffers = NewsLabelling.PinDiffers;
+    public const string BatchEnded = NewsLabelling.BatchEnded;
+    public const string LockHeld = NewsLabelling.LockHeld;
+    public const string NextLocalSlot = NewsLabelling.NextLocalSlot;
+
+    // What a pinning run comes to where it writes no version.
+    public const string PinUnchanged = "the pin holds this model, its file, the instruction and the window already";
+    public const string PinRefused = "the probe was not answered by the profile's own model on a runtime that names itself";
+    public const string ModelFileNotSet = "the local profile names no model file";
 
     // The window read.
     public const int WindowDays = NewsLabelling.WindowDays;
@@ -117,7 +154,7 @@ public sealed class NewsLabeller : IComponent
         ORDER BY MIN(r.asked_at), r.ticker;
     ";
 
-    // A member's admitted articles of the window not yet labelled under the active profile and version, newest first,
+    // A member's admitted articles of the window not yet labelled under the local profile and version, newest first,
     // which the run reads the member's own stories from.
     const string ArticlesToLabel = @"
         SELECT a.article_id, a.title, a.text
@@ -130,6 +167,19 @@ public sealed class NewsLabeller : IComponent
               SELECT 1 FROM news_label b
               WHERE b.ticker = a.ticker AND b.article_id = a.article_id AND b.profile = $profile AND b.instruction_version = $version)
         ORDER BY a.published_at DESC;
+    ";
+
+    // Every admitted article the store holds not yet labelled under the local profile and version, whatever labelled it
+    // before, newest first, with its member's name, which a batch labelling them all reads.
+    const string EveryArticleToLabel = @"
+        SELECT a.ticker, a.article_id, a.title, a.text,
+               COALESCE((SELECT m.name FROM membership m WHERE m.ticker = a.ticker AND m.name IS NOT NULL ORDER BY m.joined DESC LIMIT 1), a.ticker)
+        FROM news_article a
+        WHERE a.admissibility = $accepted
+          AND NOT EXISTS (
+              SELECT 1 FROM news_label b
+              WHERE b.ticker = a.ticker AND b.article_id = a.article_id AND b.profile = $profile AND b.instruction_version = $version)
+        ORDER BY a.published_at DESC, a.ticker, a.article_id;
     ";
 
     const string ArticlesRefused = @"
@@ -171,205 +221,445 @@ public sealed class NewsLabeller : IComponent
             $rows_written, $model_calls, $network_requests, $spend, $detail);
     ";
 
-    readonly SpendCap cap;
-    readonly ResearchModelSettings settings;
+    const string NewestPin = @"
+        SELECT id, model, model_file, sha256, size, modified, runtime_name, runtime_version, instruction_version,
+               seed, answer_tokens, context, written_at
+        FROM label_pin ORDER BY id DESC LIMIT 1;
+    ";
+
+    const string InsertPin = @"
+        INSERT INTO label_pin (model, model_file, sha256, size, modified, runtime_name, runtime_version, instruction_version,
+                               temperature, seed, answer_tokens, context, written_at, run_id)
+        VALUES ($model, $model_file, $sha256, $size, $modified, $runtime_name, $runtime_version, $instruction_version,
+                $temperature, $seed, $answer_tokens, $context, $written_at, $run_id);
+    ";
+
+    readonly IReadingModelFeed feed;
+    readonly LocalModelSettings settings;
     readonly NewsLimits limits;
     readonly IClock clock;
     readonly string databaseFile;
+    readonly string dataRoot;
     readonly Func<TimeSpan, CancellationToken, Task> wait;
 
-    public NewsLabeller(SpendCap cap, ResearchModelSettings settings, NewsLimits limits, IClock clock, string databaseFile, Func<TimeSpan, CancellationToken, Task>? wait = null)
+    public NewsLabeller(IReadingModelFeed feed, LocalModelSettings settings, NewsLimits limits, IClock clock, string databaseFile, string dataRoot, Func<TimeSpan, CancellationToken, Task>? wait = null)
     {
-        this.cap = cap;
+        this.feed = feed;
         this.settings = settings;
         this.limits = limits;
         this.clock = clock;
         this.databaseFile = databaseFile;
+        this.dataRoot = dataRoot;
         this.wait = wait ?? Task.Delay;
     }
 
+    // One night's labels: the list and the names a report is written for, each name's own stories of the window.
     public async Task<NewsLabelOutcome> RunAsync(DateOnly session, string runId, CancellationToken cancellation = default)
     {
-        var startedAt = clock.UtcNow;
-
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
         var listed = await ListedAsync(connection, session, cancellation);
         var names = listed.Concat((await ReportedAsync(connection, session, cancellation)).Where(reported => !listed.Any(name => name.Ticker == reported.Ticker))).ToList();
-        var monthBefore = await SpentThisMonthAsync(connection, startedAt, cancellation);
         var from = session.AddDays(-WindowDays).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var to = session.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        var unreadable = new Dictionary<string, int>(StringComparer.Ordinal);
-        var labelled = 0;
-        var refused = 0;
-        var already = 0;
-        var reached = 0;
-        var calls = 0;
-        var cost = 0m;
-        var stop = Finished;
+        var slot = NewsLabelling.NextLocalSlotStart(clock.UtcNow);
 
-        // Nothing is asked where the month's limit is already reached.
-        if (monthBefore >= limits.MonthLimit)
+        return await LabelAsync(
+            connection,
+            runId,
+            session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            names.Count,
+            async (ask, counting) =>
+            {
+                foreach (var (ticker, company) in names)
+                {
+                    counting.Reached++;
+                    counting.Refused += await CountAsync(connection, ArticlesRefused, ticker, from, to, cancellation);
+                    counting.Already += await CountAsync(connection, ArticlesLabelled, ticker, from, to, cancellation);
+
+                    // The member's own stories alone, newest first and every one of them in the run: a story the feed
+                    // tagged with another company's listing of the same ticker is never sent.
+                    // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+                    // see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run
+                    var own = (await ArticlesAsync(connection, ticker, from, to, cancellation))
+                        .Where(article => StoryMatch.IsAbout(article.Title, article.Text, ticker, company))
+                        .ToList();
+
+                    foreach (var (articleId, title, text) in own)
+                    {
+                        if (!await ask(ticker, company, articleId, title, text))
+                        {
+                            return;
+                        }
+                    }
+                }
+            },
+            (slot, NextLocalSlot),
+            limits.TimeLimit,
+            cancellation);
+    }
+
+    // Every admitted story the store holds labelled on the local model once, the member's own alone, newest first, until
+    // the instant given, before which the batch stops for the next writer's slot.
+    // see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own
+    public async Task<NewsLabelOutcome> EveryStoryAsync(DateTimeOffset until, string runId, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var stories = new List<(string Ticker, string ArticleId, string Title, string Text, string Company)>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = EveryArticleToLabel;
+            command.Parameters.AddWithValue("$accepted", Admissibility.Accepted);
+            command.Parameters.AddWithValue("$profile", settings.Profile);
+            command.Parameters.AddWithValue("$version", NewsInstruction.Version);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                stories.Add((reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4)));
+            }
+        }
+
+        var own = stories.Where(story => StoryMatch.IsAbout(story.Title, story.Text, story.Ticker, story.Company)).ToList();
+        var names = own.Select(story => story.Ticker).Distinct(StringComparer.Ordinal).Count();
+
+        return await LabelAsync(
+            connection,
+            runId,
+            NewsLabelling.EveryStory,
+            names,
+            async (ask, counting) =>
+            {
+                var seen = new HashSet<string>(StringComparer.Ordinal);
+
+                foreach (var (ticker, articleId, title, text, company) in own)
+                {
+                    if (seen.Add(ticker))
+                    {
+                        counting.Reached++;
+                    }
+
+                    if (!await ask(ticker, company, articleId, title, text))
+                    {
+                        return;
+                    }
+                }
+            },
+            (until, BatchEnded),
+            null,
+            cancellation);
+    }
+
+    // What a pass over the stories tallies as it goes.
+    sealed class Counting
+    {
+        public int Reached;
+        public int Refused;
+        public int Already;
+    }
+
+    // The pass the night's run and a batch share: the pin held, the lock taken, the model made ready, each story asked
+    // through the one asking routine the pass hands its stories to, and the run's row written whatever came of it. The
+    // pass stops at the instant it is given, with the stop that names it, and at the time limit where it has one.
+    async Task<NewsLabelOutcome> LabelAsync(
+        SqliteConnection connection,
+        string runId,
+        string session,
+        int nameCount,
+        Func<Func<string, string, string, string, string, Task<bool>>, Counting, Task> pass,
+        (DateTimeOffset At, string Stop) until,
+        TimeSpan? limit,
+        CancellationToken cancellation)
+    {
+        var startedAt = clock.UtcNow;
+        var monthBefore = await SpentThisMonthAsync(connection, startedAt, cancellation);
+        var unreadable = new Dictionary<string, int>(StringComparer.Ordinal);
+        var counting = new Counting();
+        var labelled = 0;
+        var notAnswered = 0;
+        var calls = 0;
+        string? model = null;
+        var stop = Finished;
+        string? why = null;
+        var waited = TimeSpan.Zero;
+        var pin = await NewestPinAsync(connection, cancellation);
+
+        if (pin is null)
+        {
+            (stop, why) = (NoPin, "no label pin is written yet; write one with label-news --pin");
+        }
+        else if (await DiffersAsync(pin, cancellation) is { } part)
+        {
+            (stop, why) = (PinDiffers, $"{part} differs from label pin {pin.Id.ToString(CultureInfo.InvariantCulture)}, so nothing is labelled until a pin is written for it");
+        }
+        else if (monthBefore >= limits.MonthLimit)
         {
             stop = MonthLimitReached;
         }
 
-        // Before every call, a retry's among them, a peak window of the profile open is waited out to its end, as the drain
-        // waits; then the stops: the time limit, counted over the time spent labelling and not waiting, and the month's
-        // limit, read as the spend so far and the call's own ceiling. A window the wait did not see end stops the run.
-        // see: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels
-        var waited = TimeSpan.Zero;
-        var waits = 0;
+        // The local model's lock, which the local run, its history read and every other local process hold while they
+        // ask: the labeller waits for it rather than overlapping them, and no longer than its time limit or the instant
+        // it stops at, whichever comes first.
+        // see: The news labeller waits for the local model's lock and stops before the local run's next slot, its time limit counted from its start
+        var asked = clock.UtcNow;
+        var lockBy = limit is { } span && startedAt + span < until.At ? startedAt + span : until.At;
 
-        async Task<string?> StoppingAsync(ModelRequest request)
+        await using var held = stop == Finished ? await LocalLocks.TakeAsync(dataRoot, lockBy, clock, wait, cancellation) : null;
+
+        waited = clock.UtcNow - asked;
+
+        if (stop == Finished && held is null)
         {
-            if (settings.Pricing.IsPeak(clock.UtcNow))
-            {
-                var from = clock.UtcNow;
-
-                await wait(settings.Pricing.OffPeakFrom(from) - from, cancellation).ConfigureAwait(false);
-
-                waited += clock.UtcNow - from;
-                waits++;
-            }
-
-            var now = clock.UtcNow;
-
-            if (now - startedAt - waited >= limits.TimeLimit)
-            {
-                return TimeLimitPassed;
-            }
-
-            if (settings.Pricing.IsPeak(now))
-            {
-                return PeakWindowOpened;
-            }
-
-            return monthBefore + cost + cap.Ceiling(request) > limits.MonthLimit ? MonthLimitReached : null;
+            (stop, why) = (LockHeld, "another local process held the local model's lock until the run's end, so the next run takes these stories up");
         }
 
-        foreach (var (ticker, company) in names)
+        if (stop == Finished)
         {
-            if (stop != Finished)
+            var loaded = false;
+
+            try
             {
-                break;
+                loaded = await feed.PrepareAsync(cancellation);
+
+                async Task<bool> AskAsync(string ticker, string company, string articleId, string title, string text)
+                {
+                    var now = clock.UtcNow;
+
+                    if (limit is { } most && now - startedAt >= most)
+                    {
+                        stop = TimeLimitPassed;
+
+                        return false;
+                    }
+
+                    if (now >= until.At)
+                    {
+                        stop = until.Stop;
+
+                        return false;
+                    }
+
+                    var request = new ReadingRequest(settings.Model, NewsInstruction.System, NewsInstruction.Prompt(company, ticker, title, text), pin!.Seed, pin.AnswerTokens, NewsInstruction.Schema());
+                    NewsLabel? label = null;
+                    string? cause = null;
+                    var answered = false;
+
+                    // An answer cut off at its budget or empty is asked once more; one that arrived whole is read once.
+                    for (var ask = 0; ask <= ReadingSettings.AskedAgain && label is null; ask++)
+                    {
+                        ReadingReply reply;
+
+                        try
+                        {
+                            reply = await feed.AskAsync(request, cancellation);
+                        }
+                        catch (ReadingRefused)
+                        {
+                            calls++;
+                            continue;
+                        }
+
+                        calls++;
+                        answered = true;
+                        model ??= reply.Model;
+
+                        var cut = string.Equals(reply.FinishReason, ReleaseAnswers.BudgetReached, StringComparison.Ordinal);
+
+                        (label, cause) = cut ? (null, NewsInstruction.CutOff) : NewsInstruction.Read(reply.Content ?? string.Empty);
+
+                        if (label is null && !cut && !string.IsNullOrWhiteSpace(reply.Content))
+                        {
+                            break;
+                        }
+                    }
+
+                    if (!answered)
+                    {
+                        // The runtime did not answer this story: no row, so the next run takes it up.
+                        notAnswered++;
+
+                        return true;
+                    }
+
+                    if (label is not null)
+                    {
+                        labelled += await WriteAsync(connection, ticker, articleId, runId, model, Labelled, null, label, cancellation);
+                    }
+                    else
+                    {
+                        unreadable[cause!] = unreadable.GetValueOrDefault(cause!) + 1;
+                        await WriteAsync(connection, ticker, articleId, runId, model, Unreadable, cause, null, cancellation);
+                    }
+
+                    return true;
+                }
+
+                await pass(AskAsync, counting);
+                await feed.ReleaseAsync(loaded, cancellation);
             }
-
-            reached++;
-            refused += await CountAsync(connection, ArticlesRefused, ticker, from, to, cancellation);
-            already += await CountAsync(connection, ArticlesLabelled, ticker, from, to, cancellation);
-
-            // The member's own stories alone, newest first and every one of them in the run: a story the feed tagged with
-            // another company's listing of the same ticker is never sent.
-            // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
-            // see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run
-            var own = (await ArticlesAsync(connection, ticker, from, to, cancellation))
-                .Where(article => StoryMatch.IsAbout(article.Title, article.Text, ticker, company))
-                .ToList();
-
-            foreach (var (articleId, title, text) in own)
+            catch (ReadingRuntimeUnavailable gone)
             {
-                var request = new ModelRequest(NewsInstruction.Lane, NewsInstruction.Section, settings.Model, [articleId], NewsInstruction.System, NewsInstruction.Prompt(company, ticker, title, text));
-
-                if (await StoppingAsync(request) is { } before)
-                {
-                    stop = before;
-                    break;
-                }
-
-                var round = ticker + " " + articleId;
-                var first = await cap.AskAsync(request, runId, round, cancellation);
-
-                calls += first.Answered || first.Unusable || first.Failure is not null && !first.Paused ? 1 : 0;
-                cost += first.Price;
-
-                if (first.Paused)
-                {
-                    stop = CapPaused;
-                    break;
-                }
-
-                var (label, cause) = Read(first);
-
-                if (cause == ModelUnreachable)
-                {
-                    stop = ModelUnreachable;
-                    break;
-                }
-
-                if (label is null)
-                {
-                    // Asked once more, the same request under a round of its own, where the stops a first call is
-                    // judged by let it be asked; where they do not, the article is left unlabelled for the next night.
-                    if (await StoppingAsync(request) is { } again)
-                    {
-                        stop = again;
-                        break;
-                    }
-
-                    var second = await cap.AskAsync(request, runId, round + ", retry", cancellation);
-
-                    calls += second.Answered || second.Unusable || second.Failure is not null && !second.Paused ? 1 : 0;
-                    cost += second.Price;
-
-                    if (second.Paused)
-                    {
-                        stop = CapPaused;
-                        break;
-                    }
-
-                    (label, cause) = Read(second);
-
-                    if (cause == ModelUnreachable)
-                    {
-                        stop = ModelUnreachable;
-                        break;
-                    }
-                }
-
-                if (label is not null)
-                {
-                    labelled += await WriteAsync(connection, ticker, articleId, runId, Labelled, null, label, cancellation);
-                }
-                else
-                {
-                    unreadable[cause!] = unreadable.GetValueOrDefault(cause!) + 1;
-                    await WriteAsync(connection, ticker, articleId, runId, Unreadable, cause, null, cancellation);
-                }
+                (stop, why) = (ModelUnreachable, gone.Message);
             }
         }
 
         var dropped = await DropOrphansAsync(connection, cancellation);
-        var outcome = new NewsLabelOutcome(names.Count, reached, labelled, unreadable, refused, already, cost, monthBefore + cost, stop, dropped, waits, waited);
+        var outcome = new NewsLabelOutcome(nameCount, counting.Reached, labelled, unreadable, counting.Refused, counting.Already, 0m, monthBefore, stop, dropped, notAnswered, waited);
 
-        await RecordAsync(connection, runId, session, startedAt, calls, outcome, cancellation);
+        await RecordAsync(connection, runId, session, startedAt, calls, model, pin, outcome, why, cancellation);
 
         return outcome;
     }
 
-    // A call read for its label or the cause it has none: a model that did not answer at all stops the run,
-    // an answer cut off at its budget or refused by the provider is a cause, and an answer that arrived is
-    // read by the instruction's own checks.
-    static (NewsLabel? Label, string? Cause) Read(PaidCall call)
+    // The first part the run differs from the newest pin in before it asks anything, or none: the model the profile
+    // names, the model's file by its size and its modified instant and by its hash where either differs, the
+    // instruction's version, and the window the profile loads the model at.
+    async Task<string?> DiffersAsync(LabelPin pin, CancellationToken cancellation)
     {
-        if (call.Answer is { } answer)
+        if (!string.Equals(settings.Model, pin.Model, StringComparison.Ordinal))
         {
-            return NewsInstruction.Read(answer.Text);
+            return ReadingPins.ModelPart;
         }
 
-        if (call.Unusable)
+        if (NewsInstruction.Version != pin.InstructionVersion)
         {
-            return (null, NewsInstruction.CutOff);
+            return ReadingPins.PromptPart;
         }
 
-        return call.Failure is { } failure && failure.Contains("refus", StringComparison.OrdinalIgnoreCase)
-            ? (null, NewsInstruction.Refused)
-            : (null, ModelUnreachable);
+        if (settings.ContextTokens != pin.Context)
+        {
+            return ReadingPins.WindowPart;
+        }
+
+        var folder = LocalModelFile.FolderOf(settings);
+
+        if (settings.ModelFile is not { } relative || !string.Equals(relative, pin.File, StringComparison.Ordinal) || LocalModelFile.Facts(folder, relative) is not { } facts)
+        {
+            return ReadingPins.FilePart;
+        }
+
+        if (facts.Size == pin.Size && facts.Modified.UtcTicks == pin.Modified.UtcTicks)
+        {
+            return null;
+        }
+
+        return string.Equals(await LocalModelFile.HashAsync(folder, relative, cancellation), pin.Sha256, StringComparison.Ordinal) ? null : ReadingPins.FilePart;
     }
 
-    // A run refused before it asked anything, its profile's key missing, a limit that is not a number or a model
-    // that does not answer, written as its own row where the store is there to hold it, so the run page says why.
+    // A new version the labeller labels under: the model's file hashed whole, the runtime read off a probe's answer and
+    // kept as a record, the instruction's version, the seed, the answer's budget and the window, written where any part
+    // but the runtime differs from the newest pin and refused where none does.
+    public async Task<string> PinAsync(string runId, CancellationToken cancellation = default)
+    {
+        var started = clock.UtcNow;
+
+        await using var held = await LocalLocks.TakeAsync(dataRoot, null, clock, wait, cancellation);
+
+        if (settings.ModelFile is not { } relative)
+        {
+            return $"label-news: {ModelFileNotSet}, {settings.Profile}, so no version is written.";
+        }
+
+        var folder = LocalModelFile.FolderOf(settings);
+
+        if (LocalModelFile.Facts(folder, relative) is not { } facts)
+        {
+            return $"label-news: no file {relative} stands under LM Studio's models folder, so no version is written.";
+        }
+
+        var sha = await LocalModelFile.HashAsync(folder, relative, cancellation);
+        ReadingReply probe;
+        bool loaded;
+
+        try
+        {
+            loaded = await feed.PrepareAsync(cancellation);
+            probe = await feed.AskAsync(new ReadingRequest(settings.Model, LocalRun.ProbeInstruction, LocalRun.ProbeText, ReadingSettings.Seed, LocalRun.ProbeTokens), cancellation);
+        }
+        catch (Exception refused) when (refused is ReadingRefused or ReadingRuntimeUnavailable)
+        {
+            return $"label-news: the local model did not answer the probe, so no version is written: {refused.Message}";
+        }
+
+        await feed.ReleaseAsync(loaded, cancellation);
+
+        if (!string.Equals(probe.Model, settings.Model, StringComparison.Ordinal) || probe.RuntimeName is not { } runtime || probe.RuntimeVersion is not { } version)
+        {
+            return $"label-news: {PinRefused}: it was answered by {probe.Model ?? "no model"} on {probe.RuntimeName ?? "no runtime"}, so no version is written.";
+        }
+
+        var candidate = new LabelPin(0, settings.Model, relative, sha, facts.Size, facts.Modified, runtime, version, NewsInstruction.Version, ReadingSettings.Seed, NewsLabelling.AnswerTokens, settings.ContextTokens, started);
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        if (await NewestPinAsync(connection, cancellation) is { } newest
+            && newest.Model == candidate.Model && newest.File == candidate.File && newest.Sha256 == candidate.Sha256
+            && newest.InstructionVersion == candidate.InstructionVersion && newest.Seed == candidate.Seed
+            && newest.AnswerTokens == candidate.AnswerTokens && newest.Context == candidate.Context)
+        {
+            return FormattableString.Invariant($"label-news: label pin {newest.Id}: {PinUnchanged}, so no version is written.");
+        }
+
+        await using (var insert = connection.CreateCommand())
+        {
+            insert.CommandText = InsertPin;
+            insert.Parameters.AddWithValue("$model", candidate.Model);
+            insert.Parameters.AddWithValue("$model_file", candidate.File);
+            insert.Parameters.AddWithValue("$sha256", candidate.Sha256);
+            insert.Parameters.AddWithValue("$size", candidate.Size);
+            insert.Parameters.AddWithValue("$modified", candidate.Modified.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ", CultureInfo.InvariantCulture));
+            insert.Parameters.AddWithValue("$runtime_name", candidate.RuntimeName);
+            insert.Parameters.AddWithValue("$runtime_version", candidate.RuntimeVersion);
+            insert.Parameters.AddWithValue("$instruction_version", candidate.InstructionVersion);
+            insert.Parameters.AddWithValue("$temperature", ReadingSettings.Temperature);
+            insert.Parameters.AddWithValue("$seed", candidate.Seed);
+            insert.Parameters.AddWithValue("$answer_tokens", candidate.AnswerTokens);
+            insert.Parameters.AddWithValue("$context", candidate.Context);
+            insert.Parameters.AddWithValue("$written_at", started.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+            insert.Parameters.AddWithValue("$run_id", runId);
+
+            await insert.ExecuteNonQueryAsync(cancellation);
+        }
+
+        var written = await NewestPinAsync(connection, cancellation);
+
+        return FormattableString.Invariant($"label-news: label pin {written!.Id} written for {candidate.Model}, its file {candidate.File} of {candidate.Size} bytes, instruction version {candidate.InstructionVersion}, seed {candidate.Seed}, an answer's budget of {candidate.AnswerTokens} tokens and a window of {candidate.Context}, answered on {candidate.RuntimeName} {candidate.RuntimeVersion}.");
+    }
+
+    public static async Task<LabelPin?> NewestPinAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestPin;
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        return await reader.ReadAsync(cancellation)
+            ? new LabelPin(
+                reader.GetInt64(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.GetInt64(4),
+                DateTimeOffset.Parse(reader.GetString(5), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
+                reader.GetString(6),
+                reader.GetString(7),
+                reader.GetInt32(8),
+                reader.GetInt32(9),
+                reader.GetInt32(10),
+                reader.GetInt32(11),
+                DateTimeOffset.Parse(reader.GetString(12), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal))
+            : null;
+    }
+
+    // A run refused before it asked anything, its profile unreadable or a limit that is not a number, written as its
+    // own row where the store is there to hold it, so the run page says why.
     public static async Task RefusedAsync(string databaseFile, string runId, DateTimeOffset at, string message, DateOnly? session = null)
     {
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
@@ -490,7 +780,7 @@ public sealed class NewsLabeller : IComponent
         return Convert.ToInt32(await command.ExecuteScalarAsync(cancellation), CultureInfo.InvariantCulture);
     }
 
-    async Task<int> WriteAsync(SqliteConnection connection, string ticker, string articleId, string runId, string outcome, string? cause, NewsLabel? label, CancellationToken cancellation)
+    async Task<int> WriteAsync(SqliteConnection connection, string ticker, string articleId, string runId, string? model, string outcome, string? cause, NewsLabel? label, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
@@ -499,7 +789,7 @@ public sealed class NewsLabeller : IComponent
         command.Parameters.AddWithValue("$article_id", articleId);
         command.Parameters.AddWithValue("$profile", settings.Profile);
         command.Parameters.AddWithValue("$version", NewsInstruction.Version);
-        command.Parameters.AddWithValue("$model", cap.Model);
+        command.Parameters.AddWithValue("$model", model ?? settings.Model);
         command.Parameters.AddWithValue("$outcome", outcome);
         command.Parameters.AddWithValue("$cause", (object?)cause ?? DBNull.Value);
         command.Parameters.AddWithValue("$kind", (object?)label?.Kind ?? DBNull.Value);
@@ -520,7 +810,8 @@ public sealed class NewsLabeller : IComponent
         return await command.ExecuteNonQueryAsync(cancellation);
     }
 
-    // What the labeller's own calls have cost this UTC month, summed in code from the money each row carries.
+    // What the labeller's own calls have cost this UTC month, summed in code from the money each row carries: a local
+    // run's row carries nothing, so the sum is the paid runs' alone.
     public static async Task<decimal> SpentThisMonthAsync(SqliteConnection connection, DateTimeOffset now, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -541,7 +832,7 @@ public sealed class NewsLabeller : IComponent
         return spent;
     }
 
-    async Task RecordAsync(SqliteConnection connection, string runId, DateOnly session, DateTimeOffset startedAt, int calls, NewsLabelOutcome outcome, CancellationToken cancellation)
+    async Task RecordAsync(SqliteConnection connection, string runId, string session, DateTimeOffset startedAt, int calls, string? model, LabelPin? pin, NewsLabelOutcome outcome, string? why, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
@@ -553,13 +844,15 @@ public sealed class NewsLabeller : IComponent
         command.Parameters.AddWithValue("$outcome", "ok");
         command.Parameters.AddWithValue("$rows_written", outcome.Labelled + outcome.UnreadableCount);
         command.Parameters.AddWithValue("$model_calls", calls);
-        command.Parameters.AddWithValue("$network_requests", calls);
-        command.Parameters.AddWithValue("$spend", outcome.Cost.ToString(CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$network_requests", 0);
+        command.Parameters.AddWithValue("$spend", "0");
         command.Parameters.AddWithValue("$detail", JsonSerializer.Serialize(new
         {
-            session = session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            session,
             profile = settings.Profile,
-            model = cap.Model,
+            model = model ?? settings.Model,
+            local = true,
+            pin = pin?.Id,
             instructionVersion = NewsInstruction.Version,
             monthLimit = limits.MonthLimit.ToString(CultureInfo.InvariantCulture),
             timeLimitMinutes = (int)limits.TimeLimit.TotalMinutes,
@@ -567,14 +860,15 @@ public sealed class NewsLabeller : IComponent
             reached = outcome.NamesReached,
             labelled = outcome.Labelled,
             unreadable = outcome.Unreadable,
+            notAnswered = outcome.NotAnswered,
             refusedByAdmissibility = outcome.RefusedByAdmissibility,
             alreadyLabelled = outcome.AlreadyLabelled,
-            cost = outcome.Cost.ToString(CultureInfo.InvariantCulture),
-            monthCost = outcome.MonthCost.ToString(CultureInfo.InvariantCulture),
             stop = outcome.Stop,
+            why,
+            cost = "0",
+            monthCost = outcome.MonthCost.ToString(CultureInfo.InvariantCulture),
             labelsDropped = outcome.LabelsDropped,
-            peakWaits = outcome.PeakWaits,
-            waitedMinutes = (int)Math.Round(outcome.Waited.TotalMinutes, MidpointRounding.AwayFromZero),
+            waitedMinutes = (int)Math.Round(outcome.Waited.TotalMinutes),
         }));
 
         await command.ExecuteNonQueryAsync(cancellation);
