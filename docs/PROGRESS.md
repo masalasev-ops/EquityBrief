@@ -10788,3 +10788,18 @@ Carried:    the quarter's segments read by code from the results release's own t
             quarters since 2026-10-14 and none of V's since 2026-10-10, though each has released a newer quarter
             since, put to the operator. ROP's
             and two other names' pages read again after the merge, once the store is at schema 113.
+
+### 18.4 ruling - the news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run, and no story already stored   2026-10-28
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      the operator's answers of 2026-10-28, about 01:30 UTC, to the part of the report page's corrections PR 577
+            carried, every story that passes labelled: "What do you need to run the labeller on ? Is it on old data ?
+            THen no, not needed. But the labeller should work going forward"; asked which names, the night's list with
+            each name's own stories whole in one run and every name a report is written for, about $1.50 a month
+            inside the labeller's month limit, which stands, in a pull request of its own after PR 577; and "you will
+            not be using claude haiku", the news job staying on its paid profile, deepseek-flash. The stories already
+            stored stay unlabelled.
+Queue:      done, PRs 573 to 577; in progress, this pull request; next, the operator's word on 22.14's pullback version,
+            on 22.15's freezes and on the quarters fetch's asks for COR, SMCI, BA and V.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
