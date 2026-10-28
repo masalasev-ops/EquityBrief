@@ -129,7 +129,7 @@ public sealed partial class MarkRenderer
 
                 words += item.Date > view.Through ? FormattableString.Invariant($", after the {PageCalendar.Days} days the timeline draws") : string.Empty;
 
-                region.Append(Formatted($"<tr data-date=\"{DayOf(item.Date)}\" data-kind=\"{Escaped(item.Kind)}\" data-declared=\"{(item.Declared ? "yes" : "no")}\"{InsideTheHold(item, view)}><td>{DayOf(item.Date)}{(item.Declared ? string.Empty : " <small class=\"estimated\">estimated</small>")}</td><td>{Escaped(words)}</td><td class=\"num\">{(item.Date.DayNumber - view.Night.DayNumber).ToString(Invariant)}</td></tr>"));
+                region.Append(Formatted($"<tr data-date=\"{DayOf(item.Date)}\" data-kind=\"{Escaped(item.Kind)}\" data-declared=\"{(item.Declared ? "yes" : "no")}\"{InsideTheHold(item, view)}><td>{DayOf(item.Date)}{(item.Declared || item.Kind != CalendarItem.Results ? string.Empty : " <small class=\"estimated\">estimated</small>")}</td><td>{Escaped(words)}</td><td class=\"num\">{(item.Date.DayNumber - view.Night.DayNumber).ToString(Invariant)}</td></tr>"));
             }
 
             region.Append("</table></div>");

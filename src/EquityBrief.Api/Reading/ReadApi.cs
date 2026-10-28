@@ -2990,7 +2990,7 @@ public sealed partial class ReadApi : IComponent
 
     public const string OpenFloorIndex = "GSPC";
 
-    const string NewestOpenFloor = "SELECT detail FROM run_log WHERE stage = $stage ORDER BY started_at DESC LIMIT 1;";
+    const string NewestOpenFloor = "SELECT detail FROM run_log WHERE stage = $stage ORDER BY rowid DESC LIMIT 1;";
 
     public async Task<CardOpenFloorView?> OpenFloorAsync()
     {

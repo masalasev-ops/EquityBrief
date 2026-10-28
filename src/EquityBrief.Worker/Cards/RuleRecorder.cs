@@ -70,7 +70,7 @@ public sealed class RuleRecorder(IClock clock, string databaseFile, string dataR
     public static string OpenFloorWords { get; } =
         "the " + TheSetupFamilies.Words(DriftRule.Live) + FormattableString.Invariant($", skipping a fill whose reward to risk at the open is under {OpenFloor:0.#}");
 
-    const string OpenFloorRuns = "SELECT detail FROM run_log WHERE stage = $stage ORDER BY started_at;";
+    const string OpenFloorRuns = "SELECT detail FROM run_log WHERE stage = $stage ORDER BY rowid;";
 
     // How long a run is allowed for before the night's window, which it does not start inside.
     public static readonly TimeSpan Expected = TimeSpan.FromHours(1);
