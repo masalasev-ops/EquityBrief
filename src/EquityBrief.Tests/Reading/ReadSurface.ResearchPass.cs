@@ -76,7 +76,7 @@ public partial class ReadSurface
     static Match WrittenOnThePage(string page, string section) =>
         Regex.Match(
             page,
-            $"<section class=\"written-section\" data-ticker=\"[^\"]*\" data-section=\"{Regex.Escape(WebUtility.HtmlEncode(section))}\" data-as-of=\"([^\"]*)\" data-model=\"([^\"]*)\"(?: data-directions=\"[^\"]*\")?>(.*?)</section>",
+            $"<section class=\"written-section\" data-ticker=\"[^\"]*\" data-section=\"{Regex.Escape(WebUtility.HtmlEncode(section))}\" data-as-of=\"([^\"]*)\" data-model=\"([^\"]*)\"(?: data-directions=\"[^\"]*\")?(?: data-priorities=\"[^\"]*\")?>(.*?)</section>",
             RegexOptions.Singleline);
 
     // Every accepted section but the cause, which the moves table draws, and the headline, which leads the page, is drawn

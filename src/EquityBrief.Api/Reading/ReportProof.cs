@@ -709,7 +709,7 @@ public static partial class ReportProof
     private static partial Regex PrioritiesOf();
 
     // A written section's own sources list, by whether its documents were held to the company and its industry.
-    [GeneratedRegex("<ul class=\"section-sources\" data-cites=\"\\d+\" data-relevance=\"(?<relevance>[a-z]+)\"")]
+    [GeneratedRegex("<ul class=\"section-sources\" data-cites=\"\\d+\"(?: data-relevance=\"(?<relevance>[a-z]+)\")?")]
     private static partial Regex SectionSources();
 
     // A document a list keeps, and one a list folds apart as naming neither the company nor its industry.

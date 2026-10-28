@@ -4240,7 +4240,7 @@ public sealed partial class MarkRenderer : IComponent
     static string PassFigures(ResearchCost cost)
     {
         var recent = cost.Recent is { Passes: > 0 } week
-            ? Formatted($"Over the seven nights {week.From:d MMM} to {week.Through:d MMM yyyy}, the run page's table, ")
+            ? FormattableString.Invariant($"Over the seven nights {week.From:d MMM} to {week.Through:d MMM yyyy}, the run page's table, ")
                 + (week.FullPasses switch
                 {
                     0 => "no pass wrote a whole report",
@@ -4254,9 +4254,9 @@ public sealed partial class MarkRenderer : IComponent
                     1 => Formatted($"; one pass writing part of a report, one section or the stale ones, cost {ReportCost(week.PartMost)}. "),
                     _ => Formatted($"; {week.PartPasses} passes writing part of a report, one section or the stale ones, cost {ReportCost(week.PartLeast)} to {ReportCost(week.PartMost)}. "),
                 })
-            : cost.Recent is { } none ? Formatted($"No research pass was priced over the seven nights {none.From:d MMM} to {none.Through:d MMM yyyy}, the run page's table. ") : string.Empty;
+            : cost.Recent is { } none ? FormattableString.Invariant($"No research pass was priced over the seven nights {none.From:d MMM} to {none.Through:d MMM yyyy}, the run page's table. ") : string.Empty;
         var most = cost.MostPass is { } costly
-            ? Formatted($"The most any research pass has cost is {ReportCost(cost.Most)}, {costly.Ticker}'s {(costly.Full ? "full report" : "pass writing part of a report")} of {costly.Day:d MMM yyyy} on {Profiles(costly.Profiles)}, the highest of the {cost.Passes} passes since the first. ")
+            ? FormattableString.Invariant($"The most any research pass has cost is {ReportCost(cost.Most)}, {costly.Ticker}'s {(costly.Full ? "full report" : "pass writing part of a report")} of {costly.Day:d MMM yyyy} on {Profiles(costly.Profiles)}, the highest of the {cost.Passes} passes since the first. ")
             : Formatted($"The most a research pass has cost is {SpendVerdict.Money(cost.Most)}. ");
 
         return recent + most;
@@ -4458,9 +4458,11 @@ public sealed partial class MarkRenderer : IComponent
                 .Select((id, at) => (Id: id, Marker: at + 1, Document: documents.FirstOrDefault(one => string.Equals(one.Id, id, StringComparison.Ordinal))))
                 .ToArray();
             var apart = relevant is null ? [] : cited.Where(one => one.Document is { } held && !relevant(held)).ToArray();
-            var relevance = relevant is null ? "untested" : "tested";
+            // A list held to the company and its industry says so on its element, with how many it folds apart; one no test
+            // read carries neither, as before the test.
+            var relevance = relevant is null ? string.Empty : Formatted($" data-relevance=\"tested\" data-left-out=\"{apart.Length}\"");
 
-            drawn.Append(Invariant, $"<div class=\"sub sources-sub\">Sources</div><ul class=\"section-sources\" data-cites=\"{section.SourceIds.Count}\" data-relevance=\"{relevance}\" data-left-out=\"{apart.Length}\">");
+            drawn.Append(Invariant, $"<div class=\"sub sources-sub\">Sources</div><ul class=\"section-sources\" data-cites=\"{section.SourceIds.Count}\"{relevance}>");
 
             if (citesNight)
             {
