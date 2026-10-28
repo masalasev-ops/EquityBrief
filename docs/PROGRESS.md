@@ -11253,3 +11253,49 @@ Carried:    the open floor's first written run, `rule-record --open-floor` from 
             built, the local model's try at them standing as a measurement; the 45 pages waiting on their newest quarter,
             each clearing as its page states; the written sections, which nothing here writes again; and the copy's nightly
             task, enabled on the operator's word.
+
+### 22.15 ruling - the Fundamentals family's freezes, the pullback version where a family has room, business first's end, the peer groups, the quarters asks, the copy's plain links and the monthly run again   2026-10-28
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      the operator's answers of 2026-10-28, given about 21:00 UTC and kept whole in
+            `prompts/2026-10-28-operator-answers.md`. 22.15: the Fundamentals family frozen on each index with its
+            one-step neighbours as versions within the nine-rule limit; the S&P 500 at its starting setting, no setting
+            having met the floors, so it starts as a starting point and not a proven edge; the S&P 400 at the proposal its
+            run stated, buy at 7 with a flag the night before and the rise asked, the growth not, held at 7, 63 sessions;
+            the S&P 600 at the proposal its run stated, buy at 9 with a flag the night before, the rise and the growth
+            asked, held at 6, 252 sessions; each card drawing the frozen line every frozen card draws from its own
+            recorded answer and adding "Its release readings before February 2025 were read by a model trained after
+            them, so its history may flatter it; its record from today is what counts." 22.14's pullback version: none on
+            the S&P 500, whose pullback family holds nine rules and already runs the version leaving off a deteriorating
+            business, which reads the same business check; "Pullback, business growing" registered on the S&P 400 and
+            the S&P 600 where the family has room within nine rules, and where one has none said so with nothing
+            registered, nothing retired; business first then ending as a family on every index, its record kept and
+            readable, as `prompts/2026-10-26-ruling-business-first.md` rules. The 19 peer groups: a proposed group approved
+            where its members all share the stock's GICS industry, one reaching outside it listed with why and set
+            nothing. The quarters fetch's asks for COR, SMCI, BA and V approved, by hand from main while no other writer
+            runs, one request each, with what each stored. The read-only copy: a link to a page the copy does not hold
+            drawn as plain text and not as "Not in this copy", the folder written again and its report brought to the
+            operator, nothing uploaded until they say so. The monthly run by hand as the ruling of 2026-10-26 set it,
+            while no night, local run, relabel batch or other writer runs, finishing before the night, each index's
+            families, what each engine proposed and any family it could not test reported with why. Then 22.15's remedy
+            from main while no other writer runs, the phase 22 report amended with 22.14's and 22.15's answers and
+            screens, and a stop, phase 22's sign-off owed to a fresh session. No paid call; no other rule's code version
+            moves, asserted; the gates over each tree before its merge; nothing merged unless done before the night.
+Asked:      the monthly run of 2026-10-27 ran from 12:25:42 to 14:32:41 UTC, run loop-month-2026-10-20261027T122542Z,
+            each step on the run log and none put, with no entry of its own; asked whether to write its record from what
+            it stored or run it again, the operator chose to run it again. ROP's GICS industry as the provider files it is
+            Electronic Equipment, Instruments & Components, so the Software group the 18.4 ruling above approved for it
+            reaches outside it; asked, the operator kept ROP on Software, approved by name. The tightened check proposes
+            no group for the other 18, so none is set.
+Room:       read off the register: the S&P 500's pullback family, the swing filter's, holds 9 rules, one of them leaving
+            off a deteriorating business; the S&P 400's pullback family holds 3 and the S&P 600's 4, each with room.
+Relabel:    finished at 18:29 UTC on 2026-10-28 with every name reached, so no batch runs around the work above.
+Labelled:   the freezes and their remedy under 22.15; the pullback version and business first's end under 22.14; the peer
+            groups and the copy's links under 18.4, which built the peer check and the copy; the quarters asks under
+            18.2, which built the quarters fetch; the monthly run and the report's amendment under 22.12, phase 22's
+            report.
+Queue:      done, PRs 573 to 582; in progress, this pull request; next, the open floor's first written run and the
+            quarters asks from main after the night, the monthly run by hand in a window no writer holds, 22.15's remedy
+            after this pull request merges, the phase 22 report amended, and a stop.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
