@@ -5,13 +5,15 @@ using EquityBrief.Core.Quarters;
 namespace EquityBrief.Core.Report;
 
 // The segment table read from a results release's own words, for a quarter the release reports before its filing is
-// stored. The release lays each table out as a heading closed by a colon, then each segment's name with its figures, the
-// quarter's first and the same quarter a year earlier's next, then a total: its revenue table under a heading naming
-// revenue or sales, and its segments' operating profit under one naming operating profit or income. Every figure is read
-// at the scale that makes the table's total the quarter's reported revenue. The table stands only where the segments sum
-// to the table's own total within half a unit of its last decimal place a figure and that total is the quarter's revenue
-// within a tenth of a per cent, and where no two of its segments share a name; otherwise none is read and the filing's
-// table stands.
+// stored. The release lays each table out as a heading closed by a colon or followed by its columns' years, then each
+// segment's name with its figures, the quarter's first and the same quarter a year earlier's next, then a total where it
+// states one: its revenue table under a heading naming revenue or sales, and its segments' operating profit under one
+// naming operating profit or income. Every figure is read at the scale that makes the table's total, or the segments' own
+// sum where it states none, the quarter's reported revenue. The table stands only where the segments sum to the table's
+// own total within half a unit of its last decimal place a figure, that total is the quarter's revenue within a tenth of a
+// per cent and no two of its segments share a name; otherwise none is read and the filing's table stands. The column after
+// the quarter's is read as the same quarter a year earlier only where its total is that quarter's stored revenue within a
+// per cent, and no year-earlier figure is read otherwise.
 // see: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so
 public static partial class ReleaseSegments
 {
@@ -25,6 +27,11 @@ public static partial class ReleaseSegments
     // How near the table's total must come to the quarter's reported revenue, as a share of it.
     public const decimal TotalShare = 0.001m;
 
+    // How near the year-earlier column's total must come to that quarter's stored revenue, as a share of it, for the column
+    // to be read as the same quarter a year earlier; wider than the quarter's own, since a release can restate the year
+    // before slightly.
+    public const decimal YearEarlierShare = 0.01m;
+
     // The most entries a table is read for before it is taken for prose.
     const int MostEntries = 30;
 
@@ -36,7 +43,7 @@ public static partial class ReleaseSegments
     // One line of a release's table: the name it opens on and its figures in order, percentages left out.
     sealed record Entry(string Name, IReadOnlyList<decimal> Figures, int Decimals);
 
-    public static SegmentReading? Read(string text, DateOnly quarter, decimal? reportedRevenue)
+    public static SegmentReading? Read(string text, DateOnly quarter, decimal? reportedRevenue, decimal? yearEarlierRevenue = null)
     {
         if (reportedRevenue is not { } revenue || revenue <= 0m || string.IsNullOrWhiteSpace(text))
         {
@@ -49,12 +56,16 @@ public static partial class ReleaseSegments
         {
             var (entries, total) = Table(flat, heading.Index + heading.Length);
 
-            if (entries.Count < 2 || total is not { Figures.Count: > 0 } whole || entries.Any(entry => entry.Figures.Count == 0)
+            if (entries.Count < 2 || entries.Any(entry => entry.Figures.Count == 0)
                 || entries.Select(entry => Footnote().Replace(entry.Name, string.Empty).Trim()).Distinct(StringComparer.OrdinalIgnoreCase).Count() < entries.Count)
             {
                 continue;
             }
 
+            // A table stating no total is read against its segments' own sum, column by column.
+            var whole = total is { Figures.Count: > 0 } stated
+                ? stated
+                : new Entry("Total", [.. Enumerable.Range(0, entries.Min(entry => entry.Figures.Count)).Select(at => entries.Sum(entry => entry.Figures[at]))], entries.Max(entry => entry.Decimals));
             var scales = Scales.Where(times => Math.Abs((whole.Figures[0] * times) - revenue) <= revenue * TotalShare).ToArray();
             var sum = entries.Sum(entry => entry.Figures[0]);
             var tolerance = (entries.Count + 1) * Half(entries.Max(entry => entry.Decimals));
@@ -66,13 +77,21 @@ public static partial class ReleaseSegments
 
             var times = scales[0];
 
+            // The column after the quarter's is the same quarter a year earlier only where its total is that quarter's stored
+            // revenue, which a column of adjusted figures or of the year to date is not.
+            var earlier = whole.Figures.Count > 1
+                && entries.All(entry => entry.Figures.Count > 1)
+                && yearEarlierRevenue is { } before
+                && before > 0m
+                && Math.Abs((whole.Figures[1] * times) - before) <= before * YearEarlierShare;
+
             // The segments' operating profit, read from the first table under its heading naming every segment.
             var earned = EarningsHeading().Matches(flat)
                 .Select(found => Table(flat, found.Index + found.Length).Entries)
                 .FirstOrDefault(rows => entries.All(entry => rows.Any(row => Same(row.Name, entry.Name) && row.Figures.Count > 0)))
                 ?? [];
 
-            decimal? Figure(Entry? entry, int at) => entry is not null && entry.Figures.Count > at ? entry.Figures[at] * times : null;
+            decimal? Figure(Entry? entry, int at) => entry is not null && entry.Figures.Count > at && (at == 0 || earlier) ? entry.Figures[at] * times : null;
 
             var company = whole.Figures[0] * times;
 
@@ -186,10 +205,12 @@ public static partial class ReleaseSegments
     [GeneratedRegex(@"\s+")]
     private static partial Regex Spaces();
 
-    [GeneratedRegex(@"\b(?:Net revenues|Net revenue|Revenues|Revenue|Net sales|Sales)\s*\*?\s*:", RegexOptions.IgnoreCase)]
+    // A heading naming revenue or sales, closed by a colon or followed by its columns' years.
+    [GeneratedRegex(@"\b(?:Net revenues|Net revenue|Revenues|Revenue|Net sales|Sales)\s*\*?\s*(?::|(?=(?:\s+(?:19|20)\d{2}){2}\b))", RegexOptions.IgnoreCase)]
     private static partial Regex RevenueHeading();
 
-    [GeneratedRegex(@"\b(?:Segment operating profit|Segment operating income|Operating profit|Operating income|Segment profit)\s*\*?\s*:", RegexOptions.IgnoreCase)]
+    // A heading naming the segments' operating profit or income, closed the same way.
+    [GeneratedRegex(@"\b(?:Segment operating profit|Segment operating income|Operating profit|Operating income|Segment profit)\s*\*?\s*(?::|(?=(?:\s+(?:19|20)\d{2}){2}\b))", RegexOptions.IgnoreCase)]
     private static partial Regex EarningsHeading();
 
     [GeneratedRegex(@"\$|\(?-?[0-9][0-9,]*(?:\.[0-9]+)?\)?%?|[^\s$]+")]

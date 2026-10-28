@@ -110,9 +110,14 @@ public sealed class FactsAssembler : IComponent
     // fetch has stored one.
     // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
     // The newest quarter the member reported by the session, reported after its newest stored filing, with its revenue as
-    // the newest fetch of it stored it.
+    // the newest fetch of it stored it and the revenue of the quarter ending within a week of a year before it.
     const string NewestReportedQuarterFor = @"
-        SELECT q.period_end, q.revenue
+        SELECT q.period_end, q.revenue,
+               (SELECT y.revenue FROM reported_quarter y
+                WHERE y.ticker = q.ticker
+                  AND y.period_end BETWEEN date(q.period_end, '-1 year', '-7 days') AND date(q.period_end, '-1 year', '+7 days')
+                ORDER BY y.fetched_at DESC
+                LIMIT 1)
         FROM reported_quarter q
         WHERE q.ticker = $ticker AND q.report_date IS NOT NULL AND q.report_date <= $session AND q.report_date > $filed
         ORDER BY q.report_date DESC, q.fetched_at DESC
@@ -647,7 +652,7 @@ public sealed class FactsAssembler : IComponent
     // reported after its newest stored filing: none where no such quarter, release or readable table is stored.
     async Task<EquityBrief.Core.Report.SegmentReading?> ReleaseSegmentsAsync(SqliteConnection connection, string ticker, DateOnly session, string? filedOn, CancellationToken cancellation)
     {
-        (DateOnly Quarter, decimal Revenue)? reported = null;
+        (DateOnly Quarter, decimal Revenue, decimal? YearEarlier)? reported = null;
 
         await using (var command = connection.CreateCommand())
         {
@@ -660,7 +665,10 @@ public sealed class FactsAssembler : IComponent
 
             if (await reader.ReadAsync(cancellation) && !reader.IsDBNull(1))
             {
-                reported = (DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture), decimal.Parse(reader.GetString(1), NumberStyles.Float, CultureInfo.InvariantCulture));
+                reported = (
+                    DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    decimal.Parse(reader.GetString(1), NumberStyles.Float, CultureInfo.InvariantCulture),
+                    reader.IsDBNull(2) ? null : decimal.Parse(reader.GetString(2), NumberStyles.Float, CultureInfo.InvariantCulture));
             }
         }
 
@@ -686,7 +694,7 @@ public sealed class FactsAssembler : IComponent
             using var unzipped = new System.IO.Compression.GZipStream(compressed, System.IO.Compression.CompressionMode.Decompress);
             using var text = new StreamReader(unzipped, System.Text.Encoding.UTF8);
 
-            return EquityBrief.Core.Report.ReleaseSegments.Read(await text.ReadToEndAsync(cancellation), quarter.Quarter, quarter.Revenue);
+            return EquityBrief.Core.Report.ReleaseSegments.Read(await text.ReadToEndAsync(cancellation), quarter.Quarter, quarter.Revenue, quarter.YearEarlier);
         }
     }
 

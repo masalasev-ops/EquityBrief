@@ -125,11 +125,14 @@ public partial class ReadSurface
 
     const decimal RopQuarterRevenue = 2_171_800_000m;
 
+    // ROP's stored revenue for the quarter to 2025-09-30, which the release's second column totals.
+    const decimal RopYearEarlierRevenue = 2_017_500_000m;
+
     [Fact]
     public void RopsReleaseSegmentTableIsReadAtTheScaleItsTotalIsTheQuartersRevenueAndCarriedAsFacts()
     {
         var quarter = new DateOnly(2026, 9, 30);
-        var read = EquityBrief.Core.Report.ReleaseSegments.Read(RopReleaseTables, quarter, RopQuarterRevenue)!;
+        var read = EquityBrief.Core.Report.ReleaseSegments.Read(RopReleaseTables, quarter, RopQuarterRevenue, RopYearEarlierRevenue)!;
 
         // Worked by hand: 2,171.8 in millions is the quarter's reported revenue, and the three segments sum to it.
         Assert.Equal("the results release", read.Report);
@@ -157,6 +160,14 @@ public partial class ReadSurface
         Assert.Null(EquityBrief.Core.Report.ReleaseSegments.Read(RopReleaseTables.Replace("Network Software 446.1", "Application Software 446.1", StringComparison.Ordinal), quarter, RopQuarterRevenue));
         Assert.Null(EquityBrief.Core.Report.ReleaseSegments.Read(RopReleaseTables, quarter, null));
 
+        // The second column is read as the same quarter a year earlier only where its total is that quarter's stored revenue
+        // within a per cent: none is read with no stored revenue for it, or against one it misses.
+        var unmatched = EquityBrief.Core.Report.ReleaseSegments.Read(RopReleaseTables, quarter, RopQuarterRevenue)!;
+
+        Assert.All(unmatched.Rows, row => Assert.Equal((null, null, null, null), (row.RevenueYearEarlier, row.RevenueChange, row.EarningsYearEarlier, row.EarningsChange)));
+        Assert.All(EquityBrief.Core.Report.ReleaseSegments.Read(RopReleaseTables, quarter, RopQuarterRevenue, 2_100_000_000m)!.Rows, row => Assert.Null(row.RevenueYearEarlier));
+        Assert.Equal(357_600_000m, unmatched.Rows[0].Earnings);
+
         // The facts file carries the table as a filing's segment figures are named, from the results release: the company's
         // total and each segment's revenue and operating profit for the quarter and the same quarter a year earlier.
         var facts = EquityBrief.Worker.Facts.FactsAssembler.ReleaseSegmentFacts(read);
@@ -167,6 +178,45 @@ public partial class ReadSurface
         Assert.Contains(new EquityBrief.Core.Facts.Fact("segment Network Software Net revenues 2025-09-30", "413400000", "results release"), facts);
         Assert.Contains(new EquityBrief.Core.Facts.Fact("segment Technology Enabled Products Operating profit 2026-09-30", "160700000", "results release"), facts);
         Assert.Equal(facts.Count, facts.Select(fact => fact.Name).Distinct(StringComparer.Ordinal).Count());
+    }
+
+    // Two other layouts the S&P 500's releases of October 2026 use, word for word: HON's, its heading followed by its
+    // columns' years rather than a colon and its segments closing on a total of their own, and GPC's, closing on the next
+    // heading with no total at all, read against its segments' own sum.
+    // The dash HON's release stands in an empty cell, built from its code point since no file here carries the character.
+    static readonly string EmDash = char.ConvertFromUtf32(0x2014);
+
+    static readonly string HonReleaseTables =
+        "Segment Data (Unaudited) (Dollars in millions) Three Months Ended September 30, Nine Months Ended September 30, Net sales 2026 2025 2026 2025 Building Automation $ 2,020 $ 1,878 $ 5,904 $ 5,396 Process Automation and Technology 1,859 1,598 5,051 4,656 Industrial Automation 1,115 1,450 4,039 4,627 Total Segment sales 4,994 4,926 14,994 14,679 Quantinuum " + EmDash + " 3 10 24 Total Net sales $ 4,994 $ 4,929 $ 15,004 $ 14,703 "
+        + "Reconciliation of Segment Profit to Income Before Taxes Three Months Ended September 30, Nine Months Ended September 30, Segment profit 2026 2025 2026 2025 Building Automation $ 546 $ 502 $ 1,584 $ 1,421 Process Automation and Technology 412 389 1,142 1,088 Industrial Automation 205 216 703 704 Corporate and All Other (101) (241) (438) (650) Total Segment profit 1,062 866 2,991 2,563";
+
+    const string GpcReleaseTables =
+        "Three Months Ended September 30, Nine Months Ended September 30, (in thousands) 2026 2025 2026 2025 Net sales: North America Automotive $ 2,540,319 $ 2,484,591 $ 7,440,587 $ 7,193,749 International Automotive 1,572,392 1,505,197 4,746,020 4,373,208 Industrial 2,408,597 2,270,444 7,136,592 6,723,769 Segment EBITDA: North America Automotive 193,860 199,626 558,393 543,121";
+
+    // HON's table: three segments summing to its 4,994 million, its profit read from the table its heading's years open,
+    // and no year-earlier column, its 4,926 million missing the 10,408 million stored for the quarter a year before, which
+    // the company reported before it split. GPC's: 6,521,308 thousand summed, its year-earlier column 6,260,232 thousand,
+    // the stored 6,260,232,000, so North America Automotive is 2.2% up on 2,484,591.
+    // see: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so
+    [Fact]
+    public void AReleasesSegmentsAreReadUnderAHeadingOfYearsOrWithNoTotalAndAYearEarlierColumnOnlyWhereItIsThatQuartersRevenue()
+    {
+        var quarter = new DateOnly(2026, 9, 30);
+        var hon = EquityBrief.Core.Report.ReleaseSegments.Read(HonReleaseTables, quarter, 4_994_000_000m, 10_408_000_000m)!;
+
+        Assert.Equal(["Building Automation", "Process Automation and Technology", "Industrial Automation"], hon.Rows.Select(row => row.Segment));
+        Assert.Equal([2_020_000_000m, 1_859_000_000m, 1_115_000_000m], hon.Rows.Select(row => row.Revenue));
+        Assert.Equal([546_000_000m, 412_000_000m, 205_000_000m], hon.Rows.Select(row => row.Earnings!.Value));
+        Assert.All(hon.Rows, row => Assert.Null(row.RevenueYearEarlier));
+        Assert.Equal(4_994_000_000m, hon.Total);
+
+        var gpc = EquityBrief.Core.Report.ReleaseSegments.Read(GpcReleaseTables, quarter, 6_521_308_000m, 6_260_232_000m)!;
+
+        Assert.Equal(6_521_308_000m, gpc.Total);
+        Assert.Equal(2_484_591_000m, gpc.Rows[0].RevenueYearEarlier);
+        Assert.Equal(2.2, Math.Round(gpc.Rows[0].RevenueChange!.Value, 1));
+        Assert.All(gpc.Rows, row => Assert.Null(row.Earnings));
+        Assert.Null(EquityBrief.Core.Report.ReleaseSegments.Read(GpcReleaseTables, quarter, 6_600_000_000m, 6_260_232_000m));
     }
 
     // A segment commentary is read as written from the release's own table only where the facts file it was written from,

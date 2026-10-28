@@ -1656,12 +1656,11 @@ public static partial class NameScreen
             && (filings.Count == 0 || reportedOn > filings.Max(filing => filing.FilingDate))
             && newestReleaseText is { } releaseText)
         {
+            var revenueLine = reported.Lines.FirstOrDefault(line => string.Equals(line.Line, EquityBrief.Core.Report.QuarterLines.Revenue, StringComparison.Ordinal));
+
             reportView = reportView with
             {
-                ReleaseSegments = EquityBrief.Core.Report.ReleaseSegments.Read(
-                    releaseText,
-                    reported.Quarter,
-                    reported.Lines.FirstOrDefault(line => string.Equals(line.Line, EquityBrief.Core.Report.QuarterLines.Revenue, StringComparison.Ordinal))?.Reported),
+                ReleaseSegments = EquityBrief.Core.Report.ReleaseSegments.Read(releaseText, reported.Quarter, revenueLine?.Reported, revenueLine?.YearEarlier),
                 CommentaryFromFiling = commentaryFromRelease == false,
             };
         }

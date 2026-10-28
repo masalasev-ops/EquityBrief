@@ -10922,3 +10922,32 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the relabel itself, run by hand from main after the merge in batches between the writers' slots, its
             figures read off its runs' rows. The filers holding no recent release, the segments read from a release's
             tables and the quarters fetch's asks for COR, SMCI, BA and V stand as the entry above carried them.
+
+### 18.4 ruling - the report page's remaining defects closed for every name's page by code and the local model alone, in a pull request of its own   2026-10-28
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      the operator's instruction of 2026-10-28, about 04:40 UTC: "Close the remaining ROP report defects for every
+            name's page. Add to what exists and remove no capability. Use code or the local model only: no paid model
+            call and no analyst-ratings call. Verify on ROP plus two other names of different kinds, and do not
+            regenerate anything", and "Do the above only as a separate PR". Its parts: a newer quarter's segments table
+            and the segment commentary's inputs filled by code from its results release's own tables, labelled as from the
+            results release with the filing not stored yet; a sentence the figures contradict withheld with the note, not
+            kept with a correction appended, two sources disagreeing named in one sentence; source labels taken out of all
+            written text, the moves' causes included; a held stock's short version opening on its held trade, its family,
+            fill, stop, target, last day from its own setup's limit, status and reward to risk at the fill, with a short
+            card for it, each paragraph of what worked and what did not held to four sentences, the earlier picks' limit
+            and the pick's exit both read from the setup's own, and the plan showing the held trade's exits in place of
+            saying it places none; a story's title or text naming the company or its American listing, and every story
+            that passes labelled; every name the peer check flags listed with a group proposed from the page's own
+            account for the operator to approve before any override is set, and the relevance test held over the
+            industry cycle's sources and the sources list, saying "not enough relevant sources" where fewer than two
+            remain; older bands read out far enough to cover a pick's target and stop, the held trade's stop and target
+            on the chart and an estimated next report marked estimated; and each part added to the proof as passed,
+            failed or unexamined with the names affected, the general rules in the architecture's report page section with
+            no dated figures and the dated evidence in the changelog, the reply stating what one full regeneration costs
+            on the paid profile, split by job.
+Queue:      done, PRs 573 to 579; in progress, this pull request; next, the operator's word on the peer groups the proof
+            proposes, on 22.14's pullback version, on 22.15's freezes and on the quarters fetch's asks for COR, SMCI, BA
+            and V, the relabel running on in batches between the writers' slots.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
