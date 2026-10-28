@@ -90,7 +90,7 @@ public static class IndustryCheck
 
         return carried.Count == 0
             ? null
-            : carried.OrderByDescending(pair => pair.Value).Select(pair => (pair.Key, Share: (double)(pair.Value / total))).First() is var most && most.Share > MostOfRevenue
+            : carried.OrderByDescending(pair => pair.Value).Select(pair => (pair.Key, Share: Prices.Statistic.FromRatio(pair.Value / total))).First() is var most && most.Share > MostOfRevenue
                 ? most
                 : null;
     }

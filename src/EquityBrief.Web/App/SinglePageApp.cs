@@ -1500,11 +1500,11 @@ public sealed partial class SinglePageApp : IComponent
                 // see: Every written section's sources and the page's are held to documents naming the company or its industry in their whole text
                 if (string.Equals(name, EquityBrief.Core.Research.ClaimRules.CycleSection, StringComparison.Ordinal))
                 {
-                    var relevant = shown.SourceIds.Where(id => !irrelevant.Contains(id)).ToArray();
+                    var cycleSources = shown.SourceIds.Where(id => !irrelevant.Contains(id)).ToArray();
 
-                    shown = relevant.Length < EquityBrief.Core.Report.IndustryCheck.FewestSources
-                        ? shown with { Prose = Invariant($"Not enough relevant sources: {relevant.Length} of the {shown.SourceIds.Count} documents it rests on name the company or its industry, and the industry cycle is written over {EquityBrief.Core.Report.IndustryCheck.FewestSources} or more."), SourceIds = relevant }
-                        : shown with { SourceIds = relevant };
+                    shown = cycleSources.Length < EquityBrief.Core.Report.IndustryCheck.FewestSources
+                        ? shown with { Prose = Invariant($"Not enough relevant sources: {cycleSources.Length} of the {shown.SourceIds.Count} documents it rests on name the company or its industry, and the industry cycle is written over {EquityBrief.Core.Report.IndustryCheck.FewestSources} or more."), SourceIds = cycleSources }
+                        : shown with { SourceIds = cycleSources };
                 }
 
                 Card(
@@ -1515,7 +1515,7 @@ public sealed partial class SinglePageApp : IComponent
                         name,
                         "Written",
                         section.AsOf,
-                        marks.WrittenSection(ticker, shown, documents, riskLines: string.Equals(name, MarkRenderer.TheRisks, StringComparison.Ordinal) ? history?.Risk : null, facts: HeldTo(shown), lead: lead, proseLabel: lead is { Length: > 0 } ? "What worked and what did not." : null, sentencesAParagraph: shortVersion ? MarkRenderer.WhatWorkedSentences : null, segmentNames: shortVersion ? [.. ((report?.ReleaseSegments ?? report?.Segments)?.Rows ?? []).Select(row => row.Segment)] : null, relevant: relevant),
+                        marks.WrittenSection(ticker, shown, documents, riskLines: string.Equals(name, MarkRenderer.TheRisks, StringComparison.Ordinal) ? history?.Risk : null, facts: HeldTo(shown), lead: lead, proseLabel: lead is { Length: > 0 } ? "What worked and what did not." : null, sentencesAParagraph: shortVersion ? MarkRenderer.WhatWorkedSentences : null, segmentNames: shortVersion ? [.. ((report?.ReleaseSegments is { Clean: true } releaseRows ? releaseRows : report?.Segments)?.Rows ?? []).Select(row => row.Segment)] : null, relevant: relevant),
                         section: name,
                         id: SectionId(name),
                         role: role),
@@ -2109,16 +2109,7 @@ public sealed partial class SinglePageApp : IComponent
                         ? report.CommentaryFromFiling ? "filing" : "release"
                         : null;
 
-                    var fromAttribute = writtenFrom is null ? string.Empty : " data-written-from=\"" + writtenFrom + "\"";
-
-                    // The note saying it was written from the older filing's segments stands above the commentary, so it is
-                    // read before the figures it qualifies.
-                    segmentBody.Append(Invariant($"<div class=\"written-part\" id=\"{SectionId(part)}\" data-section=\"{Escaped(part)}\"{fromAttribute}><div class=\"dl\"><span class=\"dl-k\">Written</span><b>{Cards.Day(partWritten.AsOf)}</b></div>"));
-                    segmentBody.Append(writtenFrom == "filing"
-                        ? "<p class=\"degraded written-from\">Written from the segments the filing before it reported, before the results release's own table above was read; a report written now reads the release's figures.</p>"
-                        : string.Empty);
-                    segmentBody.Append(marks.WrittenSection(ticker, partWritten, documents, facts: HeldTo(partWritten), relevant: relevant));
-                    segmentBody.Append("</div>");
+                    segmentBody.Append(MarkRenderer.WrittenPart(SectionId(part), part, Cards.Day(partWritten.AsOf), writtenFrom, marks.WrittenSection(ticker, partWritten, documents, facts: HeldTo(partWritten), relevant: relevant)));
                 }
             }
 

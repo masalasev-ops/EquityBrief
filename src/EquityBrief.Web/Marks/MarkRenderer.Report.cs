@@ -290,6 +290,18 @@ public sealed partial class MarkRenderer
 
     // ---- segments ----
 
+    // The note a segment commentary written from the filing's segments carries once its results release's own table is read.
+    public const string WrittenFromFiling = "<p class=\"degraded written-from\">Written from the segments the filing before it reported, before the results release's own table above was read; a report written now reads the release's figures.</p>";
+
+    // A written part of the segments region: its day, and where it was written from the older filing's segments beneath the
+    // release's own table, the note saying so above its text, so it is read before the figures it qualifies.
+    // see: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so
+    public static string WrittenPart(string id, string part, string day, string? writtenFrom, string written) =>
+        Formatted($"<div class=\"written-part\" id=\"{Escaped(id)}\" data-section=\"{Escaped(part)}\"{(writtenFrom is null ? string.Empty : Formatted($" data-written-from=\"{Escaped(writtenFrom)}\""))}><div class=\"dl\"><span class=\"dl-k\">Written</span><b>{Escaped(day)}</b></div>")
+        + (writtenFrom == "filing" ? WrittenFromFiling : string.Empty)
+        + written
+        + "</div>";
+
     // The segment table the rule made: each segment's revenue and its change on a year, its earnings and their change, and
     // its share of the company's revenue, beside the company's total; or why the rows sum to no total, where the raw
     // table drawn beneath stands instead.

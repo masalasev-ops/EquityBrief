@@ -91,14 +91,18 @@ public static class QuarterWaits
             var guess = quarter.AddDays(lag);
 
             expected = guess < reported ? reported : guess > due ? due : guess;
-            filing = Invariant($"its filing is expected about {expected:d MMM yyyy}, the quarter's end plus the {lag} days its {then.Form} for the quarter to {then.PeriodEnd:d MMM yyyy} took, and is due by {due:d MMM yyyy}");
+            filing = expected > night
+                ? Invariant($"its filing is expected about {expected:d MMM yyyy}, the quarter's end plus the {lag} days its {then.Form} for the quarter to {then.PeriodEnd:d MMM yyyy} took, and is due by {due:d MMM yyyy}")
+                : Invariant($"its filing was expected about {expected:d MMM yyyy}, the quarter's end plus the {lag} days its {then.Form} for the quarter to {then.PeriodEnd:d MMM yyyy} took, and is not stored yet, and it is due by {due:d MMM yyyy}");
         }
         else
         {
             filing = Invariant($"no filing of the same quarter a year before is stored to read its timing from, and its filing is due by {due:d MMM yyyy}");
         }
 
-        var clears = new[] { nextAsk, expected ?? due }.OfType<DateOnly>().Min();
+        // A filing expected on or before the night and not stored yet is next read the night after it.
+        var filingClears = expected ?? due;
+        var clears = new[] { nextAsk, filingClears > night ? filingClears : Weekday(night) }.OfType<DateOnly>().Min();
 
         return new QuarterWait(released, quarter, nextAsk, ask, expected, filing, due, clears);
     }

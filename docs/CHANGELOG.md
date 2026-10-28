@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-28 - docs/ARCHITECTURE.html - the rule recorder reads the run log and names its open floor form
+Authorised by: The drift's open floor is replayed beside its live rule unregistered, skipping a fill whose reward to risk at the open is under 1
+Was:
+> (the rule recorder's catalogue row reading neither the run log nor naming a third form, and its matrix row's run log cell W)
+Now:
+> its reads ending on the run log; its row closing on its third form, the S&P 500's live drift rule walked beside the same rule skipping a fill whose reward to risk at the open is under 1, registered as no rule, both written on its own run log row, the first such row read for the session the record is followed forward from; and its matrix row's run log cell R W.
+Why: the open floor form reads its own first run log row to count the record forward from it, so the recorder now reads the table it writes.
+
 ### 2026-10-28 - docs/RUNBOOK.md - a section on the drift's open floor beside its record and the record command's form for it
 Authorised by: The drift's open floor is replayed beside its live rule unregistered, skipping a fill whose reward to risk at the open is under 1
 Was:

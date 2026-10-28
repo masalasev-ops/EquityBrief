@@ -124,7 +124,24 @@ public partial class ReadSurface
         }
 
         Assert.DoesNotContain("$1.2B", table, StringComparison.Ordinal);
+
+        // The note saying a commentary was written from the older filing's segments stands above its text.
+        var commentary = new MarkRenderer().WrittenSection("ROP", new WrittenCell("The segment commentary", "Application Software reported revenue of $1,181 million.", new DateOnly(2026, 10, 27), "deepseek-flash", []), []);
+        var part = MarkRenderer.WrittenPart("the-segment-commentary", "The segment commentary", "2026-10-27", "filing", commentary);
+
+        Assert.True(part.IndexOf(MarkRenderer.WrittenFromFiling, StringComparison.Ordinal) is var note and >= 0 && note < part.IndexOf("<section class=\"written-section\"", StringComparison.Ordinal));
+        Assert.DoesNotContain(MarkRenderer.WrittenFromFiling, MarkRenderer.WrittenPart("the-segment-commentary", "The segment commentary", "2026-10-27", "release", commentary), StringComparison.Ordinal);
+        Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("ROP", "<section class=\"card spined fund\" id=\"quarter\"><div class=\"spine\"><div class=\"dl\"><span class=\"dl-k\">Reported</span><b>2026-10-22</b></div></div></section><div class=\"sub segments-release\" data-quarter=\"2026-09-30\"></div>" + part), "segments-release"));
         Assert.Equal(("B"), Figures.ScaleOf([2_000_000_000m, 3_500_000_000m])?.Suffix);
+
+        // LRCX's release lays its revenue lines under a heading of three dates and a unit, with no total line: the dates are
+        // a column heading and no segment, so its two lines stand alone, summing to its quarter's revenue, where the dates'
+        // days had been read as three segments of a few thousand dollars and drawn in a scale apart.
+        const string Lrcx = "The following table presents revenue disaggregated between systems and customer support-related revenue: Three Months Ended September 27, 2026 June 28, 2026 September 28, 2025 (in thousands) Systems revenue $ 5,732,907 $ 4,249,848 $ 3,547,565 Customer support-related revenue and other 2,486,511 2,472,390 1,776,608 $ 8,219,418 $ 6,722,238 $ 5,324,173 Systems revenue includes sales of new leading-edge equipment.";
+        var lrcx = ReleaseSegments.Read(Lrcx, new DateOnly(2026, 9, 27), 8_219_418_000m)!;
+
+        Assert.Equal([("Systems revenue", 5_732_907_000m), ("Customer support-related revenue and other", 2_486_511_000m)], lrcx.Rows.Select(row => (row.Segment, row.Revenue)));
+        Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("LRCX", new MarkRenderer().SegmentsTable(lrcx, "USD")), "segments-scale"));
         Assert.Null(Figures.ScaleOf([400_000m, 2_000_000m]));
         Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("ROP", table), "segments-scale"));
         Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("ROP", table.Replace(">$1,239.7M</td>", ">$1.2B</td>", StringComparison.Ordinal)), "segments-scale"));
@@ -155,6 +172,13 @@ public partial class ReadSurface
         // Asked on fewer nights than the retries: asked again the next weekday; past them, weekly on the night the row names.
         var retrying = QuarterWaits.Of(new DateOnly(2026, 10, 21), new DateOnly(2026, 6, 30), new DateOnly(2026, 10, 23), new DateOnly(2026, 10, 21), [new(new DateOnly(2026, 10, 22), "not yet posted", 1, null), new(new DateOnly(2026, 10, 23), "not yet posted", 2, null)], lastYear);
         var weekly = QuarterWaits.Of(new DateOnly(2026, 10, 1), new DateOnly(2026, 6, 30), new DateOnly(2026, 10, 27), new DateOnly(2026, 10, 1), [new(new DateOnly(2026, 10, 9), "not yet posted", 6, new DateOnly(2026, 10, 16)), new(new DateOnly(2026, 10, 16), "not yet posted", 7, new DateOnly(2026, 10, 23)), new(new DateOnly(2026, 10, 23), "not yet posted", 8, new DateOnly(2026, 10, 30))], []);
+
+        // A filing expected on or before the night and not stored is said so, the page expected to draw it the next weekday.
+        var overdue = QuarterWaits.Of(new DateOnly(2026, 10, 1), new DateOnly(2026, 6, 30), new DateOnly(2026, 10, 27), new DateOnly(2026, 10, 1), [new(new DateOnly(2026, 10, 2), "not yet posted", 6, new DateOnly(2026, 11, 2))], [new(new DateOnly(2025, 9, 30), new DateOnly(2025, 10, 20), "10-Q")]);
+
+        Assert.Equal((new DateOnly(2026, 10, 20), new DateOnly(2026, 10, 28)), (overdue.FilingExpected!.Value, overdue.Clears));
+        Assert.Contains("was expected about 20 Oct 2026", overdue.Filing, StringComparison.Ordinal);
+        Assert.Contains("is not stored yet", overdue.Filing, StringComparison.Ordinal);
 
         Assert.Equal(new DateOnly(2026, 10, 26), retrying.NextAsk);
         Assert.Equal(new DateOnly(2026, 10, 30), weekly.NextAsk);
