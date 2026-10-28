@@ -12,14 +12,14 @@ namespace EquityBrief.Tests.Reading;
 // a constructed store whose counts are worked by hand; and from the 18.4 correction of 2026-10-11 the articles
 // holding no label under a tab of their own after opinion.
 // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
-// see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
+// see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own
 public partial class ReadSurface
 {
     internal static readonly string[] NewsSurfaceClaims =
     [
         CheckReach.Key("15.9 Name", "News"),
         CheckReach.Key("15.7 Tonight", "The list, the positive and negative stories of the thirty days before the night as the name page's bar counts them"),
-        CheckReach.Key("15.10 Run", "Research and spend, the news labeller's line with what the night's labelling cost and the month's against its limit and the articles labelled and the unreadable answers by cause and what stopped it"),
+        CheckReach.Key("15.10 Run", "Research and spend, the news labeller's line naming the local model it labelled on and saying it spent nothing with the articles labelled and the unreadable answers by cause and the stories the runtime did not answer and what stopped it and why and a paid run's line read on the rows it wrote with what its labelling cost and the month's against its limit"),
         CheckReach.Key("15.10 Run", "What else is waiting on a count, the nights the news labeller ran against twenty with its measured duration and its month's spend and the share of answers refused for a digit"),
     ];
 
@@ -155,6 +155,52 @@ public partial class ReadSurface
         }
     }
 
+    // A local run for the night over the paid labels: its labels stand where they are, a1's in place of the paid one and
+    // a5's where the paid answer was unreadable, each kind drawn by its readable name; the region names the local model
+    // and the three stories that run labelled, and the Run page's line names the model and spends nothing.
+    [Fact]
+    public async Task ALocalRunsLabelsStandBeforeThePaidOnesAndTheNameAndRunPagesNameTheLocalModel()
+    {
+        using var store = NewsStore();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        const string LocalRun = "label-news-20260909T040500Z";
+
+        foreach (var (id, kind, direction) in new[] { ("a1", "analyst", "neutral"), ("a2", "guidance", "negative"), ("a5", "results", "positive") })
+        {
+            store.Execute(
+                "INSERT INTO news_label (ticker, article_id, profile, instruction_version, model, outcome, cause, kind, direction, reason, labelled_at, run_id) VALUES " +
+                $"('AG', '{id}', 'gemma-4', {NewsInstruction.Version}, 'google/gemma-4-26b-a4b-qat', '{NewsLabelling.Labelled}', NULL, '{kind}', '{direction}', 'The company said what it did.', '2026-09-09T04:06:00Z', '{LocalRun}');");
+        }
+
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES " +
+            $"('{LocalRun}', '{NewsLabelling.Stage}', '2026-09-09T04:05:00Z', '2026-09-09T04:09:00Z', 'ok', 3, 5, 0, '0', " +
+            $"'{{\"session\":\"{NewsNight}\",\"profile\":\"gemma-4\",\"model\":\"google/gemma-4-26b-a4b-qat\",\"local\":true,\"pin\":1,\"monthLimit\":\"5\",\"names\":2,\"reached\":2,\"labelled\":3,\"unreadable\":{{}},\"notAnswered\":1,\"refusedByAdmissibility\":1,\"alreadyLabelled\":0,\"cost\":\"0\",\"monthCost\":\"0\",\"stop\":\"{NewsLabelling.NextLocalSlot.Replace("'", "''", StringComparison.Ordinal)}\"}}');");
+
+        var card = Assert.Single(Blocks(await Page(client, "/screens/name/AG"), NewsCard));
+        var rows = Regex.Matches(card, "<li class=\"news-row\" data-article=\"([^\"]+)\" data-state=\"([^\"]+)\" data-tabs=\"([^\"]+)\"[^>]*>(.*?)</li>", RegexOptions.Singleline)
+            .ToDictionary(row => row.Groups[1].Value, row => (State: row.Groups[2].Value, Tabs: row.Groups[3].Value, Markup: row.Groups[4].Value), StringComparer.Ordinal);
+
+        Assert.Equal(("labelled", "all neutral"), (rows["a1"].State, rows["a1"].Tabs));
+        Assert.Contains("<span class=\"tag kind\">analyst change</span><span class=\"tag dir\">neutral</span>", rows["a1"].Markup, StringComparison.Ordinal);
+        Assert.Equal(("labelled", "all positive"), (rows["a5"].State, rows["a5"].Tabs));
+        Assert.Equal(("labelled", "all neutral"), (rows["a3"].State, rows["a3"].Tabs));
+        Assert.Equal(
+            " data-ticker=\"AG\" data-articles=\"7\" data-all=\"6\" data-positive=\"1\" data-negative=\"1\" data-neutral=\"2\" data-opinion=\"1\" data-unlabelled=\"2\" data-left-out=\"0\"",
+            Regex.Match(card, "<div class=\"news-region\"([^>]*)>").Groups[1].Value);
+        Assert.Contains("<p class=\"news-model\" data-local=\"true\" data-tonight=\"3\">Labelled by the local model google/gemma-4-26b-a4b-qat, the profile gemma-4, 3 stories labelled tonight.</p>", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("deepseek-flash", card, StringComparison.Ordinal);
+
+        var line = Regex.Match(await Page(client, $"/screens/run/{NewsNight}"), "<p class=\"rp-labeller\"([^>]*)>(.*?)</p>", RegexOptions.Singleline);
+
+        Assert.Contains("data-cost=\"0\"", line.Groups[1].Value, StringComparison.Ordinal);
+        Assert.Equal(
+            "The news labeller labelled 3 stories tonight on the local model google/gemma-4-26b-a4b-qat (gemma-4), and spent nothing: 0 unreadable, 1 the runtime did not answer, 1 refused by admissibility, 2 of 2 name(s) reached, stopped by the local run's next slot.",
+            line.Groups[2].Value);
+    }
+
     // The correction of 2026-10-11: CVX's page drew "ASML &amp; Chevron" for a title the provider sent with its ampersand
     // written as an entity, the page escaping the entity's own letters again.
     [Fact]
@@ -184,10 +230,10 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        // CE holds an article and was not on the night's list, which is all the labeller reads.
+        // CE holds an article and was neither on the night's list nor a report's, which is all the labeller reads.
         var ce = Assert.Single(Blocks(await Page(client, "/screens/name/CE"), NewsCard));
 
-        Assert.Contains("<p class=\"news-unlabelled\" data-why=\"not-listed\">CE was not on the list this night, and the labeller reads the names on the list alone.</p>", ce, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"news-unlabelled\" data-why=\"not-listed\">CE was not on the list this night, and the labeller reads the names on the list and those a report is written for.</p>", ce, StringComparison.Ordinal);
         Assert.DoesNotContain("news-model", ce, StringComparison.Ordinal);
 
         // AG on the earlier night, whose window holds its unreadable article and the one holding no label: no run
@@ -212,6 +258,21 @@ public partial class ReadSurface
             "'{\"session\":\"2026-09-04\",\"profile\":\"deepseek\",\"model\":\"deepseek-flash\",\"names\":1,\"reached\":0,\"labelled\":0,\"unreadable\":{},\"refusedByAdmissibility\":0,\"cost\":\"0\",\"monthCost\":\"5\",\"monthLimit\":\"5\",\"stop\":\"the labeller''s month limit\"}');");
 
         Assert.Contains("<p class=\"news-unlabelled\" data-why=\"month-limit\">The labeller's month limit was reached before this name, so its articles wait for next month.</p>", Assert.Single(Blocks(await Page(client, $"/screens/name/AG/{NewsEarlier}"), NewsCard)), StringComparison.Ordinal);
+
+        // Later runs for that night on the local model, each the newest in turn, stopped by no pin, by another local
+        // process holding the local model's lock and by the local run's next slot, each saying so in its own line.
+        foreach (var (minute, stop, why, line) in (IEnumerable<(int, string, string, string)>)[
+            (30, NewsLabelling.NoPin, "pin", "No label pin is written for the local model, so nothing was labelled; one is written with label-news --pin."),
+            (45, NewsLabelling.LockHeld, "lock", "Another local process held the local model when the labeller ran, so this name's articles wait for the next run."),
+            (50, NewsLabelling.NextLocalSlot, "slot", "The local run's next slot came before this name, so its articles wait for the next run.")])
+        {
+            store.Execute(
+                "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES " +
+                $"('label-news-20260904T23{minute}00Z', '{NewsLabelling.Stage}', '2026-09-04T23:{minute}:00Z', '2026-09-04T23:{minute}:01Z', 'ok', 0, 0, 0, '0', " +
+                $"'{{\"session\":\"2026-09-04\",\"profile\":\"gemma-4\",\"model\":\"google/gemma-4-26b-a4b-qat\",\"local\":true,\"names\":1,\"reached\":0,\"labelled\":0,\"unreadable\":{{}},\"refusedByAdmissibility\":0,\"cost\":\"0\",\"monthCost\":\"0\",\"monthLimit\":\"5\",\"stop\":\"{stop.Replace("'", "''", StringComparison.Ordinal)}\"}}');");
+
+            Assert.Contains($"<p class=\"news-unlabelled\" data-why=\"{why}\">{line}</p>", Assert.Single(Blocks(await Page(client, $"/screens/name/AG/{NewsEarlier}"), NewsCard)), StringComparison.Ordinal);
+        }
 
         // A name with nothing stored in the window says so and draws no tabs.
         var bs = Assert.Single(Blocks(await Page(client, $"/screens/name/BS/{NewsEarlier}"), NewsCard));
@@ -276,6 +337,19 @@ public partial class ReadSurface
         Assert.Equal(("1", "20"), (triggers["news labeller"].Count, triggers["news labeller"].Of));
         Assert.Contains("4 min 30 s a run at the median", triggers["news labeller"].Text, StringComparison.Ordinal);
         Assert.Contains("1 of 6 answer(s) refused for a digit", triggers["news labeller"].Text, StringComparison.Ordinal);
+
+        // A batch over every stored story labels no night: it counts toward none and its hours stay out of the median.
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES " +
+            $"('label-news-20260909T050000Z', '{NewsLabelling.Stage}', '2026-09-09T05:00:00Z', '2026-09-09T09:00:00Z', 'ok', 900, 900, 0, '0', " +
+            $"'{{\"session\":\"{NewsLabelling.EveryStory}\",\"profile\":\"gemma-4\",\"model\":\"google/gemma-4-26b-a4b-qat\",\"local\":true,\"labelled\":900,\"unreadable\":{{}},\"cost\":\"0\",\"monthCost\":\"0\",\"stop\":\"{NewsLabelling.BatchEnded.Replace("'", "''", StringComparison.Ordinal)}\"}}');");
+
+        var batched = Regex.Matches(await Page(client, $"/screens/run/{NewsNight}"), "<li data-trigger=\"([^\"]+)\" data-count=\"(\\d+)\" data-of=\"(\\d+)\">(.*?)</li>")
+            .ToDictionary(match => match.Groups[1].Value, match => (Count: match.Groups[2].Value, Text: match.Groups[4].Value), StringComparer.Ordinal);
+
+        Assert.Equal("1", batched["news labeller"].Count);
+        Assert.Contains("4 min 30 s a run at the median", batched["news labeller"].Text, StringComparison.Ordinal);
+        Assert.Contains("1 of 6 answer(s) refused for a digit", batched["news labeller"].Text, StringComparison.Ordinal);
 
         // A night the labeller has no run for says so.
         var earlier = Regex.Match(await Page(client, $"/screens/run/{NewsEarlier}"), "<p class=\"rp-labeller\"([^>]*)>(.*?)</p>", RegexOptions.Singleline);

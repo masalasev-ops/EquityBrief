@@ -56,8 +56,9 @@ public partial class FixtureExpectations
         var runtime = AnsweringRuntime(loaded: false, chat: _ => throw new InvalidOperationException("the comparison's answers are the test's own"));
         var asked = new Dictionary<string, int>(StringComparer.Ordinal);
 
-        // The local model's answers by the article's title: the first agrees on both, the second on the kind alone, the
-        // third states a figure in its reason and agrees on both when asked once more, and the fourth is no object twice.
+        // The local model's answers by the article's title, each kind a key: the first agrees on both, the second on the
+        // kind alone, the paid label's readable name read as its key, the third states a figure in its reason and agrees on
+        // both when asked once more, and the fourth is no object twice.
         var feed = new LabelAnsweringFeed(ReadingFeedOver(runtime, settings), request =>
         {
             var title = new[] { "Alpha beats", "Alpha sued", "Beta buys", "Beta opinion" }.Single(title => request.Text.Contains(title, StringComparison.Ordinal));
@@ -66,7 +67,7 @@ public partial class FixtureExpectations
             return Reply(title switch
             {
                 "Alpha beats" => "{\"kind\": \"results\", \"direction\": \"positive\", \"reason\": \"Alpha beat expectations.\"}",
-                "Alpha sued" => "{\"kind\": \"legal or regulatory\", \"direction\": \"neutral\", \"reason\": \"A lawsuit was filed against Alpha.\"}",
+                "Alpha sued" => "{\"kind\": \"legal\", \"direction\": \"neutral\", \"reason\": \"A lawsuit was filed against Alpha.\"}",
                 "Beta buys" when times == 1 => "{\"kind\": \"deal\", \"direction\": \"positive\", \"reason\": \"Beta agreed to pay 5 billion for a rival.\"}",
                 "Beta buys" => "{\"kind\": \"deal\", \"direction\": \"positive\", \"reason\": \"Beta agreed to buy a rival.\"}",
                 _ => "I cannot label this article.",
@@ -109,6 +110,9 @@ public partial class FixtureExpectations
             ["Alpha Corp (AAA) Alpha beats", "Alpha Corp (AAA) Alpha sued", "BBB (BBB) Beta buys", "BBB (BBB) Beta buys", "BBB (BBB) Beta opinion", "BBB (BBB) Beta opinion"],
             feed.Asked.Select(request => request.Text.Split('\n')[0]["Company: ".Length..] + " " + request.Text.Split('\n')[1]["Title: ".Length..]));
         Assert.All(feed.Asked, request => Assert.Equal((Gemma, NewsInstruction.System, ReadingSettings.Seed, 2000), (request.Model, request.Instruction, request.Seed, request.AnswerTokens)));
+
+        // Each request carries the schema holding its answer to the keys.
+        Assert.All(feed.Asked, request => Assert.Equal(NewsInstruction.Kinds, request.Schema!["properties"]!["kind"]!["enum"]!.AsArray().Select(key => key!.GetValue<string>())));
         Assert.Equal(NewsInstruction.Prompt("Alpha Corp", "AAA", "Alpha beats", "The text of Alpha beats."), feed.Asked[0].Text);
 
         // It waited for the lock and said so, loaded the model it found not loaded and unloaded it at its end.

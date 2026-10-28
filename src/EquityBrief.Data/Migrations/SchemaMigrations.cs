@@ -734,7 +734,32 @@ public static class SchemaMigrations
         new Migration(111, "rebuild pulled_bar and pulled_earnings with the pull in their keys", PullInThePulledKeys),
         new Migration(112, "create improving_night, improving_result and improving_trade", CreateImproving),
         new Migration(113, "add research_request's section", AddResearchRequestSection),
+        new Migration(114, "create label_pin", CreateLabelPin),
     ];
+
+    // The versions the news labeller labels under on the local model, a row a version written by hand, each pinning
+    // the model, its file, the runtime that answered as a record, the instruction's version, the settings and the window
+    // it is loaded at, as a reading version pins a release's readings.
+    // see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own
+    const string CreateLabelPin = @"
+        CREATE TABLE label_pin (
+            id                   INTEGER PRIMARY KEY,
+            model                TEXT    NOT NULL,
+            model_file           TEXT    NOT NULL,
+            sha256               TEXT    NOT NULL,
+            size                 INTEGER NOT NULL,
+            modified             TEXT    NOT NULL,
+            runtime_name         TEXT    NOT NULL,
+            runtime_version      TEXT    NOT NULL,
+            instruction_version  INTEGER NOT NULL,
+            temperature          REAL    NOT NULL,
+            seed                 INTEGER NOT NULL,
+            answer_tokens        INTEGER NOT NULL,
+            context              INTEGER NOT NULL,
+            written_at           TEXT    NOT NULL,
+            run_id               TEXT    NOT NULL
+        ) STRICT;
+    ";
 
     // The one section a press asked to have written again alone on the local model, null on every request that asked for
     // a report, which every request before the column did. A section asked for alone asks for no rewrite and is the local
@@ -3379,7 +3404,7 @@ public static class SchemaMigrations
     // and its admissibility judged as it is stored, kept for thirty-one days; and the labels a paid model gave
     // them, one row per article per profile per instruction version, never overwritten, an answer that could
     // not be read kept as unreadable with its cause so it is not paid for again.
-    // see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
+    // see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own
     // see: A news article is stored once per member with its admissibility judged, and a label is never overwritten
     const string CreateNewsArticlesAndLabels = @"
         CREATE TABLE news_article (

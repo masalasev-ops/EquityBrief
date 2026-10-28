@@ -540,7 +540,10 @@ public sealed record LabellerLine(
     int Reached,
     int Names,
     string? Stop,
-    string? Refusal);
+    string? Refusal,
+    bool Local = false,
+    int NotAnswered = 0,
+    string? Why = null);
 
 // One article on a name's page: its headline, source, published day and link, the state the labeller left it
 // in, its label where it has one, and the tabs it sits under, "all" with its direction for a labelled story,
@@ -582,7 +585,9 @@ public sealed record NewsView(
     string? Profile,
     string? Why,
     string? WhyCode,
-    int OtherCompanies = 0);
+    int OtherCompanies = 0,
+    bool Local = false,
+    int LabelledTonight = 0);
 
 // How one section of one report came out, as the Run page draws it: passed first time or on retry, left out
 // with why, or not warranted where it stood from an earlier day; what its own calls cost, a trial's left out;
@@ -7398,10 +7403,14 @@ public sealed partial class MarkRenderer : IComponent
 
         region.Append("</ul>");
 
-        // The model, named once and in small type, which the labels alone may do.
+        // The model, named once and in small type, which the labels alone may do: the local model and how many of the
+        // region's stories tonight's run labelled, where the local model wrote them.
+        // see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own
         if (view.Model is { } model)
         {
-            region.Append(Invariant, $"<p class=\"news-model\">Labelled by {Escaped(model)}{(view.Profile is { } profile ? $", the news job's profile {Escaped(profile)}" : string.Empty)}.</p>");
+            region.Append(view.Local
+                ? Formatted($"<p class=\"news-model\" data-local=\"true\" data-tonight=\"{view.LabelledTonight}\">Labelled by the local model {Escaped(model)}{(view.Profile is { } local ? $", the profile {Escaped(local)}" : string.Empty)}, {Counted(view.LabelledTonight, "story", "stories")} labelled tonight.</p>")
+                : Formatted($"<p class=\"news-model\">Labelled by {Escaped(model)}{(view.Profile is { } profile ? $", the news job's profile {Escaped(profile)}" : string.Empty)}.</p>"));
         }
 
         region.Append("</div>");
@@ -7951,7 +7960,7 @@ public sealed partial class MarkRenderer : IComponent
     // The news labeller's line for the night: what it cost and the month against its limit, the articles
     // labelled, the unreadable answers by cause, the articles refused by admissibility, the names reached
     // and the stop; the line it was refused with; or that no run is recorded for the night.
-    // see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
+    // see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own
     static string LabellerParagraph(LabellerLine? line)
     {
         if (line is null)
@@ -7970,6 +7979,16 @@ public sealed partial class MarkRenderer : IComponent
             var refusal = (line.Refusal ?? "no reason recorded").TrimEnd();
 
             return head + Formatted($"The news labeller was refused before it asked anything: {Escaped(refusal.EndsWith('.') ? refusal : refusal + ".")}</p>");
+        }
+
+        // A run on the local model names the model and the stories it labelled tonight, spends nothing, and says why
+        // where its pin or the local model's lock held it from asking.
+        // see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own
+        if (line.Local)
+        {
+            var held = line.Why is { Length: > 0 } why ? Formatted($" {Escaped(why.TrimEnd('.'))}.") : string.Empty;
+
+            return head + Formatted($"The news labeller labelled {Counted(line.Labelled, "story", "stories")} tonight on the local model {Escaped(line.Model ?? "no model")} ({Escaped(line.Profile ?? "no profile")}), and spent nothing: {unreadable} unreadable{causes}, {line.NotAnswered} the runtime did not answer, {line.RefusedByAdmissibility} refused by admissibility, {line.Reached} of {line.Names} name(s) reached, stopped by {Escaped(line.Stop ?? "no stop")}.{held}</p>");
         }
 
         var against = line.MonthLimit is { } ceiling ? Formatted($" against its {SpendVerdict.Money(ceiling)} limit") : string.Empty;

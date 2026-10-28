@@ -8,8 +8,9 @@ using EquityBrief.Core.Releases;
 namespace EquityBrief.Core.Providers;
 
 // One reading asked of the local model: the model, the instruction, the document's text, the seed and the answer's
-// budget, at temperature zero.
-public sealed record ReadingRequest(string Model, string Instruction, string Text, int Seed, int AnswerTokens);
+// budget, at temperature zero; and, for an answer held to a schema of its own as a label's is, the schema LM Studio's
+// structured output holds the answer to, none for a release's reading, whose answers its saved setting holds.
+public sealed record ReadingRequest(string Model, string Instruction, string Text, int Seed, int AnswerTokens, System.Text.Json.Nodes.JsonObject? Schema = null);
 
 // What the runtime answered for one reading, as its native answer states it: the model that answered, the answer's
 // text, the reason it finished, its tokens, the runtime's name and version, and the seconds the call took.
@@ -175,22 +176,39 @@ public sealed class LmStudioReadingFeed(HttpClient client, LocalModelSettings se
     }
 
     // The request as it is sent: the instruction and the document, temperature zero, the seed, the answer's budget, no
-    // stream, and reasoning off.
+    // stream, and reasoning off; and where the request carries a schema, the structured output holding the answer to it,
+    // a request carrying none sent as it always was.
     public static string Body(ReadingRequest request) =>
-        JsonSerializer.Serialize(new
-        {
-            model = request.Model,
-            messages = new object[]
+        request.Schema is { } schema
+            ? JsonSerializer.Serialize(new
             {
-                new { role = "system", content = request.Instruction },
-                new { role = "user", content = request.Text },
-            },
-            temperature = ReadingSettings.Temperature,
-            seed = request.Seed,
-            max_tokens = request.AnswerTokens,
-            stream = false,
-            reasoning_effort = "none",
-        });
+                model = request.Model,
+                messages = new object[]
+                {
+                    new { role = "system", content = request.Instruction },
+                    new { role = "user", content = request.Text },
+                },
+                temperature = ReadingSettings.Temperature,
+                seed = request.Seed,
+                max_tokens = request.AnswerTokens,
+                stream = false,
+                reasoning_effort = "none",
+                response_format = new { type = "json_schema", json_schema = new { name = "answer", strict = true, schema } },
+            })
+            : JsonSerializer.Serialize(new
+            {
+                model = request.Model,
+                messages = new object[]
+                {
+                    new { role = "system", content = request.Instruction },
+                    new { role = "user", content = request.Text },
+                },
+                temperature = ReadingSettings.Temperature,
+                seed = request.Seed,
+                max_tokens = request.AnswerTokens,
+                stream = false,
+                reasoning_effort = "none",
+            });
 
     // From the 20.3 correction of 2026-10-22 the request a reading keeps: the SHA-256 of the body's UTF-8 bytes as it is
     // sent, in lower-case hex.

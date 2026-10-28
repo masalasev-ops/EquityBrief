@@ -157,6 +157,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `news_pulse` | NewsPulseCounter | none | NewsPulseCounter |
 | `news_article` | NewsPulseCounter | none | NewsPulseCounter |
 | `news_label` | NewsLabeller | none | NewsLabeller |
+| `label_pin` | NewsLabeller | none | none |
 | `research_section` | ResearchRunner, ProseWriter | ClaimChecker | none |
 | `theme_section` | ThemeResearchRunner | ClaimChecker | none |
 | `source_document` | ResearchRunner, ThemeResearchRunner | none | none |
@@ -2941,12 +2942,12 @@ Grain: one row per ticker per article per profile per instruction version.
 |---|---|---|
 | `ticker` | TEXT | |
 | `article_id` | TEXT | |
-| `profile` | TEXT | the news job's profile that labelled it |
+| `profile` | TEXT | the profile that labelled it: the news job's paid profile under instruction version 1, the local profile under the labeller's pin from version 2 |
 | `instruction_version` | INTEGER | the instruction's version it was labelled under |
-| `model` | TEXT | the model as the provider answered, with the options it was asked with |
+| `model` | TEXT | the model as the provider or the runtime answered, with the options it was asked with |
 | `outcome` | TEXT | `labelled` or `unreadable` |
 | `cause` | TEXT | why an answer was unreadable, one of the seven causes, null on a label |
-| `kind` | TEXT | one of the nine kinds, null on an unreadable answer |
+| `kind` | TEXT | one of the nine kinds, by its readable name under version 1 and by its one-word key from version 2, null on an unreadable answer |
 | `direction` | TEXT | `positive`, `negative` or `neutral`, null on an unreadable answer |
 | `reason` | TEXT | one sentence holding no digit, null on an unreadable answer |
 | `labelled_at` | TEXT | UTC instant |
@@ -2954,7 +2955,32 @@ Grain: one row per ticker per article per profile per instruction version.
 
 Primary key: `ticker`, `article_id`, `profile`, `instruction_version`.
 
-Insert only, with a conflict ignored, so a label is never overwritten and after a switch the new profile writes rows of its own; an unreadable answer keeps its row so the article is not paid for again under that profile and version. The labeller drops a label whose article the counter has dropped, and is declared above as this table's deleter (see: A news article is stored once per member with its admissibility judged, and a label is never overwritten).
+Insert only, with a conflict ignored, so a label is never overwritten and after a switch the new profile writes rows of its own, the paid profile's labels standing beside the local ones; an unreadable answer keeps its row so the article is not asked again under that profile and version, and a story the runtime did not answer is given no row, so the next run asks it again. The labeller drops a label whose article the counter has dropped, and is declared above as this table's deleter (see: A news article is stored once per member with its admissibility judged, and a label is never overwritten) (see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own).
+
+### label_pin
+Grain: one row per version the news labeller labels under on the local model, from the 18.4 correction of 2026-10-28, written by hand.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | INTEGER | the version, in the order written |
+| `model` | TEXT | the model's identifier as LM Studio lists it |
+| `model_file` | TEXT | the model's file by its path under LM Studio's models folder, forward-slashed, never a path a machine roots |
+| `sha256` | TEXT | the file's SHA-256 over every byte, hashed whole when the version was written |
+| `size` | INTEGER | the file's size in bytes |
+| `modified` | TEXT | the file's last-modified instant, UTC, to its tick |
+| `runtime_name` | TEXT | the runtime's name as the probe's answer stated it, kept as a record and compared with nothing |
+| `runtime_version` | TEXT | the runtime's version as that answer stated it, kept as a record and compared with nothing |
+| `instruction_version` | INTEGER | the news instruction's version |
+| `temperature` | REAL | nought |
+| `seed` | INTEGER | the seed every label under the version is asked with |
+| `answer_tokens` | INTEGER | the answer's budget |
+| `context` | INTEGER | the window the model is loaded at, from its profile |
+| `written_at` | TEXT | UTC instant |
+| `run_id` | TEXT | the run that wrote it |
+
+Primary key: `id`.
+
+Insert by the labeller's pin by hand, `label-news --pin`, and never by a run that labels; the newest row is the pin every run compares before it asks, and a run whose model, file, instruction's version or window differs from it labels nothing and names the part, the file read by its size and modified instant and by its hash where either differs (see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own).
 
 ### research_section
 Grain: one row per ticker, section and version.

@@ -27,6 +27,17 @@ public static class LocalSlots
     // The instant a slot asks nothing after on the day it runs, in UTC.
     public static DateTimeOffset AsksNothingAfter(string slot, DateOnly day) =>
         new(day.ToDateTime(slot == Late ? LateAsksNothingAfter : EarlyAsksNothingAfter), TimeSpan.Zero);
+
+    // The start of the first slot at or after an instant, in UTC, which another process asking the local model stops
+    // before.
+    public static DateTimeOffset NextStart(DateTimeOffset from)
+    {
+        var day = DateOnly.FromDateTime(from.UtcDateTime);
+
+        return new[] { day.ToDateTime(EarlyStart), day.ToDateTime(LateStart), day.AddDays(1).ToDateTime(EarlyStart) }
+            .Select(start => new DateTimeOffset(start, TimeSpan.Zero))
+            .First(start => start >= from);
+    }
 }
 
 // When a night may read a release's reading: from the first night whose late slot starts after the SEC accepted the

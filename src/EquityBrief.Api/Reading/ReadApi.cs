@@ -409,8 +409,9 @@ public sealed record ShapeProposalRow(
 
 public sealed record TriggerReads(int? ConfirmationNights, string? ConfirmationVersion, int WiderMembers = 0, int RatedFourTimes = 0);
 
-// A stored article of a name with the newest label written for it under any profile, or none, and its stored text, which
-// says whether it is the name's own story.
+// A stored article of a name with the label the page draws for it, or none, its stored text, which says whether it is
+// the name's own story, and the run that wrote the label and the instruction's version it wrote it under, which say
+// whether the local model wrote it and whether tonight's run did.
 public sealed record NewsArticleRow(
     string ArticleId,
     string Title,
@@ -425,7 +426,9 @@ public sealed record NewsArticleRow(
     string? Reason,
     string? Model,
     string? Profile,
-    string Text = "");
+    string Text = "",
+    string? LabelRun = null,
+    int? LabelVersion = null);
 
 // One of the news labeller's own rows: its run, its outcome, when it ran and the detail naming the night.
 public sealed record LabellerRunRow(string RunId, string Outcome, string StartedAt, string EndedAt, string Detail);
@@ -2718,24 +2721,26 @@ public sealed partial class ReadApi : IComponent
     }
 
     // A name's earnings reaction record, oldest print first, as of the night the page shows.
-    // A name's stored articles of the thirty days before a night, newest first, each with the newest label
-    // written for it under any profile, which is the one the page draws.
+    // A name's stored articles of the thirty days before a night, newest first, each with the label the page draws:
+    // the one written under the newest instruction, which the local model alone writes, so the local label stands where
+    // one does and a paid label where none does, and the newest of them.
     // see: A news article is stored once per member with its admissibility judged, and a label is never overwritten
     const string NewsForName = @"
         SELECT a.article_id, a.title, a.source, a.published_at, a.link, a.admissibility,
-               l.outcome, l.cause, l.kind, l.direction, l.reason, l.model, l.profile, a.text
+               l.outcome, l.cause, l.kind, l.direction, l.reason, l.model, l.profile, a.text, l.run_id, l.instruction_version
         FROM news_article a
         LEFT JOIN news_label l ON l.rowid = (
             SELECT n.rowid FROM news_label n
             WHERE n.ticker = a.ticker AND n.article_id = a.article_id
-            ORDER BY n.labelled_at DESC, n.rowid DESC LIMIT 1)
+            ORDER BY n.instruction_version DESC, n.labelled_at DESC, n.rowid DESC LIMIT 1)
         WHERE a.ticker = $ticker AND a.published_at >= $from AND a.published_at < $to
         ORDER BY a.published_at DESC, a.article_id;
     ";
 
     // Every name's positive and negative stories of the thirty days before a night, counted as the name page's
-    // bar counts them: the newest label of each article, labelled, opinion pieces left out, and the company's own
-    // stories alone, read off each story's title and text against the company's name.
+    // bar counts them: the label the page draws of each article, labelled, opinion pieces left out under either
+    // version's word for them, and the company's own stories alone, read off each story's title and text against the
+    // company's name.
     // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
     const string NewsCountsOn = @"
         SELECT a.ticker, l.direction, a.title, a.text,
@@ -2744,8 +2749,8 @@ public sealed partial class ReadApi : IComponent
         JOIN news_label l ON l.rowid = (
             SELECT n.rowid FROM news_label n
             WHERE n.ticker = a.ticker AND n.article_id = a.article_id
-            ORDER BY n.labelled_at DESC, n.rowid DESC LIMIT 1)
-        WHERE a.published_at >= $from AND a.published_at < $to AND l.outcome = $labelled AND l.kind <> $opinion;
+            ORDER BY n.instruction_version DESC, n.labelled_at DESC, n.rowid DESC LIMIT 1)
+        WHERE a.published_at >= $from AND a.published_at < $to AND l.outcome = $labelled AND l.kind NOT IN ($opinion, $opinionName);
     ";
 
     // The store's copies, each attempt's own row, newest first.
@@ -2805,7 +2810,9 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(10) ? null : reader.GetString(10),
                 reader.IsDBNull(11) ? null : reader.GetString(11),
                 reader.IsDBNull(12) ? null : reader.GetString(12),
-                reader.IsDBNull(13) ? string.Empty : reader.GetString(13)));
+                reader.IsDBNull(13) ? string.Empty : reader.GetString(13),
+                reader.IsDBNull(14) ? null : reader.GetString(14),
+                reader.IsDBNull(15) ? null : reader.GetInt32(15)));
         }
 
         return rows;
@@ -2820,7 +2827,8 @@ public sealed partial class ReadApi : IComponent
         command.Parameters.AddWithValue("$from", NewsLabelling.WindowFrom(night));
         command.Parameters.AddWithValue("$to", NewsLabelling.WindowTo(night));
         command.Parameters.AddWithValue("$labelled", NewsLabelling.Labelled);
-        command.Parameters.AddWithValue("$opinion", NewsInstruction.Opinion);
+        command.Parameters.AddWithValue("$opinion", NewsInstruction.OpinionStored[0]);
+        command.Parameters.AddWithValue("$opinionName", NewsInstruction.OpinionStored[1]);
 
         var counts = new Dictionary<string, (int, int)>(StringComparer.Ordinal);
 

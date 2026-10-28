@@ -2119,9 +2119,9 @@ internal static class Scope
             Verdict.Pass,
             "each row of the first list carries the positive and negative stories of the window as the test's own arithmetic over the store counts them, the newest label of each article with opinion pieces and articles before the window left out, a name with no label saying so, and the second list's rows carrying none",
             ByReadSurface),
-        [CheckReach.Key("15.10 Run", "Research and spend, the news labeller's line with what the night's labelling cost and the month's against its limit and the articles labelled and the unreadable answers by cause and what stopped it")] = new Scoped(
+        [CheckReach.Key("15.10 Run", "Research and spend, the news labeller's line naming the local model it labelled on and saying it spent nothing with the articles labelled and the unreadable answers by cause and the stories the runtime did not answer and what stopped it and why and a paid run's line read on the rows it wrote with what its labelling cost and the month's against its limit")] = new Scoped(
             Verdict.Pass,
-            "the night's line is read off the labeller's own row for that night with its cost, the month's and the limit, the labels, the unreadable by cause, the refused, the names reached and the stop, and a night with no row says so",
+            "the night's line is read off the labeller's own row for that night, a local run's naming its model and spending nothing with the labels, the unreadable by cause, the stories not answered, the refused, the names reached and the stop, a paid run's with its cost, the month's and the limit, and a night with no row says so",
             ByReadSurface),
         [CheckReach.Key("15.10 Run", "What else is waiting on a count, the nights the news labeller ran against twenty with its measured duration and its month's spend and the share of answers refused for a digit")] = new Scoped(
             Verdict.Pass,
@@ -2892,7 +2892,7 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Start no news labeller, writing the night's row saying the off-peak run labels tonight's list five minutes after each peak window ends, a process of its own that labels the stored admitted articles of the names on the newest night's list and of every name a report is written for, each name's own newest first and every one of them over the thirty days before the night, through the news job's paid model one article at a time, with every call and every dollar on the labeller's own run and never the night's, bounded by its own time and month limits, the row saying on a night run again for an earlier session that its list is not tonight's (see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own) (see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Start no news labeller, writing the night's row saying the off-peak run labels tonight's list five minutes after each peak window ends, a process of its own that labels the stored admitted articles of the names on the newest night's list and of every name a report is written for, each name's own newest first and every one of them over the thirty days before the night, through the local model one article at a time under a pin of its own, with every call on the labeller's own run and never the night's, bounded by its own time and month limits, the row saying on a night run again for an earlier session that its list is not tonight's (see: The news labeller is a process of its own the off-peak run starts, and labels on the local model under a pin of its own) (see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run).")] = new Scoped(
             Verdict.Pass,
             "over a constructed night the launcher the night was handed is asked to start no labeller and no drain, the night's row after its own request saying the off-peak run labels tonight's list, with no model call on it; a night run again for an earlier session says its list is not tonight's, the night's source asks its launcher for neither, and the off-peak run's script, in its check mode over temporary repositories, builds main's own commit and refuses a checkout off main or ahead of origin/main",
             ByNight),
@@ -2902,43 +2902,43 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(LimitsTable, "News labeller time limit")] = new Scoped(
             Verdict.Pass,
-            "a labeller whose limit has passed before its first article sends nothing and names the limit as its stop with the names it reached, the twenty minutes read off the document against the constant",
+            "a labeller whose limit, counted from its start with its wait for the lock inside it, has passed sends nothing more and names the limit as its stop, a run stops before the local run's next slot, and a batch runs past the limit to its own instant, the twenty minutes read off the document against the constant",
             ByExpectations),
         [CheckReach.Key(LimitsTable, "News labeller month limit")] = new Scoped(
             Verdict.Pass,
-            "a month already at the limit sends nothing, and a limit the first call's ceiling would pass sends nothing, each naming the limit as its stop, the five dollars read off the document against the constant",
+            "a month whose paid runs spent the limit sends nothing and names the limit as its stop, and a run on the local model reads nothing spent and adds nothing, the five dollars read off the document against the constant",
             ByExpectations),
         [CheckReach.Key(LimitsTable, "Unreadable answers for a digit")] = new Scoped(
             Verdict.Pass,
-            "the instruction refuses a reason holding a digit by that cause, and the labeller stores an answer unreadable twice with its cause and counts it by cause on its row",
+            "the instruction refuses a reason holding a digit by that cause, and the labeller stores an answer it cannot read with its cause and counts it by cause on its row",
             ByExpectations),
         [CheckReach.Key(LimitsTable, "News article retention")] = new Scoped(
             Verdict.Pass,
             "the counter drops an article older than the retention and keeps the day's, the thirty-one read off the document against the constant",
             ByExpectations),
-        [CheckReach.Key(FailureTable, "The news job's model does not answer")] = new Scoped(
+        [CheckReach.Key(FailureTable, "The local model does not answer")] = new Scoped(
             Verdict.Pass,
-            "a model that answers nothing stops the labeller where it is with the model named as its stop and the labels before it kept, and a run refused before it asked writes its own refused row with the line",
+            "a runtime that is gone stops the labeller with the model named as its stop and why, and a story the runtime refuses twice is left with no row, counted as not answered and asked again by the next run",
             ByExpectations),
         [CheckReach.Key(FailureTable, "An answer the labeller cannot read")] = new Scoped(
             Verdict.Pass,
-            "an answer failing a check is asked for once more, and one failing twice is stored as unreadable with the second answer's cause, counted by cause on the run's row and not sent again under the profile",
+            "an empty answer and one cut off at its budget are asked for once more, and one cut off twice is stored as unreadable with its cause, counted by cause on the run's row and not sent again under the profile",
             ByExpectations),
         [CheckReach.Key(FailureTable, "The labeller's month limit reached")] = new Scoped(
             Verdict.Pass,
             "a month at the limit sends nothing and names the limit as its stop with the names reached",
             ByExpectations),
-        [CheckReach.Key(FailureTable, "The day or month cap pauses a label")] = new Scoped(
+        [CheckReach.Key(FailureTable, "No label pin is written, or the run differs from the newest one")] = new Scoped(
             Verdict.Pass,
-            "a cap the first call would pass makes no call, and the labeller names the cap as its stop with no label written",
+            "a run with no pin and a run whose model, instruction, window or file differs from the pin each make no call, label nothing and name the pin as their stop, the row naming how one is written or the part that differs",
             ByExpectations),
         [CheckReach.Key(FailureTable, "The labeller's time limit passes")] = new Scoped(
             Verdict.Pass,
-            "a limit passed before the first article sends nothing and names the limit as its stop with the names reached",
+            "a limit passed partway sends nothing more and names the limit as its stop, the article after it left for the next run, and the local run's next slot stops a run the same way",
             ByExpectations),
-        [CheckReach.Key(FailureTable, "A peak window of the news profile opens while the labeller runs")] = new Scoped(
+        [CheckReach.Key(FailureTable, "Another local process holds the local model's lock when the labeller would ask")] = new Scoped(
             Verdict.Pass,
-            "a clock inside the recorded profile's peak window sends nothing and names the window as its stop",
+            "a lock held a quarter of an hour is waited for inside the limit with the minutes on the run's row, and a lock held past the limit leaves the run asking nothing with the lock as its stop and why",
             ByExpectations),
         [CheckReach.Key(FailureTable, "An article refused by admissibility")] = new Scoped(
             Verdict.Pass,
@@ -6684,7 +6684,7 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "What else is waiting on a count, the mid and small cap indices' members holding four dated rating counts against nine in ten of them")] = "15.2",
         [CheckReach.Key("15.10 Run", "The setup families, beside each rule's edge its edge after each trade's own round trip at the published table over the trades priced")] = "15.2",
         [CheckReach.Key("15.7 Tonight", "The list, the positive and negative stories of the thirty days before the night as the name page's bar counts them")] = "12.6",
-        [CheckReach.Key("15.10 Run", "Research and spend, the news labeller's line with what the night's labelling cost and the month's against its limit and the articles labelled and the unreadable answers by cause and what stopped it")] = "12.6",
+        [CheckReach.Key("15.10 Run", "Research and spend, the news labeller's line naming the local model it labelled on and saying it spent nothing with the articles labelled and the unreadable answers by cause and the stories the runtime did not answer and what stopped it and why and a paid run's line read on the rows it wrote with what its labelling cost and the month's against its limit")] = "12.6",
         [CheckReach.Key("15.10 Run", "What else is waiting on a count, the nights the news labeller ran against twenty with its measured duration and its month's spend and the share of answers refused for a digit")] = "12.6",
         [CheckReach.Key("15.17 Past picks", "How the list's picks have done, the trades listed with the nights they were listed on")] = "12.2",
         [CheckReach.Key("15.17 Past picks", "How the list's picks have done, how many are still open and how many finished")] = "12.2",
@@ -7226,7 +7226,7 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Compare tonight's picks")] =
             ["a choice of the versions running beside the live list kept in the link", "the names only the live list picked and those both picked and those only the version picked with the setting that made the difference beside each name only one side picked", "two overlapping rings holding the three counts", "the version's picks over the last twenty evenings with the share the live list also picked and the evenings it picked a stock the live list did not", "picks alone with no figure from how a pick turned out"],
         [CheckReach.Key("15.10 Run", "Research and spend")] =
-            ["from 19.7 what research spent on the night's day and in its month against their caps", "the reports carrying fresh prose against reused", "the month's spend against the month cap", "the reports the paid model wrote on each of the last seven nights", "the reports written over those nights", "the news labeller's line with what the night's labelling cost and the month's against its limit and the articles labelled and the unreadable answers by cause and what stopped it"],
+            ["from 19.7 what research spent on the night's day and in its month against their caps", "the reports carrying fresh prose against reused", "the month's spend against the month cap", "the reports the paid model wrote on each of the last seven nights", "the reports written over those nights", "the news labeller's line naming the local model it labelled on and saying it spent nothing with the articles labelled and the unreadable answers by cause and the stories the runtime did not answer and what stopped it and why and a paid run's line read on the rows it wrote with what its labelling cost and the month's against its limit"],
         [CheckReach.Key("15.10 Run", "How each report did")] =
             ["one row per report over the seven nights with its stock and day and what it cost", "a cell per section saying whether it passed first time or on retry or was left out with why or was not warranted, with what its own calls cost and none of a trial's", "the two cases' cell marked where a draft of the pass carried a figure on both sides, with how many of the newest twenty reports' two cases did", "each section's share passed first time and its share left out over the newest twenty reports that warranted it"],
         [CheckReach.Key("15.10 Run", "Anything to worry about")] =
@@ -7658,12 +7658,12 @@ internal static class Scope
         // The model profiles, a 12.6 correction.
         ["A paid job's profile names a key the secrets file does not hold"] = "12.6",
         // The news labeller, a 12.6 correction.
-        ["The news job's model does not answer"] = "12.6",
+        ["The local model does not answer"] = "12.6",
         ["An answer the labeller cannot read"] = "12.6",
         ["The labeller's month limit reached"] = "12.6",
-        ["The day or month cap pauses a label"] = "12.6",
+        ["No label pin is written, or the run differs from the newest one"] = "12.6",
         ["The labeller's time limit passes"] = "12.6",
-        ["A peak window of the news profile opens while the labeller runs"] = "12.6",
+        ["Another local process holds the local model's lock when the labeller would ask"] = "12.6",
         ["An article refused by admissibility"] = "12.6",
         ["The labeller fails"] = "12.6",
         // The store's copy, the operator's ruling of 2026-10-02, and its 13.10 correction of 2026-10-08.
