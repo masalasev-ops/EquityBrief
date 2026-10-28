@@ -929,7 +929,7 @@ public sealed partial class ReadApi : IComponent
 
     // The settings key an operator's industry for a stock is read under, one entry a ticker, and the overrides read from
     // it, which the valuation's peers and the page's group read in the provider's industry's place.
-    // see: A stock's industry group is the provider's until an override is set and is checked against the page's own text, and the industry cycle reads only sources naming the company or its industry
+    // see: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening
     public const string IndustryOverridesKey = "EquityBrief:IndustryOverrides";
 
     public IReadOnlyDictionary<string, string> IndustryOverrides { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -2741,7 +2741,7 @@ public sealed partial class ReadApi : IComponent
     // bar counts them: the label the page draws of each article, labelled, opinion pieces left out under either
     // version's word for them, and the company's own stories alone, read off each story's title and text against the
     // company's name.
-    // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+    // see: A story is a member's where its title or its opening names the company by its name or its American listing, and no other story is drawn or counted
     const string NewsCountsOn = @"
         SELECT a.ticker, l.direction, a.title, a.text,
                (SELECT MAX(m.name) FROM membership m WHERE m.ticker = a.ticker)
@@ -2900,7 +2900,12 @@ public sealed partial class ReadApi : IComponent
         LIMIT 1;
     ";
 
-    public async Task<EquityBrief.Core.Report.ReleaseOpening?> NewestReleaseOpeningAsync(string ticker, DateOnly night)
+    public async Task<EquityBrief.Core.Report.ReleaseOpening?> NewestReleaseOpeningAsync(string ticker, DateOnly night) =>
+        (await NewestReleaseAsync(ticker, night))?.Opening;
+
+    // The filer's newest results release accepted by the end of a night: its opening line, the day the SEC accepted it and
+    // its whole stored text, which the page reads a newer quarter's segments from.
+    public async Task<(EquityBrief.Core.Report.ReleaseOpening? Opening, DateOnly AcceptedOn, string Text)?> NewestReleaseAsync(string ticker, DateOnly night)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
@@ -2920,13 +2925,34 @@ public sealed partial class ReadApi : IComponent
         using var unzipped = new System.IO.Compression.GZipStream(compressed, System.IO.Compression.CompressionMode.Decompress);
         using var text = new StreamReader(unzipped, System.Text.Encoding.UTF8);
 
-        return EquityBrief.Core.Report.ReleaseOpening.Of(
-            reader.GetString(0),
-            DateOnly.FromDateTime(DateTimeOffset.Parse(reader.GetString(1), CultureInfo.InvariantCulture).UtcDateTime),
-            reader.GetString(2),
-            await text.ReadToEndAsync(),
-            reader.GetString(4),
-            ticker);
+        var acceptedOn = DateOnly.FromDateTime(DateTimeOffset.Parse(reader.GetString(1), CultureInfo.InvariantCulture).UtcDateTime);
+        var whole = await text.ReadToEndAsync();
+
+        return (EquityBrief.Core.Report.ReleaseOpening.Of(reader.GetString(0), acceptedOn, reader.GetString(2), whole, reader.GetString(4), ticker), acceptedOn, whole);
+    }
+
+    // Whether the facts file a section written on a day was written from, the newest the store computed for the name by that
+    // day, carried the segments a results release's own table gave; a section written before they were read was written from
+    // the filing's.
+    // see: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so
+    const string FactsCarryReleaseSegments = @"
+        SELECT instr(payload, $carried) > 0 FROM facts
+        WHERE ticker = $ticker AND session_date <= $on
+        ORDER BY session_date DESC
+        LIMIT 1;
+    ";
+
+    public async Task<bool> WrittenFromReleaseSegmentsAsync(string ticker, DateOnly writtenOn)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = FactsCarryReleaseSegments;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$on", writtenOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$carried", "\"source\":\"" + EquityBrief.Core.Report.ReleaseSegments.FactSource + "\"");
+
+        return await command.ExecuteScalarAsync() is long carried && carried == 1;
     }
 
     // A name's two newest swing lows confirmed by a night, newest first, which the trend rule compares.

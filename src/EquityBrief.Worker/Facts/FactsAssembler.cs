@@ -60,6 +60,11 @@ public sealed class FactsAssembler : IComponent
             new StoreTouch(Store.FundamentalsSnapshot, Touch.Read),
             // The night's readings of the member's reported quarters, for a member holding them.
             new StoreTouch(Store.FundamentalReading, Touch.Read),
+            // A quarter its results release reports before its filing is stored: the quarter's reported revenue, the
+            // member's filer and the release's text, which its segments are read from.
+            new StoreTouch(Store.ReportedQuarter, Touch.Read),
+            new StoreTouch(Store.Company, Touch.Read),
+            new StoreTouch(Store.ReleaseDocument, Touch.Read),
             // Delete as well as Insert: a stored file for tonight that differs
             // from what the store now computes is removed and written again.
             new StoreTouch(Store.Facts, Touch.Insert | Touch.Delete),
@@ -83,6 +88,7 @@ public sealed class FactsAssembler : IComponent
     public const string FromFundamentals = "fundamental";
     public const string FromMembership = "membership";
     public const string FromReadings = "fundamental reading";
+    public const string FromRelease = EquityBrief.Core.Report.ReleaseSegments.FactSource;
 
     // The fact carrying the company's name, which every prompt lists with the other facts and a
     // research pass reads to rank a document whose title names the company.
@@ -103,6 +109,31 @@ public sealed class FactsAssembler : IComponent
     // Beside it the newest copy of the parts that are as of a fetch, where a
     // fetch has stored one.
     // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, and not on a day a pass wrote the name's own sections
+    // The newest quarter the member reported by the session, reported after its newest stored filing, with its revenue as
+    // the newest fetch of it stored it and the revenue of the quarter ending within a week of a year before it.
+    const string NewestReportedQuarterFor = @"
+        SELECT q.period_end, q.revenue,
+               (SELECT y.revenue FROM reported_quarter y
+                WHERE y.ticker = q.ticker
+                  AND y.period_end BETWEEN date(q.period_end, '-1 year', '-7 days') AND date(q.period_end, '-1 year', '+7 days')
+                ORDER BY y.fetched_at DESC
+                LIMIT 1)
+        FROM reported_quarter q
+        WHERE q.ticker = $ticker AND q.report_date IS NOT NULL AND q.report_date <= $session AND q.report_date > $filed
+        ORDER BY q.report_date DESC, q.fetched_at DESC
+        LIMIT 1;
+    ";
+
+    // The member's newest results release the SEC accepted by the session, by its filer.
+    const string NewestReleaseFor = @"
+        SELECT d.text_gzip
+        FROM release_document d
+        WHERE d.cik = (SELECT c.cik FROM company c WHERE c.ticker = $ticker AND c.cik IS NOT NULL ORDER BY c.fetched_at DESC LIMIT 1)
+          AND d.release = 1 AND substr(d.accepted_at, 1, 10) <= $session
+        ORDER BY d.accepted_at DESC
+        LIMIT 1;
+    ";
+
     const string LatestFilingFor = @"
         SELECT f.filing_date, f.payload,
                (SELECT s.payload FROM fundamentals_snapshot s
@@ -577,10 +608,25 @@ public sealed class FactsAssembler : IComponent
             facts.Add(new Fact(print + " move per cent", reader.GetDouble(6).ToString("0.######", CultureInfo.InvariantCulture), FromReactions));
         });
 
+        string? filedOn = null;
+
         await ReadAsync(connection, LatestFilingFor, ticker, cancellation, reader =>
+        {
+            filedOn = reader.GetString(0);
             facts.AddRange(Filed(
                 reader.GetString(0),
-                FundamentalsSnapshot.Over(reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2)))));
+                FundamentalsSnapshot.Over(reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2))));
+        });
+
+        // A quarter its results release reports before its filing is stored: the release's own segment table, read by the
+        // rule the page draws it by, in place of the older filing's segments, so the segment commentary is written from
+        // the quarter the release reports.
+        // see: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so
+        if (await ReleaseSegmentsAsync(connection, ticker, sessionDate, filedOn, cancellation) is { } released)
+        {
+            facts.RemoveAll(fact => fact.Name.StartsWith(SegmentPeriods.Prefix, StringComparison.Ordinal));
+            facts.AddRange(ReleaseSegmentFacts(released));
+        }
 
         // The release before's guided figures, read off the filing stored before the newest by the reader of the
         // newest's, so what management said can state the guidance it moved from.
@@ -600,6 +646,92 @@ public sealed class FactsAssembler : IComponent
             facts.AddRange(ReadingFacts(Readings.FromJson(reader.GetString(0)))));
 
         return new Assembled(sessionDate, facts);
+    }
+
+    // The segment table read from the newest results release, where the newest quarter the member reported by the night was
+    // reported after its newest stored filing: none where no such quarter, release or readable table is stored.
+    async Task<EquityBrief.Core.Report.SegmentReading?> ReleaseSegmentsAsync(SqliteConnection connection, string ticker, DateOnly session, string? filedOn, CancellationToken cancellation)
+    {
+        (DateOnly Quarter, decimal Revenue, decimal? YearEarlier)? reported = null;
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = NewestReportedQuarterFor;
+            command.Parameters.AddWithValue("$ticker", ticker);
+            command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$filed", filedOn ?? string.Empty);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            if (await reader.ReadAsync(cancellation) && !reader.IsDBNull(1))
+            {
+                reported = (
+                    DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    decimal.Parse(reader.GetString(1), NumberStyles.Float, CultureInfo.InvariantCulture),
+                    reader.IsDBNull(2) ? null : decimal.Parse(reader.GetString(2), NumberStyles.Float, CultureInfo.InvariantCulture));
+            }
+        }
+
+        if (reported is not { } quarter)
+        {
+            return null;
+        }
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = NewestReleaseFor;
+            command.Parameters.AddWithValue("$ticker", ticker);
+            command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            if (!await reader.ReadAsync(cancellation) || reader.IsDBNull(0))
+            {
+                return null;
+            }
+
+            using var compressed = new MemoryStream((byte[])reader.GetValue(0));
+            using var unzipped = new System.IO.Compression.GZipStream(compressed, System.IO.Compression.CompressionMode.Decompress);
+            using var text = new StreamReader(unzipped, System.Text.Encoding.UTF8);
+
+            return EquityBrief.Core.Report.ReleaseSegments.Read(await text.ReadToEndAsync(cancellation), quarter.Quarter, quarter.Revenue, quarter.YearEarlier);
+        }
+    }
+
+    // A release's segment table as facts, named as a filing's segment figures are, by segment, line and the quarter's end,
+    // the same quarter a year earlier beside it, and the company's total among them.
+    public static IReadOnlyList<Fact> ReleaseSegmentFacts(EquityBrief.Core.Report.SegmentReading released)
+    {
+        if (released.Quarter is not { } quarter)
+        {
+            return [];
+        }
+
+        var now = quarter.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var before = quarter.AddYears(-1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var facts = new List<Fact>();
+        var taken = new HashSet<string>(StringComparer.Ordinal);
+
+        // A name taken once is kept once, since a facts file naming a fact twice cannot be written.
+        void Add(string segment, string line, string period, decimal? value)
+        {
+            if (value is { } figure && taken.Add($"{SegmentPeriods.Prefix}{segment} {line} {period}"))
+            {
+                facts.Add(new Fact($"{SegmentPeriods.Prefix}{segment} {line} {period}", figure.ToString("0.##", CultureInfo.InvariantCulture), FromRelease));
+            }
+        }
+
+        Add(FundamentalsFetcher.CompanyRows, "Net revenues", now, released.Total);
+
+        foreach (var row in released.Rows)
+        {
+            Add(row.Segment, "Net revenues", now, row.Revenue);
+            Add(row.Segment, "Net revenues", before, row.RevenueYearEarlier);
+            Add(row.Segment, "Operating profit", now, row.Earnings);
+            Add(row.Segment, "Operating profit", before, row.EarningsYearEarlier);
+        }
+
+        return facts;
     }
 
     // The night's readings, each figure a stored value named for what it is, and nothing for a member

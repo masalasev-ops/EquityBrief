@@ -894,6 +894,14 @@ dl.snapshot dt{color:var(--ink-2);font-size:13.5px}
 dl.snapshot dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
 dl.snapshot dd b{font-weight:600;font-size:15px}
 dl.snapshot dd small{display:block;font-size:12.5px;color:var(--soft)}
+/* the short card of a trade a family holds the stock on: a line to a row, what it is on the left and its figure on the
+   right, ruled as the snapshot's rows are */
+.held-card{max-width:620px;margin:18px 0 0;padding:12px 16px;border:1px solid var(--hair-2);border-radius:8px;background:var(--surface)}
+.held-card h4{margin:0 0 8px;font:600 11.5px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+.held-lines{margin:0;border-top:1px solid var(--ink)}
+.held-lines>div{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:7px 0;border-bottom:1px solid var(--hair)}
+.held-lines dt{color:var(--ink-2);font-size:13.5px}
+.held-lines dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
 /* what management said and every other filed figure, closed until opened */
 details.guidance-fold,details.numbers-detail{margin:14px 0 0;border:1px solid var(--hair);border-radius:6px;background:var(--surface)}
 details.guidance-fold>summary,details.numbers-detail>summary{cursor:pointer;padding:9px 14px;font:600 13px var(--sans);min-height:40px;display:flex;align-items:center}

@@ -10922,3 +10922,111 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the relabel itself, run by hand from main after the merge in batches between the writers' slots, its
             figures read off its runs' rows. The filers holding no recent release, the segments read from a release's
             tables and the quarters fetch's asks for COR, SMCI, BA and V stand as the entry above carried them.
+
+### 18.4 ruling - the report page's remaining defects closed for every name's page by code and the local model alone, in a pull request of its own   2026-10-28
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      the operator's instruction of 2026-10-28, about 04:40 UTC: "Close the remaining ROP report defects for every
+            name's page. Add to what exists and remove no capability. Use code or the local model only: no paid model
+            call and no analyst-ratings call. Verify on ROP plus two other names of different kinds, and do not
+            regenerate anything", and "Do the above only as a separate PR". Its parts: a newer quarter's segments table
+            and the segment commentary's inputs filled by code from its results release's own tables, labelled as from the
+            results release with the filing not stored yet; a sentence the figures contradict withheld with the note, not
+            kept with a correction appended, two sources disagreeing named in one sentence; source labels taken out of all
+            written text, the moves' causes included; a held stock's short version opening on its held trade, its family,
+            fill, stop, target, last day from its own setup's limit, status and reward to risk at the fill, with a short
+            card for it, each paragraph of what worked and what did not held to four sentences, the earlier picks' limit
+            and the pick's exit both read from the setup's own, and the plan showing the held trade's exits in place of
+            saying it places none; a story's title or text naming the company or its American listing, and every story
+            that passes labelled; every name the peer check flags listed with a group proposed from the page's own
+            account for the operator to approve before any override is set, and the relevance test held over the
+            industry cycle's sources and the sources list, saying "not enough relevant sources" where fewer than two
+            remain; older bands read out far enough to cover a pick's target and stop, the held trade's stop and target
+            on the chart and an estimated next report marked estimated; and each part added to the proof as passed,
+            failed or unexamined with the names affected, the general rules in the architecture's report page section with
+            no dated figures and the dated evidence in the changelog, the reply stating what one full regeneration costs
+            on the paid profile, split by job.
+Queue:      done, PRs 573 to 579; in progress, this pull request; next, the operator's word on the peer groups the proof
+            proposes, on 22.14's pullback version, on 22.15's freezes and on the quarters fetch's asks for COR, SMCI, BA
+            and V, the relabel running on in batches between the writers' slots.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - correction: every name's report page closes the defects ROP's still showed, by code alone, each read back by the proof   2026-10-28
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Found:      ROP's page of 2026-10-28: its segments and the facts its commentary is written from the quarter to June's
+            while its release of 2026-10-22 carried the September quarter's tables, beside "not filed" rows from an older
+            filing's table; its revenue called a miss in three places beside a 0.2% beat, one kept with a correction after
+            it; D1 used as a word three times in its segment commentary and D7 and D4 in its moves' causes; its drift trade
+            of 2026-10-26, filled at 434.12, drawn nowhere, the key beneath its earlier picks saying 63 sessions where the
+            drift holds 60 and its plan saying it places no exit; Roche's stories and others naming Roper only at their
+            foot among its 42, 10 of them labelled; Roche's pages among its sources; its older bands stopping at 450.02
+            below a target of 529.64; and its next report said only as not announced.
+Corrected:  a newer quarter's results release is read by code for its own segment table, under a heading closed by a
+            colon or followed by its columns' years, with or without a total line, standing only where its total at one
+            scale is the quarter's reported revenue within a tenth of a per cent, its segments sum to it within their
+            rounding and no two share a name, the year-earlier column read only where its total is that quarter's stored
+            revenue within a per cent: drawn first, labelled as the release's, the older filing's table folded beneath, and
+            carried into the facts file in place of the filing's segment figures, a commentary written from the filing's
+            saying so. A beat or a miss the stored estimate contradicts is withheld with both sources named in one
+            sentence, and a move's written cause is read and cleaned as a section is. A document's label used as a word is
+            drawn as the kind of document it names. A stock held on a family's open trade opens on it: the short version's
+            held paragraph, its written paragraph on the levels' plan left to the plan region as a pick's is, a short card
+            styled as the snapshot's rows are, the plan's own exits, the exits line naming them where the levels' plan
+            places none, as it now names a pick's, and the chart's stop and target; the earlier picks' key names each setup's own
+            limit; what worked and what did not is drawn four sentences a paragraph, an abbreviation spelled out only in a
+            sentence left out spelled out where next used. A story is a member's where its title or the first six hundred
+            characters of its text name the company, a bracketed listing on another exchange read as that exchange's.
+            Older bands read out past the stored ones as far as a pick's or a held trade's target and stop, up to eight a
+            side, and a level beyond every band the history read is said beneath them. A next report not announced gives
+            the day it is estimated at. The sources list and the cycle read only documents naming the company or its
+            industry in their opening, the list folding the rest beneath it and saying where fewer than two remain, and the
+            proof lists each mismatched peer group with a group proposed for the operator's approval, setting none. The
+            proof adds held-trade, what-worked, own-limit, levels-cover, next-report-estimated, news-labelled,
+            sources-relevant and segments-release, and widens directions, markers, short-version, pick-on-chart and
+            pick-exit, a written cause read as a section's prose and a story's title a row names as none of the page's.
+Drawn:      ROP, held on the drift: its release's three segments summing to its 2,171.8 million, its commentary saying it
+            was written from the filing's, eight older bands reaching 534.45 to 540.29 above its target of 529.64, its next
+            report estimated about 2027-01-26, five contradicted sentences withheld and no label left; KEY, a bank held on the
+            drift, whose release states no segment table and whose stored bands reach both its levels; and P, the night's
+            pullback pick, opening on the pick with its plan's own exit. Nothing was written again.
+Proof:      over the S&P 500's 503 pages of the night of 2026-10-27, drawn from the branch over the live store at 10:39
+            UTC, each rule passed, failed and unexamined: directions 195, 0, 308; markers 204, 0, 299; abbreviations 204, 0,
+            299; short-version 42, 0, 461; held-trade 20, 0, 483; what-worked 42, 0, 461; own-limit 41, 0, 462; one-value
+            503, 0, 0; header 503, 0, 0; levels-older 61, 0, 442; pick-on-chart 26, 0, 477; levels-cover 26, 0, 477;
+            pick-exit 6, 0, 497; next-report 6, 0, 497; next-report-estimated 160, 0, 343; rules-family 6, 0, 497;
+            trend-words 401, 0, 102; news-matched 503, 0, 0; news-labelled 26, 477, 0, the relabel not yet through;
+            industry-label 500, 0, 3; industry-mismatch 42, 0, 461, with 19 groups proposed; sources-relevant 500, 0, 3;
+            newest-quarter 457, 45, 1, each a release newer than the quarter the quarters fetch has stored;
+            segments-release 15, 0, 488, of them 382 on the filing's quarter and 106 whose release states no segment table
+            summing to its revenue; rerun-alone 19, 0, 484; model-labels 503, 0, 0.
+Tests:      11 new, 5 rewritten for the rules they now hold; 2868 in all.
+Claims:     none new: the report page's rules are paragraphs of section 4, and the facts assembler's catalogue and matrix
+            rows are amended in place.
+Pins:       none move; no rule's code version and no readings version moves, held by the filter's, the scorer's and the
+            ledger readings' pin tests. The night's facts file changes only for a member whose newest quarter was reported
+            after its newest stored filing and whose release's table reads, and the stricter story match counts no more
+            stories than the night's stored counts were taken over.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, each filtered to
+            the tests reading it. M1 the release's table read at any scale, M2 the facts carrying no year-earlier revenue,
+            M3 a contradicted beat or miss kept as written, M4 a document's bare label drawn as written, M5 a move's written
+            cause drawn as written, M6 an ended trade read as held, M7 what worked drawn at any length, M8 the plan's exits
+            line naming no trade, M9 a story's company read in its whole text, M10 another exchange's brackets read as the
+            member's, M11 every document kept in the sources list, M12 the proof proposing no peer group, M13 older bands
+            stopping at the two nearest, M14 no estimate beside a next report not announced, M15 the held-trade rule passing
+            every held page, M16 a commentary read as the release's whatever its facts file carried, M17 no line where a
+            target lies beyond every band, M18 any second column read as the year before, M19 a story's title read as the
+            page's writing, M20 no abbreviation spelled out again after the cap, M21 the held-trade rule reading no plan
+            paragraph beneath the trade: each red at the tests reading it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2868 of 2868 tests ran
+            with none failed, migrations 0 to 114 with none pending, schema version 114, against `data-ci` and never
+            `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the relabel, running in batches between the writers' slots, which brings the news-labelled rule to every
+            page; the 19 peer groups the proof proposes, for the operator's approval before any override is set; the
+            written sections, which nothing here writes again, ROP's segment commentary saying it was written from the
+            filing's segments until its report is next written; and the 45 pages whose newest release is newer than the
+            quarter the quarters fetch has stored, BA's and COR's among them, the asks for COR, SMCI, BA and V standing as
+            the entries above carried them.

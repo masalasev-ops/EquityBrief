@@ -116,14 +116,18 @@ public sealed partial class MarkRenderer
         return region.Append("</section>").ToString();
     }
 
-    // The sources region: every document the written regions cite with its date and link, the latest quarter's lines the
-    // filing and the provider's fetch state differently beyond rounding, the filing first, and the one line naming what is
+    // The sources region: every document the written regions cite with its date and link, those naming neither the company
+    // nor its industry folded apart beneath and the list saying where fewer than two remain; the latest quarter's lines the
+    // filing and the provider's fetch state differently beyond rounding, the filing first; and the one line naming what is
     // computed rather than sourced.
-    public string Sources(string ticker, IReadOnlyList<SourceCell> documents, IReadOnlyList<FigureConflict> conflicts, bool filedFactsHeld)
+    // see: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening
+    public string Sources(string ticker, IReadOnlyList<SourceCell> documents, IReadOnlyList<FigureConflict> conflicts, bool filedFactsHeld, Func<SourceCell, bool>? relevant = null)
     {
         var region = new StringBuilder();
+        var kept = documents.Where(document => relevant?.Invoke(document) ?? true).ToArray();
+        var leftOut = documents.Except(kept).ToArray();
 
-        region.Append(Formatted($"<section class=\"sources-region\" data-ticker=\"{Escaped(ticker)}\" data-documents=\"{documents.Count}\" data-conflicts=\"{conflicts.Count}\">"));
+        region.Append(Formatted($"<section class=\"sources-region\" data-ticker=\"{Escaped(ticker)}\" data-documents=\"{kept.Length}\" data-left-out=\"{leftOut.Length}\" data-relevance=\"{(relevant is null ? "untested" : "tested")}\" data-conflicts=\"{conflicts.Count}\">"));
         region.Append("<div class=\"sub\">Every document the written regions cite</div>");
 
         if (documents.Count == 0)
@@ -132,15 +136,36 @@ public sealed partial class MarkRenderer
         }
         else
         {
-            region.Append("<ol class=\"sources\">");
-
-            foreach (var document in documents)
+            if (kept.Length < EquityBrief.Core.Report.IndustryCheck.FewestSources)
             {
-                region.Append(Formatted($"<li data-document=\"{Escaped(document.Id)}\" data-published-on=\"{Published(document)}\" data-url=\"{Sent(document.Url)}\">"));
-                region.Append(Link(document)).Append("</li>");
+                region.Append(Formatted($"<p class=\"degraded\" data-documents=\"few\">Not enough relevant sources: {kept.Length} of the {documents.Count} documents the written regions cite name the company or its industry.</p>"));
             }
 
-            region.Append("</ol>");
+            if (kept.Length > 0)
+            {
+                region.Append("<ol class=\"sources\">");
+
+                foreach (var document in kept)
+                {
+                    region.Append(Formatted($"<li data-document=\"{Escaped(document.Id)}\" data-published-on=\"{Published(document)}\" data-url=\"{Sent(document.Url)}\">"));
+                    region.Append(Link(document)).Append("</li>");
+                }
+
+                region.Append("</ol>");
+            }
+
+            if (leftOut.Length > 0)
+            {
+                region.Append(Formatted($"<details class=\"sources-left-out\" data-left-out=\"{leftOut.Length}\"><summary>{leftOut.Length} {(leftOut.Length == 1 ? "document names" : "documents name")} neither the company nor its industry, left out of the list</summary><ol class=\"sources\">"));
+
+                foreach (var document in leftOut)
+                {
+                    region.Append(Formatted($"<li data-document=\"{Escaped(document.Id)}\" data-published-on=\"{Published(document)}\" data-url=\"{Sent(document.Url)}\" data-relevant=\"no\">"));
+                    region.Append(Link(document)).Append("</li>");
+                }
+
+                region.Append("</ol></details>");
+            }
         }
 
         region.Append("<div class=\"sub\">Figures checked and not used</div>");

@@ -100,6 +100,16 @@ public sealed record DecisionCardView(
     public string Id => $"card-{Index}-{Family}-{Ticker}".ToLowerInvariant().Replace('.', '-').Replace(' ', '-');
 }
 
+// The trade a family holds a stock on where the page's night lists it under none: the card the trade's own night stored,
+// with its fill, and the trade as the nights since walked it to the page's night.
+public sealed record HeldTradeView(DecisionCardView Card, PickCell Pick)
+{
+    // The reward against the risk at the fill: the target's distance above it over the stop's below, none where the fill is
+    // not stored yet or stands outside the two.
+    public decimal? RewardToRisk =>
+        Pick.Buy is { } fill && Card.Stop is { } stop && Card.Target is { } target && fill > stop && target > fill ? (target - fill) / (fill - stop) : null;
+}
+
 // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
 // see: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own
 // see: A buy point's fold draws the stock's entry and exit plan beneath its setup's own plan, as the full page draws it
@@ -254,11 +264,50 @@ public sealed partial class MarkRenderer
         return body.Append("</ul></section>").ToString();
     }
 
+    // The short card of the trade a family holds the stock on: the setup and the night it picked it, the fill, the stop, the
+    // target, the last day its own limit gives it, where the trade stands and its reward against the risk at the fill.
+    // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
+    public string HeldCard(HeldTradeView held)
+    {
+        var card = held.Card;
+        var pick = held.Pick;
+        var rows = new (string Key, string Value)[]
+        {
+            ("Setup", Capitalised(SetupOf(card.Family)) + FormattableString.Invariant($", picked on {pick.Night:d MMM yyyy}")),
+            ("Fill", pick.Buy is { } fill ? Price(fill) + (pick.FilledOn is { } on ? FormattableString.Invariant($", the open of {on:d MMM yyyy}") : string.Empty) : "it buys at the next open"),
+            ("Stop", card.Stop is { } stop ? "a close below " + Price(stop) : "none"),
+            ("Target", card.Target is { } target ? Price(target) : "none, its stop trails the price"),
+            ("Last day", card.Cap is { } cap ? Formatted($"after {cap} trading days") + (card.Hits is { } hits ? FormattableString.Invariant($", about {hits.Through:d MMM yyyy}") : string.Empty) : "its setup states no limit"),
+            ("Status", PickStatus.Words(pick.Status) + (pick.Sessions is { } sessions ? Formatted($", {sessions} {(sessions == 1 ? "session" : "sessions")} held") : string.Empty)),
+            ("Reward to risk at the fill", held.RewardToRisk is { } ratio ? ratio.ToString("0.00", Invariant) : "not stated, the fill not stored or outside the stop and the target"),
+        };
+
+        var drawn = new StringBuilder(Formatted($"<section class=\"held-card\" data-family=\"{Escaped(card.Family)}\" data-night=\"{DayOf(pick.Night)}\" data-status=\"{Escaped(pick.Status)}\" data-cap=\"{(card.Cap is { } limit ? limit.ToString(Invariant) : "none")}\"><h4>The trade it is held on</h4><dl class=\"held-lines\">"));
+
+        foreach (var (key, value) in rows)
+        {
+            drawn.Append(Formatted($"<div><dt>{Escaped(key)}</dt><dd>{Escaped(value)}</dd></div>"));
+        }
+
+        return drawn.Append("</dl></section>").ToString();
+    }
+
     // A pick's own exit as the plan region opens on it: the family's target, its stop as a close below it and its time
-    // limit, whichever comes first, and that the levels' plan beneath is a buyer's without the pick.
-    public string PicksOwnExit(DecisionCardView card)
+    // limit, whichever comes first, and that the levels' plan beneath is a buyer's without the pick; for a stock a family
+    // holds a trade in, that trade's own exits in the same words.
+    public string PicksOwnExit(DecisionCardView card, PickCell? held = null)
     {
         var setup = SetupOf(card.Family);
+        var sold = SoldBy(card);
+
+        return held is { } holding
+            ? FormattableString.Invariant($"<p class=\"picks-exit\" data-family=\"{Escaped(card.Family)}\" data-held=\"{DayOf(holding.Night)}\">This stock is held on the trade the {Escaped(setup)} picked it for on {holding.Night:d MMM yyyy}, sold {Escaped(sold)}, whichever comes first. The plan beneath is worked from its support and resistance levels for a buyer without that trade.</p>")
+            : Formatted($"<p class=\"picks-exit\" data-family=\"{Escaped(card.Family)}\">This stock is a pick of the {Escaped(setup)}, and its trade is sold {Escaped(sold)}, whichever comes first. The plan beneath is worked from its support and resistance levels for a buyer without the pick.</p>");
+    }
+
+    // A trade's own exits in words: at its target, at a close below its stop and after its limit, as many as it has.
+    static string SoldBy(DecisionCardView card)
+    {
         var exits = new List<string>();
 
         if (card.Target is { } target)
@@ -276,10 +325,16 @@ public sealed partial class MarkRenderer
             exits.Add(Formatted($"after {cap} trading days"));
         }
 
-        var sold = exits.Count == 0 ? "by its own exits" : exits.Count == 1 ? exits[0] : string.Join(", ", exits.Take(exits.Count - 1)) + " or " + exits[^1];
-
-        return Formatted($"<p class=\"picks-exit\" data-family=\"{Escaped(card.Family)}\">This stock is a pick of the {Escaped(setup)}, and its trade is sold {Escaped(sold)}, whichever comes first. The plan beneath is worked from its support and resistance levels for a buyer without the pick.</p>");
+        return exits.Count == 0 ? "by its own exits" : exits.Count == 1 ? exits[0] : string.Join(", ", exits.Take(exits.Count - 1)) + " or " + exits[^1];
     }
+
+    // Where the levels' plan places no exit, the line saying so names the exits of the pick or the held trade the page opens
+    // on, so the plan never reads as selling nowhere.
+    // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
+    public static string NoPlanExitLine(DecisionCardView? trade, bool held) =>
+        trade is { } card
+            ? Formatted($"<p class=\"degraded\" data-exits=\"trade\">The levels' plan places no exit of its own; {(held ? "the held trade" : "the pick")} is sold {Escaped(SoldBy(card))}, whichever comes first.</p>")
+            : "<p class=\"degraded\" data-exits=\"none\">The plan places no exit.</p>";
 
     // How the rules read a stock a setup family picked, first: that family's sentence naming it and its night, and each
     // check it passed as its card draws them.

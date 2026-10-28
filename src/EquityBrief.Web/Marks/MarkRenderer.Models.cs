@@ -48,7 +48,7 @@ public sealed partial class MarkRenderer
     // The older bands beneath the stored year's, each with its role, its edges and the session the pulled prices turned at,
     // under a line saying they are read from the history before the stored year and that nothing but this page reads them;
     // nothing where none is drawn.
-    // see: Where the stored year holds no band on a side the name page draws bands read from the pulled history, marked older and read by nothing else
+    // see: Older bands are read out as far as a pick's stop and target, marked older and read by nothing else
     public static string OlderBandsTable(IReadOnlyList<EquityBrief.Core.Report.OlderBand> bands, decimal? price)
     {
         if (bands.Count == 0)
@@ -59,8 +59,33 @@ public sealed partial class MarkRenderer
         var rows = string.Join(string.Empty, bands.Select(band =>
             FormattableString.Invariant($"<tr class=\"band older\" data-older-role=\"{Escaped(band.Role)}\" data-low-edge=\"{band.Low.ToString(Invariant)}\" data-high-edge=\"{band.High.ToString(Invariant)}\" data-made-on=\"{band.MadeOn:yyyy-MM-dd}\"><td>{Escaped(band.Role)}, older</td><td class=\"num\">{Price(band.Low)} to {Price(band.High)}</td><td>{band.MadeOn:yyyy-MM-dd}</td></tr>")));
 
-        return Formatted($"<div class=\"sub\">Older bands, from the history before the stored year</div><p class=\"older-bands-note\">The stored year holds no band on {(bands.Any(band => band.Role == "resistance") && bands.Any(band => band.Role == "support") ? "either side" : bands.Any(band => band.Role == "resistance") ? "the side above the price" : "the side below the price")}, so these are the prices the history pulled before it turned at{(price is { } at ? Formatted($", read against {Price(at)}") : string.Empty)}. They are older and drawn here alone: no rule, plan or listing reads them.</p>")
+        return Formatted($"<div class=\"sub\">Older bands, from the history before the stored year</div><p class=\"older-bands-note\">These are the prices the history pulled before the stored year turned at {(bands.Any(band => band.Role == "resistance") && bands.Any(band => band.Role == "support") ? "on either side of the price" : bands.Any(band => band.Role == "resistance") ? "above the price" : "below the price")}{(price is { } at ? Formatted($" of {Price(at)}") : string.Empty)}, where the stored year holds no band or none as far as a pick's target or stop. They are older and drawn here alone: no rule, plan or listing reads them.</p>")
             + "<div class=\"tbl-wrap\"><table class=\"older-bands\"><thead><tr><th>Band</th><th>Edges</th><th>Turned at on</th></tr></thead><tbody>" + rows + "</tbody></table></div>";
+    }
+
+    // Where a pick's or a held trade's target lies above every band the levels draw, stored and older, or its stop below every
+    // one, a line saying so with the furthest band on that side: the history read turned at no price as far out.
+    // see: Older bands are read out as far as a pick's stop and target, marked older and read by nothing else
+    public static string BeyondTheBands(decimal? target, decimal? stop, IReadOnlyList<(decimal Low, decimal High)> bands)
+    {
+        if (bands.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var said = new System.Text.StringBuilder();
+
+        if (target is { } aim && bands.All(band => band.High < aim))
+        {
+            said.Append(Formatted($"<p class=\"degraded\" data-beyond=\"target\">No band drawn here reaches the target of {Price(aim)}: the highest, stored or older, reaches {Price(bands.Max(band => band.High))}, and the history read turned at no price as high.</p>"));
+        }
+
+        if (stop is { } floor && bands.All(band => band.Low > floor))
+        {
+            said.Append(Formatted($"<p class=\"degraded\" data-beyond=\"stop\">No band drawn here reaches the stop of {Price(floor)}: the lowest, stored or older, reaches {Price(bands.Min(band => band.Low))}, and the history read turned at no price as low.</p>"));
+        }
+
+        return said.ToString();
     }
 
     // The section a page's own account of the business is read from.
@@ -68,7 +93,7 @@ public sealed partial class MarkRenderer
 
     // The line flagging an industry group that names none of the business the page's own text describes, none where they
     // agree or either is not read.
-    // see: A stock's industry group is the provider's until an override is set and is checked against the page's own text, and the industry cycle reads only sources naming the company or its industry
+    // see: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening
     public static string IndustryMismatch(string? industry, string? sells) =>
         EquityBrief.Core.Report.IndustryCheck.Mismatch(industry, sells) is { } business
             ? Formatted($"<p class=\"notice industry-mismatch\" data-industry=\"{Escaped(industry!)}\" data-business=\"{Escaped(business)}\">The page's own account of what the company sells describes {Escaped(business)}, which the group {Escaped(industry!)} does not name: the group is the provider's classification, and an override set for the stock stands in its place.</p>")

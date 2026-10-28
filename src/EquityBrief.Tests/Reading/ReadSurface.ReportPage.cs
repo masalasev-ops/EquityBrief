@@ -49,12 +49,13 @@ public partial class ReadSurface
         Assert.Contains("data-lane=\"none\"><td>News labels</td><td>no model</td>", MarkRenderer.ModelJobsTable(MarkRenderer.ModelJobs([], news with { Model = null, Unlabelled = 79 }, null, paid)), StringComparison.Ordinal);
     }
 
-    // A story the feed tagged a member with is the member's only where it names the company by its name or by its ticker
-    // beside an American exchange or a ticker's own marks, and a listing on another exchange is never the member's: ROP's
-    // Roche stories, tagged with Roche's own listing under the same three letters, are none of Roper's.
-    // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+    // A story the feed tagged a member with is the member's only where its title or its opening names the company by its
+    // name or by its ticker beside an American exchange or a ticker's own marks, and a listing on another exchange is never
+    // the member's: ROP's Roche stories, tagged with Roche's own listing under the same three letters, are none of Roper's,
+    // and nor is a story naming Roper only further in, as the parent of a business, a fund's holding or a peer.
+    // see: A story is a member's where its title or its opening names the company by its name or its American listing, and no other story is drawn or counted
     [Fact]
-    public void AStoryIsAMembersOnlyWhereItNamesTheCompanyOrItsAmericanListing()
+    public void AStoryIsAMembersOnlyWhereItsTitleOrOpeningNamesTheCompanyOrItsAmericanListing()
     {
         const string Roper = "Roper Technologies Inc";
 
@@ -74,6 +75,21 @@ public partial class ReadSurface
         Assert.False(EquityBrief.Core.News.StoryMatch.IsAbout("Roche keeps 2026 outlook as Q3 sales rise", "Basel. Roche Holding AG said on Thursday.", "ROP", Roper));
         Assert.False(EquityBrief.Core.News.StoryMatch.IsAbout("Biomarkers Market Forecasts Growth", "Profiling Roche, Abbott and Siemens.", "ROP", Roper));
         Assert.False(EquityBrief.Core.News.StoryMatch.IsAbout("Shares on the Swiss exchange", "ROP.SW closed lower.", "ROP", Roper));
+
+        // A ticker standing in a bracketed listing that names another exchange is that exchange's, Roche's dateline among
+        // them, and one beside an American exchange in the same story is still the member's.
+        Assert.False(EquityBrief.Core.News.StoryMatch.IsAbout("Roche receives CE Mark", "Basel, 27 October 2026 - Roche (SIX: RO, ROP; OTCQX: RHHBY) announced today a new analyser.", "ROP", Roper));
+        Assert.True(EquityBrief.Core.News.StoryMatch.IsAbout("Software results", "(TSX: ROPX) and (NYSE: ROP) reported.", "ROP", Roper));
+        Assert.True(EquityBrief.Core.News.StoryMatch.IsAbout("Software results", "Shares rose (TICKER: ROP) after the call.", "ROP", Roper));
+        Assert.True(EquityBrief.Core.News.StoryMatch.IsAbout("Software results", "Shares rose (NYSEARCA: ROP) after the call.", "ROP", Roper));
+
+        // The company named only past the story's opening, as DAT's freight story names its parent in its closing lines,
+        // is not the member's story; named in its title or its opening, it is.
+        var further = new string('x', EquityBrief.Core.News.StoryMatch.Opening) + " Founded in 1978, DAT is a business unit of Roper Technologies (Nasdaq: ROP).";
+
+        Assert.False(EquityBrief.Core.News.StoryMatch.IsAbout("DAT: Truckload rates rise in September", "Spot rates rose. " + further, "ROP", Roper));
+        Assert.True(EquityBrief.Core.News.StoryMatch.IsAbout("Roper's DAT: Truckload rates rise", "Spot rates rose. " + further, "ROP", Roper));
+        Assert.True(EquityBrief.Core.News.StoryMatch.IsAbout("Truckload rates rise", "Roper Technologies' freight unit said rates rose. " + further, "ROP", Roper));
 
         // A listing the feed tags on another exchange is dropped as the payload is read, and the American one kept bare.
         Assert.True(EquityBrief.Core.News.StoryMatch.American("ROP.US"));
@@ -218,12 +234,12 @@ public partial class ReadSurface
 
     // ROP's two contradicted sentences, held to its stored latest quarter: an operating margin of 28.7% against 28.4% a
     // year earlier is wider, so "slightly narrower" is withheld with what the figures show; revenue 0.2% over its estimate is
-    // a beat, so "fell just short of the consensus" keeps its sentence and is given the stored side beside it. A sentence
-    // about an adjusted figure is not read, the markers are taken out and DEPS is spelled out where first used.
-    // see: A written sentence stating a direction the stored latest quarter contradicts is withheld where it is drawn, and a beat or a miss another source states against it is named beside it
+    // a beat, so "fell just short of the consensus" is withheld too, the two sources named in one sentence in its place. A
+    // sentence about an adjusted figure is not read, the markers are taken out and DEPS is spelled out where first used.
+    // see: A written sentence the stored latest quarter contradicts is withheld where it is drawn, and two sources disagreeing on a beat or a miss are named in one sentence in its place
     // see: A written section is drawn without its bracketed markers, its sources listed by title beneath it and every abbreviation spelled out where first used
     [Fact]
-    public void AWrittenSentenceTheStoredQuarterContradictsIsWithheldOrGivenTheStoredSide()
+    public void AWrittenSentenceTheStoredQuarterContradictsIsWithheldAndTwoSourcesDisagreeingAreNamedInOneSentence()
     {
         static EquityBrief.Core.Report.QuarterLine Line(string name, double? against, double? year, double? margin = null, double? before = null) =>
             new(name, 1m, null, null, against, null, year, margin, before, false, null, null, null);
@@ -248,8 +264,20 @@ public partial class ReadSurface
             "A sentence is withheld here: it said the operating margin was narrower, where the stored figures show 28.7% against 28.4% a year earlier, wider.",
             MarkRenderer.Readable(Margin, facts));
         Assert.Equal(
-            "The bear case begins with revenue, which fell just short of the consensus estimate, so the quarter was an earnings beat without a demand beat; the estimate the page draws puts the revenue at +0.2%, a beat.",
+            "The bear case: A sentence is withheld here: its source counted the revenue a miss against its own consensus, where the stored figures put the revenue at +0.2% against the estimate the page draws, a beat.",
             MarkRenderer.Readable(Bear, facts));
+
+        // A miss said as a line coming in below the consensus is read as one, the risk saying the line will miss again is
+        // withheld as well, and a beat said as earnings ahead of the consensus agrees with the stored side and stands.
+        Assert.StartsWith(
+            "A sentence is withheld here: its source counted the revenue a miss",
+            MarkRenderer.Readable("Earnings per share came in ahead of the consensus estimate while revenue came in a fraction below it [D7].", facts),
+            StringComparison.Ordinal);
+        Assert.StartsWith(
+            "A sentence is withheld here",
+            MarkRenderer.Readable("It would get worse if revenue misses the consensus estimate again, as it did in the latest quarter [D2].", facts),
+            StringComparison.Ordinal);
+        Assert.Equal("Earnings per share came in ahead of the consensus estimate.", MarkRenderer.Readable("Earnings per share came in ahead of the consensus estimate [D1].", facts));
 
         // The withheld sentence keeps the words its part opens on, a sentence agreeing with the figures stands as written,
         // and one about an adjusted figure is not read.
@@ -324,6 +352,23 @@ public partial class ReadSurface
         Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", AsWritten), "directions"));
         Assert.Equal(ReportProof.Unexamined, Verdict(held, "directions"));
 
+        // A move's cause is read as a section's prose is: one drawn as written beside the directions it is held to fails,
+        // its place withheld passes, and a document's label used as a word fails the markers as a bracketed one does, in a
+        // section and in a cause alike.
+        const string CauseAsWritten = "<td class=\"cause\" data-cause=\"written\" data-directions=\"revenue|estimate|1\">Revenue came in a fraction below the consensus estimate.</td>";
+        const string CauseWithheld = "<td class=\"cause\" data-cause=\"written\" data-directions=\"revenue|estimate|1\">A sentence is withheld here: its source counted the revenue a miss against its own consensus, where the stored figures put the revenue at +0.2% against the estimate the page draws, a beat.</td>";
+
+        Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", CauseAsWritten), "directions"));
+        Assert.Equal(ReportProof.Passed, Verdict(ReportProof.Evaluate("CCC", CauseWithheld), "directions"));
+        Assert.Equal(ReportProof.Passed, Verdict(ReportProof.Evaluate("CCC", CauseWithheld), "markers"));
+        Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", "<td class=\"cause\" data-cause=\"written\">Revenue rose [D7].</td>"), "markers"));
+        Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", "<tr id=\"move-CCC-1\" data-cause=\"research\"><td>2026-10-26</td><td class=\"cause\">Revenue rose [D7].</td></tr>"), "markers"));
+
+        // A story's title a row names is the story's own words and none of the page's writing, so its abbreviation is not
+        // the page's to spell out.
+        Assert.Equal(ReportProof.Unexamined, Verdict(ReportProof.Evaluate("CCC", "<tr id=\"move-CCC-1\" data-cause=\"news\"><td>2026-10-26</td><td class=\"cause\"><a href=\"https://x.example/\">EBITDA beats</a></td></tr>"), "abbreviations"));
+        Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", "<p class=\"prose\">Revenue rose, while D1 gives the reason.</p>"), "markers"));
+
         // The news region states the stories it left out and its counts add up over the stories it kept: seven, six in the
         // whole list and one opinion, the six one positive, one negative, one neutral and three not labelled.
         const string News = "<div class=\"news-region\" data-ticker=\"CCC\" data-articles=\"7\" data-all=\"6\" data-positive=\"1\" data-negative=\"1\" data-neutral=\"1\" data-opinion=\"1\" data-unlabelled=\"3\" data-left-out=\"35\">";
@@ -359,10 +404,80 @@ public partial class ReadSurface
         Assert.Contains("unexamined is never counted as a pass", ReportProof.Html(new ProofReport(DateTimeOffset.UnixEpoch, "GSPC", null, ReportProof.Counted([held, broken]), [held, broken])), StringComparison.Ordinal);
     }
 
+    // A document's label the writer used as a word, D1 in ROP's segment commentary, is drawn as the kind of document it
+    // names, read by its place in the section's own list and capitalised where it opens a sentence; each kind of document
+    // has its words, and a label no list resolves is a cited document.
+    // see: A document's label a writer used as a word is drawn as the kind of document it names, in a section and in a move's cause alike
+    [Fact]
+    public void ADocumentsLabelUsedAsAWordIsDrawnAsTheKindOfDocumentItNames()
+    {
+        var release = new SourceCell("r1", "Results release, a2026q3earningsrelease.htm", "https://www.sec.gov/Archives/edgar/data/882835/000088283526000042/a2026q3earningsrelease.htm", new DateOnly(2026, 10, 22));
+        var segments = new WrittenCell(
+            "The segment commentary",
+            "Application Software reported revenue of $1,181 million, while D1 gives organic growth and acquisitions as company-level revenue drivers [D1]. D1 attributes the rest to acquisitions [D1].",
+            new DateOnly(2026, 10, 27),
+            "deepseek-flash",
+            ["r1"]);
+        var drawn = WebUtility.HtmlDecode(new MarkRenderer().WrittenSection("ROP", segments, [release]));
+
+        Assert.Contains("while the results release gives organic growth and acquisitions as company-level revenue drivers. The results release attributes the rest to acquisitions.", drawn, StringComparison.Ordinal);
+        Assert.DoesNotMatch(@"\bD1\b", System.Text.RegularExpressions.Regex.Replace(drawn, "<[^>]+>", " "));
+
+        Assert.Equal(
+            ["the quarterly filing", "the annual filing", "the results release", "the previous results release", "a filing", "a cited article", "a cited document"],
+            new SourceCell?[]
+            {
+                new("q", "Form 10-Q for the quarter", "https://www.sec.gov/x/q.htm", null),
+                new("k", "Annual report on Form 10-K", "https://www.sec.gov/x/k.htm", null),
+                release,
+                new("p", "Previous results release, a2026q2earningsrelease.htm", "https://www.sec.gov/x/p.htm", null),
+                new("e", "Form 8-K", "https://www.sec.gov/x/e.htm", null),
+                new("a", "Roper Technologies In Rebound", "https://finance.yahoo.com/x", null),
+                null,
+            }.Select(MarkRenderer.DocumentNoun));
+        Assert.Equal("Sales rose, as a cited document said.", MarkRenderer.Readable("Sales rose, as D3 said.", null));
+    }
+
+    // A move's written cause is drawn as a section's sentences are: its markers out, a document's label named, and a move
+    // ending on or after the day the latest quarter was reported held to that quarter, so ROP's move of 2026-10-26 saying
+    // revenue came in below the consensus beside a stored beat is withheld with both sources named, and its move of
+    // 2026-02-13, before that report, held to nothing.
+    // see: A written sentence the stored latest quarter contradicts is withheld where it is drawn, and two sources disagreeing on a beat or a miss are named in one sentence in its place
+    // see: A document's label a writer used as a word is drawn as the kind of document it names, in a section and in a move's cause alike
+    [Fact]
+    public void AMovesWrittenCauseIsCleanedAsASectionIsAndHeldToTheQuarterReportedBeforeIt()
+    {
+        static EquityBrief.Core.Report.QuarterLine Line(string name, double? against, double? year) =>
+            new(name, 1m, null, null, against, null, year, null, null, false, null, null, null);
+
+        var quarter = new EquityBrief.Core.Report.LatestQuarter(new DateOnly(2026, 9, 30), new DateOnly(2026, 10, 22), new DateOnly(2025, 9, 30), [Line("Revenue", 0.2, 7.6)]);
+        const string Written = "The report on the quarter said revenue came in a fraction below the consensus estimate [D7]. D2 called the quarter a disappointment.";
+
+        MoveCell Move(DateOnly ended, int rank) =>
+            new(ended, 3, -5.0, rank, Taken: new EquityBrief.Core.Moves.MoveCause(EquityBrief.Core.Moves.MoveCauses.Research, Written, [], [], []));
+
+        var table = WebUtility.HtmlDecode(new MarkRenderer().MovesTable(
+            "ROP",
+            [Move(new DateOnly(2026, 10, 26), 1), Move(new DateOnly(2026, 2, 13), 2)],
+            new CauseSource(new DateOnly(2026, 10, 27), "deepseek-flash"),
+            null,
+            on => EquityBrief.Core.Research.Directions.For(quarter, on),
+            number => number == 2 ? "a cited article" : "a cited document"));
+        var cells = System.Text.RegularExpressions.Regex.Matches(table, "<td class=\"cause\"([^>]*)>(.*?)</td>").Select(cell => (Held: cell.Groups[1].Value, Said: cell.Groups[2].Value)).ToArray();
+
+        Assert.Equal(2, cells.Length);
+        Assert.Contains("data-directions=\"revenue|estimate|1", cells[0].Held, StringComparison.Ordinal);
+        Assert.Equal(
+            "A sentence is withheld here: its source counted the revenue a miss against its own consensus, where the stored figures put the revenue at +0.2% against the estimate the page draws, a beat. A cited article called the quarter a disappointment.",
+            cells[0].Said);
+        Assert.Equal((string.Empty, "The report on the quarter said revenue came in a fraction below the consensus estimate. A cited article called the quarter a disappointment."), cells[1]);
+        Assert.DoesNotContain("[D", table, StringComparison.Ordinal);
+    }
+
     // Sentences joined by a marker after the full stop and a line break are each read alone, as GM's short version holds
     // them, so a sentence about an adjusted figure leaves its neighbour read; and a section written before the latest
     // quarter was reported speaks of an earlier quarter and is held to nothing.
-    // see: A written sentence stating a direction the stored latest quarter contradicts is withheld where it is drawn, and a beat or a miss another source states against it is named beside it
+    // see: A written sentence the stored latest quarter contradicts is withheld where it is drawn, and two sources disagreeing on a beat or a miss are named in one sentence in its place
     [Fact]
     public void SentencesJoinedByAMarkerAreReadAloneAndASectionWrittenBeforeTheQuarterIsHeldToNothing()
     {
@@ -535,7 +650,7 @@ public partial class ReadSurface
     // scale: a pulled high of 240 that is the highest of the ten sessions either side of it, at a scale of two, is a turn at
     // 480, and with a typical day's move of 10 a band from 475 to 480, marked as resistance and older; a turn below the close
     // is read only where the year holds no band below it either.
-    // see: Where the stored year holds no band on a side the name page draws bands read from the pulled history, marked older and read by nothing else
+    // see: Older bands are read out as far as a pick's stop and target, marked older and read by nothing else
     [Fact]
     public void ASideTheStoredYearLeavesEmptyReadsTheTurnsOfThePulledHistoryMarkedOlder()
     {

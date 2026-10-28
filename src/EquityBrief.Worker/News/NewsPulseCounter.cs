@@ -320,7 +320,7 @@ public sealed class NewsPulseCounter : IComponent
 
     // The stories the feed tagged a member with that are its own: those naming the company by its name or its American
     // listing, which alone are counted and stored.
-    // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+    // see: A story is a member's where its title or its opening names the company by its name or its American listing, and no other story is drawn or counted
     static IReadOnlyList<NewsArticle> Own(IReadOnlyDictionary<string, IReadOnlyList<NewsArticle>> byName, string ticker, string? company) =>
         byName.TryGetValue(ticker, out var tagged)
             ? EquityBrief.Core.News.StoryMatch.Members(tagged, article => (article.Title, article.Text), ticker, company)

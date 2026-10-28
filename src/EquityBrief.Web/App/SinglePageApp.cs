@@ -1417,7 +1417,9 @@ public sealed partial class SinglePageApp : IComponent
         // The bands the pulled history turned at, for a side the stored year holds none on, marked older.
         IReadOnlyList<EquityBrief.Core.Report.OlderBand>? olderBands = null,
         // What the newest section asked for alone came to, none where none was asked for.
-        AloneLine? aloneLine = null)
+        AloneLine? aloneLine = null,
+        // The trade a family holds the name on where the night lists it under none, with the card its own night stored.
+        HeldTradeView? held = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -1425,7 +1427,7 @@ public sealed partial class SinglePageApp : IComponent
 
         // The directions the stored latest quarter states, which every sentence of a section written on or after that
         // quarter's report is held to where it is drawn; a section written before it speaks of an earlier quarter.
-        // see: A written sentence stating a direction the stored latest quarter contradicts is withheld where it is drawn, and a beat or a miss another source states against it is named beside it
+        // see: A written sentence the stored latest quarter contradicts is withheld where it is drawn, and two sources disagreeing on a beat or a miss are named in one sentence in its place
         IReadOnlyList<EquityBrief.Core.Research.DirectionFact> HeldTo(WrittenCell section) => EquityBrief.Core.Research.Directions.For(report?.Quarter, section.AsOf);
         var session = bars.Count > 0 ? bars[^1].SessionDate : (DateOnly?)null;
         var company = mast?.Company is { Length: > 0 } named ? named : ticker;
@@ -1433,7 +1435,7 @@ public sealed partial class SinglePageApp : IComponent
         // The documents the industry cycle cites whose title, address and stored text name neither the company nor a word of
         // its industry: they leave the cycle's sources, and the page's list where no other section cites them. A page that
         // holds no industry for the stock has nothing to hold them to, and keeps them.
-        // see: A stock's industry group is the provider's until an override is set and is checked against the page's own text, and the industry cycle reads only sources naming the company or its industry
+        // see: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening
         var cycleWritten = sections.FirstOrDefault(section => string.Equals(section.Section, EquityBrief.Core.Research.ClaimRules.CycleSection, StringComparison.Ordinal));
         var irrelevant = cycleWritten is null || mast?.Industry is not { Length: > 0 }
             ? []
@@ -1479,18 +1481,19 @@ public sealed partial class SinglePageApp : IComponent
                 }
 
                 // The short version opens on the pick and the quarter, written by code, and its prose follows under its own
-                // label; for a pick, a paragraph opening on the levels' plan is left to the plan region, which opens on the
-                // pick's own exit.
+                // label; for a pick or a held trade, a paragraph opening on the levels' plan is left to the plan region, which
+                // opens on the trade's own exit.
                 // see: The short version opens on the pick and then the quarter as code writes them, before what worked and what did not
+                // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
                 var shortVersion = string.Equals(name, MarkRenderer.TheShortVersion, StringComparison.Ordinal);
-                var lead = shortVersion ? MarkRenderer.ShortVersionLead(decision, report?.Quarter) : null;
-                var shown = shortVersion && decision is not null
+                var lead = shortVersion ? MarkRenderer.ShortVersionLead(decision, report?.Quarter, held) : null;
+                var shown = shortVersion && (decision is not null || held is not null)
                     ? section with { Prose = string.Join("\n\n", section.Prose.Split(["\r\n\r\n", "\n\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Where(paragraph => !paragraph.StartsWith("The plan ", StringComparison.Ordinal))) }
                     : section;
 
                 // The industry cycle reads only the sources naming the company or its industry, and where fewer than two do it
                 // says so in place of its paragraph.
-                // see: A stock's industry group is the provider's until an override is set and is checked against the page's own text, and the industry cycle reads only sources naming the company or its industry
+                // see: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening
                 if (string.Equals(name, EquityBrief.Core.Research.ClaimRules.CycleSection, StringComparison.Ordinal))
                 {
                     var relevant = shown.SourceIds.Where(id => !irrelevant.Contains(id)).ToArray();
@@ -1508,7 +1511,7 @@ public sealed partial class SinglePageApp : IComponent
                         name,
                         "Written",
                         section.AsOf,
-                        marks.WrittenSection(ticker, shown, documents, riskLines: string.Equals(name, MarkRenderer.TheRisks, StringComparison.Ordinal) ? history?.Risk : null, facts: HeldTo(shown), lead: lead, proseLabel: lead is { Length: > 0 } ? "What worked and what did not." : null),
+                        marks.WrittenSection(ticker, shown, documents, riskLines: string.Equals(name, MarkRenderer.TheRisks, StringComparison.Ordinal) ? history?.Risk : null, facts: HeldTo(shown), lead: lead, proseLabel: lead is { Length: > 0 } ? "What worked and what did not." : null, sentencesAParagraph: shortVersion ? MarkRenderer.WhatWorkedSentences : null),
                         section: name,
                         id: SectionId(name),
                         role: role),
@@ -1706,7 +1709,8 @@ public sealed partial class SinglePageApp : IComponent
                     gates,
                     listedUnder,
                     mast?.Index,
-                    decision),
+                    decision,
+                    held),
                 title: "The short version, written by code",
                 stamp: Cards.Night(session),
                 id: SectionId(MarkRenderer.TheShortVersion),
@@ -1714,11 +1718,21 @@ public sealed partial class SinglePageApp : IComponent
         }
 
         // How it got here: the table of the year's biggest moves, numbered as the chart numbers them, each with its cause
-        // as the core took it and where that came from, and the days the news labels cover.
+        // as the core took it and where that came from, and the days the news labels cover. A written cause is held to the
+        // latest quarter where its move ended on or after that quarter was reported, and its documents named by the cause
+        // section's own list.
         // see: A move's cause is research's where written, then the labelled news inside it and then the filings dated inside it
+        var causeIds = sections.FirstOrDefault(section => string.Equals(section.Section, EquityBrief.Core.Research.ClaimRules.CauseSection, StringComparison.Ordinal))?.SourceIds ?? [];
+
         Card("how-it-got-here", "how-it-got-here", "How it got here", Cards.Computed(
             "How it got here",
-            marks.MovesTable(ticker, moves, causes, history?.LabelsCover) + Cards.Key(
+            marks.MovesTable(
+                ticker,
+                moves,
+                causes,
+                history?.LabelsCover,
+                on => EquityBrief.Core.Research.Directions.For(report?.Quarter, on),
+                number => MarkRenderer.DocumentNoun(number >= 1 && number <= causeIds.Count ? documents.FirstOrDefault(one => string.Equals(one.Id, causeIds[number - 1], StringComparison.Ordinal)) : null)) + Cards.Key(
                 "How to read it.",
                 "The year's biggest moves, largest first and numbered as the chart above numbers them on their last sessions. Each one's cause is taken in a set order: research's sentences where research has been written; otherwise the stories the news labeller labelled that were published after the close the move is measured from and by the close of its last session, an opinion piece aside, with the results reported and the filings filed inside the move beneath them; otherwise those results and filings alone; otherwise the row says none was found. The column beside it says where the cause came from. Beside each move is its group's median move over the same sessions: the name's industry where at least five other members share it, and its sector otherwise, with how many members the median was taken over, so a move the whole group made reads apart from one the name made alone.",
                 "A result or a filing inside a move says what fell on those sessions, not that it moved the price. This is the path that produced tonight's bands."),
@@ -1755,7 +1769,7 @@ public sealed partial class SinglePageApp : IComponent
         var chart = new StringBuilder();
 
         chart.Append("<div class=\"fig row-fig\">");
-        chart.Append(marks.LevelChart(ticker, bars, averages, bands, new ChartFrame(Scale: Scale, Markers: MarkRenderer.MovesOnTheChart(ticker, moves), Events: history?.Events, Pick: decision is { } chartPick ? new ChartPick(chartPick.Family, chartPick.Stop, chartPick.Target) : null)));
+        chart.Append(marks.LevelChart(ticker, bars, averages, bands, new ChartFrame(Scale: Scale, Markers: MarkRenderer.MovesOnTheChart(ticker, moves), Events: history?.Events, Pick: (decision ?? held?.Card) is { } chartPick ? new ChartPick(chartPick.Family, chartPick.Stop, chartPick.Target) : null)));
 
         if (bars.Count > 0 && profile.Count > 0)
         {
@@ -1845,9 +1859,14 @@ public sealed partial class SinglePageApp : IComponent
 
         levelled.Append("<div class=\"tbl-wrap\">").Append(marks.LevelSummary(ticker, summary, absent, bars.Count > 0 ? bars[^1].Close : null)).Append("</div>");
 
-        // Where the stored year holds no band on a side, the bands the pulled history turned at, marked older.
-        // see: Where the stored year holds no band on a side the name page draws bands read from the pulled history, marked older and read by nothing else
+        // Where the stored year holds no band on a side, or none as far as a pick's target or stop, the bands the pulled
+        // history turned at, marked older.
+        // see: Older bands are read out as far as a pick's stop and target, marked older and read by nothing else
         levelled.Append(MarkRenderer.OlderBandsTable(olderBands ?? [], bars.Count > 0 ? bars[^1].Close : null));
+        levelled.Append(MarkRenderer.BeyondTheBands(
+            (decision ?? held?.Card)?.Target,
+            (decision ?? held?.Card)?.Stop,
+            [.. summary.Select(band => (band.LowEdge, band.HighEdge)), .. (olderBands ?? []).Select(band => (band.Low, band.High))]));
         levelled.Append(technicals);
 
         Card("levels", "levels", "Levels", Cards.Computed("Levels", levelled.ToString(), title: "The bands above and below the price, and the technical readings", stamp: Cards.Night(session), id: "levels", region: "levels"));
@@ -1865,6 +1884,10 @@ public sealed partial class SinglePageApp : IComponent
         {
             planned.Append(marks.PicksOwnExit(pick));
         }
+        else if (held is { } holding)
+        {
+            planned.Append(marks.PicksOwnExit(holding.Card, holding.Pick));
+        }
 
         if (plan.Count == 0)
         {
@@ -1873,7 +1896,7 @@ public sealed partial class SinglePageApp : IComponent
         else
         {
             planned.Append("<div class=\"plan-grid\"><div class=\"fig\">").Append(marks.PlanColumn(ticker, close, plan)).Append("</div><div>");
-            planned.Append(marks.PlanTables(ticker, plan)).Append("</div></div>");
+            planned.Append(marks.PlanTables(ticker, plan, trade: decision ?? held?.Card, held: decision is null && held is not null)).Append("</div></div>");
 
             // Each tranche as an equal share of a full position, its risk to the stop that sells it and its reward to risk to
             // each traded exit, a bar each, and the trail in the words of its rule.
@@ -1913,7 +1936,7 @@ public sealed partial class SinglePageApp : IComponent
                 Invariant($"On the list before: the nights the live list picked {Escaped(ticker)} before"),
                 marks.OnTheListBefore(ticker, picked) + Cards.Key(
                     "How to read it.",
-                    Invariant($"Each row is a night the live list picked {Escaped(ticker)} before this one, on the plan that night's rule traded: planned at that night's close, bought at the next session's open and followed to its target, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions. The line runs from the stop in red to the target in orange with the buy between them, and the dot is where the price stood on the night this page draws, hollow while the trade was open and filled where it finished. A result is what the trade made in multiples of what it risked."),
+                    Invariant($"Each row is a night the live list picked {Escaped(ticker)} before this one, on the plan that night's rule traded: planned at that night's close, bought at the next session's open and followed to its target, its stop, or the end of its own setup's limit, {string.Join(", ", picked.GroupBy(pick => (pick.Setup, Cap: pick.Cap ?? EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap)).Select(limit => Invariant($"{limit.Key.Cap} sessions for the {limit.Key.Setup.ToLowerInvariant()}")))}. The line runs from the stop in red to the target in orange with the buy between them, and the dot is where the price stood on the night this page draws, hollow while the trade was open and filled where it finished. A result is what the trade made in multiples of what it risked."),
                     "What these trades did is a record of the list's picks, not a forecast for this one, and nothing on the page is decided by it. How every pick has done is on the Past picks screen.")));
         }
 
@@ -2036,26 +2059,53 @@ public sealed partial class SinglePageApp : IComponent
         // filing's, each segment's share of revenue, what the company sells and the segment commentary where written, and
         // the filing's table as filed folded beneath.
         // see: The segment table is the segments whose revenue sums to the company's total within rounding, and the raw table where none do
-        if (report?.Segments is not null || rawSegments is not null || sections.Any(section => InTheSegments.Contains(section.Section, StringComparer.Ordinal)))
+        if (report?.Segments is not null || report?.ReleaseSegments is not null || rawSegments is not null || sections.Any(section => InTheSegments.Contains(section.Section, StringComparer.Ordinal)))
         {
             var segmentBody = new StringBuilder();
 
+            // A quarter its results release reports before its filing is stored is drawn from the release's own tables
+            // first, labelled so, the older filing's table folded beneath it.
+            // see: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so
+            if (report?.ReleaseSegments is { } released)
+            {
+                segmentBody.Append(Invariant($"<div class=\"sub segments-release\" data-quarter=\"{Cards.Day(released.Quarter!.Value)}\">The quarter to {Cards.Day(released.Quarter!.Value)}, from the results release, filing not stored yet</div>"));
+                segmentBody.Append(marks.SegmentsTable(released, report.Currency));
+                segmentBody.Append("<div class=\"fig\">" + marks.ShareBars(released) + "</div>");
+            }
+
             if (report?.Segments is { } segments)
             {
-                segmentBody.Append(marks.SegmentsTable(segments, report.Currency));
-                segmentBody.Append(segments.Clean ? "<div class=\"fig\">" + marks.ShareBars(segments) + "</div>" : string.Empty);
-                segmentBody.Append(Cards.Key(
+                var filedTable = new StringBuilder(marks.SegmentsTable(segments, report.Currency));
+
+                filedTable.Append(segments.Clean ? "<div class=\"fig\">" + marks.ShareBars(segments) + "</div>" : string.Empty);
+                filedTable.Append(Cards.Key(
                     "How to read it.",
                     "Each segment the filing reports, its revenue for the quarter and its change on the same quarter a year earlier, its operating income where the filing states one, and its share of the company's revenue. The table stands only where the segments' revenue sums to the company's within rounding, totals, eliminations and corporate amounts left out; otherwise the filing's own table is drawn as filed with what the rows summed to.",
                     "A segment growing faster than the company is where the growth is coming from, and one shrinking is what is holding it back."));
+                segmentBody.Append(report.ReleaseSegments is null
+                    ? filedTable.ToString()
+                    : "<details class=\"segments-filed\"><summary>The segments the filing before it reported</summary>" + filedTable + "</details>");
             }
 
             foreach (var part in InTheSegments)
             {
                 if (sections.FirstOrDefault(section => string.Equals(section.Section, part, StringComparison.Ordinal)) is { } partWritten)
                 {
-                    segmentBody.Append(Invariant($"<div class=\"written-part\" id=\"{SectionId(part)}\" data-section=\"{Escaped(part)}\"><div class=\"dl\"><span class=\"dl-k\">Written</span><b>{Cards.Day(partWritten.AsOf)}</b></div>"));
-                    segmentBody.Append(marks.WrittenSection(ticker, partWritten, documents, facts: HeldTo(partWritten))).Append("</div>");
+                    // Beneath the release's own table the commentary says which segments it was written from, and one
+                    // written from the filing's before that table was read says so, a report written now reading the
+                    // release's.
+                    var writtenFrom = report?.ReleaseSegments is not null && string.Equals(part, EquityBrief.Core.Research.Evidence.Segments, StringComparison.Ordinal)
+                        ? report.CommentaryFromFiling ? "filing" : "release"
+                        : null;
+
+                    var fromAttribute = writtenFrom is null ? string.Empty : " data-written-from=\"" + writtenFrom + "\"";
+
+                    segmentBody.Append(Invariant($"<div class=\"written-part\" id=\"{SectionId(part)}\" data-section=\"{Escaped(part)}\"{fromAttribute}><div class=\"dl\"><span class=\"dl-k\">Written</span><b>{Cards.Day(partWritten.AsOf)}</b></div>"));
+                    segmentBody.Append(marks.WrittenSection(ticker, partWritten, documents, facts: HeldTo(partWritten)));
+                    segmentBody.Append(writtenFrom == "filing"
+                        ? "<p class=\"degraded written-from\">Written from the segments the filing before it reported, before the results release's own table above was read; a report written now reads the release's figures.</p>"
+                        : string.Empty);
+                    segmentBody.Append("</div>");
                 }
             }
 
@@ -2231,6 +2281,12 @@ public sealed partial class SinglePageApp : IComponent
         {
             Card("card", "card", "The decision card", Invariant($"<section class=\"card name-card\" id=\"card\" data-role=\"{Cards.Buy}\" data-family=\"{Escaped(decision.Family)}\" data-index=\"{Escaped(decision.Index)}\">{marks.DecisionCard(decision)}</section>"));
         }
+        else if (held is not null)
+        {
+            // A stock a family holds a trade in keeps a short card for that trade in the decision card's place.
+            // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
+            Card("card", "card", "The held trade", Invariant($"<section class=\"card name-card held-trade\" id=\"card\" data-role=\"{Cards.Buy}\" data-family=\"{Escaped(held.Card.Family)}\" data-index=\"{Escaped(held.Card.Index)}\">{marks.HeldCard(held)}</section>"));
+        }
 
         // The calendar, after the news: the next ninety days' results, ex-dividend date and the Fed's and the CPI's dates as a
         // timeline and a table, and the dated items a pass read out of the documents.
@@ -2259,7 +2315,14 @@ public sealed partial class SinglePageApp : IComponent
         // see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's
         Card("sources", "sources", "Sources", Cards.Computed(
             "Sources",
-            marks.Sources(ticker, documents, figuresChecked ?? [], filedFactsHeld)
+            marks.Sources(
+                ticker,
+                documents,
+                figuresChecked ?? [],
+                filedFactsHeld,
+                mast?.Industry is { Length: > 0 } industryOf
+                    ? document => EquityBrief.Core.Report.IndustryCheck.Relevant(document.Title, document.Url + " " + document.Opening, mast?.Company, industryOf)
+                    : null)
                 + Cards.Key(
                     "How to read it.",
                     "Each document is listed with the day it was published and links to it. A line of the latest quarter the company's filing and the provider's fetch state differently by more than half a million dollars or a tenth of a per cent is listed with the filing's figure first; every region draws the fetch's, since every quarter the page reads shares one fetch's basis.",

@@ -78,7 +78,7 @@ builder.Services.AddSingleton(services => new ReadApi(
     services.GetRequiredService<IClock>())
 {
     // The industry an operator sets for a stock in place of the provider's, by its ticker, from the machine's settings.
-    // see: A stock's industry group is the provider's until an override is set and is checked against the page's own text, and the industry cycle reads only sources naming the company or its industry
+    // see: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening
     IndustryOverrides = builder.Configuration.GetSection(ReadApi.IndustryOverridesKey).GetChildren()
         .Where(entry => entry.Value is { Length: > 0 })
         .ToDictionary(entry => entry.Key.ToUpperInvariant(), entry => entry.Value!, StringComparer.Ordinal),
@@ -530,7 +530,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
 
     // The stored stories of the thirty days before the night with their labels, which the news region draws and each
     // move's cause reads: the company's own alone, a story the feed tagged it with that names another company left out.
-    // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+    // see: A story is a member's where its title or its opening names the company by its name or its American listing, and no other story is drawn or counted
     var tagged = night is { } storiedOn ? await read.NewsAsync(ticker, storiedOn) : [];
     var company = members.FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal))?.Name;
     var stories = EquityBrief.Core.News.StoryMatch.Members(tagged, story => (story.Title, story.Text), ticker, company);
@@ -559,6 +559,19 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
 
         behind = BehindScreen.Of(ticker, behindIndex.Name, await read.LedgerReadingsAsync(behindCode, behindOn), behindModel, behindPassed, behindUnread);
     }
+
+    // Every night the live list picked the name before the page's own, each trade as it stood on the page's night; the cards
+    // the night stored for the name; and where it lists the name under none, the cards the night of the newest trade still
+    // open on it stored, which the page draws the trade it is held on from.
+    // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
+    var before = night is { } picked ? PicksScreen.Before(await read.PicksAsync(picked, ticker), picked) : null;
+    var nightCards = night is { } cardsOn ? await CardsOfTheName(read, ticker, cardsOn) : null;
+    var heldOpen = nightCards is { Count: > 0 } ? null : before?.Where(pick => pick.Status == PickStatus.Open && pick.RepeatOf is null).OrderByDescending(pick => pick.Night).FirstOrDefault();
+    var heldCards = heldOpen is { } openTrade ? await CardsOfTheName(read, ticker, openTrade.Night) : null;
+
+    // The newest results release accepted by the night: its opening line, which the management box quotes, and its text,
+    // which a quarter it reports before its filing is stored reads its segments from.
+    var newest = (night ?? (bars.Count > 0 ? bars[^1].SessionDate : (DateOnly?)null)) is { } releasedBy ? await read.NewestReleaseAsync(ticker, releasedBy) : null;
 
     var region = NameScreen.Region(
         page, marks, ticker, bars, indicators, levels, profile, ladder, nextEvent, moves,
@@ -600,7 +613,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // no press, because nothing it is opened beside can answer one.
         export ? null : (await read.WatchedAsync()).Any(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)),
         // Every night the live list picked the name before the page's own, each trade as it stood on the page's night.
-        night is { } picked ? PicksScreen.Before(await read.PicksAsync(picked, ticker), picked) : null,
+        before,
         reading,
         readQuarters,
         peerCloses,
@@ -623,7 +636,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // rating counts as its newest fetch on or before that night filed them.
         memberReading: await read.MemberReadingAsync(ticker, on),
         ratings: await read.RatingsAsync(ticker, on),
-        decisionCards: night is { } cardsOn ? await CardsOfTheName(read, ticker, cardsOn) : null,
+        decisionCards: nightCards,
         // The account and the taken trades on tonight's page alone: an export and an earlier night's page draw neither.
         cardContext: export ? null : cardContext,
         warmed: await read.ChartAveragesAsync(ticker),
@@ -656,16 +669,26 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // The two newest swing lows the night confirmed, which say in plain words why the trend rule read the stock as it did.
         swingLows: (night ?? (bars.Count > 0 ? bars[^1].SessionDate : (DateOnly?)null)) is { } swungBy ? await read.SwingLowsAsync(ticker, swungBy) : null,
         // The newest results release accepted by the night, whose opening line the management box quotes.
-        newestRelease: (night ?? (bars.Count > 0 ? bars[^1].SessionDate : (DateOnly?)null)) is { } releasedBy ? await read.NewestReleaseOpeningAsync(ticker, releasedBy) : null,
-        // The history pulled before the store's year, read only where the stored year holds no band on a side of the close.
-        // see: Where the stored year holds no band on a side the name page draws bands read from the pulled history, marked older and read by nothing else
+        newestRelease: newest?.Opening,
+        newestReleaseText: newest?.Text,
+        // The history pulled before the store's year, read where the stored year holds no band on a side of the close, and
+        // where a family picked or holds the name, whose stop and target the older bands are read out to.
+        // see: Older bands are read out as far as a pick's stop and target, marked older and read by nothing else
         pulled: bars.Count > 0
             && (!levels.Any(level => level.Role == EquityBrief.Core.Levels.LevelSeries.Resistance && level.LowEdge > bars[^1].Close)
-                || !levels.Any(level => level.Role == EquityBrief.Core.Levels.LevelSeries.Support && level.HighEdge < bars[^1].Close))
+                || !levels.Any(level => level.Role == EquityBrief.Core.Levels.LevelSeries.Support && level.HighEdge < bars[^1].Close)
+                || nightCards is { Count: > 0 }
+                || heldCards is { Count: > 0 })
             ? await read.PulledSeriesAsync(ticker, bars[0].SessionDate)
             : null,
         // The newest pass that wrote one section asked for alone, which the research region says what came of.
-        aloneDetail: await read.NewestAloneAsync(ticker));
+        aloneDetail: await read.NewestAloneAsync(ticker),
+        heldCards: heldCards,
+        // Whether the segment commentary drawn was written from the release's own segment table, which one written before
+        // the table was read for its facts was not.
+        commentaryFromRelease: written.FirstOrDefault(section => string.Equals(section.Section, EquityBrief.Core.Research.Evidence.Segments, StringComparison.Ordinal)) is { } commentary
+            ? await read.WrittenFromReleaseSegmentsAsync(ticker, commentary.AsOf)
+            : null);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }

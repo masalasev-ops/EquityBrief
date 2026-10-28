@@ -4,12 +4,17 @@ namespace EquityBrief.Core.News;
 
 // Whether a story is about a member: the feed tags a story with every listing it names, and one ticker can be another
 // company's on another exchange, so a story is the member's only where it carries the member's American listing and its
-// title or text names the company, by its name or by its ticker beside an American exchange or a ticker's own marks.
-// see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+// title or the opening of its text names the company, by its name or by its ticker beside an American exchange or a
+// ticker's own marks. A story naming the company only further in, as a holding, a peer or a parent, is about something
+// else, and a ticker standing in another exchange's listing, as Roche's beside SIX, is not the member's.
+// see: A story is a member's where its title or its opening names the company by its name or its American listing, and no other story is drawn or counted
 public static class StoryMatch
 {
     // The feed's mark for a listing on an American exchange, the one exchange every index the night reads trades on.
     public const string AmericanListing = "US";
+
+    // How much of a story's text is its opening, read with its title for the company's name.
+    public const int Opening = 600;
 
     // A symbol the feed tags a story with is the member's where it is its ticker bare or on the American exchange.
     public static bool American(string symbol)
@@ -69,7 +74,7 @@ public static class StoryMatch
     // letters or more and no other exchange's colon or mark stands against it.
     public static bool IsAbout(string title, string text, string ticker, string? company)
     {
-        var story = Plain(title + " " + text);
+        var story = ForeignListing.Replace(Plain(title + " " + (text.Length > Opening ? text[..Opening] : text)), " ");
 
         foreach (var key in NameKeys(company).Concat(TradesAs.TryGetValue(ticker, out var names) ? names : []))
         {
@@ -94,6 +99,10 @@ public static class StoryMatch
             : [.. stories.Where(story => read(story) is var (title, text) && IsAbout(title, text, ticker, company))];
 
     static string Plain(string text) => text.Replace('’', '\'').Replace('‘', '\'').Replace("&amp;", "&", StringComparison.Ordinal);
+
+    // A bracketed listing naming an exchange other than an American one, every ticker in it that exchange's; a bracket
+    // naming the ticker or the symbol in capitals names no exchange.
+    static readonly Regex ForeignListing = new(@"\([^()]*\b(?!(?:NYSE|NASDAQ|Cboe|CBOE|NYSEAMERICAN|NYSEARCA|NYSEMKT|AMEX|ARCA|BATS|IEX|TICKER|SYMBOL)\b)[A-Z]{2,10}\s*:[^()]*\)", RegexOptions.CultureInvariant);
 
     // The legal and share-class words a company's name closes on, which no story names it by.
     static readonly HashSet<string> Legal = new(

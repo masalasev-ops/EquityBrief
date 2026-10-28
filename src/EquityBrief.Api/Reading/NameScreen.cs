@@ -438,7 +438,7 @@ public static partial class NameScreen
     // consensus estimate is drawn beside it and named for what it is: what analysts
     // expect rather than what management said.
     // see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
-    public static string Numbers(IReadOnlyList<FilingRow> filings, ConceptFigures? figures = null, EquityBrief.Core.Report.ReleaseOpening? newestRelease = null)
+    public static string Numbers(IReadOnlyList<FilingRow> filings, ConceptFigures? figures = null, EquityBrief.Core.Report.ReleaseOpening? newestRelease = null, (DateOnly From, DateOnly Estimated)? nextEstimated = null)
     {
         var html = new System.Text.StringBuilder();
 
@@ -472,7 +472,7 @@ public static partial class NameScreen
                 $"{filings.Count} {(filings.Count == 1 ? "filing" : "filings")}, fewer than the {QuartersShown} quarters this section states.</p>");
         }
 
-        html.Append(Snapshot(newest.RootElement, currency, figures));
+        html.Append(Snapshot(newest.RootElement, currency, figures, nextEstimated));
 
         html.Append(Invariant($"<div class=\"sub\">The last {shown} quarters</div><div class=\"tbl-wrap\">"));
         html.Append("<table class=\"numbers-quarters\"><tr><th>Quarter</th><th>Revenue</th>");
@@ -517,9 +517,11 @@ public static partial class NameScreen
             && reported.ValueKind == JsonValueKind.Object
             && ReportedBy(Text(reported, "reportDate"), figures?.CloseOn) is { } reportedOn)
         {
-            // A report the night has passed is said as reported, and the next as not announced.
+            // A report the night has passed is said as reported, and the next as not announced, with the day it is estimated at
+            // from the company's own report a year before.
             // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
-            html.Append(Invariant($"<p class=\"estimate\" data-estimated-quarter=\"{Text(reported, "periodEnd")}\" data-reported=\"{reportedOn:yyyy-MM-dd}\">The quarter to {Text(reported, "periodEnd")} was reported on {reportedOn:yyyy-MM-dd}, and the next report is not announced.</p>"));
+            // see: The page estimates a next report not on file from the company's own report of the same quarter a year before, marked estimated
+            html.Append(Invariant($"<p class=\"estimate\" data-estimated-quarter=\"{Text(reported, "periodEnd")}\" data-reported=\"{reportedOn:yyyy-MM-dd}\">The quarter to {Text(reported, "periodEnd")} was reported on {reportedOn:yyyy-MM-dd}, and the next report is not announced{EstimatedWords(nextEstimated)}.</p>"));
         }
         else if (newest.RootElement.TryGetProperty("estimated", out var estimated)
             && estimated.ValueKind == JsonValueKind.Object)
@@ -653,7 +655,13 @@ public static partial class NameScreen
     // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
     // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
     // see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one
-    static string Snapshot(JsonElement payload, string currency, ConceptFigures? figures = null)
+    // The day a next report not on file is estimated at, from the company's own report of the same quarter a year before,
+    // in the words that follow "not announced", none where no such report is stored.
+    // see: The page estimates a next report not on file from the company's own report of the same quarter a year before, marked estimated
+    static string EstimatedWords((DateOnly From, DateOnly Estimated)? estimate) =>
+        estimate is { } next ? Invariant($"; estimated about {next.Estimated:yyyy-MM-dd} from its report of {next.From:yyyy-MM-dd} a year on") : string.Empty;
+
+    static string Snapshot(JsonElement payload, string currency, ConceptFigures? figures = null, (DateOnly From, DateOnly Estimated)? nextEstimated = null)
     {
         JsonElement Part(string name) =>
             payload.TryGetProperty(name, out var part) && part.ValueKind == JsonValueKind.Object ? part : default;
@@ -705,7 +713,7 @@ public static partial class NameScreen
         // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
         if (ReportedBy(Text(estimated, "reportDate"), figures?.CloseOn) is { } reportedOn)
         {
-            html.Append(Invariant($"<div><dt>Next report</dt><dd data-reportDate=\"reported\"><b>not announced</b><small>the quarter to {Escaped(Text(estimated, "periodEnd") ?? "its end")} was reported on {reportedOn:yyyy-MM-dd}</small></dd></div>"));
+            html.Append(Invariant($"<div><dt>Next report</dt><dd data-reportDate=\"reported\"{(nextEstimated is { } next ? Invariant($" data-estimated=\"{next.Estimated:yyyy-MM-dd}\"") : string.Empty)}><b>not announced</b>{(nextEstimated is { } shown ? Invariant($"<small class=\"estimated\">estimated about {shown.Estimated:yyyy-MM-dd}, from its report of {shown.From:yyyy-MM-dd} a year on</small>") : string.Empty)}<small>the quarter to {Escaped(Text(estimated, "periodEnd") ?? "its end")} was reported on {reportedOn:yyyy-MM-dd}</small></dd></div>"));
         }
         else
         {
@@ -1080,10 +1088,14 @@ public static partial class NameScreen
             }
         }
 
+        // A table filed at an instant rather than over months is said as at its day.
+        var period = shortest == 0
+            ? FormattableString.Invariant($"As at {ended}")
+            : FormattableString.Invariant($"The {shortest} {(shortest == 1 ? "month" : "months")} to {ended}");
+
         html.Append("</table></div>");
         html.Append("<p class=\"segments-source\">")
-            .Append(FormattableString.Invariant(
-                $"The {shortest} {(shortest == 1 ? "month" : "months")} to {ended}, from {report} of that filing, {rows} {(rows == 1 ? "line" : "lines")}."))
+            .Append(FormattableString.Invariant($"{period}, from {report} of that filing, {rows} {(rows == 1 ? "line" : "lines")}."))
             .Append("</p>");
 
         return html.ToString();
@@ -1497,7 +1509,14 @@ public static partial class NameScreen
         // The history pulled before the store's year, read where the stored year holds no band on a side.
         PulledSeries? pulled = null,
         // The newest pass that wrote one section asked for alone, as its run log row's detail holds it.
-        string? aloneDetail = null)
+        string? aloneDetail = null,
+        // The cards the night of the trade a family holds the name on stored, where the page's night lists it under none.
+        IReadOnlyList<DecisionCardRow>? heldCards = null,
+        // The newest results release's whole text, which a quarter it reports before its filing is stored reads its
+        // segments from.
+        string? newestReleaseText = null,
+        // Whether the segment commentary was written from the release's own segment table, and none where none is written.
+        bool? commentaryFromRelease = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1603,6 +1622,18 @@ public static partial class NameScreen
         cards = cards is { } filled
             ? filled with { Fill = EquityBrief.Core.Cards.CardLines.Filled(filled.Night, filled.Entry, filled.Stop, filled.Target, bars.Select(bar => (bar.SessionDate, bar.Open))) }
             : null;
+
+        // The trade a family holds the name on where the night lists it under none: the newest still open of the nights the
+        // live list picked it before, with the card that night stored for its family, drawn as the pick's card is.
+        // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
+        var heldTrade = HeldOf(cards, earlier, heldCards, [.. (readQuarters ?? []).Select(quarter => quarter.ReportDate).OfType<DateOnly>()]);
+
+        // The next report estimated from the company's own report of the same quarter a year before, which the page draws
+        // beside a next report not on file.
+        // see: The page estimates a next report not on file from the company's own report of the same quarter a year before, marked estimated
+        var nextEstimated = EquityBrief.Core.Cards.CardLines.EstimatedReport(
+            [.. (readQuarters ?? []).Select(quarter => quarter.ReportDate).OfType<DateOnly>()],
+            night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue));
         decimal? shownPrice = live?.Price ?? (bars.Count > 0 ? bars[^1].Close : null);
         var quarters = tileQuarters ?? [];
         var tilesNight = night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue);
@@ -1617,6 +1648,22 @@ public static partial class NameScreen
         var reportView = reportInputs is { } inputs
             ? Report(ticker, inputs, filings, reading, shownPrice, forwardRate, bars, night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue))
             : null;
+
+        // A quarter its results release reports before its filing is stored reads its segments from the release's own
+        // tables, drawn labelled as the release's until the filing is stored.
+        // see: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so
+        if (reportView?.Quarter is { Reported: { } reportedOn } reported
+            && (filings.Count == 0 || reportedOn > filings.Max(filing => filing.FilingDate))
+            && newestReleaseText is { } releaseText)
+        {
+            var revenueLine = reported.Lines.FirstOrDefault(line => string.Equals(line.Line, EquityBrief.Core.Report.QuarterLines.Revenue, StringComparison.Ordinal));
+
+            reportView = reportView with
+            {
+                ReleaseSegments = EquityBrief.Core.Report.ReleaseSegments.Read(releaseText, reported.Quarter, revenueLine?.Reported, revenueLine?.YearEarlier),
+                CommentaryFromFiling = commentaryFromRelease == false,
+            };
+        }
 
         says = WithFiledMultiple(says, score?.Multiple);
 
@@ -1664,7 +1711,7 @@ public static partial class NameScreen
             bars.Count > 0 ? bars[^1].Close : 0m,
             EventBook(ladder),
             Arithmetic(ladder),
-            says is null ? Numbers(filings, concepts, newestRelease) : marks.NumbersSay(says, Numbers(filings, concepts, newestRelease)),
+            says is null ? Numbers(filings, concepts, newestRelease, nextEstimated) : marks.NumbersSay(says, Numbers(filings, concepts, newestRelease, nextEstimated)),
             cells,
             listing?.ListedBy == ListRules.Filter ? [] : FiredReasons(listing),
             previousOnTheList,
@@ -1703,7 +1750,7 @@ public static partial class NameScreen
             quote: live,
             quoteSession: quoteSession,
             // A written headline the stored directions contradict gives way to the one code writes.
-            // see: A written sentence stating a direction the stored latest quarter contradicts is withheld where it is drawn, and a beat or a miss another source states against it is named beside it
+            // see: A written sentence the stored latest quarter contradicts is withheld where it is drawn, and two sources disagreeing on a beat or a miss are named in one sentence in its place
             headline: (WrittenHeadline(accepted) is { } writtenHeadline && EquityBrief.Core.Research.Directions.Clashes(writtenHeadline.Sentence, EquityBrief.Core.Research.Directions.For(reportView?.Quarter, writtenHeadline.WrittenOn)).Count == 0 ? writtenHeadline : null)
                 ?? Headline(member?.Name ?? ticker, cards, Passed(listing, gates), missed, reading?.State, ladder?.TrendState),
             tiles: tiles,
@@ -1730,8 +1777,26 @@ public static partial class NameScreen
                 Newest(indicators, IndicatorSeries.Sma50),
                 Newest(indicators, IndicatorSeries.Sma200),
                 swingLows ?? []),
-            olderBands: OlderBandsOf(bars, levels, pulled, typicalMove),
-            aloneLine: Alone(aloneDetail));
+            olderBands: OlderBandsOf(bars, levels, pulled, typicalMove, (cards ?? heldTrade?.Card) is { } shownPick ? (shownPick.Stop, shownPick.Target) : null),
+            aloneLine: Alone(aloneDetail),
+            held: heldTrade);
+    }
+
+    // The trade a family holds the name on: the newest of the earlier picks still open, with its card from the night it was
+    // picked, its fill and its estimated report as a pick's card reads them; none where the night lists the name itself,
+    // where no earlier pick is open, or where its night stored no card for its family.
+    public static HeldTradeView? HeldOf(DecisionCardView? tonight, IReadOnlyList<PickCell>? earlier, IReadOnlyList<DecisionCardRow>? heldCards, IReadOnlyList<DateOnly> reported)
+    {
+        if (tonight is not null
+            || (earlier ?? []).Where(pick => pick.Status == PickStatus.Open && pick.RepeatOf is null).OrderByDescending(pick => pick.Night).FirstOrDefault() is not { } open
+            || (heldCards ?? []).FirstOrDefault(card => card.Night == open.Night && string.Equals(card.Family, open.Family, StringComparison.Ordinal)) is not { } row)
+        {
+            return null;
+        }
+
+        var card = WithEstimatedReport(CardScreen.View(row), reported)!;
+
+        return new HeldTradeView(card, open);
     }
 
     // What the newest pass writing one section asked for alone came to, in one line: written again, not written with why,
@@ -1771,10 +1836,11 @@ public static partial class NameScreen
             : asked + (Text(root, "reason") is { } reason ? ": " + reason + "." : "."));
     }
 
-    // The bands the pulled history turned at, for a side the stored year's bands leave empty, at the store's scale: the
-    // store's first close over the pull's close on that session.
-    // see: Where the stored year holds no band on a side the name page draws bands read from the pulled history, marked older and read by nothing else
-    static IReadOnlyList<EquityBrief.Core.Report.OlderBand> OlderBandsOf(IReadOnlyList<BarRow> bars, IReadOnlyList<LevelRow> levels, PulledSeries? pulled, double? typicalMove)
+    // The bands the pulled history turned at, at the store's scale: the store's first close over the pull's close on that
+    // session, for a side the stored year's bands leave empty, and for a side a pick's or a held trade's target or stop lies
+    // beyond every stored band on, read out as far as it.
+    // see: Older bands are read out as far as a pick's stop and target, marked older and read by nothing else
+    static IReadOnlyList<EquityBrief.Core.Report.OlderBand> OlderBandsOf(IReadOnlyList<BarRow> bars, IReadOnlyList<LevelRow> levels, PulledSeries? pulled, double? typicalMove, (decimal? Stop, decimal? Target)? pick = null)
     {
         if (bars.Count == 0 || pulled is not { PulledClose: { } pulledClose, Sessions.Count: > 0 } || pulledClose <= 0 || typicalMove is not { } move)
         {
@@ -1782,11 +1848,23 @@ public static partial class NameScreen
         }
 
         var close = bars[^1].Close;
-        var above = !levels.Any(level => level.Role == EquityBrief.Core.Levels.LevelSeries.Resistance && level.LowEdge > close);
-        var below = !levels.Any(level => level.Role == EquityBrief.Core.Levels.LevelSeries.Support && level.HighEdge < close);
+        var resistances = levels.Where(level => level.Role == EquityBrief.Core.Levels.LevelSeries.Resistance && level.LowEdge > close).ToArray();
+        var supports = levels.Where(level => level.Role == EquityBrief.Core.Levels.LevelSeries.Support && level.HighEdge < close).ToArray();
+        var above = resistances.Length == 0 || (pick?.Target is { } target && resistances.All(level => level.HighEdge < target));
+        var below = supports.Length == 0 || (pick?.Stop is { } stop && supports.All(level => level.LowEdge > stop));
 
         return above || below
-            ? EquityBrief.Core.Report.OlderBands.Of([.. pulled.Sessions.Select(session => (session.Session, session.High, session.Low))], bars[0].Close / pulledClose, close, Statistic.ToPrice(move), above, below)
+            ? EquityBrief.Core.Report.OlderBands.Of(
+                [.. pulled.Sessions.Select(session => (session.Session, session.High, session.Low))],
+                bars[0].Close / pulledClose,
+                close,
+                Statistic.ToPrice(move),
+                above,
+                below,
+                pick?.Target,
+                pick?.Stop,
+                resistances.Length == 0 ? null : resistances.Max(level => level.HighEdge),
+                supports.Length == 0 ? null : supports.Min(level => level.LowEdge))
             : [];
     }
 
