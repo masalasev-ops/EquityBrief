@@ -81,13 +81,14 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "releases" => await ReleasesVerb(args),
     "compare-labels" => await CompareLabelsVerb(),
     "compare-reviews" => await CompareReviewsVerb(),
+    "publish-site" => await PublishSiteVerb(args),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 52 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 53 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -264,7 +265,11 @@ static int NoVerb()
         "first session in the ledger from that day through its last, with '--until <HH:mm>' stopping cleanly at that " +
         "time in New York, and goes on from where an earlier run stopped, and 'releases --exhibits' reads each stored " +
         "filing's page once for the exhibit it names as the release and stores that one in the place of the one " +
-        "stored where they differ. '--live' " +
+        "stored where they differ, and " +
+        "'publish-site' writes the read-only copy of the site into the data root's site folder through the read surface " +
+        "built beside the worker, asking no provider and writing nothing to the store, reads it for forms, the surface's " +
+        "addresses, secrets, paths and the account's settings, and writes its report beside the folder, with '--upload' " +
+        "uploading the folder to its own Cloudflare Pages project once the report refuses nothing. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -2611,6 +2616,36 @@ static async Task<int> BackupRun(string[] args)
     Console.WriteLine("backup: " + outcome.Detail);
 
     return outcome.Outcome == EquityBrief.Worker.Backup.StoreBackup.Copied ? 0 : 1;
+}
+
+// The read-only copy of the site on Cloudflare Pages: written through the read surface built beside this worker, read by
+// its check, its report written beside the copy's folder, and uploaded only with the flag. The two Cloudflare settings
+// are read from the configuration, which reads the secrets file, and handed to the upload alone.
+// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
+static async Task<int> PublishSiteVerb(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (args.Skip(1).FirstOrDefault(flag => flag != EquityBrief.Core.Cloudflare.PublishedSite.Upload) is { } unknown)
+    {
+        Console.Error.WriteLine($"publish-site: '{unknown}' is not a flag this verb takes; it takes '{EquityBrief.Core.Cloudflare.PublishedSite.Upload}' alone.");
+
+        return 1;
+    }
+
+    string?[] secrets = [Path.Combine(AppContext.BaseDirectory, "appsettings.Secrets.json"), Environment.GetEnvironmentVariable(NightBuild.SecretsFileVariable)];
+    string?[] roots = [store.DataRoot, Path.GetDirectoryName(store.DataRoot), Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), Path.GetTempPath()];
+
+    return await new EquityBrief.Worker.Cloudflare.SitePublisher(
+        store.DataRoot,
+        AppContext.BaseDirectory,
+        [.. secrets.OfType<string>().Where(file => file.Length > 0)],
+        [.. roots.OfType<string>().Where(root => root.Length > 0)]).RunAsync(
+            args.Contains(EquityBrief.Core.Cloudflare.PublishedSite.Upload),
+            configuration[EquityBrief.Core.Cloudflare.PublishedSite.TokenKey],
+            configuration[EquityBrief.Core.Cloudflare.PublishedSite.AccountKey],
+            line => Console.WriteLine("publish-site: " + line));
 }
 
 // The articles of the last days stored at once, one dated query a day, for the names the index holds, run by hand on

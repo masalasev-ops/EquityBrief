@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+# The read-only copy of the site on Cloudflare Pages: what the operator runs by hand, and what the scheduler calls once
+# the off-peak run after each night has finished, so the copy carries the reports its drain wrote. Runs the worker's
+# publish-site verb from a clean copy of the committed code, as tools/offpeak does: main's own commit, read from the main
+# branch with no fetch whatever branch the checkout is on, in the data root's folder of nights, reusing the copy a night or
+# an off-peak run built of that commit and building the read surface into it beside the worker, since the copy is written
+# through the surface; a copy that does not exist yet is exported whole with `git archive` and built in Release. Nothing
+# is removed here: the one folder the verb rewrites is the data root's own folder for the copy. The data root and the
+# secrets file are the checkout's, each named by absolute path, and the secrets file is read by the worker alone.
+#
+#   tools/publish-site            write the copy and its report, and upload nothing
+#   tools/publish-site --upload   write it, and upload it to Cloudflare Pages once its report refuses nothing
+#   tools/publish-site --check    print what a run would build and run, and run nothing
+set -euo pipefail
+
+# The root in the form the platform's own tools read, as tools/nightly reads it.
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && (pwd -W 2>/dev/null || pwd))"
+cd "$root"
+
+data="${EquityBrief__DataRoot:-$root/data}"
+case "$data" in
+    /*|[A-Za-z]:*) ;;
+    *) data="$root/$data" ;;
+esac
+mkdir -p "$data"
+
+check=0
+passed=()
+
+for argument in "$@"; do
+    case "$argument" in
+        --check) check=1 ;;
+        --upload) passed+=("$argument") ;;
+        *) echo "publish-site: '$argument' is not an argument this script takes" >&2; exit 1 ;;
+    esac
+done
+
+refuse() {
+    echo "publish-site: refused before any worker exists: $1" >&2
+    exit 1
+}
+
+branch="$(git symbolic-ref --short -q HEAD || true)"
+commit="$(git rev-parse --verify -q 'refs/heads/main^{commit}' || true)"
+
+if [ -z "$commit" ]; then
+    refuse "the checkout holds no main branch, so no build was made"
+fi
+
+short="${commit:0:12}"
+note="built from $short"
+
+if [ "$branch" != "main" ]; then
+    note="$note, main's own commit while the checkout is on '${branch:-no branch}'"
+fi
+
+if git rev-parse --verify -q refs/remotes/origin/main >/dev/null; then
+    ahead="$(git rev-list --count "origin/main..$commit")"
+
+    if [ "$ahead" != 0 ]; then
+        refuse "main holds $ahead commit(s) origin/main does not have, so no build was made from it"
+    fi
+else
+    note="$note, with no origin/main to read against"
+fi
+
+copy="$data/nights/$short"
+secrets="$root/src/EquityBrief.Worker/appsettings.Secrets.json"
+
+worker_in() {
+    find "$1/src/EquityBrief.Worker/bin/Release" -name EquityBrief.Worker.dll 2>/dev/null | head -n 1 || true
+}
+
+surface_in() {
+    find "$1/src/EquityBrief.Api/bin/Release" -name EquityBrief.Api.dll 2>/dev/null | head -n 1 || true
+}
+
+built="$(worker_in "$copy")"
+surface="$(surface_in "$copy")"
+
+state() {
+    if [ -n "$1" ]; then echo "built already"; else echo "to build"; fi
+}
+
+if [ "$check" = 1 ]; then
+    echo "publish-site: would run $commit, $note"
+    echo "publish-site: copy $copy, worker $(state "$built"), read surface $(state "$surface")"
+    echo "publish-site: data root $data"
+    echo "publish-site: secrets read from $secrets, none copied"
+    echo "publish-site: would write the copy into $data/site and its report beside it${passed:+, and upload it}"
+    exit 0
+fi
+
+if [ -z "$built" ]; then
+    mkdir -p "$copy"
+    git archive "$commit" | tar -x -C "$copy"
+    dotnet build "$copy/src/EquityBrief.Worker" -c Release --nologo -v quiet
+    built="$(worker_in "$copy")"
+
+    if [ -z "$built" ]; then
+        echo "publish-site: the build of $short left no worker assembly under $copy" >&2
+        exit 1
+    fi
+
+    note="$note, worker built"
+fi
+
+if [ -z "$surface" ]; then
+    dotnet build "$copy/src/EquityBrief.Api" -c Release --nologo -v quiet
+    surface="$(surface_in "$copy")"
+
+    if [ -z "$surface" ]; then
+        echo "publish-site: the build of $short left no read surface assembly under $copy" >&2
+        exit 1
+    fi
+
+    note="$note, read surface built"
+fi
+
+touch "$copy"
+echo "publish-site: $note"
+
+export EquityBrief__DataRoot="$data"
+export EquityBrief__SecretsFile="$secrets"
+
+exec dotnet "$built" publish-site ${passed[@]+"${passed[@]}"}

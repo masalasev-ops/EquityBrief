@@ -73,6 +73,10 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
                                  peak window ends, every day:
                                  the labeller and then the drain over the reports the night queued,
                                  from a clean copy of the main checkout's commit
+                  publish-site  publish-site.ps1   the read-only copy on Cloudflare Pages, run by hand and by the
+                                 scheduler once the off-peak run has finished: the site's screens written under
+                                 the data root from a clean copy of the main checkout's commit, read for anything
+                                 that must not leave the machine, and uploaded only with --upload
                   remedy  remedy.ps1   run a remedy file, the worker commands a change owes the
                                  operator's store, one a line in order, stopping at the first failure
                   remedies/      one file per remedy, named by date, checkpoint and what it does,

@@ -115,6 +115,7 @@ public partial class NightlyCost
     [
         "src/EquityBrief.Core/Providers/AnthropicMessagesFeed.cs",
         "src/EquityBrief.Core/Providers/BlackRockFundHoldingsFeed.cs",
+        "src/EquityBrief.Core/Providers/CloudflarePagesFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdBulkPriceFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdCorporateActionFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdDividendCalendarFeed.cs",
@@ -319,11 +320,13 @@ public partial class NightlyCost
         // and twenty-three from the 2.1 correction that skips a refused member, Yahoo's chart and Nasdaq's quote, asked by the fetch
         // for a member whose row the provider's day file refused, and twenty-four from 20.1, the local run's readings, which
         // its own process asks of LM Studio and no night does, and twenty-six from 20.13, Yahoo's quote summary of a stock's
-        // analysts and TipRanks' ratings, which a chart page's ask and press start and no night does.
+        // analysts and TipRanks' ratings, which a chart page's ask and press start and no night does, and twenty-seven from
+        // the 18.4 correction of 2026-10-28, Cloudflare Pages' direct upload of the read-only copy, which the publish verb
+        // asks by hand or on the scheduler's run after the off-peak run and no night does.
         Assert.True(
-            MayHoldAClient.Length <= 26,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are twenty-six feed " +
-            "implementations. A twenty-seventh is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 27,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are twenty-seven feed " +
+            "implementations. A twenty-eighth is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: four files, the local lane's client, the local
         // run's reading feed and the paid model's live feed in each of its two formats.

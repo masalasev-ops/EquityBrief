@@ -5430,6 +5430,37 @@ public sealed partial class ReadApi : IComponent
         return rows;
     }
 
+    // The days a name's report sections the checker accepted were written on, newest first, the retired key under each
+    // figure left out as every page leaves it out: the dated versions of its report the read-only copy lists.
+    // see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
+    public async Task<IReadOnlyList<DateOnly>> ReportDaysAsync(string ticker)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ReportDays;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$retired", ClaimRules.RetiredKey);
+
+        var days = new List<DateOnly>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            days.Add(Day(reader.GetString(0)));
+        }
+
+        return days;
+    }
+
+    const string ReportDays = @"
+        SELECT DISTINCT as_of
+        FROM research_section
+        WHERE ticker = $ticker AND section <> $retired AND status = 'accepted' AND prose <> ''
+        ORDER BY as_of DESC;
+    ";
+
     static DateOnly Day(string stored) => DateOnly.ParseExact(stored, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     // The night a read is about. A page about tonight asks for the last date there is

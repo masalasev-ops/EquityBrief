@@ -340,8 +340,10 @@ public class EodhdBulkPriceFeedTests
         // twenty-three until 20.1 added the local run's readings, which its own
         // process asks of LM Studio and no night does, and twenty-four until 20.13
         // added Yahoo's quote summary of a stock's analysts and TipRanks' ratings,
-        // which a chart page's ask and press start and no night does.
-        Assert.Equal(26, Checks.NightlyCost.MayHoldAClient.Length);
+        // which a chart page's ask and press start and no night does, and twenty-six
+        // until the 18.4 correction of 2026-10-28 added Cloudflare Pages' direct
+        // upload of the read-only copy, which the publish verb asks and no night does.
+        Assert.Equal(27, Checks.NightlyCost.MayHoldAClient.Length);
         Assert.All(
             Checks.NightlyCost.MayHoldAClient,
             file => Assert.EndsWith("Feed.cs", file, StringComparison.Ordinal));

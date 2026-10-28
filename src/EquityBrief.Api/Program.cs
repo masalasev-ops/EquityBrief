@@ -1,7 +1,9 @@
 using System.Globalization;
 using System.Text.Json;
+using EquityBrief.Api.Cloudflare;
 using EquityBrief.Api.Passes;
 using EquityBrief.Api.Reading;
+using EquityBrief.Core.Cloudflare;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Quotes;
@@ -68,6 +70,17 @@ if (args.Length > 0 && args[0] == ComparisonFiles.Verb)
     }
 
     return;
+}
+
+// Started with the read-only copy's verb, the surface draws every screen as an export draws a report: no account
+// setting, none of the operator's own trades, no live quote and no TipRanks ratings, and no control asking for any.
+// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
+var copying = args.Length > 0 && args[0] == PublishedSite.Verb;
+var copyServer = copying ? new InProcessServer() : null;
+
+if (copyServer is not null)
+{
+    builder.WebHost.UseServer(copyServer);
 }
 
 builder.Services.AddSingleton<IClock>(SystemClock.ForUnitedStatesSessions());
@@ -225,7 +238,7 @@ app.MapGet("/marks/level-chart/{ticker}", async (
 // prove is that the test agrees with itself.
 app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, StoreLocation store) =>
 {
-    var name = await NameAsync(read, marks, page, caps, clock, ticker, builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC", export: false, cardContext: await CardContextAsync(read, store));
+    var name = await NameAsync(read, marks, page, caps, clock, ticker, builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC", export: copying, cardContext: await CardContextAsync(read, store, copying), live: !copying);
 
     // The link to the file, outside the region, so the file does not carry it.
     return Results.Content(ReportExporter.Link(ticker) + name.Region, "text/html; charset=utf-8");
@@ -247,7 +260,7 @@ app.MapGet("/screens/name/{ticker}/{date}", async (string ticker, string date, R
 
     if (!DateOnly.TryParseExact(date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var asked))
     {
-        var tonight = await NameAsync(read, marks, page, caps, clock, ticker, index, export: false, cardContext: await CardContextAsync(read, store));
+        var tonight = await NameAsync(read, marks, page, caps, clock, ticker, index, export: copying, cardContext: await CardContextAsync(read, store, copying), live: !copying);
 
         return Results.Content(
             SinglePageApp.NotANight(date) + ReportExporter.Link(ticker) + tonight.Region,
@@ -273,7 +286,7 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
     var through = night ?? (bars.Count > 0 ? bars[^1].SessionDate : today);
     var indexCode = await read.IndexOfAsync(ticker, night ?? today);
     var member = indexCode is null ? null : (await read.UniverseAsync(indexCode, night)).FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal));
-    var quote = session is { } open ? await read.NewestQuoteAsync(ticker, open.Open, open.Close) : null;
+    var quote = !copying && session is { } open ? await read.NewestQuoteAsync(ticker, open.Open, open.Close) : null;
     var quoteSession = session is { } window ? new QuoteSession(window.Open, window.Close, RegularSession.IsOpen(clock.UtcNow, clock.SessionZone)) : null;
     var live = SinglePageApp.QuoteDrawn(quote, quoteSession, null, bars.Count > 0 ? bars[^1].SessionDate : null);
     var reportInputs = await read.ReportInputsAsync(ticker, null, through);
@@ -329,8 +342,8 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
             Graphs = graphs with
             {
                 Yahoo = yahoo,
-                AsksYahoo = indexCode is not null && (yahoo is null || yahoo.AskedAt < EquityBrief.Core.Analysts.AnalystLimits.DayOf(now, clock.SessionZone).From),
-                TipRanks = await read.NewestRatingsAsync(ticker),
+                AsksYahoo = !copying && indexCode is not null && (yahoo is null || yahoo.AskedAt < EquityBrief.Core.Analysts.AnalystLimits.DayOf(now, clock.SessionZone).From),
+                TipRanks = copying ? null : await read.NewestRatingsAsync(ticker),
                 Calls = await read.TipRanksCallsAsync(),
                 Now = now,
             },
@@ -354,7 +367,7 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
 
         view = view with
         {
-            Brief = await BriefAsync(read, store, ticker, indexCode, briefed, member, indicators, report, reactions, cards, score),
+            Brief = await BriefAsync(read, store, ticker, indexCode, briefed, member, indicators, report, reactions, cards, score, sized: !copying),
             Fundamentals = FundamentalsScreen.Of(
                 score,
                 Universes.ByCode(indexCode ?? string.Empty)?.Name,
@@ -420,7 +433,7 @@ app.MapGet(ReportProof.Route, async (string? index, string? format, ReadApi read
 });
 
 // The name screen's region, read here and composed by the app, for the page and for the file.
-static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, string ticker, string index, bool export, DateOnly? on = null, CardContext? cardContext = null)
+static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, string ticker, string index, bool export, DateOnly? on = null, CardContext? cardContext = null, bool live = true)
 {
     var session = RegularSession.On(clock.SessionDateAt(clock.UtcNow), clock.SessionZone);
     var bars = await read.BarsAsync(ticker, DateOnly.MinValue, on ?? DateOnly.MaxValue);
@@ -642,7 +655,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         warmed: await read.ChartAveragesAsync(ticker),
         // The regular session of the day the page is opened on and the newest quote stored inside it, which tonight's
         // page draws in its masthead while the session is open; an earlier night's page and the file draw the close.
-        quote: on is null && session is { } open ? await read.NewestQuoteAsync(ticker, open.Open, open.Close) : null,
+        quote: live && on is null && session is { } open ? await read.NewestQuoteAsync(ticker, open.Open, open.Close) : null,
         quoteSession: session is { } window ? new QuoteSession(window.Open, window.Close, RegularSession.IsOpen(clock.UtcNow, clock.SessionZone)) : null,
         tileQuarters: await read.TileQuartersAsync(ticker, on),
         forwardRate: await read.ForwardRateAsync(ticker, on),
@@ -1363,7 +1376,7 @@ static async Task<IReadOnlyList<FamilyCardView>> WithNumbersAsync(ReadApi read, 
 // quarters' readings, its six-month return's place among its index's members off the ledger's readings of the night, and
 // its next report after the night.
 // see: The chart page opens on a brief read written by code from stored figures, and no rule reads it
-static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, string ticker, string? indexCode, DateOnly night, UniverseRow? member, IReadOnlyList<IndicatorRow> indicators, ReportView report, IReadOnlyList<ReactionRow> reactions, IReadOnlyList<DecisionCardRow> cards, FundamentalScoreRow? score = null)
+static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, string ticker, string? indexCode, DateOnly night, UniverseRow? member, IReadOnlyList<IndicatorRow> indicators, ReportView report, IReadOnlyList<ReactionRow> reactions, IReadOnlyList<DecisionCardRow> cards, FundamentalScoreRow? score = null, bool sized = true)
 {
     var large = indexCode == Universes.Large.Code;
     var gate = large ? await read.GateResultAsync(ticker, night) : null;
@@ -1433,7 +1446,7 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
         listed,
         large ? NameScreen.PlanRows(await read.LadderAsync(ticker, night)) : [],
         large,
-        EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot),
+        sized ? EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot) : null,
         standing,
         await read.NextReportAsync(ticker, night),
         [.. reactions.Select(row => row.MovePct)],
@@ -1476,10 +1489,12 @@ static IReadOnlyDictionary<string, double?> Growths(IEnumerable<(string Ticker, 
         .ToDictionary(group => group.Key, group => group.MaxBy(holding => holding.EnteredOn).Growth, StringComparer.Ordinal);
 
 // What the cards a page draws are handed beyond the night's rows: the operator's account where it is set, their taken
-// trades, and the card's presses, which a page the operator reads draws and an export never does.
+// trades, and the card's presses, which a page the operator reads draws and an export and the read-only copy never do.
 // see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold
-static async Task<CardContext> CardContextAsync(ReadApi read, StoreLocation store) =>
-    new(EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot), await read.OpenTakenTradesAsync(), await read.TakenTradesAsync(), Pressable: true, await read.TakenRecordsAsync());
+static async Task<CardContext> CardContextAsync(ReadApi read, StoreLocation store, bool copying = false) =>
+    copying
+        ? CardContext.None
+        : new(EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot), await read.OpenTakenTradesAsync(), await read.TakenTradesAsync(), Pressable: true, await read.TakenRecordsAsync());
 
 // How a night went, the one view the Run page's headline and tonight's notice are both handed, read off the
 // night's run log rows and the night holding the lock, if one does.
@@ -1631,7 +1646,7 @@ app.MapGet("/screens/tonight/{night?}", async (
         var indexAsOf = TonightScreen.ReadAsOf(indexNight, dated);
         var indexAnswers = await read.SweepAnswersAsync(reading.Code, indexAsOf);
         var indexRegister = await read.RegisteredCandidatesAsync();
-        var indexCardContext = await CardContextAsync(read, store);
+        var indexCardContext = await CardContextAsync(read, store, copying);
         // The short-term dip's own rows, its card drawn after every swing family's with its pick cards, funnel and numbers as
         // every family's, and its label on an earlier family's row where it gave way to that family.
         // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
@@ -1991,7 +2006,7 @@ app.MapGet("/screens/tonight/{night?}", async (
     var answers = await read.SweepAnswersAsync(reading.Code, TonightScreen.PastTheNight(dated));
     // Each pick with the card the night stored for it, opened in place beneath its row.
     // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
-    var cardContext = await CardContextAsync(read, store);
+    var cardContext = await CardContextAsync(read, store, copying);
     // Each card drawn by the rule the link chooses for it, the live rule where it names none, with its funnel, its
     // stretch line and, under a breakout card, the breakouts forming.
     // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
@@ -2314,7 +2329,7 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
 {
     var reading = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
     var night = await read.NewestNightAsync();
-    var held = EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot);
+    var held = copying ? null : EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot);
     var walkedOn = held ?? EquityBrief.Core.Cards.AccountSettings.Example;
     var paper = night is { } on ? await PaperAccountsAsync(read, reading, on, walkedOn) : null;
     var selector = night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.PaperRoute) : string.Empty;
@@ -2466,7 +2481,7 @@ async Task<IReadOnlyDictionary<string, EquityBrief.Core.Cards.PaperProgress>> Pa
         indexNight is null ? null : IndexRuleSettings.Read(indexNight.Settings),
         await read.PaperRowsAsync(reading.Code),
         large ? PicksScreen.Cells(await read.PicksAsync(night), night) : [],
-        PaperScreen.Yours(await read.TakenTradesAsync(), reading.Code),
+        PaperScreen.Yours(copying ? [] : await read.TakenTradesAsync(), reading.Code),
         large ? await read.FamilyReplaysAsync() : [],
         TonightScreen.ReadAsOf(indexNight, night));
 
@@ -2493,7 +2508,7 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
     // The register read as the night's page reads it, as of the instant a night run again read it at, on the S&P 500 off
     // its own index's night as on the S&P 400 and 600.
     // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
-    var sources = PaperScreen.Accounts(large, reading.Name, night, register, provisional, rows, cells, PaperScreen.Yours(await read.TakenTradesAsync(), reading.Code), large ? await read.FamilyReplaysAsync() : [], TonightScreen.ReadAsOf(indexNight, night));
+    var sources = PaperScreen.Accounts(large, reading.Name, night, register, provisional, rows, cells, PaperScreen.Yours(copying ? [] : await read.TakenTradesAsync(), reading.Code), large ? await read.FamilyReplaysAsync() : [], TonightScreen.ReadAsOf(indexNight, night));
     (string Ticker, DateOnly Session)[] bought = [.. sources.SelectMany(account => account.Trades.Select(one => (one.Trade.Ticker, one.Trade.Bought))).Distinct()];
 
     // The trades an account leaves out are read for their trade log's result so far, and walked by nothing.
@@ -2899,7 +2914,7 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
     // it counts with its verdict and its record's label beside them and those it leaves out folded beneath; the page's
     // lists where the link names none, with each family's verdict beside them.
     // see: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together
-    var paper = night is { } walkedOn ? await PaperAccountsAsync(read, reading, walkedOn, EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot) ?? EquityBrief.Core.Cards.AccountSettings.Example) : null;
+    var paper = night is { } walkedOn ? await PaperAccountsAsync(read, reading, walkedOn, (copying ? null : EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot)) ?? EquityBrief.Core.Cards.AccountSettings.Example) : null;
     var askedAccount = request.Query[PaperScreen.AccountQuery].FirstOrDefault();
 
     if (paper is { } accounts && night is { } logged && accounts.Views.FirstOrDefault(view => view.Key == askedAccount) is { } chosenAccount)
@@ -2942,7 +2957,7 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
                 frozenOn,
                 keptUnder,
                 PicksScreen.IndexSetups(keptTrades)) +
-            page.YourTradesRegion(reading.Name, PicksScreen.YourTrades(await read.TakenTradesAsync(), reading.Code)),
+            page.YourTradesRegion(reading.Name, PicksScreen.YourTrades(copying ? [] : await read.TakenTradesAsync(), reading.Code)),
             "text/html; charset=utf-8");
     }
 
@@ -2975,7 +2990,7 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
     // see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight
     return Results.Content(
         page.PicksRegion(marks, night, PicksScreen.Summary(under), PicksScreen.Filtered(under, status), status, setup, setups, heavyweights, selector, null, dipTrades) +
-        page.YourTradesRegion(reading.Name, PicksScreen.YourTrades(await read.TakenTradesAsync(), reading.Code)),
+        page.YourTradesRegion(reading.Name, PicksScreen.YourTrades(copying ? [] : await read.TakenTradesAsync(), reading.Code)),
         "text/html; charset=utf-8");
 });
 
@@ -3517,6 +3532,42 @@ app.MapGet("/screens/run/{night?}", async (
             routeTimesSince: times.Since),
         "text/html; charset=utf-8");
 });
+
+// The read-only copy: started with its verb and the folder to write, the surface runs on a server inside its own process
+// with no socket, asks itself for each screen the copy holds as the live shell does, writes the copy into the folder and
+// stops, recording no start and writing nothing to the store. Each line it prints is one the worker's report carries.
+// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
+if (copyServer is not null)
+{
+    if (args.Length < 2 || string.IsNullOrWhiteSpace(args[1]))
+    {
+        Console.Error.WriteLine($"{PublishedSite.Verb}: name the folder the copy is written into.");
+        Environment.ExitCode = 1;
+
+        return;
+    }
+
+    await app.StartAsync();
+
+    var copied = await SiteCopyCommand.WriteAsync(copyServer.AskAsync, app.Services.GetRequiredService<ReadApi>(), Path.GetFullPath(args[1]), line => Console.WriteLine($"{PublishedSite.Verb}: {line}"));
+
+    await app.StopAsync();
+
+    foreach (var refusal in copied.Refused)
+    {
+        Console.WriteLine($"{PublishedSite.Verb}: not held: {refusal}");
+    }
+
+    foreach (var (index, reports, versions) in copied.Reports)
+    {
+        Console.WriteLine($"{PublishedSite.Verb}: reports: {index}: {reports} reports, {versions} versions");
+    }
+
+    Console.WriteLine(FormattableString.Invariant($"{PublishedSite.Verb}: night {copied.Night:yyyy-MM-dd}, {copied.Files.Count} screens held"));
+    Environment.ExitCode = copied.Files.Count == 0 ? 1 : 0;
+
+    return;
+}
 
 // One run log row for each start of the surface, which is the grain SCHEMA declares
 // and what section 15.10's run page reads. Written after the host is built so a
