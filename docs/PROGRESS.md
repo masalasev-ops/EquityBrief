@@ -10803,3 +10803,47 @@ Queue:      done, PRs 573 to 577; in progress, this pull request; next, the oper
             on 22.15's freezes and on the quarters fetch's asks for COR, SMCI, BA and V.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.4 - correction: the box management speaks in quotes the sentence its release says what the company reported in, and the news labeller labels every name a report is written for, each name's own stories whole   2026-10-28
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Found:      ROP's, ALLE's and P's pages read on 2026-10-28 from main's Release build after PR 577 merged, the store at
+            schema 113, against the pages main drew before it. On all three the price marked CLOSED and each concept
+            drawn once. On ROP's of 2026-10-26 and ALLE's, a release not yet filed, the quarter dated by its release of
+            2026-10-22 and labelled as the release's, the segments saying they are the older filing's and the next
+            report moved on to not announced. On ROP's and P's the pick's lines on the chart, the plan opening on the
+            pick's exit and the rules opening on the family that picked it, the earnings drift's and the pullback's.
+            ROP's two older bands where it drew none, its news 39 stories of 82 with 41 another company's left out, no
+            bracketed code where 8 stood and P's 11, and ROP's newest page flagging its peer group against the software
+            its own account says it sells. Two not as the corrections ruled: ALLE's box drew no line from its release,
+            and P's quoted "Wednesday, September 23, 2026." as the opening of its release of 2026-08-27. The box read a
+            release's first line as a dateline whose city is written in small letters, and over the S&P 500's 501
+            newest releases the store held that read found no line in 299 and a conference call's weekday and hour in
+            106. And the ruling of this day on the labeller, whose run sent a name its newest twenty: ROP's page drew 59
+            of its 79 stories unlabelled.
+Corrected:  the box quotes the sentence in which the release says what the company reported or announced, read by its
+            name, its ticker or its listing past its headline, its bullets and its dateline, a present tense read only
+            where no past tense says it and straight after a dateline's day: 452 of the 501 read, none a conference
+            call's line, the rest saying it nowhere, their figures in highlights or tables alone. The labeller labels,
+            after the S&P 500's list, every name a report is written for, a request asked since the night's session
+            began and written or still to be written, and each name's own stories of the window whole in one run; the
+            newest-twenty constant and its pin go.
+Tests:      2 new; 2855 in all.
+Claims:     none new: the rows are amended in place.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the two corrections add, each
+            filtered to the tests reading it. Q1 the present tense read first, Q2 no run of capitals a separator, Q3 a
+            name read by its listing quoted from the listing, Q4 a sentence running on from a headline kept, Q5 a full
+            stop after an abbreviation ending a sentence: each red at the box's test. L1 a name sent its newest twenty,
+            L2 no name a report is written for, L3 a request asked before the session read, L4 a refused request read:
+            each red at the labeller's test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2855 of 2855 tests ran
+            with none failed, migrations 0 to 113 with none pending, schema version 113, against `data-ci` and never
+            `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the filers the box's read showed holding no recent release, which no reader corrects: of the 1,503 members
+            the store names a filer for, 37 hold no release accepted after 2025-07-01, 12 of the S&P 500's, 6 of the
+            400's and 19 of the 600's, the oldest PTON's of 2005 and CHRD's of 2010 Chordiant Software's, read on
+            2026-10-28, put to the operator. The segments read from a release's tables and the quarters fetch's asks for
+            COR, SMCI, BA and V stand as PR 577 carried them, put to the operator.
