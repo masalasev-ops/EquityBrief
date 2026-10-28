@@ -23,9 +23,8 @@ public static class NewsLabelling
     public const string CapPaused = "the day or month cap";
     public const string ModelUnreachable = "the model could not be reached";
 
-    // The window read before a night, and the most articles a name is sent for.
+    // The window read before a night.
     public const int WindowDays = 30;
-    public const int ArticlesAName = 20;
 
     // The nights the labeller's time limit, month limit and the share of answers refused for a digit are
     // settled from, which the Run page counts toward.

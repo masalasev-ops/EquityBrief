@@ -4422,7 +4422,8 @@ public sealed partial class MarkRenderer : IComponent
         NumbersSayView? says,
         GatesView? gates,
         ListedUnderView? listedUnder = null,
-        string? index = null)
+        string? index = null,
+        DecisionCardView? card = null)
     {
         var list = earlierNight is { } on ? "the list on " + on.ToString("yyyy-MM-dd", Invariant) : "tonight's list";
         var indexList = index is null ? list : earlierNight is { } dated ? "the " + index + " list on " + dated.ToString("yyyy-MM-dd", Invariant) : "tonight's " + index + " list";
@@ -4442,7 +4443,9 @@ public sealed partial class MarkRenderer : IComponent
             : says.Heading.TrimEnd('.') + ".";
 
         // The plan the night's live rule read and never a candidate's: section 10's or the nearest bands' as
-        // the row's live plan names, and the ladder's first tranche where the trade gate read that.
+        // the row's live plan names, and the ladder's first tranche where the trade gate read that. A pick whose card the
+        // page draws and whose trade the gate read no whole plan for is the family's trade, which the card draws with its
+        // exit, and is never said to have no plan beside it.
         // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
         decimal? entry;
         decimal? stop;
@@ -4459,7 +4462,9 @@ public sealed partial class MarkRenderer : IComponent
             ? Formatted($"{Capitalised(PlanWords(gates.LivePlan!))}, the plan the trade gate read: in at {Price(buy)}, stop {Price(exit)}, target {Price(sell)}.")
             : gates is { LivePlan: FilterSettings.LadderWord, LadderRewardToRisk: { } ratio, LadderStopMoves: { } moves }
                 ? Formatted($"{Capitalised(PlanWords(FilterSettings.LadderWord))}, the plan the trade gate read: reward to risk {ratio:0.00}, its stop {moves:0.00} typical moves below the entry.")
-                : "No plan with an entry, a stop and a target is stored for this night.";
+                : card is not null
+                    ? Formatted($"Its trade is the one the {SetupOf(card.Family)} picked it for{(card.Entry is { } price ? Formatted($", in at about {Price(price)}") : string.Empty)}, drawn on its card below with its exit.")
+                    : "No plan with an entry, a stop and a target is stored for this night.";
 
         var drawn = new StringBuilder();
 

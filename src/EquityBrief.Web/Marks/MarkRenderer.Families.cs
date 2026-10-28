@@ -1275,8 +1275,8 @@ public sealed partial class MarkRenderer
 
     // A pick's stories over the thirty days before the night as the labeller counted them, in words: so many good and so
     // many bad. Where it holds no label, an S&P 500 pick says so and an S&P 400's or 600's says why, the labeller reading
-    // the S&P 500's list alone.
-    // see: The news labeller reads the S&P 500's list alone until the operator widens it
+    // the S&P 500's list alone of the three.
+    // see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run
     static string PickNewsCell(FamilyPickCell pick, bool labelled) =>
         pick.Row.NewsPositive is { } positive && pick.Row.NewsNegative is { } negative
             ? Formatted($"<td class=\"news-counts\" data-positive=\"{positive}\" data-negative=\"{negative}\"><span class=\"np {(positive > 0 ? "gain" : "flat")}\">{positive} good</span> · <span class=\"nn {(negative > 0 ? "loss" : "flat")}\">{negative} bad</span></td>")

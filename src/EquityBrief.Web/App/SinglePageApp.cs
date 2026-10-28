@@ -1705,7 +1705,8 @@ public sealed partial class SinglePageApp : IComponent
                     says,
                     gates,
                     listedUnder,
-                    mast?.Index),
+                    mast?.Index,
+                    decision),
                 title: "The short version, written by code",
                 stamp: Cards.Night(session),
                 id: SectionId(MarkRenderer.TheShortVersion),
@@ -1975,7 +1976,7 @@ public sealed partial class SinglePageApp : IComponent
 
         // A quarter reported after the newest filing the store holds is the results release's, and is labelled so until its
         // filing is stored, where it read as the older filing's.
-        // see: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+        // see: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
         var releasedFirst = report?.Quarter is { Reported: { } reportedOn } && (filedOn is null || reportedOn > filedOn) ? report.Quarter.Reported : null;
 
         Card("quarter", "quarter", "The latest quarter", Cards.Dated(

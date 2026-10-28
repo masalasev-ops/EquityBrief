@@ -186,7 +186,8 @@ public partial class ReadSurface
         {
             using var host = new Host(store.Root);
 
-            var dip = CodeSummary(await NameRoute(host, "M2"));
+            var dipPage = await NameRoute(host, "M2");
+            var dip = CodeSummary(dipPage);
             var breakout = CodeSummary(await NameRoute(host, "M1"));
             var unlisted = CodeSummary(await NameRoute(host, "M3"));
 
@@ -195,6 +196,12 @@ public partial class ReadSurface
             Assert.Equal("On tonight's S&P 400 list under Short dips in an uptrend.", Part(dip, "why"));
             Assert.Equal($"On tonight's S&P 400 list under {EquityBrief.Core.Families.SetupFamilies.Named(EquityBrief.Core.Families.BreakoutRule.Name)!.Heading}.", Part(breakout, "why"));
             Assert.Equal("Not on tonight's list.", Part(unlisted, "why"));
+
+            // From the 18.4 correction of 2026-10-28 a pick's short version names its trade only where its page draws its
+            // card: M2's draws none on this night, no card stored for it, so it still says no plan is stored, as M3's does.
+            Assert.DoesNotContain("class=\"decision-card\"", dipPage, StringComparison.Ordinal);
+            Assert.Equal("No plan with an entry, a stop and a target is stored for this night.", Part(dip, "plan"));
+            Assert.Equal("No plan with an entry, a stop and a target is stored for this night.", Part(unlisted, "plan"));
         }
     }
 

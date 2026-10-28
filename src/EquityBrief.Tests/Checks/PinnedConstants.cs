@@ -409,7 +409,6 @@ public class PinnedConstants
             new("Report rates", "20", EquityBrief.Web.Marks.ReportsView.RateWindow, "ReportsView.RateWindow, for the two cases' count"),
             new("Paid model retirement warning", "30", ModelProfiles.RetirementWarningDays, "ModelProfiles.RetirementWarningDays"),
             new("News labelling window", "30", Worker.News.NewsLabeller.WindowDays, "NewsLabeller.WindowDays"),
-            new("News labelling window", "20", Worker.News.NewsLabeller.ArticlesAName, "NewsLabeller.ArticlesAName"),
             new("News labelling window", "8,000", Core.News.NewsInstruction.TextCharacters, "NewsInstruction.TextCharacters"),
             new("News labeller time limit", "20", Worker.News.NewsLimits.DefaultTimeLimitMinutes, "NewsLimits.DefaultTimeLimitMinutes"),
             new("News labeller month limit", "5", Worker.News.NewsLimits.DefaultMonthLimit, "NewsLimits.DefaultMonthLimit"),
