@@ -62,7 +62,7 @@ public partial class ReadSurface
     // of another family or another index draws none. The read surface's stage is the worker's.
     // see: The drift's open floor is replayed beside its live rule unregistered, skipping a fill whose reward to risk at the open is under 1
     [Fact]
-    public void TheDriftsCardOnTheSAndP500DrawsTheOpenFloorReplayBeneathItsRecord()
+    public async Task TheDriftsCardOnTheSAndP500DrawsTheOpenFloorReplayBeneathItsRecord()
     {
         Assert.Equal(RuleRecorder.OpenFloorStage, ReadApi.OpenFloorStage);
         Assert.Equal(EquityBrief.Worker.Indices.IndexFamilies.LargeIndex, ReadApi.OpenFloorIndex);
@@ -72,6 +72,20 @@ public partial class ReadSurface
 
         Assert.Contains("Beside it, the same rule replayed skipping a fill whose reward to risk at the open is under 1, registered as no rule: over 2 Jan 2019 to 27 Oct 2026 it kept 410 trades at +0.21 of the risk a trade after costs, 40% won, where the rule's own walk kept 455 at +0.17 of the risk a trade, 38% won, and it skipped 52 listings the rule bought. Followed forward from 27 Oct 2026: 0 trades at no average yet, against the rule's 0 at no average yet.", line, StringComparison.Ordinal);
         Assert.Equal(string.Empty, MarkRenderer.OpenFloorBeside(null));
+
+        // The newest run's row is read as the record command writes it, its detail as the first replay printed it.
+        using var store = new TemporaryStore().Migrated();
+
+        const string Detail = "{\"index\":\"GSPC\",\"floor\":1,\"from\":\"2019-01-02\",\"through\":\"2026-10-27\",\"forwardFrom\":\"2026-10-27\",\"live\":{\"rule\":\"the live drift rule\",\"trades\":2260,\"won\":0.33716814159292036,\"average\":0.020466345686089477,\"medianSessions\":9,\"forwardTrades\":0,\"forwardAverage\":null},\"variant\":{\"rule\":\"the drift rule, skipping a fill whose reward to risk at the open is under 1\",\"trades\":2027,\"won\":0.3127775037000493,\"average\":0.10866893261090291,\"medianSessions\":11,\"forwardTrades\":0,\"forwardAverage\":null},\"skipped\":353}";
+
+        Insert(store, "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES ('rule-record-open-floor-1', '" + RuleRecorder.OpenFloorStage + "', '2026-10-28T19:00:00Z', '2026-10-28T19:05:00Z', 'ok', 0, 0, 0, '0', '" + Detail + "');");
+
+        var read = await Api(store).OpenFloorAsync();
+
+        Assert.Equal((2027, 2260, 353, new DateOnly(2026, 10, 27), 0), (read!.Trades, read.LiveTrades, read.Skipped, read.ForwardFrom, read.ForwardTrades));
+        Assert.Equal(0.109, Math.Round(read.Average!.Value, 3));
+        Assert.Null(read.ForwardAverage);
+        Assert.Null(await Api(new TemporaryStore().Migrated()).OpenFloorAsync());
 
         var drift = new DecisionCardRow("GSPC", new DateOnly(2026, 10, 20), EquityBrief.Core.Families.DriftRule.Name, "KEY", 1, 20.81m, 20.04m, 21.92m, "the drift rule", "{}", "[]", null, Cap: 60);
         var context = CardContext.None with { OpenFloor = replay };
