@@ -11132,3 +11132,34 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the operator's reading of the first report before any upload, then the copy's task enabled; the 10,503 links
             reading "Not in this copy", most of them peers' tickers, for the operator to keep as ruled or to have read as
             plain words; the relabel, running in batches between the writers' slots.
+
+### 18.4 ruling - every name's page closes the gaps ROP's and KEY's still showed, ROP's peer group set to Software, and a drift variant skipping a fill under 1 replayed beside the live rule unregistered   2026-10-28
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      the operator's instruction of 2026-10-28, about 17:25 UTC: "Close these gaps for every name's page. Add to what
+            exists, remove no capability, and do not change the live rule of any family. Use code or the local model
+            only: no paid call." Its parts: ROP's peer group set to Software, approved, and no override for the other 18
+            names the check flagged; the mismatch check tightened as its own change to match on the company's own revenue
+            lines and segment names and not on words in its description, the 18 kept as cases it must not flag and ROP as
+            the case it must, and the relevance test run again for ROP's sources and industry cycle with software's words;
+            the relevance test applied to each written section's own source list beside the sources list, over the whole
+            text of a document a written section cites; the model table's "Ran on" filled from the profile each job ran
+            under; the page's most a research pass has cost reconciled with the run page's range, each figure shown with
+            its scope and what a research pass holds that a full report pass does not stated; the 106 pages whose release
+            states no segment table read counted open, the local model tried on those releases' segment tables under the
+            same two sum checks, a table's amounts in one scale, and the note that a commentary was written from the older
+            filing's segments above its text; the 45 pages failing the newest-quarter rule named with when each is
+            expected to clear; every held drift trade's reward to risk planned at the close beside the one at its fill,
+            the held trades filling under 1 counted, and the same setup skipping a fill whose reward to risk at the open is
+            under 1 replayed as a one-change variant beside the live rule over the stored history and followed forward,
+            the live rule running unchanged; the short version's four sentences a paragraph chosen by demand, cost,
+            segments and the main risk in that order; the next report, estimated where none is on file, in the calendar
+            and the plan's block around the next report, placed against the hold; and rules for the model table, the cost
+            figures agreeing and the sources test in the proof, the general rules in the architecture's report page
+            section and the dated evidence in the changelog. Asked whether the variant should be registered, the drift's
+            family already holding the nine rules a family may, the operator chose on 2026-10-28, about 17:50 UTC, to
+            replay it beside the live rule and register nothing, so no test level and no rule moves.
+Queue:      done, PRs 573 to 581; in progress, this pull request; next, the operator's word on 22.14's pullback version, on
+            22.15's freezes and on the copy's nightly task, the relabel running on in batches between the writers' slots.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
