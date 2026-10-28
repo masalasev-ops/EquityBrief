@@ -10819,12 +10819,16 @@ Found:      ROP's, ALLE's and P's pages read on 2026-10-28 from main's Release b
             and P's quoted "Wednesday, September 23, 2026." as the opening of its release of 2026-08-27. The box read a
             release's first line as a dateline whose city is written in small letters, and over the S&P 500's 501
             newest releases the store held that read found no line in 299 and a conference call's weekday and hour in
-            106. And the ruling of this day on the labeller, whose run sent a name its newest twenty: ROP's page drew 59
-            of its 79 stories unlabelled.
+            106. ROP's of 2026-10-26, which no research had reached, said in its short version by code that no plan
+            with an entry, a stop and a target was stored, above the card holding its earnings drift trade. And the
+            ruling of this day on the labeller, whose run sent a name its newest twenty: ROP's page drew 59 of its 79
+            stories unlabelled.
 Corrected:  the box quotes the sentence in which the release says what the company reported or announced, read by its
             name, its ticker or its listing past its headline, its bullets and its dateline, a present tense read only
             where no past tense says it and straight after a dateline's day: 452 of the 501 read, none a conference
-            call's line, the rest saying it nowhere, their figures in highlights or tables alone. The labeller labels,
+            call's line, the rest saying it nowhere, their figures in highlights or tables alone. The short version code
+            writes for a pick whose card the page draws, where the trade gate read it no whole plan, names the trade that
+            card holds, the setup that picked it and its entry, and no longer says no plan is stored. The labeller labels,
             after the S&P 500's list, every name a report is written for, a request asked since the night's session
             began and written or still to be written, and each name's own stories of the window whole in one run; the
             newest-twenty constant and its pin go.
@@ -10836,7 +10840,8 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             name read by its listing quoted from the listing, Q4 a sentence running on from a headline kept, Q5 a full
             stop after an abbreviation ending a sentence: each red at the box's test. L1 a name sent its newest twenty,
             L2 no name a report is written for, L3 a request asked before the session read, L4 a refused request read:
-            each red at the labeller's test.
+            each red at the labeller's test. P1 the card the page draws read as none: red at the S&P 400's and 600's
+            cards' test.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
             last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2855 of 2855 tests ran
             with none failed, migrations 0 to 113 with none pending, schema version 113, against `data-ci` and never
