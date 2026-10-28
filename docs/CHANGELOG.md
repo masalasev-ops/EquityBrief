@@ -57,8 +57,8 @@ Authorised by: What worked and what did not is drawn four sentences a paragraph 
 Was:
 > "... and then on the written prose, read as what worked and what did not, a written paragraph opening on the levels' plan left to the plan region for a pick (see: The short version opens on the pick and then the quarter as code writes them, before what worked and what did not)."
 Now:
-> the same, followed by "Each paragraph of what worked and what did not is drawn with its first four sentences (see: What worked and what did not is drawn four sentences a paragraph at most)."
-Why: the operator's ruling of 2026-10-28 caps each paragraph at four sentences, the stored prose unchanged and the proof failing a longer paragraph.
+> the same, followed by "Each paragraph of what worked and what did not is drawn with its first four sentences, an abbreviation spelled out only in a sentence left out spelled out where it is next used (see: What worked and what did not is drawn four sentences a paragraph at most)."
+Why: the operator's ruling of 2026-10-28 caps each paragraph at four sentences, the stored prose unchanged and the proof failing a longer paragraph; over the S&P 500's pages of that night the cap left IT's EBITDA and MMM's GAAP bare where their spelled-out first use fell among the sentences cut, so they are spelled out where next used.
 
 ### 2026-10-28 - docs/ARCHITECTURE.html - a newer quarter's segments are read from its results release, and a next report not announced is given the day it is estimated at
 Authorised by: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so
