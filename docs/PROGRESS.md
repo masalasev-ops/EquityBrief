@@ -10852,3 +10852,28 @@ Carried:    the filers the box's read showed holding no recent release, which no
             400's and 19 of the 600's, the oldest PTON's of 2005 and CHRD's of 2010 Chordiant Software's, read on
             2026-10-28, put to the operator. The segments read from a release's tables and the quarters fetch's asks for
             COR, SMCI, BA and V stand as PR 577 carried them, put to the operator.
+
+### 18.4 ruling - the news labeller labels on the local model under a pin of its own, each kind a one-word key, and every stored story is labelled once on it   2026-10-28
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      the operator's addendum of 2026-10-28, about 03:00 UTC, after PR 578: "The labeller needs to move to local
+            and all stale labels need to be relabelled." First each kind a one-word key the model answers with, its
+            readable name kept for the pages and mapped in code, the answer held to the keys by LM Studio's structured
+            output under the labeller's own pin, each stored paid label's kind mapped to its key one to one, and the
+            comparison run again and reported before switching, stopping if more than 5 in 100 still come back outside
+            the set. Then LM Studio under its own pin, the answer read as one closed set, one retry on an empty or
+            cut-off answer and then the story left unlabelled with its reason, "No paid call from the labeller from now
+            on; no paid fallback", a run where LM Studio does not answer labelling nothing, saying so on the Run page
+            and leaving the stories to the next run, in the off-peak run and never overlapping the local run's two slots
+            or a history read. Every stored story labelled once on the local model from main after the merge while no
+            other writer runs, its count and time stated before it starts, in batches stopping before the next
+            local-run slot, the paid labels kept beside the new ones, every page reading the local label where one
+            stands and each label carrying its model. The Run page and the news region naming the local model and the
+            count labelled tonight, the money limit staying in the settings and reading nothing spent; no paid call, the
+            news labels read by no component that decides a pick, and no rule's code version moving. Asked why the
+            comparison's local answers were refused: "i cannot have local refuse. Find the reason to fix it."
+Queue:      done, PRs 573 to 578; in progress, this pull request; next, the report page's remaining defects for every
+            name's page in a pull request of its own, then the operator's word on 22.14's pullback version, on 22.15's
+            freezes and on the quarters fetch's asks for COR, SMCI, BA and V.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
