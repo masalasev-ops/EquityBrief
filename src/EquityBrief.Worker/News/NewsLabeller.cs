@@ -34,10 +34,11 @@ public sealed record NewsLabelOutcome(
 }
 
 // The news labeller. A process of its own the night starts after the close, as it starts the drain, and run
-// by hand: it reads tonight's list in the order it is drawn, for each name the stored, admitted articles of
-// the thirty days before the night, newest first and at most twenty, not yet labelled by the active profile
-// under the instruction's version, and asks the profile's model for a label one article at a time through
-// the spend cap. Every call and every dollar sits on this run and never on the night's.
+// by hand: it reads tonight's list in the order it is drawn and then each name a report is written for, for each
+// name its own stored, admitted articles of the thirty days before the night, newest first and every one of them,
+// not yet labelled by the active profile under the instruction's version, and asks the profile's model for a
+// label one article at a time through the spend cap. Every call and every dollar sits on this run and never on
+// the night's.
 //
 // Before it asks anything it stops where the month's limit is already reached, and before each call, a retry
 // among them, where the call would pass it, where its time limit has passed, where a peak window of the
@@ -62,6 +63,7 @@ public sealed class NewsLabeller : IComponent
             new StoreTouch(Store.FundamentalReading, Touch.Read),
             new StoreTouch(Store.NewsArticle, Touch.Read),
             new StoreTouch(Store.NewsLabel, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.ResearchRequest, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
         ],
         Feeds: [Feed.ResearchModel]);
@@ -80,9 +82,8 @@ public sealed class NewsLabeller : IComponent
     public const string CapPaused = NewsLabelling.CapPaused;
     public const string ModelUnreachable = NewsLabelling.ModelUnreachable;
 
-    // The window read, and the most articles a name is sent for.
+    // The window read.
     public const int WindowDays = NewsLabelling.WindowDays;
-    public const int ArticlesAName = NewsLabelling.ArticlesAName;
 
     public static string RunIdFor(DateTimeOffset startedAt) =>
         RunPrefix + startedAt.UtcDateTime.ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
@@ -91,7 +92,7 @@ public sealed class NewsLabeller : IComponent
     // page's order, on a night the families drew it; and on a night before them the members whose live
     // result passed, improving businesses first where the night stored its readings and the filter's own
     // order within a state. A replayed result is none of the night's. The S&P 400's and 600's lists are none of it.
-    // see: The news labeller reads the S&P 500's list alone until the operator widens it
+    // see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run
     // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
     // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
     static readonly string ListedOnNight = @"
@@ -102,6 +103,18 @@ public sealed class NewsLabeller : IComponent
         WHERE g.session_date = $session AND g.version <> '" + EquityBrief.Core.Filter.ReplayedResults.Version + @"'
           AND " + FamilyList.OnTheList("g.ticker", "g.session_date", "g.passed = 1") + @"
         ORDER BY IFNULL(" + FamilyList.PlaceOn("g.ticker", "g.session_date") + ", 0), " + FundamentalState.PlaceIn("f.state") + @", g.rank, g.ticker;
+    ";
+
+    // Each name a report is written for, on any index, in the order it was asked: a request asked since the night's
+    // session began, written or still to be written, so the night's own requests are labelled at the off-peak run
+    // before the drain writes them and a press at the run after it. A request refused or withdrawn writes no report.
+    // see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run
+    const string ReportsAsked = @"
+        SELECT r.ticker, COALESCE((SELECT m.name FROM membership m WHERE m.ticker = r.ticker AND m.name IS NOT NULL ORDER BY m.joined DESC LIMIT 1), r.ticker)
+        FROM research_request r
+        WHERE r.asked_at >= $since AND r.state IN ('outstanding', 'writing', 'written')
+        GROUP BY r.ticker
+        ORDER BY MIN(r.asked_at), r.ticker;
     ";
 
     // A member's admitted articles of the window not yet labelled under the active profile and version, newest first,
@@ -182,7 +195,8 @@ public sealed class NewsLabeller : IComponent
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        var names = await ListedAsync(connection, session, cancellation);
+        var listed = await ListedAsync(connection, session, cancellation);
+        var names = listed.Concat((await ReportedAsync(connection, session, cancellation)).Where(reported => !listed.Any(name => name.Ticker == reported.Ticker))).ToList();
         var monthBefore = await SpentThisMonthAsync(connection, startedAt, cancellation);
         var from = session.AddDays(-WindowDays).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var to = session.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
@@ -246,12 +260,12 @@ public sealed class NewsLabeller : IComponent
             refused += await CountAsync(connection, ArticlesRefused, ticker, from, to, cancellation);
             already += await CountAsync(connection, ArticlesLabelled, ticker, from, to, cancellation);
 
-            // The member's own stories alone, newest first and at most the count a name is sent for: a story the feed
-            // tagged with another company's listing of the same ticker is never sent.
+            // The member's own stories alone, newest first and every one of them in the run: a story the feed tagged with
+            // another company's listing of the same ticker is never sent.
             // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+            // see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run
             var own = (await ArticlesAsync(connection, ticker, from, to, cancellation))
                 .Where(article => StoryMatch.IsAbout(article.Title, article.Text, ticker, company))
-                .Take(ArticlesAName)
                 .ToList();
 
             foreach (var (articleId, title, text) in own)
@@ -405,6 +419,25 @@ public sealed class NewsLabeller : IComponent
 
         command.CommandText = ListedOnNight;
         command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var names = new List<(string, string)>();
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            names.Add((reader.GetString(0), reader.GetString(1)));
+        }
+
+        return names;
+    }
+
+    static async Task<IReadOnlyList<(string Ticker, string Company)>> ReportedAsync(SqliteConnection connection, DateOnly session, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ReportsAsked;
+        command.Parameters.AddWithValue("$since", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "T00:00:00Z");
 
         var names = new List<(string, string)>();
 

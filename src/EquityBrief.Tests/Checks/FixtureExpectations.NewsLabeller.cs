@@ -170,6 +170,54 @@ public partial class FixtureExpectations
         Assert.Equal(6, Scalar(store, "SELECT COUNT(*) FROM news_label;"));
     }
 
+    // Worked by hand over the constructed store: ZZB holds 24 stories of its own in the window, b1 and b2 and 22 more from
+    // 2026-08-14, all sent in the one run where a run sent a name its newest twenty; ZZD, on no list, holds the night's
+    // own request asked inside its session and is labelled after the list; ZZC's request names a name the list holds,
+    // labelled once in the list's place; ZZE's request was asked the day before the session and ZZF's was refused, so
+    // neither names a report and neither's story is sent.
+    // see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run
+    [Fact]
+    public async Task TheLabellerLabelsEachNameAReportIsWrittenForAfterTheListAndEveryOneOfANamesOwnStoriesInOneRun()
+    {
+        using var store = await NewsStore();
+
+        void Article(string ticker, string id, DateOnly published) =>
+            store.Execute(
+                "INSERT INTO news_article (ticker, article_id, link, title, source, published_at, text, length, admissibility, session_date) VALUES " +
+                FormattableString.Invariant($"('{ticker}', '{id}', 'https://example.invalid/{id}', '{ticker} story {id}', 'wire', '{published:yyyy-MM-dd}T09:00:00Z', 'The company said so in a statement.', 36, '{Admissibility.Accepted}', '{published:yyyy-MM-dd}');"));
+
+        void Request(string ticker, string askedAt, string state) =>
+            store.Execute($"INSERT INTO research_request (ticker, asked_at, asked_from, lane, state) VALUES ('{ticker}', '{askedAt}', 'night', 'paid', '{state}');");
+
+        for (var day = 0; day < 22; day++)
+        {
+            Article("ZZB", FormattableString.Invariant($"b{10 + day}"), new DateOnly(2026, 8, 14).AddDays(day));
+        }
+
+        Article("ZZE", "e1", new DateOnly(2026, 9, 7));
+        Article("ZZF", "f1", new DateOnly(2026, 9, 7));
+
+        Request("ZZD", "2026-09-08T23:05:00Z", "outstanding");
+        Request("ZZC", "2026-09-08T23:05:01Z", "written");
+        Request("ZZE", "2026-09-07T23:05:00Z", "written");
+        Request("ZZF", "2026-09-08T23:06:00Z", "refused");
+
+        var model = new ScriptedModel(Enumerable.Repeat(Good, 26).ToArray());
+        var outcome = await Labeller(store, model).RunAsync(new DateOnly(2026, 9, 8), "label-news-reports");
+
+        Assert.Equal((4, 4, 26, 0, 1, NewsLabeller.Finished), (outcome.Names, outcome.NamesReached, outcome.Labelled, outcome.UnreadableCount, outcome.RefusedByAdmissibility, outcome.Stop));
+        Assert.Equal(26, model.Requests);
+
+        var asked = model.Asked.Select(request => request.DocumentIds.Single()).ToArray();
+
+        Assert.Equal(["b1", "b2", "b31", "b30"], asked[..4]);
+        Assert.Equal(24, asked.Count(id => id.StartsWith('b')));
+        Assert.Equal("b10", asked[23]);
+        Assert.Equal(["c1", "d1"], asked[24..]);
+        Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM news_label WHERE ticker IN ('ZZE', 'ZZF');"));
+        Assert.Equal(24, Scalar(store, "SELECT COUNT(*) FROM news_label WHERE ticker = 'ZZB' AND outcome = 'labelled';"));
+    }
+
     [Fact]
     public async Task TheLabellerStopsBeforeTheCallThatWouldPassItsMonthLimitAndAtItsTimeLimitAndWaitsOutAPeakWindow()
     {

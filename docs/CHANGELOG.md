@@ -26,6 +26,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-28 - CLAUDE.md - the hard rule's carve-out for the news labeller names every name a report is written for
+Authorised by: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run
+Was:
+> "... which labels the stored articles of the names on the newest night's list through a paid model one article at a time, its calls and its spend on its own run and never on the night's, bounded by its own time and month limits, on the operator's rulings of 2026-09-29 and 2026-10-12, ..." and, among its citations, "(see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own) (see: The night queues its report requests ...)"
+Now:
+> "... which labels the stored articles of the names on the newest night's list and of the names a report is written for through a paid model one article at a time, its calls and its spend on its own run and never on the night's, bounded by its own time and month limits, on the operator's rulings of 2026-09-29, 2026-10-12 and 2026-10-28, ..." and "(see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own) (see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run) (see: The night queues its report requests ...)"
+Why: the operator's ruling of 2026-10-28 widens the names the labeller reads to every name a report is written for, so the carve-out says which names it reads.
+
+### 2026-10-28 - docs/ARCHITECTURE.html - the news labeller reads every name a report is written for and each name's own stories whole
+Authorised by: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run
+Was:
+> the component catalogue: reads "membership, listings, family nights, family picks, gate results, fundamental readings, news articles, news labels, run log, research model"; "reads tonight's list in the order it is drawn and, for each name, the stored admitted articles of the thirty days before the night, newest first and at most twenty, not yet labelled by the active profile under the instruction's version; ..."
+> the nightly run's step: "... a process of its own that labels the stored admitted articles of the names on the newest night's list, newest first and at most twenty a name over the thirty days before the night, through the news job's paid model one article at a time, ... that its list is not tonight's (see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own)."
+> the read and write matrix: the news labeller's research requests cell empty
+> section 17's News labelling window: "the 30 days before the night, each listed name's stored admitted articles newest first and at most 20 a name, each article's text cut at 8,000 characters as it is stored ..."; "about a month of news is what a reader of a listed stock wants on its first night, twenty a name is the most a page draws, and the cut holds nearly every stored document whole, ..."
+Now:
+> the component catalogue: reads "membership, listings, family nights, family picks, gate results, fundamental readings, news articles, news labels, research requests, run log, research model"; "reads tonight's list in the order it is drawn and then each name a report is written for, and, for each name, its own stored admitted articles of the thirty days before the night, newest first and every one of them, not yet labelled by the active profile under the instruction's version; ..."
+> the nightly run's step: "... a process of its own that labels the stored admitted articles of the names on the newest night's list and of every name a report is written for, each name's own newest first and every one of them over the thirty days before the night, through the news job's paid model one article at a time, ... that its list is not tonight's (see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own) (see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run)."
+> the read and write matrix: R in the news labeller's research requests cell
+> section 17's News labelling window: "the 30 days before the night, each name's own stored admitted articles newest first and every one of them, each article's text cut at 8,000 characters as it is stored ..."; "about a month of news is what a reader of a listed stock wants on its first night, every story a name's page counts is labelled rather than its newest alone, and the cut holds nearly every stored document whole, ..."
+Why: the ruling labels every name a report is written for, read off the request table, and each name's own stories whole in one run, where ROP's page drew 59 of its 79 stories unlabelled on 2026-10-27.
+
+### 2026-10-28 - docs/RUNBOOK.md - the labeller's row and its verb read every name a report is written for and each name's own stories whole
+Authorised by: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run
+Was:
+> "labels the stored news of the names on tonight's list through the news job's paid model, one call an article: the admitted articles of the thirty days before the night, newest first and at most twenty a name, the ones that profile has not labelled, under a run of its own"
+> "... reads its list in the order it is drawn, and for each name asks the news job's profile for a label of each stored admitted article of the thirty days before the night, newest first and at most twenty a name, leaving out the articles that profile has already labelled or marked unreadable under the instruction's version."
+Now:
+> "labels the stored news of the names on tonight's list and of every name a report is written for through the news job's paid model, one call an article: each name's own admitted articles of the thirty days before the night, newest first and every one of them, the ones that profile has not labelled, under a run of its own"
+> "... reads its list in the order it is drawn and then each name a report is written for, a request asked since that night's session began and written or still to be written, on any of the three indices, and for each name asks the news job's profile for a label of each of its own stored admitted articles of the thirty days before the night, newest first and every one of them, leaving out the articles that profile has already labelled or marked unreadable under the instruction's version (see: The news labeller labels the S&P 500's list and every name a report is written for, each name's own stories in one run)."
+Why: the same ruling, as the runbook states what the verb reads.
+
 ### 2026-10-28 - docs/ARCHITECTURE.html - the box management speaks in opens on the sentence in which the newest release says what the company reported
 Authorised by: A quarter reported before its filing is stored is labelled as the release's, its awaited and next report lines moving on and its release quoted where it says what it reported
 Was:

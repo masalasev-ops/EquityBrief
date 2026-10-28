@@ -228,7 +228,7 @@ static int NoVerb()
         "'sweep-ideas' adds each new idea to the base, today's rule with its reward-to-risk floor at 2, one at a time " +
         "over the stored history and the market series, reading the store and writing nothing to it, and writes its " +
         "report in a run folder of its own, " +
-        "'label-news' labels the stored articles of the names on the newest night's list through the news job's paid model, " +
+        "'label-news' labels the stored articles of the names on the newest night's list and of every name a report is written for through the news job's paid model, " +
         "as the night starts it after the close, with '--session <yyyy-MM-dd>' naming the night, and " +
         "'news-fill --days <n>' stores the articles of the last n days from the news feed's dated query, one a day, " +
         "for the names the index holds, and " +
