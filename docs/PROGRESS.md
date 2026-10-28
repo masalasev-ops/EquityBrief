@@ -11030,3 +11030,41 @@ Carried:    the relabel, running in batches between the writers' slots, which br
             filing's segments until its report is next written; and the 45 pages whose newest release is newer than the
             quarter the quarters fetch has stored, BA's and COR's among them, the asks for COR, SMCI, BA and V standing as
             the entries above carried them.
+
+### 18.4 ruling - a read-only copy of the site on Cloudflare Pages for the operator's friends, built in a pull request of its own, and the scheduled jobs in a folder of their own   2026-10-28
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      the operator's instruction of 2026-10-28, about 12:55 UTC, word for word in the prompts folder: "A read-only
+            copy of the site on Cloudflare Pages", so friends browse the tool and read its written reports without
+            reaching the machine, the store, the code or any action, as the operator's other site publishes its own
+            folder. A worker command, publish-site, run by hand first and then by the scheduler after the off-peak run
+            finishes each night, that renders the copy into a folder under the data root and uploads only that folder to
+            Cloudflare Pages by direct upload, gated on the API token the secrets file holds and never in a shell command,
+            a log or the copy. It holds Tonight on each index, the newest night alone, its date arrows hidden; Past
+            picks, Paper trading and the Ledger on each index, the Loop and the universe list; every stock with a written
+            report, on any index, on its stock page with its newest report, each earlier dated version reached from that
+            page's own list, the researched list the copy's reports index, every row linking to its stock's page, its
+            sorts kept where they need no request; and the chart page and the stock page of each stock that is a pick, an
+            open trade, a book's holding or on a card's list. It holds no Run page, queue, watch list or account page;
+            every link resolves to a file it holds, a link to anything it does not hold reading "Not in this copy" in its
+            place, and a menu entry "Reports" opens the reports index. Nothing in it can request or change anything:
+            every press, form, search, the spend-cap line and every route and press header gone; the live quote and the
+            analysts the pages ask for on opening replaced by what the store held, marked "as of the close of dd mmm";
+            TipRanks' tables and Yahoo's firm actions left out; the account's size and risk never written; each report as
+            stored with its date and its writer and its sources' links kept; and the shell fetching only the copy's
+            files. A banner on every page: "A read-only copy as of the night of dd mmm yyyy. Paper trading only; nothing
+            here is advice." Before the first upload a hand run writes the folder and reports its file count and size,
+            each index's reports and versions, each page's size, every form, route, data attribute and script source left
+            and a scan for keys, absolute paths, account settings and secrets, and nothing is uploaded until the operator
+            has read it. The runbook says how Cloudflare Access is put on the site for friends' emails. No paid call and
+            no provider request from the publish step, nothing in the night, the store or any rule changes, no rule's
+            code version moves, and store-never-deleted's list gains the copy's own folder's rewrite and nothing under
+            the store. The existing site on Cloudflare, premarketdesk, is never written over. Then, while it was built:
+            "please ensure it is distinguishable from our local code that runs on 5152", and "Maybe group it under
+            cloudflare project if needed". And: every scheduled job grouped in a Task Scheduler folder of its own.
+Queue:      done, PRs 573 to 580; in progress, this pull request; next, the operator's reading of the copy's first
+            report before any upload, then the operator's word on the peer groups the proof proposes, on 22.14's pullback
+            version, on 22.15's freezes and on the quarters fetch's asks for COR, SMCI, BA and V, the relabel running on
+            in batches between the writers' slots.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
