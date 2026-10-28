@@ -1862,6 +1862,10 @@ public sealed partial class SinglePageApp : IComponent
         // history turned at, marked older.
         // see: Older bands are read out as far as a pick's stop and target, marked older and read by nothing else
         levelled.Append(MarkRenderer.OlderBandsTable(olderBands ?? [], bars.Count > 0 ? bars[^1].Close : null));
+        levelled.Append(MarkRenderer.BeyondTheBands(
+            (decision ?? held?.Card)?.Target,
+            (decision ?? held?.Card)?.Stop,
+            [.. summary.Select(band => (band.LowEdge, band.HighEdge)), .. (olderBands ?? []).Select(band => (band.Low, band.High))]));
         levelled.Append(technicals);
 
         Card("levels", "levels", "Levels", Cards.Computed("Levels", levelled.ToString(), title: "The bands above and below the price, and the technical readings", stamp: Cards.Night(session), id: "levels", region: "levels"));

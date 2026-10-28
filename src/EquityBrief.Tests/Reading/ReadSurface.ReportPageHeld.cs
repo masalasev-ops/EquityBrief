@@ -142,6 +142,16 @@ public partial class ReadSurface
         Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("ROP", Chart + Stored + Short), "levels-cover"));
         Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("ROP", Chart + Stored + Reaching), "levels-cover"));
         Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate("ROP", Stored + Reaching), "levels-cover"));
+
+        // Where the history read turned at no price as far out as the target, the page says so beneath the bands, and the
+        // proof passes that page and fails one saying so where a band drawn does reach it.
+        var beyond = MarkRenderer.BeyondTheBands(529.64m, 280m, [(300m, 305m), (260m, 265m), (455m, 460m), (495m, 500m)]);
+
+        Assert.Contains("<p class=\"degraded\" data-beyond=\"target\">No band drawn here reaches the target of 529.64: the highest, stored or older, reaches 500.00, and the history read turned at no price as high.</p>", beyond, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-beyond=\"stop\"", beyond, StringComparison.Ordinal);
+        Assert.Equal(string.Empty, MarkRenderer.BeyondTheBands(529.64m, 280m, [(260m, 265m), (535m, 540m)]));
+        Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("ROP", Chart + Stored + Short + beyond), "levels-cover"));
+        Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("ROP", Chart + Stored + Reaching + Short + beyond), "levels-cover"));
     }
 
     // A next report the night has passed reads as not announced with the day it is estimated at, from the company's own

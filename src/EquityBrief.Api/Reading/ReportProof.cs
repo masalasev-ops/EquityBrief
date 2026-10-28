@@ -48,7 +48,7 @@ public static partial class ReportProof
         ("header", "The masthead marks its price LIVE, CLOSED or LAST CLOSE."),
         ("levels-older", "Where the stored year holds no band on a side, bands from the pulled history are drawn and marked older."),
         ("pick-on-chart", "A picked or held stock's chart draws its stop and target."),
-        ("levels-cover", "A picked or held stock's bands, stored and older, reach out as far as its target and its stop."),
+        ("levels-cover", "A picked or held stock's bands, stored and older, reach out as far as its target and its stop, or the page says no band the history read reaches one."),
         ("pick-exit", "A picked stock's plan opens on the pick's own exit, and where the levels' plan places none its exits line names the pick's."),
         ("next-report", "A picked stock's card states its next report, estimated where none is on file."),
         ("next-report-estimated", "A next report not on file is drawn with the day it is estimated at, marked estimated."),
@@ -155,15 +155,16 @@ public static partial class ReportProof
             .Select(band => (Low: decimal.Parse(band.Groups[1].Value, NumberStyles.Number, CultureInfo.InvariantCulture), High: decimal.Parse(band.Groups[2].Value, NumberStyles.Number, CultureInfo.InvariantCulture)))
             .ToArray();
         decimal? Level(string name) => pickLevels.Success && decimal.TryParse(pickLevels.Groups[name].Value, NumberStyles.Number, CultureInfo.InvariantCulture, out var level) ? level : null;
-        var reachesTarget = Level("target") is not { } aim || edges.Any(edge => edge.High >= aim);
-        var reachesStop = Level("stop") is not { } floor || edges.Any(edge => edge.Low <= floor);
+        // Each level is reached by a band drawn, or the page says no band reaches it, one or the other and never both.
+        var reachesTarget = Level("target") is not { } aim || edges.Any(edge => edge.High >= aim) != page.Contains("data-beyond=\"target\"", StringComparison.Ordinal);
+        var reachesStop = Level("stop") is not { } floor || edges.Any(edge => edge.Low <= floor) != page.Contains("data-beyond=\"stop\"", StringComparison.Ordinal);
 
         Add(
             "levels-cover",
             pickLevels.Success ? reachesTarget && reachesStop : null,
             !pickLevels.Success ? "no family picked or holds it"
-            : !reachesTarget ? "no band drawn reaches the target of " + pickLevels.Groups["target"].Value
-            : !reachesStop ? "no band drawn reaches the stop of " + pickLevels.Groups["stop"].Value
+            : !reachesTarget ? (page.Contains("data-beyond=\"target\"", StringComparison.Ordinal) ? "the page says no band reaches the target of " + pickLevels.Groups["target"].Value + " where one drawn does" : "no band drawn reaches the target of " + pickLevels.Groups["target"].Value + " and the page does not say so")
+            : !reachesStop ? (page.Contains("data-beyond=\"stop\"", StringComparison.Ordinal) ? "the page says no band reaches the stop of " + pickLevels.Groups["stop"].Value + " where one drawn does" : "no band drawn reaches the stop of " + pickLevels.Groups["stop"].Value + " and the page does not say so")
             : null);
         Add(
             "pick-exit",
