@@ -152,24 +152,27 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public void TheShippedSourceStartsAProcessInOnePlaceTheLauncherAPressAsks()
+    public void TheShippedSourceStartsAProcessInTwoPlacesTheLauncherAPressAsksAndThePublishVerb()
     {
         // No shipped file started a process from 9.2 until 11.1 made a press start the worker's
-        // drain. The launcher the press asks is the one file that starts one now, and it starts
-        // it at one call, so a second place starting a process, for a pass or anything else,
-        // fails here. It reads the source because what it asserts is where a thing is not.
+        // drain. The launcher the press asks starts the worker at one call, and from the 18.4 correction of 2026-10-28 the
+        // worker's publish verb starts the read surface built beside it with the copy's verb at one call and waits for it,
+        // since the worker cannot reference the surface that draws the screens; a third place starting a process, for a pass
+        // or anything else, fails here. It reads the source because what it asserts is where a thing is not.
         var started = Directory
             .EnumerateFiles(Path.Combine(Repository.Root, "src"), "*.cs", SearchOption.AllDirectories)
             .Where(file => !file.Contains(Path.Combine("src", "EquityBrief.Tests"), StringComparison.Ordinal))
             .Where(file => Regex.IsMatch(File.ReadAllText(file), @"Process\.Start|ProcessStartInfo"))
             .Select(file => Path.GetRelativePath(Repository.Root, file).Replace(Path.DirectorySeparatorChar, '/'))
+            .Order(StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal([LauncherSource], started);
+        Assert.Equal([LauncherSource, PublisherSource], started);
 
         var launcher = File.ReadAllText(Path.Combine(Repository.Root, LauncherSource));
 
         Assert.Single(Regex.Matches(launcher, @"Process\.Start\("));
+        Assert.Single(Regex.Matches(File.ReadAllText(Path.Combine(Repository.Root, PublisherSource)), @"\.Start\(\)"));
 
         // And the page's own script sends the header the route requires.
         var shell = new SinglePageApp().Shell("EquityBrief");
@@ -179,6 +182,8 @@ public partial class ReadSurface
     }
 
     const string LauncherSource = "src/EquityBrief.Core/Research/DrainLauncher.cs";
+
+    const string PublisherSource = "src/EquityBrief.Worker/Cloudflare/SitePublisher.cs";
 
     [Fact]
     public void TheDrainIsStartedFromACopyOfTheWorkersBuildAndNeverFromTheBuildItself()

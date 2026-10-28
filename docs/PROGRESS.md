@@ -11106,7 +11106,9 @@ Drawn:      the hand run from the branch over the live store at 14:48 UTC, nothi
             the S&P 600's 19 with 26; no form, no address of the surface, no press header, one page carrying scripts, the
             shell's two inline; no secret, path or account setting found; nothing refused. 10,503 links read "Not in this
             copy", most of them peers' tickers on the stock pages.
-Tests:      27 new; 2895 in all.
+Tests:      27 new, and 2 rewritten: the count of files that may hold a client, now twenty-seven with the feed, and the
+            check of where a process starts, now naming the publish verb's start of the read surface beside the drain
+            launcher's, each at one call; 2895 in all.
 Claims:     none new: the copy is a paragraph of section 15.4, beside its table and in no row of it.
 Pins:       none move; no source a rule's version, the filter or the readings pin is edited, and the night's path is
             untouched: the read surface draws as before unless started with the copy's verb.
