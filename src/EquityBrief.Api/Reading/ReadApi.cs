@@ -2981,6 +2981,65 @@ public sealed partial class ReadApi : IComponent
         LIMIT 2;
     ";
 
+    // The stage the rule record's open floor form writes its run under and the index it replays, stated here since the
+    // worker's own constants cannot be referenced from the read surface, and `read-surface` asserts the two agree; and its
+    // newest run, the drift's live rule beside the same rule skipping a fill under the floor at the open, which the drift's
+    // card on that index draws beneath its record.
+    // see: The drift's open floor is replayed beside its live rule unregistered, skipping a fill whose reward to risk at the open is under 1
+    public const string OpenFloorStage = "rule-record-open-floor";
+
+    public const string OpenFloorIndex = "GSPC";
+
+    const string NewestOpenFloor = "SELECT detail FROM run_log WHERE stage = $stage ORDER BY started_at DESC LIMIT 1;";
+
+    public async Task<CardOpenFloorView?> OpenFloorAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestOpenFloor;
+        command.Parameters.AddWithValue("$stage", OpenFloorStage);
+
+        if (await command.ExecuteScalarAsync() is not string detail)
+        {
+            return null;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(detail);
+            var root = document.RootElement;
+            var live = root.GetProperty("live");
+            var variant = root.GetProperty("variant");
+
+            static double? Number(JsonElement element, string name) => element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number ? value.GetDouble() : null;
+
+            static DateOnly Day(JsonElement element, string name) => DateOnly.ParseExact(element.GetProperty(name).GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            return new CardOpenFloorView(
+                root.GetProperty("floor").GetDouble(),
+                Day(root, "from"),
+                Day(root, "through"),
+                Day(root, "forwardFrom"),
+                variant.GetProperty("rule").GetString() ?? string.Empty,
+                variant.GetProperty("trades").GetInt32(),
+                Number(variant, "won"),
+                Number(variant, "average"),
+                variant.GetProperty("forwardTrades").GetInt32(),
+                Number(variant, "forwardAverage"),
+                live.GetProperty("trades").GetInt32(),
+                Number(live, "won"),
+                Number(live, "average"),
+                live.GetProperty("forwardTrades").GetInt32(),
+                Number(live, "forwardAverage"),
+                root.GetProperty("skipped").GetInt32());
+        }
+        catch (Exception unreadable) when (unreadable is JsonException or KeyNotFoundException or FormatException or InvalidOperationException)
+        {
+            return null;
+        }
+    }
+
     // What a page waiting on its newest quarter reads its expected day from: the calendar's first report date on or after a
     // week before the release, the quarters fetch's asks for the member, newest last, and the first day the archive's facts
     // carried each period's end for its filer, from a year and a half before the release.

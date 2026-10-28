@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-28 - docs/RUNBOOK.md - a section on the drift's open floor beside its record and the record command's form for it
+Authorised by: The drift's open floor is replayed beside its live rule unregistered, skipping a fill whose reward to risk at the open is under 1
+Was:
+> (no section; the record command's forms were the record and `--nights`)
+Now:
+> a section of its own, *The drift's open floor beside its record*: what the S&P 500's drift card draws beneath its record, that it is registered as no rule on the operator's choice and moves nothing, and the record command's `--open-floor` form with `--print`, what it reads and writes, that it refuses inside the night's window, and that each run carries the record forward.
+Why: the operator asked on 2026-10-28 for the drift's setup skipping a fill under 1 at the open replayed as a one-change variant beside the live rule over the stored history and followed forward, and chose that day to register nothing; printed over the pulled history from 2019-01-02 to 2026-10-27, the live rule's own walk kept 2,260 trades at an average of 0.020 of the risk after costs, 33.7 per cent won, and the variant 2,027 at 0.109, 31.3 per cent won, skipping 353 listings, the card's stored record of 2026-10-16 standing at 2,251 trades and 0.021 to 2026-10-15.
+
 ### 2026-10-28 - docs/RUNBOOK.md - the industry override section names ROP's override and the check's reading of the company's own segments
 Authorised by: A stock's industry group is checked against the company's own segments and revenue lines and not its description
 Was:

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Cards;
 using EquityBrief.Core.Components;
@@ -48,13 +49,28 @@ public sealed class RuleRecorder(IClock clock, string databaseFile, string dataR
             new StoreTouch(Store.HeavyweightNight, Touch.Read),
             new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.RuleRecord, Touch.Insert | Touch.Update),
-            new StoreTouch(Store.RunLog, Touch.Insert),
+            new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
         ],
         Feeds: []);
 
     public const string Verb = "rule-record";
 
     public const string Stage = "rule-record";
+
+    // The `--open-floor` form's own stage, its flag and the floor it replays at: the reward to risk the next open has to
+    // leave for the drift's listing to be bought.
+    // see: The drift's open floor is replayed beside its live rule unregistered, skipping a fill whose reward to risk at the open is under 1
+    public const string OpenFloorStage = "rule-record-open-floor";
+
+    public const string OpenFloorFlag = "--open-floor";
+
+    public const double OpenFloor = 1.0;
+
+    // The words the variant is named by, the live drift rule's with the one change.
+    public static string OpenFloorWords { get; } =
+        "the " + TheSetupFamilies.Words(DriftRule.Live) + FormattableString.Invariant($", skipping a fill whose reward to risk at the open is under {OpenFloor:0.#}");
+
+    const string OpenFloorRuns = "SELECT detail FROM run_log WHERE stage = $stage ORDER BY started_at;";
 
     // How long a run is allowed for before the night's window, which it does not start inside.
     public static readonly TimeSpan Expected = TimeSpan.FromHours(1);
@@ -244,6 +260,126 @@ public sealed class RuleRecorder(IClock clock, string databaseFile, string dataR
         await AppendAsync(runId, startedAt, rows, string.Join("; ", lines), cancellation);
 
         return 0;
+    }
+
+    // The `--open-floor` form: the S&P 500's live drift rule walked at its one setting over the pulled history through the
+    // newest session the store holds, as its card's record is walked, and walked again skipping a listing whose next open
+    // leaves a reward to risk under the floor, both written beside each other on the run log row it writes with the
+    // listings the variant skipped; the trades listed after the first such run's last session counted apart as the record
+    // followed forward. It writes no record row, registers nothing and moves no rule, list or paper account.
+    // see: The drift's open floor is replayed beside its live rule unregistered, skipping a fill whose reward to risk at the open is under 1
+    public async Task<int> OpenFloorAsync(bool print = false, CancellationToken cancellation = default)
+    {
+        if (NightLock.Holder(dataRoot) is { } holder)
+        {
+            output.WriteLine($"{Verb} {OpenFloorFlag}: the night holds the store ({holder}); run it once the night has finished");
+
+            return 2;
+        }
+
+        if (SweepRunner.InTheNightsWindow(clock.UtcNow, Expected))
+        {
+            output.WriteLine(FormattableString.Invariant($"{Verb} {OpenFloorFlag}: a run started now would reach the night's window, which begins at {SweepRunner.PauseFrom:hh\\:mm} UTC on a weekday; run it after the night"));
+
+            return 2;
+        }
+
+        var startedAt = clock.UtcNow;
+        var runId = FormattableString.Invariant($"{OpenFloorStage}-{startedAt:yyyyMMddTHHmmssZ}");
+        var setting = IndexNightRead.DriftAsFrozen.ToArray();
+        RuleReplay.SwingVariant[] variants =
+        [
+            new(FamilyRecords.LivePrefix + TheSetupFamilies.Words(DriftRule.Live), DriftRule.Name, setting, 0),
+            new(OpenFloorWords, DriftRule.Name, setting, 0, OpenFloor),
+        ];
+        var replayed = await RuleReplay.IndexAsync(databaseFile, IndexFamilies.LargeIndex, output.WriteLine, cancellation, [DriftRule.Name], variants);
+        var live = replayed.Single(rule => rule.Rule == variants[0].Name);
+        var floor = replayed.Single(rule => rule.Rule == variants[1].Name);
+        var forwardFrom = await ForwardFromAsync(cancellation) ?? live.Through;
+
+        var detail = JsonSerializer.Serialize(new
+        {
+            index = IndexFamilies.LargeIndex,
+            floor = OpenFloor,
+            from = live.From.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            through = live.Through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            forwardFrom = forwardFrom.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            live = Walked(live, forwardFrom),
+            variant = Walked(floor, forwardFrom),
+            skipped = floor.Skipped,
+        });
+
+        var line = FormattableString.Invariant($"{Verb} {OpenFloorFlag}: from {live.From:yyyy-MM-dd} to {live.Through:yyyy-MM-dd}, the live drift rule {live.Trades.Count} trade(s), average {Number(RuleRecordFigures.Of(live.Trades).Average)} risks; skipping a fill under {OpenFloor:0.#} at the open, {floor.Trades.Count} trade(s), average {Number(RuleRecordFigures.Of(floor.Trades).Average)} risks, {floor.Skipped} listing(s) skipped; followed forward from {forwardFrom:yyyy-MM-dd}");
+
+        output.WriteLine(line);
+
+        // With '--print' the figures are printed and nothing is written.
+        if (print)
+        {
+            output.WriteLine(detail);
+
+            return 0;
+        }
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = AppendRun;
+        command.Parameters.AddWithValue("$run_id", runId);
+        command.Parameters.AddWithValue("$stage", OpenFloorStage);
+        command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$outcome", DecisionCards.Ok);
+        command.Parameters.AddWithValue("$rows_written", 0);
+        command.Parameters.AddWithValue("$detail", detail);
+
+        await command.ExecuteNonQueryAsync(cancellation);
+
+        return 0;
+
+        static object Walked(RuleReplay.Replayed rule, DateOnly forwardFrom)
+        {
+            var figures = RuleRecordFigures.Of(rule.Trades);
+            var forward = RuleRecordFigures.Of([.. rule.Trades.Where((_, at) => rule.Listed[at] > forwardFrom)]);
+
+            return new
+            {
+                rule = rule.Rule,
+                trades = figures.Trades,
+                won = figures.Won,
+                average = figures.Average,
+                medianSessions = figures.MedianSessions,
+                forwardTrades = forward.Trades,
+                forwardAverage = forward.Average,
+            };
+        }
+    }
+
+    // The last session the first `--open-floor` run read through, which the record is followed forward from; none where no
+    // run has written one.
+    async Task<DateOnly?> ForwardFromAsync(CancellationToken cancellation)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = OpenFloorRuns;
+        command.Parameters.AddWithValue("$stage", OpenFloorStage);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            using var document = JsonDocument.Parse(reader.GetString(0));
+
+            if (document.RootElement.TryGetProperty("through", out var through) && DateOnly.TryParseExact(through.GetString(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day))
+            {
+                return day;
+            }
+        }
+
+        return null;
     }
 
     // The registered breakout and drift rules the sweep's walk can express: each at its place on its family's grid, the

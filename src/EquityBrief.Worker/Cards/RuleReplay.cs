@@ -42,11 +42,19 @@ public static class RuleReplay
         // Why a family's live rule was not replayed, none where it was: a setting its registration states that its sweep's
         // own reading reads at no level, so no record is written for it.
         public string? Refused { get; init; }
+
+        // The session each kept trade was listed on, in the order of its trades, and how many listings the walk did not buy
+        // at the open, where it read an open floor.
+        public IReadOnlyList<DateOnly> Listed { get; init; } = [];
+
+        public int Skipped { get; init; }
     }
 
     // A registered breakout or drift rule walked in place of the family's frozen setting: its name as the register
-    // holds it, its family, its place on the family's grid and the drift's stop floor in typical moves.
-    public sealed record SwingVariant(string Name, string Family, int[] Setting, double StopFloor);
+    // holds it, its family, its place on the family's grid and the drift's stop floor in typical moves; and the reward to
+    // risk the next session's open has to leave for a listing to be bought, nought where every open is bought.
+    // see: The drift's open floor is replayed beside its live rule unregistered, skipping a fill whose reward to risk at the open is under 1
+    public sealed record SwingVariant(string Name, string Family, int[] Setting, double StopFloor, double OpenFloor = 0);
 
     // The families a card names on an index, in the page's order with the sector heavyweights after them.
     public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, HeavyweightRule.Name];
@@ -138,7 +146,7 @@ public static class RuleReplay
             foreach (var variant in own)
             {
                 progress($"replaying {variant.Name} on the {DecisionCards.NameOf(index)}");
-                replayed.Add(Swing(read, family, sessions, members, firstScored, variant.Setting, variant.StopFloor) with { Rule = variant.Name });
+                replayed.Add(Swing(read, family, sessions, members, firstScored, variant.Setting, variant.StopFloor, variant.OpenFloor) with { Rule = variant.Name });
             }
         }
 
@@ -258,7 +266,7 @@ public static class RuleReplay
     // The breakout or the drift at the setting it was frozen at on the S&P 500, which the S&P 400 and 600 run as their
     // provisional rule, or at a registered rule's own setting: its sweep's own listings and exit, five a night with one
     // open trade a stock.
-    static Replayed Swing(Read read, string family, IReadOnlyList<SweepColumns.Session> sessions, SweepBenchmark.Members members, int firstScored, int[]? at = null, double stopFloor = 0)
+    static Replayed Swing(Read read, string family, IReadOnlyList<SweepColumns.Session> sessions, SweepBenchmark.Members members, int firstScored, int[]? at = null, double stopFloor = 0, double openFloor = 0)
     {
         var calendar = read.Inputs.Sessions;
         var adapter = FamilySweepRunner.For(family, read.Series, sessions, members, firstScored, calendar, stopFloor);
@@ -277,8 +285,13 @@ public static class RuleReplay
 
         int YearOf(int session) => calendar[session].Year - SweepColumns.FirstScored.Year;
 
-        var trades = FamilySweep.Walk(adapter.Listings(setting).Where(listing => read.Keeps(listing.Name, listing.Bar)), tickers, YearOf, Exit, adapter.Benchmark);
+        var listings = adapter.Listings(setting).Where(listing => read.Keeps(listing.Name, listing.Bar));
+        var skipped = 0;
+        var trades = openFloor > 0
+            ? WalkSkippingAtTheOpen(listings, tickers, YearOf, Exit, adapter.Benchmark, listing => LeavesUnder(OpenAfter(read.Series[listing.Name], listing.Bar), listing, openFloor), () => skipped++)
+            : FamilySweep.Walk(listings, tickers, YearOf, Exit, adapter.Benchmark);
         var kept = new List<RecordTrade>();
+        var listed = new List<DateOnly>();
 
         foreach (var trade in trades)
         {
@@ -301,9 +314,76 @@ public static class RuleReplay
                 sessionsHeld,
                 Worst(read.Series[listing.Name], listing.Bar, sessionsHeld, open, risk),
                 listing.Trails ? null : result >= ((listing.Target - listing.Entry) / risk) - Tolerance));
+            listed.Add(calendar[listing.Session]);
         }
 
-        return new Replayed(family, SwingWords(family, setting), adapter.Grid.Key(setting), read.From, read.Inputs.Through, read.Membership, Risks, kept, Nights(read, trades.Select(trade => trade.Listing.Session)));
+        return new Replayed(family, SwingWords(family, setting), adapter.Grid.Key(setting), read.From, read.Inputs.Through, read.Membership, Risks, kept, Nights(read, trades.Select(trade => trade.Listing.Session)))
+        {
+            Listed = listed,
+            Skipped = skipped,
+        };
+    }
+
+    // Whether a listing's next open leaves less reward than the floor's multiple of its risk, the target's distance above the
+    // open over the stop's below it, or opens at or past its stop; a listing whose next open is not held is not judged, and
+    // a plan whose stop trails and names no target is judged by its stop alone.
+    // see: The drift's open floor is replayed beside its live rule unregistered, skipping a fill whose reward to risk at the open is under 1
+    public static bool LeavesUnder(double? open, FamilyListing listing, double floor) =>
+        open is { } price && (price <= listing.Stop || (!listing.Trails && (listing.Target - price) / (price - listing.Stop) < floor));
+
+    // The family's walk with one change: a listing the night's list kept whose next open the floor skips is not bought, its
+    // place on the night's list spent, since the list is chosen at the close and no listing after it moves up, and its stock
+    // free for the rule's later listings, since no trade holds it. Every other step is the family's own walk.
+    // see: The drift's open floor is replayed beside its live rule unregistered, skipping a fill whose reward to risk at the open is under 1
+    public static List<FamilyTrade> WalkSkippingAtTheOpen(
+        IEnumerable<FamilyListing> listings,
+        IReadOnlyList<string> tickers,
+        Func<int, int> yearOf,
+        Func<FamilyListing, (double? Result, int Sessions)> exit,
+        Func<FamilyListing, double> benchmark,
+        Func<FamilyListing, bool> skips,
+        Action? skipped = null,
+        int perNight = FamilySweep.PerNight)
+    {
+        var kept = new List<FamilyTrade>();
+        var openUntil = new Dictionary<int, int>();
+
+        foreach (var night in listings.GroupBy(listing => listing.Session).OrderBy(group => group.Key))
+        {
+            var taken = 0;
+
+            foreach (var listing in night
+                .OrderByDescending(one => one.Order)
+                .ThenByDescending(one => one.ThenBy)
+                .ThenBy(one => tickers[one.Name], StringComparer.Ordinal))
+            {
+                if (taken == perNight)
+                {
+                    break;
+                }
+
+                if (openUntil.TryGetValue(listing.Name, out var held) && listing.Session <= held)
+                {
+                    continue;
+                }
+
+                taken++;
+
+                if (skips(listing))
+                {
+                    skipped?.Invoke();
+
+                    continue;
+                }
+
+                var (result, sessions) = exit(listing);
+
+                openUntil[listing.Name] = listing.Session + sessions;
+                kept.Add(new FamilyTrade(listing, yearOf(listing.Session), result, result is null ? double.NaN : benchmark(listing)));
+            }
+        }
+
+        return kept;
     }
 
     // The breakout's or the drift's setting in the words the register names a family rule in, read off the setting's own

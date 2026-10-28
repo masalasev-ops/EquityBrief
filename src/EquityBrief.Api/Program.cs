@@ -1528,8 +1528,8 @@ static IReadOnlyDictionary<string, double?> Growths(IEnumerable<(string Ticker, 
 // see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold
 static async Task<CardContext> CardContextAsync(ReadApi read, StoreLocation store, bool copying = false) =>
     copying
-        ? CardContext.None
-        : new(EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot), await read.OpenTakenTradesAsync(), await read.TakenTradesAsync(), Pressable: true, await read.TakenRecordsAsync());
+        ? CardContext.None with { OpenFloor = await read.OpenFloorAsync() }
+        : new(EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot), await read.OpenTakenTradesAsync(), await read.TakenTradesAsync(), Pressable: true, await read.TakenRecordsAsync(), OpenFloor: await read.OpenFloorAsync());
 
 // How a night went, the one view the Run page's headline and tonight's notice are both handed, read off the
 // night's run log rows and the night holding the lock, if one does.
