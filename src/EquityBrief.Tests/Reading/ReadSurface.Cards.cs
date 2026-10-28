@@ -198,6 +198,15 @@ public partial class ReadSurface
         Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\"><h5>How this setup has done</h5><p class=\"degraded\">No record yet", rows["M2"], StringComparison.Ordinal);
         Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\"><h5>How this setup has done</h5><p class=\"degraded\">No record yet", rows["S1"], StringComparison.Ordinal);
 
+        // From the 18.4 correction of 2026-10-28 the short version code writes for M1, which no trade gate read a plan for,
+        // says its trade is the breakout's, drawn on its card below, where it said no plan was stored above that card; M3,
+        // whose page draws no card, still says none is.
+        var m1Plan = Part(CodeSummary(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M1/{IndexNight}"))), "plan");
+
+        Assert.StartsWith("Its trade is the one the breakout picked it for, in at about ", m1Plan, StringComparison.Ordinal);
+        Assert.EndsWith(", drawn on its card below with its exit.", m1Plan, StringComparison.Ordinal);
+        Assert.Equal("No plan with an entry, a stop and a target is stored for this night.", Part(CodeSummary(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M3/{IndexNight}"))), "plan"));
+
         // The S&P 500's Tonight, whose families drew nothing on the night, draws no card, and M3, which no family listed,
         // has none on its page.
         Assert.DoesNotContain("class=\"card-row\"", WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}")), StringComparison.Ordinal);
