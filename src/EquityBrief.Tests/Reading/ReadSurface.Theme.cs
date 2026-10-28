@@ -67,7 +67,7 @@ public partial class ReadSurface
 
         // Where a page it cites names neither the company nor a word of its industry, that page leaves the cycle's sources,
         // and with fewer than two left the cycle says so in place of its paragraph.
-        // see: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening
+        // see: Every written section's sources and the page's are held to documents naming the company or its industry in their whole text
         store.Execute("UPDATE source_document SET title = 'Bond markets this week', body = 'Yields moved.', url = 'https://www.example.org/bonds' WHERE id = 'theme-page-2';");
         store.Execute($"INSERT INTO company (ticker, fetched_at, industry) VALUES ('KEYS', '2026-09-30T00:00:00Z', '{Instruments}');");
 

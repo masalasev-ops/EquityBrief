@@ -1411,6 +1411,56 @@ public static class RunScreen
             trials);
     }
 
+    // Every research pass's cost as the table of reports counts it: a run holding a research pass's own row and an answered
+    // priced call, its cost every priced call of the run less a trial's and a review's, with the profiles the settings name
+    // for the models its calls named, a model no profile names now said so.
+    // see: The report page states its research passes' cost over the seven nights the run page counts and the most any pass cost, each with its scope
+    public static IReadOnlyList<PassCost> PassCosts(IReadOnlyList<RunStageRow> rows, IReadOnlyList<JobProfile> profiles)
+    {
+        var passes = new List<PassCost>();
+
+        foreach (var run in rows.GroupBy(row => row.RunId, StringComparer.Ordinal))
+        {
+            if (run.FirstOrDefault(row => row.Stage == ReadApi.ResearchStage) is not { } own || PassDetail.Read(own.Detail) is not { } pass)
+            {
+                continue;
+            }
+
+            var calls = run.Where(row => row.Stage.StartsWith(ReadApi.PaidCallStage + ":", StringComparison.Ordinal) && !TrialCalls.Is(row.Stage)).ToArray();
+
+            if (!calls.Any(row => row.Outcome == Ok))
+            {
+                continue;
+            }
+
+            var named = calls
+                .Select(row => ModelOf(row.Detail))
+                .OfType<string>()
+                .Distinct(StringComparer.Ordinal)
+                .Select(model => profiles.FirstOrDefault(profile => profile.Model == model)?.Name ?? "a model no profile names now")
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+
+            passes.Add(new PassCost(run.Key, pass.Ticker, pass.Day, calls.Sum(row => Money(row.Spend)), named, pass.Warranted.Contains(ClaimRules.ShortVersionSection, StringComparer.Ordinal)));
+        }
+
+        return passes;
+
+        static string? ModelOf(string? detail)
+        {
+            try
+            {
+                using var parsed = JsonDocument.Parse(string.IsNullOrWhiteSpace(detail) ? "{}" : detail);
+
+                return parsed.RootElement.ValueKind == JsonValueKind.Object && parsed.RootElement.TryGetProperty("model", out var model) && model.ValueKind == JsonValueKind.String ? model.GetString() : null;
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+        }
+    }
+
     // Each section's share passed first time and share left out over the reports handed in, newest first, read over
     // at most the window's number of those that warranted it, the short version written last from the accepted claims
     // on a row of its own apart from the ones written before.

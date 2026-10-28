@@ -6,7 +6,25 @@ namespace EquityBrief.Web.Marks;
 
 // The ninety days after the night a name's calendar draws, as the core read them: each dated event in order and each
 // kind of the market events table that ends inside the days.
-public sealed record CalendarView(DateOnly Night, DateOnly Through, IReadOnlyList<CalendarItem> Items, IReadOnlyList<string> PastTheTable);
+public sealed record CalendarView(DateOnly Night, DateOnly Through, IReadOnlyList<CalendarItem> Items, IReadOnlyList<string> PastTheTable)
+{
+    // The last day of the trade a family picked or holds the stock on, which the next report is placed against; none where
+    // no family picked or holds it.
+    public DateOnly? HoldThrough { get; init; }
+
+    // The next report estimated from the company's own report of the same quarter a year before, which a date the calendar
+    // carries is read beside where the two differ.
+    public (DateOnly From, DateOnly Estimated)? Estimate { get; init; }
+
+    // The estimate's words beside a next report the calendar dates on another day, none where they agree or none is held.
+    public string EstimateBeside(CalendarItem next) =>
+        next.Declared && Estimate is { } estimate && estimate.Estimated != next.Date
+            ? FormattableString.Invariant($"; the company's own report of {estimate.From:d MMM yyyy} a year on estimates about {estimate.Estimated:d MMM yyyy}")
+            : string.Empty;
+
+    // The next report the calendar lists, declared or estimated, none where it lists none.
+    public CalendarItem? NextReport => Items.FirstOrDefault(item => item.Kind == CalendarItem.Results);
+}
 
 // The calendar and the sources, the two regions before where the research stands: the next ninety days' dated events as a
 // table and a timeline beside the dated items the research read, and every document the written regions cite with the
@@ -67,7 +85,8 @@ public sealed partial class MarkRenderer
         {
             var lane = Array.FindIndex(Lanes, one => one.Kind == item.Kind);
 
-            if (lane < 0)
+            // An estimated report after the days drawn is listed in the table alone.
+            if (lane < 0 || item.Date > view.Through)
             {
                 continue;
             }
@@ -82,7 +101,7 @@ public sealed partial class MarkRenderer
 
     // The calendar region: the timeline, the table of the next ninety days' events with each one's days after the night, a
     // line for each kind of the market events table that ends inside them, and the dated items the research read.
-    public string TheCalendar(string ticker, CalendarView view, WrittenCell? items, IReadOnlyList<SourceCell> documents)
+    public string TheCalendar(string ticker, CalendarView view, WrittenCell? items, IReadOnlyList<SourceCell> documents, Func<SourceCell, bool>? relevant = null)
     {
         var region = new StringBuilder();
 
@@ -97,7 +116,20 @@ public sealed partial class MarkRenderer
             {
                 var words = item.Amount is { } each ? item.Words + ", " + Figures.Price(each) + " a share" : item.Words;
 
-                region.Append(Formatted($"<tr data-date=\"{DayOf(item.Date)}\" data-kind=\"{Escaped(item.Kind)}\" data-declared=\"{(item.Declared ? "yes" : "no")}\"><td>{DayOf(item.Date)}</td><td>{Escaped(words)}</td><td class=\"num\">{(item.Date.DayNumber - view.Night.DayNumber).ToString(Invariant)}</td></tr>"));
+                // The next report is placed against the hold of a trade a family picked or holds the stock on, and a date the
+                // calendar carries is read beside the company's own estimate where the two differ.
+                words += item.Kind == CalendarItem.Results ? view.EstimateBeside(item) : string.Empty;
+
+                if (item.Kind == CalendarItem.Results && view.HoldThrough is { } through)
+                {
+                    words += item.Date <= through
+                        ? FormattableString.Invariant($", inside the hold, which ends about {through:d MMM yyyy}")
+                        : FormattableString.Invariant($", after the hold's last day of about {through:d MMM yyyy}");
+                }
+
+                words += item.Date > view.Through ? FormattableString.Invariant($", after the {PageCalendar.Days} days the timeline draws") : string.Empty;
+
+                region.Append(Formatted($"<tr data-date=\"{DayOf(item.Date)}\" data-kind=\"{Escaped(item.Kind)}\" data-declared=\"{(item.Declared ? "yes" : "no")}\"{InsideTheHold(item, view)}><td>{DayOf(item.Date)}{(item.Declared ? string.Empty : " <small class=\"estimated\">estimated</small>")}</td><td>{Escaped(words)}</td><td class=\"num\">{(item.Date.DayNumber - view.Night.DayNumber).ToString(Invariant)}</td></tr>"));
             }
 
             region.Append("</table></div>");
@@ -110,17 +142,45 @@ public sealed partial class MarkRenderer
 
         if (items is not null)
         {
-            region.Append(WrittenSection(ticker, items, documents));
+            region.Append(WrittenSection(ticker, items, documents, relevant: relevant));
         }
 
         return region.Append("</section>").ToString();
+    }
+
+    // Whether the next report falls inside the hold, on its row, none for any other event or where no family holds the stock.
+    static string InsideTheHold(CalendarItem item, CalendarView view) =>
+        item.Kind == CalendarItem.Results && view.HoldThrough is { } through
+            ? Formatted($" data-inside-hold=\"{(item.Date <= through ? "yes" : "no")}\" data-hold-through=\"{DayOf(through)}\"")
+            : string.Empty;
+
+    // The next report as the plan's block around it opens on: its day, declared or estimated and from which report, and
+    // where a family picked or holds the stock whether it falls inside the hold; nothing where the calendar lists none.
+    // see: The calendar and the plan's block around the next report list it declared or estimated and place it against the hold
+    public static string NextReportAroundThePlan(CalendarView? view)
+    {
+        if (view?.NextReport is not { } next)
+        {
+            return string.Empty;
+        }
+
+        var said = next.Declared
+            ? FormattableString.Invariant($"The next report is on {next.Date:d MMM yyyy}, as the calendar dates it{view.EstimateBeside(next)}")
+            : FormattableString.Invariant($"The next report is not announced: it is estimated about {next.Date:d MMM yyyy}, {next.Words.Replace("Results, estimated ", string.Empty, StringComparison.Ordinal)}");
+        var hold = view.HoldThrough is { } through
+            ? next.Date <= through
+                ? FormattableString.Invariant($", inside the hold, which ends about {through:d MMM yyyy}, so the trade is held through it.")
+                : FormattableString.Invariant($", after the hold's last day of about {through:d MMM yyyy}, so it falls outside the hold.")
+            : ".";
+
+        return Formatted($"<p class=\"next-report-around\" data-date=\"{DayOf(next.Date)}\" data-declared=\"{(next.Declared ? "yes" : "no")}\"{(view.HoldThrough is { } last ? Formatted($" data-inside-hold=\"{(next.Date <= last ? "yes" : "no")}\" data-hold-through=\"{DayOf(last)}\"") : string.Empty)}>{Escaped(said + hold)}</p>");
     }
 
     // The sources region: every document the written regions cite with its date and link, those naming neither the company
     // nor its industry folded apart beneath and the list saying where fewer than two remain; the latest quarter's lines the
     // filing and the provider's fetch state differently beyond rounding, the filing first; and the one line naming what is
     // computed rather than sourced.
-    // see: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening
+    // see: Every written section's sources and the page's are held to documents naming the company or its industry in their whole text
     public string Sources(string ticker, IReadOnlyList<SourceCell> documents, IReadOnlyList<FigureConflict> conflicts, bool filedFactsHeld, Func<SourceCell, bool>? relevant = null)
     {
         var region = new StringBuilder();

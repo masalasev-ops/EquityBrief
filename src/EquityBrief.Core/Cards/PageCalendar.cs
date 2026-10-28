@@ -23,7 +23,8 @@ public static class PageCalendar
         DateOnly night,
         IReadOnlyList<(DateOnly Date, string Kind, string? Timing)> dated,
         DividendKept? kept,
-        IReadOnlyList<MarketEvent>? table = null)
+        IReadOnlyList<MarketEvent>? table = null,
+        (DateOnly From, DateOnly Estimated)? estimatedReport = null)
     {
         var from = night.AddDays(1);
         var through = night.AddDays(Days);
@@ -37,6 +38,13 @@ public static class PageCalendar
                 "after" => "Results, after the close",
                 _ => "Results, its timing not filed",
             }));
+        }
+        else if (!dated.Any(one => one.Kind == "earnings" && one.Date >= from) && estimatedReport is { } estimate && estimate.Estimated >= from)
+        {
+            // A next report the calendar does not date, estimated from the company's own report of the same quarter a year
+            // before and marked so, listed even where it falls after the days the calendar draws.
+            // see: The calendar and the plan's block around the next report list it declared or estimated and place it against the hold
+            items.Add(new CalendarItem(estimate.Estimated, CalendarItem.Results, FormattableString.Invariant($"Results, estimated from its report of {estimate.From:d MMM yyyy} a year on"), Declared: false));
         }
 
         DateOnly[] declared = [.. dated.Where(one => one.Kind == "ex-dividend").Select(one => one.Date)];

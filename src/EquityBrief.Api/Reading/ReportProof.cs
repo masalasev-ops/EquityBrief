@@ -10,21 +10,41 @@ public sealed record ProofVerdict(string Rule, string Verdict, string? Why = nul
 
 // One page's answers, rule by rule, and where its peer group names none of the business its own account describes, the
 // group a code proposes for the operator to approve before any override is set.
-public sealed record ProofPage(string Ticker, IReadOnlyList<ProofVerdict> Verdicts, PeerProposal? Peer = null);
+public sealed record ProofPage(string Ticker, IReadOnlyList<ProofVerdict> Verdicts, PeerProposal? Peer = null)
+{
+    // The quarter the page awaits and the days it reads, where it draws an older quarter than its newest release reports.
+    public PageWait? Wait { get; init; }
+
+    // The reward to risk a held trade's plan was struck at and the one at its fill, where a family holds a trade in it.
+    public PageFill? Fill { get; init; }
+}
+
+// The quarter a page awaits, as the page states it: the release's day, the quarter, the provider's next ask, the filing
+// expected and due, and the day the page is expected to draw it.
+public sealed record PageWait(string Released, string Awaiting, string NextAsk, string FilingExpected, string FilingDue, string Clears);
+
+// A held trade's family, the night it was picked, and its reward to risk planned at the close and at the fill.
+public sealed record PageFill(string Family, string Night, string Planned, string AtFill);
 
 // A peer group naming none of the business the page's own account describes: the stock, the group it is drawn against, the
 // business the account names most and the group proposed for it, which no override sets until the operator approves it.
 public sealed record PeerProposal(string Ticker, string Group, string Business, string Proposed);
 
-// One rule over every page: how many passed, failed and were not examined, and the pages that failed.
-public sealed record ProofRule(string Rule, string Says, int Passed, int Failed, int Unexamined, IReadOnlyList<string> Failing);
+// One rule over every page: how many passed, failed, were not examined and stand open, and the pages that failed and the
+// pages left open.
+public sealed record ProofRule(string Rule, string Says, int Passed, int Failed, int Unexamined, IReadOnlyList<string> Failing, int Open = 0, IReadOnlyList<string>? Opened = null);
 
 // The proof over a set of pages: when it was read, the index and night they are for, each rule's count and each page.
 public sealed record ProofReport(DateTimeOffset ReadAt, string Index, DateOnly? Night, IReadOnlyList<ProofRule> Rules, IReadOnlyList<ProofPage> Pages);
 
+// What the proof reads a page against beyond the page itself: the model profiles the settings name, which each job's lane
+// is held to, and the research passes of the seven nights as the run page's table counts them, which the page's cost line
+// is held to.
+public sealed record ProofContext(IReadOnlyList<EquityBrief.Web.Marks.JobProfile> Profiles, (DateOnly From, DateOnly Through, int Passes, decimal Least, decimal Most)? RunTable);
+
 // The report page's rules held over every name's page as the read surface draws it: each rule reads the drawn page and
 // answers passed, failed or unexamined, and a rule that cannot be read on a page answers unexamined, which is never a pass.
-// see: Every report page rule is held over every name's drawn page and reported passed, failed or unexamined with the pages each failed on
+// see: Every report page rule is held over every name's drawn page and each page's answer reported with the pages each rule failed or left open on
 public static partial class ReportProof
 {
     // Where the read surface draws the proof.
@@ -33,6 +53,10 @@ public static partial class ReportProof
     public const string Passed = "pass";
     public const string Failed = "fail";
     public const string Unexamined = "unexamined";
+
+    // A rule the page cannot meet yet for want of a figure the store does not hold, a gap known and counted apart, which
+    // is never a pass.
+    public const string Open = "open";
 
     // Each rule by its key and what it holds, in the order the operator's corrections state them.
     public static IReadOnlyList<(string Rule, string Says)> Rules { get; } =
@@ -57,15 +81,23 @@ public static partial class ReportProof
         ("news-matched", "The news region states how many stories it left out as another company's, and its counts add up over the stories it kept."),
         ("news-labelled", "Every story the news region keeps that admissibility admitted is labelled."),
         ("industry-label", "The peer group is labelled as the provider's classification or the stock's override."),
-        ("industry-mismatch", "A peer group naming none of the business the page's own account describes is flagged, and one naming it is not."),
+        ("industry-mismatch", "A peer group naming none of the business that the company's own segments and revenue lines put more than half the quarter's revenue in is flagged, and one naming it is not."),
         ("sources-relevant", "The page's sources list is held to the documents naming the company or its industry, the rest folded apart beneath it, and says where fewer than two remain."),
+        ("sources-test", "Each written section's own sources list is held to the documents naming the company or its industry in their whole text, as the page's list is, and no document stands in one list and is folded apart in another."),
         ("newest-quarter", "A newer quarter's results release stored before its filing is read by code into the latest quarter, labelled so."),
-        ("segments-release", "A quarter reported before its filing is stored draws its results release's own segment table first, labelled so, and a segment commentary written from the filing's segments says so."),
+        ("quarter-wait", "A page drawing an older quarter than its newest results release reports names the quarter it awaits and the first day it is expected to draw it."),
+        ("segments-release", "A quarter reported before its filing is stored draws its results release's own segment table first, labelled so, and a segment commentary written from the filing's segments says so above its text; a quarter whose release states no segment table read stands open."),
+        ("segments-scale", "Each segment table draws every amount in one scale."),
         ("rerun-alone", "A failed section can be written again alone on the local model."),
         ("model-labels", "The page names the model each job ran on and whether it is paid or local."),
+        ("model-table", "Each job's row names the profile it ran under, and its lane, paid or local, is that profile's as the settings name it."),
+        ("cost-figures", "The page states the research passes of the seven nights the run page's table counts, their number and the least and the most one cost agreeing with that table, beside the most any pass has cost with its stock, day and profile."),
+        ("fill-against-plan", "A held trade's card states the reward to risk its plan was struck at the close beside the one at its fill."),
+        ("next-report-hold", "A picked or held stock's next report, declared or estimated, is placed against the hold in the calendar and in the plan's block around the next report."),
+        ("short-priority", "Each paragraph of what worked and what did not keeps the paragraph's first sentence on demand, on cost, naming a segment and on the main risk, where the written paragraph holds one."),
     ];
 
-    public static ProofPage Evaluate(string ticker, string page)
+    public static ProofPage Evaluate(string ticker, string page, ProofContext? context = null)
     {
         var verdicts = new List<ProofVerdict>();
         var prose = string.Join(" ", ProseOf().Matches(page).Select(match => match.Groups[1].Value).Concat(CauseOf().Matches(page).Select(match => match.Groups["said"].Value)).Select(said => WebUtility.HtmlDecode(Regex.Replace(said, "<[^>]+>", " "))));
@@ -74,6 +106,8 @@ public static partial class ReportProof
 
         void Add(string rule, bool? passed, string? why = null) =>
             verdicts.Add(new ProofVerdict(rule, passed switch { true => Passed, false => Failed, null => Unexamined }, why));
+
+        void Opened(string rule, string why) => verdicts.Add(new ProofVerdict(rule, Open, why));
 
         // Every drawn sentence held to stored directions read against them again, a written section's paragraphs and a move's
         // written cause alike, a withheld sentence's place saying what the figures show and so read apart.
@@ -210,20 +244,21 @@ public static partial class ReportProof
 
         Add("industry-label", group.Success ? group.Groups[2].Value.StartsWith("the provider's classification", StringComparison.Ordinal) || group.Groups[2].Value.StartsWith("the industry set for the stock", StringComparison.Ordinal) : null, group.Success ? null : "no peer group is drawn");
 
-        // The group read against the page's own account of what the company sells, as the page reads it.
+        // The group read against the segments and revenue lines the page draws: a clean segment table's rows, the release's
+        // first, or the filing's table as filed, its groupings' lines naming revenue.
         var industry = group.Success ? WebUtility.HtmlDecode(group.Groups[1].Value) : null;
-        var sells = SectionProse(page, EquityBrief.Web.Marks.MarkRenderer.WhatItSells);
-        var business = industry is null || sells is null ? null : EquityBrief.Core.Report.IndustryCheck.Mismatch(industry, sells);
+        var lines = DrawnBusinessLines(page);
+        var business = industry is null || lines.Count == 0 ? null : EquityBrief.Core.Report.IndustryCheck.Mismatch(industry, lines);
         var flagged = page.Contains("class=\"notice industry-mismatch\"", StringComparison.Ordinal);
 
         Add(
             "industry-mismatch",
-            industry is null || sells is null ? null : (business is not null) == flagged,
+            industry is null || lines.Count == 0 ? null : (business is not null) == flagged,
             industry is null ? "no peer group is drawn"
-            : sells is null ? "the page draws no account of what the company sells"
+            : lines.Count == 0 ? "the page draws no segment table or revenue line to read the business from"
             : (business is not null) == flagged ? null
-            : business is not null ? "the group " + industry + " names none of " + business + " and no flag is drawn"
-            : "a flag is drawn where the group names the business");
+            : business is { } described ? "the group " + industry + " names none of " + described.Business + " and no flag is drawn"
+            : "a flag is drawn where no business carries more than half the revenue the group does not name");
 
         // The sources list held to the documents naming the company or its industry, saying where fewer than two remain.
         var sources = SourcesRegion().Match(page);
@@ -233,6 +268,22 @@ public static partial class ReportProof
         var saysFew = page.Contains("data-documents=\"few\">Not enough relevant sources: ", StringComparison.Ordinal);
 
         Add("sources-relevant", tested ? few == saysFew : null, !sources.Success ? "no sources list is drawn" : !tested ? "the stock's industry is not known, so its sources are held to nothing" : few != saysFew ? "fewer than two relevant documents remain and the list does not say so" : null);
+
+        // Each written section's own list tested as the page's is, and no document kept in one list and folded in another.
+        // see: Every written section's sources and the page's are held to documents naming the company or its industry in their whole text
+        var sectionLists = SectionSources().Matches(page).Select(list => list.Groups["relevance"].Value).ToArray();
+        var keptIds = KeptDocument().Matches(page).Select(match => match.Groups[1].Value).ToHashSet(StringComparer.Ordinal);
+        var apartIds = ApartDocument().Matches(page).Select(match => match.Groups[1].Value).ToHashSet(StringComparer.Ordinal);
+        var both = keptIds.Intersect(apartIds, StringComparer.Ordinal).FirstOrDefault();
+
+        Add(
+            "sources-test",
+            sectionLists.Length == 0 || !tested ? null : sectionLists.All(relevance => relevance == "tested") && both is null,
+            sectionLists.Length == 0 ? "no written section lists a document"
+            : !tested ? "the stock's industry is not known, so its sources are held to nothing"
+            : sectionLists.Any(relevance => relevance != "tested") ? "a written section's own list is drawn untested"
+            : both is not null ? "the document " + both + " stands in one list and is folded apart in another"
+            : null);
 
         // A release reports a quarter newer than the card's where it was accepted after the end of the quarter that follows
         // the card's own; one accepted before that is the card's own quarter's, filed beside it.
@@ -248,27 +299,59 @@ public static partial class ReportProof
         }
 
         var newer = following is not null && string.CompareOrdinal(newestRelease, following) > 0;
+        var wait = QuarterWaitOf().Match(page);
 
         Add(
             "newest-quarter",
             !quarterCard.Success || following is null ? null : quarterCard.Groups[1].Value == "Reported" || !newer,
             !quarterCard.Success ? "no latest quarter is drawn"
             : following is null ? "the latest quarter names no quarter"
-            : quarterCard.Groups[1].Value == "Filed" && newer ? "a results release of " + newestRelease + ", after the quarter to " + following + " ended, is newer than the quarter the filing of " + quarterCard.Groups[2].Value + " reports" : null);
+            : quarterCard.Groups[1].Value == "Filed" && newer
+                ? "a results release of " + newestRelease + ", after the quarter to " + following + " ended, is newer than the quarter the filing of " + quarterCard.Groups[2].Value + " reports"
+                    + (wait.Success ? "; expected to clear by " + wait.Groups["clears"].Value : string.Empty)
+                : null);
 
-        // A quarter reported before its filing is stored draws the release's own segment table first where it reads, and a
-        // segment commentary beneath it written from the filing's segments says so.
-        var fromRelease = quarterCard.Success && quarterCard.Groups[1].Value == "Reported";
-        var releaseTable = page.Contains("<div class=\"sub segments-release\"", StringComparison.Ordinal);
-        var unsaid = page.Contains("data-written-from=\"filing\"", StringComparison.Ordinal) && !page.Contains("<p class=\"degraded written-from\">", StringComparison.Ordinal);
+        // A page drawing an older quarter than its newest release reports names the quarter it awaits and the day it is
+        // expected to draw it, that quarter being the one after the drawn quarter's.
+        // see: A page drawing an older quarter than its newest results release reports names the quarter it awaits and the first day it is expected to read it
+        var awaits = quarterCard.Success && following is not null && quarterCard.Groups[1].Value == "Filed" && newer;
 
         Add(
-            "segments-release",
-            fromRelease && releaseTable ? !unsaid : null,
-            !fromRelease ? "the latest quarter is the filing's"
-            : !releaseTable ? "the results release states no segment table summing to the quarter's reported revenue"
-            : unsaid ? "a segment commentary written from the filing's segments does not say so"
+            "quarter-wait",
+            awaits ? wait.Success && wait.Groups["awaiting"].Value == following : null,
+            !awaits ? "the page draws its newest release's quarter, or no release newer than it"
+            : !wait.Success ? "the page names no quarter it awaits"
+            : wait.Groups["awaiting"].Value != following ? "the page awaits the quarter to " + wait.Groups["awaiting"].Value + " where its release reports the quarter to " + following
             : null);
+
+        // A quarter reported before its filing is stored draws the release's own segment table first where it reads, and a
+        // segment commentary beneath it written from the filing's segments says so above its text; one whose release states
+        // no segment table read stands open, a gap the store cannot close until the table is read or the filing stored.
+        var fromRelease = quarterCard.Success && quarterCard.Groups[1].Value == "Reported";
+        var releaseTable = page.Contains("<div class=\"sub segments-release\"", StringComparison.Ordinal);
+        var unsaid = page.Contains("data-written-from=\"filing\"", StringComparison.Ordinal) && !WrittenFromAbove().IsMatch(page);
+
+        if (fromRelease && !releaseTable)
+        {
+            Opened("segments-release", "the results release states no segment table read as summing to the quarter's reported revenue");
+        }
+        else
+        {
+            Add(
+                "segments-release",
+                fromRelease ? !unsaid : null,
+                !fromRelease ? "the latest quarter is the filing's"
+                : unsaid ? "a segment commentary written from the filing's segments does not say so above its text"
+                : null);
+        }
+
+        // Each segment table draws every amount in one scale.
+        // see: A segment table draws every amount in one scale, the one its smallest amount reads in
+        var scales = SegmentTableOf().Matches(page)
+            .Select(table => SegmentRow().Matches(table.Groups["rows"].Value).Select(row => Suffix(row.Groups["drawn"].Value)).Concat(TotalRow().Matches(table.Groups["rows"].Value).Select(total => Suffix(total.Groups[1].Value))).Distinct().Count())
+            .ToArray();
+
+        Add("segments-scale", scales.Length == 0 ? null : scales.All(count => count <= 1), scales.Length == 0 ? "no clean segment table is drawn" : scales.Any(count => count > 1) ? "a segment table draws its amounts in more than one scale" : null);
 
         var unwritten = Unwritten().Matches(page)
             .Select(match => WebUtility.HtmlDecode(match.Groups[1].Value))
@@ -283,11 +366,103 @@ public static partial class ReportProof
             unwritten.Length == 0 ? "no section of the name's own is left out or not written" : bare is null ? null : bare + " is drawn with no control writing it again alone");
         Add("model-labels", page.Contains("<table class=\"model-jobs\"", StringComparison.Ordinal) || page.Contains("class=\"model-jobs\" data-jobs=\"0\"", StringComparison.Ordinal));
 
+        // Each job's row held to the settings' profiles: it names one, and its lane is that profile's.
+        // see: Every report names the profile each of its jobs ran under and whether it is paid or local, read off the job's own row
+        var jobs = JobRow().Matches(page).Where(row => row.Groups["lane"].Value != "none").ToArray();
+        var wrongLane = jobs.FirstOrDefault(row =>
+            row.Groups["profile"].Value == "none"
+            || (context?.Profiles.FirstOrDefault(profile => profile.Name == WebUtility.HtmlDecode(row.Groups["profile"].Value)) is { } named && (named.Local ? "local" : "paid") != row.Groups["lane"].Value));
+
+        Add(
+            "model-table",
+            jobs.Length == 0 || context is null ? null : wrongLane is null,
+            jobs.Length == 0 ? "no job a model ran is drawn" : context is null ? "the settings' profiles were not read" : wrongLane is null ? null
+            : wrongLane.Groups["profile"].Value == "none" ? WebUtility.HtmlDecode(wrongLane.Groups["job"].Value) + " names no profile"
+            : WebUtility.HtmlDecode(wrongLane.Groups["job"].Value) + " is drawn " + wrongLane.Groups["lane"].Value + " under the profile " + WebUtility.HtmlDecode(wrongLane.Groups["profile"].Value) + ", which the settings name otherwise");
+
+        // The cost line's seven nights held to the run page's table.
+        // see: The report page states its research passes' cost over the seven nights the run page counts and the most any pass cost, each with its scope
+        var cost = CostLine().Match(page);
+        var table = context?.RunTable;
+        var agrees = cost.Success && table is { } run
+            && cost.Groups["from"].Value == run.From.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+            && cost.Groups["through"].Value == run.Through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+            && int.Parse(cost.Groups["passes"].Value, CultureInfo.InvariantCulture) == run.Passes
+            && (run.Passes == 0 || (decimal.Parse(cost.Groups["least"].Value, CultureInfo.InvariantCulture) == run.Least && decimal.Parse(cost.Groups["most"].Value, CultureInfo.InvariantCulture) == run.Most));
+        var mostStated = page.Contains("The most any research pass has cost is ", StringComparison.Ordinal);
+
+        Add(
+            "cost-figures",
+            !cost.Success || table is null ? null : agrees && mostStated,
+            !cost.Success ? "no research cost line is drawn" : table is null ? "the run page's table was not read"
+            : !agrees ? string.Create(CultureInfo.InvariantCulture, $"the page states {cost.Groups["passes"].Value} passes at {cost.Groups["least"].Value} to {cost.Groups["most"].Value} where the run page's table counts {table.Value.Passes} at {table.Value.Least} to {table.Value.Most}")
+            : !mostStated ? "the most any pass has cost is not stated with its scope"
+            : null);
+
+        // A held trade's card states the reward to risk its plan was struck at beside the one at its fill.
+        // see: A held trade's card states the reward to risk its plan was struck at beside the one at its fill
+        var heldCard = HeldCardOf().Match(page);
+
+        var plannedRow = page.Contains("<dt>Reward to risk planned at the close</dt>", StringComparison.Ordinal);
+
+        Add(
+            "fill-against-plan",
+            heldCard.Success ? plannedRow : null,
+            !heldCard.Success ? "no family holds a trade in it" : !plannedRow ? "the held card states no reward to risk planned at the close" : null);
+
+        // The next report placed against the hold, in the calendar and in the plan's block.
+        // see: The calendar and the plan's block around the next report list it declared or estimated and place it against the hold
+        var holding = picked || heldOn;
+        var calendarPlaced = Regex.IsMatch(page, "<tr data-date=\"[^\"]+\" data-kind=\"results\" data-declared=\"(?:yes|no)\" data-inside-hold=\"(?:yes|no)\"");
+        var planPlaced = Regex.IsMatch(page, "<p class=\"next-report-around\"[^>]*data-inside-hold=\"(?:yes|no)\"");
+        var reportListed = page.Contains("data-kind=\"results\"", StringComparison.Ordinal);
+        var planDrawn = page.Contains("<div class=\"sub\">Around the next report</div>", StringComparison.Ordinal);
+
+        Add(
+            "next-report-hold",
+            holding && reportListed ? calendarPlaced && (!planDrawn || planPlaced) : null,
+            !holding ? "no family picked or holds it" : !reportListed ? "the calendar lists no next report, declared or estimated"
+            : !calendarPlaced ? "the calendar does not place the next report against the hold"
+            : planDrawn && !planPlaced ? "the plan's block around the next report does not place it against the hold"
+            : null);
+
+        // Each paragraph of what worked and what did not keeps a sentence for each priority its written paragraph holds.
+        // see: What worked and what did not keeps four sentences a paragraph chosen by demand then cost then segments then the main risk
+        var priorities = PrioritiesOf().Match(page);
+        var segmentNames = DrawnBusinessLines(page).Select(line => line.Words).ToArray();
+        var missed = worked.Success && priorities.Success
+            ? ProseOf().Matches(worked.Groups[1].Value)
+                .Select(match => WebUtility.HtmlDecode(Regex.Replace(match.Groups[1].Value, "<[^>]+>", " ")))
+                .Zip(WebUtility.HtmlDecode(priorities.Groups[1].Value).Split(';'))
+                .SelectMany(pair => pair.Second.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                    .Where(priority => !SentenceBreak().Split(pair.First).Any(sentence => EquityBrief.Core.Report.SentencePriority.Says(sentence, priority, segmentNames)))
+                    .Select(priority => priority))
+                .FirstOrDefault()
+            : null;
+
+        Add(
+            "short-priority",
+            worked.Success && priorities.Success ? missed is null : null,
+            !worked.Success ? "no written what worked and what did not is drawn" : !priorities.Success ? "the paragraphs' priorities are not stated" : missed is null ? null : "a paragraph's sentence on " + missed + " is left out");
+
+        var heldFamily = Regex.Match(page, "<section class=\"held-card\" data-family=\"(?<family>[^\"]+)\" data-night=\"(?<night>[^\"]+)\"");
+
         return new ProofPage(
             ticker,
             verdicts,
-            industry is not null && business is not null ? new PeerProposal(ticker, industry, business, EquityBrief.Core.Report.IndustryCheck.Proposed(business)) : null);
+            industry is not null && business is { } proposed ? new PeerProposal(ticker, industry, proposed.Business, EquityBrief.Core.Report.IndustryCheck.Proposed(proposed.Business)) : null)
+        {
+            Wait = awaits && wait.Success
+                ? new PageWait(wait.Groups["released"].Value, wait.Groups["awaiting"].Value, wait.Groups["ask"].Value, wait.Groups["expected"].Value, wait.Groups["due"].Value, wait.Groups["clears"].Value)
+                : null,
+            Fill = heldCard.Success && heldFamily.Success
+                ? new PageFill(WebUtility.HtmlDecode(heldFamily.Groups["family"].Value), heldFamily.Groups["night"].Value, heldCard.Groups["planned"].Value, heldCard.Groups["fill"].Value)
+                : null,
+        };
     }
+
+    // The scale an amount is drawn in, its suffix, none for a plain figure.
+    static string Suffix(string drawn) => drawn.TrimEnd() is { Length: > 0 } amount && char.IsLetter(amount[^1]) ? amount[^1].ToString() : string.Empty;
 
     // Every rule's counts over the pages, in the rules' order.
     public static IReadOnlyList<ProofRule> Counted(IReadOnlyList<ProofPage> pages) =>
@@ -302,7 +477,9 @@ public static partial class ReportProof
                 answers.Count(answer => answer.Verdict == Passed),
                 answers.Count(answer => answer.Verdict == Failed),
                 answers.Count(answer => answer.Verdict == Unexamined),
-                [.. answers.Where(answer => answer.Verdict == Failed).Select(answer => answer.Ticker)]);
+                [.. answers.Where(answer => answer.Verdict == Failed).Select(answer => answer.Ticker)],
+                answers.Count(answer => answer.Verdict == Open),
+                [.. answers.Where(answer => answer.Verdict == Open).Select(answer => answer.Ticker)]);
         }),
     ];
 
@@ -313,19 +490,66 @@ public static partial class ReportProof
 
         html.Append("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Report page proof</title>");
         html.Append("<style>:root{--ink:#1c1c1c;--paper:#fbfaf7;--rule:#d8d8d8;--up:#2f7d4f;--down:#b23b3b;--muted:#6a6a6a}@media (prefers-color-scheme: dark){:root{--ink:#ecebe7;--paper:#161616;--rule:#3a3a3a;--up:#5fb382;--down:#e07070;--muted:#a0a0a0}}body{background:var(--paper);color:var(--ink);font:15px/1.5 system-ui,sans-serif;margin:0;padding:16px}main{max-width:1000px;margin:auto}table{border-collapse:collapse;width:100%}th,td{border-bottom:1px solid var(--rule);padding:6px 8px;text-align:left;vertical-align:top}td.n{text-align:right;font-variant-numeric:tabular-nums}.pass{color:var(--up)}.fail{color:var(--down)}.unexamined{color:var(--muted)}.wrap{overflow-x:auto}</style></head><body><main>");
-        html.Append(string.Create(CultureInfo.InvariantCulture, $"<h1>Report page proof</h1><p>{report.Pages.Count} pages of the {WebUtility.HtmlEncode(report.Index)} drawn as the read surface draws them{(report.Night is { } night ? string.Create(CultureInfo.InvariantCulture, $" for the night of {night:yyyy-MM-dd}") : string.Empty)}, read at {report.ReadAt.UtcDateTime:yyyy-MM-dd HH:mm} UTC. A rule that cannot be read on a page is unexamined there, and unexamined is never counted as a pass.</p>"));
-        html.Append("<div class=\"wrap\"><table><thead><tr><th>Rule</th><th>Passed</th><th>Failed</th><th>Unexamined</th><th>Failed on</th></tr></thead><tbody>");
+        html.Append(string.Create(CultureInfo.InvariantCulture, $"<h1>Report page proof</h1><p>{report.Pages.Count} pages of the {WebUtility.HtmlEncode(report.Index)} drawn as the read surface draws them{(report.Night is { } night ? string.Create(CultureInfo.InvariantCulture, $" for the night of {night:yyyy-MM-dd}") : string.Empty)}, read at {report.ReadAt.UtcDateTime:yyyy-MM-dd HH:mm} UTC. A rule that cannot be read on a page is unexamined there, and unexamined is never counted as a pass. A rule a page cannot meet yet for want of a figure the store does not hold stands open, counted apart and never as a pass.</p>"));
+        html.Append("<div class=\"wrap\"><table><thead><tr><th>Rule</th><th>Passed</th><th>Failed</th><th>Open</th><th>Unexamined</th><th>Failed on, then open on</th></tr></thead><tbody>");
 
         foreach (var rule in report.Rules)
         {
-            html.Append(string.Create(CultureInfo.InvariantCulture, $"<tr data-rule=\"{rule.Rule}\"><td><b>{WebUtility.HtmlEncode(rule.Rule)}</b><br>{WebUtility.HtmlEncode(rule.Says)}</td><td class=\"n pass\">{rule.Passed}</td><td class=\"n fail\">{rule.Failed}</td><td class=\"n unexamined\">{rule.Unexamined}</td><td>{WebUtility.HtmlEncode(string.Join(", ", rule.Failing.Take(40)))}{(rule.Failing.Count > 40 ? string.Create(CultureInfo.InvariantCulture, $" and {rule.Failing.Count - 40} more") : string.Empty)}</td></tr>"));
+            var opened = rule.Opened ?? [];
+
+            html.Append(string.Create(CultureInfo.InvariantCulture, $"<tr data-rule=\"{rule.Rule}\"><td><b>{WebUtility.HtmlEncode(rule.Rule)}</b><br>{WebUtility.HtmlEncode(rule.Says)}</td><td class=\"n pass\">{rule.Passed}</td><td class=\"n fail\">{rule.Failed}</td><td class=\"n unexamined\" data-open=\"{rule.Open}\">{rule.Open}</td><td class=\"n unexamined\">{rule.Unexamined}</td><td>{WebUtility.HtmlEncode(string.Join(", ", rule.Failing.Take(40)))}{(rule.Failing.Count > 40 ? string.Create(CultureInfo.InvariantCulture, $" and {rule.Failing.Count - 40} more") : string.Empty)}{(opened.Count > 0 ? "<br>Open: " + WebUtility.HtmlEncode(string.Join(", ", opened.Take(120))) + (opened.Count > 120 ? string.Create(CultureInfo.InvariantCulture, $" and {opened.Count - 120} more") : string.Empty) : string.Empty)}</td></tr>"));
         }
 
         html.Append("</tbody></table></div>");
 
+        // Every page drawing an older quarter than its newest results release reports, with the quarter it awaits, the night
+        // the quarters fetch next asks the provider for it, the day its filing is expected and due, and the first day the page
+        // is expected to draw it.
+        // see: A page drawing an older quarter than its newest results release reports names the quarter it awaits and the first day it is expected to read it
+        var waits = report.Pages.Where(page => page.Wait is not null).OrderBy(page => page.Wait!.Clears, StringComparer.Ordinal).ThenBy(page => page.Ticker, StringComparer.Ordinal).ToArray();
+
+        html.Append(string.Create(CultureInfo.InvariantCulture, $"<h2>Pages waiting on their newest quarter</h2><p data-waiting=\"{waits.Length}\">{waits.Length} {(waits.Length == 1 ? "page draws" : "pages draw")} an older quarter than the newest results release reports, each with the day it is expected to draw the newer one: the first of the night the quarters fetch next asks the provider for it and the day its filing is expected.</p>"));
+
+        if (waits.Length > 0)
+        {
+            html.Append("<div class=\"wrap\"><table><thead><tr><th>Stock</th><th>Release</th><th>Quarter awaited</th><th>Provider asked next</th><th>Filing expected</th><th>Filing due</th><th>Expected to clear</th></tr></thead><tbody>");
+
+            foreach (var waiting in waits)
+            {
+                var at = waiting.Wait!;
+
+                html.Append(string.Create(CultureInfo.InvariantCulture, $"<tr data-wait=\"{WebUtility.HtmlEncode(waiting.Ticker)}\"><td>{WebUtility.HtmlEncode(waiting.Ticker)}</td><td>{at.Released}</td><td>{at.Awaiting}</td><td>{at.NextAsk}</td><td>{at.FilingExpected}</td><td>{at.FilingDue}</td><td>{at.Clears}</td></tr>"));
+            }
+
+            html.Append("</tbody></table></div>");
+        }
+
+        // Every held trade with the reward to risk its plan was struck at the close beside the one at its fill, and how many
+        // fill under 1.
+        // see: A held trade's card states the reward to risk its plan was struck at beside the one at its fill
+        var fills = report.Pages.Where(page => page.Fill is not null).OrderBy(page => page.Ticker, StringComparer.Ordinal).ToArray();
+        var under = fills.Count(page => decimal.TryParse(page.Fill!.AtFill, NumberStyles.Number, CultureInfo.InvariantCulture, out var ratio) && ratio < 1m);
+
+        html.Append(string.Create(CultureInfo.InvariantCulture, $"<h2>Held trades, planned against filled</h2><p data-held=\"{fills.Length}\" data-under-one=\"{under}\">{fills.Length} held {(fills.Length == 1 ? "trade" : "trades")}, {under} of {(fills.Length == 1 ? "it" : "them")} filled at a reward to risk under 1.</p>"));
+
+        if (fills.Length > 0)
+        {
+            html.Append("<div class=\"wrap\"><table><thead><tr><th>Stock</th><th>Family</th><th>Picked</th><th>Planned at the close</th><th>At the fill</th></tr></thead><tbody>");
+
+            foreach (var held in fills)
+            {
+                var fill = held.Fill!;
+                var below = decimal.TryParse(fill.AtFill, NumberStyles.Number, CultureInfo.InvariantCulture, out var ratio) && ratio < 1m;
+
+                html.Append(string.Create(CultureInfo.InvariantCulture, $"<tr data-fill=\"{WebUtility.HtmlEncode(held.Ticker)}\"{(below ? " data-under-one=\"yes\"" : string.Empty)}><td>{WebUtility.HtmlEncode(held.Ticker)}</td><td>{WebUtility.HtmlEncode(fill.Family)}</td><td>{fill.Night}</td><td class=\"n\">{fill.Planned}</td><td class=\"n{(below ? " fail" : string.Empty)}\">{fill.AtFill}</td></tr>"));
+            }
+
+            html.Append("</tbody></table></div>");
+        }
+
         // Every page whose peer group names none of the business its own account describes, with the group proposed for
         // it: a list for the operator to approve before any override is set, which the proof sets none of.
-        // see: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening
+        // see: A stock's industry group is checked against the company's own segments and revenue lines and not its description
         var proposals = report.Pages.Select(page => page.Peer).OfType<PeerProposal>().ToArray();
 
         html.Append(string.Create(CultureInfo.InvariantCulture, $"<h2>Peer groups to approve</h2><p data-proposals=\"{proposals.Length}\">{proposals.Length} {(proposals.Length == 1 ? "page's peer group names" : "pages' peer groups name")} none of the business the page's own account of what the company sells describes. Each is listed with the group proposed from that account, and no override is set until you approve it.</p>"));
@@ -456,6 +680,88 @@ public static partial class ReportProof
     // The quarter the latest quarter's card reads.
     [GeneratedRegex("<h2>The quarter to (\\d{4}-\\d{2}-\\d{2}), line by line</h2>")]
     private static partial Regex QuarterTitle();
+
+    // The line naming the quarter a newer release reports that the page cannot draw yet, with the days it reads.
+    [GeneratedRegex("<p class=\"degraded quarter-wait\" data-awaiting=\"(?<awaiting>[^\"]+)\" data-released=\"(?<released>[^\"]+)\" data-next-ask=\"(?<ask>[^\"]+)\" data-filing-expected=\"(?<expected>[^\"]+)\" data-filing-due=\"(?<due>[^\"]+)\" data-clears=\"(?<clears>[^\"]+)\">")]
+    private static partial Regex QuarterWaitOf();
+
+    // A segment commentary written from the filing's segments saying so above its text, before the section is drawn.
+    [GeneratedRegex("data-written-from=\"filing\"><div class=\"dl\">(?:(?!</div>).)*</div><p class=\"degraded written-from\">", RegexOptions.Singleline)]
+    private static partial Regex WrittenFromAbove();
+
+    // A segment table's total row and the amount it draws.
+    [GeneratedRegex("<tr class=\"key-row\"><td>The company</td><td class=\"num\">([^<]*)</td>")]
+    private static partial Regex TotalRow();
+
+    // Each row of the jobs table: the job, its lane and the profile it names.
+    [GeneratedRegex("<tr data-job=\"(?<job>[^\"]+)\" data-lane=\"(?<lane>[a-z]+)\" data-profile=\"(?<profile>[^\"]+)\">")]
+    private static partial Regex JobRow();
+
+    // The research cost line's seven nights as the page states them.
+    [GeneratedRegex("<p class=\"research-cost\"[^>]*? data-recent-from=\"(?<from>[^\"]+)\" data-recent-through=\"(?<through>[^\"]+)\" data-recent-passes=\"(?<passes>\\d+)\" data-recent-least=\"(?<least>[0-9.]+)\" data-recent-most=\"(?<most>[0-9.]+)\"")]
+    private static partial Regex CostLine();
+
+    // The held trade's card with the reward to risk planned at the close and at the fill.
+    [GeneratedRegex("<section class=\"held-card\"[^>]*? data-planned-reward=\"(?<planned>[^\"]+)\" data-fill-reward=\"(?<fill>[^\"]+)\"")]
+    private static partial Regex HeldCardOf();
+
+    // The priorities each paragraph of the short version's written prose holds, a paragraph to each part.
+    [GeneratedRegex("data-section=\"The short version\"[^>]*? data-priorities=\"([^\"]*)\"")]
+    private static partial Regex PrioritiesOf();
+
+    // A written section's own sources list, by whether its documents were held to the company and its industry.
+    [GeneratedRegex("<ul class=\"section-sources\" data-cites=\"\\d+\" data-relevance=\"(?<relevance>[a-z]+)\"")]
+    private static partial Regex SectionSources();
+
+    // A document a list keeps, and one a list folds apart as naming neither the company nor its industry.
+    [GeneratedRegex("<li (?:data-marker=\"D\\d+\" )?data-document=\"([^\"]+)\"(?:(?! data-relevant=\"no\")[^>])*>")]
+    private static partial Regex KeptDocument();
+
+    [GeneratedRegex("<li [^>]*?data-document=\"([^\"]+)\"[^>]*?data-relevant=\"no\"")]
+    private static partial Regex ApartDocument();
+
+    // The first clean segment table the page draws, the release's where it draws one, and each of its rows' segment and
+    // revenue.
+    [GeneratedRegex("<table class=\"segment-table\"(?<attributes>[^>]*)>(?<rows>.*?)</table>", RegexOptions.Singleline)]
+    private static partial Regex SegmentTableOf();
+
+    [GeneratedRegex("<tr data-segment=\"(?<segment>[^\"]+)\"><td>[^<]*</td><td class=\"num\" data-revenue=\"(?<revenue>-?[0-9.]+)\">(?<drawn>[^<]*)</td>")]
+    private static partial Regex SegmentRow();
+
+    // The filing's segment table as filed, and each of its lines with its grouping and figure.
+    [GeneratedRegex("<table class=\"numbers-segments\"[^>]*>(?<rows>.*?)</table>", RegexOptions.Singleline)]
+    private static partial Regex RawSegmentsOf();
+
+    [GeneratedRegex("<tr data-segment=\"(?<group>[^\"]+)\"><td>(?<line>[^<]*)</td><td class=\"num\" data-segment-figure=\"(?<figure>-?[0-9.]+)\"")]
+    private static partial Regex RawSegmentRow();
+
+    // The segments and revenue lines the page draws, read as the industry check reads them: the first clean segment table's
+    // rows, and where none is drawn the filing's table as filed, each grouping's lines naming revenue but the company's own.
+    static IReadOnlyList<EquityBrief.Core.Report.BusinessLine> DrawnBusinessLines(string page)
+    {
+        if (SegmentTableOf().Match(page) is { Success: true } clean)
+        {
+            return
+            [
+                .. SegmentRow().Matches(clean.Groups["rows"].Value)
+                    .Select(row => new EquityBrief.Core.Report.BusinessLine(WebUtility.HtmlDecode(row.Groups["segment"].Value), decimal.Parse(row.Groups["revenue"].Value, NumberStyles.Number | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture))),
+            ];
+        }
+
+        if (RawSegmentsOf().Match(page) is { Success: true } raw)
+        {
+            return
+            [
+                .. RawSegmentRow().Matches(raw.Groups["rows"].Value)
+                    .Where(row => row.Groups["group"].Value != "The company" && Regex.IsMatch(row.Groups["line"].Value, "revenue|sales|premium", RegexOptions.IgnoreCase))
+                    .Select(row => new EquityBrief.Core.Report.BusinessLine(
+                        WebUtility.HtmlDecode(row.Groups["group"].Value) + " " + WebUtility.HtmlDecode(row.Groups["line"].Value),
+                        decimal.Parse(row.Groups["figure"].Value, NumberStyles.Number | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture))),
+            ];
+        }
+
+        return [];
+    }
 
     // Each results release the page draws management's words from, by the day it was filed or accepted.
     [GeneratedRegex("(?:data-guidance=\"[^\"]*\"[^>]*?data-filed|class=\"guidance release-opening\"[^>]*?data-accepted)=\"(\\d{4}-\\d{2}-\\d{2})\"")]

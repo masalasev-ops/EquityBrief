@@ -1410,8 +1410,14 @@ public sealed partial class SinglePageApp : IComponent
         double? filedMultiple = null,
         // Where the Fundamentals family bought the name on the night, keeps a trade in it or flagged it, from 22.13.
         string? improving = null,
-        // The models the run log names on a priced call or a labeller's run, which tell each job's paid model from a local one.
+        // The models the run log names on a priced call, which tell a paid model from a local one where no profile names it.
         IReadOnlySet<string>? paidModels = null,
+        // The model profiles the settings name, and the profile each section is written under, which each job's lane is
+        // read from.
+        IReadOnlyList<JobProfile>? profiles = null,
+        IReadOnlyDictionary<string, string>? sectionProfiles = null,
+        // The quarter a newer results release reports that the page cannot draw yet, with the first day it is expected to.
+        EquityBrief.Core.Report.QuarterWait? quarterWait = null,
         // Why the trend rule read the stock as it did, in plain words, none where it read an uptrend.
         string? trendWhy = null,
         // The bands the pulled history turned at, for a side the stored year holds none on, marked older.
@@ -1432,19 +1438,17 @@ public sealed partial class SinglePageApp : IComponent
         var session = bars.Count > 0 ? bars[^1].SessionDate : (DateOnly?)null;
         var company = mast?.Company is { Length: > 0 } named ? named : ticker;
 
-        // The documents the industry cycle cites whose title, address and stored text name neither the company nor a word of
-        // its industry: they leave the cycle's sources, and the page's list where no other section cites them. A page that
-        // holds no industry for the stock has nothing to hold them to, and keeps them.
-        // see: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening
-        var cycleWritten = sections.FirstOrDefault(section => string.Equals(section.Section, EquityBrief.Core.Research.ClaimRules.CycleSection, StringComparison.Ordinal));
-        var irrelevant = cycleWritten is null || mast?.Industry is not { Length: > 0 }
+        // Every document a written section cites, held to the company and its industry over its title, its address and its
+        // whole stored text: one naming neither is folded apart in each section's own list and in the page's, and leaves the
+        // industry cycle's sources. A page that holds no industry for the stock has nothing to hold them to, and keeps them.
+        // see: Every written section's sources and the page's are held to documents naming the company or its industry in their whole text
+        // The industry read is the one the page reads the stock under, an override set for it in the provider's place.
+        Func<SourceCell, bool>? relevant = (report?.Industry ?? mast?.Industry) is { Length: > 0 } industryOf
+            ? document => EquityBrief.Core.Report.IndustryCheck.Relevant(document.Title, document.Url + " " + document.Text, mast?.Company, industryOf)
+            : null;
+        var irrelevant = relevant is null
             ? []
-            : cycleWritten.SourceIds
-                .Where(id => documents.FirstOrDefault(document => string.Equals(document.Id, id, StringComparison.Ordinal)) is { } cited
-                    && !EquityBrief.Core.Report.IndustryCheck.Relevant(cited.Title, cited.Url + " " + cited.Opening, mast?.Company, mast?.Industry))
-                .ToHashSet(StringComparer.Ordinal);
-
-        documents = [.. documents.Where(document => !irrelevant.Contains(document.Id) || sections.Any(section => !string.Equals(section.Section, EquityBrief.Core.Research.ClaimRules.CycleSection, StringComparison.Ordinal) && section.SourceIds.Contains(document.Id, StringComparer.Ordinal)))];
+            : documents.Where(document => !relevant(document)).Select(document => document.Id).ToHashSet(StringComparer.Ordinal);
 
         // The cards, held apart from the region so the contents can be written from what was
         // drawn and still stand above it. A card records itself as it is added, at the place
@@ -1493,7 +1497,7 @@ public sealed partial class SinglePageApp : IComponent
 
                 // The industry cycle reads only the sources naming the company or its industry, and where fewer than two do it
                 // says so in place of its paragraph.
-                // see: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening
+                // see: Every written section's sources and the page's are held to documents naming the company or its industry in their whole text
                 if (string.Equals(name, EquityBrief.Core.Research.ClaimRules.CycleSection, StringComparison.Ordinal))
                 {
                     var relevant = shown.SourceIds.Where(id => !irrelevant.Contains(id)).ToArray();
@@ -1511,7 +1515,7 @@ public sealed partial class SinglePageApp : IComponent
                         name,
                         "Written",
                         section.AsOf,
-                        marks.WrittenSection(ticker, shown, documents, riskLines: string.Equals(name, MarkRenderer.TheRisks, StringComparison.Ordinal) ? history?.Risk : null, facts: HeldTo(shown), lead: lead, proseLabel: lead is { Length: > 0 } ? "What worked and what did not." : null, sentencesAParagraph: shortVersion ? MarkRenderer.WhatWorkedSentences : null),
+                        marks.WrittenSection(ticker, shown, documents, riskLines: string.Equals(name, MarkRenderer.TheRisks, StringComparison.Ordinal) ? history?.Risk : null, facts: HeldTo(shown), lead: lead, proseLabel: lead is { Length: > 0 } ? "What worked and what did not." : null, sentencesAParagraph: shortVersion ? MarkRenderer.WhatWorkedSentences : null, segmentNames: shortVersion ? [.. ((report?.ReleaseSegments ?? report?.Segments)?.Rows ?? []).Select(row => row.Segment)] : null, relevant: relevant),
                         section: name,
                         id: SectionId(name),
                         role: role),
@@ -1917,7 +1921,10 @@ public sealed partial class SinglePageApp : IComponent
                 }
             }
 
-            planned.Append("<div class=\"sub\">Around the next report</div>").Append(eventBook);
+            // The block opens on the next report, declared or estimated, placed against the hold of a trade a family picked or
+            // holds the stock on.
+            // see: The calendar and the plan's block around the next report list it declared or estimated and place it against the hold
+            planned.Append("<div class=\"sub\">Around the next report</div>").Append(MarkRenderer.NextReportAroundThePlan(calendar)).Append(eventBook);
             planned.Append("<div class=\"sub\">Sizing arithmetic</div>").Append(arithmetic);
             planned.Append(Cards.Key(
                 "How to read the plan.",
@@ -1964,7 +1971,7 @@ public sealed partial class SinglePageApp : IComponent
         // What was written about the company in the thirty days before the night, each article with the
         // label the labeller wrote for it, after its group by price; drawn for every member the page is
         // handed stories for.
-        // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
+        // see: Every report names the profile each of its jobs ran under and whether it is paid or local, read off the job's own row
         if (news is { } stories)
         {
             Card("news", "news", "News", Cards.Computed(
@@ -1986,6 +1993,10 @@ public sealed partial class SinglePageApp : IComponent
         // see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters
         var quarterBody = new StringBuilder();
 
+        // A newer quarter its results release reports and the page cannot draw yet, named above the older quarter's table
+        // with the first day the page is expected to read it.
+        // see: A page drawing an older quarter than its newest results release reports names the quarter it awaits and the first day it is expected to read it
+        quarterBody.Append(quarterWait is { } waiting ? MarkRenderer.QuarterWaitLine(waiting) : string.Empty);
         quarterBody.Append(report is null ? string.Empty : marks.QuarterTable(ticker, report));
         quarterBody.Append(report is null ? string.Empty : Cards.Key(
             "How to read it.",
@@ -2034,7 +2045,7 @@ public sealed partial class SinglePageApp : IComponent
                     MarkRenderer.WhatManagementSaid,
                     "Written",
                     managed.AsOf,
-                    marks.WrittenSection(ticker, managed, documents, facts: HeldTo(managed)) + (releaseRead ?? string.Empty),
+                    marks.WrittenSection(ticker, managed, documents, facts: HeldTo(managed), relevant: relevant) + (releaseRead ?? string.Empty),
                     section: MarkRenderer.WhatManagementSaid,
                     id: SectionId(MarkRenderer.WhatManagementSaid)),
                 managed.AsOf);
@@ -2100,11 +2111,13 @@ public sealed partial class SinglePageApp : IComponent
 
                     var fromAttribute = writtenFrom is null ? string.Empty : " data-written-from=\"" + writtenFrom + "\"";
 
+                    // The note saying it was written from the older filing's segments stands above the commentary, so it is
+                    // read before the figures it qualifies.
                     segmentBody.Append(Invariant($"<div class=\"written-part\" id=\"{SectionId(part)}\" data-section=\"{Escaped(part)}\"{fromAttribute}><div class=\"dl\"><span class=\"dl-k\">Written</span><b>{Cards.Day(partWritten.AsOf)}</b></div>"));
-                    segmentBody.Append(marks.WrittenSection(ticker, partWritten, documents, facts: HeldTo(partWritten)));
                     segmentBody.Append(writtenFrom == "filing"
                         ? "<p class=\"degraded written-from\">Written from the segments the filing before it reported, before the results release's own table above was read; a report written now reads the release's figures.</p>"
                         : string.Empty);
+                    segmentBody.Append(marks.WrittenSection(ticker, partWritten, documents, facts: HeldTo(partWritten), relevant: relevant));
                     segmentBody.Append("</div>");
                 }
             }
@@ -2248,7 +2261,7 @@ public sealed partial class SinglePageApp : IComponent
             if (valuation.Peers is { } peerValues)
             {
                 valued.Append(Invariant($"<div class=\"sub\">Against {Escaped(peerValues.Industry)}'s S&amp;P 500 members on the night, {(mast?.Industry is { } provided && !string.Equals(provided, peerValues.Industry, StringComparison.Ordinal) ? Invariant($"the industry set for the stock in place of the provider's {Escaped(provided)}") : "the provider's classification")}</div><div class=\"fig\">")).Append(marks.PeerDots(ticker, peerValues)).Append("</div>");
-                valued.Append(MarkRenderer.IndustryMismatch(peerValues.Industry, sections.FirstOrDefault(section => string.Equals(section.Section, MarkRenderer.WhatItSells, StringComparison.Ordinal))?.Prose));
+                valued.Append(MarkRenderer.IndustryMismatch(peerValues.Industry, report?.BusinessLines ?? []));
                 valued.Append(marks.PeerTable(peerValues));
             }
 
@@ -2299,7 +2312,8 @@ public sealed partial class SinglePageApp : IComponent
                     ticker,
                     calendar,
                     sections.FirstOrDefault(section => string.Equals(section.Section, InTheDates, StringComparison.Ordinal)),
-                    documents)
+                    documents,
+                    relevant)
                     + Cards.Key(
                         "How to read it.",
                         "Each event of the ninety days after the night: the company's next results as the earnings calendar dates them, its next ex-dividend date, declared where the calendar carries one and otherwise estimated from its last ex-date at the payments a year its bars' steps show and drawn hollow, and each FOMC decision and CPI release the committed table dates. Beneath them, the dated items the research read out of its documents.",
@@ -2320,9 +2334,7 @@ public sealed partial class SinglePageApp : IComponent
                 documents,
                 figuresChecked ?? [],
                 filedFactsHeld,
-                mast?.Industry is { Length: > 0 } industryOf
-                    ? document => EquityBrief.Core.Report.IndustryCheck.Relevant(document.Title, document.Url + " " + document.Opening, mast?.Company, industryOf)
-                    : null)
+                relevant)
                 + Cards.Key(
                     "How to read it.",
                     "Each document is listed with the day it was published and links to it. A line of the latest quarter the company's filing and the provider's fetch state differently by more than half a million dollars or a tenth of a per cent is listed with the filing's figure first; every region draws the fetch's, since every quarter the page reads shares one fetch's basis.",
@@ -2335,9 +2347,9 @@ public sealed partial class SinglePageApp : IComponent
         // Where the research stands, what the newest pass came to, the sections left out
         // or not written with the reason for each, and the controls with what research
         // has cost stated beside them before any is pressed; then which model ran each job.
-        // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
+        // see: Every report names the profile each of its jobs ran under and whether it is paid or local, read off the job's own row
         var research = marks.LeftOut(ticker, leftOut ?? [], researchState, notWritten, paused, pass, controls, cost, aloneLine)
-            + MarkRenderer.ModelJobsTable(MarkRenderer.ModelJobs(sections, news, report?.Release, paidModels ?? new HashSet<string>(StringComparer.Ordinal)));
+            + MarkRenderer.ModelJobsTable(MarkRenderer.ModelJobs(sections, news, report?.Release, profiles ?? [], paidModels ?? new HashSet<string>(StringComparer.Ordinal), sectionProfiles));
 
         Card(
             "research",

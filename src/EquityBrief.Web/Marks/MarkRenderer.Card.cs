@@ -108,6 +108,12 @@ public sealed record HeldTradeView(DecisionCardView Card, PickCell Pick)
     // not stored yet or stands outside the two.
     public decimal? RewardToRisk =>
         Pick.Buy is { } fill && Card.Stop is { } stop && Card.Target is { } target && fill > stop && target > fill ? (target - fill) / (fill - stop) : null;
+
+    // The reward against the risk the plan was struck at, the close its night set it at: the target's distance above that
+    // close over the stop's below, none for a plan with no target.
+    // see: A held trade's card states the reward to risk its plan was struck at beside the one at its fill
+    public decimal? PlannedRewardToRisk =>
+        Card.Entry is { } close && Card.Stop is { } stop && Card.Target is { } target && close > stop && target > close ? (target - close) / (close - stop) : null;
 }
 
 // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
@@ -279,10 +285,11 @@ public sealed partial class MarkRenderer
             ("Target", card.Target is { } target ? Price(target) : "none, its stop trails the price"),
             ("Last day", card.Cap is { } cap ? Formatted($"after {cap} trading days") + (card.Hits is { } hits ? FormattableString.Invariant($", about {hits.Through:d MMM yyyy}") : string.Empty) : "its setup states no limit"),
             ("Status", PickStatus.Words(pick.Status) + (pick.Sessions is { } sessions ? Formatted($", {sessions} {(sessions == 1 ? "session" : "sessions")} held") : string.Empty)),
-            ("Reward to risk at the fill", held.RewardToRisk is { } ratio ? ratio.ToString("0.00", Invariant) : "not stated, the fill not stored or outside the stop and the target"),
+            ("Reward to risk planned at the close", held.PlannedRewardToRisk is { } planned ? planned.ToString("0.00", Invariant) + (card.Entry is { } close ? ", struck at the close of " + Price(close) : string.Empty) : "not stated, its plan names no target"),
+            ("Reward to risk at the fill", held.RewardToRisk is { } ratio ? ratio.ToString("0.00", Invariant) + (ratio < 1m ? ", under 1: the open left less reward than risk" : string.Empty) : "not stated, the fill not stored or outside the stop and the target"),
         };
 
-        var drawn = new StringBuilder(Formatted($"<section class=\"held-card\" data-family=\"{Escaped(card.Family)}\" data-night=\"{DayOf(pick.Night)}\" data-status=\"{Escaped(pick.Status)}\" data-cap=\"{(card.Cap is { } limit ? limit.ToString(Invariant) : "none")}\"><h4>The trade it is held on</h4><dl class=\"held-lines\">"));
+        var drawn = new StringBuilder(Formatted($"<section class=\"held-card\" data-family=\"{Escaped(card.Family)}\" data-night=\"{DayOf(pick.Night)}\" data-status=\"{Escaped(pick.Status)}\" data-cap=\"{(card.Cap is { } limit ? limit.ToString(Invariant) : "none")}\" data-planned-reward=\"{(held.PlannedRewardToRisk is { } plannedAt ? Math.Round(plannedAt, 2).ToString(Invariant) : "none")}\" data-fill-reward=\"{(held.RewardToRisk is { } filledAt ? Math.Round(filledAt, 2).ToString(Invariant) : "none")}\"><h4>The trade it is held on</h4><dl class=\"held-lines\">"));
 
         foreach (var (key, value) in rows)
         {

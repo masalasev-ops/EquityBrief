@@ -574,7 +574,7 @@ public partial class ReadSurface
             WebUtility.HtmlDecode(Regex.Match(page, "<p class=\"not-written\" data-section=\"The industry cycle\">([^<]*)</p>").Groups[1].Value));
     }
 
-    // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
+    // see: Every report names the profile each of its jobs ran under and whether it is paid or local, read off the job's own row
     [Fact]
     public async Task EachModelThatWroteASectionIsNamedInTheJobsTableAndNowhereElseInThePagesWords()
     {

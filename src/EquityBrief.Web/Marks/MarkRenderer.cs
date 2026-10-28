@@ -849,7 +849,7 @@ public sealed record ListingCell(
     // The positive and negative stories of the thirty days before the night, counted as the name page's bar
     // counts them, the newest label of each article with opinion pieces left out; null where the labeller has
     // labelled nothing of the name's, which the cell says.
-    // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
+    // see: Every report names the profile each of its jobs ran under and whether it is paid or local, read off the job's own row
     int? NewsPositive = null,
     int? NewsNegative = null);
 
@@ -1144,7 +1144,7 @@ public sealed record WrittenCell(string Section, string Prose, DateOnly AsOf, st
 public sealed record RiskLines(string? Up, string? Worse);
 
 // One document a written section cites, as a page draws it.
-public sealed record SourceCell(string Id, string Title, string Url, DateOnly? PublishedOn, string Opening = "");
+public sealed record SourceCell(string Id, string Title, string Url, DateOnly? PublishedOn, string Text = "");
 
 // What the newest pass for a name came to, as the research region states it: its
 // outcome, the session it ran on, and the one line that says what happened.
@@ -1178,8 +1178,34 @@ public sealed record PassProgress(string State, string Step, int Sections);
 
 // What research has cost, stated beside a control before it is pressed: the passes the
 // run log has priced, what they came to, the most one came to, and the line saying where
-// research stands against the caps now.
-public sealed record ResearchCost(int Passes, decimal Total, decimal Most, string Verdict);
+// research stands against the caps now; and where the research passes were read, the pass
+// that cost the most and the passes of the seven nights the run page's table counts.
+public sealed record ResearchCost(int Passes, decimal Total, decimal Most, string Verdict, PassCost? MostPass = null, RecentCosts? Recent = null);
+
+// One research pass's cost: its run, its stock, the day it wrote for, every priced call it made in every round less a
+// trial's and a review's, the profiles the settings name for the models those calls named, a model no profile names now by
+// the words saying so, since the page names a model in its jobs table alone, and whether it was a full report pass, one
+// asking for the short version, which is written last from every accepted section, where a pass writing one section or the
+// stale ones asks for it not.
+public sealed record PassCost(string RunId, string Ticker, DateOnly Day, decimal Cost, IReadOnlyList<string> Profiles, bool Full = true);
+
+// The research passes of the seven nights the run page's table counts: the first and last night, how many, the least and
+// the most one cost, and the profiles their calls ran on; the full report passes among them with their least and most,
+// and how many wrote part of a report with the least and the most those cost.
+public sealed record RecentCosts(DateOnly From, DateOnly Through, int Passes, decimal Least, decimal Most, IReadOnlyList<string> Profiles)
+{
+    public int FullPasses { get; init; }
+
+    public decimal FullLeast { get; init; }
+
+    public decimal FullMost { get; init; }
+
+    public int PartPasses { get; init; }
+
+    public decimal PartLeast { get; init; }
+
+    public decimal PartMost { get; init; }
+}
 
 // One line of the sector strip.
 // A sector's line, and from 19.5 its tile: whether the night reads the trend on the index, and the sector's fund with its
@@ -3427,7 +3453,7 @@ public sealed partial class MarkRenderer : IComponent
 
             // The positive and negative stories of the thirty days before, as the name page's bar counts
             // them, on the first list alone: the labeller reads that list and no other.
-            // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
+            // see: Every report names the profile each of its jobs ran under and whether it is paid or local, read off the job's own row
             if (!oneGateShort)
             {
                 list.Append(row.NewsPositive is { } positive && row.NewsNegative is { } negative
@@ -4180,7 +4206,7 @@ public sealed partial class MarkRenderer : IComponent
 
         if (offered.Count > 0 && standing.Cost is { } cost)
         {
-            drawn.Append(Invariant, $"<p class=\"research-cost\" data-passes=\"{cost.Passes}\" data-spend=\"{cost.Total}\" data-most=\"{cost.Most}\">{Escaped(ShortCostLine(cost))}</p><div class=\"rs-controls\">");
+            drawn.Append(Invariant, $"<p class=\"research-cost\" data-passes=\"{cost.Passes}\" data-spend=\"{cost.Total}\" data-most=\"{cost.Most}\"{RecentAttributes(cost.Recent)}>{Escaped(ShortCostLine(cost))}</p><div class=\"rs-controls\">");
 
             foreach (var control in offered)
             {
@@ -4203,7 +4229,47 @@ public sealed partial class MarkRenderer : IComponent
     // spend stands against the caps.
     // see: The spend cap is a stop, not an allowance
     public static string ShortCostLine(ResearchCost cost) =>
-        (cost.Passes == 0 ? "No research pass has a recorded cost yet. " : Formatted($"The most a research pass has cost is {SpendVerdict.Money(cost.Most)}. ")) + Capitalised(cost.Verdict) + ".";
+        (cost.Passes == 0 ? "No research pass has a recorded cost yet. " : PassFigures(cost)) + Capitalised(cost.Verdict) + ".";
+
+    // The figures research's cost is stated by, each with its scope: the full report passes of the seven nights the run
+    // page's table counts, with the least and the most one cost and the profiles they ran on, and the passes there writing
+    // part of a report apart; then the most any research pass has cost since the first, with its stock, its day, whether it
+    // wrote the whole report and its profile. Every figure counts each priced call a pass made in every round and neither a
+    // trial's nor a review's, so they differ by the nights, the part of a report and the profiles they are read over.
+    // see: The report page states its research passes' cost over the seven nights the run page counts and the most any pass cost, each with its scope
+    static string PassFigures(ResearchCost cost)
+    {
+        var recent = cost.Recent is { Passes: > 0 } week
+            ? Formatted($"Over the seven nights {week.From:d MMM} to {week.Through:d MMM yyyy}, the run page's table, ")
+                + (week.FullPasses switch
+                {
+                    0 => "no pass wrote a whole report",
+                    1 => Formatted($"one full report pass, writing the whole report through its short version, cost {ReportCost(week.FullMost)}"),
+                    _ => Formatted($"{week.FullPasses} full report passes, each writing the whole report through its short version, cost {ReportCost(week.FullLeast)} to {ReportCost(week.FullMost)} each"),
+                })
+                + Formatted($" on {Profiles(week.Profiles)}")
+                + (week.PartPasses switch
+                {
+                    0 => ". ",
+                    1 => Formatted($"; one pass writing part of a report, one section or the stale ones, cost {ReportCost(week.PartMost)}. "),
+                    _ => Formatted($"; {week.PartPasses} passes writing part of a report, one section or the stale ones, cost {ReportCost(week.PartLeast)} to {ReportCost(week.PartMost)}. "),
+                })
+            : cost.Recent is { } none ? Formatted($"No research pass was priced over the seven nights {none.From:d MMM} to {none.Through:d MMM yyyy}, the run page's table. ") : string.Empty;
+        var most = cost.MostPass is { } costly
+            ? Formatted($"The most any research pass has cost is {ReportCost(cost.Most)}, {costly.Ticker}'s {(costly.Full ? "full report" : "pass writing part of a report")} of {costly.Day:d MMM yyyy} on {Profiles(costly.Profiles)}, the highest of the {cost.Passes} passes since the first. ")
+            : Formatted($"The most a research pass has cost is {SpendVerdict.Money(cost.Most)}. ");
+
+        return recent + most;
+
+        static string Profiles(IReadOnlyList<string> profiles) =>
+            profiles.Count == 0 ? "no profile named" : string.Join(" and ", profiles.Select(profile => "the " + profile + " profile"));
+    }
+
+    // The seven nights' figures on the cost line's element, which the proof holds to the run page's table.
+    static string RecentAttributes(RecentCosts? recent) =>
+        recent is { } week
+            ? Formatted($" data-recent-from=\"{DayOf(week.From)}\" data-recent-through=\"{DayOf(week.Through)}\" data-recent-passes=\"{week.Passes}\" data-recent-least=\"{week.Least.ToString(Invariant)}\" data-recent-most=\"{week.Most.ToString(Invariant)}\"")
+            : string.Empty;
 
     // What research has cost, in one sentence. Every figure is the run log's: the passes
     // it priced and what they came to. A pass's price is known only once it has been
@@ -4219,7 +4285,7 @@ public sealed partial class MarkRenderer : IComponent
 
     // The directions a written section's sentences were held to, on its element, so the proof reads every drawn sentence
     // against them again; none where the page holds no stored latest quarter to hold them to.
-    // see: Every report page rule is held over every name's drawn page and reported passed, failed or unexamined with the pages each failed on
+    // see: Every report page rule is held over every name's drawn page and each page's answer reported with the pages each rule failed or left open on
     static string HeldTo(IReadOnlyList<EquityBrief.Core.Research.DirectionFact>? facts) =>
         facts is { Count: > 0 }
             ? " data-directions=\"" + Escaped(string.Join(";", facts.Select(fact => fact.Concept + "|" + fact.Kind + "|" + fact.Sign.ToString(Invariant)))) + "\""
@@ -4238,7 +4304,7 @@ public sealed partial class MarkRenderer : IComponent
     // [D2] is checkable only where [D2] says which document it is.
     // see: A research record is written and dated per section, not as a whole
     // see: Every researched claim must name a stored source document
-    public string WrittenSection(string ticker, WrittenCell section, IReadOnlyList<SourceCell> documents, string dated = "written on", RiskLines? riskLines = null, IReadOnlyList<EquityBrief.Core.Research.DirectionFact>? facts = null, string? lead = null, string? proseLabel = null, int? sentencesAParagraph = null)
+    public string WrittenSection(string ticker, WrittenCell section, IReadOnlyList<SourceCell> documents, string dated = "written on", RiskLines? riskLines = null, IReadOnlyList<EquityBrief.Core.Research.DirectionFact>? facts = null, string? lead = null, string? proseLabel = null, int? sentencesAParagraph = null, IReadOnlyList<string>? segmentNames = null, Func<SourceCell, bool>? relevant = null)
     {
         // The section as a reader reads it, held to the stored directions, its markers out and its abbreviations spelled
         // out; the stored prose is what its markers are read from.
@@ -4249,25 +4315,31 @@ public sealed partial class MarkRenderer : IComponent
             Prose = Readable(section.Prose, facts, number => DocumentNoun(number >= 1 && number <= stored.SourceIds.Count ? documents.FirstOrDefault(one => string.Equals(one.Id, stored.SourceIds[number - 1], StringComparison.Ordinal)) : null)),
         };
 
-        // What worked and what did not is drawn at most so many sentences a paragraph, its first ones, and an abbreviation
-        // whose spelled-out first use fell among the sentences left out is spelled out where it is now first used.
-        // see: What worked and what did not is drawn four sentences a paragraph at most
+        // What worked and what did not is drawn at most so many sentences a paragraph, chosen by demand, cost, segments and
+        // the main risk in that order and drawn in the paragraph's own order, and an abbreviation whose spelled-out first use
+        // fell among the sentences left out is spelled out where it is now first used.
+        // see: What worked and what did not keeps four sentences a paragraph chosen by demand then cost then segments then the main risk
+        string? prioritiesHeld = null;
+
         if (sentencesAParagraph is { } most)
         {
+            var written = section.Prose.Split(["\r\n\r\n", "\n\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            // The priorities each written paragraph holds a sentence on, on the section's element, which the proof reads the
+            // kept sentences against.
+            prioritiesHeld = string.Join(";", written.Select(paragraph => string.Join(" ", EquityBrief.Core.Report.SentencePriority.Order.Where(priority => Sentence().Split(paragraph).Any(sentence => EquityBrief.Core.Report.SentencePriority.Says(sentence, priority, segmentNames))))));
             section = section with
             {
                 Prose = EquityBrief.Core.Research.Abbreviations.SpelledOut(string.Join(
                     "\n\n",
-                    section.Prose
-                        .Split(["\r\n\r\n", "\n\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                        .Select(paragraph => string.Join(" ", Sentence().Split(paragraph).Take(most))))),
+                    written.Select(paragraph => string.Join(" ", EquityBrief.Core.Report.SentencePriority.Choose(Sentence().Split(paragraph), most, segmentNames))))),
             };
         }
 
         var drawn = new StringBuilder();
 
         drawn.Append(Invariant, $"<section class=\"written-section\" data-ticker=\"{Escaped(ticker)}\" data-section=\"{Escaped(section.Section)}\" ");
-        drawn.Append(Invariant, $"data-as-of=\"{section.AsOf:yyyy-MM-dd}\" data-model=\"{Escaped(section.Model)}\"{HeldTo(facts)}>");
+        drawn.Append(Invariant, $"data-as-of=\"{section.AsOf:yyyy-MM-dd}\" data-model=\"{Escaped(section.Model)}\"{HeldTo(facts)}{(prioritiesHeld is null ? string.Empty : " data-priorities=\"" + Escaped(prioritiesHeld) + "\"")}>");
         drawn.Append(Invariant, $"<h3>{Escaped(section.Section)}</h3>");
 
         // Parts code writes before the written prose, and the label the prose is read under after them.
@@ -4377,26 +4449,44 @@ public sealed partial class MarkRenderer : IComponent
         // see: A written section is drawn without its bracketed markers, its sources listed by title beneath it and every abbreviation spelled out where first used
         var citesNight = stored.Prose.Contains(Core.Research.ClaimRules.NightMark, StringComparison.Ordinal);
 
+        // Each section's own list is held to the company and its industry as the page's list is: a document naming neither
+        // in its title, address or whole text is folded apart beneath the list, saying how many.
+        // see: Every written section's sources and the page's are held to documents naming the company or its industry in their whole text
         if (section.SourceIds.Count > 0 || citesNight)
         {
-            drawn.Append(Invariant, $"<div class=\"sub sources-sub\">Sources</div><ul class=\"section-sources\" data-cites=\"{section.SourceIds.Count}\">");
+            var cited = section.SourceIds
+                .Select((id, at) => (Id: id, Marker: at + 1, Document: documents.FirstOrDefault(one => string.Equals(one.Id, id, StringComparison.Ordinal))))
+                .ToArray();
+            var apart = relevant is null ? [] : cited.Where(one => one.Document is { } held && !relevant(held)).ToArray();
+            var relevance = relevant is null ? "untested" : "tested";
+
+            drawn.Append(Invariant, $"<div class=\"sub sources-sub\">Sources</div><ul class=\"section-sources\" data-cites=\"{section.SourceIds.Count}\" data-relevance=\"{relevance}\" data-left-out=\"{apart.Length}\">");
 
             if (citesNight)
             {
                 drawn.Append("<li data-marker=\"N\"><a href=\"#quarter\">the figures the night stored</a>, computed by the night or copied by code from a filing or the provider</li>");
             }
 
-            for (var at = 0; at < section.SourceIds.Count; at++)
+            foreach (var (id, marker, document) in cited.Except(apart))
             {
-                var id = section.SourceIds[at];
-                var document = documents.FirstOrDefault(one => string.Equals(one.Id, id, StringComparison.Ordinal));
-
-                drawn.Append(Invariant, $"<li data-marker=\"D{at + 1}\" data-document=\"{Escaped(id)}\">");
+                drawn.Append(Invariant, $"<li data-marker=\"D{marker}\" data-document=\"{Escaped(id)}\">");
                 drawn.Append(document is null ? "a document the store does not hold" : Link(document));
                 drawn.Append("</li>");
             }
 
             drawn.Append("</ul>");
+
+            if (apart.Length > 0)
+            {
+                drawn.Append(Invariant, $"<details class=\"section-sources-apart\" data-left-out=\"{apart.Length}\"><summary>{(apart.Length == 1 ? "1 document it cites names" : Formatted($"{apart.Length} documents it cites name"))} neither the company nor its industry</summary><ul>");
+
+                foreach (var (id, marker, document) in apart)
+                {
+                    drawn.Append(Invariant, $"<li data-marker=\"D{marker}\" data-document=\"{Escaped(id)}\" data-relevant=\"no\">{Link(document!)}</li>");
+                }
+
+                drawn.Append("</ul></details>");
+            }
         }
 
         if (section.Claims is { Count: > 0 } claims)
@@ -7359,7 +7449,7 @@ public sealed partial class MarkRenderer : IComponent
     // piece in the opinion tab alone and in no count, an article holding no label in the unlabelled tab beside
     // all, the model that wrote the labels named once, and where the name holds no label for the night one line
     // saying why. The tabs are radio inputs the stylesheet reads, so the region carries no script of its own.
-    // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
+    // see: Every report names the profile each of its jobs ran under and whether it is paid or local, read off the job's own row
     // see: A label's reason is one sentence holding no digit, and an answer code cannot read is asked once more and then kept as unreadable with its cause
     // How many stories the feed tagged the name with name neither the company nor its American listing in their title or
     // opening, left out of the list and every count.
