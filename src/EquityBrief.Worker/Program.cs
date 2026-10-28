@@ -166,7 +166,9 @@ static int NoVerb()
         "each trade after its cost, and stores its record for the card, with '--index <GSPC, MID or SML>' one index alone, " +
         "and 'rule-record --nights' replays instead each standing rule's listed count on every session of the pulled " +
         "history, the live rules and the breakout's and the drift's variants at their grid settings, for the cards' " +
-        "stretch lines, " +
+        "stretch lines, and 'rule-record --open-floor' replays the S&P 500's live drift rule beside the same rule " +
+        "skipping a fill whose reward to risk at the open is under 1, registering nothing and writing both on its run " +
+        "log row for the drift's card, with '--print' printing them and writing nothing, " +
         "'ledger-build --index <GSPC, MID or SML> --from <yyyy-MM-dd> --through <yyyy-MM-dd>' writes the setup ledger's " +
         "history for one index over the span, every member-session a family's loose gates pass over the pulled bars " +
         "merged with the store's, each replayed to its end, a chunk of sessions at a time, going on from the sessions " +
@@ -681,9 +683,11 @@ static async Task<int> RuleRecordRun(string[] args)
         store.DataRoot,
         Console.Out);
 
-    return args.Contains("--nights", StringComparer.Ordinal)
-        ? await recorder.NightsAsync(indices)
-        : await recorder.RunAsync(indices);
+    return args.Contains(EquityBrief.Worker.Cards.RuleRecorder.OpenFloorFlag, StringComparer.Ordinal)
+        ? await recorder.OpenFloorAsync(print: args.Contains("--print", StringComparer.Ordinal))
+        : args.Contains("--nights", StringComparer.Ordinal)
+            ? await recorder.NightsAsync(indices)
+            : await recorder.RunAsync(indices);
 }
 
 // The setup ledger's history, by hand: one index over a span of sessions, each setup the loose gates pass over the

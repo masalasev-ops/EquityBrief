@@ -586,6 +586,7 @@ public static partial class NameScreen
     {
         string currency = "USD";
         EquityBrief.Core.Report.SegmentReading? segments = null;
+        IReadOnlyList<EquityBrief.Core.Report.BusinessLine> lines = [];
 
         if (filings.Count > 0)
         {
@@ -605,6 +606,10 @@ public static partial class NameScreen
                     : null;
 
                 segments = EquityBrief.Core.Report.SegmentTable.Read(breakdown, reported);
+
+                // The segments and revenue lines the industry check reads off the filing's table.
+                // see: A stock's industry group is checked against the company's own segments and revenue lines and not its description
+                lines = EquityBrief.Core.Report.IndustryCheck.Lines(segments);
             }
         }
 
@@ -642,7 +647,11 @@ public static partial class NameScreen
                 : null,
             EquityBrief.Core.Report.DividendSafety.PaysNone(forwardRate, inputs.Dividends, night),
             EquityBrief.Core.Report.DividendSafety.LastWholeYear(inputs.Dividends, night),
-            EquityBrief.Core.Report.QuarterLines.Income(inputs.Quarters));
+            EquityBrief.Core.Report.QuarterLines.Income(inputs.Quarters))
+        {
+            BusinessLines = lines,
+            Industry = inputs.Industry,
+        };
     }
 
     // The figures a reader wants first, a figure to a row in two columns: the newest quarter's
@@ -1500,8 +1509,16 @@ public static partial class NameScreen
         // What the page says where the Fundamentals family bought the name on the night, keeps a trade in it or flagged it,
         // from 22.13.
         string? improving = null,
-        // The models the run log names on a priced call or a labeller's run, which tell each job's paid model from a local one.
+        // The models the run log names on a priced call, which tell a paid model from a local one where no profile names it.
         IReadOnlySet<string>? paidModels = null,
+        // The model profiles the settings name and the profile each section is written under.
+        IReadOnlyList<JobProfile>? profiles = null,
+        IReadOnlyDictionary<string, string>? sectionProfiles = null,
+        // Every research pass's cost as the run page counts it, with the seven nights its table reads.
+        (IReadOnlyList<PassCost> Passes, DateOnly From, DateOnly Through)? passCosts = null,
+        // What a page waiting on its newest quarter reads its expected day from: the calendar's report date, the quarters
+        // fetch's asks and the first day the archive's facts carried each period's end.
+        (DateOnly Released, (DateOnly? ReportDate, IReadOnlyList<EquityBrief.Core.Report.QuarterAskRow> Asks, IReadOnlyList<EquityBrief.Core.Report.FirstFiled> Filed) Read)? quarterWaitInputs = null,
         // The name's two newest swing lows confirmed by the night, which the trend rule compares.
         IReadOnlyList<EquityBrief.Core.Report.SwingLow>? swingLows = null,
         // The newest results release's opening line, which the box management speaks in opens on.
@@ -1658,11 +1675,32 @@ public static partial class NameScreen
         {
             var revenueLine = reported.Lines.FirstOrDefault(line => string.Equals(line.Line, EquityBrief.Core.Report.QuarterLines.Revenue, StringComparison.Ordinal));
 
+            var released = EquityBrief.Core.Report.ReleaseSegments.Read(releaseText, reported.Quarter, revenueLine?.Reported, revenueLine?.YearEarlier);
+
             reportView = reportView with
             {
-                ReleaseSegments = EquityBrief.Core.Report.ReleaseSegments.Read(releaseText, reported.Quarter, revenueLine?.Reported, revenueLine?.YearEarlier),
+                ReleaseSegments = released,
                 CommentaryFromFiling = commentaryFromRelease == false,
+                BusinessLines = released is { Clean: true, Rows.Count: > 0 } ? EquityBrief.Core.Report.IndustryCheck.Lines(released) : reportView.BusinessLines,
             };
+        }
+
+        // A page whose newest results release reports a quarter after the one it draws, neither the provider's quarters nor
+        // a stored filing carrying it yet, names the quarter it awaits and the first day it is expected to read it.
+        // see: A page drawing an older quarter than its newest results release reports names the quarter it awaits and the first day it is expected to read it
+        EquityBrief.Core.Report.QuarterWait? quarterWait = null;
+
+        if (reportView?.Quarter is { } drawnQuarter
+            && !(drawnQuarter.Reported is { } drawnReported && (filings.Count == 0 || drawnReported > filings.Max(filing => filing.FilingDate)))
+            && quarterWaitInputs is { } waiting
+            && (night ?? (bars.Count > 0 ? bars[^1].SessionDate : (DateOnly?)null)) is { } waitNight)
+        {
+            var following = drawnQuarter.Quarter.AddMonths(3);
+
+            if (waiting.Released > new DateOnly(following.Year, following.Month, DateTime.DaysInMonth(following.Year, following.Month)))
+            {
+                quarterWait = EquityBrief.Core.Report.QuarterWaits.Of(waiting.Released, drawnQuarter.Quarter, waitNight, waiting.Read.ReportDate, waiting.Read.Asks, waiting.Read.Filed);
+            }
         }
 
         says = WithFiledMultiple(says, score?.Multiple);
@@ -1722,10 +1760,10 @@ public static partial class NameScreen
             notWritten,
             spend is null ? null : Paused(spend),
             Written(accepted),
-            [.. (cited ?? []).Select(document => new SourceCell(document.Id, document.Title, document.Url, document.PublishedOn, document.Opening))],
+            [.. (cited ?? []).Select(document => new SourceCell(document.Id, document.Title, document.Url, document.PublishedOn, document.Text))],
             PassLine(newest, spend, today),
             Controls(staleness, newest, notWritten, spend, priced, today),
-            spend is null || priced is null ? null : Cost(priced, spend),
+            spend is null || priced is null ? null : passCosts is { } read ? Cost(read.Passes, spend, read.From, read.Through) : Cost(priced, spend),
             Suspect(suspect),
             listing is null ? [] : TonightScreen.WrittenBeforeTheCorrection([listing]),
             noYear is null ? null : new NoYear(noYear.Nights, noYear.Last, noYear.Next),
@@ -1761,16 +1799,19 @@ public static partial class NameScreen
                 ? History(inputsOfHistory, bars, levels, typicalMove, ladder, reactions ?? [], reportInputs?.Dividends ?? [], year, live)
                 : null,
             calendar: bars.Count > 0
-                ? Calendar(night ?? bars[^1].SessionDate, events ?? [], forwardRate, reportInputs?.Dividends ?? [], historyInputs?.RawCloses ?? [], filings)
+                ? Calendar(night ?? bars[^1].SessionDate, events ?? [], forwardRate, reportInputs?.Dividends ?? [], historyInputs?.RawCloses ?? [], filings, nextEstimated, (cards ?? heldTrade?.Card)?.Hits?.Through)
                 : null,
             figuresChecked: checkedFigures.Conflicts,
             filedFactsHeld: checkedFigures.Compared > 0,
             behind: behind,
-            standing: Standing(staleness, newest, spend, priced, today, OwnWritten(accepted), IndustryWritten(accepted)),
+            standing: Standing(staleness, newest, spend, priced, today, OwnWritten(accepted), IndustryWritten(accepted), passCosts),
             fundamentals: FundamentalsScreen.Of(score, Universes.ByCode(indexCode ?? string.Empty)?.Name, scoreReadings, reportView?.Analysts, reportView?.Insiders),
             filedMultiple: score?.Multiple,
             improving: improving,
             paidModels: paidModels,
+            profiles: profiles,
+            sectionProfiles: sectionProfiles,
+            quarterWait: quarterWait,
             trendWhy: EquityBrief.Core.Report.TrendWords.Why(
                 ladder?.TrendState,
                 bars.Count > 0 ? bars[^1].Close : null,
@@ -1917,7 +1958,9 @@ public static partial class NameScreen
         decimal? forwardRate,
         IReadOnlyList<EquityBrief.Core.Report.KeptDividend> dividends,
         IReadOnlyList<RawCloseRow> rawCloses,
-        IReadOnlyList<FilingRow> filings)
+        IReadOnlyList<FilingRow> filings,
+        (DateOnly From, DateOnly Estimated)? nextEstimated = null,
+        DateOnly? holdThrough = null)
     {
         DateOnly? provided = null;
 
@@ -1941,9 +1984,9 @@ public static partial class NameScreen
             }
             : null;
 
-        var (items, past) = EquityBrief.Core.Cards.PageCalendar.Of(night, [.. events.Select(row => (row.EventDate, row.Kind, row.Timing))], kept);
+        var (items, past) = EquityBrief.Core.Cards.PageCalendar.Of(night, [.. events.Select(row => (row.EventDate, row.Kind, row.Timing))], kept, estimatedReport: nextEstimated);
 
-        return new CalendarView(night, night.AddDays(EquityBrief.Core.Cards.PageCalendar.Days), items, past);
+        return new CalendarView(night, night.AddDays(EquityBrief.Core.Cards.PageCalendar.Days), items, past) { HoldThrough = holdThrough, Estimate = nextEstimated };
     }
 
     // The headline a pass wrote last and the checker accepted, its claim marks taken off, or none where none stands.
@@ -2440,14 +2483,15 @@ public static partial class NameScreen
         IReadOnlyList<(string RunId, decimal Spend)>? priced,
         DateOnly? today,
         DateOnly? written,
-        DateOnly? industry = null) =>
+        DateOnly? industry = null,
+        (IReadOnlyList<PassCost> Passes, DateOnly From, DateOnly Through)? passCosts = null) =>
         staleness is { State: Core.Research.ResearchState.Stands or Core.Research.ResearchState.Stale } judged
             ? new ReportStandingView(
                 ResearchState(judged).State,
                 written,
                 [.. judged.Fired.Select(fired => fired.Line)],
                 [.. Controls(judged, pass, [], spend, priced, today).Where(control => control.Kind is RewriteKind or RefreshKind)],
-                spend is null || priced is null ? null : Cost(priced, spend))
+                spend is null || priced is null ? null : passCosts is { } read ? Cost(read.Passes, spend, read.From, read.Through) : Cost(priced, spend))
             {
                 Industry = industry is { } cycle && (written is not { } own || cycle > own) ? cycle : null,
                 Today = pass is { Stage: ReadApi.ResearchStage, Outcome: ReadApi.PassWritten, Written: 0, AsOf: { } ran } && ran == today
@@ -2483,6 +2527,40 @@ public static partial class NameScreen
             .ToArray();
 
         return new ResearchCost(passes.Length, passes.Sum(), passes.DefaultIfEmpty(0m).Max(), spend.Line);
+    }
+
+    // What research has cost read over the research passes alone, each as the run page's table counts it: how many there
+    // are and what they came to, the pass that cost the most with its stock, day and profile, and the passes of the seven
+    // nights the run page's table reads, with the least and the most one cost.
+    // see: The report page states its research passes' cost over the seven nights the run page counts and the most any pass cost, each with its scope
+    public static ResearchCost Cost(IReadOnlyList<PassCost> passes, SpendVerdict spend, DateOnly from, DateOnly through)
+    {
+        var most = passes.OrderByDescending(pass => pass.Cost).ThenBy(pass => pass.Day).FirstOrDefault();
+        var week = passes.Where(pass => pass.Day >= from && pass.Day <= through).ToArray();
+        var full = week.Where(pass => pass.Full).ToArray();
+        var part = week.Where(pass => !pass.Full).ToArray();
+
+        return new ResearchCost(
+            passes.Count,
+            passes.Sum(pass => pass.Cost),
+            most?.Cost ?? 0m,
+            spend.Line,
+            most,
+            new RecentCosts(
+                from,
+                through,
+                week.Length,
+                week.Length > 0 ? week.Min(pass => pass.Cost) : 0m,
+                week.Length > 0 ? week.Max(pass => pass.Cost) : 0m,
+                [.. week.SelectMany(pass => pass.Profiles).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)])
+            {
+                FullPasses = full.Length,
+                FullLeast = full.Length > 0 ? full.Min(pass => pass.Cost) : 0m,
+                FullMost = full.Length > 0 ? full.Max(pass => pass.Cost) : 0m,
+                PartPasses = part.Length,
+                PartLeast = part.Length > 0 ? part.Min(pass => pass.Cost) : 0m,
+                PartMost = part.Length > 0 ? part.Max(pass => pass.Cost) : 0m,
+            });
     }
 
     // The written sections a page draws in their own places. The cause of each large move

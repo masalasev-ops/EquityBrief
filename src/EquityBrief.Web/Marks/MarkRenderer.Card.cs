@@ -94,11 +94,34 @@ public sealed record DecisionCardView(
     BehindItView? Behind = null,
     int? Cap = null,
     decimal? Trail = null,
-    string? Fill = null)
+    string? Fill = null,
+    CardOpenFloorView? OpenFloor = null)
 {
     // The id the card's row and the control opening it share.
     public string Id => $"card-{Index}-{Family}-{Ticker}".ToLowerInvariant().Replace('.', '-').Replace(' ', '-');
 }
+
+// The S&P 500's live drift rule replayed beside the same rule skipping a fill whose reward to risk at the open is under the
+// floor, registered as no rule: the floor, the sessions replayed, the session followed forward from, each walk's trades,
+// share won and average result in multiples of the risk, the trades listed after the session followed forward from and
+// their average, and how many listings the variant skipped.
+public sealed record CardOpenFloorView(
+    double Floor,
+    DateOnly From,
+    DateOnly Through,
+    DateOnly ForwardFrom,
+    string Variant,
+    int Trades,
+    double? Won,
+    double? Average,
+    int ForwardTrades,
+    double? ForwardAverage,
+    int LiveTrades,
+    double? LiveWon,
+    double? LiveAverage,
+    int LiveForwardTrades,
+    double? LiveForwardAverage,
+    int Skipped);
 
 // The trade a family holds a stock on where the page's night lists it under none: the card the trade's own night stored,
 // with its fill, and the trade as the nights since walked it to the page's night.
@@ -108,6 +131,12 @@ public sealed record HeldTradeView(DecisionCardView Card, PickCell Pick)
     // not stored yet or stands outside the two.
     public decimal? RewardToRisk =>
         Pick.Buy is { } fill && Card.Stop is { } stop && Card.Target is { } target && fill > stop && target > fill ? (target - fill) / (fill - stop) : null;
+
+    // The reward against the risk the plan was struck at, the close its night set it at: the target's distance above that
+    // close over the stop's below, none for a plan with no target.
+    // see: A held trade's card states the reward to risk its plan was struck at beside the one at its fill
+    public decimal? PlannedRewardToRisk =>
+        Card.Entry is { } close && Card.Stop is { } stop && Card.Target is { } target && close > stop && target > close ? (target - close) / (close - stop) : null;
 }
 
 // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
@@ -279,10 +308,11 @@ public sealed partial class MarkRenderer
             ("Target", card.Target is { } target ? Price(target) : "none, its stop trails the price"),
             ("Last day", card.Cap is { } cap ? Formatted($"after {cap} trading days") + (card.Hits is { } hits ? FormattableString.Invariant($", about {hits.Through:d MMM yyyy}") : string.Empty) : "its setup states no limit"),
             ("Status", PickStatus.Words(pick.Status) + (pick.Sessions is { } sessions ? Formatted($", {sessions} {(sessions == 1 ? "session" : "sessions")} held") : string.Empty)),
-            ("Reward to risk at the fill", held.RewardToRisk is { } ratio ? ratio.ToString("0.00", Invariant) : "not stated, the fill not stored or outside the stop and the target"),
+            ("Reward to risk planned at the close", held.PlannedRewardToRisk is { } planned ? planned.ToString("0.00", Invariant) + (card.Entry is { } close ? ", struck at the close of " + Price(close) : string.Empty) : "not stated, its plan names no target"),
+            ("Reward to risk at the fill", held.RewardToRisk is { } ratio ? ratio.ToString("0.00", Invariant) + (ratio < 1m ? ", under 1: the open left less reward than risk" : string.Empty) : "not stated, the fill not stored or outside the stop and the target"),
         };
 
-        var drawn = new StringBuilder(Formatted($"<section class=\"held-card\" data-family=\"{Escaped(card.Family)}\" data-night=\"{DayOf(pick.Night)}\" data-status=\"{Escaped(pick.Status)}\" data-cap=\"{(card.Cap is { } limit ? limit.ToString(Invariant) : "none")}\"><h4>The trade it is held on</h4><dl class=\"held-lines\">"));
+        var drawn = new StringBuilder(Formatted($"<section class=\"held-card\" data-family=\"{Escaped(card.Family)}\" data-night=\"{DayOf(pick.Night)}\" data-status=\"{Escaped(pick.Status)}\" data-cap=\"{(card.Cap is { } limit ? limit.ToString(Invariant) : "none")}\" data-planned-reward=\"{(held.PlannedRewardToRisk is { } plannedAt ? Math.Round(plannedAt, 2).ToString(Invariant) : "none")}\" data-fill-reward=\"{(held.RewardToRisk is { } filledAt ? Math.Round(filledAt, 2).ToString(Invariant) : "none")}\"><h4>The trade it is held on</h4><dl class=\"held-lines\">"));
 
         foreach (var (key, value) in rows)
         {
@@ -704,6 +734,26 @@ public sealed partial class MarkRenderer
     public static string ApprovedRecord(string approved) =>
         $"Not this setup's record: it stands at a change approved on the Loop page, {approved}, and the record stored for it replays its settings before the change, so none is drawn as this setup's.";
 
+    // Beneath the drift's record on the S&P 500, the same rule replayed skipping a fill whose reward to risk at the open is
+    // under the floor, beside the rule's own walk over the same sessions, each followed forward from the first replay's last
+    // session, under the rule's heading; nothing for any other card or where no replay is stored.
+    // see: The drift's open floor is replayed beside its live rule unregistered, skipping a fill whose reward to risk at the open is under 1
+    public static string OpenFloorBeside(CardOpenFloorView? floor)
+    {
+        if (floor is not { } replay)
+        {
+            return string.Empty;
+        }
+
+        static string Average(double? average) => average is { } mean ? mean.ToString("+0.00;-0.00;0.00", Invariant) + " of the risk a trade" : "no average yet";
+
+        static string Won(double? won) => won is { } share ? Formatted($", {share * 100:0}% won") : string.Empty;
+
+        return Formatted($"<p class=\"open-floor\" data-floor=\"{replay.Floor.ToString(Invariant)}\" data-trades=\"{replay.Trades}\" data-live-trades=\"{replay.LiveTrades}\" data-skipped=\"{replay.Skipped}\" data-forward-from=\"{DayOf(replay.ForwardFrom)}\" data-forward-trades=\"{replay.ForwardTrades}\">")
+            + Escaped(FormattableString.Invariant($"Beside it, the same rule replayed skipping a fill whose reward to risk at the open is under {replay.Floor:0.#}, registered as no rule: over {replay.From:d MMM yyyy} to {replay.Through:d MMM yyyy} it kept {replay.Trades} trades at {Average(replay.Average)} after costs{Won(replay.Won)}, where the rule's own walk kept {replay.LiveTrades} at {Average(replay.LiveAverage)}{Won(replay.LiveWon)}, and it skipped {replay.Skipped} listings the rule bought. Followed forward from {replay.ForwardFrom:d MMM yyyy}: {replay.ForwardTrades} trades at {Average(replay.ForwardAverage)}, against the rule's {replay.LiveForwardTrades} at {Average(replay.LiveForwardAverage)}."))
+            + "</p>";
+    }
+
     // How this setup has done, under the setup's own heading and never the stock's: its record over every stock it bought
     // as a sentence and tiles, from its replay over the pulled history, or the trades against the minimum a record is read
     // from before it, and a dashed outline saying why where the rule has not been replayed.
@@ -756,6 +806,7 @@ public sealed partial class MarkRenderer
         }
 
         body.Append("</div>");
+        body.Append(OpenFloorBeside(card.OpenFloor));
         body.Append(Invariant, $"<p class=\"card-caution\">{Escaped(RecordIsTheRules)} {Escaped(RecordReadsHigh)}</p>");
 
         if (record.Membership == "survivors only")

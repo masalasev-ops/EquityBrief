@@ -11132,3 +11132,124 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the operator's reading of the first report before any upload, then the copy's task enabled; the 10,503 links
             reading "Not in this copy", most of them peers' tickers, for the operator to keep as ruled or to have read as
             plain words; the relabel, running in batches between the writers' slots.
+
+### 18.4 ruling - every name's page closes the gaps ROP's and KEY's still showed, ROP's peer group set to Software, and a drift variant skipping a fill under 1 replayed beside the live rule unregistered   2026-10-28
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      the operator's instruction of 2026-10-28, about 17:25 UTC: "Close these gaps for every name's page. Add to what
+            exists, remove no capability, and do not change the live rule of any family. Use code or the local model
+            only: no paid call." Its parts: ROP's peer group set to Software, approved, and no override for the other 18
+            names the check flagged; the mismatch check tightened as its own change to match on the company's own revenue
+            lines and segment names and not on words in its description, the 18 kept as cases it must not flag and ROP as
+            the case it must, and the relevance test run again for ROP's sources and industry cycle with software's words;
+            the relevance test applied to each written section's own source list beside the sources list, over the whole
+            text of a document a written section cites; the model table's "Ran on" filled from the profile each job ran
+            under; the page's most a research pass has cost reconciled with the run page's range, each figure shown with
+            its scope and what a research pass holds that a full report pass does not stated; the 106 pages whose release
+            states no segment table read counted open, the local model tried on those releases' segment tables under the
+            same two sum checks, a table's amounts in one scale, and the note that a commentary was written from the older
+            filing's segments above its text; the 45 pages failing the newest-quarter rule named with when each is
+            expected to clear; every held drift trade's reward to risk planned at the close beside the one at its fill,
+            the held trades filling under 1 counted, and the same setup skipping a fill whose reward to risk at the open is
+            under 1 replayed as a one-change variant beside the live rule over the stored history and followed forward,
+            the live rule running unchanged; the short version's four sentences a paragraph chosen by demand, cost,
+            segments and the main risk in that order; the next report, estimated where none is on file, in the calendar
+            and the plan's block around the next report, placed against the hold; and rules for the model table, the cost
+            figures agreeing and the sources test in the proof, the general rules in the architecture's report page
+            section and the dated evidence in the changelog. Asked whether the variant should be registered, the drift's
+            family already holding the nine rules a family may, the operator chose on 2026-10-28, about 17:50 UTC, to
+            replay it beside the live rule and register nothing, so no test level and no rule moves.
+Queue:      done, PRs 573 to 581; in progress, this pull request; next, the operator's word on 22.14's pullback version, on
+            22.15's freezes and on the copy's nightly task, the relabel running on in batches between the writers' slots.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - correction: every name's page closes the gaps ROP's and KEY's still showed, the peer check reads the company's own segments, and the drift's open floor is replayed beside its live rule unregistered   2026-10-28
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Found:      ROP's and KEY's pages of 2026-10-28: the model table calling the news labels and the release reading "the paid
+            model" beside google/gemma, every labeller run read as paid once the labeller moved to the local model; the
+            cost line's most a research pass has cost, $0.7564, MDT's full report of 2026-09-29 on the Claude profile, over
+            139 runs of which 25 were the news labeller's, beside the run page's seven nights at $0.0026 to $0.0861; ROP's
+            release table drawing $1.2B beside $446.1M and the note that its commentary was written from the filing's
+            segments beneath the commentary; the 106 pages whose release states no segment table read unexamined; 45 pages
+            on an older quarter than their newest release with no day they clear, the run page's queue naming four; KEY's
+            drift trade filled at 21.00 for 0.96 with its plan's 1.44 nowhere; the short version's first four sentences a
+            paragraph; ROP's next report estimated about 26 Jan 2027 and KEY's about 19 Jan in no calendar and no plan; the
+            risks and two cases citing Roche's story under its Swiss listing in lists no test read, two roundups naming
+            Roper past their first six hundred characters listed as naming neither; and 19 peer groups flagged off the words
+            of the page's account of what the company sells, one of them, ROP's, real. Read back, LRCX's release table drew
+            its column heading's dates, "Three Months Ended September 27, 2026 June 28, 2026 September 28, 2025", as three
+            segments of $27,000 to $28,000 beside $5.7B, the no-total path holding the segments only to their own sum.
+Corrected:  each job of the model table names the profile it ran under and that profile's lane as the settings name it;
+            the cost line states the full report passes of the run page's seven nights apart from the passes writing part
+            of a report, beside the most any research pass has cost with its stock, day and profile, the labeller's runs
+            counted as no pass; a segment table draws every amount in its smallest amount's scale, the note on a
+            commentary written from the filing stands above its text, and a release's table reads no column heading's
+            period or dates as a segment and no unit note as part of a name; a page on an older quarter than its newest
+            release names the quarter it awaits, the night the quarters fetch next asks for it, the day its filing is
+            expected from its own lag a year before and the day it is due, and the first as the day it is expected to clear;
+            a held trade's card states the reward to risk planned at the close beside the fill's; the next report, declared
+            or estimated, is in the calendar, even past its ninety days, and in the plan's block around it, each placed
+            against the hold, a declared date with the company's own estimate beside it where the two differ; what worked
+            and what did not keeps four sentences a paragraph chosen by demand, cost, segments and the main risk; every
+            written section's sources and the page's are held to the company and the industry the page reads it under over
+            the whole stored text; the peer check reads the company's own clean segment table, its release's revenue lines
+            or its filing's segments summing to its revenue, a group flagged where more than half the quarter's revenue is
+            in a business it names none of, a channel and a device's therapies naming no business and health insurers and
+            investment banks named among the health care providers and the capital markets, a first reading that took
+            tables as filed having flagged BAX, GS, HRL, PH and SJM, none of them now; ROP's group is set to Software in the
+            read surface's settings on the operator's approval; and
+            the drift's open floor is replayed beside its live rule by the record command's own form, registered as no rule,
+            the S&P 500's drift card drawing the newest run beneath its record. The proof adds sources-test, quarter-wait,
+            segments-scale, model-table, cost-figures, fill-against-plan, next-report-hold and short-priority, counts a rule
+            a page cannot meet yet for want of a stored figure as open, segments-release among them, reads industry-mismatch
+            off the drawn segment tables, and lists beneath its rules the pages waiting on a quarter and the held trades'
+            two rewards to risk.
+Replayed:   `rule-record --open-floor --print` over the pulled history from 2019-01-02 to 2026-10-27, read only: the live drift
+            rule's own walk kept 2,260 trades at an average of 0.020 of the risk after costs, 33.7 per cent won, the card's
+            stored record of 2026-10-16 standing at 2,251 and 0.021 to 2026-10-15; skipping a fill whose reward to risk at
+            the open is under 1, 2,027 trades at 0.109, 31.3 per cent won, 353 listings skipped. Nothing was written: the run
+            that writes the row and sets the session it is followed forward from goes from main's clean copy after the merge.
+Proof:      over the S&P 500's 503 pages of the night of 2026-10-27, drawn from the branch over the live store from 19:15 to
+            19:24 UTC, each rule passed, failed and unexamined: directions 195, 0, 308; markers 204, 0, 299; abbreviations
+            204, 0, 299; short-version 42, 0, 461; held-trade 20, 0, 483; what-worked 42, 0, 461; own-limit 41, 0, 462;
+            one-value 503, 0, 0; header 503, 0, 0; levels-older 61, 0, 442; pick-on-chart 26, 0, 477; levels-cover 26, 0,
+            477; pick-exit 6, 0, 497; next-report 6, 0, 497; next-report-estimated 160, 0, 343; rules-family 6, 0, 497;
+            trend-words 401, 0, 102; news-matched 503, 0, 0; news-labelled 503, 0, 0, the relabel through; industry-label
+            500, 0, 3; industry-mismatch 145, 0, 358, no group proposed, ROP's set to Software; sources-relevant 500, 0, 3;
+            sources-test 198, 0, 305; newest-quarter 457, 45, 1; quarter-wait 45, 0, 458, 42 of the 45 expected to clear on
+            2026-10-28, the night after they reported, UDR on 2026-11-02, PRU on 2026-11-03 and COR on 2026-11-05, each a
+            release filed ahead of the calendar's report date; segments-release 15, 0, 382 and 106 open; segments-scale 145,
+            0, 358; rerun-alone 19, 0, 484; model-labels 503, 0, 0; model-table 503, 0, 0; cost-figures 41, 0, 462;
+            fill-against-plan 20, 0, 483, 3 of the 20 held trades filling under 1, BX at 0.79 on a plan of 0.78, KEY at
+            0.96 on 1.44 and MMM at 0.70 on 0.73; next-report-hold 26, 0, 477; short-priority 42, 0, 461.
+Tests:      12 new, 5 rewritten for the rules they now hold; 2907 in all.
+Claims:     none new: the report page's rules are paragraphs of section 4, and the rule recorder's catalogue and matrix rows
+            are amended in place.
+Pins:       none move; no source a rule's version, the filter or a readings pin reads is edited, and the open floor's walk is
+            the replay's own beside the family's pinned one. The night's facts file changes only for a member whose release
+            table the reader had read a column heading's dates into.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, each filtered to
+            the tests reading it, edits whose tests do not overlap run together. M1 a job's lane read off the priced models,
+            M2 a trial's calls in a pass's cost, M3 every pass read as full, M4 each amount in its own scale, M5 the note
+            beneath the commentary, M6 the fetch asking on the night itself, M7 the planned reward to risk worked from the
+            fill, M8 an estimate past ninety days left out, M9 the first four sentences kept, M10 a document read to its
+            first six hundred characters, M11 no section folding a document apart, M12 a business needing four fifths of
+            the revenue, M13 open read as unexamined, M14 a skipped listing freeing its place, M15 the open floor drawn on
+            every card, M16 to M23 the proof's model-table, cost-figures, quarter-wait, fill-against-plan, next-report-hold,
+            short-priority, segments-scale and sources-test passing every page, M24 industry-mismatch reading no drawn line,
+            M25 a column heading's dates read as segments: each red at the tests reading it. Added and not mutated: the
+            relevance test reading an override's industry, the quarter wait's and the cost window's wiring in the read
+            surface, and the read of the open floor's row, which a test now reads back.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2907 of 2907 tests ran
+            with none failed, migrations 0 to 114 with none pending, schema version 114, against `data-ci` and never
+            `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the open floor's first written run, `rule-record --open-floor` from main's clean copy after the merge, which
+            sets the session the record is followed forward from and puts the line on the drift's card; the 106 pages whose
+            release states no segment table read, open until their filings are stored or a reading of those tables is
+            built, the local model's try at them standing as a measurement; the 45 pages waiting on their newest quarter,
+            each clearing as its page states; the written sections, which nothing here writes again; and the copy's nightly
+            task, enabled on the operator's word.

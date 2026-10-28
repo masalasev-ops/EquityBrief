@@ -92,7 +92,7 @@ public partial class ReadSurface
 
     // What worked and what did not is drawn its first four sentences a paragraph, each paragraph cut alone, and the proof
     // fails a paragraph drawn with five.
-    // see: What worked and what did not is drawn four sentences a paragraph at most
+    // see: What worked and what did not keeps four sentences a paragraph chosen by demand then cost then segments then the main risk
     [Fact]
     public void WhatWorkedAndWhatDidNotIsDrawnFourSentencesAParagraphAtMost()
     {
@@ -196,10 +196,10 @@ public partial class ReadSurface
         Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate(Name, NameScreen.Numbers(filings, new ConceptFigures(null, reportDate.AddDays(-1), null, null))), "next-report-estimated"));
     }
 
-    // The sources list keeps the documents naming the company or its industry in their title, address or opening and folds
-    // the rest beneath it, saying where fewer than two remain: ROP's Roche releases name neither, and a market roundup
-    // naming Roper only past its opening does not either. The proof fails a list that keeps too few without saying so.
-    // see: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening
+    // The sources list keeps the documents naming the company or its industry in their title, address or whole text and
+    // folds the rest beneath it, saying where fewer than two remain: ROP's Roche releases name neither, and a market roundup
+    // naming Roper past its opening does, its whole text read. The proof fails a list that keeps too few without saying so.
+    // see: Every written section's sources and the page's are held to documents naming the company or its industry in their whole text
     [Fact]
     public void TheSourcesListKeepsTheDocumentsAboutTheCompanyOrItsIndustryAndFoldsTheRestBeneath()
     {
@@ -208,21 +208,22 @@ public partial class ReadSurface
         var release = new SourceCell("r1", "Roper Technologies announces third quarter financial results", "https://www.sec.gov/Archives/edgar/data/882835/a2026q3earningsrelease.htm", new DateOnly(2026, 10, 22), "Roper Technologies, Inc. (Nasdaq: ROP) reported financial results for the third quarter.");
         var roche = new SourceCell("n1", "Roche keeps 2026 outlook as Q3 sales rise", "https://www.example.com/roche", new DateOnly(2026, 10, 23), "Basel. Roche said its pharmaceuticals sales rose.");
         var roundup = new SourceCell("n2", "Stocks to watch this week", "https://www.example.com/roundup", new DateOnly(2026, 10, 24), new string('x', EquityBrief.Core.News.StoryMatch.Opening) + " Roper Technologies rose two per cent.");
+        var swiss = new SourceCell("n3", "Can Roche Holding (SWX:ROP) Still Be Cheap After Fresh Trial Wins?", "https://www.example.com/roche-rop", new DateOnly(2026, 10, 25), "Roche Holding's shares rose after two trials met their endpoints.");
 
-        // Read as the page reads each document: its title, then its address and the opening of its text.
-        static bool Relevant(SourceCell document) => EquityBrief.Core.Report.IndustryCheck.Relevant(document.Title, document.Url + " " + document.Opening, Company, Industry);
+        // Read as the page reads each document: its title, then its address and its whole text.
+        static bool Relevant(SourceCell document) => EquityBrief.Core.Report.IndustryCheck.Relevant(document.Title, document.Url + " " + document.Text, Company, Industry);
 
-        Assert.Equal([true, false, false], new[] { release, roche, roundup }.Select(Relevant));
+        Assert.Equal([true, false, true, false], new[] { release, roche, roundup, swiss }.Select(Relevant));
 
         var marks = new MarkRenderer();
-        var few = marks.Sources("ROP", [release, roche, roundup], [], false, Relevant);
+        var few = marks.Sources("ROP", [release, roche, swiss], [], false, Relevant);
 
         Assert.Contains("data-documents=\"1\" data-left-out=\"2\" data-relevance=\"tested\"", few, StringComparison.Ordinal);
         Assert.Contains("Not enough relevant sources: 1 of the 3 documents the written regions cite name the company or its industry.", few, StringComparison.Ordinal);
         Assert.Contains("<details class=\"sources-left-out\" data-left-out=\"2\"><summary>2 documents name neither the company nor its industry, left out of the list</summary>", few, StringComparison.Ordinal);
         Assert.Contains("data-document=\"n1\"", few, StringComparison.Ordinal);
 
-        var second = release with { Id = "r2", Title = "Roper Technologies quarterly report", Opening = "Roper Technologies files its quarterly report." };
+        var second = release with { Id = "r2", Title = "Roper Technologies quarterly report", Text = "Roper Technologies files its quarterly report." };
         var enough = marks.Sources("ROP", [release, second, roche], [], false, Relevant);
 
         Assert.DoesNotContain("Not enough relevant sources", enough, StringComparison.Ordinal);
@@ -236,7 +237,7 @@ public partial class ReadSurface
     // the stock before for each setup's own limit and the segments a quarter reported before its filing draws, and lists
     // every page whose peer group names none of its business with the group proposed for the operator to approve, setting
     // none.
-    // see: Every report page rule is held over every name's drawn page and reported passed, failed or unexamined with the pages each failed on
+    // see: Every report page rule is held over every name's drawn page and each page's answer reported with the pages each rule failed or left open on
     [Fact]
     public void TheProofReadsTheNewsLabelsTheOwnLimitAndListsThePeerGroupsToApprove()
     {
@@ -256,7 +257,20 @@ public partial class ReadSurface
         Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate("ROP", News), "own-limit"));
 
         const string Peers = "<div class=\"sub\">Against Electronic Equipment, Instruments &amp; Components's S&amp;P 500 members on the night, the provider's classification</div>";
-        var sells = new MarkRenderer().WrittenSection("ROP", new WrittenCell(MarkRenderer.WhatItSells, RopSells, new DateOnly(2026, 10, 26), "deepseek-flash", []), []);
+        var sells = new MarkRenderer().SegmentsTable(
+            new EquityBrief.Core.Report.SegmentReading(
+                "release",
+                new DateOnly(2026, 9, 30),
+                3,
+                2_171_800_000m,
+                2_171_800_000m,
+                [
+                    new("Application Software", 1_239_700_000m, null, null, null, null, null, 57.1),
+                    new("Network Software", 446_100_000m, null, null, null, null, null, 20.5),
+                    new("Technology Enabled Products", 486_000_000m, null, null, null, null, null, 22.4),
+                ],
+                null),
+            "USD");
         var page = ReportProof.Evaluate("ROP", Peers + sells);
 
         Assert.Equal(new PeerProposal("ROP", "Electronic Equipment, Instruments & Components", "software", "Software"), page.Peer);
@@ -268,16 +282,23 @@ public partial class ReadSurface
         Assert.Contains("<tr data-proposal=\"ROP\"><td>ROP</td><td>Electronic Equipment, Instruments &amp; Components</td><td>software</td><td>Software</td></tr>", html, StringComparison.Ordinal);
 
         // A quarter reported before its filing is stored draws the release's own segment table, and a segment commentary
-        // written from the filing's segments says so beneath it; a page whose release states no such table is unexamined.
+        // written from the filing's segments says so above its text; a page whose release states no such table stands open.
         const string Reported = "<section class=\"card spined fund\" id=\"quarter\"><div class=\"spine\"><div class=\"lbl\">The latest quarter</div><div class=\"dl\"><span class=\"dl-k\">Reported</span><b>2026-10-22</b><span>from the results release, filing not stored yet</span></div></div></section>";
         const string ReleaseTable = "<div class=\"sub segments-release\" data-quarter=\"2026-09-30\">The quarter to 2026-09-30, from the results release, filing not stored yet</div>";
-        const string FromFiling = "<div class=\"written-part\" id=\"the-segment-commentary\" data-section=\"The segment commentary\" data-written-from=\"filing\">";
+        const string FromFiling = "<div class=\"written-part\" id=\"the-segment-commentary\" data-section=\"The segment commentary\" data-written-from=\"filing\"><div class=\"dl\"><span class=\"dl-k\">Written</span><b>2026-10-27</b></div>";
         const string Said = "<p class=\"degraded written-from\">Written from the segments the filing before it reported, before the results release's own table above was read; a report written now reads the release's figures.</p>";
+        const string Text = "<section class=\"written-section\" data-ticker=\"ROP\" data-section=\"The segment commentary\"><p class=\"prose\">Application Software reported revenue of $1,181 million.</p></section>";
 
-        Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("ROP", Reported + ReleaseTable + FromFiling + Said), "segments-release"));
-        Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("ROP", Reported + ReleaseTable + FromFiling.Replace("filing", "release", StringComparison.Ordinal)), "segments-release"));
-        Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("ROP", Reported + ReleaseTable + FromFiling), "segments-release"));
-        Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate("ROP", Reported), "segments-release"));
+        Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("ROP", Reported + ReleaseTable + FromFiling + Said + Text), "segments-release"));
+        Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("ROP", Reported + ReleaseTable + FromFiling.Replace("filing", "release", StringComparison.Ordinal) + Text), "segments-release"));
+        Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("ROP", Reported + ReleaseTable + FromFiling + Text), "segments-release"));
+        Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("ROP", Reported + ReleaseTable + FromFiling + Text + Said), "segments-release"));
+        Assert.Equal(ReportProof.Open, VerdictOf(ReportProof.Evaluate("ROP", Reported), "segments-release"));
         Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate("ROP", Reported.Replace(">Reported<", ">Filed<", StringComparison.Ordinal) + ReleaseTable), "segments-release"));
+
+        var opened = ReportProof.Counted([ReportProof.Evaluate("ROP", Reported), ReportProof.Evaluate("KEY", Reported + ReleaseTable + FromFiling + Said + Text)]).Single(rule => rule.Rule == "segments-release");
+
+        Assert.Equal((1, 0, 0, 1), (opened.Passed, opened.Failed, opened.Unexamined, opened.Open));
+        Assert.Equal(["ROP"], opened.Opened);
     }
 }

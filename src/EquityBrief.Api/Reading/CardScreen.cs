@@ -7,7 +7,7 @@ namespace EquityBrief.Api.Reading;
 // What a page hands its cards beyond what the night stored: the operator's account where it is set, their open taken
 // trades, the trades taken from the cards drawn, whether the page draws the card's presses, and the setting the
 // short-term dip's night ran on, the provisional setting where the page hands none. An export hands none.
-public sealed record CardContext(EquityBrief.Core.Cards.AccountSettings? Account, IReadOnlyList<TakenTradeRow> Open, IReadOnlyList<TakenTradeRow> Taken, bool Pressable, IReadOnlyList<TakenRecordRow>? Records = null, EquityBrief.Core.Families.DipSetting? Dip = null)
+public sealed record CardContext(EquityBrief.Core.Cards.AccountSettings? Account, IReadOnlyList<TakenTradeRow> Open, IReadOnlyList<TakenTradeRow> Taken, bool Pressable, IReadOnlyList<TakenRecordRow>? Records = null, EquityBrief.Core.Families.DipSetting? Dip = null, CardOpenFloorView? OpenFloor = null)
 {
     public static CardContext None { get; } = new(null, [], [], false);
 }
@@ -81,7 +81,8 @@ public static class CardScreen
             row.Similar is { } similar ? new CardScoreView(row.ScoreRank, EquityBrief.Core.Cards.CardSimilar.Read(similar)) : null,
             row.Approved,
             Cap: row.Cap,
-            Trail: row.Trail);
+            Trail: row.Trail,
+            OpenFloor: row.Index == ReadApi.OpenFloorIndex && string.Equals(row.Family, EquityBrief.Core.Families.DriftRule.Name, StringComparison.Ordinal) ? given.OpenFloor : null);
     }
 
     // What could hit the trade, as the night stored it on the card.

@@ -127,9 +127,9 @@ public sealed record WrittenSectionRow(string Section, int Version, DateOnly AsO
 // One document a written section cites, as stored, less the body: the dates-and-sources
 // region draws what it was, when it was published and where it is, and a reader follows
 // the link for the text.
-// A cited document as the page lists it, with the opening of its stored text, which says whether the industry cycle's
-// source names the company or its industry.
-public sealed record CitedDocumentRow(string Id, string Url, string Title, DateOnly? PublishedOn, string Admissibility, string Opening = "");
+// A cited document as the page lists it, with its whole stored text, which says whether it names the company or its
+// industry.
+public sealed record CitedDocumentRow(string Id, string Url, string Title, DateOnly? PublishedOn, string Admissibility, string Text = "");
 
 // The date one of a name's accepted sections was written on, as of a night, which is
 // what tonight's header counts fresh prose against reused from.
@@ -893,6 +893,7 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.ReleaseDocument, Touch.Read),
             new StoreTouch(Store.ReleaseReading, Touch.Read),
             new StoreTouch(Store.ReadingPin, Touch.Read),
+            new StoreTouch(Store.QuarterAsk, Touch.Read),
             new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.RuleVersion, Touch.Read),
             new StoreTouch(Store.VersionScore, Touch.Read),
@@ -929,10 +930,23 @@ public sealed partial class ReadApi : IComponent
 
     // The settings key an operator's industry for a stock is read under, one entry a ticker, and the overrides read from
     // it, which the valuation's peers and the page's group read in the provider's industry's place.
-    // see: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening
+    // see: A stock's industry group is checked against the company's own segments and revenue lines and not its description
     public const string IndustryOverridesKey = "EquityBrief:IndustryOverrides";
 
     public IReadOnlyDictionary<string, string> IndustryOverrides { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
+    // The settings keys the model profiles are read under, the paid ones and the local ones, and the profile each research
+    // section is written under, which a page reads each job's lane from.
+    // see: Every report names the profile each of its jobs ran under and whether it is paid or local, read off the job's own row
+    public const string PaidProfilesKey = "EquityBrief:Models:Profiles";
+
+    public const string LocalProfilesKey = "EquityBrief:Models:Local:Profiles";
+
+    public const string SectionProfilesKey = "EquityBrief:Models:Research:Sections";
+
+    public IReadOnlyList<JobProfile> ModelProfiles { get; init; } = [];
+
+    public IReadOnlyDictionary<string, string> SectionProfiles { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
 
     // The stage and outcome the spend cap writes a paid call under. The worker's own
     // constants cannot be referenced from here, so they are stated and `read-surface`
@@ -1090,10 +1104,12 @@ public sealed partial class ReadApi : IComponent
 
     // The documents a set of sections cite, newest published first. The ids arrive as
     // one JSON array, read by the store's own function, so the statement is one text
-    // however many a page cites. No body: a page links to a document rather than
+    // however many a page cites. Each body is read whole to test whether it names the
+    // company or its industry, and drawn nowhere: a page links to a document rather than
     // reprinting it.
+    // see: Every written section's sources and the page's are held to documents naming the company or its industry in their whole text
     const string CitedDocuments = @"
-        SELECT id, url, title, published_on, admissibility, substr(IFNULL(body, ''), 1, 6000)
+        SELECT id, url, title, published_on, admissibility, IFNULL(body, '')
         FROM source_document
         WHERE id IN (SELECT value FROM json_each($ids))
         ORDER BY published_on DESC, id;
@@ -2879,12 +2895,14 @@ public sealed partial class ReadApi : IComponent
         return rows;
     }
 
-    // The models the paid lane ran: those the spend cap's calls and the news labeller's runs name in the run log, which is
-    // what tells a page's paid model from a local one. A model no such row names is one the local lane ran.
-    // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
+    // The models the paid lane ran: those the spend cap's calls and the news labeller's runs on a paid profile name in the
+    // run log, a labeller's run on the local model saying so in its own row. A page reads a job's lane off the profile the
+    // settings name for it, and these only for a model no profile names now.
+    // see: Every report names the profile each of its jobs ran under and whether it is paid or local, read off the job's own row
     const string PaidModelNames = @"
         SELECT DISTINCT json_extract(detail, '$.model') FROM run_log
-        WHERE (stage LIKE $call OR stage = $labels) AND json_valid(detail);
+        WHERE json_valid(detail)
+          AND (stage LIKE $call OR (stage = $labels AND IFNULL(CASE WHEN json_valid(detail) THEN json_extract(detail, '$.local') END, 0) = 0));
     ";
 
     // The filer's newest results release accepted by the end of a night, its exhibit, the day the SEC accepted it and its
@@ -2962,6 +2980,141 @@ public sealed partial class ReadApi : IComponent
         ORDER BY session_date DESC
         LIMIT 2;
     ";
+
+    // The stage the rule record's open floor form writes its run under and the index it replays, stated here since the
+    // worker's own constants cannot be referenced from the read surface, and `read-surface` asserts the two agree; and its
+    // newest run, the drift's live rule beside the same rule skipping a fill under the floor at the open, which the drift's
+    // card on that index draws beneath its record.
+    // see: The drift's open floor is replayed beside its live rule unregistered, skipping a fill whose reward to risk at the open is under 1
+    public const string OpenFloorStage = "rule-record-open-floor";
+
+    public const string OpenFloorIndex = "GSPC";
+
+    const string NewestOpenFloor = "SELECT detail FROM run_log WHERE stage = $stage ORDER BY rowid DESC LIMIT 1;";
+
+    public async Task<CardOpenFloorView?> OpenFloorAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestOpenFloor;
+        command.Parameters.AddWithValue("$stage", OpenFloorStage);
+
+        if (await command.ExecuteScalarAsync() is not string detail)
+        {
+            return null;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(detail);
+            var root = document.RootElement;
+            var live = root.GetProperty("live");
+            var variant = root.GetProperty("variant");
+
+            static double? Number(JsonElement element, string name) => element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number ? value.GetDouble() : null;
+
+            static DateOnly Day(JsonElement element, string name) => DateOnly.ParseExact(element.GetProperty(name).GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            return new CardOpenFloorView(
+                root.GetProperty("floor").GetDouble(),
+                Day(root, "from"),
+                Day(root, "through"),
+                Day(root, "forwardFrom"),
+                variant.GetProperty("rule").GetString() ?? string.Empty,
+                variant.GetProperty("trades").GetInt32(),
+                Number(variant, "won"),
+                Number(variant, "average"),
+                variant.GetProperty("forwardTrades").GetInt32(),
+                Number(variant, "forwardAverage"),
+                live.GetProperty("trades").GetInt32(),
+                Number(live, "won"),
+                Number(live, "average"),
+                live.GetProperty("forwardTrades").GetInt32(),
+                Number(live, "forwardAverage"),
+                root.GetProperty("skipped").GetInt32());
+        }
+        catch (Exception unreadable) when (unreadable is JsonException or KeyNotFoundException or FormatException or InvalidOperationException)
+        {
+            return null;
+        }
+    }
+
+    // What a page waiting on its newest quarter reads its expected day from: the calendar's first report date on or after a
+    // week before the release, the quarters fetch's asks for the member, newest last, and the first day the archive's facts
+    // carried each period's end for its filer, from a year and a half before the release.
+    // see: A page drawing an older quarter than its newest results release reports names the quarter it awaits and the first day it is expected to read it
+    const string ReportDateAfter = @"
+        SELECT MIN(event_date) FROM calendar
+        WHERE ticker = $ticker AND kind = 'earnings' AND event_date >= $from;
+    ";
+
+    const string QuarterAsksOf = @"
+        SELECT session_date, outcome, nights, next_ask FROM quarter_ask
+        WHERE ticker = $ticker
+        ORDER BY session_date, asked_at;
+    ";
+
+    const string FirstFiledOf = @"
+        SELECT period_end, MIN(filed), form FROM filed_fact
+        WHERE cik = (SELECT c.cik FROM company c WHERE c.ticker = $ticker AND c.cik IS NOT NULL ORDER BY c.fetched_at DESC LIMIT 1)
+          AND form IN ('10-Q', '10-K') AND period_end >= $from
+        GROUP BY period_end, form;
+    ";
+
+    public async Task<(DateOnly? ReportDate, IReadOnlyList<EquityBrief.Core.Report.QuarterAskRow> Asks, IReadOnlyList<EquityBrief.Core.Report.FirstFiled> Filed)> QuarterWaitInputsAsync(string ticker, DateOnly released)
+    {
+        await using var connection = Open();
+        DateOnly? reportDate = null;
+        var asks = new List<EquityBrief.Core.Report.QuarterAskRow>();
+        var filed = new List<EquityBrief.Core.Report.FirstFiled>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = ReportDateAfter;
+            command.Parameters.AddWithValue("$ticker", ticker);
+            command.Parameters.AddWithValue("$from", released.AddDays(-7).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+            reportDate = await command.ExecuteScalarAsync() is string day ? DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
+        }
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = QuarterAsksOf;
+            command.Parameters.AddWithValue("$ticker", ticker);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                asks.Add(new EquityBrief.Core.Report.QuarterAskRow(
+                    DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    reader.GetString(1),
+                    reader.IsDBNull(2) ? 0 : reader.GetInt32(2),
+                    reader.IsDBNull(3) ? null : DateOnly.ParseExact(reader.GetString(3), "yyyy-MM-dd", CultureInfo.InvariantCulture)));
+            }
+        }
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = FirstFiledOf;
+            command.Parameters.AddWithValue("$ticker", ticker);
+            command.Parameters.AddWithValue("$from", released.AddMonths(-18).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                if (DateOnly.TryParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var end)
+                    && DateOnly.TryParseExact(reader.GetString(1)[..Math.Min(10, reader.GetString(1).Length)], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var on))
+                {
+                    filed.Add(new EquityBrief.Core.Report.FirstFiled(end, on, reader.GetString(2)));
+                }
+            }
+        }
+
+        return (reportDate, asks, filed);
+    }
 
     public async Task<IReadOnlyList<EquityBrief.Core.Report.SwingLow>> SwingLowsAsync(string ticker, DateOnly night)
     {

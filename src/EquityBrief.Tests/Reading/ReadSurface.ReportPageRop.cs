@@ -6,7 +6,7 @@ namespace EquityBrief.Tests.Reading;
 // ROP's page as it stood on the night of 2026-10-26, frozen: each case the operator's report page corrections named, its
 // stored figures and written words copied here as the store held them, held to the rule that now answers it. A rule
 // that moves fails here on the page that showed it first.
-// see: Every report page rule is held over every name's drawn page and reported passed, failed or unexamined with the pages each failed on
+// see: Every report page rule is held over every name's drawn page and each page's answer reported with the pages each rule failed or left open on
 public partial class ReadSurface
 {
     const decimal RopClose = 441.65m;
@@ -76,9 +76,12 @@ public partial class ReadSurface
         Assert.True(EquityBrief.Core.Report.IndustryCheck.Relevant("A page on the industry", "https://www.semiconductors.org/a-page The scientific instruments industry text.", "Keysight Technologies Inc", "Scientific & Technical Instruments"));
         Assert.False(EquityBrief.Core.Report.IndustryCheck.Relevant("Bond markets this week", "https://www.example.org/bonds Yields moved.", "Keysight Technologies Inc", "Scientific & Technical Instruments"));
 
-        // Industry: its own account of what it sells describes software, which the provider's group does not name.
-        Assert.Equal("software", EquityBrief.Core.Report.IndustryCheck.Mismatch("Electronic Equipment, Instruments & Components", RopSells));
-        Assert.Null(EquityBrief.Core.Report.IndustryCheck.Mismatch("Software", RopSells));
+        // Industry: its own segments put most of its revenue in software, which the provider's group does not name, and the
+        // group set for it in the provider's place does; its description of what it sells is not read.
+        IReadOnlyList<EquityBrief.Core.Report.BusinessLine> ropLines = [new("Application Software", 1_239_700_000m), new("Network Software", 446_100_000m), new("Technology Enabled Products", 486_000_000m)];
+
+        Assert.Equal("software", EquityBrief.Core.Report.IndustryCheck.Mismatch("Electronic Equipment, Instruments & Components", ropLines)?.Business);
+        Assert.Null(EquityBrief.Core.Report.IndustryCheck.Mismatch("Software", ropLines));
 
         // The next report, none on file, estimated from its report of 2026-01-27 a year on, after the drift's hold of 60.
         var estimate = EquityBrief.Core.Cards.CardLines.EstimatedReport([new DateOnly(2025, 10, 23), new DateOnly(2026, 1, 27), new DateOnly(2026, 4, 23), new DateOnly(2026, 7, 23), new DateOnly(2026, 10, 22)], RopNight)!.Value;

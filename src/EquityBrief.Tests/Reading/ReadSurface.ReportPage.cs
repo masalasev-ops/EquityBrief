@@ -9,9 +9,9 @@ namespace EquityBrief.Tests.Reading;
 // asserted here over the fixture's pages and constructed rows.
 public partial class ReadSurface
 {
-    // A section a local model wrote is named local, one the paid model wrote is named paid because the run log prices a
-    // call by it, and the news labels and the release's reading are named the same way.
-    // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
+    // A section a local model wrote is named local and one the paid model wrote paid, each by the profile the settings name
+    // for its model, and the news labels and the release's reading by the profile their own rows name.
+    // see: Every report names the profile each of its jobs ran under and whether it is paid or local, read off the job's own row
     [Fact]
     public async Task EveryReportNamesTheModelEachJobRanOnAndWhetherItIsPaidOrLocal()
     {
@@ -33,20 +33,21 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{name}"));
 
-        Assert.Contains("<tr data-job=\"What the company sells\" data-lane=\"local\"><td>What the company sells</td><td>the local model</td><td>qwen/qwen3.5-9b</td>", page, StringComparison.Ordinal);
-        Assert.Contains("<tr data-job=\"The dated calendar items\" data-lane=\"paid\"><td>The dated calendar items</td><td>the paid model</td><td>deepseek-flash</td>", page, StringComparison.Ordinal);
+        Assert.Contains("<tr data-job=\"What the company sells\" data-lane=\"local\" data-profile=\"qwen-3.5\"><td>What the company sells</td><td>the local model, profile qwen-3.5</td><td>qwen/qwen3.5-9b</td>", page, StringComparison.Ordinal);
+        Assert.Contains("<tr data-job=\"The dated calendar items\" data-lane=\"paid\" data-profile=\"deepseek\"><td>The dated calendar items</td><td>the paid model, profile deepseek</td><td>deepseek-flash</td>", page, StringComparison.Ordinal);
 
-        // The rule over constructed views: a labeller's model the run log prices is paid, the release's reader is local,
+        // The rule over constructed views: a label's own profile names its lane, the release's reader is the local run's,
         // and stories no label stands for are named as such.
         var paid = new HashSet<string>(StringComparer.Ordinal) { "deepseek-flash" };
+        JobProfile[] profiles = [new("deepseek", "deepseek-flash", false), new("gemma-4", "google/gemma-4-26b-a4b-qat", true)];
         var news = new NewsView(name, new DateOnly(2026, 9, 4), [], 79, 3, 2, 15, 0, 59, "deepseek-flash", "deepseek", null, null);
         var release = new ReleaseReadingView(new DateOnly(2026, 9, 1), new EquityBrief.Core.Releases.ReleaseAnswer("better", "raised", "confident", "not stated"), 5, "google/gemma-4-26b-a4b-qat");
-        var jobs = MarkRenderer.ModelJobs([], news, release, paid);
+        var jobs = MarkRenderer.ModelJobs([], news, release, profiles, paid);
 
         Assert.Equal(
-            [("News labels", true, "labelled 20 of the 79 stories the page draws"), ("The newest results release's reading", false, "read the release accepted 2026-09-01")],
-            jobs.Select(job => (job.Job, job.Paid, job.Detail)));
-        Assert.Contains("data-lane=\"none\"><td>News labels</td><td>no model</td>", MarkRenderer.ModelJobsTable(MarkRenderer.ModelJobs([], news with { Model = null, Unlabelled = 79 }, null, paid)), StringComparison.Ordinal);
+            [("News labels", true, "labelled 20 of the 79 stories the page draws", "deepseek"), ("The newest results release's reading", false, "read the release accepted 2026-09-01", "gemma-4")],
+            jobs.Select(job => (job.Job, job.Paid, job.Detail, job.Profile)));
+        Assert.Contains("data-lane=\"none\" data-profile=\"none\"><td>News labels</td><td>no model</td>", MarkRenderer.ModelJobsTable(MarkRenderer.ModelJobs([], news with { Model = null, Unlabelled = 79 }, null, profiles, paid)), StringComparison.Ordinal);
     }
 
     // A story the feed tagged a member with is the member's only where its title or its opening names the company by its
@@ -298,7 +299,7 @@ public partial class ReadSurface
     // The proof reads each rule back off a drawn page: a marker left in the prose fails, two values of one concept fail, a
     // masthead's pill passes, a rule whose region is not drawn or that is not built is unexamined, and the counts over
     // several pages name the pages each rule failed on, unexamined counted apart from a pass.
-    // see: Every report page rule is held over every name's drawn page and reported passed, failed or unexamined with the pages each failed on
+    // see: Every report page rule is held over every name's drawn page and each page's answer reported with the pages each rule failed or left open on
     [Fact]
     public void TheProofReadsEachRuleBackOffADrawnPageAndCountsUnexaminedApart()
     {
@@ -378,12 +379,24 @@ public partial class ReadSurface
         Assert.Equal(ReportProof.Failed, Verdict(ReportProof.Evaluate("CCC", News.Replace(" data-left-out=\"35\"", string.Empty)), "news-matched"));
         Assert.Equal(ReportProof.Unexamined, Verdict(held, "news-matched"));
 
-        // The peer group is read against the page's own account of what the company sells: ROP's application software in a
-        // group of electronic equipment makers is flagged, and a page drawing the flag where the group names the business
-        // fails as one drawing none where it does not.
+        // The peer group is read against the company's own segments: ROP's software segments, most of its revenue, in a group
+        // of electronic equipment makers are flagged, and a page drawing the flag where the group names the business fails as
+        // one drawing none where it does not.
         const string Peers = "<div class=\"sub\">Against Electronic Equipment, Instruments &amp; Components's S&amp;P 500 members on the night, the provider's classification</div>";
-        var sells = new MarkRenderer().WrittenSection("CCC", new WrittenCell(MarkRenderer.WhatItSells, "Roper sells vertical application software and network software to niche markets.", new DateOnly(2026, 10, 26), "deepseek-flash", []), []);
-        var flag = MarkRenderer.IndustryMismatch("Electronic Equipment, Instruments & Components", "Roper sells vertical application software and network software to niche markets.");
+        var ropSegments = new EquityBrief.Core.Report.SegmentReading(
+            "release",
+            new DateOnly(2026, 9, 30),
+            3,
+            2_171_800_000m,
+            2_171_800_000m,
+            [
+                new("Application Software", 1_239_700_000m, null, null, null, null, null, 57.1),
+                new("Network Software", 446_100_000m, null, null, null, null, null, 20.5),
+                new("Technology Enabled Products", 486_000_000m, null, null, null, null, null, 22.4),
+            ],
+            null);
+        var sells = new MarkRenderer().SegmentsTable(ropSegments, "USD");
+        var flag = MarkRenderer.IndustryMismatch("Electronic Equipment, Instruments & Components", EquityBrief.Core.Report.IndustryCheck.Lines(ropSegments));
 
         Assert.NotEqual(string.Empty, flag);
         Assert.Equal(ReportProof.Passed, Verdict(ReportProof.Evaluate("CCC", Peers + flag + sells), "industry-mismatch"));

@@ -91,10 +91,25 @@ builder.Services.AddSingleton(services => new ReadApi(
     services.GetRequiredService<IClock>())
 {
     // The industry an operator sets for a stock in place of the provider's, by its ticker, from the machine's settings.
-    // see: A stock's industry group is the provider's until an override is set and is checked against its own account, and the sources list and the cycle read only documents naming the company or its industry in their opening
+    // see: A stock's industry group is checked against the company's own segments and revenue lines and not its description
     IndustryOverrides = builder.Configuration.GetSection(ReadApi.IndustryOverridesKey).GetChildren()
         .Where(entry => entry.Value is { Length: > 0 })
         .ToDictionary(entry => entry.Key.ToUpperInvariant(), entry => entry.Value!, StringComparer.Ordinal),
+    // The model profiles the worker's settings name, paid and local, and the profile each research section is written
+    // under, which each job of a page is labelled by.
+    // see: Every report names the profile each of its jobs ran under and whether it is paid or local, read off the job's own row
+    ModelProfiles =
+    [
+        .. builder.Configuration.GetSection(ReadApi.PaidProfilesKey).GetChildren()
+            .Where(profile => profile["Model"] is { Length: > 0 })
+            .Select(profile => new JobProfile(profile.Key, profile["Model"]!, false)),
+        .. builder.Configuration.GetSection(ReadApi.LocalProfilesKey).GetChildren()
+            .Where(profile => profile["Model"] is { Length: > 0 })
+            .Select(profile => new JobProfile(profile.Key, profile["Model"]!, true)),
+    ],
+    SectionProfiles = builder.Configuration.GetSection(ReadApi.SectionProfilesKey).GetChildren()
+        .Where(entry => entry.Value is { Length: > 0 })
+        .ToDictionary(entry => entry.Key, entry => entry.Value!, StringComparer.Ordinal),
 });
 builder.Services.AddSingleton<MarkRenderer>();
 
@@ -354,7 +369,7 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
     // industry section was written read off its theme as the name page reads it.
     if (view.ReportWritten is { } written)
     {
-        view = view with { Standing = NameScreen.Standing(await read.StalenessAsync(ticker), NameScreen.Pass(await read.NewestPassAsync(ticker)), await SpendNow(read, caps, clock), await read.PaidCallSpendsAsync(), today, written, (await read.ThemeCycleAsync(ticker))?.AsOf) };
+        view = view with { Standing = NameScreen.Standing(await read.StalenessAsync(ticker), NameScreen.Pass(await read.NewestPassAsync(ticker)), await SpendNow(read, caps, clock), await read.PaidCallSpendsAsync(), today, written, (await read.ThemeCycleAsync(ticker))?.AsOf, await PassCostsAsync(read)) };
     }
 
     // From 22.4 the brief read atop the page, on a night the store holds, and from 22.8 the fundamentals card beneath it,
@@ -412,7 +427,7 @@ app.MapGet(ReportExporter.Route + "{ticker}", async (string ticker, ReadApi read
 
 // The report page's rules held over every member's page of an index as the read surface draws it for tonight, each rule
 // answering passed, failed or unexamined on each page: a page to read, or with format=json the same answers to keep.
-// see: Every report page rule is held over every name's drawn page and reported passed, failed or unexamined with the pages each failed on
+// see: Every report page rule is held over every name's drawn page and each page's answer reported with the pages each rule failed or left open on
 app.MapGet(ReportProof.Route, async (string? index, string? format, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock) =>
 {
     var listed = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
@@ -420,9 +435,22 @@ app.MapGet(ReportProof.Route, async (string? index, string? format, ReadApi read
     var night = await read.NewestNightAsync();
     var pages = new List<ProofPage>();
 
+    // What each page is read against beyond itself: the settings' profiles, and the run page's table of the seven nights'
+    // research passes as that page draws it by default.
+    (DateOnly, DateOnly, int, decimal, decimal)? runTable = null;
+
+    if (night is { } tableNight && await WeekOf(read, tableNight) is { Count: > 0 } week)
+    {
+        var drawn = RunScreen.Reports(await read.ReportRowsAsync(), await read.ReportVersionsAsync(), week[0].Night, tableNight).Reports;
+
+        runTable = (week[0].Night, week[^1].Night, drawn.Count, drawn.Count > 0 ? drawn.Min(report => report.Cost) : 0m, drawn.Count > 0 ? drawn.Max(report => report.Cost) : 0m);
+    }
+
+    var context = new ProofContext(read.ModelProfiles, runTable);
+
     foreach (var member in await read.UniverseAsync(code, night))
     {
-        pages.Add(ReportProof.Evaluate(member.Ticker, (await NameAsync(read, marks, page, caps, clock, member.Ticker, listed, export: false)).Region));
+        pages.Add(ReportProof.Evaluate(member.Ticker, (await NameAsync(read, marks, page, caps, clock, member.Ticker, listed, export: false)).Region, context));
     }
 
     var report = new ProofReport(clock.UtcNow, code, night, ReportProof.Counted(pages), pages);
@@ -677,8 +705,15 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         improving: night is { } improvedOn && await read.IndexOfAsync(ticker, improvedOn) is { } improvingIndex
             ? TonightScreen.OnTheFundamentalsCard(ticker, improvedOn, await read.ImprovingResultsAsync(improvingIndex, improvedOn), await read.ImprovingTradesAsync(improvingIndex, improvedOn))
             : null,
-        // Which models the paid lane ran, so each job's model is named paid or local.
+        // The profile each job ran under from the settings' profiles, and the models the spend cap priced for a model no
+        // profile names now, so each job's model is named paid or local.
         paidModels: await read.PaidModelsAsync(),
+        profiles: read.ModelProfiles,
+        sectionProfiles: read.SectionProfiles,
+        // Every research pass's cost as the run page's table counts it, and the seven nights that table reads.
+        passCosts: export || on is not null ? null : await PassCostsAsync(read),
+        // What a page waiting on its newest quarter reads the day it is expected to read it from.
+        quarterWaitInputs: newest is { } released ? (released.AcceptedOn, await read.QuarterWaitInputsAsync(ticker, released.AcceptedOn)) : null,
         // The two newest swing lows the night confirmed, which say in plain words why the trend rule read the stock as it did.
         swingLows: (night ?? (bars.Count > 0 ? bars[^1].SessionDate : (DateOnly?)null)) is { } swungBy ? await read.SwingLowsAsync(ticker, swungBy) : null,
         // The newest results release accepted by the night, whose opening line the management box quotes.
@@ -1493,8 +1528,8 @@ static IReadOnlyDictionary<string, double?> Growths(IEnumerable<(string Ticker, 
 // see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold
 static async Task<CardContext> CardContextAsync(ReadApi read, StoreLocation store, bool copying = false) =>
     copying
-        ? CardContext.None
-        : new(EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot), await read.OpenTakenTradesAsync(), await read.TakenTradesAsync(), Pressable: true, await read.TakenRecordsAsync());
+        ? CardContext.None with { OpenFloor = await read.OpenFloorAsync() }
+        : new(EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot), await read.OpenTakenTradesAsync(), await read.TakenTradesAsync(), Pressable: true, await read.TakenRecordsAsync(), OpenFloor: await read.OpenFloorAsync());
 
 // How a night went, the one view the Run page's headline and tonight's notice are both handed, read off the
 // night's run log rows and the night holding the lock, if one does.
@@ -1537,6 +1572,16 @@ static async Task<IReadOnlyList<(DateOnly Night, IReadOnlyList<RunStageRow> Log)
     }
 
     return week;
+}
+
+// Every research pass's cost as the run page's table counts it, and the first and last of the seven newest nights the store
+// holds an evening for, which that table reads by default; none where the store holds no night.
+// see: The report page states its research passes' cost over the seven nights the run page counts and the most any pass cost, each with its scope
+static async Task<(IReadOnlyList<PassCost> Passes, DateOnly From, DateOnly Through)?> PassCostsAsync(ReadApi read)
+{
+    var week = (await read.NightsAsync()).OrderDescending().Take(7).ToArray();
+
+    return week.Length == 0 ? null : (RunScreen.PassCosts(await read.ReportRowsAsync(), read.ModelProfiles), week.Min(), week.Max());
 }
 
 // The phase report the harness last wrote, read as text and handed to the

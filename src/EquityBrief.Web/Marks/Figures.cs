@@ -46,6 +46,33 @@ public static partial class Figures
         + (currency is null or "" or "USD" ? "$" : currency + " ")
         + Scaled(Math.Abs(value));
 
+    // The one scale a table's amounts are all read in: the largest at which its smallest amount still rounds to at least
+    // one, so $1,239.7M stands beside $446.1M rather than $1.2B; none where every amount is under a million or none is
+    // given.
+    public static (decimal Size, string Suffix)? ScaleOf(IEnumerable<decimal> amounts)
+    {
+        var smallest = amounts.Select(Math.Abs).Where(amount => amount > 0).DefaultIfEmpty(0m).Min();
+
+        foreach (var (size, suffix, _) in Scales)
+        {
+            if (smallest > 0 && Math.Round(smallest / size, 1, MidpointRounding.AwayFromZero) >= 1)
+            {
+                return (size, suffix);
+            }
+        }
+
+        return null;
+    }
+
+    // An amount of money in a scale given, after the currency's sign, its thousands marked and one place kept: 1239700000
+    // in millions is $1,239.7M; read in its own scale where none is given.
+    public static string MoneyIn(decimal value, (decimal Size, string Suffix)? scale, string? currency = null) =>
+        scale is not { } unit
+            ? Money(value, currency)
+            : (value < 0 ? "-" : string.Empty)
+                + (currency is null or "" or "USD" ? "$" : currency + " ")
+                + Math.Round(Math.Abs(value) / unit.Size, 1, MidpointRounding.AwayFromZero).ToString("#,##0.0", Invariant) + unit.Suffix;
+
     // A count of shares in its scale: 190287428 is 190.3M.
     public static string Shares(decimal value) =>
         (value < 0 ? "-" : string.Empty) + Scaled(Math.Abs(value));

@@ -10,7 +10,7 @@ namespace EquityBrief.Api.Reading;
 // name's news region, tonight's counts and the Run page's labeller line and its count toward the nights its
 // limits are settled from. It reads, counts and orders, and computes nothing a label holds.
 // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
-// see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
+// see: Every report names the profile each of its jobs ran under and whether it is paid or local, read off the job's own row
 public static class NewsScreen
 {
     // What a labeller's run row says in its detail: the night it labelled, the profile and the model, the

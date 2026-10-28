@@ -693,7 +693,7 @@ public partial class ReadSurface
         // figures the archive's captured report states.
         var keysight = await NameRoute(store, "KEYS");
 
-        Assert.Contains("<table class=\"segment-table\" data-report=\"R85.htm\" data-quarter=\"2026-07-31\" data-months=\"3\" data-total=\"1846000000\" data-sum=\"1846000000\">", keysight, StringComparison.Ordinal);
+        Assert.Contains("<table class=\"segment-table\" data-report=\"R85.htm\" data-quarter=\"2026-07-31\" data-months=\"3\" data-total=\"1846000000\" data-sum=\"1846000000\" data-scale=\"M\">", keysight, StringComparison.Ordinal);
         Assert.Equal(
             [("Communications Solutions Group", "1345000000"), ("Electronic Industrial Solutions Group", "501000000")],
             Regex.Matches(keysight, "<tr data-segment=\"([^\"]+)\"><td>[^<]+</td><td class=\"num\" data-revenue=\"([^\"]+)\">").Select(match => (match.Groups[1].Value, match.Groups[2].Value)));

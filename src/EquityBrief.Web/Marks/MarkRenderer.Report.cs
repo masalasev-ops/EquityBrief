@@ -27,7 +27,15 @@ public sealed record ReportView(
     DividendYear? PaidLastYear = null,
     IReadOnlyList<QuarterIncome>? Income = null,
     SegmentReading? ReleaseSegments = null,
-    bool CommentaryFromFiling = false);
+    bool CommentaryFromFiling = false)
+{
+    // The segments and revenue lines the industry check reads, the release's segments where it read them and the filing's
+    // otherwise.
+    public IReadOnlyList<BusinessLine> BusinessLines { get; init; } = [];
+
+    // The industry the page reads the stock under: an override set for it, or the provider's classification.
+    public string? Industry { get; init; }
+}
 
 // From 20.3 the newest results release's reading a name's page draws under what management said: the day the SEC accepted
 // it in New York, its four words, and the reading version and the model it was read under.
@@ -282,6 +290,18 @@ public sealed partial class MarkRenderer
 
     // ---- segments ----
 
+    // The note a segment commentary written from the filing's segments carries once its results release's own table is read.
+    public const string WrittenFromFiling = "<p class=\"degraded written-from\">Written from the segments the filing before it reported, before the results release's own table above was read; a report written now reads the release's figures.</p>";
+
+    // A written part of the segments region: its day, and where it was written from the older filing's segments beneath the
+    // release's own table, the note saying so above its text, so it is read before the figures it qualifies.
+    // see: A newer quarter's segments are read from its results release's own tables until its filing is stored, labelled so
+    public static string WrittenPart(string id, string part, string day, string? writtenFrom, string written) =>
+        Formatted($"<div class=\"written-part\" id=\"{Escaped(id)}\" data-section=\"{Escaped(part)}\"{(writtenFrom is null ? string.Empty : Formatted($" data-written-from=\"{Escaped(writtenFrom)}\""))}><div class=\"dl\"><span class=\"dl-k\">Written</span><b>{Escaped(day)}</b></div>")
+        + (writtenFrom == "filing" ? WrittenFromFiling : string.Empty)
+        + written
+        + "</div>";
+
     // The segment table the rule made: each segment's revenue and its change on a year, its earnings and their change, and
     // its share of the company's revenue, beside the company's total; or why the rows sum to no total, where the raw
     // table drawn beneath stands instead.
@@ -294,20 +314,24 @@ public sealed partial class MarkRenderer
 
         var table = new StringBuilder();
 
-        table.Append(Formatted($"<div class=\"tbl-wrap\"><table class=\"segment-table\" data-report=\"{Escaped(segments.Report)}\" data-quarter=\"{(segments.Quarter is { } on ? DayOf(on) : "none")}\" data-months=\"{segments.Months}\" data-total=\"{segments.Total!.Value.ToString(Invariant)}\" data-sum=\"{segments.Sum!.Value.ToString(Invariant)}\">"));
+        // Every amount in the table is read in one scale, the smallest's, so no two rows are read in different units.
+        // see: A segment table draws every amount in one scale, the one its smallest amount reads in
+        var scale = Figures.ScaleOf([.. segments.Rows.Select(row => row.Revenue), .. segments.Rows.Select(row => row.Earnings).OfType<decimal>(), segments.Total!.Value]);
+
+        table.Append(Formatted($"<div class=\"tbl-wrap\"><table class=\"segment-table\" data-report=\"{Escaped(segments.Report)}\" data-quarter=\"{(segments.Quarter is { } on ? DayOf(on) : "none")}\" data-months=\"{segments.Months}\" data-total=\"{segments.Total!.Value.ToString(Invariant)}\" data-sum=\"{segments.Sum!.Value.ToString(Invariant)}\" data-scale=\"{(scale is { } unit ? unit.Suffix : "none")}\">"));
         table.Append("<tr><th>Segment</th><th class=\"num\">Revenue</th><th class=\"num\">Change on a year</th><th class=\"num\">Operating income</th><th class=\"num\">Change on a year</th><th class=\"num\">Share of revenue</th></tr>");
 
         foreach (var row in segments.Rows)
         {
             table.Append(Formatted($"<tr data-segment=\"{Escaped(row.Segment)}\"><td>{Escaped(row.Segment)}</td>"));
-            table.Append(Formatted($"<td class=\"num\" data-revenue=\"{row.Revenue.ToString(Invariant)}\">{Figures.Money(row.Revenue, currency)}</td>"));
+            table.Append(Formatted($"<td class=\"num\" data-revenue=\"{row.Revenue.ToString(Invariant)}\">{Figures.MoneyIn(row.Revenue, scale, currency)}</td>"));
             table.Append(row.RevenueChange is { } revenue ? "<td class=\"num\">" + Signed(revenue, "revenue-change") + "</td>" : "<td class=\"num degraded\">none</td>");
-            table.Append(row.Earnings is { } earnings ? Formatted($"<td class=\"num\" data-earnings=\"{earnings.ToString(Invariant)}\">{Figures.Money(earnings, currency)}</td>") : "<td class=\"num degraded\" data-earnings=\"absent\">not filed</td>");
+            table.Append(row.Earnings is { } earnings ? Formatted($"<td class=\"num\" data-earnings=\"{earnings.ToString(Invariant)}\">{Figures.MoneyIn(earnings, scale, currency)}</td>") : "<td class=\"num degraded\" data-earnings=\"absent\">not filed</td>");
             table.Append(row.EarningsChange is { } change ? "<td class=\"num\">" + Signed(change, "earnings-change") + "</td>" : "<td class=\"num degraded\">none</td>");
             table.Append(Formatted($"<td class=\"num\" data-share=\"{row.Share.ToString(Invariant)}\">{row.Share.ToString("0.0", Invariant)}%</td></tr>"));
         }
 
-        table.Append(Formatted($"<tr class=\"key-row\"><td>The company</td><td class=\"num\">{Figures.Money(segments.Total!.Value, currency)}</td><td class=\"num\"></td><td class=\"num\"></td><td class=\"num\"></td><td class=\"num\">100.0%</td></tr>"));
+        table.Append(Formatted($"<tr class=\"key-row\"><td>The company</td><td class=\"num\">{Figures.MoneyIn(segments.Total!.Value, scale, currency)}</td><td class=\"num\"></td><td class=\"num\"></td><td class=\"num\"></td><td class=\"num\">100.0%</td></tr>"));
 
         return table.Append("</table></div>").ToString();
     }

@@ -163,14 +163,20 @@ public static partial class ReleaseSegments
 
             if (figures.Count > 0)
             {
-                var line = new Entry(string.Join(" ", name), [.. figures], decimals);
+                var line = new Entry(UnitNote().Replace(string.Join(" ", name), string.Empty), [.. figures], decimals);
 
                 if (line.Name.StartsWith("Total", StringComparison.OrdinalIgnoreCase))
                 {
                     return (entries, line);
                 }
 
-                entries.Add(line);
+                // A name naming a period, a column heading's months ended or its dates, is no segment: its figures are the
+                // days of those dates and their years, which no table's total can hold to.
+                if (!PeriodHeading().IsMatch(line.Name))
+                {
+                    entries.Add(line);
+                }
+
                 (name, figures, decimals) = ([], [], 0);
 
                 if (entries.Count > MostEntries)
@@ -221,4 +227,12 @@ public static partial class ReleaseSegments
 
     [GeneratedRegex(@"\(\d\)|\*+")]
     private static partial Regex Footnote();
+
+    // A column heading's period or its dates: months, weeks, a quarter or a year ended, or a name closing on a month.
+    [GeneratedRegex(@"\b(?:months?|weeks?|quarters?|years?|periods?)\s+ended\b|\b(?:January|February|March|April|May|June|July|August|September|October|November|December)$", RegexOptions.IgnoreCase)]
+    private static partial Regex PeriodHeading();
+
+    // The unit a table states its figures in, opening a name it is read before: "(in thousands)", "(dollars in millions)".
+    [GeneratedRegex(@"^\((?:[a-z]+\s+)?in\s+(?:thousands|millions|billions)\)\s*", RegexOptions.IgnoreCase)]
+    private static partial Regex UnitNote();
 }
