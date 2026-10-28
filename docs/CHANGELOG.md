@@ -26,6 +26,39 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-28 - docs/RUNBOOK.md - every EquityBrief task registered in Task Scheduler's folder for it, and the read-only copy on Cloudflare Pages
+Authorised by: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
+Was:
+> Register-ScheduledTask -TaskName 'EquityBrief nightly' -Action $action `
+> $t = Get-ScheduledTask -TaskName 'EquityBrief nightly'
+> Reading it back with `(Get-ScheduledTask -TaskName 'EquityBrief nightly').Settings.ExecutionTimeLimit` shows `PT12H`.
+> Set-ScheduledTask -TaskName 'EquityBrief nightly' -Trigger $trigger
+> ([xml](Export-ScheduledTask -TaskName 'EquityBrief nightly')).Task.Principals.Principal.LogonType
+> ... Remove either with `Unregister-ScheduledTask 'EquityBrief nightly'`.
+> Register-ScheduledTask -TaskName 'EquityBrief monthly' -Action $action `
+> Register-ScheduledTask -TaskName 'EquityBrief offpeak' -Action $action `
+> Register-ScheduledTask -TaskName 'EquityBrief localrun early' -Action $early -Trigger $at -Settings $settings
+> Register-ScheduledTask -TaskName 'EquityBrief localrun late' -Action $late -Trigger $at -Settings $settings
+Now:
+> each of those lines naming `-TaskPath '\EquityBrief\'`, a paragraph saying every EquityBrief task sits in that folder with the commands that move one registered at the root without its schedule changing, and a section of its own, *The read-only copy on Cloudflare Pages*: what the copy holds and leaves out, its three commands, the two settings its upload reads, the first run by hand read before any upload, its task registered disabled and enabled once that report is read, waiting while the off-peak run runs, and the plain steps that put Cloudflare Access in front of the site for friends' emails.
+Why: the operator asked on 2026-10-28 for the copy and for the scheduled jobs grouped in a folder of their own; the five tasks were moved that day, each registered again in the folder from its own exported definition and compared before the root's was removed.
+
+### 2026-10-28 - CLAUDE.md - the repository layout names tools/publish-site
+Authorised by: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
+Was:
+> (no line for it; the tools list ran from offpeak to remedy)
+Now:
+> publish-site  publish-site.ps1   the read-only copy on Cloudflare Pages, run by hand and by the scheduler once the off-peak run has finished: the site's screens written under the data root from a clean copy of the main checkout's commit, read for anything that must not leave the machine, and uploaded only with --upload
+Why: the layout lists every script under tools, and the copy's is new.
+
+### 2026-10-28 - docs/ARCHITECTURE.html - section 15.4 names the read-only copy beside the two surfaces
+Authorised by: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
+Was:
+> (nothing; the section named the app and the exported report alone)
+Now:
+> a paragraph after the export's: the read-only copy is neither surface but the app's own screens saved as files, written by the read surface the worker's publish-site verb starts, drawn as an export draws a report, every control and address of the surface taken out, every link resolved or reading "Not in this copy", read for anything that must not leave the machine and uploaded to a Pages project of its own only with the upload flag, and no step of the night.
+Why: the architecture describes every surface a reader is shown, and the copy is shown to readers outside the machine.
+
 ### 2026-10-28 - CLAUDE.md - the hard rule's carve-out for the name page's older bands reads them out as far as a picked or held stock's target or stop
 Authorised by: Older bands are read out as far as a pick's stop and target, marked older and read by nothing else
 Was:

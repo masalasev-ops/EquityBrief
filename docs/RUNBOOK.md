@@ -121,6 +121,16 @@ Until 5.7 this section said to register the schedule with the platform's schedul
 
 **Windows.** Task Scheduler triggers fire in local time unless the trigger's own start boundary carries a zone, which is the trap this repository's UTC rule exists for: a task registered at a local hour walks an hour relative to the provider when daylight saving changes, and it walks into the wrong side of the close twice a year. Setting `StartBoundary` to an instant with a `Z` is what pins it, and it is the same setting the interface calls synchronizing across time zones. Task Scheduler rewrites the `Z` into the machine's own offset when it stores the task, so reading it back shows `2026-09-10T19:30:00-04:00` rather than the instant that was handed in. That is the same instant and still the pinned form: what matters is that the boundary carries an offset at all, since a boundary with none is a local wall-clock time and is the one that walks.
 
+**Every EquityBrief task sits in Task Scheduler's own folder for it, `\EquityBrief\`,** apart from the other projects' tasks on the machine, so each registration below names it with `-TaskPath '\EquityBrief\'`, and a command reading or removing one names it too. A task registered at the root before is moved without its schedule changing: export its definition, register that in the folder, compare the two, and only then remove the root's, as was done for the five on 2026-10-28:
+
+```powershell
+$name = 'EquityBrief nightly'
+$xml  = Export-ScheduledTask -TaskPath '\' -TaskName $name
+Register-ScheduledTask -Xml $xml -TaskPath '\EquityBrief\' -TaskName $name
+(Get-ScheduledTaskInfo -TaskPath '\EquityBrief\' -TaskName $name).NextRunTime   # the same as the root's
+Unregister-ScheduledTask -TaskPath '\' -TaskName $name -Confirm:$false
+```
+
 ```powershell
 $root    = 'E:\Stock Analysis  Tool Ideas\EquityBrief'
 $action  = New-ScheduledTaskAction -Execute 'powershell.exe' `
@@ -131,19 +141,19 @@ $trigger.StartBoundary = '2026-09-11T23:30:00Z'
 $settings = New-ScheduledTaskSettingsSet -WakeToRun -StartWhenAvailable `
              -DontStopIfGoingOnBatteries -AllowStartIfOnBatteries `
              -ExecutionTimeLimit (New-TimeSpan -Hours 12)
-Register-ScheduledTask -TaskName 'EquityBrief nightly' -Action $action `
+Register-ScheduledTask -TaskPath '\EquityBrief\' -TaskName 'EquityBrief nightly' -Action $action `
              -Trigger $trigger -Settings $settings
 ```
 
 Twelve hours because a night that stops is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own of two hours from 15.1, and the quarters step, the filings refresh and the report follow the close, so a shorter limit would stop the process in the middle of a try (see: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own) (see: A feed is tried three times with a doubling backoff and the night's news query waits ninety seconds a try, and the night has a two-hour deadline it cannot move). A task registered with an earlier limit of two or eight hours takes the new one from an elevated PowerShell:
 
 ```powershell
-$t = Get-ScheduledTask -TaskName 'EquityBrief nightly'
+$t = Get-ScheduledTask -TaskPath '\EquityBrief\' -TaskName 'EquityBrief nightly'
 $t.Settings.ExecutionTimeLimit = 'PT12H'
 Set-ScheduledTask -InputObject $t
 ```
 
-Reading it back with `(Get-ScheduledTask -TaskName 'EquityBrief nightly').Settings.ExecutionTimeLimit` shows `PT12H`.
+Reading it back with `(Get-ScheduledTask -TaskPath '\EquityBrief\' -TaskName 'EquityBrief nightly').Settings.ExecutionTimeLimit` shows `PT12H`.
 
 `-WakeToRun` because a laptop left to itself sleeps and a nightly job that silently did not run is worse than no nightly job. `-StartWhenAvailable` because a machine that was off at the instant should run the night when it comes back rather than skip it, and the night is idempotent.
 
@@ -152,7 +162,7 @@ Reading it back with `(Get-ScheduledTask -TaskName 'EquityBrief nightly').Settin
 ```powershell
 $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday,Tuesday,Wednesday,Thursday,Friday -At 6pm
 $trigger.StartBoundary = '2026-09-11T23:30:00Z'
-Set-ScheduledTask -TaskName 'EquityBrief nightly' -Trigger $trigger
+Set-ScheduledTask -TaskPath '\EquityBrief\' -TaskName 'EquityBrief nightly' -Trigger $trigger
 ```
 
 Reading it back shows `DaysOfWeek` as 62, being Monday to Friday as bits.
@@ -168,10 +178,10 @@ The durable form names a principal, and it needs an elevated shell because loggi
 Confirm which one is registered, because `Get-ScheduledTask` shows both as `Ready` and the difference does not appear in the task list:
 
 ```powershell
-([xml](Export-ScheduledTask -TaskName 'EquityBrief nightly')).Task.Principals.Principal.LogonType
+([xml](Export-ScheduledTask -TaskPath '\EquityBrief\' -TaskName 'EquityBrief nightly')).Task.Principals.Principal.LogonType
 ```
 
-`S4U` runs whether or not anyone is logged on and stores no password. `InteractiveToken` is worth keeping only on a machine that is never signed out of, and on that machine it is worth knowing it is what you have. Remove either with `Unregister-ScheduledTask 'EquityBrief nightly'`.
+`S4U` runs whether or not anyone is logged on and stores no password. `InteractiveToken` is worth keeping only on a machine that is never signed out of, and on that machine it is worth knowing it is what you have. Remove either with `Unregister-ScheduledTask -TaskPath '\EquityBrief\' -TaskName 'EquityBrief nightly'`.
 
 **macOS.** `launchd` has no UTC option at all: `StartCalendarInterval` is local time and there is no zone field. So the job is registered to run every hour and the script itself decides, which is the only form that holds the UTC rule across a daylight saving change without anyone editing a plist twice a year.
 
@@ -506,6 +516,54 @@ It asks nothing for a stock TipRanks answered for in the 15 days before; otherwi
 The name page carries a link, *Export this report as a file*, and the browser saves what it answers wherever the operator chooses. The read surface answers the same file at `/exports/name/<TICKER>`, which is the address the link asks for.
 
 The file is the name page's own region, drawn by the same code from the same store, in a document that needs nothing else to be read: its styles are inline, it fetches nothing, every disclosure is open, and a link to another of the application's pages is kept as its words. It opens in the light palette whatever the machine prefers, and its one script switches it to the dark palette and back at the press beside its opening line; every figure draws with scripts off (see: A single report is exported as one self-contained file in the page's design, opening light with a dark toggle and stamped with the price it was exported at). Its masthead's price is the one the page drew at the export, the delayed quote stored inside the session where one is, marked "at export" rather than live, and the last close outside it, and its opening line states the instant it was exported at in New York's time. It leaves out the research controls and the pause, which are the application asking the operator something rather than part of the report. It is named for the name and the newest session its figures are from, `EquityBrief-KEYS-2026-09-08.html`, so two exports on different nights are two files, and its opening line states that session. Nothing is written to the store by an export.
+
+### The read-only copy on Cloudflare Pages
+
+The copy is the site's own screens saved as files, for friends to browse and read the written reports without reaching this machine, its store or any action (see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control). It holds the newest night's Tonight, Past picks, Paper trading, the Ledger, the reports index, the universe list and the Loop on each index; a chart page for every stock Tonight or Paper trading links; and a stock page for each of those and for every stock with a written report, with each earlier dated version of a report listed on its page. It holds no Run page, queue, watch list or account page, every control is taken out, and a link to anything it does not hold reads *Not in this copy*. Every page names itself a read-only copy and carries the banner *A read-only copy as of the night of dd mmm yyyy. Paper trading only; nothing here is advice.* It is written to `data/site`, and its report to `data/site-report.txt` beside it, never inside it.
+
+```powershell
+tools/publish-site.ps1 --check     # what a run would build and run; runs nothing
+tools/publish-site.ps1             # write the copy and its report, and upload nothing
+tools/publish-site.ps1 --upload    # write it, and upload it once its report refuses nothing
+```
+
+On macOS the same is `tools/publish-site`. It builds main's own commit as the off-peak run does, reusing the copy a night built and building the read surface into it beside the worker, and runs the worker's `publish-site` verb, which starts that read surface with the same verb to write every screen. The worker's `publish-site` run by hand from a build is the same verb with the same flag. It asks no provider and calls no model, reads the store and writes nothing to it, and is no step of the night; it can run while the night or a drain writes, though the copy then holds what the store held as it was read, which is why the scheduled run waits for the off-peak run to finish.
+
+**The settings.** The upload reads `EquityBrief:Providers:CloudFlare:API_TOKEN` and `EquityBrief:Providers:CloudFlare:ACCOUNT_ID` from the worker's `appsettings.Secrets.json`. The token needs the account's Cloudflare Pages edit permission and nothing else. It goes to Cloudflare's API in a request header alone, and no line the verb prints, no log and no file of the copy carries it or the account; the report searches every file for both, as it searches for every other value the secrets file holds. Without either, `--upload` says which is not set and uploads nothing. The copy goes to the Pages project `equitybrief`, made on the first upload where it does not exist, with `main` its production branch; no upload names `premarketdesk`, the operator's other site, and one that did would be refused before any request.
+
+**The first run is by hand and uploads nothing.** Run `tools/publish-site.ps1` and read `data/site-report.txt`: the read surface's own lines with each index's reports and their versions, the file count and size and each page's size against the host's 25 MB a file and 20,000 files, every form, address of the surface, data attribute and script left in any file, the other sites linked by host, and every refusal, each naming its file. It refuses the upload for any form, any address a press or a fetch is sent to, the page's press header, a script loaded from anywhere or one asking another site, any value of the secrets file, any absolute path of this machine, and the account's settings by their names and, where `account.json` holds settings other than the example every page draws without them, their size. Read it, open `data/site/index.html` through a local server if you want to see it, and only then run `tools/publish-site.ps1 --upload`, which prints the deployment's address.
+
+**Scheduling it.** Once the first report has been read, daily at 04:20 UTC, its start boundary pinned in UTC as the night's is, waiting while the off-peak run is still running so the copy carries the reports its drain wrote, its output kept in `data/publish-site.log`, and stopped at five hours so it never runs into the off-peak run at 10:05. It is registered disabled, and enabled once the operator has read the first hand run's report:
+
+```powershell
+$root    = 'E:\Stock Analysis  Tool Ideas\EquityBrief'
+$action  = New-ScheduledTaskAction -Execute 'powershell.exe' `
+             -Argument "-NoProfile -ExecutionPolicy Bypass -Command `"while ((Get-ScheduledTask -TaskPath '\EquityBrief\' -TaskName 'EquityBrief offpeak').State -eq 'Running') { Start-Sleep -Seconds 60 }; & '$root\tools\publish-site.ps1' --upload *>> '$root\data\publish-site.log'`"" `
+             -WorkingDirectory $root
+$at      = New-ScheduledTaskTrigger -Daily -At 12:20am
+$at.StartBoundary = '2026-10-29T04:20:00Z'
+$settings = New-ScheduledTaskSettingsSet -WakeToRun -StartWhenAvailable `
+             -DontStopIfGoingOnBatteries -AllowStartIfOnBatteries `
+             -ExecutionTimeLimit (New-TimeSpan -Hours 5)
+Register-ScheduledTask -TaskPath '\EquityBrief\' -TaskName 'EquityBrief publish' -Action $action -Trigger $at -Settings $settings
+Disable-ScheduledTask -TaskPath '\EquityBrief\' -TaskName 'EquityBrief publish'
+# once the first report has been read:
+Enable-ScheduledTask -TaskPath '\EquityBrief\' -TaskName 'EquityBrief publish'
+```
+
+On macOS a job at twenty past every hour runs at 04 UTC alone and waits while the off-peak worker runs: `h="$(date -u +%H)"; [ "$h" = 04 ] || exit 0; while pgrep -f 'EquityBrief.Worker.dll (label-news|drain)' >/dev/null; do sleep 60; done; exec "$HOME/EquityBrief/tools/publish-site" --upload >> "$HOME/EquityBrief/data/publish-site.log" 2>&1`, in a plist laid out as the off-peak run's is.
+
+**Letting friends in with Cloudflare Access.** The first upload makes the site public at the address it prints, `equitybrief.pages.dev` or one Cloudflare chose near it. Access puts an email check in front of every file, free for up to 50 people, and nothing in the copy changes for it:
+
+1. In the Cloudflare dashboard open **Zero Trust**. The first time, choose a team name and the Free plan.
+2. Go to **Access**, then **Applications**, then **Add an application**, and choose **Self-hosted**.
+3. Name it *EquityBrief copy*, choose a session length, a week for instance, and add two application domains: the address the upload printed, as `equitybrief.pages.dev`, and the same with `*.` before it, as `*.equitybrief.pages.dev`, which covers each deployment's own address.
+4. Add a policy named *Friends*: action **Allow**, include **Emails**, and type each friend's email and your own.
+5. Under the login methods leave **One-time PIN** on, so a friend opening the site types their email and is sent a code; nothing else is needed on their side.
+6. Save, then open the address in a private window: it asks for an email, a listed email receives a code and gets in, and an email not listed receives nothing.
+7. To let a friend in or take one out later, edit the *Friends* policy's emails; the copy itself is untouched.
+
+**Stopping it.** `Disable-ScheduledTask -TaskPath '\EquityBrief\' -TaskName 'EquityBrief publish'` stops the nightly upload, and the site keeps its last copy. Deleting the `equitybrief` project in the dashboard's **Workers & Pages** takes the site down; it is never `premarketdesk`.
 
 ### Reading the report page's rules over every name
 
@@ -1182,7 +1240,7 @@ $trigger.StartBoundary = '2026-11-07T12:00:00Z'
 $settings = New-ScheduledTaskSettingsSet -WakeToRun -StartWhenAvailable `
              -DontStopIfGoingOnBatteries -AllowStartIfOnBatteries `
              -ExecutionTimeLimit (New-TimeSpan -Hours 6)
-Register-ScheduledTask -TaskName 'EquityBrief monthly' -Action $action `
+Register-ScheduledTask -TaskPath '\EquityBrief\' -TaskName 'EquityBrief monthly' -Action $action `
              -Trigger $trigger -Settings $settings
 ```
 
@@ -1229,7 +1287,7 @@ $late.StartBoundary = '2026-10-14T10:05:00Z'
 $settings = New-ScheduledTaskSettingsSet -WakeToRun -StartWhenAvailable `
              -DontStopIfGoingOnBatteries -AllowStartIfOnBatteries `
              -ExecutionTimeLimit (New-TimeSpan -Hours 6)
-Register-ScheduledTask -TaskName 'EquityBrief offpeak' -Action $action `
+Register-ScheduledTask -TaskPath '\EquityBrief\' -TaskName 'EquityBrief offpeak' -Action $action `
              -Trigger $early, $late -Settings $settings
 ```
 
@@ -1370,13 +1428,13 @@ $early    = New-ScheduledTaskAction -Execute 'powershell.exe' `
               -WorkingDirectory $root
 $at       = New-ScheduledTaskTrigger -Daily -At 8:05am
 $at.StartBoundary = '2026-10-19T12:05:00Z'
-Register-ScheduledTask -TaskName 'EquityBrief localrun early' -Action $early -Trigger $at -Settings $settings
+Register-ScheduledTask -TaskPath '\EquityBrief\' -TaskName 'EquityBrief localrun early' -Action $early -Trigger $at -Settings $settings
 $late     = New-ScheduledTaskAction -Execute 'powershell.exe' `
               -Argument "-NoProfile -ExecutionPolicy Bypass -Command `"& '$root\tools\localrun.ps1' --slot late *>> '$root\data\localrun.log'`"" `
               -WorkingDirectory $root
 $at       = New-ScheduledTaskTrigger -Daily -At 5:40pm
 $at.StartBoundary = '2026-10-19T21:40:00Z'
-Register-ScheduledTask -TaskName 'EquityBrief localrun late' -Action $late -Trigger $at -Settings $settings
+Register-ScheduledTask -TaskPath '\EquityBrief\' -TaskName 'EquityBrief localrun late' -Action $late -Trigger $at -Settings $settings
 ```
 
 On macOS the job runs every hour at five past and twenty to, and the script runs a slot at 12 and 21 UTC alone:

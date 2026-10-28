@@ -79,7 +79,9 @@ public class StoreNeverDeleted
         // accession, and their list into a folder the operator names; from 20.5 its comparison writes its figures into the
         // data root's folder of comparisons, a file named by its instant. MonthlyRun writes its month's report into the
         // month's folder under the loop's folder of the data root, a run again writing it over the one before. NightLock
-        // writes and removes the night's lock file.
+        // writes and removes the night's lock file. The read-only copy's own rewrite: SitePublisher removes the data root's
+        // folder for the copy whole and SiteCopyCommand writes each of its files into it again, and SitePublisher writes the
+        // copy's report beside that folder; none of them is the store or under it.
         // SweepPointInTime removes the scratch stores it built under the machine's temporary folder, which
         // hold nothing of the operator's. SweepRunner writes and replaces its own run folder's files, and
         // removes its own saved candidates where the history moved under them. StoreBackup, in the copies'
@@ -114,6 +116,9 @@ public class StoreNeverDeleted
                 "MonthlyRun.cs: File.WriteAllText(report)",
                 "NightLock.cs: File.Delete(holder)",
                 "NightLock.cs: File.WriteAllText(holder)",
+                "SiteCopyCommand.cs: File.WriteAllBytes(target)",
+                "SitePublisher.cs: Directory.Delete(folder)",
+                "SitePublisher.cs: File.WriteAllText(report)",
                 "SourceMeasurementRun.cs: File.WriteAllTextAsync(file)",
                 "StoreBackup.cs: File.Delete(leftover)",
                 "StoreBackup.cs: File.Delete(old)",

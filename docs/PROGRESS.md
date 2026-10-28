@@ -11068,3 +11068,61 @@ Queue:      done, PRs 573 to 580; in progress, this pull request; next, the oper
             in batches between the writers' slots.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
+
+### 18.4 - correction: a read-only copy of the site on Cloudflare Pages, written by the read surface the worker starts, read before anything leaves the machine and uploaded only when asked   2026-10-28
+
+Not a checkpoint entry: it builds into shipped source what the ruling above asks under 18.4, and lands nothing.
+Built:      the worker's publish-site verb starts the read surface built beside it with the same verb, which answers on a
+            loopback address only it knows, asks itself for each screen as the live shell does and writes each under the
+            data root's site folder, drawn as an export draws a report: no account file read, none of the operator's own
+            trades, no live quote and no TipRanks rating, and no start recorded or anything else written to the store. It
+            holds the newest night's Tonight, Past picks, Paper trading, the Ledger, the reports index, the universe list
+            and the Loop on each index, the views the first four link on their own screen, each paper account's trade log
+            and every page of the universe list and of each sector's; a chart page for each stock Tonight or Paper trading
+            links; a stock page for each of those and every stock with a written report, each earlier dated version on the
+            page of the first night that drew it and listed on the stock's page. Each screen loses its forms, presses,
+            choices of views not held, date arrows, the next night's time, export link, spend lines, the account lines,
+            Yahoo's firm actions, the TipRanks section and every attribute naming the surface's address; a stock's price
+            and its analysts are marked as of the night's close; every link resolves to a held file, a stock's chart not
+            held opening its page, or reads "Not in this copy". The copy's own shell names it a read-only copy in its title
+            and its bar, carries the banner and fetches only its files from its own list, the host's headers allowing no
+            other request and no form, and a missing route answered by a page of its own. The worker reads the folder for
+            forms, the surface's addresses, the press header, scripts, the secrets files' values, the machine's paths, the
+            account's settings and a card's plan sized on an account, writes the report beside the folder and uploads only
+            with --upload, a report refusing nothing and the token and account the secrets file holds, by Cloudflare Pages'
+            direct upload: project read and made where missing, an upload token, the files the host lacks by their BLAKE3
+            keys in buckets, every hash confirmed and the deployment made on main, the token in a header alone and every
+            message scrubbed of it; the project premarketdesk refused before any request. tools/publish-site builds main's
+            commit as the off-peak run does and the read surface into it, removing nothing. Everything the copy is made by
+            sits in a Cloudflare folder of each project, apart from the surface's own switches. The five scheduled tasks
+            moved into Task Scheduler's folder \EquityBrief\, each registered there from its exported definition, read back
+            alike with its next run unchanged, and only then removed from the root; the runbook names the folder in every
+            registration, and the copy's task is registered disabled once this merges.
+Drawn:      the hand run from the branch over the live store at 14:21 UTC, nothing uploaded: 871 files, 275,174,333 bytes,
+            868 screens of the night of 2026-10-27; the S&P 500's 44 reports with 60 versions, the S&P 400's 12 with 12 and
+            the S&P 600's 19 with 26; no form, no address of the surface, no press header, one page carrying scripts, the
+            shell's two inline; no secret, path or account setting found; nothing refused. 10,503 links read "Not in this
+            copy", most of them peers' tickers on the stock pages.
+Tests:      27 new; 2895 in all.
+Claims:     none new: the copy is a paragraph of section 15.4, beside its table and in no row of it.
+Pins:       none move; no source a rule's version, the filter or the readings pin is edited, and the night's path is
+            untouched: the read surface draws as before unless started with the copy's verb.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the copy adds, each run against the
+            copy's 35 tests. C1 forms kept, C2 a link to a screen not held left a link, C3 the S&P 500's own word kept in a
+            route's key, C4 the shell fetching the surface's route, C5 the paper page reading the account file, C7 the
+            check refusing no form, C8 the verb uploading without the flag, C9 every file sent whatever the host lacks,
+            C10 BLAKE3 at six rounds, C11 the report written inside the folder, C12 the folder not removed before it is
+            written again and C13 a failure said with the token in it: each red at the tests reading it. C6, the cards
+            reading the account and the taken trades in the copy, survived: an unreachable boundary, the fixture's night
+            drawing no decision card, so the folder check now refuses a card's plan sized on an account, which the live
+            store's cards reach. C10's first form, permuting the message after the last round, survived as equivalent,
+            nothing reading that message. The live quote and TipRanks switches were not mutated, the fixture holding no
+            quote inside a session and no rating.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2895 of 2895 tests ran
+            with none failed, migrations 0 to 114 with none pending, schema version 114, against `data-ci` and never
+            `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the operator's reading of the first report before any upload, then the copy's task enabled; the 10,503 links
+            reading "Not in this copy", most of them peers' tickers, for the operator to keep as ruled or to have read as
+            plain words; the relabel, running in batches between the writers' slots.
