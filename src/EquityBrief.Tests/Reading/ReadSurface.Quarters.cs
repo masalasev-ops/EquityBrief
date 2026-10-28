@@ -234,7 +234,7 @@ public partial class ReadSurface
         Assert.Equal(
             NumbersSay.Patterns.Select(entry => $"{entry.Name} | {entry.Pattern}"),
             table.Body.Select(row => $"{row[0]} | {row[1]}"));
-        Assert.Equal(27, NumbersSay.Patterns.Count);
+        Assert.Equal(28, NumbersSay.Patterns.Count);
 
         // The heading pattern is the one the name page draws.
         Assert.Equal("What the numbers say: steady, read from sales and operating margin alone", NumbersSay.Heading(FundamentalState.Steady));

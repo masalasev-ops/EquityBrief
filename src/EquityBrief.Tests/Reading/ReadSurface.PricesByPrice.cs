@@ -48,9 +48,10 @@ public partial class ReadSurface
 
         var page = await client.GetStringAsync($"/screens/name/{Ticker}");
 
-        // The two figures, each the year's extreme as a price with the session it was made on.
+        // The two figures, each the year's extreme as a price with the session it was made on, the high marked as the
+        // concept the page draws one value of.
         Assert.Contains(
-            $"<div><dt>Year's high</dt><dd>{EquityBrief.Web.Marks.Figures.Price(highest)} <small>on {highOn}</small></dd></div>",
+            $"<div><dt>Year's high</dt><dd data-concept=\"years-high\" data-concept-value=\"{EquityBrief.Web.Marks.Figures.Price(highest)}\">{EquityBrief.Web.Marks.Figures.Price(highest)} <small>on {highOn}</small></dd></div>",
             page,
             StringComparison.Ordinal);
 

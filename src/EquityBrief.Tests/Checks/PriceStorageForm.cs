@@ -229,6 +229,11 @@ public class PriceStorageForm
         // company's value as the valuation reading works it out, through `Yield` and so through `Statistic.FromRatio`. It
         // is what the insiders' net buying and unplanned selling are read in.
         // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+        //
+        // `OneValue.Multiple` and `OneValue.Yield` joined it with the report page's corrections: the stored close and the
+        // earnings or the dividend's rate in, the multiple or the yield a page draws out, each through
+        // `Statistic.FromRatio`. They are each concept's one value worked at the close.
+        // see: Each concept a page draws holds one value worked at the stored close beside the provider's own marked stale where struck far from it, and a check flags any concept drawn twice
         Assert.Equal(
             [
                 "Distances.cs: InTypicalDays",
@@ -237,6 +242,8 @@ public class PriceStorageForm
                 "FundamentalScorecard.cs: Ratio",
                 "MarkRenderer.cs: PlotValue",
                 "MarkRenderer.cs: Y",
+                "OneValue.cs: Multiple",
+                "OneValue.cs: Yield",
                 "PaperAccount.cs: RoundTripOf",
                 "PaperAccount.cs: SaleOf",
                 "Percents.cs: FromFraction",

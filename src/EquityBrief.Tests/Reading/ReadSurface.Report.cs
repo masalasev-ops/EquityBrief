@@ -323,9 +323,11 @@ public partial class ReadSurface
 
         // The guidance above, and what is working beside what is not, each the section's own sentences in their order.
         Assert.True(guidance.Success && working.Success && notWorking.Success, drawn);
-        Assert.Equal(["On guidance management now expects the coming quarter to grow faster than the release before expected [D1] [D2]."], RowsIn(guidance.Groups[1].Value));
-        Assert.Equal(["What is working is \"strong demand across our communications customers\" [D1].", "Orders ran ahead of shipments [D1]."], RowsIn(working.Groups[1].Value));
-        Assert.Equal(["What is not working is \"supply chain constraints\" [D1]."], RowsIn(notWorking.Groups[1].Value));
+        // Each part's rows as a reader reads them, the markers taken out and the sources listed by title beneath.
+        // see: A written section is drawn without its bracketed markers, its sources listed by title beneath it and every abbreviation spelled out where first used
+        Assert.Equal(["On guidance management now expects the coming quarter to grow faster than the release before expected."], RowsIn(guidance.Groups[1].Value));
+        Assert.Equal(["What is working is \"strong demand across our communications customers\".", "Orders ran ahead of shipments."], RowsIn(working.Groups[1].Value));
+        Assert.Equal(["What is not working is \"supply chain constraints\"."], RowsIn(notWorking.Groups[1].Value));
 
         // Prose that does not open on the three words, or names them out of order, is drawn as it was written.
         foreach (var prose in new[] { "Management expects growth to continue [D1].", "On guidance it expects more [D1].\n\nWhat is not working is nothing named [D1].\n\nWhat is working is demand [D1]." })
@@ -655,7 +657,7 @@ public partial class ReadSurface
         var valued = await NameRoute(store, "MSFT");
 
         Assert.Contains(
-            "<p class=\"valuation-line\" data-multiple=\"24.5\" data-position=\"in the lower half of its range\">At the night's close it trades at 24.5 times its last four quarters' earnings, as the data provider reports, against 20.1 to 30.2 over its own quarters: in the lower half of its range.</p>",
+            "<p class=\"valuation-line\" data-multiple=\"24.5\" data-position=\"in the lower half of its range\" data-concept=\"trailing-multiple\" data-concept-value=\"24.5\">At the night's close it trades at 24.5 times its last four quarters' earnings, as the data provider reports, against 20.1 to 30.2 over its own quarters: in the lower half of its range.</p>",
             WebUtility.HtmlDecode(valued),
             StringComparison.Ordinal);
         Assert.Contains("data-mark=\"peer-dots\" data-members=\"3\"", valued, StringComparison.Ordinal);
@@ -673,7 +675,7 @@ public partial class ReadSurface
 
         var scored = WebUtility.HtmlDecode(await NameRoute(store, "MSFT"));
 
-        Assert.Contains("<p class=\"valuation-line\" data-multiple=\"21.7\" data-source=\"filed\">At the night's close it trades at 21.7 times its last four quarters' earnings, as filed with the SEC.</p>", scored, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"valuation-line\" data-multiple=\"21.7\" data-source=\"filed\" data-concept=\"trailing-multiple\" data-concept-value=\"21.7\">At the night's close it trades at 21.7 times its last four quarters' earnings, as filed with the SEC.</p>", scored, StringComparison.Ordinal);
         Assert.DoesNotContain("class=\"mb-night\"", scored, StringComparison.Ordinal);
 
         // The numbers' last sentence, their valuation's, is the scorecard's where it holds one and the provider's where not.

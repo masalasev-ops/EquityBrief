@@ -26,6 +26,126 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-28 - docs/ARCHITECTURE.html - the rule holding written sentences to the stored quarter holds only sections written after its report, each sentence read alone
+Authorised by: A written sentence stating a direction the stored latest quarter contradicts is withheld where it is drawn, and a beat or a miss another source states against it is named beside it
+Was:
+> "Every written sentence is read against the directions the stored latest quarter states, each from its own line: ..."
+Now:
+> "Every sentence of a section written on or after the day the stored latest quarter was reported is read alone, its markers out, against the directions that quarter states, each from its own line, and a section written before that day speaks of an earlier quarter and is held to none: ..."
+Why: the proof over the S&P 500's 503 pages on the night of 2026-10-27 failed GM's: its short version of 2026-10-11, written of the quarter before the one reported on 2026-10-21, joined its sentences by a marker and a line break, so the page read them as one and passed over them, and held to the newer quarter it would have been withheld as wrong.
+
+### 2026-10-27 - docs/ARCHITECTURE.html - the rule for a section written again alone says the research region states what came of it
+Authorised by: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+Was:
+> "... the request it writes taken at once and the pass it starts asking no paid model and moving nothing to one (see: ...)."
+Now:
+> "... the request it writes taken at once and the pass it starts asking no paid model and moving nothing to one, and the research region says what the newest such pass came to beside the report's own (see: ...)."
+Why: the operator's report page corrections of 2026-10-27, the tenth part: a section asked for alone whose local model was not reached settled its request as refused, and the name page said nothing of it.
+
+### 2026-10-27 - docs/RUNBOOK.md - the proof's unexamined rule no longer names a rule not yet built
+Corrects: the paragraph said a rule could be unexamined because it was not yet built, and every rule the proof holds is built; found writing the proof's last two rules.
+Was:
+> "... a rule that cannot be read on a page, its region not drawn there or the rule not yet built, is unexamined there and is never counted as a pass ..."
+Now:
+> "... a rule that cannot be read on a page, its region not drawn there or nothing on it the rule reads, is unexamined there and is never counted as a pass ..."
+Why: a reader of the runbook would look for rules the proof does not hold.
+
+### 2026-10-27 - docs/SCHEMA.md - research_request gains the section a press asks to have written again alone
+Authorised by: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+Was:
+> "| `run_id` | TEXT | the pass's run, written by RequestDrain when it settles the request, null before; last but two because SQLite appends |"
+> "| `reason` | TEXT | why, in words, for `refused` and `withdrawn` and null otherwise; last but one because SQLite appends |"
+> "| `refresh` | INTEGER | ... written by ReadApi on the insert; last because SQLite appends |"
+> "Declared column sets, ...: ReadApi inserts `ticker`, `asked_at`, `asked_from`, `lane`, `state` and `refresh` for a press, ..."
+Now:
+> `run_id` last but three, `reason` last but two and `refresh` last but one, and a row after them: "| `section` | TEXT | the one section a press on the name page asked to have written again alone on the local model, which the drain takes at once and hands the pass; null on a request for a report, on every row written before the column and on the night's own request; constrained in the table to a request on the local lane asking for no rewrite; written by ReadApi on the insert; last because SQLite appends (see: ...) |"; and ReadApi inserts `ticker`, `asked_at`, `asked_from`, `lane`, `state`, `refresh` and `section` for a press.
+Why: the operator's report page corrections of 2026-10-27, the tenth part: a section left out is written again alone on the local model, which migration 113 gives the request a column for.
+
+### 2026-10-27 - docs/ARCHITECTURE.html - the research rows name the control that writes a section left out again alone
+Authorised by: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+Was:
+> Section 4's row "Where the research stands": "What the newest pass came to and what research has cost, each written region left out or not written with its reason, a table of the model each job behind the page ran on ..."
+> Section 15.9's row "Sections left out": "one line per section the checker left out or the newest pass did not write, each naming what refused it and never the words of the draft that was refused (see: A refused draft's own words are kept on the row and drawn on the evidence page, and never on the name page)"
+Now:
+> "... each written region left out or not written with its reason and the control that has the local model write it again alone, a table of the model ..."; and the row "Sections left out" adds "; and where the page states what research costs, beneath each of the name's own the control that has the local model write it again alone at no cost and whatever the day (see: ...)". The rules every name's page holds gain a sentence saying the same before the models' table.
+Why: the operator's report page corrections of 2026-10-27, the tenth part: ROP's sections left out could be written again only by the paid regenerate, held to once a name a day.
+
+### 2026-10-27 - docs/RUNBOOK.md - the research verb's flags name `--section`
+Authorised by: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+Was:
+> "... and which the drain adds to every regenerate a press asks for. `--live` and `--fixture <folder>` choose the source for one run, as they do for the night."
+Now:
+> the same with a sentence between them: "`--section <section>` writes one of the name's own sections again alone on the local model, the one a press beneath a section left out asks for: it makes no paid call, runs no trial or review, moves nothing to the paid path and runs whatever the day, and the drain hands it to the pass with nothing else and takes such a request at once, inside a peak window too (see: ...)."
+Why: the operator's report page corrections of 2026-10-27, the tenth part.
+
+### 2026-10-27 - CLAUDE.md - the hard rule on pulled history names the older bands the name page draws
+Authorised by: Where the stored year holds no band on a side the name page draws bands read from the pulled history, marked older and read by nothing else
+Was:
+> "...that no page reads but the chart page, which reads one stock's pulled bars at the store's scale for its weekly and monthly candles and its longer performance and hands them to no rule, level, listing or gate, on the operator's ruling of 2026-10-16, and Tonight's heavyweights cards, ..."
+Now:
+> "...that no page reads but the chart page, which reads one stock's pulled bars at the store's scale for its weekly and monthly candles and its longer performance and hands them to no rule, level, listing or gate, on the operator's ruling of 2026-10-16, and the name page, which reads one stock's pulled bars at the store's scale for the older bands it draws where the stored year holds no band on a side of the close and hands them to no rule, level, plan, listing or gate, on the operator's ruling of 2026-10-27, and Tonight's heavyweights cards, ..."
+Why: the operator's report page corrections of 2026-10-27, the sixth part: where the stored year has no band above the price or below it, bands are read from the pulled history the long view already uses and marked older.
+
+### 2026-10-27 - docs/ARCHITECTURE.html - what the numbers say gains the pattern for a quarter reported and not yet filed
+Authorised by: A quarter reported before its filing is stored is labelled as the release's, and every awaited and next report line moves on once it is reported
+Was:
+> the patterns table listed "awaited" and then "sales", and no pattern for a quarter whose release is out and whose filing is not stored.
+Now:
+> a row after "awaited": "reported | The quarter to {quarter} was reported on {day} in its results release and its filing is not stored yet, so these read the quarter to {quarter}.", held word for word to the renderer's own list as every row of the table is.
+Why: the operator's report page corrections of 2026-10-27, the third part: ROP's page still awaited the quarter to September after its release of October 22 had reported it.
+
+### 2026-10-27 - docs/ARCHITECTURE.html - section 4's rows for the short version, the news and where the research stands state the report page's corrections
+Authorised by: The short version opens on the pick and then the quarter as code writes them, before what worked and what did not
+Was:
+> The short version: "Three paragraphs of at most five sentences each, written last from the claims the other written regions were accepted with: what happened, what matters and what the plan does, said as the plan's own claims say it, each sentence citing its claims, which are listed beneath it with a link to the region drawing each, and no figure the tiles show; ..."
+>
+> News: "What was written about the company in the thirty days before the night: each article with the kind of story ..."
+>
+> Where the research stands: "What the newest pass came to and what research has cost, each written region left out or not written with its reason, and the control that asks for a report, ..."
+Now:
+> The short version opens "For a stock a family picked, a paragraph code writes from its card first and then for every stock one code writes from the latest quarter, the written prose after them read as what worked and what did not (see: ...); three paragraphs ..., the regions they come from listed beneath it by title with a link to each, ...".
+>
+> News reads "What was written about the company in the thirty days before the night, its own stories alone with a line counting those left out (see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted): ...".
+>
+> Where the research stands adds "a table of the model each job behind the page ran on and whether it is paid or local".
+Why: the operator's report page corrections of 2026-10-27, its second, eighth and eleventh parts, under the decisions each names (see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted) (see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label).
+
+### 2026-10-27 - docs/ARCHITECTURE.html - section 4 gains the rules every name's page holds
+Authorised by: Every report page rule is held over every name's drawn page and reported passed, failed or unexamined with the pages each failed on
+Was:
+> section 4 passed from the key beneath its table of regions straight to "What the numbers say, pattern by pattern".
+Now:
+> a heading, "The rules every name's page holds", and nine paragraphs between the two, stating each rule of the operator's report page corrections in words that hold on any night, each citing its decision: the written sentences held to the stored latest quarter's directions, the markers taken out with the sources listed by title and the abbreviations spelled out, the short version opening on the pick and the quarter, one value a concept, the masthead's pill, the pick's stop and target on the chart with its exit in the plan and its next report estimated, the rules opening on the family that picked the stock, the news matched to the company with the peer group labelled and checked and the industry cycle's sources held to the company or its industry, and the models named with every rule read back over every page.
+Why: the operator's report page corrections of 2026-10-27 asked for the general rules to be appended to the report page's section, worded to hold on any day with no dated figures.
+
+### 2026-10-27 - docs/ARCHITECTURE.html - three citations of the news labels' decision carried to the decision superseding it
+Authorised by: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
+Was:
+> section 4's News row, 15.7's The list row and 15.9's News row each cited "(see: The news labels alone name the model that wrote them)".
+Now:
+> each cites "(see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label)", their words otherwise unchanged.
+Why: the operator's report page corrections of 2026-10-27, the eleventh part, superseded the decision; what the three rows state stands under the new one.
+
+### 2026-10-27 - docs/ARCHITECTURE.html - the masthead's price marked LIVE in the session and CLOSED outside it, the session's last quote standing until the bars hold its close
+Authorised by: The masthead marks its price LIVE while the session is open and CLOSED outside it, the session's last quote standing until the bars hold its close
+Was:
+> section 4: "and the price now: in the regular session the newest delayed quote stored inside it, marked live, with its own time, its change on the previous close, that it is delayed about 15 minutes and the previous close, and outside it the last stored close with its session; the line beneath says the levels and the plan come from completed sessions to the night they were computed on (see: The masthead carries the index and sector beside the price the page draws, a delayed quote in the session and the last stored close outside it)."
+>
+> 15.9's Masthead row: "on tonight's page in the regular session the newest delayed quote stored inside it, marked LIVE with its own time and its signed change on the previous close; elsewhere the last stored close as of its session (see: The masthead carries the index and sector beside the price the page draws, a delayed quote in the session and the last stored close outside it);"
+Now:
+> section 4: "and the price now with a pill saying what it is: in the regular session the newest delayed quote stored inside it, marked LIVE, with its own time, its change on the previous close, that it is delayed about 15 minutes and the previous close; once the session closes its last quote marked CLOSED with its own time and day until the bars hold the session's close; and otherwise the last stored close with its session, marked CLOSED, or LAST CLOSE inside the session before a quote is stored; ..." citing the new decision.
+>
+> 15.9's Masthead row: "...; once the session closes, its last quote marked CLOSED with its own time and day until the bars hold the session's close; elsewhere the last stored close as of its session marked CLOSED, or LAST CLOSE inside the session before a quote is stored (see: The masthead marks its price LIVE while the session is open and CLOSED outside it, the session's last quote standing until the bars hold its close);"
+Why: the operator's report page corrections of 2026-10-27, the fifth part: after the close the page set the price back to the session before's stored close while a newer quote was stored, and a page left open past the close stayed marked live.
+
+### 2026-10-27 - docs/RUNBOOK.md - the masthead after the close draws the session's last quote marked CLOSED until the night stores the close
+Authorised by: The masthead marks its price LIVE while the session is open and CLOSED outside it, the session's last quote standing until the bars hold its close
+Was:
+> Outside the session, on a page for an earlier night and in the exported file nothing is asked and the masthead draws the last stored close.
+Now:
+> Outside the session, on a page for an earlier night and in the exported file nothing is asked. Once the session has closed, tonight's page draws the session's last quote marked CLOSED with its own time until the night stores the session's close, and the last stored close marked CLOSED after it (see: ...).
+Why: the operator's report page corrections of 2026-10-27, the fifth part.
+
 ### 2026-10-27 - docs/ARCHITECTURE.html - the Fundamentals family's history test: section 13's paragraph, section 17's grid and the tester's release read
 Authorised by: The Fundamentals family's history test walks its trades over the pulled history on 144 settings an index and registers nothing
 Was:

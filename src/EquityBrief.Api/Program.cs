@@ -75,7 +75,14 @@ builder.Services.AddSingleton(_ =>
     StoreLocation.Within(checkout, builder.Configuration[StoreLocation.DataRootKey]));
 builder.Services.AddSingleton(services => new ReadApi(
     services.GetRequiredService<StoreLocation>().DatabaseFile,
-    services.GetRequiredService<IClock>()));
+    services.GetRequiredService<IClock>())
+{
+    // The industry an operator sets for a stock in place of the provider's, by its ticker, from the machine's settings.
+    // see: A stock's industry group is the provider's until an override is set and is checked against the page's own text, and the industry cycle reads only sources naming the company or its industry
+    IndustryOverrides = builder.Configuration.GetSection(ReadApi.IndustryOverridesKey).GetChildren()
+        .Where(entry => entry.Value is { Length: > 0 })
+        .ToDictionary(entry => entry.Key.ToUpperInvariant(), entry => entry.Value!, StringComparer.Ordinal),
+});
 builder.Services.AddSingleton<MarkRenderer>();
 
 // The two spend caps, read once at startup so a cap that is not an amount of money
@@ -268,7 +275,7 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
     var member = indexCode is null ? null : (await read.UniverseAsync(indexCode, night)).FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal));
     var quote = session is { } open ? await read.NewestQuoteAsync(ticker, open.Open, open.Close) : null;
     var quoteSession = session is { } window ? new QuoteSession(window.Open, window.Close, RegularSession.IsOpen(clock.UtcNow, clock.SessionZone)) : null;
-    var live = quoteSession is { IsOpen: true } ? quote : null;
+    var live = SinglePageApp.QuoteDrawn(quote, quoteSession, null, bars.Count > 0 ? bars[^1].SessionDate : null);
     var reportInputs = await read.ReportInputsAsync(ticker, null, through);
     var fundamentals = await read.FundamentalsAsync(ticker);
     var reactions = await read.ReactionsAsync(ticker);
@@ -390,6 +397,28 @@ app.MapGet(ReportExporter.Route + "{ticker}", async (string ticker, ReadApi read
         ReportExporter.FileName(ticker, name.AsOf));
 });
 
+// The report page's rules held over every member's page of an index as the read surface draws it for tonight, each rule
+// answering passed, failed or unexamined on each page: a page to read, or with format=json the same answers to keep.
+// see: Every report page rule is held over every name's drawn page and reported passed, failed or unexamined with the pages each failed on
+app.MapGet(ReportProof.Route, async (string? index, string? format, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock) =>
+{
+    var listed = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
+    var code = index ?? listed;
+    var night = await read.NewestNightAsync();
+    var pages = new List<ProofPage>();
+
+    foreach (var member in await read.UniverseAsync(code, night))
+    {
+        pages.Add(ReportProof.Evaluate(member.Ticker, (await NameAsync(read, marks, page, caps, clock, member.Ticker, listed, export: false)).Region));
+    }
+
+    var report = new ProofReport(clock.UtcNow, code, night, ReportProof.Counted(pages), pages);
+
+    return string.Equals(format, "json", StringComparison.Ordinal)
+        ? Results.Json(report)
+        : Results.Content(ReportProof.Html(report), "text/html; charset=utf-8");
+});
+
 // The name screen's region, read here and composed by the app, for the page and for the file.
 static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, string ticker, string index, bool export, DateOnly? on = null, CardContext? cardContext = null)
 {
@@ -500,8 +529,11 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         : null;
 
     // The stored stories of the thirty days before the night with their labels, which the news region draws and each
-    // move's cause reads.
-    var stories = night is { } storiedOn ? await read.NewsAsync(ticker, storiedOn) : [];
+    // move's cause reads: the company's own alone, a story the feed tagged it with that names another company left out.
+    // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+    var tagged = night is { } storiedOn ? await read.NewsAsync(ticker, storiedOn) : [];
+    var company = members.FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal))?.Name;
+    var stories = EquityBrief.Core.News.StoryMatch.Members(tagged, story => (story.Title, story.Text), ticker, company);
 
     // What the typical earnings move, the long view, the chart's marks and the moves' causes read. The typical move and
     // the long view are the newest night's alone, so a page for an earlier night draws neither.
@@ -580,7 +612,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // label the labeller wrote for it, whether the name was on the night's list and the labeller's own run
         // for the night, which say why a name holds no label.
         news: night is { } storied
-            ? NewsScreen.Build(ticker, storied, stories, gate is not null && gate.SessionDate == storied && gate.Passed, NewsScreen.RunFor(await read.LabellerRunsAsync(), storied))
+            ? NewsScreen.Build(ticker, storied, stories, gate is not null && gate.SessionDate == storied && gate.Passed, NewsScreen.RunFor(await read.LabellerRunsAsync(), storied), tagged.Count - stories.Count)
             : null,
         // The name's rows on the page's list for the night, where the setup families drew it, and the short-term dip's on
         // the name's own index beside them.
@@ -618,7 +650,22 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // From 22.13 where the Fundamentals family bought the name on the night, keeps a trade in it or flagged it.
         improving: night is { } improvedOn && await read.IndexOfAsync(ticker, improvedOn) is { } improvingIndex
             ? TonightScreen.OnTheFundamentalsCard(ticker, improvedOn, await read.ImprovingResultsAsync(improvingIndex, improvedOn), await read.ImprovingTradesAsync(improvingIndex, improvedOn))
-            : null);
+            : null,
+        // Which models the paid lane ran, so each job's model is named paid or local.
+        paidModels: await read.PaidModelsAsync(),
+        // The two newest swing lows the night confirmed, which say in plain words why the trend rule read the stock as it did.
+        swingLows: (night ?? (bars.Count > 0 ? bars[^1].SessionDate : (DateOnly?)null)) is { } swungBy ? await read.SwingLowsAsync(ticker, swungBy) : null,
+        // The newest results release accepted by the night, whose opening line the management box quotes.
+        newestRelease: (night ?? (bars.Count > 0 ? bars[^1].SessionDate : (DateOnly?)null)) is { } releasedBy ? await read.NewestReleaseOpeningAsync(ticker, releasedBy) : null,
+        // The history pulled before the store's year, read only where the stored year holds no band on a side of the close.
+        // see: Where the stored year holds no band on a side the name page draws bands read from the pulled history, marked older and read by nothing else
+        pulled: bars.Count > 0
+            && (!levels.Any(level => level.Role == EquityBrief.Core.Levels.LevelSeries.Resistance && level.LowEdge > bars[^1].Close)
+                || !levels.Any(level => level.Role == EquityBrief.Core.Levels.LevelSeries.Support && level.HighEdge < bars[^1].Close))
+            ? await read.PulledSeriesAsync(ticker, bars[0].SessionDate)
+            : null,
+        // The newest pass that wrote one section asked for alone, which the research region says what came of.
+        aloneDetail: await read.NewestAloneAsync(ticker));
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -747,7 +794,22 @@ app.MapPost(SinglePageApp.PassRoute + "{ticker}", async (string ticker, HttpRequ
     // research stands and no pass has run for it today.
     var refresh = string.Equals(form?["refresh"].FirstOrDefault(), "true", StringComparison.Ordinal);
 
-    var started = await read.AskAsync(ticker, from, Lane(builder.Configuration), refresh);
+    // A press asking for one of the name's own sections to be written again alone on the local model, which the page
+    // offers beneath each section left out; the industry cycle, its theme's, and a name no section carries are refused.
+    // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+    var section = form?["section"].FirstOrDefault();
+
+    if (section is not null
+        && (!EquityBrief.Core.Research.ClaimRules.Sections.Contains(section, StringComparer.Ordinal)
+            || string.Equals(section, EquityBrief.Core.Research.ClaimRules.CycleSection, StringComparison.Ordinal)))
+    {
+        return Results.Content(
+            $"<p class=\"pass-refused\" data-refused=\"section\">no pass was started: {System.Net.WebUtility.HtmlEncode(section)} is not one of {System.Net.WebUtility.HtmlEncode(ticker)}'s own sections, which are the ones written again alone</p>",
+            "text/html; charset=utf-8",
+            statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    var started = await read.AskAsync(ticker, from, Lane(builder.Configuration), refresh, section);
     var drain = started.Written ? launcher.Start() : null;
     var line = drain is null ? started.Line : started.Line + " " + drain.Line;
 
@@ -802,10 +864,27 @@ app.MapGet(SinglePageApp.QuoteRoute + "{ticker}", async (string ticker, ReadApi 
     var named = ticker.ToUpperInvariant();
 
     if (RegularSession.On(clock.SessionDateAt(now), clock.SessionZone) is not { } session
-        || !RegularSession.IsOpen(now, clock.SessionZone)
         || await read.NewestQuoteAsync(named, session.Open, session.Close) is not { } quote)
     {
         return Results.Json(new { live = false });
+    }
+
+    // Once the session has closed, its last quote where the bars hold no close of the session yet, marked closed, which
+    // the page's script draws once and asks no more.
+    if (!RegularSession.IsOpen(now, clock.SessionZone))
+    {
+        var window = new QuoteSession(session.Open, session.Close, false);
+
+        return (await read.BarsAsync(named, window.Day, DateOnly.MaxValue)).Count > 0
+            ? Results.Json(new { live = false })
+            : Results.Json(new
+            {
+                live = false,
+                closed = true,
+                askedAt = quote.AskedAt.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
+                price = SinglePageApp.PriceNow([], null, quote, closed: true),
+                asOf = SinglePageApp.QuoteAsOf(quote, quote.Night, closed: true),
+            });
     }
 
     // The tiles at the quote's price, worked by the functions the page's own tiles are.

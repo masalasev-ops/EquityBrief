@@ -93,7 +93,8 @@ public sealed record DecisionCardView(
     string? Approved = null,
     BehindItView? Behind = null,
     int? Cap = null,
-    decimal? Trail = null)
+    decimal? Trail = null,
+    string? Fill = null)
 {
     // The id the card's row and the control opening it share.
     public string Id => $"card-{Index}-{Family}-{Ticker}".ToLowerInvariant().Replace('.', '-').Replace(' ', '-');
@@ -146,6 +147,7 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary>{Escaped(CardSummary(card, setup))}</p>");
         body.Append(WhyItQualified(card));
         body.Append(ThePlan(card, setup, pick, levels is not null));
+        body.Append(card.Fill is { } fill ? Formatted($"<p class=\"card-fill\" data-fill>{Escaped(fill)}</p>") : string.Empty);
         body.Append(levels ?? string.Empty);
         body.Append(OtherChecks(card));
         body.Append(Hits(card));
@@ -250,6 +252,46 @@ public sealed partial class MarkRenderer
         }
 
         return body.Append("</ul></section>").ToString();
+    }
+
+    // A pick's own exit as the plan region opens on it: the family's target, its stop as a close below it and its time
+    // limit, whichever comes first, and that the levels' plan beneath is a buyer's without the pick.
+    public string PicksOwnExit(DecisionCardView card)
+    {
+        var setup = SetupOf(card.Family);
+        var exits = new List<string>();
+
+        if (card.Target is { } target)
+        {
+            exits.Add(Formatted($"at {Price(target)}"));
+        }
+
+        if (card.Stop is { } stop)
+        {
+            exits.Add(Formatted($"at a close below {Price(stop)}"));
+        }
+
+        if (card.Cap is { } cap)
+        {
+            exits.Add(Formatted($"after {cap} trading days"));
+        }
+
+        var sold = exits.Count == 0 ? "by its own exits" : exits.Count == 1 ? exits[0] : string.Join(", ", exits.Take(exits.Count - 1)) + " or " + exits[^1];
+
+        return Formatted($"<p class=\"picks-exit\" data-family=\"{Escaped(card.Family)}\">This stock is a pick of the {Escaped(setup)}, and its trade is sold {Escaped(sold)}, whichever comes first. The plan beneath is worked from its support and resistance levels for a buyer without the pick.</p>");
+    }
+
+    // How the rules read a stock a setup family picked, first: that family's sentence naming it and its night, and each
+    // check it passed as its card draws them.
+    // see: How the rules read it opens on the checks of the family that picked the stock, and every input that failed is named in plain words
+    public string PickedBy(DecisionCardView card)
+    {
+        var setup = SetupOf(card.Family);
+
+        return Formatted($"<section class=\"picked-by\" data-family=\"{Escaped(card.Family)}\"><h4>Why the {Escaped(setup)} picked it</h4>")
+            + Formatted($"<p class=\"card-summary\">{Escaped(CardSummary(card, setup))}</p>")
+            + WhyItQualified(card)
+            + "</section>";
     }
 
     // A checklist line's mark drawn as a tick, a note's sign or a warning's sign, the verdict's word its label and its

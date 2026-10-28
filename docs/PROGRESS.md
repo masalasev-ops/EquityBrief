@@ -10693,3 +10693,98 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 112 with none pending, schema version 112, against `data-ci` and never
             `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+
+### 18.4 ruling - the report page's sections fixed for every name, each a general rule held by a check over every stored page, in one pull request   2026-10-27
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      the operator's instruction of 2026-10-27, about 17:55 UTC, word for word in
+            `prompts/2026-10-27-report-page-fixes-every-name.md`: the report page's defects ROP showed first, fixed for
+            every name's page as general rules, adding to what exists and removing no capability, with no change to how
+            picks are chosen, the paper-trading ledger or the scorecard, and with code or the local model alone, no paid
+            model call and no analysts' ratings call, any fix seeming to need one stopped with its cost put first. Twelve
+            parts: written sections checking their own directional claims against the stored figures, naming both
+            sources where two disagree on a beat or a miss, their sources listed by title beneath them in place of
+            bracketed codes, and a release's abbreviations spelled out; the short version opening on the pick, then the
+            quarter, then what worked and what did not, the headline held to the same check; the newest quarter read
+            from its results release by code where the release is stored before the filing, labelled so, the awaited
+            and next report lines moving on once a quarter is reported, the quote box reading the newest release's
+            opening line, and the cross-check filling once the filing arrives; one value a concept on the page, worked
+            from the stored close and the filed shares or earnings, a provider's value dated and priced and labelled
+            stale where old, a key to the valuation's earnings and a check flagging any concept shown twice; the
+            header saying closed or live as the quote is; levels read from the pulled history where the year holds
+            none, the pick's target and stop on the chart, the plan naming the family's own exit, the fill and its
+            reward to risk restated, and an estimated next report date; the rules section opening on the family that
+            picked the name, every failing input named in plain words; news matched to the company and its exchange,
+            every story passing labelled and counted again; the industry overridable and labelled as the provider's,
+            its group checked against the page's own text, and the industry cycle's sources held to the company's or
+            its industry's terms; a failed piece run again alone on the local model; each job's model named; and every
+            rule held by a check over every name's stored page, reported pass, fail or unexamined with the names
+            affected, ROP kept as a frozen fixture.
+Queue:      done, PRs 573 to 576; in progress, this pull request; next, the operator's word on 22.14's pullback version
+            and on 22.15's freezes.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - correction: every name's report page held to the rules ROP's showed it broke, each read back over every page by a proof the read surface draws   2026-10-28
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source, and lands nothing.
+Found:      the operator's reading of ROP's page on 2026-10-27, the ruling's twelve parts: a bear case calling an
+            operating margin of 28.7% against 28.4% narrower and a 0.2% revenue beat a miss, bracketed codes and DEPS
+            unexplained; a short version not opening on the pick; the quarter to September under the July filing's
+            label, the segments the June quarter's and the next report still the day it reported; market value at 35.5B
+            and 45.3B, the forward multiple, the yield and the year's high each drawn twice; LIVE on a closed session's
+            quote; no band above the price, no exit in the plan and no stop or target on the chart; the swing filter's
+            gates first for a stock the drift family picked, its trend gate unexplained; 35 of 79 stories Roche's; a
+            peer group of hardware makers for a software company; sections left out with only the paid regenerate to
+            write them again; and no model named for each job.
+Corrected:  each part for every name's page as the decisions this pull request writes state it: sentences of a section
+            written after the latest quarter's report held to its directions, markers out, sources by title,
+            abbreviations spelled out; the short version on the pick, then the quarter; a quarter a release reported
+            before its filing labelled as the release's, the next report and the awaited line moving on, the release's
+            opening line quoted; one value a concept; CLOSED and LIVE; older bands from the pulled history, CLAUDE.md's
+            hard rule naming the read; the pick's lines, exit, estimated report and fill; the rules opening on the
+            picking family; news matched to the company and recounted; the peer group labelled and flagged, the
+            cycle's sources held to the company or its industry; a section left out written again alone on the local
+            model, migration 113 giving the request its `section`; each job's model named; and `/proof/report-pages`.
+Proof:      over the night of 2026-10-27, read at 00:43 to 01:05 on 2026-10-28 from this branch over the live store, the
+            S&P 500's 503 pages, the 400's 400 and the 600's 602: every rule passed on every page it could be read on
+            but the newest quarter on 19 of the S&P 500's, BA, BKR, BXP, CNC, COR, ECL, ESS, EXR, FCX, HCA, IQV, ITW,
+            IVZ, NXPI, PPG, SHW, SMCI, V and VTR, each drawing a results release accepted after the quarter following
+            its card's had ended while the fetch held no newer quarter. Passed, by index: the directions on 188, 10 and
+            18 pages, the markers and the abbreviations on 197, 10 and 18, the short version on 39, 10 and 17, one value
+            and the header on all 1505, older bands on 61, 58 and 69, a pick's four rules on 6, 4 and 1, the trend's
+            words on 401, 1 and none, the news on all 1505, the peer group's label on 500, 400 and 600, its flag on 40,
+            9 and 17, the section written again alone on 17, 7 and 11, and the models on all 1505; every other answer
+            unexamined. The first read, from the tree before the last correction, failed GM's directions: its short
+            version of 2026-10-11, written of the quarter before the one reported on 2026-10-21, joined its sentences by
+            a marker and a line break, and the page read them as one.
+Tests:      19 new; 2853 in all.
+Claims:     none new: the rows are amended in place.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, one for each
+            part and one for the proof, each filtered to the tests reading it. R1 a contradicted sentence kept: red at
+            the sentence test and the proof's. R2 the lead dropping the pick beside a quarter: red at the short
+            version's. R3 the card dated by the filing whatever the report: red at the quarter's label. R4 no concept
+            read as drawn twice: red at the concept test and the proof's. R5 a closed session's quote drawn LIVE: red
+            at two of the masthead's. R6 a side the year holds read from the pulled history: red at the older bands'.
+            R7 the family's checks after the gates: red at both cards' page tests. R8 any story the company's: red at
+            the story match's. R9 no mismatch named: red at the proof's. R10 the day's gate holding a section asked for
+            alone: red at its fixture test. R11 the drain waiting before a section asked for alone: red at the press's.
+            R12 every model drawn as local: red at the jobs table's. R13 an unexamined page counted as passed: red at
+            the proof's. R14 a section written before the quarter's report held to it, and R15 sentences cut before
+            their markers come out: red at the sentence-splitting test. R7 and R13 read no assertion before the runs,
+            the order and an unexamined count, and each was added before its mutation.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2853 of 2853 tests ran
+            with none failed, migrations 0 to 113 with none pending, schema version 113, against `data-ci` and never
+            `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the quarter's segments read by code from the results release's own tables: the stored release text is the
+            exhibit flattened, and a strict reader holding the segments to the release's total and the total to the
+            fetched revenue read 1 of the 111 S&P 500 names whose fetch held a quarter newer than its filing on
+            2026-10-27; reading them needs the exhibit's tables stored as tables, put to the operator. Every story that
+            passes labelled: the paid labeller's calls, about $12.57 once and $16 a month at the measured rate against
+            a month limit of $5, put to the operator. The quarters fetch had asked for none of COR's, SMCI's or BA's
+            quarters since 2026-10-14 and none of V's since 2026-10-10, though each has released a newer quarter
+            since, put to the operator. ROP's
+            and two other names' pages read again after the merge, once the store is at schema 113.

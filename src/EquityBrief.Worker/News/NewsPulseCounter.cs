@@ -82,15 +82,16 @@ public sealed class NewsPulseCounter : IComponent
     public static string Cut(string text) =>
         text.Length <= EquityBrief.Core.News.NewsInstruction.TextCharacters ? text : text[..EquityBrief.Core.News.NewsInstruction.TextCharacters];
 
-    // Members on the session counted: joined by it, where the join date is
+    // Members on the session counted, each with its company's name: joined by it, where the join date is
     // known, and not left by it.
     // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
     const string CurrentMembers = @"
-        SELECT DISTINCT ticker
+        SELECT ticker, MAX(name)
         FROM membership
         WHERE " + IndexScope.Condition + @"
           AND (joined IS NULL OR joined <= $session)
           AND (""left"" IS NULL OR ""left"" > $session)
+        GROUP BY ticker
         ORDER BY ticker;
     ";
 
@@ -164,13 +165,14 @@ public sealed class NewsPulseCounter : IComponent
         // phase 5 wrote, because a fixture of four names cannot show it.
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
 
-        foreach (var ticker in members)
+        foreach (var (ticker, company) in members)
         {
             // A member the day wrote nothing about gets a row carrying zero.
             // That is a measurement rather than an absence: the pulse is
             // compared against its own baseline, and a night missing from the
             // series would read as a night nobody counted.
-            var count = byName.TryGetValue(ticker, out var found) ? found.Count : 0;
+            var found = Own(byName, ticker, company);
+            var count = found.Count;
 
             await using var command = connection.CreateCommand();
 
@@ -188,7 +190,7 @@ public sealed class NewsPulseCounter : IComponent
             }
 
             // The member's articles themselves, for the labeller and the pages, each judged as it is stored.
-            foreach (var article in found ?? [])
+            foreach (var article in found)
             {
                 await using var keep = connection.CreateCommand();
 
@@ -239,9 +241,9 @@ public sealed class NewsPulseCounter : IComponent
 
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
 
-        foreach (var ticker in members)
+        foreach (var (ticker, company) in members)
         {
-            foreach (var article in byName.TryGetValue(ticker, out var found) ? found : [])
+            foreach (var article in Own(byName, ticker, company))
             {
                 await using var keep = connection.CreateCommand();
 
@@ -291,7 +293,7 @@ public sealed class NewsPulseCounter : IComponent
         return await command.ExecuteNonQueryAsync(cancellation);
     }
 
-    static async Task<IReadOnlyList<string>> MembersAsync(
+    static async Task<IReadOnlyList<(string Ticker, string? Company)>> MembersAsync(
         SqliteConnection connection,
         string indexCode,
         DateOnly session,
@@ -304,17 +306,25 @@ public sealed class NewsPulseCounter : IComponent
         IndexScope.Bind(command, indexCode, wider);
         command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
-        var members = new List<string>();
+        var members = new List<(string, string?)>();
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         while (await reader.ReadAsync(cancellation))
         {
-            members.Add(reader.GetString(0));
+            members.Add((reader.GetString(0), reader.IsDBNull(1) ? null : reader.GetString(1)));
         }
 
         return members;
     }
+
+    // The stories the feed tagged a member with that are its own: those naming the company by its name or its American
+    // listing, which alone are counted and stored.
+    // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+    static IReadOnlyList<NewsArticle> Own(IReadOnlyDictionary<string, IReadOnlyList<NewsArticle>> byName, string ticker, string? company) =>
+        byName.TryGetValue(ticker, out var tagged)
+            ? EquityBrief.Core.News.StoryMatch.Members(tagged, article => (article.Title, article.Text), ticker, company)
+            : [];
 
     static async Task<int> DroppedAsync(SqliteConnection connection, DateOnly oldest, CancellationToken cancellation)
     {

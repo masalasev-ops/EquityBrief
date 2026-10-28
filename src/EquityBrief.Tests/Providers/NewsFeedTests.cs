@@ -220,23 +220,25 @@ public class NewsFeedTests
         // claim: the count does not grow with the population.
         Assert.Equal(1, feed.Requests);
 
-        // Every article reaches every name it names, and no name it does not.
+        // Every article reaches every American listing it names, and no name it does not: a listing on another exchange is
+        // another company's however its letters read.
+        // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
         foreach (var article in articles)
         {
-            foreach (var symbol in article.Symbols)
+            foreach (var symbol in article.American!)
             {
                 Assert.Contains(article, byName[symbol]);
             }
         }
 
         Assert.All(byName, pair => Assert.All(pair.Value, article =>
-            Assert.Contains(pair.Key, article.Symbols, StringComparer.OrdinalIgnoreCase)));
+            Assert.Contains(pair.Key, article.American!, StringComparer.OrdinalIgnoreCase)));
 
-        // And the sum over names is at least the article count, since an article
-        // naming three tickers reaches three. Stated because a fan-out that
-        // returned each article once would pass every assertion above.
+        // And the sum over names is at least the count of articles naming an American listing, since an article naming
+        // three tickers reaches three. Stated because a fan-out that returned each article once would pass every
+        // assertion above.
         Assert.True(
-            byName.Sum(pair => pair.Value.Count) >= articles.Count,
+            byName.Sum(pair => pair.Value.Count) >= articles.Count(article => article.American!.Count > 0),
             "The fan-out reached fewer name-articles than there are articles, so it is not fanning out.");
     }
 

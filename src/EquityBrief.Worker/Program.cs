@@ -92,8 +92,8 @@ static int NoVerb()
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
         "'research --ticker <TICKER>' writes the sections of one name's research that are not written or have gone " +
-        "stale, with '--refresh' to fetch its figures again and write every section again, once a day, and '--paid-for-local' to have the paid model write the " +
-        "local lane's sections as well, " +
+        "stale, with '--refresh' to fetch its figures again and write every section again, once a day, '--paid-for-local' to have the paid model write the " +
+        "local lane's sections as well, and '--section <section>' to write one section the checker left out again alone on the local model, " +
         "'drain' works through the reports a screen asked for, oldest first, running the research verb for each, with " +
         "'--now <TICKER>' writing that one request alone ahead of the queue and '--at-peak' writing it inside a peak window too, and " +
         "'register --candidate <name> --rule <rule> --test <test> --evaluator <evaluator> --parameters <name=value,...>' " +
@@ -1519,6 +1519,17 @@ static async Task<int> ResearchPass(string[] args)
         return 1;
     }
 
+    // One section the checker left out, asked for alone, which the local model writes again by itself.
+    // see: A section the checker left out is written again alone on the local model at a press, and the day's one regenerate does not hold it
+    var alone = Argument(args, RequestDrain.SectionFlag);
+
+    if (args.Contains(RequestDrain.SectionFlag) && string.IsNullOrWhiteSpace(alone))
+    {
+        Console.Error.WriteLine("research: '--section' was given with no section after it, and a section asked for alone is named.");
+
+        return 1;
+    }
+
     OnDemandFeeds feeds;
     LocalModelSettings local;
     ResearchModelSettings research;
@@ -1632,11 +1643,12 @@ static async Task<int> ResearchPass(string[] args)
         lane,
         clock,
         database,
-        models).RunAsync(ticker, runId, new ResearchPassRequest(regenerate, args.Contains("--paid-for-local"), args.Contains(RequestDrain.AtPeakFlag)));
+        models).RunAsync(ticker, runId, new ResearchPassRequest(regenerate, args.Contains("--paid-for-local"), args.Contains(RequestDrain.AtPeakFlag), alone));
 
-    // The trial, after a pass that wrote one of its sections through the paid lane at the first draft.
+    // The trial, after a pass that wrote one of its sections through the paid lane at the first draft; never after a
+    // section asked for alone, which the local model wrote and which buys no paid call.
     // see: A trial asks a second profile for named sections beside a report, and ships naming none
-    if (trial is not null && outcome.Written.Any(written => trial.Sections.Contains(written.Section, StringComparer.Ordinal) && !written.Retry))
+    if (trial is not null && alone is null && outcome.Written.Any(written => trial.Sections.Contains(written.Section, StringComparer.Ordinal) && !written.Retry))
     {
         foreach (var tried in await new SectionTrial(CapFor(trial.Profile), trial, clock, database).RunAsync(ticker, runId))
         {
@@ -1646,7 +1658,7 @@ static async Task<int> ResearchPass(string[] args)
 
     // The review, after the trial and on the same condition, where the settings name a profile for it.
     // see: A review asks a section's model to check its own draft against the section's rules, beside a stated number of reports
-    if (review is not null && outcome.Written.Any(written => review.Sections.Contains(written.Section, StringComparer.Ordinal) && !written.Retry))
+    if (review is not null && alone is null && outcome.Written.Any(written => review.Sections.Contains(written.Section, StringComparer.Ordinal) && !written.Retry))
     {
         foreach (var reviewed in await new SectionTrial(CapFor(review.Profile), review, clock, database, review: true).RunAsync(ticker, runId))
         {

@@ -223,7 +223,7 @@ public partial class ReadSurface
         // to 8 of 9, M3 bought on 2 Oct and kept at 7 of 9, and M2's release of 30 Sep waiting for its filing.
         Assert.Contains("<p class=\"listed-under improving-held\">Fundamentals buys it at the next open: its filing of 2026-10-01 lifted its score to 8 of 9, from 5 of 9.</p>", await Name("M1"), StringComparison.Ordinal);
         Assert.Contains("<p class=\"listed-under improving-held\">Fundamentals bought it on 2026-10-02 and keeps it while its score stays at 7 of 9 or more.</p>", await Name("M3"), StringComparison.Ordinal);
-        Assert.Contains("<p class=\"listed-under improving-held\">Fundamentals flagged it: its results release of 2026-09-30 reads results better than expected. It is bought only if its filing lifts it to 8 of 9.</p>", await Name("M2"), StringComparison.Ordinal);
+        Assert.Contains("<p class=\"listed-under improving-held\">Fundamentals flagged it: its results release of 2026-09-30 reads results better than expected. The Fundamentals family buys it only if its filing lifts it to 8 of 9, and that buy waits for the filing; no other family's buy waits on it.</p>", await Name("M2"), StringComparison.Ordinal);
 
         // The chart page's chip in the fundamentals-first family's place, its summary and, for the stock it bought, its way in
         // with no stop.

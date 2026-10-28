@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using EquityBrief.Api.Reading;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
@@ -346,6 +347,12 @@ public partial class ReadSurface
                 ["how-to-read", "s-the-short-version", "card"],
                 Regex.Matches(named, "<section class=\"(?:card[^\"]*|absent)\" id=\"([^\"]+)\"").Select(match => match.Groups[1].Value).Take(3));
             LinesReadBack(card, top.Groups[1].Value, pressed: false);
+
+            // How the rules read it opens on the checks of the family that picked it, before the swing filter's gates, and
+            // the proof reads it so.
+            // see: How the rules read it opens on the checks of the family that picked the stock, and every input that failed is named in plain words
+            Assert.Matches(new Regex($"data-card=\"rules\"><div class=\"card-h\">.*?</div><div class=\"card-b\"><section class=\"picked-by\" data-family=\"{card.Family}\"", RegexOptions.Singleline), named);
+            Assert.Equal(ReportProof.Passed, ReportProof.Evaluate(card.Ticker, named).Verdicts.Single(verdict => verdict.Rule == "rules-family").Verdict);
         }
 
         return rows;
@@ -465,7 +472,7 @@ public partial class ReadSurface
             pass: new ResearchPassLine("ok", new DateOnly(2026, 10, 17), "the newest research pass for this name ran on 2026-10-17 over 12 document(s)"));
         var read = WebUtility.HtmlDecode(drawn);
 
-        Assert.Contains("The two cases is left out: refused at its third retry: a figure no fact holds, 1 figure named</p>", read, StringComparison.Ordinal);
+        Assert.Contains("The two cases are left out: refused at its third retry: a figure no fact holds, 1 figure named</p>", read, StringComparison.Ordinal);
         Assert.Contains("The industry cycle is not written: the theme could not be refreshed: declined for lack of industry sources: the searches found 5 pages about Insurance - Property & Casualty, from federalreserve.gov, spglobal.com and statista.com</p>", read, StringComparison.Ordinal);
         Assert.Contains("the searches found 1 page about Farm Products, from statista.com</p>", read, StringComparison.Ordinal);
         Assert.Contains("ran on 2026-10-17 over 12 documents</p>", read, StringComparison.Ordinal);

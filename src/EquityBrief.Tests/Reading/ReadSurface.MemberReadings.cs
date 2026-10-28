@@ -109,7 +109,7 @@ public partial class ReadSurface
 
         // Each reading's words carry the window the shared function reads, so a window moved in the code moves the page.
         Assert.Contains($"over the last {MemberReadings.DollarVolumeSessions} sessions", bb, StringComparison.Ordinal);
-        Assert.Contains($"Highest high of the {MemberReadings.YearSessions} sessions before the night", bb, StringComparison.Ordinal);
+        Assert.Contains($"The high a breakout reads: the highest high of the {MemberReadings.YearSessions} sessions before the night, the night left out, not the year's high the page draws", bb, StringComparison.Ordinal);
         Assert.Contains($"return over {MemberReadings.IndustryWindows[0]} sessions", bb, StringComparison.Ordinal);
         Assert.Contains($"The same over {MemberReadings.IndustryWindows[1]} sessions", bb, StringComparison.Ordinal);
         Assert.Contains($"over the {MemberReadings.PeerSessions} sessions before the night", bb, StringComparison.Ordinal);

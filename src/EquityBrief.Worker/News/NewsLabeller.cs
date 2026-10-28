@@ -104,8 +104,8 @@ public sealed class NewsLabeller : IComponent
         ORDER BY IFNULL(" + FamilyList.PlaceOn("g.ticker", "g.session_date") + ", 0), " + FundamentalState.PlaceIn("f.state") + @", g.rank, g.ticker;
     ";
 
-    // A member's admitted articles of the window not yet labelled under the active profile and version,
-    // newest first, at most the count a name is sent for.
+    // A member's admitted articles of the window not yet labelled under the active profile and version, newest first,
+    // which the run reads the member's own stories from.
     const string ArticlesToLabel = @"
         SELECT a.article_id, a.title, a.text
         FROM news_article a
@@ -116,8 +116,7 @@ public sealed class NewsLabeller : IComponent
           AND NOT EXISTS (
               SELECT 1 FROM news_label b
               WHERE b.ticker = a.ticker AND b.article_id = a.article_id AND b.profile = $profile AND b.instruction_version = $version)
-        ORDER BY a.published_at DESC
-        LIMIT $most;
+        ORDER BY a.published_at DESC;
     ";
 
     const string ArticlesRefused = @"
@@ -247,7 +246,15 @@ public sealed class NewsLabeller : IComponent
             refused += await CountAsync(connection, ArticlesRefused, ticker, from, to, cancellation);
             already += await CountAsync(connection, ArticlesLabelled, ticker, from, to, cancellation);
 
-            foreach (var (articleId, title, text) in await ArticlesAsync(connection, ticker, from, to, cancellation))
+            // The member's own stories alone, newest first and at most the count a name is sent for: a story the feed
+            // tagged with another company's listing of the same ticker is never sent.
+            // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+            var own = (await ArticlesAsync(connection, ticker, from, to, cancellation))
+                .Where(article => StoryMatch.IsAbout(article.Title, article.Text, ticker, company))
+                .Take(ArticlesAName)
+                .ToList();
+
+            foreach (var (articleId, title, text) in own)
             {
                 var request = new ModelRequest(NewsInstruction.Lane, NewsInstruction.Section, settings.Model, [articleId], NewsInstruction.System, NewsInstruction.Prompt(company, ticker, title, text));
 
@@ -422,7 +429,6 @@ public sealed class NewsLabeller : IComponent
         command.Parameters.AddWithValue("$to", to);
         command.Parameters.AddWithValue("$profile", settings.Profile);
         command.Parameters.AddWithValue("$version", NewsInstruction.Version);
-        command.Parameters.AddWithValue("$most", ArticlesAName);
 
         var articles = new List<(string, string, string)>();
 

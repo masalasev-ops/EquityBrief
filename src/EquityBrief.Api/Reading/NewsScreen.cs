@@ -10,7 +10,7 @@ namespace EquityBrief.Api.Reading;
 // name's news region, tonight's counts and the Run page's labeller line and its count toward the nights its
 // limits are settled from. It reads, counts and orders, and computes nothing a label holds.
 // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
-// see: The news labels alone name the model that wrote them
+// see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
 public static class NewsScreen
 {
     // What a labeller's run row says in its detail: the night it labelled, the profile and the model, the
@@ -95,7 +95,9 @@ public static class NewsScreen
     // A name's news region for a night: each stored article of the window with the newest label written for
     // it, the counts the tabs and the bar draw, the model that wrote the newest label, and where the name
     // holds no label the one line saying why, read off the labeller's run for the night and the night's list.
-    public static NewsView Build(string ticker, DateOnly night, IReadOnlyList<NewsArticleRow> articles, bool listed, LabellerRunRow? run)
+    // The articles are the company's own, those the feed tagged it with that name another company counted apart.
+    // see: A story is a member's where it names the company by its name or its American listing, and no other story is drawn or counted
+    public static NewsView Build(string ticker, DateOnly night, IReadOnlyList<NewsArticleRow> articles, bool listed, LabellerRunRow? run, int otherCompanies = 0)
     {
         var rows = new List<NewsRow>(articles.Count);
 
@@ -147,7 +149,8 @@ public static class NewsScreen
             newest?.Model,
             newest?.Profile,
             why,
-            code);
+            code,
+            otherCompanies);
     }
 
     // Why a name holding articles holds no label for the night, in one line: the labeller has not run for

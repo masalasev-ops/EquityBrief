@@ -119,7 +119,7 @@ public static partial class TonightScreen
         IReadOnlyList<FundamentalReadingRow>? readings = null,
         // Each name's positive and negative stories of the thirty days before, as the name page's bar counts
         // them, for the names the labeller has labelled; a name absent from it carries no count.
-        // see: The news labels alone name the model that wrote them
+        // see: Every report names the model each of its jobs ran on and whether it is paid or local, the news region the model of its newest label
         IReadOnlyDictionary<string, (int Positive, int Negative)>? news = null)
     {
         var (drawn, statePlace) = Drawer(night, cellByTicker, closesToTheNight, suspects, researched, readings);

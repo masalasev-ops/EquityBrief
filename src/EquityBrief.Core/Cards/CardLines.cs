@@ -234,6 +234,65 @@ public static class CardLines
         return day <= night ? null : ExchangeClosures.SessionsBetween(night, day).Count + 1;
     }
 
+    // The next report estimated where none is on file, as an ex-dividend date is estimated from the last declared: the
+    // company's report of the year before whose day a year on falls first after the night, a year on, marked as an
+    // estimate; none where no report of the last year and a little more is stored.
+    // see: A pick's card estimates the next report from the company's own a year before and places it in the hold, and restates the fill and its reward to risk once the open prints
+    public static (DateOnly From, DateOnly Estimated)? EstimatedReport(IEnumerable<DateOnly> reported, DateOnly night) =>
+        reported
+            .Where(day => day > night.AddDays(-EstimateReach) && day.AddDays(ReportYear) > night)
+            .OrderBy(day => day)
+            .Select(day => ((DateOnly, DateOnly)?)(day, day.AddDays(ReportYear)))
+            .FirstOrDefault();
+
+    // Fifty-two weeks, which keeps a report on the weekday the company reported on a year before, and how far back a
+    // report is read from, a year and a quarter.
+    public const int ReportYear = 364;
+    public const int EstimateReach = 455;
+
+    // The fill once the open after the night prints: the session and its open against the price the plan was worked at,
+    // and the reward against the risk restated at it, the target's distance above the fill over the stop's below; none
+    // until the open is stored.
+    // see: A pick's card estimates the next report from the company's own a year before and places it in the hold, and restates the fill and its reward to risk once the open prints
+    public static string? Filled(DateOnly night, decimal? worked, decimal? stop, decimal? target, IEnumerable<(DateOnly Session, decimal Open)> sessions)
+    {
+        if (sessions.Where(session => session.Session > night).OrderBy(session => session.Session).Select(session => ((DateOnly Session, decimal Open)?)session).FirstOrDefault() is not { } first)
+        {
+            return null;
+        }
+
+        var (on, open) = first;
+        var said = FormattableString.Invariant($"Filled at the open of {on:yyyy-MM-dd}, {open:0.00}") + (worked is { } at ? FormattableString.Invariant($", against the {at:0.00} the plan was worked at") : string.Empty);
+
+        return stop is { } floor && target is { } aim
+            ? open <= floor
+                ? said + FormattableString.Invariant($"; the open was at or below the stop of {floor:0.00}, so the plan's reward against its risk does not stand at the fill.")
+                : open >= aim
+                    ? said + FormattableString.Invariant($"; the open was at or above the target of {aim:0.00}.")
+                    : said + FormattableString.Invariant($"; at the fill the reward against the risk is {(aim - open) / (open - floor):0.00}, the target of {aim:0.00} over the stop of {floor:0.00}.")
+            : said + ".";
+    }
+
+    // The earnings line where no report is on file and one is estimated: the estimate and the report it was taken from,
+    // the session it moves and whether that falls inside the hold's cap, a warning inside it and a note after it.
+    public static CardLine EstimatedEarnings((DateOnly From, DateOnly Estimated) estimate, DateOnly night, int? cap)
+    {
+        var said = FormattableString.Invariant($"No report date is on file for it; estimated from its report of {estimate.From:yyyy-MM-dd} a year on, its next is about {estimate.Estimated:yyyy-MM-dd}");
+
+        if (SessionsTo(night, estimate.Estimated, EventTiming.Unstated) is not { } sessions)
+        {
+            return new CardLine(4, EarningsName, CardVerdict.Warn, said + ", past the exchange calendar's table, so it cannot be placed in the hold.");
+        }
+
+        var moves = FormattableString.Invariant($"{said}, the session {sessions} {Plural(sessions, "session")} after the night");
+
+        return cap is { } most
+            ? sessions <= most
+                ? new CardLine(4, EarningsName, CardVerdict.Warn, FormattableString.Invariant($"{moves}, inside the hold's cap of {most} sessions."))
+                : new CardLine(4, EarningsName, CardVerdict.Note, FormattableString.Invariant($"{moves}, after the hold's cap of {most} sessions."))
+            : new CardLine(4, EarningsName, CardVerdict.Warn, moves + "; the rule states no cap to place it against.");
+    }
+
     // The earnings line: a warning where the next report moves a session inside the time by which the card's share of the
     // rule's replayed trades had ended, or where no report is on file; a note where it falls inside the rule's cap alone;
     // and a tick where it falls after both. A rule with no record reads the cap alone, and warns inside it.
