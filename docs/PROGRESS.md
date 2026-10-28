@@ -10903,7 +10903,9 @@ Corrected:  the labeller asks the local model alone, under a label pin written b
 Tests:      2 new, the labeller's twelve rewritten for the local model; 2857 in all.
 Claims:     none new: three of section 18's rows retitled in place, for the local model not answering, the pin and the
             lock, and the rest amended in place.
-Pins:       none move; no rule's code version moves, held by the filter's and the scorer's pin tests.
+Pins:       none move; no rule's code version and no readings version moves, held by the filter's, the scorer's and
+            the ledger readings' pin tests, the last of which turned the first run red where the slot's reading was
+            written into the availability rule's file, so it is the labeller's own.
 Mutated:    the rule, stated before the runs: the smallest edit undoing each property the correction adds, each
             filtered to the tests reading it. M1 the schema's kinds by their names, M2 a paid kind read as itself, M3 the
             reason's pattern admitting a digit, M4 a line break left in the answer, M5 no part read as differing from the

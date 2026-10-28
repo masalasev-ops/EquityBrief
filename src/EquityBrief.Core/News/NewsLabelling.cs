@@ -48,6 +48,17 @@ public static class NewsLabelling
 
     public static string WindowTo(DateOnly night) => night.AddDays(1).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 
+    // The start of the local run's first slot at or after an instant, in UTC, which a labeller stops before.
+    // see: The news labeller waits for the local model's lock and stops before the local run's next slot, its time limit counted from its start
+    public static DateTimeOffset NextLocalSlotStart(DateTimeOffset from)
+    {
+        var day = DateOnly.FromDateTime(from.UtcDateTime);
+
+        return new[] { day.ToDateTime(Releases.LocalSlots.EarlyStart), day.ToDateTime(Releases.LocalSlots.LateStart), day.AddDays(1).ToDateTime(Releases.LocalSlots.EarlyStart) }
+            .Select(start => new DateTimeOffset(start, TimeSpan.Zero))
+            .First(start => start >= from);
+    }
+
     // The latest instant a run started at an instant can end: the start plus its limit, which counts its wait for the
     // local model's lock. A paid run, whose profile named peak windows it waited through rather than labelled in, ended
     // its limit counted over the time outside them, so one started inside a window ended its limit after the window.

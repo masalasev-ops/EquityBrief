@@ -263,7 +263,7 @@ public sealed class NewsLabeller : IComponent
         var names = listed.Concat((await ReportedAsync(connection, session, cancellation)).Where(reported => !listed.Any(name => name.Ticker == reported.Ticker))).ToList();
         var from = session.AddDays(-WindowDays).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var to = session.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        var slot = LocalSlots.NextStart(clock.UtcNow);
+        var slot = NewsLabelling.NextLocalSlotStart(clock.UtcNow);
 
         return await LabelAsync(
             connection,

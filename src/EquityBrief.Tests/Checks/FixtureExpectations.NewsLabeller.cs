@@ -445,7 +445,7 @@ public partial class FixtureExpectations
 
         Assert.Equal(
             [At(9, 12, 5), At(9, 12, 5), At(9, 21, 40), At(10, 12, 5)],
-            new[] { At(9, 4, 5), At(9, 12, 5), At(9, 12, 6), At(9, 21, 41) }.Select(LocalSlots.NextStart));
+            new[] { At(9, 4, 5), At(9, 12, 5), At(9, 12, 6), At(9, 21, 41) }.Select(NewsLabelling.NextLocalSlotStart));
 
         using var store = await NewsStore();
 
