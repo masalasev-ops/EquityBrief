@@ -10972,8 +10972,9 @@ Corrected:  a newer quarter's results release is read by code for its own segmen
             saying so. A beat or a miss the stored estimate contradicts is withheld with both sources named in one
             sentence, and a move's written cause is read and cleaned as a section is. A document's label used as a word is
             drawn as the kind of document it names. A stock held on a family's open trade opens on it: the short version's
-            held paragraph, a short card, the plan's own exits, the exits line naming them where the levels' plan places
-            none, as it now names a pick's, and the chart's stop and target; the earlier picks' key names each setup's own
+            held paragraph, its written paragraph on the levels' plan left to the plan region as a pick's is, a short card
+            styled as the snapshot's rows are, the plan's own exits, the exits line naming them where the levels' plan
+            places none, as it now names a pick's, and the chart's stop and target; the earlier picks' key names each setup's own
             limit; what worked and what did not is drawn four sentences a paragraph, an abbreviation spelled out only in a
             sentence left out spelled out where next used. A story is a member's where its title or the first six hundred
             characters of its text name the company, a bracketed listing on another exchange read as that exchange's.
@@ -10990,12 +10991,12 @@ Drawn:      ROP, held on the drift: its release's three segments summing to its 
             report estimated about 2027-01-26, five contradicted sentences withheld and no label left; KEY, a bank held on the
             drift, whose release states no segment table and whose stored bands reach both its levels; and P, the night's
             pullback pick, opening on the pick with its plan's own exit. Nothing was written again.
-Proof:      over the S&P 500's 503 pages of the night of 2026-10-27, drawn from the branch over the live store at 09:43
+Proof:      over the S&P 500's 503 pages of the night of 2026-10-27, drawn from the branch over the live store at 10:39
             UTC, each rule passed, failed and unexamined: directions 195, 0, 308; markers 204, 0, 299; abbreviations 204, 0,
             299; short-version 42, 0, 461; held-trade 20, 0, 483; what-worked 42, 0, 461; own-limit 41, 0, 462; one-value
             503, 0, 0; header 503, 0, 0; levels-older 61, 0, 442; pick-on-chart 26, 0, 477; levels-cover 26, 0, 477;
             pick-exit 6, 0, 497; next-report 6, 0, 497; next-report-estimated 160, 0, 343; rules-family 6, 0, 497;
-            trend-words 401, 0, 102; news-matched 503, 0, 0; news-labelled 21, 482, 0, the relabel not yet through;
+            trend-words 401, 0, 102; news-matched 503, 0, 0; news-labelled 26, 477, 0, the relabel not yet through;
             industry-label 500, 0, 3; industry-mismatch 42, 0, 461, with 19 groups proposed; sources-relevant 500, 0, 3;
             newest-quarter 457, 45, 1, each a release newer than the quarter the quarters fetch has stored;
             segments-release 15, 0, 488, of them 382 on the filing's quarter and 106 whose release states no segment table
@@ -11016,7 +11017,8 @@ Mutated:    the rule, stated before the runs: the smallest edit undoing each pro
             stopping at the two nearest, M14 no estimate beside a next report not announced, M15 the held-trade rule passing
             every held page, M16 a commentary read as the release's whatever its facts file carried, M17 no line where a
             target lies beyond every band, M18 any second column read as the year before, M19 a story's title read as the
-            page's writing, M20 no abbreviation spelled out again after the cap: each red at the tests reading it.
+            page's writing, M20 no abbreviation spelled out again after the cap, M21 the held-trade rule reading no plan
+            paragraph beneath the trade: each red at the tests reading it.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
             last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2868 of 2868 tests ran
             with none failed, migrations 0 to 114 with none pending, schema version 114, against `data-ci` and never

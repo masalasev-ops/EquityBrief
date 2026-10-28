@@ -41,7 +41,7 @@ public static partial class ReportProof
         ("markers", "No source marker, bracketed or a document's label used as a word, is drawn in a written section or a move's cause, and a section's sources are listed by title beneath it."),
         ("abbreviations", "Every abbreviation a written section uses is spelled out where first used."),
         ("short-version", "The short version opens on the pick for a picked stock, on the held trade for a stock a family holds a trade in, and on the quarter for any other, before what worked and what did not."),
-        ("held-trade", "A stock a family holds a trade in opens its short version on that trade and keeps a short card for it, and its plan and its chart draw the trade's own exits."),
+        ("held-trade", "A stock a family holds a trade in opens its short version on that trade, leaving the levels' plan to the plan region, and keeps a short card for it, and its plan and its chart draw the trade's own exits."),
         ("what-worked", "Each paragraph of the short version's what worked and what did not holds at most four sentences."),
         ("own-limit", "Each night the list picked a stock before is followed to the end of its own setup's limit, as the key beneath them states it."),
         ("one-value", "Each concept the page marks is drawn with one value."),
@@ -116,15 +116,17 @@ public static partial class ReportProof
         // the plan opening on the trade's own exits and the chart drawing its stop and target.
         var opensOnTheTrade = (lead.Success && lead.Groups[1].Value == "held") || page.Contains("<li data-summary-part=\"why\">Held on the trade ", StringComparison.Ordinal);
         var planHeld = HeldExit().IsMatch(page) && !page.Contains("data-exits=\"none\"", StringComparison.Ordinal);
+        var planParagraph = ShortVersionPlan().IsMatch(page);
         var chartHeld = page.Contains("class=\"pick-levels\"", StringComparison.Ordinal);
 
         Add(
             "held-trade",
-            heldOn ? opensOnTheTrade && planHeld && chartHeld : null,
+            heldOn ? opensOnTheTrade && planHeld && chartHeld && !planParagraph : null,
             !heldOn ? "no family holds a trade in it"
             : !opensOnTheTrade ? "the short version does not open on the held trade"
             : !planHeld ? "the plan does not open on the held trade's exits"
             : !chartHeld ? "the chart draws no stop and target for the held trade"
+            : planParagraph ? "the short version draws its paragraph on the levels' plan beneath the held trade"
             : null);
 
         // Each paragraph of what worked and what did not, read as the page's own reader cuts its sentences.
@@ -370,6 +372,11 @@ public static partial class ReportProof
     // The plan opening on the exits of a trade a family holds the stock on.
     [GeneratedRegex("<p class=\"picks-exit\"[^>]*data-held=\"")]
     private static partial Regex HeldExit();
+
+    // A paragraph of the written short version opening on the levels' plan, which a pick's or a held trade's page leaves to
+    // the plan region.
+    [GeneratedRegex("data-section=\"The short version\"[^>]*>(?:(?!</section>).)*?<p class=\"prose[^\"]*\">The plan ", RegexOptions.Singleline)]
+    private static partial Regex ShortVersionPlan();
 
     // The short version's what worked and what did not, its label and the prose after it in its section.
     [GeneratedRegex("<p class=\"short-part-label\"><b>What worked and what did not\\.</b></p>(.*?)</section>", RegexOptions.Singleline)]

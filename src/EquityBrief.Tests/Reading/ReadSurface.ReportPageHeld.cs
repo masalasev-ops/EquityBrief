@@ -78,6 +78,13 @@ public partial class ReadSurface
         Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("ROP", page.Replace(exits, string.Empty, StringComparison.Ordinal)), "held-trade"));
         Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("ROP", page.Replace(chart, string.Empty, StringComparison.Ordinal)), "held-trade"));
         Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("ROP", page + marks.PlanTables("ROP", [])), "held-trade"));
+
+        // The written short version's paragraph opening on the levels' plan is left to the plan region, as a pick's is: one
+        // drawn beneath the held trade, saying no band above the price is far enough to sell at, fails.
+        const string PlanParagraph = "<section class=\"written-section\" data-ticker=\"ROP\" data-section=\"The short version\"><p class=\"prose\">The plan buys in three tranches at the support bands beneath the price. No resistance band above the price is far enough from the entry to sell at.</p></section>";
+
+        Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("ROP", page + PlanParagraph), "held-trade"));
+        Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("ROP", page + PlanParagraph.Replace("The plan buys", "Revenue rose; the plan buys", StringComparison.Ordinal)), "held-trade"));
         Assert.Equal(ReportProof.Passed, VerdictOf(ReportProof.Evaluate("ROP", page + marks.PlanTables("ROP", [], trade: held.Card, held: true)), "held-trade"));
         Assert.Equal(ReportProof.Failed, VerdictOf(ReportProof.Evaluate("ROP", MarkRenderer.ShortVersionLead(null, quarter) + marks.HeldCard(held) + exits + chart), "short-version"));
         Assert.Equal(ReportProof.Unexamined, VerdictOf(ReportProof.Evaluate("ROP", MarkRenderer.ShortVersionLead(null, quarter)), "held-trade"));

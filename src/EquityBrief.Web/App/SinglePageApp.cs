@@ -1481,12 +1481,13 @@ public sealed partial class SinglePageApp : IComponent
                 }
 
                 // The short version opens on the pick and the quarter, written by code, and its prose follows under its own
-                // label; for a pick, a paragraph opening on the levels' plan is left to the plan region, which opens on the
-                // pick's own exit.
+                // label; for a pick or a held trade, a paragraph opening on the levels' plan is left to the plan region, which
+                // opens on the trade's own exit.
                 // see: The short version opens on the pick and then the quarter as code writes them, before what worked and what did not
+                // see: A stock held on a family's open trade is drawn with that trade first, its short card and its own exits on the plan and the chart
                 var shortVersion = string.Equals(name, MarkRenderer.TheShortVersion, StringComparison.Ordinal);
                 var lead = shortVersion ? MarkRenderer.ShortVersionLead(decision, report?.Quarter, held) : null;
-                var shown = shortVersion && decision is not null
+                var shown = shortVersion && (decision is not null || held is not null)
                     ? section with { Prose = string.Join("\n\n", section.Prose.Split(["\r\n\r\n", "\n\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Where(paragraph => !paragraph.StartsWith("The plan ", StringComparison.Ordinal))) }
                     : section;
 
