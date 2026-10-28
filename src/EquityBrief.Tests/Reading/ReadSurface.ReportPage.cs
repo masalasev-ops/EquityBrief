@@ -487,6 +487,11 @@ public partial class ReadSurface
             "L3Harris Technologies (NYSE: LHX) reports second quarter 2026 results.",
             Line("L3Harris Technologies Reports Robust Second Quarter 2026 Results MELBOURNE, Fla., July 29, 2026 \x2014 L3Harris Technologies (NYSE: LHX) reports second quarter 2026 results. Revenue rose.", "L3Harris Technologies Inc", "LHX"));
 
+        // A name the release uses that the store no longer does, read by its listing and quoted from the name before it.
+        Assert.Equal(
+            "Pure Storage (NYSE: P), the most advanced data storage platform, today announced financial results for its second quarter fiscal year 2026 ended August 3, 2025.",
+            Line("Pure Storage Announces Second Quarter Fiscal 2026 Financial Results SANTA CLARA, Calif., August 27, 2025 /PRNewswire/ -- Pure Storage (NYSE: P), the most advanced data storage platform, today announced financial results for its second quarter fiscal year 2026 ended August 3, 2025. Revenue rose.", "Everpure, Inc.", "P"));
+
         // A bullet straight after the sentence ends it.
         Assert.Equal(
             "Abbott today announced financial results for the third quarter ended Sept. 30, 2026.",
