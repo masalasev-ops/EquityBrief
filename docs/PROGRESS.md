@@ -11545,3 +11545,24 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 114 with none pending, schema version 114, against `data-ci` and never
             `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+
+### 8.0 - correction: the opening-checkpoint reader reads the newest planned phase by the record's order, where a phase planned after a later-numbered one read as lost   2026-10-29
+
+Not a checkpoint entry: it corrects what the 8.0 correction of 2026-09-16 carried into the suite, found by the first run of
+the corpus checks over the tree carrying phase 21's planning entry below, and lands nothing.
+Found:      the suite's reader of the record's opening checkpoints took the newest landed opening by its phase's number and
+            read every lower-numbered opening not yet started as a phase the record had lost, so 21.0, planned on
+            2026-10-29 after 22.0 was planned on 2026-10-22 and built, read as wrong: 4 of 178 filtered checks red over the
+            tree, this one among them.
+Corrected:  the newest planned opening is the one the record planned last, by the order of its planning entries, and an
+            opening planned before it must have started; an opening the record never planned is still read against the
+            newest by its number, since a lost planning entry has no place in the record to read it by. The constructed
+            proof gains the shape: a phase planned after a later-numbered one standing unstarted passes, and a phase
+            planned before the newest that never started is found, which the numbers' order passed over.
+Tests:      none new; the proof test of the reader gains two cases. 2918 in all.
+Claims:     none new.
+Pins:       none move; the suite alone changes.
+Mutated:    the rule, stated before the run: the correction undone. M1 the newest opening taken by its number again: red at
+            the record's own entries test on 21.0 and at the proof's second new case, the shape the first run showed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
