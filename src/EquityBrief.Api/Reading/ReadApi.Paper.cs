@@ -125,6 +125,16 @@ public sealed partial class ReadApi
         "h.fill, h.bought_on, (SELECT b.open FROM bar b WHERE b.ticker = h.ticker AND b.session_date = h.bought_on), NULL, NULL, h.edge / 100.0 " +
         "FROM quality_holding h WHERE h.index_code = $index ORDER BY h.chosen_on, h.ticker;";
 
+    // From 22.15 every trade of the Fundamentals family on an index, under its rule's name and the provisional rule's under
+    // the page's list, in the holdings' column order with no book size, the fill its own step stored at the next open in
+    // the fills' place, its round trip read as a fraction of its buy and its edge in percentage points as one.
+    // see: A Fundamentals rule is registered as the family on its index and kept by the family's own step alone
+    static readonly string ImprovingBooksOn =
+        $"SELECT CASE WHEN t.rule = '{ImprovingProvisional}' THEN '{PageList} {ImprovingRule.Name}' ELSE t.rule END, t.ticker, t.chosen_on, t.buy_close, t.ended_on, t.result, t.cost / 100.0, NULL, " +
+        "CASE WHEN t.end_reason = 'open' THEN NULL ELSE t.end_reason END, NULL, " +
+        "t.fill, t.bought_on, (SELECT b.open FROM bar b WHERE b.ticker = t.ticker AND b.session_date = t.bought_on), NULL, NULL, t.edge / 100.0 " +
+        "FROM improving_trade t WHERE t.index_code = $index ORDER BY t.chosen_on, t.ticker;";
+
     // From 22.3 every trade of the short-term dip on an index, under its rule's name and the provisional rule's under the
     // page's list, in the swing trades' column order with its time limit as its cap and the fill its own step stored at
     // the next open in the fills' place, its result at that fill and its round trip each in the risk its listing close set.
@@ -258,6 +268,11 @@ public sealed partial class ReadApi
         {
             Reason = reader.IsDBNull(8) ? null : reader.GetString(8),
             BookSize = reader.IsDBNull(9) ? null : reader.GetInt32(9),
+        }));
+
+        await ReadAsync(ImprovingBooksOn, reader => Fill(reader, new(reader.GetString(0), ImprovingRule.Name, reader.GetString(1), Day(reader.GetString(2)), 0, Money.FromStorage(reader.GetString(3)), null, DayAt(reader, 4), Optional(reader, 5), true, null, Optional(reader, 6))
+        {
+            Reason = reader.IsDBNull(8) ? null : reader.GetString(8),
         }));
 
         return rows;

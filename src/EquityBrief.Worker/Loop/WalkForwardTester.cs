@@ -496,6 +496,13 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             ? await QualityLay.ReadAsync(read, history, through, output.WriteLine, cancellation)
             : null;
 
+        // From 22.15 the Fundamentals family's history as its own test lays it out, each filer's releases with their
+        // readings beside its filings, only where a rule of the family stands on the index.
+        // see: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions
+        var improvingLay = ReadsImproving(standingRules, index)
+            ? await ImprovingLay.ReadAsync(read, history, (await ReleasesAsync(databaseFile, clock, cancellation)).ByFiler, through, output.WriteLine, cancellation)
+            : null;
+
         // From 22.3 the short-term dip's history as its sweep reads it, the S&P 500's members beside an S&P 400's or 600's
         // for the S&P 500's breadth and the index's own fund and the VIX for its market setting, only where a rule of the
         // family stands on the index.
@@ -528,7 +535,8 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             pullbacks,
             tones,
             qualityLay,
-            dipRead));
+            dipRead,
+            improvingLay));
         var tested = RuleTests.Judge(read, rules);
         var runId = FormattableString.Invariant($"{RulesVerb}-{index}-{started:yyyyMMddTHHmmssZ}");
 
@@ -579,6 +587,12 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     // see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
     public static bool ReadsDip(IReadOnlyList<Core.Candidates.RegisterRow> standing, string index) =>
         standing.Any(row => Core.Candidates.CandidateEvaluators.Find(row.Evaluator) is Core.Candidates.DipCandidate rule && rule.Index == index);
+
+    // From 22.15 whether a run lays out the Fundamentals family's history on an index: only where a rule of the family stands
+    // on it when the run begins, so the monthly run reads the family from its next run after a freeze.
+    // see: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions
+    public static bool ReadsImproving(IReadOnlyList<Core.Candidates.RegisterRow> standing, string index) =>
+        standing.Any(row => Core.Candidates.CandidateEvaluators.Find(row.Evaluator) is Core.Candidates.ImprovingCandidate rule && rule.Index == index);
 
     // A rule's line for the console.
     public static string RuleLine(RuleTested one) =>

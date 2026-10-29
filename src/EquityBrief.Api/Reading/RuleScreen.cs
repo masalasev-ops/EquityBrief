@@ -179,6 +179,7 @@ public static class RuleScreen
         IndexDriftCandidate => RuleKind.IndexDrift,
         IndexHeavyweightCandidate => RuleKind.IndexHeavyweights,
         QualityCandidate => RuleKind.Quality,
+        ImprovingCandidate => RuleKind.Improving,
         SwingFilterRule => RuleKind.Pullback,
         BreakoutCandidate => RuleKind.Breakout,
         DriftCandidate => RuleKind.Drift,

@@ -36,27 +36,34 @@ public partial class ReadSurface
     // of 9, short of the bar; M2's results release since its filing reads better with its outlook raised, so it is flagged.
     // M3 holds a trade chosen the night before and bought at the night's open, its growth 1.05 against the members' 1.10,
     // 0.97 and 1.05. The quality book holds M1 and calls M2 dearer than its own usual.
-    static void ImprovingNightOn(TemporaryStore store, string? fault = null)
+    static void ImprovingNightOn(TemporaryStore store, string? fault = null, string rule = EquityBrief.Worker.Improving.ImprovingFamily.ProvisionalRule, ImprovingSweepSetting? setting = null, bool scores = true)
     {
-        var settings = EquityBrief.Worker.Improving.ImprovingFamily.Settings(ImprovingRule.Starting).Replace("'", "''", StringComparison.Ordinal);
+        var settings = EquityBrief.Worker.Improving.ImprovingFamily.Settings(setting ?? ImprovingGrid.Starting, rule).Replace("'", "''", StringComparison.Ordinal);
+        var named = rule.Replace("'", "''", StringComparison.Ordinal);
         var readings = Enumerable.Repeat<double?>(null, LedgerReadings.Count).ToArray();
 
         store.Execute(
             "INSERT INTO improving_night (rule, index_code, session_date, members, scored, first_read, improved, bought, flagged, held, settings, fault) VALUES " +
-            $"('provisional', 'MID', '2026-10-01', 3, 3, 1, 1, 1, 0, 1, '{settings}', NULL), " +
-            $"('provisional', 'MID', '{IndexNight}', 3, 3, 2, 2, 1, 1, 2, '{settings}', {(fault is null ? "NULL" : $"'{fault}'")});");
+            $"('{named}', 'MID', '2026-10-01', 3, 3, 1, 1, 1, 0, 1, '{settings}', NULL), " +
+            $"('{named}', 'MID', '{IndexNight}', 3, 3, 2, 2, 1, 1, 2, '{settings}', {(fault is null ? "NULL" : $"'{fault}'")});");
         store.Execute(
             "INSERT INTO improving_result (rule, index_code, session_date, ticker, passed_checks, applied, filed, first_read, before_passed, before_applied, before_checks, growth, growth_change, released, outlook, flagged, status, reason, carried) VALUES " +
-            "('provisional', 'MID', '2026-10-01', 'M1', 5, 9, '2026-08-05', 0, NULL, NULL, NULL, 0.1, 0.01, NULL, NULL, 0, NULL, NULL, 1.0), " +
-            "('provisional', 'MID', '2026-10-01', 'M2', 6, 9, '2026-08-05', 0, NULL, NULL, NULL, 0.1, 0.01, NULL, NULL, 0, NULL, NULL, 1.0), " +
-            "('provisional', 'MID', '2026-10-01', 'M3', 8, 9, '2026-09-30', 1, 5, 9, NULL, 0.1, 0.01, NULL, NULL, 0, 'bought', NULL, 1.0), " +
-            $"('provisional', 'MID', '{IndexNight}', 'M1', 8, 9, '2026-10-01', 1, 5, 9, '{ScoredChecks(1, 2, 5, 7, 9)}', 0.12, 0.02, '2026-09-29', NULL, 0, 'bought', NULL, 1.10), " +
-            $"('provisional', 'MID', '{IndexNight}', 'M2', 6, 9, '2026-08-05', 0, NULL, NULL, NULL, 0.08, -0.01, '2026-09-30', 'raised', 1, 'flagged', NULL, 0.97), " +
-            $"('provisional', 'MID', '{IndexNight}', 'M3', 7, 9, '2026-10-01', 1, 5, 9, '{ScoredChecks(1, 2, 3, 4, 5)}', 0.1, 0.01, NULL, NULL, 0, 'improved', '{ImprovingRule.UnderTheBar}', 1.05);");
+            $"('{named}', 'MID', '2026-10-01', 'M1', 5, 9, '2026-08-05', 0, NULL, NULL, NULL, 0.1, 0.01, NULL, NULL, 0, NULL, NULL, 1.0), " +
+            $"('{named}', 'MID', '2026-10-01', 'M2', 6, 9, '2026-08-05', 0, NULL, NULL, NULL, 0.1, 0.01, NULL, NULL, 0, NULL, NULL, 1.0), " +
+            $"('{named}', 'MID', '2026-10-01', 'M3', 8, 9, '2026-09-30', 1, 5, 9, NULL, 0.1, 0.01, NULL, NULL, 0, 'bought', NULL, 1.0), " +
+            $"('{named}', 'MID', '{IndexNight}', 'M1', 8, 9, '2026-10-01', 1, 5, 9, '{ScoredChecks(1, 2, 5, 7, 9)}', 0.12, 0.02, '2026-09-29', NULL, 0, 'bought', NULL, 1.10), " +
+            $"('{named}', 'MID', '{IndexNight}', 'M2', 6, 9, '2026-08-05', 0, NULL, NULL, NULL, 0.08, -0.01, '2026-09-30', 'raised', 1, 'flagged', NULL, 0.97), " +
+            $"('{named}', 'MID', '{IndexNight}', 'M3', 7, 9, '2026-10-01', 1, 5, 9, '{ScoredChecks(1, 2, 3, 4, 5)}', 0.1, 0.01, NULL, NULL, 0, 'improved', '{ImprovingRule.UnderTheBar}', 1.05);");
         store.Execute(
             "INSERT INTO improving_trade (rule, index_code, ticker, chosen_on, filed, released, passed_checks, applied, before_passed, before_applied, buy_close, bought_on, fill, gap, bench_gap, members, growth, through, sessions, end_reason) VALUES " +
-            "('provisional', 'MID', 'M3', '2026-10-01', '2026-09-30', NULL, 8, 9, 5, 9, '48', '2026-10-02', '48', 0.0, 0.0, 3, 1.05, '2026-10-02', 1, 'open'), " +
-            $"('provisional', 'MID', 'M1', '{IndexNight}', '2026-10-01', '2026-09-29', 8, 9, 5, 9, '50', NULL, NULL, NULL, NULL, NULL, 1.0, '{IndexNight}', 0, 'open');");
+            $"('{named}', 'MID', 'M3', '2026-10-01', '2026-09-30', NULL, 8, 9, 5, 9, '48', '2026-10-02', '48', 0.0, 0.0, 3, 1.05, '2026-10-02', 1, 'open'), " +
+            $"('{named}', 'MID', 'M1', '{IndexNight}', '2026-10-01', '2026-09-29', 8, 9, 5, 9, '50', NULL, NULL, NULL, NULL, NULL, 1.0, '{IndexNight}', 0, 'open');");
+
+        if (!scores)
+        {
+            return;
+        }
+
         store.Execute(
             "INSERT INTO fundamental_score (index_code, session_date, ticker, quarter, financial, passed, applied, checks, gross_profitability) VALUES " +
             $"('MID', '{IndexNight}', 'M1', '2026-08-31', 0, 8, 9, '{M1Checks}', 0.4), " +

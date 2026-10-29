@@ -204,6 +204,23 @@ public static class RegisterVerb
                     : await Said(await registrar.RegisterTogetherAsync(frozen, runId), output, error);
             }
 
+            // From 22.15 the Fundamentals family on any index: its live rule and the grid's settings one dial from it as its
+            // versions, read off the grid as the quality family's are, and no rule kept in the background.
+            // see: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions
+            if (Given(IndexFamily) == Core.Families.ImprovingRule.Name)
+            {
+                if (variants.Count > 0 || VerbArguments.Value(args, Replacing) is not null)
+                {
+                    return await RefusedAsync(registrar, runId, "a Fundamentals freeze registers its versions off the history test's grid, one dial from its live rule, and keeps no rule in the background, so it takes no --variants and no --replacing, and nothing was written.", error);
+                }
+
+                var (improving, refusedImproving) = Improving.ImprovingRules.Freeze(Given("--index"), live, await registrar.RowsAsync(), at);
+
+                return improving is null
+                    ? await RefusedAsync(registrar, runId, refusedImproving!, error)
+                    : await Said(await registrar.RegisterTogetherAsync(improving, runId), output, error);
+            }
+
             // From 22.3 the short-term dip on any index: its live rule and the versions given, each one of its one-step
             // neighbours on its sweep's grid or its market variant, and no rule kept in the background.
             // see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions

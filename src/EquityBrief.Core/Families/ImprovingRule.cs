@@ -64,6 +64,12 @@ public static class ImprovingRule
     public const string UnderTheBar = "a score under the bar";
     public const string GrowthNotRead = "its sales growth not read";
     public const string NotFaster = "its sales growth not faster than the quarter before";
+    public const string NoFlagBefore = "no flag stood the night before";
+
+    // What every frozen card of the family adds beneath the line its recorded answer gives, on the operator's answers of
+    // 2026-10-28: the readings its history was tested on were read by a model whose training may hold what followed them.
+    // see: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions
+    public const string ReadingsCaveat = "Its release readings before February 2025 were read by a model trained after them, so its history may flatter it; its record from today is what counts.";
 
     // A flag: a release accepted after the newest filing the scorecard reads, reading results better and an outlook
     // raised or kept. A flag buys nothing.
@@ -127,9 +133,26 @@ public static class ImprovingRule
         : !(change > 0) ? new(false, NotFaster)
         : new(true, null);
 
+    // A member whose newest filing was read on the night under a setting of the history test's grid: bought where its
+    // score clears the setting's bar and each check the setting asks holds, the rise over its filing before, its sales
+    // growth faster than the quarter before and a flag standing the night before; its reason otherwise, in the rule's
+    // order. At the starting setting it is the night's own answer, and it buys exactly where the grid's walk buys.
+    // see: A Fundamentals rule is registered as the family on its index and kept by the family's own step alone
+    public static ImprovingAnswer Answer(int passed, int applied, int passedBefore, int appliedBefore, double? growthChange, bool flaggedBefore, ImprovingSweepSetting setting) =>
+        applied < FundamentalScorecard.FewestRead ? new(false, NoWord)
+        : setting.Rise && !(Share(passed, applied) > Share(passedBefore, appliedBefore)) ? new(false, NotHigher)
+        : !FundamentalScorecard.Clears(passed, applied, setting.BuyInNine) ? new(false, UnderTheBar)
+        : setting.Faster && growthChange is not { } change ? new(false, GrowthNotRead)
+        : setting.Faster && !(growthChange > 0) ? new(false, NotFaster)
+        : setting.FlagFirst && !flaggedBefore ? new(false, NoFlagBefore)
+        : new(true, null);
+
     // Whether a trade is held: its score at the hold floor or better, read as a share of the checks that applied.
     public static bool Holds(int passed, int applied, ImprovingSettings settings) =>
         FundamentalScorecard.Clears(passed, applied, settings.HoldInNine);
+
+    public static bool Holds(int passed, int applied, ImprovingSweepSetting setting) =>
+        FundamentalScorecard.Clears(passed, applied, setting.HoldInNine);
 
     public static double Share(int passed, int applied) => applied > 0 ? 1.0 * passed / applied : 0;
 

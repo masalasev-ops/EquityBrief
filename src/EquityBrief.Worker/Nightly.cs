@@ -790,7 +790,7 @@ public static class Nightly
             // see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better
             new("improving", async () =>
             {
-                var outcome = await new Improving.ImprovingFamily(clock, store.DatabaseFile).RunAsync(runId);
+                var outcome = await new Improving.ImprovingFamily(clock, store.DatabaseFile).RunAsync(runId, registerAt: registerAt ?? nightStartedAt);
 
                 return Improving.ImprovingFamily.Detail(outcome.Indices);
             }, [Improving.ImprovingFamily.Stage]),

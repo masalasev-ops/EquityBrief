@@ -175,20 +175,23 @@ public sealed partial class MarkRenderer
     // it is a starting point rather than a proven edge.
     // see: A frozen card on the S&P 400 or 600 states its sweep's figures and that no setting beat luck or the tester's bar
     // see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions
-    public static string QualityFixedLine(QualityFixedView fixedOn)
+    public static string QualityFixedLine(QualityFixedView fixedOn) => FixedLine(fixedOn, "holding");
+
+    // The same line for a family whose record is counted in the unit given, the Fundamentals family's trades from 22.15.
+    static string FixedLine(QualityFixedView fixedOn, string unit)
     {
         var text = new StringBuilder();
 
-        text.Append(Invariant, $"Its settings were fixed on {fixedOn.FixedOn:d MMM} after its history test from {fixedOn.FromYear}: {fixedOn.Holdings:#,0} holdings");
+        text.Append(Invariant, $"Its settings were fixed on {fixedOn.FixedOn:d MMM} after its history test from {fixedOn.FromYear}: {fixedOn.Holdings:#,0} {unit}s");
 
         if (fixedOn.Edge is { } edge)
         {
             var behind = edge < 0;
             var years = behind
-                ? fixedOn.YearsAhead == 0 ? "behind in every year it had holdings" : Formatted($"behind in {fixedOn.YearsWithHoldings - fixedOn.YearsAhead} of the {fixedOn.YearsWithHoldings} years it had holdings")
-                : fixedOn.YearsAhead == fixedOn.YearsWithHoldings ? "ahead in every year it had holdings" : Formatted($"ahead in {fixedOn.YearsAhead} of the {fixedOn.YearsWithHoldings} years it had holdings");
+                ? fixedOn.YearsAhead == 0 ? $"behind in every year it had {unit}s" : Formatted($"behind in {fixedOn.YearsWithHoldings - fixedOn.YearsAhead} of the {fixedOn.YearsWithHoldings} years it had {unit}s")
+                : fixedOn.YearsAhead == fixedOn.YearsWithHoldings ? $"ahead in every year it had {unit}s" : Formatted($"ahead in {fixedOn.YearsAhead} of the {fixedOn.YearsWithHoldings} years it had {unit}s");
 
-            text.Append(Invariant, $", {Math.Abs(edge * 100):0.0} points a holding {(behind ? "behind" : "ahead of")} an equal-weight hold of the index's stocks after costs, {years}");
+            text.Append(Invariant, $", {Math.Abs(edge * 100):0.0} points a {unit} {(behind ? "behind" : "ahead of")} an equal-weight hold of the index's stocks after costs, {years}");
         }
 
         text.Append('.');

@@ -702,8 +702,8 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         score: behindNight is { } scoredOn ? await read.FundamentalScoreAsync(ticker, scoredOn) : null,
         scoreReadings: behindNight is { } readOn && await read.IndexOfAsync(ticker, readOn) is { } scoreIndex ? await read.OwnLedgerReadingsAsync(scoreIndex, readOn, ticker) : null,
         // From 22.13 where the Fundamentals family bought the name on the night, keeps a trade in it or flagged it.
-        improving: night is { } improvedOn && await read.IndexOfAsync(ticker, improvedOn) is { } improvingIndex
-            ? TonightScreen.OnTheFundamentalsCard(ticker, improvedOn, await read.ImprovingResultsAsync(improvingIndex, improvedOn), await read.ImprovingTradesAsync(improvingIndex, improvedOn))
+        improving: night is { } improvedOn && await read.IndexOfAsync(ticker, improvedOn) is { } improvingIndex && await read.ImprovingCardRuleAsync(improvingIndex, improvedOn) is { } improvingRule
+            ? TonightScreen.OnTheFundamentalsCard(ticker, improvedOn, await read.ImprovingResultsAsync(improvingIndex, improvedOn, improvingRule), await read.ImprovingTradesAsync(improvingIndex, improvedOn, improvingRule))
             : null,
         // The profile each job ran under from the settings' profiles, and the models the spend cap priced for a model no
         // profile names now, so each job's model is named paid or local.
@@ -1436,6 +1436,8 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
             held = book.Any(row => row.Ticker == ticker && row.EndedOn is null);
         }
 
+        var improvingRule = await read.ImprovingCardRuleAsync(index, night);
+
         standing = BriefScreen.Standing(new BriefAnswers(
             ticker,
             large,
@@ -1447,8 +1449,8 @@ static async Task<BriefView> BriefAsync(ReadApi read, StoreLocation store, strin
             await read.DipResultsAsync(index, night),
             await read.DipPicksAsync(index, night),
             held,
-            await read.ImprovingResultsAsync(index, night),
-            await read.ImprovingTradesAsync(index, night)));
+            await read.ImprovingResultsAsync(index, night, improvingRule),
+            await read.ImprovingTradesAsync(index, night, improvingRule)));
         readings = await read.LedgerReadingsAsync(index, night);
     }
 
@@ -2386,7 +2388,7 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
     // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
     string? Family(string key) =>
         request.Query[key].FirstOrDefault() is { } named
-            && (EquityBrief.Core.Families.SetupFamilies.PageOrder.Contains(named) || named == EquityBrief.Core.Families.QualityRule.Name)
+            && (EquityBrief.Core.Families.SetupFamilies.PageOrder.Contains(named) || named is EquityBrief.Core.Families.QualityRule.Name or EquityBrief.Core.Families.ImprovingRule.Name)
             ? named
             : null;
 
@@ -2473,12 +2475,32 @@ async Task<QualityCardView> QualityCardAsync(ReadApi read, string index, DateOnl
 // see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better
 async Task<ImprovingCardView> ImprovingCardAsync(ReadApi read, string index, DateOnly night, IReadOnlyDictionary<string, UniverseCell> cells)
 {
-    var trades = await read.ImprovingTradesAsync(index, night);
+    // From 22.15 the card's rows are its live rule's where a freeze stands, with the day it went live and the line its
+    // history test's recorded answer gives it.
+    // see: A Fundamentals rule is registered as the family on its index and kept by the family's own step alone
+    var rule = await read.ImprovingCardRuleAsync(index, night);
+    var trades = await read.ImprovingTradesAsync(index, night, rule);
     var answersOn = new Dictionary<DateOnly, IReadOnlyList<ImprovingResultRow>>();
 
     foreach (var on in trades.Select(trade => trade.ChosenOn).Distinct())
     {
-        answersOn[on] = await read.ImprovingResultsAsync(index, on);
+        answersOn[on] = await read.ImprovingResultsAsync(index, on, rule);
+    }
+
+    DateOnly? liveSince = null;
+    QualityFixedView? fixedView = null;
+
+    if (rule != ReadApi.ImprovingProvisional
+        && (await read.RegisteredCandidatesAsync()).Where(row => row.Candidate == rule && row.Event == EquityBrief.Core.Candidates.CandidateFamily.Registered).OrderBy(row => row.RegisteredAt).LastOrDefault() is { } registered)
+    {
+        liveSince = DateOnly.FromDateTime(registered.RegisteredAt.UtcDateTime);
+
+        var answer = (await read.SweepAnswersAsync(index, registered.RegisteredAt.AddSeconds(1)))
+            .Where(one => one.Family == EquityBrief.Core.Families.ImprovingRule.Name)
+            .OrderBy(one => one.RecordedAt)
+            .LastOrDefault();
+
+        fixedView = TonightScreen.QualityFixed(liveSince.Value, answer);
     }
 
     // A stock the quality card's rule holds tonight, or answered as dearer than its own usual price.
@@ -2501,15 +2523,17 @@ async Task<ImprovingCardView> ImprovingCardAsync(ReadApi read, string index, Dat
     return TonightScreen.Improving(
         index,
         night,
-        await read.ImprovingNightAsync(index, night),
-        await read.ImprovingResultsAsync(index, night),
+        await read.ImprovingNightAsync(index, night, rule),
+        await read.ImprovingResultsAsync(index, night, rule),
         answersOn,
         trades,
         await read.ImprovingScoresAsync(index, night),
         await read.LedgerReadingsAsync(index, night),
         quality,
         cells,
-        await read.ImprovingReportsAsync(night, TonightScreen.ReportingThrough(night)));
+        await read.ImprovingReportsAsync(night, TonightScreen.ReportingThrough(night)),
+        liveSince,
+        fixedView);
 }
 
 // Each family's live or provisional rule's record so far on an index as of a night, as Paper trading counts it off the

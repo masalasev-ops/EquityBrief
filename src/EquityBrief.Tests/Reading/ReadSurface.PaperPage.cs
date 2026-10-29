@@ -415,7 +415,7 @@ public partial class ReadSurface
         // price's after the setups' and from 22.3 the short-term dip's before the sector heavyweights', and from 22.13 the
         // fundamentals-first family's none.
         Assert.Equal(
-            ["pullback", "breakout", "drift", "dip", "heavyweight", "quality"],
+            ["pullback", "breakout", "drift", "dip", "heavyweight", "quality", "improving"],
             Regex.Matches(page, "<div class=\"paper-tile\" data-family=\"([a-z]+)\"").Select(match => match.Groups[1].Value));
         Assert.Contains("data-family=\"drift\" data-standing=\"provisional\" data-return=\"none\" data-open=\"0\" data-closed=\"0\" data-since=\"none\"", page, StringComparison.Ordinal);
 
@@ -564,7 +564,7 @@ public partial class ReadSurface
         // The select lists every family in the one order, the first its key's absence, the one the link names chosen.
         var select = Regex.Match(page, "<select data-merge-key=\"variants\".*?</select>", RegexOptions.Singleline).Value;
 
-        Assert.Equal(["", "breakout", "drift", "dip", "heavyweight", "quality"], Regex.Matches(select, "<option value=\"([^\"]*)\"").Select(match => match.Groups[1].Value));
+        Assert.Equal(["", "breakout", "drift", "dip", "heavyweight", "quality", "improving"], Regex.Matches(select, "<option value=\"([^\"]*)\"").Select(match => match.Groups[1].Value));
         Assert.Contains("<option value=\"breakout\" selected>Breakout · live rule and 1 variant</option>", select, StringComparison.Ordinal);
         Assert.DoesNotContain("<option value=\"fundamentals\"", select, StringComparison.Ordinal);
 

@@ -26,6 +26,54 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-29 - docs/ARCHITECTURE.html - the Improving family's catalogue and matrix rows read the candidate register and keep each registered rule
+Authorised by: A Fundamentals rule is registered as the family on its index and kept by the family's own step alone
+Was:
+> ... release readings, reading pins, improving nights, ... reads the Fundamentals family's starting rule on each index over every member holding a bar on the night: its scorecard ... writes no other family's row and runs through no step any rule's version pins ... (and the matrix row's candidate register cell blank)
+Now:
+> ... release readings, reading pins, candidate register, improving nights, ... reads the Fundamentals family's starting rule on each index over every member holding a bar on the night, and from 22.15 every rule of the family standing registered on the index when the night started in its place, the live rule first, each at its registration's setting in a transaction of its own and kept under its own name, a rule asking a flag first reading the member's own answer on the night before and one whose evaluator moved since named on its night's row as not kept (see: ...): its scorecard ... writes no other family's row and runs through no step another family's rule pins, its own rules from 22.15 pinning it ... (and the matrix row's candidate register cell R)
+Why: 22.15 freezes the family, so its step reads the register and keeps each rule standing on an index under its own name, and its own rules now pin the step.
+
+### 2026-10-29 - docs/ARCHITECTURE.html - the Fundamentals family's paragraph states its freeze
+Authorised by: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions
+Was:
+> ... 126 sessions, about half a year; and the equal-weighted members as the benchmark, as section 17 states.
+Now:
+> ... as section 17 states. From 22.15 the family is frozen on each index on the operator's answers: each index's rule at the setting they answered with every setting of the history test's grid one dial from it as a version, each kept by the family's own step under its own name and read off its registration, and its card draws the line every frozen card draws from its own recorded answer, counted in trades, with the words the answers add beneath it on what its history was read with (see: ...) (see: ...).
+Why: the operator's answers of 2026-10-28 froze the family on each index.
+
+### 2026-10-29 - docs/ARCHITECTURE.html - the Fundamentals family's card row states what a frozen card draws
+Authorised by: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions
+Was:
+> ... saying no checks could be read from its filings (see: A redesigned page speaks in the reader's words ...)
+Now:
+> ... (see: A redesigned page speaks in the reader's words ...); and from 22.15 where the family is frozen on the index the header saying live since the day of its freeze and beneath its sentence the line every frozen card draws from its own recorded answer counted in trades with the words the operator's answer adds and its rule's sentences stating the dials its setting asks and its fold saying its settings were fixed that day (see: ...)
+Why: the same answers; the card's row names what read-surface reads back on a frozen store.
+
+### 2026-10-29 - docs/ARCHITECTURE.html - section 17's Fundamentals family row states each index's frozen setting
+Authorised by: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions
+Was:
+> ... starting on each index until its history test and a freeze on the operator's word (see: ...) (see: ...) (see: ...)</td>
+Now:
+> ... and a freeze on the operator's word (see: ...) (see: ...) (see: ...); then frozen on the operator's answers the ruling entry of the freeze records: the largest index at this starting setting, the mid-cap index at a bar of seven with a flag the night before and the rise asked, the growth not, held at seven for sixty-three sessions at most, and the small-cap index at a bar of nine with a flag the night before, the rise and the growth asked, held at six for two hundred and fifty-two sessions at most, each with every setting of the grid one dial from it as a version, every other level of each dial, nine rules on each index (see: ...)</td>
+Why: the same answers; the settings and the indices are written in words, since no constant holds a frozen setting, the remedy's lines carry the digits and the check reads every digit of the column.
+
+### 2026-10-29 - docs/RUNBOOK.md - the Fundamentals family's freeze form and its remedy
+Authorised by: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions
+Was:
+> (no paragraph; the index family form froze the quality family and the dip)
+Now:
+> a paragraph after the dip's: the form naming the family `improving`, the index and its live setting's six dials, what it registers and refuses, and the remedy recording each index's answer and freezing the three, with its command
+Why: the same answers; the remedy runs from main after the merge.
+
+### 2026-10-29 - .claude/rules/checks.md - the fixture-expectations and read-surface rows name 22.15's assertions
+Authorised by: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions
+Was:
+> ... with the flag that stood the night before | ... and drawing a trade held in one after the ranked rows with no checks read |
+Now:
+> ... with the flag that stood the night before; and from 22.15 the Fundamentals family's freezes: the remedy's lines freezing each index's family over a register shaped as the operator's stood, each with its eight one-dial neighbours, ... every other evaluator's version standing as the operator's register names it | ... with no checks read; and from 22.15 the Fundamentals family frozen on that store, its card drawn by its live rule live since its freeze, ... an account for the live rule and each of its eight versions with the family's tile last and both pickers listing it |
+Why: the roster states what each check asserts, and 22.15 adds assertions to both.
+
 ### 2026-10-28 - docs/ARCHITECTURE.html - a link the read-only copy does not hold is drawn as plain text
 Authorised by: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
 Was:

@@ -97,13 +97,13 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?universe=400&variants=quality&rule=quality"));
 
-        // The family's tile its live rule's, after the setups'.
+        // The family's tile its live rule's, after the setups' and before the Fundamentals family's from 22.15.
         Assert.Equal(
-            ("quality", "live"),
-            Regex.Matches(page, "<div class=\"paper-tile\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\"").Select(match => (match.Groups[1].Value, match.Groups[2].Value)).Last());
+            [("quality", "live"), ("improving", "provisional")],
+            Regex.Matches(page, "<div class=\"paper-tile\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\"").Select(match => (match.Groups[1].Value, match.Groups[2].Value)).TakeLast(2));
 
-        // Both pickers list it last, and the link choosing it in each chooses it.
-        Assert.Equal("quality", Regex.Matches(Regex.Match(page, "<select data-merge-key=\"rule\".*?</select>", RegexOptions.Singleline).Value, "<option value=\"([^\"]*)\"").Select(match => match.Groups[1].Value).Last());
+        // Both pickers list it before the Fundamentals family last, and the link choosing it in each chooses it.
+        Assert.Equal(["quality", "improving"], Regex.Matches(Regex.Match(page, "<select data-merge-key=\"rule\".*?</select>", RegexOptions.Singleline).Value, "<option value=\"([^\"]*)\"").Select(match => match.Groups[1].Value).TakeLast(2));
         Assert.Contains("<option value=\"quality\" selected>", Regex.Match(page, "<select data-merge-key=\"rule\".*?</select>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
         Assert.Contains("<option value=\"quality\" selected>", Regex.Match(page, "<select data-merge-key=\"variants\".*?</select>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
 

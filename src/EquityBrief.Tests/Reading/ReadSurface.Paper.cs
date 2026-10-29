@@ -166,11 +166,11 @@ public partial class ReadSurface
         // heavyweights', and from 22.13 none of the fundamentals-first family's; every family's accounts in that order on the
         // variants' select and the scorecard's, the pullback's two standing variants counted beside its rule.
         Assert.Equal(
-            [("pullback", "live"), ("breakout", "live"), ("drift", "live"), ("dip", "provisional"), ("heavyweight", "live"), ("quality", "provisional")],
+            [("pullback", "live"), ("breakout", "live"), ("drift", "live"), ("dip", "provisional"), ("heavyweight", "live"), ("quality", "provisional"), ("improving", "provisional")],
             Regex.Matches(page, "<div class=\"paper-tile\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\"").Select(match => (match.Groups[1].Value, match.Groups[2].Value)));
         Assert.Contains("<option value=\"\">Pullback · live rule and 2 variants</option>", page, StringComparison.Ordinal);
         Assert.Equal(
-            ["", "breakout", "drift", "dip", "heavyweight", "quality"],
+            ["", "breakout", "drift", "dip", "heavyweight", "quality", "improving"],
             Regex.Matches(Regex.Match(page, "<select data-merge-key=\"rule\".*?</select>", RegexOptions.Singleline).Value, "<option value=\"([^\"]*)\"").Select(match => match.Groups[1].Value));
 
         // Within the breakout the live rule that passed and the variant within luck, each beside its own name; the
@@ -236,7 +236,7 @@ public partial class ReadSurface
         var options = Regex.Matches(lists, "<select data-merge-key=\"account\".*?</select>", RegexOptions.Singleline).Single().Value;
 
         Assert.Equal(
-            ["", "list-pullback", RunScreen.Slug("the swing filter with the market gate off, from version 1"), RunScreen.Slug("the swing filter with one-session arrival, from version 1"), "list-breakout", variantKey, "list-drift", "list-dip", "list-heavyweight", "list-quality", "you"],
+            ["", "list-pullback", RunScreen.Slug("the swing filter with the market gate off, from version 1"), RunScreen.Slug("the swing filter with one-session arrival, from version 1"), "list-breakout", variantKey, "list-drift", "list-dip", "list-heavyweight", "list-quality", "list-improving", "you"],
             Regex.Matches(options, "<option value=\"([^\"]*)\"").Select(match => match.Groups[1].Value));
         Assert.Contains($"<li data-family=\"breakout\" data-verdict=\"{RuleVerdict.Passed}\">", lists, StringComparison.Ordinal);
 
@@ -252,10 +252,11 @@ public partial class ReadSurface
 
         // From the 22.11 correction of 2026-10-25 each family is named by its label in the selector and beside its
         // verdict, the quality family's among them, and never by the word the store keeps it under; from 22.13 the
-        // fundamentals-first family's among them no more.
+        // fundamentals-first family's among them no more, and from 22.15 the Fundamentals family's among them.
         var chips = Regex.Matches(heads, "<span class=\"fam-swatch\" data-family=\"([^\"]+)\"></span>([^<]+)</span>").Select(match => (Family: match.Groups[1].Value, Label: match.Groups[2].Value)).ToArray();
 
-        Assert.Equal(6, chips.Length);
+        Assert.Equal(7, chips.Length);
+        Assert.Contains(chips, chip => chip.Family == "improving" && chip.Label == "Fundamentals");
         Assert.DoesNotContain(chips, chip => chip.Family == "fundamentals");
         Assert.All(chips, chip => Assert.NotEqual(chip.Family, chip.Label));
         Assert.Contains(("quality", "Quality at a fair price"), chips);
