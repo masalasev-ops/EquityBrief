@@ -11487,3 +11487,30 @@ Copy:       the read-only copy written again from main's clean copy of 4e8c6714 
             upload.
 Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request, which changes documents
             alone, with the figures it states.
+
+### 22.14 ruling - the operator's answers of 2026-10-29: business first kept in the night unseen with the picks its trades hold back counted, the publish task enabled by the operator, phase 22's handoff and a year-by-year test of the open floor tabled for phase 21   2026-10-29
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      the operator's answers of 2026-10-29, given about 11:50 UTC to the morning report after PRs 583 and 584 and
+            kept whole in `prompts/2026-10-29-operator-answers.md`. Business first: "leave it computing unseen until the
+            next change that moves the S&P 400/600 pins, which removes it then. Meanwhile the Run page states each night,
+            per index, how many picks business first's open trades held back, and the night's report says so in one
+            line; if that count is ever above nought, stop and tell me." The scheduled task "EquityBrief publish", found
+            enabled with a daily trigger at 00:50 Eastern and uploading main's copy at bb96acf7 at about 05:20 UTC: "i
+            enabled it", so the copy written at 05:42 UTC from 4e8c6714, 997 files with no "Not in this copy" note, is
+            uploaded by that task at its next run and by no hand. Phase 22's sign-off: the handoff issued for a fresh
+            session, the sign-offs of phases 18 and 20 staying owed beside it. For phase 21's plan and not now: the open
+            floor's drift result, 2,031 trades at 0.110 risks against the live rule's 2,264 at 0.022, put through the
+            tester year by year on years it never saw before it is proposed, written in the plan's list tabled for phase
+            21.
+Counted:    read off the store read-only at 12:00 UTC on 2026-10-29: no row of the S&P 500's list, of an index's list or
+            of the dip's list on any night names business first's trade as the one holding a stock, so the count is 0 on
+            each index on every night since 2026-10-26 and before it; business first holds one trade, DGII on the S&P 600
+            since 2026-10-20, and has kept one ever.
+Labelled:   business first's hold-back count under 22.14, which carried its end as a family; the tabled line under phase
+            21's list; the handoff under 22.12, phase 22's report.
+Queue:      done, PRs 573 to 584; in progress, this pull request, the count on the Run page; next, the handoff for phase
+            22's sign-off, and a stop.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
