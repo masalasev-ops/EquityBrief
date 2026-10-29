@@ -92,11 +92,19 @@ public partial class FixtureExpectations
         var clock = FixedClock.At(new DateTimeOffset(2026, 10, 24, 12, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates);
         var code = await new WalkForwardTester(clock, store.DatabaseFile, store.Root, output).RulesAsync("MID", "2026-10", print: true);
         var said = output.ToString().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
-        var tone = Assert.Single(said, line => line.StartsWith("drift, ", StringComparison.Ordinal) && line.Contains("release reading", StringComparison.Ordinal));
+        var variant = said.Where(line => line.StartsWith("drift, ", StringComparison.Ordinal) && line.Contains("release reading", StringComparison.Ordinal)).ToArray();
+        var tone = Assert.Single(variant, line => !line.Contains("its tone condition", StringComparison.Ordinal));
 
         Assert.Equal(0, code);
         Assert.DoesNotContain(RuleTests.ReleaseReading, tone, StringComparison.Ordinal);
         Assert.Contains("against", tone, StringComparison.Ordinal);
+
+        // From 21.1 the variant's line is followed by one stating its tone condition's trades and its opposite's, walked
+        // unregistered and written nowhere, on each side of the version's cutoff; the two are the variant's only lines.
+        var sides = Assert.Single(variant, line => line.Contains("its tone condition under reading version 1", StringComparison.Ordinal));
+
+        Assert.Contains($"its opposite, {RuleTests.OppositeWords}, walked unregistered and written nowhere", sides, StringComparison.Ordinal);
+        Assert.Equal(2, variant.Length);
 
         // The version hands the walk the history's own stocks' releases: A's one, of the three stocks it holds.
         Assert.Contains($"{WalkForwardTester.RulesVerb}: reading version 1 hands the tone walk the releases of 1 of the history's 3 stock(s), 1 release(s)", said);
