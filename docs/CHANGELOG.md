@@ -26,6 +26,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-29 - docs/ARCHITECTURE.html - the setup ledger's and the walk-forward tester's catalogue rows gain 21.3's read-only checks, and the score audit joins the catalogue and the matrix
+Authorised by: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word
+Was:
+> ...a drift's reaction set passed on the night its rule buys it (see: The setup ledger reads each S&P 400 and 600 family's frozen live rule where one stands, and a card draws setups like a pick only once its history is built under that rule) | ...the flag standing the night before a filing is read (see: The Fundamentals family's history test walks its trades over the pulled history on 144 settings an index and registers nothing) |
+Now:
+> ...(see: The setup ledger reads each S&P 400 and 600 family's frozen live rule where one stands, and a card draws setups like a pick only once its history is built under that rule); and from 21.3 by hand, `ledger-exits --index`, prices each settled swing setup of the index three ways from the history's bars ... (see: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word) | ...(see: The Fundamentals family's history test walks its trades over the pulled history on 144 settings an index and registers nothing); and from 21.3 by hand, `loop-open-floor --index`, walks the drift's rules standing on the index as the per-rule test walks them, the live or provisional rule carrying the open floor's walk beside its own ... (see: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word) | a new row, Score audit, compute, by hand, reading setups, loop models and loop runs and writing none, and its row in the read and write matrix
+Why: 21.3 builds the three read-only checks, two as verbs of the components whose history they read and one as a component of its own.
+
+### 2026-10-29 - docs/ARCHITECTURE.html - sections 13.10 and 13.12 gain a paragraph each on 21.3's read-only checks
+Authorised by: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word
+Was:
+> ...(the setup ledger's section's last paragraph) <h3>13.11 The loop's nightly half</h3> ... (the tester's section's last paragraph) <h3>13.13 The trade autopsy, winners against losers and the engines' hooks</h3>
+Now:
+> ...<p>From 21.3 two read-only checks read the ledger by hand and write nothing to it. The exits check prices each settled swing setup three ways ... The score bucket audit scores each settled swing setup entered in a tester fold's year by that fold's stored model ... (see: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word).</p> <h3>13.11 ...</h3> ... <p>From 21.3 the drift's open floor is put through the tester by hand as a one-setting procedure, read-only. ... (see: ...).</p> <h3>13.13 ...</h3>
+Why: the sections state what each check reads and prices and that none changes a rule.
+
+### 2026-10-29 - docs/RUNBOOK.md - the three read-only checks' commands and what each prints and writes
+Authorised by: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word
+Was:
+> ...since a position is sized the night before. (the next-open check's paragraph) On the operator's rulings of 2026-10-15 every entry is bought at the next session's open...
+Now:
+> ...From 21.3, three read-only checks by hand, each writing an HTML page with its figures as JSON beside it under `data/loop/checks/` and no store row: (the three commands) `ledger-exits` prices each settled swing setup ... `ledger-score-audit` scores each settled swing setup ... `loop-open-floor` walks the drift's rules ... None registers a rule, moves a version or restarts a record; a change any of them suggests waits for 21.14 and the operator's word (see: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word). On the operator's rulings of 2026-10-15 every entry is bought at the next session's open...
+Why: the runbook shows every verb the worker dispatches.
+
+### 2026-10-29 - .claude/rules/checks.md - fixture-expectations names 21.3's assertions
+Authorised by: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word
+Was:
+> ...and twelve months' strength at design (a)'s leaders setting walked and at a window off design (b)'s base kept naming so |
+Now:
+> ...kept naming so; and from 21.3 the three read-only checks: a setup's score under a constructed fold model, its rank among the model's hundredths and its group worked by hand on both sides of each group's edge, ...; the three pricings of a constructed trade ...; the open floor's parts over a constructed ledger, eight blocks one risk ahead reading one in 256 against the rule as the tester's judge reads them, ...; and each check declaring no write and its source holding no writing statement, the page carrying its title and cells |
+Why: the roster states what each check asserts, and 21.3 adds assertions to the fixture's.
+
 ### 2026-10-29 - docs/BUILD_PLAN.md - the phase 21 section gains the estimate the planning pass brought to the operator and the paragraph on what the sources check found
 Authorised by: Phase 21 makes the existing families choose better and the monthly loop test every family on every index, built to completion before any new work with no model judging a stock and nothing retired without the operator's word
 Was:

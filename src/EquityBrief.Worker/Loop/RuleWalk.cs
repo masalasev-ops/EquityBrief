@@ -35,9 +35,18 @@ public sealed class RuleWalk(
     Func<ExitChoice?, Func<int, bool>?, Func<IReadOnlyList<int>, IReadOnlyList<int>>?, IReadOnlyList<ExitProcedures.Walked>> walk,
     IReadOnlyDictionary<string, double>? standing = null,
     Func<int, IReadOnlyList<double?>>? readingsOf = null,
-    Func<long, TreeModel?>? trees = null)
+    Func<long, TreeModel?>? trees = null,
+    Func<Func<int, bool>?, Func<FamilyListing, bool>, IReadOnlyList<ExitProcedures.Walked>>? walkSkipping = null)
 {
     IReadOnlyList<ExitProcedures.Walked>? own;
+
+    // From 21.3 the rule's walk over the listings a filter keeps with the listings a skip names not bought, their places
+    // on the night spent and their stocks left free, as the record command replays the drift's open floor: the walk a
+    // swing family's rule carries at its own exit, in the family's own order. A rule whose walk carries none refuses.
+    public IReadOnlyList<ExitProcedures.Walked> KeepingSkipping(Func<int, bool>? keep, Func<FamilyListing, bool> skip) =>
+        walkSkipping is null
+            ? throw new InvalidOperationException($"The {family}'s walk carries no skipping walk, which only a swing family's does.")
+            : walkSkipping(keep, skip);
 
     public string Family => family;
 
@@ -154,6 +163,10 @@ public sealed class RuleWalk(
             return ExitProcedures.Walk(read, adapter, closes, ordered, under);
         }
 
+        // From 21.3 the same walk at the rule's own exit with a skip, the listings in the family's own order.
+        IReadOnlyList<ExitProcedures.Walked> WalkSkipping(Func<int, bool>? keep, Func<FamilyListing, bool> skip) =>
+            ExitProcedures.Walk(read, adapter, closes, keep is null ? listed : [.. listed.Where((_, at) => keep(at))], exit, skip);
+
         var floorWords = floor > 0 ? FormattableString.Invariant($", its stop held at least {floor:0.##} typical move under the buy") : string.Empty;
 
         return new RuleWalk(
@@ -165,7 +178,8 @@ public sealed class RuleWalk(
             Walk,
             hooks,
             readings is null ? null : at => readings.Of(listed[at].Name, listed[at].Bar, listed[at].Session),
-            trees);
+            trees,
+            WalkSkipping);
     }
 
     // The S&P 400's or 600's provisional pullback, the pullback's base as its record replays it, five a night with one

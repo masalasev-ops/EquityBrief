@@ -30,10 +30,12 @@ public partial class RulesChooseTheStocks
 
         // The scope, by name: the tester writes it, and the decision cards and the read surface read it; from 17.15 the
         // night's family evaluator, lister and recorder and the index families read the challenger's trees a rule's hooks
-        // name by their key.
+        // name by their key; from 21.3 the score audit reads each stored model to place the settled setups of its fold's
+        // year, a read-only check that decides nothing.
         // see: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score
+        // see: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word
         Assert.Equal(
-            ["DecisionCards", "FamilyEvaluator", "FamilyLister", "FamilyRecorder", "IndexFamilies", ReadSurface, "WalkForwardTester"],
+            ["DecisionCards", "FamilyEvaluator", "FamilyLister", "FamilyRecorder", "IndexFamilies", ReadSurface, "ScoreAudit", "WalkForwardTester"],
             touching.Select(component => component.Name).Order(StringComparer.Ordinal));
         Assert.Equal(["WalkForwardTester"], writing.Select(component => component.Name));
         Assert.Empty(touching.SelectMany(component => TouchesTheModelAndReadsWhatItMayNot(component.Name, component.Access)));

@@ -92,6 +92,8 @@ public class StoreNeverDeleted
             [
                 "AccountPlan.cs: File.Move(next)",
                 "AccountPlan.cs: File.WriteAllText(next)",
+                "CheckReports.cs: File.WriteAllText(figuresFile)",
+                "CheckReports.cs: File.WriteAllText(report)",
                 "ComparisonCommand.cs: File.WriteAllTextAsync(Path.Combine(folder, name))",
                 "ContextIdeasRunner.cs: File.WriteAllText(figures)",
                 "ContextIdeasRunner.cs: File.WriteAllText(report)",

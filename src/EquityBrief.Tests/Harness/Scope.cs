@@ -3634,6 +3634,16 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included",
             ByAccess),
+
+        // 21.3, the score audit, a read-only check of its own.
+        [CheckReach.Key(CatalogueTable, "Score audit")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the setups, the stored models and the loop runs it reads and nothing it writes, each reconciled against the row",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Score audit")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
         [CheckReach.Key(StoresTable, "Loop runs")] = new Scoped(
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",

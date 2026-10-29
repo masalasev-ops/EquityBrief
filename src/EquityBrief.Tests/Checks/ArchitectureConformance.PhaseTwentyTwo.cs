@@ -36,7 +36,9 @@ public partial class ArchitectureConformance
 
     // The rows the document gains after phase 22's report, named beside the pair and never counted in it: 22.13's ten, the
     // Fundamentals family's catalogue and matrix rows, its three stores, its step in section 14, its card on Tonight,
-    // section 17's starting settings and section 18's two; and 22.14's one, section 17's grid of its history test.
+    // section 17's starting settings and section 18's two; 22.14's one, section 17's grid of its history test; and from
+    // phase 21, built after phase 22, 21.3's two, the score audit's catalogue and matrix rows, which phase 21's own pair
+    // counts when its report reads it.
     internal static string[] AfterPhaseTwentyTwo =>
     [
         .. ComponentAccess.ImprovingRows,
@@ -45,6 +47,8 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.ImprovingPageRows,
         CheckReach.Key(NightlyRunSteps.Heading, NightlyRun.ImprovingStep),
         .. FixtureExpectations.ImprovingHistoryClaims,
+        CheckReach.Key(Scope.CatalogueTable, "Score audit"),
+        CheckReach.Key(Scope.MatrixTable, "Score audit"),
     ];
 
     // The rows the document loses after phase 22's report: none.

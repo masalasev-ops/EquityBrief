@@ -11849,3 +11849,156 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over main at
             checkpoint script, said again on 2026-10-29; the corpus checks that read the record, the plan, the runbook,
             the decisions, the changelog and the roster ran filtered over this tree, 213 of 213 green.
 Carried:    21.3 on the operator's go; the question above, answered at 21.6; the sign-offs of phases 18, 20 and 22.
+
+### 21.3 - three read-only checks built: the score bucket audit, the exits priced three ways and the drift's open floor through the tester, each writing a page under the data root and no store row   2026-10-29
+
+Queue:      done, 21.1 as PR 587 with its correction as PR 588, 21.2 as PR 589; in progress, this checkpoint; next, 21.4 on
+            the operator's go, then 21.5 to 21.15 in the section's order; beside them the sign-offs of phases 18, 20 and
+            22 by fresh sessions.
+Built:      three commands by hand, each reading the store, writing an HTML page with its figures as JSON beside it under
+            the data root's loop folder and no store row. The score bucket audit, a component of its own: each settled
+            swing setup of the index entered in a tester fold's year scored by that fold's stored model, ridge and trees
+            where one stands, which learned only on paths that ended before the year, placed among the model's own
+            hundredths on the index into five groups of a fifth, each group stating its setups, the share winning, the
+            mean edge after costs, the rule's own picks and the live rule's passes, the setups since the first monthly
+            run scored by the newest model fitted before their night. The exits check, a verb of the setup ledger: each
+            settled swing setup priced three ways from the history's bars with its stored plan, bought at the open after
+            its session, sold at the close that triggered its exit as stored, at the open of the session after it, and
+            with the target as a resting order filled on the first session whose high reaches it, the stop still a close
+            and sold at the next open, the time limit at its own close either way, a session reaching the target and
+            closing under the stop selling at the target, by family and year, the dip as it already prices. The open
+            floor, a verb of the walk-forward tester: the drift's rules standing on the index walked as the per-rule
+            test walks them, the live or provisional rule carrying the open floor's walk beside its own through the
+            record command's own skip, a skipped listing's place spent and its stock free, in the tester's walk and in
+            the sweeps' own reading alike, and the open floor judged against that rule in the drift's own correction,
+            its four parts and its test years. Each answer stands in an entry of its own below.
+Measured:   each check over the operator's store read-only, from a copy of this branch's build pointed at the live data
+            root as the run scripts point theirs, on 2026-10-29 between 19:19 and 19:25 UTC and the exits and the open
+            floor again between 19:32 and 19:37 UTC after the open floor's words and the dip's edge line were corrected:
+            the audit under a minute an index, the exits about 35 seconds and the open floor about a minute, no store
+            row written, the store's file time standing before the first read. The three answers stand in the entries
+            below, each with the pages it wrote.
+Written:    the score audit's catalogue and matrix rows, the setup ledger's and the walk-forward tester's rows gaining
+            their verbs, a paragraph each in sections 13.10 and 13.12, the runbook's three commands, the decision, the
+            roster's fixture-expectations row, the changelog, and the harness's own lists: the rows after phase 22's
+            report, the components reading the fitted model's store, the sites that write a file and the components
+            writing no store.
+Tests:      2925, from 2921: four added in the fixture's expectations, a setup's score, rank and group under a
+            constructed model on both sides of each group's edge with the group rows; the three pricings of five
+            constructed trades, each sale and session worked by hand, with the groups' paired means and ends; the open
+            floor's parts over a constructed ledger, eight blocks one risk ahead reading one in 256 against the rule as
+            the tester's judge reads them, the skip spending a listing's place and the floor's own predicate; and each
+            check declaring no write and its source holding no writing statement.
+Claims:     1457, from 1455: the score audit's catalogue row and its matrix row, each reached by component-access and
+            named among the rows after phase 22's report; the setup ledger's and the walk-forward tester's rows amended
+            in place keep their keys; 1472 placements, from 1470.
+Pins:       none moved: the exits' pricing sits in the core's ledger folder beside the next-open check, the audit in a
+            file of its own, the open floor in the tester's, the exit procedures' and the rule walk's files, and the
+            skip in the sweeps' own reading, none of which a registration pins, asserted by the expectations holding
+            every evaluator's version as the operator's register names it.
+Mutation:   chosen before the run by this rule, the property the checkpoint adds whose wrong form would read as right:
+            under the resting order a session whose high reaches the target sells at the target before its close is
+            read. The close read first: the three-pricings expectation went red at the session reaching the target and
+            closing under the stop, sold at the stop at -1.2 risks in 2 sessions where the hand expects the target at
+            +1.8 in 1; reverted, the four expectations green. Not mutated: the audit's placement, the open floor's judge
+            and the skip, each held by its own expectation.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2925 of 2925 tests ran
+            with none failed, migrations 0 to 114 with none pending, schema version 114, against `data-ci` and never
+            `data`; the phase report 64 tables, 1457 claims, 1457 passing, none out of scope and none unexamined, 1472
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    21.4 on the operator's go; the three answers below, each awaiting the operator's word at 21.14; the sign-offs
+            of phases 18, 20 and 22.
+
+### 21.3 - the score bucket audit's answer: the ridge score's top fifth stands above its bottom after costs for the breakout and the drift on the S&P 500, the drift on the S&P 400 and the breakout on the S&P 600, and for no pullback   2026-10-29
+
+Not a checkpoint entry: it brings the operator one of 21.3's three answers, and lands nothing.
+Measured:   read-only on 2026-10-29 at 19:19 UTC over the operator's store, the newest monthly run's models, those of
+            2026-10-27 read through 2026-10-26, 40 fold models an index over the five test years 2022 to 2026, each
+            settled swing setup entered in a fold's year scored by that fold's ridge model and its trees model and
+            placed among the model's own hundredths on the index into five groups of a fifth; no setup since the first
+            monthly run is settled yet, so that population holds none, and the stored picks are all history rows, so
+            only the live rule's passes inform. The S&P 500, 58,459 settled setups: the pullback's ridge groups from
+            the lowest fifth up, 1,681 setups at +0.155 risks a setup after costs, 1,773 at -0.047, 2,489 at +0.036,
+            3,496 at +0.087 and 6,785 at +0.028; the breakout's 2,102 at -0.058, 2,724 at +0.003, 2,786 at +0.002,
+            2,646 at +0.040 and 1,983 at +0.082; the drift's 938 at -0.315, 743 at -0.049, 638 at +0.038, 611 at -0.114
+            and 545 at -0.080. The S&P 400, 42,435: the pullback's 1,870 at +0.106, 1,966 at -0.111, 2,340 at -0.005,
+            2,849 at -0.114 and 3,850 at -0.064; the breakout's 1,187 at +0.030, 1,819 at +0.099, 1,931 at +0.060, 2,078
+            at +0.026 and 2,026 at -0.092; the drift's 588 at -0.100, 559 at -0.082, 483 at +0.036, 481 at +0.129 and
+            455 at +0.224. The S&P 600, 57,406: the pullback's 2,373 at +0.050, 2,934 at -0.025, 3,538 at +0.092, 4,416
+            at +0.068 and 4,791 at +0.011; the breakout's 1,470 at -0.092, 2,194 at -0.016, 2,651 at +0.114, 2,760 at
+            +0.033 and 2,622 at +0.003; the drift's 642 at +0.102, 727 at +0.060, 703 at -0.225, 671 at -0.043 and 640 at
+            -0.138. The share winning sits between 31 and 50 per cent in every group and moves little between them. The
+            trees' groups stand beside the ridge's on each page and order the pullback and the drift no better. The
+            pages: score-audit-GSPC, score-audit-MID and score-audit-SML under the data root's loop checks folder, each
+            with its figures as JSON beside it.
+Answer:     for 21.8's ordering rule, the ridge score's top fifth above its bottom fifth after costs on an index: the
+            S&P 500's breakout, +0.082 against -0.058, and drift, -0.080 against -0.315; the S&P 400's drift, +0.224
+            against -0.100; and the S&P 600's breakout, +0.003 against -0.092. Not the pullback on any index, +0.028
+            against +0.155, -0.064 against +0.106 and +0.011 against +0.050, nor the S&P 400's breakout, -0.092 against
+            +0.030, nor the S&P 600's drift, -0.138 against +0.102; there the ranking variant orders by 21.7's expected
+            value, or is not built where that does not order either, as the first amendment rules. The top fifth's
+            edge is under 0.1 risks a setup everywhere it stands above the bottom, so the score separates a little and
+            never much. Nothing changes on this answer without the operator's word.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 21.3 - the exits' answer: selling at the next open after the triggering close gains between 0.01 and 0.07 risks a trade on every swing family and index, and the target as a resting order loses on every pullback and drift   2026-10-29
+
+Not a checkpoint entry: it brings the operator one of 21.3's three answers, and lands nothing.
+Measured:   read-only on 2026-10-29 between 19:20 and 19:23 UTC over the operator's store, every settled swing setup of
+            the three indices priced three ways over the history read through 2026-10-28, bought at the open after its
+            session: 58,459 on the S&P 500, 42,435 on the S&P 400 and 57,406 on the S&P 600, none left out, and 58,428,
+            42,396 and 57,336 of them reproducing the stored result at the close within 0.001, the rest the pulled
+            years' rounding. The mean result in risks a trade at the close, at the next open and with the target
+            resting, and the mean edge after costs under each against the stored benchmark and cost: the S&P 500's
+            pullback, 30,178 trades, +0.159, +0.178 and +0.124, edges +0.022, +0.040 and -0.013; its breakout, 22,430,
+            +0.031, +0.046 and +0.046, edges -0.016, -0.001 and -0.001, its stop trailing with no target to rest; its
+            drift, 5,851, +0.180, +0.193 and +0.046, edges -0.017, -0.004 and -0.151. The S&P 400's pullback, 22,683,
+            +0.099, +0.113 and +0.046, edges +0.010, +0.024 and -0.044; its breakout, 15,421, -0.056, -0.049 and -0.049,
+            edges -0.025, -0.018 and -0.018; its drift, 4,331, +0.204, +0.278 and +0.141, edges +0.012, +0.085 and
+            -0.051. The S&P 600's pullback, 31,809, +0.145, +0.172 and +0.076, edges +0.051, +0.077 and -0.018; its
+            breakout, 19,945, -0.052, -0.041 and -0.041, edges -0.026, -0.016 and -0.016; its drift, 5,652, +0.021,
+            +0.045 and -0.063, edges -0.108, -0.084 and -0.192. The resting order reaches the target more often, 14,375
+            pullback trades against 13,205 at the close on the S&P 500, and sells them a whole move short of the close
+            that would have followed, which is where its loss comes from. The dip stands as it already prices, sold at
+            the next open, 249,968, 191,096 and 267,175 settled setups at +0.027, +0.027 and +0.020 risks, their edge,
+            where the night stored no cost, +0.007, +0.006 and +0.004. Each year's
+            rows stand on the pages exits-GSPC, exits-MID and exits-SML under the data root's loop checks folder, with
+            the figures as JSON beside them.
+Answer:     selling at the open of the session after the triggering close, rather than at that close, gains on every
+            family and index, between +0.01 and +0.07 risks a trade after costs, the drift's +0.073 on the S&P 400 the
+            most; the breakout's and the pullback's gains are the gap the next morning carries on. The target as a
+            resting order loses on every pullback and drift, by 0.03 to 0.13 risks a trade, and changes nothing for a
+            trailing stop. The stored pricing, at the triggering close, is what every rule, record and page reads, and
+            it stays unless the operator rules at 21.14 that the exits are priced at the next open by a fill step of
+            their own, with no rule registered again and no record restarting.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 21.3 - the open floor's answer: through the tester it is within luck against the live drift on every index, gaining on the S&P 500 and the S&P 600 and losing on the S&P 400, and its adjusted p never nears the bar   2026-10-29
+
+Not a checkpoint entry: it brings the operator one of 21.3's three answers, and lands nothing.
+Measured:   read-only on 2026-10-29 between 19:22 and 19:25 UTC over the operator's store, the drift's rules standing on
+            each index walked as the per-rule test walks them, the live rule carrying the open floor's walk beside its
+            own, a fill whose reward to risk at the open is under 1 skipped and its place on the night spent, as the
+            record command replays it, and the open floor judged against the live rule in the drift's own correction
+            over the history read through 2026-10-28, the S&P 500's beside its nine variants and the S&P 400's and
+            600's beside their three. The S&P 500's live drift 2,266 trades at -0.058 risks a trade after costs, the
+            open floor 2,033 with 353 listings skipped at +0.025, judged within luck: adjusted p 0.912 against the bar
+            of 0.0042 over 18 blocks, better in 2 of 4 counted years, 1,257 units; the record command's first written
+            run of 2026-10-29 read the same two rules at 2,264 and 2,031 trades. The S&P 400's live drift 1,817 at
+            +0.096, the open floor 1,702 with 115 skipped at +0.064, within luck: adjusted p 0.908, better in 0 of 4,
+            1,053 units. The S&P 600's live drift 1,036 at +0.105, the open floor 991 with 58 skipped at +0.117, within
+            luck: adjusted p 0.620, better in 2 of 4, 659 units. The pages: open-floor-GSPC, open-floor-MID and
+            open-floor-SML under the data root's loop checks folder, each with its test years and every drift rule's
+            line as the per-rule test writes it, and the figures as JSON beside them.
+Answer:     the open floor passes on no index: on the S&P 500 it lifts the drift from -0.058 to +0.025 risks a trade by
+            skipping 353 fills, about one in seven, but the lift is within luck over the test years, better in 2 of 4;
+            on the S&P 400 it loses 0.032 a trade and is better in no year; on the S&P 600 it gains 0.012 and is better
+            in 2 of 4. On the plan's own rule it is registered as a drift version where the operator rules so and the
+            family has room, run unregistered with its record followed on the S&P 500 as it is today, and not put as an
+            approval replacing a live drift, since the tester passed it nowhere. Nothing changes on this answer without
+            the operator's word at 21.14.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.

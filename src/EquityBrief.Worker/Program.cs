@@ -52,6 +52,9 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "ledger-build" => await LedgerBuildRun(args),
     "ledger-check" => await LedgerCheckRun(args),
     "ledger-next-open" => await LedgerNextOpenRun(args),
+    "ledger-exits" => await LedgerExitsRun(args),
+    "ledger-score-audit" => await ScoreAuditRun(args),
+    "loop-open-floor" => await LoopOpenFloorRun(args),
     "ledger-night" => await LedgerNightRun(),
     "scores" => await ScoresRun(),
     "fill" => await FillRun(args),
@@ -88,7 +91,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 53 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 56 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -180,6 +183,19 @@ static int NoVerb()
         "'ledger-next-open --index <GSPC, MID or SML>' prices each settled setup at the close of the night that listed " +
         "it and at the next session's open with the same stop, target, trail and cap, and states the differences by " +
         "family and year with how often the next open fell under the stop or over the target, writing nothing, " +
+        "'ledger-exits --index <GSPC, MID or SML>' prices each settled swing setup three ways, sold at the close that " +
+        "triggered its exit as stored, at the open of the session after it, and with the target as a resting order " +
+        "filled on the first session whose high reaches it, and states the results and the edges after costs by " +
+        "family and year on a page under the data root's loop folder, writing no store row, " +
+        "'ledger-score-audit --index <GSPC, MID or SML>' scores each settled swing setup entered in a test year by " +
+        "that year's stored model, places it among the model's own hundredths in five groups and states each " +
+        "group's setups, winning share, mean edge after costs and the rule's own picks, the setups since the first " +
+        "monthly run by the newest model fitted before their night, on a page under the loop folder, writing no " +
+        "store row, " +
+        "'loop-open-floor --index <GSPC, MID or SML>' walks the drift's rules standing on the index as the per-rule " +
+        "test walks them with the open floor beside the live or provisional rule, skipping a fill whose reward to " +
+        "risk at the open is under 1, and judges it against that rule in the drift's own correction over the test " +
+        "years, on a page under the loop folder, registering nothing and writing no store row, " +
         "'ledger-night' runs the setup ledger's night step over the newest night the store holds, as the night does, " +
         "writing that night's setups and every member's readings again and stating its time, refused while a night holds " +
         "the store, " +
@@ -824,6 +840,60 @@ static async Task<int> LedgerNextOpenRun(string[] args)
     }
 
     return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile).NextOpenAsync(index, Console.Out);
+}
+
+// 21.3's exits check by hand, over one index's settled swing setups, reading the store and writing its page alone.
+// see: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word
+static async Task<int> LedgerExitsRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (VerbArguments.Value(args, "--index") is not { } index)
+    {
+        Console.Error.WriteLine("ledger-exits: give '--index <GSPC, MID or SML>'.");
+
+        return 1;
+    }
+
+    return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile).ExitsAsync(index, Console.Out);
+}
+
+// 21.3's score bucket audit by hand, over one index's settled swing setups and the stored models, reading the store and
+// writing its page alone.
+// see: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word
+static async Task<int> ScoreAuditRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (VerbArguments.Value(args, "--index") is not { } index)
+    {
+        Console.Error.WriteLine("ledger-score-audit: give '--index <GSPC, MID or SML>'.");
+
+        return 1;
+    }
+
+    return await new EquityBrief.Worker.Loop.ScoreAudit(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out).RunAsync(index);
+}
+
+// 21.3's open floor through the walk-forward tester by hand, on one index, the drift's rules walked as the per-rule
+// test walks them and the open floor judged against the live or provisional rule, registering nothing and writing its
+// page alone.
+// see: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word
+static async Task<int> LoopOpenFloorRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (VerbArguments.Value(args, "--index") is not { } index)
+    {
+        Console.Error.WriteLine("loop-open-floor: give '--index <GSPC, MID or SML>'.");
+
+        return 1;
+    }
+
+    return await new EquityBrief.Worker.Loop.WalkForwardTester(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out).OpenFloorAsync(index);
 }
 
 // The walk-forward tester by hand on the S&P 400 or 600, Part 0's procedures run inside every fold, reading the pulled

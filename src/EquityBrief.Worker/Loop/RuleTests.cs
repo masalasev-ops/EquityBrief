@@ -27,7 +27,9 @@ public sealed record RuleUnderTest(
     IReadOnlyList<(int Entry, double? Edge)>? Trades = null,
     IReadOnlyList<(int Opens, double? Edge)>? Months = null,
     string? Why = null,
-    ToneSides? Tone = null)
+    ToneSides? Tone = null,
+    IReadOnlyList<(int Entry, double? Edge)>? OpenFloor = null,
+    int Skipped = 0)
 {
     public bool Book => Unit == LoopProcedures.Points;
 }
@@ -626,8 +628,38 @@ public static class RuleTests
         var units = Units(trades);
         var tone = releases is null ? null : new ToneSides(version, inputs.Tones!.CutoffOf(version), units, Units(walk.Keeping(KeptOpposite)));
 
+        // From 21.3 the drift's live or provisional rule carries the open floor's walk beside its own: the same listings
+        // with a fill whose reward to risk at the open is under the floor skipped, its place on the night spent, as the
+        // record command replays it, so the open floor is judged as a one-setting procedure against the rule.
+        if (family == DriftRule.Name && StandingOf(row) != Variant)
+        {
+            var skipped = 0;
+            var floored = walk.KeepingSkipping(
+                marketSwitches.Equals(MarketSwitches.None) && releases is null ? null : Kept,
+                listing =>
+                {
+                    var leaves = RuleReplay.LeavesUnder(OpenAfter(inputs.Read.Series[listing.Name], listing.Bar), listing, RuleRecorder.OpenFloor);
+
+                    skipped += leaves ? 1 : 0;
+
+                    return leaves;
+                });
+
+            return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone, OpenFloor: Units(floored), Skipped: skipped);
+        }
+
         return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone);
     }
+
+    // The open of the session after a bar, which a trade is bought at from 19.10, none where the series holds none; the
+    // record command's own reading of it.
+    static double? OpenAfter(SweepSeries series, int bar) =>
+        bar >= 0 && bar + 1 < series.Bars.Length && series.Bars[bar + 1].Open > 0m ? Core.Prices.Statistic.FromPrice(series.Bars[bar + 1].Open) : null;
+
+    // From 21.3 the drift's rules standing on the index as the per-rule test walks them, the live or provisional rule
+    // carrying the open floor's walk beside its own, for the open floor's test as a one-setting procedure.
+    // see: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word
+    public static IReadOnlyList<RuleUnderTest> Drift(RuleTestInputs inputs) => [.. Swings(inputs, DriftRule.Name)];
 
     // From 21.1 a registered breakout or drift walked by its sweep's own reading of the index's history at the setting and
     // every level its registration states, as the record command replays a frozen rule: its places on the family's grid
@@ -661,6 +693,25 @@ public static class RuleTests
 
         if (version == 0)
         {
+            // From 21.3 the drift's live rule carries the open floor's walk beside its own over the same listings, as the
+            // record command replays it, so the open floor is judged against the rule as a one-setting procedure.
+            if (family == DriftRule.Name && StandingOf(row) != Variant)
+            {
+                var skipped = 0;
+                var floored = own.Costed(
+                    own.AtOpenSkipping(listings, listing =>
+                    {
+                        var leaves = RuleReplay.LeavesUnder(OpenAfter(own.Series[listing.Name], listing.Bar), listing, RuleRecorder.OpenFloor);
+
+                        skipped += leaves ? 1 : 0;
+
+                        return leaves;
+                    }),
+                    1);
+
+                return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, cap, Units(own.Costed(own.AtOpen(listings), 1)), OpenFloor: Units(floored), Skipped: skipped);
+            }
+
             return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, cap, Units(own.Costed(own.AtOpen(listings), 1)));
         }
 
