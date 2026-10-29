@@ -11411,3 +11411,79 @@ Carried:    the remedy `tools/remedies/2026-10-29-22.15-the-fundamentals-freezes
             operator's choice of 2026-10-29 was not told, and the choice is put to them again with that; and the
             Fundamentals family's live rules replayed by the record command once it carries their form, their cards
             drawing no record until then.
+
+### 22.12 - the phase 22 report, amended: the monthly run of 2026-10-27 recorded from what it stored   2026-10-29
+
+Not a checkpoint entry: it records the monthly run by hand of 2026-10-27 from what it stored, on the operator's choice
+of 2026-10-29, and lands nothing.
+Ran:        `tools/monthly.ps1` by hand from a clean copy of main at a157928b, loop-month-2026-10-20261027T122542Z, from
+            12:25:42 to 14:32:41 UTC on 2026-10-27, each step on the run log: the facts, the history and each index's
+            check held on the tries of 2026-10-11, so it went on from the links; links, ideas, test and rules on each
+            index, then the report, every step ok. The ideas' run asked the local model 71 prompts on pin 5, none
+            refused. A run again for October passes over every step, each having held, so the record is written from
+            what the run stored and nothing runs.
+Proposals:  the tester on each index, its run named: the S&P 500, loop-test-GSPC-20261027T132040Z, 79 proposals and
+            none passed, the breakout's 19 with the idea generator's first-ranked idea strongest at an adjusted p of
+            0.50, the drift's 19 with its second-ranked at 0.74, the fundamentals-first's 20 with the learned trees less
+            their lowest fifth at 0.31, the sector heavyweights' 2 with the autopsy's exit at 1.0 and the pullback's 19
+            with the generator's first-ranked at 0.54; the S&P 400, loop-test-MID-20261027T133756Z, 83 and none passed,
+            the breakout's 20 with the generator's first-ranked at 0.071, the drift's 20 at 0.44, the fundamentals-first's
+            20 with the trees at 0.091, the heavyweights' 4 at 1.0 and the pullback's 19 with the trees at 0.14; the S&P
+            600, loop-test-SML-20261027T135200Z, 83 and none passed, the breakout's 20 with the learned score less its
+            lowest two fifths at 0.78, the drift's 20 with the generator's second-ranked at 0.25, the fundamentals-first's
+            20 with the score at 0.32, the heavyweights' 4 with its design's six settings at 0.62 and the pullback's 19
+            with the score ordering the list at 0.87. The report at `data/loop/2026-10/report.txt` puts none to the
+            operator, and the Loop page draws the same three runs.
+Rules:      the per-rule test on each index: the S&P 500's 44 rules, the pullback's 9, the breakout's 8, the drift's 9,
+            the fundamentals-first's 1, the heavyweights' 4, the quality family's 8 and the dip's 5, none passed and 3
+            not testable, each a pullback version reading what the history's walk does not: the plan at the nearest
+            bands, a business's reported quarters and the analysts' estimates, which the store keeps only from
+            2026-10-03; the S&P 400's 21, the pullback's 2, the breakout's 2, the drift's 3, the fundamentals-first's 1,
+            the heavyweights' 1, the quality family's 8 and the dip's 4, none passed and 8 not testable, three drift
+            rules reading an entry setting the walk does not, two pullback rules reading the quality or breadth floor
+            settings, two breakout rules reading the S&P 500's breadth the walk does not read on that index and a
+            heavyweights rule holding a book none of its design's six settings holds; the S&P 600's 25, the pullback's 3,
+            the breakout's 2, the drift's 3, the fundamentals-first's 1, the heavyweights' 3, the quality family's 8 and
+            the dip's 5, none passed and 11 not testable, three pullback rules reading the quality or breadth floor
+            settings, three drift rules reading the hold, revenue or breadth floor settings, two breakout rules reading
+            the breadth floor and three heavyweights rules holding a book none of the six settings holds. The drift's
+            tone variants are not among the rules on any index, the 20.8 defect the 22.12 ruling of 2026-10-27 put to
+            the operator standing.
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request, which changes documents
+            alone, with the figures it states.
+
+### 22.12 - the phase 22 report, amended: 22.14's and 22.15's answers, the freezes read back before their first night and the copy written again   2026-10-29
+
+Not a checkpoint entry: it amends the phase 22 report with what 22.14 and 22.15 came to on the operator's answers of
+2026-10-28, and lands nothing.
+22.14:      the history test's three answers of 2026-10-27 stand as the run entries state them. The pullback version
+            "Pullback, business growing" is registered nowhere: not on the S&P 500, whose pullback family holds nine
+            rules and already runs the version leaving off a deteriorating business, which reads the same business
+            check, and on the operator's choice of 2026-10-29 not on the S&P 400 or 600 either, business first's
+            27-setting search having passed none on any index, its best +0.07 risks on the S&P 400, so there is no
+            tested edge to carry and a version written as hooks, each a reading on its own, would be an untested rule;
+            every pullback setup in the ledger carries the revenue, margin and cash readings, so winners against losers
+            can propose a business condition for the pullback from the data. Business first stays off every page as
+            22.13 left it; its removal from the night is held, since its step sits in the files all 28 S&P 400 and 600
+            rules pin and an S&P 400's or 600's rule registered again is not replayed, its record and paper account
+            restarting, which the operator's choice was not told, and its trades have held back 0 picks on each index.
+22.15:      frozen on each index by the remedy run from main at 05:22 UTC on 2026-10-29, after PR 583 merged as 4e8c6714
+            at 05:21: each index's answer recorded first from its run of 2026-10-27, the S&P 500's at the starting
+            setting as ruled with 508 trades and the S&P 400's and 600's at the proposals their runs stated with 517 and
+            51, each with its run's own tester's verdict; then nine rules an index at one instant, the live rule and
+            every setting of the grid one dial from it, rows 673 to 681 on the S&P 500, 682 to 690 on the S&P 400 and
+            691 to 699 on the S&P 600, each at version a315800029e4; the 96 rules standing before them as they stood.
+Screens:    read back off the read surface restarted from main's Release build at 05:23 UTC, before the family's first
+            night under its live rules: each index's Fundamentals card still draws the provisional rule's rows of the
+            night of 2026-10-28, its pill reading not yet tested, since the live rule's rows begin with the night of
+            2026-10-29, as a quality card's did after its freeze; the S&P 500's card 57 improved, 2 bought and 52
+            flagged, the S&P 400's 32, 1 and 25, the S&P 600's 24, 1 and 21; and paper trading's Fundamentals tile the
+            provisional rule's with its accounts for the live rule and eight versions appearing once a night has read the
+            register after the freeze, as the 22.11 correction has it. The frozen line, its words on the readings and
+            the fold's sentence are asserted over a constructed store by read-surface, and the card is read back again
+            on the morning after the night of 2026-10-29.
+Copy:       the read-only copy written again from main's clean copy of 4e8c6714 at 05:23 UTC with no upload, every link to
+            a page it does not hold drawn as its words alone, its report beside it for the operator to read before any
+            upload.
+Verified:   `tools/ci.ps1` green over the tree carrying the last entry of this pull request, which changes documents
+            alone, with the figures it states.
