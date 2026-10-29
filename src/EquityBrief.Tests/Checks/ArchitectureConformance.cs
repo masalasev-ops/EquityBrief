@@ -854,10 +854,13 @@ public partial class ArchitectureConformance
             DuePoints.PhaseOf(checkpoint) == DuePoints.PhaseOf(id) && checkpoint != id)),
     ];
 
-    // Phases are planned and built in order, so every phase before the newest landed opening
-    // has started and landed, and that newest one alone may be planned and not started. A
-    // reader losing every building entry of the newest phase reads as that state and is not
-    // found here.
+    // Phases are planned in the order the record holds their planning entries, which is their
+    // numbers' order but for a phase planned after a later-numbered one, as phase 21 was planned
+    // after phase 22 on the operator's rulings. So every phase planned before the newest planned
+    // opening has started and landed, and that newest one alone may be planned and not started;
+    // an opening the record never planned is read against the newest by its number, since a lost
+    // planning entry has no place in the record to read it by. A reader losing every building
+    // entry of the newest phase reads as that state and is not found here.
     internal static IReadOnlyList<string> UnreadOpenings(
         IReadOnlyList<string> openings,
         IReadOnlyList<string> checkpoints,
@@ -865,9 +868,25 @@ public partial class ArchitectureConformance
         IReadOnlyList<string> built,
         IReadOnlyList<string> planned)
     {
+        // An opening's place in the record's order of planning entries, before every one it holds
+        // where the record never planned it.
+        int Place(string opening)
+        {
+            for (var at = 0; at < planned.Count; at++)
+            {
+                if (planned[at] == opening)
+                {
+                    return at;
+                }
+            }
+
+            return -1;
+        }
+
         var newest = openings
             .Where(id => DuePoints.HasLanded(id, built, planned))
-            .OrderBy(DuePoints.Order)
+            .OrderBy(Place)
+            .ThenBy(DuePoints.Order)
             .LastOrDefault();
 
         bool BuildsItsPhase(string opening) =>
@@ -875,11 +894,17 @@ public partial class ArchitectureConformance
                 && DuePoints.PhaseOf(id) == DuePoints.PhaseOf(opening)
                 && built.Contains(id, StringComparer.Ordinal));
 
+        // Planned before the newest where the record planned both, and numbered before it otherwise.
+        bool BeforeTheNewest(string opening) =>
+            Place(opening) >= 0 && Place(newest!) >= 0
+                ? Place(opening) < Place(newest!)
+                : DuePoints.Compare(opening, newest!) < 0;
+
         return
         [
             .. openings.Where(id => started.Contains(id, StringComparer.Ordinal)
                 ? !DuePoints.HasLanded(id, built, planned)
-                : BuildsItsPhase(id) || (newest is not null && DuePoints.Compare(id, newest) < 0)),
+                : BuildsItsPhase(id) || (newest is not null && BeforeTheNewest(id))),
         ];
     }
 
@@ -912,6 +937,13 @@ public partial class ArchitectureConformance
 
         // An opening the plan has beyond the newest landed one is a phase not reached.
         Assert.Empty(Unread(["2.0"], ["2.1"], ["2.0"]));
+
+        // A phase planned after a later-numbered one, as phase 21 was planned after phase 22: the
+        // newest planned opening is read by the record's order, so the phase planned last alone may
+        // stand unstarted, and a phase planned before it that never started is found, which the
+        // numbers' order passed over.
+        Assert.Empty(Unread(["2.0", "4.0"], ["2.1", "4.1"], ["2.0", "4.0", "3.0"]));
+        Assert.Equal(["4.0"], Unread(["2.0", "3.0"], ["2.1", "3.1"], ["2.0", "4.0", "3.0"]));
     }
 
     [Fact]

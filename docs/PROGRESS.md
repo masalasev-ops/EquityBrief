@@ -11545,3 +11545,95 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             with none failed, migrations 0 to 114 with none pending, schema version 114, against `data-ci` and never
             `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+
+### 8.0 - correction: the opening-checkpoint reader reads the newest planned phase by the record's order, where a phase planned after a later-numbered one read as lost   2026-10-29
+
+Not a checkpoint entry: it corrects what the 8.0 correction of 2026-09-16 carried into the suite, found by the first run of
+the corpus checks over the tree carrying phase 21's planning entry below, and lands nothing.
+Found:      the suite's reader of the record's opening checkpoints took the newest landed opening by its phase's number and
+            read every lower-numbered opening not yet started as a phase the record had lost, so 21.0, planned on
+            2026-10-29 after 22.0 was planned on 2026-10-22 and built, read as wrong: 4 of 178 filtered checks red over the
+            tree, this one among them.
+Corrected:  the newest planned opening is the one the record planned last, by the order of its planning entries, and an
+            opening planned before it must have started; an opening the record never planned is still read against the
+            newest by its number, since a lost planning entry has no place in the record to read it by. The constructed
+            proof gains the shape: a phase planned after a later-numbered one standing unstarted passes, and a phase
+            planned before the newest that never started is found, which the numbers' order passed over.
+Tests:      none new; the proof test of the reader gains two cases. 2918 in all.
+Claims:     none new.
+Pins:       none move; the suite alone changes.
+Mutated:    the rule, stated before the run: the correction undone. M1 the newest opening taken by its number again: red at
+            the record's own entries test on 21.0 and at the proof's second new case, the shape the first run showed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 21.0 planning - phase 21 planned: the families choosing better and every family tested, the 22 untestable rules by cause, every pin-moving edit in one checkpoint, each new reading's source with its cost, and the operator's answers folded in   2026-10-29
+
+Not a checkpoint entry. It lands 21.0, the pass that plans phase 21, and builds none of it.
+Queue:      done, PRs 573 to 585, 22.15's remedy and the 22.14 correction counting business first's hold-backs; in
+            progress, this pass; next, 21.1 on the operator's go of 2026-10-29, "Then build from 21.1, one checkpoint at
+            a time, each with its answer brought to me where the plan says", then 21.2 to 21.15 in the section's order;
+            beside them the sign-offs of phases 18, 20 and 22 by fresh sessions, phase 22's handoff issued.
+Ruled:      by the operator on 2026-10-29 in their brief for the phase, kept whole in
+            `prompts/2026-10-29-21.0-phase-21-brief.md`, in these words where it rules the aim, the order and the limits:
+            "The operator's aim: make the existing families choose better, give them new number readings, make the
+            monthly loop cover and test every family on every index, and make every page readable by anyone. No language
+            model picks or ranks a stock. Phase 21 is built to completion before any new work; the scheduled monthly run
+            of 2026-11-07 runs over whatever has merged by then." "The items, each one or more checkpoints with its done
+            condition, ordered by dependency, read-only checks and the checkpoints the operator can open put early".
+            "Limits: no paid call or spend without the operator naming the amount; no family, version or capability
+            dropped on a test result without the operator's word; rules choose the stocks and no model judges a stock."
+            "Stop when the section is written and bring the operator: the checkpoint list in order with each one's
+            visible output, the estimate for the phase, and the decisions it needs from them as questions with options.
+            Nothing is built until they approve."
+Answered:   the ten questions the plan put, answered with four amendments in one message and an addition to 21.14 in a
+            second, each kept whole in `prompts/2026-10-29-21.0-operator-answers.md` and folded into the section: one move
+            of the pins at 21.4; the ranking variant ordering by the learned score only where 21.3's audit finds the top
+            fifth above the bottom after costs on that index, else by 21.7's expected value, else not built there; the
+            rating actions pulled and refreshed outside the night at 100 a day, the estimate revisions forward only and
+            only where 21.2 finds the trends endpoint takes many symbols in one request under 1,000 a night for every
+            member, and short interest from FINRA's files where usable and otherwise not at all; the three S&P 500
+            pullback versions judged by their records, the deteriorating-business version's re-registration on the SEC's
+            facts put after 21.1's entry; an approval registering a frozen rule again, and at nine rules the replaced
+            rule in the background counted outside the nine; the opposite tone condition walked unregistered beside the
+            tone variant; a new variant for a family at nine run unregistered and followed; the combined account's sector
+            cap at three open positions and a fifth of the pot a book family; graded exposure on the breadth floor and
+            the VIX median; the version-choosing windows as proposed; 21.4 one pull request in reviewable commits merged
+            whole with its remedy straight after; and the open floor, where 21.3's tester passes it on an index whose
+            drift holds nine, put as an approval replacing that index's live drift besides the unregistered run. The
+            plan as approved is kept in `prompts/2026-10-29-21.0-phase-21-plan.md`.
+Planned:    `BUILD_PLAN.md`'s phase 21 section with its checkpoints 21.0 to 21.15, a line in the list tabled for phase 21
+            saying the section takes its three items up, two operating rows at the foot of the carried obligations
+            table, section 20's row and the decision placing the phase.
+Measured:   read-only on the code at 96fc734f, which the merge of PR 585 moved in no pinned source, the corpus and the
+            record, with no provider or paid call and no store read, each figure set out in the section's findings: the
+            22 rules the run of 2026-10-27 could not test, 3, 8 and 11 by index, by the per-rule test's own reasons, 19
+            of them reading what the history already holds; the drift's tone variants missing from the per-rule test on
+            every index; the engines reading five families and not the dip, Quality at a fair price or the Fundamentals
+            family; the hooks' three sources pinned by 45 rules, the S&P 500's breakout 8 and drift 9, replayed, and the
+            28 S&P 400 and 600 swing and heavyweights rules, not replayed, and the ledger's catalogue by Quality at a fair
+            price's 24 and the Fundamentals family's 27, with no replay, the dip's 15 pinning neither, every record that
+            would restart 0 to 9 days old; each source's holding and cost, the rating actions' 378 for HPQ under a cap of
+            100 asks a day, about 16 days for 1,505 members, the trends at weight 10 a ticker, 15,050 a night for every
+            member, and short interest as current values; the open floor's 2,264 trades at 0.022 against 2,031 at 0.110
+            with 353 skipped; the usefulness table's 52 setups, 59.6 per cent and +1.112 risks on the S&P 500 after the
+            cutoff; the nine-rule room by family and index; and the times, the monthly run's 2 hours 7 minutes, the
+            per-rule test's 42 minutes and the three ledger histories' two hours. About five migrations, 115 to 119, two
+            ledger rebuilds and one re-registration remedy over about 110 rules.
+Operating:  two rows opened, both created here: the monthly run's time with every family tested, read on the Loop page's
+            month heading after its first scheduled run past 21.5, settling the 45 minutes proposed; and the ratings
+            refresh's cap read on its first five runs, on the Run page's row 21.6 builds, settling the 100 asks a day
+            proposed.
+Sign-offs:  phases 18, 20 and 22 owed to fresh sessions, each named outstanding and discharged by no checkpoint of phase
+            21.
+Tests:      2918, unchanged: the 8.0 correction above adds two cases to a proof and no test.
+Claims:     1455, unchanged: section 20's row is no claim, and the section, the rows and the decision sit in no table the
+            harness reads.
+Pins:       none moved: the pass edits no shipped source.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2918 of 2918 tests ran
+            with none failed, migrations 0 to 114 with none pending, schema version 114, against `data-ci` and never
+            `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    21.1 on the operator's go; the question on the deteriorating-business version after 21.1's entry; the
+            sign-offs of phases 18, 20 and 22.
