@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-28 - docs/ARCHITECTURE.html - a link the read-only copy does not hold is drawn as plain text
+Authorised by: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
+Was:
+> each link resolves to a file the copy holds or reads "Not in this copy"; ... (see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control)
+Now:
+> each link resolves to a file the copy holds or is drawn as its words alone, plain text with no note; ... (see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text)
+Why: the operator ruled on 2026-10-28 that a link to a page the copy does not hold is drawn as plain text and not as "Not in this copy"; the first copy, written that day, carried 10,503 such notes, most of them beside peers' tickers.
+
+### 2026-10-28 - docs/RUNBOOK.md - a link the read-only copy does not hold is drawn as plain text
+Authorised by: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
+Was:
+> (see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control) ... and a link to anything it does not hold reads *Not in this copy*.
+Now:
+> (see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text) ... and a link to anything it does not hold is drawn as its words alone, plain text with no note.
+Why: the same ruling; the decision it cites was superseded by one naming how such a link is drawn.
+
 ### 2026-10-28 - docs/ARCHITECTURE.html - the rule recorder reads the run log and names its open floor form
 Authorised by: The drift's open floor is replayed beside its live rule unregistered, skipping a fill whose reward to risk at the open is under 1
 Was:

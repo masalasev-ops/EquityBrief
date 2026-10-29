@@ -10,7 +10,7 @@ namespace EquityBrief.Web.Cloudflare;
 // The read-only copy of the site on Cloudflare Pages: the read surface's own screens saved as files, each with every
 // control and every address of the surface taken out and every link resolved against the routes the copy holds, read
 // through a shell of its own that fetches only those files and names itself a copy on every page.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
+// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
 public static partial class SiteCopy
 {
     // The folder inside the copy holding the screens.
@@ -207,8 +207,8 @@ public static partial class SiteCopy
     // Every link in a fragment resolved against the routes the copy holds. A held route's link names it as the copy keys it;
     // a stock's chart not held opens its stock page where that is held, as every row of the reports index does; a link to
     // the same screen under a view not held is left as its words; a link to a place on the page or to another site stands;
-    // and any other link, to a screen or an address of the surface the copy does not hold, reads "Not in this copy" in its
-    // place beside its words.
+    // and any other link, to a screen or an address of the surface the copy does not hold, is drawn as its words alone,
+    // plain text with no note.
     public static string Relink(string fragment, string page, IReadOnlySet<string> held, bool stockPagesFirst = false) =>
         Anchor().Replace(fragment, anchor =>
         {
@@ -242,7 +242,7 @@ public static partial class SiteCopy
         });
 
     static string NotHeldLink(string words) =>
-        "<span class=\"not-held\">" + words + "<span class=\"not-held-note\">" + NotHeld + "</span></span>";
+        "<span class=\"not-held\">" + words + "</span>";
 
     static string? Resolved(string route, string page, IReadOnlySet<string> held, bool stockPagesFirst)
     {
@@ -396,8 +396,7 @@ public static partial class SiteCopy
     public const string CopyCss =
         ".copy-banner{margin:0;padding:8px 16px;background:var(--warn-fill);color:var(--ink);border-bottom:1px solid var(--hair-2);font-size:14px;text-align:center}"
         + ".copy-tag{margin-left:.5em;padding:1px 8px;border-radius:999px;background:var(--warn-fill);color:var(--ink);font-size:12px;font-weight:600;vertical-align:middle}"
-        + ".not-held-note{margin-left:.4em;font-size:.8em;font-style:italic;color:var(--soft)}"
-        + ".unlinked{color:inherit}"
+        + ".not-held,.unlinked{color:inherit}"
         + ".copy-asof{font-size:13px;color:var(--soft);font-style:italic}"
         + "p.copy-asof{margin:4px 0 8px}"
         + ".copy-versions{margin:14px 0 0;padding:10px 14px;border:1px solid var(--hair-2);border-radius:8px;background:var(--surface);font-size:14px}"

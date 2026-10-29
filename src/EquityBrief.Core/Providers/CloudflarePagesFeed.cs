@@ -14,7 +14,7 @@ namespace EquityBrief.Core.Providers;
 // headers file beside it. The API token is sent in a header to Cloudflare's API alone and the account in its addresses;
 // neither is written to a log, a line printed or the copy, and every failure is said with both taken out. The project the
 // operator named for another site is refused before any request.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
+// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
 public sealed class CloudflarePagesFeed(HttpClient http, string token, string account, string project) : ICloudflarePagesFeed
 {
     public const string Api = "https://api.cloudflare.com/client/v4";

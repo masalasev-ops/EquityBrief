@@ -8,7 +8,7 @@ public sealed record PagesFile(string Address, string Hash, string ContentType, 
 // The copy's files as Cloudflare Pages' direct upload takes them: each keyed by the hash of its bytes in base64 followed
 // by its extension, cut to its first 32 hexadecimal digits, as the host's own command-line tool keys a file, and sent in
 // buckets of at most 40 MB and a thousand files, the largest first, as that tool fills them.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
+// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
 public static class PagesFiles
 {
     public const long BucketBytes = 40L * 1024 * 1024;

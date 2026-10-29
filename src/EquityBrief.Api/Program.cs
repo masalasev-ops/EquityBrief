@@ -74,7 +74,7 @@ if (args.Length > 0 && args[0] == ComparisonFiles.Verb)
 
 // Started with the read-only copy's verb, the surface draws every screen as an export draws a report: no account
 // setting, none of the operator's own trades, no live quote and no TipRanks ratings, and no control asking for any.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
+// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
 var copying = args.Length > 0 && args[0] == PublishedSite.Verb;
 var copyServer = copying ? new InProcessServer() : null;
 
@@ -3581,7 +3581,7 @@ app.MapGet("/screens/run/{night?}", async (
 // The read-only copy: started with its verb and the folder to write, the surface runs on a server inside its own process
 // with no socket, asks itself for each screen the copy holds as the live shell does, writes the copy into the folder and
 // stops, recording no start and writing nothing to the store. Each line it prints is one the worker's report carries.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
+// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
 if (copyServer is not null)
 {
     if (args.Length < 2 || string.IsNullOrWhiteSpace(args[1]))

@@ -5585,7 +5585,7 @@ public sealed partial class ReadApi : IComponent
 
     // The days a name's report sections the checker accepted were written on, newest first, the retired key under each
     // figure left out as every page leaves it out: the dated versions of its report the read-only copy lists.
-    // see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
+    // see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
     public async Task<IReadOnlyList<DateOnly>> ReportDaysAsync(string ticker)
     {
         await using var connection = Open();

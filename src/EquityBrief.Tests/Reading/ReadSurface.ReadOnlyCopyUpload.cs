@@ -16,7 +16,7 @@ namespace EquityBrief.Tests.Reading;
 // press header, scripts, secrets, paths and the account's settings before anything leaves the machine; the folder sent to
 // its own Cloudflare Pages project by direct upload, keyed by the BLAKE3 hash the host's own tool keys a file by, with the
 // token in a header alone; and the verb writing the copy through the read surface's build, its report beside the folder.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
+// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
 public partial class ReadSurface
 {
     // BLAKE3's published test inputs, each byte its position modulo 251, and their hashes, with the empty input's and

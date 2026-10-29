@@ -20,7 +20,7 @@ public sealed record SiteCopyWritten(
 // report on the page of the night that first drew it. Each is cleaned of its controls, its links resolved against the
 // routes the copy holds, and written as a file under the folder named, beside the copy's shell, the page a missing route is
 // answered with and the host's headers. It writes nothing to the store and asks no provider.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
+// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
 public static class SiteCopyCommand
 {
     // How many views of one screen beside its first the copy holds where the screen links them, so a screen whose links
