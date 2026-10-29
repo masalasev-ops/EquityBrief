@@ -2013,6 +2013,7 @@ On the operator's rulings of 2026-10-16 an idea raised before the monthly run of
 
 - Raised 2026-10-17 and not ruled in: the monthly run asks the quarters again of every member whose company row carries no filer once it has read the SEC's ticker file, so a ticker changed since its last fetch is matched within a month rather than at its next report.
 - Raised 2026-10-17 and not ruled in: the monthly run asks the dividends history of every member no history run has kept dividends for, so a member joining an index draws its whole years of dividends within a month rather than only those paid after it joined.
+- Raised 2026-10-29 by the operator for this plan and not now, word for word in `prompts/2026-10-29-operator-answers.md`: the open floor's drift result (2,031 trades at 0.110 risks against the live rule's 2,264 at 0.022, read on the S&P 500 drift card's open floor line) is put through the tester year by year on years it never saw before it is proposed.
 
 The operator's ruling of 2026-10-22 takes the short-term dip family ahead of this hold as phase 22, below, a phase of its own after this one's place, so it is not tabled here (see: The short-term dip family is built as phase 22 ahead of the hold on new work, and phase 20's sign-off waits on none of it).
 

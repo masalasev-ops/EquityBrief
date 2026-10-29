@@ -26,6 +26,54 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-29 - docs/ARCHITECTURE.html - the fundamentals-first family's paragraph states the Run page's count of the picks its open trades held back
+Authorised by: Business first stays in the night unseen until the next change that moves the S&P 400's and 600's pins, and the Run page counts the picks its open trades hold back each night an index
+Was:
+> ...after which the night reads it there at the setting the approval stored in the provisional one's place (see: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place).</p>
+Now:
+> ...after which the night reads it there at the setting the approval stored in the provisional one's place (see: ...). From the 22.14 correction of 2026-10-29 the Run page under every index states, one line a night, how many picks its open trades held back on each of the three indices, read off the pick rows naming its trade, its rule running on unseen until the next change that moves the S&P 400's and 600's pins takes it out (see: Business first stays in the night unseen until the next change that moves the S&P 400's and 600's pins, and the Run page counts the picks its open trades hold back each night an index).</p>
+Why: the operator's answer of 2026-10-29 keeps business first in the night unseen and asks for its hold-backs stated each night an index.
+
+### 2026-10-29 - docs/ARCHITECTURE.html - the Run page's S&P 400 and 600 paragraph states the line counting the picks business first's open trades held back
+Authorised by: Business first stays in the night unseen until the next change that moves the S&P 400's and 600's pins, and the Run page counts the picks its open trades hold back each night an index
+Was:
+> ...the trades kept and ended, and its sector heavyweights' rebalance and holdings, from 22.1 the short-term dip's part among them; and its setups, each provisional with what it listed and its trades so far.
+Now:
+> ...the trades kept and ended, and its sector heavyweights' rebalance and holdings, from 22.1 the short-term dip's part among them, and from the 22.14 correction of 2026-10-29 one line a night stating how many picks business first's open trades held back on each of the three indices, read off the pick rows naming its trade, which the S&P 500's page draws too under how last night went (see: Business first stays in the night unseen until the next change that moves the S&P 400's and 600's pins, and the Run page counts the picks its open trades hold back each night an index); and its setups, each provisional with what it listed and its trades so far.
+Why: the same answer; the index pages' night card carries the line.
+
+### 2026-10-29 - docs/ARCHITECTURE.html - the Run page's row on how last night went carries the line counting the picks business first's open trades held back
+Authorised by: Business first stays in the night unseen until the next change that moves the S&P 400's and 600's pins, and the Run page counts the picks its open trades hold back each night an index
+Was:
+> ...every length of time on the page in whole minutes and seconds from 19.7 (see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state) ...
+Now:
+> ...every length of time on the page in whole minutes and seconds from 19.7; and from the 22.14 correction of 2026-10-29 one line stating how many picks business first's open trades held back that night on each of the three indices with a pick counted where its row names business first's trade as the one still open for its stock (see: Business first stays in the night unseen until the next change that moves the S&P 400's and 600's pins, and the Run page counts the picks its open trades hold back each night an index) (see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state) ...
+Why: the same answer; the S&P 500's page carries the line under how last night went.
+
+### 2026-10-29 - docs/RUNBOOK.md - the 22.13 paragraph states the Run page's count of business first's hold-backs and the operator's word on a count above nought
+Authorised by: Business first stays in the night unseen until the next change that moves the S&P 400's and 600's pins, and the Run page counts the picks its open trades hold back each night an index
+Was:
+> ...its rule running unchanged (see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight). 22.13's remedy, ...
+Now:
+> ...its rule running unchanged (see: Business first leaves Tonight, paper trading and Past picks while its rule keeps running out of sight). From the 22.14 correction of 2026-10-29 the Run page under every index states, one line a night, how many picks business first's open trades held back on each of the three indices, read off the pick rows naming its trade; its rule runs on unseen until the next change that moves the S&P 400's and 600's pins takes it out, and the operator's word of that day is that a count above nought stops the work until they are told (see: Business first stays in the night unseen until the next change that moves the S&P 400's and 600's pins, and the Run page counts the picks its open trades hold back each night an index). 22.13's remedy, ...
+Why: the operator's instruction of 2026-10-29 is an operating one, so the runbook carries it.
+
+### 2026-10-29 - .claude/rules/checks.md - fixture-expectations states the fixture's count of picks business first's open trades held back
+Authorised by: Business first stays in the night unseen until the next change that moves the S&P 400's and 600's pins, and the Run page counts the picks its open trades hold back each night an index
+Was:
+> fixture-expectations: ... every other evaluator's version standing as the operator's register names it |
+Now:
+> fixture-expectations: ... every other evaluator's version standing as the operator's register names it; and from the 22.14 correction of 2026-10-29 the picks business first's open trades held back on the fixture's night, none on any index since no trade of its stands before its first night, recounted from the three pick tables and read off the Run page under each index |
+Why: each roster row says what its check asserts, and the correction's expectation extends fixture-expectations'.
+
+### 2026-10-29 - .claude/rules/checks.md - read-surface states the Run page's line counting the picks business first's open trades held back
+Authorised by: Business first stays in the night unseen until the next change that moves the S&P 400's and 600's pins, and the Run page counts the picks its open trades hold back each night an index
+Was:
+> read-surface: ... with the family's tile last and both pickers listing it |
+Now:
+> read-surface: ... with the family's tile last and both pickers listing it; and from the 22.14 correction of 2026-10-29 the Run page under every index drawing one line a night with the picks business first's open trades held back on each index, a pick counted where its row names business first's trade and a family's own pick held by its own trade not among them, nought where none |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
 ### 2026-10-29 - docs/ARCHITECTURE.html - the Improving family's catalogue and matrix rows read the candidate register and keep each registered rule
 Authorised by: A Fundamentals rule is registered as the family on its index and kept by the family's own step alone
 Was:

@@ -1,0 +1,8 @@
+{
+ "stage": "business-first-held-back",
+ "derivation": "derived",
+ "derivedFrom": "the one-trade-a-stock rule as section 15.10 and the decision on business first's end state it, worked over the fixture's one night and not from a run: a pick is held back by business first where its row on the S&P 500's list, on an index's list or on the dip's list names a trade of business first's as the one still open for its stock, and business first keeps a trade only on a night after one its own list made. The fixture's night of 2026-09-08 is the first night the index families' step runs over, so no trade of business first's stands before it and no pick of any family on any index can be held back by one: nought on each index, which the suite recounts from the three pick tables and reads off the Run page under each index. The one table named is the one the derivation's ground is read from, the night's listing rows saying the night read its members and drew its list.",
+ "tables": ["listing"],
+ "night": "2026-09-08",
+ "heldBack": { "GSPC": 0, "MID": 0, "SML": 0 }
+}
