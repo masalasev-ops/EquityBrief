@@ -11514,3 +11514,34 @@ Queue:      done, PRs 573 to 584; in progress, this pull request, the count on t
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
             request, with the figures it states.
 
+### 22.14 - correction: the picks business first's open trades hold back are counted each night an index on the Run page   2026-10-29
+
+Not a checkpoint entry: it corrects what 22.14 left in shipped source on the operator's answer of 2026-10-29, a hold-back
+no page stated, and lands nothing.
+Found:      business first's rule runs on unseen in the index families' step, and its open trades can hold back another
+            family's pick, one trade a stock across every card of every index, which no page stated; taking it out of
+            the night edits a file all 28 S&P 400 and 600 rules pin and restarts their records.
+Corrected:  the read surface counts, for a night, every row of the S&P 500's list, of an index's list and of the dip's
+            list held back for a trade still open whose row names business first's trade, by the index the list is on,
+            business first's own picks held by its own trades left out, and the Run page draws one line a night with the
+            three counts under every index: on the S&P 500's page under how last night went, on the S&P 400's and 600's
+            in the night's card. Read off the stored rows, so every night the store holds states it and no night step
+            and no pinned source moves; no rule's code version moves, the no-pin tests standing. The decision, the
+            architecture's fundamentals-first paragraph and its two Run page passages, the runbook, the guide and the two
+            roster rows state it.
+Tests:      2 new, 2,918 in the suite: the Run page's line under every index over a constructed store, nought where no row
+            names business first's trade and 1, 2 and 1 where the S&P 500's list, an index's list with the dip's, and the
+            dip's each hold one, business first's own held pick not counted and another night's rows not counted; and the
+            fixture's night, nought on each index since no trade of its stands before its first night, recounted from the
+            three pick tables and read off the Run page under each index, derived by hand.
+Claims:     none added; the Run page's two passages and the family's paragraph are rows and paragraphs the harness already
+            reads. 1,455 claims, 1,455 PASS, 1,470 placements, 44 checks.
+Pins:       none move; every evaluator's version stands as the register names it.
+Mutated:    by the rule that the mutation breaks the property the correction exists for, the count being of other
+            families' picks: M1, the read's filter leaving out business first's own held picks removed, the Run page
+            test red on the S&P 400's count reading 3 where 2 stand. Reverted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2918 of 2918 tests ran
+            with none failed, migrations 0 to 114 with none pending, schema version 114, against `data-ci` and never
+            `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
