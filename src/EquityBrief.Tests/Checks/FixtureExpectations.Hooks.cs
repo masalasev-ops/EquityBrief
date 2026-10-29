@@ -479,6 +479,34 @@ public partial class FixtureExpectations
 
         // A held stock is passed over in either.
         Assert.Equal(["A", "E"], FamilyRecorder.Keep(verdicts, new HashSet<string>(["D"], StringComparer.Ordinal), hooks, ticker => readings[ticker]).Select(one => one.Ticker));
+
+        // From 21.4 a rule stating the exposure keeps as well a member whose verdict failed the market check alone, the
+        // picks the night's switches allow read off the night's readings: five where the breadth stands at the floor and
+        // the VIX at its median, two where one holds, none where neither and none on a night handed no readings; a
+        // verdict failing its new high as well stays off, and a rule stating no exposure keeps none of them.
+        static (string, ShadowOutcome) Closed(string ticker, double order, bool alsoFailing = false) =>
+            (ticker, new ShadowOutcome("a rule", false, new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                [FamilyRule.Market] = FamilyRuleEvaluator.Failed,
+                [BreakoutRule.NewHigh] = alsoFailing ? FamilyRuleEvaluator.Failed : FamilyRuleEvaluator.Passed,
+                [FamilyRuleEvaluator.EntryValue] = "100",
+                [FamilyRuleEvaluator.StopValue] = "95",
+                [FamilyRuleEvaluator.TargetValue] = "110",
+                [FamilyRuleEvaluator.OrderValue] = order.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                [FamilyRuleEvaluator.MoveValue] = "2",
+            }));
+
+        (string, ShadowOutcome)[] closedNight = [Closed("A", 7), Closed("B", 6), Closed("C", 5, alsoFailing: true), Closed("D", 4), Closed("E", 3), Closed("F", 2), Closed("G", 1)];
+        var exposure = RuleHooks.Of(new Dictionary<string, double>(StringComparer.Ordinal) { ["exposure"] = 0.45 });
+        var nothingHeld = new HashSet<string>(StringComparer.Ordinal);
+
+        Assert.True(FamilyRecorder.FailsOnTheMarketAlone(closedNight[0].Item2));
+        Assert.False(FamilyRecorder.FailsOnTheMarketAlone(closedNight[2].Item2));
+        Assert.Empty(FamilyRecorder.Keep(closedNight, nothingHeld));
+        Assert.Equal(["A", "B", "D", "E", "F"], FamilyRecorder.Keep(closedNight, nothingHeld, exposure, _ => NightReadings(0.45, 1.0)).Select(one => one.Ticker));
+        Assert.Equal(["A", "B"], FamilyRecorder.Keep(closedNight, nothingHeld, exposure, _ => NightReadings(0.3, 1.0)).Select(one => one.Ticker));
+        Assert.Empty(FamilyRecorder.Keep(closedNight, nothingHeld, exposure, _ => NightReadings(0.3, 1.2)));
+        Assert.Empty(FamilyRecorder.Keep(closedNight, nothingHeld, exposure, null));
     }
 
     [Fact]
