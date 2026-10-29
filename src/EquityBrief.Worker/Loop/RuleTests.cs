@@ -436,7 +436,7 @@ public static class RuleTests
                 && !float.IsNaN(plan.Multiple[exit])
                 && !float.IsNaN(plan.Benchmark[exit])
                 && plan.IsATradeAt(exit, floor)
-                    ? plan.Multiple[exit] - (double)plan.Benchmark[exit]
+                    ? plan.EdgeAt(exit)
                     : null;
 
             units.Add((pick.Session, edge));
