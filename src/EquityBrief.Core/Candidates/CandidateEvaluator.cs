@@ -229,7 +229,7 @@ public abstract class FamilyRuleEvaluator : CandidateEvaluator
     // move the night stored, which the stop's distance is counted in.
     public static IReadOnlyDictionary<string, string> ValuesOf(FamilyResult result, double? typicalMove)
     {
-        var values = result.Gates.ToDictionary(gate => gate.Name, gate => gate.Passed ? Passed : Failed, StringComparer.Ordinal);
+        var values = result.Gates.ToDictionary(gate => gate.Name, gate => gate.Passed ? "passed" : "failed", StringComparer.Ordinal);
 
         values[EntryValue] = FamilyRule.Price(result.Entry);
         values[StopValue] = FamilyRule.Price(result.Stop);
@@ -247,10 +247,6 @@ public abstract class FamilyRuleEvaluator : CandidateEvaluator
     public const string OrderValue = "order";
     public const string ThenByValue = "then by";
     public const string MoveValue = "typical move";
-
-    // The words a gate's answer is stored in.
-    public const string Passed = "passed";
-    public const string Failed = "failed";
 }
 
 // A candidate evaluated in the sector heavyweights' book's own stage over a rebalance's members: a registered rule of

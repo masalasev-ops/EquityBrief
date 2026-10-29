@@ -339,12 +339,16 @@ public sealed class FamilyRecorder : IComponent
         return kept;
     }
 
+    // The word a shadow verdict stores for a gate it failed, as the evaluators' values write it; the evaluators' own
+    // source is pinned by every rule, so the word is read here and held to theirs by a test.
+    public const string Failed = "failed";
+
     // Whether a verdict failed the market check and no other gate, which a rule stating the exposure reads as fired.
     public static bool FailsOnTheMarketAlone(ShadowOutcome outcome) =>
         !outcome.Fired
         && outcome.Values.TryGetValue(FamilyRule.Market, out var market)
-        && market == FamilyRuleEvaluator.Failed
-        && outcome.Values.All(pair => pair.Key == FamilyRule.Market || pair.Value != FamilyRuleEvaluator.Failed);
+        && market == Failed
+        && outcome.Values.All(pair => pair.Key == FamilyRule.Market || pair.Value != Failed);
 
     // The plan a verdict's values state: the buy, the stop, the target where the plan names one, the stop's
     // distance in the night's typical moves and the reward to risk; none where the values place no stop below

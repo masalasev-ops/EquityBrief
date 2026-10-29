@@ -172,6 +172,12 @@ public static class LedgerReadings
     public const int VixMedianSessions = 252;
     public const int FundAverageSessions = 200;
 
+    // From 21.4 the places of the index's breadth and of the VIX's close over its median, the two switches a rule's
+    // exposure hook reads off the night's readings, named here so the hooks' own source names no column of the catalogue.
+    public static int BreadthPlace { get; } = IndexOf("breadth");
+
+    public static int VixOverMedianPlace { get; } = IndexOf("vix_over_median");
+
     public static int Count => All.Count;
 
     public static int IndexOf(string column)

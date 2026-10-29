@@ -235,7 +235,7 @@ public sealed class DipFamily : IComponent
     // The step over the three indices, each index's failure named on its own row while the others go on, and a failure
     // outside every index's part named on the step's row: the dip never stops the night. The register is read at the
     // instant given, the night's start or the instant a night run again names, and as it stands where none is given.
-    public async Task<DipOutcome> RunAsync(string runId, CancellationToken cancellation = default, DateTimeOffset? registerAt = null)
+    public async Task<DipOutcome> RunAsync(string runId, CancellationToken cancellation = default, DateTimeOffset? registerAt = null, Func<string, CancellationToken, Task<Func<string, IReadOnlyList<double?>?>>>? readingsOf = null)
     {
         var startedAt = clock.UtcNow;
         var outcomes = new List<DipIndexOutcome>();
@@ -267,7 +267,7 @@ public sealed class DipFamily : IComponent
             {
                 try
                 {
-                    var (outcome, written) = await IndexNightAsync(connection, index, night, rulesOf[index], cardRules, cancellation);
+                    var (outcome, written) = await IndexNightAsync(connection, index, night, rulesOf[index], cardRules, cancellation, readingsOf);
 
                     outcomes.Add(outcome);
                     rows += written;
@@ -347,14 +347,16 @@ public sealed class DipFamily : IComponent
         DateOnly night,
         IReadOnlyList<(string Rule, DipSetting Setting, string? Fault, EquityBrief.Core.Loop.RuleHooks Hooks)> rules,
         IReadOnlyList<string> cardRules,
-        CancellationToken cancellation)
+        CancellationToken cancellation,
+        Func<string, CancellationToken, Task<Func<string, IReadOnlyList<double?>?>>>? readingsOf = null)
     {
         var names = await NamesAsync(connection, index, night, cancellation);
         var inputs = IndexNightRead.Prepare(index, night, names, new Dictionary<string, IReadOnlyList<FiledIncome>>(StringComparer.Ordinal));
 
-        // From 21.4 the night's readings, laid by the ledger's own catalogue, for a rule whose hooks read them; a rule
-        // stating the exposure takes its answer in the market setting's place.
-        var readings = rules.Any(rule => rule.Hooks.ReadsReadings) ? await new EquityBrief.Worker.Ledger.SetupLedger(clock, databaseFile).ReadingsTonightAsync(index, cancellation) : null;
+        // From 21.4 the night's readings, laid by the ledger's own catalogue and handed in by the night as the index
+        // families are handed them, for a rule whose hooks read them, a rule reading them on a night that supplies none
+        // listing nothing; a rule stating the exposure takes its answer in the market setting's place.
+        var readings = readingsOf is not null && rules.Any(rule => rule.Hooks.ReadsReadings) ? await readingsOf(index, cancellation) : null;
         var nightReadings = inputs is null ? null : IndexNightRead.NightReadings(inputs, readings);
         var suspects = new HashSet<string>(StringComparer.Ordinal);
 

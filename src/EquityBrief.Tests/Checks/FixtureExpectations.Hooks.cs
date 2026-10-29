@@ -1,5 +1,6 @@
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Filter;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Loop;
 using EquityBrief.Core.Sweep;
@@ -256,7 +257,8 @@ public partial class FixtureExpectations
         // The S&P 500's breakout and drift and every S&P 400 and 600 rule pin the hooks' and the menu's sources beside
         // their own; the swing filter, the three conditions and the S&P 500's heavyweights do not, so the pin move of the
         // hooks moved none of their versions, and no shared evaluation source names them.
-        string[] hooked = ["breakout", "breakout-400", "breakout-600", "drift", "drift-400", "drift-600", "heavyweight-400", "heavyweight-600", "pullback-400", "pullback-600"];
+        // From 21.4 the dip's rules read the hooks as well, so they pin the same three sources.
+        string[] hooked = ["breakout", "breakout-400", "breakout-600", "dip-400", "dip-500", "dip-600", "drift", "drift-400", "drift-600", "heavyweight-400", "heavyweight-600", "pullback-400", "pullback-600"];
 
         Assert.Equal(hooked, CandidateEvaluators.All.Where(evaluator => RuleHooks.Sources.All(evaluator.OwnSources.Contains)).Select(evaluator => evaluator.Name).Order(StringComparer.Ordinal));
         Assert.DoesNotContain(CandidateEvaluators.All, evaluator => !hooked.Contains(evaluator.Name) && RuleHooks.Sources.Any(evaluator.OwnSources.Contains));
@@ -487,8 +489,8 @@ public partial class FixtureExpectations
         static (string, ShadowOutcome) Closed(string ticker, double order, bool alsoFailing = false) =>
             (ticker, new ShadowOutcome("a rule", false, new Dictionary<string, string>(StringComparer.Ordinal)
             {
-                [FamilyRule.Market] = FamilyRuleEvaluator.Failed,
-                [BreakoutRule.NewHigh] = alsoFailing ? FamilyRuleEvaluator.Failed : FamilyRuleEvaluator.Passed,
+                [FamilyRule.Market] = FamilyRecorder.Failed,
+                [BreakoutRule.NewHigh] = alsoFailing ? FamilyRecorder.Failed : "passed",
                 [FamilyRuleEvaluator.EntryValue] = "100",
                 [FamilyRuleEvaluator.StopValue] = "95",
                 [FamilyRuleEvaluator.TargetValue] = "110",
@@ -500,6 +502,10 @@ public partial class FixtureExpectations
         var exposure = RuleHooks.Of(new Dictionary<string, double>(StringComparer.Ordinal) { ["exposure"] = 0.45 });
         var nothingHeld = new HashSet<string>(StringComparer.Ordinal);
 
+        // The recorder's word for a failed gate is the one the evaluators' values write, read off a result with the check
+        // closed and one with it open.
+        Assert.Equal(FamilyRecorder.Failed, FamilyRuleEvaluator.ValuesOf(new FamilyResult("A", BreakoutRule.Name, [new Gate(FamilyRule.Market, false, "closed", FamilyRule.Values())], 100m, 95m, null, 1, []), 2)[FamilyRule.Market]);
+        Assert.Equal("passed", FamilyRuleEvaluator.ValuesOf(new FamilyResult("A", BreakoutRule.Name, [new Gate(FamilyRule.Market, true, "open", FamilyRule.Values())], 100m, 95m, null, 1, []), 2)[FamilyRule.Market]);
         Assert.True(FamilyRecorder.FailsOnTheMarketAlone(closedNight[0].Item2));
         Assert.False(FamilyRecorder.FailsOnTheMarketAlone(closedNight[2].Item2));
         Assert.Empty(FamilyRecorder.Keep(closedNight, nothingHeld));

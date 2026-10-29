@@ -78,10 +78,11 @@ public sealed record RuleHooks(
     // The VIX's close over its median, at or under which the exposure's second switch holds.
     public const double VixAtItsMedian = 1;
 
-    // The catalogue's places of the index's breadth and of the VIX's close over its median, which the exposure reads.
-    public static int BreadthColumn { get; } = Column("breadth");
+    // The catalogue's places of the index's breadth and of the VIX's close over its median, which the exposure reads,
+    // named by the catalogue itself.
+    public static int BreadthColumn => LedgerReadings.BreadthPlace;
 
-    public static int VixOverMedianColumn { get; } = Column("vix_over_median");
+    public static int VixOverMedianColumn => LedgerReadings.VixOverMedianPlace;
 
     public static RuleHooks Off { get; } = new(0, [], new Dictionary<int, double>(), null);
 

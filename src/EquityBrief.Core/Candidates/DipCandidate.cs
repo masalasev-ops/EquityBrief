@@ -26,7 +26,7 @@ public sealed class DipCandidate(string index) : OwnStepCandidate(index)
 
     public const string SellParameterBefore = "exit";
 
-    public override string Version => "e8c0399ca425";
+    public override string Version => "517c099c38ba";
 
     public override string SetupFamily => DipRule.Name;
 
@@ -88,6 +88,7 @@ public sealed class DipCandidate(string index) : OwnStepCandidate(index)
         "src/EquityBrief.Core/Filter/SwingReadings.cs",
         "src/EquityBrief.Core/Indicators/IndicatorSeries.cs",
         "src/EquityBrief.Core/Ladders/TrendSeries.cs",
+        "src/EquityBrief.Core/Ledger/LedgerReadings.cs",
         "src/EquityBrief.Core/Ledger/TradeFills.cs",
         "src/EquityBrief.Core/Prices/PriceForm.cs",
         "src/EquityBrief.Core/Prices/Statistic.cs",
@@ -109,6 +110,7 @@ public sealed class DipCandidate(string index) : OwnStepCandidate(index)
         "src/EquityBrief.Worker/Sweep/SweepColumns.cs",
         "src/EquityBrief.Worker/Sweep/SweepHistory.cs",
         "src/EquityBrief.Worker/Sweep/SweepIdeas.cs",
+        .. EquityBrief.Core.Loop.RuleHooks.Sources,
     ];
 
     // The setting a registration's parameters state on the evaluator's index, its market setting the level its place

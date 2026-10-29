@@ -543,7 +543,11 @@ public static class Nightly
                 // list and open trade, and before the cards, which read its picks. A failure in an index's part is named on
                 // the step's row, and the step goes on.
                 // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
-                var dips = await new EquityBrief.Worker.Dips.DipFamily(clock, store.DatabaseFile).RunAsync(runId, night.Token, registerAt ?? nightStartedAt);
+                var dips = await new EquityBrief.Worker.Dips.DipFamily(clock, store.DatabaseFile).RunAsync(
+                    runId,
+                    night.Token,
+                    registerAt ?? nightStartedAt,
+                    (index, token) => new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).ReadingsTonightAsync(index, token));
 
                 // A card for each stock every index's families listed and each its books bought, read from the rows the
                 // stages above stored. A failure in an index's cards is named on their own row, and the step goes on.
