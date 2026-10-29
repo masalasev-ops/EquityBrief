@@ -1017,16 +1017,22 @@ public sealed class CandidateRegistrar : IComponent
         }
 
         // A family rule whose trades are walked one at a time may state the engines' hooks beside its own parameters,
-        // each off where it is not stated; a heavyweights book reads none, nor does a rule its own family's step keeps, so
-        // their hooks are refused as any parameter they do not read is.
+        // each off where it is not stated, and from 21.4 so may the dip's rule, as the swing rules do, and a book's rule
+        // its conditions and its score alone; a heavyweights book reads none, so its hooks are refused as any parameter
+        // it does not read is.
         // see: Every engine's settings hooks land together and all default off, so the families' pins move once
-        var hooked = carried is FamilyRuleEvaluator and not IndexHeavyweightCandidate and not OwnStepCandidate;
+        var hooked = carried is FamilyRuleEvaluator and not IndexHeavyweightCandidate;
 
         if (hooked)
         {
             try
             {
-                EquityBrief.Core.Loop.RuleHooks.Of(parameters);
+                var hooks = EquityBrief.Core.Loop.RuleHooks.Of(parameters);
+
+                if (carried is QualityCandidate or ImprovingCandidate && !hooks.AreABooks)
+                {
+                    return $"'{evaluator}' is registered with hooks a book does not read: {EquityBrief.Core.Loop.RuleHooks.NotABooks}.";
+                }
             }
             catch (ArgumentException refused)
             {

@@ -92,7 +92,7 @@ public partial class FixtureExpectations
         Assert.False(RuleHooks.IsHook("also_no_such_reading_above"));
         Assert.False(RuleHooks.IsHook("highSessions"));
         Assert.Equal(["highSessions", "volumeMultiple"], RuleHooks.Without(hooked).Keys.Order(StringComparer.Ordinal));
-        Assert.Throws<ArgumentException>(() => RuleHooks.Of(new Dictionary<string, double>(StringComparer.Ordinal) { ["exit"] = 27 }));
+        Assert.Throws<ArgumentException>(() => RuleHooks.Of(new Dictionary<string, double>(StringComparer.Ordinal) { ["exit"] = 31 }));
 
         // A member meets the conditions at 1.02 over its average and 0.03 of its close a move; 0.98 fails the first, 0.06
         // the second, and a reading not held fails whatever its level.
@@ -117,6 +117,137 @@ public partial class FixtureExpectations
 
         Assert.Equal(["D", "A", "E"], hooks.Order(own, ticker => readings[ticker]));
         Assert.Equal(own, off.Order(own, ticker => readings[ticker]));
+    }
+
+    // A score over one reading of the catalogue, standing in for a stored model.
+    sealed class OneColumnScore(int column) : IScoreModel
+    {
+        public string Hash => "one-column";
+
+        public int Rows => 0;
+
+        public IReadOnlyList<int> Readings => [column];
+
+        public double? Score(IReadOnlyList<double?> readings) => readings[column];
+
+        public int? Rank(string index, double score) => null;
+
+        public double? FloorAt(string index, double share) => null;
+
+        public IReadOnlyDictionary<string, double> HookParameters(double? floor) => new Dictionary<string, double>(StringComparer.Ordinal);
+
+        public string Canonical() => Hash;
+    }
+
+    static double?[] NightReadings(double? breadth, double? vixOverMedian)
+    {
+        var readings = new double?[LedgerReadings.Count];
+
+        readings[RuleHooks.BreadthColumn] = breadth;
+        readings[RuleHooks.VixOverMedianColumn] = vixOverMedian;
+
+        return readings;
+    }
+
+    [Fact]
+    public void TheExposureTheRankingAndTheExpectedValueOrderAreWorkedByHandOverAConstructedNight()
+    {
+        static RuleHooks Of(params (string Name, double Value)[] parameters) =>
+            RuleHooks.Of(parameters.ToDictionary(pair => pair.Name, pair => pair.Value, StringComparer.Ordinal));
+
+        // The three forms of 21.4 read off a rule's parameters: the exposure as the breadth floor it reads, the ranking by
+        // the learned score or by the expected value, and the expected-value order; the exposure reads readings, a ranking
+        // by the score reads readings and one by the expected value reads that, and the order reads the expected value.
+        var exposed = Of(("exposure", 0.45));
+        var rankedByScore = Of(("ranking", 1));
+        var rankedByExpected = Of(("ranking", 2));
+        var byExpected = Of(("order_expected", 1));
+
+        Assert.Equal((0.45, true, false, false), (exposed.Exposure, exposed.ReadsReadings, exposed.ReadsExpected, exposed.IsOff));
+        Assert.Equal((RuleHooks.RankingByScore, true, true, false), (rankedByScore.Ranking, rankedByScore.Ranks, rankedByScore.ReadsReadings, rankedByScore.ReadsExpected));
+        Assert.Equal((RuleHooks.RankingByExpected, true, false, true), (rankedByExpected.Ranking, rankedByExpected.Ranks, rankedByExpected.ReadsReadings, rankedByExpected.ReadsExpected));
+        Assert.Equal((true, false, true), (byExpected.ByExpected, byExpected.ReadsReadings, byExpected.ReadsExpected));
+        Assert.True(Of(("order_expected", 0), ("ranking", 0)).IsOff);
+        Assert.All(new[] { "exposure", "ranking", "order_expected" }, name => Assert.True(RuleHooks.IsHook(name)));
+        Assert.Equal([true, true, true, true, false, false], new[] { "ranking", "order_expected", "score_floor", "score_close_over_long", "exposure", "exit" }.Select(RuleHooks.IsOrder));
+
+        // Refused: an exposure floor at nought or over one, a ranking the two forms do not name, an order other than on or
+        // off, and two orders together.
+        Assert.Throws<ArgumentException>(() => Of(("exposure", 0)));
+        Assert.Throws<ArgumentException>(() => Of(("exposure", 1.5)));
+        Assert.Throws<ArgumentException>(() => Of(("ranking", 3)));
+        Assert.Throws<ArgumentException>(() => Of(("order_expected", 2)));
+        Assert.Throws<ArgumentException>(() => Of(("ranking", 1), ("score_close_over_long", 1)));
+        Assert.Throws<ArgumentException>(() => Of(("ranking", 2), ("order_expected", 1)));
+        Assert.Throws<ArgumentException>(() => Of(("order_expected", 1), ("score_floor", 1)));
+
+        // A book's rule reads conditions and a score alone.
+        Assert.True(Of(("also_close_over_long_above", 1), ("score_close_over_fifty", 1), ("score_floor", 0.5)).AreABooks);
+        Assert.Equal([false, false, false, false], new[] { exposed, rankedByScore, byExpected, Of(("exit", 2)) }.Select(one => one.AreABooks));
+
+        Assert.Equal("exposure: 5 picks where the index's breadth is at or above 0.45 and the VIX at or under its median of the 252 sessions before, 2 where one holds and none where neither, in the market check's place", exposed.Words());
+        Assert.Equal("ranked over the family's setups at the ledger's loose gates by the index's newest learned score, the best 5", rankedByScore.Words());
+        Assert.Equal("ranked over the family's setups at the ledger's loose gates by the expected value of the setups like each, the best 5", rankedByExpected.Words());
+        Assert.Equal("ordered by the expected value of the setups like each, highest first", byExpected.Words());
+
+        // The exposure at both switches on both sides: a breadth of 0.45 at the floor holds and 0.4499 does not; the VIX at
+        // its median, 1, holds and a hair over, 1.0001, does not; five picks where both hold, two where one, none where
+        // neither, a reading not held not holding, and none on a night with no readings; a rule stating no exposure caps
+        // nothing of its own.
+        Assert.Equal(5, exposed.PicksUnder(NightReadings(0.45, 1.0)));
+        Assert.Equal(2, exposed.PicksUnder(NightReadings(0.4499, 1.0)));
+        Assert.Equal(2, exposed.PicksUnder(NightReadings(0.45, 1.0001)));
+        Assert.Equal(0, exposed.PicksUnder(NightReadings(0.4499, 1.0001)));
+        Assert.Equal(2, exposed.PicksUnder(NightReadings(null, 1.0)));
+        Assert.Equal(0, exposed.PicksUnder(null));
+        Assert.Null(byExpected.PicksUnder(NightReadings(0.45, 1.0)));
+
+        // Over a constructed night of seven candidates in the rule's own order, the exposure keeps the first five where
+        // both switches hold, the first two where one does and none where neither.
+        string[] seven = ["A", "B", "C", "D", "E", "F", "G"];
+
+        Assert.Equal(["A", "B", "C", "D", "E"], exposed.Order(seven, _ => NightReadings(0.5, 0.9)));
+        Assert.Equal(["A", "B"], exposed.Order(seven, _ => NightReadings(0.3, 0.9)));
+        Assert.Empty(exposed.Order(seven, _ => NightReadings(0.3, 1.2)));
+
+        // The ranking by the learned score over the family's setups at the loose gates, seven of them: the best five by a
+        // constructed score reading one column, B and E tied at 0.9 in the rule's order, then G, D and A, F sixth and C,
+        // which the score cannot read, left off; handed no score, a ranking lists none.
+        var scores = new Dictionary<string, double?>(StringComparer.Ordinal) { ["A"] = 0.2, ["B"] = 0.9, ["C"] = null, ["D"] = 0.5, ["E"] = 0.9, ["F"] = 0.1, ["G"] = 0.7 };
+        var column = Column("close_over_long");
+
+        double?[] Scored(string ticker)
+        {
+            var readings = new double?[LedgerReadings.Count];
+
+            readings[column] = scores[ticker];
+
+            return readings;
+        }
+
+        Assert.Equal(["B", "E", "G", "D", "A"], rankedByScore.WithRanker(new OneColumnScore(column)).Order(seven, Scored));
+        Assert.Empty(rankedByScore.Order(seven, Scored));
+
+        // The same ranking by the expected value of the setups like each: C and E at 0.8, F, A and G, D sixth and B, with
+        // no figure, left off; handed no figure, none.
+        var expected = new Dictionary<string, double?>(StringComparer.Ordinal) { ["A"] = 0.3, ["B"] = null, ["C"] = 0.8, ["D"] = 0.1, ["E"] = 0.8, ["F"] = 0.6, ["G"] = 0.2 };
+
+        Assert.Equal(["C", "E", "F", "A", "G"], rankedByExpected.Order(seven, Scored, ticker => expected[ticker]));
+        Assert.Empty(rankedByExpected.Order(seven, Scored));
+
+        // The expected-value order over the rule's own candidates: those with a figure first by it, then those without in
+        // the rule's own order, none left off; handed no figure, the rule's order stands; and with the exposure beside it
+        // the ordered list is cut to the picks the night allows.
+        Assert.Equal(["C", "E", "F", "A", "G", "D", "B"], byExpected.Order(seven, Scored, ticker => expected[ticker]));
+        Assert.Equal(seven, byExpected.Order(seven, Scored));
+        Assert.Equal(["C", "E"], Of(("order_expected", 1), ("exposure", 0.45)).Order(seven, _ => NightReadings(0.3, 0.9), ticker => expected[ticker]));
+
+        // A change stating a ranking replaces a standing score whole, as a score does, and a condition stands beside it.
+        var standing = new Dictionary<string, double>(StringComparer.Ordinal) { ["score_close_over_long"] = 1, ["score_floor"] = 0.5, ["also_move_share_below"] = 0.05 };
+        var moved = LoopChange.OfHooks(new Dictionary<string, double>(StringComparer.Ordinal) { ["ranking"] = 1 }).OnTopOf(new LoopChange(null, null, null, standing)).Hooks;
+
+        Assert.Equal(["also_move_share_below", "ranking"], moved.Keys.Order(StringComparer.Ordinal));
+        Assert.Equal(["also_move_share_below", "order_expected"], LoopChange.OfHooks(new Dictionary<string, double>(StringComparer.Ordinal) { ["order_expected"] = 1 }).OnTopOf(new LoopChange(null, null, null, moved)).Hooks.Keys.Order(StringComparer.Ordinal));
     }
 
     [Fact]
@@ -147,7 +278,7 @@ public partial class FixtureExpectations
 
         Assert.Equal(CandidateRegistrar.Registered, hooked.Outcome);
 
-        parameters["exit"] = 27;
+        parameters["exit"] = 31;
 
         var refused = await registrar.RegisterAsync("the breakout at an exit the menu lacks", "a breakout", "the edge", BreakoutCandidate.EvaluatorName, parameters, "hooks-refused");
 
@@ -169,7 +300,35 @@ public partial class FixtureExpectations
 
         Assert.Null(IndexRules.Refusal(drift, swing));
         Assert.Equal(CandidateRegistrar.Registered, (await registrar.RegisterAsync("the S&P 400 drift at an exit", "a drift", "the edge", drift.Name, swing, "hooks-drift")).Outcome);
-        Assert.Contains("menu numbers its exits", IndexRules.Refusal(drift, new Dictionary<string, double>(swing, StringComparer.Ordinal) { ["exit"] = 27 }), StringComparison.Ordinal);
+        Assert.Contains("menu numbers its exits", IndexRules.Refusal(drift, new Dictionary<string, double>(swing, StringComparer.Ordinal) { ["exit"] = 31 }), StringComparison.Ordinal);
+
+        // From 21.4 the dip's rule states the hooks as a swing rule does, its sell dial no longer named exit, and a book's
+        // rule states conditions and a score alone: an exit beside a quality rule's parameters is refused.
+        var dipEvaluator = CandidateEvaluators.Find("dip-500")!;
+        var dipParameters = new Dictionary<string, double>(StringComparer.Ordinal)
+        {
+            [DipCandidate.DropParameter] = -3,
+            [DipCandidate.TrendParameter] = 50,
+            [DipCandidate.SellParameter] = DipRule.RsiExit,
+            [DipCandidate.LimitParameter] = 10,
+            [DipCandidate.StopParameter] = 3,
+            [DipCandidate.MarketParameter] = 6,
+            [DipCandidate.VolumeParameter] = 0,
+            ["exposure"] = 0.45,
+            ["also_close_over_long_above"] = 1,
+        };
+
+        Assert.Equal(CandidateRegistrar.Registered, (await registrar.RegisterAsync("the S&P 500 dip under an exposure", "a dip", "the edge", dipEvaluator.Name, dipParameters, "hooks-dip")).Outcome);
+
+        var quality = new QualityCandidate(MarketCloses.Index);
+        var bookHooks = new Dictionary<string, double>(QualityCandidate.ParametersOf(QualityRule.Starting), StringComparer.Ordinal) { ["also_close_over_long_above"] = 1, ["score_close_over_fifty"] = 1 };
+
+        Assert.Equal(CandidateRegistrar.Registered, (await registrar.RegisterAsync("quality over its long average", "a book", "the edge", quality.Name, bookHooks, "hooks-quality")).Outcome);
+
+        var bookRefused = await registrar.RegisterAsync("quality at an exit", "a book", "the edge", quality.Name, new Dictionary<string, double>(bookHooks, StringComparer.Ordinal) { ["exit"] = 2 }, "hooks-quality-refused");
+
+        Assert.Equal(CandidateRegistrar.Refused, bookRefused.Outcome);
+        Assert.Contains("a book does not read", bookRefused.Detail, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -15,17 +15,26 @@ public sealed class DipCandidate(string index) : OwnStepCandidate(index)
 {
     public const string DropParameter = "drop";
     public const string TrendParameter = "trend";
-    public const string ExitParameter = "exit";
     public const string LimitParameter = "limit";
     public const string StopParameter = "stop";
     public const string MarketParameter = "market";
     public const string VolumeParameter = "volume";
 
+    // The level a trade is sold at, named sell from 21.4 so the dip's rule can state the hooks' exit beside its own
+    // dials; a registration from before that names it exit, and is read under either name.
+    public const string SellParameter = "sell";
+
+    public const string SellParameterBefore = "exit";
+
     public override string Version => "e8c0399ca425";
 
     public override string SetupFamily => DipRule.Name;
 
-    public override IReadOnlyList<string> Parameters { get; } = [DropParameter, TrendParameter, ExitParameter, LimitParameter, StopParameter, MarketParameter, VolumeParameter];
+    public override IReadOnlyList<string> Parameters { get; } = [DropParameter, TrendParameter, SellParameter, LimitParameter, StopParameter, MarketParameter, VolumeParameter];
+
+    // The sell dial a registration states, under its name or the name it carried before 21.4.
+    public static double SellOf(IReadOnlyDictionary<string, double> parameters) =>
+        parameters.TryGetValue(SellParameter, out var sell) ? sell : parameters[SellParameterBefore];
 
     // Every file the dip's step runs through keeping a rule's trades, its rule first, as the compiled code reaches them:
     // the step itself and the index night's reader it reads each member's year through, the other families' open trades'
@@ -79,7 +88,7 @@ public sealed class DipCandidate(string index) : OwnStepCandidate(index)
     public DipSetting SettingOf(IReadOnlyDictionary<string, double> parameters) => DipRule.SettingOf(
         parameters[DropParameter],
         parameters[TrendParameter],
-        (int)parameters[ExitParameter],
+        (int)SellOf(parameters),
         (int)parameters[LimitParameter],
         parameters[StopParameter],
         DipRule.MarketLevels(Index)[(int)parameters[MarketParameter]].Key,

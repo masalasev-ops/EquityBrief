@@ -588,7 +588,7 @@ public partial class FixtureExpectations
         {
             [DipCandidate.DropParameter] = -3,
             [DipCandidate.TrendParameter] = 50,
-            [DipCandidate.ExitParameter] = DipRule.RsiExit,
+            [DipCandidate.SellParameter] = DipRule.RsiExit,
             [DipCandidate.LimitParameter] = 10,
             [DipCandidate.StopParameter] = 3,
             [DipCandidate.MarketParameter] = 6,
@@ -599,7 +599,12 @@ public partial class FixtureExpectations
             [Core.Loop.RuleHooks.ScorePrefix + Core.Ledger.LedgerReadings.All[0].Column] = 1,
         });
 
-        Assert.Throws<ArgumentException>(() => Core.Loop.RuleHooks.Of(CandidateEvaluator.Read(dip.Parameters)));
+        // From 21.4 the dip's sell dial is no hook's name, so its rule states no hook where it states none; a registration
+        // from before, naming the dial exit, is read as the same setting, and the hooks read off it as 21.4 reads them would
+        // take the dial for the menu's exit, which is why the recorder reads no own-step rule's hooks.
+        Assert.True(Core.Loop.RuleHooks.Of(CandidateEvaluator.Read(dip.Parameters)).IsOff);
+        Assert.Equal(DipRule.RsiExit, DipCandidate.SellOf(new Dictionary<string, double> { [DipCandidate.SellParameterBefore] = DipRule.RsiExit }));
+        Assert.Equal(5, DipCandidate.SellOf(new Dictionary<string, double> { [DipCandidate.SellParameter] = 5, [DipCandidate.SellParameterBefore] = DipRule.RsiExit }));
         Assert.False(EquityBrief.Worker.Families.FamilyRecorder.Keeps(dip));
         Assert.True(EquityBrief.Worker.Families.FamilyRecorder.Keeps(scored));
         Assert.False(EquityBrief.Worker.Families.FamilyRecorder.HooksReadReadings([dip]));
@@ -623,7 +628,7 @@ public partial class FixtureExpectations
         {
             [DipCandidate.DropParameter] = -3,
             [DipCandidate.TrendParameter] = 50,
-            [DipCandidate.ExitParameter] = DipRule.RsiExit,
+            [DipCandidate.SellParameter] = DipRule.RsiExit,
             [DipCandidate.LimitParameter] = 10,
             [DipCandidate.StopParameter] = stop,
             [DipCandidate.MarketParameter] = 0,

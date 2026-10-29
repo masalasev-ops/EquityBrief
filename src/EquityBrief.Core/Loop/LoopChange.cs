@@ -77,16 +77,17 @@ public sealed record LoopChange(IReadOnlyList<int>? Places, string? Key, double?
 
     // This change made to a rule standing at a setting and hooks: its setting and floor where it states a setting, the
     // rule's otherwise; its exit in place of the rule's; its conditions beside the rule's, one on the same reading and
-    // side replacing it; and its score, where it states one, in place of the rule's whole score.
+    // side replacing it; and its order, a score, a ranking or the expected-value order, where it states one, in place of
+    // the rule's whole order.
     public LoopChange OnTopOf(LoopChange? standing)
     {
         var hooks = new Dictionary<string, double>(standing?.Hooks ?? NoHooks, StringComparer.Ordinal);
 
-        if (Hooks.Keys.Any(IsScore))
+        if (Hooks.Keys.Any(RuleHooks.IsOrder))
         {
-            foreach (var score in hooks.Keys.Where(IsScore).ToArray())
+            foreach (var order in hooks.Keys.Where(RuleHooks.IsOrder).ToArray())
             {
-                hooks.Remove(score);
+                hooks.Remove(order);
             }
         }
 
@@ -99,9 +100,6 @@ public sealed record LoopChange(IReadOnlyList<int>? Places, string? Key, double?
             ? new LoopChange(Places, Key, StopFloor, hooks)
             : new LoopChange(standing?.Places, standing?.Key, standing?.StopFloor, hooks);
     }
-
-    static bool IsScore(string name) =>
-        name == RuleHooks.ScoreFloorParameter || name.StartsWith(RuleHooks.ScorePrefix, StringComparison.Ordinal);
 
     // The change in words: its setting by its key with its floor, and its hooks' own words.
     public string Words()

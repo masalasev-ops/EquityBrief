@@ -34,7 +34,7 @@ public static class DipRules
     [
         (DipCandidate.DropParameter, IndexSweepRunner.DipDrops),
         (DipCandidate.TrendParameter, IndexSweepRunner.DipTrends),
-        (DipCandidate.ExitParameter, IndexSweepRunner.DipExits),
+        (DipCandidate.SellParameter, IndexSweepRunner.DipExits),
         (DipCandidate.LimitParameter, [.. IndexSweepRunner.DipLimits.Select<int, double>(limit => limit)]),
         (DipCandidate.StopParameter, IndexSweepRunner.DipStops),
         (DipCandidate.MarketParameter, [.. Enumerable.Range(0, IndexSweepRunner.DipMarketLevels(index).Count).Select<int, double>(place => place)]),

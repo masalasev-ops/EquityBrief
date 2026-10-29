@@ -402,7 +402,7 @@ public sealed class IndexFamilies : IComponent
         // for on that setting, and every other on its provisional rule.
         // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
         IndexFamilyRead ReadOf(IndexNightInputs prepared, string family) =>
-            rules.FirstOrDefault(rule => rule.Live && rule.Family == family) is { } live ? IndexRules.Read(prepared, live, levels)
+            rules.FirstOrDefault(rule => rule.Live && rule.Family == family) is { } live ? ReadUnderItsHooks(prepared, live, levels, tonight)
             : stored.TryGetValue(family, out var setting) ? Stored(prepared, family, setting, tonight, trees)
             : IndexNightRead.Provisional(prepared, family, tonight);
 
@@ -411,7 +411,7 @@ public sealed class IndexFamilies : IComponent
             : new IndexNight(index, session, inputs.Held.Length, inputs.Breadth, inputs.Open, [.. families.SelectMany(family => IndexNightRead.Answers(inputs, family, ReadOf(inputs, family)))]);
         IReadOnlyList<(IndexRule Rule, IReadOnlyList<IndexAnswer> Answers)> ruleAnswers = inputs is null
             ? []
-            : [.. rules.Where(rule => rule.Evaluator is not Core.Candidates.IndexHeavyweightCandidate).Select(rule => (rule, IndexNightRead.Answers(inputs, rule.Family, IndexRules.Read(inputs, rule, levels))))];
+            : [.. rules.Where(rule => rule.Evaluator is not Core.Candidates.IndexHeavyweightCandidate).Select(rule => (rule, IndexNightRead.Answers(inputs, rule.Family, ReadUnderItsHooks(inputs, rule, levels, tonight))))];
         var qualifying = families
             .Select(family => new FamilyQualifiers(family, [.. read.Answers.Where(answer => answer.Family == family && answer.Passed).OrderBy(answer => answer.Place).Select(answer => answer.Ticker)]))
             .ToArray();
@@ -668,6 +668,20 @@ public sealed class IndexFamilies : IComponent
         family == FundamentalsRule.Name
             ? IndexNightRead.Hooked(inputs, IndexNightRead.Fundamentals(inputs, FundamentalsRule.StoredOr(setting.Places), readings), RuleHooks.Of(setting.Hooks).With(trees), readings)
             : IndexNightRead.Stored(inputs, family, setting, readings, trees);
+
+    // A registered rule's read at its own setting and, from 21.4, under the hook that changes what it reads: a rule
+    // stating the exposure reads its setups with the market check open and takes the exposure's answer in the check's
+    // place, its conditions read with it; its order is applied where its list is kept, as before, so a score the stored
+    // models hold is read once, with them.
+    static IndexFamilyRead ReadUnderItsHooks(IndexNightInputs inputs, IndexRule rule, IndexLevels levels, Func<string, IReadOnlyList<double?>?>? readings)
+    {
+        var read = IndexRules.Read(inputs, rule, levels);
+        var hooks = RuleHooks.Of(rule.Parameters);
+
+        return hooks.Exposure is null
+            ? read
+            : IndexNightRead.Hooked(inputs, read, hooks with { Score = new Dictionary<int, double>(), ScoreFloor = null, Trees = null, Ranking = 0, ByExpected = false }, readings);
+    }
 
     // The newest setting an approval stored for each of an index's families.
     const string StoredSettings = @"
