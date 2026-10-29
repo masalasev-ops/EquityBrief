@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Ledger;
@@ -50,6 +51,7 @@ public sealed class ImprovingFamily : IComponent
             new StoreTouch(Store.ReleaseDocument, Touch.Read),
             new StoreTouch(Store.ReleaseReading, Touch.Read),
             new StoreTouch(Store.ReadingPin, Touch.Read),
+            new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.ImprovingNight, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.ImprovingResult, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.ImprovingTrade, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
@@ -65,6 +67,16 @@ public sealed class ImprovingFamily : IComponent
 
     // The rule the trades are kept under before a freeze registers one.
     public const string ProvisionalRule = "provisional";
+
+    // Why a registered rule was not kept on a night: its evaluator's code moved since it was registered.
+    public const string Moved = "its evaluator's code moved since it was registered, so it is kept no further until it is registered again";
+
+    // The register as it stands, read whole and held at an instant by the code every family's rules are read by.
+    const string ReadRegister = @"
+        SELECT id, candidate, rule, test, evaluator, parameters, evaluator_version, event, retires, registered_at, evidence
+        FROM candidate_register
+        ORDER BY id;
+    ";
 
     // What became of a member on the night and why a trade ended, in the rule's words.
     const string BoughtStatus = ImprovingRule.Bought;
@@ -108,7 +120,7 @@ public sealed class ImprovingFamily : IComponent
     const string NightBefore = "SELECT MAX(session_date) FROM improving_night WHERE rule = $rule AND index_code = $index AND session_date < $night AND fault IS NULL;";
 
     // Every member's carried growth on a night.
-    const string CarriedOn = "SELECT ticker, carried FROM improving_result WHERE rule = $rule AND index_code = $index AND session_date = $session;";
+    const string CarriedOn = "SELECT ticker, carried, flagged FROM improving_result WHERE rule = $rule AND index_code = $index AND session_date = $session;";
 
     // A member's newest answer on or before a night, for a member the night before holds none for.
     const string NewestCarried = @"
@@ -215,15 +227,38 @@ public sealed class ImprovingFamily : IComponent
         this.databaseFile = databaseFile;
     }
 
+    // The rules the step keeps on an index on the night: where a rule of the family stands registered on it, every rule of
+    // the family standing at the instant the night reads the register at, the live rule first and the versions in the
+    // order they were registered, each at its registration's setting and one whose evaluator moved since named as not
+    // kept; and otherwise the provisional rule at the starting setting.
+    // see: A Fundamentals rule is registered as the family on its index and kept by the family's own step alone
+    public static IReadOnlyList<(string Rule, ImprovingSweepSetting Setting, string? Fault)> RulesOn(string index, IReadOnlyList<RegisterRow> register, DateTimeOffset standingAt)
+    {
+        var family = ShadowColumn.StandingAt(register, standingAt)
+            .Where(row => CandidateEvaluators.Find(row.Evaluator) is ImprovingCandidate rule && rule.Index == index)
+            .OrderBy(row => FamilyRecords.IsLive(row.Candidate) ? 0 : 1)
+            .ThenBy(row => row.Id)
+            .ToArray();
+
+        return family.Length == 0
+            ? [(ProvisionalRule, ImprovingGrid.Starting, null)]
+            : [.. family.Select(row => (
+                row.Candidate,
+                ImprovingCandidate.SettingsOf(CandidateEvaluator.Read(row.Parameters)),
+                CandidateEvaluators.Find(row.Evaluator)!.Version == row.EvaluatorVersion ? (string?)null : Moved))];
+    }
+
     // The step over the three indices, each index's failure named on its own row while the others go on, and a failure
-    // outside every index's part named on the step's row: the family never stops the night.
-    public async Task<ImprovingOutcome> RunAsync(string runId, CancellationToken cancellation = default)
+    // outside every index's part named on the step's row: the family never stops the night. The register is read at the
+    // instant given, the night's start or the instant a night run again names, and as it stands where none is given;
+    // each rule standing on an index is kept in a transaction of its own, the live rule first, and the index's outcome
+    // is the first rule's, the one its card draws.
+    public async Task<ImprovingOutcome> RunAsync(string runId, CancellationToken cancellation = default, DateTimeOffset? registerAt = null)
     {
         var startedAt = clock.UtcNow;
         var outcomes = new List<ImprovingIndexOutcome>();
         DateOnly? read = null;
         var rows = 0;
-        var settings = ImprovingRule.Starting;
 
         try
         {
@@ -241,23 +276,44 @@ public sealed class ImprovingFamily : IComponent
             var bars = await BarsAsync(connection, night, cancellation);
             var filers = await FilersAsync(connection, cancellation);
             var facts = new Dictionary<string, IReadOnlyList<FiledFactRow>>(StringComparer.Ordinal);
+            var register = await RegisterAsync(connection, cancellation);
 
             read = night;
 
             foreach (var index in AllIndices)
             {
+                var rules = RulesOn(index, register, registerAt ?? startedAt);
+                ImprovingIndexOutcome? first = null;
+
                 try
                 {
-                    var (outcome, written) = await IndexNightAsync(connection, index, night, bars, filers, facts, ProvisionalRule, settings, cancellation);
+                    foreach (var (rule, setting, moved) in rules)
+                    {
+                        if (moved is not null)
+                        {
+                            rows += await NotComputedAsync(connection, index, night, moved, rule, setting, cancellation);
+                            first ??= new ImprovingIndexOutcome(index, 0, 0, 0, 0, [], 0, [], 0, 0, moved);
 
-                    outcomes.Add(outcome);
-                    rows += written;
+                            continue;
+                        }
+
+                        var (outcome, written) = await IndexNightAsync(connection, index, night, bars, filers, facts, rule, setting, cancellation);
+
+                        first ??= outcome;
+                        rows += written;
+                    }
+
+                    outcomes.Add(first!);
                 }
                 catch (Exception failure) when (!cancellation.IsCancellationRequested)
                 {
                     var fault = Cause(failure);
 
-                    rows += await NotComputedAsync(connection, index, night, fault, ProvisionalRule, settings, cancellation);
+                    foreach (var (rule, setting, _) in rules)
+                    {
+                        rows += await NotComputedAsync(connection, index, night, fault, rule, setting, cancellation);
+                    }
+
                     outcomes.Add(new ImprovingIndexOutcome(index, 0, 0, 0, 0, [], 0, [], 0, 0, fault));
                 }
             }
@@ -288,15 +344,47 @@ public sealed class ImprovingFamily : IComponent
             : FormattableString.Invariant(
                 $"{outcome.Index}: {outcome.Members} member(s) read, {outcome.Scored} scored, {outcome.FirstRead} newly read filing(s), {outcome.Improved} raising the score, {outcome.Bought.Count} bought, {outcome.Flagged} flagged, {outcome.Sold.Count} sold, {outcome.Held} held, {outcome.Waiting} waiting for their next session")));
 
-    // The settings the night read the rule by, and the words its card states the rule in.
-    public static string Settings(ImprovingSettings settings, string rule = ProvisionalRule) => JsonSerializer.Serialize(new
+    // The settings the night read a rule by, each of the grid's six dials, and the words its card states the rule in: the
+    // family's starting rule's for the provisional rule, which runs at no other setting, and its grid setting's for a
+    // registered one.
+    public static string Settings(ImprovingSweepSetting setting, string rule = ProvisionalRule) => JsonSerializer.Serialize(new
     {
         rule,
-        buy = settings.BuyInNine,
-        hold = settings.HoldInNine,
-        sessions = settings.Sessions,
-        words = settings.Words,
+        buy = setting.BuyInNine,
+        flag = setting.FlagFirst,
+        rise = setting.Rise,
+        faster = setting.Faster,
+        hold = setting.HoldInNine,
+        sessions = setting.Sessions,
+        words = rule == ProvisionalRule ? ImprovingRule.Starting.Words : setting.Words,
     });
+
+    public static string Settings(ImprovingSettings settings, string rule = ProvisionalRule) =>
+        Settings(new ImprovingSweepSetting(settings.BuyInNine, false, true, true, settings.HoldInNine, settings.Sessions), rule);
+
+    // The register's rows, which the step reads the rules standing on each index off.
+    static async Task<IReadOnlyList<RegisterRow>> RegisterAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        var rows = new List<RegisterRow>();
+
+        await foreach (var row in RowsAsync(connection, null, ReadRegister, [], cancellation))
+        {
+            rows.Add(new RegisterRow(
+                row.GetInt64(0),
+                row.GetString(1),
+                row.GetString(2),
+                row.GetString(3),
+                row.GetString(4),
+                row.GetString(5),
+                row.GetString(6),
+                row.GetString(7),
+                row.IsDBNull(8) ? null : row.GetString(8),
+                DateTimeOffset.ParseExact(row.GetString(9), "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
+                row.IsDBNull(10) ? null : row.GetString(10)));
+        }
+
+        return rows;
+    }
 
     // One index's part of the night, in one transaction: every member's answer with its carried growth, the trades
     // carried, bought, sold and chosen, and the night's row.
@@ -308,7 +396,7 @@ public sealed class ImprovingFamily : IComponent
         IReadOnlyDictionary<string, string> filers,
         Dictionary<string, IReadOnlyList<FiledFactRow>> facts,
         string rule,
-        ImprovingSettings settings,
+        ImprovingSweepSetting setting,
         CancellationToken cancellation)
     {
         var members = new HashSet<string>(StringComparer.Ordinal);
@@ -344,20 +432,20 @@ public sealed class ImprovingFamily : IComponent
 
         // Each member's growth carried from its answer the night before, or from its own newest answer where the night
         // before holds none for it, by tonight's close over its close on that answer's night; and from one where it has none.
-        var last = new Dictionary<string, (DateOnly Session, double Carried)>(StringComparer.Ordinal);
+        var last = new Dictionary<string, (DateOnly Session, double Carried, bool Flagged)>(StringComparer.Ordinal);
 
         if (before is { } previous)
         {
             await foreach (var row in RowsAsync(connection, null, CarriedOn, [("$rule", rule), ("$index", index), ("$session", Stamp(previous))], cancellation))
             {
-                last[row.GetString(0)] = (previous, row.GetDouble(1));
+                last[row.GetString(0)] = (previous, row.GetDouble(1), row.GetInt64(2) == 1);
             }
 
             foreach (var ticker in members.Where(ticker => !last.ContainsKey(ticker)).ToArray())
             {
                 await foreach (var row in RowsAsync(connection, null, NewestCarried, [("$rule", rule), ("$index", index), ("$ticker", ticker), ("$session", Stamp(previous))], cancellation))
                 {
-                    last[ticker] = (Date(row.GetString(0)), row.GetDouble(1));
+                    last[ticker] = (Date(row.GetString(0)), row.GetDouble(1), false);
                 }
             }
         }
@@ -404,10 +492,14 @@ public sealed class ImprovingFamily : IComponent
             Scorecard? earlierCard = null;
             ImprovingAnswer? answer = null;
 
+            // A flag that stood the night before, where a setting asks one first: the member's own answer on that night
+            // under this rule, and none where that night holds no answer for it.
+            var flaggedBefore = before is { } prior && last.TryGetValue(ticker, out var past) && past.Session == prior && past.Flagged;
+
             if (first)
             {
                 earlierCard = FundamentalScorecard.Read(held, filed!.Value, score.Financial, Prices(bars, ticker));
-                answer = ImprovingRule.Answer(score.Passed, score.Applied, earlierCard.Passed, earlierCard.Applied, change, settings);
+                answer = ImprovingRule.Answer(score.Passed, score.Applied, earlierCard.Passed, earlierCard.Applied, change, flaggedBefore, setting);
             }
 
             // Its newest results release the night may read, flagged where the scorecard read a check, it was accepted after
@@ -494,8 +586,8 @@ public sealed class ImprovingFamily : IComponent
 
             // Sold at tonight's close where tonight's scorecard stands under the hold floor, or where tonight is its last
             // session; one with no close stored tonight was not answered and is kept.
-            var fell = !gone && tonight.TryGetValue(trade.Ticker, out var answer) && answer.Applied > 0 && !ImprovingRule.Holds(answer.Passed, answer.Applied, settings);
-            var ended = !gone && !fell && trade.Through == night && sessions >= settings.Sessions;
+            var fell = !gone && tonight.TryGetValue(trade.Ticker, out var answer) && answer.Applied > 0 && !ImprovingRule.Holds(answer.Passed, answer.Applied, setting);
+            var ended = !gone && !fell && trade.Through == night && sessions >= setting.Sessions;
 
             if (gone || fell || ended)
             {
@@ -573,7 +665,7 @@ public sealed class ImprovingFamily : IComponent
         [
             ("$rule", rule), ("$index", index), ("$night", Stamp(night)), ("$members", members.Count),
             ("$scored", scored), ("$first_read", firstRead), ("$improved", improved), ("$bought", boughtTonight.Count),
-            ("$flagged", flaggedCount), ("$held", kept.Count + boughtTonight.Count), ("$settings", Settings(settings, rule)),
+            ("$flagged", flaggedCount), ("$held", kept.Count + boughtTonight.Count), ("$settings", Settings(setting, rule)),
         ], cancellation);
 
         await transaction.CommitAsync(cancellation);
@@ -796,7 +888,7 @@ public sealed class ImprovingFamily : IComponent
 
     // An index's part that failed: a night row naming why where no earlier try of the night wrote one, and none where the
     // store will not take it, since recording the failure is never what stops the night.
-    async Task<int> NotComputedAsync(SqliteConnection connection, string index, DateOnly night, string fault, string rule, ImprovingSettings settings, CancellationToken cancellation)
+    async Task<int> NotComputedAsync(SqliteConnection connection, string index, DateOnly night, string fault, string rule, ImprovingSweepSetting setting, CancellationToken cancellation)
     {
         try
         {
@@ -806,7 +898,7 @@ public sealed class ImprovingFamily : IComponent
             command.Parameters.AddWithValue("$rule", rule);
             command.Parameters.AddWithValue("$index", index);
             command.Parameters.AddWithValue("$night", Stamp(night));
-            command.Parameters.AddWithValue("$settings", Settings(settings, rule));
+            command.Parameters.AddWithValue("$settings", Settings(setting, rule));
             command.Parameters.AddWithValue("$fault", fault);
 
             return await command.ExecuteNonQueryAsync(cancellation);

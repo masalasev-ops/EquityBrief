@@ -480,11 +480,13 @@ public partial class FixtureExpectations
     ];
 
     // No source any rule's version pins is one 22.13 writes, so no existing rule's version moves, the reader shown to find a
-    // source a rule pins.
+    // source a rule pins; from 22.15 the family's own rules pin its files, which the freeze's own test holds apart.
+    // see: A Fundamentals rule is registered as the family on its index and kept by the family's own step alone
     [Fact]
     public void NoSourceARulesVersionPinsIsOne22Point13Writes()
     {
         var pinned = EquityBrief.Core.Candidates.CandidateEvaluators.All
+            .Where(evaluator => evaluator is not EquityBrief.Core.Candidates.ImprovingCandidate)
             .SelectMany(evaluator => evaluator.OwnSources)
             .Concat(EquityBrief.Core.Candidates.CandidateEvaluator.EvaluationSources)
             .Concat(EquityBrief.Core.Loop.RuleHooks.Sources)

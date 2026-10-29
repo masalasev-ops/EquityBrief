@@ -37,7 +37,15 @@ public sealed class SweepAnswers(IClock clock, string databaseFile, string sweep
     // The indices a run may name and the families a card draws, which are the answers a card can read.
     static readonly string[] IndexCodes = [EquityBrief.Worker.Indices.IndexFamilies.LargeIndex, "MID", "SML"];
 
-    static readonly string[] Families = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, HeavyweightRule.Name, QualityRule.Name, DipRule.Name];
+    static readonly string[] Families = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, HeavyweightRule.Name, QualityRule.Name, DipRule.Name, ImprovingRule.Name];
+
+    // The two families whose history tests walk a grid of settings in months, whose figures are read one way: Quality at a
+    // fair price from 22.11 and the Fundamentals family from 22.15, the proposal or the starting setting its freeze fixes.
+    static bool WalksAGrid(string? family) => family is QualityRule.Name or ImprovingRule.Name;
+
+    static string GridStartingKey(string family) => family == QualityRule.Name ? QualityRule.Starting.Key : ImprovingGrid.Starting.Key;
+
+    static string GridFamilyWord(string family) => family == QualityRule.Name ? "quality" : "Fundamentals";
 
     // From 22.11 the newest run in the sweep's folder that states an answer for a family on an index, by its folder's name,
     // which is the instant it started; none where no run states one. A remedy written before its run names it this way.
@@ -214,9 +222,9 @@ public sealed class SweepAnswers(IClock clock, string databaseFile, string sweep
             // its starting setting's otherwise, the setting a freeze then fixes, with its settings, those meeting its floors
             // against luck and the run's own tester's verdict.
             // see: Each index's quality rule is frozen at its starting setting on the operator's word, with its one-step neighbours as versions
-            if (root.TryGetProperty("family", out var named) && named.GetString() == QualityRule.Name && root.TryGetProperty("settings", out var grid))
+            if (root.TryGetProperty("family", out var named) && WalksAGrid(named.GetString()) && root.TryGetProperty("settings", out var grid))
             {
-                var key = root.TryGetProperty("proposal", out var proposed) && proposed.ValueKind == JsonValueKind.String ? proposed.GetString()! : QualityRule.Starting.Key;
+                var key = root.TryGetProperty("proposal", out var proposed) && proposed.ValueKind == JsonValueKind.String ? proposed.GetString()! : GridStartingKey(named.GetString()!);
 
                 return (QualityFiguresOf(run, root, [.. grid.EnumerateArray()], key), null);
             }
@@ -321,13 +329,13 @@ public sealed class SweepAnswers(IClock clock, string databaseFile, string sweep
             // its grid walked, read as the family's own answer reads its proposal's, beside the run's own tester's verdict;
             // refused where the setting is not one the grid walked or an entry is named, which the family reads none of.
             // see: The S&P 400's and 600's quality rules are frozen at their starting settings on the operator's answer, as the S&P 500's was
-            if (root.TryGetProperty("family", out var named) && named.GetString() == QualityRule.Name && root.TryGetProperty("settings", out var grid))
+            if (root.TryGetProperty("family", out var named) && WalksAGrid(named.GetString()) && root.TryGetProperty("settings", out var grid))
             {
                 var walked = grid.EnumerateArray().ToArray();
 
                 if (ruled.Entry is not null)
                 {
-                    return (null, $"run {run} is a quality history test, which reads no entry, so a ruled setting on it names none");
+                    return (null, $"run {run} is a {GridFamilyWord(named.GetString()!)} history test, which reads no entry, so a ruled setting on it names none");
                 }
 
                 if (walked.All(setting => setting.GetProperty("Key").GetString() != ruled.Setting))

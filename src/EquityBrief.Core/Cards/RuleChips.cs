@@ -22,6 +22,7 @@ public enum RuleKind
     IndexDrift,
     IndexHeavyweights,
     Quality,
+    Improving,
 }
 
 // A rule's settings as a card's chips, written by code from the parameters its registration states, or from the settings
@@ -156,6 +157,16 @@ public static class RuleChips
                 Add(QualityCandidate.TrendParameter, At(QualityCandidate.TrendParameter) == 1 ? "above its 200-day average" : null);
                 Add(QualityCandidate.BookParameter, At(QualityCandidate.BookParameter) is { } book ? Invariant($"{Number(book)} holdings") : null);
                 Add(QualityCandidate.SaleParameter, At(QualityCandidate.SaleParameter) == 1 ? "also sold on a filing" : "sold at reshuffles");
+                break;
+
+            // From 22.15 the Fundamentals family's six dials, a check the setting does not ask left out.
+            case RuleKind.Improving:
+                Add(ImprovingCandidate.BuyParameter, At(ImprovingCandidate.BuyParameter) is { } bar ? Invariant($"buy at {Number(bar)} in 9") : null);
+                Add(ImprovingCandidate.FlagParameter, At(ImprovingCandidate.FlagParameter) == 1 ? "a flag the night before" : null);
+                Add(ImprovingCandidate.RiseParameter, At(ImprovingCandidate.RiseParameter) == 1 ? "above its previous filing's score" : null);
+                Add(ImprovingCandidate.FasterParameter, At(ImprovingCandidate.FasterParameter) == 1 ? "sales speeding up" : null);
+                Add(ImprovingCandidate.HoldParameter, At(ImprovingCandidate.HoldParameter) is { } hold ? Invariant($"held at {Number(hold)} in 9") : null);
+                Add(ImprovingCandidate.LimitParameter, At(ImprovingCandidate.LimitParameter) is { } limit ? Invariant($"{Number(limit)} sessions at most") : null);
                 break;
         }
 

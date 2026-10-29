@@ -11253,3 +11253,161 @@ Carried:    the open floor's first written run, `rule-record --open-floor` from 
             built, the local model's try at them standing as a measurement; the 45 pages waiting on their newest quarter,
             each clearing as its page states; the written sections, which nothing here writes again; and the copy's nightly
             task, enabled on the operator's word.
+
+### 22.15 ruling - the Fundamentals family's freezes, the pullback version where a family has room, business first's end, the peer groups, the quarters asks, the copy's plain links and the monthly run again   2026-10-28
+
+Not a checkpoint entry: it records the operator's word and lands nothing.
+Ruled:      the operator's answers of 2026-10-28, given about 21:00 UTC and kept whole in
+            `prompts/2026-10-28-operator-answers.md`. 22.15: the Fundamentals family frozen on each index with its
+            one-step neighbours as versions within the nine-rule limit; the S&P 500 at its starting setting, no setting
+            having met the floors, so it starts as a starting point and not a proven edge; the S&P 400 at the proposal its
+            run stated, buy at 7 with a flag the night before and the rise asked, the growth not, held at 7, 63 sessions;
+            the S&P 600 at the proposal its run stated, buy at 9 with a flag the night before, the rise and the growth
+            asked, held at 6, 252 sessions; each card drawing the frozen line every frozen card draws from its own
+            recorded answer and adding "Its release readings before February 2025 were read by a model trained after
+            them, so its history may flatter it; its record from today is what counts." 22.14's pullback version: none on
+            the S&P 500, whose pullback family holds nine rules and already runs the version leaving off a deteriorating
+            business, which reads the same business check; "Pullback, business growing" registered on the S&P 400 and
+            the S&P 600 where the family has room within nine rules, and where one has none said so with nothing
+            registered, nothing retired; business first then ending as a family on every index, its record kept and
+            readable, as `prompts/2026-10-26-ruling-business-first.md` rules. The 19 peer groups: a proposed group approved
+            where its members all share the stock's GICS industry, one reaching outside it listed with why and set
+            nothing. The quarters fetch's asks for COR, SMCI, BA and V approved, by hand from main while no other writer
+            runs, one request each, with what each stored. The read-only copy: a link to a page the copy does not hold
+            drawn as plain text and not as "Not in this copy", the folder written again and its report brought to the
+            operator, nothing uploaded until they say so. The monthly run by hand as the ruling of 2026-10-26 set it,
+            while no night, local run, relabel batch or other writer runs, finishing before the night, each index's
+            families, what each engine proposed and any family it could not test reported with why. Then 22.15's remedy
+            from main while no other writer runs, the phase 22 report amended with 22.14's and 22.15's answers and
+            screens, and a stop, phase 22's sign-off owed to a fresh session. No paid call; no other rule's code version
+            moves, asserted; the gates over each tree before its merge; nothing merged unless done before the night.
+Asked:      the monthly run of 2026-10-27 ran from 12:25:42 to 14:32:41 UTC, run loop-month-2026-10-20261027T122542Z,
+            each step on the run log and none put, with no entry of its own; asked whether to write its record from what
+            it stored or run it again, the operator chose to run it again; told then that a run again for the month passes
+            over every step an earlier try held, and every October step held between 2026-10-11 and 2026-10-27, the
+            report among them, the operator chose to have its record written from what it stored, and nothing runs. ROP's
+            GICS industry as the provider files it is Electronic Equipment, Instruments & Components, so the Software
+            group the 18.4 ruling above approved for it reaches outside it; asked, the operator kept ROP on Software,
+            approved by name. The tightened check proposes no group for the other 18, so none is set. Told that "Pullback,
+            business growing" can be written on the S&P 400 and 600 only as hooks a member must also pass, each a
+            reading on its own, so either margin up cannot be stated without editing the hooks' file every family rule
+            pins, the operator chose on 2026-10-29, about 00:40 UTC, to register nothing on either index: business
+            first's 27-setting search passed none on any index, its best +0.07 risks on the S&P 400, so there is no
+            tested edge to carry and either form would be an untested rule, and every pullback setup in the ledger
+            already carries the revenue, margin and cash readings, so winners against losers can propose a business
+            condition for the pullback from the data. Told that taking business first out of the night edits a file
+            all 28 registered S&P 400 and 600 rules pin, that its trades can hold back another family's pick, the open
+            trade read of the index trades carrying no family filter and read by the S&P 500 list, the 400's and 600's
+            lists and the dip, and that it has held back 0 picks on each index ever, its one trade DGII on the S&P 600
+            open since 2026-10-20, the operator chose on 2026-10-29, about 01:55 UTC, to take it out of the night now,
+            the 28 rules registered again replayed to carry their records, the count before 0 and after 0, DGII's
+            trade ending under its own plan. Asked how far to go overnight, they chose to go through all of it, this
+            pull request through its merge, then the store writes approved above from main outside the off-peak and
+            local run windows, the copy written again with its report and no upload, the read surface restarted, the
+            monthly record and the phase 22 report's amendment as a docs pull request, and a stop. Told the segment try
+            accepted 0 of 106, 88 answers empty for the model's reasoning spending its budget and 16 naming too few rows,
+            they chose a rerun with reasoning off and a 16,000-token budget as the record's measurement.
+Room:       read off the register: the S&P 500's pullback family, the swing filter's, holds 9 rules, one of them leaving
+            off a deteriorating business; the S&P 400's pullback family holds 3 and the S&P 600's 4, each with room.
+Relabel:    finished at 18:29 UTC on 2026-10-28 with every name reached, so no batch runs around the work above.
+Labelled:   the freezes and their remedy under 22.15; the pullback version and business first's end under 22.14; the peer
+            groups and the copy's links under 18.4, which built the peer check and the copy; the quarters asks under
+            18.2, which built the quarters fetch; the monthly run's record and the report's amendment under 22.12, phase
+            22's report.
+Queue:      done, PRs 573 to 582; in progress, this pull request; next, the open floor's first written run and the
+            quarters asks from main after the night, the record of the monthly run of 2026-10-27, 22.15's remedy after
+            this pull request merges, the phase 22 report amended, and a stop.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - correction: a link the read-only copy does not hold is drawn as its words alone   2026-10-28
+
+Not a checkpoint entry: it corrects what 18.4 carried into shipped source on the operator's answers of 2026-10-28, and
+lands nothing.
+Found:      the copy of 2026-10-28 drew "Not in this copy" beside 10,503 links to pages it does not hold, most of them
+            peers' tickers, which the operator read as clutter.
+Corrected:  a link to a screen or an address the copy does not hold is drawn as its words alone, plain text with no note,
+            and the copy's stylesheet styles no note; a route not held opened at its address still answers with the page
+            saying it is not in this copy. The decision is superseded by one naming how such a link is drawn, and every
+            citation of it moved; the architecture's and the runbook's sentences and the guide's say plain words.
+Tests:      none new; the copy's link test rewritten to the words alone, asserting no note and no style for one. 2907 in
+            all.
+Claims:     none new.
+Mutated:    the rule, stated before the run: undo the property the correction adds. C1 the note put back beside a link
+            the copy does not hold: red at the copy's link test, 25 of the copy's 26 tests passing.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 18.4 - record: the open floor's first written run, the four quarters asks and the segment try's rerun   2026-10-29
+
+Not a checkpoint entry: it records three things done from main's clean copy and the local model on the operator's
+answers of 2026-10-28, and lands nothing.
+Ran:        `rule-record --open-floor` from the night's clean copy of bb96acf7 over the live store at 02:10 to 02:14 UTC on
+            2026-10-29, the first written run: from 2019-01-02 to 2026-10-28 the live drift rule 2,264 trades at an average
+            of 0.022 of the risk, and skipping a fill whose reward to risk at the open is under 1, 2,031 trades at 0.110,
+            353 listings skipped; the run's row on the run log, which the S&P 500's drift card now draws beneath its record
+            and the record is followed forward from. Then `fundamentals --ticker` for COR, SMCI, BA and V in turn at 02:16
+            UTC, the one form that asks for one member's quarters: each answered that the stored copy holds the latest
+            filing known, COR's of 2026-08-05 with 12 filings held, SMCI's of 2026-08-31 with 11 of 12, BA's of 2026-07-28
+            with 12 and V's of 2026-07-29 with 12, so none fetched, 0 requests and 0 weighted calls of the provider's
+            100,000; the night's quarters step asks each on the night after it reports.
+Tried:      the local model on the segment tables of the 106 releases the page's reader found none in, twice, the model
+            naming line numbers alone and code reading every figure from those lines under the page's own two sum checks,
+            the store read-only and nothing written. The first run, reasoning on and 6,000 answer tokens, 14:50 to 16:25
+            UTC on 2026-10-28, 106 tried and none accepted: 88 answers came back empty, the reasoning spending the whole
+            budget, 1 cut off, 16 naming fewer than two segment rows and 1 with no release stored. The second, reasoning off
+            and 16,000 tokens, 02:10 to 02:45 UTC on 2026-10-29, 106 tried and none accepted: 96 naming fewer than two
+            segment rows, 9 not answering and 1 with no release stored. Read as a measurement: with reasoning off the model
+            answers in under a second a release and names no segment table in 96 of the 106, which is what the page's
+            reader found, so those releases most likely state none and the 106 stay open until a filing is stored.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the last entry of this pull
+            request, with the figures it states.
+
+### 22.15 - the Fundamentals family frozen on each index on the operator's answers, each with its one-dial neighbours as versions kept by its own step   2026-10-29
+
+Built:      the family's evaluator on each index, `improving-500`, `improving-400` and `improving-600`, its six parameters
+            the history test's dials and its version the pin of every file the family's step runs through, read off the
+            compiled code; the freeze form for the family, its live rule at the setting given and every setting of the grid
+            one dial from it as a version at one instant, nine rules an index, refusing a setting off the grid, an index
+            carried no rule, other parameters, variants, a rule in the background and a second freeze; the family's step
+            reading the register at the night's start and keeping every rule standing on an index under its own name, the
+            live rule first, each at its registration's setting, a rule asking a flag first reading the member's own answer
+            the night before, a rule whose evaluator moved named on its row and not kept, and the provisional rule where
+            none stands; the night's answer under a setting buying exactly where the grid's walk buys; the answer command
+            recording a Fundamentals history test as a quality one, the proposal or the starting setting as ruled; the
+            card drawn by its live rule, live since its freeze, with the line every frozen card draws from its own recorded
+            answer counted in trades and the words the operator's answer adds beneath it, its sentences stating the dials
+            its setting asks and its fold saying its settings were fixed; the stock's own pages' line reading the live
+            rule's rows; paper trading's account for the live rule and each version with the family's tile and pickers;
+            the monthly run's per-rule test walking each registered rule's book by the history test's own lay from its
+            first run after a freeze; the remedy recording each index's answer from its run of 2026-10-27 and freezing the
+            three; the two decisions, the architecture's family paragraph, catalogue and matrix rows, section 17's row and
+            the card's claim row, the runbook's form and remedy, the guide, the roster's two rows and the changelog.
+Tests:      9 new, the remedy's lines over a register shaped as the operator's stood on 2026-10-29, the refusals, each
+            frozen setting on both sides of each dial with the answer held to the grid's walk at every setting, the night
+            keeping each rule under its own name with the expectation's hand-derived counts and a moved rule not kept, the
+            monthly run reading the family after a freeze, the answer command, no pin moved with every other evaluator's
+            version as the register names it, and the frozen card and paper trading read back; 7 rewritten for the family's
+            tile, pickers and label the page now lists. 2916 in all.
+Claims:     none new: the family's rows and paragraph are amended in place, with no run of three comma items.
+Pins:       none move: the three Fundamentals evaluators are new at a315800029e4 and pin the family's own files, which no
+            other evaluator pins, asserted; the operator's register's 18 evaluators stand at the versions it names.
+Mutated:    the rule, stated before the runs: the smallest edit undoing each property the checkpoint adds, each filtered to
+            the tests reading it. M1 a neighbour two dials away registered: red at the remedy, refusal and monthly tests. M2
+            the flag asked first ignored: red at the both-sides and night tests. M3 every version kept under the live rule's
+            name: red at the night test. M4 a moved rule kept: red there too. M5 the words the answer adds left off the
+            card: red at the card test. Added and not mutated: the stock's own pages reading the live rule's rows, the
+            answer command's family word, and the paper account's rows, which the paper test reads back.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2916 of 2916 tests ran
+            with none failed, migrations 0 to 114 with none pending, schema version 114, against `data-ci` and never
+            `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the remedy `tools/remedies/2026-10-29-22.15-the-fundamentals-freezes.txt` from main after the merge while no
+            writer runs, and the read surface restarted; the copy written again with its report, nothing uploaded; the
+            phase 22 report amended with 22.14's and 22.15's answers and screens; business first's end: it stays off every
+            page, the night still computing it, since taking it out of the night registers the 28 S&P 400 and 600 rules
+            again and an S&P 400's or 600's rule is not replayed, so its record and paper account restart, which the
+            operator's choice of 2026-10-29 was not told, and the choice is put to them again with that; and the
+            Fundamentals family's live rules replayed by the record command once it carries their form, their cards
+            drawing no record until then.

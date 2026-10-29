@@ -7,7 +7,7 @@ namespace EquityBrief.Tests.Checks;
 // worker, building main's commit and not the branch's where the checkout is on a branch, refusing a main holding a commit
 // origin/main lacks before any worker exists, and passing on the upload flag alone; read in its check mode over temporary
 // repositories as the off-peak run's script is.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
+// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
 // see: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
 public partial class NightlyRun
 {

@@ -1,0 +1,18 @@
+{
+  "stage": "improving-freeze",
+  "derivation": "derived",
+  "tables": ["candidate_register", "fundamental_score", "ledger_reading", "filed_fact", "bar"],
+  "derivedFrom": "22.15's freeze and night worked by hand, not a run. The history test's grid crosses the score to buy at 7, 8 or 9, a flag first or not, the rise asked or not, the growth asked or not, the hold at 6 or 7 and the time limit at 63, 126 or 252; one dial from any setting stands every other level of each dial, 2 + 1 + 1 + 1 + 1 + 2 = 8 settings, so each freeze writes 9 rules, on the S&P 500 from the starting setting of 8, no flag, the rise and the growth asked, 7 and 126, on the S&P 400 from its proposal at 7, a flag first, the rise asked, the growth not, 7 and 63, and on the S&P 600 from its at 9, a flag first, both asked, 6 and 252. Over the improving store's eight S&P 400 members on the first night, I01 and I08 at 8 of 9 with their filings read for the first time, above the filing before's and their sales faster, are bought by the starting setting; I02 at 8 of 9 rising with its sales slower is bought only where the growth is not asked; I03 at 7 of 9 rising with its sales faster only where the bar is 7; I04 at 9 of 9 was read on an earlier night and I07 read too few checks, so the bar of 9 buys none; no flag stood the night before, the first night having none, so a flag asked first buys none; and the hold and the limit choose nothing on a night of buys, so each buys the starting setting's two.",
+  "rules": { "GSPC": 9, "MID": 9, "SML": 9 },
+  "firstNight": {
+    "live": 2,
+    "buy7": 3,
+    "buy9": 0,
+    "flagFirst": 0,
+    "riseOff": 2,
+    "fasterOff": 3,
+    "hold6": 2,
+    "limit63": 2,
+    "limit252": 2
+  }
+}

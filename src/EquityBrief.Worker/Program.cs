@@ -2625,7 +2625,7 @@ static async Task<int> BackupRun(string[] args)
 // The read-only copy of the site on Cloudflare Pages: written through the read surface built beside this worker, read by
 // its check, its report written beside the copy's folder, and uploaded only with the flag. The two Cloudflare settings
 // are read from the configuration, which reads the secrets file, and handed to the upload alone.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
+// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
 static async Task<int> PublishSiteVerb(string[] args)
 {
     var configuration = Configuration();

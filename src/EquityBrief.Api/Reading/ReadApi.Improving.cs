@@ -44,6 +44,15 @@ public sealed partial class ReadApi
     // The rule its trades are kept under before a freeze registers one, the night's own word.
     public const string ImprovingProvisional = "provisional";
 
+    // From 22.15 the live rule the family's step kept a night under on an index, where a freeze stands, read off the
+    // night's own rows; the provisional rule where none does.
+    // see: A Fundamentals rule is registered as the family on its index and kept by the family's own step alone
+    const string ImprovingLiveOn = @"
+        SELECT rule FROM improving_night
+        WHERE index_code = $index AND session_date = $on AND substr(rule, 1, length($live)) = $live
+        ORDER BY rule LIMIT 1;
+    ";
+
     const string ImprovingNightOn = @"
         SELECT index_code, session_date, members, scored, first_read, improved, bought, flagged, held, settings, fault
         FROM improving_night WHERE rule = $rule AND index_code = $index AND session_date = $on;
@@ -79,6 +88,21 @@ public sealed partial class ReadApi
         SELECT ticker, passed, applied, gross_profitability, checks FROM fundamental_score
         WHERE index_code = $index AND session_date = $on;
     ";
+
+    // The rule whose rows the family's card draws on an index as of a night: its live rule where the step kept the night
+    // under one, and the provisional rule otherwise.
+    public async Task<string> ImprovingCardRuleAsync(string index, DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ImprovingLiveOn;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$on", Day(on));
+        command.Parameters.AddWithValue("$live", EquityBrief.Core.Candidates.FamilyRecords.LivePrefix);
+
+        return await command.ExecuteScalarAsync() is string live ? live : ImprovingProvisional;
+    }
 
     // The Fundamentals family's night on an index, none for a night its step did not read.
     public async Task<ImprovingNightRow?> ImprovingNightAsync(string index, DateOnly on, string rule = ImprovingProvisional)

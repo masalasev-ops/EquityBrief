@@ -514,7 +514,7 @@ public partial class FixtureExpectations
     public void NoSourceARulesVersionPinsIsOne22Point8WritesSoNoExistingRulesVersionMoves()
     {
         var pinned = EquityBrief.Core.Candidates.CandidateEvaluators.All
-            .Where(evaluator => evaluator is not EquityBrief.Core.Candidates.QualityCandidate)
+            .Where(evaluator => evaluator is not (EquityBrief.Core.Candidates.QualityCandidate or EquityBrief.Core.Candidates.ImprovingCandidate))
             .SelectMany(evaluator => evaluator.OwnSources)
             .Concat(EquityBrief.Core.Candidates.CandidateEvaluator.EvaluationSources)
             .Concat(EquityBrief.Core.Loop.RuleHooks.Sources)

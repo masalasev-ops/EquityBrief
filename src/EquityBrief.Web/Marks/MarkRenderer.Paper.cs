@@ -872,5 +872,7 @@ public sealed partial class MarkRenderer
             ? SetupFamilies.SectorHeavyweights.Heading
             : family == QualityRule.Name
                 ? QualityRule.Label
-                : SetupFamilies.Named(family)?.Label ?? family;
+                : family == ImprovingRule.Name
+                    ? ImprovingRule.Label
+                    : SetupFamilies.Named(family)?.Label ?? family;
 }

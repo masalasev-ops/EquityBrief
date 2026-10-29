@@ -1,0 +1,14 @@
+# The remedy of 22.15, the Fundamentals family's freezes, as its PROGRESS entry prints it, on the operator's answers of
+# 2026-10-28. On each index the answer its history test of 2026-10-27 states is recorded from that run's own figures: the
+# S&P 500's at its starting setting as ruled, no setting having met the floors, and the S&P 400's and 600's at the
+# proposal each run stated; then the family is frozen there with every setting of the grid one dial from it as a
+# version, at one instant an index: nine rules on each of the three indices. No request
+# to the provider, none to the SEC and no model call. Run from main after the merge, when no night, local run, drain,
+# labeller, history read, ledger build or monthly run is writing, read the output for "remedy done", and restart the
+# read surface after it.
+sweep-answer --run 20261027T182510Z --ruled 2026-10-28 --setting "buy=8|flag=off|rise=on|faster=on|hold=7|limit=126"
+register --index-family improving --index GSPC --parameters buy=8,flag=0,rise=1,faster=1,hold=7,limit=126
+sweep-answer --run 20261027T182542Z
+register --index-family improving --index MID --parameters buy=7,flag=1,rise=1,faster=0,hold=7,limit=63
+sweep-answer --run 20261027T182701Z
+register --index-family improving --index SML --parameters buy=9,flag=1,rise=1,faster=1,hold=6,limit=252

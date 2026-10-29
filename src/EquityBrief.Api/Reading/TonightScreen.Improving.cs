@@ -41,9 +41,12 @@ public static partial class TonightScreen
         IReadOnlyDictionary<string, IReadOnlyList<double?>> readings,
         IReadOnlyDictionary<string, string> quality,
         IReadOnlyDictionary<string, UniverseCell> cells,
-        IReadOnlyList<(string Ticker, DateOnly Date)>? reports)
+        IReadOnlyList<(string Ticker, DateOnly Date)>? reports,
+        DateOnly? liveSince = null,
+        QualityFixedView? fixedView = null)
     {
-        var settings = ImprovingRule.Starting;
+        var setting = SettingOf(read?.Settings);
+        var settings = new ImprovingSettings(setting.BuyInNine, setting.HoldInNine, setting.Sessions);
         var checksOf = scores.ToDictionary(score => score.Ticker, score => score.Checks, StringComparer.Ordinal);
         var byTicker = tonight.ToDictionary(row => row.Ticker, StringComparer.Ordinal);
         string? Company(string ticker) => cells.TryGetValue(ticker, out var cell) ? cell.Name : null;
@@ -143,7 +146,38 @@ public static partial class TonightScreen
             reporting,
             improving,
             strongest,
-            read?.Settings ?? ImprovingRule.Starting.Words);
+            read?.Settings ?? ImprovingRule.Starting.Words,
+            setting,
+            liveSince,
+            fixedView);
+    }
+
+    // The setting a night's row states, read off the six dials its own JSON carries; the starting setting where it states
+    // none, and the starting setting's checks where a row written before the grid's dials were stored states only the
+    // three the family started with.
+    public static ImprovingSweepSetting SettingOf(string? settings)
+    {
+        if (settings is null)
+        {
+            return ImprovingGrid.Starting;
+        }
+
+        try
+        {
+            using var document = System.Text.Json.JsonDocument.Parse(settings);
+            var root = document.RootElement;
+
+            static bool Flag(System.Text.Json.JsonElement root, string name, bool otherwise) =>
+                root.TryGetProperty(name, out var value) && value.ValueKind is System.Text.Json.JsonValueKind.True or System.Text.Json.JsonValueKind.False ? value.GetBoolean() : otherwise;
+
+            return root.TryGetProperty("buy", out var buy) && root.TryGetProperty("hold", out var hold) && root.TryGetProperty("sessions", out var sessions)
+                ? new ImprovingSweepSetting(buy.GetInt32(), Flag(root, "flag", false), Flag(root, "rise", true), Flag(root, "faster", true), hold.GetInt32(), sessions.GetInt32())
+                : ImprovingGrid.Starting;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return ImprovingGrid.Starting;
+        }
     }
 
     // What a stock's page says where the Fundamentals family bought it on its night, keeps a trade in it from an earlier

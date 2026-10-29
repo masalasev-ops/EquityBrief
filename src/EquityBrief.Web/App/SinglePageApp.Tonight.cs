@@ -70,7 +70,7 @@ public sealed partial class SinglePageApp
             var slot = tiles.TakeWhile(tile => tile.Family != EquityBrief.Core.Families.DipRule.Name && tile.Family != EquityBrief.Core.Families.HeavyweightRule.Name).Count();
 
             shown = [.. tiles.Take(slot), new SetupTileView(EquityBrief.Core.Families.ImprovingRule.Name, EquityBrief.Core.Families.ImprovingRule.Label, improving.Bought, improving.Bought == 1 ? "pick" : "picks", improving.Fault is null ? "read nightly" : "not computed tonight"), .. tiles.Skip(slot)];
-            liveSince[EquityBrief.Core.Families.ImprovingRule.Name] = null;
+            liveSince[EquityBrief.Core.Families.ImprovingRule.Name] = improving.LiveSince;
             tonight[EquityBrief.Core.Families.ImprovingRule.Name] = ImprovingTileLine(improving);
         }
 

@@ -57,7 +57,8 @@ public sealed record RuleTestInputs(
     IdeaReplay? Candidates = null,
     ToneReleases? Tones = null,
     QualityLay? Quality = null,
-    IndexSweepRunner.DipRead? Dip = null);
+    IndexSweepRunner.DipRead? Dip = null,
+    ImprovingLay? Improving = null);
 
 // From 20.8 the release readings the per-rule test walks the drift's tone variant over: for each reading version whose
 // history read is complete, each stock's results releases with their readings under it, read through the one reader of
@@ -202,7 +203,22 @@ public static class RuleTests
             .. Heavyweights(inputs),
             .. (inputs.Quality is { } lay ? Quality(inputs.Standing, inputs.Read.Index, setting => lay.Book(setting).Months) : []),
             .. (inputs.Dip is { } dip ? Dip(inputs.Standing, inputs.Read.Index, parameters => DipTrades(dip, parameters)) : []),
+            .. (inputs.Improving is { } improving ? Improving(inputs.Standing, inputs.Read.Index, setting => improving.Book(setting).Months) : []),
         ];
+    }
+
+    // From 22.15 the Fundamentals family on any index once a freeze stands on it: each registered rule's book walked by the
+    // history test's own lay at its setting, its months the unit, the live rule first; none before a freeze, so the
+    // monthly run reads the family from its next run after one.
+    // see: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions
+    public static IEnumerable<RuleUnderTest> Improving(IReadOnlyList<RegisterRow> standing, string index, Func<ImprovingSweepSetting, IReadOnlyList<(int Opens, double? Edge)>> months)
+    {
+        foreach (var row in LiveFirst(standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is ImprovingCandidate rule && rule.Index == index)))
+        {
+            var setting = ImprovingCandidate.SettingsOf(CandidateEvaluator.Read(row.Parameters));
+
+            yield return new RuleUnderTest(ImprovingRule.Name, row.Candidate, StandingOf(row), setting.Words, LoopProcedures.Points, BookMonths.LongestMonth, Months: months(setting));
+        }
     }
 
     // From 22.3 the short-term dip on any index once a freeze stands on it: each registered rule's trades walked at its

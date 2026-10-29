@@ -165,5 +165,7 @@ public sealed partial class SinglePageApp
             ? EquityBrief.Core.Families.SetupFamilies.SectorHeavyweights.Heading
             : family == EquityBrief.Core.Families.QualityRule.Name
                 ? EquityBrief.Core.Families.QualityRule.Label
-                : EquityBrief.Core.Families.SetupFamilies.Named(family)?.Label ?? family;
+                : family == EquityBrief.Core.Families.ImprovingRule.Name
+                    ? EquityBrief.Core.Families.ImprovingRule.Label
+                    : EquityBrief.Core.Families.SetupFamilies.Named(family)?.Label ?? family;
 }

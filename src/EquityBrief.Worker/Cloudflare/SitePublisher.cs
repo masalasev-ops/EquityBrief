@@ -12,7 +12,7 @@ namespace EquityBrief.Worker.Cloudflare;
 // the copy's check; writes the report beside the folder and prints it; and only with the upload flag, a check that refused
 // nothing and the API token and account the secrets file holds, uploads that folder alone to Cloudflare Pages. The token
 // is read from the configuration, handed to the host in a header and printed nowhere.
-// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens and holds no control
+// see: A read-only copy of the site is published to Cloudflare Pages from the read surface's own screens with no control, a link it does not hold drawn as plain text
 public sealed class SitePublisher(
     string dataRoot,
     string workerBuild,

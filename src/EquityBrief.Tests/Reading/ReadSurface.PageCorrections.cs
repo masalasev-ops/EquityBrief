@@ -245,8 +245,8 @@ public partial class ReadSurface
             var rule = Regex.Match(page, "<select data-merge-key=\"rule\".*?</select>", RegexOptions.Singleline).Value;
 
             Assert.Equal(
-                ("quality", "live"),
-                Regex.Matches(page, "<div class=\"paper-tile\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\"").Select(match => (match.Groups[1].Value, match.Groups[2].Value)).Last());
+                [("quality", "live"), ("improving", "provisional")],
+                Regex.Matches(page, "<div class=\"paper-tile\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\"").Select(match => (match.Groups[1].Value, match.Groups[2].Value)).TakeLast(2));
             Assert.Contains("<option value=\"quality\" selected>Quality at a fair price · live rule</option>", rule, StringComparison.Ordinal);
             Assert.Contains("<option value=\"quality\" selected>", Regex.Match(page, "<select data-merge-key=\"variants\".*?</select>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
             Assert.Contains("<div class=\"score\" data-family=\"quality\" data-standing=\"live\"", page, StringComparison.Ordinal);

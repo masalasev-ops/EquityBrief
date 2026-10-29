@@ -305,6 +305,43 @@ public static class PaperScreen
             }
         }
 
+        // From 22.15 the Fundamentals family's trades after Quality at a fair price's, every index's: its live rule's from its
+        // freeze, or the provisional rule's from its first night, and each version's beside it, named by what it changes.
+        // see: A Fundamentals rule is registered as the family on its index and kept by the family's own step alone
+        {
+            var family = ImprovingRule.Name;
+            var (live, versions) = RuleScreen.Accounts(family, large, indexName, register, night, null, asOf);
+            var chips = live is not null ? RuleScreen.ChipsOf(live) : RuleChips.Of(RuleKind.Improving, ImprovingCandidate.ParametersOf(ImprovingGrid.Starting));
+            var head = new PaperAccountSource(
+                ListKey(family),
+                family,
+                live is not null ? PaperAccountView.Live : PaperAccountView.Provisional,
+                live is not null ? "Live" : "Provisional",
+                live?.Candidate ?? ImprovingRule.Label + ", the page's list on its starting settings",
+                null,
+                true,
+                [],
+                null,
+                live?.Candidate ?? ReadApi.PageList + " " + family,
+                Short: live is not null ? "Live rule" : "Provisional rule",
+                Changes: chips.Count > 0 ? string.Join(TabJoint, chips.Select(chip => chip.Words)) : null);
+
+            head = head with { Unfilled = Unfilled(rows.Where(head.Keeps)) };
+
+            var registrations = RuleScreen.Registrations(family, large, indexName, register);
+
+            accounts.Add(live is not null
+                ? Started(head, Of(rows.Where(head.Keeps)), live, [], [.. registrations.Where(row => FamilyRecords.IsLive(row.Candidate))])
+                : head with { Trades = Of(rows.Where(head.Keeps)), Since = rows.Where(head.Keeps).Select(row => (DateOnly?)row.Bought).Min(), Version = ProvisionalVersion, Earlier = [] });
+
+            foreach (var (row, tab) in versions)
+            {
+                var version = new PaperAccountSource(RunScreen.Slug(row.Candidate), family, PaperAccountView.Variant, tab, row.Candidate, row.Candidate, true, [], null, row.Candidate, Short: TabShort(tab), Changes: TabChanges(tab));
+
+                accounts.Add(Started(version with { Unfilled = Unfilled(rows.Where(version.Keeps)) }, Of(rows.Where(version.Keeps)), row, [], [.. registrations.Where(one => one.Candidate == row.Candidate)]));
+            }
+        }
+
         accounts.Add(new PaperAccountSource(
             YouKey,
             YouKey,

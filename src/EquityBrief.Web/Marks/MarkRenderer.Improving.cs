@@ -27,7 +27,10 @@ public sealed record ImprovingCardView(
     int? Reporting,
     IReadOnlyList<ImprovingRowCell> Improving,
     IReadOnlyList<StrongestCell> Strongest,
-    string Rule);
+    string Rule,
+    EquityBrief.Core.Families.ImprovingSweepSetting? Setting = null,
+    DateOnly? LiveSince = null,
+    QualityFixedView? Fixed = null);
 
 // see: The Fundamentals family buys a company whose newly read filing lifts its scorecard to eight in nine, and flags one whose release reads better
 // see: A redesigned page speaks in the reader's words: every card opens on a sentence from its numbers, and no internal term reaches the screen outside the glossary
@@ -85,7 +88,9 @@ public sealed partial class MarkRenderer
 
         body.Append("<header class=\"fam-head\" data-family=\"improving\"><span class=\"fam-tag\" data-family=\"improving\"><span class=\"fam-swatch\" data-family=\"improving\"></span>");
         body.Append(Escaped(EquityBrief.Core.Families.ImprovingRule.Label)).Append("</span>");
-        body.Append(Invariant, $" <span class=\"status-pill provisional\" title=\"{Escaped(EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus)}\">Not yet tested</span>");
+        body.Append(card.LiveSince is { } since
+            ? FormattableString.Invariant($" <span class=\"status-pill live\" data-live-since=\"{DayOf(since)}\">Live since {since:d MMM yyyy}</span>")
+            : FormattableString.Invariant($" <span class=\"status-pill provisional\" title=\"{Escaped(EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus)}\">Not yet tested</span>"));
         body.Append(Invariant, $" <span class=\"fam-count\">{Escaped(card.Bought == 1 ? "1 pick tonight" : Formatted($"{card.Bought} picks tonight"))}</span></header>");
         body.Append(Invariant, $"<p class=\"setup-about\">{Escaped(EquityBrief.Core.Families.ImprovingRule.Description)}<br>{Escaped(CheckedNightly)}</p>");
 
@@ -96,11 +101,21 @@ public sealed partial class MarkRenderer
     // each opening on what it lists, and how it picks and how it will be tested behind a fold.
     public string ImprovingCard(ImprovingCardView card)
     {
-        var settings = EquityBrief.Core.Families.ImprovingRule.Starting;
+        var settings = SettingsOf(card);
         var body = new StringBuilder();
 
         body.Append(Invariant, $"<section class=\"family-card improving-card\" data-family=\"improving\" data-index=\"{Escaped(card.Index)}\" data-bought=\"{card.Bought}\" data-flagged=\"{card.Flagged}\" data-improving=\"{card.Improving.Count}\" data-holding=\"{card.Holding}\">");
         body.Append(Invariant, $"<p class=\"card-summary\" data-summary>{Escaped(ImprovingSummary(card))}</p>");
+
+        // From 22.15 a frozen card's line from its own recorded answer, as every frozen card draws it, and beneath it in
+        // the same breath what its history was read with.
+        // see: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions
+        if (card.Fixed is { } fixedOn)
+        {
+            body.Append(Invariant, $"<p class=\"family-frozen improving-fixed\" data-fixed=\"{DayOf(fixedOn.FixedOn)}\" data-trades=\"{fixedOn.Holdings}\" data-edge=\"{(fixedOn.Edge is { } edge ? edge.ToString("R", Invariant) : "none")}\" ");
+            body.Append(Invariant, $"data-years=\"{fixedOn.YearsWithHoldings}\" data-ahead=\"{fixedOn.YearsAhead}\" data-beat-luck=\"{(fixedOn.BeatLuck is { } beat ? Flag(beat) : "none")}\" data-tester-passed=\"{(fixedOn.TesterPassed is { } passed ? Flag(passed) : "none")}\">");
+            body.Append(Escaped(ImprovingFixedLine(fixedOn))).Append(' ').Append(Escaped(EquityBrief.Core.Families.ImprovingRule.ReadingsCaveat)).Append("</p>");
+        }
 
         if (!card.Read || card.Fault is not null)
         {
@@ -120,7 +135,9 @@ public sealed partial class MarkRenderer
         body.Append("</nav>");
 
         body.Append(Invariant, $"<div class=\"improving-panel\" data-tab=\"fastest\" data-rows=\"{card.Improving.Count}\">");
-        body.Append(Invariant, $"<p class=\"improving-lead\">Companies whose business got better the most on their newest report, whatever their price. A company is bought when its filing lifts it to at least {settings.BuyInNine} of the 9 checks with sales growing faster than the quarter before.</p>");
+        var setting = card.Setting ?? EquityBrief.Core.Families.ImprovingGrid.Starting;
+
+        body.Append(Invariant, $"<p class=\"improving-lead\">Companies whose business got better the most on their newest report, whatever their price. A company is bought when its filing lifts it to at least {settings.BuyInNine} of the 9 checks{(setting.Faster ? " with sales growing faster than the quarter before" : string.Empty)}{(setting.FlagFirst ? ", a flag standing the night before" : string.Empty)}.</p>");
 
         if (card.Improving.Count == 0)
         {
@@ -231,6 +248,13 @@ public sealed partial class MarkRenderer
         Formatted($"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(ticker)}\">{Escaped(ticker)}</a>{(company is { Length: > 0 } named ? Formatted($"<span class=\"co\">{Escaped(named)}</span>") : string.Empty)}</td>");
 
     // The card's sentence from tonight's figures.
+    // The three dials the card's sentences state, read off the rule's own setting where its night states one.
+    static EquityBrief.Core.Families.ImprovingSettings SettingsOf(ImprovingCardView card) =>
+        card.Setting is { } setting ? new(setting.BuyInNine, setting.HoldInNine, setting.Sessions) : EquityBrief.Core.Families.ImprovingRule.Starting;
+
+    // A frozen Fundamentals card's line, the one every frozen card draws, its record counted in trades.
+    public static string ImprovingFixedLine(QualityFixedView fixedOn) => FixedLine(fixedOn, "trade");
+
     static string ImprovingSummary(ImprovingCardView card)
     {
         if (card.Fault is not null)
@@ -281,15 +305,18 @@ public sealed partial class MarkRenderer
     // How it picks and how it will be tested, in the reader's words, behind a fold.
     static string ImprovingRuleFold(ImprovingCardView card)
     {
-        var settings = EquityBrief.Core.Families.ImprovingRule.Starting;
+        var settings = SettingsOf(card);
+        var setting = card.Setting ?? EquityBrief.Core.Families.ImprovingGrid.Starting;
         var body = new StringBuilder();
 
         body.Append("<details class=\"fold fam-rule improving-rule\"><summary>How it picks, and how it will be tested</summary><div class=\"fold-b\">");
         body.Append("<p class=\"record-said\">Flagged: a company whose results release, sent since its last filing, reads results better than expected and an outlook raised or kept. A flag buys nothing.</p>");
-        body.Append(Invariant, $"<p class=\"record-said\">Bought at the next open: a company whose new filing, read tonight for the first time, lifts its score to at least {settings.BuyInNine} of the 9 checks that apply and above the score of the filing before it, while its sales over a year grow faster than in the quarter before. A flag is not needed.</p>");
+        body.Append(Invariant, $"<p class=\"record-said\">Bought at the next open: a company whose new filing, read tonight for the first time, lifts its score to at least {settings.BuyInNine} of the 9 checks that apply{(setting.Rise ? " and above the score of the filing before it" : string.Empty)}{(setting.Faster ? ", while its sales over a year grow faster than in the quarter before" : string.Empty)}. {(setting.FlagFirst ? "A flag must have stood the night before." : "A flag is not needed.")}</p>");
         body.Append(Invariant, $"<p class=\"record-said\">Kept while its score stays at {settings.HoldInNine} of 9 or better. Sold at the close of the night a new filing drops it below {settings.HoldInNine}, at the close of its {settings.Sessions}th trading day, or at its last close in the index, whichever comes first. No stop and no target.</p>");
         body.Append("<p class=\"record-said\">Judged by its return against an equal-weight hold of the index's stocks over the same days, in points, after its trading costs. One trade a stock; a stock it buys may also be bought by another setup.</p>");
-        body.Append("<p class=\"record-said\">It has not been tested yet, so its picks count toward nothing and ask for no report. Its test over the past comes next, and its settings are fixed only on that answer.</p>");
+        body.Append(card.LiveSince is { } live
+            ? FormattableString.Invariant($"<p class=\"record-said\">Its settings were fixed on {live:d MMM yyyy} after its test over the past, and its record counts from then. {EquityBrief.Core.Families.ImprovingRule.ReadingsCaveat}</p>")
+            : "<p class=\"record-said\">It has not been tested yet, so its picks count toward nothing and ask for no report. Its test over the past comes next, and its settings are fixed only on that answer.</p>");
         body.Append(Invariant, $"<p class=\"record-said\" data-rule=\"{Escaped(card.Rule)}\">{Escaped(WorkedBy)}</p>");
         body.Append("</div></details>");
 

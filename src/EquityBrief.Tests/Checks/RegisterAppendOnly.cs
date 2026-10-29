@@ -642,7 +642,29 @@ public class RegisterAppendOnly
         Assert.All(dips, dip => Assert.DoesNotContain("src/EquityBrief.Worker/Filter/SwingFilter.cs", dip.OwnSources));
         Assert.All(dips, dip => Assert.Equal(dip.Version, CandidateEvaluator.Pin([SourceOf(dip), .. OwnOf(dip)])));
 
-        foreach (var family in families.Cast<CandidateEvaluator>().Concat(books).Concat(qualities).Concat(dips))
+        // From 22.15 each index's Fundamentals rule pins its rule's file first and every file the family's own step runs
+        // through keeping its trades, read off the compiled code with the catalogue left out, and none of the shared
+        // sources, which the step never reads: the three pin the same sources and carry one version, and a change to the
+        // swing filter moves none of them.
+        // see: A Fundamentals rule is registered as the family on its index and kept by the family's own step alone
+        var improvings = evaluators.OfType<ImprovingCandidate>().ToArray();
+        var improvingRuns = SourcesReached.From(
+            [
+                typeof(EquityBrief.Worker.Improving.ImprovingFamily).GetMethod(nameof(EquityBrief.Worker.Improving.ImprovingFamily.RunAsync))!,
+                typeof(ImprovingCandidate).GetMethod(nameof(ImprovingCandidate.SettingsOf))!,
+            ])
+            .Where(path => path is not "src/EquityBrief.Core/Candidates/CandidateEvaluators.cs" && !path.EndsWith($"/{nameof(ImprovingCandidate)}.cs", StringComparison.Ordinal))
+            .Distinct(StringComparer.Ordinal);
+
+        Assert.Equal(["GSPC", "MID", "SML"], improvings.Select(improving => improving.Index).Order(StringComparer.Ordinal));
+        Assert.Equal(["improving-400", "improving-500", "improving-600"], improvings.Select(improving => improving.Name).Order(StringComparer.Ordinal));
+        Assert.Single(improvings.Select(improving => improving.Version).Distinct());
+        Assert.All(improvings, improving => Assert.Equal("src/EquityBrief.Core/Families/ImprovingRule.cs", improving.OwnSources[0]));
+        Assert.All(improvings, improving => Assert.Equal(improvingRuns.Order(StringComparer.Ordinal), improving.OwnSources.Order(StringComparer.Ordinal)));
+        Assert.All(improvings, improving => Assert.DoesNotContain("src/EquityBrief.Worker/Filter/SwingFilter.cs", improving.OwnSources));
+        Assert.All(improvings, improving => Assert.Equal(improving.Version, CandidateEvaluator.Pin([SourceOf(improving), .. OwnOf(improving)])));
+
+        foreach (var family in families.Cast<CandidateEvaluator>().Concat(books).Concat(qualities).Concat(dips).Concat(improvings))
         {
             var rule = family.OwnSources[0];
             var movedRule = OwnOf(family);
