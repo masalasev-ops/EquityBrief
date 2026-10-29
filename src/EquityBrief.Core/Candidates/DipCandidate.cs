@@ -36,6 +36,34 @@ public sealed class DipCandidate(string index) : OwnStepCandidate(index)
     public static double SellOf(IReadOnlyDictionary<string, double> parameters) =>
         parameters.TryGetValue(SellParameter, out var sell) ? sell : parameters[SellParameterBefore];
 
+    // The hooks a registration states beside the dip's own dials, read as a swing rule's are: a registration from
+    // before 21.4, which names no sell dial, names the dial exit, so its exit is the dial and no hook.
+    public static Loop.RuleHooks HooksOf(IReadOnlyDictionary<string, double> parameters)
+    {
+        var dials = parameters.ContainsKey(SellParameter) ? Dials : [.. Dials, SellParameterBefore];
+
+        return Loop.RuleHooks.Of(parameters.Where(pair => !dials.Contains(pair.Key, StringComparer.Ordinal)).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal));
+    }
+
+    // A setting stated in the form from before 21.4, its sell dial named exit and no sell dial beside it, read with the
+    // dial under its name, so a remedy or a form written then registers the same rule; a setting naming both leaves its
+    // exit to the hooks.
+    public static IReadOnlyDictionary<string, double> Renamed(IReadOnlyDictionary<string, double> parameters)
+    {
+        if (parameters.ContainsKey(SellParameter) || !parameters.ContainsKey(SellParameterBefore))
+        {
+            return parameters;
+        }
+
+        var renamed = parameters.Where(pair => pair.Key != SellParameterBefore).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+
+        renamed[SellParameter] = parameters[SellParameterBefore];
+
+        return renamed;
+    }
+
+    static readonly string[] Dials = [DropParameter, TrendParameter, SellParameter, LimitParameter, StopParameter, MarketParameter, VolumeParameter];
+
     // Every file the dip's step runs through keeping a rule's trades, its rule first, as the compiled code reaches them:
     // the step itself and the index night's reader it reads each member's year through, the other families' open trades'
     // readers it gives way to, the walk's fill and round trip, the code that reads a registration and names the rules

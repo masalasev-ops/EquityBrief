@@ -230,7 +230,8 @@ public partial class FixtureExpectations
             Assert.All(family.Skip(1), row => Assert.StartsWith("the " + named + " dip rule at ", row.Candidate, StringComparison.Ordinal));
             Assert.All(family, row => Assert.Equal((evaluator.Name, evaluator.Version), (row.Evaluator, row.EvaluatorVersion)));
             Assert.Single(family.Select(row => row.RegisteredAt).Distinct());
-            Assert.Equal(Dials(live).OrderBy(pair => pair.Key), CandidateEvaluator.Read(family[0].Parameters).OrderBy(pair => pair.Key));
+            // From 21.4 the remedy's exit dial, the form from before, is stored under the dial's name, sell.
+            Assert.Equal(DipCandidate.Renamed(Dials(live)).OrderBy(pair => pair.Key), CandidateEvaluator.Read(family[0].Parameters).OrderBy(pair => pair.Key));
             Assert.Equal(DipRule.SettingOf(-3, Dials(live)["trend"], DipRule.RsiExit, (int)Dials(live)["limit"], 3, DipRule.MarketLevels(index)[(int)Dials(live)["market"]].Key, Dials(live)["volume"]), evaluator.SettingOf(CandidateEvaluator.Read(family[0].Parameters)));
 
             // The market variant is the live rule with its market setting off, every other dial the live rule's.
@@ -254,19 +255,19 @@ public partial class FixtureExpectations
     public async Task ADipFreezeIsRefusedOffTheGridOnAnIndexItCarriesNoRuleForWithOtherParametersAVersionNoNeighbourOrPastNineRulesAndWritesNothing()
     {
         using var store = new TemporaryStore().Migrated();
-        const string Live = "drop=-3,trend=50,exit=65,limit=10,stop=3,market=6,volume=0";
-        var nine = string.Join(";", new[] { "drop=-2", "drop=-4", "trend=200", "exit=5", "exit=1", "limit=7", "stop=4", "market=5", "market=0" }
+        const string Live = "drop=-3,trend=50,sell=65,limit=10,stop=3,market=6,volume=0";
+        var nine = string.Join(";", new[] { "drop=-2", "drop=-4", "trend=200", "sell=5", "sell=1", "limit=7", "stop=4", "market=5", "market=0" }
             .Select(change => Live.Replace(change.Split('=')[0] + "=" + Dials(Live)[change.Split('=')[0]].ToString(CultureInfo.InvariantCulture), change, StringComparison.Ordinal)));
 
         foreach (var ((args, expected), at) in new (string[] Args, string Said)[]
         {
-            ([RegisterVerb.IndexFamily, DipRule.Name, "--index", "GSPC", "--parameters", "drop=-5,trend=50,exit=65,limit=10,stop=3,market=6,volume=0"], "drop=-5, which the sweep's grid does not hold"),
-            ([RegisterVerb.IndexFamily, DipRule.Name, "--index", "GSPC", "--parameters", "drop=-3,trend=50,exit=65,limit=10,stop=3,market=7,volume=0"], "market=7, which the sweep's grid does not hold"),
-            ([RegisterVerb.IndexFamily, DipRule.Name, "--index", "GSPC", "--parameters", "drop=-3,trend=50,exit=65,limit=10,stop=3,market=6"], "the dip rule reads [drop, exit, limit, market, stop, trend, volume]"),
+            ([RegisterVerb.IndexFamily, DipRule.Name, "--index", "GSPC", "--parameters", "drop=-5,trend=50,sell=65,limit=10,stop=3,market=6,volume=0"], "drop=-5, which the sweep's grid does not hold"),
+            ([RegisterVerb.IndexFamily, DipRule.Name, "--index", "GSPC", "--parameters", "drop=-3,trend=50,sell=65,limit=10,stop=3,market=7,volume=0"], "market=7, which the sweep's grid does not hold"),
+            ([RegisterVerb.IndexFamily, DipRule.Name, "--index", "GSPC", "--parameters", "drop=-3,trend=50,sell=65,limit=10,stop=3,market=6"], "the dip rule reads [drop, limit, market, sell, stop, trend, volume]"),
             ([RegisterVerb.IndexFamily, DipRule.Name, "--index", "NDX", "--parameters", Live], "no dip rule is carried for an index coded 'NDX'"),
-            ([RegisterVerb.IndexFamily, DipRule.Name, "--index", "GSPC", "--parameters", Live, "--variants", "drop=-3,trend=50,exit=65,limit=5,stop=3,market=6,volume=0"], "is neither one of the live rule's one-step neighbours"),
-            ([RegisterVerb.IndexFamily, DipRule.Name, "--index", "GSPC", "--parameters", Live, "--variants", "drop=-3,trend=200,exit=65,limit=10,stop=4,market=6,volume=0"], "is neither one of the live rule's one-step neighbours"),
-            ([RegisterVerb.IndexFamily, DipRule.Name, "--index", "GSPC", "--parameters", Live, "--variants", "drop=-3,trend=200,exit=65,limit=10,stop=3,market=6,volume=0;drop=-3,trend=200,exit=65,limit=10,stop=3,market=6,volume=0"], "a version is given twice"),
+            ([RegisterVerb.IndexFamily, DipRule.Name, "--index", "GSPC", "--parameters", Live, "--variants", "drop=-3,trend=50,sell=65,limit=5,stop=3,market=6,volume=0"], "is neither one of the live rule's one-step neighbours"),
+            ([RegisterVerb.IndexFamily, DipRule.Name, "--index", "GSPC", "--parameters", Live, "--variants", "drop=-3,trend=200,sell=65,limit=10,stop=4,market=6,volume=0"], "is neither one of the live rule's one-step neighbours"),
+            ([RegisterVerb.IndexFamily, DipRule.Name, "--index", "GSPC", "--parameters", Live, "--variants", "drop=-3,trend=200,sell=65,limit=10,stop=3,market=6,volume=0;drop=-3,trend=200,sell=65,limit=10,stop=3,market=6,volume=0"], "a version is given twice"),
             ([RegisterVerb.IndexFamily, DipRule.Name, "--index", "GSPC", "--parameters", Live, "--variants", nine], "would hold 10 rules, past the 9 a family keeps"),
             ([RegisterVerb.IndexFamily, DipRule.Name, "--index", "GSPC", "--parameters", Live, "--replacing", "the live rule"], "takes no --replacing"),
         }.Select((one, at) => (one, at)))
@@ -482,7 +483,7 @@ public partial class FixtureExpectations
         var command = new SweepAnswers(new SweepClock(DipFrozenAt), store.DatabaseFile, sweeps.Path, new StringWriter());
         const string run = "20261024T060843Z";
         const string tester = "20261024T060946Z";
-        const string setting = "drop=-3|trend=50|exit=65|limit=5|stop=3|market=5";
+        const string setting = "drop=-3|trend=50|sell=65|limit=5|stop=3|market=5";
         double[] years = [0.01, 0.013, 0.02, 0.009, 0.03, 0.04, 0.013, -0.05];
 
         void Run(string name, SweepAnswer? answer, object figures)

@@ -60,6 +60,10 @@ public static class DipRules
             return (null, FormattableString.Invariant($"the {carried.Family} holds {standing.Count} rule(s) standing; the family is frozen again once they are retired."));
         }
 
+        // A setting in the form from before 21.4 names its sell dial exit; it is read under the dial's name.
+        live = DipCandidate.Renamed(live);
+        versions = [.. versions.Select(DipCandidate.Renamed)];
+
         var dials = Dials(index);
 
         foreach (var setting in versions.Prepend(live))

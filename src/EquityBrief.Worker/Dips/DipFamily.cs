@@ -216,7 +216,7 @@ public sealed class DipFamily : IComponent
     // order they were registered, each at its registration's setting and one whose evaluator moved since named as not
     // kept; and otherwise the provisional rule at the provisional setting.
     // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
-    public static IReadOnlyList<(string Rule, DipSetting Setting, string? Fault)> RulesOn(string index, IReadOnlyList<RegisterRow> register, DateTimeOffset standingAt)
+    public static IReadOnlyList<(string Rule, DipSetting Setting, string? Fault, EquityBrief.Core.Loop.RuleHooks Hooks)> RulesOn(string index, IReadOnlyList<RegisterRow> register, DateTimeOffset standingAt)
     {
         var family = ShadowColumn.StandingAt(register, standingAt)
             .Where(row => CandidateEvaluators.Find(row.Evaluator) is DipCandidate rule && rule.Index == index)
@@ -224,11 +224,12 @@ public sealed class DipFamily : IComponent
             .ThenBy(row => row.Id)
             .ToArray();
 
+        // From 21.4 each rule's hooks beside its dials, read as a swing rule's are.
         return family.Length == 0
-            ? [(ProvisionalRule, DipRule.Provisional, null)]
+            ? [(ProvisionalRule, DipRule.Provisional, null, EquityBrief.Core.Loop.RuleHooks.Off)]
             : [.. family.Select(row => CandidateEvaluators.Find(row.Evaluator) is DipCandidate rule
-                ? (row.Candidate, rule.SettingOf(CandidateEvaluator.Read(row.Parameters)), rule.Version == row.EvaluatorVersion ? (string?)null : Moved)
-                : (row.Candidate, DipRule.Provisional, Moved))];
+                ? (row.Candidate, rule.SettingOf(CandidateEvaluator.Read(row.Parameters)), rule.Version == row.EvaluatorVersion ? (string?)null : Moved, DipCandidate.HooksOf(CandidateEvaluator.Read(row.Parameters)))
+                : (row.Candidate, DipRule.Provisional, Moved, EquityBrief.Core.Loop.RuleHooks.Off))];
     }
 
     // The step over the three indices, each index's failure named on its own row while the others go on, and a failure
@@ -274,7 +275,7 @@ public sealed class DipFamily : IComponent
                 catch (Exception failure) when (!cancellation.IsCancellationRequested)
                 {
                     var fault = IndexFamilies.Cause(failure);
-                    var (card, setting, _) = rulesOf[index][0];
+                    var (card, setting, _, _) = rulesOf[index][0];
 
                     rows += await NotComputedAsync(connection, index, night, fault, card, setting, cancellation);
                     outcomes.Add(new DipIndexOutcome(index, 0, 0, 0, 0, 0, 0, 0, fault, rulesOf[index].Count));
@@ -344,12 +345,17 @@ public sealed class DipFamily : IComponent
         SqliteConnection connection,
         string index,
         DateOnly night,
-        IReadOnlyList<(string Rule, DipSetting Setting, string? Fault)> rules,
+        IReadOnlyList<(string Rule, DipSetting Setting, string? Fault, EquityBrief.Core.Loop.RuleHooks Hooks)> rules,
         IReadOnlyList<string> cardRules,
         CancellationToken cancellation)
     {
         var names = await NamesAsync(connection, index, night, cancellation);
         var inputs = IndexNightRead.Prepare(index, night, names, new Dictionary<string, IReadOnlyList<FiledIncome>>(StringComparer.Ordinal));
+
+        // From 21.4 the night's readings, laid by the ledger's own catalogue, for a rule whose hooks read them; a rule
+        // stating the exposure takes its answer in the market setting's place.
+        var readings = rules.Any(rule => rule.Hooks.ReadsReadings) ? await new EquityBrief.Worker.Ledger.SetupLedger(clock, databaseFile).ReadingsTonightAsync(index, cancellation) : null;
+        var nightReadings = inputs is null ? null : IndexNightRead.NightReadings(inputs, readings);
         var suspects = new HashSet<string>(StringComparer.Ordinal);
 
         await foreach (var row in RowsAsync(connection, null, Suspects, [], cancellation))
@@ -361,10 +367,10 @@ public sealed class DipFamily : IComponent
         var read = rules
             .Select(rule =>
             {
-                var gate = MarketGateOn(index, rule.Setting.Market, inputs, market, night);
+                var gate = rule.Hooks.Exposure is { } floor ? IndexNightRead.ExposureGate(rule.Hooks, floor, nightReadings) : MarketGateOn(index, rule.Setting.Market, inputs, market, night);
                 var answers = inputs is null || rule.Fault is not null ? [] : Answers(inputs, rule.Setting, suspects, gate);
 
-                return (rule.Rule, rule.Setting, rule.Fault, Gate: gate, Answers: answers, Ranked: DipRule.Ranked(answers));
+                return (rule.Rule, rule.Setting, rule.Fault, Gate: gate, Answers: answers, Ranked: rule.Hooks.Order(DipRule.Ranked(answers), answer => readings?.Invoke(answer.Ticker)));
             })
             .ToArray();
         var tickers = read.SelectMany(rule => rule.Ranked).Select(answer => answer.Ticker).Distinct(StringComparer.Ordinal).ToArray();
