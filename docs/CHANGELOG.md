@@ -26,6 +26,62 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-29 - docs/BUILD_PLAN.md - 21.4 registers the deteriorating-business pullback version again on the SEC's facts, on the operator's answer to 21.1's question
+Authorised by: The S&P 500 pullback version leaving off a deteriorating business is registered again at 21.4 to read the SEC's facts as first filed through the ledger's catalogue
+Was:
+> ...since no trade of its can hold back anything once it stops. One remedy, from main after the merge while no other writer runs: the migration, every rule whose version moved registered again, ..., the 28 S&P 400 and 600 rules, the dip's, the quality's and the Fundamentals' restarting at the registration with their paper accounts, ... **Done when** ...; a constructed S&P 600 night holds back nothing for it; the remedy's lines register again exactly the rules whose versions moved over a register shaped as the operator's, the S&P 500's two families replayed, and no other rule's version moves, asserted; ...
+Now:
+> ...once it stops. On the operator's answer of 2026-10-29 to 21.1's question, the S&P 500 pullback version leaving off a deteriorating business is registered again to read the SEC's facts as first filed through the ledger's catalogue, as the Fundamentals family and the scorecard read them, in place of the provider's reported quarters the store keeps only from 2026-09-27, so the per-rule test walks it from its first test year; its record restarts at the registration with its count stated, and no other S&P 500 pullback rule's version moves, asserted (see: The S&P 500 pullback version leaving off a deteriorating business is registered again at 21.4 to read the SEC's facts as first filed through the ledger's catalogue). One remedy, ...: the migration, every rule whose version moved registered again, ..., the dip's, the quality's, the Fundamentals' and the deteriorating-business version restarting at the registration with their paper accounts, ... **Done when** ...; a constructed S&P 600 night holds back nothing for it; the deteriorating-business version registered again reads the SEC's facts as first filed through the catalogue at a constructed filing and is walked by the per-rule test over a constructed ledger from its first test year, with no other S&P 500 pullback rule's version moving, asserted; the remedy's lines register again ...
+Why: the operator answered 21.1's question ahead, yes, and placed the re-registration at 21.4 with the other pin moves.
+
+### 2026-10-29 - docs/ARCHITECTURE.html - the per-rule test's paragraph states each rule walked at what it reads and the judge named for one the history cannot walk
+Authorised by: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+Was:
+> ...and the fundamentals-first family's provisional rule by its search's own walk. Each live or provisional rule is judged against its own benchmark, ... at the same bar and the same three screens. A rule the history cannot walk, one reading the analysts' estimates kept only from 2026-10-03 or a plan the walk does not draw among them, is kept with the reading it lacks and no figure. The test adopts and retires nothing; ...
+Now:
+> ...by its search's own walk. From 21.1 a registered S&P 400 or 600 rule stating a level the extended grid's walk does not read, ... is walked by its sweep's own reading of the index's history at the setting and every level its registration states, as the record command replays a frozen rule, ...; a registered heavyweights book at a setting none of its design's six holds is walked at its own setting from the lay's full grid, ...; an S&P 500 pullback version's trade gate is walked at the plan of its kind, ...; and the drift's tone variant on every index is held to its condition over the listings its levels keep, with its opposite, a release read whose results are not better or whose outlook was lowered or withdrawn, the complement of the condition over the releases read, walked beside it unregistered and written nowhere, ... Each live or provisional rule is judged ... A rule the history still cannot walk, one reading the analysts' estimates kept only from 2026-10-03 or a business's reported quarters kept only from 2026-09-27 among them, is kept with the reading it lacks and no figure and, from 21.1, with the words naming what judges it instead, its record from its registration on paper trading and the Run page (see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead). The test adopts and retires nothing; ...
+Why: 21.1 walks each rule at what it reads through the readings the sweeps and the record command already make, and names the judge of one the history still cannot walk.
+
+### 2026-10-29 - docs/ARCHITECTURE.html - paper trading's test years verdict row names the judge of a rule not testable
+Authorised by: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+Was:
+> ...and a rule not tested yet or not testable saying so with its verdict in words (see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark)
+Now:
+> ...and a rule not tested yet or not testable saying so with its verdict in words, from 21.1 one not testable naming the reading it lacks and what judges it instead, its record from its registration on paper trading and the Run page (see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark) (see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead)
+Why: the verdict's words on the page now name the judge.
+
+### 2026-10-29 - docs/ARCHITECTURE.html - the failure row for a rule the per-rule test cannot walk states the causes left and the judge named
+Authorised by: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+Was:
+> ...the analysts' estimates kept only from 2026-10-03 or a business's reported quarters or sector leadership or a plan the walk does not draw or a setting off its sweep's grid or a market switch the walk does not read; ... | Not testable with the reading it lacks as the account's test years verdict on paper trading and on its trade log | ...
+Now:
+> ...the analysts' estimates kept only from 2026-10-03 or a business's reported quarters kept only from 2026-09-27 or a setting off its sweep's grid or a market switch the walk does not read, and from 21.1 a sweep's own reading the run laid out none of or twelve months' strength at a window or an industries count off design (b)'s base, a plan the walk does not draw, sector leadership and a level the extended grid's walk does not read no longer among them since each is walked at what the rule reads; ... (see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead) | Not testable with the reading it lacks and, from 21.1, the words naming what judges it instead, its record from its registration on paper trading and the Run page, as the account's test years verdict on paper trading and on its trade log | ...
+Why: three causes are walked from 21.1 and two new ones can arise, and the verdict names the judge.
+
+### 2026-10-29 - docs/RUNBOOK.md - the per-rule test's paragraph states each rule walked at what it reads, the judge named and the tone sides printed
+Authorised by: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+Was:
+> A rule the history cannot walk, one reading the analysts' estimates or a plan the walk does not draw among them, is written as not testable with the reading it lacks. It writes `loop_rule` and `loop_rule_year` ... and `--print` prints each rule's verdict and writes nothing.
+Now:
+> From 21.1 a registered S&P 400 or 600 rule stating a level the extended grid's walk does not read is walked by its sweep's own reading at the setting and every level it states, ..., a heavyweights book at a setting off its design's six at its own setting from the lay's full grid, and an S&P 500 pullback version's trade gate at the plan of its kind. A rule the history still cannot walk, one reading the analysts' estimates or a business's reported quarters among them, is written as not testable with the reading it lacks and the words naming what judges it instead, its record from its registration on paper trading and the Run page. It writes `loop_rule` and `loop_rule_year` ... and `--print` prints each rule's verdict and writes nothing. From 21.1 it prints, whether or not it writes, for each rule reading a release reading its tone condition's trades and mean edge after costs before the local model's cutoff's year and from it, beside its opposite's, ..., walked unregistered and written nowhere.
+Why: the runbook states what the verb does, and 21.1 changes what it walks and what it prints.
+
+### 2026-10-29 - docs/BUILD_PLAN.md - 21.1 defines the opposite tone condition as the complement over the releases read, and its done condition says so
+Authorised by: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+Was:
+> Beside the tone variant the opposite condition, a release reading results worse or its outlook lowered or withdrawn, is walked unregistered on each index over the same history ... and the opposite condition's walk keeps exactly the listings the variant's leaves;
+Now:
+> Beside the tone variant the opposite condition, a release read whose results are not better or whose outlook was lowered or withdrawn, the complement of the variant's condition over the releases read, is walked unregistered on each index over the same history ... and the opposite condition's walk keeps exactly the listings the variant's leaves among those whose release is read, a listing whose release is not read kept by neither;
+Why: the variant's condition is results better and the outlook not lowered or withdrawn, so results worse alone is narrower than its complement, and only the complement keeps exactly what the variant leaves; a listing whose release is not read is kept by neither, as on the night. The checkpoint amends its own done condition and its entry says so.
+
+### 2026-10-29 - .claude/rules/checks.md - fixture-expectations names 21.1's assertions
+Authorised by: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+Was:
+> ...recounted from the three pick tables and read off the Run page under each index |
+Now:
+> ...recounted from the three pick tables and read off the Run page under each index; and from 21.1 every registered rule walked by the per-rule test at what it reads or named with what judges it: each cause the run of 2026-10-27 could not test routed over a constructed register of one rule a cause, ...; the tone condition's opposite the complement of the variant's over the sixteen answers a release reads to, ...; and over a constructed S&P 600 history a breakout registered at a market floor the extended grid does not read walked by its sweep's own reading, ..., a heavyweights book off its design's six settings walked at its own setting with its months equal to the lay's full grid's, and twelve months' strength at design (a)'s leaders setting walked and at a window off design (b)'s base kept naming so |
+Why: the roster states what each check asserts, and 21.1 adds assertions to the fixture's.
+
 ### 2026-10-29 - docs/ARCHITECTURE.html - the fundamentals-first family's paragraph states the Run page's count of the picks its open trades held back
 Authorised by: Business first stays in the night unseen until the next change that moves the S&P 400's and 600's pins, and the Run page counts the picks its open trades hold back each night an index
 Was:

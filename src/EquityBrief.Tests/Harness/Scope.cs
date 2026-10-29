@@ -4094,7 +4094,7 @@ internal static class Scope
             ByMigration),
         [CheckReach.Key(FailureTable, "A rule the per-rule test cannot walk")] = new Scoped(
             Verdict.Pass,
-            "a rule reading the analysts' estimates, one at the nearest bands and a variant whose head cannot be walked each stored with the reading it lacks and no figure over a constructed ledger, the rules beside them judged as they stand",
+            "a rule reading the analysts' estimates, one reading a business's reported quarters and a variant whose head cannot be walked each stored with the reading it lacks and no figure over a constructed ledger, its verdict naming what judges it instead, the rules beside them judged as they stand; and from 21.1 each cause the run of 2026-10-27 could not test routed to its sweep's own reading or kept with its judge over constructed registrations, a rule at a level its sweep reads walked by that reading's own trades over a constructed history, a book off the six settings walked at its own setting with its months the record command's, and the tone condition's opposite the complement of the variant's over the releases read",
             ByExpectations),
         [CheckReach.Key("15.21 Paper trading", "Your account")] = new Scoped(
             Verdict.Pass, "the sentence on what the page is, the account's line of the settings kept or the example's and the form behind Change the account read back off the rendered page, and distinctive settings found in no byte of the store or the run log", ByReadSurface),

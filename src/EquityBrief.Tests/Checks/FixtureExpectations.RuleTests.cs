@@ -9,9 +9,11 @@ namespace EquityBrief.Tests.Checks;
 
 // fixture-expectations, 19.4: the monthly per-rule test worked by hand over a constructed ledger. A provisional rule is
 // read against its benchmark unit for unit, each variant against it with the family's variants read together by the
-// step-down, a rule the history cannot walk kept with the reading it lacks and no figure, a variant whose head cannot be
-// walked and one with no head each naming why, and the run written whole and read back row for row.
+// step-down, a rule the history cannot walk kept with the reading it lacks and no figure, its verdict from 21.1 naming what
+// judges it instead, a variant whose head cannot be walked and one with no head each naming why, and the run written whole
+// and read back row for row.
 // see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark
+// see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
 public partial class FixtureExpectations
 {
     // The row 19.4 adds that this check reaches: section 18's rule the per-rule test cannot walk.
@@ -45,7 +47,7 @@ public partial class FixtureExpectations
         var estimates = new RuleUnderTest("pullback", "the estimates variant", RuleTests.Variant, "estimates raised", LoopProcedures.Risks, 0, Why: RuleTests.Estimates);
 
         // The drift's provisional rule cannot be walked, so its variant names why; the breakout holds a variant alone.
-        var unwalked = new RuleUnderTest("drift", "provisional", RuleTests.Provisional, "the provisional drift", LoopProcedures.Risks, 0, Why: RuleTests.NearestBands);
+        var unwalked = new RuleUnderTest("drift", "provisional", RuleTests.Provisional, "the provisional drift", LoopProcedures.Risks, 0, Why: RuleTests.BusinessState);
         var orphan = new RuleUnderTest("drift", "the drift variant", RuleTests.Variant, "a drift variant", LoopProcedures.Risks, 0, head.Trades);
         var alone = new RuleUnderTest("breakout", "the breakout variant", RuleTests.Variant, "a breakout variant", LoopProcedures.Risks, 0, head.Trades);
 
@@ -98,14 +100,16 @@ public partial class FixtureExpectations
         Assert.False(Of(same).Verdict!.Gate);
         Assert.Equal(TestVerdict.WithinLuck, TestVerdict.Of(Of(same).Passed, Of(same).Why, Of(same).Verdict!.Adjusted, Of(same).Verdict!.Gate, Of(same).Verdict!.Stable, Of(same).Verdict!.Trimmed, Of(same).Verdict!.Counts));
 
-        // The estimates variant is kept with the reading it lacks and no figure; the drift's provisional rule likewise,
-        // its variant naming that its head cannot be walked; and the breakout's variant naming that no head stands.
+        // The estimates variant is kept with the reading it lacks and no figure, its verdict from 21.1 naming what judges it
+        // instead; the drift's provisional rule likewise, its variant naming that its head cannot be walked; and the
+        // breakout's variant naming that no head stands.
         Assert.Null(Of(estimates).Evidence);
         Assert.Equal(RuleTests.Estimates, Of(estimates).Why);
-        Assert.Equal("not testable: " + RuleTests.Estimates, TestVerdict.Of(false, Of(estimates).Why, null, null, null, null, null));
-        Assert.Equal(RuleTests.NearestBands, Of(unwalked).Why);
+        Assert.Equal("not testable: " + RuleTests.Estimates + "; judged by its record from its registration, on paper trading and the Run page", TestVerdict.Of(false, Of(estimates).Why, null, null, null, null, null));
+        Assert.Equal(3, TestVerdict.Rank(TestVerdict.Of(false, Of(estimates).Why, null, null, null, null, null)));
+        Assert.Equal(RuleTests.BusinessState, Of(unwalked).Why);
         Assert.Equal(RuleTests.HeadUnwalked(unwalked), Of(orphan).Why);
-        Assert.Equal("its provisional rule cannot be walked: " + RuleTests.NearestBands, Of(orphan).Why);
+        Assert.Equal("its provisional rule cannot be walked: " + RuleTests.BusinessState, Of(orphan).Why);
         Assert.Equal("no live or provisional rule of its family stands on the index", Of(alone).Why);
         Assert.Equal(RuleTests.NoHead, Of(alone).Against);
 
@@ -130,7 +134,7 @@ public partial class FixtureExpectations
             ],
             Query(store, "SELECT family || '|' || rule || '|' || standing || '|' || against || '|' || COALESCE(gate, 'null') || '|' || passed FROM loop_rule ORDER BY rowid;"));
         Assert.Equal(
-            [RuleTests.Estimates, RuleTests.NearestBands],
+            [RuleTests.Estimates, RuleTests.BusinessState],
             Query(store, "SELECT why FROM loop_rule WHERE rule IN ('the estimates variant', 'provisional') AND why IS NOT NULL ORDER BY rowid;"));
 
         // A year row a test year for each rule walked and none for one that was not: three each for the four walked.

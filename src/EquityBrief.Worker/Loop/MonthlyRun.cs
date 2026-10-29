@@ -374,7 +374,7 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
                     }
 
                     text.AppendLine(why is not null
-                        ? $"  {family}, {rule}: reads the release readings; its per-rule test names it not testable, {why}."
+                        ? $"  {family}, {rule}: reads the release readings; its per-rule test names it not testable, {why}; {RuleVerdict.Judged}."
                         : $"  {family}, {rule}: reads the release readings; its per-rule test {(passedTest ? "passed" : "did not pass")}. " + CutoffLine(LedgerReleases.Split(years, split), split, "risks"));
                 }
             }

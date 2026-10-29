@@ -300,7 +300,13 @@ public sealed partial class IndexSweepRunner
         // hold and window where none of them sets its own, the entry a level moves bought at its own session, the hold then
         // set, a level moving the last session read after it, and the market level the setting holds read on the session
         // bought.
-        public IReadOnlyList<FamilyTrade> TradesUnder(int[] setting, IReadOnlyList<DialLevel<FamilyListing>> together, ConcurrentDictionary<(int Name, int Session), int>? held = null)
+        public IReadOnlyList<FamilyTrade> TradesUnder(int[] setting, IReadOnlyList<DialLevel<FamilyListing>> together, ConcurrentDictionary<(int Name, int Session), int>? held = null) =>
+            Costed(AtOpen(ListingsUnder(setting, together), held), 1);
+
+        // From 21.1 the listings a setting keeps under a set of levels together, before the walk, so a condition read after
+        // the levels, the drift's tone condition among them, keeps or leaves each before one open trade a stock is read.
+        // see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+        public IReadOnlyList<FamilyListing> ListingsUnder(int[] setting, IReadOnlyList<DialLevel<FamilyListing>> together)
         {
             var own = setting[..^1];
             var level = Open[setting[^1]];
@@ -315,7 +321,7 @@ public sealed partial class IndexSweepRunner
             IEnumerable<FamilyListing> Through(FamilyListing listing, IEnumerable<Func<FamilyListing, int[], IEnumerable<FamilyListing>>> moves) =>
                 moves.Aggregate((IEnumerable<FamilyListing>)[listing], (current, move) => current.SelectMany(one => move(one, own)));
 
-            var chosen = listings
+            return listings
                 .Where(listing => together.All(one => one.Keep is not { } keep || keep(listing)))
                 .SelectMany(listing => Through(listing, entries))
                 .DistinctBy(listing => (listing.Name, listing.Session))
@@ -323,8 +329,6 @@ public sealed partial class IndexSweepRunner
                 .Select(listing => hold > 0 ? listing with { Cap = hold } : listing)
                 .SelectMany(listing => Through(listing, exits))
                 .ToArray();
-
-            return Costed(AtOpen(chosen, held), 1);
         }
 
         // Whether a setting's figures pass: the floors, and on the S&P 400's drift its last two years above nothing.

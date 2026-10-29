@@ -200,6 +200,24 @@ public sealed class HeavyweightLay
         return rebalances;
     }
 
+    // From 21.1 a book on twelve months' strength skipping the latest month at the quality and the multiple of the dollar
+    // volume floor a registration states, which the record command replays at no setting: design (a) over the leaders
+    // setting the registration states and design (b) at the base window and industries with its members an industry,
+    // each rebalance read by the six settings' own reader, so the per-rule test walks such a book at its own setting.
+    // see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+    public HeavyweightBook TwelveOneBook(HeavyweightSixSetting setting, decimal floors, bool designA, string words)
+    {
+        bool Clearing(int name, int session, IndexQuality quality) => Clears(name, session, quality, floors);
+
+        var rebalances = HeavyweightSix.RebalancesOf(setting, read.Calendar, months).ToDictionary(
+            session => session,
+            session => designA
+                ? HeavyweightSix.ReadA(tape, sessions[session], setting, names, Clearing)
+                : HeavyweightSix.ReadB(tape, session, setting, leading, industryOf, SectorOf, Clearing));
+
+        return BookFrom(rebalances, designA ? setting.Leaders!.Exit : HeavyweightExit.Drop, words);
+    }
+
     // A book over the whole history from the rebalances read at a setting of either full grid: its holdings walked under
     // the exit named, each bought at the open after its rebalance with its size cut each member from its own open after
     // it and after its round trip, as the sweeps on the index's own history score them, and its months.

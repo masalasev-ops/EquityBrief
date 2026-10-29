@@ -507,13 +507,52 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         // for the S&P 500's breadth and the index's own fund and the VIX for its market setting, only where a rule of the
         // family stands on the index.
         // see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
+        // The S&P 500 as it stood, read once where the dip's or the sweeps' own readings need it on the S&P 400 or 600.
+        SweepHistoryInputs? largeRead = large ? inputs : null;
+
+        async Task<SweepHistoryInputs> LargeReadAsync() => largeRead ??= await IndexSweepRunner.OwnSwingRead.LargeAsync(history, through, output.WriteLine, cancellation);
+
         var dipRead = ReadsDip(standingRules, index)
             ? IndexSweepRunner.DipRead.Of(
                 read,
-                large ? inputs : await history.ReadAsync(through, null, cancellation),
+                await LargeReadAsync(),
                 await history.SeriesOfAsync([IndexSweepRunner.DipFund(index), MarketCloses.Vix], through, cancellation))
             : null;
         var tones = await TonesAsync(read, cancellation);
+
+        // From 21.1 the sweeps' own readings of the index's history, read only where a registered rule standing on it states
+        // a level the extended grid's walk does not read, each family's at each stop floor such a drift rule states, and the
+        // pullback's search's charged its round trip once; none on the S&P 500.
+        // see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+        var own = OwnReads.None;
+
+        if (!large)
+        {
+            var swingsNeeded = RuleTests.OwnSwingsNeeded(standingRules, index);
+            var pullbackNeeded = RuleTests.OwnPullbackNeeded(standingRules, index);
+
+            if (swingsNeeded.Count > 0 || pullbackNeeded)
+            {
+                var swings = new Dictionary<(string Family, double StopFloor), IndexSweepRunner.OwnSwingRead>();
+
+                foreach (var (family, stopFloor) in swingsNeeded)
+                {
+                    output.WriteLine(FormattableString.Invariant($"{RulesVerb}: reading the {DecisionCards.NameOf(index)}'s {family} as its own sweep reads it{(stopFloor > 0 ? $", its stop held at least {stopFloor:0.##} typical move under the buy" : string.Empty)}, for the rules stating a level the extended grid's walk does not read"));
+                    swings[(family, stopFloor)] = await IndexSweepRunner.OwnSwingRead.ReadAsync(read, await LargeReadAsync(), family, history, through, stopFloor, cancellation);
+                }
+
+                IndexSweepRunner.OwnPullbackRead? pullback = null;
+
+                if (pullbackNeeded)
+                {
+                    output.WriteLine($"{RulesVerb}: reading the {DecisionCards.NameOf(index)}'s pullback as its own search reads it, for the rules stating a level the extended grid's walk does not read");
+                    pullback = await IndexSweepRunner.OwnPullbackRead.ReadAsync(read, await LargeReadAsync(), history, through, output.WriteLine, cancellation);
+                    pullback.Charge(1);
+                }
+
+                own = new OwnReads(swings, pullback);
+            }
+        }
 
         // What each complete reading version hands the tone variant's walk: the history's stocks it holds a filer's releases
         // for, and how many releases, so a walk handed none is said rather than read as a variant keeping nothing.
@@ -536,7 +575,8 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             tones,
             qualityLay,
             dipRead,
-            improvingLay));
+            improvingLay,
+            own));
         var tested = RuleTests.Judge(read, rules);
         var runId = FormattableString.Invariant($"{RulesVerb}-{index}-{started:yyyyMMddTHHmmssZ}");
 
@@ -548,6 +588,13 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         foreach (var one in tested)
         {
             output.WriteLine(RuleLine(one));
+        }
+
+        // From 21.1 each tone variant's figures on each side of the local model's cutoff's year beside its opposite's, which
+        // is walked unregistered and written nowhere.
+        foreach (var one in tested.Where(one => one.Rule.Tone is not null))
+        {
+            output.WriteLine(RuleTests.ToneLine(one.Rule, read.Calendar));
         }
 
         output.WriteLine(print
@@ -567,10 +614,16 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
 
         await connection.OpenAsync(cancellation);
 
-        return new ToneReleases(
-            await Ledger.SetupLedger.CompleteReleasesAsync(connection, read.Series.Select(one => one.Name.Ticker), cancellation),
-            clock.SessionZone,
-            new Core.Releases.ReleaseCalendar(read.Calendar));
+        var versions = await Ledger.SetupLedger.CompleteReleasesAsync(connection, read.Series.Select(one => one.Name.Ticker), cancellation);
+        var cutoffs = new Dictionary<long, DateOnly?>();
+
+        // From 21.1 the local model's cutoff each complete version states, which the tone figures are split at.
+        foreach (var version in versions.Keys)
+        {
+            cutoffs[version] = await ReleaseReadings.CutoffAsync(connection, version, cancellation);
+        }
+
+        return new ToneReleases(versions, clock.SessionZone, new Core.Releases.ReleaseCalendar(read.Calendar), cutoffs);
     }
 
     static string RulesDetail(IReadOnlyList<RuleTested> tested, string index, string month, DateOnly through, int folds) =>
@@ -594,10 +647,10 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     public static bool ReadsImproving(IReadOnlyList<Core.Candidates.RegisterRow> standing, string index) =>
         standing.Any(row => Core.Candidates.CandidateEvaluators.Find(row.Evaluator) is Core.Candidates.ImprovingCandidate rule && rule.Index == index);
 
-    // A rule's line for the console.
+    // A rule's line for the console, a rule the history cannot walk naming what judges it instead.
     public static string RuleLine(RuleTested one) =>
         one.Why is { } why
-            ? $"{one.Rule.Family}, {one.Rule.Rule}: not testable, {why}"
+            ? $"{one.Rule.Family}, {one.Rule.Rule}: not testable, {why}; {RuleVerdict.Judged}"
             : FormattableString.Invariant($"{one.Rule.Family}, {one.Rule.Rule}: {(one.Passed ? "passed" : "did not pass")} against {one.Against}; {(one.Verdict!.Adjusted is { } p ? FormattableString.Invariant($"adjusted p {p:0.####} against {LoopGate.Bar:0.####}") : FormattableString.Invariant($"{one.Verdict.Blocks} block(s), under the floor of {EquityBrief.Core.Returns.Blocks.Floor}"))}; better in {one.Verdict.Better} of {one.Verdict.Counted} counted year(s); {one.Verdict.Units} {one.Rule.Unit} unit(s){(one.Verdict.Counts ? string.Empty : ", short of the count")}");
 
     // The register's rows, which the per-rule test reads the rules standing when its run began off.

@@ -16,7 +16,7 @@ namespace EquityBrief.Worker.Loop;
 // One rule the monthly per-rule test reads on an index: its family, its name as the register holds it or the provisional
 // rule's, whether it is the live rule, the provisional one or a variant, its words, its unit, the sessions a block of its
 // waits, and its trades or its book's months over the whole history as its walk gave them, or why the history cannot
-// walk it.
+// walk it; from 21.1 a tone variant carries its opposite's walk beside its own.
 public sealed record RuleUnderTest(
     string Family,
     string Rule,
@@ -26,9 +26,28 @@ public sealed record RuleUnderTest(
     int Cap,
     IReadOnlyList<(int Entry, double? Edge)>? Trades = null,
     IReadOnlyList<(int Opens, double? Edge)>? Months = null,
-    string? Why = null)
+    string? Why = null,
+    ToneSides? Tone = null)
 {
     public bool Book => Unit == LoopProcedures.Points;
+}
+
+// From 21.1 a tone variant's walk and its opposite's over the same history, each trade by the session it was listed on,
+// with the reading version and the local model's cutoff it states, for the figures the run prints on each side of the
+// cutoff's year; the opposite is walked unregistered and written nowhere.
+// see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+public sealed record ToneSides(long Version, DateOnly? Cutoff, IReadOnlyList<(int Entry, double? Edge)> Variant, IReadOnlyList<(int Entry, double? Edge)> Opposite);
+
+// From 21.1 the sweeps' own readings of an index's history the per-rule test walks a registered rule through where it
+// states a level the extended grid's walk does not read: the breakout's and the drift's at each stop floor a drift rule
+// states, and the pullback's search's, each read once a run and only where a rule standing on the index needs it, the
+// pullback's charged its round trip once.
+// see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+public sealed record OwnReads(
+    IReadOnlyDictionary<(string Family, double StopFloor), IndexSweepRunner.OwnSwingRead> Swings,
+    IndexSweepRunner.OwnPullbackRead? Pullback)
+{
+    public static OwnReads None { get; } = new(new Dictionary<(string Family, double StopFloor), IndexSweepRunner.OwnSwingRead>(), null);
 }
 
 // One rule's verdict: what it was read against, its evidence over the test years and the four parts of its verdict, none
@@ -42,8 +61,9 @@ public sealed record RuleTested(RuleUnderTest Rule, string Against, LoopEvidence
 // run began, the setting an approval stored for each family, the market series, the heavyweights' history laid out, the
 // ledger's readings, the stored trees, the S&P 500's open filter version with its history, the progress line, the
 // pullback's candidates where they were read already, from 20.8 the release readings the drift's tone variant reads, from
-// 22.11 Quality at a fair price's history laid out where a freeze stands on the index, and from 22.3 the short-term dip's
-// history as its sweep reads it where a freeze stands on the index.
+// 22.11 Quality at a fair price's history laid out where a freeze stands on the index, from 22.3 the short-term dip's
+// history as its sweep reads it where a freeze stands on the index, and from 21.1 the sweeps' own readings of the index's
+// history where a registered rule states a level the extended grid's walk does not read.
 public sealed record RuleTestInputs(
     LoopRead Read,
     IReadOnlyList<RegisterRow> Standing,
@@ -58,31 +78,41 @@ public sealed record RuleTestInputs(
     ToneReleases? Tones = null,
     QualityLay? Quality = null,
     IndexSweepRunner.DipRead? Dip = null,
-    ImprovingLay? Improving = null);
+    ImprovingLay? Improving = null,
+    OwnReads? Own = null);
 
 // From 20.8 the release readings the per-rule test walks the drift's tone variant over: for each reading version whose
 // history read is complete, each stock's results releases with their readings under it, read through the one reader of
-// the release readings, and the zone and the sessions the release rules place a print's window by.
+// the release readings, and the zone and the sessions the release rules place a print's window by; from 21.1 the local
+// model's cutoff each version states, which the tone figures are split at.
 // see: The release readings join the ledger's catalogue once their history read is complete, and their use is judged on the years after the model's cutoff
 public sealed record ToneReleases(
     IReadOnlyDictionary<long, IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>> Versions,
     TimeZoneInfo Zone,
-    ReleaseCalendar Calendar)
+    ReleaseCalendar Calendar,
+    IReadOnlyDictionary<long, DateOnly?>? Cutoffs = null)
 {
     // A version's releases by stock, none where its history read is not complete.
     public IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? Of(long version) => Versions.GetValueOrDefault(version);
+
+    // A version's cutoff, none where it states none or the run was handed none.
+    public DateOnly? CutoffOf(long version) => Cutoffs is { } cutoffs && cutoffs.TryGetValue(version, out var cutoff) ? cutoff : null;
 }
 
 // The monthly per-rule test on one index. Every family rule standing on the index is walked at its own settings and
-// hooks over the history the tester reads: the S&P 500's pullback as the swing filter at its settings, the breakout and
-// the drift at their places on their sweeps' grids with a market switch read on the listing's session, the sector
-// heavyweights as books at their settings, the S&P 400's and 600's provisional rules and registered rules, a market-off
-// variant's walk reading its check open on every session, and the fundamentals-first family's provisional rule by its
-// search's own walk at the setting and hooks an approval stored for it. Each variant is then read against its live or provisional rule by the proposals' block sign-flip
-// test of the difference in edge after costs, its family's variants on the index read together by the step-down, and
-// each live or provisional rule against its own benchmark under the same test, every one held to the same bar and
-// screens. A rule the history cannot walk is kept with the reading it lacks and no figure. It adopts and retires nothing.
+// hooks over the history the tester reads: the S&P 500's pullback as the swing filter at its settings and, from 21.1, at
+// the plan its version's trade gate reads, the breakout and the drift at their places on their sweeps' grids with a market
+// switch read on the listing's session, the sector heavyweights as books at their settings, the S&P 400's and 600's
+// provisional rules and registered rules, a market-off variant's walk reading its check open on every session, from 21.1
+// a registered rule stating a level the extended grid's walk does not read walked by its sweep's own reading at every
+// level it states and a book at any setting of its design's grid by the lay, and the fundamentals-first family's
+// provisional rule by its search's own walk at the setting and hooks an approval stored for it. Each variant is then read
+// against its live or provisional rule by the proposals' block sign-flip test of the difference in edge after costs, its
+// family's variants on the index read together by the step-down, and each live or provisional rule against its own
+// benchmark under the same test, every one held to the same bar and screens. A rule the history cannot walk is kept with
+// the reading it lacks and no figure, and its verdict names what judges it instead. It adopts and retires nothing.
 // see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark
+// see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
 public static class RuleTests
 {
     public const string Live = "live";
@@ -97,12 +127,19 @@ public static class RuleTests
     // What a variant is read against where no rule of its family stands to read it against.
     public const string NoHead = "its live rule";
 
-    // Why a rule cannot be walked over the history.
-    public const string NearestBands = "the plan at the nearest bands, which the history's walk does not draw";
-
-    public const string LadderPlan = "the ladder's first tranche, which the history's walk does not draw";
-
+    // Why a rule cannot be walked over the history; from 21.1 a plan the version's trade gate reads is walked by the ideas'
+    // run's plan of that kind and no longer kept.
     public const string BusinessState = "a business's reported quarters, which the history keeps no reading of";
+
+    // From 21.1 why an S&P 400 or 600 rule stating a level the extended grid's walk does not read was not walked by its
+    // sweep's own reading: the run laid out no such reading for its family, or its book reads twelve months' strength at
+    // a window or an industries count no sweep on the index's own history read.
+    public const string NoOwnRead = "a level its sweep's own reading would walk, which the run laid out no reading for";
+
+    public const string TwelveOneOffTheBase = "twelve months' strength at a window or an industries count other than design (b)'s base, which no sweep on the index's own history read";
+
+    // From 21.1 the tone condition's opposite, in the words the run prints.
+    public const string OppositeWords = "a release read whose results are not better or whose outlook was lowered or withdrawn";
 
     public const string Estimates = "the analysts' estimates, which the store keeps only from 2026-10-03";
 
@@ -122,8 +159,6 @@ public static class RuleTests
     public const string LargeBreadth = "the S&P 500's breadth, which the history's walk does not read on this index";
 
     public const string NoFilterVersion = "no swing filter version stands open";
-
-    public const string NoSix = "a book none of its design's six settings holds";
 
     public static string Unread(IEnumerable<string> settings) => "settings the history's walk does not read: " + string.Join(", ", settings);
 
@@ -261,29 +296,32 @@ public static class RuleTests
 
     static IReadOnlyList<(int Entry, double? Edge)> Units(IEnumerable<ExitProcedures.Walked> walked) => [.. walked.Select(one => (one.Entry, one.Edge))];
 
+    // The sweep's own trades as units, each by the session it was listed on with its edge after costs over the same plan
+    // on every member, as the dip's walk is read.
+    static IReadOnlyList<(int Entry, double? Edge)> Units(IEnumerable<FamilyTrade> trades) =>
+        [.. trades.Select(trade => (trade.Listing.Session, new OwnProcedures.Walked(trade.Listing.Session, null, trade).Edge))];
+
     static string StandingOf(RegisterRow row) => FamilyRecords.IsLive(row.Candidate) ? Live : Variant;
 
     // The live rule first, then the variants in the register's order.
     static IEnumerable<RegisterRow> LiveFirst(IEnumerable<RegisterRow> rows) => rows.OrderByDescending(row => FamilyRecords.IsLive(row.Candidate)).ThenBy(row => row.Id);
 
     // The S&P 500's pullback: each swing filter rule at its own settings, a rule reading no market check at the market
-    // floor off and one keeping the night's best few at that many a night.
+    // floor off, one keeping the night's best few at that many a night, and from 21.1 one whose trade gate reads the plan
+    // at the nearest bands or the ladder's first tranche at that plan, which the ideas' run reads for every candidate. A
+    // version reading a business's reported quarters, the analysts' estimates or sector leadership is kept with the
+    // reading it lacks, which the history holds no reading of.
     static IEnumerable<RuleUnderTest> LargePullbacks(RuleTestInputs inputs)
     {
         foreach (var row in LiveFirst(inputs.Standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is SwingFilterRule)))
         {
             var p = CandidateEvaluator.Read(row.Parameters);
             var live = FamilyRecords.IsLive(row.Candidate);
-            var why = (p.GetValueOrDefault(SwingFilterRule.TradeParameter, 2)) switch
-            {
-                0 => LadderPlan,
-                1 => NearestBands,
-                _ => p.GetValueOrDefault(SwingFilterRule.SkipDeterioratingParameter) == 1 ? BusinessState
-                    : p.GetValueOrDefault(SwingFilterRule.RaisedEstimatesParameter) == 1 ? Estimates
-                    : p.GetValueOrDefault(SwingFilterRule.LeaderSectorsParameter) > 0 ? Leadership
-                    : inputs.Filter is null ? NoFilterVersion
-                    : null,
-            };
+            var why = p.GetValueOrDefault(SwingFilterRule.SkipDeterioratingParameter) == 1 ? BusinessState
+                : p.GetValueOrDefault(SwingFilterRule.RaisedEstimatesParameter) == 1 ? Estimates
+                : p.GetValueOrDefault(SwingFilterRule.LeaderSectorsParameter) > 0 ? Leadership
+                : inputs.Filter is null ? NoFilterVersion
+                : null;
 
             if (why is not null)
             {
@@ -301,11 +339,20 @@ public static class RuleTests
             }
 
             var perNight = p.GetValueOrDefault(SwingFilterRule.BestOfParameter) is > 0 and var best ? (int)best : SetupFamilies.ListedANight;
-            var walk = RuleWalk.LargeSwingFilter(inputs.Read, filter.History, filter.Version, settings, inputs.Progress, live ? inputs.Approved.GetValueOrDefault(SetupFamilies.Pullback) : null, inputs.Readings, inputs.Trees, perNight);
+            var walk = RuleWalk.LargeSwingFilter(inputs.Read, filter.History, filter.Version, settings, inputs.Progress, live ? inputs.Approved.GetValueOrDefault(SetupFamilies.Pullback) : null, inputs.Readings, inputs.Trees, perNight, PlanOf(p));
 
             yield return new RuleUnderTest(SetupFamilies.Pullback, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, Units(walk.Own));
         }
     }
+
+    // From 21.1 the plan a swing filter version's trade gate reads, from its trade parameter: the ladder's first tranche,
+    // the plan at the nearest bands, or section 10's, the live plan.
+    public static PlanRule PlanOf(IReadOnlyDictionary<string, double> p) => p.GetValueOrDefault(SwingFilterRule.TradeParameter, 2) switch
+    {
+        0 => PlanRule.Ladder,
+        1 => PlanRule.NearestBands,
+        _ => PlanRule.Clear,
+    };
 
     // The S&P 400's or 600's pullback: its live rule where a freeze registered one, its provisional rule otherwise, and
     // each registered rule at its dials on the extended grid.
@@ -321,12 +368,19 @@ public static class RuleTests
         foreach (var row in LiveFirst(rows))
         {
             var p = CandidateEvaluator.Read(row.Parameters);
-            var dials = DialsOf(p);
-            var why = LevelsWhy(p, []) ?? (dials is null ? OffTheGrid : null);
 
-            if (why is not null)
+            // From 21.1 a rule stating a level the extended grid's walk does not read, its market check's floor or the
+            // profit and cover check among them, is walked by its search's own reading at every level it states.
+            if (CandidateEvaluators.Find(row.Evaluator) is IndexRuleCandidate own && ReadsOwnSweep(own, p))
             {
-                yield return new RuleUnderTest(SetupFamilies.Pullback, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, SweepIdeas.Cap, Why: why);
+                yield return ThroughOwnSearch(inputs.Own?.Pullback, own, row, p);
+
+                continue;
+            }
+
+            if (DialsOf(p) is not { } dials)
+            {
+                yield return new RuleUnderTest(SetupFamilies.Pullback, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, SweepIdeas.Cap, Why: OffTheGrid);
 
                 continue;
             }
@@ -335,6 +389,60 @@ public static class RuleTests
 
             yield return new RuleUnderTest(SetupFamilies.Pullback, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, Units(walk.Own));
         }
+    }
+
+    // From 21.1 a registered pullback walked by its search's own reading of the index's history at the setting and every
+    // level its registration states, as its record is replayed: every candidate's plan bought at the open after its listing
+    // and charged its round trip, the stages' own walk with one open trade a stock, each kept pick's result less the same
+    // plan on every member that session; kept with why where the search reads no such setting or the run laid out no
+    // reading.
+    // see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+    public static RuleUnderTest ThroughOwnSearch(IndexSweepRunner.OwnPullbackRead? own, IndexRuleCandidate evaluator, RegisterRow row, IReadOnlyDictionary<string, double> p)
+    {
+        RuleUnderTest Kept(string why) => new(SetupFamilies.Pullback, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, SweepIdeas.Cap, Why: why);
+
+        if (own is null)
+        {
+            return Kept(NoOwnRead);
+        }
+
+        var (at, refused) = RuleReplay.OwnPullback(own, evaluator, p);
+
+        if (at is null)
+        {
+            return Kept(refused!);
+        }
+
+        var (design, picks) = own.Under(at.Levels);
+        var setting = own.SettingUnder(at.Point, at.Levels);
+        var walked = new HashSet<(int Name, int Session)>();
+
+        SweepStages.Measures(picks, design, setting, own.Space.Conditions(at.Point), own.Nights, walked);
+
+        var exit = design.ExitIndex;
+        var floor = SweepStages.StopFloor(setting);
+        var units = new List<(int Entry, double? Edge)>();
+
+        foreach (var pick in picks)
+        {
+            if (!walked.Remove((pick.Name, pick.Session)))
+            {
+                continue;
+            }
+
+            var plan = pick.Plan;
+            double? edge = pick.Year is >= 0 and < SweepFigures.Years
+                && plan.Code[exit] is SweepPlanOutcomes.Win or SweepPlanOutcomes.Loss or SweepPlanOutcomes.Unresolved
+                && !float.IsNaN(plan.Multiple[exit])
+                && !float.IsNaN(plan.Benchmark[exit])
+                && plan.IsATradeAt(exit, floor)
+                    ? plan.EdgeAt(exit)
+                    : null;
+
+            units.Add((pick.Session, edge));
+        }
+
+        return new RuleUnderTest(SetupFamilies.Pullback, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, SweepIdeas.Cap, [.. units.OrderBy(unit => unit.Entry)]);
     }
 
     // An index rule's dials on the extended grid, a pullback reading no market check at the market floor off; none where
@@ -471,6 +579,13 @@ public static class RuleTests
             return kept;
         }
 
+        // From 21.1 an S&P 400 or 600 rule stating a level the extended grid's walk does not read is walked by its sweep's
+        // own reading at every level it states, the tone condition read over the listings those keep.
+        if (!large && CandidateEvaluators.Find(row.Evaluator) is IndexRuleCandidate own && ReadsOwnSweep(own, p))
+        {
+            return ThroughOwnSweep(inputs, family, row, own, p);
+        }
+
         var version = ReleaseTone.VersionOf(p);
         var releases = version > 0 ? inputs.Tones!.Of(version) : null;
 
@@ -501,9 +616,122 @@ public static class RuleTests
             (marketSwitches.Equals(MarketSwitches.None) || Open(at))
             && (releases is null || ToneHolds(inputs.Read, walk.Listings[at], releases, inputs.Tones!));
 
-        var trades = marketSwitches.Equals(MarketSwitches.None) && releases is null ? walk.Own : walk.Keeping(Kept);
+        // From 21.1 the tone variant's opposite, walked beside it unregistered and written nowhere: the listings its switches
+        // keep whose print's release is read and fails the condition.
+        bool KeptOpposite(int at) =>
+            (marketSwitches.Equals(MarketSwitches.None) || Open(at))
+            && releases is not null && ToneOpposite(inputs.Read, walk.Listings[at], releases, inputs.Tones!);
 
-        return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, Units(trades));
+        var trades = marketSwitches.Equals(MarketSwitches.None) && releases is null ? walk.Own : walk.Keeping(Kept);
+        var units = Units(trades);
+        var tone = releases is null ? null : new ToneSides(version, inputs.Tones!.CutoffOf(version), units, Units(walk.Keeping(KeptOpposite)));
+
+        return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone);
+    }
+
+    // From 21.1 a registered breakout or drift walked by its sweep's own reading of the index's history at the setting and
+    // every level its registration states, as the record command replays a frozen rule: its places on the family's grid
+    // with the market check's level it reads, the drift's stop floor, and the second stage's levels together, five a night
+    // with one open trade a stock, every trade bought at the open after its listing and after its round trip. A rule naming
+    // a reading version is held to the tone condition over the listings its levels keep before the walk, its opposite walked
+    // beside it unregistered; one its sweep reads no setting for, or whose family the run laid out no reading for, is kept
+    // with why.
+    // see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+    public static RuleUnderTest ThroughOwnSweep(RuleTestInputs inputs, string family, RegisterRow row, IndexRuleCandidate evaluator, IReadOnlyDictionary<string, double> p)
+    {
+        var stopFloor = evaluator is IndexDriftCandidate ? p.GetValueOrDefault(IndexDriftCandidate.StopFloorParameter) : 0;
+
+        RuleUnderTest Kept(string why) => new(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, 0, Why: why);
+
+        if (inputs.Own?.Swings.GetValueOrDefault((family, stopFloor)) is not { } own)
+        {
+            return Kept(NoOwnRead);
+        }
+
+        var (at, refused) = RuleReplay.OwnSwing(own, evaluator, Unversioned(p));
+
+        if (at is null)
+        {
+            return Kept(refused!);
+        }
+
+        var listings = own.ListingsUnder(at.Setting, at.Levels);
+        var cap = listings.Select(listing => listing.Cap).DefaultIfEmpty(0).Max();
+        var version = ReleaseTone.VersionOf(p);
+
+        if (version == 0)
+        {
+            return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, cap, Units(own.Costed(own.AtOpen(listings), 1)));
+        }
+
+        var releases = inputs.Tones!.Of(version)!;
+        var variant = Units(own.Costed(own.AtOpen(listings.Where(listing => ToneHolds(own.Series, own.Calendar, listing.Name, listing.Bar, listing.Session, releases, inputs.Tones))), 1));
+        var opposite = Units(own.Costed(own.AtOpen(listings.Where(listing => ToneOpposite(own.Series, own.Calendar, listing.Name, listing.Bar, listing.Session, releases, inputs.Tones))), 1));
+
+        return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, cap, variant, Tone: new ToneSides(version, inputs.Tones.CutoffOf(version), variant, opposite));
+    }
+
+    // From 21.1 the dials of a family's second stage a registered rule may state beside its grid places.
+    public static IReadOnlyList<string> OwnDialsOf(IndexRuleCandidate evaluator) => evaluator switch
+    {
+        IndexBreakoutCandidate => [IndexBreakoutCandidate.NearnessParameter, IndexBreakoutCandidate.RecencyParameter, IndexBreakoutCandidate.HighVolumeParameter],
+        IndexDriftCandidate => [IndexDriftCandidate.WideWindowParameter, IndexDriftCandidate.PeersParameter, IndexDriftCandidate.EntryParameter, IndexDriftCandidate.RevenueGrewParameter],
+        _ => [],
+    };
+
+    // From 21.1 whether a registered S&P 400 or 600 rule states a level the extended grid's walk does not read, its market
+    // check's floor at a level other than the swing filter's, its quality check, its hold, the drift's first-pullback entry
+    // or revenue dial or the S&P 500's breadth among them, so the per-rule test walks it through its sweep's own reading at
+    // every level it states, as the record command replays a frozen rule.
+    public static bool ReadsOwnSweep(IndexRuleCandidate evaluator, IReadOnlyDictionary<string, double> p) =>
+        LevelsWhy(Unversioned(p), OwnDialsOf(evaluator)) is not null;
+
+    // A registration's parameters with the reading version it names left off, so the tone condition is read after the
+    // sweep's own walk and not as a level of it.
+    public static IReadOnlyDictionary<string, double> Unversioned(IReadOnlyDictionary<string, double> p) =>
+        p.Where(pair => pair.Key != ReleaseTone.VersionParameter).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+
+    // From 21.1 the sweeps' own readings a run needs on an index before it walks: the family and the stop floor of each
+    // registered breakout or drift rule standing on it that states a level the extended grid's walk does not read, each
+    // read once; none on the S&P 500, whose rules state no such level.
+    public static IReadOnlyList<(string Family, double StopFloor)> OwnSwingsNeeded(IReadOnlyList<RegisterRow> standing, string index) =>
+        [.. standing
+            .Select(row => (Row: row, Evaluator: CandidateEvaluators.Find(row.Evaluator) as IndexRuleCandidate))
+            .Where(pair => pair.Evaluator is { } rule && rule.Index == index && (rule.SetupFamily == BreakoutRule.Name || rule.SetupFamily == DriftRule.Name) && !FamilyRecords.IsBackground(pair.Row.Candidate))
+            .Select(pair => (pair.Evaluator!, Parameters: CandidateEvaluator.Read(pair.Row.Parameters)))
+            .Where(rule => ReadsOwnSweep(rule.Item1, rule.Parameters))
+            .Select(rule => (rule.Item1.SetupFamily, rule.Item1 is IndexDriftCandidate ? rule.Parameters.GetValueOrDefault(IndexDriftCandidate.StopFloorParameter) : 0))
+            .Distinct()];
+
+    // From 21.1 whether a run needs the pullback's search's own reading on an index: a registered pullback standing on it
+    // states a level the extended grid's walk does not read.
+    public static bool OwnPullbackNeeded(IReadOnlyList<RegisterRow> standing, string index) =>
+        standing.Any(row => CandidateEvaluators.Find(row.Evaluator) is IndexPullbackCandidate rule && rule.Index == index && !FamilyRecords.IsBackground(row.Candidate) && ReadsOwnSweep(rule, CandidateEvaluator.Read(row.Parameters)));
+
+    // From 21.1 a tone variant's figures on each side of the local model's cutoff's year, as the run prints them: its own
+    // trades and their mean edge after costs, and its opposite's, walked unregistered and written nowhere.
+    public static string ToneLine(RuleUnderTest rule, DateOnly[] calendar)
+    {
+        var tone = rule.Tone!;
+
+        static string Side(IReadOnlyList<(int Entry, double? Edge)> units, Func<int, bool> on)
+        {
+            var kept = units.Where(unit => on(unit.Entry)).ToArray();
+            var edged = kept.Where(unit => unit.Edge is not null).ToArray();
+
+            return edged.Length == 0
+                ? FormattableString.Invariant($"{kept.Length} trade(s), none ended")
+                : FormattableString.Invariant($"{kept.Length} trade(s) at {edged.Average(unit => unit.Edge!.Value):+0.000;-0.000} risks");
+        }
+
+        if (tone.Cutoff is not { } cutoff)
+        {
+            return FormattableString.Invariant($"{rule.Family}, {rule.Rule}: its tone condition under reading version {tone.Version}, {Side(tone.Variant, _ => true)} over the history; its opposite, {OppositeWords}, walked unregistered and written nowhere, {Side(tone.Opposite, _ => true)}; the version states no cutoff");
+        }
+
+        bool Before(int entry) => calendar[entry].Year < cutoff.Year;
+
+        return FormattableString.Invariant($"{rule.Family}, {rule.Rule}: its tone condition under reading version {tone.Version}, {Side(tone.Variant, Before)} before the local model's cutoff's year, {cutoff.Year}, and {Side(tone.Variant, entry => !Before(entry))} from it; its opposite, {OppositeWords}, walked unregistered and written nowhere, {Side(tone.Opposite, Before)} and {Side(tone.Opposite, entry => !Before(entry))}");
     }
 
     // A swing rule kept with why before any walk is read: from 20.8 a drift rule reading a release reading under a version
@@ -520,18 +748,36 @@ public static class RuleTests
     // under the version, read better with its outlook not lowered or withdrawn. A listing whose stock holds no release
     // under the version, or whose release holds no reading, passes none, as on the night.
     // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
-    public static bool ToneHolds(LoopRead read, RuleListing listing, IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>> releases, ToneReleases tones)
-    {
-        var series = read.Series[listing.Name];
+    public static bool ToneHolds(LoopRead read, RuleListing listing, IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>> releases, ToneReleases tones) =>
+        ToneHolds(read.Series, read.Calendar, listing.Name, listing.Bar, listing.Session, releases, tones);
 
-        if (series.NewestSurprise[listing.Bar] is not (var newest and >= 0) || !releases.TryGetValue(series.Name.Ticker, out var held))
+    public static bool ToneHolds(SweepSeries[] series, DateOnly[] calendar, int name, int bar, int session, IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>> releases, ToneReleases tones) =>
+        ToneAnswer(series, calendar, name, bar, session, releases, tones) is { } answer && ReleaseTone.Passes(answer);
+
+    // From 21.1 whether a drift listing passes the tone condition's opposite: its print's release read, and read not
+    // better or with its outlook lowered or withdrawn, the complement of the variant's condition over the releases read; a
+    // listing whose release is not read passes neither, as on the night.
+    // see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+    public static bool ToneOpposite(LoopRead read, RuleListing listing, IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>> releases, ToneReleases tones) =>
+        ToneOpposite(read.Series, read.Calendar, listing.Name, listing.Bar, listing.Session, releases, tones);
+
+    public static bool ToneOpposite(SweepSeries[] series, DateOnly[] calendar, int name, int bar, int session, IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>> releases, ToneReleases tones) =>
+        ToneAnswer(series, calendar, name, bar, session, releases, tones) is { } answer && IsOpposite(answer);
+
+    public static bool IsOpposite(ReleaseAnswer answer) => !ReleaseTone.Passes(answer);
+
+    // The reading of the release the night of a listing's session reads for the newest print the listing reacts to, none
+    // where the stock holds no release under the version or its release holds no reading.
+    static ReleaseAnswer? ToneAnswer(SweepSeries[] series, DateOnly[] calendar, int name, int bar, int session, IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>> releases, ToneReleases tones)
+    {
+        var one = series[name];
+
+        if (one.NewestSurprise[bar] is not (var newest and >= 0) || !releases.TryGetValue(one.Name.Ticker, out var held))
         {
-            return false;
+            return null;
         }
 
-        var release = ReleaseAvailability.ReleaseFor(held, one => one.Accepted, series.Name.Surprises[newest].EventDate, read.Calendar[listing.Session], tones.Zone, tones.Calendar);
-
-        return release?.Answer is { } answer && ReleaseTone.Passes(answer);
+        return ReleaseAvailability.ReleaseFor(held, release => release.Accepted, one.Name.Surprises[newest].EventDate, calendar[session], tones.Zone, tones.Calendar)?.Answer;
     }
 
     // The fundamentals-first family's provisional rule, by its search's own walk: the pullback's base listings kept where
@@ -591,9 +837,58 @@ public static class RuleTests
             var six = p.GetValueOrDefault(IndexRuleCandidate.FloorsParameter, 1) == 1 ? SixOf(p, designA) : null;
 
             yield return six is null
-                ? new RuleUnderTest(HeavyweightRule.Name, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Points, BookMonths.LongestMonth, Why: NoSix)
+                ? BookOffTheSix(inputs.Lay, row, p, designA)
                 : new RuleUnderTest(HeavyweightRule.Name, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Points, BookMonths.LongestMonth, Months: inputs.Lay.Book(six, designA).Months);
         }
+    }
+
+    // From 21.1 a registered book at a setting none of its design's six settings holds, walked at its own setting as the
+    // record command replays a frozen book: design (a) at the leaders setting, the quality and the floors it states and
+    // design (b) at its window, industries and members, each from the lay's full grid; and twelve months' strength
+    // skipping the latest month, which the record command replays at no setting, through the six settings' own reader at
+    // the registration's quality and floors, design (b)'s at the base window and industries alone.
+    // see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+    public static RuleUnderTest BookOffTheSix(HeavyweightLay lay, RegisterRow row, IReadOnlyDictionary<string, double> p, bool designA)
+    {
+        RuleUnderTest Of(IReadOnlyList<(int Opens, double? Edge)> months) => new(HeavyweightRule.Name, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Points, BookMonths.LongestMonth, Months: months);
+
+        RuleUnderTest Kept(string why) => new(HeavyweightRule.Name, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Points, BookMonths.LongestMonth, Why: why);
+
+        if (IndexRules.TwelveOne(p))
+        {
+            var quality = p.GetValueOrDefault(IndexRuleCandidate.QualityParameter, 1) switch
+            {
+                0 => IndexQuality.Off,
+                2 => IndexQuality.Cover,
+                _ => IndexQuality.Profit,
+            };
+            var floors = p.GetValueOrDefault(IndexRuleCandidate.FloorsParameter, 1) == 2 ? 2m : 1m;
+
+            if (designA)
+            {
+                return Of(lay.TwelveOneBook(new HeavyweightSixSetting(0, row.Rule, true, quality, false, IndexRules.HeavyweightSettingOf(p)), floors, true, row.Rule).Months);
+            }
+
+            if (p.GetValueOrDefault(IndexHeavyweightCandidate.WindowParameter) != HeavyweightSix.BaseWindow || p.GetValueOrDefault(IndexHeavyweightCandidate.IndustriesParameter) != HeavyweightSix.BaseIndustries)
+            {
+                return Kept(TwelveOneOffTheBase);
+            }
+
+            return Of(lay.TwelveOneBook(new HeavyweightSixSetting(0, row.Rule, true, quality, false, PerIndustry: (int)p.GetValueOrDefault(IndexHeavyweightCandidate.MembersParameter, 1)), floors, false, row.Rule).Months);
+        }
+
+        var (at, refused) = RuleReplay.OwnBook(p);
+
+        if (at is null)
+        {
+            return Kept(refused!);
+        }
+
+        var book = at.Setting is { } setting
+            ? lay.BookFrom(lay.RebalancesA(setting, at.Quality, at.Floors), setting.Exit, at.Key)
+            : lay.BookFrom(lay.RebalancesB(at.Window, at.Industries, at.Members, at.Quality, at.Floors), HeavyweightExit.Drop, at.Key);
+
+        return Of(book.Months);
     }
 
     // An S&P 500 heavyweights registration's setting as its sweep's grid holds it.

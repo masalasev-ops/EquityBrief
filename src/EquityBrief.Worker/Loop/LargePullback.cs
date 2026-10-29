@@ -35,12 +35,15 @@ public sealed class LargePullback(IReadOnlyList<SweepSeries> series, IReadOnlyLi
     public static DialSetting AtThePoint { get; } = new(0, 0, 0, 0, 0, 0, 0, 0, 0);
 
     // The listings the filter at its settings keeps over the history, in the ideas' run's order, each as the ideas'
-    // run lists one; the earnings window the filter's own.
-    public List<IdeaListing> Listings(FilterSettings settings)
+    // run lists one; the earnings window the filter's own, and from 21.1 the plan the version's trade gate reads, section
+    // 10's as live, the plan at the nearest bands or the ladder's first tranche, each a plan the ideas' run reads for
+    // every candidate.
+    // see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+    public List<IdeaListing> Listings(FilterSettings settings, PlanRule plan = PlanRule.Clear)
     {
         var listings = new List<IdeaListing>();
 
-        foreach (var pick in SweepStages.Picks(candidates, SweepDesign.Live with { EarningsWindow = settings.EarningsWindowSessions }, PointOf(settings)))
+        foreach (var pick in SweepStages.Picks(candidates, SweepDesign.Live with { EarningsWindow = settings.EarningsWindowSessions, Plan = plan }, PointOf(settings)))
         {
             if (!pick.Corner.Passes(AtThePoint))
             {
@@ -67,9 +70,19 @@ public sealed class LargePullback(IReadOnlyList<SweepSeries> series, IReadOnlyLi
         return listings;
     }
 
-    // The filter at a version in words, as the tester names the rule today.
-    public static string Words(string version, FilterSettings settings) =>
+    // The filter at a version in words, as the tester names the rule today, with the plan its trade gate reads where it is
+    // not section 10's.
+    public static string Words(string version, FilterSettings settings, PlanRule plan = PlanRule.Clear) =>
         string.Create(
             CultureInfo.InvariantCulture,
-            $"the S&P 500's swing filter at version {version}: a strength place at least {settings.StrengthFloor:0.##}, a pullback of {settings.DepthLow:0.##} to {settings.DepthHigh:0.##} typical moves, its volume at most {settings.DryUpCeiling:0.##} of its average, a reward to risk at least {settings.RewardToRiskFloor:0.##}, the stop {settings.StopLow:0.##} to {settings.StopHigh:0.##} typical moves under the buy, breadth at least {settings.BreadthFloor:0.##}, five a night, held on closes to {SweepIdeas.Cap} sessions");
+            $"the S&P 500's swing filter at version {version}: a strength place at least {settings.StrengthFloor:0.##}, a pullback of {settings.DepthLow:0.##} to {settings.DepthHigh:0.##} typical moves, its volume at most {settings.DryUpCeiling:0.##} of its average, a reward to risk at least {settings.RewardToRiskFloor:0.##}, the stop {settings.StopLow:0.##} to {settings.StopHigh:0.##} typical moves under the buy, breadth at least {settings.BreadthFloor:0.##}, five a night, held on closes to {SweepIdeas.Cap} sessions")
+        + PlanWords(plan);
+
+    // The plan a version's trade gate reads, in words, none for section 10's.
+    public static string PlanWords(PlanRule plan) => plan switch
+    {
+        PlanRule.Ladder => ", its trade the ladder's first tranche",
+        PlanRule.NearestBands => ", its trade the plan at the nearest bands",
+        _ => string.Empty,
+    };
 }

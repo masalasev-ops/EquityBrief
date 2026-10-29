@@ -476,7 +476,7 @@ public partial class FixtureExpectations
             text,
             StringComparison.Ordinal);
         Assert.Contains(
-            "  drift, a tone variant being read: reads the release readings; its per-rule test names it not testable, its reading version's history read is not complete.",
+            "  drift, a tone variant being read: reads the release readings; its per-rule test names it not testable, its reading version's history read is not complete; judged by its record from its registration, on paper trading and the Run page.",
             text,
             StringComparison.Ordinal);
         Assert.DoesNotContain("the live drift: reads", text, StringComparison.Ordinal);
