@@ -12002,3 +12002,20 @@ Answer:     the open floor passes on no index: on the S&P 500 it lifts the drift
             the operator's word at 21.14.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
             request, with the figures it states.
+
+### 16.1 - correction: the local model's allowance expectation widens its margins, where a hosted runner read a refusal as an answer   2026-10-29
+
+Found:      the hosted macOS job over PR 590's head, 53f838db, failed one test of 2,925 on 2026-10-29, the expectation
+            that a model already listed is not loaded again and its first call alone carries the load's allowance: its
+            second call, bounded by one second, was to be refused against a scripted answer two seconds out, and the
+            runner, under the whole suite, let it answer. The second macOS run and both Linux runs of the same commit
+            passed, and the operator's machine passed it in every run. The bounds are wall-clock, a bound on the machine
+            as the rules on writing an assertion say, and a margin of one second was the fault.
+Corrected:  the scripted answer stands six seconds out against a load allowance of eight, so the first call, bounded by
+            nine, still answers and the second, bounded by one, is refused with five seconds to spare; the test's
+            comment says so and why. No shipped source changes.
+Tests:      2925, unchanged: one expectation's margins widened, none added.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 53f838db at 20:17 UTC on 2026-10-29, the shipped
+            source, the fixtures and the settings this tree carries unchanged from it and every other test unchanged;
+            this commit widens one expectation's margins, and that expectation ran green over this tree three times in
+            a row, on the operator's word of 2026-10-29 to fix the hosted failure so the pull request merges.
