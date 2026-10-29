@@ -26,6 +26,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-29 - docs/ARCHITECTURE.html - the exit menu's row and 13.13's menu paragraph gain 21.4's two kinds, and the menu decision's citations repointed
+Authorised by: The trade autopsy proposes exits of a fixed menu that only a checkpoint widens, each tested as the procedure that chose it
+Was:
+> for the swing families 26 exits: ... unless the trade is above the buy or 0.5 risks up; and half sold at the target, or at 2 risks where the plan names none, the rest trailed 2 or 3 typical moves under the highest close. For the sector heavyweights two: ... | ...Lo and Remorov 2017. <b>Judgement:</b> the break-even and time exits and every step | fixture-expectations, every exit of the menu replayed by hand over one constructed path, a plan with a fixed target and the same plan trailing, a series running out leaving a trade open and a stop at its buy placing none; the heavyweights' two... | 13.13: ...a sale at the close a number of sessions in unless the trade is above the buy or half a risk up; and half sold at the target with the rest trailed. For the sector heavyweights: ... | (see: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it), at the tester's catalogue row, 13.13, the autopsy's findings row, the loop findings' retention row, the exit menu's and the autopsy's proposals' rows in section 17 and the path no bars reach in section 18
+Now:
+> for the swing families 30 exits: ... unless the trade is above the buy or 0.5 risks up; half sold at the target, or at 2 risks where the plan names none, the rest trailed 2 or 3 typical moves under the highest close; a time stop, a sale at the close after a set number of sessions, 5, 10 or 20, whatever the trade stands at; and half sold at the first close 1 risk up, the stop raised to the buy on the rest and the rest sold as the plan sells it. For the sector heavyweights two: ... | ...Lo and Remorov 2017; the two kinds of the one move of the pins are numbered after the first twenty-six, so a registration naming an exit by its number keeps its meaning. <b>Judgement:</b> the break-even and time exits, the time stop, the half at a risk and every step | ...a stop at its buy placing none, and the time stop and the half at a risk on both sides of their session and their risk; the heavyweights' two... | 13.13: ...half sold at the target with the rest trailed; and from 21.4 a time stop, sold at the close a number of sessions in whatever the trade stands at, and half sold at the first close a risk up with the stop raised to the buy on the rest, the rest sold as the plan sells it. The two kinds of 21.4 are numbered after the twenty-six before them, and the menu widens only in a checkpoint that moves the pins, since its file is one every swing rule but the S&P 500's pullback pins. For the sector heavyweights: ... | (see: The trade autopsy proposes exits of a fixed menu that only a checkpoint widens, each tested as the procedure that chose it) at each of those seven places
+Why: 21.4's first part widens the menu by the two kinds the operator's brief of 2026-10-29 named, in the one checkpoint of the phase that moves the pins; the decision describing the menu is superseded by one carrying the two kinds and saying in its name that only a checkpoint widens it, and every citation of it is repointed.
+
+### 2026-10-29 - docs/RUNBOOK.md - the autopsy paragraph's citation of the menu decision repointed
+Authorised by: The trade autopsy proposes exits of a fixed menu that only a checkpoint widens, each tested as the procedure that chose it
+Was:
+> The trade autopsy runs in the same run (see: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it).
+Now:
+> The trade autopsy runs in the same run (see: The trade autopsy proposes exits of a fixed menu that only a checkpoint widens, each tested as the procedure that chose it).
+Why: the decision the paragraph cites is superseded at 21.4 by the one that carries the menu's two new kinds.
+
+### 2026-10-29 - docs/SCHEMA.md - the loop findings' writer line's citation of the menu decision repointed
+Authorised by: The trade autopsy proposes exits of a fixed menu that only a checkpoint widens, each tested as the procedure that chose it
+Was:
+> ...context for the exits the autopsy proposes and never a test of them (see: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it).
+Now:
+> ...context for the exits the autopsy proposes and never a test of them (see: The trade autopsy proposes exits of a fixed menu that only a checkpoint widens, each tested as the procedure that chose it).
+Why: the decision the line cites is superseded at 21.4 by the one that carries the menu's two new kinds.
+
+### 2026-10-29 - docs/BUILD_PLAN.md - 21.4 counts the menu's exits as 30 from 26
+Corrects: 21.4's count of the menu after its two kinds, 28 from 26, where the time stop at three lengths and the half at a risk are four exits; found when the menu was built
+Was:
+> The exit menu gains two kinds for the swing families, 28 exits from 26: a time stop, sold at the close a set number of sessions in, 5, 10 or 20, whatever the trade stands at; and half sold at 1 risk of profit with the stop moved to the buy on the rest, the rest sold at the plan's target or trail as before.
+Now:
+> The exit menu gains two kinds for the swing families, 30 exits from 26: a time stop, sold at the close a set number of sessions in, 5, 10 or 20, whatever the trade stands at, three exits; and half sold at 1 risk of profit with the stop moved to the buy on the rest, the rest sold at the plan's target or trail as before, one.
+Why: the plan counted two kinds as two exits; the time stop's three lengths are three exits, as the time exit's three lengths at two risks are six.
+
 ### 2026-10-29 - docs/ARCHITECTURE.html - the setup ledger's and the walk-forward tester's catalogue rows gain 21.3's read-only checks, and the score audit joins the catalogue and the matrix
 Authorised by: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word
 Was:

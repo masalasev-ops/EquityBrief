@@ -17,9 +17,10 @@ public partial class FixtureExpectations
     [Fact]
     public void EveryExitOfTheMenuIsReplayedByHandOverAConstructedPath()
     {
-        // Twenty-six exits, numbered from one, a rule's own exit being nought.
-        Assert.Equal(26, ExitMenu.Swing.Count);
-        Assert.Equal(Enumerable.Range(1, 26), ExitMenu.Swing.Select(choice => choice.Number));
+        // Thirty exits, numbered from one, a rule's own exit being nought: the twenty-six of 17.5 and from 21.4 the
+        // time stop at three lengths and half sold at a risk.
+        Assert.Equal(30, ExitMenu.Swing.Count);
+        Assert.Equal(Enumerable.Range(1, 30), ExitMenu.Swing.Select(choice => choice.Number));
         Assert.Null(ExitMenu.Of(0));
 
         // The plan's own exit: nothing under 95 and nothing at 110 until the thirteenth session's 111, 2.2 risks.
@@ -72,6 +73,89 @@ public partial class FixtureExpectations
         // which stays under every later close, so the cap's 117 at 3.4 ends the rest: 2.8 for the whole.
         AssertMenu(25, 2.8, 20, SetupEnds.Cap);
         AssertMenu(26, 2.8, 20, SetupEnds.Cap);
+
+        // From 21.4 the time stop, whatever the trade stands at: the fifth session's 105 sells at 1.0 and the tenth's 101
+        // at 0.2; at twenty the target's thirteenth session comes first.
+        AssertMenu(27, 1.0, 5, SetupEnds.Time);
+        AssertMenu(28, 0.2, 10, SetupEnds.Time);
+        AssertMenu(29, 2.2, 13, SetupEnds.Target);
+        Assert.Equal("sold at the close 5 sessions in, whatever the trade stands at", ExitMenu.Of(27)!.Words);
+
+        // Half sold once a close is a risk up, the third session's 106 at 1.2, and the stop raised to the buy on the
+        // rest: the eleventh's 99.5 sells the rest under it at -0.1, so 0.55 for the whole.
+        AssertMenu(30, 0.55, 11, SetupEnds.Stop);
+        Assert.Equal("half sold once a close is 1 risks up, the stop raised to the buy on the rest", ExitMenu.Of(30)!.Words);
+    }
+
+    [Fact]
+    public void TheTimeStopAndTheHalfAtARiskAreReplayedByHandOnBothSidesOfTheirSessionAndTheirRisk()
+    {
+        // A buy at 100 with its stop at 95 and its target at 110, five sessions at most, over closes reaching exactly a
+        // risk up on the second session and the target on the fourth.
+        var anchor = new SetupAnchor(new DateOnly(2026, 1, 2), 100, 95, 110, null, 5, 2.5);
+        double[] path = [100, 103, 105, 107, 111, 112];
+        var halfAtRisk = ExitMenu.Of(30)!;
+        var stopAtFive = ExitMenu.Of(27)!;
+
+        // The half is sold at the second session's 105, exactly a risk up, 1.0, and the rest at the fourth's 111, 2.2:
+        // 1.6 for the whole at the target.
+        var reached = ExitMenu.Replay(path, 0, anchor, 2, halfAtRisk);
+
+        Assert.Equal((1.6, 4, SetupEnds.Target), (Math.Round(reached.Result!.Value, 9), reached.Sessions, reached.End));
+
+        // A hundredth under the level sells no half, and a close at the level and the target on one session is the
+        // target's sale of the whole: 2.2 at the fourth session's 111.
+        double[] under = [100, 103, 104.99, 104, 111, 112];
+        var none = ExitMenu.Replay(under, 0, anchor, 2, halfAtRisk);
+
+        Assert.Equal((2.2, 4, SetupEnds.Target), (Math.Round(none.Result!.Value, 9), none.Sessions, none.End));
+
+        // The level reached a session later sells the half there, the third session's 107 at 1.4: 1.8 for the whole.
+        var later = ExitMenu.Replay([100, 103, 104.99, 107, 111, 112], 0, anchor, 2, halfAtRisk);
+
+        Assert.Equal((1.8, 4, SetupEnds.Target), (Math.Round(later.Result!.Value, 9), later.Sessions, later.End));
+
+        // Before the level a close under the stop sells the whole, as the plan would: -1.2 at the second session.
+        double[] stopped = [100, 103, 94, 107, 111, 112];
+        var whole = ExitMenu.Replay(stopped, 0, anchor, 2, halfAtRisk);
+
+        Assert.Equal((-1.2, 2, SetupEnds.Stop), (Math.Round(whole.Result!.Value, 9), whole.Sessions, whole.End));
+
+        // After the half at the first session's 106, 1.2, the stop stands at the buy: a close at 99.5, which the plan's
+        // own stop would have held through, sells the rest at -0.1, so 0.55 for the whole; a close at 100 does not.
+        double[] raised = [100, 106, 99.5, 107, 111, 112];
+        var rest = ExitMenu.Replay(raised, 0, anchor, 2, halfAtRisk);
+
+        Assert.Equal((0.55, 2, SetupEnds.Stop), (Math.Round(rest.Result!.Value, 9), rest.Sessions, rest.End));
+        Assert.Equal(SetupEnds.Target, ExitMenu.Replay([100, 106, 100, 107, 111, 112], 0, anchor, 2, halfAtRisk).End);
+
+        // The cap ends what is left: half at the first session's 106, 1.2, and the fifth's 108, 1.6, so 1.4.
+        double[] capped = [100, 106, 104, 105, 107, 108];
+        var atCap = ExitMenu.Replay(capped, 0, anchor, 2, halfAtRisk);
+
+        Assert.Equal((1.4, 5, SetupEnds.Cap), (Math.Round(atCap.Result!.Value, 9), atCap.Sessions, atCap.End));
+
+        // On a trailing plan the rest keeps the plan's trail as well as the buy under it: 6 under the highest close, the
+        // menu's path sells the rest at the tenth session's 101 after the half at the third's 106, 0.7 for the whole.
+        var trailing = MenuAnchor with { Target = null, Trail = 6 };
+        var trailed = ExitMenu.Replay(MenuPath, 0, trailing, 2, halfAtRisk);
+
+        Assert.Equal((0.7, 10, SetupEnds.Trail), (Math.Round(trailed.Result!.Value, 9), trailed.Sessions, trailed.End));
+
+        // The time stop at five sells the fifth session's close whatever it stands at, 108 at 1.6 here, and not the
+        // fourth's 104; a close reaching the target on that session is the target's sale and not the time stop's; under
+        // a cap of four the cap's close ends the trade first, 0.8; a path running out leaves it open; and a close under
+        // the buy on the fifth session is sold there as well, -0.9.
+        var fifth = ExitMenu.Replay([100, 101, 102, 103, 104, 108], 0, anchor, 2, stopAtFive);
+        var atTarget = ExitMenu.Replay([100, 101, 102, 103, 104, 112], 0, anchor, 2, stopAtFive);
+        var atFour = ExitMenu.Replay([100, 101, 102, 103, 104, 108], 0, anchor with { Cap = 4 }, 2, stopAtFive);
+        var down = ExitMenu.Replay([100, 99, 98, 97, 96, 95.5], 0, anchor, 2, stopAtFive);
+
+        Assert.Equal((1.6, 5, SetupEnds.Time), (Math.Round(fifth.Result!.Value, 9), fifth.Sessions, fifth.End));
+        Assert.Equal((2.4, 5, SetupEnds.Target), (Math.Round(atTarget.Result!.Value, 9), atTarget.Sessions, atTarget.End));
+        Assert.Equal((0.8, 4, SetupEnds.Cap), (Math.Round(atFour.Result!.Value, 9), atFour.Sessions, atFour.End));
+        Assert.Null(ExitMenu.Replay([100, 101, 102, 103], 0, anchor, 2, stopAtFive).Result);
+        Assert.Equal((-0.9, 5, SetupEnds.Time), (Math.Round(down.Result!.Value, 9), down.Sessions, down.End));
     }
 
     [Fact]

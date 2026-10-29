@@ -11,7 +11,7 @@ namespace EquityBrief.Tests.Reading;
 // month the link names is drawn and the others linked; and an index with no run says so in one line. From 17.5 the
 // autopsy's figures of a family stand beneath its rule today and each exit proposal's finding beneath its change.
 // see: A proposal passes the tester on a block sign-flip test of its total edge after costs against the current rule, corrected within a run and held to a fixed bar across runs
-// see: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it
+// see: The trade autopsy proposes exits of a fixed menu that only a checkpoint widens, each tested as the procedure that chose it
 public partial class ReadSurface
 {
     // The parts of section 15.20's regions this check reaches.

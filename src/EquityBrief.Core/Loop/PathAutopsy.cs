@@ -15,7 +15,7 @@ public sealed record AutopsyFigure(string Figure, double? Value, int Trades, str
 // went for and against before it ended, the best and the worst close in risks; the sessions to the best close; and of
 // the trades its stop ended, how many had closed a risk up first, and of those its target ended, how far under the buy
 // they fell first. Each figure is a median or a share over the trades it is read over, and none where none is.
-// see: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it
+// see: The trade autopsy proposes exits of a fixed menu that only a checkpoint widens, each tested as the procedure that chose it
 public static class PathAutopsy
 {
     public const string Best = "best";

@@ -20,7 +20,7 @@ namespace EquityBrief.Tests.Checks;
 // autopsy's figures worked by hand over constructed paths, and the five strongest exits chosen on the learning years
 // alone.
 // see: Every engine's settings hooks land together and all default off, so the families' pins move once
-// see: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it
+// see: The trade autopsy proposes exits of a fixed menu that only a checkpoint widens, each tested as the procedure that chose it
 public partial class FixtureExpectations
 {
     // The rows 17.5's autopsy adds that this check reaches: section 17's menu and proposals and section 18's path no bars

@@ -22,7 +22,7 @@ public sealed record RuleListing(int Name, int Bar, int Session, int? Exit, doub
 // after its round trip and against the same plan under the same exit on every member that session. A rule standing at
 // its family's own setting states no hook and is walked as it always was; one an approval changed on the S&P 400 or
 // 600 is walked at the setting and the hooks the approval stored.
-// see: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it
+// see: The trade autopsy proposes exits of a fixed menu that only a checkpoint widens, each tested as the procedure that chose it
 // see: Winners against losers proposes a condition only where it beats a within-night shuffle of its own search
 // see: A fitted statistical model is a rule
 // see: An approved change is applied by the night's own build on the index it was approved on alone
