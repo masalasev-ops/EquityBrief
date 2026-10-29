@@ -26,6 +26,46 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-29 - docs/BUILD_PLAN.md - the phase 21 section gains the estimate the planning pass brought to the operator and the paragraph on what the sources check found
+Authorised by: Phase 21 makes the existing families choose better and the monthly loop test every family on every index, built to completion before any new work with no model judging a stock and nothing retired without the operator's word
+Was:
+> **The claims phase 21 predicts.** ... (the section's last paragraph before its checkpoints)
+>
+> ### 21.0 Planning
+Now:
+> **The claims phase 21 predicts.** ...
+>
+> **The estimate.** Sixteen checkpoints, 21.0 to 21.15, about sixteen pull requests and their corrections; ... No paid call, no model judging a stock, nothing retired on a result.
+>
+> **What the sources check found, on 2026-10-29.** Read-only at 21.2, the figures in its entry: the provider's calendar trends endpoint takes many symbols in one request at one weighted call a symbol, ... Each branch chosen on the operator's answers: ...
+>
+> ### 21.0 Planning
+Why: the operator asked on 2026-10-29 for the build plan to be written in the build plan document; the section lacked the estimate the pass brought them, and from 21.2 each checkpoint's findings are written into the section as earlier phases' sections carry what their checks found.
+
+### 2026-10-29 - docs/BUILD_PLAN.md - 21.2 reads the estimate revisions' branch against the operator's allowance of 1,505 calls, and asserts no store write by the store's file time
+Authorised by: Phase 21 makes the existing families choose better and the monthly loop test every family on every index, built to completion before any new work with no model judging a stock and nothing retired without the operator's word
+Was:
+> ...the estimate revisions are built forward only, and only where the pass finds the trends endpoint takes many symbols in one request at a weight under 1,000 a night for every member, and are otherwise left out, the entry saying so with the measured weight; and short interest ... **Done when** ...; the trends' weight for every member a night stands against 1,000 and FINRA's files against usable, each branch named; and no store row was written, asserted by the store's row counts before and after.
+Now:
+> ...the estimate revisions are built forward only, the pass having found the trends endpoint takes many symbols in one request at one weighted call a symbol, about 1,505 a night for every member, which the operator allowed on 2026-10-29 in place of the 1,000 their third amendment set, their words in `prompts/2026-10-29-21.2-operator-answers.md`; and short interest ... **Done when** ...; the trends' weight for every member a night stands against the operator's allowance of 1,505 and FINRA's files against usable, each branch named; and no store row was written, asserted by the store's file time, which any write moves, standing after the last read at a time before the first.
+Why: the operator's word of 2026-10-29, "you can have 1505 calls", on the measured weight; and the pass read the store before it counted rows, where the file time asserts the same thing and catches an update a count would miss. The checkpoint amends its own done condition and its entry says so.
+
+### 2026-10-29 - docs/BUILD_PLAN.md - 21.6 builds the estimate revisions at the measured weight on the operator's allowance, with a history off the trends endpoint's own quarterly points put to them
+Authorised by: Phase 21 makes the existing families choose better and the monthly loop test every family on every index, built to completion before any new work with no model judging a stock and nothing retired without the operator's word
+Was:
+> The estimate revisions, forward only and only where 21.2 found the trends endpoint takes many symbols in one request at a weight under 1,000 a night for every member: the night's one request a page in the swing filter's step, as the night asks for the estimates today, each member's trend a reading from the night it is first stored and none before, said so on the Ledger page, and left out otherwise with the entry saying so and the measured weight.
+Now:
+> The estimate revisions, forward only, at the weight 21.2 measured, one weighted call a symbol and about 1,505 a night for every member, which the operator allowed on 2026-10-29 in place of the third amendment's 1,000: the night's requests a page of symbols in the swing filter's step, as the night asks for the estimates today, each member's trend a reading from the night it is first stored and none before, said so on the Ledger page; 21.2 found each past quarter back to 2017 carries its own consensus at 90, 60, 30 and 7 days before its reference point with its revision counts, so a history read off those points, point in time at each offset, is put to the operator in 21.2's entry and built here only on their word.
+Why: 21.2's measurement and the operator's allowance decide the branch, and the endpoint's quarterly history is a finding the plan did not foresee, so it is put to the operator rather than built unasked.
+
+### 2026-10-29 - docs/RUNBOOK.md - the call weights paragraph notes the trends endpoint's measured weight and the requests 21.2 spent
+Authorised by: The night's cost is counted in weighted calls against the stated daily allowance
+Was:
+> ...A member's dividends history costs 1 a member, the historical weight, and the history run states each at that weight before its first request.
+Now:
+> ...A member's dividends history costs 1 a member, the historical weight, and the history run states each at that weight before its first request. The calendar trends endpoint costs 1 a symbol, measured at 21.2 on 2026-10-29 against the counter: five symbols in one request moved it from 8,203 to 8,208 and one symbol from 8,208 to 8,209, and one fundamentals request for a member's share statistics moved it from 8,209 to 8,219; the counter reads cost nothing, and nothing in the night asks the trends endpoint until 21.6 builds the reading.
+Why: 21.2 states the requests it spent where the other measured weights are stated.
+
 ### 2026-10-29 - docs/BUILD_PLAN.md - 21.4 registers the deteriorating-business pullback version again on the SEC's facts, on the operator's answer to 21.1's question
 Authorised by: The S&P 500 pullback version leaving off a deteriorating business is registered again at 21.4 to read the SEC's facts as first filed through the ledger's catalogue
 Was:
