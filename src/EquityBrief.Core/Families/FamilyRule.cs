@@ -216,12 +216,17 @@ public static class FamilyRule
     // The market gate where the night's swing filter stored none, which closes every family's list.
     public static Gate NoMarketCheck { get; } = new(Market, false, "the swing filter stored no market check for the night", Values());
 
+    // Whether a result failed the market check and no other gate, with nothing keeping it off.
+    public static bool FailsOnTheMarketAlone(FamilyResult result) =>
+        !result.Passed && result.Gates.Count > 0 && result.Exclusions.Count == 0 && result.Gates.All(gate => gate.Passed || gate.Name == Market) && result.Gates.Any(gate => gate.Name == Market && !gate.Passed);
+
     // The names passing in the family's order: the figure its order reads, largest first, and then the
-    // ticker, so two reads of one night cannot disagree.
-    public static IReadOnlyList<FamilyResult> Ranked(IEnumerable<FamilyResult> results) =>
+    // ticker, so two reads of one night cannot disagree. From 21.4 with the market check off, for a rule stating the
+    // exposure in the check's place, a name failing the check alone passes as well.
+    public static IReadOnlyList<FamilyResult> Ranked(IEnumerable<FamilyResult> results, bool marketOff = false) =>
     [
         .. results
-            .Where(result => result.Passed)
+            .Where(result => result.Passed || (marketOff && FailsOnTheMarketAlone(result)))
             .OrderByDescending(result => result.OrderBy)
             .ThenByDescending(result => result.ThenBy)
             .ThenBy(result => result.Ticker, StringComparer.Ordinal),

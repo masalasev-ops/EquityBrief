@@ -300,24 +300,28 @@ public sealed class FamilyRecorder : IComponent
     // none it holds a trade on still open and none whose values place no plan. The night's record keeps its list
     // by it, and a replay of the rule keeps the list the same way.
     // Where the rule states hooks reading readings, its fired members are kept and ordered by them first, its own order
-    // breaking a tie; a rule stating none keeps its own order.
+    // breaking a tie; a rule stating none keeps its own order. From 21.4 a rule stating the exposure keeps as well the
+    // members its verdict failed on the market check alone, the exposure's picks standing in the check's place, and the
+    // expected value of the setups like each member is handed in by the step where it has one.
     public static IReadOnlyList<(string Ticker, int Place, (decimal Entry, decimal Stop, decimal? Target, double? RiskMoves, double? RewardToRisk) Plan)> Keep(
         IEnumerable<(string Ticker, ShadowOutcome Outcome)> verdicts,
         IReadOnlySet<string> held,
         RuleHooks? hooks = null,
-        Func<string, IReadOnlyList<double?>?>? readings = null)
+        Func<string, IReadOnlyList<double?>?>? readings = null,
+        Func<string, double?>? expected = null)
     {
         var kept = new List<(string, int, (decimal, decimal, decimal?, double?, double?))>();
+        var exposed = hooks?.Exposure is not null;
         IReadOnlyList<(string Ticker, ShadowOutcome Outcome)> own =
         [
             .. verdicts
-                .Where(verdict => verdict.Outcome.Fired)
+                .Where(verdict => verdict.Outcome.Fired || (exposed && FailsOnTheMarketAlone(verdict.Outcome)))
                 .OrderByDescending(verdict => Number(verdict.Outcome.Values, FamilyRuleEvaluator.OrderValue) ?? double.MinValue)
                 .ThenByDescending(verdict => Number(verdict.Outcome.Values, FamilyRuleEvaluator.ThenByValue) ?? double.MinValue)
                 .ThenBy(verdict => verdict.Ticker, StringComparer.Ordinal),
         ];
 
-        foreach (var fire in (hooks ?? RuleHooks.Off).Order(own, verdict => readings?.Invoke(verdict.Ticker)))
+        foreach (var fire in (hooks ?? RuleHooks.Off).Order(own, verdict => readings?.Invoke(verdict.Ticker), verdict => expected?.Invoke(verdict.Ticker)))
         {
             if (kept.Count == SetupFamilies.ListedANight)
             {
@@ -334,6 +338,13 @@ public sealed class FamilyRecorder : IComponent
 
         return kept;
     }
+
+    // Whether a verdict failed the market check and no other gate, which a rule stating the exposure reads as fired.
+    public static bool FailsOnTheMarketAlone(ShadowOutcome outcome) =>
+        !outcome.Fired
+        && outcome.Values.TryGetValue(FamilyRule.Market, out var market)
+        && market == FamilyRuleEvaluator.Failed
+        && outcome.Values.All(pair => pair.Key == FamilyRule.Market || pair.Value != FamilyRuleEvaluator.Failed);
 
     // The plan a verdict's values state: the buy, the stop, the target where the plan names one, the stop's
     // distance in the night's typical moves and the reward to risk; none where the values place no stop below
