@@ -11736,3 +11736,37 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    21.2 on the operator's go; the re-registration answered above, built at 21.4; the sign-offs of phases 18, 20
             and 22.
+
+### 21.1 - correction: the per-rule verb's output expectation gains the tone line, where the suite over 21.1's merged tree failed at its single-line assertion   2026-10-29
+
+Queue:      done, 21.1 merged as PR 587 at 17:40 UTC on the operator's word; in progress, this correction; next, 21.2 on
+            the operator's go, then 21.3 to 21.15 in the section's order; beside them the sign-offs of phases 18, 20 and
+            22 by fresh sessions.
+Found:      the 21.1 entry states `tools/ci.ps1` and `tools/verify-phase.ps1` green over the tree carrying it, dbbcba98.
+            That run, started at 17:39 UTC, failed in the suite at one test: the expectation that the per-rule verb hands
+            the walk every complete version's release readings asserted exactly one output line beginning with the
+            drift's family and naming the release reading, and 21.1's tone line, printed after the verdict line of each
+            rule reading a release reading, is a second such line. The filtered runs 21.1 made before its gates covered
+            the expectations of the files it changed and not this one. PR 587 merged at 17:40 UTC on the operator's word
+            before the run ended, so main at 5705a03b carries a suite that fails at that test. An earlier run of the same
+            gates over the branch at d7b9d41d had failed at price-storage-form on an explicit cast in the pullback's
+            own-search routing, corrected in dbbcba98 before the merge. Each of those runs, under a PowerShell host whose
+            streams the session redirected, ended at the first failing test's stderr line under the script's Stop
+            preference and reported one failure; this correction's gates run in a PowerShell process of their own with
+            its streams redirected by the shell that starts it, as the operator's own terminal runs them.
+Corrected:  the expectation takes the variant's lines as its verdict line and its tone line: the one without the tone
+            condition's words judged as before, the one with them asserted to state the opposite condition walked
+            unregistered and written nowhere, and the two asserted to be the variant's only lines. No shipped source
+            changes.
+Tests:      2921, unchanged: one assertion widened, none added.
+Claims:     1455, unchanged.
+Pins:       none moved: no shipped source is written.
+Mutation:   chosen before the run by this rule, the property the correction adds: the variant's output is exactly its
+            verdict line and its tone line. The tone line's print skipped: the test red at its single tone line;
+            reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2921 of 2921 tests ran
+            with none failed, migrations 0 to 114 with none pending, schema version 114, against `data-ci` and never
+            `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    21.2 on the operator's go; the sign-offs of phases 18, 20 and 22.
