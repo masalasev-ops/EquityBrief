@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-29 - docs/BUILD_PLAN.md - 21.4 registers the deteriorating-business pullback version again on the SEC's facts, on the operator's answer to 21.1's question
+Authorised by: The S&P 500 pullback version leaving off a deteriorating business is registered again at 21.4 to read the SEC's facts as first filed through the ledger's catalogue
+Was:
+> ...since no trade of its can hold back anything once it stops. One remedy, from main after the merge while no other writer runs: the migration, every rule whose version moved registered again, ..., the 28 S&P 400 and 600 rules, the dip's, the quality's and the Fundamentals' restarting at the registration with their paper accounts, ... **Done when** ...; a constructed S&P 600 night holds back nothing for it; the remedy's lines register again exactly the rules whose versions moved over a register shaped as the operator's, the S&P 500's two families replayed, and no other rule's version moves, asserted; ...
+Now:
+> ...once it stops. On the operator's answer of 2026-10-29 to 21.1's question, the S&P 500 pullback version leaving off a deteriorating business is registered again to read the SEC's facts as first filed through the ledger's catalogue, as the Fundamentals family and the scorecard read them, in place of the provider's reported quarters the store keeps only from 2026-09-27, so the per-rule test walks it from its first test year; its record restarts at the registration with its count stated, and no other S&P 500 pullback rule's version moves, asserted (see: The S&P 500 pullback version leaving off a deteriorating business is registered again at 21.4 to read the SEC's facts as first filed through the ledger's catalogue). One remedy, ...: the migration, every rule whose version moved registered again, ..., the dip's, the quality's, the Fundamentals' and the deteriorating-business version restarting at the registration with their paper accounts, ... **Done when** ...; a constructed S&P 600 night holds back nothing for it; the deteriorating-business version registered again reads the SEC's facts as first filed through the catalogue at a constructed filing and is walked by the per-rule test over a constructed ledger from its first test year, with no other S&P 500 pullback rule's version moving, asserted; the remedy's lines register again ...
+Why: the operator answered 21.1's question ahead, yes, and placed the re-registration at 21.4 with the other pin moves.
+
 ### 2026-10-29 - docs/ARCHITECTURE.html - the per-rule test's paragraph states each rule walked at what it reads and the judge named for one the history cannot walk
 Authorised by: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
 Was:

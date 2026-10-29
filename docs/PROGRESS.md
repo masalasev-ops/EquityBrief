@@ -11637,3 +11637,102 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    21.1 on the operator's go; the question on the deteriorating-business version after 21.1's entry; the
             sign-offs of phases 18, 20 and 22.
+
+### 21.0 - record: the phase report the planning entry states over PR 586's tree, made over main after the merge   2026-10-29
+
+Not a checkpoint entry: it records what the 21.0 planning entry stated of its run, and lands nothing.
+Found:      the entry states `tools/ci.ps1` and `tools/verify-phase.ps1` green over the tree carrying it, with 2918 tests and
+            1455 claims. The checkpoint script ran green over that tree, d477def7, finishing at 15:33 UTC on 2026-10-29
+            with 2918 of 2918 tests and migrations 0 to 114; the phase report was not run over it before PR 586 merged,
+            the condition for a pull request of documents alone being the checkpoint script, and the entry's statement
+            of a phase report was written ahead of a run that was then not made. Hosted CI passed both jobs over the
+            pull request's head. Recorded on the operator's word of 2026-10-29, kept whole in
+            `prompts/2026-10-29-21.1-operator-answers.md`.
+Measured:   the phase report over main at d477def7 with a clean tree, run from 15:58 to 16:31 UTC on 2026-10-29 after the
+            merge, the suite run again since the script's stamp was empty over the tree it had run on: 2918 of 2918
+            tests ran with none failed, 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined,
+            1470 placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed, the
+            figures the entry stated, the report reading that entry as the newest.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the newest entry of this pull
+            request, with the figures it states.
+
+### 21.1 - every registered rule walked by the per-rule test at what it reads, or named with what judges it: the S&P 400's and 600's rules through their sweeps' own readings, a book off the six at its own setting, a pullback version at its plan, and the tone variant's opposite walked beside it   2026-10-29
+
+Queue:      done, 21.0 as PR 586; in progress, this checkpoint; next, 21.2 on the operator's go of 2026-10-29, then 21.3 to
+            21.15 in the section's order; beside them the sign-offs of phases 18, 20 and 22 by fresh sessions.
+Built:      the per-rule test walks each registered rule at what it reads, in the tester's own files: a registered S&P
+            400 or 600 breakout, drift or pullback stating a level the extended grid's walk does not read, its market
+            check's floor off the swing filter's, its quality check, its hold, the drift's first-pullback entry or revenue
+            dial or the S&P 500's breadth, goes to its sweep's own reading of the index's history at the setting and
+            every level its registration states, through the mapping the record command replays a frozen rule by, the
+            tester laying each family's reading out once a run at each stop floor a drift rule states and the pullback's
+            search once, charged its round trip; a heavyweights book at a setting none of its design's six holds goes to
+            the lay's full grid at its own setting, and twelve months' strength, which the record command replays at no
+            setting, through the six settings' own reader at the registration's quality and floors, design (b)'s at its
+            base window and industries alone; an S&P 500 pullback version's trade gate goes to the plan of its kind, the
+            ladder's first tranche or the plan at the nearest bands, drawn by the ideas' run from the bands the history
+            holds; and the drift's tone variant, missing from the test on every index since 20.8, is held to its condition
+            over the listings its levels keep, with its opposite, the complement of the condition over the releases read,
+            walked beside it unregistered and written nowhere and both sides printed on each side of the local model's
+            cutoff's year. A rule the history still cannot walk, one reading the analysts' estimates or a business's
+            reported quarters, keeps the reading it lacks and no figure and names what judges it instead, its record from
+            its registration on paper trading and the Run page, in its stored verdict, on the run's line and in the
+            month's report.
+Measured:   the per-rule test in print mode over the operator's store, read-only and writing nothing, from a copy of this
+            branch's build pointed at the live data root as the run scripts point theirs, from 15:56 to 17:25 UTC on
+            2026-10-29 while no night, local run, off-peak run or other writer ran. The S&P 500: 53 rules, 51 walked and 2
+            not testable, the swing filter leaving off a deteriorating business, a business's reported quarters, and the
+            swing filter with estimates raised over the last 30 days, the analysts' estimates, each naming its judge; the
+            swing filter on the plan at the nearest bands walked, 1,044 units, better in 2 of 4 counted years against the
+            live swing filter and not passing; none passed; 20 minutes. The S&P 400: 30 rules, all walked, the drift's,
+            the breakout's and the pullback's own readings laid out first, the drift's at a stop floor of 1 typical move;
+            none passed; 30 minutes. The S&P 600: 34 rules, all walked, the three readings laid out first and the
+            heavyweights' book on twelve months' strength among them; none passed; 39 minutes. So of the 22 rules the run
+            of 2026-10-27 could not test, 3, 8 and 11 by index, 20 are walked and 2 name their judge. The tone variant
+            and its opposite, trades and mean edge after costs a trade, before the cutoff's year, 2025, and from it: the
+            S&P 500's variant 1,185 at +0.120 and 465 at -0.096, its opposite 584 at -0.365 and 186 at -0.415; the S&P
+            400's 973 at +0.144 and 395 at -0.037, its opposite 492 at +0.120 and 165 at +0.058; the S&P 600's 566 at
+            +0.085 and 235 at -0.009, its opposite 190 at +0.128 and 74 at +0.455; beside 20.10's usefulness table, for
+            the operator's ruling at 21.14. The three legs took 1 hour 29 minutes against the per-rule test's about 42
+            minutes in the monthly run of 2026-10-27, the sweeps' own readings on the S&P 400 and 600 being the
+            difference, so the monthly run of 2026-11-07 is expected near 2 hours 55 minutes, which 21.5's operating row
+            reads. The verdicts paper trading draws are the newest written run's, so the page shows these words on that
+            run, or on a run of `loop-rules` by hand without `--print` on the operator's word.
+Answered:   the question the plan has this entry bring, whether the pullback version leaving off a deteriorating business,
+            which reads the provider's reported quarters kept only from 2026-09-27 and is named here as judged by its
+            record, is registered again on the SEC's facts as first filed, was answered ahead by the operator on
+            2026-10-29, word for word in `prompts/2026-10-29-21.1-operator-answers.md`: yes, through the ledger's
+            catalogue as the Fundamentals family and the scorecard read them, so the per-rule test walks it from 2019,
+            landing at 21.4 with the other pin moves, its record restarting with the count stated and no other S&P 500
+            pullback rule's version moving, asserted. 21.4's text, its done condition and the decision naming it carry
+            the answer, with the prior text in the changelog.
+Tests:      2921, from 2918: three added in the fixture's expectations, each cause the run of 2026-10-27 could not test
+            routed or naming its judge over a constructed register, the tone condition's opposite the complement over
+            the sixteen answers with its line, and over a constructed S&P 600 history a breakout at a market floor the
+            extended grid does not read, a pullback at its own levels, a book off the six and twelve months' strength at
+            its own setting, walked and refused as the roster states.
+Claims:     1455, 1455 passing, 1470 placements: the three rows amended, the per-rule paragraph being no claim, keep their
+            keys and their checks, so the pair stands at the count 21.0 stated for this checkpoint less the two rows it
+            expected added, which were amended in place instead.
+Pins:       none moved: every edit sits in the tester's, the lay's and the sweeps' own-reading files, which no
+            registration pins, asserted by the expectations holding every evaluator's version as the operator's register
+            names it and no rule on the indices pinning a file the searches on their own history live in.
+Mutation:   chosen before the run by this rule, the property added last that no other test holds: the tone condition's
+            opposite is the complement of the variant's over the releases read. The opposite narrowed to results worse
+            or the outlook lowered or withdrawn, the reading the plan first had: the complement's test went red at its
+            assertion that a release read in line with its outlook kept is opposite, the book's test beside it green;
+            reverted, both green. Not mutated: the routing of each cause, the book's months equal to the record
+            command's and the judge's words, each held by its own expectation.
+Amended:    this checkpoint amends its own done condition: the opposite condition's walk keeps exactly the listings the
+            variant's leaves among those whose release is read, a listing whose release is not read kept by neither, as
+            on the night; and the checkpoint's text defines the opposite as the complement over the releases read rather
+            than results worse or the outlook cut, which is narrower than the complement and would not keep what the
+            variant leaves. Both with the prior text in the changelog. A book holds one row fewer than the months laid,
+            the last laid month having no session to close on, which the expectation states.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2921 of 2921 tests ran
+            with none failed, migrations 0 to 114 with none pending, schema version 114, against `data-ci` and never
+            `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    21.2 on the operator's go; the re-registration answered above, built at 21.4; the sign-offs of phases 18, 20
+            and 22.
