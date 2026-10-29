@@ -248,12 +248,13 @@ public partial class FixtureExpectations
         string[] fill = ["TradeFills", "TradeFiller", "OpenFills", "trade_fill"];
 
         // Every source an evaluator pins, its own and the shared evaluation's, the hooks' and the readings' version, but the
-        // quality rules', whose step buys at the fill and which no rule registered before them did, and from 22.3 the dip's
-        // own rules', whose step buys at the fill too.
+        // quality rules', whose step buys at the fill and which no rule registered before them did, from 22.3 the dip's
+        // own rules', whose step buys at the fill too, and from 22.15 the Fundamentals rules', the same.
         // see: A quality rule is registered as the family on its index and kept by the family's own step alone
         // see: A dip rule is registered as the family on its index and kept by the dip's own step alone
+        // see: A Fundamentals rule is registered as the family on its index and kept by the family's own step alone
         var pinned = EquityBrief.Core.Candidates.CandidateEvaluators.All
-            .Where(evaluator => evaluator is not (EquityBrief.Core.Candidates.QualityCandidate or EquityBrief.Core.Candidates.DipCandidate))
+            .Where(evaluator => evaluator is not (EquityBrief.Core.Candidates.QualityCandidate or EquityBrief.Core.Candidates.DipCandidate or EquityBrief.Core.Candidates.ImprovingCandidate))
             .SelectMany(evaluator => evaluator.OwnSources)
             .Concat(EquityBrief.Core.Candidates.CandidateEvaluator.EvaluationSources)
             .Concat(EquityBrief.Core.Loop.RuleHooks.Sources)
