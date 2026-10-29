@@ -329,6 +329,10 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.CatalogueTable, "Walk-forward tester"),
             CheckReach.Key(Scope.MatrixTable, "Walk-forward tester"),
 
+            // 21.3, the score audit.
+            CheckReach.Key(Scope.CatalogueTable, "Score audit"),
+            CheckReach.Key(Scope.MatrixTable, "Score audit"),
+
             // 16.3, the taken trades' follower.
             CheckReach.Key(Scope.CatalogueTable, "Taken follower"),
             CheckReach.Key(Scope.MatrixTable, "Taken follower"),
@@ -800,16 +804,17 @@ public partial class ComponentAccess
 
         Assert.Empty(faults);
 
-        // The ten that write no store, stated in advance: the page, the renderer, the
+        // The eleven that write no store, stated in advance: the page, the renderer, the
         // trend classifier, which hands its label to the ladder builder, from 6.11 the
         // report exporter, whose file is kept wherever the person exporting chooses,
         // from 12.2 the filter counts, which print the shape counts and open the store read-only,
         // from 12.6 the comparison files, written to a folder the repository ignores, from 12.5 the
         // sweep history, which opens the store read-only and keeps its chunks and its report in a folder beside it,
         // and the sweep's point-in-time check, which reads scratch stores of its own the night's components wrote,
-        // from 20.3 the release accuracy report, which prints its figures and writes nothing, and from 20.5 the local
-        // comparison, which opens the store read-only and writes its figures to a file under the data root.
-        Assert.Equal(["ComparisonFiles", "FilterCounts", "LocalComparison", "MarkRenderer", "ReleaseAccuracy", "ReportExporter", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
+        // from 20.3 the release accuracy report, which prints its figures and writes nothing, from 20.5 the local
+        // comparison, which opens the store read-only and writes its figures to a file under the data root, and from
+        // 21.3 the score audit, which reads the setups and the stored models and writes its page under the data root.
+        Assert.Equal(["ComparisonFiles", "FilterCounts", "LocalComparison", "MarkRenderer", "ReleaseAccuracy", "ReportExporter", "ScoreAudit", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
 
         // And the row's own words, read off the document, are the words this holds.
         Assert.Equal(

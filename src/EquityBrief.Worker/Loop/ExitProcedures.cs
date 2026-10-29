@@ -199,7 +199,9 @@ public static class ExitProcedures
 
     // A rule's trades over the listings it is handed under an exit, or its own where none is given, each result after its
     // round trip and against the same plan under the same exit on every member that session.
-    public static IReadOnlyList<Walked> Walk(LoopRead read, FamilySweepRunner.Adapter adapter, double[][] closes, IReadOnlyList<FamilyListing> listings, ExitChoice? exit)
+    // From 21.3 a listing a skip names is not bought, its place on the night spent and its stock left free, as the record
+    // command replays the drift's open floor; with no skip the walk is the family's own.
+    public static IReadOnlyList<Walked> Walk(LoopRead read, FamilySweepRunner.Adapter adapter, double[][] closes, IReadOnlyList<FamilyListing> listings, ExitChoice? exit, Func<FamilyListing, bool>? skip = null)
     {
         var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
         var ended = new Dictionary<(int Name, int Session), (int Sessions, string End)>();
@@ -229,7 +231,9 @@ public static class ExitProcedures
 
         int YearOf(int session) => read.Calendar[session].Year - SweepColumns.FirstScored.Year;
 
-        var trades = FamilySweep.Walk(listings, tickers, YearOf, Exit, Benchmark);
+        var trades = skip is null
+            ? FamilySweep.Walk(listings, tickers, YearOf, Exit, Benchmark)
+            : RuleReplay.WalkSkippingAtTheOpen(listings, tickers, YearOf, Exit, Benchmark, skip);
 
         return
         [

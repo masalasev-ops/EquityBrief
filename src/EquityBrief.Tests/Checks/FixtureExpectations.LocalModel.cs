@@ -227,9 +227,12 @@ public partial class FixtureExpectations
     [Fact]
     public async Task AModelAlreadyListedIsNotLoadedAgainAndItsFirstCallAloneCarriesTheLoadsAllowance()
     {
-        // Listed is loaded or loading, so the first call is bounded by its own second and the load's three, and answers
-        // after two; the second call, bounded by its own second alone, does not.
-        var settings = LoadingProfile(Gemma, timeoutSeconds: 1, loadSeconds: 3);
+        // Listed is loaded or loading, so the first call is bounded by its own second and the load's eight, and answers
+        // after six; the second call, bounded by its own second alone, does not. The bounds are wall-clock, which the
+        // rules on writing an assertion name as a bound on the machine: the scripted answer stands five seconds past
+        // the second call's bound and three short of the first's, because a hosted runner under the whole suite let a
+        // one-second bound run past a two-second answer on 2026-10-29 and read the refusal as an answer.
+        var settings = LoadingProfile(Gemma, timeoutSeconds: 1, loadSeconds: 8);
         var runtime = new ScriptedRuntime(async (path, cancellation) =>
         {
             if (path == "/api/v1/models")
@@ -237,7 +240,7 @@ public partial class FixtureExpectations
                 return Answered(HttpStatusCode.OK, Runtime("local-runtime-models-gemma-loaded.json"));
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(2), cancellation);
+            await Task.Delay(TimeSpan.FromSeconds(6), cancellation);
 
             return Answered(HttpStatusCode.OK, Runtime("local-gemma-answered.json"));
         });
@@ -259,7 +262,7 @@ public partial class FixtureExpectations
                 return Answered(HttpStatusCode.NotFound, "Not Found");
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(2), cancellation);
+            await Task.Delay(TimeSpan.FromSeconds(6), cancellation);
 
             return Answered(HttpStatusCode.OK, Runtime("local-gemma-answered.json"));
         });

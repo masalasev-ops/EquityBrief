@@ -4,6 +4,7 @@ using EquityBrief.Core.Loop;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Readings;
 using EquityBrief.Core.Sweep;
+using EquityBrief.Worker.Cards;
 using EquityBrief.Worker.Indices;
 using EquityBrief.Worker.Loop;
 
@@ -278,6 +279,17 @@ public sealed partial class IndexSweepRunner
                 },
                 listing => Fills.Benchmark(adapter.Benchmark(listing), listing));
         }
+
+        // From 21.3 the same trades with a listing a skip names not bought, its place on the night spent and its stock left
+        // free, as the record command replays the drift's open floor over a frozen rule's own listings.
+        public IReadOnlyList<FamilyTrade> AtOpenSkipping(IEnumerable<FamilyListing> listings, Func<FamilyListing, bool> skips) =>
+            RuleReplay.WalkSkippingAtTheOpen(
+                listings,
+                Tickers,
+                YearOf,
+                listing => Fills.Exit(Adapter.Exit(listing), listing),
+                listing => Fills.Benchmark(Adapter.Benchmark(listing), listing),
+                skips);
 
         // The rule the index's night reads today: the provisional setting at the index's own breadth of 45 per cent with no
         // stop floor, its listings clearing the floors and the profit gate, after each trade's round trip at the next open.
