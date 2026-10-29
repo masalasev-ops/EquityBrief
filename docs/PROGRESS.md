@@ -11770,3 +11770,82 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             `data`; the phase report 64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    21.2 on the operator's go; the sign-offs of phases 18, 20 and 22.
+
+### 21.0 - correction: the phase 21 section carries the estimate the planning pass brought to the operator   2026-10-29
+
+Not a checkpoint entry: it corrects the section the planning pass wrote, and lands nothing.
+Found:      the operator asked on 2026-10-29 for the build plan to be written in the build plan document; the section
+            held the plan's checkpoints, findings, answers and claims and not its estimate, which the pass brought to
+            the operator in conversation and the planning entry stated in part.
+Corrected:  the section carries the estimate as the plan stated it, with 21.1's measured time of the per-rule test
+            added; and from 21.2 each checkpoint's findings are written into the section as well as its entry, as
+            earlier phases' sections carry what their checks found.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over main at 2cd332d7 at 18:27 UTC on 2026-10-29,
+            the shipped source, the suite, the fixtures and the settings this tree carries unchanged from it; this pull
+            request changes documents alone, so no run over its own tree, and the corpus checks that read them ran
+            filtered over this tree, stated in the newest entry of this pull request.
+
+### 21.2 - the sources checked, read-only: the trends endpoint at one weighted call a symbol, FINRA's files usable from 2017-12-29, Yahoo's actions back to 2012 for the stocks asked, and the insider clusters counted by index and year   2026-10-29
+
+Queue:      done, 21.1 as PR 587 and its correction as PR 588; in progress, this checkpoint; next, 21.3 on the operator's
+            go, then 21.4 to 21.15 in the section's order; beside them the sign-offs of phases 18, 20 and 22 by fresh
+            sessions.
+Measured:   read-only on 2026-10-29 between 17:45 and 18:00 UTC, no store row written: every read of the store opened it
+            read-only, and its file stood after the last read at its time of 16:54 UTC, before the first, with no
+            write-ahead file. The provider's calendar trends endpoint, asked once for five symbols and once for one,
+            moved the account's counter from 8,203 to 8,208 and from 8,208 to 8,209, one weighted call a symbol, so
+            about 1,505 a night for every member; its answer carries, a symbol, every quarter from 2017 to the next
+            fiscal year, 96 records for AAPL over 40 period ends from 2017-06-30 to 2027-09-30 and 98 to 100 for the
+            other four, over the periods 0q, +1q, 0y and +1y, each with the consensus at 90, 60, 30 and 7 days before
+            its reference point and the analysts raising and cutting over 7 and 30 days, the trend moving in 96 of
+            AAPL's 96 records and 87 of KEYS's 98, so a past quarter's record is its own and not the fetch day's; the
+            one-symbol answer held the same 96 records. The fundamentals payload's share statistics: null in the
+            fixture's four captures of 2026-09-12 and filled in one live answer for KEYS on 2026-10-29, 2,164,006 shares
+            short against 2,360,669 the month before and a ratio of 1.78, current values only, at weight 10, the counter
+            8,209 to 8,219; 16 weighted calls in all against the day's 100,000, the counter reads free. FINRA's
+            consolidated short interest: a keyless query API answering CSV or JSON, settlement dates twice a month, the
+            15th and the month's last settlement day, published on the seventh business day after, 24 a year; its first
+            settlement date 2017-12-29 with 15,495 rows and none before it, its latest 2026-10-15 with 22,537 rows across
+            NYSE, Nasdaq, Arca, BZX, OTC and the rest at 5,000 rows a page, filtered by symbol and by date range, AAPL's
+            twelve settlements of the first half of 2019 answered in one request; about 17 requests spent, free, so
+            usable. Yahoo's stored rating actions: 24 rows for 19 stocks, the chart page's asks, the newest answer a
+            stock holding 62 to 997 actions, 352 at the median, reaching back to 2011 for one stock, 2012 for 14 and
+            2015, 2017, 2021 and 2025 for one each, and 1,486 of the 1,505 current members hold no stored row. The stored
+            Form 4 history: 1,512,247 transactions, 48,847 open-market purchases across 1,895 issuers from 2006-10-31 to
+            2026-10-26; a cluster event, a day whose trailing 21 sessions by the pulled history's calendar first hold
+            three or more distinct insiders buying in the open market, counted from 2019: over every issuer 243, 378,
+            152, 201, 214, 125, 193 and 115 a year from 2019 to 2026, 1,621 among 847 issuers; among today's members by
+            index, the S&P 500 39, 39, 25, 25, 25, 10, 31 and 23 a year, 217 among 132 issuers, the S&P 400 37, 71, 27,
+            34, 47, 24, 28 and 32, 300 among 138, and the S&P 600 72, 135, 55, 73, 73, 45, 85 and 42, 580 among 307; by
+            the index the issuer was in on the day as the membership table records it, which holds the S&P 400's and
+            600's rows only from 2026-10-02, the S&P 500's 36, 36, 18, 22, 27, 11, 37 and 24.
+Chosen:     on the operator's answers of 2026-10-29: relative strength and the insider cluster built with their history;
+            the rating actions built with their history pulled and refreshed outside the night at 100 a day, about 15
+            days for the 1,486 members without a row; the estimate revisions built forward only, the trends endpoint
+            taking many symbols in one request at one weighted call a symbol, about 1,505 a night, which the operator
+            allowed in conversation about 17:55 UTC, "you can have 1505 calls", kept whole in
+            `prompts/2026-10-29-21.2-operator-answers.md`, in place of the third amendment's 1,000; short interest from
+            FINRA's files, usable, the provider's snapshot not built.
+Asked:      whether the estimate revisions' history is read off the trends endpoint's own quarterly points, each past
+            quarter's consensus at 90, 60, 30 and 7 days before its reference point taken point in time at each offset,
+            so the ledger holds the reading over the test years, or the reading starts forward only as ruled; the answer
+            lands at 21.6.
+Written:    the section's findings paragraph and the estimate, 21.2's and 21.6's text on the allowance, the runbook's
+            note of the requests spent, this entry and the changelog; no shipped source, no fixture, no setting.
+Amended:    this checkpoint amends its own done condition: no store row written is asserted by the store's file time,
+            which any write moves, standing after the last read at a time before the first, where the condition named
+            row counts before and after, since the pass read before it counted and a count misses an update where the
+            file time does not; and the trends' bar of 1,000 stands as the operator's allowance of 1,505, on their word
+            above. Both with the prior text in the changelog.
+Tests:      2921, unchanged: the pass builds nothing.
+Claims:     1455, unchanged.
+Pins:       none moved: no shipped source is written.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over main at 2cd332d7 at 18:27 UTC on 2026-10-29,
+            the shipped source, the suite, the fixtures and the settings this tree carries unchanged from it: 2921 of
+            2921 tests ran with none failed, migrations 0 to 114 with none pending, schema version 114, the phase report
+            64 tables, 1455 claims, 1455 passing, none out of scope and none unexamined, 1470 placements and verdicts
+            reconciled against a floor of 34, 44 checks on the roster run and passed. This pull request changes documents
+            alone, so no run over its own tree, on the operator's standing word that a documents-only change runs no full
+            checkpoint script, said again on 2026-10-29; the corpus checks that read the record, the plan, the runbook,
+            the decisions, the changelog and the roster ran filtered over this tree, 213 of 213 green.
+Carried:    21.3 on the operator's go; the question above, answered at 21.6; the sign-offs of phases 18, 20 and 22.
