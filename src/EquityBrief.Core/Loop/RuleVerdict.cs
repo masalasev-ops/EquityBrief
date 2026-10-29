@@ -2,8 +2,8 @@ namespace EquityBrief.Core.Loop;
 
 // What a rule's newest monthly per-rule test reads as beside its paper account and its trade log: passed, within luck
 // where the gate did not clear the bar, the first screen it failed in the tester's own order, not testable with the
-// reading it lacks, or not tested yet where no test holds it. Its record since registration is labelled apart, too few
-// until the count screen's own minimum is met, and the two are never merged into one figure.
+// reading it lacks and what judges it instead, or not tested yet where no test holds it. Its record since registration is
+// labelled apart, too few until the count screen's own minimum is met, and the two are never merged into one figure.
 // see: A rule's scorecard draws its test years and its record since it went live as two halves, and never adds them together
 public static class RuleVerdict
 {
@@ -27,9 +27,16 @@ public static class RuleVerdict
 
     public const string Count = "count";
 
+    // From 21.1 what judges a rule the history cannot walk, named beside the reading it lacks: its record from its
+    // registration, which paper trading and the Run page draw.
+    // see: Every registered rule is walked by the per-rule test at what it reads, and one the history cannot walk names what judges it instead
+    public const string Judged = "judged by its record from its registration, on paper trading and the Run page";
+
+    public const string NotTestablePrefix = "not testable: ";
+
     public static string Failed(string screen) => "failed the test's " + screen;
 
-    public static string NotTestable(string why) => "not testable: " + why;
+    public static string NotTestable(string why) => NotTestablePrefix + why + "; " + Judged;
 
     // The verdict a stored test row reads as: a rule with a reason is not testable; below the block floor no p-value
     // was read; then the gate, the stability screen, the trimmed screen and the count, in the tester's own order.
@@ -49,7 +56,7 @@ public static class RuleVerdict
         verdict == Passed ? 0
         : verdict == WithinLuck ? 1
         : verdict.StartsWith(Failed(string.Empty), StringComparison.Ordinal) ? 2
-        : verdict.StartsWith(NotTestable(string.Empty), StringComparison.Ordinal) ? 3
+        : verdict.StartsWith(NotTestablePrefix, StringComparison.Ordinal) ? 3
         : verdict == NotTested ? 4
         : 5;
 

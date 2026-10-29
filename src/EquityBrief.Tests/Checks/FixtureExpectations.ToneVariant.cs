@@ -515,7 +515,7 @@ public partial class FixtureExpectations
         var kept = RuleTests.NotWalkedYet(DriftRule.Name, Row(tone), null)!;
 
         Assert.Equal(RuleTests.ReleaseReading, kept.Why);
-        Assert.Equal("not testable: its reading version's history read is not complete", EquityBrief.Core.Loop.RuleVerdict.Of(false, kept.Why, null, null, null, null, null));
+        Assert.Equal("not testable: its reading version's history read is not complete; judged by its record from its registration, on paper trading and the Run page", EquityBrief.Core.Loop.RuleVerdict.Of(false, kept.Why, null, null, null, null, null));
         Assert.Equal(RuleTests.ReleaseReading, RuleTests.NotWalkedYet(DriftRule.Name, Row(tone), Complete(1))!.Why);
         Assert.Null(RuleTests.NotWalkedYet(DriftRule.Name, Row(tone), Complete(1, 2)));
         Assert.Null(RuleTests.NotWalkedYet(DriftRule.Name, Row(live), null));

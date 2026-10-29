@@ -221,15 +221,15 @@ public sealed class RuleWalk(
 
     // The S&P 500's pullback: the swing filter at a version's settings read by value over the ideas' run's candidates,
     // every listing kept, five a night in the list's own order or as many as a variant keeps, held on closes to the cap,
-    // with the hooks an approval stored for it.
+    // with the hooks an approval stored for it, and from 21.1 at the plan the version's trade gate reads.
     // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
-    public static RuleWalk LargeSwingFilter(LoopRead read, LargePullback history, string version, FilterSettings settings, Action<string> progress, LoopChange? standing = null, LoopReadings? readings = null, Func<long, TreeModel?>? trees = null, int perNight = SetupFamilies.ListedANight) =>
+    public static RuleWalk LargeSwingFilter(LoopRead read, LargePullback history, string version, FilterSettings settings, Action<string> progress, LoopChange? standing = null, LoopReadings? readings = null, Func<long, TreeModel?>? trees = null, int perNight = SetupFamilies.ListedANight, PlanRule plan = PlanRule.Clear) =>
         OverListings(
             read,
             history.Series,
-            history.Listings(settings),
+            history.Listings(settings, plan),
             SweepIdeas.TodaysRule with { PerNight = perNight },
-            LargePullback.Words(version, settings),
+            LargePullback.Words(version, settings, plan),
             progress,
             standing,
             readings,
