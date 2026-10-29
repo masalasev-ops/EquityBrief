@@ -232,7 +232,7 @@ public sealed class ImprovingFamily : IComponent
     // order they were registered, each at its registration's setting and one whose evaluator moved since named as not
     // kept; and otherwise the provisional rule at the starting setting.
     // see: A Fundamentals rule is registered as the family on its index and kept by the family's own step alone
-    public static IReadOnlyList<(string Rule, ImprovingSweepSetting Setting, string? Fault)> RulesOn(string index, IReadOnlyList<RegisterRow> register, DateTimeOffset standingAt)
+    public static IReadOnlyList<(string Rule, ImprovingSweepSetting Setting, string? Fault, EquityBrief.Core.Loop.RuleHooks Hooks)> RulesOn(string index, IReadOnlyList<RegisterRow> register, DateTimeOffset standingAt)
     {
         var family = ShadowColumn.StandingAt(register, standingAt)
             .Where(row => CandidateEvaluators.Find(row.Evaluator) is ImprovingCandidate rule && rule.Index == index)
@@ -240,12 +240,15 @@ public sealed class ImprovingFamily : IComponent
             .ThenBy(row => row.Id)
             .ToArray();
 
+        // From 21.4 each rule's hooks beside its setting, its conditions on the catalogue's readings and its score, which
+        // keep the members whose lifted filing its step buys.
         return family.Length == 0
-            ? [(ProvisionalRule, ImprovingGrid.Starting, null)]
+            ? [(ProvisionalRule, ImprovingGrid.Starting, null, EquityBrief.Core.Loop.RuleHooks.Off)]
             : [.. family.Select(row => (
                 row.Candidate,
                 ImprovingCandidate.SettingsOf(CandidateEvaluator.Read(row.Parameters)),
-                CandidateEvaluators.Find(row.Evaluator)!.Version == row.EvaluatorVersion ? (string?)null : Moved))];
+                CandidateEvaluators.Find(row.Evaluator)!.Version == row.EvaluatorVersion ? (string?)null : Moved,
+                EquityBrief.Core.Loop.RuleHooks.Of(CandidateEvaluator.Read(row.Parameters))))];
     }
 
     // The step over the three indices, each index's failure named on its own row while the others go on, and a failure
@@ -287,7 +290,7 @@ public sealed class ImprovingFamily : IComponent
 
                 try
                 {
-                    foreach (var (rule, setting, moved) in rules)
+                    foreach (var (rule, setting, moved, hooks) in rules)
                     {
                         if (moved is not null)
                         {
@@ -297,7 +300,7 @@ public sealed class ImprovingFamily : IComponent
                             continue;
                         }
 
-                        var (outcome, written) = await IndexNightAsync(connection, index, night, bars, filers, facts, rule, setting, cancellation);
+                        var (outcome, written) = await IndexNightAsync(connection, index, night, bars, filers, facts, rule, setting, hooks, cancellation);
 
                         first ??= outcome;
                         rows += written;
@@ -309,7 +312,7 @@ public sealed class ImprovingFamily : IComponent
                 {
                     var fault = Cause(failure);
 
-                    foreach (var (rule, setting, _) in rules)
+                    foreach (var (rule, setting, _, _) in rules)
                     {
                         rows += await NotComputedAsync(connection, index, night, fault, rule, setting, cancellation);
                     }
@@ -397,6 +400,7 @@ public sealed class ImprovingFamily : IComponent
         Dictionary<string, IReadOnlyList<FiledFactRow>> facts,
         string rule,
         ImprovingSweepSetting setting,
+        EquityBrief.Core.Loop.RuleHooks hooks,
         CancellationToken cancellation)
     {
         var members = new HashSet<string>(StringComparer.Ordinal);
@@ -414,6 +418,7 @@ public sealed class ImprovingFamily : IComponent
         }
 
         var readings = new Dictionary<string, (double? Growth, double? Change)>(StringComparer.Ordinal);
+        var catalogue = new Dictionary<string, double?[]>(StringComparer.Ordinal);
         var growthAt = LedgerReadings.IndexOf("revenue_growth");
         var changeAt = LedgerReadings.IndexOf("growth_change");
 
@@ -422,6 +427,9 @@ public sealed class ImprovingFamily : IComponent
             if (!row.IsDBNull(1) && JsonSerializer.Deserialize<double?[]>(row.GetString(1)) is { } held)
             {
                 readings[row.GetString(0)] = (held.Length > growthAt ? held[growthAt] : null, held.Length > changeAt ? held[changeAt] : null);
+
+                // From 21.4 the whole row, which a rule's hooks read their conditions and score off.
+                catalogue[row.GetString(0)] = held;
             }
         }
 
@@ -602,8 +610,12 @@ public sealed class ImprovingFamily : IComponent
         }
 
         // Tonight's buys: each member a newly read filing lifted to the bar, one trade a stock, chosen at tonight's close.
+        // From 21.4 a rule stating hooks buys only the lifted members its conditions keep, read off the catalogue's
+        // readings the ledger stored for the night; a rule stating none buys every one, as before.
         var boughtTonight = new List<string>();
         var statuses = new Dictionary<string, (string Status, string? Reason)>(StringComparer.Ordinal);
+        var lifted = answered.Where(one => one is { FirstRead: true, Answer.Bought: true, Before: not null }).ToList();
+        var keptByHooks = hooks.IsOff ? null : hooks.Order(lifted, one => catalogue.GetValueOrDefault(one.Ticker)).Select(one => one.Ticker).ToHashSet(StringComparer.Ordinal);
 
         foreach (var one in answered)
         {
@@ -612,6 +624,10 @@ public sealed class ImprovingFamily : IComponent
                 if (answer.Bought && kept.Contains(one.Ticker))
                 {
                     statuses[one.Ticker] = (HeldStatus, null);
+                }
+                else if (answer.Bought && keptByHooks is not null && !keptByHooks.Contains(one.Ticker))
+                {
+                    statuses[one.Ticker] = (ImprovedStatus, EquityBrief.Worker.Indices.IndexNightRead.NotByItsHooks);
                 }
                 else if (answer.Bought && !sold.Contains(one.Ticker, StringComparer.Ordinal))
                 {

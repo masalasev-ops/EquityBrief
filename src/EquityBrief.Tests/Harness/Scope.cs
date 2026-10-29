@@ -3710,6 +3710,15 @@ internal static class Scope
             Verdict.Pass,
             "the five strongest exits chosen on the learning years alone above the rule's own, an exit one trade short of its floor and one whose trades end in the test year left unranked; the figures read off the document against the constants",
             ByExpectations),
+        // 21.4's hook forms: section 17's exposure and ranking.
+        [CheckReach.Key(LimitsTable, "The exposure")] = new Scoped(
+            Verdict.Pass,
+            "the exposure worked by hand over a constructed night at both switches on both sides, at the hooks, in the S&P 500's recorder and evaluator and in the S&P 400's and 600's night; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The ranking")] = new Scoped(
+            Verdict.Pass,
+            "the ranking's candidates and order worked by hand over a constructed night of seven setups under a constructed score and under the expected value, the best five taken and a setup neither can read left off, at the hooks and in the S&P 500's recorder; the figures read off the document against the constants",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "A path no bars reach")] = new Scoped(
             Verdict.Pass,
             "a series running out before the trade ends leaves it open with no result, a stop at its buy places no trade, and the benchmark averages only the members whose closes reach the exit's end and is none where none does",

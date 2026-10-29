@@ -513,7 +513,7 @@ public static class Nightly
                 var recorded = await NightClose.RecordRuleAsync(store.DatabaseFile, night.Token);
                 // The catalogue's readings of the night's members, read once and only where a stored setting's hooks or a
                 // standing rule's read them.
-                // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+                // see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
                 Func<string, IReadOnlyList<double?>?>? readingsRead = null;
 
                 async Task<Func<string, IReadOnlyList<double?>?>> ReadingsTonightAsync(CancellationToken token) =>
@@ -524,7 +524,10 @@ public static class Nightly
                 var hookReadings = FamilyRecorder.HooksReadReadings(rules.Standing)
                     ? await ReadingsTonightAsync(night.Token)
                     : null;
-                var kept = await new FamilyRecorder(clock, store.DatabaseFile).RunAsync(indexCode, runId, rules.Standing, night.Token, hookReadings);
+                var hookSetups = FamilyRecorder.HooksRank(rules.Standing)
+                    ? await new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).SetupsTonightAsync(indexCode, night.Token)
+                    : null;
+                var kept = await new FamilyRecorder(clock, store.DatabaseFile).RunAsync(indexCode, runId, rules.Standing, night.Token, hookReadings, hookSetups);
                 var held = await new HeavyweightBook(clock, store.DatabaseFile).RunAsync(indexCode, runId, night.Token, HeavyweightBook.Standing(register, standingAt), HeavyweightBook.RetiredBooks(register, standingAt));
 
                 // The S&P 400's and 600's provisional rules, read after the S&P 500's list is drawn so each index's list
@@ -537,7 +540,8 @@ public static class Nightly
                     night.Token,
                     register,
                     standingAt,
-                    (index, token) => new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).ReadingsTonightAsync(index, token));
+                    (index, token) => new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).ReadingsTonightAsync(index, token),
+                    (index, token) => new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).SetupsTonightAsync(index, token));
 
                 // The short-term dip on every index, after every other family has drawn its list, so it gives way to each
                 // list and open trade, and before the cards, which read its picks. A failure in an index's part is named on
@@ -547,7 +551,9 @@ public static class Nightly
                     runId,
                     night.Token,
                     registerAt ?? nightStartedAt,
-                    (index, token) => new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).ReadingsTonightAsync(index, token));
+                    (index, token) => new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).ReadingsTonightAsync(index, token),
+                    (index, token) => new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).SetupsTonightAsync(index, token),
+                    (index, family, token) => EquityBrief.Worker.Loop.StoredRidge.NewestAsync(store.DatabaseFile, index, family, token));
 
                 // A card for each stock every index's families listed and each its books bought, read from the rows the
                 // stages above stored. A failure in an index's cards is named on their own row, and the step goes on.

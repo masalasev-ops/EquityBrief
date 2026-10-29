@@ -169,9 +169,20 @@ public sealed class FamilyRecorder : IComponent
     public static bool HooksReadReadings(IEnumerable<RegisterRow> standing) =>
         standing.Where(Keeps).Any(rule => RuleHooks.Of(CandidateEvaluator.Read(rule.Parameters)).ReadsReadings);
 
+    // From 21.4 whether a rule the recorder keeps states the ranking, so the night lays its family's setups at the
+    // ledger's loose gates for it.
+    public static bool HooksRank(IEnumerable<RegisterRow> standing) =>
+        standing.Where(Keeps).Any(rule => RuleHooks.Of(CandidateEvaluator.Read(rule.Parameters)).Ranks);
+
     // The night's records; the readings a rule whose hooks read them is listed by, one member's at a time, where the
     // night supplies them.
-    public async Task<FamilyRecordsOutcome> RunAsync(string indexCode, string runId, IReadOnlyList<RegisterRow> standing, CancellationToken cancellation = default, Func<string, IReadOnlyList<double?>?>? readings = null)
+    public async Task<FamilyRecordsOutcome> RunAsync(
+        string indexCode,
+        string runId,
+        IReadOnlyList<RegisterRow> standing,
+        CancellationToken cancellation = default,
+        Func<string, IReadOnlyList<double?>?>? readings = null,
+        Func<string, IReadOnlyList<LooseSetup>>? setups = null)
     {
         var startedAt = clock.UtcNow;
 
@@ -250,12 +261,22 @@ public sealed class FamilyRecorder : IComponent
             var hooks = RuleHooks.Of(CandidateEvaluator.Read(rule.Parameters)).With(trees);
             (string Ticker, ShadowOutcome Outcome)[] own = [.. verdicts.Where(verdict => verdict.Family == family && verdict.Outcome.Candidate == rule.Candidate).Select(verdict => (verdict.Ticker, verdict.Outcome))];
 
-            // A rule whose hooks read readings the night did not supply lists nothing tonight rather than a list its
-            // hooks did not order, and one the night's rows hold no verdict of lists nothing it was not evaluated for;
-            // either keeps the trades a run of the night stored for it before.
-            if ((hooks.ReadsReadings && readings is null) || own.Length == 0)
+            // From 21.4 a rule stating the ranking lists from its family's setups at the ledger's loose gates, handed in by
+            // the night as the readings are, ordered by the index's newest learned score where it ranks by the score.
+            if (hooks.Ranking == RuleHooks.RankingByScore)
             {
-                var why = own.Length == 0 ? "the night's rows holding no verdict of it" : "its hooks reading what the night did not supply";
+                hooks = hooks.WithRanker(await EquityBrief.Worker.Loop.StoredRidge.NewestAsync(connection, transaction, indexCode, family, cancellation));
+            }
+
+            // A rule whose hooks read readings the night did not supply lists nothing tonight rather than a list its
+            // hooks did not order, one ranking setups the night did not lay lists nothing either, and one the night's
+            // rows hold no verdict of lists nothing it was not evaluated for; each keeps the trades a run of the night
+            // stored for it before.
+            if ((hooks.ReadsReadings && readings is null) || (hooks.Ranks && setups is null) || (!hooks.Ranks && own.Length == 0))
+            {
+                var why = hooks.Ranks && setups is null ? "its ranking reading setups the night did not lay"
+                    : !hooks.Ranks && own.Length == 0 ? "the night's rows holding no verdict of it"
+                    : "its hooks reading what the night did not supply";
                 var stored = await StoredAsync(connection, transaction, rule.Candidate, night, cancellation);
 
                 said.Add(stored == 0
@@ -268,7 +289,7 @@ public sealed class FamilyRecorder : IComponent
             await ExecuteAsync(connection, transaction, ClearTheRulesNight, cancellation, ("$night", Stamp(night)), ("$candidate", rule.Candidate));
 
             var held = await HeldAsync(connection, transaction, rule.Candidate, night, cancellation);
-            var listed = Keep(own, held, hooks, readings);
+            var listed = hooks.Ranks ? KeepRanked(setups!(family), held, hooks) : Keep(own, held, hooks, readings);
 
             foreach (var (ticker, place, plan) in listed)
             {
@@ -334,6 +355,35 @@ public sealed class FamilyRecorder : IComponent
             }
 
             kept.Add((fire.Ticker, kept.Count + 1, plan));
+        }
+
+        return kept;
+    }
+
+    // From 21.4 the trades a rule stating the ranking keeps: its family's setups at the ledger's loose gates on the night,
+    // the best five by the score or the expected value its hooks name, each at the setup's own plan, none it holds a
+    // trade on still open and none whose stop stands at or over its buy. The night's record keeps its list by it.
+    public static IReadOnlyList<(string Ticker, int Place, (decimal Entry, decimal Stop, decimal? Target, double? RiskMoves, double? RewardToRisk) Plan)> KeepRanked(
+        IReadOnlyList<LooseSetup> setups,
+        IReadOnlySet<string> held,
+        RuleHooks hooks,
+        Func<string, double?>? expected = null)
+    {
+        var kept = new List<(string, int, (decimal, decimal, decimal?, double?, double?))>();
+
+        foreach (var setup in hooks.Order(setups, setup => setup.Readings, setup => expected?.Invoke(setup.Ticker)))
+        {
+            if (kept.Count == SetupFamilies.ListedANight)
+            {
+                break;
+            }
+
+            if (held.Contains(setup.Ticker) || setup.Stop >= setup.Entry || setup.Stop <= 0)
+            {
+                continue;
+            }
+
+            kept.Add((setup.Ticker, kept.Count + 1, (setup.Entry, setup.Stop, setup.Target, setup.RiskMoves, setup.RewardToRisk)));
         }
 
         return kept;

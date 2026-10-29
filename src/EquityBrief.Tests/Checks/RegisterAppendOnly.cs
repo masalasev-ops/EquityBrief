@@ -563,7 +563,7 @@ public class RegisterAppendOnly
         Assert.Equal(["breakout", "drift"], families.Select(family => family.Family).Order(StringComparer.Ordinal));
         // Four of its own, and from 17.5 the engines' hooks and the exit menu its list and trades are read through; and from
         // 20.4 the drift's tone condition's file beside its four, which the drift on every index pins and no other evaluator.
-        // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+        // see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
         // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
         Assert.All(families, family => Assert.Equal(4 + (family.Family == Core.Families.DriftRule.Name ? 1 : 0) + Core.Loop.RuleHooks.Sources.Count, family.OwnSources.Count));
         Assert.All(families, family => Assert.Equal(Core.Loop.RuleHooks.Sources, family.OwnSources.TakeLast(Core.Loop.RuleHooks.Sources.Count)));

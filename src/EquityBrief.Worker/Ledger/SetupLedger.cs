@@ -5,6 +5,7 @@ using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Insiders;
 using EquityBrief.Core.Ledger;
+using EquityBrief.Core.Loop;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Readings;
@@ -344,15 +345,77 @@ public sealed partial class SetupLedger : IComponent
     // The catalogue's shared readings of an index's members on the newest night, for a rule whose hooks read them: each
     // member's read as the night's own setups read theirs, from the same inputs, and none for a member the night holds no
     // bar for. Read only where a standing rule's hooks ask, so a night with none reads nothing.
-    // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+    // see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
     public async Task<Func<string, IReadOnlyList<double?>?>> ReadingsTonightAsync(string index, CancellationToken cancellation = default)
     {
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        if (await ScalarAsync(connection, NewestSession, [], cancellation) is not string newest)
+        if (await TonightAsync(connection, index, cancellation) is not (var inputs, var market, var context))
         {
             return _ => null;
+        }
+
+        var read = new Dictionary<string, IReadOnlyList<double?>?>(StringComparer.Ordinal);
+
+        IReadOnlyList<double?>? Of(string ticker)
+        {
+            var name = Array.FindIndex(inputs.Series, one => string.Equals(one.Name.Ticker, ticker, StringComparison.Ordinal));
+
+            if (name < 0 || IndexNightRead.BarOf(inputs.Series[name], inputs.At) is var bar && bar < 0)
+            {
+                return null;
+            }
+
+            var closes = inputs.Series[name].Bars.Select(one => Statistic.FromPrice(one.Close)).ToArray();
+
+            return LedgerSetups.Readings(index, name, inputs.Series[name], closes, bar, inputs.Sessions[inputs.At], inputs.Members, inputs.Calendar, inputs.At, market, context, inputs.Series);
+        }
+
+        return ticker => read.TryGetValue(ticker, out var held) ? held : read[ticker] = Of(ticker);
+    }
+
+    // From 21.4 the setups at the ledger's loose gates on the newest night, for a rule stating the ranking, whose
+    // candidates they are: each family's rows laid from the same inputs the night's own setups are laid from, each with
+    // its plan and its readings; none for a family holding none, and none at all where the store holds no bar or the
+    // index no member with one. Read only where a standing rule asks, so a night with none lays nothing.
+    public async Task<Func<string, IReadOnlyList<LooseSetup>>> SetupsTonightAsync(string index, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        if (await TonightAsync(connection, index, cancellation) is not (var inputs, var market, var context))
+        {
+            return _ => [];
+        }
+
+        var loose = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, context)
+            .ToDictionary(family => family.Family, family => (IReadOnlyList<LooseSetup>)[.. family.Rows.Select(Loose)], StringComparer.Ordinal);
+
+        return family => loose.GetValueOrDefault(family) ?? [];
+    }
+
+    // A setup's row as a rule stating the ranking is handed it: its plan as prices, through the one crossing from the
+    // statistic the ledger lays it in.
+    static LooseSetup Loose(SetupRow row) =>
+        new(
+            row.Ticker,
+            Statistic.ToPrice(row.Anchor.Entry),
+            Statistic.ToPrice(row.Anchor.Stop),
+            row.Anchor.Target is { } target ? Statistic.ToPrice(target) : null,
+            row.Anchor.Trail is { } trail ? Statistic.ToPrice(trail) : null,
+            row.Anchor.Cap,
+            row.Anchor.RiskMoves,
+            row.Readings);
+
+    // What tonight's readings and setups are laid from, as the night's own setups are: the index's inputs on the newest
+    // night, the market series to it and the catalogue's context; none where the store holds no bar or the index no
+    // member with one.
+    async Task<(IndexNightInputs Inputs, LedgerMarket Market, LedgerContext Context)?> TonightAsync(SqliteConnection connection, string index, CancellationToken cancellation)
+    {
+        if (await ScalarAsync(connection, NewestSession, [], cancellation) is not string newest)
+        {
+            return null;
         }
 
         var night = Date(newest);
@@ -360,7 +423,7 @@ public sealed partial class SetupLedger : IComponent
 
         if (IndexNightRead.Prepare(index, night, names, income) is not { } inputs)
         {
-            return _ => null;
+            return null;
         }
 
         var market = await MarketAsync(connection, MarketBars, night, cancellation);
@@ -379,23 +442,8 @@ public sealed partial class SetupLedger : IComponent
             LargeBreadth = await LargeBreadthOnAsync(connection, index, night, cancellation),
             Gics = await GicsAsync(connection, history: false, cancellation),
         };
-        var read = new Dictionary<string, IReadOnlyList<double?>?>(StringComparer.Ordinal);
 
-        IReadOnlyList<double?>? Of(string ticker)
-        {
-            var name = Array.FindIndex(inputs.Series, one => string.Equals(one.Name.Ticker, ticker, StringComparison.Ordinal));
-
-            if (name < 0 || IndexNightRead.BarOf(inputs.Series[name], inputs.At) is var bar && bar < 0)
-            {
-                return null;
-            }
-
-            var closes = inputs.Series[name].Bars.Select(one => Statistic.FromPrice(one.Close)).ToArray();
-
-            return LedgerSetups.Readings(index, name, inputs.Series[name], closes, bar, inputs.Sessions[inputs.At], inputs.Members, inputs.Calendar, inputs.At, market, context, inputs.Series);
-        }
-
-        return ticker => read.TryGetValue(ticker, out var held) ? held : read[ticker] = Of(ticker);
+        return (inputs, market, context);
     }
 
     // What a history's readings read beside its series, as the build reads it: the pulled market series to the history's

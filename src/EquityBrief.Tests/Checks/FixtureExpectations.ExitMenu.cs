@@ -5,7 +5,7 @@ namespace EquityBrief.Tests.Checks;
 
 // fixture-expectations, 17.5: every exit of the menu replayed by hand over one constructed path, a plan with a fixed
 // target and the same plan trailing, each result worked out from the closes in multiples of the risk.
-// see: Every engine's settings hooks land together and all default off, so the families' pins move once
+// see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
 public partial class FixtureExpectations
 {
     // A buy at 100 with its stop at 95, a risk of 5, a target at 110, two risks, twenty sessions and a typical move of

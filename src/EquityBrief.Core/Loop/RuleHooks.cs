@@ -26,7 +26,7 @@ public sealed record AlsoRequires(int Reading, bool Above, double Level)
 // that holds the stored models, and one not found scores no member, so the rule lists none; the ranking's score and the
 // expected value are handed in by the step that lists, since neither is a registered parameter, and a ranking handed
 // no score lists none.
-// see: Every engine's settings hooks land together and all default off, so the families' pins move once
+// see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
 // see: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score
 public sealed record RuleHooks(
     int Exit,

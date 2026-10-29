@@ -27,7 +27,7 @@ public sealed class BreakoutCandidate : FamilyRuleEvaluator
 
     // Its rule's sources and the engines' hooks a registration may state beside its parameters, which its list and
     // its trades are read through.
-    // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+    // see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
     public override IReadOnlyList<string> OwnSources { get; } = [.. SourcesWith("src/EquityBrief.Core/Families/BreakoutRule.cs"), .. EquityBrief.Core.Loop.RuleHooks.Sources];
 
     // The parameters a registration states for settings and switches, and the settings a registration's parameters state.

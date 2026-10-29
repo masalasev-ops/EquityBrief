@@ -1907,7 +1907,7 @@ public static class SchemaMigrations
 
     // The exit a family rule's trade was kept under, none for the rule's own; the autopsy's finding a proposal states;
     // and the autopsy's figures of a family's finished trades, one row a run, family and figure.
-    // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+    // see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
     // see: The trade autopsy proposes exits of a fixed menu that only a checkpoint widens, each tested as the procedure that chose it
     const string CreateLoopFindings = @"
         ALTER TABLE family_trade ADD COLUMN exit INTEGER;

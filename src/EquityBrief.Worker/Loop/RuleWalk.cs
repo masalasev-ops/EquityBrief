@@ -105,7 +105,11 @@ public sealed class RuleWalk(
     public static RuleWalk Swing(LoopRead read, string family, bool large, LoopChange? standing = null, LoopReadings? readings = null, Func<long, TreeModel?>? trees = null, bool marketOff = false)
     {
         var floor = standing?.StopFloor ?? 0;
-        IReadOnlyList<SweepColumns.Session> sessions = marketOff ? [.. read.Sessions.Select(session => session with { Breadth = 1.0 })] : read.Sessions;
+
+        // From 21.4 a rule standing at the exposure reads its listings with the market check open, as the night reads
+        // them, the exposure's picks a night cutting each night's list through its hooks' order.
+        var exposed = RuleHooks.Of(standing?.Hooks ?? LoopChange.NoHooks).Exposure is not null;
+        IReadOnlyList<SweepColumns.Session> sessions = marketOff || exposed ? [.. read.Sessions.Select(session => session with { Breadth = 1.0 })] : read.Sessions;
         var adapter = floor > 0
             ? FamilySweepRunner.For(family, read.Series, sessions, read.Members, read.FirstScored, read.Calendar, floor)
             : FamilySweepRunner.For(family, read.Series, sessions, read.Members, read.FirstScored, read.Calendar);

@@ -18,7 +18,7 @@ public sealed class ImprovingCandidate(string index) : OwnStepCandidate(index)
     public const string HoldParameter = "hold";
     public const string LimitParameter = "limit";
 
-    public override string Version => "1d175fa50226";
+    public override string Version => "992ae30686f9";
 
     public override string SetupFamily => ImprovingRule.Name;
 
@@ -61,6 +61,7 @@ public sealed class ImprovingCandidate(string index) : OwnStepCandidate(index)
         "src/EquityBrief.Data/Money.cs",
         "src/EquityBrief.Core/Prices/Statistic.cs",
         "src/EquityBrief.Data/StoreConnection.cs",
+        .. EquityBrief.Core.Loop.RuleHooks.Sources,
     ];
 
     // The parameters a registration states for a setting, and the setting a registration's parameters state.

@@ -43,7 +43,7 @@ public sealed record ExitChoice(int Number, ExitKind Kind, double K, double J, i
 // families' own walks are: each session's close read from the session after the buy, a close under the stop selling
 // at that close, and the cap's close ending a trade nothing else ended. Each exit changes only what it names and keeps
 // the rest of the plan: its stop, its cap, and its target or its trail.
-// see: Every engine's settings hooks land together and all default off, so the families' pins move once
+// see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
 public static class ExitMenu
 {
     public static IReadOnlyList<double> BreakEvenRisks { get; } = [0.5, 1, 1.5, 2];

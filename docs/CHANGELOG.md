@@ -26,6 +26,30 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-29 - docs/ARCHITECTURE.html - 13.13's hooks paragraph gains 21.4's three forms, section 17 gains the exposure's and the ranking's rows, and the hooks decision's citations repointed
+Authorised by: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
+Was:
+> What a proposal changes is a setting the rule's walk already reads, so an approval changes stored settings and never code (see: Every engine's settings hooks land together and all default off, so the families' pins move once). A registered family rule may state beside its own parameters the exit of the menu its trades are walked under, conditions on the ledger's readings that a member passing its own gates must also meet, and a score over those readings that its list is ordered by, with the least score kept. A rule stating none is listed, walked and benchmarked exactly as before the hooks existed, and no rule standing states one. The hooks are pinned by the S&P 500's breakout and drift rules and by every S&P 400 and 600 rule, so they moved those pins once, and the S&P 500's rules were registered again with a replay that keeps each record where every trade is reproduced. A rule whose hooks read readings is handed the night's from the ledger's own catalogue on every index, and lists nothing on a night that supplies none; a heavyweights book's exits are its own settings, and a hook stated beside its parameters is refused. | (see: Every engine's settings hooks land together and all default off, so the families' pins move once) at the family recorder's and the index families' catalogue rows and the family trades' store row | no exposure row and no ranking row in section 17
+Now:
+> What a proposal changes is a setting the rule's walk already reads, so an approval changes stored settings and never code (see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again). A registered family rule may state beside its own parameters the exit of the menu its trades are walked under, conditions on the ledger's readings that a member passing its own gates must also meet, a score over those readings that its list is ordered by, with the least score kept, and from 21.4 three more forms: the exposure, ... a ranking, ... and an order of its own candidates by that expected value, highest first ... A rule states one order, and a change stating one replaces the order it stands at. ... The hooks are pinned by the S&P 500's breakout and drift rules, by every S&P 400 and 600 rule and from 21.4 by the dip's rules ... A pinned source moves only in a checkpoint that registers again every rule reading it, 17.5 and 21.4 ... the ranking's candidates and its score are handed in the same way by the step that lists, and a ranking handed none lists none. | (see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again) at those three places | two new rows, The exposure (5 picks a night where both switches hold, 2 where one, none where neither; the breadth at the hook's floor and the VIX at or under the median of its 252 closes before) and The ranking (the best 5 of the family's setups at the loose gates by the newest learned score or the expected value), each with its reasoning and its harness
+Why: 21.4's hooks part adds the three forms the plan names, pinned by the dip's rules as well, and supersedes the decision that said the pins move once with one saying they move only in a checkpoint that registers every rule reading them again.
+
+### 2026-10-29 - docs/RUNBOOK.md - the dip's sell dial named apart from the hooks' exit, and the hooks decision's citation repointed
+Authorised by: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
+Was:
+> `trend` 200 or 50, `exit` 5 for the 5-session average, 65 for the RSI back above 65 or 1 for the first up close, `limit`, | (see: Every engine's settings hooks land together and all default off, so the families' pins move once)
+Now:
+> `trend` 200 or 50, `sell` 5 for the 5-session average, 65 for the RSI back above 65 or 1 for the first up close, named `exit` before 21.4 and read under either name so the dip's rules can state the hooks' exit beside their dials, `limit`, | (see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again)
+Why: the dip's rules read the hooks from 21.4, and a dial named exit collided with the hooks' exit; a registration or a remedy in the old form is read under the dial's name.
+
+### 2026-10-29 - docs/SCHEMA.md - the family trades' and index rule trades' writer lines' citation of the hooks decision repointed
+Authorised by: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
+Was:
+> (see: Every engine's settings hooks land together and all default off, so the families' pins move once)
+Now:
+> (see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again)
+Why: the decision the lines cite is superseded at 21.4 by the one that carries the hooks' three new forms.
+
 ### 2026-10-29 - docs/ARCHITECTURE.html - the exit menu's row and 13.13's menu paragraph gain 21.4's two kinds, and the menu decision's citations repointed
 Authorised by: The trade autopsy proposes exits of a fixed menu that only a checkpoint widens, each tested as the procedure that chose it
 Was:

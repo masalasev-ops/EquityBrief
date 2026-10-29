@@ -121,7 +121,7 @@ public partial class NightlyRun
 
         // The readings a rule whose hooks read them is listed by on the night are AAA's as its setup stored them, the
         // catalogue's shared readings each; a member the night holds no bar for reads none.
-        // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+        // see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
         var tonight = await ledger.ReadingsTonightAsync("GSPC");
         var supplied = tonight("AAA")!;
 

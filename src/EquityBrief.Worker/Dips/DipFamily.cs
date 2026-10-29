@@ -235,7 +235,13 @@ public sealed class DipFamily : IComponent
     // The step over the three indices, each index's failure named on its own row while the others go on, and a failure
     // outside every index's part named on the step's row: the dip never stops the night. The register is read at the
     // instant given, the night's start or the instant a night run again names, and as it stands where none is given.
-    public async Task<DipOutcome> RunAsync(string runId, CancellationToken cancellation = default, DateTimeOffset? registerAt = null, Func<string, CancellationToken, Task<Func<string, IReadOnlyList<double?>?>>>? readingsOf = null)
+    public async Task<DipOutcome> RunAsync(
+        string runId,
+        CancellationToken cancellation = default,
+        DateTimeOffset? registerAt = null,
+        Func<string, CancellationToken, Task<Func<string, IReadOnlyList<double?>?>>>? readingsOf = null,
+        Func<string, CancellationToken, Task<Func<string, IReadOnlyList<EquityBrief.Core.Loop.LooseSetup>>>>? setupsOf = null,
+        Func<string, string, CancellationToken, Task<EquityBrief.Core.Loop.IScoreModel?>>? rankerOf = null)
     {
         var startedAt = clock.UtcNow;
         var outcomes = new List<DipIndexOutcome>();
@@ -267,7 +273,7 @@ public sealed class DipFamily : IComponent
             {
                 try
                 {
-                    var (outcome, written) = await IndexNightAsync(connection, index, night, rulesOf[index], cardRules, cancellation, readingsOf);
+                    var (outcome, written) = await IndexNightAsync(connection, index, night, rulesOf[index], cardRules, cancellation, readingsOf, setupsOf, rankerOf);
 
                     outcomes.Add(outcome);
                     rows += written;
@@ -348,16 +354,22 @@ public sealed class DipFamily : IComponent
         IReadOnlyList<(string Rule, DipSetting Setting, string? Fault, EquityBrief.Core.Loop.RuleHooks Hooks)> rules,
         IReadOnlyList<string> cardRules,
         CancellationToken cancellation,
-        Func<string, CancellationToken, Task<Func<string, IReadOnlyList<double?>?>>>? readingsOf = null)
+        Func<string, CancellationToken, Task<Func<string, IReadOnlyList<double?>?>>>? readingsOf = null,
+        Func<string, CancellationToken, Task<Func<string, IReadOnlyList<EquityBrief.Core.Loop.LooseSetup>>>>? setupsOf = null,
+        Func<string, string, CancellationToken, Task<EquityBrief.Core.Loop.IScoreModel?>>? rankerOf = null)
     {
         var names = await NamesAsync(connection, index, night, cancellation);
         var inputs = IndexNightRead.Prepare(index, night, names, new Dictionary<string, IReadOnlyList<FiledIncome>>(StringComparer.Ordinal));
 
         // From 21.4 the night's readings, laid by the ledger's own catalogue and handed in by the night as the index
         // families are handed them, for a rule whose hooks read them, a rule reading them on a night that supplies none
-        // listing nothing; a rule stating the exposure takes its answer in the market setting's place.
+        // listing nothing; a rule stating the exposure takes its answer in the market setting's place; and a rule stating
+        // the ranking lists from the dip's setups at the ledger's loose gates, handed in the same way, by the index's
+        // newest learned score where it ranks by the score, which the night reads for it.
         var readings = readingsOf is not null && rules.Any(rule => rule.Hooks.ReadsReadings) ? await readingsOf(index, cancellation) : null;
         var nightReadings = inputs is null ? null : IndexNightRead.NightReadings(inputs, readings);
+        var setups = setupsOf is not null && rules.Any(rule => rule.Hooks.Ranks) ? await setupsOf(index, cancellation) : null;
+        var ranker = rankerOf is not null && rules.Any(rule => rule.Hooks.Ranking == EquityBrief.Core.Loop.RuleHooks.RankingByScore) ? await rankerOf(index, DipRule.Name, cancellation) : null;
         var suspects = new HashSet<string>(StringComparer.Ordinal);
 
         await foreach (var row in RowsAsync(connection, null, Suspects, [], cancellation))
@@ -369,10 +381,14 @@ public sealed class DipFamily : IComponent
         var read = rules
             .Select(rule =>
             {
-                var gate = rule.Hooks.Exposure is { } floor ? IndexNightRead.ExposureGate(rule.Hooks, floor, nightReadings) : MarketGateOn(index, rule.Setting.Market, inputs, market, night);
+                var hooks = rule.Hooks.WithRanker(ranker);
+                var gate = hooks.Exposure is { } floor ? IndexNightRead.ExposureGate(hooks, floor, nightReadings) : MarketGateOn(index, rule.Setting.Market, inputs, market, night);
                 var answers = inputs is null || rule.Fault is not null ? [] : Answers(inputs, rule.Setting, suspects, gate);
+                IReadOnlyList<DipAnswer> ranked = hooks.Ranks
+                    ? [.. hooks.Order(setups?.Invoke(DipRule.Name) ?? [], setup => setup.Readings).Select(setup => new DipAnswer(setup.Ticker, [], setup.Entry, setup.Stop, setup.Cap, null, null))]
+                    : hooks.Order(DipRule.Ranked(answers), answer => readings?.Invoke(answer.Ticker));
 
-                return (rule.Rule, rule.Setting, rule.Fault, Gate: gate, Answers: answers, Ranked: rule.Hooks.Order(DipRule.Ranked(answers), answer => readings?.Invoke(answer.Ticker)));
+                return (rule.Rule, rule.Setting, rule.Fault, Gate: gate, Answers: answers, Ranked: ranked);
             })
             .ToArray();
         var tickers = read.SelectMany(rule => rule.Ranked).Select(answer => answer.Ticker).Distinct(StringComparer.Ordinal).ToArray();

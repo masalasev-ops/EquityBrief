@@ -20,7 +20,7 @@ namespace EquityBrief.Tests.Checks;
 // readings and as it stands where none, on the S&P 500 and on an index over the readings its night supplies, the
 // autopsy's figures worked by hand over constructed paths, and the five strongest exits chosen on the learning years
 // alone.
-// see: Every engine's settings hooks land together and all default off, so the families' pins move once
+// see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
 // see: The trade autopsy proposes exits of a fixed menu that only a checkpoint widens, each tested as the procedure that chose it
 public partial class FixtureExpectations
 {
@@ -31,6 +31,13 @@ public partial class FixtureExpectations
         CheckReach.Key(Scope.LimitsTable, "The exit menu"),
         CheckReach.Key(Scope.LimitsTable, "The autopsy's proposals"),
         CheckReach.Key(Scope.FailureTable, "A path no bars reach"),
+    ];
+
+    // The rows 21.4's hook forms add that this check reaches: section 17's exposure and ranking.
+    internal static readonly string[] HookFormClaims =
+    [
+        CheckReach.Key(Scope.LimitsTable, "The exposure"),
+        CheckReach.Key(Scope.LimitsTable, "The ranking"),
     ];
 
     // Every row 17.5's autopsy adds, named after phase 16's report until phase 17's own pair is checked: the findings'
@@ -257,8 +264,13 @@ public partial class FixtureExpectations
         // The S&P 500's breakout and drift and every S&P 400 and 600 rule pin the hooks' and the menu's sources beside
         // their own; the swing filter, the three conditions and the S&P 500's heavyweights do not, so the pin move of the
         // hooks moved none of their versions, and no shared evaluation source names them.
-        // From 21.4 the dip's rules read the hooks as well, so they pin the same three sources.
-        string[] hooked = ["breakout", "breakout-400", "breakout-600", "dip-400", "dip-500", "dip-600", "drift", "drift-400", "drift-600", "heavyweight-400", "heavyweight-600", "pullback-400", "pullback-600"];
+        // From 21.4 the dip's, the quality family's and the Fundamentals family's rules read the hooks as well, so they pin
+        // the same three sources.
+        string[] hooked =
+        [
+            "breakout", "breakout-400", "breakout-600", "dip-400", "dip-500", "dip-600", "drift", "drift-400", "drift-600", "heavyweight-400", "heavyweight-600",
+            "improving-400", "improving-500", "improving-600", "pullback-400", "pullback-600", "quality-400", "quality-500", "quality-600",
+        ];
 
         Assert.Equal(hooked, CandidateEvaluators.All.Where(evaluator => RuleHooks.Sources.All(evaluator.OwnSources.Contains)).Select(evaluator => evaluator.Name).Order(StringComparer.Ordinal));
         Assert.DoesNotContain(CandidateEvaluators.All, evaluator => !hooked.Contains(evaluator.Name) && RuleHooks.Sources.Any(evaluator.OwnSources.Contains));
@@ -321,6 +333,22 @@ public partial class FixtureExpectations
         };
 
         Assert.Equal(CandidateRegistrar.Registered, (await registrar.RegisterAsync("the S&P 500 dip under an exposure", "a dip", "the edge", dipEvaluator.Name, dipParameters, "hooks-dip")).Outcome);
+
+        // A dip rule registered in the form from before 21.4, its sell dial named exit and no sell beside it, is read as
+        // the same setting and stored with the dial under its name, so a remedy written then still registers.
+        var before = new Dictionary<string, double>(dipParameters, StringComparer.Ordinal);
+
+        before.Remove(DipCandidate.SellParameter);
+        before.Remove("exposure");
+        before.Remove("also_close_over_long_above");
+        before[DipCandidate.SellParameterBefore] = DipRule.RsiExit;
+
+        Assert.Equal(CandidateRegistrar.Registered, (await registrar.RegisterAsync("the S&P 500 dip in the form from before", "a dip", "the edge", dipEvaluator.Name, before, "hooks-dip-before")).Outcome);
+
+        var stored = CandidateEvaluator.Read((await registrar.RowsAsync()).Single(row => row.Candidate == "the S&P 500 dip in the form from before").Parameters);
+
+        Assert.Equal(DipRule.RsiExit, stored[DipCandidate.SellParameter]);
+        Assert.False(stored.ContainsKey(DipCandidate.SellParameterBefore));
 
         var quality = new QualityCandidate(MarketCloses.Index);
         var bookHooks = new Dictionary<string, double>(QualityCandidate.ParametersOf(QualityRule.Starting), StringComparer.Ordinal) { ["also_close_over_long_above"] = 1, ["score_close_over_fifty"] = 1 };
@@ -513,6 +541,46 @@ public partial class FixtureExpectations
         Assert.Equal(["A", "B"], FamilyRecorder.Keep(closedNight, nothingHeld, exposure, _ => NightReadings(0.3, 1.0)).Select(one => one.Ticker));
         Assert.Empty(FamilyRecorder.Keep(closedNight, nothingHeld, exposure, _ => NightReadings(0.3, 1.2)));
         Assert.Empty(FamilyRecorder.Keep(closedNight, nothingHeld, exposure, null));
+    }
+
+    [Fact]
+    public void ARuleStatingTheRankingKeepsTheBestFiveOfItsFamilysLooseSetupsByTheScoreEachAtTheSetupsOwnPlan()
+    {
+        // Seven setups at the loose gates, each at its own plan, their scores read off one column: B and E tied at 0.9 in
+        // the rows' order, then G, D and A; F sixth and C, which the score cannot read, left off. G's stop stands at its
+        // buy and places no trade, so four are kept, each at its own entry, stop and target with the target's distance
+        // over the stop's as its reward to risk; a stock held is passed over after the five are chosen.
+        var column = Column("close_over_long");
+        var scores = new Dictionary<string, double?>(StringComparer.Ordinal) { ["A"] = 0.2, ["B"] = 0.9, ["C"] = null, ["D"] = 0.5, ["E"] = 0.9, ["F"] = 0.1, ["G"] = 0.7 };
+
+        LooseSetup Setup(string ticker, decimal entry = 100m, decimal stop = 95m, decimal? target = 110m)
+        {
+            var readings = new double?[LedgerReadings.Count];
+
+            readings[column] = scores[ticker];
+
+            return new LooseSetup(ticker, entry, stop, target, null, 20, 2.5, readings);
+        }
+
+        LooseSetup[] setups = [Setup("A"), Setup("B"), Setup("C"), Setup("D", 50m, 48m, 56m), Setup("E"), Setup("F"), Setup("G", 200m, 200m, 210m)];
+        var byScore = RuleHooks.Of(new Dictionary<string, double>(StringComparer.Ordinal) { ["ranking"] = RuleHooks.RankingByScore });
+        var ranking = byScore.WithRanker(new OneColumnScore(column));
+        var nothingHeld = new HashSet<string>(StringComparer.Ordinal);
+        var kept = FamilyRecorder.KeepRanked(setups, nothingHeld, ranking);
+
+        Assert.Equal(["B", "E", "D", "A"], kept.Select(one => one.Ticker));
+        Assert.Equal([1, 2, 3, 4], kept.Select(one => one.Place));
+        Assert.Equal((50m, 48m, (decimal?)56m, (double?)2.5, 3.0), (kept[2].Plan.Entry, kept[2].Plan.Stop, kept[2].Plan.Target, kept[2].Plan.RiskMoves, Math.Round(kept[2].Plan.RewardToRisk!.Value, 9)));
+        Assert.Equal(["B", "D", "A"], FamilyRecorder.KeepRanked(setups, new HashSet<string>(["E"], StringComparer.Ordinal), ranking).Select(one => one.Ticker));
+
+        // Handed no score, a ranking by the score keeps none; a ranking by the expected value takes the best five by it,
+        // C and E at 0.8, F, A and G, with B, holding no figure, left off and G placing no trade.
+        var expected = new Dictionary<string, double?>(StringComparer.Ordinal) { ["A"] = 0.3, ["B"] = null, ["C"] = 0.8, ["D"] = 0.1, ["E"] = 0.8, ["F"] = 0.6, ["G"] = 0.2 };
+        var byExpected = RuleHooks.Of(new Dictionary<string, double>(StringComparer.Ordinal) { ["ranking"] = RuleHooks.RankingByExpected });
+
+        Assert.Empty(FamilyRecorder.KeepRanked(setups, nothingHeld, byScore));
+        Assert.Equal(["C", "E", "F", "A"], FamilyRecorder.KeepRanked(setups, nothingHeld, byExpected, ticker => expected[ticker]).Select(one => one.Ticker));
+        Assert.Empty(FamilyRecorder.KeepRanked(setups, nothingHeld, byExpected));
     }
 
     [Fact]
