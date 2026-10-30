@@ -72,9 +72,17 @@ public static class ExitProcedures
         progress(FormattableString.Invariant($"walking the {rule.Family} on the {DecisionCards.NameOf(read.Index)} under its own exit and the menu's {ExitMenu.Swing.Count}"));
 
         IReadOnlyList<IReadOnlyList<Walked>> walks = [.. ExitMenu.Swing.Select(rule.Under)];
+        var (proposals, figures) = Propose(read, rule.Family, rule.Current, rule.Closes, rule.Own, walks);
 
-        return Propose(read, rule.Family, rule.Current, rule.Closes, rule.Own, walks);
+        // From 21.5 an exit a family's night does not read is tested and shown with why, and states no change to put.
+        // see: A change a family's night does not read is tested and shown and never put to the operator
+        return rule.ReadsMenu
+            ? (proposals, figures)
+            : ([.. proposals.Select(one => one with { Change = null, Finding = one.Finding is { } finding ? finding + "; " + NotRead : one.Finding })], figures);
     }
+
+    // Why an exit the autopsy finds for a family whose night reads no exit of the menu is not put.
+    public const string NotRead = "shown and not put to you, since the family's night reads no exit of the menu";
 
     // Each fold's ranking of the menu's exits above the rule's own, the k-th proposal the k-th exit each fold ranks, and
     // the autopsy's figures read off the rule's own finished trades.

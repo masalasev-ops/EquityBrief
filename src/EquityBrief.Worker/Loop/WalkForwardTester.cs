@@ -291,33 +291,35 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         rules.Add(RuleWalk.Swing(read, BreakoutRule.Name, large, standing.GetValueOrDefault(BreakoutRule.Name), readings, trees));
         rules.Add(RuleWalk.Swing(read, DriftRule.Name, large, standing.GetValueOrDefault(DriftRule.Name), readings, trees));
 
-        // The fundamentals-first family on every index, at the setting an approval stored for it or its provisional one,
-        // over the pullback's base listings read once: its 27 settings a procedure where the rule stands at no hook, and
-        // the rule as it stands handed to the engines.
-        // see: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place
-        var fundamentalsStanding = standing.GetValueOrDefault(FundamentalsRule.Name);
-        var fundamentalsSetting = FundamentalsRule.StoredOr(fundamentalsStanding?.Places);
-        baseReplay ??= SweepIdeasRunner.Read(read.Inputs, market, output.WriteLine).Replay;
+        // From 21.5 the short-term dip where a rule of it stands on the index: its live rule's walk handed to every engine,
+        // and its grid a procedure against that rule where it stands at no hook, which the grid's walk does not read. The
+        // fundamentals-first family, which the night computes no longer, is read by no engine.
+        // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
+        var standingRules = Core.Candidates.ShadowColumn.StandingAt(await RegisterAsync(databaseFile, cancellation), started);
+        SweepHistoryInputs? largeRead = large ? inputs : null;
 
-        var baseListings = RuleWalk.BaseListings(read, baseReplay);
-        var fundamentals = RuleWalk.Fundamentals(read, baseReplay.Series, baseListings, readings, fundamentalsSetting, output.WriteLine, fundamentalsStanding, trees);
+        async Task<SweepHistoryInputs> LargeReadAsync() => largeRead ??= await IndexSweepRunner.OwnSwingRead.LargeAsync(history, through, output.WriteLine, cancellation);
 
-        if (procedures && fundamentalsStanding is { Hooks.Count: > 0 })
+        if (LiveOn(standingRules, index, DipRule.Name) is { } dipLive)
         {
-            output.WriteLine($"{Verb}: the {FundamentalsRule.Name}'s grid is not searched on the {DecisionCards.NameOf(index)}, since the rule stands at {fundamentalsStanding.Words()} and the grid's walk reads no hook");
-        }
-        else if (procedures)
-        {
-            output.WriteLine(FormattableString.Invariant($"walking the {FundamentalsRule.Name}'s {FundamentalsSearch.Grid.Settings.Count} setting(s) on the {DecisionCards.NameOf(index)} over the whole history"));
-            proposals.Add(LoopProcedures.Fundamentals(
-                read,
-                [.. FundamentalsSearch.Grid.Settings.Select(setting => RuleWalk.Fundamentals(read, baseReplay.Series, baseListings, readings, FundamentalsRule.At(setting), _ => { }).Own)],
-                fundamentals.Own,
-                fundamentalsSetting,
-                fundamentals.Cap));
-        }
+            var dipRead = IndexSweepRunner.DipRead.Of(read, await LargeReadAsync(), await history.SeriesOfAsync([IndexSweepRunner.DipFund(index), MarketCloses.Vix], through, cancellation));
+            var parameters = Core.Candidates.DipCandidate.Renamed(Core.Candidates.CandidateEvaluator.Read(dipLive.Parameters));
+            var evaluator = Core.Candidates.CandidateEvaluators.Find(dipLive.Evaluator)!;
+            var hooks = LoopRegistrations.HooksOf(evaluator, parameters);
+            var (setting, levels) = dipRead.SettingOf(parameters);
+            var words = "the dip rule at " + Dips.DipRules.Short(((Core.Candidates.DipCandidate)evaluator).SettingOf(parameters), index);
 
-        rules.Add(fundamentals);
+            rules.Add(RuleWalk.Dip(read, dipRead, parameters, words, hooks, readings, trees));
+
+            if (procedures && hooks.Count > 0)
+            {
+                output.WriteLine($"{Verb}: the {DipRule.Name}'s grid is not searched on the {DecisionCards.NameOf(index)}, since the rule stands at hooks the grid's walk reads none of");
+            }
+            else if (procedures)
+            {
+                proposals.Add(OwnProcedures.Swing(read, dipRead, output.WriteLine, new OwnProcedures.LiveRule(setting, levels, words, choice => DipChange(index, choice))));
+            }
+        }
 
         if (asks is not null)
         {
@@ -638,6 +640,26 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     // From 22.3 whether a run reads the short-term dip's history on an index: only where a rule of the family stands on it
     // when the run begins, so the monthly run reads the family from its next run after a freeze.
     // see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
+    // From 21.5 a family's live rule standing on an index as the register counts the family there; none where none stands.
+    public static Core.Candidates.RegisterRow? LiveOn(IReadOnlyList<Core.Candidates.RegisterRow> standing, string index, string family) =>
+        Core.Candidates.FamilyRecords.LiveOf(Core.Candidates.CandidateFamily.In(standing, LoopDecisions.RegisterFamilyOf(index, family)));
+
+    // From 21.5 a choice of the dip's grid as the change an approval would register: its places with the drop's volume as
+    // the last, where the second stage's levels it crossed are none or the drop's volume alone, which a dip registration
+    // states; none where it crossed another, which no registration of the dip can state.
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
+    public static LoopChange? DipChange(string index, OwnProcedures.SwingChoice choice)
+    {
+        if (choice.Levels.Any(level => level.Dial != IndexSweepRunner.DipRead.VolumeDial))
+        {
+            return null;
+        }
+
+        int[] places = [.. choice.Setting, choice.Levels.Count > 0 ? 1 : 0];
+
+        return LoopChange.OfSetting(places, LoopRegistrations.KeyOf(index, places), 0);
+    }
+
     public static bool ReadsDip(IReadOnlyList<Core.Candidates.RegisterRow> standing, string index) =>
         standing.Any(row => Core.Candidates.CandidateEvaluators.Find(row.Evaluator) is Core.Candidates.DipCandidate rule && rule.Index == index);
 
