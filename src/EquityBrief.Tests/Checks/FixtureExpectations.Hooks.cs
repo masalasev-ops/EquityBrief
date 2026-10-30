@@ -419,6 +419,42 @@ public partial class FixtureExpectations
         Assert.Equal(["ID|1", "PN|2", "IE|3", "IA|4", "IB|5"], Kept(Hooked));
         Assert.Equal(["IE|1", "MV|2", "PN|3", "IA|4", "IC|5"], Kept(liveName));
 
+        // From 21.4 a rule stating the exposure in the market check's place, at a floor of 0.45: with the breadth at 0.5 and
+        // the VIX at 1.2 of its median one switch holds and it keeps the family's first two, IE and MV; with both holding,
+        // the VIX at 0.9, its five; with neither, the breadth at 0.3, none; and handed no readings it keeps none and leaves
+        // the night's trades as they stood.
+        const string Exposed = "the S&P 400 breakout under an exposure";
+        var exposedRegistrar = new CandidateRegistrar(FixedClock.At(FreezeAt.AddMinutes(2), SessionZones.UnitedStates), store.DatabaseFile);
+
+        Assert.Equal(CandidateRegistrar.Registered, (await exposedRegistrar.RegisterAsync(Exposed, "a breakout", "the edge", breakout.Name, new Dictionary<string, double>(live, StringComparer.Ordinal) { [RuleHooks.ExposureParameter] = 0.45 }, "exposed")).Outcome);
+
+        var withExposure = await exposedRegistrar.RowsAsync();
+
+        // The night's readings carry the switches beside each member's close over its long average, so the hooked rule
+        // keeps its five through these runs.
+        double?[] Switched(string ticker, double breadth, double vix)
+        {
+            var readings = HookReadings(overLong.GetValueOrDefault(ticker), null, null);
+
+            readings[RuleHooks.BreadthColumn] = breadth;
+            readings[RuleHooks.VixOverMedianColumn] = vix;
+
+            return readings;
+        }
+
+        async Task NightUnder(string run, double breadth, double vix) =>
+            await new IndexFamilies(clock, store.DatabaseFile).RunAsync(run, default, withExposure, FreezeAt.AddHours(1), (index, _) => Task.FromResult<Func<string, IReadOnlyList<double?>?>>(ticker => Switched(ticker, breadth, vix)));
+
+        await NightUnder("exposure-one", 0.5, 1.2);
+        Assert.Equal(["IE|1", "MV|2"], Kept(Exposed));
+        await NightUnder("exposure-both", 0.5, 0.9);
+        Assert.Equal(["IE|1", "MV|2", "PN|3", "IA|4", "IC|5"], Kept(Exposed));
+        await NightUnder("exposure-neither", 0.3, 1.2);
+        Assert.Empty(Kept(Exposed));
+        await new IndexFamilies(clock, store.DatabaseFile).RunAsync("exposure-none", default, withExposure, FreezeAt.AddHours(1));
+        Assert.Empty(Kept(Exposed));
+        Assert.Equal(["IE|1", "MV|2", "PN|3", "IA|4", "IC|5"], Kept(liveName));
+
         // Three sessions after it IE, held by both rules at one buy and stop, closes 0.6 of a risk up, then 0.2 of a risk
         // under its buy, then 1.6 risks up, each other member flat. The live rule, stating no hook, trails a risk under
         // its highest close and holds through all three, where a stop raised to the buy would have sold the dip; the

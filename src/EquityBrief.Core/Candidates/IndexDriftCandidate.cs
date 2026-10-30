@@ -22,7 +22,7 @@ public sealed class IndexDriftCandidate(string index) : IndexRuleCandidate(index
     public const string EntryParameter = "entry";
     public const string RevenueGrewParameter = "revenueGrew";
 
-    public override string Version => "d910be232894";
+    public override string Version => "4b443d9c00c6";
 
     public override string SetupFamily => DriftRule.Name;
 

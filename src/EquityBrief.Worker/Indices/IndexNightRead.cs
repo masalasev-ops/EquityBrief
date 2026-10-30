@@ -266,8 +266,10 @@ public static class IndexNightRead
 
         double? ExpectedOf((int Name, IndexTrade Trade) one) => expected?.Invoke(inputs.Series[one.Name].Name.Ticker);
 
+        // The hooks keep and cut among the members passing the rule's own parts, a member listed twice counted once, so a
+        // count they cut the list to counts the members the rule would list.
         var candidates = hooks.Exposure is not null ? read.ListedIfOpen ?? read.Listed : read.Listed;
-        var kept = hooks.Order(candidates, ReadingsOf, ExpectedOf);
+        var kept = hooks.Order([.. candidates.DistinctBy(one => one.Name).Where(one => read.FailsOn(one.Name) is null)], ReadingsOf, ExpectedOf);
         var keeps = kept.Select(one => one.Name).ToHashSet();
 
         return read with
