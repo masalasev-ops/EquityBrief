@@ -26,6 +26,28 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-30 - docs/BUILD_PLAN.md - 21.14 states the operator's answers on the exits, the tone variant and the open floor with two read-only checks, and 21.16 the second move of the pins
+Authorised by: Phase 21 makes the existing families choose better and the monthly loop test every family on every index, built to completion before any new work with no model judging a stock and nothing retired without the operator's word
+Was:
+> (What is the operator's) ... any migration beyond those this plan names; any pin moving outside 21.4; ...
+> (21.14) Each only as ruled on 21.1's and 21.3's figures. The exits: every swing trade's exit priced at the next open, or the target as a resting order, by a fill step of its own, as 19.10 priced the entries, every page and record reading the fill, no rule re-registered and no record restarting. The tone versions: the drift's tone variant kept or retired on each index, and the opposite condition registered as a version where ruled and the family has room, each by remedy. The open floor: registered as a drift version where ruled and room stands; on an index whose drift holds nine rules, the S&P 500 today, run unregistered with its record followed as it is today, and, on the operator's addition of 2026-10-29, where 21.3's tester passed it on that index it is also put to the operator as an approval replacing that index's live drift, ... and lands through 21.5's registration. The exposure's direction on the VIX ... nothing more is registered for it. A ruling that keeps everything as it is lands this checkpoint as its ruling entry and builds nothing. Writes the decision each ruling names, section 13.10's pricing paragraph where the fill changes, section 17's rows, the runbook's remedy, the roster's rows and the changelog.
+> (21.14, done when) each ruled change is worked by hand on both sides over constructed trades, the fill step's three pricings among them where ruled; the exposure's reverse direction ...
+> (21.16) no such checkpoint.
+Now:
+> (What is the operator's) ... any pin moving outside 21.4 and 21.16; ...
+> (21.14) As the operator ruled on 21.1's and 21.3's figures on 2026-10-30, their answers kept word for word in `prompts/2026-10-30-21.14-operator-answers.md`. The exits: every swing trade's exit, on every swing family and index, priced at the open of the session after the triggering close by a fill step of its own, ... the target as a resting order is not adopted; the entry states each record's figures before and after the repricing. The tone variant: kept running on every index and judged by its record from now on, ... its card says "Its history before 2025 does not count: the model that read those releases was trained after them. Its record from today is what counts."; the opposite condition is not registered. The open floor: run on unregistered on the S&P 500 as it is today, nothing registered and no approval put. Two read-only checks before 21.15, ...: the same split before 2025 and from it ... for every rule reading a release reading, ...; and the surprises, ... The exposure's direction on the VIX ... nothing more is registered for it. Writes the decision each ruling names, section 13.10's pricing paragraph, the card's words, section 17's rows, the roster's rows and the changelog.
+> (21.14, done when) the fill step's exit at the next open is worked by hand on both sides over constructed trades, a stop, a target and a time limit among them, and a record read back at the fill; the entry states each record's figures before and after the repricing; the tone variant's sentence is read back off its rendered card; one figure of each read-only check is worked by hand over a constructed store and neither writes a store row, asserted; the exposure's reverse direction ...
+> (21.16) The second move of the pins: the expected value's order and graded exposure read more widely, and the changes no night read made approvable. ... built now, before 21.11, ... Built as 21.4 was ...
+Why: the operator answered the held decisions on 2026-10-30: the exits at the next open, the tone variant kept with its card's words, the open floor unregistered, two read-only checks, and a second move of the pins in this phase before 21.13.
+
+### 2026-10-30 - docs/ARCHITECTURE.html - section 20's phase 21 row names 21.16
+Authorised by: Phase 21 makes the existing families choose better and the monthly loop test every family on every index, built to completion before any new work with no model judging a stock and nothing retired without the operator's word
+Was:
+> the build plan's phase 21 checkpoints, 21.0 to 21.15
+Now:
+> the build plan's phase 21 checkpoints, 21.0 to 21.16
+Why: the operator's answers of 2026-10-30 add a second move of the pins to phase 21 as 21.16.
+
 ### 2026-10-30 - docs/BUILD_PLAN.md - the ruling's words in 21.13 and 21.14 name no subject the harness holds a due point for
 Corrects: 21.13's text named the market series and 21.14's done condition the tester's folds, two subjects the harness writes a due point for, so the plan's words shadowed them; found by the hosted case-sensitivity job on PR 599.
 Was:
