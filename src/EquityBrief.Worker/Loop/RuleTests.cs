@@ -29,7 +29,8 @@ public sealed record RuleUnderTest(
     string? Why = null,
     ToneSides? Tone = null,
     IReadOnlyList<(int Entry, double? Edge)>? OpenFloor = null,
-    int Skipped = 0)
+    int Skipped = 0,
+    IReadOnlyList<(int Entry, double? Edge)>? Expected = null)
 {
     public bool Book => Unit == LoopProcedures.Points;
 }
@@ -82,7 +83,8 @@ public sealed record RuleTestInputs(
     IndexSweepRunner.DipRead? Dip = null,
     ImprovingLay? Improving = null,
     OwnReads? Own = null,
-    Func<int, int, string?>? FiledStates = null)
+    Func<int, int, string?>? FiledStates = null,
+    LikePool? Like = null)
 {
     // From 21.4 the business's state off the SEC's facts as first filed for a stock on a session, which the S&P 500 pullback
     // version leaving off a deteriorating business is walked at: the one handed in, or the catalogue's own through the
@@ -700,6 +702,21 @@ public static class RuleTests
         var change = new LoopChange(places, grid.Key(places), floor > 0 ? floor : null, hooks);
         var walk = RuleWalk.Swing(inputs.Read, family, large, change, inputs.Readings, inputs.Trees, marketOff: !large && p.GetValueOrDefault(IndexRuleCandidate.LargeBreadthParameter) == IndexRuleCandidate.NoMarketCheck);
 
+        // From 21.7 the expected value of the setups like each listing, matched inside each fold among what ended before
+        // it: a rule ordered by it is walked by it, and a live or provisional rule whose family on the index registers no
+        // order by it has that order walked beside it unregistered and written nowhere.
+        // see: An order by the expected value of the setups like each pick is registered where its family has room and its step can hand the figure, and walked unregistered elsewhere
+        walk.ExpectedOf = inputs.Like?.For(family, walk, inputs.Read);
+
+        if (RuleHooks.Of(hooks).ReadsExpected && walk.ExpectedOf is null)
+        {
+            return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, 0, Why: NoExpected);
+        }
+
+        var expected = StandingOf(row) != Variant && walk.ExpectedOf is not null && !RegistersExpected(inputs, row, family)
+            ? Units(walk.Hooked(ExpectedOrder, _ => []))
+            : null;
+
         bool Open(int at)
         {
             var session = walk.Listings[at].Session;
@@ -741,10 +758,38 @@ public static class RuleTests
                     return leaves;
                 });
 
-            return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone, OpenFloor: Units(floored), Skipped: skipped);
+            return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone, OpenFloor: Units(floored), Skipped: skipped, Expected: expected);
         }
 
-        return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone);
+        return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone, Expected: expected);
+    }
+
+    // From 21.7 why a rule ordered by the expected value of the setups like each listing is not walked: the run holds no
+    // fold score of its family on the index to match on.
+    public const string NoExpected = "its order reads the expected value of the setups like each listing, and the run holds no fold score of its family on the index to match them on";
+
+    // The order by the expected value of the setups like each listing, as a change sets it.
+    static readonly IReadOnlyDictionary<string, double> ExpectedOrder = new Dictionary<string, double>(StringComparer.Ordinal) { [RuleHooks.ExpectedOrderParameter] = 1 };
+
+    // Whether a rule of the family registered on the same index states the order by the expected value.
+    static bool RegistersExpected(RuleTestInputs inputs, RegisterRow row, string family) =>
+        inputs.Standing.Any(other => other.Evaluator == row.Evaluator && RuleHooks.Of(CandidateEvaluator.Read(other.Parameters)).ReadsExpected);
+
+    // From 21.7 a live or provisional rule's order by the expected value of the setups like each listing beside its own
+    // walk, as the run prints it: each walk's trades and their mean edge after costs over the test years.
+    public static string ExpectedLine(RuleUnderTest rule, Func<int, bool> inTestYears)
+    {
+        static string Side(IReadOnlyList<(int Entry, double? Edge)> units, Func<int, bool> on)
+        {
+            var kept = units.Where(unit => on(unit.Entry)).ToArray();
+            var edged = kept.Where(unit => unit.Edge is not null).ToArray();
+
+            return edged.Length == 0
+                ? FormattableString.Invariant($"{kept.Length} trade(s), none ended")
+                : FormattableString.Invariant($"{kept.Length} trade(s) at {edged.Average(unit => unit.Edge!.Value):+0.000;-0.000} risks");
+        }
+
+        return FormattableString.Invariant($"{rule.Family}, {rule.Rule}: ordered by the expected value of the setups like each listing, walked unregistered and written nowhere, {Side(rule.Expected!, inTestYears)} over the test years, against its own {Side(rule.Trades ?? [], inTestYears)}");
     }
 
     // The open of the session after a bar, which a trade is bought at from 19.10, none where the series holds none; the

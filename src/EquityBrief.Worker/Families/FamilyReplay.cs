@@ -222,10 +222,11 @@ public sealed class FamilyReplay : IComponent
                     .ToHashSet(StringComparer.Ordinal);
 
                 // The rule's hooks as its registration states them, the exit it walks its trades under among them; a
-                // rule whose hooks read readings is replayed over none, which keeps none of its trades.
+                // rule whose hooks read readings or the expected value of the setups like each member is replayed over
+                // none, which keeps none of its trades.
                 var hooks = RuleHooks.Of(CandidateEvaluator.Read(rule.Parameters));
 
-                foreach (var (ticker, place, plan) in hooks.ReadsReadings ? [] : FamilyRecorder.Keep(verdicts.Where(verdict => verdict.Outcome.Candidate == rule.Candidate), held, hooks))
+                foreach (var (ticker, place, plan) in hooks.ReadsReadings || hooks.ReadsExpected ? [] : FamilyRecorder.Keep(verdicts.Where(verdict => verdict.Outcome.Candidate == rule.Candidate), held, hooks))
                 {
                     var ended = FamilyRecorder.Walk(night, plan.Entry, plan.Stop, plan.Target, cap, closes.GetValueOrDefault(ticker), calendar, at, hooks.Exit, plan.RiskMoves);
 

@@ -1,0 +1,10 @@
+# The remedy of 21.7, each pick's chance and expected value from the setups like it. The S&P 500's breakout family holds
+# eight rules and room for a ninth, and its step hands the expected value of the setups like each member, so it is
+# registered again whole with its ninth, the live rule's setting with its list ordered by that figure: the eight replayed
+# first, each record carrying on where the replay reproduces every trade, and the ninth's record starting at this instant.
+# The S&P 500's pullback and drift hold nine, and every S&P 400 and 600 family's step is a source their rules pin, so none
+# of them registers the order here, and the monthly run's per-rule test walks it unregistered beside the live rule it
+# walks. No migration, no request to the provider and no model call. Run from main after the merge, when no night, local
+# run, drain, labeller, ledger build or monthly run is writing, read the output for "remedy done" and "registered 9", and
+# restart the read surface after it.
+register --family-again breakout --evidence "21.7: the breakout's ninth rule, its live rule's setting with its list ordered by the expected value of the setups like each member"

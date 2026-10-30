@@ -10,6 +10,7 @@ using EquityBrief.Core.Readings;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
+using EquityBrief.Worker.Cards;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Families;
@@ -44,6 +45,8 @@ public sealed class FamilyRecorder : IComponent
             new StoreTouch(Store.FamilyResult, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
             new StoreTouch(Store.LoopModel, Touch.Read),
+            new StoreTouch(Store.Setup, Touch.Read),
+            new StoreTouch(Store.SetupNight, Touch.Read),
             new StoreTouch(Store.FamilyTrade, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -167,7 +170,7 @@ public sealed class FamilyRecorder : IComponent
 
     // Whether a rule the recorder keeps reads the night's readings through its hooks, so the night reads them for it.
     public static bool HooksReadReadings(IEnumerable<RegisterRow> standing) =>
-        standing.Where(Keeps).Any(rule => RuleHooks.Of(CandidateEvaluator.Read(rule.Parameters)).ReadsReadings);
+        standing.Where(Keeps).Any(rule => RuleHooks.Of(CandidateEvaluator.Read(rule.Parameters)) is var hooks && (hooks.ReadsReadings || hooks.ReadsExpected));
 
     // From 21.4 whether a rule the recorder keeps states the ranking, so the night lays its family's setups at the
     // ledger's loose gates for it.
@@ -272,7 +275,7 @@ public sealed class FamilyRecorder : IComponent
             // hooks did not order, one ranking setups the night did not lay lists nothing either, and one the night's
             // rows hold no verdict of lists nothing it was not evaluated for; each keeps the trades a run of the night
             // stored for it before.
-            if ((hooks.ReadsReadings && readings is null) || (hooks.Ranks && setups is null) || (!hooks.Ranks && own.Length == 0))
+            if (((hooks.ReadsReadings || hooks.ReadsExpected) && readings is null) || (hooks.Ranks && setups is null) || (!hooks.Ranks && own.Length == 0))
             {
                 var why = hooks.Ranks && setups is null ? "its ranking reading setups the night did not lay"
                     : !hooks.Ranks && own.Length == 0 ? "the night's rows holding no verdict of it"
@@ -289,7 +292,21 @@ public sealed class FamilyRecorder : IComponent
             await ExecuteAsync(connection, transaction, ClearTheRulesNight, cancellation, ("$night", Stamp(night)), ("$candidate", rule.Candidate));
 
             var held = await HeldAsync(connection, transaction, rule.Candidate, night, cancellation);
-            var listed = hooks.Ranks ? KeepRanked(setups!(family), held, hooks) : Keep(own, held, hooks, readings);
+
+            // From 21.7 a rule ordered by the expected value of the setups like each member is handed it, read from the
+            // ledger's finished setups of the family on the index as a pick's card reads them.
+            // see: An order by the expected value of the setups like each pick is registered where its family has room and its step can hand the figure, and walked unregistered elsewhere
+            var expected = hooks.ReadsExpected
+                ? await LikeSetups.ExpectedAsync(
+                    connection,
+                    transaction,
+                    indexCode,
+                    family,
+                    readings!,
+                    ticker => own.Where(verdict => verdict.Ticker == ticker).Select(verdict => Plan(verdict.Outcome.Values)).FirstOrDefault() is { Target: not null },
+                    cancellation)
+                : null;
+            var listed = hooks.Ranks ? KeepRanked(setups!(family), held, hooks, expected) : Keep(own, held, hooks, readings, expected);
 
             foreach (var (ticker, place, plan) in listed)
             {

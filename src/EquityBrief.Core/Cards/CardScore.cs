@@ -18,6 +18,41 @@ public sealed record CardSimilar(
     [property: JsonPropertyName("rule_setups")] int? RuleSetups = null,
     [property: JsonPropertyName("unmatched")] string? Unmatched = null)
 {
+    // From 21.7 the matched setups' chance: the form their wins and results are read in, how many hold a result, how many
+    // of those won, and their mean result after costs with its interval, each none on a card written before or where
+    // fewer than the fewest hold a result.
+    // see: Each pick's card says how often the setups like it won and what they made after costs, under the rule's heading
+    [JsonPropertyName("form")]
+    public string? Form { get; init; }
+
+    [JsonPropertyName("with_result")]
+    public int? WithResult { get; init; }
+
+    [JsonPropertyName("won")]
+    public int? Won { get; init; }
+
+    [JsonPropertyName("result_mean")]
+    public double? ResultMean { get; init; }
+
+    [JsonPropertyName("result_low")]
+    public double? ResultLow { get; init; }
+
+    [JsonPropertyName("result_high")]
+    public double? ResultHigh { get; init; }
+
+    // The chance's fields set from a part's chance, none where it holds none.
+    public CardSimilar WithChance(EquityBrief.Core.Loop.SetupChance? chance) => chance is null
+        ? this
+        : this with
+        {
+            Form = chance.Form.ToString().ToLowerInvariant(),
+            WithResult = chance.Count,
+            Won = chance.Won,
+            ResultMean = chance.Mean,
+            ResultLow = chance.Low,
+            ResultHigh = chance.High,
+        };
+
     // Whether the interval holds the rule's own mean, where the part is not told from the rule's record.
     public bool Distinguishable => RuleMean is { } rule && Low is { } low && High is { } high && (rule < low || rule > high);
 

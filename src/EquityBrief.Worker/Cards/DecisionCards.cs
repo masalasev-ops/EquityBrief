@@ -255,8 +255,10 @@ public sealed class DecisionCards : IComponent
 
     // Every finished setup the rule's own setting passed on an index holding each reading matched on; for a family the
     // night read by its live rule, only those whose pass was read under that rule.
+    // From 21.7 with what each came to, its round trip as the night stored it, how it ended, its plan's prices and its
+    // company's value, which the chance reads.
     static string RulesSetups(IReadOnlyList<string> columns, bool underLive) =>
-        "SELECT ticker, session_date, edge, " + string.Join(", ", columns)
+        "SELECT ticker, session_date, edge, result, cost, \"end\", target, entry, stop, company_value, " + string.Join(", ", columns)
         + " FROM setup WHERE index_code = $index AND family = $family AND live_pass = 1 AND settled = 1 AND edge IS NOT NULL"
         + (underLive ? " AND rule = $rule" : string.Empty)
         + string.Concat(columns.Select(column => " AND " + column + " IS NOT NULL"))
@@ -407,7 +409,7 @@ public sealed class DecisionCards : IComponent
                 : live is null
                     ? new MarketReading(breadth, floor, true)
                     : await LiveMarketAsync(connection, transaction, index, pick, night, breadth, floor, cancellation);
-            var score = await ScorePartAsync(connection, transaction, index, pick.Family, pick.Ticker, scores, cancellation, live);
+            var score = await ScorePartAsync(connection, transaction, index, pick.Family, pick.Ticker, scores, cancellation, live, plan.Target is not null);
 
             written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, market, sectors, ranks, null, cancellation, score, Approved(pick.Family), live);
         }
@@ -417,7 +419,7 @@ public sealed class DecisionCards : IComponent
         foreach (var pick in indexPicks)
         {
             var plan = await IndexPlanAsync(connection, transaction, index, pick, night, indexSettings, cancellation);
-            var score = await ScorePartAsync(connection, transaction, index, pick.Family, pick.Ticker, scores, cancellation);
+            var score = await ScorePartAsync(connection, transaction, index, pick.Family, pick.Ticker, scores, cancellation, hasTarget: plan.Target is not null);
 
             written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, new MarketReading(breadth, floor, true), sectors, ranks, null, cancellation, score);
         }
@@ -428,7 +430,7 @@ public sealed class DecisionCards : IComponent
         foreach (var pick in dipPicks)
         {
             var plan = await DipPlanAsync(connection, transaction, index, pick, night, cancellation);
-            var score = await ScorePartAsync(connection, transaction, index, pick.Family, pick.Ticker, scores, cancellation);
+            var score = await ScorePartAsync(connection, transaction, index, pick.Family, pick.Ticker, scores, cancellation, hasTarget: plan.Target is not null);
             var market = large
                 ? await LargeMarketAsync(connection, transaction, pick.Ticker, night, false, cancellation)
                 : new MarketReading(breadth, floor, false);
@@ -613,7 +615,7 @@ public sealed class DecisionCards : IComponent
     // and otherwise says the setups like it wait for the next history build under the rule.
     // see: A pick's card draws the setups like it under its rule beneath the rule's record, and the score's rank only once the score passed on its index
     // see: The setup ledger reads each S&P 400 and 600 family's frozen live rule where one stands, and a card draws setups like a pick only once its history is built under that rule
-    async Task<ScorePart?> ScorePartAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string family, string ticker, IndexScores scores, CancellationToken cancellation, string? live = null)
+    async Task<ScorePart?> ScorePartAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string family, string ticker, IndexScores scores, CancellationToken cancellation, string? live = null, bool hasTarget = true)
     {
         if (!ScoreProcedures.Reaches(index, family))
         {
@@ -678,8 +680,8 @@ public sealed class DecisionCards : IComponent
                 scores.Setups[family] = setups;
             }
 
-            return SimilarSetups.Match(setups, ticker, [.. matched.Select(reading => readings[reading]!.Value)], columns) is { } part
-                ? new ScorePart(rank, new CardSimilar(part.Readings, part.Count, part.MedianDistance, part.Mean, part.Low, part.High, part.RuleMean, part.RuleSetups))
+            return SimilarSetups.Match(setups, ticker, [.. matched.Select(reading => readings[reading]!.Value)], columns, SetupChance.FormOf(LikeSetups.IsBook(family), hasTarget)) is { } part
+                ? new ScorePart(rank, new CardSimilar(part.Readings, part.Count, part.MedianDistance, part.Mean, part.Low, part.High, part.RuleMean, part.RuleSetups).WithChance(part.Chance))
                 : new ScorePart(rank, new CardSimilar(Unmatched: FormattableString.Invariant($"fewer than {SimilarSetups.Fewest} of the rule's {setups.Count} finished setups on this index could be matched")));
         }
         catch (Exception failure) when (!cancellation.IsCancellationRequested)
@@ -690,7 +692,7 @@ public sealed class DecisionCards : IComponent
 
     // Every finished setup the rule's own setting passed on an index, each with its session's place among the sessions
     // the ledger read and the readings matched on; under a live rule, those whose pass was read under it alone.
-    static async Task<IReadOnlyList<SimilarSetup>> RulesSetupsAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string family, IReadOnlyList<string> columns, string? live, CancellationToken cancellation)
+    internal static async Task<IReadOnlyList<SimilarSetup>> RulesSetupsAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string family, IReadOnlyList<string> columns, string? live, CancellationToken cancellation)
     {
         var sessions = new Dictionary<string, int>(StringComparer.Ordinal);
 
@@ -710,11 +712,23 @@ public sealed class DecisionCards : IComponent
         {
             while (await reader.ReadAsync(cancellation))
             {
+                var edge = reader.GetDouble(2);
+                double? result = reader.IsDBNull(3) ? null : reader.GetDouble(3);
+                var form = SetupChance.FormOf(LikeSetups.IsBook(family), !reader.IsDBNull(6));
+
                 setups.Add(new SimilarSetup(
                     reader.GetString(0),
                     sessions.TryGetValue(reader.GetString(1), out var place) ? place : -1,
-                    [.. Enumerable.Range(0, columns.Count).Select(at => reader.GetDouble(3 + at))],
-                    reader.GetDouble(2)));
+                    [.. Enumerable.Range(0, columns.Count).Select(at => reader.GetDouble(10 + at))],
+                    edge,
+                    LikeSetups.AfterCost(
+                        form,
+                        result,
+                        reader.IsDBNull(4) ? null : reader.GetDouble(4),
+                        Statistic.FromPrice(Money(reader.GetString(7))),
+                        Statistic.FromPrice(Money(reader.GetString(8))),
+                        reader.IsDBNull(9) ? null : reader.GetDouble(9)),
+                    SetupChance.WonOf(form, reader.IsDBNull(5) ? null : reader.GetString(5), result, edge)));
             }
         }
 

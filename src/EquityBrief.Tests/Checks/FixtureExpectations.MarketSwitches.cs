@@ -501,19 +501,20 @@ public partial class FixtureExpectations
         Assert.Equal(0, code);
         Assert.Equal(8, lines.Length);
         Assert.All(asWritten, rule => Assert.Contains($"replay: '{rule.Candidate}' carries its record on: reproduced its 0 trade(s) over 0 night(s) from 2026-10-02", lines));
-        Assert.StartsWith("register: retired 7 and registered 8 at one instant, family of 8 of 9: retired ", lines[^1], StringComparison.Ordinal);
+        Assert.StartsWith("register: retired 7 and registered 9 at one instant, family of 9 of 9: retired ", lines[^1], StringComparison.Ordinal);
         Assert.EndsWith("; on the evidence: the operator's ruling of 2026-10-03" + Environment.NewLine, said, StringComparison.Ordinal);
 
-        // The seven retired on the evidence and the eight registered at that instant, the seven under their names and
-        // the eighth the live rule switched on the index, each at the version the code carries and stating both
-        // switches; the drift's rule untouched.
+        // The seven retired on the evidence and the nine the code now writes registered at that instant, the seven under
+        // their names, the eighth the live rule switched on the index and from 21.7 the ninth the live rule ordered by the
+        // expected value of the setups like each, each at the version the code carries and stating both switches; the
+        // drift's rule untouched.
         const string At = "2026-10-03T12:00:00Z";
 
         Assert.Equal(
             [.. asWritten.Select(one => one.Candidate).Order(StringComparer.Ordinal)],
             TextRows(store, $"SELECT retires FROM candidate_register WHERE event = 'retired' AND registered_at = '{At}' AND evidence = 'the operator''s ruling of 2026-10-03' ORDER BY retires;"));
         Assert.Equal(
-            [.. TheSetupFamilies.Breakouts.Select(one => one.Candidate)],
+            [.. TheSetupFamilies.Breakouts.Select(one => one.Candidate), TheSetupFamilies.BreakoutExpected.Candidate],
             TextRows(store, $"SELECT candidate FROM candidate_register WHERE event = 'registered' AND registered_at = '{At}' ORDER BY id;"));
         Assert.All(
             TextRows(store, $"SELECT evaluator_version || '|' || parameters FROM candidate_register WHERE event = 'registered' AND registered_at = '{At}';"),
@@ -524,18 +525,18 @@ public partial class FixtureExpectations
         // from Monday 2026-10-05 in place of Friday 2026-10-02.
         var standing = CandidateFamily.In(CandidateFamily.Standing(await registrar.RowsAsync(), at1200), BreakoutRule.Name);
 
-        Assert.Equal(8, standing.Count);
+        Assert.Equal(9, standing.Count);
         Assert.All(standing, row => Assert.Equal(new DateOnly(2026, 10, 5), FamilyRecords.FirstSession(row.RegisteredAt)));
         Assert.Equal(new DateOnly(2026, 10, 2), FamilyRecords.FirstSession(new DateTimeOffset(2026, 10, 2, 11, 35, 37, TimeSpan.Zero)));
 
-        // Registered again once more it retires the eight and registers them again, and a family no freeze is
+        // Registered again once more it retires the nine and registers them again, and a family no freeze is
         // written for is refused by name with nothing written.
         var (again, againSaid) = await RegisterVerbAt(store, at1200.AddMinutes(1), RegisterVerb.FamilyAgain, BreakoutRule.Name, "--evidence", "again");
         var before = Scalar(store, "SELECT COUNT(*) FROM candidate_register;");
         var (leader, leaderSaid) = await RegisterVerbAt(store, at1200.AddMinutes(2), RegisterVerb.FamilyAgain, LeaderRule.Name, "--evidence", "the ruling");
 
         Assert.Equal((0, 1), (again, leader));
-        Assert.StartsWith("register: retired 8 and registered 8 at one instant, family of 8 of 9", againSaid.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)[^1], StringComparison.Ordinal);
+        Assert.StartsWith("register: retired 9 and registered 9 at one instant, family of 9 of 9", againSaid.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)[^1], StringComparison.Ordinal);
         Assert.Contains("no freeze is written for a family named 'leader', so it was not registered again; the families a freeze is written for are breakout, drift, heavyweight.", leaderSaid, StringComparison.Ordinal);
         Assert.Equal(before, Scalar(store, "SELECT COUNT(*) FROM candidate_register;"));
         Assert.Equal(

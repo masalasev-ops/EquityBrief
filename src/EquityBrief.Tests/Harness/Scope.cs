@@ -71,6 +71,8 @@ internal static class Scope
     // approved change.
     internal const string CardPage = "15.18 The decision card";
     internal const string CardScorePart = "The score's part";
+
+    internal const string CardChancePart = "The setups' chance";
     internal const string CardApproved = "A rule standing at an approved change";
     const string ByNight = "nightly-run";
     const string ByListings = "listings-coverage";
@@ -3850,6 +3852,10 @@ internal static class Scope
             Verdict.Pass,
             "over a constructed store the newest run's score with no proposal passed drawing no rank and the words on the card on Tonight, on the stock's page and on the Loop page, and a newer run's passed drawing the rank on all three",
             ByReadSurface),
+        [CheckReach.Key(CardPage, CardChancePart)] = new Scoped(
+            Verdict.Pass,
+            "the sentence read back off the rendered card on Tonight over a constructed store: the share that reached their target and the mean made after costs with its range, a trailing setup's share that ended above its buy and a mean lost, and none drawn on a card holding no chance",
+            ByReadSurface),
         [CheckReach.Key(CardPage, CardScorePart)] = new Scoped(
             Verdict.Pass,
             "the setups like the pick and the rank or the words read back off the rendered card on Tonight and on the stock's page over a constructed store the night matched from the ledger, on both sides of the sentence that they are not distinguishable from the rule's record",
@@ -6314,6 +6320,7 @@ internal static class Scope
         // 17.7's learned score beneath a family's proposals, and the card's part beneath the rule's record.
         [CheckReach.Key(LoopPage, LoopScore)] = "17.7",
         [CheckReach.Key(CardPage, CardScorePart)] = "17.7",
+        [CheckReach.Key(CardPage, CardChancePart)] = "21.7",
         // 17.9's Loop page regions, Tonight's line and the card's row for a rule standing at an approved change.
         [CheckReach.Key(LoopPage, LoopWord)] = "17.9",
         [CheckReach.Key(LoopPage, LoopDecided)] = "17.9",
