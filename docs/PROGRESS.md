@@ -12456,3 +12456,74 @@ Corrected:  the decision's date in its own words; no code moved, since the ledge
             its first day.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.7's entry below, which
             states that run's figures.
+
+### 21.6 - the remedy run from main: migration 116 and FINRA's short interest history read from its first settlement   2026-10-30
+
+Not a checkpoint entry: it records 21.6's remedy and what it measured, and lands nothing.
+Ran:        `tools/remedies/2026-10-30-21.6-the-new-readings-sources.txt` from main's 1d403368, PR 595's merge, from
+            13:43 to 14:09 UTC on 2026-10-30 with no night, local run, drain, labeller, ledger build or monthly run
+            writing.
+Measured:   the migration applied 116, creating the short interest store and the night's estimate trends. FINRA's
+            history read 212 settlements, 2017-12-29 to 2026-10-15, in 849 requests, free and keyless: 333,205 stock
+            asks, 302,701 reports stored and 30,504 asks answered with nothing, the first settlement's 1,652 asks
+            answered for 1,324 stocks and the newest's 1,508 for 1,506. No request to the provider and no model call.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.7's entry below, on whose
+            branch this is recorded; records alone change in this entry.
+
+### 21.7 - each pick's chance and expected value from the setups like it: the share that won and the mean after costs drawn first in the card's part under the setup's heading, the order by that mean registered as the S&P 500 breakout's ninth rule and walked unregistered by the per-rule test beside every other breakout and drift   2026-10-30
+
+Queue:      done, 21.1 to 21.6 as PRs 587 to 595 with 21.4's and 21.6's remedies, recorded above; in progress, 21.7;
+            next, 21.8 to 21.13 in the section's order on the standing go, with 21.14, 21.15 and every decision held
+            for the operator's word; beside them the sign-offs of phases 18, 20 and 22 by fresh sessions.
+Built:      the setups the card's part matches for a pick are read for their chance: how many hold a result and how
+            many of those won, a setup with a target winning where it reached the target before its stop, one with no
+            target where it ended above its buy and a book's holding where it ended above the equal-weighted hold, and
+            their mean result after costs with its 90 per cent interval, in risks or for a book in points of the buy,
+            none where fewer than 30 hold a result. A setup's cost is the round trip the night stored for it, and
+            otherwise the published spread at its company's value, its buy and its sale. The night stores the chance on
+            the card, and the card draws it first in the part in the reader's words, under the setup's heading and
+            saying it is those setups' record and not the stock's chance; a card from before draws none. The family
+            recorder hands a rule ordered by the expected value the mean the card reads for each member, from the
+            ledger's finished setups of its family on the index, and the family's command registers the breakout's
+            live setting ordered by it as the family's ninth, which no replay reads. The per-rule test matches each
+            listing among the setups whose paths ended before its fold's year began, on the readings weighing most in
+            that fold's stored score, walks a rule ordered by the figure at it, and walks the order unregistered beside
+            every live or provisional breakout and drift whose family registers none, printing each against its rule's
+            own walk over the test years. The word list gains the expected value with the reader's words for it, and
+            a page says the ninth rule's name in them.
+Not built:  the order registered on the S&P 400's and 600's breakouts and drifts, whose families have room: their
+            index families' step lists their rules and hands no figure, and it is a source every rule of theirs pins,
+            so registering one there moves every S&P 400 and 600 rule's version. Put to the operator for the next
+            checkpoint that moves the pins, the per-rule test walking it unregistered until then. No pullback's order
+            is walked: neither the S&P 500's swing filter nor the S&P 400's and 600's pullbacks is walked by the swing
+            walk the order rides.
+Judgement:  the tester's match is cut at the fold's year in place of each listing's own session, so one pool serves a
+            fold; written in the decision.
+Decisions:  two written: Each pick's card says how often the setups like it won and what they made after costs, under
+            the rule's heading; and An order by the expected value of the setups like each pick is registered where its
+            family has room and its step can hand the figure, and walked unregistered elsewhere.
+Tests:      2963, from 2957: six added, the chance worked by hand over a thousand setups on both sides of the sentence
+            and at 29 and 30 holding a result, the three forms with their round trips from the published table and
+            their sentences in the reader's words, the ninth rule's order over a constructed night, the remedy's line
+            over a register shaped as the operator's with the drift at nine refusing the same order, the card's
+            sentence read back off the rendered page, and the night's figure and the tester's fold cut over a
+            constructed store; five amended, the family's command and its two replays registering nine, and the screens'
+            and phase 13's counts.
+Claims:     1477, from 1476: one added, 15.18's row of the setups' chance, against the plan's count of about 3; the
+            catalogue's family recorder row and section 17's row of the setups like a pick amended in place, and the
+            word list's row read as its table's; 1492 placements.
+Pins:       none moved: no source 21.7 writes is one a rule's version pins, read off every evaluator's source list.
+Remedy:     `tools/remedies/2026-10-30-21.7-the-setups-like-each-pick.txt`, run from main after the merge while no other
+            writer runs: the breakout registered again whole, its eight replayed and its ninth registered, printing
+            `registered 9`. The cards carry the chance from the night after the merge.
+Mutation:   chosen before the run by this rule, the property the done condition names first on the figure itself, the
+            floor below which no chance is drawn: the chance drawn from 29 matched setups holding a result. The floor
+            lowered by one in the chance's reading: the thousand setups' test went red, 29 drawing a chance where none is
+            expected; reverted, green. Not mutated: the forms' wins, the round trip, the order and the fold cut.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2963 of 2963 tests ran
+            with none failed, migrations 0 to 116 with none pending, schema version 116, against `data-ci` and never
+            `data`; the phase report 64 tables, 1477 claims, 1477 passing, none out of scope and none unexamined, 1492
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the order on the S&P 400's and 600's breakouts and drifts, put to the operator; the ninth breakout rule's
+            record from its registration, read on paper trading and the Run page; and everything 21.6 carried.
