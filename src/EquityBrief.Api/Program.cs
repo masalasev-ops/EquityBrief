@@ -3156,8 +3156,8 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
     var alarms = await read.LoopAlarmsAsync(reading.Code);
     var newest = await read.NewestLoopRunAsync(reading.Code);
 
-    // From 19.7 each family's rule standing on the index as its card's chips draw it, for the summary's rule today, the
-    // fundamentals-first family's on the S&P 500 as well off the settings its night stored there, as its card reads them.
+    // From 19.7 each family's rule standing on the index as its card's chips draw it, for the summary's rule today, and on the
+    // S&P 400 and 600 a family standing provisional off the settings its night stored, as its card reads them.
     var large = reading == Universes.Large;
     var register = await read.RegisteredCandidatesAsync();
     var loopNight = night is not { } stored ? null : await read.IndexNightAsync(reading.Code, stored);
@@ -3171,9 +3171,8 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
         family =>
         {
             var (live, _) = RuleScreen.Accounts(family, large, reading.Name, register, night ?? DateOnly.MinValue, large ? null : provisional, loopAsOf);
-            var readsNight = !large || family == EquityBrief.Core.Families.FundamentalsRule.Name;
 
-            return (IReadOnlyList<string>)[.. (live is not null ? RuleScreen.ChipsOf(live) : readsNight && provisional is not null ? RuleScreen.ProvisionalChips(family, provisional) : []).Select(chip => chip.Words)];
+            return (IReadOnlyList<string>)[.. (live is not null ? RuleScreen.ChipsOf(live) : !large && provisional is not null ? RuleScreen.ProvisionalChips(family, provisional) : []).Select(chip => chip.Words)];
         },
         StringComparer.Ordinal);
 
