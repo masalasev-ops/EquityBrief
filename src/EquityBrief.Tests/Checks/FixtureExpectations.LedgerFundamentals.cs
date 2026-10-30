@@ -294,11 +294,11 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task AnApprovedSettingOfTheFamilyIsReadByTheNightInTheProvisionalOnesPlaceTheSAndP500sAmongThem()
+    public async Task AnApprovedSettingOfTheFamilyIsReadByThePerRuleTestAndFrom21Point4TheNightComputesTheFamilyOnNoIndex()
     {
         // AAA on the night with its cash at 0.9 of its income and every other part passing: the provisional rule asks for
-        // the income whole and refuses it at its cash, while the setting with cash at 0.8 an approval stored passes it, and
-        // a change of the hooks alone leaves the provisional setting standing.
+        // the income whole and refuses it at its cash; the per-rule test walks the family at the setting an approval stored,
+        // with the hooks stored beside it, and at the provisional setting where none is stored.
         var inputs = BusinessFirstHistory.Inputs(BusinessFirstHistory.Night + 1);
         var prepared = IndexNightRead.Prepare(IndexFamilies.LargeIndex, inputs.Sessions[^1], inputs.Names, BusinessFirstHistory.Income())!;
         Func<string, IReadOnlyList<double?>?> readings = ticker => ticker == "AAA" ? Improving(("cash_over_income", 0.9)) : null;
@@ -319,11 +319,11 @@ public partial class FixtureExpectations
         Assert.StartsWith("growth>0|margins=either|cash>=0.8; ", EquityBrief.Worker.Loop.RuleTests.FundamentalsStanding(exitHook).Words, StringComparison.Ordinal);
 
         Assert.Equal(FundamentalsRule.NoCash, Reason(IndexNightRead.Provisional(prepared, FundamentalsRule.Name, readings)));
-        Assert.Null(Reason(IndexFamilies.Stored(prepared, FundamentalsRule.Name, lower, readings)));
-        Assert.Equal(FundamentalsRule.NoCash, Reason(IndexFamilies.Stored(prepared, FundamentalsRule.Name, hooks, readings)));
 
-        // Over a store of the same history, the index families' step reads the setting stored for the family on the S&P
-        // 500, where it reads no other family's, and states it in the night's settings the card's gates are written from.
+        // Over a store of the same history with the setting stored for the family on the S&P 500, the index families' step
+        // from 21.4 reads the S&P 500 for no family and, no page trade of the family's standing open on it, not at all: no
+        // night row of its own, no answer under the family on any index, and the stored setting unread.
+        // see: Business first leaves the night at the one move of the pins, its rows and record kept and its one open trade run out under its own plan
         using var store = new TemporaryStore().Migrated();
         var night = BusinessFirstHistory.Seed(store);
         var clock = EquityBrief.Core.Time.FixedClock.At(new DateTimeOffset(2026, 1, 28, 3, 0, 0, TimeSpan.Zero), EquityBrief.Core.Time.SessionZones.UnitedStates);
@@ -333,13 +333,10 @@ public partial class FixtureExpectations
         store.Execute($"INSERT INTO provisional_setting (index_code, family, change, words, set_at, run_id, proposal) VALUES ('GSPC', 'pullback', '{hooks.Json}', '{hooks.Words()}', '2026-01-27T15:00:00Z', 'run', 'the exit');");
         await new IndexFamilies(clock, store.DatabaseFile).RunAsync("night-business", readingsOf: ledger.ReadingsTonightAsync);
 
-        var settings = FamilyRows(store, $"SELECT settings FROM index_family_night WHERE index_code = 'GSPC' AND session_date = '{night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}';").Single();
-
-        Assert.Contains("\"fundamentals\":{\"setting\":\"growth 0|margins either|cash 0.8\"", settings, StringComparison.Ordinal);
-        Assert.Contains("\"approved\":{\"fundamentals\":\"the setting growth 0, margins either, cash 0.8\"}", settings, StringComparison.Ordinal);
-
-        // AAA passes at its cash of 1.25; BBB's of 0.6 is still under the stored 0.8, and its row names the cash check.
-        Assert.Equal(["AAA|1|", $"BBB|0|{FundamentalsRule.NoCash}"], FamilyRows(store, $"SELECT ticker || '|' || passed || '|' || IFNULL(reason, '') FROM index_family_result WHERE index_code = 'GSPC' AND family = 'fundamentals' AND ticker IN ('AAA', 'BBB') ORDER BY ticker;"));
+        Assert.Empty(FamilyRows(store, $"SELECT settings FROM index_family_night WHERE index_code = 'GSPC' AND session_date = '{night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}';"));
+        Assert.Empty(FamilyRows(store, "SELECT ticker FROM index_family_result WHERE family = 'fundamentals';"));
+        Assert.Equal(["MID", "SML"], FamilyRows(store, $"SELECT index_code FROM index_family_night WHERE session_date = '{night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}' ORDER BY index_code;"));
+        Assert.All(FamilyRows(store, "SELECT settings FROM index_family_night;"), settings => Assert.DoesNotContain("\"fundamentals\"", settings, StringComparison.Ordinal));
     }
 
     // Every weekday from the first scored session to early March 2024: three years a fold of 2022 learns on, and the test

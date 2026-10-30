@@ -90,11 +90,14 @@ public sealed record IndexNightInputs(
 // see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
 public static class IndexNightRead
 {
-    // The families in the page's order, the words they are stored under, the fundamentals-first family last; and the one
-    // the S&P 500 is read for here, its other families being the S&P 500's own.
-    public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, FundamentalsRule.Name];
+    // The families in the page's order, the words they are stored under; from 21.4 the fundamentals-first family is not
+    // among them, the night computing it no longer and its rows standing as written. The S&P 500 is read here for no
+    // family, its own families being the S&P 500's own, and only while a page trade of the fundamentals-first family's
+    // stands open on it, to walk that trade to its end.
+    // see: Business first leaves the night at the one move of the pins, its rows and record kept and its one open trade run out under its own plan
+    public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name];
 
-    public static IReadOnlyList<string> LargeFamilies { get; } = [FundamentalsRule.Name];
+    public static IReadOnlyList<string> LargeFamilies { get; } = [];
 
     // The parts of a rule a member fails, in the rule's order, the first the row names.
     public const string MarketClosed = "the market check closed";

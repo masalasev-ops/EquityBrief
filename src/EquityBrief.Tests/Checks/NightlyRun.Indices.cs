@@ -45,16 +45,17 @@ public partial class NightlyRun
 
         Assert.Equal(1, stages.Count(stage => stage == EquityBrief.Worker.Indices.IndexFamilies.Stage));
         Assert.True(stages.IndexOf(EquityBrief.Worker.Families.HeavyweightBook.Stage) < stages.IndexOf(EquityBrief.Worker.Indices.IndexFamilies.Stage));
-        // From 17.8 the S&P 500's four members are read first, for the fundamentals-first family alone.
+        // From 21.4 the S&P 500 is read for no family and, holding no open page trade of the fundamentals-first family's,
+        // not at all: no night row of its own and no words of its own on the stage's row, which opens on the S&P 400's.
         Assert.Equal(
-            ["GSPC|4", "MID|0", "SML|0"],
+            ["MID|0", "SML|0"],
             Texts(store, "SELECT index_code || '|' || members FROM index_family_night ORDER BY index_code;"));
 
         var detail = Texts(store, $"SELECT detail FROM run_log WHERE stage = '{EquityBrief.Worker.Indices.IndexFamilies.Stage}';").Single();
 
-        Assert.StartsWith("GSPC: 4 member(s) read, ", detail, StringComparison.Ordinal);
-        Assert.Contains(" passed by the fundamentals, ", detail, StringComparison.Ordinal);
-        Assert.Contains("; MID: 0 member(s) read, breadth not read, the market check closed", detail, StringComparison.Ordinal);
+        Assert.StartsWith("MID: 0 member(s) read, breadth not read, the market check closed", detail, StringComparison.Ordinal);
+        Assert.DoesNotContain("fundamentals", detail, StringComparison.Ordinal);
+        Assert.DoesNotContain("GSPC", detail, StringComparison.Ordinal);
     }
 
     // An S&P 400 book that throws: a holding whose buy close is not a price, which the book reads first. The S&P 400's
@@ -84,16 +85,16 @@ public partial class NightlyRun
         Assert.Equal(["ok"], Texts(store, $"SELECT outcome FROM run_log WHERE {Night} AND stage = '{EquityBrief.Worker.Nights.NightClose.Stage}';"));
         Assert.Equal(1, Scalar(store, $"SELECT COUNT(*) FROM run_log WHERE {Night} AND stage = '{RequestDrain.NightStage}';"));
 
-        // The S&P 400 not computed and named with its cause; the S&P 600 read.
+        // The S&P 400 not computed and named with its cause; the S&P 600 read; and from 21.4 the S&P 500 not read at all,
+        // holding no open page trade of the fundamentals-first family's.
         Assert.Equal([EquityBrief.Worker.Indices.IndexFamilies.NotComputed], Texts(store, $"SELECT outcome FROM run_log WHERE {Night} AND stage = '{stage}';"));
 
         var detail = Texts(store, $"SELECT detail FROM run_log WHERE {Night} AND stage = '{stage}';").Single();
 
-        Assert.StartsWith("GSPC: 4 member(s) read, ", detail, StringComparison.Ordinal);
-        Assert.Contains("; MID: not computed tonight, FormatException: ", detail, StringComparison.Ordinal);
+        Assert.StartsWith("MID: not computed tonight, FormatException: ", detail, StringComparison.Ordinal);
         Assert.Contains("; SML: 0 member(s) read, breadth not read", detail, StringComparison.Ordinal);
         Assert.Equal(
-            ["GSPC|4|", "MID|0|FormatException", "SML|0|"],
+            ["MID|0|FormatException", "SML|0|"],
             Texts(store, "SELECT index_code || '|' || members || '|' || COALESCE(substr(fault, 1, instr(fault, ':') - 1), '') FROM index_family_night ORDER BY index_code;"));
 
         // The book's holding left as it was, carried by nothing.

@@ -26,6 +26,48 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-30 - docs/ARCHITECTURE.html - business first leaves the night: 13.15 states its end, the index families' row reads it no longer and the Run page's hold-back line goes
+Authorised by: Business first leaves the night at the one move of the pins, its rows and record kept and its one open trade run out under its own plan
+Was:
+> (13.15) The fundamentals-first family reads the business first and the chart second, on all three indices (see: ...). ... From the 22.14 correction of 2026-10-29 the Run page under every index states, one line a night, how many picks its open trades held back on each of the three indices, read off the pick rows naming its trade, its rule running on unseen until the next change that moves the S&P 400's and 600's pins takes it out (see: Business first stays in the night unseen until the next change that moves the S&P 400's and 600's pins, and the Run page counts the picks its open trades hold back each night an index).</p> | (Index families) nightly, once for each of the S&P 400 and 600, and from 17.8 once for the S&P 500 first, in the swing filter's step after the S&P 500's families | ... from 17.8 reads the fundamentals-first family on all three indices, the S&P 500 for that family alone and under its own rows, over the pullback's base listings with the night's readings of the ledger's catalogue, the S&P 500's list holding back a stock its own families listed that night (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point); | (the Run page, 15.19) ..., and from the 22.14 correction of 2026-10-29 one line a night stating how many picks business first's open trades held back on each of the three indices, read off the pick rows naming its trade, which the S&P 500's page draws too under how last night went (see: ...); and its setups, | (How last night went) ...; and from the 22.14 correction of 2026-10-29 one line stating how many picks business first's open trades held back that night on each of the three indices with a pick counted where its row names business first's trade as the one still open for its stock (see: ...) (see: A night's state ...
+Now:
+> (13.15) The fundamentals-first family read the business first and the chart second, on all three indices, from 17.8 to 21.4 (see: ...). ... From the 22.14 correction of 2026-10-29 to 21.4 the Run page under every index stated, one line a night, how many picks its open trades held back on each of the three indices, its rule running on unseen until the next change that moved the S&P 400's and 600's pins; 21.4 is that change, and from it the night computes the family on no index, its rows and record kept and readable, its one open trade, DGII on the S&P 600 since 2026-10-20, run out under its own plan with the index's other page trades, the S&P 500 read only while such a trade stands open on it, and the line gone with the hold-back it counted (see: Business first leaves the night at the one move of the pins, its rows and record kept and its one open trade run out under its own plan). The parts below stand as the rule's, which the loop's walks still read over the ledger's setups of the family.</p> | nightly, once for each of the S&P 400 and 600, from 17.8 to 21.4 once for the S&P 500 first and from 21.4 for the S&P 500 only while a page trade of the fundamentals-first family's stands open on it, in the swing filter's step after the S&P 500's families | ... from 17.8 to 21.4 read the fundamentals-first family on all three indices, the S&P 500 for that family alone and under its own rows, and from 21.4 computes it no longer on any index, its rows and record kept and readable and its one open trade walked to its end under its own plan with the index's other page trades (see: Business first leaves the night ...); | ...; and its setups, | ... (see: A night's state ...
+Why: 21.4 is the change that moves the S&P 400's and 600's pins, at which the ruling of 2026-10-29 said business first's code leaves the night; the hold-back line counted a hold-back the family's end removes.
+
+### 2026-10-30 - docs/SCHEMA.md - the index family night's grain, index and settings notes state the S&P 500 is read only while a page trade stands open on it
+Authorised by: Business first leaves the night at the one move of the pins, its rows and record kept and its one open trade run out under its own plan
+Was:
+> Grain: one row per session and index the S&P 400's and 600's provisional rules were read for, and from 17.8 the S&P 500's fundamentals-first family. | `GSPC` for the S&P 500, read for the fundamentals-first family alone | the words each card's description is written from, the fundamentals-first family's setting with its words and its cap among them, and from 20.11 `registerAt`,
+Now:
+> Grain: ..., from 17.8 to 21.4 the S&P 500's fundamentals-first family, and from 21.4 the S&P 500 only while a page trade of that family's stands open on it. | `GSPC` for the S&P 500, read for the fundamentals-first family alone from 17.8 to 21.4 and from 21.4 only while a page trade of that family's stands open on it | ..., from 17.8 to 21.4 the fundamentals-first family's setting with its words and its cap among them, and from 20.11 `registerAt`,
+Why: the night writes no S&P 500 row for the family from 21.4 and no fundamentals setting in any row's settings.
+
+### 2026-10-30 - docs/RUNBOOK.md - the fundamentals-first family's section states its end and the Fundamentals family's section the Run page line's
+Authorised by: Business first leaves the night at the one move of the pins, its rows and record kept and its one open trade run out under its own plan
+Was:
+> Its card stands after each index's own families' on Tonight; on the S&P 500 the card says the S&P 400's and 600's step read it. | From the 22.14 correction of 2026-10-29 the Run page under every index states, one line a night, how many picks business first's open trades held back on each of the three indices, read off the pick rows naming its trade; its rule runs on unseen until the next change that moves the S&P 400's and 600's pins takes it out, and the operator's word of that day is that a count above nought stops the work until they are told (see: Business first stays in the night unseen until the next change that moves the S&P 400's and 600's pins, and the Run page counts the picks its open trades hold back each night an index)
+Now:
+> ... on the S&P 500 the card says the S&P 400's and 600's step read it. From 21.4 the night computes it no longer on any index: the one move of the pins took it out, its rows and record kept and readable, its one open trade run out under its own plan with the index's other page trades, and the S&P 500 read by the step only while such a trade stands open on it (see: Business first leaves the night ...). | From the 22.14 correction of 2026-10-29 to 21.4 the Run page under every index stated, one line a night, how many picks business first's open trades held back on each of the three indices; 21.4, the next change that moved the S&P 400's and 600's pins, took the family out of the night and the line with it, its one open trade run out under its own plan (see: Business first leaves the night ...)
+Why: the same.
+
+### 2026-10-30 - docs/BUILD_PLAN.md - 21.4's business-first clause cites the decision ending the family in the night
+Authorised by: Business first leaves the night at the one move of the pins, its rows and record kept and its one open trade run out under its own plan
+Was:
+> as the ruling of 2026-10-29 states for the next change that moves those pins (see: Business first stays in the night unseen until the next change that moves the S&P 400's and 600's pins, and the Run page counts the picks its open trades hold back each night an index);
+Now:
+> as the ruling of 2026-10-29 stated for the next change that moves those pins (see: Business first leaves the night at the one move of the pins, its rows and record kept and its one open trade run out under its own plan);
+Why: the decision the clause cited is superseded by the one 21.4 makes, and a spec cites no superseded decision.
+
+### 2026-10-30 - .claude/rules/checks.md - fixture-expectations and read-surface no longer state the Run page's hold-back line
+Authorised by: Business first leaves the night at the one move of the pins, its rows and record kept and its one open trade run out under its own plan
+Was:
+> fixture-expectations: ...; and from the 22.14 correction of 2026-10-29 the picks business first's open trades held back on the fixture's night, none on any index since no trade of its stands before its first night, recounted from the three pick tables and read off the Run page under each index ...
+> read-surface: ...; and from the 22.14 correction of 2026-10-29 the Run page under every index drawing one line a night with the picks business first's open trades held back on each index, a pick counted where its row names business first's trade and a family's own pick held by its own trade not among them, nought where none |
+Now:
+> fixture-expectations: ... (the clause removed)
+> read-surface: ... (the clause removed) |
+Why: the line and its two tests leave with the family's time in the night.
+
 ### 2026-10-30 - .claude/rules/checks.md - fixture-expectations and nightly-run state 21.4's menu, hooks, readings and book setups
 Authorised by: A book family's setup is each member a reshuffle or a filing leaves at the ledger's gate, held while it clears the hold and never past a year against an equal-weighted hold of the index
 Was:
