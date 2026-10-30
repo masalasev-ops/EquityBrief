@@ -12351,3 +12351,97 @@ Carried:    21.4's remedy and the three histories built again from main after PR
             operator with this pull request: the drift's eight records the remedy restarted on a surprise the provider
             revised after its night, the changes the dip's and the books' nights read no dial for, a frozen pullback no
             engine reads, and the Loop summary's tall rows at 390.
+
+### 21.4 - the remedy run from main: the swing family registered again whole, every moved rule registered again with the S&P 500's breakout and drift replayed, and the three ledger histories built again with their checks   2026-10-30
+
+Not a checkpoint entry: it records 21.4's remedy and the histories built after it, and what they measured, and lands nothing.
+Ran:        `tools/remedies/2026-10-30-21.4-the-one-move-of-the-pins.txt` from main's 1dc4154a, PR 591's merge, ending at
+            05:40 UTC on 2026-10-30 with no night, local run, drain, labeller or monthly run writing; then, from main's
+            1b0faa99, PR 593's merge, each index's history built again with `--again` over 2019-01-02 to 2026-10-29 from
+            its clean copy and checked: the S&P 500's build from 08:52 to 09:12 and its check to 09:49, the S&P 400's
+            build to 09:35 and its check from 09:49 to 10:00, and the S&P 600's build, after the off-peak run of 10:05,
+            from 10:20 to 10:57 and its check to 11:17. No request and no model call.
+Measured:   the migration applied 115. The swing family's nine S&P 500 pullback versions retired and registered again at
+            one instant. The 110 other moved rules retired and registered again at one instant, each unchanged: of the 17
+            S&P 500 breakout and drift rules replayed, 7 carry their records on, the live breakout and five of its
+            variants and one drift variant, each reproducing every trade from 2026-10-02 or 2026-10-05; 10 restart, two
+            breakout variants at a 251-session high whose record keeps LH on 2026-10-28 and HLT on 2026-10-20 where the
+            replay keeps none, and eight drift rules, the live one among them, on FLEX's place of 2026-10-28, which the
+            replay reads one lower than the night did; and the other 93, the S&P 400's and 600's 28, the dip's 14,
+            Quality at a fair price's 24 and the Fundamentals family's 27, restart at this registration. Each build left
+            the 15 sessions holding the night's own rows, 2026-10-09 to 2026-10-29, to the night and read the history
+            again through 2026-10-08: the S&P 500's wrote 385,066 setups over 1,953 sessions, 61,622 passing the live
+            rule; the S&P 400's 280,721 and 43,880; the S&P 600's 384,327 and 50,886. Each check rebuilt 200 of 200
+            sampled history setups with every reading the same.
+Found:      FLEX's place moves because the provider revised its surprise after the night of 2026-10-28, 21.6495 in the
+            night's stored order against 12.3711 in the calendar on the night of 2026-10-29, and the replay reads the
+            calendar as it stands; put to the operator with phase 21's decisions.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.6's entry below, on whose
+            branch this is recorded; records alone change in this entry.
+
+### 21.6 - the new readings' sources filled outside the night: every member's estimate trend asked by the night in pages of symbols, the ratings refresh asking Yahoo after the labeller under the chart page's cap less its reserve, and FINRA's short interest read once a settlement with its history by hand   2026-10-30
+
+Queue:      done, 21.1 to 21.5 as PRs 587 to 594 with 21.4's remedy, recorded above, and the history build's two
+            corrections; in progress, 21.6; next, 21.7 to 21.13 in the section's order on the standing go, with 21.14,
+            21.15 and every decision held for the operator's word; beside them the sign-offs of phases 18, 20 and 22 by
+            fresh sessions.
+Built:      migration 116 creates the short interest store and the night's estimate trends. The trends fetcher, in the
+            swing filter's step after the estimates fetcher, asks the provider's calendar trends endpoint for every member
+            of the three indices holding no trend for the night, 50 symbols a request at one weighted call a symbol, about
+            1,505 weighted calls in 31 requests a night, none past the day's allowance and none on a night run again for an
+            earlier session, and stores each member's current fiscal year as first read; the night's feeds carry it and
+            count its symbols in the night's weighted calls. The ratings refresh, a process of its own the off-peak run
+            starts after the labeller, hands the members the analyst job never asked about, and then those it asked
+            longest ago, to the job in turn while the New York day's asks stand under 80, the job's cap of 100 less 20
+            left to the chart page, two seconds between asks, stopping after three failed asks in a row. The short
+            interest reader, after the refresh, asks FINRA for the settlements from the newest held, every stock the three
+            indices held on or after each, 500 symbols a request, keeps each report with the day FINRA published it, the
+            seventh business day after the settlement, and reads its history once by hand from 2017-12-29. The ledger
+            reads the night's trend above a quarters fetch's on one session and none before a member's first, and a short
+            interest report from the session after it was published, in the night, the history build and the
+            point-in-time check alike. The Run page counts the refresh's runs against five with the asks they made, the
+            failed among them and the stocks holding an answer; the Ledger page says beneath which readings go with
+            winners where the readings with no history of their own start. The worker's verbs are 58 with
+            `analysts-refresh` and `short-interest`; the off-peak run starts both between the labeller and the drain.
+Judgement:  the refresh stops at 80 of the day's 100 asks, where the plan said 100 shared with the chart page: the
+            refresh runs at the start of the New York day, so at 100 every chart page opened that day would find no ask
+            left. The plan's text and its operating row say so, and the row's trigger settles both figures.
+Decisions:  four written: The night asks every member's estimate trend once a night in requests of a page of symbols;
+            The ratings refresh asks Yahoo for the members whose stored answer is oldest or none after the labeller,
+            under the chart page's daily cap less the page's reserve; FINRA's short interest is read once a settlement
+            after the labeller, and its history once by hand; and A new reading joins the ledger with its history where
+            its source keeps one, and from the night it is first stored where it keeps none.
+Captures:   the provider's trends answer of 2026-10-29 for five symbols, trimmed to each symbol's two newest
+            current-year records and AAPL's later +1y, each record byte for byte as sent; FINRA's answers of 2026-10-30
+            for AAPL over a span, for five symbols at a settlement and for the share classes, whole; and FINRA's answer to
+            a query matching nothing, read off the wire as a 204 with no body, which the feed reads as none.
+Tests:      2957, from 2943: fourteen added, the captures read as sent, the published day by hand, the trends fetcher's
+            pages, store and allowance, its refused page and its night run again, the short interest reader's
+            settlements, published days and first-read reports, its refusal, the two live feeds, the refresh's turn and
+            cap, its three failures, the ledger's two readers, a setup's readings rebuilt the same and the sources
+            unmoved, and the Run page's and the Ledger page's lines.
+Claims:     1476, from 1461: 15 added, the three components' catalogue and matrix rows, the two stores, section 17's
+            three rows, section 18's two, the Run page's count of the refresh's runs and the Ledger page's line, against
+            the plan's count of about 9; 1491 placements.
+Pins:       none moved: the 22 shipped sources 21.6 writes outside its comments are pinned by no rule, asserted; the
+            ledger's readings file it touches gains comment lines alone.
+Remedy:     `tools/remedies/2026-10-30-21.6-the-new-readings-sources.txt`, run from main after the merge while no other
+            writer runs: the migration and FINRA's history read, about 1,000 free requests. The night asks every member's
+            trend from the night after the merge and the off-peak run starts the refresh at its next slot. The three
+            ledger histories are built again by hand with their checks once the refresh has asked every member, about
+            nineteen days after its first run.
+Mutation:   chosen before the run by this rule, the property the done condition names on the process and its cap, the
+            one bound that stops the refresh spending an outside source's asks: the process asks nothing at its cap and
+            one under it asks. The refresh made to ask while the day's asks stand at its cap: the refresh's cap test went
+            red, one under the cap asking twice where once is expected; reverted, green. Not mutated: the trends
+            fetcher's allowance, FINRA's published day, the night's trend above a fetch's and the point-in-time rebuild.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2957 of 2957 tests ran
+            with none failed, migrations 0 to 116 with none pending, schema version 116, against `data-ci` and never
+            `data`; the phase report 64 tables, 1476 claims, 1476 passing, none out of scope and none unexamined, 1491
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the operating row The ratings refresh's cap read on its first five runs, read on the Run page's line; the
+            three ledger histories built again once the refresh has asked every member, with their checks, recorded then;
+            the catalogue's words for the estimate revision, which name the quarters fetch alone, and for the short
+            interest, which say last reported where the reading reads last published, each moved at the next checkpoint
+            that moves the pins; and FLEX's revised surprise, put to the operator.
