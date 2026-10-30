@@ -15,7 +15,8 @@ public sealed record LoopDecided(
     IReadOnlyList<LoopAlarmRow> Alarms,
     string? Newest,
     DateOnly? Cutoff = null,
-    IReadOnlyList<LoopTestRow>? Tests = null);
+    IReadOnlyList<LoopTestRow>? Tests = null,
+    IReadOnlySet<string>? Registered = null);
 
 // The Loop page's marks: a family's rule today in the words its run stored, and each proposal tested against it, its
 // change, its verdict part by part and its test years with the setting each fold's learning years chose. Every figure
@@ -181,7 +182,7 @@ public sealed partial class MarkRenderer
         {
             html.Append("<p class=\"degraded\" data-decision=\"older-run\">A newer run stands for this index, and its proposals are the ones put to you.</p>");
         }
-        else if (LoopDecisions.Refusal(index, proposal.Family) is { } refused)
+        else if (LoopDecisions.Refusal(index, proposal.Family, decided.Registered?.Contains(proposal.Family) == true) is { } refused)
         {
             html.Append($"<p class=\"degraded\" data-decision=\"not-offered\">Approve is not offered here: {Escaped(refused)}.</p>");
         }

@@ -290,7 +290,9 @@ public sealed partial class ReadApi
                 : "Nothing was approved: the proposal did not pass the tester.");
         }
 
-        if (LoopDecisions.Refusal(index, family) is { } refused)
+        var registered = await RegisteredOnAsync(index, family);
+
+        if (LoopDecisions.Refusal(index, family, registered) is { } refused)
         {
             return new RequestWritten(false, $"Nothing was approved: {refused}.");
         }
@@ -322,10 +324,23 @@ public sealed partial class ReadApi
             ? LoopChange.Read(held.Change)?.Shape is { Count: > 0 }
                 ? "Approved. The move is applied at the start of the next night, on this index alone: the swing filter opens its next version with the move made and the live filter registered again under it, restarting its record."
                 : "Approved. The change is applied at the start of the next night, on this index alone, and the swing filter's page reads it from that night on."
-            : large
-                ? FormattableString.Invariant($"Approved. The change is applied at the start of the next night, on this index alone, and registered as the family's live rule, which the page reads from that night on; the rule it replaces runs beside it as a variant for {LoopDecisions.ReplacedSessions} sessions.")
+            : large || registered
+                ? FormattableString.Invariant($"Approved. The change is applied at the start of the next night, on this index alone, and registered as the family's live rule, which the page reads from that night on; the rule it replaces runs beside it as a variant for {LoopDecisions.ReplacedSessions} sessions, or in the background where the family holds {EquityBrief.Core.Candidates.CandidateFamily.Maximum} rules.")
                 : "Approved. The change is applied before the next night, on this index alone, and the family reads it from that night on.");
     }
+
+    // From 21.5 whether the family's live rule stands registered on the index, which a family keeping no stored setting is
+    // changed through alone, read off the register as it stands.
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
+    public async Task<bool> RegisteredOnAsync(string index, string family) =>
+        LoopDecisions.RegistersOn(index, family, EquityBrief.Core.Candidates.CandidateFamily.Standing(RegisterRowsOf(await RegisteredCandidatesAsync()), DateTimeOffset.MaxValue));
+
+    // The register's rows as the core's reader of what stands reads them.
+    public static IReadOnlyList<EquityBrief.Core.Candidates.RegisterRow> RegisterRowsOf(IEnumerable<CandidateRow> rows) =>
+    [
+        .. rows.Select(row => new EquityBrief.Core.Candidates.RegisterRow(
+            row.Id, row.Candidate, string.Empty, string.Empty, row.Evaluator, row.Parameters, row.EvaluatorVersion, row.Event, row.Retires, row.RegisteredAt, row.Evidence)),
+    ];
 
     // The operator's approval of a restore of a family the live alarm flagged: the setting standing before the newest
     // change an approval stored, applied as a change is. Refused where the change named is not the family's newest, where

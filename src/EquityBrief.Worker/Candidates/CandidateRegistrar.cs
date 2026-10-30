@@ -689,6 +689,43 @@ public sealed class CandidateRegistrar : IComponent
             taken.Add(standing with { Id = taken.Max(one => one.Id) + 1, Event = Retired, Retires = registration.Candidate, RegisteredAt = startedAt, Evidence = evidence });
         }
 
+        // From 21.5 a family holding nine rules takes the change with the rule it replaces moved to the background: the
+        // live rule retired and registered again unchanged under the background's name at the same instant, counted
+        // outside the nine and drawn on no page, where it runs on until the block after the change is reached.
+        // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
+        string? backgrounded = null;
+        var familyOf = CandidateFamily.In(CandidateFamily.Standing(taken, startedAt), CandidateFamily.SetupFamilyOf(registration.Evaluator));
+
+        if (!again
+            && familyOf.Count(row => !FamilyRecords.IsBackground(row.Candidate)) >= CandidateFamily.Maximum
+            && FamilyRecords.LiveOf(familyOf) is { } replaced)
+        {
+            backgrounded = BackgroundOf(replaced.Candidate);
+
+            if (RetirementRefusal(taken, replaced.Candidate, evidence, startedAt, ShortlistSeries.Reasons) is { } refusal)
+            {
+                return await RefuseAsync(refusal);
+            }
+
+            taken.Add(replaced with { Id = taken.Max(one => one.Id) + 1, Event = Retired, Retires = replaced.Candidate, RegisteredAt = startedAt, Evidence = evidence });
+
+            if (Refusal(taken, backgrounded, replaced.Evaluator, CandidateEvaluator.Read(replaced.Parameters), startedAt) is { } backgroundRefused)
+            {
+                return await RefuseAsync(backgroundRefused);
+            }
+
+            taken.Add(replaced with
+            {
+                Id = taken.Max(one => one.Id) + 1,
+                Candidate = backgrounded,
+                EvaluatorVersion = CandidateEvaluators.Find(replaced.Evaluator)!.Version,
+                Event = Registered,
+                Retires = null,
+                RegisteredAt = startedAt,
+                Evidence = null,
+            });
+        }
+
         if ((Unstated(registration.Rule, registration.Test) ?? Refusal(taken, registration.Candidate, registration.Evaluator, registration.Parameters, startedAt) ?? await VersionRefusalAsync(connection, transaction, registration.Candidate, registration.Parameters, cancellation)) is { } refused)
         {
             return await RefuseAsync(refused);
@@ -721,13 +758,21 @@ public sealed class CandidateRegistrar : IComponent
         await alongside(connection, transaction, cancellation);
 
         var detail = (again ? $"registered '{registration.Candidate}' again unchanged" : $"registered '{registration.Candidate}'")
-            + $" as the family's live rule, on the evidence: {evidence}";
+            + " as the family's live rule"
+            + (backgrounded is null ? string.Empty : FormattableString.Invariant($", the family holding {CandidateFamily.Maximum} rules, so the rule it replaces runs on in the background as '{backgrounded}'"))
+            + $", on the evidence: {evidence}";
 
         await RecordAsync(connection, runId, startedAt, Registered, taken.Count - rows.Count, detail, cancellation);
         await transaction.CommitAsync(cancellation);
 
         return new RegistrationOutcome(Registered, null, detail);
     }
+
+    // From 21.5 the name a family's live rule runs on under in the background once a change replaced it at nine rules: the
+    // background's words in the live rule's place, the rest of its name as it stood.
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
+    public static string BackgroundOf(string live) =>
+        FamilyRecords.BackgroundPrefix + (FamilyRecords.IsLive(live) ? live[FamilyRecords.LivePrefix.Length..] : live);
 
     public async Task<RegistrationOutcome> RetireAsync(
         string candidate,
@@ -1094,10 +1139,12 @@ public sealed class CandidateRegistrar : IComponent
                 "that does not say what will run.";
         }
 
-        // A setup family's own rules alone, since each family's correction divides by its own.
+        // A setup family's own rules alone, since each family's correction divides by its own; from 21.5 a rule a change
+        // replaced that runs on in the background counted outside the nine, which its correction still counts.
         // see: Each setup family's correction for luck counts its own rules alone, at most nine a family
+        // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
         var family = CandidateFamily.SetupFamilyOf(evaluator);
-        var standing = CandidateFamily.In(CandidateFamily.Standing(rows, at), family).Count;
+        var standing = CandidateFamily.In(CandidateFamily.Standing(rows, at), family).Count(row => !FamilyRecords.IsBackground(row.Candidate));
 
         return standing >= CandidateFamily.Maximum
             ? FormattableString.Invariant(

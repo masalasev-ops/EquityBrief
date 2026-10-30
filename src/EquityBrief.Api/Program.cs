@@ -3166,7 +3166,7 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
     // S&P 500 off its own index's night as on the S&P 400 and 600.
     // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
     DateTimeOffset? loopAsOf = night is not { } readOn ? null : TonightScreen.ReadAsOf(loopNight, readOn);
-    var chips = EquityBrief.Core.Families.SetupFamilies.Order.ToDictionary(
+    var chips = EquityBrief.Core.Loop.LoopDecisions.LoopFamilies.ToDictionary(
         family => family,
         family =>
         {
@@ -3181,7 +3181,14 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
     // of 2026-10-19 held back by over the run's test years.
     var cutoff = await read.ModelCutoffAsync();
 
-    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest, cutoff, tests), chips), "text/html; charset=utf-8");
+    // From 21.5 the families whose live rule stands registered on the index, which an approval changes by a registration.
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
+    var standingRules = EquityBrief.Core.Candidates.CandidateFamily.Standing(ReadApi.RegisterRowsOf(register), DateTimeOffset.MaxValue);
+    var registered = EquityBrief.Core.Loop.LoopDecisions.LoopFamilies
+        .Where(family => EquityBrief.Core.Loop.LoopDecisions.RegistersOn(reading.Code, family, standingRules))
+        .ToHashSet(StringComparer.Ordinal);
+
+    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest, cutoff, tests, registered), chips), "text/html; charset=utf-8");
 });
 
 // The Loop's badge in the menu: the proposals each index's newest run puts to the operator that hold no word yet.
