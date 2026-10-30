@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-30 - docs/ARCHITECTURE.html - section 18's row for a history build asked for a session the night wrote says the build reads the history through the last session it writes
+Corrects: a history build whose span ended in the night's sessions read the history on through them while its check reads the history through the newest session the build wrote, so the pulled years were scaled onto the stored closes over different sessions and the S&P 500's check after 21.4's remedy found readings differing by the scale, on 2026-10-30.
+Was:
+> A history build asked for a session the night wrote | the build writes the span's other sessions and leaves each session holding the night's own rows to the night, those rows as the night wrote them and no history row beside them, and the monthly run's rebuild of the history leaves them the same way (see: ...) | the build's output counting the sessions left to the night, with the first and the last of them | ...; a night whose part the ledger could not compute holds no row of its own, so the build still fills it
+Now:
+> A history build asked for a session the night wrote | the build writes the span's other sessions and leaves each session holding the night's own rows to the night, those rows as the night wrote them and no history row beside them, and reads the history again through the last session it writes, the newest the history holds once it ends, which its check reads the history through; the monthly run's rebuild of the history leaves the night's sessions the same way (see: ...) | the build's output counting the sessions left to the night, with the first and the last of them, and naming the session it reads the history again through | ...; a night whose part the ledger could not compute holds no row of its own, so the build still fills it; and a build reading the history on through the night's sessions scales the pulled years onto the stored closes over sessions its check does not read, so the check finds readings that differ by the scale
+Why: the build now reads the history through the session its check reads it through, and the row states it where the harness holds it.
+
+### 2026-10-30 - .claude/rules/checks.md - nightly-run states the history build's read through the last session it writes
+Corrects: the same defect.
+Was:
+> nightly-run: ... its row as the night wrote it and its output counting it, the session picker shown to write none the night holds |
+Now:
+> nightly-run: ... its row as the night wrote it and its output counting it, the session picker shown to write none the night holds; and a build whose span ends in three sessions the night wrote reading the history again through the last session it writes, which its check reads it through with every reading it rebuilds the one stored, and the end the history is read through worked by hand over constructed sessions |
+Why: each roster row says what its check asserts, and the correction's tests extend nightly-run's.
+
 ### 2026-10-30 - docs/ARCHITECTURE.html - section 18 gains the row for a history build asked for a session the night wrote
 Corrects: a history build whose span reached a session holding the night's own rows wrote every chunk before it again and stopped at the first such session with its run unrecorded, found when 21.4's remedy built the S&P 500's history through the night before on 2026-10-30.
 Was:

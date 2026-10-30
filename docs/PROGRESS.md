@@ -12246,3 +12246,37 @@ Carried:    from main after the merge, while no other writer runs, each index's 
             `tools/ledger-build.ps1 --index <GSPC, MID or SML> --from 2019-01-02 --through 2026-10-29 --again` and checked
             with `ledger-check`, its counts and 21.4's remedy's recorded on 21.5's branch; 21.5 on the standing go; and
             the rest as the 21.4 entry above carries it.
+
+### 21.4 - correction: the history build reads the history through the last session it writes, which its check reads it through, where the S&P 500's check after the build found readings differing by the scale   2026-10-30
+
+Queue:      done, 21.1 to 21.4 as PRs 587 to 591, 21.4's remedy's two commands from main and the history build's first
+            correction as PR 592; in progress, this correction; next, the three ledger histories built again and
+            checked from main after its merge, then 21.5 to 21.13 in the section's order, with 21.14, 21.15 and every
+            decision held for the operator's word; beside them the sign-offs of phases 18, 20 and 22 by fresh sessions.
+Found:      from main's copy of PR 592 the S&P 500's history was built again through 2026-10-29: 385,066 setups over
+            1,953 sessions to 2026-10-08, the 15 sessions from 2026-10-09 left to the night. The build read the history
+            through 2026-10-29 and its check reads it through 2026-10-08, the newest session the history holds, so each
+            member's pulled years were scaled onto its stored closes over different sessions, and 50 readings of 8 of
+            the 200 sampled setups differed, the largest by 0.12 per cent. The check ran beside the S&P 400's build and
+            could not write its row, the store locked; that build was stopped part way and the S&P 600's never started.
+Corrected:  the build reads the history again through the newest session the history holds once it ends, the last it
+            writes or the newest an earlier build wrote where that is later, wherever its first read reached past it,
+            its output naming the session; section 18's row says so.
+Tests:      2935, from 2934: one added, a build whose span ends in three sessions the night wrote reading the history
+            again through the session before them, its check reading the history through the same session with every
+            reading the same; the session picker's test gains the end read through, worked by hand.
+Claims:     1461, unchanged: section 18's row amended in place; 1476 placements.
+Pins:       none moved: the build's source is pinned by no rule.
+Mutation:   chosen before the run by this rule, the property the correction adds: the build reads the history again where
+            its first read reached past the newest session the history holds once it ends. The build made to read again
+            only where that session lies past the span's end: the new build test went red, the reads naming 2026-08-14
+            alone where 2026-08-14 and then 2026-08-11 are expected; reverted, all five ledger build tests green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2935 of 2935 tests ran
+            with none failed, migrations 0 to 115 with none pending, schema version 115, against `data-ci` and never
+            `data`; the phase report 64 tables, 1461 claims, 1461 passing, none out of scope and none unexamined, 1476
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    from main after the merge, while no other writer runs, each index's history built again with
+            `tools/ledger-build.ps1 --index <GSPC, MID or SML> --from 2019-01-02 --through 2026-10-29 --again` one after
+            another, and each checked with `ledger-check` once every build has ended, its counts and 21.4's remedy's
+            recorded on 21.5's branch; 21.5 on the standing go; and the rest as the 21.4 entry above carries it.

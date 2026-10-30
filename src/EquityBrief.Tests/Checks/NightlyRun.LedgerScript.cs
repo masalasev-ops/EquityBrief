@@ -101,5 +101,12 @@ public partial class NightlyRun
         Assert.Equal([0, 2], SetupLedger.SessionsToWrite(calendar, 0, 4, stored, again: false, nights));
         Assert.Equal([0, 1, 2, 3], SetupLedger.SessionsToWrite(calendar, 0, 4, stored, again: true, nights));
         Assert.Empty(SetupLedger.SessionsToWrite(calendar, 4, 4, stored, again: true, nights));
+
+        // The end the history is read through, the newest session it holds once the build ends: the fourth, the last
+        // written, where the night holds the fifth; the fourth again, written before, over a build writing the first and the
+        // third; and the third where the history held nothing before.
+        Assert.Equal(calendar[3], SetupLedger.ReadThrough(calendar, [0, 1, 2, 3], stored));
+        Assert.Equal(calendar[3], SetupLedger.ReadThrough(calendar, [0, 2], stored));
+        Assert.Equal(calendar[2], SetupLedger.ReadThrough(calendar, [0, 2], none));
     }
 }
