@@ -517,4 +517,42 @@ public sealed partial class ReadApi
 
         return closes;
     }
+
+    // From 21.9 the two readings a graded exposure is read from on each night given, the index's breadth and the VIX's
+    // close over its median, as the ledger's setups of the index on that session hold them, which every member shares; a
+    // night the ledger holds no setup with a breadth for is left out.
+    // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
+    static readonly string ExposureNight =
+        $"SELECT {EquityBrief.Core.Ledger.LedgerReadings.All[EquityBrief.Core.Ledger.LedgerReadings.BreadthPlace].Column}, {EquityBrief.Core.Ledger.LedgerReadings.All[EquityBrief.Core.Ledger.LedgerReadings.VixOverMedianPlace].Column} "
+        + $"FROM setup WHERE index_code = $index AND settled IN (0, 1) AND session_date = $night AND {EquityBrief.Core.Ledger.LedgerReadings.All[EquityBrief.Core.Ledger.LedgerReadings.BreadthPlace].Column} IS NOT NULL LIMIT 1;";
+
+    public async Task<IReadOnlyDictionary<DateOnly, (double? Breadth, double? VixOverMedian)>> ExposureNightsAsync(string index, IReadOnlyList<DateOnly> nights)
+    {
+        var read = new Dictionary<DateOnly, (double?, double?)>();
+
+        if (nights.Count == 0)
+        {
+            return read;
+        }
+
+        await using var connection = Open();
+
+        foreach (var night in nights.Distinct())
+        {
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = ExposureNight;
+            command.Parameters.AddWithValue("$index", index);
+            command.Parameters.AddWithValue("$night", Stamp(night));
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                read[night] = (reader.IsDBNull(0) ? null : reader.GetDouble(0), reader.IsDBNull(1) ? null : reader.GetDouble(1));
+            }
+        }
+
+        return read;
+    }
 }

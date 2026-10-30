@@ -71,6 +71,12 @@ public static class RegisterVerb
     // see: A family's ranking variant orders by the learned score where its audit's top fifth stands above the bottom and otherwise by the expected value, and is built nowhere neither orders
     public const string Ranked = "--ranked";
 
+    // From 21.9 the flag that registers a breakout's or a drift's graded exposure on an index beside its live rule: the
+    // live rule's setting with the exposure at the breadth floor its market check reads, refused where the family holds
+    // nine, the rule reads no market check, or the family is not one whose walk reads the exposure.
+    // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
+    public const string Exposed = "--exposed";
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--candidate", ["--candidate", "--rule", "--test", "--evaluator"], ["--parameters"], []),
@@ -84,6 +90,7 @@ public static class RegisterVerb
         new(IndexFamily, [IndexFamily, "--index", "--parameters"], ["--variants", Replacing], []),
         new(IndexVariants, [IndexVariants, "--index", "--variants"], ["--evidence"], [Again]),
         new(Ranked, [Ranked, "--index", "--by"], [], []),
+        new(Exposed, [Exposed, "--index"], [], []),
     ];
 
     // The run id, to the ten-millionth of a second, so two commands a second apart never share one.
@@ -316,6 +323,15 @@ public static class RegisterVerb
                 : await RefusedAsync(registrar, runId, $"no freeze is written for a family named '{Given(Family)}'; the families a freeze is written for are {string.Join(", ", TheSetupFamilies.Names)}.", error);
         }
 
+        if (form.Flag == Exposed)
+        {
+            var (exposure, refusedExposure) = ExposedVariant(Given(Exposed), Given("--index"), await registrar.RowsAsync(), at);
+
+            return exposure is null
+                ? await RefusedAsync(registrar, runId, refusedExposure!, error)
+                : await Said(await registrar.RegisterAsync(exposure.Candidate, exposure.Rule, exposure.Test, exposure.Evaluator, exposure.Parameters, runId), output, error);
+        }
+
         if (form.Flag == Ranked)
         {
             var (ranking, refusedRanking) = RankedVariant(Given(Ranked), Given("--index"), Given("--by"), await registrar.RowsAsync(), at);
@@ -364,15 +380,7 @@ public static class RegisterVerb
             return (null, $"the night's step on the {Cards.DecisionCards.NameOf(index)} lists no {family} rule ranked by {Core.Loop.RankingChoice.Words(order)}, so none is registered.");
         }
 
-        static bool OnIndex(Core.Candidates.CandidateEvaluator? evaluator, string family, string index) => evaluator switch
-        {
-            Core.Candidates.IndexRuleCandidate rule => rule.SetupFamily == family && rule.Index == index,
-            Core.Candidates.OwnStepCandidate rule => rule.SetupFamily == family && rule.Index == index,
-            Core.Candidates.FamilyRuleEvaluator rule => index == Loop.WalkForwardTester.LargeIndex && rule.Family == family,
-            _ => false,
-        };
-
-        if (Core.Candidates.CandidateFamily.Standing(register, at).FirstOrDefault(row => Core.Candidates.FamilyRecords.IsLive(row.Candidate) && OnIndex(Core.Candidates.CandidateEvaluators.Find(row.Evaluator), family, index)) is not { } live)
+        if (LiveOn(register, family, index, at) is not { } live)
         {
             return (null, $"no live {family} rule stands registered on the {Cards.DecisionCards.NameOf(index)}, so there is no rule to rank.");
         }
@@ -384,6 +392,46 @@ public static class RegisterVerb
         var words = Loop.RankingProcedures.ChangeOf(order);
 
         return (new Registration("the " + live.Candidate[Core.Candidates.FamilyRecords.LivePrefix.Length..] + ", " + words, live.Rule, live.Test, live.Evaluator, parameters), null);
+    }
+
+    // A family's live rule standing on an index, none where none stands.
+    static Core.Candidates.RegisterRow? LiveOn(IReadOnlyList<Core.Candidates.RegisterRow> register, string family, string index, DateTimeOffset at)
+    {
+        static bool OnIndex(Core.Candidates.CandidateEvaluator? evaluator, string family, string index) => evaluator switch
+        {
+            Core.Candidates.IndexRuleCandidate rule => rule.SetupFamily == family && rule.Index == index,
+            Core.Candidates.OwnStepCandidate rule => rule.SetupFamily == family && rule.Index == index,
+            Core.Candidates.FamilyRuleEvaluator rule => index == Loop.WalkForwardTester.LargeIndex && rule.Family == family,
+            _ => false,
+        };
+
+        return Core.Candidates.CandidateFamily.Standing(register, at).FirstOrDefault(row => Core.Candidates.FamilyRecords.IsLive(row.Candidate) && OnIndex(Core.Candidates.CandidateEvaluators.Find(row.Evaluator), family, index));
+    }
+
+    // From 21.9 a breakout's or a drift's graded exposure on an index: its live rule's name without the word live and the
+    // exposure's words after it, its words and its test, its evaluator and its setting with the exposure at the breadth
+    // floor its market check reads; or why none can be registered.
+    // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
+    public static (Registration? Registration, string? Refusal) ExposedVariant(string family, string index, IReadOnlyList<Core.Candidates.RegisterRow> register, DateTimeOffset at)
+    {
+        if (!Loop.ExposureProcedures.Families.Contains(family, StringComparer.Ordinal))
+        {
+            return (null, $"the per-rule test's walk of the {family} reads no exposure, so none is registered; the exposure is offered to the {string.Join(" and the ", Loop.ExposureProcedures.Families)}.");
+        }
+
+        if (LiveOn(register, family, index, at) is not { } live)
+        {
+            return (null, $"no live {family} rule stands registered on the {Cards.DecisionCards.NameOf(index)}, so there is no rule to grade.");
+        }
+
+        var p = Core.Candidates.CandidateEvaluator.Read(live.Parameters);
+
+        if (Loop.ExposureProcedures.FloorOf(Core.Candidates.CandidateEvaluators.Find(live.Evaluator), p) is not { } floor)
+        {
+            return (null, $"the live {family} rule on the {Cards.DecisionCards.NameOf(index)} reads no market check, so it has none for the exposure to stand in the place of.");
+        }
+
+        return (new Registration("the " + live.Candidate[Core.Candidates.FamilyRecords.LivePrefix.Length..] + ", " + Loop.ExposureProcedures.WordsOf(floor), live.Rule, live.Test, live.Evaluator, Loop.ExposureProcedures.Exposed(p, floor)), null);
     }
 
     // What each replayed rule's record does, a line a rule.

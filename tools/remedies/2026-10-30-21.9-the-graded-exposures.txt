@@ -1,0 +1,12 @@
+# The remedy of 21.9, graded exposure as a variant. Each breakout and drift whose family has room and whose live rule
+# reads a market check registers beside it the live rule's setting with the graded exposure in that check's place, at the
+# breadth floor the check reads: the S&P 400's breakout, whose check reads the S&P 500's breadth, at that check's floor of
+# 0.45 on the index's own breadth, the one breadth the exposure reads; the S&P 400's drift at its own 0.45; and the S&P
+# 600's breakout at its own 0.40. The S&P 600's drift reads no market check and has none to grade; the S&P 500's breakout
+# and drift hold nine, so theirs is walked unregistered by the monthly run's per-rule test; and no pullback's walk reads the
+# exposure. Each record starts at this instant. No migration, no request to the provider and no model call. Run from main
+# after the merge, when no night, local run, drain, labeller, ledger build or monthly run is writing, read the output for
+# "remedy done" and the three registrations, and restart the read surface after it.
+register --exposed breakout --index MID
+register --exposed drift --index MID
+register --exposed breakout --index SML

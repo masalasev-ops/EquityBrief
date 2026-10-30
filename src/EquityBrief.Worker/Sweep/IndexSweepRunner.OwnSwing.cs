@@ -280,6 +280,50 @@ public sealed partial class IndexSweepRunner
                 listing => Fills.Benchmark(adapter.Benchmark(listing), listing));
         }
 
+        // From 21.9 the same walk with the night's count of picks read off its first listing's readings, as the exposure
+        // grades it: on each session the listings in the family's order, a stock a kept trade still holds passed over, and
+        // the first so many kept. The loop stands apart from the family sweep's own, whose source the rules pin.
+        // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
+        public IReadOnlyList<FamilyTrade> AtOpenGraded(IEnumerable<FamilyListing> listings, Func<FamilyListing, int> picksOf)
+        {
+            var kept = new List<FamilyTrade>();
+            var openUntil = new Dictionary<int, int>();
+
+            foreach (var night in listings.GroupBy(listing => listing.Session).OrderBy(group => group.Key))
+            {
+                FamilyListing[] ordered =
+                [
+                    .. night
+                        .OrderByDescending(one => one.Order)
+                        .ThenByDescending(one => one.ThenBy)
+                        .ThenBy(one => Tickers[one.Name], StringComparer.Ordinal),
+                ];
+                var picks = ordered.Length == 0 ? 0 : Math.Min(FamilySweep.PerNight, picksOf(ordered[0]));
+                var taken = 0;
+
+                foreach (var listing in ordered)
+                {
+                    if (taken == picks)
+                    {
+                        break;
+                    }
+
+                    if (openUntil.TryGetValue(listing.Name, out var held) && listing.Session <= held)
+                    {
+                        continue;
+                    }
+
+                    var (result, sessions) = Fills.Exit(Adapter.Exit(listing), listing);
+
+                    openUntil[listing.Name] = listing.Session + sessions;
+                    kept.Add(new FamilyTrade(listing, YearOf(listing.Session), result, result is null ? double.NaN : Fills.Benchmark(Adapter.Benchmark(listing), listing)));
+                    taken++;
+                }
+            }
+
+            return kept;
+        }
+
         // From 21.3 the same trades with a listing a skip names not bought, its place on the night spent and its stock left
         // free, as the record command replays the drift's open floor over a frozen rule's own listings.
         public IReadOnlyList<FamilyTrade> AtOpenSkipping(IEnumerable<FamilyListing> listings, Func<FamilyListing, bool> skips) =>

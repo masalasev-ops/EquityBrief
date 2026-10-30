@@ -482,6 +482,8 @@ public sealed partial class MarkRenderer
             ? Formatted($"<p class=\"loop-folds\" data-stable-folds=\"{proposal.StableFolds}\" data-folds=\"{years.Count}\">{proposal.StableFolds} of the {years.Count} folds held enough finished setups to fit the score on their own years before.</p>")
             : proposal.Proposal.StartsWith(RankingChoice.Proposal, StringComparison.Ordinal)
             ? Formatted($"<p class=\"loop-folds\" data-stable-folds=\"{proposal.StableFolds}\" data-folds=\"{years.Count}\">{proposal.StableFolds} of the {years.Count} folds held a score fitted on their own years before to rank by.</p>")
+            : proposal.Proposal == ExposureVariant.Proposal
+            ? Formatted($"<p class=\"loop-folds\" data-stable-folds=\"{proposal.StableFolds}\" data-folds=\"{years.Count}\">The exposure reads no setting a fold chooses, so each of the {years.Count} folds walks it as it stands.</p>")
             : Formatted($"<p class=\"loop-folds\" data-stable-folds=\"{proposal.StableFolds}\" data-folds=\"{years.Count}\">{proposal.StableFolds} of the {years.Count} folds chose {(book ? "the same setting as" : "within a grid step of")} the proposal on their own years before.</p>"));
         html.Append("</div>");
 

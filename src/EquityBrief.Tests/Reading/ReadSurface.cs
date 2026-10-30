@@ -92,6 +92,9 @@ public partial class ReadSurface
             // 21.7, the setups' chance on a pick's card.
             .. ChanceClaims,
 
+            // 21.9, paper trading's trade sized at half.
+            .. HalvedClaims,
+
             // 12.7's correction, close to a buy point beneath tonight's list.
             .. CloseToABuyPointClaims,
 

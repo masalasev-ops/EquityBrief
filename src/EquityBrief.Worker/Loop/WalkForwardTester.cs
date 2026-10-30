@@ -341,6 +341,10 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             }
         }
 
+        // From 21.9 each frozen breakout's and drift's live rule and its sweep's own reading, which its graded exposure is
+        // walked over.
+        var exposedFrom = new Dictionary<string, (Core.Candidates.RegisterRow Live, IndexSweepRunner.OwnSwingRead? Own)>(StringComparer.Ordinal);
+
         foreach (var family in new[] { BreakoutRule.Name, DriftRule.Name })
         {
             if (FrozenOn(family) is not { } live)
@@ -357,6 +361,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
                 : null;
 
             AddLive(family, RuleTests.LiveSwingWalk(read, family, live, own, readings, trees));
+            exposedFrom[family] = (live, own);
         }
 
         // From 21.5 the short-term dip where a rule of it stands on the index: its live rule's walk handed to every engine,
@@ -525,6 +530,15 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
                 }
 
                 proposals.AddRange(RankingProcedures.Run(read, EngineRule.Of(read, rule, readings), ranked, fitted, like, output.WriteLine));
+            }
+
+            // From 21.9 the breakout's and the drift's graded exposure at the floor the rule's market check reads.
+            // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
+            var from = exposedFrom.GetValueOrDefault(rule.Family);
+
+            if (RuleTests.ExposedUnits(read, rule.Family, large, from.Live, standing.GetValueOrDefault(rule.Family), from.Own, readings, trees) is { } exposed)
+            {
+                proposals.Add(ExposureProcedures.Run(read, EngineRule.Of(read, rule, readings), exposed.Units, exposed.Floor));
             }
             findings[rule.Family] = figures;
             spreads[rule.Family] = spread;
@@ -840,6 +854,14 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         foreach (var one in tested.Where(one => one.Rule.RankingWords is not null))
         {
             output.WriteLine(RuleTests.RankingLine(one.Rule, InTestYears));
+        }
+
+        // From 21.9 each live or provisional breakout's and drift's graded exposure, walked unregistered beside it where its
+        // family on the index registers none.
+        // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
+        foreach (var one in tested.Where(one => one.Rule.Exposure is not null))
+        {
+            output.WriteLine(RuleTests.ExposureLine(one.Rule, InTestYears));
         }
 
         output.WriteLine(print

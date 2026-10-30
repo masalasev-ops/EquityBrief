@@ -32,7 +32,9 @@ public sealed record RuleUnderTest(
     int Skipped = 0,
     IReadOnlyList<(int Entry, double? Edge)>? Expected = null,
     IReadOnlyList<(int Entry, double? Edge)>? Ranking = null,
-    string? RankingWords = null)
+    string? RankingWords = null,
+    IReadOnlyList<(int Entry, double? Edge)>? Exposure = null,
+    double? ExposureFloor = null)
 {
     public bool Book => Unit == LoopProcedures.Points;
 }
@@ -805,6 +807,17 @@ public static class RuleTests
             ? Units(walk.Hooked(ExpectedOrder, _ => []))
             : null;
 
+        // From 21.9 a live or provisional rule whose family on the index registers no graded exposure has its exposure
+        // walked beside it unregistered, at the floor its market check reads, its listings read with that check open.
+        // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
+        (IReadOnlyList<(int Entry, double? Edge)>? Units, double? Floor) exposure = (null, null);
+
+        if (StandingOf(row) != Variant && !RegistersExposure(inputs, row) && marketSwitches.Equals(MarketSwitches.None)
+            && ExposureProcedures.FloorOf(CandidateEvaluators.Find(row.Evaluator), p) is { } exposureFloor)
+        {
+            exposure = (Units(RuleWalk.Swing(inputs.Read, family, large, change with { Hooks = ExposureProcedures.Exposed(hooks, exposureFloor) }, inputs.Readings, inputs.Trees).Own), exposureFloor);
+        }
+
         bool Open(int at)
         {
             var session = walk.Listings[at].Session;
@@ -846,10 +859,93 @@ public static class RuleTests
                     return leaves;
                 });
 
-            return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone, OpenFloor: Units(floored), Skipped: skipped, Expected: expected);
+            return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone, OpenFloor: Units(floored), Skipped: skipped, Expected: expected, Exposure: exposure.Units, ExposureFloor: exposure.Floor);
         }
 
-        return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone, Expected: expected);
+        return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, units, Tone: tone, Expected: expected, Exposure: exposure.Units, ExposureFloor: exposure.Floor);
+    }
+
+    // From 21.9 whether a rule of the family registered on the same index states the graded exposure.
+    static bool RegistersExposure(RuleTestInputs inputs, RegisterRow row) =>
+        inputs.Standing.Any(other => other.Evaluator == row.Evaluator && RuleHooks.Of(CandidateEvaluator.Read(other.Parameters)).Exposure is not null);
+
+    // From 21.9 a rule's parameters with its market check off, which the exposure stands in the place of.
+    static IReadOnlyDictionary<string, double> MarketOff(IReadOnlyDictionary<string, double> p) =>
+        new Dictionary<string, double>(p, StringComparer.Ordinal) { [IndexRuleCandidate.LargeBreadthParameter] = IndexRuleCandidate.NoMarketCheck };
+
+    // From 21.9 a rule's graded exposure walked over its sweep's own reading: its listings with the market check off, each
+    // night's picks those its first listing's readings allow.
+    static IReadOnlyList<(int Entry, double? Edge)>? GradedOwn(LoopReadings? readings, IndexSweepRunner.OwnSwingRead own, IndexRuleCandidate evaluator, IReadOnlyDictionary<string, double> p, RuleHooks hooks)
+    {
+        var (open, _) = RuleReplay.OwnSwing(own, evaluator, MarketOff(Unversioned(p)));
+
+        return open is null
+            ? null
+            : Units(own.Costed(own.AtOpenGraded(own.ListingsUnder(open.Setting, open.Levels), listing => hooks.PicksUnder(readings?.Of(listing.Name, listing.Bar, listing.Session)) ?? 0), 1));
+    }
+
+    // From 21.9 a breakout's or a drift's graded exposure as the tester proposes it: on the S&P 500 the family's rule at the
+    // market floor its sweep reads, and on the S&P 400 or 600 the frozen live rule at the floor its check reads, walked by
+    // its sweep's own reading where it states a level only that reading walks; none for another family, a rule reading no
+    // market check, or one off the grid with no reading of its own.
+    // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
+    public static (IReadOnlyList<(int Entry, double? Edge)> Units, double Floor)? ExposedUnits(LoopRead read, string family, bool large, RegisterRow? live, LoopChange? standing, IndexSweepRunner.OwnSwingRead? own, LoopReadings? readings, Func<long, TreeModel?>? trees)
+    {
+        if (!ExposureProcedures.Families.Contains(family, StringComparer.Ordinal))
+        {
+            return null;
+        }
+
+        if (large)
+        {
+            var at = FamilySweep.MarketFloor;
+            var change = standing ?? new LoopChange(null, null, null, LoopChange.NoHooks);
+
+            return (Units(RuleWalk.Swing(read, family, true, change with { Hooks = ExposureProcedures.Exposed(change.Hooks, at) }, readings, trees).Own), at);
+        }
+
+        if (live is null || CandidateEvaluators.Find(live.Evaluator) is not IndexRuleCandidate evaluator)
+        {
+            return null;
+        }
+
+        var p = Unversioned(CandidateEvaluator.Read(live.Parameters));
+
+        if (ExposureProcedures.FloorOf(evaluator, p) is not { } floor)
+        {
+            return null;
+        }
+
+        if (ReadsOwnSweep(evaluator, p))
+        {
+            return own is not null && GradedOwn(readings, own, evaluator, ExposureProcedures.Exposed(p, floor), RuleHooks.Of(ExposureProcedures.Exposed(LoopChange.NoHooks, floor))) is { } graded
+                ? (graded, floor)
+                : null;
+        }
+
+        var (grid, values, stopFloor) = GridOf(family, p);
+        var places = IndexNightRead.Places(grid, values);
+
+        return places.Any(place => place < 0)
+            ? null
+            : (Units(RuleWalk.Swing(read, family, false, new LoopChange(places, grid.Key(places), stopFloor > 0 ? stopFloor : null, ExposureProcedures.Exposed(HooksOf(p), floor)), readings, trees).Own), floor);
+    }
+
+    // From 21.9 a live or provisional rule's graded exposure beside it, as the run prints it: its trades and their mean edge
+    // after costs over the test years against the rule's own.
+    public static string ExposureLine(RuleUnderTest rule, Func<int, bool> inTestYears)
+    {
+        static string Side(IReadOnlyList<(int Entry, double? Edge)> units, Func<int, bool> on)
+        {
+            var kept = units.Where(unit => on(unit.Entry)).ToArray();
+            var edged = kept.Where(unit => unit.Edge is not null).ToArray();
+
+            return edged.Length == 0
+                ? FormattableString.Invariant($"{kept.Length} trade(s), none ended")
+                : FormattableString.Invariant($"{kept.Length} trade(s) at {edged.Average(unit => unit.Edge!.Value):+0.000;-0.000} risks");
+        }
+
+        return FormattableString.Invariant($"{rule.Family}, {rule.Rule}: its exposure graded at the breadth floor {rule.ExposureFloor:0.00}, walked unregistered and written nowhere, {Side(rule.Exposure!, inTestYears)} over the test years, against its own {Side(rule.Trades ?? [], inTestYears)}");
     }
 
     // From 21.7 why a rule ordered by the expected value of the setups like each listing is not walked: the run holds no
@@ -919,6 +1015,27 @@ public static class RuleTests
         var listings = own.ListingsUnder(at.Setting, at.Levels);
         var cap = listings.Select(listing => listing.Cap).DefaultIfEmpty(0).Max();
         var version = ReleaseTone.VersionOf(p);
+        var hooks = RuleHooks.Of(HooksOf(p));
+
+        // From 21.9 a rule stating the graded exposure is walked with its market check off, each night's picks as its
+        // exposure allows; a live or provisional rule whose family registers none has its exposure walked beside it at the
+        // floor its market check reads.
+        // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
+        if (hooks.Exposure is not null)
+        {
+            return GradedOwn(inputs.Readings, own, evaluator, p, hooks) is { } graded
+                ? new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, cap, graded)
+                : Kept(NoOwnRead);
+        }
+
+        IReadOnlyList<(int Entry, double? Edge)>? besideUnits = null;
+        double? besideFloor = null;
+
+        if (StandingOf(row) != Variant && !RegistersExposure(inputs, row) && ExposureProcedures.FloorOf(evaluator, p) is { } floor)
+        {
+            besideUnits = GradedOwn(inputs.Readings, own, evaluator, ExposureProcedures.Exposed(p, floor), RuleHooks.Of(ExposureProcedures.Exposed(LoopChange.NoHooks, floor)));
+            besideFloor = floor;
+        }
 
         if (version == 0)
         {
@@ -938,10 +1055,10 @@ public static class RuleTests
                     }),
                     1);
 
-                return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, cap, Units(own.Costed(own.AtOpen(listings), 1)), OpenFloor: Units(floored), Skipped: skipped);
+                return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, cap, Units(own.Costed(own.AtOpen(listings), 1)), OpenFloor: Units(floored), Skipped: skipped, Exposure: besideUnits, ExposureFloor: besideUnits is null ? null : besideFloor);
             }
 
-            return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, cap, Units(own.Costed(own.AtOpen(listings), 1)));
+            return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, cap, Units(own.Costed(own.AtOpen(listings), 1)), Exposure: besideUnits, ExposureFloor: besideUnits is null ? null : besideFloor);
         }
 
         var releases = inputs.Tones!.Of(version)!;
