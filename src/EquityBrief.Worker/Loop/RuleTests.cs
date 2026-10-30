@@ -233,7 +233,9 @@ public static class RuleTests
         [.. (units ?? []).Select(one => (one.At, one.Edge.HasValue ? 0.0 : one.Edge))];
 
     // Every family rule standing on the index, walked: the families in the page's order, each one's live or provisional
-    // rule first and then its variants, the pullback's candidates read once for every walk of them.
+    // rule first and then its variants, the pullback's candidates read once for every walk of them. From 21.5 the
+    // fundamentals-first family, which the night computes no longer, is walked no more.
+    // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
     public static IReadOnlyList<RuleUnderTest> Walk(RuleTestInputs inputs)
     {
         var large = inputs.Read.Index == WalkForwardTester.LargeIndex;
@@ -248,7 +250,6 @@ public static class RuleTests
             .. large ? LargePullbacks(inputs) : IndexPullbacks(inputs, pullback!, Candidates),
             .. Swings(inputs, BreakoutRule.Name),
             .. Swings(inputs, DriftRule.Name),
-            Fundamentals(inputs, Candidates()),
             .. Heavyweights(inputs),
             .. (inputs.Quality is { } lay ? Quality(inputs.Standing, inputs.Read.Index, setting => lay.Book(setting).Months) : []),
             .. (inputs.Dip is { } dip ? Dip(inputs.Standing, inputs.Read.Index, parameters => DipTrades(dip, parameters)) : []),
@@ -584,18 +585,87 @@ public static class RuleTests
         return (passes[(int)MarketSwitch.IndexOverTwoHundred], passes[(int)MarketSwitch.VixFalling]);
     }
 
-    static RuleUnderTest SwingAt(RuleTestInputs inputs, string family, RegisterRow row, bool large, (bool[] Average, bool[] Vix)? switches)
+    // A breakout's or a drift's registration as its sweep's grid reads it: the grid, each dial's value, and the drift's
+    // stop floor in typical moves, none for the breakout.
+    static (FamilyGrid Grid, double[] Values, double Floor) GridOf(string family, IReadOnlyDictionary<string, double> p)
     {
-        var p = CandidateEvaluator.Read(row.Parameters);
         var breakout = family == BreakoutRule.Name;
-        var grid = breakout ? BreakoutSweep.Grid : DriftSweep.Grid;
 
         static double Ceiling(double value) => value >= 1e9 ? double.PositiveInfinity : value;
 
         double[] values = breakout
             ? [p[BreakoutCandidate.HighSessionsParameter], p[BreakoutCandidate.VolumeMultipleParameter], Ceiling(p[BreakoutCandidate.RangeCeilingParameter]), p[BreakoutCandidate.StopMovesParameter]]
             : [p[DriftCandidate.WindowSessionsParameter], p[DriftCandidate.ReactionMovesParameter], p[DriftCandidate.VolumeMultipleParameter], p.GetValueOrDefault(DriftCandidate.TargetRiskMultipleParameter, p.GetValueOrDefault(IndexDriftCandidate.TargetMultipleParameter))];
-        var floor = breakout ? 0 : p.GetValueOrDefault(DriftCandidate.StopFloorMovesParameter, p.GetValueOrDefault(IndexDriftCandidate.StopFloorParameter));
+
+        return (breakout ? BreakoutSweep.Grid : DriftSweep.Grid, values, breakout ? 0 : p.GetValueOrDefault(DriftCandidate.StopFloorMovesParameter, p.GetValueOrDefault(IndexDriftCandidate.StopFloorParameter)));
+    }
+
+    // From 21.5 an S&P 400's or 600's frozen breakout or drift as the engines read it, at the setting and every level its
+    // registration states: on the extended grid's walk where that walk reads its levels, and otherwise over its sweep's own
+    // reading of the index's history, which the caller lays out; or why the history cannot walk it.
+    // see: The engines test a frozen rule at the levels it states, and a frozen rule's setting moves only by a freeze
+    public static (RuleWalk? Walk, string? Why) LiveSwingWalk(LoopRead read, string family, RegisterRow row, IndexSweepRunner.OwnSwingRead? own, LoopReadings? readings, Func<long, TreeModel?>? trees)
+    {
+        if (CandidateEvaluators.Find(row.Evaluator) is not IndexRuleCandidate evaluator)
+        {
+            return (null, $"its rule runs on '{row.Evaluator}', which no S&P 400 or 600 swing family carries");
+        }
+
+        var p = Unversioned(CandidateEvaluator.Read(row.Parameters));
+        var hooks = HooksOf(p);
+        var words = FamilyRecords.IsLive(row.Candidate) ? row.Candidate[FamilyRecords.LivePrefix.Length..] : row.Candidate;
+
+        if (ReadsOwnSweep(evaluator, p))
+        {
+            if (own is null)
+            {
+                return (null, NoOwnRead);
+            }
+
+            var (at, refused) = RuleReplay.OwnSwing(own, evaluator, p);
+
+            return at is null ? (null, refused) : (RuleWalk.OwnSwing(read, own, at.Setting, at.Levels, words, hooks, readings, trees), null);
+        }
+
+        var (grid, values, floor) = GridOf(family, p);
+        var places = IndexNightRead.Places(grid, values);
+
+        if (places.Any(place => place < 0))
+        {
+            return (null, OffTheGrid);
+        }
+
+        var change = new LoopChange(places, grid.Key(places), floor > 0 ? floor : null, hooks);
+
+        return (RuleWalk.Swing(read, family, false, change, readings, trees, marketOff: p.GetValueOrDefault(IndexRuleCandidate.LargeBreadthParameter) == IndexRuleCandidate.NoMarketCheck), null);
+    }
+
+    // From 21.5 an S&P 400's or 600's frozen pullback as the engines read it: at its dials on the extended grid with its
+    // hooks, where that grid's walk reads every level it states; or why it cannot, a level only its search's own reading
+    // walks, which no engine's walk reads.
+    // see: The engines test a frozen rule at the levels it states, and a frozen rule's setting moves only by a freeze
+    public static (RuleWalk? Walk, string? Why) LivePullbackWalk(LoopRead read, IReadOnlyList<SweepMarketSeries> market, RegisterRow row, Action<string> progress, LoopReadings? readings, Func<long, TreeModel?>? trees, IdeaReplay candidates)
+    {
+        var p = CandidateEvaluator.Read(row.Parameters);
+
+        if (CandidateEvaluators.Find(row.Evaluator) is IndexRuleCandidate own && ReadsOwnSweep(own, p))
+        {
+            return (null, OwnSearchOnly);
+        }
+
+        return DialsOf(p) is { } dials
+            ? (RuleWalk.Pullback(read, market, progress, LoopChange.OfHooks(HooksOf(p)), readings, trees, dials, candidates), null)
+            : (null, OffTheGrid);
+    }
+
+    // Why the engines read no frozen pullback stating a level only its search's own reading walks.
+    public const string OwnSearchOnly = "its live rule states a level only its search's own reading of the index's history walks, which no engine's walk reads";
+
+    static RuleUnderTest SwingAt(RuleTestInputs inputs, string family, RegisterRow row, bool large, (bool[] Average, bool[] Vix)? switches)
+    {
+        var p = CandidateEvaluator.Read(row.Parameters);
+        var breakout = family == BreakoutRule.Name;
+        var (grid, values, floor) = GridOf(family, p);
         var places = IndexNightRead.Places(grid, values);
         var hooks = HooksOf(p);
         var marketSwitches = large ? MarketSwitches.Of(p) : MarketSwitches.None;
@@ -855,28 +925,6 @@ public static class RuleTests
         }
 
         return ReleaseAvailability.ReleaseFor(held, release => release.Accepted, one.Name.Surprises[newest].EventDate, calendar[session], tones.Zone, tones.Calendar)?.Answer;
-    }
-
-    // The fundamentals-first family's provisional rule, by its search's own walk: the pullback's base listings kept where
-    // the family's parts pass at the setting an approval stored for it on the index or its provisional one, walked at the
-    // hooks that approval stored and at none of the pullback's.
-    // see: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place
-    static RuleUnderTest Fundamentals(RuleTestInputs inputs, IdeaReplay candidates)
-    {
-        var standing = inputs.Approved.GetValueOrDefault(FundamentalsRule.Name);
-        var (setting, words) = FundamentalsStanding(standing);
-        var walk = RuleWalk.Fundamentals(inputs.Read, candidates, inputs.Readings, setting, inputs.Progress, standing, inputs.Trees);
-
-        return new RuleUnderTest(FundamentalsRule.Name, RuleRows.ProvisionalRule, Provisional, words, LoopProcedures.Risks, walk.Cap, Units(walk.Own));
-    }
-
-    // The setting the family's provisional rule is walked at and its words: the one an approval stored, with the hooks it
-    // stored, or the provisional setting where none was stored.
-    public static (FundamentalsSetting Setting, string Words) FundamentalsStanding(LoopChange? standing)
-    {
-        var setting = FundamentalsRule.StoredOr(standing?.Places);
-
-        return (setting, RuleHooks.Of(standing?.Hooks ?? LoopChange.NoHooks).Words() is { } hooked ? setting.Key + "; " + hooked : setting.Key);
     }
 
     // The sector heavyweights: on the S&P 500 each registered book at its setting, on the S&P 400 or 600 its live book

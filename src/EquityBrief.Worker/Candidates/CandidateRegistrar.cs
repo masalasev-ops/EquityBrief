@@ -650,13 +650,14 @@ public sealed class CandidateRegistrar : IComponent
     // own writes beside it in the same transaction, or none of it: the rule the change stands at registered, or, where a
     // rule of that name stands already, as a restore finds the rule it brings back, retired and registered again
     // unchanged at one instant so it is the family's newest.
-    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
     public async Task<RegistrationOutcome> RegisterTheChangeAsync(
         Registration registration,
         string evidence,
         Func<SqliteConnection, SqliteTransaction, CancellationToken, Task> alongside,
         string runId,
-        CancellationToken cancellation = default)
+        CancellationToken cancellation = default,
+        string? subject = null)
     {
         var startedAt = clock.UtcNow;
 
@@ -668,7 +669,7 @@ public sealed class CandidateRegistrar : IComponent
         async Task<RegistrationOutcome> RefuseAsync(string said)
         {
             await transaction.RollbackAsync(cancellation);
-            await RecordAsync(connection, runId, startedAt, Refused, 0, said, cancellation);
+            await RecordAsync(connection, runId, startedAt, Refused, 0, said, cancellation, subject);
 
             return new RegistrationOutcome(Refused, null, said);
         }
@@ -687,6 +688,43 @@ public sealed class CandidateRegistrar : IComponent
             var standing = CandidateFamily.Standing(rows, startedAt).Single(row => string.Equals(row.Candidate, registration.Candidate, StringComparison.Ordinal));
 
             taken.Add(standing with { Id = taken.Max(one => one.Id) + 1, Event = Retired, Retires = registration.Candidate, RegisteredAt = startedAt, Evidence = evidence });
+        }
+
+        // From 21.5 a family holding nine rules takes the change with the rule it replaces moved to the background: the
+        // live rule retired and registered again unchanged under the background's name at the same instant, counted
+        // outside the nine and drawn on no page, where it runs on until the block after the change is reached.
+        // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
+        string? backgrounded = null;
+        var familyOf = CandidateFamily.In(CandidateFamily.Standing(taken, startedAt), CandidateFamily.SetupFamilyOf(registration.Evaluator));
+
+        if (!again
+            && familyOf.Count(row => !FamilyRecords.IsBackground(row.Candidate)) >= CandidateFamily.Maximum
+            && FamilyRecords.LiveOf(familyOf) is { } replaced)
+        {
+            backgrounded = BackgroundOf(replaced.Candidate);
+
+            if (RetirementRefusal(taken, replaced.Candidate, evidence, startedAt, ShortlistSeries.Reasons) is { } refusal)
+            {
+                return await RefuseAsync(refusal);
+            }
+
+            taken.Add(replaced with { Id = taken.Max(one => one.Id) + 1, Event = Retired, Retires = replaced.Candidate, RegisteredAt = startedAt, Evidence = evidence });
+
+            if (Refusal(taken, backgrounded, replaced.Evaluator, CandidateEvaluator.Read(replaced.Parameters), startedAt) is { } backgroundRefused)
+            {
+                return await RefuseAsync(backgroundRefused);
+            }
+
+            taken.Add(replaced with
+            {
+                Id = taken.Max(one => one.Id) + 1,
+                Candidate = backgrounded,
+                EvaluatorVersion = CandidateEvaluators.Find(replaced.Evaluator)!.Version,
+                Event = Registered,
+                Retires = null,
+                RegisteredAt = startedAt,
+                Evidence = null,
+            });
         }
 
         if ((Unstated(registration.Rule, registration.Test) ?? Refusal(taken, registration.Candidate, registration.Evaluator, registration.Parameters, startedAt) ?? await VersionRefusalAsync(connection, transaction, registration.Candidate, registration.Parameters, cancellation)) is { } refused)
@@ -721,19 +759,28 @@ public sealed class CandidateRegistrar : IComponent
         await alongside(connection, transaction, cancellation);
 
         var detail = (again ? $"registered '{registration.Candidate}' again unchanged" : $"registered '{registration.Candidate}'")
-            + $" as the family's live rule, on the evidence: {evidence}";
+            + " as the family's live rule"
+            + (backgrounded is null ? string.Empty : FormattableString.Invariant($", the family holding {CandidateFamily.Maximum} rules, so the rule it replaces runs on in the background as '{backgrounded}'"))
+            + $", on the evidence: {evidence}";
 
-        await RecordAsync(connection, runId, startedAt, Registered, taken.Count - rows.Count, detail, cancellation);
+        await RecordAsync(connection, runId, startedAt, Registered, taken.Count - rows.Count, detail, cancellation, subject);
         await transaction.CommitAsync(cancellation);
 
         return new RegistrationOutcome(Registered, null, detail);
     }
 
+    // From 21.5 the name a family's live rule runs on under in the background once a change replaced it at nine rules: the
+    // background's words in the live rule's place, the rest of its name as it stood.
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
+    public static string BackgroundOf(string live) =>
+        FamilyRecords.BackgroundPrefix + (FamilyRecords.IsLive(live) ? live[FamilyRecords.LivePrefix.Length..] : live);
+
     public async Task<RegistrationOutcome> RetireAsync(
         string candidate,
         string evidence,
         string runId,
-        CancellationToken cancellation = default)
+        CancellationToken cancellation = default,
+        string? subject = null)
     {
         var startedAt = clock.UtcNow;
 
@@ -747,7 +794,7 @@ public sealed class CandidateRegistrar : IComponent
         if (RetirementRefusal(rows, candidate, evidence, startedAt, ShortlistSeries.Reasons) is { } refusal)
         {
             await transaction.RollbackAsync(cancellation);
-            await RecordAsync(connection, runId, startedAt, Refused, 0, refusal, cancellation);
+            await RecordAsync(connection, runId, startedAt, Refused, 0, refusal, cancellation, subject);
 
             return new RegistrationOutcome(Refused, null, refusal);
         }
@@ -776,7 +823,7 @@ public sealed class CandidateRegistrar : IComponent
 
         var detail = $"retired '{candidate}' as {id}, on the evidence: {evidence}";
 
-        await RecordAsync(connection, runId, startedAt, Retired, 1, detail, cancellation);
+        await RecordAsync(connection, runId, startedAt, Retired, 1, detail, cancellation, subject);
         await transaction.CommitAsync(cancellation);
 
         return new RegistrationOutcome(Retired, id, detail);
@@ -1094,10 +1141,12 @@ public sealed class CandidateRegistrar : IComponent
                 "that does not say what will run.";
         }
 
-        // A setup family's own rules alone, since each family's correction divides by its own.
+        // A setup family's own rules alone, since each family's correction divides by its own; from 21.5 a rule a change
+        // replaced that runs on in the background counted outside the nine, which its correction still counts.
         // see: Each setup family's correction for luck counts its own rules alone, at most nine a family
+        // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
         var family = CandidateFamily.SetupFamilyOf(evaluator);
-        var standing = CandidateFamily.In(CandidateFamily.Standing(rows, at), family).Count;
+        var standing = CandidateFamily.In(CandidateFamily.Standing(rows, at), family).Count(row => !FamilyRecords.IsBackground(row.Candidate));
 
         return standing >= CandidateFamily.Maximum
             ? FormattableString.Invariant(
@@ -1192,6 +1241,8 @@ public sealed class CandidateRegistrar : IComponent
         await RecordAsync(connection, runId, clock.UtcNow, Refused, 0, refusal, cancellation);
     }
 
+    // A row under the stage, or, where a run registers or retires several rules, under the stage with the rule it names,
+    // so each holds a row of its own under the run.
     async Task RecordAsync(
         SqliteConnection connection,
         string runId,
@@ -1199,13 +1250,14 @@ public sealed class CandidateRegistrar : IComponent
         string outcome,
         int written,
         string detail,
-        CancellationToken cancellation)
+        CancellationToken cancellation,
+        string? subject = null)
     {
         await using var command = connection.CreateCommand();
 
         command.CommandText = AppendRun;
         command.Parameters.AddWithValue("$run_id", runId);
-        command.Parameters.AddWithValue("$stage", Stage);
+        command.Parameters.AddWithValue("$stage", subject is null ? Stage : Stage + ": " + subject);
         command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$outcome", outcome);

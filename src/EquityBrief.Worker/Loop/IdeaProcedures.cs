@@ -47,30 +47,26 @@ public static class IdeaProcedures
     }
 
     // Each fold's ask and, last, the ask over all finished data, for a family's rule on an index.
-    public static IReadOnlyList<FoldAsk> Asks(LoopRead read, RuleWalk rule, LoopReadings readings)
-    {
-        IReadOnlyList<double?> ReadingsOf(int at) => readings.Of(rule.Listings[at].Name, rule.Listings[at].Bar, rule.Listings[at].Session);
+    public static IReadOnlyList<FoldAsk> Asks(LoopRead read, RuleWalk rule, LoopReadings readings) => Asks(read, EngineRule.Of(read, rule, readings), readings.Reads);
 
-        (DateOnly Ended, TradePath Path)[] finished =
-        [
-            .. rule.Own
-                .Where(one => one.Exit is not null && one.Trade.Result is not null)
-                .Select(one => (read.Calendar[one.Exit!.Value], ExitProcedures.Path(read, rule.Closes, one))),
-        ];
-
-        return [.. read.Folds.Append(read.AllFinished).Select(fold => Ask(rule.Family, fold, read.Calendar, rule.Listings, ReadingsOf, finished, readings.Reads))];
-    }
+    // From 21.5 the same over any family's rule as the engines read it, a book family's setups among them, whose prompt
+    // reads no path of a trade.
+    public static IReadOnlyList<FoldAsk> Asks(LoopRead read, EngineRule rule, Func<int, bool> reads) =>
+        [.. read.Folds.Append(read.AllFinished).Select(fold => Ask(rule.Family, fold, read.Calendar, rule.Listings, rule.ReadingsOf, rule.Finished, reads))];
 
     // The prompts the generator puts for a family's rule, in the order of its folds.
-    public static IReadOnlyList<IdeaAsk> Prompts(LoopRead read, RuleWalk rule, LoopReadings readings) =>
-        [.. Asks(read, rule, readings).Select(ask => new IdeaAsk(rule.Family, ask.Fold.Year, ask.Prompt, ask.Key))];
+    public static IReadOnlyList<IdeaAsk> Prompts(LoopRead read, RuleWalk rule, LoopReadings readings) => Prompts(read, EngineRule.Of(read, rule, readings), readings.Reads);
+
+    public static IReadOnlyList<IdeaAsk> Prompts(LoopRead read, EngineRule rule, Func<int, bool> reads) =>
+        [.. Asks(read, rule, reads).Select(ask => new IdeaAsk(rule.Family, ask.Fold.Year, ask.Prompt, ask.Key))];
 
     // The generator's proposals for a family's rule on an index, the answers stored read by their prompts' keys.
-    public static IReadOnlyList<LoopProposalRead> Run(LoopRead read, RuleWalk rule, LoopReadings readings, Func<string, IReadOnlyList<IdeaLabel>?> answered, Action<string> progress)
+    public static IReadOnlyList<LoopProposalRead> Run(LoopRead read, RuleWalk rule, LoopReadings readings, Func<string, IReadOnlyList<IdeaLabel>?> answered, Action<string> progress) =>
+        Run(read, EngineRule.Of(read, rule, readings), readings.Reads, answered, progress);
+
+    public static IReadOnlyList<LoopProposalRead> Run(LoopRead read, EngineRule rule, Func<int, bool> reads, Func<string, IReadOnlyList<IdeaLabel>?> answered, Action<string> progress)
     {
         progress(FormattableString.Invariant($"reading the stored ideas for the {rule.Family} on the {DecisionCards.NameOf(read.Index)} in each of its {read.Folds.Count} fold(s) and over all finished data"));
-
-        IReadOnlyList<double?> ReadingsOf(int at) => readings.Of(rule.Listings[at].Name, rule.Listings[at].Bar, rule.Listings[at].Session);
 
         var walks = new Dictionary<string, IReadOnlyList<(int Entry, double? Edge)>>(StringComparer.Ordinal);
 
@@ -82,14 +78,14 @@ public static class IdeaProcedures
 
             if (!walks.TryGetValue(key, out var held))
             {
-                held = [.. rule.Hooked(condition.Parameters(), ReadingsOf).Select(one => (one.Entry, one.Edge))];
+                held = rule.Walk(condition.Parameters(), null);
                 walks[key] = held;
             }
 
             return held;
         }
 
-        return Proposals(read, rule.Family, rule.Current, rule.Cap, Asks(read, rule, readings), answered, UnitsUnder, [.. rule.Own.Select(one => (one.Entry, one.Edge))]);
+        return Proposals(read, rule, Asks(read, rule, reads), answered, UnitsUnder);
     }
 
     // The proposals over each fold's ask, the all-finished ask last: the k-th the k-th label each answer holds, turned
@@ -103,8 +99,22 @@ public static class IdeaProcedures
         IReadOnlyList<FoldAsk> asks,
         Func<string, IReadOnlyList<IdeaLabel>?> answered,
         Func<ConditionFound, IReadOnlyList<(int Entry, double? Edge)>> unitsUnder,
-        IReadOnlyList<(int Entry, double? Edge)> own)
+        IReadOnlyList<(int Entry, double? Edge)> own) =>
+        Proposals(
+            read,
+            new EngineRule(family, current, LoopProcedures.Risks, "listing", 1, cap, [], _ => [], own, (_, _) => [], LoopProcedures.Evidence, LoopProcedures.Reference(read, own), []),
+            asks,
+            answered,
+            unitsUnder);
+
+    static IReadOnlyList<LoopProposalRead> Proposals(
+        LoopRead read,
+        EngineRule rule,
+        IReadOnlyList<FoldAsk> asks,
+        Func<string, IReadOnlyList<IdeaLabel>?> answered,
+        Func<ConditionFound, IReadOnlyList<(int Entry, double? Edge)>> unitsUnder)
     {
+        var (family, current, cap, own) = (rule.Family, rule.Current, rule.Cap, rule.Own);
         (IdeaLabel Label, ConditionFound Condition)? AtRank(FoldAsk ask, int place) =>
             answered(ask.Key) is { } labels && place < labels.Count && IdeaPrompt.Condition(labels[place], ask.Units) is { } condition
                 ? (labels[place], condition)
@@ -125,18 +135,18 @@ public static class IdeaProcedures
                 ProposalName(rank),
                 named is { } one ? ConditionProcedures.ChangeOf(one.Condition) : null,
                 current,
-                LoopProcedures.Risks,
+                rule.Unit,
                 cap,
                 [.. read.Folds.Select((fold, at) => (fold, chosen[at] is { } choice ? ConditionProcedures.ChangeOf(choice.Condition) : null))],
                 named is { } same ? chosen.Count(choice => choice is { } made && made.Label == same.Label) : 0,
-                LoopProcedures.Evidence(read.Folds, read.Calendar, [.. chosen.Select(choice => choice is { } made ? unitsUnder(made.Condition) : null)], own))
+                rule.Evidence(read.Folds, read.Calendar, [.. chosen.Select(choice => choice is { } made ? unitsUnder(made.Condition) : null)], own))
             {
                 Finding = named is { } found
                     ? FormattableString.Invariant(
-                        $"the local model named {IdeaPrompt.Words(found.Label)} over the {finished.Units.Count} finished listings; {found.Condition.Words()} kept {found.Condition.Kept} of them at {found.Condition.Score:+0.000;-0.000} risks a listing against the rule's {ownEdge:+0.000;-0.000}")
+                        $"the local model named {IdeaPrompt.Words(found.Label)} over the {finished.Units.Count} finished {rule.Thing}s; {found.Condition.Words()} kept {found.Condition.Kept} of them at {found.Condition.Score * rule.Scale:+0.000;-0.000} {rule.Unit} a {rule.Thing} against the rule's {ownEdge * rule.Scale:+0.000;-0.000}")
                     : null,
                 Change = named is { } change ? LoopChange.OfHooks(change.Condition.Parameters()) : null,
-                Reference = LoopProcedures.Reference(read, own),
+                Reference = rule.Reference,
             });
         }
 

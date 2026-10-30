@@ -477,7 +477,7 @@ public static class Nightly
                 // S&P 500's page and the rule the change registers read it from tonight. A failure is named on the step's
                 // row, and the families read the settings as they stood.
                 // see: An approved change is applied by the night's own build on the index it was approved on alone
-                // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+                // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
                 string applied;
                 var applyStartedAt = clock.UtcNow;
                 DateTimeOffset? wroteFrom;

@@ -190,6 +190,11 @@ public partial class ReadSurface
         foreach (var family in reversed)
         {
             LedgerYearRow(store, family, 2026, 10, 2, 0, 0, 5, "0.1", "0.05", "-1,-0.5,0,0.25,0.5,1,1.5,2,3");
+        }
+
+        // The Loop page reads the seven families the loop proposes for, in Tonight's order of their cards.
+        foreach (var family in EquityBrief.Core.Loop.LoopDecisions.LoopFamilies.Reverse())
+        {
             store.Execute(
                 "INSERT INTO loop_alarm (index_code, family, period, trades, edge, edge_floor, counted, under, streak, flagged, reference, run_id) VALUES " +
                 $"('GSPC', '{family}', '2026-08-01', 5, 0.1, -0.1, 1, 0, 0, 0, '{LargeOctober}', 'night-1');");
@@ -208,8 +213,11 @@ public partial class ReadSurface
         Assert.Equal(order, Regex.Matches(ledger, "data-card=\"ledger-([a-z]+)\"").Select(match => match.Groups[1].Value).Where(card => card != "path"));
         Assert.Equal(order, Regex.Matches(ledger, "data-family-(?:link|chosen)=\"([a-z]+)\"").Select(match => match.Groups[1].Value));
         Assert.Contains("data-family-link=\"pullback\" href=\"#/ledger?universe=500&family=pullback\" aria-current=\"true\">", ledger, StringComparison.Ordinal);
-        Assert.Equal(order, Regex.Matches(loop, "<div class=\"loop-alarm\" data-family=\"([a-z]+)\"").Select(match => match.Groups[1].Value));
-        Assert.Equal(order, Regex.Matches(loop, "data-loop-rule=\"none\" data-family=\"([a-z]+)\"").Select(match => match.Groups[1].Value));
+        string[] loopOrder = ["pullback", "breakout", "drift", "improving", "dip", "heavyweight", "quality"];
+
+        Assert.Equal(loopOrder, EquityBrief.Core.Loop.LoopDecisions.LoopFamilies);
+        Assert.Equal(loopOrder, Regex.Matches(loop, "<div class=\"loop-alarm\" data-family=\"([a-z]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Equal(loopOrder, Regex.Matches(loop, "data-loop-rule=\"none\" data-family=\"([a-z]+)\"").Select(match => match.Groups[1].Value));
     }
 
     [Fact]

@@ -296,9 +296,13 @@ public static partial class TonightScreen
 
                 // The rule of the day before a freeze, kept in the background, is read by no test: no trial of its
                 // family's, it takes and passes no share of the family's level and is read at the level its rules start at.
+                // From 21.5 a rule an approval moved to the background is a trial of its family's while it runs and drawn
+                // on no row.
+                // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
+                RegisterRow[] moved = [.. rules.Where(rule => MovedByAnApproval(rule.Candidate, rows))];
                 RegisterRow[] tested = [.. rules.Where(rule => !FamilyRecords.IsBackground(rule.Candidate))];
-                RegisterRow[] kept = [.. rules.Where(rule => FamilyRecords.IsBackground(rule.Candidate))];
-                var trials = CandidateFamily.Trials(CandidateFamily.In(rows, name), tested.Select(rule => rule.Candidate));
+                RegisterRow[] kept = [.. rules.Where(rule => FamilyRecords.IsBackground(rule.Candidate) && !moved.Contains(rule))];
+                var trials = CandidateFamily.Trials(CandidateFamily.In(rows, name), tested.Concat(moved).Select(rule => rule.Candidate));
 
                 return FamilyRecords.Family(tested, trades, night, family.Cap, trials)
                     .Concat(FamilyRecords.Family(kept, trades, night, family.Cap, Math.Max(1, trials)))

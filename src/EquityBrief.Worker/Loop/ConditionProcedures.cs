@@ -20,20 +20,23 @@ public static class ConditionProcedures
 
     public static string ChangeOf(ConditionFound condition) => "also requires " + condition.Words();
 
-    public static (IReadOnlyList<LoopProposalRead> Proposals, IReadOnlyList<ReadingSpread> Spreads) Run(LoopRead read, RuleWalk rule, LoopReadings readings, Action<string> progress)
+    public static (IReadOnlyList<LoopProposalRead> Proposals, IReadOnlyList<ReadingSpread> Spreads) Run(LoopRead read, RuleWalk rule, LoopReadings readings, Action<string> progress) =>
+        Run(read, EngineRule.Of(read, rule, readings), readings.Reads, progress);
+
+    // From 21.5 the same over any family's rule as the engines read it, a book family's among them, its setups the ledger's
+    // and a condition walked by its book's own walk.
+    public static (IReadOnlyList<LoopProposalRead> Proposals, IReadOnlyList<ReadingSpread> Spreads) Run(LoopRead read, EngineRule rule, Func<int, bool> reads, Action<string> progress)
     {
-        progress(FormattableString.Invariant($"reading the {rule.Family}'s {rule.Listings.Count} listing(s) on the {DecisionCards.NameOf(read.Index)} for winners against losers"));
+        progress(FormattableString.Invariant($"reading the {rule.Family}'s {rule.Listings.Count} {rule.Thing}(s) on the {DecisionCards.NameOf(read.Index)} for winners against losers"));
 
-        IReadOnlyList<double?> ReadingsOf(int at) => readings.Of(rule.Listings[at].Name, rule.Listings[at].Bar, rule.Listings[at].Session);
-
-        IReadOnlyList<ConditionUnit> Learning(LoopFold fold) => LearningUnits(fold, read.Calendar, rule.Listings, ReadingsOf);
+        IReadOnlyList<ConditionUnit> Learning(LoopFold fold) => LearningUnits(fold, read.Calendar, rule.Listings, rule.ReadingsOf);
 
         ConditionVerdict Judged(LoopFold fold) => ConditionSearch.Judge(Learning(fold), LoopProcedures.Floors(read.LearningYears(fold)).Trades);
 
         var verdicts = read.Folds.Select(Judged).ToArray();
         var finishedUnits = Learning(read.AllFinished);
         var finished = Judged(read.AllFinished);
-        var spreads = ConditionSearch.Spreads(finishedUnits).Where(spread => readings.Reads(spread.Reading)).ToArray();
+        var spreads = ConditionSearch.Spreads(finishedUnits).Where(spread => reads(spread.Reading)).ToArray();
         var walks = new Dictionary<string, IReadOnlyList<(int Entry, double? Edge)>>(StringComparer.Ordinal);
 
         // The rule's walk with a condition set as the hooks an approval would store, on top of those it stands at, each
@@ -44,14 +47,13 @@ public static class ConditionProcedures
 
             if (!walks.TryGetValue(key, out var held))
             {
-                held = [.. rule.Hooked(condition.Parameters(), ReadingsOf).Select(one => (one.Entry, one.Edge))];
+                held = rule.Walk(condition.Parameters(), null);
                 walks[key] = held;
             }
 
             return held;
         }
 
-        IReadOnlyList<(int Entry, double? Edge)> own = [.. rule.Own.Select(one => (one.Entry, one.Edge))];
         var ownEdge = finishedUnits.Count > 0 ? finishedUnits.Average(unit => unit.Edge) : 0;
         var proposals = new List<LoopProposalRead>();
 
@@ -66,15 +68,15 @@ public static class ConditionProcedures
                 ProposalName(rank),
                 named is null ? null : ChangeOf(named),
                 rule.Current,
-                LoopProcedures.Risks,
+                rule.Unit,
                 rule.Cap,
                 [.. read.Folds.Select((fold, at) => (fold, chosen[at] is { } one ? ChangeOf(one) : null))],
                 named is null ? 0 : chosen.Count(one => one is not null && one.Words() == named.Words()),
-                LoopProcedures.Evidence(read.Folds, read.Calendar, [.. chosen.Select(one => one is null ? null : UnitsUnder(one))], own))
+                rule.Evidence(read.Folds, read.Calendar, [.. chosen.Select(one => one is null ? null : UnitsUnder(one))], rule.Own))
             {
-                Finding = named is null ? null : Finding(named, finished, spreads, finishedUnits.Count, ownEdge),
+                Finding = named is null ? null : Finding(named, finished, spreads, finishedUnits.Count, ownEdge, rule),
                 Change = named is null ? null : LoopChange.OfHooks(named.Parameters()),
-                Reference = LoopProcedures.Reference(read, own),
+                Reference = rule.Reference,
             });
         }
 
@@ -93,13 +95,14 @@ public static class ConditionProcedures
 
     // A condition's finding: what it kept of every finished listing at what edge against the rule's own, the null's
     // mark it stood above, and its first reading's medians among the winners and the losers.
-    public static string Finding(ConditionFound condition, ConditionVerdict verdict, IReadOnlyList<ReadingSpread> spreads, int listings, double ownEdge)
+    public static string Finding(ConditionFound condition, ConditionVerdict verdict, IReadOnlyList<ReadingSpread> spreads, int listings, double ownEdge, EngineRule? rule = null)
     {
         var first = condition.Conditions[0];
         var spread = spreads.First(one => one.Reading == first.Reading);
+        var (unit, thing, scale) = rule is null ? (LoopProcedures.Risks, "listing", 1.0) : (rule.Unit, rule.Thing, rule.Scale);
 
         return FormattableString.Invariant(
-            $"{condition.Words()} kept {condition.Kept} of the {listings} finished listings at {condition.Score:+0.000;-0.000} risks a listing against the rule's {ownEdge:+0.000;-0.000}, above the within-night null's 95th percentile of {verdict.Mark:+0.000;-0.000} over {verdict.Arrangements} arrangements")
+            $"{condition.Words()} kept {condition.Kept} of the {listings} finished {thing}s at {condition.Score * scale:+0.000;-0.000} {unit} a {thing} against the rule's {ownEdge * scale:+0.000;-0.000}, above the within-night null's 95th percentile of {verdict.Mark * scale:+0.000;-0.000} over {verdict.Arrangements} arrangements")
             + (spread.WinnersMedian is { } winners && spread.LosersMedian is { } losers
                 ? FormattableString.Invariant($"; the winners' median {spread.Column} {winners:0.####} against the losers' {losers:0.####}")
                 : string.Empty);

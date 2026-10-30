@@ -12280,3 +12280,74 @@ Carried:    from main after the merge, while no other writer runs, each index's 
             `tools/ledger-build.ps1 --index <GSPC, MID or SML> --from 2019-01-02 --through 2026-10-29 --again` one after
             another, and each checked with `ledger-check` once every build has ended, its counts and 21.4's remedy's
             recorded on 21.5's branch; 21.5 on the standing go; and the rest as the 21.4 entry above carries it.
+
+### 21.4 - correction: section 14's swing filter step reads the S&P 500 for the fundamentals-first family only while its page trade stands open, as 21.4 built   2026-10-30
+
+Found:      the step still said the night reads the fundamentals-first family on the S&P 500 and among the S&P 400's and
+            600's provisional rules, which 21.4 took out of the night, and the step's note in the harness said the S&P
+            500 was read first for the family; found while 21.5 amended the same step's approvals.
+Corrected:  the step's words, its key in the harness's three copies and its note; no code moved.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.5's entry below, which states
+            that run's figures.
+
+### 21.5 - the monthly loop over every family: the short-term dip, Quality at a fair price and the Fundamentals family proposed for by every engine that applies, a frozen rule read at its levels, an approval registering every family's live rule again with the rule it replaces in the background at nine, and the fundamentals-first family out of the loop   2026-10-30
+
+Queue:      done, 21.1 to 21.4 as PRs 587 to 591 with 21.4's remedy, and the history build's two corrections as PRs 592
+            and 593; in progress, 21.5; next, 21.6 to 21.13 in the section's order, with 21.14, 21.15 and every decision
+            held for the operator's word; beside them the sign-offs of phases 18, 20 and 22 by fresh sessions.
+Built:      the tester proposes for seven families on every index where a rule of each stands, in Tonight's order of
+            their cards. The short-term dip's live rule is walked by its own walk for the autopsy, each exit of the swing
+            menu sold at the next open after the close that triggers it and a time stop at its own close, and handed to
+            winners against losers, the idea generator and the learned score over the dip's ledger setups; its grid is a
+            procedure against the live rule, a choice the change a dip registration states. Quality at a fair price and
+            the Fundamentals family each walk a book menu through the book's own walk, the sale under the 200-day average
+            and quality's sale on a filing or the Fundamentals family's other time limits, ranked in each fold above the
+            live book at the month floors, and run their grids of 72 and 144 settings as procedures; their live rules go
+            to winners against losers, the generator and the score over the ledger's settled setups, a condition or an
+            order keeping and ordering the members each session's book chooses. A frozen S&P 400 or 600 rule is read at
+            the levels it states, its grid not searched, and one no engine can walk says why. A change the family's night
+            reads no dial for, the dip's exits and the books' sale under the 200-day average, is judged with the family's
+            proposals and shown with why, and never put. An approval of a change to a family whose live rule stands
+            registered registers that rule again at the change on every index, the rule it replaces beside it for a block,
+            or at nine moved to the background, counted outside the nine and by the family's luck correction and drawn on
+            no row of the Run page; a frozen swing rule's setting, a provisional book's and the fundamentals-first family's
+            changes are refused with why. The Loop page draws the seven families a row and a card each, the month's report
+            names them in that order, and the per-rule test walks business first no more.
+Decisions:  four written: The monthly loop proposes for seven families on every index where their rule stands, and the
+            fundamentals-first family leaves it with the night; The engines test a frozen rule at the levels it states,
+            and a frozen rule's setting moves only by a freeze; A change a family's night does not read is tested and
+            shown and never put to the operator; and An approved change registers the family's live rule again at the
+            change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the
+            family holds nine. Two moved under Previously decided with every spec and code citation repointed, the S&P
+            500's approval decision of 17.13 and the fundamentals-first family's of 19.9; the apply step's decision of
+            17.13 narrowed.
+Tests:      2943, from 2935: nine added, the dip's live rule for every engine, a book's walk and the book menu, a frozen
+            rule read at its levels, an approval registering a family's live rule again, the Loop page over seven
+            families, one step-down a family whichever engine proposed, the report's order and the sources unmoved; three
+            replaced by their 21.5 forms, a family at nine, the fundamentals-first family's night and the Loop summary
+            drawing no business first row; and the 27 settings' procedure test taken out with the procedure.
+Claims:     1461, unchanged: every row 21.5 writes is amended in place, the plan's count of about 8 for 21.5 landing as
+            amendments of the Loop page's two rows, section 17's two rows, section 18's approval row and section 14's
+            step; 1476 placements.
+Pins:       none moved: the 25 shipped sources 21.5 writes outside its comments are pinned by no rule, asserted; the
+            citations it repoints in pinned sources are comment lines, which no pin reads.
+Screens:    the Loop page over a constructed S&P 600 run proposing for the seven families, served from a scratch store
+            migrated to 115, read back at 1440 pixels and a true 390: the seven rows and cards in Tonight's order under
+            their labels, no business first anywhere, the page's width the viewport's at both; at 390 the summary's rows
+            stand tall, its last column wrapping inside the box that scrolls it, as before 21.5.
+Mutation:   chosen before the run by this rule, the property the done condition names that no earlier commit of the
+            checkpoint mutated: a proposal counts in its family's multiple-testing total. The tester made to judge each
+            engine's proposals of a family apart: the step-down test went red, the dip's exit read at 0.0000019 where its
+            family's step-down gives 0.00043 and quality's menu at 0.0000019 where it gives 0.00037; reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2943 of 2943 tests ran
+            with none failed, migrations 0 to 115 with none pending, schema version 115, against `data-ci` and never
+            `data`; the phase report 64 tables, 1461 claims, 1461 passing, none out of scope and none unexamined, 1476
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    21.4's remedy and the three histories built again from main after PR 593 and checked, recorded on 21.6's
+            branch since the S&P 600's build waits on the off-peak run, the S&P 500's and the S&P 400's checks each
+            rebuilding 200 of 200 sampled setups with every reading the same; the operating row on the monthly run's time
+            with every family tested, read at the first scheduled run after this merges; and the findings put to the
+            operator with this pull request: the drift's eight records the remedy restarted on a surprise the provider
+            revised after its night, the changes the dip's and the books' nights read no dial for, a frozen pullback no
+            engine reads, and the Loop summary's tall rows at 390.

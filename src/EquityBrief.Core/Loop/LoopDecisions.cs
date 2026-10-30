@@ -32,30 +32,95 @@ public static class LoopDecisions
     public static string RestoreProposal(long setting) => FormattableString.Invariant($"restore the setting before change {setting}");
 
     // Why a change is not applied.
-    public const string BookRefused = "a sector heavyweights' book changes its setting only by a freeze, so an approved change to it is not applied";
+    public const string BookRefused = "the S&P 500's sector heavyweights' books change their setting only by a freeze, so an approved change to one is not applied";
 
     public const string FamilyRefused = "the family has no setting an approval applies";
 
-    public const string FrozenRefused = "the family's live rule stands registered on the index and draws its page, and a registered rule changes only by a registration, which waits on the operator's ruling of how an approval registers one";
+    // From 21.5 the fundamentals-first family, which the night computes no longer, takes no change.
+    // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
+    public const string LeftTheNightRefused = "the fundamentals-first family is computed by the night no longer, so an approved change to it is not applied";
+
+    // From 21.5 an approval changes a frozen swing rule's hooks alone, its setting standing where its freeze put it.
+    // see: The engines test a frozen rule at the levels it states, and a frozen rule's setting moves only by a freeze
+    public const string FrozenSettingRefused = "a frozen rule's setting moves only by a freeze, so an approval changes its hooks alone";
 
     // The families an approval changes on every index, the S&P 500's pullback by its hooks or a shape move from 17.14, and
-    // from 19.9 the fundamentals-first family by its setting and its hooks on every index, the S&P 500's included.
+    // from 21.5 the short-term dip, Quality at a fair price and the Fundamentals family on every index and the sector
+    // heavyweights on the S&P 400 and 600, each by a registration of its live rule again at the change; the
+    // fundamentals-first family, which the night computes no longer, is not among them.
     // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
-    // see: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place
-    public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, FundamentalsRule.Name];
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
+    public static IReadOnlyList<string> Families { get; } =
+        [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, DipRule.Name, QualityRule.Name, ImprovingRule.Name, HeavyweightRule.Name];
 
-    // The S&P 500's families an approval changes, each by its stored settings and a registration.
+    // The S&P 500's families an approval changes by its stored settings and a registration together.
     public static IReadOnlyList<string> LargeFamilies { get; } = [BreakoutRule.Name, DriftRule.Name];
 
-    // The sessions a rule a change replaced runs beside the change on the S&P 500 before the apply step retires it, a block.
-    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    // From 21.5 the seven families the monthly loop proposes for, in the order Tonight draws their cards: the pullback, the
+    // breakout, the drift, the Fundamentals family, the short-term dip, the sector heavyweights and Quality at a fair
+    // price; the fundamentals-first family, which the night computes no longer, is proposed for no more.
+    // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
+    public static IReadOnlyList<string> LoopFamilies { get; } =
+        [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, ImprovingRule.Name, DipRule.Name, HeavyweightRule.Name, QualityRule.Name];
+
+    // Where a family stands in that order, counted from one, and past every family for a word it does not hold.
+    public static int LoopOrderOf(string family)
+    {
+        for (var at = 0; at < LoopFamilies.Count; at++)
+        {
+            if (string.Equals(LoopFamilies[at], family, StringComparison.Ordinal))
+            {
+                return at + 1;
+            }
+        }
+
+        return LoopFamilies.Count + 1;
+    }
+
+    // The sessions a rule a change replaced runs beside the change before the apply step retires it, a block, beside it
+    // as a variant or, from 21.5, in the background where its family holds nine rules.
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
     public const int ReplacedSessions = 63;
 
     // Why an approved change to a family on an index is not applied, none where it is.
     public static string? Refusal(string index, string family) =>
-        family == HeavyweightRule.Name ? BookRefused
+        family == HeavyweightRule.Name && index == MarketCloses.Index ? BookRefused
+        : family == FundamentalsRule.Name ? LeftTheNightRefused
         : !Families.Contains(family, StringComparer.Ordinal) ? FamilyRefused
         : null;
+
+    // From 21.5 why a change to a family keeping no stored setting is not applied where no live rule of it stands
+    // registered on the index, a heavyweights book standing provisional or a dip or book before its freeze.
+    public const string ProvisionalBookRefused = "a sector heavyweights' book standing provisional changes its setting only by its freeze, so an approved change to it is not applied";
+
+    public const string NoRuleRefused = "the family holds no live rule registered on the index for a change to replace, so an approval waits for its freeze";
+
+    // The same with whether the family's live rule stands registered on the index, which a family keeping no stored
+    // setting changes by alone.
+    public static string? Refusal(string index, string family, bool registered) =>
+        Refusal(index, family)
+        ?? (KeepsNoSetting(family) && !registered ? (family == HeavyweightRule.Name ? ProvisionalBookRefused : NoRuleRefused) : null);
+
+    // From 21.5 the families keeping no stored setting, each changed by a registration of its live rule alone: the dip, the
+    // two books and the sector heavyweights.
+    public static bool KeepsNoSetting(string family) =>
+        family is DipRule.Name or QualityRule.Name or ImprovingRule.Name or HeavyweightRule.Name;
+
+    // From 21.5 a family as the register counts it on an index: the dip and the two books by their name on the index, the
+    // S&P 500's other families by their own name, and the S&P 400's and 600's by their name on the index.
+    public static string RegisterFamilyOf(string index, string family) =>
+        family is DipRule.Name or QualityRule.Name or ImprovingRule.Name ? Candidates.OwnStepCandidate.FamilyOn(family, index)
+        : index == MarketCloses.Index ? family
+        : Candidates.IndexRuleCandidate.FamilyOn(family, index);
+
+    // From 21.5 whether an approved change reaches its family through a registration of the live rule standing on its
+    // index, other than the S&P 500's breakout and drift, which have their own path: a frozen swing or heavyweights family
+    // on the S&P 400 or 600, and the dip and the two books on any index, each where a live rule of it stands registered.
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
+    public static bool RegistersOn(string index, string family, IReadOnlyList<Candidates.RegisterRow> standing) =>
+        family != FundamentalsRule.Name
+        && (index != MarketCloses.Index || family is DipRule.Name or QualityRule.Name or ImprovingRule.Name)
+        && Candidates.FamilyRecords.LiveOf(Candidates.CandidateFamily.In(standing, RegisterFamilyOf(index, family))) is not null;
 
     // The one proposal of a family a run puts to the operator: of those that passed and state a change, leaving out one
     // an earlier run's decline holds back, the lowest adjusted p-value, a tie settled by the proposal's name; none where

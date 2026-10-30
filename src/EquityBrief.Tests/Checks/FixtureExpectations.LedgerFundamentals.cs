@@ -294,11 +294,10 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task AnApprovedSettingOfTheFamilyIsReadByThePerRuleTestAndFrom21Point4TheNightComputesTheFamilyOnNoIndex()
+    public async Task From21Point4TheNightComputesTheFamilyOnNoIndexAndReadsNoSettingAnApprovalStoredForIt()
     {
         // AAA on the night with its cash at 0.9 of its income and every other part passing: the provisional rule asks for
-        // the income whole and refuses it at its cash; the per-rule test walks the family at the setting an approval stored,
-        // with the hooks stored beside it, and at the provisional setting where none is stored.
+        // the income whole and refuses it at its cash.
         var inputs = BusinessFirstHistory.Inputs(BusinessFirstHistory.Night + 1);
         var prepared = IndexNightRead.Prepare(IndexFamilies.LargeIndex, inputs.Sessions[^1], inputs.Names, BusinessFirstHistory.Income())!;
         Func<string, IReadOnlyList<double?>?> readings = ticker => ticker == "AAA" ? Improving(("cash_over_income", 0.9)) : null;
@@ -308,15 +307,6 @@ public partial class FixtureExpectations
 
         var lower = EquityBrief.Core.Loop.LoopChange.OfSetting([0, 0, 0], FundamentalsRule.At([0, 0, 0]).Short, 0);
         var hooks = EquityBrief.Core.Loop.LoopChange.OfHooks(new Dictionary<string, double>(StringComparer.Ordinal) { [EquityBrief.Core.Loop.RuleHooks.ExitParameter] = 7 });
-
-        // The per-rule test walks the family at the same setting with the hooks stored beside it, and at the provisional
-        // setting where none is stored.
-        var exitHook = EquityBrief.Core.Loop.LoopChange.OfSetting([0, 0, 0], FundamentalsRule.At([0, 0, 0]).Short, 0) with { Hooks = hooks.Hooks };
-
-        Assert.Equal((FundamentalsRule.Provisional, FundamentalsRule.Provisional.Key), EquityBrief.Worker.Loop.RuleTests.FundamentalsStanding(null));
-        Assert.Equal((FundamentalsRule.At([0, 0, 0]), "growth>0|margins=either|cash>=0.8"), EquityBrief.Worker.Loop.RuleTests.FundamentalsStanding(lower));
-        Assert.Equal(FundamentalsRule.At([0, 0, 0]), EquityBrief.Worker.Loop.RuleTests.FundamentalsStanding(exitHook).Setting);
-        Assert.StartsWith("growth>0|margins=either|cash>=0.8; ", EquityBrief.Worker.Loop.RuleTests.FundamentalsStanding(exitHook).Words, StringComparison.Ordinal);
 
         Assert.Equal(FundamentalsRule.NoCash, Reason(IndexNightRead.Provisional(prepared, FundamentalsRule.Name, readings)));
 
@@ -337,105 +327,5 @@ public partial class FixtureExpectations
         Assert.Empty(FamilyRows(store, "SELECT ticker FROM index_family_result WHERE family = 'fundamentals';"));
         Assert.Equal(["MID", "SML"], FamilyRows(store, $"SELECT index_code FROM index_family_night WHERE session_date = '{night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}' ORDER BY index_code;"));
         Assert.All(FamilyRows(store, "SELECT settings FROM index_family_night;"), settings => Assert.DoesNotContain("\"fundamentals\"", settings, StringComparison.Ordinal));
-    }
-
-    // Every weekday from the first scored session to early March 2024: three years a fold of 2022 learns on, and the test
-    // years 2022, 2023 and the months of 2024.
-    static DateOnly[] FundamentalsLoopCalendar()
-    {
-        var days = new List<DateOnly>();
-
-        for (var day = EquityBrief.Worker.Sweep.SweepColumns.FirstScored; day <= new DateOnly(2024, 3, 8); day = day.AddDays(1))
-        {
-            if (day.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday))
-            {
-                days.Add(day);
-            }
-        }
-
-        return [.. days];
-    }
-
-    // A setting's walk over the calendar: a trade entered on every session and ended five sessions on, none past the
-    // history's end, each earning the edge given for its entry session over a benchmark of nothing.
-    static IReadOnlyList<EquityBrief.Worker.Loop.ExitProcedures.Walked> FundamentalsWalk(DateOnly[] calendar, Func<int, double> edge) =>
-    [
-        .. Enumerable.Range(0, calendar.Length).Select(entry =>
-        {
-            var ended = entry + 5 < calendar.Length ? entry + 5 : (int?)null;
-            var listing = new FamilyListing(0, entry, entry, 0, 0, 100, 95, 110, double.NaN, 63);
-
-            return new EquityBrief.Worker.Loop.ExitProcedures.Walked(entry, ended, new FamilyTrade(listing, calendar[entry].Year - EquityBrief.Worker.Sweep.SweepColumns.FirstScored.Year, ended is null ? null : edge(entry), 0), string.Empty);
-        }),
-    ];
-
-    [Fact]
-    public void TheFamilysProcedureIsWorkedOverConstructedFoldsAcrossItsTwentySevenSettings()
-    {
-        var calendar = FundamentalsLoopCalendar();
-        var folds = EquityBrief.Core.Loop.LoopFolds.Of(calendar, calendar[^1]);
-        var read = new EquityBrief.Worker.Loop.LoopRead("MID", null!, [], [], null!, null!, new Dictionary<string, IReadOnlyList<FiledIncome>>(), calendar, 0, folds);
-        var grid = EquityBrief.Worker.Loop.FundamentalsSearch.Grid;
-        var settings = grid.Settings;
-
-        // The grid is the family's 27 settings in the search's order, the growth floor slowest, the provisional among them
-        // at its places: no growth floor, either margin and cash at the income.
-        Assert.Equal(27, settings.Count);
-        Assert.Equal(FundamentalsRule.Grid, settings.Select(FundamentalsRule.At));
-        Assert.Equal([0, 0, 1], grid.Provisional);
-        Assert.Equal(FundamentalsRule.Provisional, FundamentalsRule.At(grid.Provisional.ToArray()));
-
-        // Every setting earns a fifth of a risk a trade but two: revenue up more than five per cent with both margins
-        // wider and cash at 1.2 of the income, two dials moved, and cash at 1.2 alone, one dial moved, each earning a whole
-        // risk. A fold's search takes the best edge meeting the floors and, between the two, the one moving fewer dials.
-        int PlaceOf(int[] places) => Enumerable.Range(0, settings.Count).Single(at => settings[at].SequenceEqual(places));
-
-        var twoMoved = PlaceOf([1, 1, 2]);
-        var oneMoved = PlaceOf([0, 0, 2]);
-        IReadOnlyList<IReadOnlyList<EquityBrief.Worker.Loop.ExitProcedures.Walked>> walked =
-        [
-            .. Enumerable.Range(0, settings.Count).Select(at => FundamentalsWalk(calendar, _ => at == twoMoved || at == oneMoved ? 1.0 : 0.2)),
-        ];
-        var current = walked[PlaceOf([0, 0, 1])];
-        var proposal = EquityBrief.Worker.Loop.LoopProcedures.Fundamentals(read, walked, current, FundamentalsRule.Provisional, 63);
-
-        Assert.Equal(FundamentalsRule.Name, proposal.Family);
-        Assert.Equal(EquityBrief.Worker.Loop.LoopProcedures.Grid, proposal.Proposal);
-        Assert.Equal(FundamentalsRule.Provisional.Words, proposal.Current);
-        Assert.Equal(FundamentalsRule.At([0, 0, 2]).Words, proposal.Words);
-        Assert.Equal([0, 0, 2], proposal.Change!.Places);
-        Assert.Equal("growth 0|margins either|cash 1.2", proposal.Change.Key);
-        Assert.Equal("the setting growth 0, margins either, cash 1.2", proposal.Change.Words());
-        Assert.Null(proposal.Change.StopFloor);
-        Assert.Equal([2022, 2023, 2024], proposal.Folds.Select(one => one.Fold.Year));
-        Assert.All(proposal.Folds, one => Assert.Equal(FundamentalsRule.At([0, 0, 2]).Words, one.Chosen));
-        Assert.Equal(3, proposal.StableFolds);
-
-        // In each test year the chosen setting's trades earn four fifths of a risk more than the rule today's, unit for
-        // unit, every one of its trades that ended in its year.
-        foreach (var year in proposal.Evidence.Years)
-        {
-            Assert.True(year.ProposedUnits > 0);
-            Assert.Equal(year.CurrentUnits, year.ProposedUnits);
-            Assert.Equal(0.8 * year.ProposedUnits, year.ProposedTotal - year.CurrentTotal, 6);
-        }
-
-        // Where a fold's years before hold too few trades for the floors in proportion, it chooses nothing and tests the
-        // rule today against itself: here every walk holds a trade every twentieth session, about thirteen a year, under
-        // the 113, 150 and 188 trades three, four and five learning years read, so no fold chooses a setting.
-        IReadOnlyList<IReadOnlyList<EquityBrief.Worker.Loop.ExitProcedures.Walked>> sparse =
-        [
-            .. walked.Select(one => (IReadOnlyList<EquityBrief.Worker.Loop.ExitProcedures.Walked>)[.. one.Where(trade => trade.Entry % 20 == 0)]),
-        ];
-        var thin = EquityBrief.Worker.Loop.LoopProcedures.Fundamentals(read, sparse, sparse[PlaceOf([0, 0, 1])], FundamentalsRule.Provisional, 63);
-
-        Assert.Equal([null, null, null], thin.Folds.Select(one => one.Chosen));
-        Assert.Null(thin.Words);
-        Assert.Null(thin.Change);
-        Assert.Equal(0, thin.StableFolds);
-        Assert.All(thin.Evidence.Years, year => Assert.Equal(year.CurrentTotal, year.ProposedTotal));
-
-        // A walk a setting short is refused rather than read against the wrong settings.
-        Assert.Throws<ArgumentException>(() => EquityBrief.Worker.Loop.LoopProcedures.Fundamentals(read, [.. walked.Skip(1)], current, FundamentalsRule.Provisional, 63));
     }
 }

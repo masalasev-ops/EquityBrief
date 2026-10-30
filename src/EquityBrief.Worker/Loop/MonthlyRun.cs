@@ -207,9 +207,9 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
     }
 
     // The month's report: for each index the tester ran on for the month, each family's one proposal put to the
-    // operator, the strongest that passed, with its change in words and its figures, or that none passed; written into
-    // the month's folder under the data root, a run again writing it over the one before. Says which indices hold no
-    // run for the month.
+    // operator, the strongest that passed, with its change in words and its figures, or that none passed, the families in
+    // Tonight's order of their cards; written into the month's folder under the data root, a run again writing it over
+    // the one before. Says which indices hold no run for the month.
     public async Task<(bool Held, string Words)> ReportAsync(string month, CancellationToken cancellation = default)
     {
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
@@ -290,7 +290,9 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
 
             text.AppendLine($"The {DecisionCards.NameOf(index)}, run {run}:");
 
-            foreach (var family in proposals.GroupBy(proposal => proposal.Family).OrderBy(group => group.Key, StringComparer.Ordinal))
+            // From 21.5 the families in the order Tonight draws their cards, as the Loop page draws them.
+            // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
+            foreach (var family in proposals.GroupBy(proposal => proposal.Family).OrderBy(group => LoopDecisions.LoopOrderOf(group.Key)).ThenBy(group => group.Key, StringComparer.Ordinal))
             {
                 var passed = family.Count(proposal => proposal.Passed);
 

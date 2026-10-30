@@ -59,6 +59,12 @@ public static class OwnProcedures
     // its figures over the years the fold learned on.
     public sealed record SwingChoice(int[] Setting, IReadOnlyList<DialLevel<FamilyListing>> Levels, FamilyFigures Figures);
 
+    // From 21.5 a family's live rule a grid is judged against in its provisional rule's place: its setting, the second
+    // stage's levels it states, its words, and the change an approval would register for a choice, none where its
+    // registration cannot state the choice.
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
+    public sealed record LiveRule(int[] Setting, IReadOnlyList<DialLevel<FamilyListing>> Levels, string Words, Func<SwingChoice, LoopChange?> ChangeOf);
+
     static int Up(int numerator, int denominator) => (numerator + denominator - 1) / denominator;
 
     // The rule the second stage keeps a level by, in proportion to the years a fold learns on: a level is kept on a
@@ -100,7 +106,7 @@ public static class OwnProcedures
     // The breakout's or the drift's search on an index's own history as a procedure: every setting of the grid walked
     // once over the whole history and every setting a fold's second stage reads under each level once, a fold reading
     // only the trades that ended before its year.
-    public static LoopProposalRead Swing(LoopRead read, IOwnSwing own, Action<string> progress)
+    public static LoopProposalRead Swing(LoopRead read, IOwnSwing own, Action<string> progress, LiveRule? live = null)
     {
         var grid = own.Grid;
         var settings = grid.Settings;
@@ -126,7 +132,7 @@ public static class OwnProcedures
 
         var first = settings.Select(setting => Walk(setting, [])).ToArray();
         var nightsHeld = new ConcurrentDictionary<(int Name, int Session), int>();
-        var current = Kept(own.NightsRule(nightsHeld), nightsHeld);
+        var current = Kept(live is null ? own.NightsRule(nightsHeld) : own.TradesUnder(live.Setting, live.Levels, nightsHeld), nightsHeld);
 
         SwingChoice? ChooseIn(LoopFold fold)
         {
@@ -213,12 +219,15 @@ public static class OwnProcedures
             own.Family,
             SwingGrid,
             proposal is null ? null : Words(proposal),
-            grid.Key([.. grid.Provisional]) + (own.Floored ? ", with no stop floor" : string.Empty),
+            live?.Words ?? grid.Key([.. grid.Provisional]) + (own.Floored ? ", with no stop floor" : string.Empty),
             LoopProcedures.Risks,
             cap,
             [.. folds.Select(one => (one.Fold, one.Choice is null ? null : Words(one.Choice)))],
             proposal is null ? 0 : folds.Count(one => one.Choice is { } choice && SameLevels(choice, proposal) && choice.Setting.Zip(proposal.Setting).All(pair => Math.Abs(pair.First - pair.Second) <= 1)),
-            LoopProcedures.Evidence(read.Folds, read.Calendar, [.. folds.Select(one => one.Choice is null ? null : Units(Walk(one.Choice.Setting, one.Choice.Levels)))], Units(current)));
+            LoopProcedures.Evidence(read.Folds, read.Calendar, [.. folds.Select(one => one.Choice is null ? null : Units(Walk(one.Choice.Setting, one.Choice.Levels)))], Units(current)))
+        {
+            Change = proposal is not null && live is not null ? live.ChangeOf(proposal) : null,
+        };
     }
 
     // A walk's trades with the session each ended on, none while open.

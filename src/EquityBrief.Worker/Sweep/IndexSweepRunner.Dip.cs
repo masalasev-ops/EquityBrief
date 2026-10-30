@@ -4,6 +4,7 @@ using System.Net;
 using System.Text;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Loop;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Readings;
@@ -110,6 +111,8 @@ public sealed partial class IndexSweepRunner
         readonly ConcurrentDictionary<(int Drop, int Trend, int Limit, int Stop, bool Reports), FamilyListing[]> listings = new();
         readonly ConcurrentDictionary<(int Name, int Bar, int Exit, int Limit, int Stop, bool AtTrigger), Walked> walks = new();
         readonly ConcurrentDictionary<(int Session, int Exit, int Limit, int Stop), double> benchmarks = new();
+        readonly ConcurrentDictionary<(int Name, int Bar, int Exit, int Limit, int Stop), Walked> menuWalks = new();
+        readonly ConcurrentDictionary<(int Session, int Exit, int Limit, int Stop), double> menuBenchmarks = new();
         readonly ConcurrentDictionary<(int Session, string Sector), double?> sectorFalls = new();
 
         DipRead(LoopRead read, IReadOnlyList<MarketLevel> marketLevels, bool[][] open)
@@ -432,6 +435,118 @@ public sealed partial class IndexSweepRunner
                 listing => Fills.Benchmark(BenchmarkAtClose(listing.Session, exit, limit, stop), listing));
         }
 
+        // From 21.5 one walk of a listing under an exit of the menu, sold as the dip sells: the menu's own replay of its path
+        // from the listing's close, its stop the setting's and its time limit the cap, cut at a gap in its sessions as the
+        // dip's walk is; a close the exit sells at by its price sold at the open after it where one is held, and a sale by
+        // time, the cap's or the menu's time stop, at its own close. The plan names no target, so an exit keeping the plan's
+        // target walks the stop and the time limit with its own change; a half sale, whose first half the menu sells at its
+        // close, is not walked for the dip and buys nothing.
+        // see: A change a family's night does not read is tested and shown and never put to the operator
+        public Walked MenuWalkOf(int name, int bar, ExitChoice exit, int limit, int stop) =>
+            menuWalks.GetOrAdd((name, bar, exit.Number, limit, stop), key =>
+            {
+                if (exit.Kind is ExitKind.HalfTarget or ExitKind.HalfBreakEven)
+                {
+                    return new Walked(null, 0, 0, null);
+                }
+
+                var one = Series[key.Name];
+                var close = closes[key.Name][key.Bar];
+                var move = one.Atr[key.Bar];
+                var stopMoves = DipStops[key.Stop];
+                var cap = DipLimits[key.Limit];
+                var end = key.Bar + 1;
+
+                while (end < one.Bars.Length && end - key.Bar <= cap && one.SessionAt[end] - one.SessionAt[end - 1] <= 1)
+                {
+                    end++;
+                }
+
+                var anchor = new SetupAnchor(DateOnly.MinValue, close, close - (stopMoves * move), double.PositiveInfinity, null, cap, stopMoves);
+                var outcome = ExitMenu.Replay(closes[key.Name].AsSpan(0, end), key.Bar, anchor, move, exit);
+
+                if (outcome.End == SetupEnds.None || !(move > 0))
+                {
+                    return new Walked(null, 0, 0, null);
+                }
+
+                if (outcome.End == SetupEnds.Open || outcome.Result is not { } atTrigger)
+                {
+                    return new Walked(null, end - key.Bar - 1, 0, null);
+                }
+
+                if (outcome.End is SetupEnds.Cap or SetupEnds.Time)
+                {
+                    return new Walked(atTrigger, outcome.Sessions - 1, outcome.Sessions, atTrigger);
+                }
+
+                var triggered = key.Bar + outcome.Sessions;
+                var held = triggered + 1 < one.Bars.Length && one.SessionAt[triggered + 1] - one.SessionAt[triggered] == 1 && opens[key.Name][triggered + 1] > 0;
+                var sale = held ? opens[key.Name][triggered + 1] : closes[key.Name][triggered];
+
+                return new Walked((sale - close) / anchor.Risk, outcome.Sessions, outcome.Sessions + 1, atTrigger);
+            });
+
+        // From 21.5 the same exit of the menu on every member the index held with a bar that session, each walked as the
+        // dip walks one under the exit: the mean of their results at the close, none where none could be bought or any still
+        // held where the history ends.
+        double MenuBenchmarkAtClose(int session, ExitChoice exit, int limit, int stop) =>
+            menuBenchmarks.GetOrAdd((session, exit.Number, limit, stop), key =>
+            {
+                var (names, bars) = (Read.Members.Names[key.Session], Read.Members.Bars[key.Session]);
+                var (sum, count) = (0.0, 0);
+
+                for (var place = 0; place < names.Length; place++)
+                {
+                    var (name, bar) = (names[place], bars[place]);
+                    var move = Series[name].Atr[bar];
+
+                    if (!(move > 0) || !(closes[name][bar] - (DipStops[key.Stop] * move) > 0))
+                    {
+                        continue;
+                    }
+
+                    var walked = MenuWalkOf(name, bar, exit, key.Limit, key.Stop);
+
+                    if (walked.AtClose is { } result)
+                    {
+                        sum += result;
+                        count++;
+                    }
+                    else if (walked.Held > 0)
+                    {
+                        return double.NaN;
+                    }
+                }
+
+                return count > 0 ? sum / count : double.NaN;
+            });
+
+        // From 21.5 a setting's trades at the next open before costs under an exit of the menu, five a night in the order
+        // handed in and one open trade a stock, the benchmark the same exit on every member; where a map is handed in, the
+        // sessions to each trade's sale are kept in it.
+        public IReadOnlyList<FamilyTrade> AtOpenUnder(IEnumerable<FamilyListing> chosen, int[] setting, ExitChoice exit, ConcurrentDictionary<(int Name, int Session), int>? held = null)
+        {
+            var (limit, stop) = (setting[3], setting[4]);
+
+            return FamilySweep.Walk(
+                chosen,
+                Tickers,
+                YearOf,
+                listing =>
+                {
+                    var walked = MenuWalkOf(listing.Name, listing.Bar, exit, limit, stop);
+
+                    if (held is not null)
+                    {
+                        held[(listing.Name, listing.Session)] = walked.Sale;
+                    }
+
+                    return Fills.Exit((walked.AtClose, walked.Held), listing);
+                },
+                listing => Fills.Benchmark(MenuBenchmarkAtClose(listing.Session, exit, limit, stop), listing));
+        }
+
         // Each trade's result after its round trip at a multiple of the published table, the benchmark paying none.
         public IReadOnlyList<FamilyTrade> Costed(IReadOnlyList<FamilyTrade> trades, int multiple) =>
             [.. trades.Select(trade => trade.Result is { } result ? trade with { Result = result - CostInRisk(Series[trade.Listing.Name], trade.Listing, result, Read.Companies, multiple) } : trade)];
@@ -450,16 +565,22 @@ public sealed partial class IndexSweepRunner
         public IReadOnlyList<FamilyTrade> TradesUnder(int[] setting, IReadOnlyList<DialLevel<FamilyListing>> together, ConcurrentDictionary<(int Name, int Session), int>? held = null) =>
             TradesUnder(setting, together, held, readReports: true, atTrigger: false);
 
-        public IReadOnlyList<FamilyTrade> TradesUnder(int[] setting, IReadOnlyList<DialLevel<FamilyListing>> together, ConcurrentDictionary<(int Name, int Session), int>? held, bool readReports, bool atTrigger)
+        public IReadOnlyList<FamilyTrade> TradesUnder(int[] setting, IReadOnlyList<DialLevel<FamilyListing>> together, ConcurrentDictionary<(int Name, int Session), int>? held, bool readReports, bool atTrigger) =>
+            Costed(AtOpen(ListingsUnder(setting, together, readReports), setting, held, atTrigger), 1);
+
+        // A setting's listings under a set of the second stage's levels together, before the walk: each level's test kept,
+        // each level's move of the order or the drop applied, and the market level read on the listing's session.
+        public FamilyListing[] ListingsUnder(int[] setting, IReadOnlyList<DialLevel<FamilyListing>> together, bool readReports = true)
         {
             var level = Open[setting[^1]];
             var moves = together.Select(one => one.Instead).OfType<Func<FamilyListing, int[], IEnumerable<FamilyListing>>>().ToArray();
-            var chosen = ListingsOf(setting, readReports)
-                .Where(listing => level[listing.Session] && together.All(one => one.Keep is not { } keep || keep(listing)))
-                .SelectMany(listing => moves.Aggregate((IEnumerable<FamilyListing>)[listing], (current, move) => current.SelectMany(one => move(one, setting))))
-                .ToArray();
 
-            return Costed(AtOpen(chosen, setting, held, atTrigger), 1);
+            return
+            [
+                .. ListingsOf(setting, readReports)
+                    .Where(listing => level[listing.Session] && together.All(one => one.Keep is not { } keep || keep(listing)))
+                    .SelectMany(listing => moves.Aggregate((IEnumerable<FamilyListing>)[listing], (current, move) => current.SelectMany(one => move(one, setting)))),
+            ];
         }
 
         // The rule the index's night reads today: the provisional setting, after each trade's round trip at the next open.

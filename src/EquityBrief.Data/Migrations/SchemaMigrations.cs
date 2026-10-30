@@ -1646,7 +1646,7 @@ public static class SchemaMigrations
     // The exit of the menu an S&P 500 breakout's or drift's pick is walked under where an approval stored one, and its
     // stop's distance in the night's typical moves, which a trail of the menu is counted in. A row stored before the
     // change, or under the family's own exit, holds neither.
-    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
     const string AddFamilyResultExit = @"
         ALTER TABLE family_result ADD COLUMN exit INTEGER;
         ALTER TABLE family_result ADD COLUMN risk_moves REAL;

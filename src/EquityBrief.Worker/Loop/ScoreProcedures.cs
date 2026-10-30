@@ -68,26 +68,28 @@ public static class ScoreProcedures
             ? FormattableString.Invariant($", a score under {floor:0.####}, the {left * 100:0}th hundredth of those it learned on on the {DecisionCards.NameOf(index)}, left off")
             : string.Empty);
 
-    public static (IReadOnlyList<LoopProposalRead> Proposals, IReadOnlyList<FittedScore> Scores) Run(LoopRead read, RuleWalk rule, LoopReadings readings, ScoreRows rows, Action<string> progress)
+    public static (IReadOnlyList<LoopProposalRead> Proposals, IReadOnlyList<FittedScore> Scores) Run(LoopRead read, RuleWalk rule, LoopReadings readings, ScoreRows rows, Action<string> progress) =>
+        Run(read, EngineRule.Of(read, rule, readings), rows, progress);
+
+    // From 21.5 the same over any family's rule as the engines read it, a book family's among them, its list the members
+    // its book chooses.
+    public static (IReadOnlyList<LoopProposalRead> Proposals, IReadOnlyList<FittedScore> Scores) Run(LoopRead read, EngineRule rule, ScoreRows rows, Action<string> progress)
     {
         progress(FormattableString.Invariant($"fitting the learned score and its challenger's trees of the {rule.Family} on {rows.Count} finished setup(s) across the three indices"));
 
-        var (ridge, ridgeScores) = Kind(read, rule, readings, rows, (learnt, learning) => RidgeScore.Fit(learnt, learning), ProposalName);
-        var (trees, treeScores) = Kind(read, rule, readings, rows, (learnt, learning) => TreeFit.Fit(learnt, learning), TreesName);
+        var (ridge, ridgeScores) = Kind(read, rule, rows, (learnt, learning) => RidgeScore.Fit(learnt, learning), ProposalName);
+        var (trees, treeScores) = Kind(read, rule, rows, (learnt, learning) => TreeFit.Fit(learnt, learning), TreesName);
 
         return ([.. ridge, .. trees], [.. ridgeScores, .. treeScores]);
     }
 
     static (IReadOnlyList<LoopProposalRead> Proposals, IReadOnlyList<FittedScore> Scores) Kind(
         LoopRead read,
-        RuleWalk rule,
-        LoopReadings readings,
+        EngineRule rule,
         ScoreRows rows,
         Func<ScoreRows, IReadOnlyList<int>, IScoreModel?> fit,
         Func<int, string> name)
     {
-        IReadOnlyList<double?> ReadingsOf(int at) => readings.Of(rule.Listings[at].Name, rule.Listings[at].Bar, rule.Listings[at].Session);
-
         FittedScore? FitIn(LoopFold fold)
         {
             var learning = rows.Learning(fold);
@@ -99,7 +101,6 @@ public static class ScoreProcedures
 
         var fitted = read.Folds.Select(FitIn).ToArray();
         var named = FitIn(read.AllFinished);
-        IReadOnlyList<(int Entry, double? Edge)> own = [.. rule.Own.Select(one => (one.Entry, one.Edge))];
         var proposals = new List<LoopProposalRead>();
 
         for (var rank = 1; rank <= LeftOff.Count; rank++)
@@ -113,7 +114,7 @@ public static class ScoreProcedures
                     return null;
                 }
 
-                return [.. rule.Hooked(score.Model.HookParameters(share is { } least ? score.Model.FloorAt(read.Index, least) : null), ReadingsOf, score.Model as TreeModel).Select(one => (one.Entry, one.Edge))];
+                return rule.Walk(score.Model.HookParameters(share is { } least ? score.Model.FloorAt(read.Index, least) : null), score.Model as TreeModel);
             }
 
             proposals.Add(new LoopProposalRead(
@@ -121,17 +122,17 @@ public static class ScoreProcedures
                 name(rank),
                 named is null ? null : ChangeOf(named, read.Index, share),
                 rule.Current,
-                LoopProcedures.Risks,
+                rule.Unit,
                 rule.Cap,
                 [.. read.Folds.Select((fold, at) => (fold, fitted[at] is { } one ? ChangeOf(one, read.Index, share) : null))],
                 fitted.Count(one => one is not null),
-                LoopProcedures.Evidence(read.Folds, read.Calendar, [.. fitted.Select(Walked)], own))
+                rule.Evidence(read.Folds, read.Calendar, [.. fitted.Select(Walked)], rule.Own))
             {
                 Finding = named?.Words,
                 Change = named is null || (share is { } least && named.Model.FloorAt(read.Index, least) is null)
                     ? null
                     : LoopChange.OfHooks(named.Model.HookParameters(share is { } left ? named.Model.FloorAt(read.Index, left) : null)),
-                Reference = LoopProcedures.Reference(read, own),
+                Reference = rule.Reference,
             });
         }
 

@@ -104,11 +104,11 @@ public partial class ReadSurface
             (await Press("SML", SmallOctober, "breakout", "the autopsy's exit, ranked 2", "decline", "the first is enough")).Said,
             StringComparison.Ordinal);
 
-        // Refused: a proposal that did not pass, one stating no change, a book's, a run that is not the newest and a
-        // proposal the run does not hold.
+        // Refused: a proposal that did not pass, one stating no change, a book standing provisional with no live rule
+        // registered, a run that is not the newest and a proposal the run does not hold.
         Assert.Contains("did not pass the tester", (await Press("SML", SmallOctober, "drift", "the autopsy's exit, ranked 1", "approve")).Said, StringComparison.Ordinal);
         Assert.Contains("states no change", (await Press("SML", SmallOctober, "drift", "the grid", "approve")).Said, StringComparison.Ordinal);
-        Assert.Contains(LoopDecisions.BookRefused, (await Press("SML", SmallOctober, "heavyweight", "the autopsy's exit, ranked 1", "approve")).Said, StringComparison.Ordinal);
+        Assert.Contains(LoopDecisions.ProvisionalBookRefused, (await Press("SML", SmallOctober, "heavyweight", "the autopsy's exit, ranked 1", "approve")).Said, StringComparison.Ordinal);
 
         // From 17.13 the S&P 500's drift exit is approved, the press saying the change registers the family's live rule,
         // and from 17.14 its pullback's condition, the press saying the swing filter's page reads it.
@@ -190,11 +190,11 @@ public partial class ReadSurface
         Assert.Contains("<p class=\"degraded\" data-decision=\"not-put\">Not put to you: this run puts the family's strongest proposal that passed to you, the autopsy's exit, ranked 1.</p>", second, StringComparison.Ordinal);
         Assert.DoesNotContain("class=\"loop-press\"", second, StringComparison.Ordinal);
 
-        // The drift's approval with what the apply did; the pullback's decline with its reason; the book's exit not
-        // offered, saying why; the failing exit drawing no word.
+        // The drift's approval with what the apply did; the pullback's decline with its reason; the provisional book's exit
+        // not offered, saying why; the failing exit drawing no word.
         Assert.Contains("<p class=\"loop-decided\" data-decision=\"approved\" data-outcome=\"applied\"><b>Approved</b> on 2026-10-09. Applied on 2026-10-09: the family stands from the next night at exit: the eighth.</p>", page, StringComparison.Ordinal);
         Assert.Contains("<p class=\"loop-decided\" data-decision=\"declined\"><b>Declined</b> on 2026-10-09: too young. It changes nothing.</p>", page, StringComparison.Ordinal);
-        Assert.Contains($"<p class=\"degraded\" data-decision=\"not-offered\">Approve is not offered here: {LoopDecisions.BookRefused}.</p>", page, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"degraded\" data-decision=\"not-offered\">Approve is not offered here: {LoopDecisions.ProvisionalBookRefused}.</p>", page, StringComparison.Ordinal);
         Assert.DoesNotContain("data-loop-key=\"drift|the autopsy's exit, ranked 2\"", page, StringComparison.Ordinal);
 
         // Your decisions, newest first, and the setting the approval stored.
@@ -281,7 +281,7 @@ public partial class ReadSurface
     // From 17.13 a change approved to the S&P 500's breakout and applied by the night is read on the S&P 500's breakout
     // card, named in its words with the rule it replaced among the selector's variants, and the S&P 400's and 600's pages
     // stand as they were, byte for byte.
-    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
     [Fact]
     public async Task AChangeApprovedOnTheSAndP500sBreakoutIsReadOnItsCardWithTheRuleItReplacedAVariantAndTheSAndP400sAndTheSAndP600sStandAsTheyWere()
     {
@@ -326,7 +326,7 @@ public partial class ReadSurface
 
     // From 17.13 a card whose S&P 500 breakout stands at a change an approval stored carries the change's words in the
     // record's place, as an S&P 400's or 600's does, while the pullback's card beside it is drawn as before.
-    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
     [Fact]
     public async Task AnSAndP500BreakoutCardAtAnApprovedChangeNamesTheChangeInTheRecordsPlace()
     {

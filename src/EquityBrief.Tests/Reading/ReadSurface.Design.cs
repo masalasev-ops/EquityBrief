@@ -700,8 +700,13 @@ public partial class ReadSurface
 
         Assert.Equal("0", await Put());
 
-        // From 19.9 the business-first family's passing grid proposal on the S&P 500 is put as every family's is: one.
+        // The business-first family's passing grid proposal, which the loop proposes for no more, is put to no one; the
+        // Fundamentals family's is put as every family's is: one.
         Proposed(store, LargeOctober, "GSPC", "fundamentals", "the grid", true, LoopChange.OfSetting([0, 0, 2], "growth 0|margins either|cash 1.2", 0).Json);
+
+        Assert.Equal("0", await Put());
+
+        Proposed(store, LargeOctober, "GSPC", EquityBrief.Core.Families.ImprovingRule.Name, "the grid", true, new LoopChange(null, EquityBrief.Core.Families.ImprovingGrid.Settings[1].Key, null, LoopChange.NoHooks).Json);
 
         Assert.Equal("1", await Put());
 

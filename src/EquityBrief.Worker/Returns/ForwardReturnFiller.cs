@@ -427,7 +427,7 @@ public sealed class ForwardReturnFiller : IComponent
             {
                 // A pick an approved setting named an exit of the menu for is walked under it, its plan at the scale the
                 // series had on the listing night.
-                // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+                // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
                 var floor = trade.Stop * (bar.Close / listedAt);
 
                 if (Menu(after, bar.Close, floor, family.Trails ? null : trade.Target * (bar.Close / listedAt), trade.RiskMoves, family.Horizon, family.CapSessions, exit) is not { } walked)

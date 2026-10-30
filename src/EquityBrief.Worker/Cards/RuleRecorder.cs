@@ -435,7 +435,7 @@ public sealed class RuleRecorder(IClock clock, string databaseFile, string dataR
     }
 
     // A family's live rule, the newest registration of it carrying the live rule's name.
-    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
     static string? LiveName(IReadOnlyList<RegisterRow> standing, Func<RegisterRow, bool> ofTheRule) =>
         FamilyRecords.LiveOf(standing.Where(ofTheRule))?.Candidate;
 

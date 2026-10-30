@@ -3749,7 +3749,9 @@ public sealed partial class SinglePageApp : IComponent
         "Each family's card counts its setups a year on this index, the member-sessions its loose gates passed, with the share the live rule passes, the share the night's list picked of the rows a night wrote, and the mean result and edge of the settled ones, its edge a bar a year in green above nothing and red beneath. A family whose live rule passes few of its setups is choosing, and its edge against the same plan on every member says whether the choice paid. The strip draws the edge at each tenth of the newest year's settled setups; a wide strip is a family whose setups differ a great deal, which is what the loop's engines read. Beneath, a setup's path draws its closes from about ten sessions before it to where its path ended, with its buy, its stop and its target across.";
 
     // The families the Loop page draws, in the one order every page lists them in.
-    public static IReadOnlyList<string> LoopFamilies { get; } = EquityBrief.Core.Families.SetupFamilies.Order;
+    // From 21.5 the seven families the monthly loop proposes for, in the order Tonight draws their cards.
+    // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
+    public static IReadOnlyList<string> LoopFamilies { get; } = EquityBrief.Core.Loop.LoopDecisions.LoopFamilies;
 
     // How many proposals a run puts to the operator that hold no word of theirs yet: at most one a family, the one the
     // Loop page offers its presses on, read as the page reads it. The menu's badge counts them over each index's newest run.
@@ -3784,7 +3786,9 @@ public sealed partial class SinglePageApp : IComponent
             "breakout" => "Breakout",
             "drift" => "Earnings drift",
             "heavyweight" => "Sector heavyweights",
-            EquityBrief.Core.Families.FundamentalsRule.Name => EquityBrief.Core.Families.SetupFamilies.FundamentalsFirst.Label,
+            EquityBrief.Core.Families.ImprovingRule.Name => EquityBrief.Core.Families.ImprovingRule.Label,
+            EquityBrief.Core.Families.DipRule.Name => EquityBrief.Core.Families.SetupFamilies.Dips.Label,
+            EquityBrief.Core.Families.QualityRule.Name => EquityBrief.Core.Families.QualityRule.Label,
             _ => word,
         };
 
@@ -3824,7 +3828,7 @@ public sealed partial class SinglePageApp : IComponent
         var summary = new List<LoopSummaryRow>();
         var cards = new StringBuilder();
 
-        foreach (var family in EquityBrief.Core.Families.SetupFamilies.Order)
+        foreach (var family in LoopFamilies)
         {
             var own = proposals.Where(proposal => proposal.Family == family).ToArray();
             var body = new StringBuilder(marks.LoopRule(family, own.FirstOrDefault()?.Current));

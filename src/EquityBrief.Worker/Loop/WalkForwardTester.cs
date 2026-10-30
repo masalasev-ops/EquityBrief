@@ -128,6 +128,18 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
 
     const string FinishedCount = "SELECT COUNT(*) FROM setup WHERE family = $family AND settled = 1 AND edge IS NOT NULL AND risk_moves IS NOT NULL AND ended_on IS NOT NULL;";
 
+    // From 21.5 a book family's finished setups, which hold no stop, the same way.
+    static readonly string FinishedBookSetups =
+        "SELECT index_code, session_date, ended_on, edge, risk_moves, " + string.Join(", ", EquityBrief.Core.Ledger.LedgerReadings.All.Select(reading => reading.Column))
+        + " FROM setup WHERE family = $family AND settled = 1 AND edge IS NOT NULL AND ended_on IS NOT NULL"
+        + " ORDER BY index_code, ticker, session_date;";
+
+    const string FinishedBookCount = "SELECT COUNT(*) FROM setup WHERE family = $family AND settled = 1 AND edge IS NOT NULL AND ended_on IS NOT NULL;";
+
+    // From 21.5 a book family's settled setups on an index, which its engines search, each with the session its holding
+    // ended on and its edge, a fraction of the buy against an equal-weighted hold of the index's members.
+    const string BookSetups = "SELECT ticker, session_date, ended_on, edge FROM setup WHERE index_code = $index AND family = $family AND settled = 1 AND edge IS NOT NULL AND ended_on IS NOT NULL ORDER BY session_date, ticker;";
+
     const string AppendRun = @"
         INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail)
         VALUES ($run_id, $stage, $started_at, $ended_at, 'ok', $rows_written, 0, 0, '0', $detail);";
@@ -234,13 +246,30 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         // or its own setting otherwise. A family an approval set hooks on is not searched on its grid, whose walk reads no
         // hook.
         // see: An approved change is applied by the night's own build on the index it was approved on alone
-        // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+        // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
         var standing = await StandingAsync(databaseFile, index, cancellation);
+
+        // From 21.5 the families standing registered on the index, a frozen family on the S&P 400 or 600 tested against its
+        // live rule at the levels it states and its grid not searched, since a frozen rule's setting moves only by a freeze.
+        // see: The engines test a frozen rule at the levels it states, and a frozen rule's setting moves only by a freeze
+        var standingRules = Core.Candidates.ShadowColumn.StandingAt(await RegisterAsync(databaseFile, cancellation), started);
+        SweepHistoryInputs? largeRead = large ? inputs : null;
+
+        async Task<SweepHistoryInputs> LargeReadAsync() => largeRead ??= await IndexSweepRunner.OwnSwingRead.LargeAsync(history, through, output.WriteLine, cancellation);
+
+        Core.Candidates.RegisterRow? FrozenOn(string family) => large ? null : LiveOn(standingRules, index, family);
 
         if (!large && procedures)
         {
             foreach (var family in new[] { BreakoutRule.Name, DriftRule.Name })
             {
+                if (FrozenOn(family) is not null)
+                {
+                    output.WriteLine($"{Verb}: the {family}'s grid is not searched on the {DecisionCards.NameOf(index)}, since its live rule is frozen and {LoopDecisions.FrozenSettingRefused}");
+
+                    continue;
+                }
+
                 if (standing.TryGetValue(family, out var stood) && stood.Hooks.Count > 0)
                 {
                     output.WriteLine($"{Verb}: the {family}'s grid is not searched on the {DecisionCards.NameOf(index)}, since the rule stands at {stood.Words()} and the grid's walk reads no hook");
@@ -251,7 +280,10 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
                 proposals.Add(LoopProcedures.Swing(read, family, output.WriteLine, standing.GetValueOrDefault(family)));
             }
 
-            proposals.AddRange(LoopProcedures.Heavyweights(read, lay!, output.WriteLine));
+            if (FrozenOn(HeavyweightRule.Name) is null)
+            {
+                proposals.AddRange(LoopProcedures.Heavyweights(read, lay!, output.WriteLine));
+            }
         }
 
         var readings = await LoopReadings.ReadAsync(read, databaseFile, through, cancellation);
@@ -260,10 +292,31 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         var market = await history.MarketAsync(through, cancellation);
         IdeaReplay? baseReplay = null;
 
+        // A frozen family's live rule as the engines read it, or the line saying why none is read for it.
+        void AddLive(string family, (RuleWalk? Walk, string? Why) live)
+        {
+            if (live.Walk is { } walk)
+            {
+                rules.Add(walk);
+            }
+            else
+            {
+                output.WriteLine($"{Verb}: no engine reads the {family} on the {DecisionCards.NameOf(index)}, since {live.Why}");
+            }
+        }
+
         if (!large)
         {
             baseReplay = SweepIdeasRunner.Read(read.Inputs, market, output.WriteLine).Replay;
-            rules.Add(RuleWalk.Pullback(read, market, output.WriteLine, standing.GetValueOrDefault(SetupFamilies.Pullback), readings, trees, candidates: baseReplay));
+
+            if (FrozenOn(SetupFamilies.Pullback) is { } pullbackLive)
+            {
+                AddLive(SetupFamilies.Pullback, RuleTests.LivePullbackWalk(read, market, pullbackLive, output.WriteLine, readings, trees, baseReplay));
+            }
+            else
+            {
+                rules.Add(RuleWalk.Pullback(read, market, output.WriteLine, standing.GetValueOrDefault(SetupFamilies.Pullback), readings, trees, candidates: baseReplay));
+            }
         }
         else if (await OpenVersionAsync(databaseFile, cancellation) is { } open)
         {
@@ -288,36 +341,133 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             }
         }
 
-        rules.Add(RuleWalk.Swing(read, BreakoutRule.Name, large, standing.GetValueOrDefault(BreakoutRule.Name), readings, trees));
-        rules.Add(RuleWalk.Swing(read, DriftRule.Name, large, standing.GetValueOrDefault(DriftRule.Name), readings, trees));
-
-        // The fundamentals-first family on every index, at the setting an approval stored for it or its provisional one,
-        // over the pullback's base listings read once: its 27 settings a procedure where the rule stands at no hook, and
-        // the rule as it stands handed to the engines.
-        // see: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place
-        var fundamentalsStanding = standing.GetValueOrDefault(FundamentalsRule.Name);
-        var fundamentalsSetting = FundamentalsRule.StoredOr(fundamentalsStanding?.Places);
-        baseReplay ??= SweepIdeasRunner.Read(read.Inputs, market, output.WriteLine).Replay;
-
-        var baseListings = RuleWalk.BaseListings(read, baseReplay);
-        var fundamentals = RuleWalk.Fundamentals(read, baseReplay.Series, baseListings, readings, fundamentalsSetting, output.WriteLine, fundamentalsStanding, trees);
-
-        if (procedures && fundamentalsStanding is { Hooks.Count: > 0 })
+        foreach (var family in new[] { BreakoutRule.Name, DriftRule.Name })
         {
-            output.WriteLine($"{Verb}: the {FundamentalsRule.Name}'s grid is not searched on the {DecisionCards.NameOf(index)}, since the rule stands at {fundamentalsStanding.Words()} and the grid's walk reads no hook");
-        }
-        else if (procedures)
-        {
-            output.WriteLine(FormattableString.Invariant($"walking the {FundamentalsRule.Name}'s {FundamentalsSearch.Grid.Settings.Count} setting(s) on the {DecisionCards.NameOf(index)} over the whole history"));
-            proposals.Add(LoopProcedures.Fundamentals(
-                read,
-                [.. FundamentalsSearch.Grid.Settings.Select(setting => RuleWalk.Fundamentals(read, baseReplay.Series, baseListings, readings, FundamentalsRule.At(setting), _ => { }).Own)],
-                fundamentals.Own,
-                fundamentalsSetting,
-                fundamentals.Cap));
+            if (FrozenOn(family) is not { } live)
+            {
+                rules.Add(RuleWalk.Swing(read, family, large, standing.GetValueOrDefault(family), readings, trees));
+
+                continue;
+            }
+
+            // A live rule stating a level the extended grid's walk does not read is walked over its sweep's own reading.
+            var p = RuleTests.Unversioned(Core.Candidates.CandidateEvaluator.Read(live.Parameters));
+            var own = Core.Candidates.CandidateEvaluators.Find(live.Evaluator) is Core.Candidates.IndexRuleCandidate evaluator && RuleTests.ReadsOwnSweep(evaluator, p)
+                ? await IndexSweepRunner.OwnSwingRead.ReadAsync(read, await LargeReadAsync(), family, history, through, evaluator is Core.Candidates.IndexDriftCandidate ? p.GetValueOrDefault(Core.Candidates.IndexDriftCandidate.StopFloorParameter) : 0, cancellation)
+                : null;
+
+            AddLive(family, RuleTests.LiveSwingWalk(read, family, live, own, readings, trees));
         }
 
-        rules.Add(fundamentals);
+        // From 21.5 the short-term dip where a rule of it stands on the index: its live rule's walk handed to every engine,
+        // and its grid a procedure against that rule where it stands at no hook, which the grid's walk does not read. The
+        // fundamentals-first family, which the night computes no longer, is read by no engine.
+        // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
+        if (LiveOn(standingRules, index, DipRule.Name) is { } dipLive)
+        {
+            var dipRead = IndexSweepRunner.DipRead.Of(read, await LargeReadAsync(), await history.SeriesOfAsync([IndexSweepRunner.DipFund(index), MarketCloses.Vix], through, cancellation));
+            var parameters = Core.Candidates.DipCandidate.Renamed(Core.Candidates.CandidateEvaluator.Read(dipLive.Parameters));
+            var evaluator = Core.Candidates.CandidateEvaluators.Find(dipLive.Evaluator)!;
+            var hooks = LoopRegistrations.HooksOf(evaluator, parameters);
+            var (setting, levels) = dipRead.SettingOf(parameters);
+            var words = "the dip rule at " + Dips.DipRules.Short(((Core.Candidates.DipCandidate)evaluator).SettingOf(parameters), index);
+
+            rules.Add(RuleWalk.Dip(read, dipRead, parameters, words, hooks, readings, trees));
+
+            if (procedures && hooks.Count > 0)
+            {
+                output.WriteLine($"{Verb}: the {DipRule.Name}'s grid is not searched on the {DecisionCards.NameOf(index)}, since the rule stands at hooks the grid's walk reads none of");
+            }
+            else if (procedures)
+            {
+                proposals.Add(OwnProcedures.Swing(read, dipRead, output.WriteLine, new OwnProcedures.LiveRule(setting, levels, words, choice => DipChange(index, choice))));
+            }
+        }
+
+        // From 21.5 Quality at a fair price and the Fundamentals family where a rule of each stands on the index: its book's
+        // menu and its grid procedures against its live rule's book, the grid where the rule stands at no hook, which the
+        // grid's walk reads none of; and its live rule handed to winners against losers, the learned score and the idea
+        // generator over the ledger's setups of the family on the index.
+        // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
+        // see: A change a family's night does not read is tested and shown and never put to the operator
+        var books = new List<EngineRule>();
+        const string UnderTheAverage = "a holding also sold at a close under its 200-day average";
+
+        void GridSkipped(string family) =>
+            output.WriteLine($"{Verb}: the {family}'s grid is not searched on the {DecisionCards.NameOf(index)}, since the rule stands at hooks the grid's walk reads none of");
+
+        if (LiveOn(standingRules, index, QualityRule.Name) is { } qualityLive
+            && Core.Candidates.QualityCandidate.SettingsOf(Core.Candidates.CandidateEvaluator.Read(qualityLive.Parameters)) is { } quality)
+        {
+            var qualityLay = await QualityLay.ReadAsync(read, history, through, output.WriteLine, cancellation);
+            var hooks = LoopRegistrations.HooksOf(Core.Candidates.CandidateEvaluators.Find(qualityLive.Evaluator)!, Core.Candidates.CandidateEvaluator.Read(qualityLive.Parameters));
+            var arranged = BookProcedures.Arranged(read, readings, RuleHooks.Of(hooks).With(trees));
+            var words = "the quality rule at " + Quality.QualityRules.Short(quality);
+            var engine = BookProcedures.Engine(read, QualityRule.Name, words, await BookSetupsAsync(databaseFile, read, QualityRule.Name, cancellation), readings, hooks, arrange => qualityLay.Book(quality, arrange: arrange).Months, trees);
+
+            books.Add(engine);
+
+            if (procedures)
+            {
+                var onFiling = quality with { SellOnFiling = true };
+
+                BookProcedures.MenuChange[] menu =
+                [
+                    new(UnderTheAverage, qualityLay.Book(quality, soldUnderAverage: true, arrange: arranged).Months, null),
+                    .. quality.SellOnFiling
+                        ? []
+                        : new[] { new BookProcedures.MenuChange("a holding also sold at the close of the night a filing drops its score below the floor", qualityLay.Book(onFiling, arrange: arranged).Months, new LoopChange(null, onFiling.Key, null, LoopChange.NoHooks)) },
+                ];
+
+                proposals.AddRange(BookProcedures.Menu(read, QualityRule.Name, engine.Current, engine.Own, qualityLay.Reshuffles, menu, output.WriteLine));
+
+                if (hooks.Count > 0)
+                {
+                    GridSkipped(QualityRule.Name);
+                }
+                else
+                {
+                    output.WriteLine(FormattableString.Invariant($"walking the {QualityRule.Name}'s {QualityRule.Grid.Count} setting(s) on the {DecisionCards.NameOf(index)} over the whole history"));
+                    proposals.Add(QualityLay.Procedure(read, [.. QualityRule.Grid.Select(setting => qualityLay.Book(setting))], qualityLay.Reshuffles, qualityLay.Book(quality)));
+                }
+            }
+        }
+
+        if (LiveOn(standingRules, index, ImprovingRule.Name) is { } improvingLive
+            && Core.Candidates.ImprovingCandidate.SettingsOf(Core.Candidates.CandidateEvaluator.Read(improvingLive.Parameters)) is { } improving)
+        {
+            var improvingLay = await ImprovingLay.ReadAsync(read, history, (await ReleasesAsync(databaseFile, clock, cancellation)).ByFiler, through, output.WriteLine, cancellation);
+            var hooks = LoopRegistrations.HooksOf(Core.Candidates.CandidateEvaluators.Find(improvingLive.Evaluator)!, Core.Candidates.CandidateEvaluator.Read(improvingLive.Parameters));
+            var arranged = BookProcedures.Arranged(read, readings, RuleHooks.Of(hooks).With(trees));
+            var words = "the Fundamentals rule at " + Improving.ImprovingRules.Short(improving);
+            var engine = BookProcedures.Engine(read, ImprovingRule.Name, words, await BookSetupsAsync(databaseFile, read, ImprovingRule.Name, cancellation), readings, hooks, arrange => improvingLay.Book(improving, arrange: arrange).Months, trees);
+
+            books.Add(engine);
+
+            if (procedures)
+            {
+                BookProcedures.MenuChange[] menu =
+                [
+                    new(UnderTheAverage, improvingLay.Book(improving, soldUnderAverage: true, arrange: arranged).Months, null),
+                    .. ImprovingGrid.SessionLevels
+                        .Where(level => level != improving.Sessions)
+                        .Select(level => improving with { Sessions = level })
+                        .Select(limit => new BookProcedures.MenuChange(FormattableString.Invariant($"the time limit at {limit.Sessions} sessions"), improvingLay.Book(limit, arrange: arranged).Months, new LoopChange(null, limit.Key, null, LoopChange.NoHooks))),
+                ];
+
+                proposals.AddRange(BookProcedures.Menu(read, ImprovingRule.Name, engine.Current, engine.Own, improvingLay.Months, menu, output.WriteLine));
+
+                if (hooks.Count > 0)
+                {
+                    GridSkipped(ImprovingRule.Name);
+                }
+                else
+                {
+                    output.WriteLine(FormattableString.Invariant($"walking the {ImprovingRule.Name}'s {ImprovingGrid.Settings.Count} setting(s) on the {DecisionCards.NameOf(index)} over the whole history"));
+                    proposals.Add(ImprovingLay.Procedure(read, [.. ImprovingGrid.Settings.Select(setting => improvingLay.Book(setting))], improvingLay.Months, improvingLay.Book(improving)));
+                }
+            }
+        }
 
         if (asks is not null)
         {
@@ -326,7 +476,12 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
                 asks.AddRange(IdeaProcedures.Prompts(read, rule, readings));
             }
 
-            output.WriteLine(FormattableString.Invariant($"{verb}: {asks.Count} prompt(s) over {rules.Count} rule(s) on the {DecisionCards.NameOf(index)}, through {through:yyyy-MM-dd}, over {read.Folds.Count} fold(s)"));
+            foreach (var bookRule in books)
+            {
+                asks.AddRange(IdeaProcedures.Prompts(read, bookRule, readings.Reads));
+            }
+
+            output.WriteLine(FormattableString.Invariant($"{verb}: {asks.Count} prompt(s) over {rules.Count + books.Count} rule(s) on the {DecisionCards.NameOf(index)}, through {through:yyyy-MM-dd}, over {read.Folds.Count} fold(s)"));
 
             return 0;
         }
@@ -350,7 +505,32 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             spreads[rule.Family] = spread;
         }
 
-        proposals.AddRange(ExitProcedures.Heavyweights(read, lay!, output.WriteLine));
+        // From 21.5 each book's live rule through winners against losers, the idea generator and the learned score, over
+        // the ledger's setups of its family, the score fitted on the family's finished setups of all three indices.
+        foreach (var bookRule in books)
+        {
+            var (conditions, spread) = ConditionProcedures.Run(read, bookRule, readings.Reads, output.WriteLine);
+            var ideas = IdeaProcedures.Run(read, bookRule, readings.Reads, answered, output.WriteLine);
+            var (scored, fitted) = ScoreProcedures.Run(read, bookRule, await FinishedAsync(databaseFile, bookRule.Family, through, cancellation, book: true), output.WriteLine);
+
+            proposals.AddRange(conditions);
+            proposals.AddRange(ideas);
+            proposals.AddRange(scored);
+            scores.AddRange(fitted);
+            spreads[bookRule.Family] = spread;
+        }
+
+        // From 21.5 a frozen book on the S&P 400 or 600 has its menu read against no provisional book: its rule reads the
+        // menu's sale under the 200-day average alone, and the run says whether it holds it already.
+        // see: The engines test a frozen rule at the levels it states, and a frozen rule's setting moves only by a freeze
+        if (FrozenOn(HeavyweightRule.Name) is { } book)
+        {
+            output.WriteLine($"{Verb}: the heavyweights' menu is not read on the {DecisionCards.NameOf(index)}, since " + BookMenuWhy(book));
+        }
+        else
+        {
+            proposals.AddRange(ExitProcedures.Heavyweights(read, lay!, output.WriteLine));
+        }
 
         var tested = ScoreProcedures.AgainstRidge(Judge(read, proposals));
         var runId = FormattableString.Invariant($"{Verb}-{index}-{started:yyyyMMddTHHmmssZ}");
@@ -638,6 +818,33 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     // From 22.3 whether a run reads the short-term dip's history on an index: only where a rule of the family stands on it
     // when the run begins, so the monthly run reads the family from its next run after a freeze.
     // see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
+    // From 21.5 why a frozen heavyweights book's menu is read against no book: its rule reads the menu's sale under the
+    // 200-day average alone, which it states already or which the engines walk on no frozen book of their own.
+    public static string BookMenuWhy(Core.Candidates.RegisterRow book) =>
+        Core.Candidates.CandidateEvaluator.Read(book.Parameters).GetValueOrDefault(Core.Candidates.IndexHeavyweightCandidate.AverageExitParameter) == 1
+            ? "its live book is frozen and sells under its 200-day average already, the one change of the menu its rule reads"
+            : "its live book is frozen, and the engines walk the menu's sale under the 200-day average on no frozen book of their own";
+
+    // From 21.5 a family's live rule standing on an index as the register counts the family there; none where none stands.
+    public static Core.Candidates.RegisterRow? LiveOn(IReadOnlyList<Core.Candidates.RegisterRow> standing, string index, string family) =>
+        Core.Candidates.FamilyRecords.LiveOf(Core.Candidates.CandidateFamily.In(standing, LoopDecisions.RegisterFamilyOf(index, family)));
+
+    // From 21.5 a choice of the dip's grid as the change an approval would register: its places with the drop's volume as
+    // the last, where the second stage's levels it crossed are none or the drop's volume alone, which a dip registration
+    // states; none where it crossed another, which no registration of the dip can state.
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
+    public static LoopChange? DipChange(string index, OwnProcedures.SwingChoice choice)
+    {
+        if (choice.Levels.Any(level => level.Dial != IndexSweepRunner.DipRead.VolumeDial))
+        {
+            return null;
+        }
+
+        int[] places = [.. choice.Setting, choice.Levels.Count > 0 ? 1 : 0];
+
+        return LoopChange.OfSetting(places, LoopRegistrations.KeyOf(index, places), 0);
+    }
+
     public static bool ReadsDip(IReadOnlyList<Core.Candidates.RegisterRow> standing, string index) =>
         standing.Any(row => Core.Candidates.CandidateEvaluators.Find(row.Evaluator) is Core.Candidates.DipCandidate rule && rule.Index == index);
 
@@ -827,21 +1034,23 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     // A family's finished setups on all three indices as the learned score learns on them, none on a store whose ledger
     // holds none; a run through a day before the scorecard's readings join the loop reads them as none.
     // see: The fundamentals scorecard and the quality family join phase 22 ahead of the hold on new work, and the monthly run reads none of them before its first run after 2026-11-07
-    public static async Task<ScoreRows> FinishedAsync(string databaseFile, string family, DateOnly through, CancellationToken cancellation = default)
+    // From 21.5 a book family's setups, which hold no stop, each read at a distance of one typical move, which scales every
+    // label alike and moves no score's order.
+    public static async Task<ScoreRows> FinishedAsync(string databaseFile, string family, DateOnly through, CancellationToken cancellation = default, bool book = false)
     {
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
         await using var count = connection.CreateCommand();
 
-        count.CommandText = FinishedCount;
+        count.CommandText = book ? FinishedBookCount : FinishedCount;
         count.Parameters.AddWithValue("$family", family);
 
         var rows = new ScoreRows(Convert.ToInt32(await count.ExecuteScalarAsync(cancellation), CultureInfo.InvariantCulture), through);
 
         await using var command = connection.CreateCommand();
 
-        command.CommandText = FinishedSetups;
+        command.CommandText = book ? FinishedBookSetups : FinishedSetups;
         command.Parameters.AddWithValue("$family", family);
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
@@ -860,10 +1069,44 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
                 DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 readings,
                 reader.GetDouble(3),
-                reader.GetDouble(4));
+                reader.IsDBNull(4) ? 1.0 : reader.GetDouble(4));
         }
 
         return rows;
+    }
+
+    // From 21.5 a book family's settled setups on an index as its engines search them: each member's place in the history
+    // and its bar and session there, the session its holding ended on and its edge; a setup of a stock or a session the
+    // history does not hold is left out.
+    public static async Task<IReadOnlyList<RuleListing>> BookSetupsAsync(string databaseFile, LoopRead read, string family, CancellationToken cancellation = default)
+    {
+        var names = read.Series.Select((one, name) => (one.Name.Ticker, name)).DistinctBy(pair => pair.Ticker, StringComparer.Ordinal).ToDictionary(pair => pair.Ticker, pair => pair.name, StringComparer.Ordinal);
+        var sessionAt = read.Calendar.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
+        var setups = new List<RuleListing>();
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = BookSetups;
+        command.Parameters.AddWithValue("$index", read.Index);
+        command.Parameters.AddWithValue("$family", family);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            var session = DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var ended = DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            if (names.TryGetValue(reader.GetString(0), out var name) && sessionAt.TryGetValue(session, out var at) && sessionAt.TryGetValue(ended, out var end)
+                && Array.BinarySearch(read.Series[name].SessionAt, at) is var bar && bar >= 0)
+            {
+                setups.Add(new RuleListing(name, bar, at, end, reader.GetDouble(3)));
+            }
+        }
+
+        return setups;
     }
 
     // The history an index's procedures are run over, which the fundamentals-first family's search reads too.

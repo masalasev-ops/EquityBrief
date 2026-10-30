@@ -45,7 +45,7 @@ public sealed record FamilyNightInputs(IReadOnlyList<FamilyNightMember> Members,
 // stored beside each pick with the stop's distance in typical moves, which the filler walks the trade under. It
 // makes no request and calls no model.
 // see: The nightly run is arithmetic only
-// see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+// see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
 // see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, each family registered again whole and its records replayed
 // see: The market check closes every swing family's list together but the short-term dip's, and the sector heavyweights read none
 // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
@@ -372,7 +372,7 @@ public sealed class FamilyEvaluator : IComponent
     // a family's passing members in its own order handed to its hooks, those they keep placed in the hooks' order and
     // those they leave off failing on them, a member a condition or a score cannot be read for among them; a family
     // stating no hook answered and placed as its own rule answers it.
-    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
     public static (IReadOnlyList<FamilyResult> Results, IReadOnlyDictionary<(string Family, string Ticker), int> Places) Hooked(
         IReadOnlyList<FamilyResult> results,
         IReadOnlyDictionary<string, RuleHooks> hooks,

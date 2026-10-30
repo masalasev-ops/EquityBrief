@@ -241,11 +241,17 @@ public sealed class ImprovingLay
     // newly read filing the setting buys, closing that session and holding no trade, are chosen at its close, a stock
     // sold that session not chosen again. Each session's choices stand under the group with every member answered that
     // session, the members a trade is judged against.
+    // From 21.5 the walk the engines read as well: a trade also sold at the first close under its 200-day average after the
+    // session it was chosen on, the menu's sale no dial of the rule reads; and each session's buys handed to an arrangement
+    // a proposal's hooks set, which keeps and orders them as the night's hooks do.
+    // see: A change a family's night does not read is tested and shown and never put to the operator
     public static (List<HeavyweightTrade> Trades, Dictionary<int, HeavyweightRebalance> Chosen) Walk(
         HeavyweightTape tape,
         IReadOnlyList<IReadOnlyList<ImprovingFiling>> filings,
         IReadOnlyList<IReadOnlyDictionary<int, ImprovingScore>> scores,
-        ImprovingSweepSetting setting)
+        ImprovingSweepSetting setting,
+        bool soldUnderAverage = false,
+        Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null)
     {
         var trades = new List<HeavyweightTrade>();
         var chosen = new Dictionary<int, HeavyweightRebalance>();
@@ -315,6 +321,11 @@ public sealed class ImprovingLay
                     End(name, session, fell ? ImprovingRule.ScoreFell : ImprovingRule.TimeLimit);
                     sold.Add(name);
                 }
+                else if (soldUnderAverage && tape.Close[name][session] < tape.Average200[name][session])
+                {
+                    End(name, session, QualityLay.UnderTheAverage);
+                    sold.Add(name);
+                }
             }
 
             if (!bySession.TryGetValue(session, out var read))
@@ -329,6 +340,11 @@ public sealed class ImprovingLay
                 .Select(one => one.Name)
                 .Order()
                 .ToArray();
+
+            if (arrange is not null)
+            {
+                buys = [.. arrange(session, buys)];
+            }
 
             if (buys.Length == 0)
             {
@@ -355,9 +371,9 @@ public sealed class ImprovingLay
 
     // One setting's book: its walk, each trade and its members bought at the open after its night and the trade charged
     // its round trip, and its months.
-    public ImprovingBook Book(ImprovingSweepSetting setting)
+    public ImprovingBook Book(ImprovingSweepSetting setting, bool soldUnderAverage = false, Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null)
     {
-        var (trades, chosen) = Walk(tape, filings, scores, setting);
+        var (trades, chosen) = Walk(tape, filings, scores, setting, soldUnderAverage, arrange);
         var holdings = trades
             .Select(trade => new BookHolding(
                 trade.Entry,
@@ -457,11 +473,13 @@ public sealed class ImprovingLay
             .FirstOrDefault();
 
     // The grid as a procedure the tester runs year by year: each fold chooses among the 144 books on the trades and the
-    // months that ended before its year, and is tested on its choice's months in its year against the starting setting's.
+    // months that ended before its year, and is tested on its choice's months in its year against the starting setting's,
+    // or from 21.5 against the live rule's book handed in, where the proposal states the change an approval registers.
     // see: A change is adopted only on test years the proposal never saw, and a search is judged as a procedure run year by year
-    public static LoopProposalRead Procedure(LoopRead read, IReadOnlyList<ImprovingBook> books, IReadOnlyList<int> months)
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
+    public static LoopProposalRead Procedure(LoopRead read, IReadOnlyList<ImprovingBook> books, IReadOnlyList<int> months, ImprovingBook? live = null)
     {
-        var current = books.Single(book => book.Setting == ImprovingGrid.Starting);
+        var current = live ?? books.Single(book => book.Setting == ImprovingGrid.Starting);
 
         ImprovingSweepSetting? ChooseIn(LoopFold fold) => Choose(
             [
@@ -482,12 +500,15 @@ public sealed class ImprovingLay
             ImprovingRule.Name,
             LoopProcedures.Grid,
             proposal?.Words,
-            ImprovingGrid.Starting.Words,
+            current.Setting.Words,
             LoopProcedures.Points,
             BookMonths.LongestMonth,
             [.. chosen.Select(one => (one.Fold, one.Setting?.Words))],
             proposal is null ? 0 : chosen.Count(one => one.Setting is { } setting && setting.Changes(proposal) <= 1),
-            LoopProcedures.BookEvidence(read.Folds, read.Calendar, [.. chosen.Select(one => one.Setting is null ? null : byKey[one.Setting.Key].Months)], current.Months));
+            LoopProcedures.BookEvidence(read.Folds, read.Calendar, [.. chosen.Select(one => one.Setting is null ? null : byKey[one.Setting.Key].Months)], current.Months))
+        {
+            Change = live is not null && proposal is not null && proposal != live.Setting ? new LoopChange(null, proposal.Key, null, LoopChange.NoHooks) : null,
+        };
     }
 
     // A name's return from one session's close to a later one's, none where either holds no close.

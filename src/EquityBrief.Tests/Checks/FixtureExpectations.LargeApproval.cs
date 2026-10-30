@@ -18,9 +18,11 @@ namespace EquityBrief.Tests.Checks;
 // 17.13: a change the operator approves to the S&P 500's breakout or drift written as its stored setting and registered
 // as the family's live rule by the night's apply step alone, on a night whose session the registration counts from; the
 // rule it replaced kept as a variant and retired on the night that reaches the block after the change and not the night
-// before, and kept where a restore came first; a family at nine refused; the page's list kept and ordered by the stored
-// hooks; and a pick walked under the stored exit. Each is worked by hand over constructed stores, results and closes.
-// see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+// before, and kept where a restore came first; from 21.5 a family at nine taking the change with the rule it replaces in
+// the background, counted outside the nine, by the family's luck correction and on no row of the Run page; the page's
+// list kept and ordered by the stored hooks; and a pick walked under the stored exit. Each is worked by hand over
+// constructed stores, results and closes.
+// see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
 public partial class FixtureExpectations
 {
     const string LargeRun = "loop-test-GSPC-20261009T120000Z";
@@ -121,7 +123,7 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task AnApprovalOfAnSAndP500FamilyHoldingNineRulesIsRefusedWithWhy()
+    public async Task AnApprovalOfAnSAndP500FamilyHoldingNineRulesRegistersTheChangeWithTheRuleItReplacesInTheBackground()
     {
         using var store = new TemporaryStore().Migrated();
 
@@ -132,8 +134,12 @@ public partial class FixtureExpectations
         LoopDecided(store, LargeRun, "GSPC", "breakout", "the autopsy's exit, ranked 1", LoopDecisions.Approved);
         Assert.Equal(1, (await new LoopApply(At(2026, 10, 9, 23, 35), store.DatabaseFile, null).NightAsync("night-first")).Applied);
 
-        // A later run's second change to the breakout, approved while the family holds nine, the change and the rule it
-        // replaced among them, is refused naming the maximum, and nothing is stored or registered for it.
+        var first = FamilyRecords.LiveOf(await LargeFamilyAsync(store, BreakoutRule.Name, At(2026, 10, 9, 23, 40)))!;
+
+        // A later run's second change to the breakout, approved while the family holds nine, the first change and the rule
+        // it replaced among them: the change is registered as the family's live rule, and the first change, the rule it
+        // replaces, is retired and registered again unchanged under the background's name at the same instant, so nine
+        // rules stand drawn and the tenth runs in the background.
         const string later = "loop-test-GSPC-20261012T120000Z";
 
         LargeSession(store, "2026-10-12");
@@ -141,13 +147,75 @@ public partial class FixtureExpectations
         LoopProposed(store, later, "GSPC", "breakout", "the autopsy's exit, ranked 1", true, ExitChange(2));
         LoopDecided(store, later, "GSPC", "breakout", "the autopsy's exit, ranked 1", LoopDecisions.Approved);
 
-        var refused = await new LoopApply(At(2026, 10, 12, 23, 35), store.DatabaseFile, null).NightAsync("night-second");
+        var applied = await new LoopApply(At(2026, 10, 12, 23, 35), store.DatabaseFile, null).NightAsync("night-second");
 
-        Assert.Equal(["GSPC|breakout|refused"], [.. refused.Applications.Select(one => $"{one.Index}|{one.Family}|{(one.Applied ? "applied" : "refused")}")]);
-        Assert.Contains("which is the maximum family of 9", refused.Applications.Single().Words, StringComparison.Ordinal);
-        Assert.Equal(["1"], FamilyRows(store, "SELECT COUNT(*) FROM provisional_setting WHERE index_code = 'GSPC';"));
-        Assert.Equal(9, (await LargeFamilyAsync(store, BreakoutRule.Name, At(2026, 10, 12, 23, 40))).Count);
-        Assert.Null(refused.WroteFrom);
+        Assert.Equal(["GSPC|breakout|applied"], [.. applied.Applications.Select(one => $"{one.Index}|{one.Family}|{(one.Applied ? "applied" : "refused")}")]);
+
+        var family = await LargeFamilyAsync(store, BreakoutRule.Name, At(2026, 10, 12, 23, 40));
+        var background = CandidateRegistrar.BackgroundOf(first.Candidate);
+        var live = FamilyRecords.LiveOf(family)!;
+        var kept = family.Single(row => FamilyRecords.IsBackground(row.Candidate));
+
+        Assert.Equal(FamilyRecords.BackgroundPrefix + first.Candidate[FamilyRecords.LivePrefix.Length..], background);
+        Assert.Equal((10, 9), (family.Count, family.Count(row => !FamilyRecords.IsBackground(row.Candidate))));
+        Assert.Equal((background, first.Parameters, first.Evaluator), (kept.Candidate, kept.Parameters, kept.Evaluator));
+        Assert.Equal(2, RuleHooks.Of(CandidateEvaluator.Read(live.Parameters)).Exit);
+        Assert.Equal(TheSetupFamilies.Breakouts[0].Candidate + "; exit: a target at 1.5 risks", first.Candidate);
+        Assert.Equal(TheSetupFamilies.Breakouts[0].Candidate + "; exit: the stop raised to the buy once a close is 1 risks up", live.Candidate);
+        Assert.Contains(background, applied.Applications.Single().Words, StringComparison.Ordinal);
+
+        // The luck correction counts the background rule while it runs: a window opened after the change divides the
+        // family's level across the ten standing.
+        var register = await new CandidateRegistrar(At(2026, 10, 13, 12, 0), store.DatabaseFile).RowsAsync();
+
+        Assert.Equal(10, CandidateFamily.Divisor(CandidateFamily.In(register, BreakoutRule.Name), new DateTimeOffset(2026, 10, 13, 12, 0, 0, TimeSpan.Zero)));
+
+        // Drawn on no page: the Run page's records hold no row of it, while the nine drawn are each read at five per cent
+        // over the ten standing. It is told from the rule before a freeze by the live rule of its name the register retired
+        // at the instant it was registered.
+        var records = EquityBrief.Api.Reading.TonightScreen.FamilyRecordRows(await new EquityBrief.Api.Reading.ReadApi(store.DatabaseFile, At(2026, 10, 13, 12, 0)).RegisteredCandidatesAsync(), [], new DateOnly(2026, 10, 13));
+
+        Assert.True(EquityBrief.Api.Reading.TonightScreen.MovedByAnApproval(background, register));
+        Assert.False(EquityBrief.Api.Reading.TonightScreen.MovedByAnApproval(live.Candidate, register));
+        Assert.DoesNotContain(background, records.Select(row => row.Rule));
+        Assert.Equal(9, records.Count(row => row.Family == BreakoutRule.Name));
+        Assert.All(records.Where(row => row.Family == BreakoutRule.Name), row => Assert.Equal(ReasonVerdict.Significance / 10, row.Level, 12));
+
+        // A third change at nine moves the second to the background beside the first, the drawn rules still nine: the
+        // background is counted outside the nine.
+        const string third = "loop-test-GSPC-20261013T120000Z";
+
+        LargeSession(store, "2026-10-13");
+        LoopRun(store, third, "GSPC", "2026-10");
+        LoopProposed(store, third, "GSPC", "breakout", "the autopsy's exit, ranked 1", true, ExitChange(15));
+        LoopDecided(store, third, "GSPC", "breakout", "the autopsy's exit, ranked 1", LoopDecisions.Approved);
+        Assert.Equal(1, (await new LoopApply(At(2026, 10, 13, 23, 35), store.DatabaseFile, null).NightAsync("night-third")).Applied);
+
+        var three = await LargeFamilyAsync(store, BreakoutRule.Name, At(2026, 10, 13, 23, 40));
+
+        Assert.Equal((11, 9), (three.Count, three.Count(row => !FamilyRecords.IsBackground(row.Candidate))));
+        Assert.Equal(
+            [background, CandidateRegistrar.BackgroundOf(live.Candidate)],
+            three.Where(row => FamilyRecords.IsBackground(row.Candidate)).Select(row => row.Candidate).Order(StringComparer.Ordinal));
+
+        // The background rule retires on the night whose session is the 63rd after the second change's session, counted
+        // over the exchange's closures, which is one session after the first change's 63rd, and not on the night before;
+        // its evidence names the change that moved it there.
+        Assert.Equal((0, 1), (Blocks.Of(new DateOnly(2026, 10, 12), new DateOnly(2027, 1, 11)), Blocks.Of(new DateOnly(2026, 10, 12), new DateOnly(2027, 1, 12))));
+
+        LargeSession(store, "2027-01-11");
+        Assert.DoesNotContain(background, (await new LoopApply(At(2027, 1, 11, 23, 35), store.DatabaseFile, null).NightAsync("night-before")).Retired!);
+
+        LargeSession(store, "2027-01-12");
+
+        var reached = await new LoopApply(At(2027, 1, 12, 23, 35), store.DatabaseFile, null).NightAsync("night-reached");
+
+        Assert.Contains(background, reached.Retired!);
+        Assert.Contains(
+            $"the live rule '{first.Candidate}' replaced by '",
+            FamilyRows(store, $"SELECT evidence FROM candidate_register WHERE event = 'retired' AND retires = '{background.Replace("'", "''", StringComparison.Ordinal)}';").Single(),
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(background, (await LargeFamilyAsync(store, BreakoutRule.Name, At(2027, 1, 12, 23, 40))).Select(row => row.Candidate));
     }
 
     [Fact]
