@@ -38,6 +38,9 @@ public sealed class QualityLay
     // Why a holding the history sold on a filing ended, the words the night's step stores.
     public const string OnAFiling = QualityFamily.OnAFiling;
 
+    // Why a holding the engines' walk sold at a close under its 200-day average ended.
+    public const string UnderTheAverage = "under its 200-day average";
+
     // The average the trend dial reads a close against, the tape's own.
     public const int TrendSessions = 200;
 
@@ -160,12 +163,19 @@ public sealed class QualityLay
     // qualifies is sold at the close, one with no close kept, and the places left are filled down the ranking. Each
     // reshuffle's choices stand under the group with every member answered that session, the members a holding is judged
     // against.
+    // From 21.5 the walk the engines read as well: a holding also sold at the first close under its 200-day average after
+    // the session it was chosen on, the menu's sale no dial of the rule reads; and each reshuffle's qualifying members, in
+    // the family's own ranking, handed to an arrangement a proposal's hooks set, which keeps and orders them as the night's
+    // hooks do.
+    // see: A change a family's night does not read is tested and shown and never put to the operator
     public static (List<HeavyweightTrade> Trades, Dictionary<int, HeavyweightRebalance> Rebalances) Walk(
         HeavyweightTape tape,
         IReadOnlyList<int> reshuffles,
         IReadOnlyDictionary<int, QualityReading?[]> readings,
         IReadOnlyList<IReadOnlyDictionary<int, QualityReading>> filings,
-        QualitySettings setting)
+        QualitySettings setting,
+        bool soldUnderAverage = false,
+        Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null)
     {
         var trades = new List<HeavyweightTrade>();
         var rebalances = new Dictionary<int, HeavyweightRebalance>();
@@ -205,6 +215,10 @@ public sealed class QualityLay
                 {
                     End(name, session, OnAFiling);
                 }
+                else if (soldUnderAverage && session > open[name] && tape.Close[name][session] < tape.Average200[name][session])
+                {
+                    End(name, session, UnderTheAverage);
+                }
             }
 
             if (!reshuffleAt.Contains(session))
@@ -227,7 +241,8 @@ public sealed class QualityLay
 
             var answered = Enumerable.Range(0, read.Length).Where(name => read[name] is not null).ToArray();
             var ranked = QualityRule.Ranked(answered.Where(Qualifies), name => (read[name]!.Value.Passed, read[name]!.Value.Applied, read[name]!.Value.Place, tape.Tickers[name]));
-            var chosen = ranked.Where(name => !open.ContainsKey(name)).Take(Math.Max(0, setting.Holdings - open.Count)).ToArray();
+            var arranged = arrange is null ? ranked : arrange(session, ranked);
+            var chosen = arranged.Where(name => !open.ContainsKey(name)).Take(Math.Max(0, setting.Holdings - open.Count)).ToArray();
 
             rebalances[session] = new HeavyweightRebalance([(Group, chosen, answered)]);
 
@@ -253,9 +268,9 @@ public sealed class QualityLay
 
     // One setting's book: its walk, each holding and its members bought at the open after its reshuffle and the holding
     // charged its round trip, and its months.
-    public QualityBook Book(QualitySettings setting)
+    public QualityBook Book(QualitySettings setting, bool soldUnderAverage = false, Func<int, IReadOnlyList<int>, IReadOnlyList<int>>? arrange = null)
     {
-        var (trades, rebalances) = Walk(tape, reshuffles, readings, filings, setting);
+        var (trades, rebalances) = Walk(tape, reshuffles, readings, filings, setting, soldUnderAverage, arrange);
         var holdings = trades
             .Select(trade => new BookHolding(
                 trade.Entry,
@@ -360,11 +375,13 @@ public sealed class QualityLay
             .FirstOrDefault();
 
     // The grid as a procedure the tester runs year by year: each fold chooses among the 72 books on the holdings and the
-    // months that ended before its year, and is tested on its choice's months in its year against the starting setting's.
+    // months that ended before its year, and is tested on its choice's months in its year against the starting setting's,
+    // or from 21.5 against the live rule's book handed in, where the proposal states the change an approval registers.
     // see: A change is adopted only on test years the proposal never saw, and a search is judged as a procedure run year by year
-    public static LoopProposalRead Procedure(LoopRead read, IReadOnlyList<QualityBook> books, IReadOnlyList<int> reshuffles)
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
+    public static LoopProposalRead Procedure(LoopRead read, IReadOnlyList<QualityBook> books, IReadOnlyList<int> reshuffles, QualityBook? live = null)
     {
-        var current = books.Single(book => book.Setting == QualityRule.Starting);
+        var current = live ?? books.Single(book => book.Setting == QualityRule.Starting);
 
         QualitySettings? ChooseIn(LoopFold fold) => Choose(
             [
@@ -385,11 +402,14 @@ public sealed class QualityLay
             QualityRule.Name,
             LoopProcedures.Grid,
             proposal?.Words,
-            QualityRule.Starting.Words,
+            current.Setting.Words,
             LoopProcedures.Points,
             BookMonths.LongestMonth,
             [.. chosen.Select(one => (one.Fold, one.Setting?.Words))],
             proposal is null ? 0 : chosen.Count(one => one.Setting is { } setting && setting.Changes(proposal) <= 1),
-            LoopProcedures.BookEvidence(read.Folds, read.Calendar, [.. chosen.Select(one => one.Setting is null ? null : byKey[one.Setting.Key].Months)], current.Months));
+            LoopProcedures.BookEvidence(read.Folds, read.Calendar, [.. chosen.Select(one => one.Setting is null ? null : byKey[one.Setting.Key].Months)], current.Months))
+        {
+            Change = live is not null && proposal is not null && proposal != live.Setting ? new LoopChange(null, proposal.Key, null, LoopChange.NoHooks) : null,
+        };
     }
 }
