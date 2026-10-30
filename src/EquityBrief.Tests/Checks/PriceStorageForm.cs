@@ -379,10 +379,17 @@ public class PriceStorageForm
         // setting's edge read as the double the median sorts, a step (c) row's
         // viable count as the figure it ranks by, and the whole numbers of the
         // freshness and band strength dials read as the values a space labels, twice each.
+        // From 21.4 the business's state off the SEC's facts types three nulls in
+        // the statistics world, a filed quarter with no quarter a year before
+        // reading none of its growth and its two margins, and crosses nothing, as
+        // the version record's two do.
         Assert.Equal(
             [
                 "CandidateRecord.cs: (double)inside.Length",
                 "CandidateRecord.cs: (double)setups.Count",
+                "FiledFacts.cs: (double?)null",
+                "FiledFacts.cs: (double?)null",
+                "FiledFacts.cs: (double?)null",
                 "ForwardReturnFiller.cs: (double?)null",
                 "ForwardReturnSeries.cs: (double)counted.Count",
                 "LadderBuilder.cs: (decimal?)null",
