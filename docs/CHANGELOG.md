@@ -26,6 +26,16 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-30 - docs/BUILD_PLAN.md - the ruling's words in 21.13 and 21.14 name no subject the harness holds a due point for
+Corrects: 21.13's text named the market series and 21.14's done condition the tester's folds, two subjects the harness writes a due point for, so the plan's words shadowed them; found by the hosted case-sensitivity job on PR 599.
+Was:
+> (21.13) ... the hard rule in CLAUDE.md names them among the market series, its prior text in the changelog; ... 15.7's strip rows and the copy's, the market series' rows and the night's step, ...
+> (21.14, done when) ... and walked beside each graded variant in the tester's folds, its figures stated beside the variant's; ...
+Now:
+> (21.13) ... the hard rule in CLAUDE.md names them among the series the night reads beside the members' bars, its prior text in the changelog; ... 15.7's strip rows and the copy's, the rows of the series the night reads and the night's step, ...
+> (21.14, done when) ... and walked beside each graded variant in the folds the tester walks, its figures stated beside the variant's; ...
+Why: the ruling's sense stands; the words move off the two subjects.
+
 ### 2026-10-30 - docs/BUILD_PLAN.md - 21.13 gains the market strip and 21.14 the exposure's direction on the VIX, on the operator's ruling
 Authorised by: Phase 21 makes the existing families choose better and the monthly loop test every family on every index, built to completion before any new work with no model judging a stock and nothing retired without the operator's word
 Was:
