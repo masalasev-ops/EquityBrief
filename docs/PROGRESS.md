@@ -12019,3 +12019,102 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 53f838d
             source, the fixtures and the settings this tree carries unchanged from it and every other test unchanged;
             this commit widens one expectation's margins, and that expectation ran green over this tree three times in
             a row, on the operator's word of 2026-10-29 to fix the hosted failure so the pull request merges.
+
+### 21.4 - the one move of the pins: the exit menu's two new exits, the hooks' three forms read by the swing families, the dip and the two book families, the catalogue's five readings, the two book families' setups in the ledger and business first out of the night, one remedy registering every moved rule again   2026-10-30
+
+Queue:      done, 21.1 as PR 587 with its correction as PR 588, 21.2 as PR 589, 21.3 as PR 590; in progress, this checkpoint
+            as PR 591, one pull request in reviewable commits, one a part, on the operator's fourth amendment; next, 21.5 to
+            21.15 in the section's order on the standing go; beside them the sign-offs of phases 18, 20 and 22 by fresh
+            sessions.
+Built:      every change of the phase that edits a source a registered rule pins, in one pull request. The exit menu: two
+            kinds for the swing families, 30 exits from 26, a time stop sold at the close a set number of sessions in, 5,
+            10 or 20, whatever the trade stands at, and half sold at 1 risk of profit with the stop moved to the buy on the
+            rest, the rest sold at the plan's target or trail as before, each replayed by the menu's own walk. The hooks:
+            three forms a registration states, each off by default and none stated by a rule standing, the exposure in the
+            market check's place scaling the picks a night with the index's breadth at the rule's floor and the VIX against
+            its 252-session median, 5 where both hold, 2 where one and none where neither, a ranking keeping the family's
+            floors and defining event, reading every other gate at the ledger's loose level and taking the best 5 by the
+            index's newest ridge score fitted on all finished data, and an order by the expected value of the setups like
+            each candidate, 21.7's figure, its delegate handed by no step yet; a rule states one order, and a change stating
+            one replaces the order it stands at. The dip's rules read the hooks as the swing rules do, its own exit dial
+            renamed sell since it collided with the hooks' exit, a setting in the form from before read under the new name
+            and registered again as it stood; the quality and the Fundamentals rules read conditions on the catalogue's
+            readings and an order by a score beside their own parameters, every other form refused for a book. The
+            catalogue: the five readings the operator chose at 21.2 appended after every reading before them, 99 from 94,
+            the close over the index's own series' close at its high of the 252 sessions to the session, the distinct
+            insiders buying in the open market over the 21 sessions to it, Yahoo's upgrades less downgrades over the 21
+            sessions before it from the newest stored answer, the current year's consensus over its figure 30 days before
+            from the quarters fetches' trends, and the shares short over the covers' count, none until a store holds
+            FINRA's reports, each none where its source holds nothing for the session, migration 115 adding their columns;
+            the setup ledger reads the analyst views and the estimate trends for them. The two book families' setups: Quality
+            at a fair price's each member on a reshuffle session, the first of a calendar month, whose scorecard clears six
+            in nine, the grid's lowest floor, with no valuation or trend condition, held while it clears that at each later
+            reshuffle; the Fundamentals family's each member whose newest quarter's filing was first read on the session and
+            leaves its scorecard at six in nine or better, one step past the grid's lowest buy, held while every later
+            filing leaves it at five in nine or better; each bought at the session's close, held never past 252 sessions,
+            its result a fraction of the buy against every member of the index held the same sessions, its live pass under
+            the register's standing rule and its pick marked on the night after from the family's own holdings, since both
+            families' steps run after the ledger's; the night lays them, the history build writes them and the point-in-time
+            check rebuilds them. Business first out of the night: the index families' step computes the fundamentals-first
+            family on no index, its rows and record kept and readable, the S&P 500 read by the step only while a page trade
+            of the family's stands open on it, its one open trade, DGII on the S&P 600 since 2026-10-20, run out under its
+            own plan with the index's other page trades, and the Run page's hold-back line gone with the hold-back it
+            counted, the standing stop of 2026-10-29 discharged by the family's end.
+Not built:  the re-registration of the S&P 500 pullback version leaving off a deteriorating business on the SEC's facts,
+            which the operator's answer of 2026-10-29 put at this checkpoint with no other S&P 500 pullback rule's version
+            moving. The state a swing filter version reads enters through the swing filter's own stage and its reader of a
+            member's gate inputs, which every one of the nine S&P 500 pullback versions pins, so a version reading the
+            filed state in place of the provider's is either a change to those sources, which moves all nine versions and
+            registers the family again whole, or a rule of another kind, a pullback family rule the S&P 500's recorder
+            keeps from the live rule's pass with a hook on a filed-state reading of the catalogue, which keeps the nine
+            where they are but moves the version's record, card and tile to where the recorder's rules are drawn and
+            needs the catalogue, the family member's inputs and the per-rule test to carry a pullback family rule, which
+            the plan did not state. Neither is this session's to choose: the operator's word is asked for below, and the
+            done condition's clause for it stands unmet until it is given. The version runs on as registered, judged by its
+            record, as 21.1 named it.
+Written:    section 13.13's menu and hooks paragraphs, section 13.10's setups paragraphs and its catalogue count, section
+            13.15's end, the index families', the setup ledger's and the family recorder's catalogue rows, the nightly
+            list's ledger item and the Run page's rows, the Setups store row, section 17's exit menu and loose gates rows
+            amended and its exposure, ranking and readings rows added, the decisions on the menu, the hooks and business
+            first superseded under Previously decided with their citations repointed and the decisions on the book
+            families' setups and business first's end added, the schema's setup, index family night and ledger notes, the
+            runbook's dip dials, the family's end and the remedy, the plan's quality clause and its citation, the guide's
+            families and business first, the roster's fixture-expectations, nightly-run and read-surface rows, the fixture's
+            ledger and behind-it expectations, and the changelog.
+Tests:      2931, from 2925: eight added, the menu's two exits replayed by hand on both sides of their session and their
+            risk, the hooks' three forms over constructed nights at the hooks, in the S&P 500's recorder and evaluator, in
+            the S&P 400's and 600's night and in the dip's and the books' steps, the five readings at a constructed
+            session and none where each source holds nothing, and the book setups over a constructed history and over a
+            constructed store with the point-in-time rebuild; two taken out, the Run page's hold-back line's, with the
+            line.
+Claims:     1460, from 1457: section 17's exposure, ranking and readings rows, each reached by fixture-expectations and
+            named among the rows after phase 22's report; every other row amended in place keeps its key; 1475
+            placements, from 1472.
+Pins:       every registered rule's evaluator but the swing filter's and the S&P 500 heavyweights' moved, and every moved
+            version is raised to its pin and asserted: the S&P 500's breakout ebcad1bf374b and drift 174ec44b8174, the
+            S&P 400's and 600's pullback 8c186a083638, breakout 60eb03a70de8, drift c8466e717260 and heavyweights
+            ae80ca77c41d, the dip's f1fca7f9e6b3, Quality at a fair price's 755e8c8b9917 and the Fundamentals family's
+            29448278bc4a; the readings' pin 4b61113aaeb8. The remedy registers again every standing candidate whose
+            evaluator moved, the S&P 500's breakout and drift rules replayed first, every other rule's record and paper
+            account restarting at that instant with its count printed, about 111 rules, the register's own count when it
+            runs.
+Remedy:     `tools/remedies/2026-10-30-21.4-the-one-move-of-the-pins.txt`, run from main after the merge while no other
+            writer runs: the migration and the one registration command; then each index's ledger history built again by
+            hand with `tools/ledger-build.ps1 --again` and checked with `ledger-check`, about two hours. Tonight's lists are
+            unchanged by it, since no rule states a new hook.
+Mutation:   chosen before the run by this rule, the property the checkpoint adds whose wrong form would read as right: a
+            book setup is sold at the first later session its gate fails at and held to its cap where none fails. The
+            not-held reader made to list no session: the hand-worked expectation went red reading the first not-held
+            session of an empty list where December's reshuffle is expected, and the night expectation red reading a null
+            end date where the Fundamentals setup's sale on the sixth of November is expected; reverted, both green. Not
+            mutated: the menu's two exits, the hooks' three forms, the five readings and the live pass, each held by its
+            own expectation.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2931 of 2931 tests ran
+            with none failed, migrations 0 to 115 with none pending, schema version 115, against `data-ci` and never
+            `data`; the phase report 64 tables, 1460 claims, 1460 passing, none out of scope and none unexamined, 1475
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the operator's word on the deteriorating-business version, the two shapes above; the remedy after the merge;
+            21.5 on the standing go; the three answers of 21.3 at 21.14; 21.2's question at 21.6; the sign-offs of phases
+            18, 20 and 22; and the engines still reading the fundamentals-first family's history until 21.5 states which
+            families the loop covers.
