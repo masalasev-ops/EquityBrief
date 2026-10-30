@@ -12614,3 +12614,64 @@ Corrected:  the decision's and the guide's words, naming the rules the swing wal
             own search has none; no code moved.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.9's entry below, which
             states that run's figures.
+
+### 21.8 - the remedy run from main: the S&P 400's drift and the S&P 600's breakout each registered with its ranking variant by the learned score   2026-10-30
+
+Not a checkpoint entry: it records 21.8's remedy and what it measured, and lands nothing.
+Ran:        `tools/remedies/2026-10-30-21.8-the-ranking-variants.txt` from main's b7b56a53, PR 597's merge, at 16:41 UTC
+            on 2026-10-30 with no night, local run, drain, labeller, ledger build or monthly run writing.
+Measured:   the S&P 400's drift's ranking variant registered as 955, its family 6 of 9, and the S&P 600's breakout's as
+            956, its family 4 of 9, each the live rule's setting ranked by the index's newest learned score. Before it,
+            the per-rule test in print mode over the S&P 400 from 16:04 to 16:32 UTC walked the drift's variant
+            unregistered: 1,632 trades at +0.009 risks over the test years against the live rule's 1,132 at +0.148. No
+            request and no model call.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.9's entry below, on whose
+            branch this is recorded; records alone change in this entry.
+
+### 21.9 - graded exposure as a variant: the breakout's and the drift's exposure at the floor its market check reads, registered for the S&P 400's breakout and drift and the S&P 600's breakout, walked and proposed by the tester, and paper trading sizing a one-switch night's trades at half   2026-10-30
+
+Queue:      done, 21.1 to 21.8 as PRs 587 to 597 with their remedies, recorded above; in progress, 21.9; next, 21.10
+            to 21.13 in the section's order on the standing go, with 21.14, 21.15 and every decision held for the
+            operator's word; beside them the sign-offs of phases 18, 20 and 22 by fresh sessions.
+Built:      a breakout's or a drift's graded exposure as a variant: the live rule's setting with the exposure hook in its
+            market check's place at the floor that check reads, an S&P 400 or 600 rule's own, the S&P 500's 0.45 where
+            it reads the S&P 500's breadth and none where it reads no check, the S&P 500's families at their sweep's
+            market floor. `register --exposed <family> --index <code>` registers it beside the live rule. The per-rule
+            test walks a rule standing at the exposure with its market check open, a frozen rule's own search through a
+            graded nightly walk of its own, and walks the exposure unregistered beside each live breakout and drift whose
+            family registers none; the tester proposes it against the rule's own walk in every fold, and the Loop page
+            says each fold walks it as it stands. Paper trading reads each trade's night off the ledger's setups of that
+            session, the breadth and the VIX over its median, sizes a trade on a night its exposure held one switch at
+            half the risk setting and marks it half size in the account's log.
+Evidence:   Nagel (2012), read again: reversal profits rise with the VIX and are highest in turmoil. The breakout and the
+            drift follow a move and the paper does not test them, so the VIX switch's direction on them is judgement,
+            put to the operator.
+Not built:  the exposure on any pullback or dip, whose walks read no exposure; on the S&P 600's drift, which reads no
+            market check; and registration on the S&P 500's breakout and drift, which hold nine, walked unregistered
+            instead.
+Decisions:  one written: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a
+            night it holds one switch sizes its trades at half.
+Tests:      2971, from 2967: four added, the floor each rule grades at by hand and the exposure at that floor at both
+            switches on both sides and at each level over a constructed night, a paper account's half-sized trade by
+            hand with its night read off the two switches and the account and the log marked, the remedy's lines over a
+            register shaped as the operator's with four refusals, and the half size read back off the rendered log.
+Claims:     1480, from 1478: two added, section 17's graded exposure variant and 15.21's trade sized at half, against the
+            plan's count of about 3; the tester's catalogue row amended in place and 11.2's paragraph added; 1495
+            placements.
+Pins:       none moved: no source 21.9 writes is one a rule's version pins, read off every evaluator's source list; the
+            graded nightly walk stands in the own search's file because the family sweep's walk is pinned.
+Remedy:     `tools/remedies/2026-10-30-21.9-the-graded-exposures.txt`, run from main after the merge while no other
+            writer runs: the S&P 400's breakout and drift and the S&P 600's breakout each register the exposure beside
+            the live rule, printing `family of` and the family's new count.
+Mutation:   chosen before the run by this rule, the property the done condition names first, the exposure graded at the
+            rule's own floor: an S&P 400 or 600 rule's own floor ignored for the market floor. The exposure's test went
+            red, 0.45 where the S&P 600 breakout's 0.40 is expected; reverted, green. Not mutated: the switches, the
+            graded walk, the half sizing and the registrations' refusals.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2971 of 2971 tests ran
+            with none failed, migrations 0 to 116 with none pending, schema version 116, against `data-ci` and never
+            `data`; the phase report 64 tables, 1480 claims, 1480 passing, none out of scope and none unexamined, 1495
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the exposure's direction on the VIX, put to the operator; the three registered variants' records from their
+            registration; the pullback's and the dip's exposure, waiting on a walk of theirs that reads it; and
+            everything 21.8 carried.
