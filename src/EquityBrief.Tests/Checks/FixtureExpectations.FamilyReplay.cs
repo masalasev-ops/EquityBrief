@@ -103,13 +103,15 @@ public partial class FixtureExpectations
         Assert.Equal(["1|8"], FamilyRows(store, $"SELECT COUNT(DISTINCT run_id) || '|' || COUNT(*) FROM run_log WHERE stage LIKE '{FamilyRecords.ReplayStages}' AND run_id LIKE '{FamilyReplay.RunPrefix}%';"));
 
         // Each rule stands by the registration of Saturday, whose first session is Monday 2026-10-05, and its record
-        // counts from Friday 2026-10-02, its first registration's session, with nothing restarted.
+        // counts from Friday 2026-10-02, its first registration's session, with nothing restarted; from 21.7 the ninth
+        // the code writes, ordered by the expected value of the setups like each, is new and counts from Monday.
         var standing = await StandingBreakoutsAsync(store, again.AddHours(1));
         var replays = Replays(store);
 
-        Assert.Equal(8, standing.Count);
+        Assert.Equal(9, standing.Count);
         Assert.All(standing, rule => Assert.Equal(new DateOnly(2026, 10, 5), FamilyRecords.FirstSession(rule.RegisteredAt)));
-        Assert.All(standing, rule => Assert.Equal((new DateOnly(2026, 10, 2), (string?)null), FamilyRecords.StartOf(rule, replays)));
+        Assert.All(standing.Where(rule => rule.Candidate != TheSetupFamilies.BreakoutExpected.Candidate), rule => Assert.Equal((new DateOnly(2026, 10, 2), (string?)null), FamilyRecords.StartOf(rule, replays)));
+        Assert.Equal((new DateOnly(2026, 10, 5), (string?)null), FamilyRecords.StartOf(Assert.Single(standing, rule => rule.Candidate == TheSetupFamilies.BreakoutExpected.Candidate), replays));
     }
 
     [Fact]
@@ -133,13 +135,15 @@ public partial class FixtureExpectations
         Assert.Equal(7, ReplayRows(store).Count(row => row.Contains($"|{FamilyRecords.ReplayReproduced}|", StringComparison.Ordinal)));
 
         // The live rule counts from Monday 2026-10-05, the first session of the registration it stands by, saying
-        // what the replay found; the seven the replay reproduced carry on from Friday 2026-10-02.
+        // what the replay found; the seven the replay reproduced carry on from Friday 2026-10-02, and the ninth the code
+        // writes from 21.7, new, counts from Monday.
         var standing = await StandingBreakoutsAsync(store, again.AddHours(1));
         var replays = Replays(store);
 
         Assert.Equal((new DateOnly(2026, 10, 5), Differed), FamilyRecords.StartOf(Assert.Single(standing, rule => rule.Candidate == LiveBreakoutRule), replays));
+        Assert.Equal((new DateOnly(2026, 10, 5), (string?)null), FamilyRecords.StartOf(Assert.Single(standing, rule => rule.Candidate == TheSetupFamilies.BreakoutExpected.Candidate), replays));
         Assert.All(
-            standing.Where(rule => rule.Candidate != LiveBreakoutRule),
+            standing.Where(rule => rule.Candidate != LiveBreakoutRule && rule.Candidate != TheSetupFamilies.BreakoutExpected.Candidate),
             rule => Assert.Equal((new DateOnly(2026, 10, 2), (string?)null), FamilyRecords.StartOf(rule, replays)));
     }
 

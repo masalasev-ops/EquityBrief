@@ -741,6 +741,18 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             output.WriteLine(FormattableString.Invariant($"{RulesVerb}: reading version {version} hands the tone walk the releases of {stocks.Count} of the history's {read.Series.Length} stock(s), {stocks.Values.Sum(releases => releases.Count)} release(s)"));
         }
 
+        // From 21.7 the ledger's settled setups and the newest run's fold scores, which the expected value of the setups like
+        // each listing is matched over.
+        LikePool like;
+
+        await using (var connection = new Microsoft.Data.Sqlite.SqliteConnection(StoreConnection.For(databaseFile)))
+        {
+            await connection.OpenAsync(cancellation);
+            like = await LikePool.ReadAsync(connection, index, cancellation);
+        }
+
+        output.WriteLine(FormattableString.Invariant($"{RulesVerb}: {like.Count} settled setup(s) of the swing families to match the setups like each listing among"));
+
         var rules = RuleTests.Walk(new RuleTestInputs(
             read,
             standingRules,
@@ -756,7 +768,8 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             qualityLay,
             dipRead,
             improvingLay,
-            own));
+            own,
+            Like: like));
         var tested = RuleTests.Judge(read, rules);
         var runId = FormattableString.Invariant($"{RulesVerb}-{index}-{started:yyyyMMddTHHmmssZ}");
 
@@ -775,6 +788,16 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         foreach (var one in tested.Where(one => one.Rule.Tone is not null))
         {
             output.WriteLine(RuleTests.ToneLine(one.Rule, read.Calendar));
+        }
+
+        // From 21.7 each live or provisional swing rule's order by the expected value of the setups like each listing,
+        // walked unregistered beside it where its family on the index registers none, over the test years.
+        // see: An order by the expected value of the setups like each pick is registered where its family has room and its step can hand the figure, and walked unregistered elsewhere
+        bool InTestYears(int entry) => read.Folds.Any(fold => read.Calendar[entry] >= fold.TestFrom && read.Calendar[entry] <= fold.TestThrough);
+
+        foreach (var one in tested.Where(one => one.Rule.Expected is not null))
+        {
+            output.WriteLine(RuleTests.ExpectedLine(one.Rule, InTestYears));
         }
 
         output.WriteLine(print

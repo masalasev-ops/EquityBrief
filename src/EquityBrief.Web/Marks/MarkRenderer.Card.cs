@@ -703,6 +703,7 @@ public sealed partial class MarkRenderer
 
         body.Append(Invariant, $"<section class=\"card-score\" data-rank=\"{(score.Rank is { } held ? held.ToString(Invariant) : "none")}\">");
         body.Append("<h5>Setups most like this one</h5>");
+        body.Append(Chance(similar));
 
         if (similar.Unmatched is { } why || similar.Count is not { } count || similar.Mean is not { } mean || similar.Low is not { } low || similar.High is not { } high || similar.RuleMean is not { } ruleMean)
         {
@@ -728,6 +729,39 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<p class=\"card-caution\">These are setups like this one under the same setup on the {Escaped(named)}, not this stock's chance.</p>");
 
         return body.Append("</section>").ToString();
+    }
+
+    // From 21.7 how often the setups like the pick under its setup won and what they made after costs, in the reader's
+    // words and under the setup's heading, never as the stock's own: the share that reached their target before their
+    // stop, ended above their buy for a trailing setup or above the equal-weight hold for a book, and their mean result
+    // after costs with the range it falls in nine times in ten; nothing where the card holds no chance, the part beneath
+    // saying why where none was matched.
+    // see: Each pick's card says how often the setups like it won and what they made after costs, under the rule's heading
+    public static string Chance(EquityBrief.Core.Cards.CardSimilar similar)
+    {
+        if (similar.WithResult is not { } count || similar.Won is not { } won || similar.ResultMean is not { } mean || similar.ResultLow is not { } low || similar.ResultHigh is not { } high)
+        {
+            return string.Empty;
+        }
+
+        var book = similar.Form == "book";
+        var share = count == 0 ? 0 : (int)Math.Round(100.0 * won / count, MidpointRounding.AwayFromZero);
+        var reached = similar.Form switch
+        {
+            "trailing" => "ended above their buy",
+            "book" => "ended above the easy alternative, the same money spread across every stock of the index",
+            _ => "reached their target before their stop",
+        };
+
+        static string Dollars(double value) => value < 0 ? Formatted($"-${-value:0.00}") : Formatted($"${value:0.00}");
+
+        static string Points(double value) => Formatted($"{value:+0.0;-0.0;0.0} points");
+
+        var made = book
+            ? Formatted($"On average they returned {Points(mean)} of their buying price after costs, and nine times in ten that average falls between {Points(low)} and {Points(high)}.")
+            : Formatted($"On average they {(mean < 0 ? "lost" : "made")} {Dollars(Math.Abs(mean))} per $1 risked after costs, and nine times in ten that average falls between {Dollars(low)} and {Dollars(high)}.");
+
+        return Formatted($"<p class=\"card-chance\" data-form=\"{Escaped(similar.Form ?? "target")}\" data-with-result=\"{count}\" data-won=\"{won}\" data-result-mean=\"{mean.ToString("R", Invariant)}\" data-result-low=\"{low.ToString("R", Invariant)}\" data-result-high=\"{high.ToString("R", Invariant)}\">Of the {count:N0} past setups most like this one under this setup, {won:N0} ({share}%) {reached}. {made} This is those setups' record, not this stock's chance.</p>");
     }
 
     // What a card says in place of the record of a rule standing at a change an approval set.

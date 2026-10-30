@@ -88,9 +88,14 @@ public static class TheSetupFamilies
     };
 
     // A family's registrations as it is registered again, from 20.4 the drift's with its tone variant where a reading
-    // version whose history read is complete is given, and as its freeze wrote them where none is.
-    public static IReadOnlyList<Registration>? For(string family, long readingVersion) =>
-        family == Core.Families.DriftRule.Name && readingVersion > 0 ? [.. Drifts, ToneVariant(readingVersion)] : For(family);
+    // version whose history read is complete is given, from 21.7 the breakout's with the order by the expected value of
+    // the setups like each member, and as its freeze wrote them otherwise.
+    public static IReadOnlyList<Registration>? For(string family, long readingVersion) => family switch
+    {
+        Core.Families.DriftRule.Name when readingVersion > 0 => [.. Drifts, ToneVariant(readingVersion)],
+        Core.Families.BreakoutRule.Name => [.. Breakouts, BreakoutExpected],
+        _ => For(family),
+    };
 
     // From 20.4 the drift's tone variant: the live rule's setting with the condition, reading the version given, the
     // family's ninth rule.
@@ -146,6 +151,19 @@ public static class TheSetupFamilies
 
         return [Of(live, true, MarketSwitches.None), .. variants.Select(settings => Of(settings, false, MarketSwitches.None)), Of(live, false, BreakoutSwitch)];
     }
+
+    // From 21.7 the breakout's ninth rule: its live rule's setting with its list ordered by the expected value of the setups
+    // like each member, the family the one on the S&P 500 with room and a step that hands the figure.
+    // see: An order by the expected value of the setups like each pick is registered where its family has room and its step can hand the figure, and walked unregistered elsewhere
+    public const string ExpectedWords = ", ordered by the expected value of the setups like each";
+
+    public static Registration BreakoutExpected { get; } =
+        new(
+            Named(false, Words(Core.Families.BreakoutRule.Live) + ExpectedWords),
+            BreakoutWords,
+            FamilySweepReport.Test,
+            BreakoutCandidate.EvaluatorName,
+            new Dictionary<string, double>(BreakoutCandidate.ParametersOf(Core.Families.BreakoutRule.Live, MarketSwitches.None), StringComparer.Ordinal) { [Core.Loop.RuleHooks.ExpectedOrderParameter] = 1 });
 
     static IReadOnlyList<Registration> DriftsAtTheFreeze()
     {

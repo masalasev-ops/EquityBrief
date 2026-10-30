@@ -89,6 +89,9 @@ public partial class ReadSurface
             // 21.6, the Run page's count of the ratings refresh's runs and the Ledger page's line on the readings' sources.
             .. NewReadingSourceClaims,
 
+            // 21.7, the setups' chance on a pick's card.
+            .. ChanceClaims,
+
             // 12.7's correction, close to a buy point beneath tonight's list.
             .. CloseToABuyPointClaims,
 

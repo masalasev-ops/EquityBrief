@@ -39,6 +39,15 @@ public sealed class RuleWalk(
     Func<Func<int, bool>?, Func<FamilyListing, bool>, IReadOnlyList<ExitProcedures.Walked>>? walkSkipping = null,
     bool readsMenu = true)
 {
+    // From 21.7 the expected value of the setups like each listing, by its place, which an order by it reads: matched
+    // among the setups that ended before the listing's session on the readings of its fold's own score; none where the
+    // walk was handed none.
+    // see: An order by the expected value of the setups like each pick is registered where its family has room and its step can hand the figure, and walked unregistered elsewhere
+    public Func<int, double?>? ExpectedOf { get; set; }
+
+    // A listing's readings by its place, none where the walk was built without them.
+    public IReadOnlyList<double?>? ReadingsAt(int place) => readingsOf?.Invoke(place);
+
     IReadOnlyList<ExitProcedures.Walked>? own;
 
     // From 21.5 whether the family's night reads an exit of the menu its hooks name; the short-term dip's does not, so an
@@ -94,7 +103,15 @@ public sealed class RuleWalk(
             throw new InvalidOperationException($"The {family} stands at hooks reading the catalogue's readings, and the walk was handed none.");
         }
 
-        return walk(hooks.ExitChoice, keep, hooks.ReadsReadings ? night => hooks.Order(night, at => readings!(at)) : null);
+        if (hooks.ReadsExpected && ExpectedOf is null)
+        {
+            throw new InvalidOperationException($"The {family} stands at an order by the expected value of the setups like each listing, and the walk was handed none.");
+        }
+
+        return walk(
+            hooks.ExitChoice,
+            keep,
+            hooks.ReadsReadings || hooks.ReadsExpected ? night => hooks.Order(night, at => readings?.Invoke(at), at => ExpectedOf?.Invoke(at)) : null);
     }
 
     static double[][] ClosesOf(IReadOnlyList<SweepSeries> series) =>
