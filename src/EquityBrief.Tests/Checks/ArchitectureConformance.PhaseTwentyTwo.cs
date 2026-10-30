@@ -42,7 +42,8 @@ public partial class ArchitectureConformance
     // for a history build asked for a session the night wrote; and 21.6's fifteen, the trends fetcher's, the ratings
     // refresh's and the short interest reader's catalogue and matrix rows, their two stores, section 17's three rows,
     // section 18's two, the Run page's count of the refresh's runs and the Ledger page's line on the readings' sources;
-    // and 21.7's one, the setups' chance on a pick's card; which phase 21's own pair counts when its report reads them.
+    // and 21.7's one, the setups' chance on a pick's card; and 21.8's one, section 17's ranking variant; which phase 21's
+    // own pair counts when its report reads them.
     internal static string[] AfterPhaseTwentyTwo =>
     [
         .. ComponentAccess.ImprovingRows,
@@ -61,6 +62,7 @@ public partial class ArchitectureConformance
         .. FixtureExpectations.NewReadingClaims,
         .. Reading.ReadSurface.NewReadingSourceClaims,
         .. Reading.ReadSurface.ChanceClaims,
+        .. FixtureExpectations.RankingClaims,
     ];
 
     // The rows the document loses after phase 22's report: none.

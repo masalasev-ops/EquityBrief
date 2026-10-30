@@ -30,7 +30,9 @@ public sealed record RuleUnderTest(
     ToneSides? Tone = null,
     IReadOnlyList<(int Entry, double? Edge)>? OpenFloor = null,
     int Skipped = 0,
-    IReadOnlyList<(int Entry, double? Edge)>? Expected = null)
+    IReadOnlyList<(int Entry, double? Edge)>? Expected = null,
+    IReadOnlyList<(int Entry, double? Edge)>? Ranking = null,
+    string? RankingWords = null)
 {
     public bool Book => Unit == LoopProcedures.Points;
 }
@@ -84,7 +86,8 @@ public sealed record RuleTestInputs(
     ImprovingLay? Improving = null,
     OwnReads? Own = null,
     Func<int, int, string?>? FiledStates = null,
-    LikePool? Like = null)
+    LikePool? Like = null,
+    Func<string, RankingWalk?>? Ranked = null)
 {
     // From 21.4 the business's state off the SEC's facts as first filed for a stock on a session, which the S&P 500 pullback
     // version leaving off a deteriorating business is walked at: the one handed in, or the catalogue's own through the
@@ -247,7 +250,7 @@ public static class RuleTests
 
         var pullback = large ? null : RuleWalk.Pullback(inputs.Read, inputs.Market, inputs.Progress, inputs.Approved.GetValueOrDefault(SetupFamilies.Pullback), inputs.Readings, inputs.Trees, candidates: Candidates());
 
-        return
+        IReadOnlyList<RuleUnderTest> walked =
         [
             .. large ? LargePullbacks(inputs) : IndexPullbacks(inputs, pullback!, Candidates),
             .. Swings(inputs, BreakoutRule.Name),
@@ -257,6 +260,91 @@ public static class RuleTests
             .. (inputs.Dip is { } dip ? Dip(inputs.Standing, inputs.Read.Index, parameters => DipTrades(dip, parameters)) : []),
             .. (inputs.Improving is { } improving ? Improving(inputs.Standing, inputs.Read.Index, setting => improving.Book(setting).Months) : []),
         ];
+
+        return inputs.Ranked is null ? walked : Ranked(inputs, walked);
+    }
+
+    // From 21.8 a rule registered ranked walked by the ranking walk over the ledger's setups of its family, matched
+    // inside each fold on the newest run's fold score of its year, in place of its own gates' walk; and beside a live or
+    // provisional rule whose family on the index registers no ranking, the family's ranking variant walked unregistered
+    // by the order the fifths choose and written nowhere, or the words saying none is built.
+    // see: A family's ranking variant orders by the learned score where its audit's top fifth stands above the bottom and otherwise by the expected value, and is built nowhere neither orders
+    static IReadOnlyList<RuleUnderTest> Ranked(RuleTestInputs inputs, IReadOnlyList<RuleUnderTest> walked)
+    {
+        var like = inputs.Like ?? LikePool.None;
+        var places = inputs.Read.Calendar.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
+        var unregistered = new Dictionary<string, (IReadOnlyList<(int Entry, double? Edge)>? Units, string Words)>(StringComparer.Ordinal);
+
+        IReadOnlyList<(int Entry, double? Edge)>? Walk(RankingWalk walk, RankingOrder order) =>
+            walk.Folds(order, inputs.Read.Folds, places, year => like.FoldOf(walk.Family, year), walk.ExpectedOf(like)) is var folds && folds.Any(one => one is not null)
+                ? [.. folds.OfType<IReadOnlyList<(int Entry, double? Edge)>>().SelectMany(units => units)]
+                : null;
+
+        RegisterRow? RowOf(RuleUnderTest rule) => inputs.Standing.FirstOrDefault(row => row.Candidate == rule.Rule);
+
+        bool Ranks(RegisterRow row) => RuleHooks.Of(CandidateEvaluator.Read(row.Parameters)).Ranks;
+
+        bool FamilyRanks(RuleUnderTest rule) =>
+            walked.Any(other => other.Family == rule.Family && RowOf(other) is { } row && Ranks(row));
+
+        return
+        [
+            .. walked.Select(rule =>
+            {
+                if (inputs.Ranked!(rule.Family) is not { } walk)
+                {
+                    return rule;
+                }
+
+                if (RowOf(rule) is { } row && Ranks(row))
+                {
+                    var order = RankingChoice.OrderOf(RuleHooks.Of(CandidateEvaluator.Read(row.Parameters)));
+
+                    return Walk(walk, order) is { } units
+                        ? rule with { Trades = units, Why = null }
+                        : rule with { Trades = null, Why = NoRankingFolds };
+                }
+
+                if (rule.Standing == Variant || FamilyRanks(rule))
+                {
+                    return rule;
+                }
+
+                if (!unregistered.TryGetValue(rule.Family, out var beside))
+                {
+                    var (order, score, expected) = walk.Choose(year => like.FoldOf(walk.Family, year), walk.ExpectedOf(like));
+
+                    beside = (order == RankingOrder.None ? null : Walk(walk, order), ScoreAudit.RankingLine(rule.Family, order, score, expected));
+                    unregistered[rule.Family] = beside;
+                }
+
+                return rule with { Ranking = beside.Units, RankingWords = beside.Words };
+            }),
+        ];
+    }
+
+    // From 21.8 why a rule registered ranked is not walked: the run holds no fold score of its family on the index.
+    public const string NoRankingFolds = "its ranking reads the fold scores of its family on the index, and the run holds none to rank by";
+
+    // From 21.8 a live or provisional rule's family's ranking variant beside it, as the run prints it: the order the fifths
+    // chose with the fifths, and the variant's trades and their mean edge after costs over the test years against the
+    // rule's own, or that none is built.
+    public static string RankingLine(RuleUnderTest rule, Func<int, bool> inTestYears)
+    {
+        static string Side(IReadOnlyList<(int Entry, double? Edge)> units, Func<int, bool> on)
+        {
+            var kept = units.Where(unit => on(unit.Entry)).ToArray();
+            var edged = kept.Where(unit => unit.Edge is not null).ToArray();
+
+            return edged.Length == 0
+                ? FormattableString.Invariant($"{kept.Length} trade(s), none ended")
+                : FormattableString.Invariant($"{kept.Length} trade(s) at {edged.Average(unit => unit.Edge!.Value):+0.000;-0.000} risks");
+        }
+
+        return FormattableString.Invariant($"{rule.Family}, {rule.Rule}: {rule.RankingWords}")
+            + (rule.Ranking is { } units
+                ? FormattableString.Invariant($"; walked unregistered and written nowhere, {Side(units, inTestYears)} over the test years, against its own {Side(rule.Trades ?? [], inTestYears)}")
+                : string.Empty);
     }
 
     // From 22.15 the Fundamentals family on any index once a freeze stands on it: each registered rule's book walked by the

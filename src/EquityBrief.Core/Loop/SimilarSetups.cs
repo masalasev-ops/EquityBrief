@@ -149,12 +149,7 @@ public static class SimilarSetups
         var matched = new List<(int Row, double Distance)>();
         var taken = new Dictionary<string, List<int>>(StringComparer.Ordinal);
 
-        foreach (var (row, distance) in Enumerable.Range(0, setups.Count)
-            .Where(row => !string.Equals(setups[row].Ticker, ticker, StringComparison.Ordinal))
-            .Select(row => (Row: row, Distance: Distance(row)))
-            .OrderBy(one => one.Distance)
-            .ThenByDescending(one => setups[one.Row].Session)
-            .ThenBy(one => setups[one.Row].Ticker, StringComparer.Ordinal))
+        foreach (var (row, distance) in ByDistance(setups, ticker, Distance))
         {
             if (matched.Count == Nearest)
             {
@@ -208,6 +203,74 @@ public static class SimilarSetups
             Chance = form is { } read ? SetupChance.Of(read, [.. matched.Select(one => setups[one.Row])]) : null,
         };
     }
+
+    // Every setup but the pick's own stock's, nearest first, a tie the newer session first and then by ticker. Only those
+    // within the distance of the nearest few times the count matched are sorted at first, which holds the order's start
+    // whole since every setup nearer stands among them; the rest are sorted only where those run out before the count.
+    static IEnumerable<(int Row, double Distance)> ByDistance(IReadOnlyList<SimilarSetup> setups, string ticker, Func<int, double> distance)
+    {
+        var rows = new List<(int Row, double Distance)>(setups.Count);
+
+        for (var row = 0; row < setups.Count; row++)
+        {
+            if (!string.Equals(setups[row].Ticker, ticker, StringComparison.Ordinal))
+            {
+                rows.Add((row, distance(row)));
+            }
+        }
+
+        int Compare((int Row, double Distance) one, (int Row, double Distance) other)
+        {
+            var by = one.Distance.CompareTo(other.Distance);
+
+            if (by == 0)
+            {
+                by = setups[other.Row].Session.CompareTo(setups[one.Row].Session);
+            }
+
+            return by != 0 ? by : string.CompareOrdinal(setups[one.Row].Ticker, setups[other.Row].Ticker);
+        }
+
+        var first = SortedFirst * Nearest;
+
+        if (rows.Count > first)
+        {
+            var distances = rows.Select(one => one.Distance).ToArray();
+
+            Array.Sort(distances);
+
+            var cut = distances[first - 1];
+            var near = rows.Where(one => one.Distance <= cut).ToList();
+
+            near.Sort(Compare);
+
+            foreach (var one in near)
+            {
+                yield return one;
+            }
+
+            var far = rows.Where(one => one.Distance > cut).ToList();
+
+            far.Sort(Compare);
+
+            foreach (var one in far)
+            {
+                yield return one;
+            }
+
+            yield break;
+        }
+
+        rows.Sort(Compare);
+
+        foreach (var one in rows)
+        {
+            yield return one;
+        }
+    }
+
+    // How many times the count matched are sorted first.
+    const int SortedFirst = 4;
 
     // A value's place among sorted values: the share under it and half the share equal to it.
     public static double Place(double[] sorted, double value)

@@ -65,6 +65,12 @@ public static class RegisterVerb
     // see: A freeze on the S&P 400 or 600 registers a market variant beside each swing rule and keeps the rule it replaces in the background for 63 sessions
     public const string Replacing = "--replacing";
 
+    // From 21.8 the flag that registers a family's ranking variant on an index beside its live rule: the live rule's
+    // setting with its list ranked over the family's setups at the ledger's loose gates by the order given, score or
+    // expected, refused where the family holds nine or the night's step on the index lists no rule by that order.
+    // see: A family's ranking variant orders by the learned score where its audit's top fifth stands above the bottom and otherwise by the expected value, and is built nowhere neither orders
+    public const string Ranked = "--ranked";
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--candidate", ["--candidate", "--rule", "--test", "--evaluator"], ["--parameters"], []),
@@ -77,6 +83,7 @@ public static class RegisterVerb
         new(FamilyAgain, [FamilyAgain, "--evidence"], [], []),
         new(IndexFamily, [IndexFamily, "--index", "--parameters"], ["--variants", Replacing], []),
         new(IndexVariants, [IndexVariants, "--index", "--variants"], ["--evidence"], [Again]),
+        new(Ranked, [Ranked, "--index", "--by"], [], []),
     ];
 
     // The run id, to the ten-millionth of a second, so two commands a second apart never share one.
@@ -309,6 +316,15 @@ public static class RegisterVerb
                 : await RefusedAsync(registrar, runId, $"no freeze is written for a family named '{Given(Family)}'; the families a freeze is written for are {string.Join(", ", TheSetupFamilies.Names)}.", error);
         }
 
+        if (form.Flag == Ranked)
+        {
+            var (ranking, refusedRanking) = RankedVariant(Given(Ranked), Given("--index"), Given("--by"), await registrar.RowsAsync(), at);
+
+            return ranking is null
+                ? await RefusedAsync(registrar, runId, refusedRanking!, error)
+                : await Said(await registrar.RegisterAsync(ranking.Candidate, ranking.Rule, ranking.Test, ranking.Evaluator, ranking.Parameters, runId), output, error);
+        }
+
         IReadOnlyDictionary<string, double> parameters;
 
         try
@@ -324,6 +340,50 @@ public static class RegisterVerb
             await registrar.RegisterAsync(Given("--candidate"), Given("--rule"), Given("--test"), Given("--evaluator"), parameters, runId),
             output,
             error);
+    }
+
+    // From 21.8 a family's ranking variant on an index: its live rule's name without the word live, its words and its
+    // test, its evaluator and its setting with the ranking by the order given; or why none can be registered.
+    // see: A family's ranking variant orders by the learned score where its audit's top fifth stands above the bottom and otherwise by the expected value, and is built nowhere neither orders
+    public static (Registration? Registration, string? Refusal) RankedVariant(string family, string index, string by, IReadOnlyList<Core.Candidates.RegisterRow> register, DateTimeOffset at)
+    {
+        var order = by switch
+        {
+            "score" => Core.Loop.RankingOrder.Score,
+            "expected" => Core.Loop.RankingOrder.Expected,
+            _ => Core.Loop.RankingOrder.None,
+        };
+
+        if (order == Core.Loop.RankingOrder.None)
+        {
+            return (null, $"'--by {by}' names no order; a ranking is by 'score', the index's newest learned score, or by 'expected', the expected value of the setups like each.");
+        }
+
+        if (!Loop.RankingProcedures.Approvable(index, family, order))
+        {
+            return (null, $"the night's step on the {Cards.DecisionCards.NameOf(index)} lists no {family} rule ranked by {Core.Loop.RankingChoice.Words(order)}, so none is registered.");
+        }
+
+        static bool OnIndex(Core.Candidates.CandidateEvaluator? evaluator, string family, string index) => evaluator switch
+        {
+            Core.Candidates.IndexRuleCandidate rule => rule.SetupFamily == family && rule.Index == index,
+            Core.Candidates.OwnStepCandidate rule => rule.SetupFamily == family && rule.Index == index,
+            Core.Candidates.FamilyRuleEvaluator rule => index == Loop.WalkForwardTester.LargeIndex && rule.Family == family,
+            _ => false,
+        };
+
+        if (Core.Candidates.CandidateFamily.Standing(register, at).FirstOrDefault(row => Core.Candidates.FamilyRecords.IsLive(row.Candidate) && OnIndex(Core.Candidates.CandidateEvaluators.Find(row.Evaluator), family, index)) is not { } live)
+        {
+            return (null, $"no live {family} rule stands registered on the {Cards.DecisionCards.NameOf(index)}, so there is no rule to rank.");
+        }
+
+        var parameters = new Dictionary<string, double>(Core.Candidates.CandidateEvaluator.Read(live.Parameters), StringComparer.Ordinal)
+        {
+            [Core.Loop.RuleHooks.RankingParameter] = Core.Loop.RankingChoice.HookOf(order)!.Value,
+        };
+        var words = Loop.RankingProcedures.ChangeOf(order);
+
+        return (new Registration("the " + live.Candidate[Core.Candidates.FamilyRecords.LivePrefix.Length..] + ", " + words, live.Rule, live.Test, live.Evaluator, parameters), null);
     }
 
     // What each replayed rule's record does, a line a rule.

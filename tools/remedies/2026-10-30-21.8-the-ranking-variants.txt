@@ -1,0 +1,12 @@
+# The remedy of 21.8, ranking in place of pass-or-fail gates as a variant. The score bucket audit of 2026-10-30 found the
+# learned score's top fifth above its bottom for the S&P 500's breakout and drift, the S&P 400's drift and the S&P 600's
+# breakout, and the expected value of the setups like each ordering none of the families the score does not, its top
+# fifth below its bottom on each of them; the dip holds no fold score yet. So the ranking variant orders by the learned
+# score on those four and is built on no other family. The S&P 400's drift and the S&P 600's breakout have room, so each registers its live
+# rule's setting ranked by the index's newest learned score beside it, its record starting at this instant; the S&P 500's
+# breakout and drift hold nine, so theirs is walked unregistered by the monthly run's per-rule test. No migration, no
+# request to the provider and no model call. Run from main after the merge, when no night, local run, drain, labeller,
+# ledger build or monthly run is writing, read the output for "remedy done" and the two registrations, and restart the read
+# surface after it.
+register --ranked drift --index MID --by score
+register --ranked breakout --index SML --by score

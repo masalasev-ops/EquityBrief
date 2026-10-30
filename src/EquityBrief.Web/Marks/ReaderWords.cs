@@ -147,6 +147,7 @@ public static class ReaderWords
     [
         .. new (string Phrase, string Words)[]
         {
+            (@"\branked over the family's setups at the ledger's loose gates by\b", "ranked, among every stock its event found that night with its other steps loosened, by"),
             (@"\bits four newest quarters sum their net income above nothing\b", "it made a profit over its last four quarters"),
             (@"\bits four newest quarters sum their net income to nothing or less\b", "it made no profit over its last four quarters"),
             (@"\bits operating income is ([\d.,]+) times its interest\b", "it earns $1 times its interest bill"),

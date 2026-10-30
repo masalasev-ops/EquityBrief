@@ -45,7 +45,7 @@ public sealed class ScoreAudit(IClock clock, string databaseFile, string dataRoo
 
     static readonly string SettledSwings =
         "SELECT family, session_date, picked, live_pass, result, edge, edge_after_cost, " + string.Join(", ", LedgerReadings.All.Select(reading => reading.Column))
-        + " FROM setup WHERE index_code = $index AND settled = 1 AND family IN ('pullback', 'breakout', 'drift') ORDER BY session_date, family, ticker;";
+        + " FROM setup WHERE index_code = $index AND settled = 1 AND family IN ('pullback', 'breakout', 'drift', 'dip') ORDER BY session_date, family, ticker;";
 
     sealed record Run(string Id, DateOnly Through, DateOnly Started);
 
@@ -227,6 +227,27 @@ public sealed class ScoreAudit(IClock clock, string databaseFile, string dataRoo
             output.WriteLine(FormattableString.Invariant($"{Verb}: {row.Family}, {row.Kind}, {row.Population}, group {row.Group + 1}: {row.Setups} setup(s), {CheckReports.Share(row.Winning, row.Setups)} winning, mean edge {CheckReports.Cell(row.MeanEdge, true)}, {row.Picked} picked, {row.Passed} passed"));
         }
 
+        // From 21.8 the order each family's ranking variant takes on the index, read off the same fifths in the test years:
+        // the learned score where its top fifth stands above its bottom, otherwise the expected value of the setups like
+        // each where its own top fifth does, and none otherwise.
+        // see: A family's ranking variant orders by the learned score where its audit's top fifth stands above the bottom and otherwise by the expected value, and is built nowhere neither orders
+        var rankings = new List<RankingRow>();
+
+        if (folds.Count > 0)
+        {
+            var like = await LikePool.ReadAsync(connection, index, cancellation);
+            var from = new DateOnly(folds.Keys.Min(key => key.Year), 1, 1);
+
+            foreach (var family in RankingWalk.Families)
+            {
+                var walk = await RankingWalk.ReadAsync(connection, index, family, from, newest.Through, cancellation);
+                var (order, score, expected) = walk.Choose(year => folds.TryGetValue((family, ScoreProcedures.Ridge, year), out var fold) ? fold.Model : null, walk.ExpectedOf(like));
+
+                rankings.Add(new RankingRow(family, order, score, expected));
+                output.WriteLine($"{Verb}: {RankingLine(family, order, score, expected)}");
+            }
+        }
+
         var (report, figures) = CheckReports.Write(
             dataRoot,
             FormattableString.Invariant($"score-audit-{index}"),
@@ -235,14 +256,28 @@ public sealed class ScoreAudit(IClock clock, string databaseFile, string dataRoo
             [new CheckReports.Table(
                 "Each family's settled setups by the group their score falls in",
                 ["Family", "Kind", "Population", "Group", "Setups", "Winning", "Mean edge after costs", "Picked", "Passed"],
-                [.. rows.Select(row => (IReadOnlyList<string>)[row.Family, row.Kind, row.Population, CheckReports.Cell(row.Group + 1), CheckReports.Cell(row.Setups), CheckReports.Share(row.Winning, row.Setups), CheckReports.Cell(row.MeanEdge, true), CheckReports.Cell(row.Picked), CheckReports.Cell(row.Passed)])])],
-            new { index, run = newest.Id, through = newest.Through, settled = setups.Count, placedInFolds = inFolds.Count, placedSinceFirstRun = sinceFirst.Count, rows },
+                [.. rows.Select(row => (IReadOnlyList<string>)[row.Family, row.Kind, row.Population, CheckReports.Cell(row.Group + 1), CheckReports.Cell(row.Setups), CheckReports.Share(row.Winning, row.Setups), CheckReports.Cell(row.MeanEdge, true), CheckReports.Cell(row.Picked), CheckReports.Cell(row.Passed)])]),
+             new CheckReports.Table(
+                "Each family's ranking variant: the order its fifths choose",
+                ["Family", "Learned score's bottom fifth", "Learned score's top fifth", "Expected value's bottom fifth", "Expected value's top fifth", "Ordered by"],
+                [.. rankings.Select(row => (IReadOnlyList<string>)[row.Family, CheckReports.Cell(row.Score.Bottom, true), CheckReports.Cell(row.Score.Top, true), CheckReports.Cell(row.Expected.Bottom, true), CheckReports.Cell(row.Expected.Top, true), row.Order == RankingOrder.None ? "not built" : RankingChoice.Words(row.Order)])])],
+            new { index, run = newest.Id, through = newest.Through, settled = setups.Count, placedInFolds = inFolds.Count, placedSinceFirstRun = sinceFirst.Count, rows, rankings },
             clock.UtcNow);
 
         output.WriteLine($"{Verb}: written to {report} with its figures at {figures}; no store row written");
 
         return 0;
     }
+
+    // From 21.8 a family's ranking variant on an index: the order its fifths choose, and the fifths.
+    public sealed record RankingRow(string Family, RankingOrder Order, RankingFifths Score, RankingFifths Expected);
+
+    // A family's ranking variant in a run's words.
+    public static string RankingLine(string family, RankingOrder order, RankingFifths score, RankingFifths expected) =>
+        $"the {family}'s ranking variant "
+        + (order == RankingOrder.None ? "is not built" : "orders by " + RankingChoice.Words(order))
+        + ": the learned score's fifths, " + RankingWalk.FifthsWords(score)
+        + "; the expected value's fifths, " + RankingWalk.FifthsWords(expected);
 
     static DateOnly Date(string stamp) => DateOnly.ParseExact(stamp, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 }

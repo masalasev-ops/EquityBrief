@@ -8,9 +8,10 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Loop;
 
-// From 21.7 what the tester matches the setups like a rule's listing among: every settled setup of a swing family the
-// ledger holds on an index whose live rule passed it, each with the day its path ended, its readings, its result after
-// costs and whether it won, and the newest tester run's ridge score fitted in each fold, a year each. A listing in a
+// From 21.7 what the tester matches the setups like a rule's listing among: every settled setup of a swing family, from
+// 21.8 the dip's too, the ledger holds on an index whose live rule passed it, each with the day its path ended, its
+// readings, its result after costs and whether it won, and the newest tester run's ridge score fitted in each fold, a
+// year each. A listing in a
 // year is matched on the readings weighing most in that year's fold score, among the setups whose paths ended before the
 // year began, so nothing that ended inside the fold's year reaches it; a listing in a year no fold score stands for, or
 // holding none of the readings matched on, reads no expected value.
@@ -26,7 +27,7 @@ public sealed class LikePool(IReadOnlyList<LikePool.Settled> setups, IReadOnlyDi
     static readonly string SettledSwings =
         "SELECT family, ticker, session_date, ended_on, result, cost, \"end\", target, entry, stop, edge, company_value, "
         + string.Join(", ", LedgerReadings.All.Select(reading => reading.Column))
-        + " FROM setup WHERE index_code = $index AND settled = 1 AND live_pass = 1 AND ended_on IS NOT NULL AND family IN ('pullback', 'breakout', 'drift') ORDER BY session_date, family, ticker;";
+        + " FROM setup WHERE index_code = $index AND settled = 1 AND live_pass = 1 AND ended_on IS NOT NULL AND family IN ('pullback', 'breakout', 'drift', 'dip') ORDER BY session_date, family, ticker;";
 
     const int ReadingsFrom = 12;
 
@@ -35,6 +36,12 @@ public sealed class LikePool(IReadOnlyList<LikePool.Settled> setups, IReadOnlyDi
     public static LikePool None { get; } = new([], new Dictionary<(string Family, int Year), RidgeModel>());
 
     public int Count => setups.Count;
+
+    // From 21.8 the same setups matched on other fold scores, the ones a run fitted before it stores them.
+    public LikePool With(IReadOnlyDictionary<(string Family, int Year), RidgeModel> others) => new(setups, others);
+
+    // The fold score stored for a family's year, none where none stands.
+    public RidgeModel? FoldOf(string family, int year) => folds.TryGetValue((family, year), out var model) ? model : null;
 
     public static async Task<LikePool> ReadAsync(SqliteConnection connection, string index, CancellationToken cancellation)
     {
