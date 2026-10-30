@@ -182,12 +182,14 @@ public partial class ReadSurface
         // Each card's key says the rule today was chosen on these test years.
         Assert.Contains("The rule today was chosen on these same test years, so a proposal reads understated against it.", page, StringComparison.Ordinal);
 
-        // September's run named in the link, its families each saying none was tested, from 19.9 the business-first
-        // family's card among them.
+        // September's run named in the link, its families each saying none was tested, the seven the loop proposes for: the
+        // dip's and the two books' cards among them and the business-first family's not.
         var september = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=400&month=2026-09"));
 
         Assert.Contains("data-month=\"2026-09\" data-run=\"loop-test-MID-20260905T120000Z\" data-proposals=\"0\"", september, StringComparison.Ordinal);
-        Assert.Equal(EquityBrief.Core.Families.SetupFamilies.Order.Count, september.Split("data-loop-rule=\"none\"").Length - 1);
+        Assert.Equal(7, september.Split("data-loop-rule=\"none\"").Length - 1);
+        Assert.Equal(EquityBrief.Core.Loop.LoopDecisions.LoopFamilies, System.Text.RegularExpressions.Regex.Matches(september, "data-loop-rule=\"none\" data-family=\"([a-z]+)\"").Select(match => match.Groups[1].Value));
+        Assert.DoesNotContain("data-card=\"loop-fundamentals\"", september, StringComparison.Ordinal);
 
         // An index with no run says so in one line.
         var small = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=600"));

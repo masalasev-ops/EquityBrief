@@ -265,7 +265,8 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
                         await WriteAppliedAsync(writing, transaction, one, true, words, token);
                     },
                     runId,
-                    cancellation);
+                    cancellation,
+                    registration.Candidate);
 
                 if (registered.Outcome == CandidateRegistrar.Refused)
                 {
@@ -322,7 +323,8 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
                     evidence,
                     async (writing, transaction, token) => await WriteAppliedAsync(writing, transaction, one, true, words, token),
                     runId,
-                    cancellation);
+                    cancellation,
+                    registration.Candidate);
 
                 if (registered.Outcome == CandidateRegistrar.Refused)
                 {
@@ -351,12 +353,15 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
 
             foreach (var name in families)
             {
-                var family = CandidateFamily.In(CandidateFamily.Standing(await registrar.RowsAsync(cancellation), clock.UtcNow), name);
+                var rows = await registrar.RowsAsync(cancellation);
+                var family = CandidateFamily.In(CandidateFamily.Standing(rows, clock.UtcNow), name);
 
+                // Its successor is the first live rule registered after it, read over every registration of the family, so
+                // a successor a later change moved to the background still counts the block from its own registration.
                 foreach (var replaced in family.Where(row => FamilyRecords.IsReplaced(row.Candidate, family)).ToArray())
                 {
-                    var successor = family
-                        .Where(row => FamilyRecords.IsLive(row.Candidate) && (row.RegisteredAt, row.Id).CompareTo((replaced.RegisteredAt, replaced.Id)) > 0)
+                    var successor = CandidateFamily.In(rows, name)
+                        .Where(row => row.Event == CandidateFamily.Registered && FamilyRecords.IsLive(row.Candidate) && (row.RegisteredAt, row.Id).CompareTo((replaced.RegisteredAt, replaced.Id)) > 0)
                         .MinBy(row => (row.RegisteredAt, row.Id));
 
                     if (successor is null || Blocks.Of(FamilyRecords.FirstSession(successor.RegisteredAt), tonight) < 1)
@@ -369,7 +374,8 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
                         replaced.Candidate,
                         FormattableString.Invariant($"replaced by '{successor.Candidate}', whose record counts from {first:yyyy-MM-dd}, and the {LoopDecisions.ReplacedSessions} sessions it ran beside it have passed by {tonight:yyyy-MM-dd}"),
                         runId,
-                        cancellation);
+                        cancellation,
+                        replaced.Candidate);
 
                     if (retiring.Outcome == CandidateRegistrar.Retired)
                     {
@@ -407,7 +413,8 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
                         ? FormattableString.Invariant($"the live rule '{wasLive}' replaced by '{live?.Candidate ?? "its family's change"}' in a family holding {CandidateFamily.Maximum}, kept beside it in the background from {since:yyyy-MM-dd}, and the {LoopDecisions.ReplacedSessions} sessions it ran beside it have passed by {tonight:yyyy-MM-dd}")
                         : FormattableString.Invariant($"the rule of the day before the freeze of '{live?.Candidate ?? "its family"}', kept beside it in the background from {since:yyyy-MM-dd}, and the {LoopDecisions.ReplacedSessions} sessions it ran beside it have passed by {tonight:yyyy-MM-dd}"),
                     runId,
-                    cancellation);
+                    cancellation,
+                    background.Candidate);
 
                 if (retiring.Outcome == CandidateRegistrar.Retired)
                 {
@@ -557,7 +564,7 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
             return (false, NoChangeRefused, null);
         }
 
-        if (index == MarketCloses.Index && made.Places is not null && family != FundamentalsRule.Name)
+        if (index == MarketCloses.Index && made.Places is not null)
         {
             return (false, LargeSettingRefused, null);
         }

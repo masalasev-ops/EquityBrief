@@ -3786,7 +3786,9 @@ public sealed partial class SinglePageApp : IComponent
             "breakout" => "Breakout",
             "drift" => "Earnings drift",
             "heavyweight" => "Sector heavyweights",
-            EquityBrief.Core.Families.FundamentalsRule.Name => EquityBrief.Core.Families.SetupFamilies.FundamentalsFirst.Label,
+            EquityBrief.Core.Families.ImprovingRule.Name => EquityBrief.Core.Families.ImprovingRule.Label,
+            EquityBrief.Core.Families.DipRule.Name => EquityBrief.Core.Families.SetupFamilies.Dips.Label,
+            EquityBrief.Core.Families.QualityRule.Name => EquityBrief.Core.Families.QualityRule.Label,
             _ => word,
         };
 

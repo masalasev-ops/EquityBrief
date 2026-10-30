@@ -36,19 +36,22 @@ public static class LoopDecisions
 
     public const string FamilyRefused = "the family has no setting an approval applies";
 
+    // From 21.5 the fundamentals-first family, which the night computes no longer, takes no change.
+    // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
+    public const string LeftTheNightRefused = "the fundamentals-first family is computed by the night no longer, so an approved change to it is not applied";
+
     // From 21.5 an approval changes a frozen swing rule's hooks alone, its setting standing where its freeze put it.
     // see: The engines test a frozen rule at the levels it states, and a frozen rule's setting moves only by a freeze
     public const string FrozenSettingRefused = "a frozen rule's setting moves only by a freeze, so an approval changes its hooks alone";
 
-    // The families an approval changes on every index, the S&P 500's pullback by its hooks or a shape move from 17.14,
-    // from 19.9 the fundamentals-first family by its setting and its hooks on every index, the S&P 500's included, and
+    // The families an approval changes on every index, the S&P 500's pullback by its hooks or a shape move from 17.14, and
     // from 21.5 the short-term dip, Quality at a fair price and the Fundamentals family on every index and the sector
-    // heavyweights on the S&P 400 and 600, each by a registration of its live rule again at the change.
+    // heavyweights on the S&P 400 and 600, each by a registration of its live rule again at the change; the
+    // fundamentals-first family, which the night computes no longer, is not among them.
     // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
-    // see: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place
     // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
     public static IReadOnlyList<string> Families { get; } =
-        [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, FundamentalsRule.Name, DipRule.Name, QualityRule.Name, ImprovingRule.Name, HeavyweightRule.Name];
+        [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, DipRule.Name, QualityRule.Name, ImprovingRule.Name, HeavyweightRule.Name];
 
     // The S&P 500's families an approval changes by its stored settings and a registration together.
     public static IReadOnlyList<string> LargeFamilies { get; } = [BreakoutRule.Name, DriftRule.Name];
@@ -60,6 +63,20 @@ public static class LoopDecisions
     public static IReadOnlyList<string> LoopFamilies { get; } =
         [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, ImprovingRule.Name, DipRule.Name, HeavyweightRule.Name, QualityRule.Name];
 
+    // Where a family stands in that order, counted from one, and past every family for a word it does not hold.
+    public static int LoopOrderOf(string family)
+    {
+        for (var at = 0; at < LoopFamilies.Count; at++)
+        {
+            if (string.Equals(LoopFamilies[at], family, StringComparison.Ordinal))
+            {
+                return at + 1;
+            }
+        }
+
+        return LoopFamilies.Count + 1;
+    }
+
     // The sessions a rule a change replaced runs beside the change before the apply step retires it, a block, beside it
     // as a variant or, from 21.5, in the background where its family holds nine rules.
     // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
@@ -68,6 +85,7 @@ public static class LoopDecisions
     // Why an approved change to a family on an index is not applied, none where it is.
     public static string? Refusal(string index, string family) =>
         family == HeavyweightRule.Name && index == MarketCloses.Index ? BookRefused
+        : family == FundamentalsRule.Name ? LeftTheNightRefused
         : !Families.Contains(family, StringComparer.Ordinal) ? FamilyRefused
         : null;
 

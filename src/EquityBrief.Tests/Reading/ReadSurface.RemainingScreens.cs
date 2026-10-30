@@ -225,7 +225,7 @@ public partial class ReadSurface
         Tested(store, "loop-test-MID-20261009T120000Z", "MID", "pullback", "winners against losers, ranked 1", 0.0001, true, Condition("rsi", 60));
         Tested(store, "loop-test-MID-20261009T120000Z", "MID", "pullback", "the grid", 0.5, false, null);
         Tested(store, "loop-test-MID-20261009T120000Z", "MID", "breakout", "the grid", 0.05, false, Exit(7), better: 2, counted: 5);
-        Tested(store, "loop-test-MID-20261009T120000Z", "MID", "fundamentals", "the grid", 0.3, false, EquityBrief.Core.Loop.LoopChange.OfSetting([0, 0, 2], "growth 0|margins either|cash 1.2", 0).Json);
+        Tested(store, "loop-test-MID-20261009T120000Z", "MID", EquityBrief.Core.Families.ImprovingRule.Name, "the grid", 0.3, false, new EquityBrief.Core.Loop.LoopChange(null, EquityBrief.Core.Families.ImprovingGrid.Settings[1].Key, null, EquityBrief.Core.Loop.LoopChange.NoHooks).Json);
         store.Execute("INSERT INTO loop_test (run_id, index_code, family, proposal, year, complete, chosen, current_units, proposed_units, current_total, proposed_total) VALUES ('loop-test-MID-20261009T120000Z', 'MID', 'pullback', 'winners against losers, ranked 1', 2024, 1, 'rsi above 60', 60, 55, 2.5, 4.0);");
 
         using var host = new Host(store.Root);
@@ -234,9 +234,9 @@ public partial class ReadSurface
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=400"));
         var summary = Card(page, "loop-summary");
 
-        // A row a family in the one order, the business-first family among them.
+        // A row a family in Tonight's order of the seven the loop proposes for, the dip and the two books among them.
         Assert.Equal(
-            ["pullback", "breakout", "drift", "fundamentals", "heavyweight"],
+            ["pullback", "breakout", "drift", "improving", "dip", "heavyweight", "quality"],
             Regex.Matches(summary, "<tr data-family=\"([^\"]+)\" data-tested").Select(match => match.Groups[1].Value));
         Assert.Contains("<tr data-family=\"pullback\" data-tested=\"2\" data-strongest=\"winners against losers, ranked 1\" data-put=\"winners against losers, ranked 1\">", summary, StringComparison.Ordinal);
         Assert.Contains("data-adjusted=\"0.0001\" data-held=\"true\"", summary, StringComparison.Ordinal);
@@ -253,12 +253,12 @@ public partial class ReadSurface
         Assert.Equal(new DateOnly(2026, 12, 5), SinglePageApp.NextMonthlyRun("2026-11"));
         Assert.Contains("Nothing was tested for this setup in the run for 2026-10; the next monthly run is on 2026-11-07.", summary, StringComparison.Ordinal);
 
-        // From 19.9 the business-first family is a row and a card as every family is, its one proposal drawn from the run
-        // and nothing said of 19.9.
-        Assert.Contains("<tr data-family=\"fundamentals\" data-tested=\"1\" data-strongest=\"the grid\" data-put=\"none\">", summary, StringComparison.Ordinal);
-        Assert.Contains("data-card=\"loop-fundamentals\"", page, StringComparison.Ordinal);
-        Assert.Single(Blocks(page, "<details class=\"loop-row\" data-family=\"fundamentals\" data-proposal=\"the grid\">.*?</details>"));
-        Assert.DoesNotContain("19.9", page, StringComparison.Ordinal);
+        // The Fundamentals family is a row and a card as every family is, its one proposal drawn from the run under its own
+        // name and nothing said of a checkpoint.
+        Assert.Contains("<tr data-family=\"improving\" data-tested=\"1\" data-strongest=\"the grid\" data-put=\"none\">", summary, StringComparison.Ordinal);
+        Assert.Contains("data-card=\"loop-improving\"", page, StringComparison.Ordinal);
+        Assert.Single(Blocks(page, "<details class=\"loop-row\" data-family=\"improving\" data-proposal=\"the grid\">.*?</details>"));
+        Assert.DoesNotContain("21.5", page, StringComparison.Ordinal);
 
         // The line on what a change must pass, each figure its constant.
         Assert.Contains(
@@ -277,11 +277,10 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task TheLoopSummaryDrawsTheBusinessFirstFamilysRuleTodayFromTheSettingItsNightStoredOnEveryIndex()
+    public async Task TheLoopSummaryDrawsNoBusinessFirstRowOnAnyIndexWhileItsSettingsShortFormStillReadsBack()
     {
-        // From the 19.7 correction of 2026-10-18: no rule of the business-first family is registered, so its rule today is
-        // the setting each index's night stored, read back from its short form; the S&P 400 at the provisional setting and
-        // the S&P 500 at an approved one, each chip worked by hand from the setting's words.
+        // The business-first family's setting a night stored still reads back from its short form, each one of its grid,
+        // and a form no setting holds reads none.
         Assert.Equal(EquityBrief.Core.Families.FundamentalsRule.Provisional, EquityBrief.Core.Families.FundamentalsSetting.FromShort("growth 0|margins either|cash 1.0"));
         Assert.All(EquityBrief.Core.Families.FundamentalsRule.Grid, setting => Assert.Equal(setting, EquityBrief.Core.Families.FundamentalsSetting.FromShort(setting.Short)));
         Assert.Null(EquityBrief.Core.Families.FundamentalsSetting.FromShort("growth 0|margins 1|cash 1.0"));
@@ -305,17 +304,16 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        static string RuleToday(string page) =>
-            Regex.Match(Card(WebUtility.HtmlDecode(page), "loop-summary"), "<tr data-family=\"fundamentals\".*?</td><td.*?</td>", RegexOptions.Singleline).Value;
+        // The night computes the family no longer and the loop proposes for it no more, so neither index's summary draws
+        // its row or its card, whatever setting its night stored.
+        foreach (var universe in new[] { "400", "500" })
+        {
+            var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/loop?universe={universe}"));
 
-        Assert.EndsWith(
-            "<td><span class=\"rule-chips\"><span class=\"chip\">revenue up more than 0%</span><span class=\"chip\">gross or operating margin up</span><span class=\"chip\">cash at least 1 times income</span></span></td>",
-            RuleToday(await client.GetStringAsync("/screens/loop?universe=400")),
-            StringComparison.Ordinal);
-        Assert.EndsWith(
-            "<td><span class=\"rule-chips\"><span class=\"chip\">revenue up more than 5%</span><span class=\"chip\">gross and operating margins up</span><span class=\"chip\">cash at least 1.2 times income</span></span></td>",
-            RuleToday(await client.GetStringAsync("/screens/loop?universe=500")),
-            StringComparison.Ordinal);
+            Assert.DoesNotContain("<tr data-family=\"fundamentals\"", Card(page, "loop-summary"), StringComparison.Ordinal);
+            Assert.DoesNotContain("data-card=\"loop-fundamentals\"", page, StringComparison.Ordinal);
+            Assert.Contains($"<tr data-family=\"{EquityBrief.Core.Families.ImprovingRule.Name}\"", Card(page, "loop-summary"), StringComparison.Ordinal);
+        }
     }
 
     [Fact]

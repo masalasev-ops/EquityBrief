@@ -656,7 +656,8 @@ public sealed class CandidateRegistrar : IComponent
         string evidence,
         Func<SqliteConnection, SqliteTransaction, CancellationToken, Task> alongside,
         string runId,
-        CancellationToken cancellation = default)
+        CancellationToken cancellation = default,
+        string? subject = null)
     {
         var startedAt = clock.UtcNow;
 
@@ -668,7 +669,7 @@ public sealed class CandidateRegistrar : IComponent
         async Task<RegistrationOutcome> RefuseAsync(string said)
         {
             await transaction.RollbackAsync(cancellation);
-            await RecordAsync(connection, runId, startedAt, Refused, 0, said, cancellation);
+            await RecordAsync(connection, runId, startedAt, Refused, 0, said, cancellation, subject);
 
             return new RegistrationOutcome(Refused, null, said);
         }
@@ -762,7 +763,7 @@ public sealed class CandidateRegistrar : IComponent
             + (backgrounded is null ? string.Empty : FormattableString.Invariant($", the family holding {CandidateFamily.Maximum} rules, so the rule it replaces runs on in the background as '{backgrounded}'"))
             + $", on the evidence: {evidence}";
 
-        await RecordAsync(connection, runId, startedAt, Registered, taken.Count - rows.Count, detail, cancellation);
+        await RecordAsync(connection, runId, startedAt, Registered, taken.Count - rows.Count, detail, cancellation, subject);
         await transaction.CommitAsync(cancellation);
 
         return new RegistrationOutcome(Registered, null, detail);
@@ -778,7 +779,8 @@ public sealed class CandidateRegistrar : IComponent
         string candidate,
         string evidence,
         string runId,
-        CancellationToken cancellation = default)
+        CancellationToken cancellation = default,
+        string? subject = null)
     {
         var startedAt = clock.UtcNow;
 
@@ -792,7 +794,7 @@ public sealed class CandidateRegistrar : IComponent
         if (RetirementRefusal(rows, candidate, evidence, startedAt, ShortlistSeries.Reasons) is { } refusal)
         {
             await transaction.RollbackAsync(cancellation);
-            await RecordAsync(connection, runId, startedAt, Refused, 0, refusal, cancellation);
+            await RecordAsync(connection, runId, startedAt, Refused, 0, refusal, cancellation, subject);
 
             return new RegistrationOutcome(Refused, null, refusal);
         }
@@ -821,7 +823,7 @@ public sealed class CandidateRegistrar : IComponent
 
         var detail = $"retired '{candidate}' as {id}, on the evidence: {evidence}";
 
-        await RecordAsync(connection, runId, startedAt, Retired, 1, detail, cancellation);
+        await RecordAsync(connection, runId, startedAt, Retired, 1, detail, cancellation, subject);
         await transaction.CommitAsync(cancellation);
 
         return new RegistrationOutcome(Retired, id, detail);
@@ -1239,6 +1241,8 @@ public sealed class CandidateRegistrar : IComponent
         await RecordAsync(connection, runId, clock.UtcNow, Refused, 0, refusal, cancellation);
     }
 
+    // A row under the stage, or, where a run registers or retires several rules, under the stage with the rule it names,
+    // so each holds a row of its own under the run.
     async Task RecordAsync(
         SqliteConnection connection,
         string runId,
@@ -1246,13 +1250,14 @@ public sealed class CandidateRegistrar : IComponent
         string outcome,
         int written,
         string detail,
-        CancellationToken cancellation)
+        CancellationToken cancellation,
+        string? subject = null)
     {
         await using var command = connection.CreateCommand();
 
         command.CommandText = AppendRun;
         command.Parameters.AddWithValue("$run_id", runId);
-        command.Parameters.AddWithValue("$stage", Stage);
+        command.Parameters.AddWithValue("$stage", subject is null ? Stage : Stage + ": " + subject);
         command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$outcome", outcome);

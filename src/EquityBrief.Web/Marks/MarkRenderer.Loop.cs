@@ -322,7 +322,7 @@ public sealed partial class MarkRenderer
 
         var html = new StringBuilder();
 
-        foreach (var family in decided.Alarms.GroupBy(one => one.Family).OrderBy(family => EquityBrief.Core.Families.SetupFamilies.OrderOf(family.Key)))
+        foreach (var family in decided.Alarms.GroupBy(one => one.Family).OrderBy(family => LoopDecisions.LoopOrderOf(family.Key)))
         {
             var periods = family.OrderByDescending(one => one.Period).ToArray();
             var newest = periods[0];
