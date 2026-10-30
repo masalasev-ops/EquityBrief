@@ -12675,3 +12675,83 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the exposure's direction on the VIX, put to the operator; the three registered variants' records from their
             registration; the pullback's and the dip's exposure, waiting on a walk of theirs that reads it; and
             everything 21.8 carried.
+
+### 21.14 ruling - the exposure's direction on the VIX stays as built, its reverse walked unregistered beside each graded variant and both put at 21.14   2026-10-30
+
+Not a checkpoint entry: it records the operator's ruling of 2026-10-30 on the question 21.9 carried, and lands nothing.
+Ruled:      word for word in `prompts/2026-10-30-21.9-21.13-operator-ruling.md`, the first item: "The exposure's
+            direction on the VIX, the question 21.9 carried: keep it as built, a VIX over its median counting against
+            the night. Beside each graded variant, walk the reverse direction unregistered, a VIX over its median
+            counting for the night, through the tester in the same folds, and put both results to me at 21.14 with the
+            other rulings. Nothing more is registered for it."
+Written:    21.14's text and its done condition in the build plan, with the prior text in the changelog; the reverse
+            walk is built with 21.14.
+Verified:   `tools/ci.ps1` green over the tree carrying 21.10's entry below, which states that run's figures.
+
+### 21.13 ruling - a market strip atop Tonight on every index and atop every page the copy holds, with four market series added to the night   2026-10-30
+
+Not a checkpoint entry: it records the operator's addition of 2026-10-30 to 21.13, and lands nothing.
+Ruled:      word for word in `prompts/2026-10-30-21.9-21.13-operator-ruling.md`, the second item: one row of tiles,
+            the S&P 500, the S&P 400 (IJH), the S&P 600 (IJR), QQQ, DIA, Breadth with the floor its page's market check
+            reads, the VIX against its 1-year median, US 10Y and US 3M, Credit (HYG), Oil (WTI) and Dollar, each with its
+            level and its change on the day, green up and red down with an arrow; a line above saying the close it reads
+            or the delayed time, the read surface asking Yahoo once a page's opening, cached five minutes, free and
+            keyless and outside the night, a tile unanswered showing the close with "prior close only"; the copy drawing
+            the closes alone; and the night gaining QQQ, DIA, WTI crude and the US dollar index, one request a series,
+            kept apart from the members' bars, named in CLAUDE.md's hard rule, each series' weight stated before the
+            first night asks it, read by no rule and moving no rule's version.
+Written:    21.13's text and its done condition in the build plan, with the prior text in the changelog.
+Verified:   `tools/ci.ps1` green over the tree carrying 21.10's entry below, which states that run's figures.
+
+### 21.9 - the remedy run from main: the S&P 400's breakout and drift and the S&P 600's breakout each registered with its graded exposure   2026-10-30
+
+Not a checkpoint entry: it records 21.9's remedy and what it measured, and lands nothing.
+Ran:        `tools/remedies/2026-10-30-21.9-the-graded-exposures.txt` from main's b4838cfc, PR 598's merge, at 17:42 UTC
+            on 2026-10-30 with no night, local run, drain, labeller, ledger build or monthly run writing.
+Measured:   registered as 957, the S&P 400's breakout at 0.45, its family 4 of 9; 958, the S&P 400's drift at 0.45, 7 of
+            9; and 959, the S&P 600's breakout at 0.40, 5 of 9. Before it, the per-rule test in print mode over the S&P
+            400 from 17:00 to 17:26 UTC walked each exposure unregistered: the breakout's 584 trades at +0.027 risks over
+            the test years against its own 622 at +0.054, and the drift's 984 at +0.165 against its own 1,132 at +0.148.
+            No request and no model call.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.10's entry below, on whose
+            branch this is recorded; records alone change in this entry.
+
+### 21.10 - choosing a version by its recent record, tested against staying put: three procedures a family walked by the per-rule test beside its rules and judged as variants in the family's correction, drawn on the Loop page with no press   2026-10-30
+
+Queue:      done, 21.1 to 21.9 as PRs 587 to 598 with their remedies, recorded above; in progress, 21.10; next, 21.11 to
+            21.13 in the section's order on the standing go, 21.13 with the operator's market strip, and 21.14, 21.15 and
+            every decision held for the operator's word; beside them the sign-offs of phases 18, 20 and 22 by fresh
+            sessions.
+Built:      three procedures a family on each index, one a window of 126, 252 and 504 sessions: at each month's first
+            session the family's rule standing on the index whose mean edge after costs over the window stands highest
+            over at least 50 ended trades, or a book's 12 months, the live or provisional rule where none qualifies and
+            an earlier rule on a tie, its trades entered in the month walked. A trade is read once its cap's sessions have
+            passed, so nothing ending in a fold's year reaches a choice made in it. The per-rule test walks them beside
+            every family it walks with a live or provisional rule and at least one variant, each judged as a variant
+            against that rule in the family's step-down with its registered variants, its row named by its window and
+            its words naming the version it would run now and the months it switched. The run's summary counts the rules
+            and the version choices apart, and the Run page counts a family's variants without them. The Loop page draws
+            each family's three with no press; an approval waits on the operator's word and is not built.
+Judgement:  a trade's cap as the mark that it ended, since the per-rule test's units carry no last session; written in
+            the decision.
+Decisions:  one written: A family's version is chosen each month by its recent record as a procedure judged against
+            staying with the live rule, and an approval of it waits on the operator's word.
+Tests:      2975, from 2971: four added, the choice at one month by hand at the floor and one under, a tie and a book's
+            floor, no trade read that has not ended by its month with the cut a year opens on, the procedure over a
+            constructed history judged against the live rule as the tester judges a proposal in the family's correction,
+            and the Loop page's row read back.
+Claims:     1482, from 1480: two added, section 17's windows and floors and the Loop page's row, against the plan's count
+            of about 4; 13.12's paragraph added and the tester's catalogue row amended in place; 1497 placements.
+Pins:       none moved: no source 21.10 writes is one a rule's version pins, read off every evaluator's source list.
+Remedy:     none; the monthly run of 2026-11-07 walks the procedures for the first time and the Loop page draws them.
+Mutation:   chosen before the run by this rule, the property the done condition names first, the choice at the floor
+            and one under it: the trade floor lowered by one. The choice's test went red, 49 ended trades reading a
+            record where none is expected; reverted, green. Not mutated: the ended-trade cut, the tie, the book's floor
+            and the procedure's judging.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2975 of 2975 tests ran
+            with none failed, migrations 0 to 116 with none pending, schema version 116, against `data-ci` and never
+            `data`; the phase report 64 tables, 1482 claims, 1482 passing, none out of scope and none unexamined, 1497
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the procedures' first figures, read off the monthly run of 2026-11-07 and put to the operator with 21.14's
+            rulings; an approval of a procedure that passes, on the operator's word; and everything 21.9 carried.

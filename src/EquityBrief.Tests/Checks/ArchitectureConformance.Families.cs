@@ -406,9 +406,10 @@ public partial class ArchitectureConformance
         // their two stores, section 17's three rows, section 18's two, the Run page's count of the refresh's runs and the
         // Ledger page's line on the readings' sources, and 1477 from 21.7, the setups' chance on a pick's card, and 1478 from
         // 21.8, section 17's ranking variant, and 1480 from 21.9, section 17's graded exposure variant and paper trading's
-        // trade sized at half.
+        // trade sized at half, and 1482 from 21.10, section 17's windows and floors of choosing a version and the Loop page's
+        // row of it.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1480),
+            (789, 853, 6, 4, 855, 876, 1482),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

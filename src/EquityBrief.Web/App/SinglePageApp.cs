@@ -3780,7 +3780,8 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyList<EquityBrief.Core.Loop.LoopModelRow>? models = null,
         IReadOnlyList<EquityBrief.Core.Loop.LoopRankRow>? ranks = null,
         LoopDecided? decided = null,
-        IReadOnlyDictionary<string, IReadOnlyList<string>>? chips = null)
+        IReadOnlyDictionary<string, IReadOnlyList<string>>? chips = null,
+        IReadOnlyList<LoopChoiceView>? choices = null)
     {
         static string Named(string word) => word switch
         {
@@ -3863,6 +3864,7 @@ public sealed partial class SinglePageApp : IComponent
 
             body.Append(marks.LoopReadings(family, [.. (spreads ?? []).Where(spread => spread.Family == family)]));
             body.Append(marks.LoopScore(family, own, (models ?? []).FirstOrDefault(model => model.Family == family), [.. (ranks ?? []).Where(rank => rank.Family == family)], run.Month));
+            body.Append(marks.LoopChoices(family, choices ?? []));
 
             cards.Append(Cards.Computed(
                 "Loop",

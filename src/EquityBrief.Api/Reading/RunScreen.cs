@@ -2123,7 +2123,7 @@ public static class RunScreen
                     own.Count(proposal => proposal.Passed),
                     EquityBrief.Core.Loop.LoopDecisions.PutOf(own, heldBack)?.Proposal,
                     head is null ? null : Verdict(head),
-                    [.. tested.Where(row => row.Standing == PaperAccountView.Variant).GroupBy(Verdict).OrderBy(group => EquityBrief.Core.Loop.RuleVerdict.Rank(group.Key)).Select(group => (group.Key, group.Count()))]);
+                    [.. tested.Where(row => row.Standing == PaperAccountView.Variant && !EquityBrief.Core.Loop.VersionChoices.Is(row.Rule)).GroupBy(Verdict).OrderBy(group => EquityBrief.Core.Loop.RuleVerdict.Rank(group.Key)).Select(group => (group.Key, group.Count()))]);
             })
             .Where(family => family.Tested > 0 || family.Head is not null || family.Variants.Count > 0)
             .ToArray();

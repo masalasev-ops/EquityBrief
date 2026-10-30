@@ -3192,7 +3192,16 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
         .Where(family => EquityBrief.Core.Loop.LoopDecisions.RegistersOn(reading.Code, family, standingRules))
         .ToHashSet(StringComparer.Ordinal);
 
-    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest, cutoff, tests, registered), chips), "text/html; charset=utf-8");
+    // From 21.10 each family's versions chosen by their recent record, as the newest per-rule test on the index walked them.
+    // see: A family's version is chosen each month by its recent record as a procedure judged against staying with the live rule, and an approval of it waits on the operator's word
+    EquityBrief.Web.Marks.LoopChoiceView[] choices =
+    [
+        .. (await read.RuleTestsAsync(reading.Code)).Rules
+            .Where(row => EquityBrief.Core.Loop.VersionChoices.Is(row.Rule))
+            .Select(row => new EquityBrief.Web.Marks.LoopChoiceView(row.Family, row.Rule, row.Words, row.Units, row.Adjusted, row.Passed, row.Why)),
+    ];
+
+    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest, cutoff, tests, registered), chips, choices), "text/html; charset=utf-8");
 });
 
 // The Loop's badge in the menu: the proposals each index's newest run puts to the operator that hold no word yet.

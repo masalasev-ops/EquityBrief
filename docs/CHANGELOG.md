@@ -26,6 +26,48 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-30 - docs/BUILD_PLAN.md - the ruling's words in 21.13 and 21.14 name no subject the harness holds a due point for
+Corrects: 21.13's text named the market series and 21.14's done condition the tester's folds, two subjects the harness writes a due point for, so the plan's words shadowed them; found by the hosted case-sensitivity job on PR 599.
+Was:
+> (21.13) ... the hard rule in CLAUDE.md names them among the market series, its prior text in the changelog; ... 15.7's strip rows and the copy's, the market series' rows and the night's step, ...
+> (21.14, done when) ... and walked beside each graded variant in the tester's folds, its figures stated beside the variant's; ...
+Now:
+> (21.13) ... the hard rule in CLAUDE.md names them among the series the night reads beside the members' bars, its prior text in the changelog; ... 15.7's strip rows and the copy's, the rows of the series the night reads and the night's step, ...
+> (21.14, done when) ... and walked beside each graded variant in the folds the tester walks, its figures stated beside the variant's; ...
+Why: the ruling's sense stands; the words move off the two subjects.
+
+### 2026-10-30 - docs/BUILD_PLAN.md - 21.13 gains the market strip and 21.14 the exposure's direction on the VIX, on the operator's ruling
+Authorised by: Phase 21 makes the existing families choose better and the monthly loop test every family on every index, built to completion before any new work with no model judging a stock and nothing retired without the operator's word
+Was:
+> (21.13) ... the combined account's card opens "All setups together: up n.n% since dd mmm, n positions open, n picks skipped." Writes 15.23's tables, 15.20's and 15.21's rows, the fixture's expectations, the roster's row, the guide and the changelog.
+> (21.13, done when) ... each sentence above is read back off its rendered page; and one mutation is shown red, the rule stated before the run.
+> (21.14) ... A ruling that keeps everything as it is lands this checkpoint as its ruling entry and builds nothing. ...
+> (21.14, done when) each ruled change is worked by hand on both sides over constructed trades, the fill step's three pricings among them where ruled; the remedy's lines ...
+Now:
+> (21.13) ... n picks skipped." On the operator's addition of 2026-10-30, ... a market strip atop Tonight on every index, and atop every page the copy holds: ... No paid call; no rule reads the four new series. Writes 15.23's tables, 15.20's and 15.21's rows, 15.7's strip rows and the copy's, the market series' rows and the night's step, CLAUDE.md's hard rule, the fixture's expectations, the roster's row, the guide and the changelog.
+> (21.13, done when) ... each sentence above is read back off its rendered page; the market strip's tiles are read back off Tonight and off the copy ...; the plain-words check passes on the strip; the night asks each of the four series in one request, its weight stated before the request ...; no rule's code version moves, asserted; and one mutation is shown red, the rule stated before the run.
+> (21.14) ... The exposure's direction on the VIX, on the operator's ruling of 2026-10-30 ...: kept as 21.9 built it ...; beside each graded variant the reverse direction ... is walked unregistered through the tester in the same folds, and both results are put to the operator with the other rulings; nothing more is registered for it. A ruling that keeps everything ...
+> (21.14, done when) each ruled change ...; the exposure's reverse direction is worked by hand at both of its VIX switches over a constructed night and walked beside each graded variant in the tester's folds, its figures stated beside the variant's; the remedy's lines ...
+Why: the operator ruled on 2026-10-30 that the exposure's VIX direction stays as built with its reverse walked beside it and put at 21.14, and added the market strip to 21.13.
+
+### 2026-10-30 - docs/ARCHITECTURE.html - the tester's per-rule test walks each family's versions chosen by their record
+Authorised by: A family's version is chosen each month by its recent record as a procedure judged against staying with the live rule, and an approval of it waits on the operator's word
+Was:
+> (Walk-forward tester) ... and the exposure walked unregistered beside each live rule whose family registers none (see: A breakout's or a drift's graded exposure ...)
+Now:
+> (Walk-forward tester) ... (see: A breakout's or a drift's graded exposure ...); and from 21.10 the per-rule test's three procedures a family choosing a version by its recent record each month, judged as variants against the live or provisional rule (see: ...)
+Why: 21.10 tests choosing a version by its record against staying put; 13.12 gains its paragraph, section 17 its windows and floors and 15.20 its row, all new, and the line above is the one that stood and now names it.
+
+### 2026-10-30 - .claude/rules/checks.md - fixture-expectations and read-surface state 21.10's assertions
+Authorised by: A family's version is chosen each month by its recent record as a procedure judged against staying with the live rule, and an approval of it waits on the operator's word
+Was:
+> (fixture-expectations) ... refusing where the rule reads no check, the family holds nine or its walk reads no exposure |
+> (read-surface) ... and one sized whole with neither |
+Now:
+> (fixture-expectations) ...; and from 21.10 the version chosen at one month by hand at the floor and one under it, a tie and a book's floor, no trade read that has not ended by its month, and the procedure judged against the live rule as the tester judges a proposal in the family's correction |
+> (read-surface) ...; and from 21.10 a family's versions chosen by their record drawn on the Loop page with what each does, the version it would run now, its trades, its adjusted p and whether it beat staying put, and no press |
+Why: each check gains the assertions 21.10's tests add.
+
 ### 2026-10-30 - docs/ARCHITECTURE.html - the tester reads each breakout's and drift's graded exposure
 Authorised by: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
 Was:

@@ -263,7 +263,57 @@ public static class RuleTests
             .. (inputs.Improving is { } improving ? Improving(inputs.Standing, inputs.Read.Index, setting => improving.Book(setting).Months) : []),
         ];
 
-        return inputs.Ranked is null ? walked : Ranked(inputs, walked);
+        var ranked = inputs.Ranked is null ? walked : Ranked(inputs, walked);
+
+        return [.. ranked, .. Choosing(inputs.Read, ranked)];
+    }
+
+    // From 21.10 each family's version chosen by its recent record, three procedures a family walked beside its rules over
+    // the same walks: at each month's first session the rule standing here whose mean edge after costs over the window
+    // before stands highest over the floor of ended trades or months, the live or provisional rule where none qualifies,
+    // its trades walked for the month; each judged as a variant against the live or provisional rule in the family's
+    // correction, and none for a family whose live rule the history cannot walk or that stands alone.
+    // see: A family's version is chosen each month by its recent record as a procedure judged against staying with the live rule, and an approval of it waits on the operator's word
+    public static IEnumerable<RuleUnderTest> Choosing(LoopRead read, IReadOnlyList<RuleUnderTest> walked)
+    {
+        var starts = VersionChoices.MonthStarts(read.Calendar);
+        var from = read.Folds.Count == 0 ? DateOnly.MaxValue : read.Folds[0].TestFrom;
+        var through = read.Folds.Count == 0 ? DateOnly.MinValue : read.Folds[^1].TestThrough;
+
+        foreach (var family in walked.GroupBy(rule => rule.Family, StringComparer.Ordinal))
+        {
+            if (family.FirstOrDefault(rule => rule.Standing != Variant) is not { Why: null } head)
+            {
+                continue;
+            }
+
+            RuleUnderTest[] rules = [head, .. family.Where(rule => rule.Standing == Variant && rule.Why is null && !VersionChoices.Is(rule.Rule))];
+
+            if (rules.Length < 2)
+            {
+                continue;
+            }
+
+            var book = head.Book;
+            (IReadOnlyList<(int Entry, double? Edge)> Units, int Cap)[] walks =
+            [
+                .. rules.Select(rule => ((IReadOnlyList<(int Entry, double? Edge)>)(book ? [.. (rule.Months ?? []).Select(month => (month.Opens, month.Edge))] : rule.Trades ?? []), rule.Cap)),
+            ];
+
+            foreach (var window in VersionChoices.Windows)
+            {
+                var (units, chosen, now) = VersionChoices.Walk(walks, starts, read.Calendar.Length, window, book);
+                int[] inTest = [.. Enumerable.Range(0, starts.Count).Where(month => read.Calendar[starts[month]] >= from && read.Calendar[starts[month]] <= through)];
+                var switched = inTest.Skip(1).Count(month => chosen[month] != chosen[month - 1]);
+                var floor = book ? VersionChoices.MonthFloor : VersionChoices.TradeFloor;
+                var words = FormattableString.Invariant(
+                    $"each month the {family.Key} rule standing here whose mean edge after costs over the {window} sessions before stands highest over at least {floor} ended {(book ? "months" : "trades")}, the {(head.Standing == Provisional ? "provisional" : "live")} rule where none does; it would run '{rules[now].Rule}' now, and switched {switched} time(s) over the {inTest.Length} month(s) of the test years");
+
+                yield return book
+                    ? new RuleUnderTest(family.Key, VersionChoices.NameOf(window), Variant, words, head.Unit, rules.Max(rule => rule.Cap), Months: [.. units.Select(unit => (unit.Entry, unit.Edge))])
+                    : new RuleUnderTest(family.Key, VersionChoices.NameOf(window), Variant, words, head.Unit, rules.Max(rule => rule.Cap), units);
+            }
+        }
     }
 
     // From 21.8 a rule registered ranked walked by the ranking walk over the ledger's setups of its family, matched

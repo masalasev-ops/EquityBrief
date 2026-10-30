@@ -43,8 +43,9 @@ public partial class ArchitectureConformance
     // refresh's and the short interest reader's catalogue and matrix rows, their two stores, section 17's three rows,
     // section 18's two, the Run page's count of the refresh's runs and the Ledger page's line on the readings' sources;
     // and 21.7's one, the setups' chance on a pick's card; and 21.8's one, section 17's ranking variant; and 21.9's two,
-    // section 17's graded exposure variant and paper trading's trade sized at half; which phase 21's own pair counts when
-    // its report reads them.
+    // section 17's graded exposure variant and paper trading's trade sized at half; and 21.10's two, section 17's windows
+    // and floors of choosing a version and the Loop page's row of it; which phase 21's own pair counts when its report
+    // reads them.
     internal static string[] AfterPhaseTwentyTwo =>
     [
         .. ComponentAccess.ImprovingRows,
@@ -66,6 +67,8 @@ public partial class ArchitectureConformance
         .. FixtureExpectations.RankingClaims,
         .. FixtureExpectations.ExposureClaims,
         .. Reading.ReadSurface.HalvedClaims,
+        .. FixtureExpectations.VersionChoiceClaims,
+        .. Reading.ReadSurface.VersionChoicePageClaims,
     ];
 
     // The rows the document loses after phase 22's report: none.
