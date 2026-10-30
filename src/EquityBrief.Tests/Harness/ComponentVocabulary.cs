@@ -82,7 +82,8 @@ internal static class ComponentVocabulary
     // a chart page's asks for them beside the asks for a report, each a press's request the worker answers. From 22.9 the
     // computed tables column holds each member's answer under Quality at a fair price, the listings column its nights and
     // the forward returns column its holdings, as the dip family's sit; and from 22.13 the Fundamentals family's answers,
-    // nights and trades sit the same way.
+    // nights and trades sit the same way. From 21.6 the fundamentals column holds the night's estimate trends and FINRA's
+    // short interest, each a source's answer about a company.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
@@ -93,7 +94,7 @@ internal static class ComponentVocabulary
         ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick, DataStore.HeavyweightNight, DataStore.HeavyweightRuleNight, DataStore.IndexFamilyNight, DataStore.IndexFamilyPick, DataStore.DipNight, DataStore.DipPick, DataStore.IndexHeavyweightRuleNight, DataStore.SweepAnswer, DataStore.DecisionCard, DataStore.RuleNight, DataStore.FormingRow, DataStore.QualityNight, DataStore.ImprovingNight]),
         ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade, DataStore.HeavyweightHolding, DataStore.HeavyweightRuleHolding, DataStore.IndexFamilyTrade, DataStore.DipTrade, DataStore.IndexHeavyweightHolding, DataStore.IndexRuleTrade, DataStore.IndexHeavyweightRuleHolding, DataStore.RuleRecord, DataStore.RulePick, DataStore.TradeFill, DataStore.Setup, DataStore.SetupNight, DataStore.LedgerSummary, DataStore.LedgerReading, DataStore.LoopRun, DataStore.LoopProposal, DataStore.LoopTest, DataStore.LoopFinding, DataStore.LoopReading, DataStore.LoopModel, DataStore.LoopReference, DataStore.LoopRule, DataStore.LoopRuleYear, DataStore.LoopLink, DataStore.ReleaseAnswerEdge, DataStore.LoopApplied, DataStore.ProvisionalSetting, DataStore.LoopAlarm, DataStore.QualityHolding, DataStore.ImprovingTrade]),
         ("Facts", [DataStore.Facts]),
-        ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk, DataStore.Company, DataStore.EstimateReading, DataStore.DividendReading, DataStore.EstimateTrend, DataStore.DividendEvent, DataStore.FiledFact, DataStore.FiledFactPull, DataStore.FilingDay, DataStore.InsiderTrade, DataStore.InsiderRead, DataStore.SecTicker, DataStore.AnalystView, DataStore.AnalystRating]),
+        ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk, DataStore.Company, DataStore.EstimateReading, DataStore.DividendReading, DataStore.EstimateTrend, DataStore.DividendEvent, DataStore.FiledFact, DataStore.FiledFactPull, DataStore.FilingDay, DataStore.InsiderTrade, DataStore.InsiderRead, DataStore.SecTicker, DataStore.AnalystView, DataStore.AnalystRating, DataStore.EstimateTrendNight, DataStore.ShortInterest]),
         ("News", [DataStore.NewsPulse, DataStore.NewsArticle, DataStore.NewsLabel, DataStore.LabelPin]),
         ("Research and readings", [DataStore.ResearchSection, DataStore.ThemeSection, DataStore.ReadingPin, DataStore.ReleaseReading, DataStore.ReleaseProbe, DataStore.LoopIdea]),
         ("Sources", [DataStore.SourceDocument, DataStore.ReleaseDocument, DataStore.ReleaseCheck, DataStore.ReleaseDay, DataStore.ReleaseFiler]),
@@ -186,6 +187,8 @@ internal static class ComponentVocabulary
         ["substitute bar feed"] = Feed.SubstituteBar,
         ["analyst feed"] = Feed.Analyst,
         ["ratings feed"] = Feed.AnalystRatings,
+        ["short interest feed"] = Feed.ShortInterest,
+        ["estimate trends feed"] = Feed.EstimateTrends,
     };
 
     // Prose that names a store under a name the mechanical rule does not reach.
@@ -330,6 +333,8 @@ internal static class ComponentVocabulary
         ["estimate trends"] = DataStore.EstimateTrend,
         ["dividend events"] = DataStore.DividendEvent,
         ["Treasury yields"] = DataStore.TreasuryYield,
+        ["night estimate trends"] = DataStore.EstimateTrendNight,
+        ["short interest"] = DataStore.ShortInterest,
     };
 
     internal sealed record CellReading(DataStore[] Stores, Feed[] Feeds, string[] Unresolved);

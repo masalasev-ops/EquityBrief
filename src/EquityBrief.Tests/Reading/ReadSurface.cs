@@ -86,6 +86,9 @@ public partial class ReadSurface
             // 15.2's second pull request, the name page's member readings and the run page's two parts.
             .. MemberReadingClaims,
 
+            // 21.6, the Run page's count of the ratings refresh's runs and the Ledger page's line on the readings' sources.
+            .. NewReadingSourceClaims,
+
             // 12.7's correction, close to a buy point beneath tonight's list.
             .. CloseToABuyPointClaims,
 

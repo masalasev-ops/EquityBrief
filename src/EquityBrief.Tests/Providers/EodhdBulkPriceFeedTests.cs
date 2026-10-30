@@ -342,8 +342,10 @@ public class EodhdBulkPriceFeedTests
         // added Yahoo's quote summary of a stock's analysts and TipRanks' ratings,
         // which a chart page's ask and press start and no night does, and twenty-six
         // until the 18.4 correction of 2026-10-28 added Cloudflare Pages' direct
-        // upload of the read-only copy, which the publish verb asks and no night does.
-        Assert.Equal(27, Checks.NightlyCost.MayHoldAClient.Length);
+        // upload of the read-only copy, which the publish verb asks and no night does, and twenty-seven until 21.6 added the
+        // provider's trends, which the night asks a page of symbols a request, and FINRA's short interest, which the
+        // off-peak run's step asks and no night does.
+        Assert.Equal(29, Checks.NightlyCost.MayHoldAClient.Length);
         Assert.All(
             Checks.NightlyCost.MayHoldAClient,
             file => Assert.EndsWith("Feed.cs", file, StringComparison.Ordinal));

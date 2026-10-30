@@ -39,7 +39,10 @@ public partial class ArchitectureConformance
     // section 17's starting settings and section 18's two; 22.14's one, section 17's grid of its history test; and from
     // phase 21, built after phase 22, 21.3's two, the score audit's catalogue and matrix rows, 21.4's three, the
     // exposure's, the ranking's and the chosen readings' rows in section 17, and its correction's one, section 18's row
-    // for a history build asked for a session the night wrote, which phase 21's own pair counts when its report reads it.
+    // for a history build asked for a session the night wrote; and 21.6's fifteen, the trends fetcher's, the ratings
+    // refresh's and the short interest reader's catalogue and matrix rows, their two stores, section 17's three rows,
+    // section 18's two, the Run page's count of the refresh's runs and the Ledger page's line on the readings' sources;
+    // which phase 21's own pair counts when its report reads them.
     internal static string[] AfterPhaseTwentyTwo =>
     [
         .. ComponentAccess.ImprovingRows,
@@ -53,6 +56,10 @@ public partial class ArchitectureConformance
         .. FixtureExpectations.HookFormClaims,
         .. FixtureExpectations.ChosenReadingClaims,
         CheckReach.Key(Scope.FailureTable, "A history build asked for a session the night wrote"),
+        .. ComponentAccess.NewReadingSourceRows,
+        .. SchemaColumns.NewReadingStoreRows,
+        .. FixtureExpectations.NewReadingClaims,
+        .. Reading.ReadSurface.NewReadingSourceClaims,
     ];
 
     // The rows the document loses after phase 22's report: none.

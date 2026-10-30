@@ -120,6 +120,7 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/EodhdCorporateActionFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdDividendCalendarFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdEarningsCalendarFeed.cs",
+        "src/EquityBrief.Core/Providers/EodhdEstimateTrendsFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdFundamentalsFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdHistoricalBarFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdIndexComponentsFeed.cs",
@@ -129,6 +130,7 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/EodhdNewsFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdQuoteFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdSymbolListFeed.cs",
+        "src/EquityBrief.Core/Providers/FinraShortInterestFeed.cs",
         "src/EquityBrief.Core/Providers/LmStudioReadingFeed.cs",
         "src/EquityBrief.Core/Providers/SecEdgarFilingsArchiveFeed.cs",
         "src/EquityBrief.Core/Providers/SecEdgarFundSnapshotFeed.cs",
@@ -322,11 +324,13 @@ public partial class NightlyCost
         // its own process asks of LM Studio and no night does, and twenty-six from 20.13, Yahoo's quote summary of a stock's
         // analysts and TipRanks' ratings, which a chart page's ask and press start and no night does, and twenty-seven from
         // the 18.4 correction of 2026-10-28, Cloudflare Pages' direct upload of the read-only copy, which the publish verb
-        // asks by hand or on the scheduler's run after the off-peak run and no night does.
+        // asks by hand or on the scheduler's run after the off-peak run and no night does, and twenty-nine from 21.6, the
+        // provider's trends, which the night asks a page of symbols a request, and FINRA's short interest, which the
+        // off-peak run's step asks and no night does.
         Assert.True(
-            MayHoldAClient.Length <= 27,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are twenty-seven feed " +
-            "implementations. A twenty-eighth is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 29,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are twenty-nine feed " +
+            "implementations. A thirtieth is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: four files, the local lane's client, the local
         // run's reading feed and the paid model's live feed in each of its two formats.
@@ -580,6 +584,10 @@ public partial class NightlyCost
         // once every file is read and at most twenty a night, free and neither the provider's.
         // see: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read
         (nameof(BarFetcher), Feed.SubstituteBar),
+        // The tenth, every member's estimate trend in the swing filter's step, a page of symbols a request at one
+        // weighted call a symbol, the one carve whose weight grows with the index, as the operator allowed.
+        // see: The night asks every member's estimate trend once a night in requests of a page of symbols
+        (nameof(EquityBrief.Worker.Filter.TrendsFetcher), Feed.EstimateTrends),
     ];
 
     static string NightSource() =>
@@ -1386,6 +1394,7 @@ public partial class NightlyCost
             [nameof(ProviderWeights.EarningsCalendar)] = $"The earnings calendar costs {ProviderWeights.EarningsCalendar} for a whole window",
             [nameof(ProviderWeights.DividendCalendar)] = $"The dividend calendar costs {ProviderWeights.DividendCalendar} a session",
             [nameof(ProviderWeights.Quote)] = $"A delayed quote costs {ProviderWeights.Quote} a listing",
+            [nameof(ProviderWeights.EstimateTrends)] = $"The calendar trends endpoint costs {ProviderWeights.EstimateTrends} a symbol",
         };
 
         // Every figure the class holds, so a weight added to it is one read here.

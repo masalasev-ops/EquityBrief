@@ -401,9 +401,12 @@ public partial class ArchitectureConformance
         // Tonight, section 17's settings and section 18's two, and 1455 from 22.14, section 17's grid of its history test,
         // and 1457 from 21.3, the score audit's catalogue and matrix rows, and 1459 from 21.4, section 17's exposure and
         // ranking rows, and 1460 from 21.4's catalogue part, section 17's row for the readings the operator chose, and 1461
-        // from 21.4's correction, section 18's row for a history build asked for a session the night wrote.
+        // from 21.4's correction, section 18's row for a history build asked for a session the night wrote, and 1476 from
+        // 21.6, the trends fetcher's, the ratings refresh's and the short interest reader's catalogue and matrix rows,
+        // their two stores, section 17's three rows, section 18's two, the Run page's count of the refresh's runs and the
+        // Ledger page's line on the readings' sources.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1461),
+            (789, 853, 6, 4, 855, 876, 1476),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

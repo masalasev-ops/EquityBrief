@@ -524,6 +524,24 @@ public static class Nightly
                 var outcome = await new SwingFilter(clock, store.DatabaseFile)
                     .RunAsync(indexCode, runId, family, night.Token, estimates, FiledStatesTonightAsync);
                 await estimates.RecordAsync(runId, night.Token);
+
+                // Every member's estimate trend for its current fiscal year, a page of symbols a request, which the
+                // ledger reads from the night it is first stored. A failure is named on the step's row, and the step
+                // goes on.
+                // see: The night asks every member's estimate trend once a night in requests of a page of symbols
+                string trended;
+
+                try
+                {
+                    var trends = await new TrendsFetcher(askForTheFirstName ? feeds.Trends : null, () => feeds.WeightedCalls, clock, store.DatabaseFile)
+                        .RunAsync(runId, night.Token);
+
+                    trended = $"{trends.Stored} member estimate trend(s) stored of {trends.Members}";
+                }
+                catch (Exception failed) when (failed is Microsoft.Data.Sqlite.SqliteException or ArgumentException or InvalidOperationException)
+                {
+                    trended = "the members' estimate trends not read tonight, " + failed.Message;
+                }
                 var recorded = await NightClose.RecordRuleAsync(store.DatabaseFile, night.Token);
                 var evaluated = await new FamilyEvaluator(clock, store.DatabaseFile).RunAsync(runId, rules, night.Token, ReadingsTonightAsync);
                 var listed = await new FamilyLister(clock, store.DatabaseFile).RunAsync(runId, night.Token, ReadingsTonightAsync);
@@ -599,6 +617,7 @@ public static class Nightly
                 return $"{outcome.RowsWritten} row(s) for {outcome.Members} member(s), {outcome.Passing} passing, " +
                     $"{outcome.Excluded} excluded, version {outcome.Version}" +
                     (recorded ? ", listed by the swing filter" : ", no session stored for the list's rule") +
+                    $"; {trended}" +
                     $"; {evaluated.Families.Sum(family => family.Passed)} passed by the other setup families" +
                     $"; {listed.Listed} on the page's list" +
                     $"; {kept.Kept} kept by the registered family rules" +
@@ -613,7 +632,7 @@ public static class Nightly
                     (ruleCards.Indices.Any(one => one.Fault is not null) ? ", " + string.Join(", ", ruleCards.Indices.Where(one => one.Fault is not null).Select(one => $"the {one.Index} rule rows not computed tonight")) : string.Empty) +
                     $"; {alarmed}" +
                     (takenFollowed.Fault is null ? $"; {takenFollowed.Followed} taken trade(s) followed" : "; the taken trades not followed tonight");
-            }, [EquityBrief.Worker.Loop.LoopApply.Stage, SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, IndexFamilies.Stage, EquityBrief.Worker.Dips.DipFamily.Stage, DecisionCards.Stage, RuleCards.Stage, EquityBrief.Worker.Loop.LiveAlarmReader.Stage, TakenFollower.Stage]),
+            }, [EquityBrief.Worker.Loop.LoopApply.Stage, SwingFilter.Stage, EstimatesFetcher.Stage, TrendsFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, IndexFamilies.Stage, EquityBrief.Worker.Dips.DipFamily.Stage, DecisionCards.Stage, RuleCards.Stage, EquityBrief.Worker.Loop.LiveAlarmReader.Stage, TakenFollower.Stage]),
             // Section 14's step 17. The setup ledger, after the families have drawn every index's list, since it
             // stores the live rule's own pass and the night's pick beside each setup. It appends tonight's setups
             // on each index and closes the windows of the setups stored before that ended on tonight's close. A

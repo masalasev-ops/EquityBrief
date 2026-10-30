@@ -131,6 +131,17 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Improving family"),
     ];
 
+    // 21.6's three: the night's trends fetcher, the ratings refresh and the short interest reader.
+    internal static string[] NewReadingSourceRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Trends fetcher"),
+        CheckReach.Key(Scope.MatrixTable, "Trends fetcher"),
+        CheckReach.Key(Scope.CatalogueTable, "Ratings refresh"),
+        CheckReach.Key(Scope.MatrixTable, "Ratings refresh"),
+        CheckReach.Key(Scope.CatalogueTable, "Short interest reader"),
+        CheckReach.Key(Scope.MatrixTable, "Short interest reader"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -183,6 +194,9 @@ public partial class ComponentAccess
 
             // 22.13, the Fundamentals family.
             .. ImprovingRows,
+
+            // 21.6, the new readings' sources.
+            .. NewReadingSourceRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

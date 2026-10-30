@@ -98,6 +98,38 @@ public sealed partial class ReadApi
         return await command.ExecuteScalarAsync() is string day ? DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
     }
 
+    // From 21.6 where the readings whose sources keep no history of their own start: the first quarters fetch filing the
+    // current year's trend, the first night the night asked every member's trend, the first settlement of FINRA's short
+    // interest held, and the stocks holding an answer from Yahoo.
+    // see: A new reading joins the ledger with its history where its source keeps one, and from the night it is first stored where it keeps none
+    const string ReadingSourcesHeld = @"
+        SELECT (SELECT MIN(fetched_at) FROM estimate_trend WHERE period = '0y'),
+               (SELECT MIN(session_date) FROM estimate_trend_night),
+               (SELECT MIN(settlement_date) FROM short_interest),
+               (SELECT COUNT(DISTINCT ticker) FROM analyst_view);
+    ";
+
+    public async Task<EquityBrief.Web.Marks.ReadingSources> LedgerSourcesAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ReadingSourcesHeld;
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        await reader.ReadAsync();
+
+        static DateOnly? Day(string? text) =>
+            text is { Length: >= 10 } ? DateOnly.ParseExact(text[..10], "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
+
+        return new EquityBrief.Web.Marks.ReadingSources(
+            Day(reader.IsDBNull(0) ? null : reader.GetString(0)),
+            Day(reader.IsDBNull(1) ? null : reader.GetString(1)),
+            Day(reader.IsDBNull(2) ? null : reader.GetString(2)),
+            reader.IsDBNull(3) ? 0 : reader.GetInt32(3));
+    }
+
     public async Task<LinkTable?> LedgerLinksAsync(string index, string family)
     {
         await using var connection = Open();

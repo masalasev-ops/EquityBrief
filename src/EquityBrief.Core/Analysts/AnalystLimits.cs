@@ -24,10 +24,21 @@ public static class AnalystLimits
     // The instant a stock's press opens again after an answer to the press made at the instant given.
     public static DateTimeOffset RatingsOpenAt(DateTimeOffset answeredPress) => answeredPress.AddDays(RatingsWaitDays);
 
+    // The asks of a New York day the ratings refresh leaves to the chart page: it asks only while the day's asks, the
+    // page's among them, stand under the cap less these, so a page opened after a refresh still finds asks left.
+    // see: The ratings refresh asks Yahoo for the members whose stored answer is oldest or none after the labeller, under the chart page's daily cap less the page's reserve
+    public const int RefreshReserve = 20;
+
+    // The asks of a New York day past which the ratings refresh asks nothing more.
+    public const int RefreshCap = DailyCap - RefreshReserve;
+
     // The run log's stages of the analyst job and the ratings job, which the read surface reads the month's calls from.
     public const string AnalystsStage = "analysts";
 
     public const string RatingsStage = "analyst-ratings";
+
+    // The run log's stage of the ratings refresh's own row, one a run, which the Run page counts its runs from.
+    public const string RefreshStage = "analysts-refresh";
 
     // The New York day an instant falls in, as the two instants that bound it, the first inside and the second after.
     public static (DateTimeOffset From, DateTimeOffset To) DayOf(DateTimeOffset instant, TimeZoneInfo zone)

@@ -237,7 +237,8 @@ public partial class ReadSurface
         var lines = Regex.Matches(region, "<li data-trigger=\"([^\"]+)\" data-count=\"(\\d+)\" data-of=\"(\\d+)\">(.*?)</li>")
             .ToDictionary(match => match.Groups[1].Value, match => (Count: match.Groups[2].Value, Of: match.Groups[3].Value, Text: match.Groups[4].Value), StringComparer.Ordinal);
 
-        Assert.Equal(["spend cap", "event setups", "trend confirmation", "analyst coverage", "news labeller"], lines.Keys);
+        Assert.Equal(["spend cap", "event setups", "trend confirmation", "analyst coverage", "ratings refresh", "news labeller"], lines.Keys);
+        Assert.Equal(("0", "5"), (lines["ratings refresh"].Count, lines["ratings refresh"].Of));
         Assert.Equal(("2", "20"), (lines["spend cap"].Count, lines["spend cap"].Of));
         Assert.Equal(("0", "250"), (lines["event setups"].Count, lines["event setups"].Of));
         Assert.Equal(("3", "60"), (lines["trend confirmation"].Count, lines["trend confirmation"].Of));

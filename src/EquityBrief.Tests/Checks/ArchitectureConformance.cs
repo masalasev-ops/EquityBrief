@@ -1483,7 +1483,8 @@ public partial class ArchitectureConformance
         // 259 at 22.8: the fundamentals card on the chart page and on the name page.
         // 260 at 22.9: Tonight's row for Quality at a fair price's card.
         // 261 at 22.13: Tonight's row for the Fundamentals family's card.
-        Assert.Equal(261, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 262 at 21.6: the Ledger page's line on the readings' sources.
+        Assert.Equal(262, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1647,7 +1648,9 @@ public partial class ArchitectureConformance
         // 660 at 22.8: the fundamentals card on the chart page and on the name page.
         // 661 at 22.9: Tonight's row for Quality at a fair price's card.
         // 662 at 22.13: Tonight's row for the Fundamentals family's card.
-        Assert.Equal(662, inDocument.Length);
+        // 664 at 21.6: what else is waiting on a count's part on the ratings refresh's runs and the Ledger page's line on
+        // the readings' sources.
+        Assert.Equal(664, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1764,7 +1767,8 @@ public partial class ArchitectureConformance
         // 505 at 19.7: the Run page's trades region's four parts, how the system learns' five and a checkpoint's four
         // taken out, the setup families' three parts added, research and spend's two moved from how last night went and
         // its one on every length of time added.
-        Assert.Equal(505, checkedElements);
+        // 506 at 21.6: what else is waiting on a count's part on the ratings refresh's runs.
+        Assert.Equal(506, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the
