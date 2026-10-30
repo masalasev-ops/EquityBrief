@@ -12203,3 +12203,46 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the remedy after the merge, its two commands' counts read off its output; 21.5 on the standing go; the three
             answers of 21.3 at 21.14; 21.2's question at 21.6; the sign-offs of phases 18, 20 and 22; and the engines
             still reading the fundamentals-first family's history until 21.5 states which families the loop covers.
+
+### 21.4 - correction: the history build reads the heavyweights over each member's own closes and leaves each session the night wrote to the night, where the S&P 500's build after the remedy stopped twice   2026-10-30
+
+Queue:      done, 21.1 to 21.4 as PRs 587 to 591, and 21.4's remedy's two commands from main; in progress, this
+            correction; next, the three ledger histories built again and checked from main after its merge, then 21.5 to
+            21.13 in the section's order, with 21.14, 21.15 and every decision held for the operator's word; beside them
+            the sign-offs of phases 18, 20 and 22 by fresh sessions.
+Found:      after the remedy the S&P 500's history was built again by hand as the runbook says, through the night before,
+            2026-10-29. It wrote every chunk from 2019-01-02 to 2026-10-08 again under 21.4's code and stopped at the
+            chunk holding 2026-10-09, the first session the night's ledger step wrote, since a history row of a session
+            cannot stand beside the night's: 385,066 history setups stand on the S&P 500 through 2026-10-08, with no run
+            row and no summary refreshed. Built again through 2026-10-08 it stopped at its first rebalance of the
+            heavyweights: 21.4's relative strength reading walks a member's bars by place over the closes it is handed,
+            and the build handed the heavyweights each member's closes run on past the span for the replay. The night
+            reads each member's own closes and was not affected; the monthly run's rebuild reads a span ending before
+            the newest bar and would have stopped the same way. The S&P 400's and 600's histories stand as their builds
+            of 2026-10-27 left them.
+Corrected:  the build reads the heavyweights' setups over each member's own closes, the closes after the span kept for
+            the replay alone; the build and the monthly run's rebuild leave each session holding the night's own rows to
+            the night, the build's output counting them with the first and the last, so a span through the night before
+            writes the history to the session before the night's first row; and section 18 gains the row.
+Tests:      2934, from 2932: two added, a build over a constructed S&P 500 whose span ends twelve sessions before the
+            bar store's newest, its two rebalances' eight setups read with the relative strength worked by hand, and a
+            build asked again over a span whose last session holds the night's row; the session picker's test gains a
+            session the night holds.
+Claims:     1461, from 1460: section 18's row for a history build asked for a session the night wrote; 1476 placements.
+Pins:       none moved: the build's source is pinned by no rule, and the setups' source the readings' pin reads is
+            unchanged.
+Mutation:   chosen before the run by this rule, the property the correction adds whose wrong form stops the build: the
+            heavyweights read over each member's own closes. The build made to hand them the history's closes again:
+            both new tests went red on the index out of range the store's build met; reverted, green. The second
+            property mutated too: the session picker made to write a session the night holds: the night-session test
+            went red on the night row's key, as the store's first build did, and the picker's test red at [0, 2, 4]
+            where [0, 2] is expected; reverted, all three green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2934 of 2934 tests ran
+            with none failed, migrations 0 to 115 with none pending, schema version 115, against `data-ci` and never
+            `data`; the phase report 64 tables, 1461 claims, 1461 passing, none out of scope and none unexamined, 1476
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    from main after the merge, while no other writer runs, each index's history built again with
+            `tools/ledger-build.ps1 --index <GSPC, MID or SML> --from 2019-01-02 --through 2026-10-29 --again` and checked
+            with `ledger-check`, its counts and 21.4's remedy's recorded on 21.5's branch; 21.5 on the standing go; and
+            the rest as the 21.4 entry above carries it.
