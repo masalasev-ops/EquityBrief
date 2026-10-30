@@ -48,6 +48,22 @@ Now:
 > the build plan's phase 21 checkpoints, 21.0 to 21.16
 Why: the operator's answers of 2026-10-30 add a second move of the pins to phase 21 as 21.16.
 
+### 2026-10-30 - docs/ARCHITECTURE.html - the family replay reads a drift's member on the surprise its night stored
+Corrects: the replay read each night's inputs with the earnings calendar as it stands, so a surprise the provider revised after the night read it changed a drift's order in the replay, and FLEX's, 21.65 on the night and 12.37 since, restarted eight of the S&P 500's nine drift records at the 21.4 remedy of 2026-10-30.
+Was:
+> ... through the family evaluator's own inputs read as of each night, the night's shadow and the list the family recorder keeps, and compares ...
+Now:
+> ... through the family evaluator's own inputs read as of each night, a drift's member read on the surprise the night stored for it where it stored one, since the provider revises a surprise after the night has read it, the night's shadow and the list the family recorder keeps, and compares ...
+Why: a replay asks whether the code reproduces what the night did, and the night did it on the surprise it read.
+
+### 2026-10-30 - .claude/rules/checks.md - fixture-expectations states the 14.1 correction's replay of a drift on its night's surprise
+Corrects: the same defect; the row says what the correction's test asserts.
+Was:
+> fixture-expectations: ... and the procedure judged against the live rule as the tester judges a proposal in the family's correction |
+Now:
+> fixture-expectations: ... and the procedure judged against the live rule as the tester judges a proposal in the family's correction; and from the 14.1 correction of 2026-10-30 a drift registered again replayed on the surprise its night stored, its record carried on where the calendar revised a surprise since |
+Why: each roster row says what its check asserts.
+
 ### 2026-10-30 - docs/BUILD_PLAN.md - the ruling's words in 21.13 and 21.14 name no subject the harness holds a due point for
 Corrects: 21.13's text named the market series and 21.14's done condition the tester's folds, two subjects the harness writes a due point for, so the plan's words shadowed them; found by the hosted case-sensitivity job on PR 599.
 Was:

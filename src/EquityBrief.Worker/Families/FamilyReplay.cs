@@ -68,6 +68,9 @@ public sealed class FamilyReplay : IComponent
     // The nights the family's evaluator stored its rows for, from a session on.
     const string NightsFrom = "SELECT DISTINCT session_date FROM family_result WHERE family = $family AND session_date >= $from ORDER BY session_date;";
 
+    // The surprise each member's drift row stored on a night, the figure the drift's order reads.
+    const string SurprisesOn = "SELECT ticker, order_by FROM family_result WHERE family = $family AND session_date = $night AND order_by IS NOT NULL;";
+
     // Every trade a rule's record stored.
     const string Stored = @"
         SELECT ticker, session_date, place, entry, stop, target, ended_on, result
@@ -197,10 +200,15 @@ public sealed class FamilyReplay : IComponent
 
         foreach (var night in nights)
         {
-            if (await FamilyEvaluator.InputsAsync(connection, night, shadow.DriftWindowReach, cancellation, shadow.ReadingVersions) is not { } inputs)
+            if (await FamilyEvaluator.InputsAsync(connection, night, shadow.DriftWindowReach, cancellation, shadow.ReadingVersions) is not { } calendarInputs)
             {
                 continue;
             }
+
+            // The provider revises a surprise after a night has read it, so a drift is replayed on the surprise its night
+            // stored; a member whose row stored none, its print outside the live rule's window, is read as the calendar
+            // holds it.
+            var inputs = family == DriftRule.Name ? AsTheNightRead(calendarInputs, await SurprisesAsync(connection, family, night, cancellation)) : calendarInputs;
 
             var verdicts = new List<(string Ticker, ShadowOutcome Outcome)>();
 
@@ -387,6 +395,39 @@ public sealed class FamilyReplay : IComponent
         }
 
         return rows;
+    }
+
+    // A night's inputs with each member's newest print carrying the surprise the night stored for it.
+    internal static FamilyNightInputs AsTheNightRead(FamilyNightInputs inputs, IReadOnlyDictionary<string, double> surprises) =>
+        inputs with
+        {
+            Members =
+            [
+                .. inputs.Members.Select(member =>
+                    member.Inputs.Drift.Print is { } print && surprises.TryGetValue(member.Ticker, out var surprise)
+                        ? member with { Inputs = member.Inputs with { Drift = member.Inputs.Drift with { Print = print with { SurprisePct = surprise } } } }
+                        : member),
+            ],
+        };
+
+    static async Task<IReadOnlyDictionary<string, double>> SurprisesAsync(SqliteConnection connection, string family, DateOnly night, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = SurprisesOn;
+        command.Parameters.AddWithValue("$family", family);
+        command.Parameters.AddWithValue("$night", Stamp(night));
+
+        var surprises = new Dictionary<string, double>(StringComparer.Ordinal);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            surprises[reader.GetString(0)] = reader.GetDouble(1);
+        }
+
+        return surprises;
     }
 
     static async Task<IReadOnlyList<DateOnly>> NightsAsync(SqliteConnection connection, string family, DateOnly from, CancellationToken cancellation)
