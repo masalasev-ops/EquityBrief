@@ -10,7 +10,8 @@ namespace EquityBrief.Tests.Checks;
 // session, so each member's closes run on past its own bars for the replay. On each
 // rebalance in the span every member of each sector's size cut is a heavyweights' setup, its readings read over the
 // member's own closes and its relative strength at a high worked by hand; and a span reaching a session holding the
-// night's own rows is written but for that session, which is left to the night with its row as the night wrote it.
+// night's own rows is written but for that session, which is left to the night with its row as the night wrote it, the
+// history read through the last session the build writes, which its check reads it through.
 // see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span
 public partial class NightlyRun
 {
@@ -83,6 +84,44 @@ public partial class NightlyRun
         Assert.Equal(
             sessions.Where(session => session >= SpanFrom && session < through).Select(SpanStamp),
             Texts(store, "SELECT DISTINCT session_date FROM setup_night WHERE source = 'history' ORDER BY session_date;"));
+    }
+
+    [Fact]
+    public async Task AHistoryBuildWhoseSpanEndsInTheNightsSessionsReadsTheHistoryThroughTheLastSessionItWritesAsItsCheckDoes()
+    {
+        var (store, sessions) = SpanStore();
+        using var held = store;
+        var through = sessions[^13];
+        var written = sessions[^16];
+
+        // The night's own rows of the span's last three sessions.
+        foreach (var session in sessions[^15..^12])
+        {
+            store.Execute($"INSERT INTO setup_night (index_code, family, session_date, members, setups, live_passes, source) VALUES ('GSPC', 'pullback', '{SpanStamp(session)}', 4, 0, 0, 'night');");
+        }
+
+        var ledger = SpanLedger(store);
+        var output = new StringWriter();
+
+        Assert.Equal(0, await ledger.BuildAsync(store.Root, IndexFamilies.LargeIndex, SpanFrom, through, output, again: true));
+
+        // Read through the span's end, the history's last three sessions are the night's, so it is read again through the
+        // session before them, the last the build writes, and every member's closes after it are the bar store's.
+        var said = output.ToString();
+
+        Assert.Equal(
+            [SpanStamp(through), SpanStamp(written)],
+            System.Text.RegularExpressions.Regex.Matches(said, "reading the S&P 500's history through ([0-9-]+)").Select(match => match.Groups[1].Value));
+        Assert.Contains($"the history is read again through {SpanStamp(written)}", said, StringComparison.Ordinal);
+        Assert.Contains($"4 name(s) replayed past {SpanStamp(written)} over the bar store's closes through {SpanStamp(sessions[^1])}", said, StringComparison.Ordinal);
+        Assert.Equal([SpanStamp(written)], Texts(store, "SELECT MAX(session_date) FROM setup_night WHERE source = 'history';"));
+
+        // The check reads the history through the same session, and every reading it rebuilds is the one stored.
+        var checkSaid = new StringWriter();
+
+        Assert.Equal(0, await ledger.CheckAsync(IndexFamilies.LargeIndex, checkSaid));
+        Assert.Contains($"rebuilt from the history read through {SpanStamp(written)}", checkSaid.ToString(), StringComparison.Ordinal);
+        Assert.Contains("every reading the same", checkSaid.ToString(), StringComparison.Ordinal);
     }
 
     static SetupLedger SpanLedger(TemporaryStore store) =>
