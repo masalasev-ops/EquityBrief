@@ -73,6 +73,8 @@ internal static class Scope
     internal const string CardScorePart = "The score's part";
 
     internal const string CardChancePart = "The setups' chance";
+
+    internal const string PaperHalvedTrade = "A trade sized at half";
     internal const string CardApproved = "A rule standing at an approved change";
     const string ByNight = "nightly-run";
     const string ByListings = "listings-coverage";
@@ -3733,6 +3735,11 @@ internal static class Scope
             Verdict.Pass,
             "the ranking's candidates and order worked by hand over a constructed night of seven setups under a constructed score and under the expected value, the best five taken and a setup neither can read left off, at the hooks and in the S&P 500's recorder; the figures read off the document against the constants",
             ByExpectations),
+        // 21.9's graded exposure variant.
+        [CheckReach.Key(LimitsTable, "The graded exposure variant")] = new Scoped(
+            Verdict.Pass,
+            "the floor each rule grades at read off its market check by hand, its own floor, the S&P 500's where it reads that breadth and none where it reads no check; the exposure at that floor at both switches on both sides and at each level over a constructed night; a paper account's half-sized trade worked by hand and its night read off the two switches; and the remedy's lines over a register shaped as the operator's, refusing where the rule reads no check, the family holds nine or its walk reads no exposure; the figures read off the document against the constants",
+            ByExpectations),
         // 21.8's ranking variant.
         [CheckReach.Key(LimitsTable, "The ranking variant")] = new Scoped(
             Verdict.Pass,
@@ -4199,6 +4206,8 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key("15.21 Paper trading", "Your account")] = new Scoped(
             Verdict.Pass, "the sentence on what the page is, the account's line of the settings kept or the example's and the form behind Change the account read back off the rendered page, and distinctive settings found in no byte of the store or the run log", ByReadSurface),
+        [CheckReach.Key("15.21 Paper trading", PaperHalvedTrade)] = new Scoped(
+            Verdict.Pass, "a trade the walk sized at half drawn in its account's log with its mark and its row's flag, and a trade sized whole with neither, read back off the rendered log", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", "The tiles")] = new Scoped(
             Verdict.Pass, "each live or provisional account's tile read back off the rendered page over a constructed store, its return worked by hand from the walk with a skip under the cash, its trades open and closed and its day, and the fund's tile over the same days worked by hand from its closes", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", "The chart")] = new Scoped(
@@ -6326,6 +6335,7 @@ internal static class Scope
         [CheckReach.Key(LoopPage, LoopScore)] = "17.7",
         [CheckReach.Key(CardPage, CardScorePart)] = "17.7",
         [CheckReach.Key(CardPage, CardChancePart)] = "21.7",
+        [CheckReach.Key("15.21 Paper trading", PaperHalvedTrade)] = "21.9",
         // 17.9's Loop page regions, Tonight's line and the card's row for a rule standing at an approved change.
         [CheckReach.Key(LoopPage, LoopWord)] = "17.9",
         [CheckReach.Key(LoopPage, LoopDecided)] = "17.9",
@@ -8135,6 +8145,8 @@ internal static class Scope
         ["FINRA's short interest"] = "21.6",
         // 21.8's row, which the plan names as section 17's row of the variant.
         ["The ranking variant"] = "21.8",
+        // 21.9's row, which the plan names as section 17's row of the exposure.
+        ["The graded exposure variant"] = "21.9",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

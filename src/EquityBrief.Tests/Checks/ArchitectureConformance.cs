@@ -1485,7 +1485,8 @@ public partial class ArchitectureConformance
         // 261 at 22.13: Tonight's row for the Fundamentals family's card.
         // 262 at 21.6: the Ledger page's line on the readings' sources.
         // 263 at 21.7: the setups' chance on a pick's card.
-        Assert.Equal(263, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 264 at 21.9: paper trading's trade sized at half.
+        Assert.Equal(264, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1652,7 +1653,8 @@ public partial class ArchitectureConformance
         // 664 at 21.6: what else is waiting on a count's part on the ratings refresh's runs and the Ledger page's line on
         // the readings' sources.
         // 665 at 21.7: the setups' chance on a pick's card.
-        Assert.Equal(665, inDocument.Length);
+        // 666 at 21.9: paper trading's trade sized at half.
+        Assert.Equal(666, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

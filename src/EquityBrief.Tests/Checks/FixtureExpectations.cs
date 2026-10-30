@@ -148,6 +148,8 @@ public partial class FixtureExpectations
             .. NewReadingClaims,
             // 21.8, ranking in place of pass-or-fail gates: section 17's row of the variant.
             .. RankingClaims,
+            // 21.9, graded exposure: section 17's row of the variant.
+            .. ExposureClaims,
             // 17.6, winners against losers: section 17's two rows and section 18's one.
             .. ConditionClaims,
             // 17.7, the learned score: section 17's three rows.

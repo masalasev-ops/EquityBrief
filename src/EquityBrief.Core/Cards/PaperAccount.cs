@@ -32,10 +32,16 @@ public sealed record PaperTrade(
     double? Edge = null,
     string? Outcome = null,
     int? Exit = null,
-    double? RiskMoves = null)
+    double? RiskMoves = null,
+    bool Halved = false)
 {
     // The price the trade is sized from: the close its plan was set at where it was set the night before.
     public decimal SizedAt => Planned ?? Buy;
+
+    // From 21.9 the share of the account's risk setting the trade is sized at: half on a night its rule's graded exposure
+    // held one of its two switches, and the whole otherwise.
+    // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
+    public decimal RiskShare => Halved ? 0.5m : 1m;
 
     // The night that listed it, which an account's start and its versions are read by.
     public DateOnly ListedOn => Listed ?? Bought;
@@ -129,7 +135,7 @@ public static partial class PaperAccount
             foreach (var trade in trades.Where(trade => trade.Bought == session).OrderBy(trade => trade.Place).ThenBy(trade => trade.Ticker, StringComparer.Ordinal))
             {
                 var worth = cash + open.Sum(position => position.Shares * position.Trade.Buy);
-                var plan = PositionSize.Of(account with { Size = worth }, trade.SizedAt, trade.Stop, trade.BookHoldings, null);
+                var plan = PositionSize.Of(account with { Size = worth, RiskPercent = account.RiskPercent * trade.RiskShare }, trade.SizedAt, trade.Stop, trade.BookHoldings, null);
 
                 if (plan is not { Shares: > 0 })
                 {

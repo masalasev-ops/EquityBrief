@@ -2589,6 +2589,10 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
 
     sources = PaperScreen.Costed(sources, rows, await read.MemberCostsAsync(reading.Code, bought), closes);
 
+    // From 21.9 a rule standing at the graded exposure sizes a night's trades at half where its exposure held one switch.
+    // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
+    sources = PaperScreen.Halved(sources, register, await read.ExposureNightsAsync(reading.Code, PaperScreen.ExposedNights(sources, register)));
+
     var fund = await read.FundClosesAsync(PaperScreen.Fund(reading.Code), from);
     var (tests, years) = await read.RuleTestsAsync(reading.Code);
     var sessions = await read.SessionsFromAsync(earliest);

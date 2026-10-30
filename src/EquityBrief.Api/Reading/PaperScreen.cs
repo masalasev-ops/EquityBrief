@@ -119,6 +119,44 @@ public static class PaperScreen
 
     // A registered rule's account's trades split at its start: those it counts, bought on or after it, and those it leaves
     // out, each named by the version that listed it; the stocks no fill bought counted from its start alike.
+    // From 21.9 an account whose rule stands at the graded exposure with each trade marked where its night held one of the
+    // exposure's two switches, which sizes it at half the risk setting; a night whose readings are not held is sized
+    // whole. Every other account as it was.
+    // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
+    public static IReadOnlyList<PaperAccountSource> Halved(IReadOnlyList<PaperAccountSource> accounts, IReadOnlyList<CandidateRow> register, IReadOnlyDictionary<DateOnly, (double? Breadth, double? VixOverMedian)> nights) =>
+    [
+        .. accounts.Select(account =>
+            register.LastOrDefault(row => row.Candidate == account.Words) is { } row
+            && Core.Loop.RuleHooks.Of(Core.Candidates.CandidateEvaluator.Read(row.Parameters)) is { Exposure: not null } hooks
+                ? account with { Trades = [.. account.Trades.Select(one => (one.Trade with { Halved = HalvedOn(hooks, nights, one.Trade.ListedOn) }, one.Result))] }
+                : account),
+    ];
+
+    // Whether a graded exposure held one switch on a night: its picks there are the half count.
+    public static bool HalvedOn(Core.Loop.RuleHooks hooks, IReadOnlyDictionary<DateOnly, (double? Breadth, double? VixOverMedian)> nights, DateOnly night)
+    {
+        if (!nights.TryGetValue(night, out var held))
+        {
+            return false;
+        }
+
+        var readings = new double?[Core.Ledger.LedgerReadings.Count];
+
+        readings[Core.Loop.RuleHooks.BreadthColumn] = held.Breadth;
+        readings[Core.Loop.RuleHooks.VixOverMedianColumn] = held.VixOverMedian;
+
+        return hooks.PicksUnder(readings) == Core.Loop.RuleHooks.ExposureHalf;
+    }
+
+    // The nights of every trade of the accounts whose rule stands at the graded exposure, which their sizing reads.
+    public static IReadOnlyList<DateOnly> ExposedNights(IReadOnlyList<PaperAccountSource> accounts, IReadOnlyList<CandidateRow> register) =>
+    [
+        .. accounts
+            .Where(account => register.LastOrDefault(row => row.Candidate == account.Words) is { } row && Core.Loop.RuleHooks.Of(Core.Candidates.CandidateEvaluator.Read(row.Parameters)).Exposure is not null)
+            .SelectMany(account => account.Trades.Select(one => one.Trade.ListedOn))
+            .Distinct(),
+    ];
+
     public static PaperAccountSource Started(PaperAccountSource account, IReadOnlyList<(PaperTrade Trade, double? Result)> trades, CandidateRow standing, IReadOnlyList<FamilyReplayRow> replays, IReadOnlyList<CandidateRow> lineage)
     {
         var start = StartOf(standing, replays);
@@ -708,6 +746,6 @@ public static class PaperScreen
             result = null;
         }
 
-        return new PaperTradeView(trade.Ticker, trade.Bought, trade.Buy, trade.Stop, trade.Ended, result, open, skipped, version);
+        return new PaperTradeView(trade.Ticker, trade.Bought, trade.Buy, trade.Stop, trade.Ended, result, open, skipped, version, trade.Halved);
     }
 }
