@@ -150,6 +150,8 @@ public partial class FixtureExpectations
             .. RankingClaims,
             // 21.9, graded exposure: section 17's row of the variant.
             .. ExposureClaims,
+            // 21.10, choosing a version by its record: section 17's windows and floors.
+            .. VersionChoiceClaims,
             // 17.6, winners against losers: section 17's two rows and section 18's one.
             .. ConditionClaims,
             // 17.7, the learned score: section 17's three rows.

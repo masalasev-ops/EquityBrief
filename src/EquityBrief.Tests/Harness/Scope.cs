@@ -75,6 +75,8 @@ internal static class Scope
     internal const string CardChancePart = "The setups' chance";
 
     internal const string PaperHalvedTrade = "A trade sized at half";
+
+    internal const string LoopChoices = "Choosing a version by its recent record";
     internal const string CardApproved = "A rule standing at an approved change";
     const string ByNight = "nightly-run";
     const string ByListings = "listings-coverage";
@@ -3735,6 +3737,11 @@ internal static class Scope
             Verdict.Pass,
             "the ranking's candidates and order worked by hand over a constructed night of seven setups under a constructed score and under the expected value, the best five taken and a setup neither can read left off, at the hooks and in the S&P 500's recorder; the figures read off the document against the constants",
             ByExpectations),
+        // 21.10's windows and floors of choosing a version by its record.
+        [CheckReach.Key(LimitsTable, "Choosing a version by its record")] = new Scoped(
+            Verdict.Pass,
+            "the choice at one month worked by hand at the floor of ended trades and one under it, a tie, a book's floor of months; no trade read that has not ended by its month, the cut a fold's year opens on among them; and the procedure walked over a constructed history judged against the live rule as the tester judges a proposal, in the family's correction; the figures read off the document against the constants",
+            ByExpectations),
         // 21.9's graded exposure variant.
         [CheckReach.Key(LimitsTable, "The graded exposure variant")] = new Scoped(
             Verdict.Pass,
@@ -3871,6 +3878,10 @@ internal static class Scope
         [CheckReach.Key(CardPage, CardScorePart)] = new Scoped(
             Verdict.Pass,
             "the setups like the pick and the rank or the words read back off the rendered card on Tonight and on the stock's page over a constructed store the night matched from the ledger, on both sides of the sentence that they are not distinguishable from the rule's record",
+            ByReadSurface),
+        [CheckReach.Key(LoopPage, LoopChoices)] = new Scoped(
+            Verdict.Pass,
+            "a family's procedures read back off the rendered card, each with what it does in the reader's words and the version it would run now, its trades, its adjusted p and whether it beat staying put, with the line that an approval waits on the operator's word and no press, and nothing for a family with none",
             ByReadSurface),
         [CheckReach.Key(LoopPage, LoopScore)] = new Scoped(
             Verdict.Pass,
@@ -6336,6 +6347,7 @@ internal static class Scope
         [CheckReach.Key(CardPage, CardScorePart)] = "17.7",
         [CheckReach.Key(CardPage, CardChancePart)] = "21.7",
         [CheckReach.Key("15.21 Paper trading", PaperHalvedTrade)] = "21.9",
+        [CheckReach.Key(LoopPage, LoopChoices)] = "21.10",
         // 17.9's Loop page regions, Tonight's line and the card's row for a rule standing at an approved change.
         [CheckReach.Key(LoopPage, LoopWord)] = "17.9",
         [CheckReach.Key(LoopPage, LoopDecided)] = "17.9",
@@ -8147,6 +8159,8 @@ internal static class Scope
         ["The ranking variant"] = "21.8",
         // 21.9's row, which the plan names as section 17's row of the exposure.
         ["The graded exposure variant"] = "21.9",
+        // 21.10's row, which the plan names as section 17's windows and floor.
+        ["Choosing a version by its record"] = "21.10",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

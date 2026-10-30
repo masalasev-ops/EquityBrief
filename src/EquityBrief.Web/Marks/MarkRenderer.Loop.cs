@@ -5,6 +5,11 @@ using EquityBrief.Core.Returns;
 
 namespace EquityBrief.Web.Marks;
 
+// From 21.10 one version-choosing procedure as the newest per-rule test on an index walked it: its family and name, what
+// it does with the version it would run now, its trades over the test years, its adjusted p, whether it passed, and why
+// the history could not walk it where it could not.
+public sealed record LoopChoiceView(string Family, string Rule, string Words, int? Units, double? Adjusted, bool Passed, string? Why);
+
 // What a Loop page draws of the operator's word: every decision on the index with what the apply step did, the settings
 // approvals stored, the live alarm's periods, and the index's newest run, the one whose proposals are put to the operator;
 // from 20.8 the local model's cutoff, and from its correction of 2026-10-19 the run's test years, which a proposal reading a
@@ -96,6 +101,36 @@ public sealed partial class MarkRenderer
     // words with its hash, the words saying it has not passed the tester on this index until one of its proposals did,
     // and from then the rank each of tonight's cards carries under it, read off the cards and never worked out here.
     // see: A pick's card draws the setups like it under its rule beneath the rule's record, and the score's rank only once the score passed on its index
+    // From 21.10 a family's versions chosen by their recent record, as the newest per-rule test on the index walked them:
+    // a row a window with what it does in words, the version it would run now and the months it switched among them, its
+    // trades over the test years, its adjusted p and whether it passed against staying with the live rule; and that an
+    // approval of one waits on the operator's word. Nothing where the test walked none for the family.
+    // see: A family's version is chosen each month by its recent record as a procedure judged against staying with the live rule, and an approval of it waits on the operator's word
+    public string LoopChoices(string family, IReadOnlyList<LoopChoiceView> choices)
+    {
+        var own = choices.Where(choice => choice.Family == family).ToArray();
+
+        if (own.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        var html = new StringBuilder();
+
+        html.Append(Invariant, $"<div class=\"loop-choices\" data-family=\"{Escaped(family)}\" data-choices=\"{own.Length}\"><h5>Choosing a version by its recent record</h5>");
+        html.Append("<div class=\"tbl-wrap\"><table class=\"loop-choices-table\"><thead><tr><th>Procedure</th><th>What it does</th><th class=\"r\">Trades</th><th class=\"r\">Could this be luck</th><th>Beat staying put</th></tr></thead><tbody>");
+
+        foreach (var choice in own)
+        {
+            html.Append(Invariant, $"<tr data-choice=\"{Escaped(choice.Rule)}\" data-passed=\"{Flag(choice.Passed)}\"><td>{Escaped(choice.Rule)}</td><td>{Escaped(EquityBrief.Web.Marks.ReaderWords.Plain(choice.Words))}</td>");
+            html.Append(Invariant, $"<td class=\"r num\">{(choice.Units is { } units ? units.ToString(Invariant) : "none")}</td><td class=\"r num\">{(choice.Adjusted is { } adjusted ? adjusted.ToString("0.000", Invariant) : "not read")}</td><td>{(choice.Why is { } why ? Escaped(why) : choice.Passed ? "yes" : "no")}</td></tr>");
+        }
+
+        html.Append("</tbody></table></div><p class=\"loop-choices-note\">Each walks the setup's own versions and switches to the one with the best recent record each month. Making one the way the setup runs waits on your word; there is no press for it here.</p></div>");
+
+        return html.ToString();
+    }
+
     public string LoopScore(string family, IReadOnlyList<LoopProposalRow> proposals, LoopModelRow? model, IReadOnlyList<LoopRankRow> ranks, string? month = null)
     {
         var scored = proposals.Where(proposal => proposal.Proposal.StartsWith(RidgeScore.Proposal, StringComparison.Ordinal)).ToArray();

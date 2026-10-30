@@ -893,8 +893,13 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         return new ToneReleases(versions, clock.SessionZone, new Core.Releases.ReleaseCalendar(read.Calendar), cutoffs);
     }
 
-    static string RulesDetail(IReadOnlyList<RuleTested> tested, string index, string month, DateOnly through, int folds) =>
-        FormattableString.Invariant($"{tested.Count(one => one.Passed)} of {tested.Count} rule(s) passed on the {DecisionCards.NameOf(index)} for {month} and {tested.Count(one => one.Why is not null)} not testable, through {through:yyyy-MM-dd}, over {folds} fold(s)");
+    static string RulesDetail(IReadOnlyList<RuleTested> tested, string index, string month, DateOnly through, int folds)
+    {
+        var rules = tested.Where(one => !Core.Loop.VersionChoices.Is(one.Rule.Rule)).ToArray();
+        var choices = tested.Where(one => Core.Loop.VersionChoices.Is(one.Rule.Rule)).ToArray();
+
+        return FormattableString.Invariant($"{rules.Count(one => one.Passed)} of {rules.Length} rule(s) passed on the {DecisionCards.NameOf(index)} for {month} and {rules.Count(one => one.Why is not null)} not testable, and {choices.Count(one => one.Passed)} of {choices.Length} version choice(s), through {through:yyyy-MM-dd}, over {folds} fold(s)");
+    }
 
     // From 22.11 whether a run lays out Quality at a fair price's history on an index: only where a rule of the family stands
     // on it when the run begins, so the monthly run reads the family from its next run after a freeze.
