@@ -12755,3 +12755,52 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the procedures' first figures, read off the monthly run of 2026-11-07 and put to the operator with 21.14's
             rulings; an approval of a procedure that passes, on the operator's word; and everything 21.9 carried.
+
+### 21.14 ruling - the held decisions answered: the exits at the next open, the tone variant kept and judged from today, the open floor unregistered, two read-only checks, and two corrections   2026-10-30
+
+Not a checkpoint entry: it records the operator's answers of 2026-10-30 to the decisions this phase held, and lands
+nothing.
+Ruled:      word for word in `prompts/2026-10-30-21.14-operator-answers.md`. The exits: priced at the next session's
+            open after the triggering close on every swing family and index by a fill step of its own, as 19.10 priced
+            the entries, no rule registered again and no record restarting, every page and record reading the fill; the
+            target as a resting order not adopted; each record's figures stated before and after the repricing. The
+            tone variant: kept running on every index and judged by its record from now on, its results before 2025
+            having risen and after the model's cutoff fallen on all three indices, the S&P 500 +0.120 over 1,185 to
+            -0.096 over 465, the S&P 400 +0.144 over 973 to -0.037 over 395, the S&P 600 +0.085 over 566 to -0.009 over
+            235, which is phase 20's test for an edge carried by the model's memory; its card saying "Its history
+            before 2025 does not count: the model that read those releases was trained after them. Its record from
+            today is what counts."; the opposite not registered; and, read-only before 21.15, the same split for every
+            rule reading a release reading, the drift version "release better, outlook not cut" and the S&P 400's and
+            600's frozen rules whose settings require a flag against the same settings without it. The open floor: run
+            on unregistered on the S&P 500, nothing registered and no approval. The estimate revisions: forward only, as
+            ruled. The ranked S&P 400 drift: kept running, nothing retired. FLEX: the replay reads the surprise the night
+            stored and not the calendar as it stands, as a correction; then, read-only, for every drift listing the
+            nights stored since the night first stored a surprise, how many differ from the calendar's figure today and
+            by how much, and whether the history the drift's sweeps and the walk-forward walks read takes surprises as
+            pulled since, so revised. The ratings refresh: 80 a day with 20 kept for the chart page, as built. FINRA's
+            dates before 2025: estimated from the publishing schedule, checked against the files from 2025 that carry
+            the date, and every estimated date pushed later by the largest miss found, the miss stated, as a correction
+            to 21.6.
+Written:    21.14's text and its done condition in the build plan, with the prior text in the changelog. The second
+            move of the pins is the ruling entry below.
+Order:      21.16 next, then 21.11, 21.12 and 21.13, then 21.14 with its two read-only checks, then 21.15; the FLEX
+            and FINRA corrections on their own branches beside them.
+Verified:   `tools/ci.ps1` green over the tree carrying 21.10's entry above, which states that run's figures; documents
+            alone change after it.
+
+### 21.16 ruling - a second move of the pins in this phase, now: the expected value's order on the S&P 400 and 600, graded exposure on the pullback and the dip, and the changes no night read made approvable   2026-10-30
+
+Not a checkpoint entry: it records the operator's sixth answer of 2026-10-30, which adds 21.16 to the phase, and lands
+nothing.
+Ruled:      word for word in `prompts/2026-10-30-21.14-operator-answers.md`, the sixth answer: "The second move of the
+            pins: in this phase, now, while the records restarted on 2026-10-30 are a day old. One checkpoint, built as
+            21.4 was (one pull request in reviewable commits, merged complete, the remedy straight after from main while
+            no other writer runs): the order by expected value read on the S&P 400 and 600; graded exposure read by the
+            pullback and the dip; and the dip's exit changes, the book families' sale under the 200-day average and the
+            frozen S&P 400 and 600 pullbacks' changes made approvable, the decision that a change a family's night does
+            not read is never put to me superseded for them. State each rule that restarts and its record's length
+            before the remedy. Placed before 21.13 so the plain-words pass draws the result."
+Written:    21.16's text and its done condition in the build plan, numbered after the phase report and built before
+            21.11, and section 20's phase 21 row, each with its prior text in the changelog.
+Verified:   `tools/ci.ps1` green over the tree carrying 21.10's entry above, which states that run's figures; documents
+            alone change after it.
