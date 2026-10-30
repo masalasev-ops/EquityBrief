@@ -3733,6 +3733,11 @@ internal static class Scope
             Verdict.Pass,
             "the ranking's candidates and order worked by hand over a constructed night of seven setups under a constructed score and under the expected value, the best five taken and a setup neither can read left off, at the hooks and in the S&P 500's recorder; the figures read off the document against the constants",
             ByExpectations),
+        // 21.8's ranking variant.
+        [CheckReach.Key(LimitsTable, "The ranking variant")] = new Scoped(
+            Verdict.Pass,
+            "the order chosen by hand over a constructed audit on both sides of the score's top fifth standing above its bottom, then the expected value's, and none where neither does; the variant's candidates and order over constructed nights under the score and under the expected value, a gate loosened, a held stock and a stop at its buy passed over; each fold walked by its own score; and the remedy's lines over a register shaped as the operator's, refusing where the family holds nine or the step lists by no such order; the figures read off the document against the constants",
+            ByExpectations),
         // 21.4's catalogue part: section 17's row for the five readings the operator chose at 21.2.
         [CheckReach.Key(LimitsTable, "The readings the operator chose")] = new Scoped(
             Verdict.Pass,
@@ -8128,6 +8133,8 @@ internal static class Scope
         // 21.6's two, which the plan names as section 17's weights.
         ["The night's estimate trends"] = "21.6",
         ["FINRA's short interest"] = "21.6",
+        // 21.8's row, which the plan names as section 17's row of the variant.
+        ["The ranking variant"] = "21.8",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

@@ -404,9 +404,10 @@ public partial class ArchitectureConformance
         // from 21.4's correction, section 18's row for a history build asked for a session the night wrote, and 1476 from
         // 21.6, the trends fetcher's, the ratings refresh's and the short interest reader's catalogue and matrix rows,
         // their two stores, section 17's three rows, section 18's two, the Run page's count of the refresh's runs and the
-        // Ledger page's line on the readings' sources, and 1477 from 21.7, the setups' chance on a pick's card.
+        // Ledger page's line on the readings' sources, and 1477 from 21.7, the setups' chance on a pick's card, and 1478 from
+        // 21.8, section 17's ranking variant.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1477),
+            (789, 853, 6, 4, 855, 876, 1478),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

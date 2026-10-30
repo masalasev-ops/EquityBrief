@@ -489,6 +489,16 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         var scores = new List<FittedScore>();
         var answered = await StoredIdeasAsync(databaseFile, cancellation);
 
+        // From 21.8 the ledger's settled setups the expected value of the setups like each is matched among, which each
+        // family's ranking variant reads where the score does not order it.
+        LikePool like;
+
+        await using (var connection = new SqliteConnection(StoreConnection.For(databaseFile)))
+        {
+            await connection.OpenAsync(cancellation);
+            like = await LikePool.ReadAsync(connection, index, cancellation);
+        }
+
         foreach (var rule in rules)
         {
             var (exits, figures) = ExitProcedures.Autopsy(read, rule, output.WriteLine);
@@ -501,6 +511,21 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             proposals.AddRange(ideas);
             proposals.AddRange(scored);
             scores.AddRange(fitted);
+
+            // From 21.8 the family's ranking variant, its order read off the fifths of the scores this run fitted.
+            // see: A family's ranking variant orders by the learned score where its audit's top fifth stands above the bottom and otherwise by the expected value, and is built nowhere neither orders
+            if (RankingWalk.Families.Contains(rule.Family, StringComparer.Ordinal))
+            {
+                RankingWalk ranked;
+
+                await using (var connection = new SqliteConnection(StoreConnection.For(databaseFile)))
+                {
+                    await connection.OpenAsync(cancellation);
+                    ranked = await RankingWalk.ReadAsync(connection, index, rule.Family, read.Folds[0].TestFrom, through, cancellation);
+                }
+
+                proposals.AddRange(RankingProcedures.Run(read, EngineRule.Of(read, rule, readings), ranked, fitted, like, output.WriteLine));
+            }
             findings[rule.Family] = figures;
             spreads[rule.Family] = spread;
         }
@@ -745,13 +770,21 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         // each listing is matched over.
         LikePool like;
 
+        // From 21.8 each family's setups at the ledger's loose gates in the test years, which its ranking variant ranks.
+        var ranked = new Dictionary<string, RankingWalk>(StringComparer.Ordinal);
+
         await using (var connection = new Microsoft.Data.Sqlite.SqliteConnection(StoreConnection.For(databaseFile)))
         {
             await connection.OpenAsync(cancellation);
             like = await LikePool.ReadAsync(connection, index, cancellation);
+
+            foreach (var family in RankingWalk.Families)
+            {
+                ranked[family] = await RankingWalk.ReadAsync(connection, index, family, read.Folds[0].TestFrom, through, cancellation);
+            }
         }
 
-        output.WriteLine(FormattableString.Invariant($"{RulesVerb}: {like.Count} settled setup(s) of the swing families to match the setups like each listing among"));
+        output.WriteLine(FormattableString.Invariant($"{RulesVerb}: {like.Count} settled setup(s) of the swing families to match the setups like each listing among, and {ranked.Values.Sum(walk => walk.Count)} setup(s) in the test years to rank"));
 
         var rules = RuleTests.Walk(new RuleTestInputs(
             read,
@@ -769,7 +802,8 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             dipRead,
             improvingLay,
             own,
-            Like: like));
+            Like: like,
+            Ranked: family => ranked.GetValueOrDefault(family)));
         var tested = RuleTests.Judge(read, rules);
         var runId = FormattableString.Invariant($"{RulesVerb}-{index}-{started:yyyyMMddTHHmmssZ}");
 
@@ -798,6 +832,14 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         foreach (var one in tested.Where(one => one.Rule.Expected is not null))
         {
             output.WriteLine(RuleTests.ExpectedLine(one.Rule, InTestYears));
+        }
+
+        // From 21.8 each live or provisional rule's family's ranking variant, walked unregistered beside it where its family
+        // on the index registers none.
+        // see: A family's ranking variant orders by the learned score where its audit's top fifth stands above the bottom and otherwise by the expected value, and is built nowhere neither orders
+        foreach (var one in tested.Where(one => one.Rule.RankingWords is not null))
+        {
+            output.WriteLine(RuleTests.RankingLine(one.Rule, InTestYears));
         }
 
         output.WriteLine(print

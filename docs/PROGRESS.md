@@ -12527,3 +12527,77 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the order on the S&P 400's and 600's breakouts and drifts, put to the operator; the ninth breakout rule's
             record from its registration, read on paper trading and the Run page; and everything 21.6 carried.
+
+### 21.7 - the remedy run from main: the S&P 500's breakout registered again whole with its ninth rule, ordered by the expected value of the setups like each member   2026-10-30
+
+Not a checkpoint entry: it records 21.7's remedy and what it measured, and lands nothing.
+Ran:        `tools/remedies/2026-10-30-21.7-the-setups-like-each-pick.txt` from main's cf358584, PR 596's merge, at
+            15:35 UTC on 2026-10-30 with no night, local run, drain, labeller, ledger build or monthly run writing.
+Measured:   the eight standing breakout rules replayed, each carrying its record on: the live rule and five variants
+            from 2026-10-02 or 2026-10-05, reproducing 19 trades between them, 1, 4, 1, 11, 1 and 1, over 19 or 20
+            nights, and the two variants at a 251-session high from 2026-10-30, holding none; then the nine registered
+            at one instant, family of 9 of 9, the ninth the live setting ordered by the expected value. No request and
+            no model call.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.8's entry below, on whose
+            branch this is recorded; records alone change in this entry.
+
+### 21.8 - ranking in place of pass-or-fail gates, as a variant: the order read off the audit's fifths, the learned score for the S&P 500's breakout and drift, the S&P 400's drift and the S&P 600's breakout, none elsewhere, the two with room registered and every variant proposed and walked by the tester   2026-10-30
+
+Queue:      done, 21.1 to 21.7 as PRs 587 to 596 with 21.4's, 21.6's and 21.7's remedies, recorded above; in progress,
+            21.8; next, 21.9 to 21.13 in the section's order on the standing go, with 21.14, 21.15 and every decision
+            held for the operator's word; beside them the sign-offs of phases 18, 20 and 22 by fresh sessions.
+Built:      a family's ranking variant for the pullback, the breakout, the drift and the dip on each index: the live
+            rule with the ranking hook, its candidates the family's setups at the ledger's loose gates, the floors and
+            the defining event kept, the best five a night in the hook's order, one open trade a stock. The score audit
+            places the dip's setups too and ends on a line a family naming the order its fifths choose, the learned
+            score where its top fifth's mean edge stands above its bottom's, otherwise the expected value of the setups
+            like each placed into fifths of the same setups, and none where neither, both fifths printed and written. The
+            tester proposes the variant beside the learned score, its order read off the fifths of the scores the run
+            fitted, walked in each fold's year by that fold's own score or by the expected value matched among what
+            ended before the year, counted in the family's correction, an approval putting it only where the night's
+            step lists by that order; the Loop page says how many folds held a score to rank by. The per-rule test walks
+            a rule registered ranked by the same ranking and prints the variant beside each live rule whose family
+            registers none. `register --ranked <family> --index <code> --by score|expected` registers one beside the
+            live rule. The matcher sorts only the nearest few hundred setups first, the same order, so the audit's
+            expected value over every setup in the test years runs in about a minute an index. The plain-words rewrite
+            says a ranked version's words.
+Measured:   the score audit read-only over the operator's store at 15:55 UTC, the newest run's fold scores of 2026-10-27
+            over the test years, each family's fifths as mean edge in risks, the top against the bottom: the S&P 500's
+            pullback +0.025 against +0.156 by the score and +0.033 against +0.061 by the expected value, so none; its
+            breakout +0.082 against -0.057, the score, the expected value +0.077 against +0.046; its drift -0.069
+            against -0.312, the score, the expected value +0.153 against -0.492. The S&P 400's pullback -0.066 against
+            +0.103 and -0.235 against -0.064, none; its breakout -0.095 against +0.027 and -0.053 against +0.043, none;
+            its drift +0.220 against -0.101, the score, the expected value -0.104 against +0.179. The S&P 600's
+            pullback +0.009 against +0.050 and -0.062 against +0.084, none; its breakout +0.002 against -0.089, the
+            score, the expected value +0.020 against -0.027; its drift -0.138 against +0.093 and -0.237 against -0.017,
+            none. The dip holds no fold score on any index, so none is placed. The audit took 78, 53 and 69 seconds.
+Not built:  the variant on any pullback, the S&P 400's breakout and the S&P 600's drift, which neither order separates;
+            the dip's, until a monthly run fits its fold scores; and on the S&P 500's breakout and drift, which hold
+            nine, registration, their variant walked unregistered by the per-rule test instead.
+Decisions:  one written: A family's ranking variant orders by the learned score where its audit's top fifth stands above
+            the bottom and otherwise by the expected value, and is built nowhere neither orders.
+Tests:      2967, from 2963: four added, the order chosen by hand over a constructed audit on both sides and none where
+            neither orders, the candidates and order over constructed nights under the score and the expected value
+            with a gate loosened, a held stock and a stop at its buy passed over, each fold walked by its own score, and
+            the remedy's lines over a register shaped as the operator's with five refusals, the version's chip and its
+            words as Tonight says them.
+Claims:     1478, from 1477: one added, section 17's ranking variant, against the plan's count of about 2; the score
+            audit's and the tester's catalogue rows amended in place and 11.4's paragraph added; 1493 placements.
+Pins:       none moved: no source 21.8 writes is one a rule's version pins, read off every evaluator's source list.
+Remedy:     `tools/remedies/2026-10-30-21.8-the-ranking-variants.txt`, run from main after the merge while no other
+            writer runs: the S&P 400's drift and the S&P 600's breakout each registers its live rule ranked by the
+            index's newest learned score beside it, printing `family of` and the family's new count.
+Mutation:   chosen before the run by this rule, the property the done condition names first, the choice of order on
+            both sides of the top fifth standing above the bottom: a tie counted as standing above. The fifths' test
+            with no margin made to order at a tie: the choice's test went red, every edge at nought choosing the score
+            where none is expected; reverted, green. Not mutated: the walk's order, the held stock, the fold's own score
+            and the registrations' refusals.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2967 of 2967 tests ran
+            with none failed, migrations 0 to 116 with none pending, schema version 116, against `data-ci` and never
+            `data`; the phase report 64 tables, 1478 claims, 1478 passing, none out of scope and none unexamined, 1493
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the dip's ranking variant, its order read off the audit once a monthly run stores the dip's fold scores, put
+            to the operator with its figures then; the two registered variants' records from their registration; the
+            expected value's top fifth standing below its bottom on every family the score does not order, put to the
+            operator beside the ninth breakout rule's record; and everything 21.7 carried.

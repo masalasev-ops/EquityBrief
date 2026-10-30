@@ -26,6 +26,32 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-30 - docs/ARCHITECTURE.html - the score audit and the tester read each family's ranking variant
+Authorised by: A family's ranking variant orders by the learned score where its audit's top fifth stands above the bottom and otherwise by the expected value, and is built nowhere neither orders
+Was:
+> (Score audit) ... scores each settled swing setup of the index entered in a tester fold's year by that fold's stored model, ... the same for the setups since the first monthly run scored by the newest model fitted before their night; its answer a page under the data root's loop folder ...
+> (Walk-forward tester) ... the open floor is registered, or put as an approval, only on the operator's word (see: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word)
+Now:
+> (Score audit) ... scores each settled swing setup of the index, from 21.8 the dip's among them, entered in a tester fold's year ..., and from 21.8 for each family the order its ranking variant takes, the learned score's bottom and top fifths beside the expected value's of the same setups placed into fifths of their own (see: ...); its answer a page under the data root's loop folder ...
+> (Walk-forward tester) ... (see: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word); and from 21.8 each gated family's ranking variant proposed beside the learned score, its order read off the fifths of the scores the run fitted, ranked in each fold's year ..., an approval putting it only where the night's step lists by that order, and in the per-rule test a rule registered ranked walked by the same ranking and the variant walked unregistered beside each live rule whose family registers none (see: ...)
+Why: 21.8 offers each gated family a ranking variant whose order the audit's fifths choose; section 17 gains the variant's row and 11.4 its paragraph, both new, and the lines above are the ones that stood and now name it. A family's card draws a ranked version as any version, its order its last chip.
+
+### 2026-10-30 - docs/RUNBOOK.md - the score audit names each family's ranking variant, and the ranked form registers one
+Authorised by: A family's ranking variant orders by the learned score where its audit's top fifth stands above the bottom and otherwise by the expected value, and is built nowhere neither orders
+Was:
+> ... the setups since the first monthly run by the newest model fitted before their night. `loop-open-floor` walks ...
+Now:
+> ... the setups since the first monthly run by the newest model fitted before their night; from 21.8 it scores the dip's as well, and ends on a line a family ... naming the order its ranking variant takes ..., with the learned score's top and bottom fifths and the expected value's of the same setups (see: ...). `loop-open-floor` walks ...
+Why: the audit's lines are what the ranked form's order is read off, and the form gains a paragraph of its own before the S&P 400 and 600 freezes.
+
+### 2026-10-30 - .claude/rules/checks.md - fixture-expectations states 21.8's assertions
+Authorised by: A family's ranking variant orders by the learned score where its audit's top fifth stands above the bottom and otherwise by the expected value, and is built nowhere neither orders
+Was:
+> (fixture-expectations) ... and the remedy's line registering it over a register shaped as the operator's where the drift at nine refuses the same order |
+Now:
+> (fixture-expectations) ...; and from 21.8 the ranking variant's order chosen by hand over a constructed audit on both sides ..., its candidates and order over constructed nights ..., each fold walked by its own score, and the remedy's lines registering it ... and refusing where it holds nine or the step lists by no such order, the version's chip and its words as Tonight says them |
+Why: the check gains the assertions 21.8's tests add.
+
 ### 2026-10-30 - docs/ARCHITECTURE.html - section 17's row of the setups like a pick states their chance, and the family recorder reads the setups for the order by it
 Authorised by: Each pick's card says how often the setups like it won and what they made after costs, under the rule's heading
 Was:
