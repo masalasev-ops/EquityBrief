@@ -407,7 +407,13 @@ public sealed record ShapeProposalRow(
     string? Reason,
     string? Opened);
 
-public sealed record TriggerReads(int? ConfirmationNights, string? ConfirmationVersion, int WiderMembers = 0, int RatedFourTimes = 0);
+public sealed record TriggerReads(int? ConfirmationNights, string? ConfirmationVersion, int WiderMembers = 0, int RatedFourTimes = 0)
+{
+    // From 21.6 the ratings refresh's runs, the asks they made, those that failed, and the stocks holding a stored answer.
+    public RefreshReads Refresh { get; init; } = new(0, 0, 0, 0);
+}
+
+public sealed record RefreshReads(int Runs, int Asked, int Failed, int Answered);
 
 // A stored article of a name with the label the page draws for it, or none, its stored text, which says whether it is
 // the name's own story, and the run that wrote the label and the instruction's version it wrote it under, which say
@@ -880,6 +886,8 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.DividendReading, Touch.Read),
             new StoreTouch(Store.DividendEvent, Touch.Read),
             new StoreTouch(Store.EstimateTrend, Touch.Read),
+            new StoreTouch(Store.EstimateTrendNight, Touch.Read),
+            new StoreTouch(Store.ShortInterest, Touch.Read),
             new StoreTouch(Store.TreasuryYield, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.FundamentalReading, Touch.Read),
@@ -3611,8 +3619,38 @@ public sealed partial class ReadApi : IComponent
             }
         }
 
-        return new TriggerReads(confirmationNights, confirmation?.Version, wider, rated);
+        // The ratings refresh's runs off its own rows, with the asks each states it made and how many failed, and the
+        // stocks the analyst job holds a stored answer for.
+        var refresh = new RefreshReads(0, 0, 0, 0);
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = RefreshRuns;
+            command.Parameters.AddWithValue("$stage", EquityBrief.Core.Analysts.AnalystLimits.RefreshStage);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                refresh = new RefreshReads(
+                    reader.GetInt32(0),
+                    reader.IsDBNull(1) ? 0 : reader.GetInt32(1),
+                    reader.IsDBNull(2) ? 0 : reader.GetInt32(2),
+                    reader.IsDBNull(3) ? 0 : reader.GetInt32(3));
+            }
+        }
+
+        return new TriggerReads(confirmationNights, confirmation?.Version, wider, rated) { Refresh = refresh };
     }
+
+    const string RefreshRuns = @"
+        SELECT COUNT(*),
+               SUM(json_extract(detail, '$.asked')),
+               SUM(json_extract(detail, '$.failed')),
+               (SELECT COUNT(DISTINCT ticker) FROM analyst_view)
+        FROM run_log
+        WHERE stage = $stage;
+    ";
 
     const string RatedFourTimes = @"
         SELECT COUNT(*),

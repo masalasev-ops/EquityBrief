@@ -75,6 +75,8 @@ public sealed partial class SetupLedger : IComponent
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.AnalystView, Touch.Read),
             new StoreTouch(Store.EstimateTrend, Touch.Read),
+            new StoreTouch(Store.EstimateTrendNight, Touch.Read),
+            new StoreTouch(Store.ShortInterest, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
             new StoreTouch(Store.SwitchReading, Touch.Read),
             new StoreTouch(Store.MarketReading, Touch.Read),
@@ -136,6 +138,13 @@ public sealed partial class SetupLedger : IComponent
     const string NewestAnalystViews = "SELECT ticker, asked_at, actions FROM analyst_view a WHERE asked_at = (SELECT MAX(asked_at) FROM analyst_view b WHERE b.ticker = a.ticker);";
 
     const string YearTrends = "SELECT ticker, fetched_at, eps_now, eps_thirty_days_ago FROM estimate_trend WHERE period = '0y' ORDER BY ticker, fetched_at;";
+
+    // From 21.6 the night's own ask of each member's trend of its current fiscal year, a session a row, and FINRA's
+    // settlements of each stock's short interest with the day each was published.
+    // see: A new reading joins the ledger with its history where its source keeps one, and from the night it is first stored where it keeps none
+    const string NightTrends = "SELECT ticker, session_date, eps_now, eps_thirty_days_ago FROM estimate_trend_night ORDER BY ticker, session_date;";
+
+    const string ShortInterestReports = "SELECT ticker, published_on, shares_short FROM short_interest ORDER BY ticker, published_on, settlement_date;";
 
     const string PulledFilers = "SELECT ticker, cik FROM pulled_company WHERE cik IS NOT NULL;";
 
@@ -467,6 +476,7 @@ public sealed partial class SetupLedger : IComponent
         var releases = await ReleasesAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
         var actions = await ActionsAsync(connection, names.Select(name => name.Ticker), cancellation);
         var trends = await TrendsAsync(connection, names.Select(name => name.Ticker), cancellation);
+        var shortInterest = await ShortInterestAsync(connection, names.Select(name => name.Ticker), cancellation);
         var (highs, lows) = SweepIdeas.HighsAndLows(inputs.Series, inputs.Members, inputs.Calendar.Length);
         var context = new LedgerContext(income, sectors, highs, lows, facts, before)
         {
@@ -476,6 +486,7 @@ public sealed partial class SetupLedger : IComponent
             Releases = releases,
             Actions = actions,
             Trends = trends,
+            ShortInterest = shortInterest,
             LargeBreadth = await LargeBreadthOnAsync(connection, index, night, cancellation),
             Gics = await GicsAsync(connection, history: false, cancellation),
         };
@@ -509,6 +520,7 @@ public sealed partial class SetupLedger : IComponent
         var releases = await ReleasesAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
         var actions = await ActionsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
         var trends = await TrendsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
+        var shortInterest = await ShortInterestAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
 
         // On the S&P 400 and 600 the S&P 500's breadth as it stood, as the history build reads it.
         var largeBreadth = index is not null && index != IndexFamilies.LargeIndex
@@ -523,6 +535,7 @@ public sealed partial class SetupLedger : IComponent
             Releases = releases,
             Actions = actions,
             Trends = trends,
+            ShortInterest = shortInterest,
             LargeBreadth = largeBreadth,
             Gics = await GicsAsync(connection, history: true, cancellation),
         });
@@ -584,6 +597,7 @@ public sealed partial class SetupLedger : IComponent
         var releases = await ReleasesAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
         var actions = await ActionsAsync(connection, names.Select(name => name.Ticker), cancellation);
         var trends = await TrendsAsync(connection, names.Select(name => name.Ticker), cancellation);
+        var shortInterest = await ShortInterestAsync(connection, names.Select(name => name.Ticker), cancellation);
         var largeBreadth = await LargeBreadthOnAsync(connection, index, night, cancellation);
         var gics = await GicsAsync(connection, history: false, cancellation);
 
@@ -632,6 +646,7 @@ public sealed partial class SetupLedger : IComponent
                     Releases = releases,
                     Actions = actions,
                     Trends = trends,
+                    ShortInterest = shortInterest,
                     LargeBreadth = largeBreadth,
                     Gics = gics,
                     QualityLive = live.Quality.Settings,
@@ -1568,6 +1583,7 @@ public sealed partial class SetupLedger : IComponent
         var releases = await ReleasesAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
         var actions = await ActionsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
         var trends = await TrendsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
+        var shortInterest = await ShortInterestAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
 
         // On the S&P 400 and 600 the S&P 500's breadth as it stood on each session, from the S&P 500's own history as its
         // sweep reads it, which the dip's reading reads and a live rule's market check reads.
@@ -1589,6 +1605,7 @@ public sealed partial class SetupLedger : IComponent
             Releases = releases,
             Actions = actions,
             Trends = trends,
+            ShortInterest = shortInterest,
             LargeBreadth = largeBreadth is null ? null : LargeBreadthOver(calendar, largeBreadth),
             Gics = await GicsAsync(connection, history: true, cancellation),
             QualityLive = rules.Quality.Settings,
@@ -1937,6 +1954,7 @@ public sealed partial class SetupLedger : IComponent
         var releases = await ReleasesAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
         var actions = await ActionsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
         var trends = await TrendsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
+        var shortInterest = await ShortInterestAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
         var largeBreadth = index == IndexFamilies.LargeIndex
             ? null
             : LargeBreadthOver(inputs.Sessions, SweepSwitches.LargeBreadth(await history.ReadAsync(through, null, cancellation), inputs.Sessions));
@@ -1951,7 +1969,7 @@ public sealed partial class SetupLedger : IComponent
 
             foreach (var row in session)
             {
-                var (held, rebuilt) = LedgerPointInTime.Setup(index, cut, cutMarket, income, sectors, facts, row.Family, row.Ticker, insiders, releases, largeBreadth, gics, actions, trends);
+                var (held, rebuilt) = LedgerPointInTime.Setup(index, cut, cutMarket, income, sectors, facts, row.Family, row.Ticker, insiders, releases, largeBreadth, gics, actions, trends, shortInterest);
 
                 if (!held)
                 {
@@ -2561,14 +2579,52 @@ public sealed partial class SetupLedger : IComponent
         return answers;
     }
 
-    // From 21.4 the quarters fetches' trends of each stock's current fiscal year, oldest first, each fetch read as the
-    // session its instant falls on in New York, since a fetch after the close belongs to that session's night.
-    static async Task<IReadOnlyDictionary<string, IReadOnlyList<LedgerTrend>>> TrendsAsync(SqliteConnection connection, IEnumerable<string> tickers, CancellationToken cancellation)
+    // From 21.4 the quarters fetches' trends of each stock's current fiscal year, each fetch read as the session its
+    // instant falls on in New York, since a fetch after the close belongs to that session's night; and from 21.6 the
+    // night's own trend of each member under the session it was asked on. Oldest first, and on a session holding both
+    // the night's last, so the reading takes the night's.
+    public static async Task<IReadOnlyDictionary<string, IReadOnlyList<LedgerTrend>>> TrendsAsync(SqliteConnection connection, IEnumerable<string> tickers, CancellationToken cancellation)
     {
         var wanted = tickers.ToHashSet(StringComparer.Ordinal);
         var trends = new Dictionary<string, List<LedgerTrend>>(StringComparer.Ordinal);
 
-        await using var command = Command(connection, null, YearTrends, []);
+        foreach (var (query, night) in new[] { (YearTrends, false), (NightTrends, true) })
+        {
+            await using var command = Command(connection, null, query, []);
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                var ticker = reader.GetString(0);
+
+                if (!wanted.Contains(ticker))
+                {
+                    continue;
+                }
+
+                if (!trends.TryGetValue(ticker, out var rows))
+                {
+                    trends[ticker] = rows = [];
+                }
+
+                rows.Add(new LedgerTrend(
+                    night ? DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture) : SessionDayOf(InstantOf(reader.GetString(1))),
+                    reader.IsDBNull(2) ? null : Money.FromStorage(reader.GetString(2)),
+                    reader.IsDBNull(3) ? null : Money.FromStorage(reader.GetString(3))));
+            }
+        }
+
+        return trends.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<LedgerTrend>)[.. pair.Value.OrderBy(trend => trend.Session)], StringComparer.Ordinal);
+    }
+
+    // From 21.6 FINRA's settlements of each stock's short interest, each under the day FINRA published it, oldest first;
+    // none for a stock the store holds no report for.
+    public static async Task<IReadOnlyDictionary<string, IReadOnlyList<LedgerShortInterest>>> ShortInterestAsync(SqliteConnection connection, IEnumerable<string> tickers, CancellationToken cancellation)
+    {
+        var wanted = tickers.ToHashSet(StringComparer.Ordinal);
+        var reports = new Dictionary<string, List<LedgerShortInterest>>(StringComparer.Ordinal);
+
+        await using var command = Command(connection, null, ShortInterestReports, []);
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         while (await reader.ReadAsync(cancellation))
@@ -2580,18 +2636,15 @@ public sealed partial class SetupLedger : IComponent
                 continue;
             }
 
-            if (!trends.TryGetValue(ticker, out var rows))
+            if (!reports.TryGetValue(ticker, out var rows))
             {
-                trends[ticker] = rows = [];
+                reports[ticker] = rows = [];
             }
 
-            rows.Add(new LedgerTrend(
-                SessionDayOf(InstantOf(reader.GetString(1))),
-                reader.IsDBNull(2) ? null : Money.FromStorage(reader.GetString(2)),
-                reader.IsDBNull(3) ? null : Money.FromStorage(reader.GetString(3))));
+            rows.Add(new LedgerShortInterest(DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture), reader.GetInt64(2)));
         }
 
-        return trends.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<LedgerTrend>)pair.Value, StringComparer.Ordinal);
+        return reports.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<LedgerShortInterest>)pair.Value, StringComparer.Ordinal);
     }
 
     static readonly TimeZoneInfo SessionZone = SessionZones.ResolveSessionZone(SessionZones.UnitedStates);

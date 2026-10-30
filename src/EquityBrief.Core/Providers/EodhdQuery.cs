@@ -85,4 +85,9 @@ public static class ProviderWeights
 
     // The delayed quote of one listing, one a request.
     public const int Quote = 1;
+
+    // Measured at 21.2: five symbols asked of the calendar trends endpoint in one request moved the account's counter
+    // from 8,203 to 8,208, and one symbol from 8,208 to 8,209, so a request costs one a symbol it asks for.
+    // see: The night asks every member's estimate trend once a night in requests of a page of symbols
+    public const int EstimateTrends = 1;
 }

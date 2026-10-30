@@ -90,7 +90,8 @@ public sealed record LedgerActions(DateOnly AskedOn, IReadOnlyList<(DateOnly Day
 // belongs to, and the consensus now and 30 days before as the answer stated them, each none where it filed none.
 public sealed record LedgerTrend(DateOnly Session, decimal? Now, decimal? MonthBefore);
 
-// From 21.4 one settlement of a stock's short interest as FINRA reports it: the day reported for and the shares short.
+// From 21.4 one settlement of a stock's short interest as FINRA reports it: the day FINRA published it, which a session
+// after it reads it from, and the shares short.
 public sealed record LedgerShortInterest(DateOnly Reported, decimal Shares);
 
 public sealed record LedgerContext(
@@ -112,9 +113,9 @@ public sealed record LedgerContext(
     public IReadOnlyDictionary<DateOnly, double>? LargeBreadth { get; init; }
 
     // From 21.4 the sources of the readings the operator chose at 21.2: Yahoo's newest stored answer about each stock's
-    // analysts, the quarters fetches' trends of each stock's current fiscal year by the session each belongs to, oldest
-    // first, and FINRA's settlements of each stock's short interest, oldest first; each none where the readings are read
-    // without it, and the short interest none until its store is filled.
+    // analysts, the trends of each stock's current fiscal year by the session each belongs to, the quarters fetches' and
+    // from 21.6 the night's own, oldest first, and FINRA's settlements of each stock's short interest by the day each was
+    // published, oldest first; each none where the readings are read without it.
     public IReadOnlyDictionary<string, LedgerActions>? Actions { get; init; }
 
     public IReadOnlyDictionary<string, IReadOnlyList<LedgerTrend>>? Trends { get; init; }
@@ -283,8 +284,8 @@ public sealed record LedgerContext(
     }
 
     // From 21.4 the current fiscal year's consensus earnings a share over its figure 30 days before, less 1, as the newest
-    // quarters fetch on or before a session states them; none before the first fetch, where either figure is missing or
-    // where the earlier one is nought.
+    // trend stored on or before a session states them, a quarters fetch's or from 21.6 the night's own; none before the
+    // first, where either figure is missing or where the earlier one is nought.
     public double? EstimateRevision(string ticker, DateOnly session) =>
         Trends?.GetValueOrDefault(ticker)?.LastOrDefault(trend => trend.Session <= session) is { Now: { } now, MonthBefore: { } before } && before != 0m
             ? Statistic.FromRatio(now / before) - 1

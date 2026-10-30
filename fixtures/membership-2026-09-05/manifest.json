@@ -1762,6 +1762,34 @@
       "query": "POST https://mcp.tipranks.com/mcp/ with the key in the request's Authorization header and in no address: a JSON-RPC tools/call of get_my_usage, inside a session opened by initialize",
       "fetchedAt": "2026-10-23T14:56:28Z",
       "trimmedTo": "nothing. The server's JSON-RPC answer as the probe kept it, written again without its spacing: the month's calls, 3 used of a limit of 100, 97 remaining, starting again at 2026-11-01T00:00:00+00:00. Asked with the key in the header alone, which answered as the address had; the count spends none of the month's calls."
+    },
+    {
+      "file": "trends-2026-10-29.json",
+      "endpoint": "calendar/trends",
+      "query": "calendar/trends?symbols=AAPL.US,MSFT.US,KEYS.US,NFLX.US,ROP.US&fmt=json, 21.2's measurement of the endpoint's weight, five symbols in one request moving the account's counter from 8,203 to 8,208",
+      "fetchedAt": "2026-10-29T17:55:18Z",
+      "trimmedTo": "for each of the five symbols the two records filed under 0y with the newest ends, and AAPL's first record, a +1y whose end is later than either, each record byte for byte as sent and in the answer's order, the answer's type, description and symbols kept: the other 91 to 98 records a symbol, every quarter and year back to 2017 under 0q, +1q, 0y and +1y, left out, from an answer of 369,518 bytes. AAPL's current year ends 2026-09-30 at 8.8348 now against 8.8242 thirty days before, 2 raised and 2 cut over thirty days, and no record files a count of cuts over seven days."
+    },
+    {
+      "file": "short-interest-AAPL.json",
+      "endpoint": "data/group/otcMarket/name/consolidatedShortInterest at api.finra.org",
+      "query": "POST https://api.finra.org/data/group/otcMarket/name/consolidatedShortInterest, keyless, with the body {\"limit\": 5, \"compareFilters\": [{\"compareType\": \"EQUAL\", \"fieldName\": \"symbolCode\", \"fieldValue\": \"AAPL\"}], \"dateRangeFilters\": [{\"fieldName\": \"settlementDate\", \"startDate\": \"2026-09-01\", \"endDate\": \"2026-10-30\"}]}",
+      "fetchedAt": "2026-10-30T10:39:55Z",
+      "trimmedTo": "nothing. FINRA's answer as sent, every field of AAPL's three settlements in the span, 2026-09-15, 2026-09-30 and 2026-10-15, 131,591,865 shares short at the last over an average daily volume of 35,498,663, 3.71 days to cover, and no revision flag."
+    },
+    {
+      "file": "short-interest-2026-10-15.json",
+      "endpoint": "data/group/otcMarket/name/consolidatedShortInterest at api.finra.org",
+      "query": "POST https://api.finra.org/data/group/otcMarket/name/consolidatedShortInterest, keyless, with the body {\"limit\": 5000, \"fields\": [\"symbolCode\",\"settlementDate\",\"currentShortPositionQuantity\",\"revisionFlag\",\"stockSplitFlag\"], \"domainFilters\": [{\"fieldName\": \"symbolCode\", \"values\": [\"AAPL\",\"MSFT\",\"KEYS\",\"NFLX\",\"ROP\"]}], \"compareFilters\": [{\"compareType\": \"EQUAL\", \"fieldName\": \"settlementDate\", \"fieldValue\": \"2026-10-15\"}]}",
+      "fetchedAt": "2026-10-30T10:40:06Z",
+      "trimmedTo": "nothing. FINRA's answer as sent, the five symbols' records at the settlement of 2026-10-15 with the fields asked, in FINRA's order of the symbols, its header's record total 5."
+    },
+    {
+      "file": "short-interest-classes-2026-10-15.json",
+      "endpoint": "data/group/otcMarket/name/consolidatedShortInterest at api.finra.org",
+      "query": "POST https://api.finra.org/data/group/otcMarket/name/consolidatedShortInterest, keyless, with the body {\"limit\": 50, \"fields\": [\"symbolCode\",\"issueName\",\"settlementDate\",\"currentShortPositionQuantity\"], \"domainFilters\": [{\"fieldName\": \"symbolCode\", \"values\": [\"BRK.B\",\"BRK/B\",\"BRKB\",\"BRK-B\",\"BF.B\",\"BF/B\",\"MOG.A\",\"MOG/A\"]}], \"compareFilters\": [{\"compareType\": \"EQUAL\", \"fieldName\": \"settlementDate\", \"fieldValue\": \"2026-10-15\"}]}",
+      "fetchedAt": "2026-10-30T10:58:10Z",
+      "trimmedTo": "nothing. FINRA's answer as sent: of eight spellings of three share classes, the one record FINRA files, BRKB, Berkshire Hathaway's class B joined to its ticker with no separator, 13,769,255 shares short at the settlement of 2026-10-15."
     }
   ]
 }

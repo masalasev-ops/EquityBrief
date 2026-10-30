@@ -3643,7 +3643,8 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyList<EquityBrief.Core.Ledger.LedgerSetupRow> settled,
         EquityBrief.Core.Ledger.LedgerPath? path,
         EquityBrief.Core.Ledger.LinkTable? links = null,
-        EquityBrief.Core.Ledger.AnswerTable? answers = null)
+        EquityBrief.Core.Ledger.AnswerTable? answers = null,
+        ReadingSources? sources = null)
     {
         static string Named(string word) => word switch
         {
@@ -3710,6 +3711,7 @@ public sealed partial class SinglePageApp : IComponent
         region.Append(Cards.Computed(
             "Setup ledger",
             marks.LedgerLinks(links)
+                + (sources is null ? string.Empty : MarkRenderer.LedgerSources(sources))
                 + Cards.Key(
                     "How to read it.",
                     "Each row is one of the ledger's readings on this family's settled setups: how strongly its value at entry ranked with the setup's result in each test year, the mean of those years, how many of them pointed the same way, and how large the same mean comes out with the results shuffled among the setups of each night. A reading goes with winners where higher values went with better results beyond that shuffle, and with losers where they went with worse.",

@@ -121,6 +121,13 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "Improving trades"),
     ];
 
+    // 21.6's two: the night's estimate trends and FINRA's short interest.
+    internal static string[] NewReadingStoreRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Night estimate trends"),
+        CheckReach.Key(Scope.StoresTable, "Short interest"),
+    ];
+
     internal static CheckReach Reach => new(
         "schema-columns",
         ["docs/SCHEMA.md"],
@@ -249,6 +256,9 @@ public class SchemaColumns
 
             // 22.13, the Fundamentals family's three stores.
             .. ImprovingStoreRows,
+
+            // 21.6, the new readings' two stores.
+            .. NewReadingStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

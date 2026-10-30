@@ -4,6 +4,11 @@ using EquityBrief.Core.Ledger;
 
 namespace EquityBrief.Web.Marks;
 
+// From 21.6 where the readings whose sources keep no history start, as the read surface reads the store: the first
+// quarters fetch filing the current year's trend, the first night that asked every member's trend, the first settlement
+// of FINRA's short interest held, and the stocks holding an answer from Yahoo.
+public sealed record ReadingSources(DateOnly? FirstFetch, DateOnly? FirstNight, DateOnly? FirstSettlement, int AnalystStocks);
+
 // The Ledger page's marks: a family's setups a year with the share the live rule passes and the share the night's list
 // picked, the cut points between the deciles of result and edge, its newest settled setups to choose from, and the
 // chosen setup's closes drawn with its plan's lines. Every figure is read off the summary the ledger's writers refresh
@@ -203,6 +208,20 @@ public sealed partial class MarkRenderer
         table.Append("</tbody></table></div>");
 
         return table.ToString();
+    }
+
+    // From 21.6 the line saying where the readings whose sources keep no history start: the estimate revision from the
+    // first quarters fetch and the night's first ask of every member, the rating actions from each stock's newest answer,
+    // and FINRA's short interest from its first settlement held; each said not held yet where the store holds none.
+    // see: A new reading joins the ledger with its history where its source keeps one, and from the night it is first stored where it keeps none
+    public static string LedgerSources(ReadingSources sources)
+    {
+        static string On(DateOnly? day, string none) => day is { } held ? held.ToString("d MMM yyyy", Invariant) : none;
+
+        return Formatted($"<p class=\"ledger-sources\" data-first-fetch=\"{On(sources.FirstFetch, "none")}\" data-first-night=\"{On(sources.FirstNight, "none")}\" data-first-settlement=\"{On(sources.FirstSettlement, "none")}\" data-analyst-stocks=\"{sources.AnalystStocks}\">")
+            + Formatted($"The estimate revision reads the analysts' consensus, which its source states only on the day it is asked, so it holds nothing before a stock's first quarters fetch, the first on {On(sources.FirstFetch, "no day yet")}, and from {On(sources.FirstNight, "the night the night first asks it")} the night's own ask of every member. ")
+            + Formatted($"The rating actions read each stock's newest answer from Yahoo, {sources.AnalystStocks:N0} stock{(sources.AnalystStocks == 1 ? string.Empty : "s")} holding one, and none on a session after its ask. ")
+            + Formatted($"FINRA's short interest reads every settlement from {On(sources.FirstSettlement, "the first the store holds, none yet")}.</p>");
     }
 
     // Which readings go with winners for the family chosen, as the walk-forward tester stored them: the readings beyond

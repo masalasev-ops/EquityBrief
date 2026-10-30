@@ -1036,6 +1036,9 @@ public static class RunScreen
     // owes: The trend confirmation's nights settled from flip-backs
     // From 15.2 the S&P 400's and 600's members holding four dated rating counts, against nine in ten of them.
     // owes: Analyst coverage tested as a dial once dated counts exist
+    // From 21.6 the ratings refresh's runs against the five its cap is settled from, with the asks they made, those that
+    // failed and the stocks holding a stored answer.
+    // owes: The ratings refresh's cap read on its first five runs
     public static IReadOnlyList<TriggerLine> Triggers(TriggerReads reads, PricedCalls priced, TriggerLine? labeller = null) =>
     [
         new(
@@ -1060,6 +1063,11 @@ public static class RunScreen
             reads.RatedFourTimes,
             CoverageOf(reads.WiderMembers),
             FormattableString.Invariant($"of the S&P 400's and 600's {reads.WiderMembers} member(s) on the newest night hold four dated rating counts, against the nine in ten analyst coverage is tested as a dial from")),
+        new(
+            "ratings refresh",
+            reads.Refresh.Runs,
+            5,
+            FormattableString.Invariant($"run(s) of the ratings refresh, against the five its cap of {EquityBrief.Core.Analysts.AnalystLimits.RefreshCap} asks of Yahoo a New York day is settled from: {reads.Refresh.Asked} ask(s) made, {reads.Refresh.Failed} of them failed, and {reads.Refresh.Answered} stock(s) holding a stored answer")),
         .. labeller is null ? Array.Empty<TriggerLine>() : new[] { labeller },
     ];
 
@@ -1082,7 +1090,7 @@ public static class RunScreen
         ("Prices and calendar", ["migrate", "membership", "backfill", "fetch", "market-series", "actions", "dividends", "calendar"]),
         ("Indicators and levels", ["indicators", "chart-averages", "page-history", "swings", "volume-profile", "levels"]),
         ("Plans and moves", ["ladders", "moves"]),
-        ("Readings and the list", ["swing-readings", "fundamental-readings", "member-readings", "fundamental-scores", "listings", "swing-filter", "estimates", "family-rules", "families", "family-records", "heavyweights", "loop-apply", "index-families", "dip-family", "decision-cards", "rule-cards", "live-alarm", "taken-follower", "ledger", "shape-proposal"]),
+        ("Readings and the list", ["swing-readings", "fundamental-readings", "member-readings", "fundamental-scores", "listings", "swing-filter", "estimates", "trends", "family-rules", "families", "family-records", "heavyweights", "loop-apply", "index-families", "dip-family", "decision-cards", "rule-cards", "live-alarm", "taken-follower", "ledger", "shape-proposal"]),
         ("Records", ["facts", "changes", "forward-returns", "fills", "news-pulse", "rule-versions", "close"]),
         ("After the close", ["quarters", "filings", "fundamental-scores-again", "quality", "improving", "treasury", QueueStage, "report", "label-news", "backup"]),
     ];

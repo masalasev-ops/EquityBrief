@@ -1,0 +1,12 @@
+# The remedy of 21.6, the new readings' sources, as its PROGRESS entry prints it. Migration 116 creates the short interest
+# store and the night's estimate trends. Then FINRA's consolidated short interest is read once whole, from its first
+# settlement of 2017-12-29, about 5 requests a settlement over about 215 settlements, free and keyless, every stock the
+# three indices held on or after each, so the ledger's short interest reading holds its history; the off-peak run reads
+# each settlement after it from here. The night asks every member's estimate trend from the night after the merge, and the
+# off-peak run starts the ratings refresh at its next slot, so neither needs a line here. No rule's version moves, so none
+# is registered again, and tonight's lists are unchanged. No request to the provider and no model call. The three ledger
+# histories are built again by hand once the refresh has asked every member, about nineteen days on, as the entry says.
+# Run from main after the merge, when no night, local run, drain, labeller, history read, ledger build or monthly run is
+# writing, and read the output for "remedy done" and the reports stored.
+migrate
+short-interest --history

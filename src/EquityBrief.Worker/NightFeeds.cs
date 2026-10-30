@@ -68,11 +68,19 @@ public sealed record NightFeeds(
     // see: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read
     public ISubstituteBarFeed? Substitutes { get; init; }
 
+    // The fourteenth is the provider's earnings trends, asked by the swing filter's step for every member of the three
+    // indices once a night, a page of symbols a request at one weighted call a symbol, so its weight grows with the
+    // index as the operator allowed. A set of feeds built without it asks for no trend, and no capture holds one, since
+    // a trend answers for the day it is asked and a replayed night is not that day.
+    // see: The night asks every member's estimate trend once a night in requests of a page of symbols
+    public IEstimateTrendsFeed? Trends { get; init; }
+
     // What the night cost, read off the feeds rather than stated by the caller.
     // A caller that wrote the figure would be recording its own intention.
     public int Requests =>
         Membership.Requests + Historical.Requests + Bulk.Requests + Corporate.Requests
-        + Calendar.Requests + News.Requests + Fundamentals.Requests + Market.Requests + Funds.Requests + Dividends.Requests;
+        + Calendar.Requests + News.Requests + Fundamentals.Requests + Market.Requests + Funds.Requests + Dividends.Requests
+        + (Trends?.Requests ?? 0);
 
     // The same night in the units the provider bills in, which is the unit
     // `RUNBOOK.md` states the allowance in. Composed from the roles rather than
@@ -87,7 +95,8 @@ public sealed record NightFeeds(
         + (Dividends.Requests * ProviderWeights.DividendCalendar)
         + (News.Requests * ProviderWeights.News)
         + (Fundamentals.Requests * ProviderWeights.Fundamentals)
-        + (Market.Requests * ProviderWeights.HistoricalPerTicker);
+        + (Market.Requests * ProviderWeights.HistoricalPerTicker)
+        + ((Trends?.Symbols ?? 0) * ProviderWeights.EstimateTrends);
 
     public const string ConstituentsFile = "index-constituents.json";
 
@@ -140,6 +149,7 @@ public sealed record NightFeeds(
             Dividends = EodhdDividendCalendarFeed.Live(address, key),
             Treasury = TreasuryParYieldFeed.Live(),
             Substitutes = YahooNasdaqBarFeed.Live(),
+            Trends = EodhdEstimateTrendsFeed.Live(address, key),
         };
     }
 
@@ -222,5 +232,6 @@ public sealed record NightFeeds(
         || Funds is not RecordedFundHoldingsFeed
         || Dividends is not RecordedDividendCalendarFeed
         || Filings is not (null or RecordedFilingsRefreshFeed)
-        || Treasury is not (null or RecordedTreasuryYieldFeed);
+        || Treasury is not (null or RecordedTreasuryYieldFeed)
+        || Trends is not null;
 }

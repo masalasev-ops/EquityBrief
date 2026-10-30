@@ -26,6 +26,70 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-30 - CLAUDE.md - the first hard rule names the night's estimate trends, the ratings refresh and the short interest reader among its carve-outs, and the layout's off-peak run runs both
+Authorised by: The night asks every member's estimate trend once a night in requests of a page of symbols
+Was:
+> Nine carve-outs are named rather than left to be discovered, and none asks for every member every night: ... and the local run, ... its requests and its calls on its own run and never on the night's, on the operator's rulings of 2026-10-18. (see: The nightly run is arithmetic only) ... (see: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it)
+> (offpeak) the labeller and then the drain over the reports the night queued,
+Now:
+> Twelve carve-outs are named rather than left to be discovered, and none but the tenth asks for every member every night: ... on the operator's rulings of 2026-10-18, and the night's ask for every member's estimate trend, a page of symbols a request at one weighted call a symbol in the swing filter's step, about 1,505 weighted calls a night, the one carve whose cost follows the index, on the operator's answers of 2026-10-29, and the ratings refresh, a process of its own the off-peak run starts after the labeller, ... and the short interest reader, a process of its own the off-peak run starts after the refresh, ... on the operator's answers of 2026-10-29. (see: The nightly run is arithmetic only) ... (see: The night asks every member's estimate trend once a night in requests of a page of symbols) (see: The ratings refresh asks Yahoo for the members whose stored answer is oldest or none after the labeller, under the chart page's daily cap less the page's reserve) (see: FINRA's short interest is read once a settlement after the labeller, and its history once by hand)
+> (offpeak) the labeller, the ratings refresh, the short interest reader and then the drain over the reports the night queued,
+Why: 21.6 fills the readings' sources the operator chose at 21.2, one in the night at a weight that follows the index and two outside it, each named where the rule names what the night may ask. The two processes are cited too: (see: The ratings refresh asks Yahoo for the members whose stored answer is oldest or none after the labeller, under the chart page's daily cap less the page's reserve) (see: FINRA's short interest is read once a settlement after the labeller, and its history once by hand).
+
+### 2026-10-30 - docs/ARCHITECTURE.html - the analyst job is handed members by the ratings refresh, the ledger reads the two new stores, the swing filter step asks every member's trend, the Run page counts the refresh's runs and the per-name limit carves the trends
+Authorised by: The night asks every member's estimate trend once a night in requests of a page of symbols
+Was:
+> (Analyst job) on a chart page's ask as it opens, as a process of its own
+> (Setup ledger, reads) ... analyst views, estimate trends, member readings, ...
+> (section 14) ... keeping their records), and record the night's session as listed by the swing filter once the rows are stored ...
+> (What else is waiting on a count) ... and the mid and small cap indices' members holding four dated rating counts against nine in ten of them; the labeller's nights are what its three operating rows wait on (see: ...)
+> (Per-name network calls in the nightly run) ... (see: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read)</td><td>... The estimates are the sixth exception ... each stored and read back rather than asked for again</td>
+> (The readings the operator chose) ... less one, as the newest quarters fetch on or before the session states them; and the shares FINRA last reported short before the session over the newest share count the filings' covers state (see: Phase 21 makes ...)
+Now:
+> (Analyst job) on a chart page's ask as it opens and from 21.6 for each member the ratings refresh hands it, as a process of its own
+> (Setup ledger, reads) ... analyst views, estimate trends, night estimate trends, short interest, member readings, ...
+> (section 14) ... keeping their records), from 21.6 the estimate trend of every member of the three indices asked once a night, a page of symbols a request, and kept for the ledger, a failure named on the step's row while the step goes on (see: The night asks every member's estimate trend once a night in requests of a page of symbols), and record the night's session ...
+> (What else is waiting on a count) ... against nine in ten of them, and the ratings refresh's runs against five with the asks they made and the failed among them and the stocks holding a stored answer; the labeller's nights are what its three operating rows wait on, and the refresh's runs what its cap's row waits on (see: ...)
+> (Per-name network calls in the nightly run) ... once every file is read); and every member's estimate trend, asked once a night in pages of symbols at one weighted call a symbol, the one carve whose cost grows with the index, as the operator allowed (see: The night asks every member's estimate trend once a night in requests of a page of symbols)</td><td>... rather than asked for again. The estimate trends are the tenth and the one that follows the index: from 21.6 every member of the three indices once a night, about 1,505 weighted calls in 31 requests, which the operator allowed on 2026-10-29, since the provider keeps no history of a trend and the ledger's estimate revision for every member needs the night's own ask</td>
+> (The readings the operator chose) ... less one, as the newest trend stored on or before the session states them, a quarters fetch's or the night's own ask, the night's above a fetch's on one session; and the shares short in the newest report FINRA published before the session over the newest share count the filings' covers state (see: A new reading joins the ledger with its history where its source keeps one, and from the night it is first stored where it keeps none) (see: Phase 21 makes ...)
+Why: 21.6 adds the trends fetcher, the ratings refresh and the short interest reader with their catalogue and matrix rows, their two stores, section 17's three rows, section 18's two and the Ledger page's line on the readings' sources; the lines above are the ones that stood and now name them.
+
+### 2026-10-30 - docs/RUNBOOK.md - the night's costs, the call weights and the off-peak run name the trends, the ratings refresh and FINRA's short interest
+Authorised by: The night asks every member's estimate trend once a night in requests of a page of symbols
+Was:
+> (tools/nightly, costs) ... one to three a night at 10 weighted calls each, a handful of calendar and membership calls. No model call
+> (Call weights) ... the counter reads cost nothing, and nothing in the night asks the trends endpoint until 21.6 builds the reading.
+> (The off-peak run) It labels the newest night's list, as `label-news` run by hand does, and then drains the queue, as `drain` run by hand does, each a run of its own with its calls and spend on its own rows; a labeller that stops leaves the drain to run, and the drain waits out any peak window it starts in.
+Now:
+> (tools/nightly, costs) ... one to three a night at 10 weighted calls each, from 21.6 every member's estimate trend, fifty symbols a request at one weighted call a symbol, about 1,505 weighted calls in 31 requests, a handful of calendar and membership calls. No model call
+> (Call weights) ... the counter reads cost nothing. From 21.6 the night asks it for every member of the three indices once, fifty symbols a request, about 1,505 weighted calls in 31 requests a night, and asks none past the day's allowance (see: ...). FINRA's short interest and Yahoo's analysts are free and keyless and weigh nothing on the allowance.
+> (The off-peak run) It labels the newest night's list, as `label-news` run by hand does, from 21.6 refreshes the analysts' ratings of the members asked longest ago, as `analysts-refresh` run by hand does, and reads FINRA's newest short interest, as `short-interest` run by hand does, and then drains the queue, ...; a step that stops leaves the steps after it to run, ...
+Why: the two verbs gain sections of their own, and the night's and the off-peak run's lines name what they now ask (see: The ratings refresh asks Yahoo for the members whose stored answer is oldest or none after the labeller, under the chart page's daily cap less the page's reserve) (see: FINRA's short interest is read once a settlement after the labeller, and its history once by hand).
+
+### 2026-10-30 - docs/BUILD_PLAN.md - 21.6 and its operating row state the refresh stopping at 80 of the day's 100 asks
+Authorised by: The ratings refresh asks Yahoo for the members whose stored answer is oldest or none after the labeller, under the chart page's daily cap less the page's reserve
+Was:
+> (21.6) ... under a cap of 100 a New York day, proposed, shared with the chart page's asks, storing every action ...
+> (The ratings refresh's cap read on its first five runs) ... At the trigger the cap of 100 asks a New York day, proposed, is settled against the five runs' counts, ...
+Now:
+> (21.6) ... under a cap of 100 a New York day, proposed, shared with the chart page's asks and the refresh stopping at 80 of them so 20 are left to the page, storing every action ...
+> (The ratings refresh's cap read on its first five runs) ... At the trigger the cap of 100 asks a New York day, proposed, with the refresh's 80 of them and the 20 left to the chart page, is settled against the five runs' counts, ...
+Why: the refresh runs at the start of the New York day, so a refresh reaching the shared cap would leave every chart page opened that day unable to ask.
+
+### 2026-10-30 - .claude/rules/checks.md - fixture-expectations, read-surface, nightly-cost and nightly-run state 21.6's assertions
+Authorised by: A new reading joins the ledger with its history where its source keeps one, and from the night it is first stored where it keeps none
+Was:
+> (fixture-expectations) ... and no source a rule's version pins written outside its comments |
+> (read-surface) ... and every table in a box of its own |
+> (nightly-cost) ... a night constructing one found by the local model and the filings archive each declares |
+> (nightly-run) ... and the end the history is read through worked by hand over constructed sessions |
+Now:
+> (fixture-expectations) ...; and from 21.6 the provider's trends answer and FINRA's three answers read as sent from their captures, FINRA's published day worked by hand, the night's trends fetcher, the short interest reader, the live feeds, the ratings refresh, the ledger's two readers and a setup's readings rebuilt from the history cut at its session the same, and no source a rule's version pins written outside its comments |
+> (read-surface) ...; and from 21.6 the Run page counting the ratings refresh's runs and the Ledger page's line saying where the readings with no history of their own start |
+> (nightly-cost) ...; and from 21.6 the tenth, every member's estimate trend, carved by name to the trends fetcher, and the two new feeds among the shipped files that may hold a client |
+> (nightly-run) ...; and from 21.6 the swing filter's step asking every member's estimate trend under a stage of its own, and the off-peak script's check naming the ratings refresh and the short interest reader |
+Why: each check gains the assertions 21.6's tests add.
+
 ### 2026-10-30 - docs/ARCHITECTURE.html - sections 13.12 to 13.16 state the monthly loop over seven families, the dip's and the two books' engines, the frozen rules read at their levels and the fundamentals-first family out of the loop
 Authorised by: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
 Was:

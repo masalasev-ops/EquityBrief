@@ -126,9 +126,11 @@ public enum Store
     SweepAnswer,
     EstimateReading,
     EstimateTrend,
+    EstimateTrendNight,
     TreasuryYield,
     AnalystView,
     AnalystRating,
+    ShortInterest,
     ForwardReturn,
     Facts,
     Fundamentals,
@@ -193,12 +195,18 @@ public enum Feed
     // Yahoo's daily chart and Nasdaq's quote, keyless and free, asked by the bar fetcher alone for a member whose row the
     // provider's day file refused.
     SubstituteBar,
-    // Yahoo's quote summary of one stock's analysts, keyless and free, asked by the analyst job alone for a chart page
-    // opened.
+    // Yahoo's quote summary of one stock's analysts, keyless and free, asked by the analyst job alone, for a chart page
+    // opened and from 21.6 for each member the ratings refresh asks it for.
     Analyst,
     // TipRanks' recent ratings of one stock and its count of the month's calls, on the operator's key, asked by the
     // ratings job alone on a chart page's press.
     AnalystRatings,
+    // From 21.6 FINRA's consolidated short interest, keyless and free, a settlement's members in one request, asked by the
+    // short interest reader alone outside the night.
+    ShortInterest,
+    // From 21.6 the provider's earnings trends of many symbols in one request at one weighted call a symbol, asked by the
+    // night's trends fetcher alone in the swing filter's step.
+    EstimateTrends,
 }
 
 public readonly record struct StoreTouch(Store Store, Touch Touch);

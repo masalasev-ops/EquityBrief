@@ -736,7 +736,45 @@ public static class SchemaMigrations
         new Migration(113, "add research_request's section", AddResearchRequestSection),
         new Migration(114, "create label_pin", CreateLabelPin),
         new Migration(115, "add the setup's five readings the operator chose and the business state off the filings", AddTheReadingsTheOperatorChose),
+        new Migration(116, "create short_interest and estimate_trend_night", CreateShortInterestAndNightTrends),
     ];
+
+    // From 21.6: FINRA's consolidated short interest, a stock's settlement a row with the day FINRA published it, read
+    // once a publication outside the night and its history once by hand; and the night's ask of each member's estimate
+    // trend for its current fiscal year, a session a row. Each row is kept as first read. Earnings a share are text,
+    // which is the storage form money takes.
+    // see: A new reading joins the ledger with its history where its source keeps one, and from the night it is first stored where it keeps none
+    const string CreateShortInterestAndNightTrends = @"
+        CREATE TABLE short_interest (
+            ticker           TEXT    NOT NULL,
+            settlement_date  TEXT    NOT NULL,
+            published_on     TEXT    NOT NULL,
+            shares_short     INTEGER NOT NULL,
+            average_volume   INTEGER,
+            days_to_cover    REAL,
+            revision         TEXT,
+            observed_at      TEXT    NOT NULL,
+            run_id           TEXT    NOT NULL,
+            PRIMARY KEY (ticker, settlement_date)
+        ) STRICT;
+
+        CREATE TABLE estimate_trend_night (
+            ticker                 TEXT    NOT NULL,
+            session_date           TEXT    NOT NULL,
+            period_end             TEXT    NOT NULL,
+            eps_now                TEXT,
+            eps_seven_days_ago     TEXT,
+            eps_thirty_days_ago    TEXT,
+            eps_sixty_days_ago     TEXT,
+            eps_ninety_days_ago    TEXT,
+            up_last_seven_days     INTEGER,
+            up_last_thirty_days    INTEGER,
+            down_last_seven_days   INTEGER,
+            down_last_thirty_days  INTEGER,
+            run_id                 TEXT    NOT NULL,
+            PRIMARY KEY (ticker, session_date)
+        ) STRICT;
+    ";
 
     // From 21.4: the setup ledger's five readings the operator chose at 21.2 and the business's state off the SEC's facts
     // as first filed, which the swing filter's version leaving off a deteriorating business reads, a column a reading after

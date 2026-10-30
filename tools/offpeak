@@ -8,11 +8,12 @@
 # of its own. A main holding a commit origin/main does not have is refused before any worker exists; a checkout on
 # a branch is not, since the run builds a commit and never the working tree.
 #
-# The worker then labels the newest night's list, and then drains the report requests the night queued, each a run
-# of its own whose calls and spend are on its own rows; the drain waits out any peak window it starts in, as every
-# drain does, and a labeller that stops leaves the drain to run.
+# The worker then labels the newest night's list, refreshes the analysts' ratings of the members asked longest ago
+# under the New York day's cap, reads FINRA's newest short interest, and then drains the report requests the night
+# queued, each a run of its own whose calls and spend are on its own rows; the drain waits out any peak window it
+# starts in, as every drain does, and a step before it that stops leaves the rest to run.
 #
-#   tools/offpeak            the labeller and then the drain
+#   tools/offpeak            the labeller, the ratings refresh, the short interest and then the drain
 #   tools/offpeak --check    print what a run would build and run, and run nothing
 set -euo pipefail
 
@@ -86,7 +87,7 @@ if [ "$check" = 1 ]; then
     echo "offpeak: copy $copy, ${built:+built already}${built:-to build}"
     echo "offpeak: data root $data"
     echo "offpeak: secrets read from $secrets, none copied"
-    echo "offpeak: would label the newest night's list and then drain the queued reports"
+    echo "offpeak: would label the newest night's list, refresh the analysts' ratings, read FINRA's short interest and then drain the queued reports"
     exit 0
 fi
 
@@ -122,7 +123,21 @@ labelled=0
 dotnet "$built" label-news || labelled=$?
 
 if [ "$labelled" != 0 ]; then
-    echo "offpeak: the labeller stopped with $labelled, and the drain runs" >&2
+    echo "offpeak: the labeller stopped with $labelled, and the rest runs" >&2
+fi
+
+refreshed=0
+dotnet "$built" analysts-refresh || refreshed=$?
+
+if [ "$refreshed" != 0 ]; then
+    echo "offpeak: the ratings refresh stopped with $refreshed, and the rest runs" >&2
+fi
+
+shorted=0
+dotnet "$built" short-interest || shorted=$?
+
+if [ "$shorted" != 0 ]; then
+    echo "offpeak: the short interest step stopped with $shorted, and the drain runs" >&2
 fi
 
 exec dotnet "$built" drain

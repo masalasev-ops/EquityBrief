@@ -30,7 +30,7 @@ public partial class NightlyRun
         AssertNames(Path.Combine(checkout.Data, NightBuild.CopiesFolder, Short(checkout.First)) + ", to build", clean.StandardOutput);
         AssertNames("offpeak: data root " + checkout.Data, clean.StandardOutput);
         AssertNames("offpeak: secrets read from " + Path.Combine(checkout.Root, "src", "EquityBrief.Worker", "appsettings.Secrets.json") + ", none copied", clean.StandardOutput);
-        Assert.Contains("offpeak: would label the newest night's list and then drain the queued reports", clean.StandardOutput, StringComparison.Ordinal);
+        Assert.Contains("offpeak: would label the newest night's list, refresh the analysts' ratings, read FINRA's short interest and then drain the queued reports", clean.StandardOutput, StringComparison.Ordinal);
 
         // A copy a night built of the same commit is run as it is.
         var build = Path.Combine(checkout.Data, NightBuild.CopiesFolder, Short(checkout.First), "src", "EquityBrief.Worker", "bin", "Release", Repository.Framework);

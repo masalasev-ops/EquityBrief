@@ -79,6 +79,8 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "quote" => await QuoteRun(args),
     "analysts" => await AnalystsRun(args),
     "analyst-ratings" => await AnalystRatingsRun(args),
+    "analysts-refresh" => await AnalystsRefreshRun(args),
+    "short-interest" => await ShortInterestRun(args),
     "dividends" => await DividendsRun(args),
     "local-run" => await LocalRunVerb(args),
     "releases" => await ReleasesVerb(args),
@@ -91,7 +93,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 56 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 58 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -263,6 +265,13 @@ static int NoVerb()
         "'analyst-ratings --ticker <TICKER> --asked <yyyy-MM-ddTHH:mm:ssZ>' asks TipRanks' count of the month's calls and, " +
         "under the limit and only 15 days after TipRanks last answered for the stock, its recent ratings, and stores them, as a chart page's " +
         "press starts it, and " +
+        "'analysts-refresh' asks Yahoo through the analyst job for each member of the three indices on the newest stored " +
+        "session it has never asked or asked longest ago, while the New York day's asks stand under 80, the chart page's 100 " +
+        "less 20 left to it, stopping after three failed asks in a row, as the off-peak run starts it after the labeller, and " +
+        "'short-interest' reads FINRA's consolidated short interest for each settlement from the newest the store holds, " +
+        "every stock the three indices held on or after it, 500 symbols a request, and keeps each report with the day FINRA " +
+        "published it, as the off-peak run starts it after the labeller, with '--history' reading every settlement from " +
+        "FINRA's first, free and keyless, and " +
         "'dividends --history --from <yyyy-MM-dd>' asks each member the index holds today for its dividends from that date, " +
         "one request a member, stating its asks and their weighted calls before the first request, and keeps each beside " +
         "the ones the nights kept, with '--index <GSPC, MID or SML>' naming the index and '--names' with codes between " +
@@ -2219,6 +2228,73 @@ static async Task<int> AnalystRatingsRun(string[] args)
     Console.WriteLine($"analyst-ratings: {outcome.Outcome}, {credentials.Redact(outcome.Detail)}");
 
     return outcome.Outcome == EquityBrief.Worker.Analysts.RatingsJob.Answered ? 0 : 1;
+}
+
+// The ratings refresh, as the off-peak run starts it after the labeller and by hand: each member of the three indices
+// the analyst job has never asked about or asked longest ago, asked through the job while the New York day's asks stand
+// under the refresh's cap, a fresh feed an ask as a chart page's ask takes.
+// see: The ratings refresh asks Yahoo for the members whose stored answer is oldest or none after the labeller, under the chart page's daily cap less the page's reserve
+static async Task<int> AnalystsRefreshRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (args.Length > 1)
+    {
+        Console.Error.WriteLine("analysts-refresh: it takes no argument.");
+
+        return 1;
+    }
+
+    if (!File.Exists(store.DatabaseFile))
+    {
+        Console.Error.WriteLine($"analysts-refresh: no store at '{store.DatabaseFile}', so there is nowhere to keep an answer.");
+
+        return 1;
+    }
+
+    var outcome = await new EquityBrief.Worker.Analysts.RatingsRefresh(
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        YahooAnalystFeed.Live).RunAsync();
+
+    Console.WriteLine(FormattableString.Invariant(
+        $"analysts-refresh: {outcome.Members} member(s), {outcome.Asked} asked, {outcome.Answered} answered, {outcome.NoAnalysts} with no analysts, {outcome.Failed} failed, {outcome.Requests} request(s) to Yahoo; {outcome.Stopped}"));
+
+    return outcome.Stopped == EquityBrief.Worker.Analysts.RatingsRefresh.Refused ? 1 : 0;
+}
+
+// FINRA's consolidated short interest, as the off-peak run starts it after the labeller and by hand, with '--history'
+// reading every settlement from FINRA's first.
+// see: FINRA's short interest is read once a settlement after the labeller, and its history once by hand
+static async Task<int> ShortInterestRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var history = args.Contains("--history");
+
+    if (args.Skip(1).Any(argument => argument != "--history"))
+    {
+        Console.Error.WriteLine("short-interest: it takes '--history' alone, or no argument.");
+
+        return 1;
+    }
+
+    if (!File.Exists(store.DatabaseFile))
+    {
+        Console.Error.WriteLine($"short-interest: no store at '{store.DatabaseFile}', so there is nowhere to keep a report.");
+
+        return 1;
+    }
+
+    var outcome = await new EquityBrief.Worker.Shorts.ShortInterestReader(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile)
+        .RunAsync(FinraShortInterestFeed.Live(), history, Console.Out);
+
+    Console.WriteLine(FormattableString.Invariant(
+        $"short-interest: {outcome.Settlements} settlement(s) read, {outcome.Asked} stock ask(s), {outcome.Stored} report(s) stored, {outcome.Unanswered} answered nothing, {outcome.Requests} request(s) to FINRA")
+        + (outcome.Refused is { } refused ? "; stopped, " + refused : string.Empty));
+
+    return outcome.Refused is null ? 0 : 1;
 }
 
 // The stock and the instant its page asked, each verb's two flags, or a line saying what the verb takes.
