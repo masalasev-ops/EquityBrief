@@ -40,6 +40,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `analyst_view` | AnalystJob | none | none |
 | `analyst_rating` | RatingsJob | none | none |
 | `treasury_yield` | TreasuryReader | none | none |
+| `short_interest` | ShortInterestReader | none | none |
 | `calendar` | CalendarFetcher | CalendarFetcher | CalendarFetcher |
 | `pulled_bar` | HistoryPull | none | HistoryPull |
 | `pulled_earnings` | HistoryPull | none | HistoryPull |
@@ -135,6 +136,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `dividend_reading` | QuarterFetcher | none | none |
 | `dividend_event` | DividendKeeper | none | none |
 | `estimate_trend` | QuarterFetcher | none | none |
+| `estimate_trend_night` | TrendsFetcher | none | none |
 | `sweep_answer` | SweepAnswers | SweepAnswers | none |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
@@ -364,6 +366,25 @@ Grain: one row per session the Treasury published a 10-year par yield for.
 Primary key: `session_date`.
 
 **The Treasury's own 10-year par yield, kept a session a row by the Treasury reader alone** (see: The Treasury's 10-year par yield is read once a night after the close and kept a session a row). The night's step asks for the session's calendar year once and inserts each session to the night's that the table does not hold, a session held keeping its first row; nothing updates or deletes a row. A session whose 10-year cell the Treasury left empty is not stored, and an empty answer stores nothing. The name page reads the newest row on or before its night and the year's rows for a payer's dividend; no rule, list or gate reads the table, and it is apart from `market_bar` because the Treasury is not the provider and a yield is no close.
+
+### short_interest
+Grain: one row per stock per settlement FINRA reported its consolidated short interest at.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | the stock as the three indices hold it, FINRA's symbol being the ticker with a share class's separator taken out |
+| `settlement_date` | TEXT | the settlement the report is for, the 15th or the month's last settlement day |
+| `published_on` | TEXT | the day FINRA publishes the settlement, the seventh business day after it, a weekday the exchange's closure table does not hold where it covers the day |
+| `shares_short` | INTEGER | the shares short at the settlement, as FINRA states them |
+| `average_volume` | INTEGER | FINRA's average daily volume over the settlement's period, null where it states none |
+| `days_to_cover` | REAL | FINRA's days to cover, a statistic, null where it states none |
+| `revision` | TEXT | FINRA's revision flag as sent, null where it sends none |
+| `observed_at` | TEXT | UTC instant the reader stored it |
+| `run_id` | TEXT | the run of the short interest reader that read it |
+
+Primary key: `ticker`, `settlement_date`.
+
+**FINRA's consolidated short interest, kept a stock and settlement a row by the short interest reader alone** (see: FINRA's short interest is read once a settlement after the labeller, and its history once by hand). The off-peak run's step asks FINRA for the settlements from the newest the table holds and the records of every stock the three indices held on or after each, and the history by hand from FINRA's first settlement, 2017-12-29; a report held is kept as first read, so a settlement asked again stores only what it lacked and nothing updates or deletes a row. A stock FINRA answers nothing for at a settlement stores nothing. The setup ledger reads the newest report a session finds published before it, over the share count the filings state before the session, for its short interest reading, none for a session before the first; no rule, list or gate reads the table (see: A new reading joins the ledger with its history where its source keeps one, and from the night it is first stored where it keeps none).
 
 ### calendar
 Grain: one row per ticker, event date and kind.
@@ -2903,6 +2924,22 @@ Grain: one row per ticker per quarters fetch per forward period.
 Primary key: `ticker`, `fetched_at`, `period`.
 
 **The analysts' earnings trend each quarters fetch carries, kept by the quarter fetcher in the write that stores its quarters** (see: The quarters fetch keeps the gross profit and cash flow lines, the estimate trend and the analysts' mean and target its answer carries). A period the answer files no entry for is not stored, and nothing updates or deletes a row. The name page reads the newest fetch on or before its night for the analysts' region and the growth tile, and the newest fetch made before a quarter's report for that quarter's revenue estimate; from the 18.2 correction of 2026-10-21 that is the newest fetch made before the instant the calendar's timing on the report date places the release in New York, the quarter's own revenue estimate, filed under the current quarter's word or the next's, or, for a quarter ending its fiscal year, the year's, and the stock's first fetch on or before the page's night gives the day its estimates are kept from (see: The latest quarter is read line by line against the estimates kept before its release and the quarter a year earlier, a financial company's revenue against none and a fiscal fourth quarter's against its year's estimate less three quarters); no rule, list or gate reads the table, and no figure in it reaches a facts file (see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one).
+
+### estimate_trend_night
+Grain: one row per member per night the night asked its trend.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the night's session, the day the trend was asked for |
+| `period_end` | TEXT | the end of the member's current fiscal year, the newest the answer files under `0y` |
+| `eps_now`, `eps_seven_days_ago`, `eps_thirty_days_ago`, `eps_sixty_days_ago`, `eps_ninety_days_ago` | TEXT | decimal in code, the year's consensus earnings a share as the answer states it now and 7, 30, 60 and 90 days before, each null where none is filed |
+| `up_last_seven_days`, `up_last_thirty_days`, `down_last_seven_days`, `down_last_thirty_days` | INTEGER | how many analysts raised and cut the estimate over the last 7 and 30 days, each null where none is filed |
+| `run_id` | TEXT | the night's run that asked |
+
+Primary key: `ticker`, `session_date`.
+
+**The night's own ask of every member's estimate trend, kept a member and night a row by the trends fetcher alone** (see: The night asks every member's estimate trend once a night in requests of a page of symbols). The swing filter's step asks the provider's trends for every member of the three indices holding no row for the night, a page of symbols a request, and inserts each member's current fiscal year; a row held is kept as first read and nothing updates or deletes one. A member whose answer files no current year stores nothing, and a night run again for an earlier session asks for none. The setup ledger reads the newest row on or before a setup's session, the night's above a quarters fetch's on the same session, for its estimate revision; a session before a member's first row and first fetch reads none, since the provider keeps no history of what it stated on a day, and no rule, list or gate reads the table (see: A new reading joins the ledger with its history where its source keeps one, and from the night it is first stored where it keeps none).
 
 ### news_pulse
 Grain: one row per ticker per date.

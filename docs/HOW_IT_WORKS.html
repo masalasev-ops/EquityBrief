@@ -1305,6 +1305,13 @@
   <li><b>vix_over_median</b>: the VIX against its middle level of the year before.</li>
   <li><b>company_value</b>: how large the whole company is at that evening's price, counted in powers of ten.</li>
 </ul>
+<p>Five more came with phase 21, the ones you chose from the sources the tool checked first, each filled from where it can be read without paying for every stock every night:</p>
+<ul>
+  <li><b>Relative strength at a new high</b> and <b>insider cluster buying</b>: read from the stored prices and the stored insider filings, so they reach back to 2019 like every other reading.</li>
+  <li><b>Upgrades less downgrades</b>: each firm's dated rating changes as Yahoo lists them. Yahoo's list reaches back years, so asking each stock once fills its history; each morning, after the news is labelled, the tool asks Yahoo about the 80 stocks it asked longest ago, leaving 20 of the day's 100 asks for the chart pages you open, so every stock is asked about once in about nineteen days.</li>
+  <li><b>Estimate revision</b>: how the analysts' forecast of this year's earnings a share moved over the last month. No source keeps what the forecast was on a past day, so each evening the night asks the provider for every stock's forecast, fifty stocks a request, and the reading starts from the first evening it was asked; the Ledger page says from when.</li>
+  <li><b>Short interest</b>: the shares sold short over all the shares, from FINRA's twice-monthly reports, free, back to the end of 2017. Each report is read only from the day after FINRA published it, about a week and a half after the date it counts.</li>
+</ul>
 <p>Once a month the loop also works out which readings went with winners, and the Ledger page shows it for each family on each index: how strongly each reading's value when a setup was found matched how that setup turned out, year by year from 2022, against the same figure with the results shuffled among each evening's setups so that a lucky match is not mistaken for a real one. A reading is said to go with winners or with losers only where it beats the shuffle. The words are for you to read; no reading is removed and no rule changes because of them.</p>
 <figure>
   <svg viewBox="0 0 1000 270" role="img" aria-labelledby="f-loop-night">
