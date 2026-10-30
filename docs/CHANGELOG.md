@@ -26,6 +26,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-30 - docs/ARCHITECTURE.html - section 17's row of the setups like a pick states their chance, and the family recorder reads the setups for the order by it
+Authorised by: Each pick's card says how often the setups like it won and what they made after costs, under the rule's heading
+Was:
+> (Family recorder, reads) membership, bar store, indicators, family results, member readings, loop models, family trades
+> (Family recorder) ... and from 17.15 a score naming the learned trees by their key read off the trees the tester stored; each rule keeps its own list ...
+> (Setups like a pick, value) ... their mean edge with a two-sided 90 per cent interval at 1.645 standard errors either side (see: A pick's card draws the setups like it under its rule beneath the rule's record, and the score's rank only once the score passed on its index)
+> (Setups like a pick, check) fixture-expectations, the part worked by hand over a thousand constructed setups on both sides of the sentence, the pick's own stock never matched, a stock matched once within its run of sessions and twenty-nine short of the floor drawing none; the figures read off the document against the constants
+Now:
+> (Family recorder, reads) membership, bar store, indicators, family results, member readings, loop models, setups, setup nights, family trades
+> (Family recorder) ... and from 17.15 a score naming the learned trees by their key read off the trees the tester stored, and from 21.7 a rule ordering its list by the expected value of the setups like each member is handed that figure, the mean result after costs of the ledger's finished setups of its family on the index the card's part matches for the member (see: An order by the expected value of the setups like each pick is registered where its family has room and its step can hand the figure, and walked unregistered elsewhere); each rule keeps its own list ...
+> (Setups like a pick, value) ... at 1.645 standard errors either side (see: ...); and the share of them that won and their mean result after costs with the same interval, drawn from the same floor of matched setups holding a result, the mean the expected value an order by it reads (see: Each pick's card says how often the setups like it won and what they made after costs, under the rule's heading)
+> (Setups like a pick, check) fixture-expectations, ... and twenty-nine short of the floor drawing none, and from 21.7 the share that won and the mean after costs worked by hand over a thousand on both sides of the sentence and at twenty-nine and thirty holding a result, a target's, a trailing rule's and a book's forms each with its round trip from the published table; the figures read off the document against the constants
+Why: 21.7 draws each pick's chance from the setups like it beneath the rule's record and registers the order by its mean where the breakout's family has room; 15.18 gains the part's row and 15.23 the term, both new rows, and the lines above are the ones that stood and now name them (see: An order by the expected value of the setups like each pick is registered where its family has room and its step can hand the figure, and walked unregistered elsewhere).
+
+### 2026-10-30 - docs/RUNBOOK.md - the breakout registered again adds its ninth, ordered by the expected value of the setups like each member
+Authorised by: An order by the expected value of the setups like each pick is registered where its family has room and its step can hand the figure, and walked unregistered elsewhere
+Was:
+> ... the remedy `tools/remedies/2026-10-18-20.4-the-tone-variants.txt` registers it once the history read has completed.
+Now:
+> ... registers it once the history read has completed. From 21.7 the breakout registered again adds its ninth, the live setting with its list ordered by the expected value of the setups like each member, which no replay reads, so its record starts at the registration (see: ...); the remedy `tools/remedies/2026-10-30-21.7-the-setups-like-each-pick.txt` registers it, printing `registered 9`.
+Why: the family's command registers the family the code writes, which from 21.7 holds the ninth.
+
+### 2026-10-30 - .claude/rules/checks.md - fixture-expectations and read-surface state 21.7's assertions
+Authorised by: Each pick's card says how often the setups like it won and what they made after costs, under the rule's heading
+Was:
+> (fixture-expectations) ... and no source a rule's version pins written outside its comments |
+> (read-surface) ... each source said not held yet where the store holds none |
+Now:
+> (fixture-expectations) ... and no source a rule's version pins written outside its comments; and from 21.7 the setups like a pick read for how often they won and what they made after costs over a thousand constructed setups on both sides of the sentence and at twenty-nine and thirty holding a result, the three forms each with its round trip from the published table and each sentence in the reader's words, the breakout's ninth rule ordering a constructed night by that figure as the hand does, and the remedy's line registering it where the drift at nine refuses the same order |
+> (read-surface) ... each source said not held yet where the store holds none; and from 21.7 a pick's card drawing how often the setups like it won and what they made after costs under the setup's heading, a card from before drawing none, the night's figure an order reads the card's mean, and the tester's matched among the setups that ended before its fold's year |
+Why: each check gains the assertions 21.7's tests add.
+
 ### 2026-10-30 - CLAUDE.md - the first hard rule names the night's estimate trends, the ratings refresh and the short interest reader among its carve-outs, and the layout's off-peak run runs both
 Authorised by: The night asks every member's estimate trend once a night in requests of a page of symbols
 Was:
