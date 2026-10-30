@@ -40,6 +40,24 @@ Now:
 > (21.14, done when) each ruled change ...; the exposure's reverse direction is worked by hand at both of its VIX switches over a constructed night and walked beside each graded variant in the tester's folds, its figures stated beside the variant's; the remedy's lines ...
 Why: the operator ruled on 2026-10-30 that the exposure's VIX direction stays as built with its reverse walked beside it and put at 21.14, and added the market strip to 21.13.
 
+### 2026-10-30 - docs/ARCHITECTURE.html - the tester's per-rule test walks each family's versions chosen by their record
+Authorised by: A family's version is chosen each month by its recent record as a procedure judged against staying with the live rule, and an approval of it waits on the operator's word
+Was:
+> (Walk-forward tester) ... and the exposure walked unregistered beside each live rule whose family registers none (see: A breakout's or a drift's graded exposure ...)
+Now:
+> (Walk-forward tester) ... (see: A breakout's or a drift's graded exposure ...); and from 21.10 the per-rule test's three procedures a family choosing a version by its recent record each month, judged as variants against the live or provisional rule (see: ...)
+Why: 21.10 tests choosing a version by its record against staying put; 13.12 gains its paragraph, section 17 its windows and floors and 15.20 its row, all new, and the line above is the one that stood and now names it.
+
+### 2026-10-30 - .claude/rules/checks.md - fixture-expectations and read-surface state 21.10's assertions
+Authorised by: A family's version is chosen each month by its recent record as a procedure judged against staying with the live rule, and an approval of it waits on the operator's word
+Was:
+> (fixture-expectations) ... refusing where the rule reads no check, the family holds nine or its walk reads no exposure |
+> (read-surface) ... and one sized whole with neither |
+Now:
+> (fixture-expectations) ...; and from 21.10 the version chosen at one month by hand at the floor and one under it, a tie and a book's floor, no trade read that has not ended by its month, and the procedure judged against the live rule as the tester judges a proposal in the family's correction |
+> (read-surface) ...; and from 21.10 a family's versions chosen by their record drawn on the Loop page with what each does, the version it would run now, its trades, its adjusted p and whether it beat staying put, and no press |
+Why: each check gains the assertions 21.10's tests add.
+
 ### 2026-10-30 - docs/ARCHITECTURE.html - the tester reads each breakout's and drift's graded exposure
 Authorised by: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
 Was:
