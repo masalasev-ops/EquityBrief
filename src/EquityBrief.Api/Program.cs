@@ -3351,10 +3351,6 @@ app.MapGet("/screens/run/{night?}", async (
     var reading = Universes.Of(universe);
     var selector = Cards.Universe(reading, await read.MembersByIndexAsync(dated), SinglePageApp.RunRoute + dated.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
-    // The picks business first's open trades held back on the night on each index, one line under every index's page.
-    // see: Business first stays in the night unseen until the next change that moves the S&P 400's and 600's pins, and the Run page counts the picks its open trades hold back each night an index
-    var heldByBusinessFirst = await read.HeldByBusinessFirstAsync(dated);
-
     if (reading != Universes.Large)
     {
         var indexNight = await read.IndexNightAsync(reading.Code, dated);
@@ -3406,8 +3402,7 @@ app.MapGet("/screens/run/{night?}", async (
                     indexRegister,
                     indexAsOf),
                 indexRecords,
-                RuleScreen.Flagged(await read.RuleNightsAsync(reading.Code, dated), dated, indexRegister, indexAsOf),
-                heldByBusinessFirst: heldByBusinessFirst),
+                RuleScreen.Flagged(await read.RuleNightsAsync(reading.Code, dated), dated, indexRegister, indexAsOf)),
             "text/html; charset=utf-8");
     }
 
@@ -3532,7 +3527,6 @@ app.MapGet("/screens/run/{night?}", async (
                 : EdgeScreen.NearMisses(null, [], dated),
             held: held,
             how: how,
-            heldByBusinessFirst: heldByBusinessFirst,
             picture: picture,
             // The live rule's own trades: the pullback's, whatever the other setups listed.
             trades: PicksScreen.Summary(PicksScreen.OfSetup(PicksScreen.Cells(await read.PicksAsync(dated), dated), EquityBrief.Core.Families.SetupFamilies.Pullback)),

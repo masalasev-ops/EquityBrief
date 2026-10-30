@@ -120,7 +120,7 @@ public static class IndexRules
     {
         // The engines' hooks a swing rule may state beside its own parameters are read by its keeping and its walk and
         // not by its evaluation; a heavyweights book reads none.
-        // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+        // see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
         var hooked = evaluator is not IndexHeavyweightCandidate;
 
         if (hooked)

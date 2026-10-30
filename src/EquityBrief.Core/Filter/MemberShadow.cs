@@ -19,6 +19,10 @@ public interface IMemberShadow
     // night asks the provider for its estimates before the verdicts are written; never for a member skipped.
     bool AsksForEstimates(GateInputs inputs, bool stale, DateOnly? gap);
 
+    // Whether a standing candidate reads the business's state off the SEC's facts as first filed, so the night reads the
+    // ledger's reading of it for every member before the verdicts are written, and reads none where none does.
+    bool ReadsFiledState { get; }
+
     // How many verdicts were written.
     int Evaluated { get; }
 

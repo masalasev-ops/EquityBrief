@@ -425,7 +425,14 @@ public partial class FixtureExpectations
         Assert.Empty(ImprovingFreezeWrites.Concat(ImprovingRuleWrites).Intersect(pinned, StringComparer.Ordinal));
         Assert.Empty(ImprovingFreezeWrites.Intersect(improving, StringComparer.Ordinal));
         Assert.Superset(ImprovingRuleWrites.Where(path => !path.EndsWith("/ImprovingCandidate.cs", StringComparison.Ordinal)).ToHashSet(StringComparer.Ordinal), improving.ToHashSet(StringComparer.Ordinal));
-        Assert.All(OperatorsStandingBeforeTheImprovingFreeze, row => Assert.Equal(row.Version, CandidateEvaluators.Find(row.Evaluator)!.Version));
+        // From 21.4 every version the register named but the S&P 500 heavyweights' moves, in the one checkpoint that
+        // registers every rule reading the moved sources again, the swing filter's among them on the operator's ruling of
+        // 2026-10-30, since the version leaving off a deteriorating business reads the SEC's facts through the filter's
+        // reader of a member's gate inputs; the heavyweights' stands as the register named it and every other differs.
+        string[] standingThroughTheMove = ["heavyweight"];
+
+        Assert.All(OperatorsStandingBeforeTheImprovingFreeze.Where(row => standingThroughTheMove.Contains(row.Evaluator, StringComparer.Ordinal)), row => Assert.Equal(row.Version, CandidateEvaluators.Find(row.Evaluator)!.Version));
+        Assert.All(OperatorsStandingBeforeTheImprovingFreeze.Where(row => !standingThroughTheMove.Contains(row.Evaluator, StringComparer.Ordinal)), row => Assert.NotEqual(row.Version, CandidateEvaluators.Find(row.Evaluator)!.Version));
         Assert.Equal(18, OperatorsStandingBeforeTheImprovingFreeze.Length);
     }
 }

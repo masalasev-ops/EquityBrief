@@ -67,16 +67,15 @@ public partial class FixtureExpectations
         Assert.Equal("net income of -10 over its 4 newest quarters as filed, not above nothing", breakout["PR"].Gates[3].Reason);
         Assert.All(breakout.Values.SelectMany(row => row.Gates).Where(gate => gate.Passed), gate => Assert.Equal(string.Empty, gate.Reason));
 
-        // No member's pullback, drift or fundamentals-first setup lists with the check open: the breakouts close above every
-        // high before, NH 0.3 under its twenty sessions' high on a typical move near 1, the ten more than five typical moves
-        // under theirs, and none reports. The fundamentals-first family reads no readings tonight, so its five parts reading
-        // them fail too.
-        foreach (var family in new[] { SetupFamilies.Pullback, DriftRule.Name, FundamentalsRule.Name })
+        // No member's pullback or drift setup lists with the check open: the breakouts close above every high before, NH 0.3
+        // under its twenty sessions' high on a typical move near 1, the ten more than five typical moves under theirs, and
+        // none reports. From 21.4 the fundamentals-first family is computed no longer, so no row answers under it.
+        foreach (var family in new[] { SetupFamilies.Pullback, DriftRule.Name })
         {
             Assert.All(Stored(family).Values, row => Assert.Equal(("market", false, "setup", false), (row.Gates[0].Name, row.Gates[0].Passed, row.Gates[1].Name, row.Gates[1].Passed)));
         }
 
-        Assert.Equal("market- setup- floors+ readings- profit+ revenue- margin- cash- trend-", PartsLine(Stored(FundamentalsRule.Name)["IA"].Gates));
+        Assert.Empty(Stored(FundamentalsRule.Name));
 
         // The card reads the four the check alone keeps off, in the page's family order and by ticker, each with the check's
         // words, and the market line counts them; it draws no Watch press, the watch list holding the S&P 500's names.

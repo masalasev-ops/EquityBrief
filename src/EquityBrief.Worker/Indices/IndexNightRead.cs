@@ -1,6 +1,7 @@
 using EquityBrief.Core.Cards;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
+using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Loop;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Readings;
@@ -89,11 +90,14 @@ public sealed record IndexNightInputs(
 // see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
 public static class IndexNightRead
 {
-    // The families in the page's order, the words they are stored under, the fundamentals-first family last; and the one
-    // the S&P 500 is read for here, its other families being the S&P 500's own.
-    public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, FundamentalsRule.Name];
+    // The families in the page's order, the words they are stored under; from 21.4 the fundamentals-first family is not
+    // among them, the night computing it no longer and its rows standing as written. The S&P 500 is read here for no
+    // family, its own families being the S&P 500's own, and only while a page trade of the fundamentals-first family's
+    // stands open on it, to walk that trade to its end.
+    // see: Business first leaves the night at the one move of the pins, its rows and record kept and its one open trade run out under its own plan
+    public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name];
 
-    public static IReadOnlyList<string> LargeFamilies { get; } = [FundamentalsRule.Name];
+    public static IReadOnlyList<string> LargeFamilies { get; } = [];
 
     // The parts of a rule a member fails, in the rule's order, the first the row names.
     public const string MarketClosed = "the market check closed";
@@ -250,24 +254,54 @@ public static class IndexNightRead
 
     // A family's read with its list kept and ordered by hooks: those the hooks keep first in their order, then those they
     // leave off, each of which fails on them after the family's own parts, every member read against them by its own
-    // readings.
-    public static IndexFamilyRead Hooked(IndexNightInputs inputs, IndexFamilyRead read, RuleHooks hooks, Func<string, IReadOnlyList<double?>?>? readings)
+    // readings. From 21.4 a rule stating the exposure reads its setups with the market check open and takes the exposure's
+    // answer in the check's place, the picks the night's two switches allow, read off the night's readings, which every
+    // member of the index shares; a member past the picks is left off by its hooks as one failing a condition is. The
+    // expected value of the setups like each member is handed in by the step that lists where it has one.
+    public static IndexFamilyRead Hooked(IndexNightInputs inputs, IndexFamilyRead read, RuleHooks hooks, Func<string, IReadOnlyList<double?>?>? readings, Func<string, double?>? expected = null)
     {
-        if (!hooks.ReadsReadings)
+        if (!hooks.ReadsReadings && !hooks.ReadsExpected)
         {
             return read;
         }
 
         IReadOnlyList<double?>? ReadingsOf((int Name, IndexTrade Trade) one) => readings?.Invoke(inputs.Series[one.Name].Name.Ticker);
 
-        var kept = hooks.Order(read.Listed, ReadingsOf);
+        double? ExpectedOf((int Name, IndexTrade Trade) one) => expected?.Invoke(inputs.Series[one.Name].Name.Ticker);
+
+        // The hooks keep and cut among the members passing the rule's own parts, a member listed twice counted once, so a
+        // count they cut the list to counts the members the rule would list.
+        var candidates = hooks.Exposure is not null ? read.ListedIfOpen ?? read.Listed : read.Listed;
+        var kept = hooks.Order([.. candidates.DistinctBy(one => one.Name).Where(one => read.FailsOn(one.Name) is null)], ReadingsOf, ExpectedOf);
         var keeps = kept.Select(one => one.Name).ToHashSet();
 
         return read with
         {
-            Listed = [.. kept, .. read.Listed.Where(one => !keeps.Contains(one.Name))],
-            PartsOf = name => [.. read.PartsOf(name), new RulePart(NotByItsHooks, hooks.Order([(name, default(IndexTrade))], ReadingsOf).Count > 0)],
+            Listed = [.. kept, .. candidates.Where(one => !keeps.Contains(one.Name))],
+            Market = hooks.Exposure is { } floor ? ExposureGate(hooks, floor, NightReadings(inputs, readings)) : read.Market,
+            PartsOf = name => [.. read.PartsOf(name), new RulePart(NotByItsHooks, keeps.Contains(name))],
+            ListedIfOpen = hooks.Exposure is not null ? candidates : read.ListedIfOpen,
         };
+    }
+
+    // The night's readings every member of the index shares, off the first member holding any; none where the night
+    // supplies none.
+    public static IReadOnlyList<double?>? NightReadings(IndexNightInputs inputs, Func<string, IReadOnlyList<double?>?>? readings) =>
+        readings is null ? null : inputs.Held.Select(name => readings(inputs.Series[name].Name.Ticker)).FirstOrDefault(one => one is not null);
+
+    // The exposure's answer in the market check's place: the picks the night allows, the breadth it read against the
+    // floor the rule states and the VIX's close over its median, closed where it allows none.
+    public static Gate ExposureGate(RuleHooks hooks, double floor, IReadOnlyList<double?>? night)
+    {
+        var picks = hooks.PicksUnder(night) ?? 0;
+        var breadth = night is not null && RuleHooks.BreadthColumn >= 0 ? night[RuleHooks.BreadthColumn] : null;
+        var over = night is not null && RuleHooks.VixOverMedianColumn >= 0 ? night[RuleHooks.VixOverMedianColumn] : null;
+
+        return new Gate(
+            RuleRows.Market,
+            picks > 0,
+            FormattableString.Invariant($"the exposure allows {picks} pick(s) tonight: the index's breadth {FamilyRule.Figure(breadth)} against its floor of {floor:0.##}, and the VIX at {FamilyRule.Figure(over)} of its median of the {LedgerReadings.VixMedianSessions} sessions before, at or under 1 holding"),
+            FamilyRule.Values(("breadth", FamilyRule.Figure(breadth)), ("floor", FamilyRule.Figure(floor)), ("vix over median", FamilyRule.Figure(over)), ("picks", FamilyRule.Figure(picks))));
     }
 
     // The fundamentals-first family at a setting: the pullback's base listings on the night, its trade the pullback's,

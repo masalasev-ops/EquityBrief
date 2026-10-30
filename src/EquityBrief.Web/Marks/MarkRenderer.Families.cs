@@ -192,19 +192,8 @@ public sealed record IndexTradeCell(
 // kept and ended, and its sector heavyweights' rebalance and holdings.
 public sealed record IndexRunView(int Members, double? Breadth, double Floor, bool MarketOpen, int Passed, int Listed, int HeldBack, int Kept, int Ended, bool Rebalanced, int Holdings, string? Fault = null, IReadOnlyList<MarketCheckView>? Checks = null);
 
-// How many picks business first's open trades held back on a night on each of the three indices, as the Run page states
-// it under every index: a pick counted where its row names business first's trade as the one still open for its stock.
-// see: Business first stays in the night unseen until the next change that moves the S&P 400's and 600's pins, and the Run page counts the picks its open trades hold back each night an index
-public sealed record HeldByBusinessFirstView(DateOnly Night, int Large, int Mid, int Small);
-
 public sealed partial class MarkRenderer
 {
-    // One line a night under every index: how many picks business first's open trades held back on each of the three
-    // indices, read off the pick rows naming its trade, so a hold-back no page draws is stated where the night is read.
-    // see: Business first stays in the night unseen until the next change that moves the S&P 400's and 600's pins, and the Run page counts the picks its open trades hold back each night an index
-    public static string HeldByBusinessFirstLine(HeldByBusinessFirstView held) =>
-        FormattableString.Invariant($"<p class=\"held-by-business-first\" data-gspc=\"{held.Large}\" data-mid=\"{held.Mid}\" data-sml=\"{held.Small}\">Business first's open trades held back {held.Large} {(held.Large == 1 ? "pick" : "picks")} on the S&amp;P 500, {held.Mid} on the S&amp;P 400 and {held.Small} on the S&amp;P 600 tonight.</p>");
-
     // What each column of an index's trades on Past picks holds.
     public static IReadOnlyList<(string Heading, string Says)> IndexTradeHeadings { get; } =
     [

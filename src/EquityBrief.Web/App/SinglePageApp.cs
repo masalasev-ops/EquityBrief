@@ -3162,8 +3162,7 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyList<DateOnly>? oldCorrections = null,
         IReadOnlyList<RouteTime>? routeTimes = null,
         DateTimeOffset? routeTimesSince = null,
-        IReadOnlyList<LocalRunView>? localRuns = null,
-        HeldByBusinessFirstView? heldByBusinessFirst = null)
+        IReadOnlyList<LocalRunView>? localRuns = null)
     {
         var region = new StringBuilder();
         var heading = "Run evidence: " + Universes.Large.Titled;
@@ -3188,8 +3187,7 @@ public sealed partial class SinglePageApp : IComponent
         region.Append("<h2 class=\"run-heading\" data-heading=\"health\">Health</h2><div class=\"run-pair\">");
         region.Append(Cards.Computed(
             "Last night",
-            (how is { } went ? marks.NightStatus(went) + NightPress(went) : string.Empty) + marks.NightOps(night, duration, harness)
-                + (heldByBusinessFirst is { } heldBack ? MarkRenderer.HeldByBusinessFirstLine(heldBack) : string.Empty),
+            (how is { } went ? marks.NightStatus(went) + NightPress(went) : string.Empty) + marks.NightOps(night, duration, harness),
             title: "How last night went",
             lede: "What the night's own run log says of it: its state, what it read and cost, and where its time went.",
             stamp: Cards.Night(night),
@@ -4200,8 +4198,7 @@ public sealed partial class SinglePageApp : IComponent
         IndexRunView? view,
         IReadOnlyList<FamilyRunRow> setups,
         IReadOnlyList<FamilyRecordRow>? records = null,
-        IReadOnlyList<(string Family, string Rule, int Stretch, int Mark)>? pastTheirMark = null,
-        HeldByBusinessFirstView? heldByBusinessFirst = null)
+        IReadOnlyList<(string Family, string Rule, int Stretch, int Mark)>? pastTheirMark = null)
     {
         var region = new StringBuilder();
         var heading = "Run evidence: " + universe.Titled;
@@ -4247,7 +4244,6 @@ public sealed partial class SinglePageApp : IComponent
             body.Append("</ul>");
         }
 
-        body.Append(heldByBusinessFirst is { } heldBack ? MarkRenderer.HeldByBusinessFirstLine(heldBack) : string.Empty);
         body.Append(Invariant($"<p class=\"oneline\">The night's steps are one list for all three indices: <a href=\"{RunRoute}{night:yyyy-MM-dd}\">see them under the S&amp;P 500</a>.</p>"));
 
         region.Append(Cards.Computed(

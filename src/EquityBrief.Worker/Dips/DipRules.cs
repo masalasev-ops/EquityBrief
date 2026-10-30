@@ -34,7 +34,7 @@ public static class DipRules
     [
         (DipCandidate.DropParameter, IndexSweepRunner.DipDrops),
         (DipCandidate.TrendParameter, IndexSweepRunner.DipTrends),
-        (DipCandidate.ExitParameter, IndexSweepRunner.DipExits),
+        (DipCandidate.SellParameter, IndexSweepRunner.DipExits),
         (DipCandidate.LimitParameter, [.. IndexSweepRunner.DipLimits.Select<int, double>(limit => limit)]),
         (DipCandidate.StopParameter, IndexSweepRunner.DipStops),
         (DipCandidate.MarketParameter, [.. Enumerable.Range(0, IndexSweepRunner.DipMarketLevels(index).Count).Select<int, double>(place => place)]),
@@ -59,6 +59,10 @@ public static class DipRules
         {
             return (null, FormattableString.Invariant($"the {carried.Family} holds {standing.Count} rule(s) standing; the family is frozen again once they are retired."));
         }
+
+        // A setting in the form from before 21.4 names its sell dial exit; it is read under the dial's name.
+        live = DipCandidate.Renamed(live);
+        versions = [.. versions.Select(DipCandidate.Renamed)];
 
         var dials = Dials(index);
 

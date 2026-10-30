@@ -82,6 +82,17 @@ public sealed record LedgerInsiders(IReadOnlyDictionary<string, IReadOnlyList<In
 // business readings and the valuation reading's facts change only when a fact is filed, so they are kept for a member by
 // how many of its facts were filed before the session, and a series' closes are joined to those before its year once.
 // see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+// From 21.4 what Yahoo's newest stored answer about a stock's analysts holds for the ledger: the day it was asked on and
+// each rating action's day with Yahoo's word for it, as Yahoo files them.
+public sealed record LedgerActions(DateOnly AskedOn, IReadOnlyList<(DateOnly Day, string Action)> Actions);
+
+// From 21.4 one quarters fetch's trend of the current fiscal year's consensus earnings a share: the session the fetch
+// belongs to, and the consensus now and 30 days before as the answer stated them, each none where it filed none.
+public sealed record LedgerTrend(DateOnly Session, decimal? Now, decimal? MonthBefore);
+
+// From 21.4 one settlement of a stock's short interest as FINRA reports it: the day reported for and the shares short.
+public sealed record LedgerShortInterest(DateOnly Reported, decimal Shares);
+
 public sealed record LedgerContext(
     IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> Income,
     IReadOnlyDictionary<string, string?> Sectors,
@@ -99,6 +110,204 @@ public sealed record LedgerContext(
     // From 22.2 the S&P 500's breadth on each session, which an S&P 400 or 600 row reads; none where it is read without it.
     // see: The short-term dip's setups clear its drop a grid step past the widest its sweep reads with no trend condition, and the ledger's history budget is raised to hold them
     public IReadOnlyDictionary<DateOnly, double>? LargeBreadth { get; init; }
+
+    // From 21.4 the sources of the readings the operator chose at 21.2: Yahoo's newest stored answer about each stock's
+    // analysts, the quarters fetches' trends of each stock's current fiscal year by the session each belongs to, oldest
+    // first, and FINRA's settlements of each stock's short interest, oldest first; each none where the readings are read
+    // without it, and the short interest none until its store is filled.
+    public IReadOnlyDictionary<string, LedgerActions>? Actions { get; init; }
+
+    public IReadOnlyDictionary<string, IReadOnlyList<LedgerTrend>>? Trends { get; init; }
+
+    public IReadOnlyDictionary<string, IReadOnlyList<LedgerShortInterest>>? ShortInterest { get; init; }
+
+    // From 21.4 the settings the two book families' live rules stand at on the index, which each book setup's live pass
+    // is read under, the starting settings where the context is built without the register; and the clock's reading of
+    // the session an instant falls on, which the Fundamentals pass reads a release's day by, no flag read without it.
+    // see: A book family's setup is each member a reshuffle or a filing leaves at the ledger's gate, held while it clears the hold and never past a year against an equal-weighted hold of the index
+    public QualitySettings QualityLive { get; init; } = QualityRule.Starting;
+
+    public ImprovingSweepSetting ImprovingLive { get; init; } = ImprovingGrid.Starting;
+
+    public Func<DateTimeOffset, DateOnly>? SessionDay { get; init; }
+
+    readonly System.Collections.Concurrent.ConcurrentDictionary<string, DateOnly[]> filingDays = new();
+    readonly System.Collections.Concurrent.ConcurrentDictionary<string, ImprovingRelease[]> releasesRead = new();
+
+    // The days a member's filer filed on, each once and in order, among which a filing read anew on a session is found
+    // without reading every fact again.
+    public IReadOnlyList<DateOnly> FilingDays(string ticker) =>
+        filingDays.GetOrAdd(ticker, key => [.. (Facts?.GetValueOrDefault(key) ?? []).Select(fact => fact.Filed).Distinct().Order()]);
+
+    // The newest quarter's filing a member's scorecard on a session reads, by the day it was filed; none where the card
+    // names no quarter or no filing of it stands before the session.
+    public DateOnly? FiledOn(SweepSeries one, DateOnly session) =>
+        ImprovingRule.FiledOn(Facts?.GetValueOrDefault(one.Name.Ticker) ?? [], Scorecard(one, session).Quarter, session);
+
+    // Whether a flag stood for a member on a session, as the Fundamentals family's history test reads one: its newest
+    // release readable that night, flagged by the family's own rule against the scorecard the night reads, its sessions
+    // counted on the calendar given; none where the context has no clock to read a release's day by.
+    public bool FlagStood(SweepSeries one, IReadOnlyList<DateOnly> calendar, int at)
+    {
+        if (SessionDay is null)
+        {
+            return false;
+        }
+
+        var ticker = one.Name.Ticker;
+        var releases = releasesRead.GetOrAdd(ticker, key =>
+            [.. (Releases?.GetValueOrDefault(key) ?? [])
+                .Where(release => release.Answer is not null)
+                .OrderByDescending(release => release.Accepted)
+                .Select(release => new ImprovingRelease(release.Accepted, SessionDay(release.Accepted), release.Answer!))]);
+
+        if (releases.Length == 0)
+        {
+            return false;
+        }
+
+        var session = calendar[at];
+        var sector = Gics is { } gics ? gics.GetValueOrDefault(ticker) : Sectors.GetValueOrDefault(ticker);
+        var financial = FundamentalScorecard.IsFinancial(GicsSectors.On(ticker, sector, session));
+
+        return ImprovingLay.FlagStood(Facts?.GetValueOrDefault(ticker) ?? [], releases, calendar, session, financial, ownPrices.GetValue(one, series => PriceHistory.Of(series.Bars)));
+    }
+
+    readonly System.Runtime.CompilerServices.ConditionalWeakTable<SweepSeries, double?[]> relativeStrength = new();
+
+    // Yahoo's words for a firm raising and lowering its rating.
+    public const string Upgrade = "up";
+
+    public const string Downgrade = "down";
+
+    // From 21.4 a member's close over the index's own series' close on each of its bars, over the highest such ratio of
+    // the 252 bars to it, 1 at a new high; none under 252 bars or where the series holds no close by one of their days,
+    // a day it lacks between two it holds read as the close before it, as every market series reading reads one. Read
+    // once a series, the high kept over a window that drops each bar as it leaves.
+    public double?[] RelativeStrengthHigh(SweepSeries one, double[] closes, IReadOnlyList<(DateOnly Session, double Close)>? index) =>
+        relativeStrength.GetValue(one, series => RelativeStrengthHighOf(series, closes, index));
+
+    static double?[] RelativeStrengthHighOf(SweepSeries one, double[] closes, IReadOnlyList<(DateOnly Session, double Close)>? index)
+    {
+        var readings = new double?[closes.Length];
+
+        if (index is null)
+        {
+            return readings;
+        }
+
+        var ratios = new double?[closes.Length];
+
+        for (var bar = 0; bar < closes.Length; bar++)
+        {
+            ratios[bar] = SeriesReadings.CloseOn(index, one.Bars[bar].Session) is { } close && close > 0 ? closes[bar] / close : null;
+        }
+
+        var window = LedgerReadings.RelativeStrengthSessions;
+        var highs = new LinkedList<int>();
+        var lastMissing = -1;
+
+        for (var bar = 0; bar < closes.Length; bar++)
+        {
+            if (ratios[bar] is not { } ratio)
+            {
+                lastMissing = bar;
+                highs.Clear();
+
+                continue;
+            }
+
+            while (highs.Count > 0 && ratios[highs.Last!.Value]!.Value <= ratio)
+            {
+                highs.RemoveLast();
+            }
+
+            highs.AddLast(bar);
+
+            while (highs.First!.Value <= bar - window)
+            {
+                highs.RemoveFirst();
+            }
+
+            if (bar >= window - 1 && bar - lastMissing >= window)
+            {
+                readings[bar] = ratio / ratios[highs.First.Value]!.Value;
+            }
+        }
+
+        return readings;
+    }
+
+    // From 21.4 the distinct insiders buying in the open market over the cluster's sessions to a session, from the filings
+    // filed before it, each counted on the day it counts on; none for a member the store matches no filer for, and none
+    // where the insider history does not hold the window's days.
+    public double? ClusterBuyers(SweepSeries one, IReadOnlyList<DateOnly> calendar, int at)
+    {
+        if (Insiders?.GetValueOrDefault(one.Name.Ticker) is not { } rows)
+        {
+            return null;
+        }
+
+        var session = calendar[at];
+        var from = calendar[Math.Max(0, at - (LedgerReadings.ClusterSessions - 1))];
+
+        if (!InsiderSpans.Holds(from, session.AddDays(-1)))
+        {
+            return null;
+        }
+
+        return InsiderReadings.InEffect(rows, session)
+            .Where(one => one.Day >= from)
+            .Select(one => one.Row)
+            .Where(row => row.Code == InsiderReadings.Purchase)
+            .Select(row => InsiderReadings.Insider(row.OwnerKey))
+            .Distinct(StringComparer.Ordinal)
+            .Count();
+    }
+
+    // From 21.4 Yahoo's rating upgrades less downgrades dated over the sessions before a session, from the stock's newest
+    // stored answer; none where the store holds no answer for the stock, or the session is after the answer's ask, since
+    // the actions after the ask are not yet stored.
+    public double? RatingActionsNet(string ticker, IReadOnlyList<DateOnly> calendar, int at)
+    {
+        if (Actions?.GetValueOrDefault(ticker) is not { } answer || calendar[at] > answer.AskedOn)
+        {
+            return null;
+        }
+
+        var from = calendar[Math.Max(0, at - LedgerReadings.RatingActionSessions)];
+        var to = calendar[at];
+        var window = answer.Actions.Where(action => action.Day >= from && action.Day < to).ToArray();
+
+        return window.Count(action => action.Action == Upgrade) - window.Count(action => action.Action == Downgrade);
+    }
+
+    // From 21.4 the current fiscal year's consensus earnings a share over its figure 30 days before, less 1, as the newest
+    // quarters fetch on or before a session states them; none before the first fetch, where either figure is missing or
+    // where the earlier one is nought.
+    public double? EstimateRevision(string ticker, DateOnly session) =>
+        Trends?.GetValueOrDefault(ticker)?.LastOrDefault(trend => trend.Session <= session) is { Now: { } now, MonthBefore: { } before } && before != 0m
+            ? Statistic.FromRatio(now / before) - 1
+            : null;
+
+    // From 21.4 the shares short FINRA last reported before a session over the newest share count the filings' covers
+    // state before it; none while no store holds the reports, and none where the covers state no count.
+    public double? ShortInterestShare(SweepSeries one, DateOnly session)
+    {
+        var ticker = one.Name.Ticker;
+
+        if (ShortInterest?.GetValueOrDefault(ticker)?.LastOrDefault(report => report.Reported < session) is not { } report)
+        {
+            return null;
+        }
+
+        var facts = Facts?.GetValueOrDefault(ticker) ?? [];
+        var filed = facts.Count(fact => fact.Filed < session);
+        var parts = valuation.GetOrAdd((ticker, filed), _ => ValuationReading.PartsOf(facts, session));
+        var count = parts.Counts.LastOrDefault(count => count.Day < session);
+
+        return count.Day == default || count.Shares <= 0m ? null : Statistic.FromRatio(report.Shares / count.Shares);
+    }
 
     // A member's 2-session relative strength index on each of its bars, read once a series through the dip's own function.
     public double?[] RsiTwo(SweepSeries one, double[] closes) => rsiTwo.GetValue(one, _ => DipRule.Rsi(closes));
@@ -209,6 +418,20 @@ public sealed record LedgerContext(
         return business.GetOrAdd((ticker, filed), _ => FiledFacts.Read(facts, session));
     }
 
+    readonly System.Collections.Concurrent.ConcurrentDictionary<(string Ticker, int Filed), string?> filedStates = new();
+
+    // From 21.4 the business's state off its filer's facts as first filed before a session, as the swing filter's version
+    // leaving off a deteriorating business reads it, worked once for each count of the facts filed before a session; none
+    // for a member the store matches no filer for or whose facts hold too few quarters.
+    // see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
+    public string? BusinessStateFiled(string ticker, DateOnly session)
+    {
+        var facts = Facts?.GetValueOrDefault(ticker) ?? [];
+        var filed = facts.Count(fact => fact.Filed < session);
+
+        return filedStates.GetOrAdd((ticker, filed), _ => FiledFacts.StateOf(facts, session));
+    }
+
     public double? ValuePlace(SweepSeries one, DateOnly session)
     {
         var ticker = one.Name.Ticker;
@@ -250,7 +473,9 @@ public sealed record LedgerContext(
 // see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
 public static class LedgerSetups
 {
-    public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, FundamentalsRule.Name, DipRule.Name];
+    // The families whose setups the ledger holds a row of every night, in the order the Ledger page draws them; from 21.4
+    // the two book families after the dip, each a setup where a reshuffle or a filing leaves a member at its gate.
+    public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, FundamentalsRule.Name, DipRule.Name, .. BookSetups.Families];
 
     static readonly int LiveHigh = SweepAxes.ReferenceHighs.ToList().IndexOf(SweepDesign.Live.ReferenceHigh);
     static readonly int LiveAge = SweepCandidate.AgeAt(SweepDesign.Live.Trigger, SweepDesign.Live.Support);
@@ -334,6 +559,143 @@ public static class LedgerSetups
         return new FamilySetups(HeavyweightRule.Name, members.Names[at].Length, Ordered(rows));
     }
 
+    // From 21.4 a book family's setup row: bought at the session's close with no stop, no target and a year's cap, its
+    // result a fraction of the buy as the heavyweights' is.
+    static SetupRow Book(string indexCode, string family, string ticker, DateOnly session, string words, bool livePass, double close, double?[] readings) =>
+        new(indexCode, family, ticker, session, words, livePass, new SetupAnchor(session, close, 0, null, null, BookSetups.Cap, null), new SetupPlan(0, null, null, BookSetups.Cap), readings);
+
+    // From 21.4 Quality at a fair price's setups of a reshuffle session, the first of a calendar month: each member whose
+    // scorecard clears the ledger's floor, whatever its valuation or its trend, bought at the session's close and given a
+    // year, its live pass whether the rule the index's register stands at passes it, its valuation's place and its close
+    // against its 200-session average read as the night reads them, with the readings every setup carries; and none on
+    // any other session, the family's row of that night counting the members alone.
+    // see: A book family's setup is each member a reshuffle or a filing leaves at the ledger's gate, held while it clears the hold and never past a year against an equal-weighted hold of the index
+    public static FamilySetups Quality(
+        string indexCode,
+        IReadOnlyList<SweepSeries> series,
+        double[][] closes,
+        IReadOnlyList<SweepColumns.Session> sessions,
+        SweepBenchmark.Members members,
+        IReadOnlyList<DateOnly> calendar,
+        int at,
+        LedgerMarket market,
+        LedgerContext context)
+    {
+        var rows = new List<SetupRow>();
+
+        if (BookSetups.Reshuffles(calendar, at))
+        {
+            for (var place = 0; place < members.Names[at].Length; place++)
+            {
+                var name = members.Names[at][place];
+                var bar = members.Bars[at][place];
+
+                if (bar < 0 || !(closes[name][bar] > 0))
+                {
+                    continue;
+                }
+
+                var card = context.Scorecard(series[name], calendar[at]);
+
+                if (!BookSetups.QualityClears(card.Passed, card.Applied))
+                {
+                    continue;
+                }
+
+                var readings = Readings(indexCode, name, series[name], closes[name], bar, sessions[at], members, calendar, at, market, context, series);
+                var above = readings[LedgerReadings.IndexOf("close_over_long")] is { } over ? over > 1 : (bool?)null;
+                var live = QualityRule.Answer(card.Passed, card.Applied, context.ValuePlace(series[name], calendar[at]), above, context.QualityLive).Passed;
+
+                rows.Add(Book(indexCode, QualityRule.Name, series[name].Name.Ticker, calendar[at], context.QualityLive.Words, live, closes[name][bar], readings));
+            }
+        }
+
+        return new FamilySetups(QualityRule.Name, members.Names[at].Length, Ordered(rows));
+    }
+
+    // From 21.4 the Fundamentals family's setups of a session: each member whose newest quarter's filing was first read
+    // on the session, filed since the session before, and leaves its scorecard at the ledger's buy or better, whether or
+    // not above its filing before, bought at the session's close and given a year; its live pass whether the rule the
+    // index's register stands at buys it, its rise over the filing before, its growth's change and the flag the night
+    // before read as the night reads them. None on the calendar's first session, which has no session before it to read
+    // filings since.
+    // see: A book family's setup is each member a reshuffle or a filing leaves at the ledger's gate, held while it clears the hold and never past a year against an equal-weighted hold of the index
+    public static FamilySetups Improving(
+        string indexCode,
+        IReadOnlyList<SweepSeries> series,
+        double[][] closes,
+        IReadOnlyList<SweepColumns.Session> sessions,
+        SweepBenchmark.Members members,
+        IReadOnlyList<DateOnly> calendar,
+        int at,
+        LedgerMarket market,
+        LedgerContext context)
+    {
+        var rows = new List<SetupRow>();
+
+        for (var place = 0; place < members.Names[at].Length; place++)
+        {
+            var name = members.Names[at][place];
+            var bar = members.Bars[at][place];
+            var ticker = series[name].Name.Ticker;
+
+            if (bar < 0 || !(closes[name][bar] > 0) || !BookSetups.FiledAnew(context.FilingDays(ticker), calendar, at))
+            {
+                continue;
+            }
+
+            var card = context.Scorecard(series[name], calendar[at]);
+
+            if (context.FiledOn(series[name], calendar[at]) is not { } filed || filed < calendar[at - 1] || !BookSetups.ImprovingBuys(card.Passed, card.Applied))
+            {
+                continue;
+            }
+
+            var before = context.Scorecard(series[name], filed);
+            var live = ImprovingGrid.Buys(
+                card.Passed,
+                card.Applied,
+                before.Passed,
+                before.Applied,
+                context.Business(ticker, calendar[at]).GrowthChange,
+                context.FlagStood(series[name], calendar, at - 1),
+                context.ImprovingLive);
+
+            rows.Add(Book(indexCode, ImprovingRule.Name, ticker, calendar[at], context.ImprovingLive.Words, live, closes[name][bar],
+                Readings(indexCode, name, series[name], closes[name], bar, sessions[at], members, calendar, at, market, context, series)));
+        }
+
+        return new FamilySetups(ImprovingRule.Name, members.Names[at].Length, Ordered(rows));
+    }
+
+    // From 21.4 the sessions after a book setup's own on which its gate no longer holds the member, by their places in
+    // the calendar and within its cap: a quality setup's at each later reshuffle whose scorecard fails the ledger's floor,
+    // a Fundamentals setup's at each later session a filing read anew on leaves its scorecard under the ledger's hold.
+    // see: A book family's setup is each member a reshuffle or a filing leaves at the ledger's gate, held while it clears the hold and never past a year against an equal-weighted hold of the index
+    public static IReadOnlyList<int> BookNotHeld(string family, SweepSeries one, IReadOnlyList<DateOnly> calendar, int at, LedgerContext context)
+    {
+        var notHeld = new List<int>();
+        var quality = family == QualityRule.Name;
+        var filingDays = quality ? [] : context.FilingDays(one.Name.Ticker);
+
+        for (var later = at + 1; later < calendar.Count && later <= at + BookSetups.Cap; later++)
+        {
+            if (quality ? !BookSetups.Reshuffles(calendar, later) : !BookSetups.FiledAnew(filingDays, calendar, later))
+            {
+                continue;
+            }
+
+            var card = context.Scorecard(one, calendar[later]);
+
+            if (quality ? !BookSetups.QualityClears(card.Passed, card.Applied) : !BookSetups.ImprovingHolds(card.Passed, card.Applied))
+            {
+                notHeld.Add(later);
+            }
+        }
+
+        return notHeld;
+    }
+
     public static IReadOnlyList<FamilySetups> On(
         string indexCode,
         IReadOnlyList<SweepSeries> series,
@@ -354,6 +716,8 @@ public static class LedgerSetups
             Drifts(indexCode, series, closes, sessions, members, calendar, at, market, context),
             fundamentals,
             Dips(indexCode, series, closes, sessions, members, calendar, at, market, context),
+            Quality(indexCode, series, closes, sessions, members, calendar, at, market, context),
+            Improving(indexCode, series, closes, sessions, members, calendar, at, market, context),
         ];
     }
 
@@ -868,6 +1232,17 @@ public static class LedgerSetups
         {
             Set(column, value);
         }
+
+        // From 21.4 the five readings the operator chose at 21.2, each none where its source holds nothing for the session.
+        Set("relative_strength_high", context.RelativeStrengthHigh(one, closes, indexSeries)[bar]);
+        Set("insider_cluster_buyers", context.ClusterBuyers(one, calendar, at));
+        Set("rating_actions_net", context.RatingActionsNet(ticker, calendar, at));
+        Set("estimate_revision_month", context.EstimateRevision(ticker, day));
+        Set("short_interest_share", context.ShortInterestShare(one, day));
+
+        // From 21.4 the business's state off the SEC's facts as first filed, stored as the night's place for a state, which
+        // the swing filter's version leaving off a deteriorating business reads; none where too few quarters are filed.
+        Set(LedgerReadings.BusinessStateFiled, context.BusinessStateFiled(ticker, day) is { } state ? Core.Quarters.FundamentalState.Place(state) : null);
 
         return readings;
     }

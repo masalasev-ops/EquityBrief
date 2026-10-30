@@ -1,6 +1,7 @@
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Providers;
+using EquityBrief.Core.Quarters;
 
 namespace EquityBrief.Core.Ledger;
 
@@ -120,11 +121,7 @@ public static class FiledFacts
 
     public static BusinessReading Read(IReadOnlyList<FiledFactRow> facts, DateOnly session)
     {
-        var known = facts
-            .Where(fact => fact.Filed < session)
-            .Select(fact => new FiledRevenue(fact.Concept, fact.Start, fact.End, fact.Value, fact.Filed, fact.Form, fact.Accession))
-            .ToArray();
-
+        var known = Known(facts, session);
         var revenue = FirstFiledRevenue.Quarters(known, Revenue);
         var gross = FirstFiledRevenue.Quarters(known, GrossProfit);
         var operating = FirstFiledRevenue.Quarters(known, OperatingIncome);
@@ -145,6 +142,54 @@ public static class FiledFacts
             MarginChange(operating, latest, yearBefore),
             CashOverIncome(known));
     }
+
+    // From 21.4 the business's state off the SEC's facts as first filed before the session, by the rule the night reads
+    // the provider's quarters by, for the swing filter's version leaving off a deteriorating business: over the two
+    // newest filed quarters, each against the same quarter a year earlier, improving where both grew their sales and
+    // widened their operating margin, deteriorating where both shrank their sales and narrowed their margin, steady
+    // otherwise; none where fewer than two quarters hold all four figures, which the version fires on as it fires on a
+    // state the night did not read.
+    // see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
+    public static string? StateOf(IReadOnlyList<FiledFactRow> facts, DateOnly session)
+    {
+        var known = Known(facts, session);
+        var revenue = FirstFiledRevenue.Quarters(known, Revenue);
+        var operating = FirstFiledRevenue.Quarters(known, OperatingIncome);
+
+        if (revenue.Count < QuarterReadings.TrajectoryQuarters)
+        {
+            return null;
+        }
+
+        var quarters = revenue
+            .TakeLast(QuarterReadings.TrajectoryQuarters)
+            .Select(quarter => YearBefore(revenue, quarter) is { } yearBefore
+                ? (Growth: Growth(quarter, yearBefore), Margin: Margin(operating, quarter), Earlier: Margin(operating, yearBefore))
+                : (Growth: (double?)null, Margin: (double?)null, Earlier: (double?)null))
+            .ToArray();
+
+        if (quarters.Any(quarter => quarter.Growth is null || quarter.Margin is null || quarter.Earlier is null))
+        {
+            return null;
+        }
+
+        if (quarters.All(quarter => quarter.Growth > 0 && quarter.Margin > quarter.Earlier))
+        {
+            return FundamentalState.Improving;
+        }
+
+        return quarters.All(quarter => quarter.Growth < 0 && quarter.Margin < quarter.Earlier)
+            ? FundamentalState.Deteriorating
+            : FundamentalState.Steady;
+    }
+
+    // The facts filed before a session, as the revenue rule reads them.
+    static FiledRevenue[] Known(IReadOnlyList<FiledFactRow> facts, DateOnly session) =>
+    [
+        .. facts
+            .Where(fact => fact.Filed < session)
+            .Select(fact => new FiledRevenue(fact.Concept, fact.Start, fact.End, fact.Value, fact.Filed, fact.Form, fact.Accession)),
+    ];
 
     static QuarterRevenue? YearBefore(IReadOnlyList<QuarterRevenue> quarters, QuarterRevenue quarter)
     {

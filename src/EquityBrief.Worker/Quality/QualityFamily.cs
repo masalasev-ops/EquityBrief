@@ -196,7 +196,7 @@ public sealed class QualityFamily : IComponent
 
     // What every rule on an index reads on the night: its members, each one's scorecard, its valuation's place and
     // whether it closed above its 200-session average.
-    sealed record IndexInputs(HashSet<string> Members, IReadOnlyDictionary<string, (int Passed, int Applied)> Scores, IReadOnlyDictionary<string, double?> Places, IReadOnlyDictionary<string, bool> Above);
+    sealed record IndexInputs(HashSet<string> Members, IReadOnlyDictionary<string, (int Passed, int Applied)> Scores, IReadOnlyDictionary<string, double?> Places, IReadOnlyDictionary<string, bool> Above, IReadOnlyDictionary<string, double?[]> Readings);
 
     readonly IClock clock;
     readonly string databaseFile;
@@ -212,7 +212,7 @@ public sealed class QualityFamily : IComponent
     // order they were registered, each at its registration's settings and one whose evaluator moved since named as not
     // kept; and otherwise the provisional rule at the starting setting.
     // see: A quality rule is registered as the family on its index and kept by the family's own step alone
-    public static IReadOnlyList<(string Rule, QualitySettings Settings, string? Fault)> RulesOn(string index, IReadOnlyList<RegisterRow> register, DateTimeOffset standingAt)
+    public static IReadOnlyList<(string Rule, QualitySettings Settings, string? Fault, EquityBrief.Core.Loop.RuleHooks Hooks)> RulesOn(string index, IReadOnlyList<RegisterRow> register, DateTimeOffset standingAt)
     {
         var family = ShadowColumn.StandingAt(register, standingAt)
             .Where(row => CandidateEvaluators.Find(row.Evaluator) is QualityCandidate rule && rule.Index == index)
@@ -220,12 +220,15 @@ public sealed class QualityFamily : IComponent
             .ThenBy(row => row.Id)
             .ToArray();
 
+        // From 21.4 each rule's hooks beside its settings, its conditions on the catalogue's readings and its score, which
+        // keep and order the members its book may hold.
         return family.Length == 0
-            ? [(ProvisionalRule, QualityRule.Starting, null)]
+            ? [(ProvisionalRule, QualityRule.Starting, null, EquityBrief.Core.Loop.RuleHooks.Off)]
             : [.. family.Select(row => (
                 row.Candidate,
                 QualityCandidate.SettingsOf(CandidateEvaluator.Read(row.Parameters)),
-                CandidateEvaluators.Find(row.Evaluator)!.Version == row.EvaluatorVersion ? (string?)null : Moved))];
+                CandidateEvaluators.Find(row.Evaluator)!.Version == row.EvaluatorVersion ? (string?)null : Moved,
+                EquityBrief.Core.Loop.RuleHooks.Of(CandidateEvaluator.Read(row.Parameters))))];
     }
 
     // The step over the three indices, each index's failure named on its own row while the others go on, and a failure
@@ -271,7 +274,7 @@ public sealed class QualityFamily : IComponent
                 {
                     var fault = Cause(failure);
 
-                    foreach (var (rule, settings, _) in rules)
+                    foreach (var (rule, settings, _, _) in rules)
                     {
                         rows += await NotComputedAsync(connection, index, night, fault, rule, settings, cancellation);
                     }
@@ -326,7 +329,7 @@ public sealed class QualityFamily : IComponent
         string index,
         DateOnly night,
         IReadOnlyDictionary<string, SortedDictionary<DateOnly, Daily>> bars,
-        IReadOnlyList<(string Rule, QualitySettings Settings, string? Fault)> rules,
+        IReadOnlyList<(string Rule, QualitySettings Settings, string? Fault, EquityBrief.Core.Loop.RuleHooks Hooks)> rules,
         CancellationToken cancellation)
     {
         var members = new HashSet<string>(StringComparer.Ordinal);
@@ -344,11 +347,20 @@ public sealed class QualityFamily : IComponent
         }
 
         var places = new Dictionary<string, double?>(StringComparer.Ordinal);
+        var catalogue = new Dictionary<string, double?[]>(StringComparer.Ordinal);
         var at = LedgerReadings.IndexOf("value_place");
 
         await foreach (var row in RowsAsync(connection, null, ReadingsOn, [("$index", index), ("$night", Stamp(night))], cancellation))
         {
-            places[row.GetString(0)] = !row.IsDBNull(1) && JsonSerializer.Deserialize<double?[]>(row.GetString(1)) is { } readings && readings.Length > at ? readings[at] : null;
+            var readings = row.IsDBNull(1) ? null : JsonSerializer.Deserialize<double?[]>(row.GetString(1));
+
+            places[row.GetString(0)] = readings is not null && readings.Length > at ? readings[at] : null;
+
+            // From 21.4 the whole row, which a rule's hooks read their conditions and score off.
+            if (readings is not null)
+            {
+                catalogue[row.GetString(0)] = readings;
+            }
         }
 
         var above = new Dictionary<string, bool>(StringComparer.Ordinal);
@@ -364,11 +376,11 @@ public sealed class QualityFamily : IComponent
             }
         }
 
-        var inputs = new IndexInputs(members, scores, places, above);
+        var inputs = new IndexInputs(members, scores, places, above, catalogue);
         QualityIndexOutcome? first = null;
         var rows = 0;
 
-        foreach (var (rule, settings, moved) in rules)
+        foreach (var (rule, settings, moved, hooks) in rules)
         {
             var fault = moved;
 
@@ -376,7 +388,7 @@ public sealed class QualityFamily : IComponent
             {
                 try
                 {
-                    var (outcome, written) = await RuleNightAsync(connection, index, night, bars, inputs, rule, settings, cancellation);
+                    var (outcome, written) = await RuleNightAsync(connection, index, night, bars, inputs, rule, settings, hooks, cancellation);
 
                     first ??= outcome with { Rules = rules.Count };
                     rows += written;
@@ -406,6 +418,7 @@ public sealed class QualityFamily : IComponent
         IndexInputs inputs,
         string rule,
         QualitySettings settings,
+        EquityBrief.Core.Loop.RuleHooks hooks,
         CancellationToken cancellation)
     {
         var (members, scores, places, above) = (inputs.Members, inputs.Scores, inputs.Places, inputs.Above);
@@ -450,7 +463,9 @@ public sealed class QualityFamily : IComponent
             answered.Add(new Answered(ticker, passed, applied, place, QualityRule.Answer(passed, applied, place, above.TryGetValue(ticker, out var up) ? up : null, settings), carried));
         }
 
-        var ranked = QualityRule.Ranked(answered.Where(one => one.Answer.Passed), one => (one.Passed, one.Applied, one.Place, one.Ticker));
+        // From 21.4 the members the rule's hooks keep, in the hooks' order where they state a score and the family's own
+        // where they state none, read off the catalogue's readings the ledger stored for the night.
+        var ranked = hooks.Order(QualityRule.Ranked(answered.Where(one => one.Answer.Passed), one => (one.Passed, one.Applied, one.Place, one.Ticker)), one => inputs.Readings.GetValueOrDefault(one.Ticker));
         var rank = ranked.Select((one, place) => (one.Ticker, Place: place + 1)).ToDictionary(pair => pair.Ticker, pair => pair.Place, StringComparer.Ordinal);
         var tonight = answered.ToDictionary(one => one.Ticker, StringComparer.Ordinal);
 

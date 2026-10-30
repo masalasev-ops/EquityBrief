@@ -507,24 +507,33 @@ public static class Nightly
                 var family = FamilyShadow.For(register, standingAt);
                 var rules = FamilyRuleShadow.For(register, standingAt);
                 var estimates = new EstimatesFetcher(askForTheFirstName ? companies : null, () => feeds.WeightedCalls, clock, store.DatabaseFile);
-                var outcome = await new SwingFilter(clock, store.DatabaseFile)
-                    .RunAsync(indexCode, runId, family, night.Token, estimates);
-                await estimates.RecordAsync(runId, night.Token);
-                var recorded = await NightClose.RecordRuleAsync(store.DatabaseFile, night.Token);
+
                 // The catalogue's readings of the night's members, read once and only where a stored setting's hooks or a
-                // standing rule's read them.
-                // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+                // standing rule's read them, the swing filter's version reading each member's business state off the
+                // SEC's facts through them among those rules.
+                // see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
+                // see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
                 Func<string, IReadOnlyList<double?>?>? readingsRead = null;
 
                 async Task<Func<string, IReadOnlyList<double?>?>> ReadingsTonightAsync(CancellationToken token) =>
                     readingsRead ??= await new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).ReadingsTonightAsync(indexCode, token);
 
+                async Task<Func<string, string?>> FiledStatesTonightAsync(CancellationToken token) =>
+                    EquityBrief.Worker.Ledger.SetupLedger.FiledStatesOf(await ReadingsTonightAsync(token));
+
+                var outcome = await new SwingFilter(clock, store.DatabaseFile)
+                    .RunAsync(indexCode, runId, family, night.Token, estimates, FiledStatesTonightAsync);
+                await estimates.RecordAsync(runId, night.Token);
+                var recorded = await NightClose.RecordRuleAsync(store.DatabaseFile, night.Token);
                 var evaluated = await new FamilyEvaluator(clock, store.DatabaseFile).RunAsync(runId, rules, night.Token, ReadingsTonightAsync);
                 var listed = await new FamilyLister(clock, store.DatabaseFile).RunAsync(runId, night.Token, ReadingsTonightAsync);
                 var hookReadings = FamilyRecorder.HooksReadReadings(rules.Standing)
                     ? await ReadingsTonightAsync(night.Token)
                     : null;
-                var kept = await new FamilyRecorder(clock, store.DatabaseFile).RunAsync(indexCode, runId, rules.Standing, night.Token, hookReadings);
+                var hookSetups = FamilyRecorder.HooksRank(rules.Standing)
+                    ? await new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).SetupsTonightAsync(indexCode, night.Token)
+                    : null;
+                var kept = await new FamilyRecorder(clock, store.DatabaseFile).RunAsync(indexCode, runId, rules.Standing, night.Token, hookReadings, hookSetups);
                 var held = await new HeavyweightBook(clock, store.DatabaseFile).RunAsync(indexCode, runId, night.Token, HeavyweightBook.Standing(register, standingAt), HeavyweightBook.RetiredBooks(register, standingAt));
 
                 // The S&P 400's and 600's provisional rules, read after the S&P 500's list is drawn so each index's list
@@ -537,13 +546,20 @@ public static class Nightly
                     night.Token,
                     register,
                     standingAt,
-                    (index, token) => new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).ReadingsTonightAsync(index, token));
+                    (index, token) => new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).ReadingsTonightAsync(index, token),
+                    (index, token) => new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).SetupsTonightAsync(index, token));
 
                 // The short-term dip on every index, after every other family has drawn its list, so it gives way to each
                 // list and open trade, and before the cards, which read its picks. A failure in an index's part is named on
                 // the step's row, and the step goes on.
                 // see: The dip lists last among the swing families on every index and gives way to every other family's list and open trades
-                var dips = await new EquityBrief.Worker.Dips.DipFamily(clock, store.DatabaseFile).RunAsync(runId, night.Token, registerAt ?? nightStartedAt);
+                var dips = await new EquityBrief.Worker.Dips.DipFamily(clock, store.DatabaseFile).RunAsync(
+                    runId,
+                    night.Token,
+                    registerAt ?? nightStartedAt,
+                    (index, token) => new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).ReadingsTonightAsync(index, token),
+                    (index, token) => new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).SetupsTonightAsync(index, token),
+                    (index, family, token) => EquityBrief.Worker.Loop.StoredRidge.NewestAsync(store.DatabaseFile, index, family, token));
 
                 // A card for each stock every index's families listed and each its books bought, read from the rows the
                 // stages above stored. A failure in an index's cards is named on their own row, and the step goes on.

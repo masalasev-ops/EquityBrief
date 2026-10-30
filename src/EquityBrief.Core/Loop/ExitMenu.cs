@@ -4,7 +4,9 @@ namespace EquityBrief.Core.Loop;
 
 // The kinds of exit the menu holds: the stop raised to the buy once a close reaches a number of risks, a trail
 // following the highest close once a close reaches a number of risks, a fixed target, a time exit for a trade that
-// has not moved, and half the trade sold at the target with the rest trailed.
+// has not moved, half the trade sold at the target with the rest trailed, and from 21.4 a time stop selling at the
+// close a number of sessions in whatever the trade stands at, and half the trade sold once a close reaches a number
+// of risks with the stop raised to the buy on the rest.
 public enum ExitKind
 {
     BreakEven,
@@ -12,11 +14,13 @@ public enum ExitKind
     Target,
     Time,
     HalfTarget,
+    TimeStop,
+    HalfBreakEven,
 }
 
-// One exit of the menu: its number, its kind and its figures, and its words. K is risks for a break-even and a
-// target and typical moves for a trail; J is the risks a trail waits for; N the sessions a time exit reads at and X
-// the risks a trade must be up by then.
+// One exit of the menu: its number, its kind and its figures, and its words. K is risks for a break-even, a target
+// and the half sold at a number of risks, and typical moves for a trail; J is the risks a trail waits for; N the
+// sessions a time exit or a time stop reads at and X the risks a trade must be up by then.
 public sealed record ExitChoice(int Number, ExitKind Kind, double K, double J, int N, double X)
 {
     public string Words => Kind switch
@@ -29,6 +33,8 @@ public sealed record ExitChoice(int Number, ExitKind Kind, double K, double J, i
         ExitKind.Time => X > 0
             ? FormattableString.Invariant($"sold at the close {N} sessions in unless it is {X:0.##} risks up")
             : FormattableString.Invariant($"sold at the close {N} sessions in unless it is above the buy"),
+        ExitKind.TimeStop => FormattableString.Invariant($"sold at the close {N} sessions in, whatever the trade stands at"),
+        ExitKind.HalfBreakEven => FormattableString.Invariant($"half sold once a close is {K:0.##} risks up, the stop raised to the buy on the rest"),
         _ => FormattableString.Invariant($"half sold at the target and the rest trailed {K:0.##} typical moves under the highest close"),
     };
 }
@@ -37,7 +43,7 @@ public sealed record ExitChoice(int Number, ExitKind Kind, double K, double J, i
 // families' own walks are: each session's close read from the session after the buy, a close under the stop selling
 // at that close, and the cap's close ending a trade nothing else ended. Each exit changes only what it names and keeps
 // the rest of the plan: its stop, its cap, and its target or its trail.
-// see: Every engine's settings hooks land together and all default off, so the families' pins move once
+// see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
 public static class ExitMenu
 {
     public static IReadOnlyList<double> BreakEvenRisks { get; } = [0.5, 1, 1.5, 2];
@@ -56,6 +62,12 @@ public static class ExitMenu
 
     // A trailing plan names no target, so its half is sold at this many risks.
     public const double HalfTargetWhereTheTrailHasNone = 2;
+
+    // From 21.4 the time stop's sessions, each a sale at that session's close whatever the trade stands at, and the
+    // risks a close must reach for half the trade to be sold with the stop raised to the buy on the rest.
+    public static IReadOnlyList<int> TimeStopSessions { get; } = [5, 10, 20];
+
+    public const double HalfBreakEvenRisk = 1;
 
     // The swing families' menu, numbered from 1; 0 is a rule's own exit.
     public static IReadOnlyList<ExitChoice> Swing { get; } = Build();
@@ -96,6 +108,13 @@ public static class ExitMenu
         {
             Add(ExitKind.HalfTarget, k);
         }
+
+        foreach (var n in TimeStopSessions)
+        {
+            Add(ExitKind.TimeStop, n: n);
+        }
+
+        Add(ExitKind.HalfBreakEven, HalfBreakEvenRisk);
 
         return menu;
     }
@@ -165,6 +184,8 @@ public static class ExitMenu
             ExitKind.Trail => Walk(closes, from, anchor with { Target = null, Trail = choice.K * move }, move, trailFrom: anchor.Entry + (choice.J * risk)),
             ExitKind.Target => Walk(closes, from, anchor with { Target = anchor.Entry + (choice.K * risk), Trail = null }, move),
             ExitKind.Time => Walk(closes, from, anchor, move, timeAt: choice.N, timeFloor: anchor.Entry + (choice.X * risk)),
+            ExitKind.TimeStop => Walk(closes, from, anchor, move, timeAt: choice.N, timeFloor: double.PositiveInfinity),
+            ExitKind.HalfBreakEven => HalfAtRisk(closes, from, anchor, anchor.Entry + (choice.K * risk)),
             _ => Half(closes, from, anchor, choice.K * move),
         };
     }
@@ -296,6 +317,65 @@ public static class ExitMenu
             if (half is not null)
             {
                 floor = Math.Max(floor, highest - trail);
+            }
+        }
+
+        return new SetupOutcome(null, anchor.Cap, SetupEnds.Open);
+    }
+
+    // From 21.4 half sold at the first close at or over a level of risks, the stop raised to the buy on the rest from
+    // that session on, never lowered, and the rest sold as the plan sells it: at its target where it names one, under
+    // its trail where it trails, or at the cap's close. Before the level is reached the plan's own exit holds, a close
+    // under the stop selling the whole; the whole's result is the mean of the two halves', each in risks.
+    static SetupOutcome HalfAtRisk(ReadOnlySpan<double> closes, int from, SetupAnchor anchor, double level)
+    {
+        var (entry, risk) = (anchor.Entry, anchor.Risk);
+        var floor = anchor.Stop;
+        double? half = null;
+
+        if (anchor.Trails ? !(anchor.Trail > 0) : !(anchor.Target > entry))
+        {
+            return new SetupOutcome(null, 0, SetupEnds.None);
+        }
+
+        for (var session = 1; session <= anchor.Cap; session++)
+        {
+            var at = from + session;
+
+            if (at >= closes.Length)
+            {
+                return new SetupOutcome(null, Math.Max(0, closes.Length - 1 - from), SetupEnds.Open);
+            }
+
+            var close = closes[at];
+            var result = (close - entry) / risk;
+
+            double Whole() => half is { } sold ? (sold + result) / 2 : result;
+
+            if (close < floor)
+            {
+                return new SetupOutcome(Whole(), session, anchor.Trails && floor > anchor.Stop ? SetupEnds.Trail : SetupEnds.Stop);
+            }
+
+            if (!anchor.Trails && close >= anchor.Target!.Value)
+            {
+                return new SetupOutcome(Whole(), session, SetupEnds.Target);
+            }
+
+            if (half is null && close >= level)
+            {
+                half = result;
+                floor = Math.Max(floor, entry);
+            }
+
+            if (session == anchor.Cap)
+            {
+                return new SetupOutcome(Whole(), session, SetupEnds.Cap);
+            }
+
+            if (anchor.Trails)
+            {
+                floor = Math.Max(floor, close - anchor.Trail!.Value);
             }
         }
 

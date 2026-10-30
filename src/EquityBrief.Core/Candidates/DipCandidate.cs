@@ -15,17 +15,54 @@ public sealed class DipCandidate(string index) : OwnStepCandidate(index)
 {
     public const string DropParameter = "drop";
     public const string TrendParameter = "trend";
-    public const string ExitParameter = "exit";
     public const string LimitParameter = "limit";
     public const string StopParameter = "stop";
     public const string MarketParameter = "market";
     public const string VolumeParameter = "volume";
 
-    public override string Version => "e8c0399ca425";
+    // The level a trade is sold at, named sell from 21.4 so the dip's rule can state the hooks' exit beside its own
+    // dials; a registration from before that names it exit, and is read under either name.
+    public const string SellParameter = "sell";
+
+    public const string SellParameterBefore = "exit";
+
+    public override string Version => "96ade2efcc10";
 
     public override string SetupFamily => DipRule.Name;
 
-    public override IReadOnlyList<string> Parameters { get; } = [DropParameter, TrendParameter, ExitParameter, LimitParameter, StopParameter, MarketParameter, VolumeParameter];
+    public override IReadOnlyList<string> Parameters { get; } = [DropParameter, TrendParameter, SellParameter, LimitParameter, StopParameter, MarketParameter, VolumeParameter];
+
+    // The sell dial a registration states, under its name or the name it carried before 21.4.
+    public static double SellOf(IReadOnlyDictionary<string, double> parameters) =>
+        parameters.TryGetValue(SellParameter, out var sell) ? sell : parameters[SellParameterBefore];
+
+    // The hooks a registration states beside the dip's own dials, read as a swing rule's are: a registration from
+    // before 21.4, which names no sell dial, names the dial exit, so its exit is the dial and no hook.
+    public static Loop.RuleHooks HooksOf(IReadOnlyDictionary<string, double> parameters)
+    {
+        var dials = parameters.ContainsKey(SellParameter) ? Dials : [.. Dials, SellParameterBefore];
+
+        return Loop.RuleHooks.Of(parameters.Where(pair => !dials.Contains(pair.Key, StringComparer.Ordinal)).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal));
+    }
+
+    // A setting stated in the form from before 21.4, its sell dial named exit and no sell dial beside it, read with the
+    // dial under its name, so a remedy or a form written then registers the same rule; a setting naming both leaves its
+    // exit to the hooks.
+    public static IReadOnlyDictionary<string, double> Renamed(IReadOnlyDictionary<string, double> parameters)
+    {
+        if (parameters.ContainsKey(SellParameter) || !parameters.ContainsKey(SellParameterBefore))
+        {
+            return parameters;
+        }
+
+        var renamed = parameters.Where(pair => pair.Key != SellParameterBefore).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+
+        renamed[SellParameter] = parameters[SellParameterBefore];
+
+        return renamed;
+    }
+
+    static readonly string[] Dials = [DropParameter, TrendParameter, SellParameter, LimitParameter, StopParameter, MarketParameter, VolumeParameter];
 
     // Every file the dip's step runs through keeping a rule's trades, its rule first, as the compiled code reaches them:
     // the step itself and the index night's reader it reads each member's year through, the other families' open trades'
@@ -51,6 +88,7 @@ public sealed class DipCandidate(string index) : OwnStepCandidate(index)
         "src/EquityBrief.Core/Filter/SwingReadings.cs",
         "src/EquityBrief.Core/Indicators/IndicatorSeries.cs",
         "src/EquityBrief.Core/Ladders/TrendSeries.cs",
+        "src/EquityBrief.Core/Ledger/LedgerReadings.cs",
         "src/EquityBrief.Core/Ledger/TradeFills.cs",
         "src/EquityBrief.Core/Prices/PriceForm.cs",
         "src/EquityBrief.Core/Prices/Statistic.cs",
@@ -72,6 +110,8 @@ public sealed class DipCandidate(string index) : OwnStepCandidate(index)
         "src/EquityBrief.Worker/Sweep/SweepColumns.cs",
         "src/EquityBrief.Worker/Sweep/SweepHistory.cs",
         "src/EquityBrief.Worker/Sweep/SweepIdeas.cs",
+        .. EquityBrief.Core.Loop.RuleHooks.Sources,
+        "src/EquityBrief.Core/Loop/LooseSetup.cs",
     ];
 
     // The setting a registration's parameters state on the evaluator's index, its market setting the level its place
@@ -79,7 +119,7 @@ public sealed class DipCandidate(string index) : OwnStepCandidate(index)
     public DipSetting SettingOf(IReadOnlyDictionary<string, double> parameters) => DipRule.SettingOf(
         parameters[DropParameter],
         parameters[TrendParameter],
-        (int)parameters[ExitParameter],
+        (int)SellOf(parameters),
         (int)parameters[LimitParameter],
         parameters[StopParameter],
         DipRule.MarketLevels(Index)[(int)parameters[MarketParameter]].Key,

@@ -42,6 +42,13 @@ public sealed class LoopReadings
     public IReadOnlyList<double?> Of(int name, int bar, int session) =>
         held.GetOrAdd((name, session), _ => Masked(LedgerSetups.Readings(read.Index, name, read.Series[name], closes[name], bar, read.Sessions[session], read.Members, read.Calendar, session, market, context, read.Series), through));
 
+    // From 21.4 a member's business state off the SEC's facts as first filed before a session, through the catalogue's
+    // own function over the context the readings are read from, for the S&P 500 pullback version leaving off a
+    // deteriorating business, which the per-rule test walks at its own condition: a registered rule's condition is the
+    // rule's own and not a search's reading, so it is read whole and never as none under the mask the engines read by.
+    // see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
+    public string? BusinessStateFiled(int name, int session) => context.BusinessStateFiled(read.Series[name].Name.Ticker, read.Calendar[session]);
+
     // The readings a run through a day reads, each the loop does not read yet left none.
     public static double?[] Masked(double?[] readings, DateOnly through)
     {

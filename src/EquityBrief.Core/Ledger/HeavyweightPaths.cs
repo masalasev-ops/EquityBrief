@@ -13,23 +13,25 @@ public static class HeavyweightPaths
     // The sessions a heavyweights' setup is given, a year's.
     public const int Cap = 252;
 
-    // `notBought` is every later rebalance, by its place in the closes, at which the rule did not buy the stock.
-    public static SetupOutcome Replay(ReadOnlySpan<double> closes, int from, IReadOnlyList<int> notBought, int cap = Cap)
+    // `notBought` is every later rebalance, by its place in the closes, at which the rule did not buy the stock; from 21.4 a
+    // book family's setup is replayed the same way, `notBought` the later sessions its gate no longer holds it on and
+    // `sold` the end its sale is stored under.
+    public static SetupOutcome Replay(ReadOnlySpan<double> closes, int from, IReadOnlyList<int> notBought, int cap = Cap, string sold = SetupEnds.Rebalance)
     {
         if (from < 0 || from >= closes.Length || !(closes[from] > 0))
         {
             return new SetupOutcome(null, 0, SetupEnds.None);
         }
 
-        var sold = notBought.Where(at => at > from && at < from + cap).DefaultIfEmpty(int.MaxValue).Min();
-        var end = Math.Min(sold, from + cap);
+        var soldAt = notBought.Where(at => at > from && at < from + cap).DefaultIfEmpty(int.MaxValue).Min();
+        var end = Math.Min(soldAt, from + cap);
 
         if (end >= closes.Length)
         {
             return new SetupOutcome(null, closes.Length - 1 - from, SetupEnds.Open);
         }
 
-        return new SetupOutcome((closes[end] / closes[from]) - 1, end - from, end == sold ? SetupEnds.Rebalance : SetupEnds.Cap);
+        return new SetupOutcome((closes[end] / closes[from]) - 1, end - from, end == soldAt ? sold : SetupEnds.Cap);
     }
 
     // The size cut's return over a path's sessions: each member's closes with the place of the buy's session in them and

@@ -376,19 +376,34 @@ public sealed class FamilyEvaluator : IComponent
     public static (IReadOnlyList<FamilyResult> Results, IReadOnlyDictionary<(string Family, string Ticker), int> Places) Hooked(
         IReadOnlyList<FamilyResult> results,
         IReadOnlyDictionary<string, RuleHooks> hooks,
-        Func<string, IReadOnlyList<double?>?>? readings)
+        Func<string, IReadOnlyList<double?>?>? readings,
+        Func<string, double?>? expected = null)
     {
         var places = new Dictionary<(string Family, string Ticker), int>();
         var leftOff = new HashSet<(string Family, string Ticker)>();
+        var exposed = new Dictionary<(string Family, string Ticker), Gate>();
 
         foreach (var family in SetupFamilies.Evaluated)
         {
-            var ranked = FamilyRule.Ranked(results.Where(result => result.Family == family.Name));
-            var kept = (hooks.GetValueOrDefault(family.Name) ?? RuleHooks.Off).Order(ranked, result => readings?.Invoke(result.Ticker));
+            // From 21.4 a setting stating the exposure reads the family's members with the market check off and puts the
+            // exposure's answer in the check's place on each member it keeps.
+            var familyHooks = hooks.GetValueOrDefault(family.Name) ?? RuleHooks.Off;
+            var ranked = FamilyRule.Ranked(results.Where(result => result.Family == family.Name), marketOff: familyHooks.Exposure is not null);
+            var kept = familyHooks.Order(ranked, result => readings?.Invoke(result.Ticker), result => expected?.Invoke(result.Ticker));
 
             for (var at = 0; at < kept.Count; at++)
             {
                 places[(family.Name, kept[at].Ticker)] = at + 1;
+            }
+
+            if (familyHooks.Exposure is { } floor)
+            {
+                var gate = IndexNightRead.ExposureGate(familyHooks, floor, ranked.Select(result => readings?.Invoke(result.Ticker)).FirstOrDefault(night => night is not null));
+
+                foreach (var result in kept)
+                {
+                    exposed[(family.Name, result.Ticker)] = gate;
+                }
             }
 
             foreach (var result in ranked.Where(result => !places.ContainsKey((family.Name, result.Ticker))))
@@ -398,7 +413,12 @@ public sealed class FamilyEvaluator : IComponent
         }
 
         return (
-            [.. results.Select(result => leftOff.Contains((result.Family, result.Ticker)) ? result with { Exclusions = [.. result.Exclusions, IndexNightRead.NotByItsHooks] } : result)],
+            [
+                .. results.Select(result =>
+                    exposed.TryGetValue((result.Family, result.Ticker), out var gate) ? result with { Gates = [.. result.Gates.Select(one => one.Name == FamilyRule.Market ? gate : one)] }
+                    : leftOff.Contains((result.Family, result.Ticker)) ? result with { Exclusions = [.. result.Exclusions, IndexNightRead.NotByItsHooks] }
+                    : result),
+            ],
             places);
     }
 

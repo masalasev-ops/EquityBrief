@@ -6,7 +6,9 @@ using EquityBrief.Core.Families;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Readings;
 using EquityBrief.Core.Releases;
+using EquityBrief.Worker.Improving;
 using EquityBrief.Worker.Indices;
+using EquityBrief.Worker.Quality;
 using EquityBrief.Worker.Sweep;
 
 namespace EquityBrief.Worker.Ledger;
@@ -16,6 +18,14 @@ namespace EquityBrief.Worker.Ledger;
 public sealed record LiveRulesRead(IReadOnlyDictionary<string, IndexRule> Read, IReadOnlyList<string> Unread)
 {
     public static LiveRulesRead None { get; } = new(new Dictionary<string, IndexRule>(StringComparer.Ordinal), []);
+
+    // From 21.4 the two book families' live rules on the index as the register stood, by name and setting, the
+    // provisional rule at its starting setting where none stands registered; each book setup's live pass is read under
+    // the setting and its pick off the rule's own holdings.
+    // see: A book family's setup is each member a reshuffle or a filing leaves at the ledger's gate, held while it clears the hold and never past a year against an equal-weighted hold of the index
+    public (string Rule, QualitySettings Settings) Quality { get; init; } = (QualityFamily.ProvisionalRule, QualityRule.Starting);
+
+    public (string Rule, ImprovingSweepSetting Setting) Improving { get; init; } = (ImprovingFamily.ProvisionalRule, ImprovingGrid.Starting);
 
     // The words a night's row and a build's run carry for the rules read as the register stood at an instant, none where
     // no live rule stands.
@@ -65,9 +75,13 @@ public static class LedgerLiveRules
     // see: A night run again for the newest session reads the register as it stands when it runs where the operator says so, and its page reads the rules that run read
     public static LiveRulesRead Of(IReadOnlyList<RegisterRow> register, DateTimeOffset at, string index)
     {
+        var quality = QualityFamily.RulesOn(index, register, at)[0];
+        var improving = ImprovingFamily.RulesOn(index, register, at)[0];
+        var books = LiveRulesRead.None with { Quality = (quality.Rule, quality.Settings), Improving = (improving.Rule, improving.Setting) };
+
         if (index == IndexFamilies.LargeIndex)
         {
-            return LiveRulesRead.None;
+            return books;
         }
 
         var read = new Dictionary<string, IndexRule>(StringComparer.Ordinal);
@@ -91,7 +105,7 @@ public static class LedgerLiveRules
             read[rule.Family] = rule;
         }
 
-        return new LiveRulesRead(read, unread);
+        return books with { Read = read, Unread = unread };
     }
 
     // The parts of a rule the ledger reads on no session, each named, none where it reads every part: the industry's

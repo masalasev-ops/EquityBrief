@@ -96,13 +96,15 @@ public partial class NightlyRun
         var outcome = await cards.RunAsync("night-rule-cards", register, new DateTimeOffset(2026, 10, 7, 21, 0, 0, TimeSpan.Zero));
 
         Assert.Equal(new DateOnly(2026, 10, 7), outcome.Session);
-        Assert.Equal([("GSPC", 2, 1, 0, false), ("MID", 5, 0, 0, false), ("SML", 0, 0, 0, false)], outcome.Indices.Select(index => (index.Index, index.Rules, index.Picks, index.Forming, index.Fault is not null)));
+        // From 21.4 the S&P 400's rules' nights are its three families' and its heavyweights', the fundamentals-first family
+        // computed no longer.
+        Assert.Equal([("GSPC", 2, 1, 0, false), ("MID", 4, 0, 0, false), ("SML", 0, 0, 0, false)], outcome.Indices.Select(index => (index.Index, index.Rules, index.Picks, index.Forming, index.Fault is not null)));
 
         // The live filter's row counts the page's list and its funnel the shadow's gates, each funnel with the three members
-        // the night read for the rule, which reached its first gate; the variant's its own pick; and
-        // from 17.8 the S&P 400's fundamentals-first family, which listed nothing.
+        // the night read for the rule, which reached its first gate; the variant's its own pick; and from 21.4 no row for
+        // the fundamentals-first family, which the night computes no longer.
         Assert.Equal(
-            [$"GSPC|pullback|{LiveFilter}|1|1|0", $"GSPC|pullback|{FilterVariant}|1|1|0", "MID|breakout|provisional|1|1|0", "MID|drift|provisional|1|0|1", "MID|fundamentals|provisional|1|0|1", "MID|heavyweight|provisional|1|0|", "MID|pullback|provisional|1|0|1"],
+            [$"GSPC|pullback|{LiveFilter}|1|1|0", $"GSPC|pullback|{FilterVariant}|1|1|0", "MID|breakout|provisional|1|1|0", "MID|drift|provisional|1|0|1", "MID|heavyweight|provisional|1|0|", "MID|pullback|provisional|1|0|1"],
             Texts(store, $"SELECT index_code || '|' || family || '|' || rule || '|' || evaluated || '|' || listed || '|' || COALESCE(stretch, '') FROM rule_night WHERE session_date = '{RuleNight}' ORDER BY index_code, family, rule;"));
         Assert.Equal(
             RuleRows.GatesJson([("market", 3), ("trend and strength", 3), ("setup", 1), ("trigger", 1), ("trade", 1)], 3),
@@ -128,16 +130,18 @@ public partial class NightlyRun
         var again = await cards.RunAsync("night-rule-cards-again", register, new DateTimeOffset(2026, 10, 7, 21, 0, 0, TimeSpan.Zero));
 
         Assert.Equal(outcome.Indices, again.Indices);
-        Assert.Equal(["607"], Texts(store, "SELECT COUNT(*) FROM rule_night;"));
+        // The 601 history rows, the night's own among them replaced by the night, and the night's six rows, the
+        // fundamentals-first family's no longer among them from 21.4.
+        Assert.Equal(["606"], Texts(store, "SELECT COUNT(*) FROM rule_night;"));
         Assert.Equal(["2"], Texts(store, "SELECT COUNT(*) FROM rule_pick;"));
         Assert.Equal([RuleCards.Ok, RuleCards.Ok], Texts(store, $"SELECT outcome FROM run_log WHERE stage = '{RuleCards.Stage}' ORDER BY rowid;"));
-        Assert.StartsWith("2 rule(s), 1 pick(s) of their own and 0 forming on the S&P 500; 5 rule(s), 0 pick(s) of their own and 0 forming on the S&P 400; 0 rule(s)", Texts(store, $"SELECT detail FROM run_log WHERE stage = '{RuleCards.Stage}' ORDER BY rowid;").First(), StringComparison.Ordinal);
+        Assert.StartsWith("2 rule(s), 1 pick(s) of their own and 0 forming on the S&P 500; 4 rule(s), 0 pick(s) of their own and 0 forming on the S&P 400; 0 rule(s)", Texts(store, $"SELECT detail FROM run_log WHERE stage = '{RuleCards.Stage}' ORDER BY rowid;").First(), StringComparison.Ordinal);
 
         // The night's own row stands in the replay's place on its session, listing M1 with its funnel; and the history
         // replayed again over the night's session writes the 600 before it and leaves the night's own row standing.
         Assert.Equal(["night|1|1"], Texts(store, $"SELECT source || '|' || listed || '|' || (gates IS NOT NULL) FROM rule_night WHERE session_date = '{RuleNight}' AND index_code = 'MID' AND family = 'breakout';"));
         Assert.Equal(600, await cards.WriteHistoryAsync("MID", "breakout", RuleRows.ProvisionalRule, replayed));
         Assert.Equal(["night|1|1"], Texts(store, $"SELECT source || '|' || listed || '|' || (gates IS NOT NULL) FROM rule_night WHERE session_date = '{RuleNight}' AND index_code = 'MID' AND family = 'breakout';"));
-        Assert.Equal(["607"], Texts(store, "SELECT COUNT(*) FROM rule_night;"));
+        Assert.Equal(["606"], Texts(store, "SELECT COUNT(*) FROM rule_night;"));
     }
 }

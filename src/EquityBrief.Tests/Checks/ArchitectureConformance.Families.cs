@@ -399,9 +399,10 @@ public partial class ArchitectureConformance
         // Tonight and its step in section 14, and 1444 from 22.10, section 17's grid of its history test, and 1454 from
         // 22.13, the Fundamentals family's catalogue and matrix rows, its three stores, its step in section 14, its card on
         // Tonight, section 17's settings and section 18's two, and 1455 from 22.14, section 17's grid of its history test,
-        // and 1457 from 21.3, the score audit's catalogue and matrix rows.
+        // and 1457 from 21.3, the score audit's catalogue and matrix rows, and 1459 from 21.4, section 17's exposure and
+        // ranking rows, and 1460 from 21.4's catalogue part, section 17's row for the readings the operator chose.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1457),
+            (789, 853, 6, 4, 855, 876, 1460),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

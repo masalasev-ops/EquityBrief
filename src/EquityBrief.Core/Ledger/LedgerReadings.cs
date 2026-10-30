@@ -17,7 +17,7 @@ public static class LedgerReadings
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "a47e1ae9a20e";
+    public const string Version = "d2ecd6139b90";
 
     // The reference high the pullback's readings are taken at, the live design's twenty sessions.
     public const int ReferenceHighSessions = 20;
@@ -151,7 +151,23 @@ public static class LedgerReadings
         new("share_fall", "one less the newest share count the covers state over the one standing a year before it, brought across each split between them, higher where the shares fell"),
         new("turnover_change", "the four newest quarters' sales over the total assets at their start less the same a year before"),
         new("gross_margin_year_change", "the four newest quarters' gross profit over their sales less the same a year before"),
+
+        // From 21.4 the five readings the operator chose at 21.2, appended so every reading before them keeps its place,
+        // each none where its source holds nothing for the session, so a store filled later fills them with the catalogue
+        // standing where it is; the loop reads by place, so it reads them from the same run as the scorecard's.
+        new("relative_strength_high", "the close over the index's own series' close on the session, over the highest such ratio of the 252 sessions to it, 1 at a new high; none under 252 sessions or where the series holds no close by one of their days"),
+        new("insider_cluster_buyers", "the distinct insiders buying in the open market over the 21 sessions to the session, from the Form 4 filings filed before it; none where the store's insider history does not hold those days"),
+        new("rating_actions_net", "Yahoo's rating upgrades less downgrades dated over the 21 sessions before the session, from the stock's newest stored answer; none where the store holds no answer or the session is after the answer's ask"),
+        new("estimate_revision_month", "the current fiscal year's consensus earnings a share over its figure 30 days before, less 1, as the newest quarters fetch on or before the session states them; none before the first fetch or where either is missing"),
+        new("short_interest_share", "the shares short FINRA last reported before the session over the newest share count the filings' covers state; none while no store holds the reports"),
+        // From 21.4 the business's state off the SEC's facts as first filed, which the swing filter's version leaving off a
+        // deteriorating business reads in the provider's quarters' place, as the place the night orders its list by.
+        // see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
+        new(BusinessStateFiled, "the business's state off the SEC's facts as first filed before the session, as the night's place for a state: 0 improving, where both of the two newest filed quarters grew their sales on the same quarter a year earlier and widened their operating margin, 3 deteriorating, where both shrank and narrowed, 1 steady otherwise; none where fewer than two quarters hold the four figures"),
     ];
+
+    // The column of the business's state off the SEC's facts, which the swing filter's stage is handed the night's read of.
+    public const string BusinessStateFiled = "business_state_filed";
 
     // The first of the scorecard's readings, and the run of the monthly loop after which it reads them: the run of
     // 2026-11-07 reads none of them, as the operator ruled.
@@ -171,6 +187,19 @@ public static class LedgerReadings
     // The sessions the VIX's median is read over, and the sessions a fund's average reads.
     public const int VixMedianSessions = 252;
     public const int FundAverageSessions = 200;
+
+    // From 21.4 the windows of the readings the operator chose at 21.2: the sessions the relative strength's high is read
+    // over, the sessions an insider cluster and the rating actions are counted over, and the days a revision reads back.
+    public const int RelativeStrengthSessions = 252;
+    public const int ClusterSessions = 21;
+    public const int RatingActionSessions = 21;
+    public const int RevisionDays = 30;
+
+    // From 21.4 the places of the index's breadth and of the VIX's close over its median, the two switches a rule's
+    // exposure hook reads off the night's readings, named here so the hooks' own source names no column of the catalogue.
+    public static int BreadthPlace { get; } = IndexOf("breadth");
+
+    public static int VixOverMedianPlace { get; } = IndexOf("vix_over_median");
 
     public static int Count => All.Count;
 

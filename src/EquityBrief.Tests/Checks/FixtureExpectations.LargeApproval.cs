@@ -306,6 +306,36 @@ public partial class FixtureExpectations
         var exit = RuleHooks.Of(new Dictionary<string, double>(StringComparer.Ordinal) { [RuleHooks.ExitParameter] = 14 });
 
         Assert.Equal(results, FamilyEvaluator.Hooked(results, new Dictionary<string, RuleHooks>(StringComparer.Ordinal) { [BreakoutRule.Name] = exit }, null).Results);
+
+        // From 21.4 a setting stating the exposure reads the family with the market check off: three breakouts the check
+        // closed, BBB failing its new high as well, and a drift stating no exposure. With the breadth at 0.5 over the
+        // floor of 0.45 and the VIX at 1.3 of its median, one switch holds and two picks are allowed: AAA and CCC pass
+        // with the exposure's answer in the check's place, BBB stays off its own rule and the drift closed as it was.
+        static FamilyResult ClosedOn(string ticker, string family, double order, bool newHigh = true) =>
+            new(ticker, family, [new Gate(FamilyRule.Market, false, "closed", FamilyRule.Values()), new Gate(BreakoutRule.NewHigh, newHigh, "the high", FamilyRule.Values())], 100m, 95m, null, order, []);
+
+        IReadOnlyList<FamilyResult> closed = [ClosedOn("AAA", BreakoutRule.Name, 3), ClosedOn("BBB", BreakoutRule.Name, 2, newHigh: false), ClosedOn("CCC", BreakoutRule.Name, 1), ClosedOn("DDD", DriftRule.Name, 1)];
+        var exposure = new Dictionary<string, RuleHooks>(StringComparer.Ordinal) { [BreakoutRule.Name] = RuleHooks.Of(new Dictionary<string, double>(StringComparer.Ordinal) { [RuleHooks.ExposureParameter] = 0.45 }) };
+        var (exposed, exposedPlaces) = FamilyEvaluator.Hooked(closed, exposure, _ => Readings(RuleHooks.BreadthColumn, 0.5, RuleHooks.VixOverMedianColumn, 1.3));
+
+        Assert.True(FamilyRule.FailsOnTheMarketAlone(closed[0]));
+        Assert.False(FamilyRule.FailsOnTheMarketAlone(closed[1]));
+        Assert.Equal([true, false, true, false], [.. exposed.Select(result => result.Passed)]);
+        Assert.Equal([1, 2], [exposedPlaces[("breakout", "AAA")], exposedPlaces[("breakout", "CCC")]]);
+        Assert.Equal(FamilyRule.Market, exposed[0].Gates[0].Name);
+        Assert.Contains("the exposure allows 2 pick(s) tonight", exposed[0].Gates[0].Reason, StringComparison.Ordinal);
+        Assert.Empty(exposed[1].Exclusions);
+        Assert.False(exposedPlaces.ContainsKey(("breakout", "BBB")));
+
+        // With both switches holding five are allowed and both still pass; with neither none is, and the two the rule
+        // would have listed are left off by their hooks, the check standing closed on them.
+        Assert.Equal(2, FamilyEvaluator.Hooked(closed, exposure, _ => Readings(RuleHooks.BreadthColumn, 0.5, RuleHooks.VixOverMedianColumn, 0.9)).Places.Count(pair => pair.Key.Family == "breakout"));
+
+        var (shut, shutPlaces) = FamilyEvaluator.Hooked(closed, exposure, _ => Readings(RuleHooks.BreadthColumn, 0.3, RuleHooks.VixOverMedianColumn, 1.3));
+
+        Assert.DoesNotContain(shutPlaces.Keys, key => key.Family == "breakout");
+        Assert.Equal([IndexNightRead.NotByItsHooks], shut[0].Exclusions);
+        Assert.False(shut[0].Passed);
     }
 
     [Fact]

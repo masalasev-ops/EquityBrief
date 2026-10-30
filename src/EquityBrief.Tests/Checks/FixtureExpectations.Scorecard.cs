@@ -466,7 +466,8 @@ public partial class FixtureExpectations
 
         Assert.True(held);
         Assert.Empty(Worker.Ledger.LedgerPointInTime.Differences(stored.Readings, rebuilt!));
-        Assert.All(LedgerReadings.All.Skip(LedgerReadings.IndexOf(LedgerReadings.ScorecardFirst)), reading => Assert.NotNull(rebuilt![LedgerReadings.IndexOf(reading.Column)]));
+        // The scorecard's nine alone: the five readings 21.4 appended after them read none where their sources hold nothing.
+        Assert.All(LedgerReadings.All.Skip(LedgerReadings.IndexOf(LedgerReadings.ScorecardFirst)).Take(FundamentalScorecard.Checks), reading => Assert.NotNull(rebuilt![LedgerReadings.IndexOf(reading.Column)]));
     }
 
     // The sources 22.8 writes.
@@ -508,22 +509,31 @@ public partial class FixtureExpectations
     // No source a rule's version pins is one 22.8 writes, so no existing rule's version moves and no record restarts, the
     // reader shown to find a source a rule pins; and the revenue rule every S&P 400 and 600 drift rule pins is among those
     // pinned and not among those 22.8 writes. From 22.11 the quality rules pin the scorecard and the readings their step
-    // reads, and no rule registered before them did.
+    // reads, and no rule registered before them did; and from 21.4 the dip's rules pin the readings' catalogue, which the
+    // hooks read the night's readings by, that one source alone of those 22.8 wrote, their versions moved by 21.4 and
+    // registered again by its remedy.
     // see: A quality rule is registered as the family on its index and kept by the family's own step alone
+    // see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
     [Fact]
     public void NoSourceARulesVersionPinsIsOne22Point8WritesSoNoExistingRulesVersionMoves()
     {
         var pinned = EquityBrief.Core.Candidates.CandidateEvaluators.All
-            .Where(evaluator => evaluator is not (EquityBrief.Core.Candidates.QualityCandidate or EquityBrief.Core.Candidates.ImprovingCandidate))
+            .Where(evaluator => evaluator is not (EquityBrief.Core.Candidates.QualityCandidate or EquityBrief.Core.Candidates.ImprovingCandidate or EquityBrief.Core.Candidates.DipCandidate))
             .SelectMany(evaluator => evaluator.OwnSources)
             .Concat(EquityBrief.Core.Candidates.CandidateEvaluator.EvaluationSources)
             .Concat(EquityBrief.Core.Loop.RuleHooks.Sources)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        var dip = EquityBrief.Core.Candidates.CandidateEvaluators.All
+            .OfType<EquityBrief.Core.Candidates.DipCandidate>()
+            .SelectMany(evaluator => evaluator.OwnSources)
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 
         Assert.True(pinned.Length >= 30, $"Read {pinned.Length} pinned source(s), expected at least 30.");
         Assert.All(ScorecardSources, path => Assert.True(File.Exists(Path.Combine(Repository.Root, path)), path));
         Assert.Empty(ScorecardSources.Intersect(pinned, StringComparer.Ordinal));
+        Assert.Equal(new[] { "src/EquityBrief.Core/Ledger/LedgerReadings.cs" }, ScorecardSources.Intersect(dip, StringComparer.Ordinal).ToArray());
         Assert.Contains("src/EquityBrief.Core/Families/FirstFiledRevenue.cs", pinned);
         Assert.NotEmpty(new[] { "src/EquityBrief.Worker/Indices/IndexFamilies.cs" }.Intersect(pinned, StringComparer.Ordinal));
     }

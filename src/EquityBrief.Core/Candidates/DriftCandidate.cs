@@ -23,7 +23,7 @@ public sealed class DriftCandidate : FamilyRuleEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "f6b52da6e0c6";
+    public override string Version => "735dd5072a4e";
 
     public override string Family => DriftRule.Name;
 
@@ -32,7 +32,7 @@ public sealed class DriftCandidate : FamilyRuleEvaluator
 
     // Its rule's sources, the tone condition's and the engines' hooks a registration may state beside its parameters,
     // which its list and its trades are read through.
-    // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+    // see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
     public override IReadOnlyList<string> OwnSources { get; } =
         [.. SourcesWith("src/EquityBrief.Core/Families/DriftRule.cs"), "src/EquityBrief.Core/Releases/ReleaseTone.cs", .. EquityBrief.Core.Loop.RuleHooks.Sources];
 

@@ -17,7 +17,7 @@ namespace EquityBrief.Worker.Loop;
 // the exits by their edge on the trades that ended before its year, through its view and over the family floors in
 // proportion, and keeps those above the rule's own; the k-th proposal is the k-th exit each fold ranks, scored on that
 // fold's year against the rule as it stands. The autopsy's figures are read off the rule's own finished trades.
-// see: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it
+// see: The trade autopsy proposes exits of a fixed menu that only a checkpoint widens, each tested as the procedure that chose it
 // see: A change is adopted only on test years the proposal never saw, and a search is judged as a procedure run year by year
 public static class ExitProcedures
 {

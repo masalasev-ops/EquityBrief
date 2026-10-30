@@ -263,7 +263,7 @@ public sealed partial class IndexSweepRunner
             [
                 At(DipDrops, parameters[Core.Candidates.DipCandidate.DropParameter]),
                 At(DipTrends, parameters[Core.Candidates.DipCandidate.TrendParameter]),
-                At(DipExits, parameters[Core.Candidates.DipCandidate.ExitParameter]),
+                At(DipExits, Core.Candidates.DipCandidate.SellOf(parameters)),
                 At([.. DipLimits.Select<int, double>(limit => limit)], parameters[Core.Candidates.DipCandidate.LimitParameter]),
                 At(DipStops, parameters[Core.Candidates.DipCandidate.StopParameter]),
                 At(Grid.Dials[^1].Levels, parameters[Core.Candidates.DipCandidate.MarketParameter]),

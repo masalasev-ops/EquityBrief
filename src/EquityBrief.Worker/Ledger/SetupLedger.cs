@@ -5,12 +5,14 @@ using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Insiders;
 using EquityBrief.Core.Ledger;
+using EquityBrief.Core.Loop;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Readings;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
+using EquityBrief.Data.Analysts;
 using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Cards;
 using EquityBrief.Worker.Indices;
@@ -71,6 +73,8 @@ public sealed partial class SetupLedger : IComponent
             new StoreTouch(Store.PulledHolding, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
+            new StoreTouch(Store.AnalystView, Touch.Read),
+            new StoreTouch(Store.EstimateTrend, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
             new StoreTouch(Store.SwitchReading, Touch.Read),
             new StoreTouch(Store.MarketReading, Touch.Read),
@@ -85,6 +89,8 @@ public sealed partial class SetupLedger : IComponent
             new StoreTouch(Store.IndexFamilyNight, Touch.Read),
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
             new StoreTouch(Store.DipPick, Touch.Read),
+            new StoreTouch(Store.QualityHolding, Touch.Read),
+            new StoreTouch(Store.ImprovingTrade, Touch.Read),
             new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.SetupNight, Touch.Read | Touch.Insert | Touch.Delete),
@@ -124,6 +130,12 @@ public sealed partial class SetupLedger : IComponent
     // Each ticker's filer: the newest the quarters step filed for it, and the companies pull's beneath it for the
     // history, read in that order so the night's own replaces the pull's.
     const string Filers = "SELECT ticker, cik FROM company WHERE cik IS NOT NULL ORDER BY fetched_at;";
+
+    // From 21.4 Yahoo's newest stored answer about each stock's analysts with its rating actions, and the quarters
+    // fetches' trends of the current fiscal year's consensus earnings a share, for the readings the operator chose at 21.2.
+    const string NewestAnalystViews = "SELECT ticker, asked_at, actions FROM analyst_view a WHERE asked_at = (SELECT MAX(asked_at) FROM analyst_view b WHERE b.ticker = a.ticker);";
+
+    const string YearTrends = "SELECT ticker, fetched_at, eps_now, eps_thirty_days_ago FROM estimate_trend WHERE period = '0y' ORDER BY ticker, fetched_at;";
 
     const string PulledFilers = "SELECT ticker, cik FROM pulled_company WHERE cik IS NOT NULL;";
 
@@ -230,6 +242,17 @@ public sealed partial class SetupLedger : IComponent
         SELECT ticker, family FROM index_family_pick WHERE index_code = $index AND session_date = $night AND state = 'listed'
         UNION ALL
         SELECT ticker, 'dip' FROM dip_pick WHERE index_code = $index AND session_date = $night AND state = 'listed';";
+
+    // From 21.4 the book families' picks of a session, read on the night after it since their steps run after the
+    // ledger's: the quality book's holdings under the live rule standing after that session's reshuffle, and the
+    // Fundamentals trades the live rule opened that night; and the night's own book rows of that session marked by them.
+    const string QualityHeld = "SELECT ticker FROM quality_holding WHERE index_code = $index AND rule = $rule AND chosen_on <= $session AND (ended_on IS NULL OR ended_on > $session);";
+
+    const string ImprovingBought = "SELECT ticker FROM improving_trade WHERE index_code = $index AND rule = $rule AND chosen_on = $session;";
+
+    const string UnpickBookRows = "UPDATE setup SET picked = 0 WHERE index_code = $index AND family = $family AND session_date = $session AND source = $source;";
+
+    const string PickBookRow = "UPDATE setup SET picked = 1 WHERE index_code = $index AND family = $family AND session_date = $session AND source = $source AND ticker = $ticker;";
 
     const string ClearTheNight = "DELETE FROM setup WHERE index_code = $index AND session_date = $night AND source = $source;";
 
@@ -344,41 +367,17 @@ public sealed partial class SetupLedger : IComponent
     // The catalogue's shared readings of an index's members on the newest night, for a rule whose hooks read them: each
     // member's read as the night's own setups read theirs, from the same inputs, and none for a member the night holds no
     // bar for. Read only where a standing rule's hooks ask, so a night with none reads nothing.
-    // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+    // see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
     public async Task<Func<string, IReadOnlyList<double?>?>> ReadingsTonightAsync(string index, CancellationToken cancellation = default)
     {
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        if (await ScalarAsync(connection, NewestSession, [], cancellation) is not string newest)
+        if (await TonightAsync(connection, index, cancellation) is not (var inputs, var market, var context))
         {
             return _ => null;
         }
 
-        var night = Date(newest);
-        var (names, income) = await IndexFamilies.InputsAsync(connection, index, night, cancellation);
-
-        if (IndexNightRead.Prepare(index, night, names, income) is not { } inputs)
-        {
-            return _ => null;
-        }
-
-        var market = await MarketAsync(connection, MarketBars, night, cancellation);
-        var sectors = await SectorsAsync(connection, Sectors, names, cancellation);
-        var facts = await FactsAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
-        var before = await BeforeTheYearAsync(connection, FirstSessions(names), facts, night, cancellation);
-        var insiders = await InsidersAsync(connection, [Filers], names.Select(name => name.Ticker), night.AddDays(-InsiderReadings.WindowDays), cancellation);
-        var releases = await ReleasesAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
-        var (highs, lows) = SweepIdeas.HighsAndLows(inputs.Series, inputs.Members, inputs.Calendar.Length);
-        var context = new LedgerContext(income, sectors, highs, lows, facts, before)
-        {
-            Ranks = new FactorRanks(inputs.Series, inputs.Members),
-            Insiders = insiders.Rows,
-            InsiderSpans = insiders.Spans,
-            Releases = releases,
-            LargeBreadth = await LargeBreadthOnAsync(connection, index, night, cancellation),
-            Gics = await GicsAsync(connection, history: false, cancellation),
-        };
         var read = new Dictionary<string, IReadOnlyList<double?>?>(StringComparer.Ordinal);
 
         IReadOnlyList<double?>? Of(string ticker)
@@ -396,6 +395,92 @@ public sealed partial class SetupLedger : IComponent
         }
 
         return ticker => read.TryGetValue(ticker, out var held) ? held : read[ticker] = Of(ticker);
+    }
+
+    // From 21.4 each member's business state off the SEC's facts as first filed, read off the catalogue's readings of the
+    // night as the swing filter's stage is handed it for the version leaving off a deteriorating business: the state the
+    // stored place stands for, and none for a member the night holds no bar for or whose facts hold too few quarters.
+    // see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
+    public static Func<string, string?> FiledStatesOf(Func<string, IReadOnlyList<double?>?> readings)
+    {
+        var at = LedgerReadings.IndexOf(LedgerReadings.BusinessStateFiled);
+
+        return ticker => readings(ticker) is { } read && at < read.Count ? Core.Quarters.FundamentalState.OfPlace(read[at]) : null;
+    }
+
+    // From 21.4 the setups at the ledger's loose gates on the newest night, for a rule stating the ranking, whose
+    // candidates they are: each family's rows laid from the same inputs the night's own setups are laid from, each with
+    // its plan and its readings; none for a family holding none, and none at all where the store holds no bar or the
+    // index no member with one. Read only where a standing rule asks, so a night with none lays nothing.
+    public async Task<Func<string, IReadOnlyList<LooseSetup>>> SetupsTonightAsync(string index, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        if (await TonightAsync(connection, index, cancellation) is not (var inputs, var market, var context))
+        {
+            return _ => [];
+        }
+
+        var loose = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, context)
+            .ToDictionary(family => family.Family, family => (IReadOnlyList<LooseSetup>)[.. family.Rows.Select(Loose)], StringComparer.Ordinal);
+
+        return family => loose.GetValueOrDefault(family) ?? [];
+    }
+
+    // A setup's row as a rule stating the ranking is handed it: its plan as prices, through the one crossing from the
+    // statistic the ledger lays it in.
+    static LooseSetup Loose(SetupRow row) =>
+        new(
+            row.Ticker,
+            Statistic.ToPrice(row.Anchor.Entry),
+            Statistic.ToPrice(row.Anchor.Stop),
+            row.Anchor.Target is { } target ? Statistic.ToPrice(target) : null,
+            row.Anchor.Trail is { } trail ? Statistic.ToPrice(trail) : null,
+            row.Anchor.Cap,
+            row.Anchor.RiskMoves,
+            row.Readings);
+
+    // What tonight's readings and setups are laid from, as the night's own setups are: the index's inputs on the newest
+    // night, the market series to it and the catalogue's context; none where the store holds no bar or the index no
+    // member with one.
+    async Task<(IndexNightInputs Inputs, LedgerMarket Market, LedgerContext Context)?> TonightAsync(SqliteConnection connection, string index, CancellationToken cancellation)
+    {
+        if (await ScalarAsync(connection, NewestSession, [], cancellation) is not string newest)
+        {
+            return null;
+        }
+
+        var night = Date(newest);
+        var (names, income) = await IndexFamilies.InputsAsync(connection, index, night, cancellation);
+
+        if (IndexNightRead.Prepare(index, night, names, income) is not { } inputs)
+        {
+            return null;
+        }
+
+        var market = await MarketAsync(connection, MarketBars, night, cancellation);
+        var sectors = await SectorsAsync(connection, Sectors, names, cancellation);
+        var facts = await FactsAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
+        var before = await BeforeTheYearAsync(connection, FirstSessions(names), facts, night, cancellation);
+        var insiders = await InsidersAsync(connection, [Filers], names.Select(name => name.Ticker), night.AddDays(-InsiderReadings.WindowDays), cancellation);
+        var releases = await ReleasesAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
+        var actions = await ActionsAsync(connection, names.Select(name => name.Ticker), cancellation);
+        var trends = await TrendsAsync(connection, names.Select(name => name.Ticker), cancellation);
+        var (highs, lows) = SweepIdeas.HighsAndLows(inputs.Series, inputs.Members, inputs.Calendar.Length);
+        var context = new LedgerContext(income, sectors, highs, lows, facts, before)
+        {
+            Ranks = new FactorRanks(inputs.Series, inputs.Members),
+            Insiders = insiders.Rows,
+            InsiderSpans = insiders.Spans,
+            Releases = releases,
+            Actions = actions,
+            Trends = trends,
+            LargeBreadth = await LargeBreadthOnAsync(connection, index, night, cancellation),
+            Gics = await GicsAsync(connection, history: false, cancellation),
+        };
+
+        return (inputs, market, context);
     }
 
     // What a history's readings read beside its series, as the build reads it: the pulled market series to the history's
@@ -422,6 +507,8 @@ public sealed partial class SetupLedger : IComponent
         var facts = await FactsAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
         var insiders = await InsidersAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), FirstInsiderDay(inputs.Sessions), cancellation);
         var releases = await ReleasesAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
+        var actions = await ActionsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
+        var trends = await TrendsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
 
         // On the S&P 400 and 600 the S&P 500's breadth as it stood, as the history build reads it.
         var largeBreadth = index is not null && index != IndexFamilies.LargeIndex
@@ -434,6 +521,8 @@ public sealed partial class SetupLedger : IComponent
             Insiders = insiders.Rows,
             InsiderSpans = insiders.Spans,
             Releases = releases,
+            Actions = actions,
+            Trends = trends,
             LargeBreadth = largeBreadth,
             Gics = await GicsAsync(connection, history: true, cancellation),
         });
@@ -493,6 +582,8 @@ public sealed partial class SetupLedger : IComponent
         var before = await BeforeTheYearAsync(connection, FirstSessions(names), facts, night, cancellation);
         var insiders = await InsidersAsync(connection, [Filers], names.Select(name => name.Ticker), night.AddDays(-InsiderReadings.WindowDays), cancellation);
         var releases = await ReleasesAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
+        var actions = await ActionsAsync(connection, names.Select(name => name.Ticker), cancellation);
+        var trends = await TrendsAsync(connection, names.Select(name => name.Ticker), cancellation);
         var largeBreadth = await LargeBreadthOnAsync(connection, index, night, cancellation);
         var gics = await GicsAsync(connection, history: false, cancellation);
 
@@ -539,8 +630,13 @@ public sealed partial class SetupLedger : IComponent
                     Insiders = insiders.Rows,
                     InsiderSpans = insiders.Spans,
                     Releases = releases,
+                    Actions = actions,
+                    Trends = trends,
                     LargeBreadth = largeBreadth,
                     Gics = gics,
+                    QualityLive = live.Quality.Settings,
+                    ImprovingLive = live.Improving.Setting,
+                    SessionDay = clock.SessionDateAt,
                 };
                 var families = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, context)
                     .Select(family => live.Read.TryGetValue(family.Family, out var rule)
@@ -553,16 +649,24 @@ public sealed partial class SetupLedger : IComponent
                     var listed = picks.TryGetValue(family.Family, out var held) ? held : [];
                     var dipBenchmark = family.Family == DipRule.Name && family.Rows.Count > 0 ? DipBenchmark(closes, opens, inputs, inputs.At, night) : default;
 
+                    var book = BookSetups.IsBook(family.Family);
+
                     foreach (var row in family.Rows)
                     {
                         var name = NameOf(inputs.Series, row.Ticker);
                         var at = IndexNightRead.BarOf(inputs.Series[name], inputs.At);
-                        var outcome = family.Family == DipRule.Name
-                            ? DipRead(closes, opens, inputs, name, at, row.Anchor, dipBenchmark)
-                            : Outcome(closes, opens, inputs, name, at, row.Anchor, row.Plan);
-                        var cost = costs.TryGetValue(row.Ticker, out var percent) ? CostInRisks(percent, row.Anchor) : null;
 
-                        await InsertAsync(connection, transaction, row, listed.Contains(row.Ticker), cost, outcome, inputs.Calendar, inputs.At, NightSource, cancellation);
+                        // From 21.4 a book family's setup is laid open with its cost a fraction of the buy, its path read by
+                        // the nights after as the heavyweights' is, and its pick read on the night after from the family's
+                        // own holdings, since the two families' steps run after the ledger's.
+                        var outcome = book
+                            ? new SetupRead(new SetupOutcome(null, 0, SetupEnds.Open), new BenchmarkReading(null, 0, 0))
+                            : family.Family == DipRule.Name
+                                ? DipRead(closes, opens, inputs, name, at, row.Anchor, dipBenchmark)
+                                : Outcome(closes, opens, inputs, name, at, row.Anchor, row.Plan);
+                        double? cost = costs.TryGetValue(row.Ticker, out var percent) ? (book ? percent / 100 : CostInRisks(percent, row.Anchor)) : null;
+
+                        await InsertAsync(connection, transaction, row, book ? null : listed.Contains(row.Ticker), cost, outcome, inputs.Calendar, inputs.At, NightSource, cancellation);
                     }
 
                     await ExecuteAsync(connection, transaction, InsertNight,
@@ -599,7 +703,12 @@ public sealed partial class SetupLedger : IComponent
                 }
 
                 boughtSince = await BoughtSinceAsync(connection, transaction, index, waiting, bought, cancellation);
-                closed = await SettleAsync(connection, transaction, index, open, inputs, closes, opens, rebalances, cancellation);
+                closed = await SettleAsync(connection, transaction, index, open, inputs, closes, opens, rebalances, context, cancellation);
+
+                if (inputs.At > 0)
+                {
+                    await MarkBookPicksAsync(connection, transaction, index, inputs.Calendar[inputs.At - 1], live, cancellation);
+                }
 
                 // Every member's readings on the night, read as its setups read theirs, which the chart of what is behind a
                 // stock reads for its percentiles among the members and its push on the learned score.
@@ -872,7 +981,7 @@ public sealed partial class SetupLedger : IComponent
 
     // A setup's path and its benchmark as the ledger stores them from 19.10, at the open, with the open it was bought at
     // and where that open stood against its plan; none bought where the store holds no open after its night.
-    sealed record SetupRead(SetupOutcome Outcome, BenchmarkReading Benchmark, double? Fill = null, string? Past = null);
+    public sealed record SetupRead(SetupOutcome Outcome, BenchmarkReading Benchmark, double? Fill = null, string? Past = null);
 
     // The night's stored setups not yet settled, each replayed again over the closes to the night and its benchmark read
     // again, and written where its path ended or its benchmark settled.
@@ -885,11 +994,13 @@ public sealed partial class SetupLedger : IComponent
         double[][] closes,
         double[][] opens,
         IReadOnlyDictionary<DateOnly, IReadOnlyList<HeavyweightCut>> rebalances,
+        LedgerContext context,
         CancellationToken cancellation)
     {
         var closed = 0;
         var names = inputs.Series.Select((one, name) => (one.Name.Ticker, name)).ToDictionary(pair => pair.Ticker, pair => pair.name, StringComparer.Ordinal);
         var dipBenchmarks = new Dictionary<int, (BenchmarkReading Reading, IReadOnlyList<FillMember> Members)>();
+        var bookBenchmarks = new Dictionary<(int At, int Sessions), (BenchmarkReading Reading, IReadOnlyList<FillMember> Members)>();
 
         foreach (var setup in open)
         {
@@ -917,6 +1028,10 @@ public sealed partial class SetupLedger : IComponent
                 }
 
                 read = heavyweight;
+            }
+            else if (BookSetups.IsBook(setup.Family))
+            {
+                read = BookRead(setup.Family, inputs.Series, name, setup.Anchor, closes, opens, inputs.Members, inputs.Calendar, at, bar, context, null, bookBenchmarks);
             }
             else if (setup.Family == DipRule.Name)
             {
@@ -991,6 +1106,53 @@ public sealed partial class SetupLedger : IComponent
         var benchmark = outcome.Result is null ? new BenchmarkReading(null, 0, cut.Count) : HeavyweightPaths.Cut(cut, outcome.Sessions);
 
         return AtOpen(anchor, outcome, benchmark, HeavyweightPaths.CutMembers(members, outcome.Sessions), OpenAfter(closes, opens, bar), book: true);
+    }
+
+    // From 21.4 a book family's setup's path and benchmark: held to the first later session its gate no longer holds the
+    // member on, a quality setup's a reshuffle and a Fundamentals setup's a filing, or to its cap, whichever comes first,
+    // against every member of the index on its session held the same way, each read at its next session's open as every
+    // setup is; the benchmark worked once for each session and length, since every setup of a session shares its members.
+    // see: A book family's setup is each member a reshuffle or a filing leaves at the ledger's gate, held while it clears the hold and never past a year against an equal-weighted hold of the index
+    public static SetupRead BookRead(
+        string family,
+        IReadOnlyList<SweepSeries> series,
+        int name,
+        SetupAnchor anchor,
+        double[][] closes,
+        double[][] opens,
+        SweepBenchmark.Members members,
+        IReadOnlyList<DateOnly> calendar,
+        int at,
+        int bar,
+        LedgerContext context,
+        bool[]? stopped,
+        Dictionary<(int At, int Sessions), (BenchmarkReading Reading, IReadOnlyList<FillMember> Members)> benchmarks)
+    {
+        var notHeld = LedgerSetups.BookNotHeld(family, series[name], calendar, at, context)
+            .Select(later => IndexNightRead.BarOf(series[name], later))
+            .Where(held => held >= 0)
+            .ToArray();
+        var outcome = HeavyweightPaths.Replay(closes[name], bar, notHeld, BookSetups.Cap, family == QualityRule.Name ? SetupEnds.Rebalance : SetupEnds.Filing);
+
+        if (!benchmarks.TryGetValue((at, outcome.Sessions), out var benchmark))
+        {
+            var names = members.Names[at];
+            var bars = members.Bars[at];
+            var cut = new (double[] Closes, int From, bool Stopped)[names.Length];
+            var fills = new (double[] Closes, double[] Opens, int From)[names.Length];
+
+            for (var place = 0; place < names.Length; place++)
+            {
+                cut[place] = (closes[names[place]], bars[place], stopped is not null && stopped[names[place]]);
+                fills[place] = (closes[names[place]], opens[names[place]], bars[place]);
+            }
+
+            benchmarks[(at, outcome.Sessions)] = benchmark = (
+                outcome.Result is null ? new BenchmarkReading(null, 0, names.Length) : HeavyweightPaths.Cut(cut, outcome.Sessions),
+                HeavyweightPaths.CutMembers(fills, outcome.Sessions));
+        }
+
+        return AtOpen(anchor, outcome, benchmark.Reading, benchmark.Members, OpenAfter(closes[name], opens[name], bar), book: true);
     }
 
     // The fill half of a row: the open it was bought at, at the setup's own scale, and where that open stood.
@@ -1368,6 +1530,8 @@ public sealed partial class SetupLedger : IComponent
             : new Dictionary<int, IReadOnlyList<HeavyweightCut>>();
         var insiders = await InsidersAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), FirstInsiderDay(calendar), cancellation);
         var releases = await ReleasesAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
+        var actions = await ActionsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
+        var trends = await TrendsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
 
         // On the S&P 400 and 600 the S&P 500's breadth as it stood on each session, from the S&P 500's own history as its
         // sweep reads it, which the dip's reading reads and a live rule's market check reads.
@@ -1387,8 +1551,13 @@ public sealed partial class SetupLedger : IComponent
             Insiders = insiders.Rows,
             InsiderSpans = insiders.Spans,
             Releases = releases,
+            Actions = actions,
+            Trends = trends,
             LargeBreadth = largeBreadth is null ? null : LargeBreadthOver(calendar, largeBreadth),
             Gics = await GicsAsync(connection, history: true, cancellation),
+            QualityLive = rules.Quality.Settings,
+            ImprovingLive = rules.Improving.Setting,
+            SessionDay = clock.SessionDateAt,
         };
 
         return new PreparedHistory(index, calendar, series, sessions, members, income, closes, opens, stopped, [.. calendar, .. after], past, market, context, heavyweights)
@@ -1479,6 +1648,7 @@ public sealed partial class SetupLedger : IComponent
         {
             var families = new List<(FamilySetups, IReadOnlyList<SetupRead>)>();
             var inputsOnTheNight = new IndexNightInputs(index, calendar[at], calendar, at, series, sessions, members, members.Names[at], income);
+            var bookBenchmarks = new Dictionary<(int At, int Sessions), (BenchmarkReading Reading, IReadOnlyList<FillMember> Members)>();
 
             foreach (var read in LedgerSetups.On(index, series, sessions, members, calendar, at, market, context))
             {
@@ -1492,9 +1662,11 @@ public sealed partial class SetupLedger : IComponent
                     var name = NameOf(series, row.Ticker);
                     var bar = IndexNightRead.BarOf(series[name], at);
 
-                    return family.Family == DipRule.Name
-                        ? DipRead(closes, opens, inputsOnTheNight, name, bar, row.Anchor, dipBenchmark)
-                        : Outcome(closes, opens, inputsOnTheNight, name, bar, row.Anchor, row.Plan, stopped);
+                    return BookSetups.IsBook(family.Family)
+                        ? BookRead(family.Family, series, name, row.Anchor, closes, opens, members, calendar, at, bar, context, stopped, bookBenchmarks)
+                        : family.Family == DipRule.Name
+                            ? DipRead(closes, opens, inputsOnTheNight, name, bar, row.Anchor, dipBenchmark)
+                            : Outcome(closes, opens, inputsOnTheNight, name, bar, row.Anchor, row.Plan, stopped);
                 })]));
             }
 
@@ -1723,6 +1895,8 @@ public sealed partial class SetupLedger : IComponent
         var facts = await FactsAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
         var insiders = await InsidersAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), FirstInsiderDay(inputs.Sessions), cancellation);
         var releases = await ReleasesAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
+        var actions = await ActionsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
+        var trends = await TrendsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
         var largeBreadth = index == IndexFamilies.LargeIndex
             ? null
             : LargeBreadthOver(inputs.Sessions, SweepSwitches.LargeBreadth(await history.ReadAsync(through, null, cancellation), inputs.Sessions));
@@ -1737,7 +1911,7 @@ public sealed partial class SetupLedger : IComponent
 
             foreach (var row in session)
             {
-                var (held, rebuilt) = LedgerPointInTime.Setup(index, cut, cutMarket, income, sectors, facts, row.Family, row.Ticker, insiders, releases, largeBreadth, gics);
+                var (held, rebuilt) = LedgerPointInTime.Setup(index, cut, cutMarket, income, sectors, facts, row.Family, row.Ticker, insiders, releases, largeBreadth, gics, actions, trends);
 
                 if (!held)
                 {
@@ -2316,6 +2490,77 @@ public sealed partial class SetupLedger : IComponent
     // Each ticker's insiders' transactions the four readings read, through its filer as the facts are read and filed on or
     // after the day given, the columns the readings read alone; and the spans the store's insider history holds.
     // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+    // From 21.4 Yahoo's newest stored answer about each of the stocks given, its ask's day and each rating action's day with
+    // Yahoo's word for it, Yahoo's instants read as days in UTC since it files a day and not a moment; none for a stock
+    // the store holds no answer for.
+    static async Task<IReadOnlyDictionary<string, LedgerActions>> ActionsAsync(SqliteConnection connection, IEnumerable<string> tickers, CancellationToken cancellation)
+    {
+        var wanted = tickers.ToHashSet(StringComparer.Ordinal);
+        var answers = new Dictionary<string, LedgerActions>(StringComparer.Ordinal);
+
+        await using var command = Command(connection, null, NewestAnalystViews, []);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            var ticker = reader.GetString(0);
+
+            if (!wanted.Contains(ticker))
+            {
+                continue;
+            }
+
+            var actions = reader.IsDBNull(2) ? [] : StoredAnalysts.ActionsOf(reader.GetString(2));
+
+            answers[ticker] = new LedgerActions(
+                DateOnly.FromDateTime(InstantOf(reader.GetString(1)).UtcDateTime),
+                [.. actions.Select(action => (DateOnly.FromDateTime(action.GradedAt.UtcDateTime), action.Action))]);
+        }
+
+        return answers;
+    }
+
+    // From 21.4 the quarters fetches' trends of each stock's current fiscal year, oldest first, each fetch read as the
+    // session its instant falls on in New York, since a fetch after the close belongs to that session's night.
+    static async Task<IReadOnlyDictionary<string, IReadOnlyList<LedgerTrend>>> TrendsAsync(SqliteConnection connection, IEnumerable<string> tickers, CancellationToken cancellation)
+    {
+        var wanted = tickers.ToHashSet(StringComparer.Ordinal);
+        var trends = new Dictionary<string, List<LedgerTrend>>(StringComparer.Ordinal);
+
+        await using var command = Command(connection, null, YearTrends, []);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            var ticker = reader.GetString(0);
+
+            if (!wanted.Contains(ticker))
+            {
+                continue;
+            }
+
+            if (!trends.TryGetValue(ticker, out var rows))
+            {
+                trends[ticker] = rows = [];
+            }
+
+            rows.Add(new LedgerTrend(
+                SessionDayOf(InstantOf(reader.GetString(1))),
+                reader.IsDBNull(2) ? null : Money.FromStorage(reader.GetString(2)),
+                reader.IsDBNull(3) ? null : Money.FromStorage(reader.GetString(3))));
+        }
+
+        return trends.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<LedgerTrend>)pair.Value, StringComparer.Ordinal);
+    }
+
+    static readonly TimeZoneInfo SessionZone = SessionZones.ResolveSessionZone(SessionZones.UnitedStates);
+
+    // A stored instant as the clock stores one, and the session it falls on in New York, which is the clock's own reading
+    // of a session date, for a source the night's own run wrote after the close.
+    static DateTimeOffset InstantOf(string stored) => DateTimeOffset.Parse(stored, CultureInfo.InvariantCulture);
+
+    static DateOnly SessionDayOf(DateTimeOffset instant) => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(instant, SessionZone).DateTime);
+
     static async Task<LedgerInsiders> InsidersAsync(
         SqliteConnection connection,
         IReadOnlyList<string> filerQueries,
@@ -2676,6 +2921,36 @@ public sealed partial class SetupLedger : IComponent
         }
 
         return costs;
+    }
+
+    // From 21.4 the book families' picks of the session before the night, marked on the night: a quality setup picked
+    // where the live rule's book holds the stock after that session's reshuffle, a Fundamentals setup where the live rule
+    // bought it that night; every book row the night wrote for that session is marked, picked or not, and the history's
+    // rows keep none, since the two families' steps run after the ledger's and their holdings of a night stand only the
+    // night after.
+    // see: A book family's setup is each member a reshuffle or a filing leaves at the ledger's gate, held while it clears the hold and never past a year against an equal-weighted hold of the index
+    async Task MarkBookPicksAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly session, LiveRulesRead live, CancellationToken cancellation)
+    {
+        foreach (var (family, sql, rule) in new[] { (QualityRule.Name, QualityHeld, live.Quality.Rule), (ImprovingRule.Name, ImprovingBought, live.Improving.Rule) })
+        {
+            var picked = new List<string>();
+
+            await using (var command = Command(connection, transaction, sql, [("$index", index), ("$rule", rule), ("$session", Stamp(session))]))
+            await using (var reader = await command.ExecuteReaderAsync(cancellation))
+            {
+                while (await reader.ReadAsync(cancellation))
+                {
+                    picked.Add(reader.GetString(0));
+                }
+            }
+
+            await ExecuteAsync(connection, transaction, UnpickBookRows, [("$index", index), ("$family", family), ("$session", Stamp(session)), ("$source", NightSource)], cancellation);
+
+            foreach (var ticker in picked)
+            {
+                await ExecuteAsync(connection, transaction, PickBookRow, [("$index", index), ("$family", family), ("$session", Stamp(session)), ("$source", NightSource), ("$ticker", ticker)], cancellation);
+            }
+        }
     }
 
     // The stocks each family's list held on the night as the index's own stage stored it, keyed by family; a family that

@@ -58,7 +58,7 @@ public sealed class SwingFilter : IComponent
     // the list from the compiled code and holds this to it.
     public const string CodeVersionDeclaration = "public const string CodeVersion =";
 
-    public const string CodeVersion = "462efb8dec4a";
+    public const string CodeVersion = "87c0bd6de398";
 
     public static IReadOnlyList<string> CodeVersionSources { get; } =
     [
@@ -150,7 +150,7 @@ public sealed class SwingFilter : IComponent
 
     // The state each member's reported quarters gave it on the session, handed to the family's shadow
     // and read by no gate.
-    // see: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
+    // see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
     const string StatesOn = "SELECT ticker, state FROM fundamental_reading WHERE session_date = $session;";
 
     // The sector the membership names for each name, which the sector leaders' variant reads its standing by.
@@ -197,9 +197,12 @@ public sealed class SwingFilter : IComponent
 
     // The family's shadow is the night's, read off the register as it stood when the night started, and
     // none where no night handed one; the estimates are read through the source the night hands in, for the
-    // members a rule reading them passes on everything else, and read as none where it handed none.
+    // members a rule reading them passes on everything else, and read as none where it handed none; and from
+    // 21.4 each member's business state off the SEC's facts as first filed is read through the reader the night
+    // hands in, once and only where a standing candidate reads it, and read as none where it handed none.
     // see: The night asks for the estimates of each member a rule reading them passes on everything else, once a member a night
-    public async Task<SwingFilterOutcome> RunAsync(string indexCode, string runId, IMemberShadow? family = null, CancellationToken cancellation = default, IEstimateSource? estimates = null)
+    // see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
+    public async Task<SwingFilterOutcome> RunAsync(string indexCode, string runId, IMemberShadow? family = null, CancellationToken cancellation = default, IEstimateSource? estimates = null, Func<CancellationToken, Task<Func<string, string?>>>? filedStates = null)
     {
         var startedAt = clock.UtcNow;
 
@@ -243,12 +246,22 @@ public sealed class SwingFilter : IComponent
         bool? FiredOn(string ticker, DateOnly session) =>
             befores.TryGetValue(session, out var stored) && stored.TryGetValue(ticker, out var happened) ? happened : null;
 
+        // From 21.4 the business state off the SEC's facts for every member, read once through the ledger's own reader
+        // where a standing candidate reads it and handed to the shadow as the provider's state is; no gate reads it.
+        var filed = family?.ReadsFiledState == true && filedStates is not null ? await filedStates(cancellation) : null;
+        var filedRead = new Dictionary<string, string?>(StringComparer.Ordinal);
+
         var results = new List<GateResult>();
         var shadows = new Dictionary<string, string>(StringComparer.Ordinal);
         var evaluated = new List<(string Ticker, GateInputs Inputs, bool Stale, DateOnly? Gap)>();
 
         foreach (var ticker in members)
         {
+            if (filed is not null)
+            {
+                filedRead[ticker] = filed(ticker);
+            }
+
             var read = readings.GetValueOrDefault(ticker);
             var pair = bars.GetValueOrDefault(ticker) ?? [];
             var tonight = pair.Count > 0 && pair[0].Session == night ? pair[0] : null;
@@ -283,7 +296,8 @@ public sealed class SwingFilter : IComponent
                     fired,
                     earlier,
                     states.GetValueOrDefault(ticker),
-                    standings.GetValueOrDefault(ticker));
+                    standings.GetValueOrDefault(ticker),
+                    FiledState: filedRead.GetValueOrDefault(ticker));
 
             results.Add(SwingGates.Evaluate(inputs, settings));
             evaluated.Add((ticker, inputs, tonight is null, SwingReader.GapIn(read?.Note)));
@@ -339,7 +353,7 @@ public sealed class SwingFilter : IComponent
             command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
             command.Parameters.AddWithValue("$rows_written", results.Count);
             command.Parameters.AddWithValue("$outcome", family is { Faults.Count: > 0 } ? "failed" : "ok");
-            command.Parameters.AddWithValue("$detail", SwingFunnel.Line(funnel, excluded, ranked.Count, version) + (family?.Said ?? string.Empty) + EstimatesSaid(asked, estimates));
+            command.Parameters.AddWithValue("$detail", SwingFunnel.Line(funnel, excluded, ranked.Count, version) + (family?.Said ?? string.Empty) + EstimatesSaid(asked, estimates) + FiledSaid(filed is not null, filedRead));
 
             await command.ExecuteNonQueryAsync(cancellation);
         }
@@ -348,6 +362,13 @@ public sealed class SwingFilter : IComponent
 
         return new SwingFilterOutcome(members.Count, results.Count, funnel, excluded, ranked.Count, version, family?.Evaluated ?? 0, family?.Faults ?? []);
     }
+
+    // What the stage's row says of the business states read off the SEC's facts: nothing where no candidate reads them,
+    // and otherwise how many members a state was read for and how many of those read deteriorating.
+    static string FiledSaid(bool read, IReadOnlyDictionary<string, string?> states) =>
+        read
+            ? FormattableString.Invariant($"; business states read off the SEC's facts for {states.Values.Count(state => state is not null)} of {states.Count} member(s), {states.Values.Count(state => state == Core.Quarters.FundamentalState.Deteriorating)} deteriorating")
+            : string.Empty;
 
     // What the stage's row says of the estimates a rule reading them asked for: nothing where none was asked, the
     // members asked about and the source's own sentence, or that the night handed nothing to ask with.

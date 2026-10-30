@@ -1,5 +1,6 @@
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Filter;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Loop;
 using EquityBrief.Core.Sweep;
@@ -19,8 +20,8 @@ namespace EquityBrief.Tests.Checks;
 // readings and as it stands where none, on the S&P 500 and on an index over the readings its night supplies, the
 // autopsy's figures worked by hand over constructed paths, and the five strongest exits chosen on the learning years
 // alone.
-// see: Every engine's settings hooks land together and all default off, so the families' pins move once
-// see: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it
+// see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
+// see: The trade autopsy proposes exits of a fixed menu that only a checkpoint widens, each tested as the procedure that chose it
 public partial class FixtureExpectations
 {
     // The rows 17.5's autopsy adds that this check reaches: section 17's menu and proposals and section 18's path no bars
@@ -30,6 +31,13 @@ public partial class FixtureExpectations
         CheckReach.Key(Scope.LimitsTable, "The exit menu"),
         CheckReach.Key(Scope.LimitsTable, "The autopsy's proposals"),
         CheckReach.Key(Scope.FailureTable, "A path no bars reach"),
+    ];
+
+    // The rows 21.4's hook forms add that this check reaches: section 17's exposure and ranking.
+    internal static readonly string[] HookFormClaims =
+    [
+        CheckReach.Key(Scope.LimitsTable, "The exposure"),
+        CheckReach.Key(Scope.LimitsTable, "The ranking"),
     ];
 
     // Every row 17.5's autopsy adds, named after phase 16's report until phase 17's own pair is checked: the findings'
@@ -92,7 +100,7 @@ public partial class FixtureExpectations
         Assert.False(RuleHooks.IsHook("also_no_such_reading_above"));
         Assert.False(RuleHooks.IsHook("highSessions"));
         Assert.Equal(["highSessions", "volumeMultiple"], RuleHooks.Without(hooked).Keys.Order(StringComparer.Ordinal));
-        Assert.Throws<ArgumentException>(() => RuleHooks.Of(new Dictionary<string, double>(StringComparer.Ordinal) { ["exit"] = 27 }));
+        Assert.Throws<ArgumentException>(() => RuleHooks.Of(new Dictionary<string, double>(StringComparer.Ordinal) { ["exit"] = 31 }));
 
         // A member meets the conditions at 1.02 over its average and 0.03 of its close a move; 0.98 fails the first, 0.06
         // the second, and a reading not held fails whatever its level.
@@ -119,13 +127,150 @@ public partial class FixtureExpectations
         Assert.Equal(own, off.Order(own, ticker => readings[ticker]));
     }
 
+    // A score over one reading of the catalogue, standing in for a stored model.
+    sealed class OneColumnScore(int column) : IScoreModel
+    {
+        public string Hash => "one-column";
+
+        public int Rows => 0;
+
+        public IReadOnlyList<int> Readings => [column];
+
+        public double? Score(IReadOnlyList<double?> readings) => readings[column];
+
+        public int? Rank(string index, double score) => null;
+
+        public double? FloorAt(string index, double share) => null;
+
+        public IReadOnlyDictionary<string, double> HookParameters(double? floor) => new Dictionary<string, double>(StringComparer.Ordinal);
+
+        public string Canonical() => Hash;
+    }
+
+    static double?[] NightReadings(double? breadth, double? vixOverMedian)
+    {
+        var readings = new double?[LedgerReadings.Count];
+
+        readings[RuleHooks.BreadthColumn] = breadth;
+        readings[RuleHooks.VixOverMedianColumn] = vixOverMedian;
+
+        return readings;
+    }
+
+    [Fact]
+    public void TheExposureTheRankingAndTheExpectedValueOrderAreWorkedByHandOverAConstructedNight()
+    {
+        static RuleHooks Of(params (string Name, double Value)[] parameters) =>
+            RuleHooks.Of(parameters.ToDictionary(pair => pair.Name, pair => pair.Value, StringComparer.Ordinal));
+
+        // The three forms of 21.4 read off a rule's parameters: the exposure as the breadth floor it reads, the ranking by
+        // the learned score or by the expected value, and the expected-value order; the exposure reads readings, a ranking
+        // by the score reads readings and one by the expected value reads that, and the order reads the expected value.
+        var exposed = Of(("exposure", 0.45));
+        var rankedByScore = Of(("ranking", 1));
+        var rankedByExpected = Of(("ranking", 2));
+        var byExpected = Of(("order_expected", 1));
+
+        Assert.Equal((0.45, true, false, false), (exposed.Exposure, exposed.ReadsReadings, exposed.ReadsExpected, exposed.IsOff));
+        Assert.Equal((RuleHooks.RankingByScore, true, true, false), (rankedByScore.Ranking, rankedByScore.Ranks, rankedByScore.ReadsReadings, rankedByScore.ReadsExpected));
+        Assert.Equal((RuleHooks.RankingByExpected, true, false, true), (rankedByExpected.Ranking, rankedByExpected.Ranks, rankedByExpected.ReadsReadings, rankedByExpected.ReadsExpected));
+        Assert.Equal((true, false, true), (byExpected.ByExpected, byExpected.ReadsReadings, byExpected.ReadsExpected));
+        Assert.True(Of(("order_expected", 0), ("ranking", 0)).IsOff);
+        Assert.All(new[] { "exposure", "ranking", "order_expected" }, name => Assert.True(RuleHooks.IsHook(name)));
+        Assert.Equal([true, true, true, true, false, false], new[] { "ranking", "order_expected", "score_floor", "score_close_over_long", "exposure", "exit" }.Select(RuleHooks.IsOrder));
+
+        // Refused: an exposure floor at nought or over one, a ranking the two forms do not name, an order other than on or
+        // off, and two orders together.
+        Assert.Throws<ArgumentException>(() => Of(("exposure", 0)));
+        Assert.Throws<ArgumentException>(() => Of(("exposure", 1.5)));
+        Assert.Throws<ArgumentException>(() => Of(("ranking", 3)));
+        Assert.Throws<ArgumentException>(() => Of(("order_expected", 2)));
+        Assert.Throws<ArgumentException>(() => Of(("ranking", 1), ("score_close_over_long", 1)));
+        Assert.Throws<ArgumentException>(() => Of(("ranking", 2), ("order_expected", 1)));
+        Assert.Throws<ArgumentException>(() => Of(("order_expected", 1), ("score_floor", 1)));
+
+        // A book's rule reads conditions and a score alone.
+        Assert.True(Of(("also_close_over_long_above", 1), ("score_close_over_fifty", 1), ("score_floor", 0.5)).AreABooks);
+        Assert.Equal([false, false, false, false], new[] { exposed, rankedByScore, byExpected, Of(("exit", 2)) }.Select(one => one.AreABooks));
+
+        Assert.Equal("exposure: 5 picks where the index's breadth is at or above 0.45 and the VIX at or under its median of the 252 sessions before, 2 where one holds and none where neither, in the market check's place", exposed.Words());
+        Assert.Equal("ranked over the family's setups at the ledger's loose gates by the index's newest learned score, the best 5", rankedByScore.Words());
+        Assert.Equal("ranked over the family's setups at the ledger's loose gates by the expected value of the setups like each, the best 5", rankedByExpected.Words());
+        Assert.Equal("ordered by the expected value of the setups like each, highest first", byExpected.Words());
+
+        // The exposure at both switches on both sides: a breadth of 0.45 at the floor holds and 0.4499 does not; the VIX at
+        // its median, 1, holds and a hair over, 1.0001, does not; five picks where both hold, two where one, none where
+        // neither, a reading not held not holding, and none on a night with no readings; a rule stating no exposure caps
+        // nothing of its own.
+        Assert.Equal(5, exposed.PicksUnder(NightReadings(0.45, 1.0)));
+        Assert.Equal(2, exposed.PicksUnder(NightReadings(0.4499, 1.0)));
+        Assert.Equal(2, exposed.PicksUnder(NightReadings(0.45, 1.0001)));
+        Assert.Equal(0, exposed.PicksUnder(NightReadings(0.4499, 1.0001)));
+        Assert.Equal(2, exposed.PicksUnder(NightReadings(null, 1.0)));
+        Assert.Equal(0, exposed.PicksUnder(null));
+        Assert.Null(byExpected.PicksUnder(NightReadings(0.45, 1.0)));
+
+        // Over a constructed night of seven candidates in the rule's own order, the exposure keeps the first five where
+        // both switches hold, the first two where one does and none where neither.
+        string[] seven = ["A", "B", "C", "D", "E", "F", "G"];
+
+        Assert.Equal(["A", "B", "C", "D", "E"], exposed.Order(seven, _ => NightReadings(0.5, 0.9)));
+        Assert.Equal(["A", "B"], exposed.Order(seven, _ => NightReadings(0.3, 0.9)));
+        Assert.Empty(exposed.Order(seven, _ => NightReadings(0.3, 1.2)));
+
+        // The ranking by the learned score over the family's setups at the loose gates, seven of them: the best five by a
+        // constructed score reading one column, B and E tied at 0.9 in the rule's order, then G, D and A, F sixth and C,
+        // which the score cannot read, left off; handed no score, a ranking lists none.
+        var scores = new Dictionary<string, double?>(StringComparer.Ordinal) { ["A"] = 0.2, ["B"] = 0.9, ["C"] = null, ["D"] = 0.5, ["E"] = 0.9, ["F"] = 0.1, ["G"] = 0.7 };
+        var column = Column("close_over_long");
+
+        double?[] Scored(string ticker)
+        {
+            var readings = new double?[LedgerReadings.Count];
+
+            readings[column] = scores[ticker];
+
+            return readings;
+        }
+
+        Assert.Equal(["B", "E", "G", "D", "A"], rankedByScore.WithRanker(new OneColumnScore(column)).Order(seven, Scored));
+        Assert.Empty(rankedByScore.Order(seven, Scored));
+
+        // The same ranking by the expected value of the setups like each: C and E at 0.8, F, A and G, D sixth and B, with
+        // no figure, left off; handed no figure, none.
+        var expected = new Dictionary<string, double?>(StringComparer.Ordinal) { ["A"] = 0.3, ["B"] = null, ["C"] = 0.8, ["D"] = 0.1, ["E"] = 0.8, ["F"] = 0.6, ["G"] = 0.2 };
+
+        Assert.Equal(["C", "E", "F", "A", "G"], rankedByExpected.Order(seven, Scored, ticker => expected[ticker]));
+        Assert.Empty(rankedByExpected.Order(seven, Scored));
+
+        // The expected-value order over the rule's own candidates: those with a figure first by it, then those without in
+        // the rule's own order, none left off; handed no figure, the rule's order stands; and with the exposure beside it
+        // the ordered list is cut to the picks the night allows.
+        Assert.Equal(["C", "E", "F", "A", "G", "D", "B"], byExpected.Order(seven, Scored, ticker => expected[ticker]));
+        Assert.Equal(seven, byExpected.Order(seven, Scored));
+        Assert.Equal(["C", "E"], Of(("order_expected", 1), ("exposure", 0.45)).Order(seven, _ => NightReadings(0.3, 0.9), ticker => expected[ticker]));
+
+        // A change stating a ranking replaces a standing score whole, as a score does, and a condition stands beside it.
+        var standing = new Dictionary<string, double>(StringComparer.Ordinal) { ["score_close_over_long"] = 1, ["score_floor"] = 0.5, ["also_move_share_below"] = 0.05 };
+        var moved = LoopChange.OfHooks(new Dictionary<string, double>(StringComparer.Ordinal) { ["ranking"] = 1 }).OnTopOf(new LoopChange(null, null, null, standing)).Hooks;
+
+        Assert.Equal(["also_move_share_below", "ranking"], moved.Keys.Order(StringComparer.Ordinal));
+        Assert.Equal(["also_move_share_below", "order_expected"], LoopChange.OfHooks(new Dictionary<string, double>(StringComparer.Ordinal) { ["order_expected"] = 1 }).OnTopOf(new LoopChange(null, null, null, moved)).Hooks.Keys.Order(StringComparer.Ordinal));
+    }
+
     [Fact]
     public void TheHooksAndTheMenuArePinnedByTheRulesTheyHookAndByNoOtherEvaluator()
     {
         // The S&P 500's breakout and drift and every S&P 400 and 600 rule pin the hooks' and the menu's sources beside
         // their own; the swing filter, the three conditions and the S&P 500's heavyweights do not, so the pin move of the
         // hooks moved none of their versions, and no shared evaluation source names them.
-        string[] hooked = ["breakout", "breakout-400", "breakout-600", "drift", "drift-400", "drift-600", "heavyweight-400", "heavyweight-600", "pullback-400", "pullback-600"];
+        // From 21.4 the dip's, the quality family's and the Fundamentals family's rules read the hooks as well, so they pin
+        // the same three sources.
+        string[] hooked =
+        [
+            "breakout", "breakout-400", "breakout-600", "dip-400", "dip-500", "dip-600", "drift", "drift-400", "drift-600", "heavyweight-400", "heavyweight-600",
+            "improving-400", "improving-500", "improving-600", "pullback-400", "pullback-600", "quality-400", "quality-500", "quality-600",
+        ];
 
         Assert.Equal(hooked, CandidateEvaluators.All.Where(evaluator => RuleHooks.Sources.All(evaluator.OwnSources.Contains)).Select(evaluator => evaluator.Name).Order(StringComparer.Ordinal));
         Assert.DoesNotContain(CandidateEvaluators.All, evaluator => !hooked.Contains(evaluator.Name) && RuleHooks.Sources.Any(evaluator.OwnSources.Contains));
@@ -147,7 +292,7 @@ public partial class FixtureExpectations
 
         Assert.Equal(CandidateRegistrar.Registered, hooked.Outcome);
 
-        parameters["exit"] = 27;
+        parameters["exit"] = 31;
 
         var refused = await registrar.RegisterAsync("the breakout at an exit the menu lacks", "a breakout", "the edge", BreakoutCandidate.EvaluatorName, parameters, "hooks-refused");
 
@@ -169,7 +314,51 @@ public partial class FixtureExpectations
 
         Assert.Null(IndexRules.Refusal(drift, swing));
         Assert.Equal(CandidateRegistrar.Registered, (await registrar.RegisterAsync("the S&P 400 drift at an exit", "a drift", "the edge", drift.Name, swing, "hooks-drift")).Outcome);
-        Assert.Contains("menu numbers its exits", IndexRules.Refusal(drift, new Dictionary<string, double>(swing, StringComparer.Ordinal) { ["exit"] = 27 }), StringComparison.Ordinal);
+        Assert.Contains("menu numbers its exits", IndexRules.Refusal(drift, new Dictionary<string, double>(swing, StringComparer.Ordinal) { ["exit"] = 31 }), StringComparison.Ordinal);
+
+        // From 21.4 the dip's rule states the hooks as a swing rule does, its sell dial no longer named exit, and a book's
+        // rule states conditions and a score alone: an exit beside a quality rule's parameters is refused.
+        var dipEvaluator = CandidateEvaluators.Find("dip-500")!;
+        var dipParameters = new Dictionary<string, double>(StringComparer.Ordinal)
+        {
+            [DipCandidate.DropParameter] = -3,
+            [DipCandidate.TrendParameter] = 50,
+            [DipCandidate.SellParameter] = DipRule.RsiExit,
+            [DipCandidate.LimitParameter] = 10,
+            [DipCandidate.StopParameter] = 3,
+            [DipCandidate.MarketParameter] = 6,
+            [DipCandidate.VolumeParameter] = 0,
+            ["exposure"] = 0.45,
+            ["also_close_over_long_above"] = 1,
+        };
+
+        Assert.Equal(CandidateRegistrar.Registered, (await registrar.RegisterAsync("the S&P 500 dip under an exposure", "a dip", "the edge", dipEvaluator.Name, dipParameters, "hooks-dip")).Outcome);
+
+        // A dip rule registered in the form from before 21.4, its sell dial named exit and no sell beside it, is read as
+        // the same setting and stored with the dial under its name, so a remedy written then still registers.
+        var before = new Dictionary<string, double>(dipParameters, StringComparer.Ordinal);
+
+        before.Remove(DipCandidate.SellParameter);
+        before.Remove("exposure");
+        before.Remove("also_close_over_long_above");
+        before[DipCandidate.SellParameterBefore] = DipRule.RsiExit;
+
+        Assert.Equal(CandidateRegistrar.Registered, (await registrar.RegisterAsync("the S&P 500 dip in the form from before", "a dip", "the edge", dipEvaluator.Name, before, "hooks-dip-before")).Outcome);
+
+        var stored = CandidateEvaluator.Read((await registrar.RowsAsync()).Single(row => row.Candidate == "the S&P 500 dip in the form from before").Parameters);
+
+        Assert.Equal(DipRule.RsiExit, stored[DipCandidate.SellParameter]);
+        Assert.False(stored.ContainsKey(DipCandidate.SellParameterBefore));
+
+        var quality = new QualityCandidate(MarketCloses.Index);
+        var bookHooks = new Dictionary<string, double>(QualityCandidate.ParametersOf(QualityRule.Starting), StringComparer.Ordinal) { ["also_close_over_long_above"] = 1, ["score_close_over_fifty"] = 1 };
+
+        Assert.Equal(CandidateRegistrar.Registered, (await registrar.RegisterAsync("quality over its long average", "a book", "the edge", quality.Name, bookHooks, "hooks-quality")).Outcome);
+
+        var bookRefused = await registrar.RegisterAsync("quality at an exit", "a book", "the edge", quality.Name, new Dictionary<string, double>(bookHooks, StringComparer.Ordinal) { ["exit"] = 2 }, "hooks-quality-refused");
+
+        Assert.Equal(CandidateRegistrar.Refused, bookRefused.Outcome);
+        Assert.Contains("a book does not read", bookRefused.Detail, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -228,6 +417,42 @@ public partial class FixtureExpectations
 
         Assert.Equal(hookedKept, HookedTrades());
         Assert.Equal(["ID|1", "PN|2", "IE|3", "IA|4", "IB|5"], Kept(Hooked));
+        Assert.Equal(["IE|1", "MV|2", "PN|3", "IA|4", "IC|5"], Kept(liveName));
+
+        // From 21.4 a rule stating the exposure in the market check's place, at a floor of 0.45: with the breadth at 0.5 and
+        // the VIX at 1.2 of its median one switch holds and it keeps the family's first two, IE and MV; with both holding,
+        // the VIX at 0.9, its five; with neither, the breadth at 0.3, none; and handed no readings it keeps none and leaves
+        // the night's trades as they stood.
+        const string Exposed = "the S&P 400 breakout under an exposure";
+        var exposedRegistrar = new CandidateRegistrar(FixedClock.At(FreezeAt.AddMinutes(2), SessionZones.UnitedStates), store.DatabaseFile);
+
+        Assert.Equal(CandidateRegistrar.Registered, (await exposedRegistrar.RegisterAsync(Exposed, "a breakout", "the edge", breakout.Name, new Dictionary<string, double>(live, StringComparer.Ordinal) { [RuleHooks.ExposureParameter] = 0.45 }, "exposed")).Outcome);
+
+        var withExposure = await exposedRegistrar.RowsAsync();
+
+        // The night's readings carry the switches beside each member's close over its long average, so the hooked rule
+        // keeps its five through these runs.
+        double?[] Switched(string ticker, double breadth, double vix)
+        {
+            var readings = HookReadings(overLong.GetValueOrDefault(ticker), null, null);
+
+            readings[RuleHooks.BreadthColumn] = breadth;
+            readings[RuleHooks.VixOverMedianColumn] = vix;
+
+            return readings;
+        }
+
+        async Task NightUnder(string run, double breadth, double vix) =>
+            await new IndexFamilies(clock, store.DatabaseFile).RunAsync(run, default, withExposure, FreezeAt.AddHours(1), (index, _) => Task.FromResult<Func<string, IReadOnlyList<double?>?>>(ticker => Switched(ticker, breadth, vix)));
+
+        await NightUnder("exposure-one", 0.5, 1.2);
+        Assert.Equal(["IE|1", "MV|2"], Kept(Exposed));
+        await NightUnder("exposure-both", 0.5, 0.9);
+        Assert.Equal(["IE|1", "MV|2", "PN|3", "IA|4", "IC|5"], Kept(Exposed));
+        await NightUnder("exposure-neither", 0.3, 1.2);
+        Assert.Empty(Kept(Exposed));
+        await new IndexFamilies(clock, store.DatabaseFile).RunAsync("exposure-none", default, withExposure, FreezeAt.AddHours(1));
+        Assert.Empty(Kept(Exposed));
         Assert.Equal(["IE|1", "MV|2", "PN|3", "IA|4", "IC|5"], Kept(liveName));
 
         // Three sessions after it IE, held by both rules at one buy and stop, closes 0.6 of a risk up, then 0.2 of a risk
@@ -320,6 +545,78 @@ public partial class FixtureExpectations
 
         // A held stock is passed over in either.
         Assert.Equal(["A", "E"], FamilyRecorder.Keep(verdicts, new HashSet<string>(["D"], StringComparer.Ordinal), hooks, ticker => readings[ticker]).Select(one => one.Ticker));
+
+        // From 21.4 a rule stating the exposure keeps as well a member whose verdict failed the market check alone, the
+        // picks the night's switches allow read off the night's readings: five where the breadth stands at the floor and
+        // the VIX at its median, two where one holds, none where neither and none on a night handed no readings; a
+        // verdict failing its new high as well stays off, and a rule stating no exposure keeps none of them.
+        static (string, ShadowOutcome) Closed(string ticker, double order, bool alsoFailing = false) =>
+            (ticker, new ShadowOutcome("a rule", false, new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                [FamilyRule.Market] = FamilyRecorder.Failed,
+                [BreakoutRule.NewHigh] = alsoFailing ? FamilyRecorder.Failed : "passed",
+                [FamilyRuleEvaluator.EntryValue] = "100",
+                [FamilyRuleEvaluator.StopValue] = "95",
+                [FamilyRuleEvaluator.TargetValue] = "110",
+                [FamilyRuleEvaluator.OrderValue] = order.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                [FamilyRuleEvaluator.MoveValue] = "2",
+            }));
+
+        (string, ShadowOutcome)[] closedNight = [Closed("A", 7), Closed("B", 6), Closed("C", 5, alsoFailing: true), Closed("D", 4), Closed("E", 3), Closed("F", 2), Closed("G", 1)];
+        var exposure = RuleHooks.Of(new Dictionary<string, double>(StringComparer.Ordinal) { ["exposure"] = 0.45 });
+        var nothingHeld = new HashSet<string>(StringComparer.Ordinal);
+
+        // The recorder's word for a failed gate is the one the evaluators' values write, read off a result with the check
+        // closed and one with it open.
+        Assert.Equal(FamilyRecorder.Failed, FamilyRuleEvaluator.ValuesOf(new FamilyResult("A", BreakoutRule.Name, [new Gate(FamilyRule.Market, false, "closed", FamilyRule.Values())], 100m, 95m, null, 1, []), 2)[FamilyRule.Market]);
+        Assert.Equal("passed", FamilyRuleEvaluator.ValuesOf(new FamilyResult("A", BreakoutRule.Name, [new Gate(FamilyRule.Market, true, "open", FamilyRule.Values())], 100m, 95m, null, 1, []), 2)[FamilyRule.Market]);
+        Assert.True(FamilyRecorder.FailsOnTheMarketAlone(closedNight[0].Item2));
+        Assert.False(FamilyRecorder.FailsOnTheMarketAlone(closedNight[2].Item2));
+        Assert.Empty(FamilyRecorder.Keep(closedNight, nothingHeld));
+        Assert.Equal(["A", "B", "D", "E", "F"], FamilyRecorder.Keep(closedNight, nothingHeld, exposure, _ => NightReadings(0.45, 1.0)).Select(one => one.Ticker));
+        Assert.Equal(["A", "B"], FamilyRecorder.Keep(closedNight, nothingHeld, exposure, _ => NightReadings(0.3, 1.0)).Select(one => one.Ticker));
+        Assert.Empty(FamilyRecorder.Keep(closedNight, nothingHeld, exposure, _ => NightReadings(0.3, 1.2)));
+        Assert.Empty(FamilyRecorder.Keep(closedNight, nothingHeld, exposure, null));
+    }
+
+    [Fact]
+    public void ARuleStatingTheRankingKeepsTheBestFiveOfItsFamilysLooseSetupsByTheScoreEachAtTheSetupsOwnPlan()
+    {
+        // Seven setups at the loose gates, each at its own plan, their scores read off one column: B and E tied at 0.9 in
+        // the rows' order, then G, D and A; F sixth and C, which the score cannot read, left off. G's stop stands at its
+        // buy and places no trade, so four are kept, each at its own entry, stop and target with the target's distance
+        // over the stop's as its reward to risk; a stock held is passed over after the five are chosen.
+        var column = Column("close_over_long");
+        var scores = new Dictionary<string, double?>(StringComparer.Ordinal) { ["A"] = 0.2, ["B"] = 0.9, ["C"] = null, ["D"] = 0.5, ["E"] = 0.9, ["F"] = 0.1, ["G"] = 0.7 };
+
+        LooseSetup Setup(string ticker, decimal entry = 100m, decimal stop = 95m, decimal? target = 110m)
+        {
+            var readings = new double?[LedgerReadings.Count];
+
+            readings[column] = scores[ticker];
+
+            return new LooseSetup(ticker, entry, stop, target, null, 20, 2.5, readings);
+        }
+
+        LooseSetup[] setups = [Setup("A"), Setup("B"), Setup("C"), Setup("D", 50m, 48m, 56m), Setup("E"), Setup("F"), Setup("G", 200m, 200m, 210m)];
+        var byScore = RuleHooks.Of(new Dictionary<string, double>(StringComparer.Ordinal) { ["ranking"] = RuleHooks.RankingByScore });
+        var ranking = byScore.WithRanker(new OneColumnScore(column));
+        var nothingHeld = new HashSet<string>(StringComparer.Ordinal);
+        var kept = FamilyRecorder.KeepRanked(setups, nothingHeld, ranking);
+
+        Assert.Equal(["B", "E", "D", "A"], kept.Select(one => one.Ticker));
+        Assert.Equal([1, 2, 3, 4], kept.Select(one => one.Place));
+        Assert.Equal((50m, 48m, (decimal?)56m, (double?)2.5, 3.0), (kept[2].Plan.Entry, kept[2].Plan.Stop, kept[2].Plan.Target, kept[2].Plan.RiskMoves, Math.Round(kept[2].Plan.RewardToRisk!.Value, 9)));
+        Assert.Equal(["B", "D", "A"], FamilyRecorder.KeepRanked(setups, new HashSet<string>(["E"], StringComparer.Ordinal), ranking).Select(one => one.Ticker));
+
+        // Handed no score, a ranking by the score keeps none; a ranking by the expected value takes the best five by it,
+        // C and E at 0.8, F, A and G, with B, holding no figure, left off and G placing no trade.
+        var expected = new Dictionary<string, double?>(StringComparer.Ordinal) { ["A"] = 0.3, ["B"] = null, ["C"] = 0.8, ["D"] = 0.1, ["E"] = 0.8, ["F"] = 0.6, ["G"] = 0.2 };
+        var byExpected = RuleHooks.Of(new Dictionary<string, double>(StringComparer.Ordinal) { ["ranking"] = RuleHooks.RankingByExpected });
+
+        Assert.Empty(FamilyRecorder.KeepRanked(setups, nothingHeld, byScore));
+        Assert.Equal(["C", "E", "F", "A"], FamilyRecorder.KeepRanked(setups, nothingHeld, byExpected, ticker => expected[ticker]).Select(one => one.Ticker));
+        Assert.Empty(FamilyRecorder.KeepRanked(setups, nothingHeld, byExpected));
     }
 
     [Fact]

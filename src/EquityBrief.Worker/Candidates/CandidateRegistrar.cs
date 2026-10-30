@@ -111,6 +111,10 @@ public sealed class CandidateRegistrar : IComponent
     {
         var startedAt = clock.UtcNow;
 
+        // From 21.4 a dip rule's sell dial is stored under its name, a registration in the form from before naming it exit
+        // read as the same setting.
+        parameters = Renamed(evaluator, parameters);
+
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
@@ -596,7 +600,10 @@ public sealed class CandidateRegistrar : IComponent
 
         foreach (var row in moved)
         {
-            if ((Unstated(row.Rule, row.Test) ?? Refusal(taken, row.Candidate, row.Evaluator, CandidateEvaluator.Read(row.Parameters), startedAt)) is { } refusal)
+            // From 21.4 a dip rule registered before, its sell dial named exit, is written again with the dial under its name.
+            var parameters = Renamed(row.Evaluator, CandidateEvaluator.Read(row.Parameters));
+
+            if ((Unstated(row.Rule, row.Test) ?? Refusal(taken, row.Candidate, row.Evaluator, parameters, startedAt)) is { } refusal)
             {
                 return await RefuseAsync($"'{row.Candidate}' was refused, so none of the {moved.Length} was written: {refusal}");
             }
@@ -604,6 +611,7 @@ public sealed class CandidateRegistrar : IComponent
             taken.Add(row with
             {
                 Id = taken.Max(one => one.Id) + 1,
+                Parameters = CandidateEvaluator.Write(parameters),
                 EvaluatorVersion = CandidateEvaluators.Find(row.Evaluator)!.Version,
                 Event = Registered,
                 Retires = null,
@@ -632,6 +640,11 @@ public sealed class CandidateRegistrar : IComponent
 
         return new RegistrationOutcome(Registered, null, detail);
     }
+
+    // A dip rule's parameters with its sell dial under its name where a registration names it exit, the form from
+    // before 21.4; any other evaluator's as given.
+    static IReadOnlyDictionary<string, double> Renamed(string evaluator, IReadOnlyDictionary<string, double> parameters) =>
+        CandidateEvaluators.Find(evaluator) is DipCandidate ? DipCandidate.Renamed(parameters) : parameters;
 
     // A change approved on the Loop page for an S&P 500 family registered as the family's live rule, with the apply step's
     // own writes beside it in the same transaction, or none of it: the rule the change stands at registered, or, where a
@@ -1017,16 +1030,22 @@ public sealed class CandidateRegistrar : IComponent
         }
 
         // A family rule whose trades are walked one at a time may state the engines' hooks beside its own parameters,
-        // each off where it is not stated; a heavyweights book reads none, nor does a rule its own family's step keeps, so
-        // their hooks are refused as any parameter they do not read is.
-        // see: Every engine's settings hooks land together and all default off, so the families' pins move once
-        var hooked = carried is FamilyRuleEvaluator and not IndexHeavyweightCandidate and not OwnStepCandidate;
+        // each off where it is not stated, and from 21.4 so may the dip's rule, as the swing rules do, and a book's rule
+        // its conditions and its score alone; a heavyweights book reads none, so its hooks are refused as any parameter
+        // it does not read is.
+        // see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
+        var hooked = carried is FamilyRuleEvaluator and not IndexHeavyweightCandidate;
 
         if (hooked)
         {
             try
             {
-                EquityBrief.Core.Loop.RuleHooks.Of(parameters);
+                var hooks = EquityBrief.Core.Loop.RuleHooks.Of(parameters);
+
+                if (carried is QualityCandidate or ImprovingCandidate && !hooks.AreABooks)
+                {
+                    return $"'{evaluator}' is registered with hooks a book does not read: {EquityBrief.Core.Loop.RuleHooks.NotABooks}.";
+                }
             }
             catch (ArgumentException refused)
             {

@@ -113,7 +113,9 @@ public partial class FixtureExpectations
             if (ruled.Contains(family))
             {
                 var row = rows.Single(stored => stored[0] == family);
-                var stated = family == Core.Families.DipRule.Name ? expected.GetProperty("dipLine").GetString()! : expected.GetProperty("ruledLine").GetString()!;
+
+                // From 21.4 the dip's is the one ruled card, the fundamentals-first family computed no longer.
+                var stated = expected.GetProperty("dipLine").GetString()!;
 
                 // The sentence the file states by hand is the suite's own arithmetic over the stored funnel, and the card's.
                 Assert.StartsWith(Sentence(family, row[1]), stated, StringComparison.Ordinal);

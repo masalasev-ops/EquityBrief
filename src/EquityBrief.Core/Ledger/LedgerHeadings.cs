@@ -29,10 +29,14 @@ public static class LedgerHeadings
             "depth", "rsi_low", "freshness", "band_strength", "reaction_moves", "reward_to_risk", "breadth", "highs_less_lows",
             "index_over_long", "mid_over_large", "small_over_large", "credit_over_fifty", "return_week", "return_month",
             "close_place", "overnight_less_intraday", "sector_month", "sector_quarter", "low_ratio", "streak", "alpha_one", "alpha_four",
-            "rsi_two", "drop_fall", "drop_against_sector", "large_breadth", "fund_over_long",
+            "rsi_two", "drop_fall", "drop_against_sector", "large_breadth", "fund_over_long", "relative_strength_high",
         ]),
         new("Valuation", ["value_place"]),
-        new("Analyst sentiment", ["surprise_percent", "surprise_sessions", "earnings_sessions", "insider_net_buy", "insider_buyers", "insider_officer_buy", "insider_unplanned_sale", "release_results", "release_outlook", "release_tone", "release_demand"]),
+        new("Analyst sentiment",
+        [
+            "surprise_percent", "surprise_sessions", "earnings_sessions", "insider_net_buy", "insider_buyers", "insider_officer_buy", "insider_unplanned_sale",
+            "release_results", "release_outlook", "release_tone", "release_demand", "insider_cluster_buyers", "rating_actions_net", "estimate_revision_month", "short_interest_share",
+        ]),
         new("Volatility", ["move_share", "gap_down", "tightness", "range_ratio", "vix", "vix_change", "largest_return", "volatility_month", "residual_volatility", "beta", "skewness", "drop_largest", "vix_over_median"]),
         new("Size and liquidity", ["liquidity", "volume_ratio", "dry_up", "volume_multiple", "up_volume_share", "price_volume_correlation", "illiquidity", "volume_slope", "alpha_two", "alpha_three", "alpha_six", "drop_volume", "company_value"]),
         new("Financial strength",
@@ -40,7 +44,7 @@ public static class LedgerHeadings
             "profit", "coverage", "cash_over_income", "fundamentals_score", "return_on_assets", "return_on_assets_change", "leverage_fall",
             "current_ratio_change", "share_fall",
         ]),
-        new("Earnings quality", ["revenue_growth", "growth_change", "gross_margin_change", "operating_margin_change", "gross_profitability", "turnover_change", "gross_margin_year_change"]),
+        new("Earnings quality", ["revenue_growth", "growth_change", "gross_margin_change", "operating_margin_change", "gross_profitability", "turnover_change", "gross_margin_year_change", "business_state_filed"]),
     ];
 
     // The readings read off a market series, the same for every member of an index on a night.

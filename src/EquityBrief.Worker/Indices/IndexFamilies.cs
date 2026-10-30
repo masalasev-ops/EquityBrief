@@ -187,6 +187,9 @@ public sealed class IndexFamilies : IComponent
     // A company's value on a trade's own night as the member readings read it under the index, none where they read none.
     const string ValueOn = "SELECT company_value FROM member_reading WHERE index_code = $index AND session_date = $session AND ticker = $ticker;";
 
+    // The page trades of an index still open, which from 21.4 is what the S&P 500 is read for at all.
+    const string OpenPageTrades = "SELECT COUNT(*) FROM index_family_trade WHERE index_code = $index AND ended_on IS NULL;";
+
     // An index's night that failed, where no earlier try of the night computed one.
     const string InsertNotComputed = @"
         INSERT INTO index_family_night (index_code, session_date, members, breadth, market_open, settings, rebalanced, fault)
@@ -220,18 +223,20 @@ public sealed class IndexFamilies : IComponent
 
     // The catalogue's readings of an index's members on the night, read only for an index whose standing rule's hooks
     // read them.
-    // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+    // see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
     public async Task<IndexFamiliesOutcome> RunAsync(
         string runId,
         CancellationToken cancellation = default,
         IReadOnlyList<Core.Candidates.RegisterRow>? register = null,
         DateTimeOffset? nightStartedAt = null,
-        Func<string, CancellationToken, Task<Func<string, IReadOnlyList<double?>?>>>? readingsOf = null)
+        Func<string, CancellationToken, Task<Func<string, IReadOnlyList<double?>?>>>? readingsOf = null,
+        Func<string, CancellationToken, Task<Func<string, IReadOnlyList<LooseSetup>>>>? setupsOf = null)
     {
         var startedAt = clock.UtcNow;
         var outcomes = new List<IndexNightOutcome>();
         DateOnly? read = null;
         var rows = 0;
+        IReadOnlyList<string> indices = [LargeIndex, .. Indices];
 
         // The index rules standing registered when the night started, each index's own read on its night.
         // see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
@@ -253,11 +258,22 @@ public sealed class IndexFamilies : IComponent
 
             read = session;
 
-            foreach (var index in (IReadOnlyList<string>)[LargeIndex, .. Indices])
+            // From 21.4 the S&P 500 is read only while a page trade of the fundamentals-first family's stands open on it, to
+            // walk that trade to its end; the family is computed on no index, and the S&P 500's own families are its own
+            // steps'.
+            // see: Business first leaves the night at the one move of the pins, its rows and record kept and its one open trade run out under its own plan
+            var largeOpen = await ScalarAsync(connection, OpenPageTrades, [("$index", LargeIndex)], cancellation) is long open && open > 0;
+
+            if (!largeOpen)
+            {
+                indices = Indices;
+            }
+
+            foreach (var index in indices)
             {
                 try
                 {
-                    var (outcome, written) = await IndexNightAsync(connection, index, session, [.. standing.Where(rule => rule.Index == index)], cancellation, readingsOf, nightStartedAt ?? startedAt, IndexHeavyweights.RetiredBooks(register ?? [], index, nightStartedAt ?? startedAt));
+                    var (outcome, written) = await IndexNightAsync(connection, index, session, [.. standing.Where(rule => rule.Index == index)], cancellation, readingsOf, nightStartedAt ?? startedAt, IndexHeavyweights.RetiredBooks(register ?? [], index, nightStartedAt ?? startedAt), setupsOf);
 
                     outcomes.Add(outcome);
                     rows += written;
@@ -281,7 +297,7 @@ public sealed class IndexFamilies : IComponent
             IndexNightOutcome[] all =
             [
                 .. outcomes,
-                .. ((IReadOnlyList<string>)[LargeIndex, .. Indices]).Where(index => outcomes.All(outcome => outcome.Index != index)).Select(index => IndexNightOutcome.NotComputed(index, fault)),
+                .. indices.Where(index => outcomes.All(outcome => outcome.Index != index)).Select(index => IndexNightOutcome.NotComputed(index, fault)),
             ];
 
             await AppendAfterAFailureAsync(runId, startedAt, rows, Detail(all) + "; the step stopped on " + fault, cancellation);
@@ -370,7 +386,8 @@ public sealed class IndexFamilies : IComponent
         CancellationToken cancellation,
         Func<string, CancellationToken, Task<Func<string, IReadOnlyList<double?>?>>>? readingsOf = null,
         DateTimeOffset? registerAt = null,
-        IReadOnlyDictionary<string, DateTimeOffset>? retiredBooks = null)
+        IReadOnlyDictionary<string, DateTimeOffset>? retiredBooks = null,
+        Func<string, CancellationToken, Task<Func<string, IReadOnlyList<LooseSetup>>>>? setupsOf = null)
     {
         var (names, income) = await InputsAsync(connection, index, session, cancellation);
         var inputs = IndexNightRead.Prepare(index, session, names, income);
@@ -378,21 +395,19 @@ public sealed class IndexFamilies : IComponent
         var revenue = rules.Any(rule => rule.Evaluator is Core.Candidates.IndexDriftCandidate && rule.Parameters.GetValueOrDefault(Core.Candidates.IndexDriftCandidate.RevenueGrewParameter) == 1);
         var levels = inputs is null || rules.Count == 0 ? IndexLevels.None : await LevelsAsync(connection, inputs, cancellation, versions, revenue);
 
-        // The S&P 500 is read here for the fundamentals-first family alone, its other families being the S&P 500's own and
-        // its book the S&P 500's sector heavyweights'.
-        // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+        // From 21.4 the S&P 500 is read for no family, its families being the S&P 500's own and its book the S&P 500's
+        // sector heavyweights', and only to walk a page trade of the fundamentals-first family's still open on it to its end.
+        // see: Business first leaves the night at the one move of the pins, its rows and record kept and its one open trade run out under its own plan
         var large = index == LargeIndex;
         var families = large ? IndexNightRead.LargeFamilies : IndexNightRead.Families;
 
-        // The catalogue's readings of the members on the night, which the fundamentals-first family reads every night and a
-        // standing rule's hooks read where they state one.
-        var tonight = inputs is not null && readingsOf is not null ? await readingsOf(index, cancellation) : null;
+        // The catalogue's readings of the members on the night, which a standing rule's hooks read where they state one and
+        // a stored setting's hooks read, none on an index read for no family.
+        var tonight = inputs is not null && readingsOf is not null && families.Count > 0 ? await readingsOf(index, cancellation) : null;
 
-        // The setting an approval stored for each family on the index, on the S&P 500 the fundamentals-first family's alone,
-        // the only one read here, its own families changing through the stored settings their own steps read and a
-        // registration.
+        // The setting an approval stored for each family on the index, its own families changing through the stored settings
+        // their own steps read and a registration.
         // see: An approved change is applied by the night's own build on the index it was approved on alone
-        // see: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place
         var stored = (await StoredSettingsAsync(connection, index, cancellation))
             .Where(pair => families.Contains(pair.Key, StringComparer.Ordinal))
             .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
@@ -402,7 +417,7 @@ public sealed class IndexFamilies : IComponent
         // for on that setting, and every other on its provisional rule.
         // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
         IndexFamilyRead ReadOf(IndexNightInputs prepared, string family) =>
-            rules.FirstOrDefault(rule => rule.Live && rule.Family == family) is { } live ? IndexRules.Read(prepared, live, levels)
+            rules.FirstOrDefault(rule => rule.Live && rule.Family == family) is { } live ? ReadUnderItsHooks(prepared, live, levels, tonight)
             : stored.TryGetValue(family, out var setting) ? Stored(prepared, family, setting, tonight, trees)
             : IndexNightRead.Provisional(prepared, family, tonight);
 
@@ -411,7 +426,7 @@ public sealed class IndexFamilies : IComponent
             : new IndexNight(index, session, inputs.Held.Length, inputs.Breadth, inputs.Open, [.. families.SelectMany(family => IndexNightRead.Answers(inputs, family, ReadOf(inputs, family)))]);
         IReadOnlyList<(IndexRule Rule, IReadOnlyList<IndexAnswer> Answers)> ruleAnswers = inputs is null
             ? []
-            : [.. rules.Where(rule => rule.Evaluator is not Core.Candidates.IndexHeavyweightCandidate).Select(rule => (rule, IndexNightRead.Answers(inputs, rule.Family, IndexRules.Read(inputs, rule, levels))))];
+            : [.. rules.Where(rule => rule.Evaluator is not Core.Candidates.IndexHeavyweightCandidate).Select(rule => (rule, IndexNightRead.Answers(inputs, rule.Family, ReadUnderItsHooks(inputs, rule, levels, tonight))))];
         var qualifying = families
             .Select(family => new FamilyQualifiers(family, [.. read.Answers.Where(answer => answer.Family == family && answer.Passed).OrderBy(answer => answer.Place).Select(answer => answer.Ticker)]))
             .ToArray();
@@ -419,6 +434,10 @@ public sealed class IndexFamilies : IComponent
         var (open, heldIn) = await OpenAsync(connection, session, passing, cancellation, large);
         var picks = FamilyList.Draw(qualifying, open);
         var readings = ruleAnswers.Any(pair => RuleHooks.Of(pair.Rule.Parameters).ReadsReadings) ? tonight : null;
+
+        // From 21.4 the families' setups at the ledger's loose gates on the night, handed in by the night as the readings
+        // are, for a registered rule stating the ranking; laid only where one does.
+        var setups = inputs is not null && setupsOf is not null && ruleAnswers.Any(pair => RuleHooks.Of(pair.Rule.Parameters).Ranks) ? await setupsOf(index, cancellation) : null;
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
@@ -440,7 +459,7 @@ public sealed class IndexFamilies : IComponent
         var heavyweightRules = large
             ? new IndexHeavyweightsOutcome(false, 0, 0, 0)
             : await IndexHeavyweights.RulesAsync(connection, transaction, index, session, names, income, levels, [.. rules.Where(rule => rule.Evaluator is Core.Candidates.IndexHeavyweightCandidate)], cancellation, retiredBooks);
-        var ruleTrades = await IndexRuleTrades.KeepAsync(connection, transaction, index, session, inputs, ruleAnswers, cancellation, readings);
+        var ruleTrades = await IndexRuleTrades.KeepAsync(connection, transaction, index, session, inputs, ruleAnswers, cancellation, readings, setups);
 
         await ExecuteAsync(connection, transaction, InsertNight, [("$index", index), ("$night", Stamp(session)), ("$members", read.Members), ("$breadth", (object?)read.Breadth ?? DBNull.Value), ("$open", read.MarketOpen ? 1 : 0), ("$settings", Settings(index, rules, stored, registerAt)), ("$rebalanced", heavyweights.Rebalanced ? 1 : 0)], cancellation);
 
@@ -550,7 +569,6 @@ public sealed class IndexFamilies : IComponent
             .OrderBy(pair => pair.Key, StringComparer.Ordinal)
             .ToDictionary(pair => pair.Key, pair => pair.Value.Words(), StringComparer.Ordinal),
         heavyweights = IndexHeavyweights.Provisional.Key,
-        fundamentals = new { setting = Fundamentals(stored).Short, words = Fundamentals(stored).Words, cap = IndexNightRead.PullbackCap },
         live = (rules ?? [])
             .Where(rule => rule.Live)
             .Select(rule => new
@@ -655,19 +673,27 @@ public sealed class IndexFamilies : IComponent
     static int[]? StoredPlaces(IReadOnlyDictionary<string, LoopChange>? stored, string family) =>
         stored is not null && stored.TryGetValue(family, out var setting) && setting.Places is { } places ? [.. places] : null;
 
-    // The fundamentals-first family's setting on an index: the one an approval stored, or its provisional one.
-    static FundamentalsSetting Fundamentals(IReadOnlyDictionary<string, LoopChange>? stored) =>
-        FundamentalsRule.StoredOr(StoredPlaces(stored, FundamentalsRule.Name));
-
-    // A family at the setting an approval stored for it on the index: the fundamentals-first family at the setting of its
-    // 27 the approval named, or its provisional one where it named none, its list kept and ordered by the setting's
-    // hooks; every swing family as the index night reads a stored setting. Read here and not in the index night's own
-    // source, which every index rule's version pins, so a family no rule is registered for moves no rule's version.
-    // see: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place
+    // A family at the setting an approval stored for it on the index, its list kept and ordered by the setting's hooks, as
+    // the index night reads a stored setting; from 21.4 the fundamentals-first family is read no longer, the night
+    // computing it on no index.
+    // see: An approved change is applied by the night's own build on the index it was approved on alone
+    // see: Business first leaves the night at the one move of the pins, its rows and record kept and its one open trade run out under its own plan
     public static IndexFamilyRead Stored(IndexNightInputs inputs, string family, LoopChange setting, Func<string, IReadOnlyList<double?>?>? readings, Func<long, TreeModel?>? trees = null) =>
-        family == FundamentalsRule.Name
-            ? IndexNightRead.Hooked(inputs, IndexNightRead.Fundamentals(inputs, FundamentalsRule.StoredOr(setting.Places), readings), RuleHooks.Of(setting.Hooks).With(trees), readings)
-            : IndexNightRead.Stored(inputs, family, setting, readings, trees);
+        IndexNightRead.Stored(inputs, family, setting, readings, trees);
+
+    // A registered rule's read at its own setting and, from 21.4, under the hook that changes what it reads: a rule
+    // stating the exposure reads its setups with the market check open and takes the exposure's answer in the check's
+    // place, its conditions read with it; its order is applied where its list is kept, as before, so a score the stored
+    // models hold is read once, with them.
+    static IndexFamilyRead ReadUnderItsHooks(IndexNightInputs inputs, IndexRule rule, IndexLevels levels, Func<string, IReadOnlyList<double?>?>? readings)
+    {
+        var read = IndexRules.Read(inputs, rule, levels);
+        var hooks = RuleHooks.Of(rule.Parameters);
+
+        return hooks.Exposure is null
+            ? read
+            : IndexNightRead.Hooked(inputs, read, hooks with { Score = new Dictionary<int, double>(), ScoreFloor = null, Trees = null, Ranking = 0, ByExpected = false }, readings);
+    }
 
     // The newest setting an approval stored for each of an index's families.
     const string StoredSettings = @"
@@ -2311,7 +2337,8 @@ public static class IndexRuleTrades
         IndexNightInputs? inputs,
         IReadOnlyList<(IndexRule Rule, IReadOnlyList<IndexAnswer> Answers)> rules,
         CancellationToken cancellation,
-        Func<string, IReadOnlyList<double?>?>? readings = null)
+        Func<string, IReadOnlyList<double?>?>? readings = null,
+        Func<string, IReadOnlyList<LooseSetup>>? setups = null)
     {
         if (inputs is null)
         {
@@ -2326,11 +2353,19 @@ public static class IndexRuleTrades
         {
             // The rule's hooks as its registration states them: its list kept and ordered by them where they read the
             // night's readings, a rule reading them on a night that supplied none listing nothing and keeping the trades
-            // a run of the night stored for it; and the exit its trades are walked under.
-            // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+            // a run of the night stored for it; and the exit its trades are walked under. From 21.4 a rule stating the
+            // ranking lists from its family's setups at the ledger's loose gates, handed in as the readings are, by the
+            // index's newest learned score where it ranks by the score; its own answers stay the night's record of the
+            // rule's own gates.
+            // see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
             var hooks = RuleHooks.Of(rule.Parameters).With(trees);
 
-            if (hooks.ReadsReadings && readings is null)
+            if (hooks.Ranking == RuleHooks.RankingByScore)
+            {
+                hooks = hooks.WithRanker(await EquityBrief.Worker.Loop.StoredRidge.NewestAsync(connection, transaction, index, rule.Family, cancellation));
+            }
+
+            if ((hooks.ReadsReadings && readings is null) || (hooks.Ranks && setups is null))
             {
                 continue;
             }
@@ -2356,7 +2391,13 @@ public static class IndexRuleTrades
 
             var place = 0;
 
-            foreach (var answer in hooks.Order([.. answers.Where(one => one.Passed && !holding.Contains(one.Ticker)).OrderBy(one => one.Place)], one => readings?.Invoke(one.Ticker)).Take(IndexRules.PerNight))
+            // Under a ranking the candidates are the family's setups at the loose gates in the ranking's order, each at the
+            // setup's own plan with the score as its order figure; otherwise the rule's own passing members under its hooks.
+            IReadOnlyList<IndexAnswer> candidates = hooks.Ranks
+                ? [.. hooks.Order(setups!(rule.Family), setup => setup.Readings).Where(setup => !holding.Contains(setup.Ticker)).Select((setup, at) => new IndexAnswer(setup.Ticker, rule.Family, true, at + 1, setup.Entry, setup.Stop, setup.Target, setup.Trail, setup.Cap, hooks.Ranker?.Score(setup.Readings), null))]
+                : hooks.Order([.. answers.Where(one => one.Passed && !holding.Contains(one.Ticker)).OrderBy(one => one.Place)], one => readings?.Invoke(one.Ticker));
+
+            foreach (var answer in candidates.Take(IndexRules.PerNight))
             {
                 var name = Array.FindIndex(inputs.Series, one => string.Equals(one.Name.Ticker, answer.Ticker, StringComparison.Ordinal));
                 var move = inputs.Series[name].Atr[IndexNightRead.BarOf(inputs.Series[name], inputs.At)];

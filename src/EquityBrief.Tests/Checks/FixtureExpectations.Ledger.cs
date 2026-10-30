@@ -33,7 +33,7 @@ public partial class FixtureExpectations
         CheckReach.Key(Scope.StoresTable, "Setup nights"),
         .. LedgerClaims,
         CheckReach.Key(Scope.FailureTable, "An index's setups the ledger could not compute"),
-        CheckReach.Key(NightlyRunSteps.Heading, "Append tonight's setups to the ledger on every index the night read: every member-session a family's loose gates pass, the pullback's, the breakout's, the drift's and from 19.9 the fundamentals-first family's, with the live rule's own pass and the night's pick beside it, from 20.11 on the S&P 400 and 600 the pass of the family's frozen live rule where one stands, read as the night read the register, a drift's reaction set passed on the night its rule buys it, its plan as prices, its readings as they stood and its path still open, and one row a family an index with the members the gates were read over; and close the windows of the setups the night stored before whose paths ended on tonight's close or whose benchmark, the same plan on every member of their session, has every member's path ended, the history's setups left to the build that wrote them, a failure in an index's part named on the step's row while the step goes on (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood) (see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span) (see: The fundamentals-first family's setups are the pullback's whose revenue and cash clear a grid step past the widest level its search tried) (see: The setup ledger reads each S&P 400 and 600 family's frozen live rule where one stands, and a card draws setups like a pick only once its history is built under that rule)."),
+        CheckReach.Key(NightlyRunSteps.Heading, "Append tonight's setups to the ledger on every index the night read: every member-session a family's loose gates pass, the pullback's, the breakout's, the drift's, from 19.9 the fundamentals-first family's and from 21.4 the two book families', each a member a reshuffle or a filing leaves at the ledger's gate, with the live rule's own pass and the night's pick beside it, a book's pick marked on the night after, from 20.11 on the S&P 400 and 600 the pass of the family's frozen live rule where one stands, read as the night read the register, a drift's reaction set passed on the night its rule buys it, its plan as prices, its readings as they stood and its path still open, and one row a family an index with the members the gates were read over; and close the windows of the setups the night stored before whose paths ended on tonight's close or whose benchmark, the same plan on every member of their session, has every member's path ended, the history's setups left to the build that wrote them, a failure in an index's part named on the step's row while the step goes on (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood) (see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span) (see: The fundamentals-first family's setups are the pullback's whose revenue and cash clear a grid step past the widest level its search tried) (see: The setup ledger reads each S&P 400 and 600 family's frozen live rule where one stands, and a card draws setups like a pick only once its history is built under that rule)."),
     ];
 
     static readonly DateOnly LedgerDay = new(2026, 10, 8);
@@ -83,10 +83,12 @@ public partial class FixtureExpectations
         Assert.Equal((1.0, 0.0), (LedgerReadings.Flag(true)!.Value, LedgerReadings.Flag(false)!.Value));
 
         // The catalogue names each column once, and from 20.8 holds the four release readings at its end, from 22.2 before
-        // the short-term dip's nine, and from 22.8 those before the fundamentals scorecard's nine.
+        // the short-term dip's nine, from 22.8 those before the fundamentals scorecard's nine, and from 21.4 those before the
+        // five readings the operator chose at 21.2 and the business's state off the SEC's facts after them.
         Assert.Equal(LedgerReadings.All.Count, LedgerReadings.All.Select(reading => reading.Column).Distinct(StringComparer.Ordinal).Count());
-        Assert.Equal(94, LedgerReadings.Count);
-        Assert.Equal(LedgerReleases.Columns, LedgerReadings.All.SkipLast(18).TakeLast(4).Select(reading => reading.Column));
+        Assert.Equal(100, LedgerReadings.Count);
+        Assert.Equal(LedgerReleases.Columns, LedgerReadings.All.SkipLast(24).TakeLast(4).Select(reading => reading.Column));
+        Assert.Equal(["relative_strength_high", "insider_cluster_buyers", "rating_actions_net", "estimate_revision_month", "short_interest_share", LedgerReadings.BusinessStateFiled], LedgerReadings.All.TakeLast(6).Select(reading => reading.Column));
     }
 
     [Fact]
@@ -315,9 +317,9 @@ public partial class FixtureExpectations
 
         Assert.Equal("derived", expected.GetProperty("derivation").GetString());
         Assert.Equal(["setup_night", "setup", "ledger_summary"], expected.GetProperty("tables").EnumerateArray().Select(table => table.GetString()!));
-        Assert.Equal(5, expected.GetProperty("setupNightsAnIndex").GetInt32());
+        Assert.Equal(7, expected.GetProperty("setupNightsAnIndex").GetInt32());
         Assert.Equal(LedgerSetups.Families, expected.GetProperty("families").EnumerateArray().Select(family => family.GetString()!).ToArray());
-        Assert.StartsWith("every setup row's family is one of the five", expected.GetProperty("setups").GetString(), StringComparison.Ordinal);
+        Assert.StartsWith("every setup row's family is one of the seven", expected.GetProperty("setups").GetString(), StringComparison.Ordinal);
         Assert.StartsWith("none:", expected.GetProperty("otherSetups").GetString(), StringComparison.Ordinal);
         Assert.StartsWith("one row, the dip's", expected.GetProperty("summary").GetString(), StringComparison.Ordinal);
 
@@ -332,7 +334,10 @@ public partial class FixtureExpectations
         var members = Query(store, "SELECT DISTINCT members FROM setup_night WHERE index_code = 'GSPC';").Single();
 
         Assert.True(int.Parse(members, System.Globalization.CultureInfo.InvariantCulture) > 0, "the fixture's night held no member");
-        Assert.Equal([$"GSPC|breakout|{members}|night", $"GSPC|dip|{members}|night", $"GSPC|drift|{members}|night", $"GSPC|fundamentals|{members}|night", $"GSPC|pullback|{members}|night"], nights);
+        // From 21.4 the two book families' rows among them, the fixture's night no reshuffle and no member's filing read anew.
+        Assert.Equal(
+            [$"GSPC|breakout|{members}|night", $"GSPC|dip|{members}|night", $"GSPC|drift|{members}|night", $"GSPC|fundamentals|{members}|night", $"GSPC|improving|{members}|night", $"GSPC|pullback|{members}|night", $"GSPC|quality|{members}|night"],
+            nights);
         Assert.Equal(["ok"], Query(store, $"SELECT outcome FROM run_log WHERE run_id = 'ledger-fixture' AND stage = '{SetupLedger.Stage}';"));
 
         // Every setup written sits inside its family's loose gates, read back off its own readings and its session.

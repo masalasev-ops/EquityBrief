@@ -239,30 +239,48 @@ public partial class FixtureExpectations
             SwingFilterRule.ParametersOf(Ruled)[SwingFilterRule.LeaderShareOfParameter]));
         Assert.DoesNotContain(SwingFilterRule.LeadershipValue, new SwingFilterRule().EvaluateGates(FamilyPassing(), SwingFilterRule.ParametersOf(Ruled)).Values.Keys);
 
-        // The business state: the seventh leaves off a member whose reported quarters read deteriorating on
-        // the night and fires on improving, steady, not enough quarters, no fundamentals yet and a state the
-        // night did not store; the live filter and the other seven read no state and fire on deteriorating as
-        // on any other.
-        // see: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
+        // The business state: from 21.4 the seventh leaves off a member whose business the SEC's facts as first filed
+        // read deteriorating on the night, handed in through the ledger's catalogue, and fires on improving, steady and a
+        // state the night read none of; the provider's state the night stored moves it no longer, and the live filter and
+        // the other seven read no state and fire on deteriorating as on any other.
+        // see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
         var skipping = Variant(TheSwingFamily.DeterioratingName);
 
         GateInputs InState(string? state) => FamilyPassing() with { FundamentalState = state };
 
-        Assert.False(Fires(InState(FundamentalState.Deteriorating))[skipping]);
-        Assert.True(Fires(InState(FundamentalState.Deteriorating))[Live]);
-        Assert.Equal(8, Fires(InState(FundamentalState.Deteriorating)).Count(fire => fire.Value));
-        Assert.All(
-            new[] { FundamentalState.Improving, FundamentalState.Steady, FundamentalState.NotEnoughQuarters, FundamentalState.NoFundamentalsYet, null },
-            state => Assert.True(Fires(InState(state))[skipping], state ?? "no state stored"));
-        Assert.All(Fires(InState(FundamentalState.Improving)), fire => Assert.True(fire.Value, fire.Key));
+        GateInputs InFiledState(string? state) => FamilyPassing() with { FiledState = state };
 
-        var skipped = new SwingFilterRule().EvaluateGates(InState(FundamentalState.Deteriorating), SwingFilterRule.ParametersOf(Ruled, skipDeteriorating: true));
+        Assert.False(Fires(InFiledState(FundamentalState.Deteriorating))[skipping]);
+        Assert.True(Fires(InFiledState(FundamentalState.Deteriorating))[Live]);
+        Assert.Equal(8, Fires(InFiledState(FundamentalState.Deteriorating)).Count(fire => fire.Value));
+        Assert.All(
+            new[] { FundamentalState.Improving, FundamentalState.Steady, null },
+            state => Assert.True(Fires(InFiledState(state))[skipping], state ?? "no state read"));
+        Assert.All(Fires(InFiledState(FundamentalState.Improving)), fire => Assert.True(fire.Value, fire.Key));
+        Assert.All(Fires(InState(FundamentalState.Deteriorating)), fire => Assert.True(fire.Value, fire.Key));
+        Assert.False(Fires(InState(FundamentalState.Improving) with { FiledState = FundamentalState.Deteriorating })[skipping]);
+
+        // The version's verdict names the state it read and the facts it read it from; a registration reading the provider's
+        // quarters, the form every registration took before 21.4, still reads the state the night stored and names no source.
+        var skipped = new SwingFilterRule().EvaluateGates(InFiledState(FundamentalState.Deteriorating), SwingFilterRule.ParametersOf(Ruled, skipDeteriorating: true, filedState: true));
+        var provider = new SwingFilterRule().EvaluateGates(InState(FundamentalState.Deteriorating), SwingFilterRule.ParametersOf(Ruled, skipDeteriorating: true));
         var kept = new SwingFilterRule().EvaluateGates(InState(null), SwingFilterRule.ParametersOf(Ruled));
 
-        Assert.Equal((false, FundamentalState.Deteriorating, "yes"), (skipped.Fired, skipped.Values[SwingFilterRule.StateValue], skipped.Values["skips deteriorating"]));
+        Assert.Equal(
+            (false, FundamentalState.Deteriorating, "yes", SwingFilterRule.FiledSource),
+            (skipped.Fired, skipped.Values[SwingFilterRule.StateValue], skipped.Values["skips deteriorating"], skipped.Values[SwingFilterRule.StateSourceValue]));
+        Assert.True(new SwingFilterRule().EvaluateGates(InState(FundamentalState.Deteriorating), SwingFilterRule.ParametersOf(Ruled, skipDeteriorating: true, filedState: true)).Fired);
+        Assert.Equal((false, FundamentalState.Deteriorating, "yes"), (provider.Fired, provider.Values[SwingFilterRule.StateValue], provider.Values["skips deteriorating"]));
+        Assert.True(new SwingFilterRule().EvaluateGates(InFiledState(FundamentalState.Deteriorating), SwingFilterRule.ParametersOf(Ruled, skipDeteriorating: true)).Fired);
+        Assert.DoesNotContain(SwingFilterRule.StateSourceValue, provider.Values.Keys);
         Assert.Equal((true, SwingFilterRule.StateNotRead, "no"), (kept.Fired, kept.Values[SwingFilterRule.StateValue], kept.Values["skips deteriorating"]));
-        Assert.Equal(1.0, SwingFilterRule.ParametersOf(Ruled, skipDeteriorating: true)[SwingFilterRule.SkipDeterioratingParameter]);
-        Assert.Equal(0.0, SwingFilterRule.ParametersOf(Ruled)[SwingFilterRule.SkipDeterioratingParameter]);
+        Assert.DoesNotContain(SwingFilterRule.StateSourceValue, kept.Values.Keys);
+        Assert.Equal(
+            (1.0, 1.0),
+            (SwingFilterRule.ParametersOf(Ruled, skipDeteriorating: true, filedState: true)[SwingFilterRule.SkipDeterioratingParameter], SwingFilterRule.ParametersOf(Ruled, skipDeteriorating: true, filedState: true)[SwingFilterRule.FiledStateParameter]));
+        Assert.Equal((0.0, 0.0), (SwingFilterRule.ParametersOf(Ruled)[SwingFilterRule.SkipDeterioratingParameter], SwingFilterRule.ParametersOf(Ruled)[SwingFilterRule.FiledStateParameter]));
+        Assert.Equal((1.0, 1.0), (TheSwingFamily.For("1", Ruled).Single(one => one.Candidate == skipping).Parameters[SwingFilterRule.SkipDeterioratingParameter], TheSwingFamily.For("1", Ruled).Single(one => one.Candidate == skipping).Parameters[SwingFilterRule.FiledStateParameter]));
+        Assert.All(TheSwingFamily.For("1", Ruled).Where(one => one.Candidate != skipping), one => Assert.Equal(0.0, one.Parameters[SwingFilterRule.FiledStateParameter]));
 
         // The verdict names each gate's answer, the market read, the exclusions, the session it arrived on
         // and the plan its trade gate read, which is the plan its setup is scored on.
@@ -420,9 +438,10 @@ public partial class FixtureExpectations
 
         // The nine are the family, each on the one evaluator at its version, the live filter stating the open
         // version's settings and each variant those with one thing moved, named for version 1, the seventh
-        // leaving a deteriorating business off, the eighth reading analysts' revisions, in the place the sector
-        // leaders' rule held until it was retired, and the ninth keeping the night's best three, each stating so in
-        // its rule and its parameters.
+        // leaving a business deteriorating in its SEC filings off, from 21.4 named for the source it reads and
+        // stating it in its parameters, the eighth reading analysts' revisions, in the place the sector leaders'
+        // rule held until it was retired, and the ninth keeping the night's best three, each stating so in its rule
+        // and its parameters.
         var revisions = Variant(TheSwingFamily.RevisionsName);
         var bestThree = Variant(TheSwingFamily.BestThreeName);
 
@@ -430,8 +449,12 @@ public partial class FixtureExpectations
             [Live, NearestBands, Variant(TheSwingFamily.DepthName), Variant(TheSwingFamily.MarketOffName), Variant(TheSwingFamily.StrengthName), Variant(TheSwingFamily.ArrivalName), Variant(TheSwingFamily.DeterioratingName), revisions, bestThree],
             TextRows(store, "SELECT candidate FROM candidate_register WHERE event = 'registered' AND id > 3 ORDER BY id;"));
         Assert.Equal("the swing filter with estimates raised over the last 30 days, from version 1", revisions);
+        Assert.Equal("the swing filter leaving off a business deteriorating in its SEC filings, from version 1", Variant(TheSwingFamily.DeterioratingName));
+        Assert.DoesNotContain(Variant(TheSwingFamily.ProviderDeterioratingName), TextRows(store, "SELECT candidate FROM candidate_register;"));
         Assert.Equal(1.0, CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{Variant(TheSwingFamily.DeterioratingName)}';"))[SwingFilterRule.SkipDeterioratingParameter]);
+        Assert.Equal(1.0, CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{Variant(TheSwingFamily.DeterioratingName)}';"))[SwingFilterRule.FiledStateParameter]);
         Assert.Equal(0.0, CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{Live}';"))[SwingFilterRule.SkipDeterioratingParameter]);
+        Assert.Equal(0.0, CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{Live}';"))[SwingFilterRule.FiledStateParameter]);
         Assert.Equal(TheSwingFamily.RuleSkippingDeteriorating, Text(store, $"SELECT rule FROM candidate_register WHERE candidate = '{Variant(TheSwingFamily.DeterioratingName)}';"));
         Assert.Equal(TheSwingFamily.RuleReadingEstimates, Text(store, $"SELECT rule FROM candidate_register WHERE candidate = '{revisions}';"));
         Assert.Equal(
@@ -472,11 +495,23 @@ public partial class FixtureExpectations
         store.Execute("UPDATE swing_reading SET strength = 0.6, place_short = 0.6, place_long = 0.6 WHERE ticker = 'ZZB';");
 
         // The night's fundamental readings: ZZA's reported quarters read deteriorating and ZZC's improving,
-        // and ZZB and ZZD have no reading stored.
+        // and ZZB and ZZD have no reading stored. The states off the SEC's facts the night hands in run the other
+        // way, ZZA's improving and ZZC's deteriorating, and ZZB's and ZZD's are read as none, so the version leaving
+        // off a deteriorating business, which from 21.4 reads the filed state alone, leaves off ZZC and keeps ZZA.
         store.Execute(
             "INSERT INTO fundamental_reading (ticker, session_date, state, read_from, fetched_at, awaited, readings) VALUES " +
             $"('ZZA', '{FilterNight}', '{FundamentalState.Deteriorating}', NULL, NULL, NULL, '{{}}'), " +
             $"('ZZC', '{FilterNight}', '{FundamentalState.Improving}', NULL, NULL, NULL, '{{}}');");
+
+        var filedAsked = 0;
+        var filedStates = new Dictionary<string, string?>(StringComparer.Ordinal) { ["ZZA"] = FundamentalState.Improving, ["ZZC"] = FundamentalState.Deteriorating };
+
+        Task<Func<string, string?>> FiledStatesOnce(CancellationToken _)
+        {
+            filedAsked++;
+
+            return Task.FromResult<Func<string, string?>>(ticker => filedStates.GetValueOrDefault(ticker));
+        }
 
         // The night's sectors: the four and ZZE in Alpha, the five a sector is ranked on, ZZE holding a long
         // return of 30 and no bar on the night, ZZD 20 and the other three 10 each. Alpha ranks first, alone,
@@ -494,11 +529,12 @@ public partial class FixtureExpectations
         // 102 over a stop at 95 to 120 or 126 and the plan at the nearest bands over a stop at 100, and their
         // events tonight with none on the session before; ZZD is in a range and passes every other gate. So
         // the eighth, reading analysts' revisions, asks for the estimates of ZZA, ZZB and ZZC, and fires on ZZC,
-        // whose estimate was raised, alone. ZZC fires for all nine, ZZA for all but the seventh, which leaves a
-        // deteriorating business off, and the eighth, its estimate standing level, ZZB for all but the strength
-        // variant and the eighth, its state not stored and so not read against and its estimate not served, and
-        // ZZD for none; the ninth fires where the live filter does. ZZE, holding no bar on the night, is skipped
-        // by all nine and asked about by none.
+        // whose estimate was raised, alone. ZZC fires for all but the seventh, which leaves off a business its SEC
+        // filings read deteriorating, ZZA for all but the eighth, its estimate standing level, its provider state of
+        // deteriorating moving nothing, ZZB for all but the strength variant and the eighth, its states not read and
+        // so not read against and its estimate not served, and ZZD for none; the ninth fires where the live filter
+        // does. ZZE, holding no bar on the night, is skipped by all nine and asked about by none. The filed states
+        // are read once, since the family holds a rule reading them.
         var family = FamilyShadow.For(
             await new CandidateRegistrar(FixedClock.At(FilterEvening, SessionZones.UnitedStates), store.DatabaseFile).RowsAsync(),
             FilterEvening.AddMinutes(-30));
@@ -508,10 +544,14 @@ public partial class FixtureExpectations
             ["ZZB"] = EstimateReading.Unread("the provider did not serve it"),
             ["ZZC"] = Raised,
         });
+
+        Assert.True(family.ReadsFiledState);
+
         var outcome = await new SwingFilter(FixedClock.At(FilterEvening, SessionZones.UnitedStates), store.DatabaseFile)
-            .RunAsync("GSPC", "filter-family", family, estimates: estimates);
+            .RunAsync("GSPC", "filter-family", family, estimates: estimates, filedStates: FiledStatesOnce);
 
         Assert.Equal((36, 0), (outcome.Evaluated, outcome.Faults!.Count));
+        Assert.Equal(1, filedAsked);
 
         IReadOnlyDictionary<string, bool> FiredOn(string ticker)
         {
@@ -541,16 +581,31 @@ public partial class FixtureExpectations
         // level and ZZB's the provider did not serve.
         Assert.Equal(["ZZA", "ZZB", "ZZC"], estimates.Asked);
 
-        Assert.DoesNotContain(FiredOn("ZZC"), fire => !fire.Value);
+        Assert.Equal([skipping], FiredOn("ZZC").Where(fire => !fire.Value).Select(fire => fire.Key));
         Assert.DoesNotContain(FiredOn("ZZD"), fire => fire.Value);
-        Assert.Equal([skipping, revisions], FiredOn("ZZA").Where(fire => !fire.Value).Select(fire => fire.Key).Order(StringComparer.Ordinal));
+        Assert.Equal([revisions], FiredOn("ZZA").Where(fire => !fire.Value).Select(fire => fire.Key));
         Assert.Equal(
             [revisions, Variant(TheSwingFamily.StrengthName)],
             FiredOn("ZZB").Where(fire => !fire.Value).Select(fire => fire.Key).Order(StringComparer.Ordinal));
         Assert.Equal(9, FiredOn("ZZB").Count);
+
+        // The state each verdict read: the version reading the SEC's facts the filed state, naming its source, and the live
+        // filter the provider's state the night stored, naming none.
         Assert.Equal(
-            (FundamentalState.Deteriorating, FundamentalState.Deteriorating, FundamentalState.Improving, SwingFilterRule.StateNotRead),
-            (StateReadOn("ZZA", skipping), StateReadOn("ZZA", Live), StateReadOn("ZZC", skipping), StateReadOn("ZZB", skipping)));
+            (FundamentalState.Improving, FundamentalState.Deteriorating, FundamentalState.Deteriorating, FundamentalState.Improving, SwingFilterRule.StateNotRead),
+            (StateReadOn("ZZA", skipping), StateReadOn("ZZA", Live), StateReadOn("ZZC", skipping), StateReadOn("ZZC", Live), StateReadOn("ZZB", skipping)));
+
+        string? SourceReadOn(string ticker, string candidate)
+        {
+            using var document = JsonDocument.Parse(Text(store, $"SELECT shadow FROM gate_result WHERE ticker = '{ticker}' AND session_date = '{FilterNight}';"));
+            var values = document.RootElement.GetProperty("candidates").EnumerateArray()
+                .Single(one => one.GetProperty("candidate").GetString() == candidate)
+                .GetProperty("values");
+
+            return values.TryGetProperty(SwingFilterRule.StateSourceValue, out var source) ? source.GetString() : null;
+        }
+
+        Assert.Equal((SwingFilterRule.FiledSource, null), (SourceReadOn("ZZC", skipping), SourceReadOn("ZZC", Live)));
 
         // The estimate the filter handed each member, as the revisions rule's verdict names it.
         string EstimateOn(string ticker)
@@ -573,10 +628,17 @@ public partial class FixtureExpectations
         }
 
         Assert.EndsWith(
-            "; 9 swing family candidate(s) registered, 36 shadow evaluation(s) written, 9 skipped on a member without the readings: 9 stale, 0 gapped; estimates read for 3 member(s) a rule reading them passed on everything else, ZZA, ZZB, ZZC: the source's own words",
+            "; 9 swing family candidate(s) registered, 36 shadow evaluation(s) written, 9 skipped on a member without the readings: 9 stale, 0 gapped; estimates read for 3 member(s) a rule reading them passed on everything else, ZZA, ZZB, ZZC: the source's own words; business states read off the SEC's facts for 2 of 5 member(s), 1 deteriorating",
             Text(store, "SELECT detail FROM run_log WHERE run_id = 'filter-family' AND stage = 'swing-filter';"),
             StringComparison.Ordinal);
         Assert.Equal("ok", Text(store, "SELECT outcome FROM run_log WHERE run_id = 'filter-family' AND stage = 'swing-filter';"));
+
+        // A night handed no family reads no filed state, and its row says nothing of them.
+        await new SwingFilter(FixedClock.At(FilterEvening, SessionZones.UnitedStates), store.DatabaseFile)
+            .RunAsync("GSPC", "filter-alone", filedStates: FiledStatesOnce);
+
+        Assert.Equal(1, filedAsked);
+        Assert.DoesNotContain("business states", Text(store, "SELECT detail FROM run_log WHERE run_id = 'filter-alone' AND stage = 'swing-filter';"), StringComparison.Ordinal);
     }
 
     // An estimates source answering from constructed readings, recording the members it was asked about.

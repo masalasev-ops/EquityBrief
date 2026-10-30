@@ -735,7 +735,20 @@ public static class SchemaMigrations
         new Migration(112, "create improving_night, improving_result and improving_trade", CreateImproving),
         new Migration(113, "add research_request's section", AddResearchRequestSection),
         new Migration(114, "create label_pin", CreateLabelPin),
+        new Migration(115, "add the setup's five readings the operator chose and the business state off the filings", AddTheReadingsTheOperatorChose),
     ];
+
+    // From 21.4: the setup ledger's five readings the operator chose at 21.2 and the business's state off the SEC's facts
+    // as first filed, which the swing filter's version leaving off a deteriorating business reads, a column a reading after
+    // every column before them, each row kept and the new columns null until a build or a night writes them.
+    const string AddTheReadingsTheOperatorChose = @"
+        ALTER TABLE setup ADD COLUMN relative_strength_high REAL;
+        ALTER TABLE setup ADD COLUMN insider_cluster_buyers REAL;
+        ALTER TABLE setup ADD COLUMN rating_actions_net REAL;
+        ALTER TABLE setup ADD COLUMN estimate_revision_month REAL;
+        ALTER TABLE setup ADD COLUMN short_interest_share REAL;
+        ALTER TABLE setup ADD COLUMN business_state_filed REAL;
+    ";
 
     // The versions the news labeller labels under on the local model, a row a version written by hand, each pinning
     // the model, its file, the runtime that answered as a record, the instruction's version, the settings and the window
@@ -1907,8 +1920,8 @@ public static class SchemaMigrations
 
     // The exit a family rule's trade was kept under, none for the rule's own; the autopsy's finding a proposal states;
     // and the autopsy's figures of a family's finished trades, one row a run, family and figure.
-    // see: Every engine's settings hooks land together and all default off, so the families' pins move once
-    // see: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it
+    // see: The engines' hooks are eight forms a registration states and all default off, and every source a rule pins moves only in a checkpoint that registers every rule reading it again
+    // see: The trade autopsy proposes exits of a fixed menu that only a checkpoint widens, each tested as the procedure that chose it
     const string CreateLoopFindings = @"
         ALTER TABLE family_trade ADD COLUMN exit INTEGER;
         ALTER TABLE index_rule_trade ADD COLUMN exit INTEGER;

@@ -50,8 +50,10 @@ public static class LedgerPointInTime
         LedgerInsiders? insiders = null,
         IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? releases = null,
         IReadOnlyDictionary<DateOnly, double>? largeBreadth = null,
-        IReadOnlyDictionary<string, string?>? gics = null) =>
-        Read(cut, income, sectors, facts, ticker, insiders, releases, largeBreadth, gics) is { } read
+        IReadOnlyDictionary<string, string?>? gics = null,
+        IReadOnlyDictionary<string, LedgerActions>? actions = null,
+        IReadOnlyDictionary<string, IReadOnlyList<LedgerTrend>>? trends = null) =>
+        Read(cut, income, sectors, facts, ticker, insiders, releases, largeBreadth, gics, actions, trends) is { } read
             ? LedgerSetups.Readings(index, read.Name, read.Series[read.Name], Closes(read.Series[read.Name]), read.Bar, read.Sessions[read.At], read.Members, read.Calendar, read.At, market, read.Context, read.Series)
             : null;
 
@@ -71,9 +73,11 @@ public static class LedgerPointInTime
         LedgerInsiders? insiders = null,
         IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? releases = null,
         IReadOnlyDictionary<DateOnly, double>? largeBreadth = null,
-        IReadOnlyDictionary<string, string?>? gics = null)
+        IReadOnlyDictionary<string, string?>? gics = null,
+        IReadOnlyDictionary<string, LedgerActions>? actions = null,
+        IReadOnlyDictionary<string, IReadOnlyList<LedgerTrend>>? trends = null)
     {
-        if (Read(cut, income, sectors, facts, ticker, insiders, releases, largeBreadth, gics) is not { } read)
+        if (Read(cut, income, sectors, facts, ticker, insiders, releases, largeBreadth, gics, actions, trends) is not { } read)
         {
             return (false, null);
         }
@@ -102,7 +106,9 @@ public static class LedgerPointInTime
         LedgerInsiders? insiders,
         IReadOnlyDictionary<string, IReadOnlyList<LedgerRelease>>? releases,
         IReadOnlyDictionary<DateOnly, double>? largeBreadth,
-        IReadOnlyDictionary<string, string?>? gics)
+        IReadOnlyDictionary<string, string?>? gics,
+        IReadOnlyDictionary<string, LedgerActions>? actions = null,
+        IReadOnlyDictionary<string, IReadOnlyList<LedgerTrend>>? trends = null)
     {
         var calendar = cut.Sessions;
 
@@ -142,6 +148,8 @@ public static class LedgerPointInTime
             Releases = releases,
             LargeBreadth = largeBreadth,
             Gics = gics,
+            Actions = actions,
+            Trends = trends,
         });
     }
 
