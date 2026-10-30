@@ -237,10 +237,27 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
         var standing = await StandingAsync(databaseFile, index, cancellation);
 
+        // From 21.5 the families standing registered on the index, a frozen family on the S&P 400 or 600 tested against its
+        // live rule at the levels it states and its grid not searched, since a frozen rule's setting moves only by a freeze.
+        // see: The engines test a frozen rule at the levels it states, and a frozen rule's setting moves only by a freeze
+        var standingRules = Core.Candidates.ShadowColumn.StandingAt(await RegisterAsync(databaseFile, cancellation), started);
+        SweepHistoryInputs? largeRead = large ? inputs : null;
+
+        async Task<SweepHistoryInputs> LargeReadAsync() => largeRead ??= await IndexSweepRunner.OwnSwingRead.LargeAsync(history, through, output.WriteLine, cancellation);
+
+        Core.Candidates.RegisterRow? FrozenOn(string family) => large ? null : LiveOn(standingRules, index, family);
+
         if (!large && procedures)
         {
             foreach (var family in new[] { BreakoutRule.Name, DriftRule.Name })
             {
+                if (FrozenOn(family) is not null)
+                {
+                    output.WriteLine($"{Verb}: the {family}'s grid is not searched on the {DecisionCards.NameOf(index)}, since its live rule is frozen and {LoopDecisions.FrozenSettingRefused}");
+
+                    continue;
+                }
+
                 if (standing.TryGetValue(family, out var stood) && stood.Hooks.Count > 0)
                 {
                     output.WriteLine($"{Verb}: the {family}'s grid is not searched on the {DecisionCards.NameOf(index)}, since the rule stands at {stood.Words()} and the grid's walk reads no hook");
@@ -251,7 +268,10 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
                 proposals.Add(LoopProcedures.Swing(read, family, output.WriteLine, standing.GetValueOrDefault(family)));
             }
 
-            proposals.AddRange(LoopProcedures.Heavyweights(read, lay!, output.WriteLine));
+            if (FrozenOn(HeavyweightRule.Name) is null)
+            {
+                proposals.AddRange(LoopProcedures.Heavyweights(read, lay!, output.WriteLine));
+            }
         }
 
         var readings = await LoopReadings.ReadAsync(read, databaseFile, through, cancellation);
@@ -260,10 +280,31 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         var market = await history.MarketAsync(through, cancellation);
         IdeaReplay? baseReplay = null;
 
+        // A frozen family's live rule as the engines read it, or the line saying why none is read for it.
+        void AddLive(string family, (RuleWalk? Walk, string? Why) live)
+        {
+            if (live.Walk is { } walk)
+            {
+                rules.Add(walk);
+            }
+            else
+            {
+                output.WriteLine($"{Verb}: no engine reads the {family} on the {DecisionCards.NameOf(index)}, since {live.Why}");
+            }
+        }
+
         if (!large)
         {
             baseReplay = SweepIdeasRunner.Read(read.Inputs, market, output.WriteLine).Replay;
-            rules.Add(RuleWalk.Pullback(read, market, output.WriteLine, standing.GetValueOrDefault(SetupFamilies.Pullback), readings, trees, candidates: baseReplay));
+
+            if (FrozenOn(SetupFamilies.Pullback) is { } pullbackLive)
+            {
+                AddLive(SetupFamilies.Pullback, RuleTests.LivePullbackWalk(read, market, pullbackLive, output.WriteLine, readings, trees, baseReplay));
+            }
+            else
+            {
+                rules.Add(RuleWalk.Pullback(read, market, output.WriteLine, standing.GetValueOrDefault(SetupFamilies.Pullback), readings, trees, candidates: baseReplay));
+            }
         }
         else if (await OpenVersionAsync(databaseFile, cancellation) is { } open)
         {
@@ -288,18 +329,28 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             }
         }
 
-        rules.Add(RuleWalk.Swing(read, BreakoutRule.Name, large, standing.GetValueOrDefault(BreakoutRule.Name), readings, trees));
-        rules.Add(RuleWalk.Swing(read, DriftRule.Name, large, standing.GetValueOrDefault(DriftRule.Name), readings, trees));
+        foreach (var family in new[] { BreakoutRule.Name, DriftRule.Name })
+        {
+            if (FrozenOn(family) is not { } live)
+            {
+                rules.Add(RuleWalk.Swing(read, family, large, standing.GetValueOrDefault(family), readings, trees));
+
+                continue;
+            }
+
+            // A live rule stating a level the extended grid's walk does not read is walked over its sweep's own reading.
+            var p = RuleTests.Unversioned(Core.Candidates.CandidateEvaluator.Read(live.Parameters));
+            var own = Core.Candidates.CandidateEvaluators.Find(live.Evaluator) is Core.Candidates.IndexRuleCandidate evaluator && RuleTests.ReadsOwnSweep(evaluator, p)
+                ? await IndexSweepRunner.OwnSwingRead.ReadAsync(read, await LargeReadAsync(), family, history, through, evaluator is Core.Candidates.IndexDriftCandidate ? p.GetValueOrDefault(Core.Candidates.IndexDriftCandidate.StopFloorParameter) : 0, cancellation)
+                : null;
+
+            AddLive(family, RuleTests.LiveSwingWalk(read, family, live, own, readings, trees));
+        }
 
         // From 21.5 the short-term dip where a rule of it stands on the index: its live rule's walk handed to every engine,
         // and its grid a procedure against that rule where it stands at no hook, which the grid's walk does not read. The
         // fundamentals-first family, which the night computes no longer, is read by no engine.
         // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
-        var standingRules = Core.Candidates.ShadowColumn.StandingAt(await RegisterAsync(databaseFile, cancellation), started);
-        SweepHistoryInputs? largeRead = large ? inputs : null;
-
-        async Task<SweepHistoryInputs> LargeReadAsync() => largeRead ??= await IndexSweepRunner.OwnSwingRead.LargeAsync(history, through, output.WriteLine, cancellation);
-
         if (LiveOn(standingRules, index, DipRule.Name) is { } dipLive)
         {
             var dipRead = IndexSweepRunner.DipRead.Of(read, await LargeReadAsync(), await history.SeriesOfAsync([IndexSweepRunner.DipFund(index), MarketCloses.Vix], through, cancellation));
@@ -352,7 +403,17 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             spreads[rule.Family] = spread;
         }
 
-        proposals.AddRange(ExitProcedures.Heavyweights(read, lay!, output.WriteLine));
+        // From 21.5 a frozen book on the S&P 400 or 600 has its menu read against no provisional book: its rule reads the
+        // menu's sale under the 200-day average alone, and the run says whether it holds it already.
+        // see: The engines test a frozen rule at the levels it states, and a frozen rule's setting moves only by a freeze
+        if (FrozenOn(HeavyweightRule.Name) is { } book)
+        {
+            output.WriteLine($"{Verb}: the heavyweights' menu is not read on the {DecisionCards.NameOf(index)}, since " + BookMenuWhy(book));
+        }
+        else
+        {
+            proposals.AddRange(ExitProcedures.Heavyweights(read, lay!, output.WriteLine));
+        }
 
         var tested = ScoreProcedures.AgainstRidge(Judge(read, proposals));
         var runId = FormattableString.Invariant($"{Verb}-{index}-{started:yyyyMMddTHHmmssZ}");
@@ -640,6 +701,13 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
     // From 22.3 whether a run reads the short-term dip's history on an index: only where a rule of the family stands on it
     // when the run begins, so the monthly run reads the family from its next run after a freeze.
     // see: Each index's dip is frozen at the setting its sweep would run with the neighbours meeting the floors and the market variant as versions
+    // From 21.5 why a frozen heavyweights book's menu is read against no book: its rule reads the menu's sale under the
+    // 200-day average alone, which it states already or which the engines walk on no frozen book of their own.
+    public static string BookMenuWhy(Core.Candidates.RegisterRow book) =>
+        Core.Candidates.CandidateEvaluator.Read(book.Parameters).GetValueOrDefault(Core.Candidates.IndexHeavyweightCandidate.AverageExitParameter) == 1
+            ? "its live book is frozen and sells under its 200-day average already, the one change of the menu its rule reads"
+            : "its live book is frozen, and the engines walk the menu's sale under the 200-day average on no frozen book of their own";
+
     // From 21.5 a family's live rule standing on an index as the register counts the family there; none where none stands.
     public static Core.Candidates.RegisterRow? LiveOn(IReadOnlyList<Core.Candidates.RegisterRow> standing, string index, string family) =>
         Core.Candidates.FamilyRecords.LiveOf(Core.Candidates.CandidateFamily.In(standing, LoopDecisions.RegisterFamilyOf(index, family)));

@@ -584,18 +584,87 @@ public static class RuleTests
         return (passes[(int)MarketSwitch.IndexOverTwoHundred], passes[(int)MarketSwitch.VixFalling]);
     }
 
-    static RuleUnderTest SwingAt(RuleTestInputs inputs, string family, RegisterRow row, bool large, (bool[] Average, bool[] Vix)? switches)
+    // A breakout's or a drift's registration as its sweep's grid reads it: the grid, each dial's value, and the drift's
+    // stop floor in typical moves, none for the breakout.
+    static (FamilyGrid Grid, double[] Values, double Floor) GridOf(string family, IReadOnlyDictionary<string, double> p)
     {
-        var p = CandidateEvaluator.Read(row.Parameters);
         var breakout = family == BreakoutRule.Name;
-        var grid = breakout ? BreakoutSweep.Grid : DriftSweep.Grid;
 
         static double Ceiling(double value) => value >= 1e9 ? double.PositiveInfinity : value;
 
         double[] values = breakout
             ? [p[BreakoutCandidate.HighSessionsParameter], p[BreakoutCandidate.VolumeMultipleParameter], Ceiling(p[BreakoutCandidate.RangeCeilingParameter]), p[BreakoutCandidate.StopMovesParameter]]
             : [p[DriftCandidate.WindowSessionsParameter], p[DriftCandidate.ReactionMovesParameter], p[DriftCandidate.VolumeMultipleParameter], p.GetValueOrDefault(DriftCandidate.TargetRiskMultipleParameter, p.GetValueOrDefault(IndexDriftCandidate.TargetMultipleParameter))];
-        var floor = breakout ? 0 : p.GetValueOrDefault(DriftCandidate.StopFloorMovesParameter, p.GetValueOrDefault(IndexDriftCandidate.StopFloorParameter));
+
+        return (breakout ? BreakoutSweep.Grid : DriftSweep.Grid, values, breakout ? 0 : p.GetValueOrDefault(DriftCandidate.StopFloorMovesParameter, p.GetValueOrDefault(IndexDriftCandidate.StopFloorParameter)));
+    }
+
+    // From 21.5 an S&P 400's or 600's frozen breakout or drift as the engines read it, at the setting and every level its
+    // registration states: on the extended grid's walk where that walk reads its levels, and otherwise over its sweep's own
+    // reading of the index's history, which the caller lays out; or why the history cannot walk it.
+    // see: The engines test a frozen rule at the levels it states, and a frozen rule's setting moves only by a freeze
+    public static (RuleWalk? Walk, string? Why) LiveSwingWalk(LoopRead read, string family, RegisterRow row, IndexSweepRunner.OwnSwingRead? own, LoopReadings? readings, Func<long, TreeModel?>? trees)
+    {
+        if (CandidateEvaluators.Find(row.Evaluator) is not IndexRuleCandidate evaluator)
+        {
+            return (null, $"its rule runs on '{row.Evaluator}', which no S&P 400 or 600 swing family carries");
+        }
+
+        var p = Unversioned(CandidateEvaluator.Read(row.Parameters));
+        var hooks = HooksOf(p);
+        var words = FamilyRecords.IsLive(row.Candidate) ? row.Candidate[FamilyRecords.LivePrefix.Length..] : row.Candidate;
+
+        if (ReadsOwnSweep(evaluator, p))
+        {
+            if (own is null)
+            {
+                return (null, NoOwnRead);
+            }
+
+            var (at, refused) = RuleReplay.OwnSwing(own, evaluator, p);
+
+            return at is null ? (null, refused) : (RuleWalk.OwnSwing(read, own, at.Setting, at.Levels, words, hooks, readings, trees), null);
+        }
+
+        var (grid, values, floor) = GridOf(family, p);
+        var places = IndexNightRead.Places(grid, values);
+
+        if (places.Any(place => place < 0))
+        {
+            return (null, OffTheGrid);
+        }
+
+        var change = new LoopChange(places, grid.Key(places), floor > 0 ? floor : null, hooks);
+
+        return (RuleWalk.Swing(read, family, false, change, readings, trees, marketOff: p.GetValueOrDefault(IndexRuleCandidate.LargeBreadthParameter) == IndexRuleCandidate.NoMarketCheck), null);
+    }
+
+    // From 21.5 an S&P 400's or 600's frozen pullback as the engines read it: at its dials on the extended grid with its
+    // hooks, where that grid's walk reads every level it states; or why it cannot, a level only its search's own reading
+    // walks, which no engine's walk reads.
+    // see: The engines test a frozen rule at the levels it states, and a frozen rule's setting moves only by a freeze
+    public static (RuleWalk? Walk, string? Why) LivePullbackWalk(LoopRead read, IReadOnlyList<SweepMarketSeries> market, RegisterRow row, Action<string> progress, LoopReadings? readings, Func<long, TreeModel?>? trees, IdeaReplay candidates)
+    {
+        var p = CandidateEvaluator.Read(row.Parameters);
+
+        if (CandidateEvaluators.Find(row.Evaluator) is IndexRuleCandidate own && ReadsOwnSweep(own, p))
+        {
+            return (null, OwnSearchOnly);
+        }
+
+        return DialsOf(p) is { } dials
+            ? (RuleWalk.Pullback(read, market, progress, LoopChange.OfHooks(HooksOf(p)), readings, trees, dials, candidates), null)
+            : (null, OffTheGrid);
+    }
+
+    // Why the engines read no frozen pullback stating a level only its search's own reading walks.
+    public const string OwnSearchOnly = "its live rule states a level only its search's own reading of the index's history walks, which no engine's walk reads";
+
+    static RuleUnderTest SwingAt(RuleTestInputs inputs, string family, RegisterRow row, bool large, (bool[] Average, bool[] Vix)? switches)
+    {
+        var p = CandidateEvaluator.Read(row.Parameters);
+        var breakout = family == BreakoutRule.Name;
+        var (grid, values, floor) = GridOf(family, p);
         var places = IndexNightRead.Places(grid, values);
         var hooks = HooksOf(p);
         var marketSwitches = large ? MarketSwitches.Of(p) : MarketSwitches.None;

@@ -192,6 +192,71 @@ public sealed class RuleWalk(
             WalkSkipping);
     }
 
+    // From 21.5 an S&P 400 or 600 breakout or drift standing at a level only its sweep's own reading of the index's history
+    // walks, read once for every engine: the listings its setting keeps under every level it states over that reading, and
+    // its walk, five a night with one open trade a stock, each bought at the next open after its round trip, under the exit
+    // its hooks name or one a proposal sets, against the same plan under the same exit on every member.
+    // see: The engines test a frozen rule at the levels it states, and a frozen rule's setting moves only by a freeze
+    public static RuleWalk OwnSwing(LoopRead read, IndexSweepRunner.OwnSwingRead own, int[] setting, IReadOnlyList<DialLevel<FamilyListing>> levels, string words, IReadOnlyDictionary<string, double> hooks, LoopReadings? readings = null, Func<long, TreeModel?>? trees = null)
+    {
+        FamilyListing[] listed = [.. own.ListingsUnder(setting, levels)];
+        var closes = ClosesOf(read.Series);
+        var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
+        var exit = RuleHooks.Of(hooks).ExitChoice;
+
+        RuleListing Unit(FamilyListing listing)
+        {
+            var (result, sessions) = exit is null ? own.Adapter.Exit(listing) : Menu(listing);
+            var benchmark = result is null ? double.NaN : exit is null ? own.Adapter.Benchmark(listing) : ExitProcedures.MenuBenchmark(read, closes, listing, exit);
+            double? edge = result is { } made && !double.IsNaN(benchmark)
+                ? made - IndexSweepRunner.CostInRisk(read.Series[listing.Name], listing, made, read.Companies, 1) - benchmark
+                : null;
+
+            return new RuleListing(listing.Name, listing.Bar, listing.Session, result is null ? null : listing.Session + sessions, edge);
+        }
+
+        (double? Result, int Sessions) Menu(FamilyListing listing)
+        {
+            var outcome = ExitProcedures.Replayed(closes, listing, exit!);
+
+            return (outcome.Result, outcome.Sessions);
+        }
+
+        IReadOnlyList<ExitProcedures.Walked> Walk(ExitChoice? under, Func<int, bool>? keep, Func<IReadOnlyList<int>, IReadOnlyList<int>>? arrange)
+        {
+            if (arrange is null)
+            {
+                return ExitProcedures.Walk(read, own.Adapter, closes, keep is null ? listed : [.. listed.Where((_, at) => keep(at))], under);
+            }
+
+            var ordered = new List<FamilyListing>();
+
+            foreach (var night in Enumerable.Range(0, listed.Length).Where(at => keep is null || keep(at)).GroupBy(at => listed[at].Session).OrderBy(group => group.Key))
+            {
+                int[] ranked = [.. night.OrderByDescending(at => listed[at].Order).ThenByDescending(at => listed[at].ThenBy).ThenBy(at => tickers[listed[at].Name], StringComparer.Ordinal)];
+                var kept = arrange(ranked);
+
+                for (var place = 0; place < kept.Count; place++)
+                {
+                    ordered.Add(listed[kept[place]] with { Order = kept.Count - place, ThenBy = 0 });
+                }
+            }
+
+            return ExitProcedures.Walk(read, own.Adapter, closes, ordered, under);
+        }
+
+        return new RuleWalk(
+            own.Family,
+            WordsOf(words, hooks),
+            closes,
+            listed.Select(one => one.Cap).DefaultIfEmpty(0).Max(),
+            [.. listed.Select(Unit)],
+            Walk,
+            hooks,
+            readings is null ? null : at => readings.Of(listed[at].Name, listed[at].Bar, listed[at].Session),
+            trees);
+    }
+
     // From 21.5 the short-term dip's live rule on an index read once for every engine: its listings at the setting and the
     // second stage's levels its registration states over the dip's own reading of the history, the market level read on
     // each listing's session, and its walk, the dip's own, five a night in its order with one open trade a stock, each
