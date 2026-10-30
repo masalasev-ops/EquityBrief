@@ -12601,3 +12601,16 @@ Carried:    the dip's ranking variant, its order read off the audit once a month
             to the operator with its figures then; the two registered variants' records from their registration; the
             expected value's top fifth standing below its bottom on every family the score does not order, put to the
             operator beside the ninth breakout rule's record; and everything 21.7 carried.
+
+### 21.7 - correction: the expected value's order is walked unregistered beside the rules the swing walk walks, where its decision and the guide said every live breakout and drift   2026-10-30
+
+Found:      the per-rule test in print mode over the operator's store on the S&P 400, read-only from 16:04 to 16:32 UTC,
+            printed no expected-value line beside the live drift or the live breakout, each stating a level only its own
+            search walks, while the decision An order by the expected value of the setups like each pick is registered
+            where its family has room and its step can hand the figure, and walked unregistered elsewhere and the guide
+            said the order is walked beside every live breakout and drift; the order rides the swing walk's listings,
+            which a rule walked by its own search does not have.
+Corrected:  the decision's and the guide's words, naming the rules the swing walk walks and saying a rule walked by its
+            own search has none; no code moved.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.9's entry below, which
+            states that run's figures.
