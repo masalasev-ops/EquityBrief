@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-30 - docs/ARCHITECTURE.html - section 14's swing filter step reads the S&P 500 for the fundamentals-first family only while its page trade stands open, and no index answers under the family
+Corrects: the step still said the night reads the fundamentals-first family on the S&P 500 and among the S&P 400's and 600's provisional rules, which 21.4 took out of the night on 2026-10-30; found while 21.5 amended the same step's approvals.
+Was:
+> ...; then read the fundamentals-first family on the S&P 500 alone, over the pullback's base listings with each member's readings as the ledger's catalogue reads them tonight, at the setting an approval stored for it there or its provisional one, holding back a stock the S&P 500's own families listed tonight (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point); then read the S&P 400's and 600's provisional rules by the sweep's own code over each index's own members, the fundamentals-first family's among them, its swing lists closed together on its own breadth, ...
+Now:
+> ...; then, from 21.4, read the S&P 500 for the fundamentals-first family only while a page trade of the family's stands open on it, walking that trade to its end, no member answering under the family on any index (see: Business first leaves the night at the one move of the pins, its rows and record kept and its one open trade run out under its own plan); then read the S&P 400's and 600's provisional rules by the sweep's own code over each index's own members, its swing lists closed together on its own breadth, ...
+Why: the step states what the night does from 21.4, as the decision taking business first out of the night rules.
+
 ### 2026-10-30 - docs/ARCHITECTURE.html - section 18's row for a history build asked for a session the night wrote says the build reads the history through the last session it writes
 Corrects: a history build whose span ended in the night's sessions read the history on through them while its check reads the history through the newest session the build wrote, so the pulled years were scaled onto the stored closes over different sessions and the S&P 500's check after 21.4's remedy found readings differing by the scale, on 2026-10-30.
 Was:
