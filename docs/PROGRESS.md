@@ -12445,3 +12445,14 @@ Carried:    the operating row The ratings refresh's cap read on its first five r
             the catalogue's words for the estimate revision, which name the quarters fetch alone, and for the short
             interest, which say last reported where the reading reads last published, each moved at the next checkpoint
             that moves the pins; and FLEX's revised surprise, put to the operator.
+
+### 21.6 - correction: the decision on a new reading dates the quarters fetches' kept trends from their first fetch of 2026-10-11, where it said 2026-09-27   2026-10-30
+
+Found:      the decision A new reading joins the ledger with its history where its source keeps one, and from the
+            night it is first stored where it keeps none said the quarters fetches' trends were kept from 2026-09-27,
+            the day the quarters fetch was ruled; the store's first trend was fetched at 01:27 UTC on 2026-10-11, read
+            from the live store read-only while 21.7 was written beside it.
+Corrected:  the decision's date in its own words; no code moved, since the ledger reads each trend as stored whatever
+            its first day.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying 21.7's entry below, which
+            states that run's figures.
