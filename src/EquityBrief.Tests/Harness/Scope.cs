@@ -3719,6 +3719,11 @@ internal static class Scope
             Verdict.Pass,
             "the ranking's candidates and order worked by hand over a constructed night of seven setups under a constructed score and under the expected value, the best five taken and a setup neither can read left off, at the hooks and in the S&P 500's recorder; the figures read off the document against the constants",
             ByExpectations),
+        // 21.4's catalogue part: section 17's row for the five readings the operator chose at 21.2.
+        [CheckReach.Key(LimitsTable, "The readings the operator chose")] = new Scoped(
+            Verdict.Pass,
+            "the five readings worked by hand at a constructed session through the ledger's one readings function: the relative strength at a new high and under one, none under its sessions and none while the index's series holds no close by one of them; the cluster's distinct open-market buyers inside its sessions, none where the insider history does not hold them and none for a member with no filer; the rating actions' net inside its sessions, none where the store holds no answer and none on a session after the ask; the revision from the newest fetch on or before the session, none before the first fetch; and the shares short over the covers' count, none while no store holds the reports; the figures read off the document against the constants",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "A path no bars reach")] = new Scoped(
             Verdict.Pass,
             "a series running out before the trade ends leaves it open with no result, a stop at its buy places no trade, and the benchmark averages only the members whose closes reach the exit's end and is none where none does",

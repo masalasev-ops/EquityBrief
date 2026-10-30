@@ -735,7 +735,18 @@ public static class SchemaMigrations
         new Migration(112, "create improving_night, improving_result and improving_trade", CreateImproving),
         new Migration(113, "add research_request's section", AddResearchRequestSection),
         new Migration(114, "create label_pin", CreateLabelPin),
+        new Migration(115, "add the setup's five readings the operator chose", AddTheReadingsTheOperatorChose),
     ];
+
+    // From 21.4: the setup ledger's five readings the operator chose at 21.2, a column a reading after every column before
+    // them, each row kept and the new columns null until a build or a night writes them.
+    const string AddTheReadingsTheOperatorChose = @"
+        ALTER TABLE setup ADD COLUMN relative_strength_high REAL;
+        ALTER TABLE setup ADD COLUMN insider_cluster_buyers REAL;
+        ALTER TABLE setup ADD COLUMN rating_actions_net REAL;
+        ALTER TABLE setup ADD COLUMN estimate_revision_month REAL;
+        ALTER TABLE setup ADD COLUMN short_interest_share REAL;
+    ";
 
     // The versions the news labeller labels under on the local model, a row a version written by hand, each pinning
     // the model, its file, the runtime that answered as a record, the instruction's version, the settings and the window

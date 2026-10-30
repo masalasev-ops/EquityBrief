@@ -82,6 +82,17 @@ public sealed record LedgerInsiders(IReadOnlyDictionary<string, IReadOnlyList<In
 // business readings and the valuation reading's facts change only when a fact is filed, so they are kept for a member by
 // how many of its facts were filed before the session, and a series' closes are joined to those before its year once.
 // see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+// From 21.4 what Yahoo's newest stored answer about a stock's analysts holds for the ledger: the day it was asked on and
+// each rating action's day with Yahoo's word for it, as Yahoo files them.
+public sealed record LedgerActions(DateOnly AskedOn, IReadOnlyList<(DateOnly Day, string Action)> Actions);
+
+// From 21.4 one quarters fetch's trend of the current fiscal year's consensus earnings a share: the session the fetch
+// belongs to, and the consensus now and 30 days before as the answer stated them, each none where it filed none.
+public sealed record LedgerTrend(DateOnly Session, decimal? Now, decimal? MonthBefore);
+
+// From 21.4 one settlement of a stock's short interest as FINRA reports it: the day reported for and the shares short.
+public sealed record LedgerShortInterest(DateOnly Reported, decimal Shares);
+
 public sealed record LedgerContext(
     IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> Income,
     IReadOnlyDictionary<string, string?> Sectors,
@@ -99,6 +110,152 @@ public sealed record LedgerContext(
     // From 22.2 the S&P 500's breadth on each session, which an S&P 400 or 600 row reads; none where it is read without it.
     // see: The short-term dip's setups clear its drop a grid step past the widest its sweep reads with no trend condition, and the ledger's history budget is raised to hold them
     public IReadOnlyDictionary<DateOnly, double>? LargeBreadth { get; init; }
+
+    // From 21.4 the sources of the readings the operator chose at 21.2: Yahoo's newest stored answer about each stock's
+    // analysts, the quarters fetches' trends of each stock's current fiscal year by the session each belongs to, oldest
+    // first, and FINRA's settlements of each stock's short interest, oldest first; each none where the readings are read
+    // without it, and the short interest none until its store is filled.
+    public IReadOnlyDictionary<string, LedgerActions>? Actions { get; init; }
+
+    public IReadOnlyDictionary<string, IReadOnlyList<LedgerTrend>>? Trends { get; init; }
+
+    public IReadOnlyDictionary<string, IReadOnlyList<LedgerShortInterest>>? ShortInterest { get; init; }
+
+    readonly System.Runtime.CompilerServices.ConditionalWeakTable<SweepSeries, double?[]> relativeStrength = new();
+
+    // Yahoo's words for a firm raising and lowering its rating.
+    public const string Upgrade = "up";
+
+    public const string Downgrade = "down";
+
+    // From 21.4 a member's close over the index's own series' close on each of its bars, over the highest such ratio of
+    // the 252 bars to it, 1 at a new high; none under 252 bars or where the series holds no close by one of their days,
+    // a day it lacks between two it holds read as the close before it, as every market series reading reads one. Read
+    // once a series, the high kept over a window that drops each bar as it leaves.
+    public double?[] RelativeStrengthHigh(SweepSeries one, double[] closes, IReadOnlyList<(DateOnly Session, double Close)>? index) =>
+        relativeStrength.GetValue(one, series => RelativeStrengthHighOf(series, closes, index));
+
+    static double?[] RelativeStrengthHighOf(SweepSeries one, double[] closes, IReadOnlyList<(DateOnly Session, double Close)>? index)
+    {
+        var readings = new double?[closes.Length];
+
+        if (index is null)
+        {
+            return readings;
+        }
+
+        var ratios = new double?[closes.Length];
+
+        for (var bar = 0; bar < closes.Length; bar++)
+        {
+            ratios[bar] = SeriesReadings.CloseOn(index, one.Bars[bar].Session) is { } close && close > 0 ? closes[bar] / close : null;
+        }
+
+        var window = LedgerReadings.RelativeStrengthSessions;
+        var highs = new LinkedList<int>();
+        var lastMissing = -1;
+
+        for (var bar = 0; bar < closes.Length; bar++)
+        {
+            if (ratios[bar] is not { } ratio)
+            {
+                lastMissing = bar;
+                highs.Clear();
+
+                continue;
+            }
+
+            while (highs.Count > 0 && ratios[highs.Last!.Value]!.Value <= ratio)
+            {
+                highs.RemoveLast();
+            }
+
+            highs.AddLast(bar);
+
+            while (highs.First!.Value <= bar - window)
+            {
+                highs.RemoveFirst();
+            }
+
+            if (bar >= window - 1 && bar - lastMissing >= window)
+            {
+                readings[bar] = ratio / ratios[highs.First.Value]!.Value;
+            }
+        }
+
+        return readings;
+    }
+
+    // From 21.4 the distinct insiders buying in the open market over the cluster's sessions to a session, from the filings
+    // filed before it, each counted on the day it counts on; none for a member the store matches no filer for, and none
+    // where the insider history does not hold the window's days.
+    public double? ClusterBuyers(SweepSeries one, IReadOnlyList<DateOnly> calendar, int at)
+    {
+        if (Insiders?.GetValueOrDefault(one.Name.Ticker) is not { } rows)
+        {
+            return null;
+        }
+
+        var session = calendar[at];
+        var from = calendar[Math.Max(0, at - (LedgerReadings.ClusterSessions - 1))];
+
+        if (!InsiderSpans.Holds(from, session.AddDays(-1)))
+        {
+            return null;
+        }
+
+        return InsiderReadings.InEffect(rows, session)
+            .Where(one => one.Day >= from)
+            .Select(one => one.Row)
+            .Where(row => row.Code == InsiderReadings.Purchase)
+            .Select(row => InsiderReadings.Insider(row.OwnerKey))
+            .Distinct(StringComparer.Ordinal)
+            .Count();
+    }
+
+    // From 21.4 Yahoo's rating upgrades less downgrades dated over the sessions before a session, from the stock's newest
+    // stored answer; none where the store holds no answer for the stock, or the session is after the answer's ask, since
+    // the actions after the ask are not yet stored.
+    public double? RatingActionsNet(string ticker, IReadOnlyList<DateOnly> calendar, int at)
+    {
+        if (Actions?.GetValueOrDefault(ticker) is not { } answer || calendar[at] > answer.AskedOn)
+        {
+            return null;
+        }
+
+        var from = calendar[Math.Max(0, at - LedgerReadings.RatingActionSessions)];
+        var to = calendar[at];
+        var window = answer.Actions.Where(action => action.Day >= from && action.Day < to).ToArray();
+
+        return window.Count(action => action.Action == Upgrade) - window.Count(action => action.Action == Downgrade);
+    }
+
+    // From 21.4 the current fiscal year's consensus earnings a share over its figure 30 days before, less 1, as the newest
+    // quarters fetch on or before a session states them; none before the first fetch, where either figure is missing or
+    // where the earlier one is nought.
+    public double? EstimateRevision(string ticker, DateOnly session) =>
+        Trends?.GetValueOrDefault(ticker)?.LastOrDefault(trend => trend.Session <= session) is { Now: { } now, MonthBefore: { } before } && before != 0m
+            ? Statistic.FromRatio(now / before) - 1
+            : null;
+
+    // From 21.4 the shares short FINRA last reported before a session over the newest share count the filings' covers
+    // state before it; none while no store holds the reports, and none where the covers state no count.
+    public double? ShortInterestShare(SweepSeries one, DateOnly session)
+    {
+        var ticker = one.Name.Ticker;
+
+        if (ShortInterest?.GetValueOrDefault(ticker)?.LastOrDefault(report => report.Reported < session) is not { } report)
+        {
+            return null;
+        }
+
+        var facts = Facts?.GetValueOrDefault(ticker) ?? [];
+        var filed = facts.Count(fact => fact.Filed < session);
+        var parts = valuation.GetOrAdd((ticker, filed), _ => ValuationReading.PartsOf(facts, session));
+        var count = parts.Counts.LastOrDefault(count => count.Day < session);
+
+        return count.Day == default || count.Shares <= 0m ? null : Statistic.FromRatio(report.Shares / count.Shares);
+    }
 
     // A member's 2-session relative strength index on each of its bars, read once a series through the dip's own function.
     public double?[] RsiTwo(SweepSeries one, double[] closes) => rsiTwo.GetValue(one, _ => DipRule.Rsi(closes));
@@ -868,6 +1025,13 @@ public static class LedgerSetups
         {
             Set(column, value);
         }
+
+        // From 21.4 the five readings the operator chose at 21.2, each none where its source holds nothing for the session.
+        Set("relative_strength_high", context.RelativeStrengthHigh(one, closes, indexSeries)[bar]);
+        Set("insider_cluster_buyers", context.ClusterBuyers(one, calendar, at));
+        Set("rating_actions_net", context.RatingActionsNet(ticker, calendar, at));
+        Set("estimate_revision_month", context.EstimateRevision(ticker, day));
+        Set("short_interest_share", context.ShortInterestShare(one, day));
 
         return readings;
     }

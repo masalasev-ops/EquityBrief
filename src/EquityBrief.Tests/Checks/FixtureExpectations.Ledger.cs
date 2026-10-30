@@ -83,10 +83,12 @@ public partial class FixtureExpectations
         Assert.Equal((1.0, 0.0), (LedgerReadings.Flag(true)!.Value, LedgerReadings.Flag(false)!.Value));
 
         // The catalogue names each column once, and from 20.8 holds the four release readings at its end, from 22.2 before
-        // the short-term dip's nine, and from 22.8 those before the fundamentals scorecard's nine.
+        // the short-term dip's nine, from 22.8 those before the fundamentals scorecard's nine, and from 21.4 those before the
+        // five readings the operator chose at 21.2.
         Assert.Equal(LedgerReadings.All.Count, LedgerReadings.All.Select(reading => reading.Column).Distinct(StringComparer.Ordinal).Count());
-        Assert.Equal(94, LedgerReadings.Count);
-        Assert.Equal(LedgerReleases.Columns, LedgerReadings.All.SkipLast(18).TakeLast(4).Select(reading => reading.Column));
+        Assert.Equal(99, LedgerReadings.Count);
+        Assert.Equal(LedgerReleases.Columns, LedgerReadings.All.SkipLast(23).TakeLast(4).Select(reading => reading.Column));
+        Assert.Equal(["relative_strength_high", "insider_cluster_buyers", "rating_actions_net", "estimate_revision_month", "short_interest_share"], LedgerReadings.All.TakeLast(5).Select(reading => reading.Column));
     }
 
     [Fact]

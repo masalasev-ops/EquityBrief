@@ -50,6 +50,7 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.CatalogueTable, "Score audit"),
         CheckReach.Key(Scope.MatrixTable, "Score audit"),
         .. FixtureExpectations.HookFormClaims,
+        .. FixtureExpectations.ChosenReadingClaims,
     ];
 
     // The rows the document loses after phase 22's report: none.

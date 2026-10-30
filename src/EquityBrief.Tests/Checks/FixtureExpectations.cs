@@ -142,6 +142,8 @@ public partial class FixtureExpectations
             .. AutopsyClaims,
             // 21.4, the hooks' three forms: section 17's exposure and ranking rows.
             .. HookFormClaims,
+            // 21.4, the catalogue's five readings the operator chose: section 17's row.
+            .. ChosenReadingClaims,
             // 17.6, winners against losers: section 17's two rows and section 18's one.
             .. ConditionClaims,
             // 17.7, the learned score: section 17's three rows.

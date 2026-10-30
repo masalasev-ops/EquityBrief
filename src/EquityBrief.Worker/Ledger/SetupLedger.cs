@@ -12,6 +12,7 @@ using EquityBrief.Core.Readings;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
+using EquityBrief.Data.Analysts;
 using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Cards;
 using EquityBrief.Worker.Indices;
@@ -72,6 +73,8 @@ public sealed partial class SetupLedger : IComponent
             new StoreTouch(Store.PulledHolding, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
+            new StoreTouch(Store.AnalystView, Touch.Read),
+            new StoreTouch(Store.EstimateTrend, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
             new StoreTouch(Store.SwitchReading, Touch.Read),
             new StoreTouch(Store.MarketReading, Touch.Read),
@@ -125,6 +128,12 @@ public sealed partial class SetupLedger : IComponent
     // Each ticker's filer: the newest the quarters step filed for it, and the companies pull's beneath it for the
     // history, read in that order so the night's own replaces the pull's.
     const string Filers = "SELECT ticker, cik FROM company WHERE cik IS NOT NULL ORDER BY fetched_at;";
+
+    // From 21.4 Yahoo's newest stored answer about each stock's analysts with its rating actions, and the quarters
+    // fetches' trends of the current fiscal year's consensus earnings a share, for the readings the operator chose at 21.2.
+    const string NewestAnalystViews = "SELECT ticker, asked_at, actions FROM analyst_view a WHERE asked_at = (SELECT MAX(asked_at) FROM analyst_view b WHERE b.ticker = a.ticker);";
+
+    const string YearTrends = "SELECT ticker, fetched_at, eps_now, eps_thirty_days_ago FROM estimate_trend WHERE period = '0y' ORDER BY ticker, fetched_at;";
 
     const string PulledFilers = "SELECT ticker, cik FROM pulled_company WHERE cik IS NOT NULL;";
 
@@ -432,6 +441,8 @@ public sealed partial class SetupLedger : IComponent
         var before = await BeforeTheYearAsync(connection, FirstSessions(names), facts, night, cancellation);
         var insiders = await InsidersAsync(connection, [Filers], names.Select(name => name.Ticker), night.AddDays(-InsiderReadings.WindowDays), cancellation);
         var releases = await ReleasesAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
+        var actions = await ActionsAsync(connection, names.Select(name => name.Ticker), cancellation);
+        var trends = await TrendsAsync(connection, names.Select(name => name.Ticker), cancellation);
         var (highs, lows) = SweepIdeas.HighsAndLows(inputs.Series, inputs.Members, inputs.Calendar.Length);
         var context = new LedgerContext(income, sectors, highs, lows, facts, before)
         {
@@ -439,6 +450,8 @@ public sealed partial class SetupLedger : IComponent
             Insiders = insiders.Rows,
             InsiderSpans = insiders.Spans,
             Releases = releases,
+            Actions = actions,
+            Trends = trends,
             LargeBreadth = await LargeBreadthOnAsync(connection, index, night, cancellation),
             Gics = await GicsAsync(connection, history: false, cancellation),
         };
@@ -470,6 +483,8 @@ public sealed partial class SetupLedger : IComponent
         var facts = await FactsAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
         var insiders = await InsidersAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), FirstInsiderDay(inputs.Sessions), cancellation);
         var releases = await ReleasesAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
+        var actions = await ActionsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
+        var trends = await TrendsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
 
         // On the S&P 400 and 600 the S&P 500's breadth as it stood, as the history build reads it.
         var largeBreadth = index is not null && index != IndexFamilies.LargeIndex
@@ -482,6 +497,8 @@ public sealed partial class SetupLedger : IComponent
             Insiders = insiders.Rows,
             InsiderSpans = insiders.Spans,
             Releases = releases,
+            Actions = actions,
+            Trends = trends,
             LargeBreadth = largeBreadth,
             Gics = await GicsAsync(connection, history: true, cancellation),
         });
@@ -541,6 +558,8 @@ public sealed partial class SetupLedger : IComponent
         var before = await BeforeTheYearAsync(connection, FirstSessions(names), facts, night, cancellation);
         var insiders = await InsidersAsync(connection, [Filers], names.Select(name => name.Ticker), night.AddDays(-InsiderReadings.WindowDays), cancellation);
         var releases = await ReleasesAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
+        var actions = await ActionsAsync(connection, names.Select(name => name.Ticker), cancellation);
+        var trends = await TrendsAsync(connection, names.Select(name => name.Ticker), cancellation);
         var largeBreadth = await LargeBreadthOnAsync(connection, index, night, cancellation);
         var gics = await GicsAsync(connection, history: false, cancellation);
 
@@ -587,6 +606,8 @@ public sealed partial class SetupLedger : IComponent
                     Insiders = insiders.Rows,
                     InsiderSpans = insiders.Spans,
                     Releases = releases,
+                    Actions = actions,
+                    Trends = trends,
                     LargeBreadth = largeBreadth,
                     Gics = gics,
                 };
@@ -1416,6 +1437,8 @@ public sealed partial class SetupLedger : IComponent
             : new Dictionary<int, IReadOnlyList<HeavyweightCut>>();
         var insiders = await InsidersAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), FirstInsiderDay(calendar), cancellation);
         var releases = await ReleasesAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
+        var actions = await ActionsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
+        var trends = await TrendsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
 
         // On the S&P 400 and 600 the S&P 500's breadth as it stood on each session, from the S&P 500's own history as its
         // sweep reads it, which the dip's reading reads and a live rule's market check reads.
@@ -1435,6 +1458,8 @@ public sealed partial class SetupLedger : IComponent
             Insiders = insiders.Rows,
             InsiderSpans = insiders.Spans,
             Releases = releases,
+            Actions = actions,
+            Trends = trends,
             LargeBreadth = largeBreadth is null ? null : LargeBreadthOver(calendar, largeBreadth),
             Gics = await GicsAsync(connection, history: true, cancellation),
         };
@@ -1771,6 +1796,8 @@ public sealed partial class SetupLedger : IComponent
         var facts = await FactsAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
         var insiders = await InsidersAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), FirstInsiderDay(inputs.Sessions), cancellation);
         var releases = await ReleasesAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
+        var actions = await ActionsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
+        var trends = await TrendsAsync(connection, inputs.Names.Select(name => name.Ticker), cancellation);
         var largeBreadth = index == IndexFamilies.LargeIndex
             ? null
             : LargeBreadthOver(inputs.Sessions, SweepSwitches.LargeBreadth(await history.ReadAsync(through, null, cancellation), inputs.Sessions));
@@ -1785,7 +1812,7 @@ public sealed partial class SetupLedger : IComponent
 
             foreach (var row in session)
             {
-                var (held, rebuilt) = LedgerPointInTime.Setup(index, cut, cutMarket, income, sectors, facts, row.Family, row.Ticker, insiders, releases, largeBreadth, gics);
+                var (held, rebuilt) = LedgerPointInTime.Setup(index, cut, cutMarket, income, sectors, facts, row.Family, row.Ticker, insiders, releases, largeBreadth, gics, actions, trends);
 
                 if (!held)
                 {
@@ -2364,6 +2391,77 @@ public sealed partial class SetupLedger : IComponent
     // Each ticker's insiders' transactions the four readings read, through its filer as the facts are read and filed on or
     // after the day given, the columns the readings read alone; and the spans the store's insider history holds.
     // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+    // From 21.4 Yahoo's newest stored answer about each of the stocks given, its ask's day and each rating action's day with
+    // Yahoo's word for it, Yahoo's instants read as days in UTC since it files a day and not a moment; none for a stock
+    // the store holds no answer for.
+    static async Task<IReadOnlyDictionary<string, LedgerActions>> ActionsAsync(SqliteConnection connection, IEnumerable<string> tickers, CancellationToken cancellation)
+    {
+        var wanted = tickers.ToHashSet(StringComparer.Ordinal);
+        var answers = new Dictionary<string, LedgerActions>(StringComparer.Ordinal);
+
+        await using var command = Command(connection, null, NewestAnalystViews, []);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            var ticker = reader.GetString(0);
+
+            if (!wanted.Contains(ticker))
+            {
+                continue;
+            }
+
+            var actions = reader.IsDBNull(2) ? [] : StoredAnalysts.ActionsOf(reader.GetString(2));
+
+            answers[ticker] = new LedgerActions(
+                DateOnly.FromDateTime(InstantOf(reader.GetString(1)).UtcDateTime),
+                [.. actions.Select(action => (DateOnly.FromDateTime(action.GradedAt.UtcDateTime), action.Action))]);
+        }
+
+        return answers;
+    }
+
+    // From 21.4 the quarters fetches' trends of each stock's current fiscal year, oldest first, each fetch read as the
+    // session its instant falls on in New York, since a fetch after the close belongs to that session's night.
+    static async Task<IReadOnlyDictionary<string, IReadOnlyList<LedgerTrend>>> TrendsAsync(SqliteConnection connection, IEnumerable<string> tickers, CancellationToken cancellation)
+    {
+        var wanted = tickers.ToHashSet(StringComparer.Ordinal);
+        var trends = new Dictionary<string, List<LedgerTrend>>(StringComparer.Ordinal);
+
+        await using var command = Command(connection, null, YearTrends, []);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            var ticker = reader.GetString(0);
+
+            if (!wanted.Contains(ticker))
+            {
+                continue;
+            }
+
+            if (!trends.TryGetValue(ticker, out var rows))
+            {
+                trends[ticker] = rows = [];
+            }
+
+            rows.Add(new LedgerTrend(
+                SessionDayOf(InstantOf(reader.GetString(1))),
+                reader.IsDBNull(2) ? null : Money.FromStorage(reader.GetString(2)),
+                reader.IsDBNull(3) ? null : Money.FromStorage(reader.GetString(3))));
+        }
+
+        return trends.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<LedgerTrend>)pair.Value, StringComparer.Ordinal);
+    }
+
+    static readonly TimeZoneInfo SessionZone = SessionZones.ResolveSessionZone(SessionZones.UnitedStates);
+
+    // A stored instant as the clock stores one, and the session it falls on in New York, which is the clock's own reading
+    // of a session date, for a source the night's own run wrote after the close.
+    static DateTimeOffset InstantOf(string stored) => DateTimeOffset.Parse(stored, CultureInfo.InvariantCulture);
+
+    static DateOnly SessionDayOf(DateTimeOffset instant) => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(instant, SessionZone).DateTime);
+
     static async Task<LedgerInsiders> InsidersAsync(
         SqliteConnection connection,
         IReadOnlyList<string> filerQueries,
