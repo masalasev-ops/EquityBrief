@@ -26,6 +26,20 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-30 - docs/BUILD_PLAN.md - 21.13 gains the market strip and 21.14 the exposure's direction on the VIX, on the operator's ruling
+Authorised by: Phase 21 makes the existing families choose better and the monthly loop test every family on every index, built to completion before any new work with no model judging a stock and nothing retired without the operator's word
+Was:
+> (21.13) ... the combined account's card opens "All setups together: up n.n% since dd mmm, n positions open, n picks skipped." Writes 15.23's tables, 15.20's and 15.21's rows, the fixture's expectations, the roster's row, the guide and the changelog.
+> (21.13, done when) ... each sentence above is read back off its rendered page; and one mutation is shown red, the rule stated before the run.
+> (21.14) ... A ruling that keeps everything as it is lands this checkpoint as its ruling entry and builds nothing. ...
+> (21.14, done when) each ruled change is worked by hand on both sides over constructed trades, the fill step's three pricings among them where ruled; the remedy's lines ...
+Now:
+> (21.13) ... n picks skipped." On the operator's addition of 2026-10-30, ... a market strip atop Tonight on every index, and atop every page the copy holds: ... No paid call; no rule reads the four new series. Writes 15.23's tables, 15.20's and 15.21's rows, 15.7's strip rows and the copy's, the market series' rows and the night's step, CLAUDE.md's hard rule, the fixture's expectations, the roster's row, the guide and the changelog.
+> (21.13, done when) ... each sentence above is read back off its rendered page; the market strip's tiles are read back off Tonight and off the copy ...; the plain-words check passes on the strip; the night asks each of the four series in one request, its weight stated before the request ...; no rule's code version moves, asserted; and one mutation is shown red, the rule stated before the run.
+> (21.14) ... The exposure's direction on the VIX, on the operator's ruling of 2026-10-30 ...: kept as 21.9 built it ...; beside each graded variant the reverse direction ... is walked unregistered through the tester in the same folds, and both results are put to the operator with the other rulings; nothing more is registered for it. A ruling that keeps everything ...
+> (21.14, done when) each ruled change ...; the exposure's reverse direction is worked by hand at both of its VIX switches over a constructed night and walked beside each graded variant in the tester's folds, its figures stated beside the variant's; the remedy's lines ...
+Why: the operator ruled on 2026-10-30 that the exposure's VIX direction stays as built with its reverse walked beside it and put at 21.14, and added the market strip to 21.13.
+
 ### 2026-10-30 - docs/ARCHITECTURE.html - the tester reads each breakout's and drift's graded exposure
 Authorised by: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
 Was:

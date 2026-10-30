@@ -12675,3 +12675,30 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the exposure's direction on the VIX, put to the operator; the three registered variants' records from their
             registration; the pullback's and the dip's exposure, waiting on a walk of theirs that reads it; and
             everything 21.8 carried.
+
+### 21.14 ruling - the exposure's direction on the VIX stays as built, its reverse walked unregistered beside each graded variant and both put at 21.14   2026-10-30
+
+Not a checkpoint entry: it records the operator's ruling of 2026-10-30 on the question 21.9 carried, and lands nothing.
+Ruled:      word for word in `prompts/2026-10-30-21.9-21.13-operator-ruling.md`, the first item: "The exposure's
+            direction on the VIX, the question 21.9 carried: keep it as built, a VIX over its median counting against
+            the night. Beside each graded variant, walk the reverse direction unregistered, a VIX over its median
+            counting for the night, through the tester in the same folds, and put both results to me at 21.14 with the
+            other rulings. Nothing more is registered for it."
+Written:    21.14's text and its done condition in the build plan, with the prior text in the changelog; the reverse
+            walk is built with 21.14.
+Verified:   `tools/ci.ps1` green over the tree carrying 21.10's entry below, which states that run's figures.
+
+### 21.13 ruling - a market strip atop Tonight on every index and atop every page the copy holds, with four market series added to the night   2026-10-30
+
+Not a checkpoint entry: it records the operator's addition of 2026-10-30 to 21.13, and lands nothing.
+Ruled:      word for word in `prompts/2026-10-30-21.9-21.13-operator-ruling.md`, the second item: one row of tiles,
+            the S&P 500, the S&P 400 (IJH), the S&P 600 (IJR), QQQ, DIA, Breadth with the floor its page's market check
+            reads, the VIX against its 1-year median, US 10Y and US 3M, Credit (HYG), Oil (WTI) and Dollar, each with its
+            level and its change on the day, green up and red down with an arrow; a line above saying the close it reads
+            or the delayed time, the read surface asking Yahoo once a page's opening, cached five minutes, free and
+            keyless and outside the night, a tile unanswered showing the close with "prior close only"; the copy drawing
+            the closes alone; and the night gaining QQQ, DIA, WTI crude and the US dollar index, one request a series,
+            kept apart from the members' bars, named in CLAUDE.md's hard rule, each series' weight stated before the
+            first night asks it, read by no rule and moving no rule's version.
+Written:    21.13's text and its done condition in the build plan, with the prior text in the changelog.
+Verified:   `tools/ci.ps1` green over the tree carrying 21.10's entry below, which states that run's figures.
