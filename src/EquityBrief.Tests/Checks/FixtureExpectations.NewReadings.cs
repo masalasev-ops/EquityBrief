@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using EquityBrief.Core.Analysts;
+using EquityBrief.Core.Bars;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Providers;
@@ -105,8 +106,83 @@ public partial class FixtureExpectations
         // 27th, 30th, 1 December and the 2nd; a day later than a count of weekdays alone.
         Assert.Equal(new DateOnly(2026, 12, 2), ShortInterests.PublishedOn(new DateOnly(2026, 11, 20)));
 
-        // 2017-12-29, FINRA's first settlement, before the table covers a day: weekdays alone, the 1st of January counted.
-        Assert.Equal(new DateOnly(2018, 1, 9), ShortInterests.PublishedOn(ShortInterests.FirstSettlement));
+        // 2017-12-29, FINRA's first settlement, before the table covers a day: weekdays alone, the 1st of January counted, to
+        // the 9th, and from the 21.6 correction of 2026-10-30 one business day later, the 10th. 2024-12-31's count starts on
+        // the table's first day and is read off the table: the 2nd, 3rd, 6th, 7th, 8th, then the 9th closed, the 10th and
+        // the 13th.
+        Assert.Equal(new DateOnly(2018, 1, 10), ShortInterests.PublishedOn(ShortInterests.FirstSettlement));
+        Assert.Equal(new DateOnly(2025, 1, 13), ShortInterests.PublishedOn(new DateOnly(2024, 12, 31)));
+        Assert.Equal(new DateOnly(2024, 12, 25), ShortInterests.PublishedOn(new DateOnly(2024, 12, 13)));
+    }
+
+    // The 21.6 correction of 2026-10-30: over every settlement of the closure table's reach as FINRA dates them, the 15th or
+    // the business day before it and the month's last business day, a count of weekdays alone misses the table's day by
+    // at most the business days an estimate is moved later by, and by that many on at least one.
+    // see: A FINRA publication day counted before the closure table's reach is moved later by the largest miss counting weekdays alone makes where the table reaches
+    [Fact]
+    public void AnEstimatedFinraDayIsMovedLaterByTheLargestMissCountingWeekdaysAloneMakesWhereTheTableReaches()
+    {
+        static bool Weekday(DateOnly day) => day.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday);
+
+        static bool Business(DateOnly day) => Weekday(day) && !ExchangeClosures.All.Contains(day);
+
+        static DateOnly OnOrBefore(DateOnly day)
+        {
+            while (!Business(day))
+            {
+                day = day.AddDays(-1);
+            }
+
+            return day;
+        }
+
+        static DateOnly WeekdaysAfter(DateOnly from, int count)
+        {
+            var day = from;
+
+            for (var counted = 0; counted < count;)
+            {
+                day = day.AddDays(1);
+                counted += Weekday(day) ? 1 : 0;
+            }
+
+            return day;
+        }
+
+        var misses = new List<int>();
+
+        for (var month = new DateOnly(2025, 1, 1); month.Year <= 2027; month = month.AddMonths(1))
+        {
+            foreach (var settlement in new[] { OnOrBefore(month.AddDays(14)), OnOrBefore(month.AddMonths(1).AddDays(-1)) })
+            {
+                var table = ShortInterests.PublishedOn(settlement);
+
+                if (table > ExchangeClosures.CoveredThrough)
+                {
+                    continue;
+                }
+
+                var alone = WeekdaysAfter(settlement, ShortInterests.PublishedAfter);
+                var miss = 0;
+
+                for (var day = alone.AddDays(1); day <= table; day = day.AddDays(1))
+                {
+                    miss += Weekday(day) ? 1 : 0;
+                }
+
+                misses.Add(miss);
+            }
+        }
+
+        // 72 settlements over three years, December 2027's month end published past the table's reach and left out.
+        Assert.Equal(71, misses.Count);
+        Assert.Equal(ShortInterests.EstimatedLate, misses.Max());
+
+        // A settlement before the reach is counted on weekdays alone and moved that many weekdays later.
+        var before = new DateOnly(2024, 11, 15);
+
+        Assert.Equal(WeekdaysAfter(before, ShortInterests.PublishedAfter + ShortInterests.EstimatedLate), ShortInterests.PublishedOn(before));
+        Assert.Equal(new DateOnly(2024, 11, 27), ShortInterests.PublishedOn(before));
     }
 
     // A trends feed answering from a capture for the symbols it holds and a constructed current year for the rest but each
@@ -286,6 +362,29 @@ public partial class FixtureExpectations
 
     // The off-peak run's first slot of 2026-10-30 in New York.
     static readonly DateTimeOffset ShortInterestRead = new(2026, 10, 30, 4, 20, 0, TimeSpan.Zero);
+
+    // The 21.6 correction of 2026-10-30: a run first moves every stored settlement to the day the rule gives, a report
+    // stored on a weekday count alone before the closure table's reach moved one business day later, and one stored on the
+    // rule's day left alone.
+    [Fact]
+    public async Task TheShortInterestReaderMovesAStoredSettlementToTheDayTheRuleGivesBeforeItReads()
+    {
+        using var store = ShortInterestStore();
+
+        store.Execute(
+            "INSERT INTO short_interest (ticker, settlement_date, published_on, shares_short, average_volume, days_to_cover, revision, observed_at, run_id) VALUES "
+            + "('AAPL', '2017-12-29', '2018-01-09', 100, NULL, NULL, NULL, '2026-10-30T13:00:00Z', 'short-interest-history-20261030T130000Z'), "
+            + "('KEYS', '2017-12-29', '2018-01-09', 200, NULL, NULL, NULL, '2026-10-30T13:00:00Z', 'short-interest-history-20261030T130000Z'), "
+            + "('AAPL', '2026-09-30', '2026-10-09', 300, NULL, NULL, NULL, '2026-10-30T13:00:00Z', 'short-interest-20261030T130000Z');");
+
+        var outcome = await new ShortInterestReader(FixedClock.At(ShortInterestRead, SessionZones.UnitedStates), store.DatabaseFile).RunAsync(new ConstructedShortInterestFeed(), history: false);
+
+        Assert.Equal(2, outcome.Restated);
+        Assert.Equal(
+            ["AAPL|2017-12-29|2018-01-10|100", "AAPL|2026-09-30|2026-10-09|300", "KEYS|2017-12-29|2018-01-10|200"],
+            Query(store, "SELECT ticker, settlement_date, published_on, shares_short FROM short_interest WHERE settlement_date IN ('2017-12-29', '2026-09-30') ORDER BY ticker, settlement_date;"));
+        Assert.Contains("; 2 stored report(s) moved to the day FINRA's publication is counted on", Query(store, "SELECT detail FROM run_log WHERE stage = 'short-interest';").Single(), StringComparison.Ordinal);
+    }
 
     [Fact]
     public async Task TheShortInterestReaderKeepsEachSettlementsReportsWithTheDayFinraPublishedThemAndAReportAsFirstRead()

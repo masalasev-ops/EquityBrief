@@ -40,7 +40,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `analyst_view` | AnalystJob | none | none |
 | `analyst_rating` | RatingsJob | none | none |
 | `treasury_yield` | TreasuryReader | none | none |
-| `short_interest` | ShortInterestReader | none | none |
+| `short_interest` | ShortInterestReader | ShortInterestReader | none |
 | `calendar` | CalendarFetcher | CalendarFetcher | CalendarFetcher |
 | `pulled_bar` | HistoryPull | none | HistoryPull |
 | `pulled_earnings` | HistoryPull | none | HistoryPull |
@@ -374,7 +374,7 @@ Grain: one row per stock per settlement FINRA reported its consolidated short in
 |---|---|---|
 | `ticker` | TEXT | the stock as the three indices hold it, FINRA's symbol being the ticker with a share class's separator taken out |
 | `settlement_date` | TEXT | the settlement the report is for, the 15th or the month's last settlement day |
-| `published_on` | TEXT | the day FINRA publishes the settlement, the seventh business day after it, a weekday the exchange's closure table does not hold where it covers the day |
+| `published_on` | TEXT | the day FINRA publishes the settlement, the seventh business day after it, a weekday the exchange's closure table does not hold where it covers the day, and one business day later where the count starts before the table's reach |
 | `shares_short` | INTEGER | the shares short at the settlement, as FINRA states them |
 | `average_volume` | INTEGER | FINRA's average daily volume over the settlement's period, null where it states none |
 | `days_to_cover` | REAL | FINRA's days to cover, a statistic, null where it states none |
@@ -384,7 +384,7 @@ Grain: one row per stock per settlement FINRA reported its consolidated short in
 
 Primary key: `ticker`, `settlement_date`.
 
-**FINRA's consolidated short interest, kept a stock and settlement a row by the short interest reader alone** (see: FINRA's short interest is read once a settlement after the labeller, and its history once by hand). The off-peak run's step asks FINRA for the settlements from the newest the table holds and the records of every stock the three indices held on or after each, and the history by hand from FINRA's first settlement, 2017-12-29; a report held is kept as first read, so a settlement asked again stores only what it lacked and nothing updates or deletes a row. A stock FINRA answers nothing for at a settlement stores nothing. The setup ledger reads the newest report a session finds published before it, over the share count the filings state before the session, for its short interest reading, none for a session before the first; no rule, list or gate reads the table (see: A new reading joins the ledger with its history where its source keeps one, and from the night it is first stored where it keeps none).
+**FINRA's consolidated short interest, kept a stock and settlement a row by the short interest reader alone** (see: FINRA's short interest is read once a settlement after the labeller, and its history once by hand). The off-peak run's step asks FINRA for the settlements from the newest the table holds and the records of every stock the three indices held on or after each, and the history by hand from FINRA's first settlement, 2017-12-29; a report held is kept as first read, so a settlement asked again stores only what it lacked and nothing deletes a row. From the 21.6 correction of 2026-10-30 each run first moves every stored settlement's `published_on` to the day the rule gives where it stands at another, the one update the table takes, a settlement whose count starts before the exchange's closure table reaches counted on weekdays alone and moved one business day later (see: A FINRA publication day counted before the closure table's reach is moved later by the largest miss counting weekdays alone makes where the table reaches). A stock FINRA answers nothing for at a settlement stores nothing. The setup ledger reads the newest report a session finds published before it, over the share count the filings state before the session, for its short interest reading, none for a session before the first; no rule, list or gate reads the table (see: A new reading joins the ledger with its history where its source keeps one, and from the night it is first stored where it keeps none).
 
 ### calendar
 Grain: one row per ticker, event date and kind.

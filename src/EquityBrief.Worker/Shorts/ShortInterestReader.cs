@@ -9,7 +9,7 @@ namespace EquityBrief.Worker.Shorts;
 
 // What a read of FINRA's short interest came to: the settlements read, the member asks made, the reports stored, the
 // members FINRA answered nothing for at a settlement, the requests, and the refusal that stopped it, none where none did.
-public sealed record ShortInterestOutcome(int Settlements, int Asked, int Stored, int Unanswered, int Requests, string? Refused);
+public sealed record ShortInterestOutcome(int Settlements, int Asked, int Stored, int Unanswered, int Requests, string? Refused, int Restated = 0);
 
 // The short interest step. A process of its own the off-peak run starts after the labeller, never the night, and by hand
 // with its history: it asks FINRA for the settlements its reference symbol's reports carry from the newest settlement
@@ -27,7 +27,7 @@ public sealed class ShortInterestReader(IClock clock, string databaseFile) : ICo
         Stores:
         [
             new StoreTouch(Store.Membership, Touch.Read),
-            new StoreTouch(Store.ShortInterest, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.ShortInterest, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: [Feed.ShortInterest]);
@@ -42,6 +42,11 @@ public sealed class ShortInterestReader(IClock clock, string databaseFile) : ICo
     public const int FirstLookBackDays = 45;
 
     const string NewestSettlement = "SELECT MAX(settlement_date) FROM short_interest;";
+
+    const string HeldSettlements = "SELECT DISTINCT settlement_date FROM short_interest;";
+
+    // A settlement's reports moved to the day the rule gives, where the day stored is another.
+    const string Restate = "UPDATE short_interest SET published_on = $published_on WHERE settlement_date = $settlement_date AND published_on <> $published_on;";
 
     // Every stock the three indices held on or after a settlement, each once, a member announced to join among them, as
     // the stages that store what a member needs read it.
@@ -75,6 +80,9 @@ public sealed class ShortInterestReader(IClock clock, string databaseFile) : ICo
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
+        // A report is kept as first read, and the day it was published is the rule's and not FINRA's, so each run first
+        // moves every stored settlement to the day the rule gives where it stands at another.
+        var restated = await RestateAsync(connection, cancellation);
         var newest = await NewestAsync(connection, cancellation);
         var from = history ? ShortInterests.FirstSettlement : newest ?? today.AddDays(-FirstLookBackDays);
         var before = feed.Requests;
@@ -111,7 +119,7 @@ public sealed class ShortInterestReader(IClock clock, string databaseFile) : ICo
             refused = failure is OperationCanceledException ? "FINRA did not answer in time on any try" : failure.Message;
         }
 
-        var outcome = new ShortInterestOutcome(read, asked, stored, unanswered, feed.Requests - before, refused);
+        var outcome = new ShortInterestOutcome(read, asked, stored, unanswered, feed.Requests - before, refused, restated);
 
         await using (var command = connection.CreateCommand())
         {
@@ -121,7 +129,7 @@ public sealed class ShortInterestReader(IClock clock, string databaseFile) : ICo
             command.Parameters.AddWithValue("$started_at", Instant(started));
             command.Parameters.AddWithValue("$ended_at", Instant(clock.UtcNow));
             command.Parameters.AddWithValue("$outcome", refused is null ? "ok" : "partial");
-            command.Parameters.AddWithValue("$rows_written", stored);
+            command.Parameters.AddWithValue("$rows_written", stored + restated);
             command.Parameters.AddWithValue("$network_requests", outcome.Requests);
             command.Parameters.AddWithValue("$detail", Detail(outcome, from, today, history));
             await command.ExecuteNonQueryAsync(cancellation);
@@ -134,7 +142,44 @@ public sealed class ShortInterestReader(IClock clock, string databaseFile) : ICo
     public static string Detail(ShortInterestOutcome outcome, DateOnly from, DateOnly through, bool history) =>
         FormattableString.Invariant($"{(history ? "the history" : "the newest settlements")} from {Day(from)} through {Day(through)}: ")
         + FormattableString.Invariant($"{outcome.Settlements} settlement(s) read, {outcome.Asked} stock ask(s), {outcome.Stored} report(s) stored, {outcome.Unanswered} answered nothing, {outcome.Requests} request(s) to FINRA")
+        + (outcome.Restated > 0 ? FormattableString.Invariant($"; {outcome.Restated} stored report(s) moved to the day FINRA's publication is counted on") : string.Empty)
         + (outcome.Refused is { } refusal ? "; stopped, " + refusal : string.Empty);
+
+    async Task<int> RestateAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        var settlements = new List<string>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = HeldSettlements;
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                settlements.Add(reader.GetString(0));
+            }
+        }
+
+        var restated = 0;
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        foreach (var settlement in settlements)
+        {
+            await using var command = connection.CreateCommand();
+
+            command.Transaction = transaction;
+            command.CommandText = Restate;
+            command.Parameters.AddWithValue("$settlement_date", settlement);
+            command.Parameters.AddWithValue("$published_on", Day(ShortInterests.PublishedOn(DateOnly.ParseExact(settlement, "yyyy-MM-dd", CultureInfo.InvariantCulture))));
+            restated += await command.ExecuteNonQueryAsync(cancellation);
+        }
+
+        await transaction.CommitAsync(cancellation);
+
+        return restated;
+    }
 
     async Task<int> StoreAsync(
         SqliteConnection connection,
