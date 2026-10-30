@@ -317,9 +317,9 @@ public partial class FixtureExpectations
 
         Assert.Equal("derived", expected.GetProperty("derivation").GetString());
         Assert.Equal(["setup_night", "setup", "ledger_summary"], expected.GetProperty("tables").EnumerateArray().Select(table => table.GetString()!));
-        Assert.Equal(5, expected.GetProperty("setupNightsAnIndex").GetInt32());
+        Assert.Equal(7, expected.GetProperty("setupNightsAnIndex").GetInt32());
         Assert.Equal(LedgerSetups.Families, expected.GetProperty("families").EnumerateArray().Select(family => family.GetString()!).ToArray());
-        Assert.StartsWith("every setup row's family is one of the five", expected.GetProperty("setups").GetString(), StringComparison.Ordinal);
+        Assert.StartsWith("every setup row's family is one of the seven", expected.GetProperty("setups").GetString(), StringComparison.Ordinal);
         Assert.StartsWith("none:", expected.GetProperty("otherSetups").GetString(), StringComparison.Ordinal);
         Assert.StartsWith("one row, the dip's", expected.GetProperty("summary").GetString(), StringComparison.Ordinal);
 
@@ -334,7 +334,10 @@ public partial class FixtureExpectations
         var members = Query(store, "SELECT DISTINCT members FROM setup_night WHERE index_code = 'GSPC';").Single();
 
         Assert.True(int.Parse(members, System.Globalization.CultureInfo.InvariantCulture) > 0, "the fixture's night held no member");
-        Assert.Equal([$"GSPC|breakout|{members}|night", $"GSPC|dip|{members}|night", $"GSPC|drift|{members}|night", $"GSPC|fundamentals|{members}|night", $"GSPC|pullback|{members}|night"], nights);
+        // From 21.4 the two book families' rows among them, the fixture's night no reshuffle and no member's filing read anew.
+        Assert.Equal(
+            [$"GSPC|breakout|{members}|night", $"GSPC|dip|{members}|night", $"GSPC|drift|{members}|night", $"GSPC|fundamentals|{members}|night", $"GSPC|improving|{members}|night", $"GSPC|pullback|{members}|night", $"GSPC|quality|{members}|night"],
+            nights);
         Assert.Equal(["ok"], Query(store, $"SELECT outcome FROM run_log WHERE run_id = 'ledger-fixture' AND stage = '{SetupLedger.Stage}';"));
 
         // Every setup written sits inside its family's loose gates, read back off its own readings and its session.

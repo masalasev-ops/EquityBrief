@@ -89,6 +89,8 @@ public sealed partial class SetupLedger : IComponent
             new StoreTouch(Store.IndexFamilyNight, Touch.Read),
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
             new StoreTouch(Store.DipPick, Touch.Read),
+            new StoreTouch(Store.QualityHolding, Touch.Read),
+            new StoreTouch(Store.ImprovingTrade, Touch.Read),
             new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.SetupNight, Touch.Read | Touch.Insert | Touch.Delete),
@@ -240,6 +242,17 @@ public sealed partial class SetupLedger : IComponent
         SELECT ticker, family FROM index_family_pick WHERE index_code = $index AND session_date = $night AND state = 'listed'
         UNION ALL
         SELECT ticker, 'dip' FROM dip_pick WHERE index_code = $index AND session_date = $night AND state = 'listed';";
+
+    // From 21.4 the book families' picks of a session, read on the night after it since their steps run after the
+    // ledger's: the quality book's holdings under the live rule standing after that session's reshuffle, and the
+    // Fundamentals trades the live rule opened that night; and the night's own book rows of that session marked by them.
+    const string QualityHeld = "SELECT ticker FROM quality_holding WHERE index_code = $index AND rule = $rule AND chosen_on <= $session AND (ended_on IS NULL OR ended_on > $session);";
+
+    const string ImprovingBought = "SELECT ticker FROM improving_trade WHERE index_code = $index AND rule = $rule AND chosen_on = $session;";
+
+    const string UnpickBookRows = "UPDATE setup SET picked = 0 WHERE index_code = $index AND family = $family AND session_date = $session AND source = $source;";
+
+    const string PickBookRow = "UPDATE setup SET picked = 1 WHERE index_code = $index AND family = $family AND session_date = $session AND source = $source AND ticker = $ticker;";
 
     const string ClearTheNight = "DELETE FROM setup WHERE index_code = $index AND session_date = $night AND source = $source;";
 
@@ -610,6 +623,9 @@ public sealed partial class SetupLedger : IComponent
                     Trends = trends,
                     LargeBreadth = largeBreadth,
                     Gics = gics,
+                    QualityLive = live.Quality.Settings,
+                    ImprovingLive = live.Improving.Setting,
+                    SessionDay = clock.SessionDateAt,
                 };
                 var families = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, context)
                     .Select(family => live.Read.TryGetValue(family.Family, out var rule)
@@ -622,16 +638,24 @@ public sealed partial class SetupLedger : IComponent
                     var listed = picks.TryGetValue(family.Family, out var held) ? held : [];
                     var dipBenchmark = family.Family == DipRule.Name && family.Rows.Count > 0 ? DipBenchmark(closes, opens, inputs, inputs.At, night) : default;
 
+                    var book = BookSetups.IsBook(family.Family);
+
                     foreach (var row in family.Rows)
                     {
                         var name = NameOf(inputs.Series, row.Ticker);
                         var at = IndexNightRead.BarOf(inputs.Series[name], inputs.At);
-                        var outcome = family.Family == DipRule.Name
-                            ? DipRead(closes, opens, inputs, name, at, row.Anchor, dipBenchmark)
-                            : Outcome(closes, opens, inputs, name, at, row.Anchor, row.Plan);
-                        var cost = costs.TryGetValue(row.Ticker, out var percent) ? CostInRisks(percent, row.Anchor) : null;
 
-                        await InsertAsync(connection, transaction, row, listed.Contains(row.Ticker), cost, outcome, inputs.Calendar, inputs.At, NightSource, cancellation);
+                        // From 21.4 a book family's setup is laid open with its cost a fraction of the buy, its path read by
+                        // the nights after as the heavyweights' is, and its pick read on the night after from the family's
+                        // own holdings, since the two families' steps run after the ledger's.
+                        var outcome = book
+                            ? new SetupRead(new SetupOutcome(null, 0, SetupEnds.Open), new BenchmarkReading(null, 0, 0))
+                            : family.Family == DipRule.Name
+                                ? DipRead(closes, opens, inputs, name, at, row.Anchor, dipBenchmark)
+                                : Outcome(closes, opens, inputs, name, at, row.Anchor, row.Plan);
+                        double? cost = costs.TryGetValue(row.Ticker, out var percent) ? (book ? percent / 100 : CostInRisks(percent, row.Anchor)) : null;
+
+                        await InsertAsync(connection, transaction, row, book ? null : listed.Contains(row.Ticker), cost, outcome, inputs.Calendar, inputs.At, NightSource, cancellation);
                     }
 
                     await ExecuteAsync(connection, transaction, InsertNight,
@@ -668,7 +692,12 @@ public sealed partial class SetupLedger : IComponent
                 }
 
                 boughtSince = await BoughtSinceAsync(connection, transaction, index, waiting, bought, cancellation);
-                closed = await SettleAsync(connection, transaction, index, open, inputs, closes, opens, rebalances, cancellation);
+                closed = await SettleAsync(connection, transaction, index, open, inputs, closes, opens, rebalances, context, cancellation);
+
+                if (inputs.At > 0)
+                {
+                    await MarkBookPicksAsync(connection, transaction, index, inputs.Calendar[inputs.At - 1], live, cancellation);
+                }
 
                 // Every member's readings on the night, read as its setups read theirs, which the chart of what is behind a
                 // stock reads for its percentiles among the members and its push on the learned score.
@@ -941,7 +970,7 @@ public sealed partial class SetupLedger : IComponent
 
     // A setup's path and its benchmark as the ledger stores them from 19.10, at the open, with the open it was bought at
     // and where that open stood against its plan; none bought where the store holds no open after its night.
-    sealed record SetupRead(SetupOutcome Outcome, BenchmarkReading Benchmark, double? Fill = null, string? Past = null);
+    public sealed record SetupRead(SetupOutcome Outcome, BenchmarkReading Benchmark, double? Fill = null, string? Past = null);
 
     // The night's stored setups not yet settled, each replayed again over the closes to the night and its benchmark read
     // again, and written where its path ended or its benchmark settled.
@@ -954,11 +983,13 @@ public sealed partial class SetupLedger : IComponent
         double[][] closes,
         double[][] opens,
         IReadOnlyDictionary<DateOnly, IReadOnlyList<HeavyweightCut>> rebalances,
+        LedgerContext context,
         CancellationToken cancellation)
     {
         var closed = 0;
         var names = inputs.Series.Select((one, name) => (one.Name.Ticker, name)).ToDictionary(pair => pair.Ticker, pair => pair.name, StringComparer.Ordinal);
         var dipBenchmarks = new Dictionary<int, (BenchmarkReading Reading, IReadOnlyList<FillMember> Members)>();
+        var bookBenchmarks = new Dictionary<(int At, int Sessions), (BenchmarkReading Reading, IReadOnlyList<FillMember> Members)>();
 
         foreach (var setup in open)
         {
@@ -986,6 +1017,10 @@ public sealed partial class SetupLedger : IComponent
                 }
 
                 read = heavyweight;
+            }
+            else if (BookSetups.IsBook(setup.Family))
+            {
+                read = BookRead(setup.Family, inputs.Series, name, setup.Anchor, closes, opens, inputs.Members, inputs.Calendar, at, bar, context, null, bookBenchmarks);
             }
             else if (setup.Family == DipRule.Name)
             {
@@ -1060,6 +1095,53 @@ public sealed partial class SetupLedger : IComponent
         var benchmark = outcome.Result is null ? new BenchmarkReading(null, 0, cut.Count) : HeavyweightPaths.Cut(cut, outcome.Sessions);
 
         return AtOpen(anchor, outcome, benchmark, HeavyweightPaths.CutMembers(members, outcome.Sessions), OpenAfter(closes, opens, bar), book: true);
+    }
+
+    // From 21.4 a book family's setup's path and benchmark: held to the first later session its gate no longer holds the
+    // member on, a quality setup's a reshuffle and a Fundamentals setup's a filing, or to its cap, whichever comes first,
+    // against every member of the index on its session held the same way, each read at its next session's open as every
+    // setup is; the benchmark worked once for each session and length, since every setup of a session shares its members.
+    // see: A book family's setup is each member a reshuffle or a filing leaves at the ledger's gate, held while it clears the hold and never past a year against an equal-weighted hold of the index
+    public static SetupRead BookRead(
+        string family,
+        IReadOnlyList<SweepSeries> series,
+        int name,
+        SetupAnchor anchor,
+        double[][] closes,
+        double[][] opens,
+        SweepBenchmark.Members members,
+        IReadOnlyList<DateOnly> calendar,
+        int at,
+        int bar,
+        LedgerContext context,
+        bool[]? stopped,
+        Dictionary<(int At, int Sessions), (BenchmarkReading Reading, IReadOnlyList<FillMember> Members)> benchmarks)
+    {
+        var notHeld = LedgerSetups.BookNotHeld(family, series[name], calendar, at, context)
+            .Select(later => IndexNightRead.BarOf(series[name], later))
+            .Where(held => held >= 0)
+            .ToArray();
+        var outcome = HeavyweightPaths.Replay(closes[name], bar, notHeld, BookSetups.Cap, family == QualityRule.Name ? SetupEnds.Rebalance : SetupEnds.Filing);
+
+        if (!benchmarks.TryGetValue((at, outcome.Sessions), out var benchmark))
+        {
+            var names = members.Names[at];
+            var bars = members.Bars[at];
+            var cut = new (double[] Closes, int From, bool Stopped)[names.Length];
+            var fills = new (double[] Closes, double[] Opens, int From)[names.Length];
+
+            for (var place = 0; place < names.Length; place++)
+            {
+                cut[place] = (closes[names[place]], bars[place], stopped is not null && stopped[names[place]]);
+                fills[place] = (closes[names[place]], opens[names[place]], bars[place]);
+            }
+
+            benchmarks[(at, outcome.Sessions)] = benchmark = (
+                outcome.Result is null ? new BenchmarkReading(null, 0, names.Length) : HeavyweightPaths.Cut(cut, outcome.Sessions),
+                HeavyweightPaths.CutMembers(fills, outcome.Sessions));
+        }
+
+        return AtOpen(anchor, outcome, benchmark.Reading, benchmark.Members, OpenAfter(closes[name], opens[name], bar), book: true);
     }
 
     // The fill half of a row: the open it was bought at, at the setup's own scale, and where that open stood.
@@ -1462,6 +1544,9 @@ public sealed partial class SetupLedger : IComponent
             Trends = trends,
             LargeBreadth = largeBreadth is null ? null : LargeBreadthOver(calendar, largeBreadth),
             Gics = await GicsAsync(connection, history: true, cancellation),
+            QualityLive = rules.Quality.Settings,
+            ImprovingLive = rules.Improving.Setting,
+            SessionDay = clock.SessionDateAt,
         };
 
         return new PreparedHistory(index, calendar, series, sessions, members, income, closes, opens, stopped, [.. calendar, .. after], past, market, context, heavyweights)
@@ -1552,6 +1637,7 @@ public sealed partial class SetupLedger : IComponent
         {
             var families = new List<(FamilySetups, IReadOnlyList<SetupRead>)>();
             var inputsOnTheNight = new IndexNightInputs(index, calendar[at], calendar, at, series, sessions, members, members.Names[at], income);
+            var bookBenchmarks = new Dictionary<(int At, int Sessions), (BenchmarkReading Reading, IReadOnlyList<FillMember> Members)>();
 
             foreach (var read in LedgerSetups.On(index, series, sessions, members, calendar, at, market, context))
             {
@@ -1565,9 +1651,11 @@ public sealed partial class SetupLedger : IComponent
                     var name = NameOf(series, row.Ticker);
                     var bar = IndexNightRead.BarOf(series[name], at);
 
-                    return family.Family == DipRule.Name
-                        ? DipRead(closes, opens, inputsOnTheNight, name, bar, row.Anchor, dipBenchmark)
-                        : Outcome(closes, opens, inputsOnTheNight, name, bar, row.Anchor, row.Plan, stopped);
+                    return BookSetups.IsBook(family.Family)
+                        ? BookRead(family.Family, series, name, row.Anchor, closes, opens, members, calendar, at, bar, context, stopped, bookBenchmarks)
+                        : family.Family == DipRule.Name
+                            ? DipRead(closes, opens, inputsOnTheNight, name, bar, row.Anchor, dipBenchmark)
+                            : Outcome(closes, opens, inputsOnTheNight, name, bar, row.Anchor, row.Plan, stopped);
                 })]));
             }
 
@@ -2822,6 +2910,36 @@ public sealed partial class SetupLedger : IComponent
         }
 
         return costs;
+    }
+
+    // From 21.4 the book families' picks of the session before the night, marked on the night: a quality setup picked
+    // where the live rule's book holds the stock after that session's reshuffle, a Fundamentals setup where the live rule
+    // bought it that night; every book row the night wrote for that session is marked, picked or not, and the history's
+    // rows keep none, since the two families' steps run after the ledger's and their holdings of a night stand only the
+    // night after.
+    // see: A book family's setup is each member a reshuffle or a filing leaves at the ledger's gate, held while it clears the hold and never past a year against an equal-weighted hold of the index
+    async Task MarkBookPicksAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly session, LiveRulesRead live, CancellationToken cancellation)
+    {
+        foreach (var (family, sql, rule) in new[] { (QualityRule.Name, QualityHeld, live.Quality.Rule), (ImprovingRule.Name, ImprovingBought, live.Improving.Rule) })
+        {
+            var picked = new List<string>();
+
+            await using (var command = Command(connection, transaction, sql, [("$index", index), ("$rule", rule), ("$session", Stamp(session))]))
+            await using (var reader = await command.ExecuteReaderAsync(cancellation))
+            {
+                while (await reader.ReadAsync(cancellation))
+                {
+                    picked.Add(reader.GetString(0));
+                }
+            }
+
+            await ExecuteAsync(connection, transaction, UnpickBookRows, [("$index", index), ("$family", family), ("$session", Stamp(session)), ("$source", NightSource)], cancellation);
+
+            foreach (var ticker in picked)
+            {
+                await ExecuteAsync(connection, transaction, PickBookRow, [("$index", index), ("$family", family), ("$session", Stamp(session)), ("$source", NightSource), ("$ticker", ticker)], cancellation);
+            }
+        }
     }
 
     // The stocks each family's list held on the night as the index's own stage stored it, keyed by family; a family that

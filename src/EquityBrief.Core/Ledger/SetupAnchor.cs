@@ -25,8 +25,13 @@ public static class SetupEnds
 
     public const string Cap = "cap";
 
-    // A heavyweights' setup sold at a later rebalance at which the rule did not buy it.
+    // A heavyweights' setup sold at a later rebalance at which the rule did not buy it, and from 21.4 a quality setup sold
+    // at a later reshuffle at which its scorecard no longer clears the ledger's floor.
     public const string Rebalance = "rebalance";
+
+    // From 21.4 a Fundamentals setup sold at the close of a session a filing read anew on left its scorecard under the
+    // ledger's hold.
+    public const string Filing = "filing";
 
     // A trade sold by a time exit, its close at the sessions the exit reads short of the level it asks for.
     public const string Time = "time";

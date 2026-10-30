@@ -466,7 +466,8 @@ public partial class FixtureExpectations
 
         Assert.True(held);
         Assert.Empty(Worker.Ledger.LedgerPointInTime.Differences(stored.Readings, rebuilt!));
-        Assert.All(LedgerReadings.All.Skip(LedgerReadings.IndexOf(LedgerReadings.ScorecardFirst)), reading => Assert.NotNull(rebuilt![LedgerReadings.IndexOf(reading.Column)]));
+        // The scorecard's nine alone: the five readings 21.4 appended after them read none where their sources hold nothing.
+        Assert.All(LedgerReadings.All.Skip(LedgerReadings.IndexOf(LedgerReadings.ScorecardFirst)).Take(FundamentalScorecard.Checks), reading => Assert.NotNull(rebuilt![LedgerReadings.IndexOf(reading.Column)]));
     }
 
     // The sources 22.8 writes.

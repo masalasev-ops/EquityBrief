@@ -120,6 +120,23 @@ public sealed partial class SetupLedger
                     NextOpenCheck.HeavyweightResult(closes, bar, setup.Sessions, open),
                     members is null ? null : NextOpenCheck.HeavyweightCut(members, setup.Sessions));
             }
+            else if (BookSetups.IsBook(setup.Family))
+            {
+                // From 21.4 a book family's setup priced as the heavyweights' is, its cut every member of the index on its
+                // session held the same way.
+                gap = open is > 0 ? NextOpenGap.Inside : NextOpenGap.NoOpen;
+
+                var members = prepared.Members.Names[at]
+                    .Select((member, place) => (prepared.Closes[member], opens[member], prepared.Members.Bars[at][place], prepared.Stopped[member]))
+                    .ToArray();
+
+                atClose = (
+                    bar + setup.Sessions < closes.Length && closes[bar] > 0 ? (closes[bar + setup.Sessions] / closes[bar]) - 1 : null,
+                    HeavyweightPaths.Cut([.. members.Select(member => (member.Item1, member.Item3, member.Item4))], setup.Sessions));
+                atOpen = (
+                    NextOpenCheck.HeavyweightResult(closes, bar, setup.Sessions, open),
+                    NextOpenCheck.HeavyweightCut(members, setup.Sessions));
+            }
             else if (setup.Family == DipRule.Name)
             {
                 // The dip's path through its own walk from the stored stop in the history's prices, its result moved by
@@ -220,7 +237,7 @@ public sealed partial class SetupLedger
     // heavyweights' as fractions of the sum that close put to the stock.
     public static string Line(string index, NextOpenGroup group)
     {
-        var book = group.Family == HeavyweightRule.Name;
+        var book = BookSetups.IsBook(group.Family);
         var unit = book ? "as a fraction of the sum at the close" : "in the close's risks";
         var places = book ? "0.0000" : "0.000";
         var gaps = book

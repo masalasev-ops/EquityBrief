@@ -16,7 +16,7 @@ public sealed class QualityCandidate(string index) : OwnStepCandidate(index)
     public const string BookParameter = "book";
     public const string SaleParameter = "sale";
 
-    public override string Version => "c3783370b20c";
+    public override string Version => "755e8c8b9917";
 
     public override string SetupFamily => QualityRule.Name;
 

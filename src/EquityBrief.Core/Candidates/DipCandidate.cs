@@ -26,7 +26,7 @@ public sealed class DipCandidate(string index) : OwnStepCandidate(index)
 
     public const string SellParameterBefore = "exit";
 
-    public override string Version => "0ebfa65c56c8";
+    public override string Version => "b7ab056f595e";
 
     public override string SetupFamily => DipRule.Name;
 
