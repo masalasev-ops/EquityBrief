@@ -12840,3 +12840,38 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
 Carried:    the drift's history reading revised surprises, put to the operator with 21.14's read-only checks; the S&P
             500's drift replayed again at 21.16's remedy reads its nights' surprises.
+
+### 21.6 - correction: FINRA's publication day counted before the closure table's reach moved one business day later, the largest miss a count of weekdays alone makes where the table reaches, and every stored settlement moved to it   2026-10-30
+
+Found:      21.6 counted FINRA's publication day, the seventh business day after a settlement, on weekdays alone where the
+            exchange's closure table, which reaches from 2025-01-01, does not cover the days, so a holiday inside them put
+            the day counted before FINRA's and the setup ledger could read a report a session before it was published.
+            The operator ruled on 2026-10-30, word for word in `prompts/2026-10-30-21.14-operator-answers.md`: estimate,
+            check against the years the table reaches, push every estimate later by the largest miss, and state it.
+Measured:   read-only on 2026-10-30 at 21:18 UTC over the operator's store: of the 212 settlements it holds, 2017-12-29
+            to 2026-10-15, the 43 from 2025-01-15 are read off the table, and a count of weekdays alone misses the table's
+            day on 15 of them, by one business day each, 2025-01-15's and 2025-12-31's three calendar days across a weekend;
+            over every settlement of 2025 to 2027 as FINRA dates them, 71 whose day the table reaches, the largest miss is
+            one business day. So the largest miss is one business day, and 236,771 stored reports over the 168 settlements
+            before 2024-12-31 stand a business day early until the reader's next run moves them.
+Corrected:  a settlement whose count starts before the table's reach is counted on weekdays alone and moved one business
+            day later, the miss held as a constant beside the count; the short interest reader, the table's one writer,
+            first moves every stored settlement to the day the rule gives where it stands at another, its row counting
+            the reports it moved, since a report is kept as first read and the day it was published is the rule's and not
+            FINRA's. A new decision names the rule, the old one's judgement pointing to it; SCHEMA's ownership, column and
+            paragraph, the reader's catalogue row and the roster's row say so. No source a rule's version pins moves.
+Remedy:     none by hand: the off-peak run's next short interest step after the merge moves the 236,771 reports; the
+            ledger's short interest reading reads them when its history is built again, which 21.6 carried.
+Tests:      2978, from 2976: two added, the largest miss worked by hand over every settlement the table reaches and a day
+            before the reach moved by it, and a run moving stored settlements to the rule's day and leaving one standing
+            on it; FINRA's first settlement's day in the published-day test moved from the 9th to the 10th of January 2018.
+Claims:     1482, unchanged: the reader's catalogue row amended in place; 1497 placements.
+Mutation:   chosen before the run by this rule, the property the correction adds, an estimated day moved later: the
+            estimate's push made nought. Three tests went red, the published-day test, the largest miss and the reader's
+            move of stored settlements; reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2978 of 2978 tests ran
+            with none failed, migrations 0 to 116 with none pending, schema version 116, against `data-ci` and never
+            `data`; the phase report 64 tables, 1482 claims, 1482 passing, none out of scope and none unexamined, 1497
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    nothing new.

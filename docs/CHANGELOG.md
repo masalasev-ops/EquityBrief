@@ -26,6 +26,34 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-30 - docs/SCHEMA.md - the short interest reader updates a stored settlement's published day, which moves one business day later before the closure table's reach
+Authorised by: A FINRA publication day counted before the closure table's reach is moved later by the largest miss counting weekdays alone makes where the table reaches
+Was:
+> | `short_interest` | ShortInterestReader | none | none |
+> | `published_on` | TEXT | the day FINRA publishes the settlement, the seventh business day after it, a weekday the exchange's closure table does not hold where it covers the day |
+> ... a report held is kept as first read, so a settlement asked again stores only what it lacked and nothing updates or deletes a row. A stock FINRA ...
+Now:
+> | `short_interest` | ShortInterestReader | ShortInterestReader | none |
+> | `published_on` | TEXT | the day FINRA publishes the settlement, the seventh business day after it, a weekday the exchange's closure table does not hold where it covers the day, and one business day later where the count starts before the table's reach |
+> ... a report held is kept as first read, so a settlement asked again stores only what it lacked and nothing deletes a row. From the 21.6 correction of 2026-10-30 each run first moves every stored settlement's `published_on` to the day the rule gives where it stands at another, the one update the table takes, ... (see: A FINRA publication day counted before the closure table's reach is moved later by the largest miss counting weekdays alone makes where the table reaches). A stock FINRA ...
+Why: the operator ruled on 2026-10-30 that FINRA's days before 2025 are pushed later by the largest miss found where the closure table reaches, one business day, so no figure is read before it was published.
+
+### 2026-10-30 - docs/ARCHITECTURE.html - the short interest reader's row states the day moved later and the stored settlements moved to it
+Authorised by: A FINRA publication day counted before the closure table's reach is moved later by the largest miss counting weekdays alone makes where the table reaches
+Was:
+> keeps each stock's report with the day FINRA published it, the seventh business day after the settlement, as first read, so the newest settlement held ...
+Now:
+> keeps each stock's report with the day FINRA published it, the seventh business day after the settlement and one business day later where the count starts before the exchange's closure table reaches, as first read, each run first moving every stored settlement to the day the rule gives where it stands at another (see: ...), so the newest settlement held ...
+Why: the same ruling.
+
+### 2026-10-30 - .claude/rules/checks.md - fixture-expectations states the 21.6 correction's FINRA days
+Authorised by: A FINRA publication day counted before the closure table's reach is moved later by the largest miss counting weekdays alone makes where the table reaches
+Was:
+> fixture-expectations: ... its record carried on where the calendar revised a surprise since |
+Now:
+> fixture-expectations: ... its record carried on where the calendar revised a surprise since; and from the 21.6 correction of 2026-10-30 FINRA's publication day counted before the closure table's reach moved one business day later, the largest miss ... worked by hand, and a run moving every stored settlement to the day the rule gives |
+Why: each roster row says what its check asserts.
+
 ### 2026-10-30 - docs/BUILD_PLAN.md - 21.14 states the operator's answers on the exits, the tone variant and the open floor with two read-only checks, and 21.16 the second move of the pins
 Authorised by: Phase 21 makes the existing families choose better and the monthly loop test every family on every index, built to completion before any new work with no model judging a stock and nothing retired without the operator's word
 Was:

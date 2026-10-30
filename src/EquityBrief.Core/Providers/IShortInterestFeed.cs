@@ -48,13 +48,20 @@ public static class ShortInterests
     public static string SymbolOf(string ticker) =>
         ticker.Replace("-", string.Empty, StringComparison.Ordinal).Replace(".", string.Empty, StringComparison.Ordinal);
 
+    // The business days a publication day counted on weekdays alone is moved later by: the largest miss counting weekdays
+    // alone makes against the closure table over the settlements the table covers, measured at the 21.6 correction.
+    public const int EstimatedLate = 1;
+
     // The day FINRA publishes a settlement: the seventh business day after it, a weekday the exchange's closures do not
-    // hold where the closure table covers the day.
+    // hold where the closure table covers the day. A settlement whose count starts before the table's reach is counted
+    // on weekdays alone and moved later by the largest miss that makes, so no report is read before it was published.
+    // see: A FINRA publication day counted before the closure table's reach is moved later by the largest miss counting weekdays alone makes where the table reaches
     public static DateOnly PublishedOn(DateOnly settlement)
     {
         var day = settlement;
+        var estimated = settlement.AddDays(1) < ExchangeClosures.CoveredFrom;
 
-        for (var counted = 0; counted < PublishedAfter;)
+        for (var counted = 0; counted < PublishedAfter + (estimated ? EstimatedLate : 0);)
         {
             day = day.AddDays(1);
 
