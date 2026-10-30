@@ -1356,12 +1356,25 @@ public sealed partial class SetupLedger : IComponent
         return sessions;
     }
 
+    // The end the build reads the history through: the newest session the history holds once the build ends, the last
+    // session it writes or the newest an earlier build wrote where that is later. The check reads the history through the
+    // same session, so the pulled years are scaled onto the stored closes over the same sessions for the build and its
+    // check.
+    // see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span
+    public static DateOnly ReadThrough(IReadOnlyList<DateOnly> calendar, IReadOnlyList<int> sessionsToWrite, IReadOnlySet<DateOnly> stored)
+    {
+        var written = calendar[sessionsToWrite[^1]];
+
+        return stored.Count > 0 && stored.Max() is var held && held > written ? held : written;
+    }
+
     // The history, built by hand from a clean copy of main's commit: every session of the span on one index the
     // store does not hold a history row for, over the pulled bars merged with the store's on membership as it stood,
     // each setup and its benchmark replayed to their end where the history and the bar store's closes after it reach,
     // written a chunk of sessions at a time under a run of its own. The build waits for the night and holds the drain's
     // lock, which the store's copy holds while it copies, for each chunk it writes and for no longer. Asked to write the
-    // span again, it replaces what an earlier build wrote for it.
+    // span again, it replaces what an earlier build wrote for it. It reads the history through the newest session the
+    // history holds once it ends, reading it again where the span's end reaches past that session.
     // see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span
     public async Task<int> BuildAsync(string dataRoot, string index, DateOnly from, DateOnly through, TextWriter output, bool again = false, Func<TimeSpan, CancellationToken, Task>? wait = null, CancellationToken cancellation = default)
     {
@@ -1373,7 +1386,8 @@ public sealed partial class SetupLedger : IComponent
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        var prepared = await PrepareAsync(connection, index, through, output, cancellation, live: await LiveRulesAsync(index, output, cancellation));
+        var live = await LiveRulesAsync(index, output, cancellation);
+        var prepared = await PrepareAsync(connection, index, through, output, cancellation, live: live);
         var first = Array.FindIndex(prepared.Calendar, session => session >= from);
         var last = Array.FindLastIndex(prepared.Calendar, session => session <= through);
 
@@ -1399,6 +1413,18 @@ public sealed partial class SetupLedger : IComponent
             output.WriteLine(FormattableString.Invariant($"ledger-build: every session of {Stamp(prepared.Calendar[first])} to {Stamp(prepared.Calendar[last])} is written already; --again writes the span again"));
 
             return 0;
+        }
+
+        var readThrough = ReadThrough(prepared.Calendar, sessionsToWrite, stored);
+
+        if (readThrough != prepared.Calendar[^1])
+        {
+            output.WriteLine(FormattableString.Invariant($"ledger-build: the history is read again through {Stamp(readThrough)}, the newest session it holds once the build ends, which its check reads it through"));
+
+            prepared = await PrepareAsync(connection, index, readThrough, output, cancellation, live: live);
+            first = Array.FindIndex(prepared.Calendar, session => session >= from);
+            last = Array.FindLastIndex(prepared.Calendar, session => session <= through);
+            sessionsToWrite = SessionsToWrite(prepared.Calendar, first, last, stored, again, nights);
         }
 
         output.WriteLine(FormattableString.Invariant($"ledger-build: {sessionsToWrite.Count} session(s) to write of the {last - first + 1} in the span, {last - first + 1 - sessionsToWrite.Count} written already"));
