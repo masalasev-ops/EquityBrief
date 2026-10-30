@@ -87,10 +87,19 @@ public partial class NightlyRun
         // order; asked again it writes all five; a span inside the written ones writes nothing.
         DateOnly[] calendar = [.. Enumerable.Range(0, 5).Select(at => new DateOnly(2026, 10, 5).AddDays(at))];
         var stored = new HashSet<DateOnly> { calendar[1], calendar[3] };
+        var none = new HashSet<DateOnly>();
 
-        Assert.Equal([0, 2, 4], SetupLedger.SessionsToWrite(calendar, 0, 4, stored, again: false));
-        Assert.Equal([0, 1, 2, 3, 4], SetupLedger.SessionsToWrite(calendar, 0, 4, stored, again: true));
-        Assert.Empty(SetupLedger.SessionsToWrite(calendar, 1, 1, stored, again: false));
-        Assert.Equal([2], SetupLedger.SessionsToWrite(calendar, 1, 3, stored, again: false));
+        Assert.Equal([0, 2, 4], SetupLedger.SessionsToWrite(calendar, 0, 4, stored, again: false, none));
+        Assert.Equal([0, 1, 2, 3, 4], SetupLedger.SessionsToWrite(calendar, 0, 4, stored, again: true, none));
+        Assert.Empty(SetupLedger.SessionsToWrite(calendar, 1, 1, stored, again: false, none));
+        Assert.Equal([2], SetupLedger.SessionsToWrite(calendar, 1, 3, stored, again: false, none));
+
+        // The last session holding the night's own rows: neither a span over it nor one asked again writes it, and a span
+        // of it alone writes nothing.
+        var nights = new HashSet<DateOnly> { calendar[4] };
+
+        Assert.Equal([0, 2], SetupLedger.SessionsToWrite(calendar, 0, 4, stored, again: false, nights));
+        Assert.Equal([0, 1, 2, 3], SetupLedger.SessionsToWrite(calendar, 0, 4, stored, again: true, nights));
+        Assert.Empty(SetupLedger.SessionsToWrite(calendar, 4, 4, stored, again: true, nights));
     }
 }

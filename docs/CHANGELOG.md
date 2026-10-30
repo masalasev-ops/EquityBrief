@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-30 - docs/ARCHITECTURE.html - section 18 gains the row for a history build asked for a session the night wrote
+Corrects: a history build whose span reached a session holding the night's own rows wrote every chunk before it again and stopped at the first such session with its run unrecorded, found when 21.4's remedy built the S&P 500's history through the night before on 2026-10-30.
+Was:
+> (section 18, after the row for an index's setups the ledger could not compute) no row
+Now:
+> A history build asked for a session the night wrote | the build writes the span's other sessions and leaves each session holding the night's own rows to the night, those rows as the night wrote them and no history row beside them, and the monthly run's rebuild of the history leaves them the same way (see: ...) | the build's output counting the sessions left to the night, with the first and the last of them | a history row and the night's row of one session cannot both stand, ...; a night whose part the ledger could not compute holds no row of its own, so the build still fills it
+Why: the build and the monthly rebuild now leave the night's sessions to the night, and the row states it where the harness holds it.
+
+### 2026-10-30 - .claude/rules/checks.md - nightly-run states the history build's two corrected properties
+Corrects: the same defect, and the heavyweights' readings read over closes running past each member's own bars, which stopped the same build at its first S&P 500 rebalance.
+Was:
+> nightly-run: ... its result, benchmark and edge worked by hand over a constructed store |
+Now:
+> nightly-run: ... its result, benchmark and edge worked by hand over a constructed store; and from the 21.4 correction of 2026-10-30 the history built over a constructed S&P 500 whose span ends before the bar store's newest session reading the heavyweights' setups over each member's own closes, ..., and a build asked again for a span whose last session holds the night's own row writing every other session and leaving that one to the night, ... |
+Why: each roster row says what its check asserts, and the correction's tests extend nightly-run's.
+
 ### 2026-10-30 - docs/ARCHITECTURE.html - the swing family's sixth reads the business's state off the SEC's facts through the catalogue, which gains the reading and the filter's stage is handed
 Authorised by: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
 Was:

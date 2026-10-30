@@ -258,7 +258,7 @@ public sealed partial class SetupLedger : IComponent
 
     const string ClearTheNightsRows = "DELETE FROM setup_night WHERE index_code = $index AND session_date = $night AND source = $source;";
 
-    const string StoredHistory = "SELECT DISTINCT session_date FROM setup_night WHERE index_code = $index AND source = $source;";
+    const string StoredSessions = "SELECT DISTINCT session_date FROM setup_night WHERE index_code = $index AND source = $source;";
 
     const string ClearTheNightsReadings = "DELETE FROM ledger_reading WHERE index_code = $index AND session_date = $night;";
 
@@ -1337,14 +1337,17 @@ public sealed partial class SetupLedger : IComponent
     public static bool MustWait(DateTimeOffset now, bool nightHeld, TimeSpan chunk) => nightHeld || SweepRunner.InTheNightsWindow(now, chunk);
 
     // The sessions of the span the build writes: those between the span's ends the stored history does not hold, so a
-    // build stopped part way goes on from where it was, and a span written again is asked for by name.
-    public static IReadOnlyList<int> SessionsToWrite(IReadOnlyList<DateOnly> calendar, int first, int last, IReadOnlySet<DateOnly> stored, bool again)
+    // build stopped part way goes on from where it was, and a span written again is asked for by name; and never a
+    // session holding the night's own rows, which are the night's, since a history row of a session cannot stand beside
+    // the night's and a build reaching one would stop there with every chunk before it written.
+    // see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span
+    public static IReadOnlyList<int> SessionsToWrite(IReadOnlyList<DateOnly> calendar, int first, int last, IReadOnlySet<DateOnly> stored, bool again, IReadOnlySet<DateOnly> nights)
     {
         var sessions = new List<int>();
 
         for (var at = first; at <= last; at++)
         {
-            if (again || !stored.Contains(calendar[at]))
+            if (!nights.Contains(calendar[at]) && (again || !stored.Contains(calendar[at])))
             {
                 sessions.Add(at);
             }
@@ -1381,8 +1384,15 @@ public sealed partial class SetupLedger : IComponent
             return 1;
         }
 
-        var stored = await StoredHistorySessionsAsync(connection, index, cancellation);
-        var sessionsToWrite = SessionsToWrite(prepared.Calendar, first, last, stored, again);
+        var stored = await StoredSessionsAsync(connection, index, HistorySource, cancellation);
+        var nights = await StoredSessionsAsync(connection, index, NightSource, cancellation);
+        var sessionsToWrite = SessionsToWrite(prepared.Calendar, first, last, stored, again, nights);
+        var theNights = prepared.Calendar[first..(last + 1)].Where(nights.Contains).ToArray();
+
+        if (theNights.Length > 0)
+        {
+            output.WriteLine(FormattableString.Invariant($"ledger-build: {theNights.Length} session(s) of the span hold the night's own rows, {Stamp(theNights[0])} to {Stamp(theNights[^1])}, and are left to the night"));
+        }
 
         if (sessionsToWrite.Count == 0)
         {
@@ -1447,7 +1457,7 @@ public sealed partial class SetupLedger : IComponent
                 return (false, $"the {DecisionCards.NameOf(index)}'s history holds no session of its span");
             }
 
-            var sessions = SessionsToWrite(prepared.Calendar, first, last, new HashSet<DateOnly>(), again: true);
+            var sessions = SessionsToWrite(prepared.Calendar, first, last, new HashSet<DateOnly>(), again: true, await StoredSessionsAsync(connection, index, NightSource, cancellation));
             var built = sessions.ToDictionary(at => at, prepared.Compute);
             var benchmarks = built.Values
                 .SelectMany(session => session.Families)
@@ -1640,6 +1650,10 @@ public sealed partial class SetupLedger : IComponent
 
         readonly Lazy<SweepSeries[]> empty = new(() => [.. series.Select(one => LedgerLiveRules.Empty(one.Name.Ticker))]);
 
+        // Each name's closes over its own bars alone, which the heavyweights' readings are read over as every other
+        // family's are, a reading walking the name's bars by place; the closes after the span are the replay's.
+        readonly Lazy<double[][]> ownCloses = new(() => [.. series.Select((one, name) => closes[name].Length > one.Bars.Length ? closes[name][..one.Bars.Length] : closes[name])]);
+
         // One session's setups on every family, each replayed to its end with its benchmark, a family whose live rule
         // the build reads read under it; on a rebalance of the S&P 500's heavyweights, each member of each sector's size
         // cut held as the rule holds a buy, to the first later rebalance whose buys leave it out or its cap, against its
@@ -1672,7 +1686,7 @@ public sealed partial class SetupLedger : IComponent
 
             if (heavyweights.TryGetValue(at, out var cuts))
             {
-                var family = LedgerSetups.Heavyweights(index, series, closes, sessions, members, calendar, at, market, context, cuts);
+                var family = LedgerSetups.Heavyweights(index, series, ownCloses.Value, sessions, members, calendar, at, market, context, cuts);
 
                 families.Add((family, [.. family.Rows.Select(row =>
                 {
@@ -1973,11 +1987,12 @@ public sealed partial class SetupLedger : IComponent
         }
     }
 
-    static async Task<IReadOnlySet<DateOnly>> StoredHistorySessionsAsync(SqliteConnection connection, string index, CancellationToken cancellation)
+    // The sessions the ledger holds rows of on the index from one source, the history build's or the night's.
+    static async Task<IReadOnlySet<DateOnly>> StoredSessionsAsync(SqliteConnection connection, string index, string source, CancellationToken cancellation)
     {
         var stored = new HashSet<DateOnly>();
 
-        await using var command = Command(connection, null, StoredHistory, [("$index", index), ("$source", HistorySource)]);
+        await using var command = Command(connection, null, StoredSessions, [("$index", index), ("$source", source)]);
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         while (await reader.ReadAsync(cancellation))
