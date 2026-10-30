@@ -1,21 +1,29 @@
 # The remedy of 21.4, the one move of the pins, as its PROGRESS entry prints it. Migration 115 adds the setup table's five
-# readings the operator chose at 21.2. Every source a registered rule pins moved once in the pull request: the exit menu's
-# two new exits and the hooks' three forms, which every S&P 500 breakout and drift rule and every S&P 400 and 600 swing
-# and heavyweights rule pin; the index night's reader, which those rules and the dip's pin, the dip's rules reading the
-# hooks and the fundamentals-first family leaving the night; and the ledger's catalogue, which the dip's, the quality's and
-# the Fundamentals rules pin. So one command registers again every standing candidate whose evaluator the code no longer
-# carries at the version it was registered with: the S&P 500's breakout and drift rules replayed first, each record carrying
-# on where the replay reproduces every trade and restarting otherwise, and every other rule registered again with its
-# record and paper account restarting at this instant, its count printed before it restarts. A dip rule's stored setting is
-# read with its sell dial under the dial's new name, so a row registered in the form from before is registered again as it
-# stood. The swing filter's nine S&P 500 pullback versions and the S&P 500's four heavyweights rules pin none of the sources
-# that moved and are not registered again. Tonight's lists are unchanged by it, since no rule states a new hook. Each
-# index's ledger history is then built again by hand with tools/ledger-build.ps1 --index <GSPC, MID or SML> --from
-# 2019-01-02 --through <the night before> --again, which builds main's own commit from a clean copy and so is not a worker
-# command this file can run, so every history setup carries the five readings and the two book families' setups, each
-# index checked after its build with ledger-check --index <GSPC, MID or SML> by hand. No request to the provider, none to
-# the SEC and no model call. Run from main after the merge, when no night, local run, drain, labeller, history read, ledger
-# build or monthly run is writing, read the output for "remedy done" and the count of rules registered again, and restart
-# the read surface after it.
+# readings the operator chose at 21.2 and the business's state off the SEC's facts as first filed. Every source a registered
+# rule pins moved once in the pull request: the exit menu's two new exits and the hooks' three forms, which every S&P 500
+# breakout and drift rule and every S&P 400 and 600 swing and heavyweights rule pin; the index night's reader, which those
+# rules and the dip's pin, the dip's rules reading the hooks and the fundamentals-first family leaving the night; the
+# ledger's catalogue, which the dip's, the quality's and the Fundamentals rules pin; and, on the operator's ruling of
+# 2026-10-30, the swing filter's reader of a member's gate inputs and the family's shadow, which every evaluator but the
+# S&P 500 heavyweights' pins, so the version leaving off a deteriorating business reads the SEC's facts as first filed
+# through the catalogue. So the swing family is registered again whole first: the nine S&P 500 pullback versions retired
+# and registered at one instant under the open filter version, the eight unchanged under the names they carry, each
+# keeping its nights and picks under its name, and the business version under its new name, its record starting here and
+# the old name's kept and readable; the family replay reads the breakout's and the drift's stored trades alone and reads no
+# swing version, so none of the nine is replayed, which the entry states with each one's record length. Then one command
+# registers again every other standing candidate whose evaluator the code no longer carries at the version it was
+# registered with: the S&P 500's breakout and drift rules replayed first, each record carrying on where the replay
+# reproduces every trade and restarting otherwise, and every other rule registered again with its record and paper account
+# restarting at this instant, its count printed before it restarts. A dip rule's stored setting is read with its sell dial
+# under the dial's new name, so a row registered in the form from before is registered again as it stood. The S&P 500's
+# four heavyweights rules pin none of the sources that moved and are not registered again. Tonight's lists are unchanged by
+# it, since no rule states a new hook. Each index's ledger history is then built again by hand with tools/ledger-build.ps1
+# --index <GSPC, MID or SML> --from 2019-01-02 --through <the night before> --again, which builds main's own commit from a
+# clean copy and so is not a worker command this file can run, so every history setup carries the six readings and the two
+# book families' setups, each index checked after its build with ledger-check --index <GSPC, MID or SML> by hand. No
+# request to the provider, none to the SEC and no model call. Run from main after the merge, when no night, local run,
+# drain, labeller, history read, ledger build or monthly run is writing, read the output for "remedy done" and the counts of
+# rules registered again, and restart the read surface after it.
 migrate
-register --moved --evidence "21.4: the one move of the pins, every source a rule pins moved once by the exit menu's two new exits, the hooks' three forms, the dip's rules reading the hooks, the index night's reader read for no fundamentals-first family and the catalogue's five readings"
+register --the-family-again --evidence "21.4 on the operator's ruling of 2026-10-30: the version leaving off a deteriorating business reads the SEC's facts as first filed through the ledger's catalogue in the provider's quarters' place, under a new name, and the eight other versions are registered again as they stood, the swing filter's reader of a member's gate inputs having moved for all nine"
+register --moved --evidence "21.4: the one move of the pins, every source a rule pins moved once by the exit menu's two new exits, the hooks' three forms, the dip's rules reading the hooks, the index night's reader read for no fundamentals-first family, the catalogue's six readings and the swing filter's reader of a member's gate inputs"

@@ -12118,3 +12118,88 @@ Carried:    the operator's word on the deteriorating-business version, the two s
             21.5 on the standing go; the three answers of 21.3 at 21.14; 21.2's question at 21.6; the sign-offs of phases
             18, 20 and 22; and the engines still reading the fundamentals-first family's history until 21.5 states which
             families the loop covers.
+
+### 21.4 - the one move of the pins, finished on the operator's ruling of 2026-10-30: the version leaving off a deteriorating business reads the SEC's facts as first filed through the ledger's catalogue, the nine S&P 500 pullback versions registered again whole, and the remedy's counts and record lengths stated   2026-10-30
+
+Queue:      done, 21.1 as PR 587 with its correction as PR 588, 21.2 as PR 589, 21.3 as PR 590; in progress, this checkpoint
+            as PR 591, one pull request in reviewable commits, one a part, its sixth part on the operator's ruling of
+            2026-10-30, word for word in `prompts/2026-10-30-21.4-operator-ruling-deteriorating-version.md`; next, 21.5 to
+            21.15 in the section's order on the standing go; beside them the sign-offs of phases 18, 20 and 22 by fresh
+            sessions.
+Corrects:   the entry of 2026-10-30 above, headed the same checkpoint, whose Verified line stated a run over the tree
+            carrying it as this pull request's last: the ruling reopened the checkpoint before that run was made, so no run
+            went green over that tree as the pull request's last, its figures stand as what the tree carried then, and the
+            figures below are the ones this pull request's last tree is verified against. That entry's Not built stands
+            answered here: shape (a).
+Built:      shape (a). The ledger's catalogue gains a hundredth reading, the business's state off the SEC's facts as first
+            filed before the session, read by the rule the night reads the provider's quarters by over the two newest
+            filed quarters each against the same quarter a year earlier, improving where both grew their sales and widened
+            their operating margin, deteriorating where both shrank and narrowed, steady otherwise and none where fewer
+            than two quarters hold the four figures, stored as the night's place for a state, migration 115 adding its
+            column with the five. The swing filter's reader of a member's gate inputs gains the state: the night reads it
+            once for every member through the ledger's own reader, only where a standing candidate reads it, and hands it
+            to the stage beside the provider's state, which no gate reads either, the stage's row saying for how many
+            members a state was read and how many read deteriorating. The version leaving off a deteriorating business
+            states a second parameter and reads the filed state in the provider's quarters' place, under a new name naming
+            the source, its verdict naming the state and the facts it read it from; every other S&P 500 pullback version
+            reads exactly what it read before, asserted over the same constructed inputs, and a registration in the form
+            from before still reads the provider's state. The per-rule test walks the version from the first test year as
+            the live filter's walk less the listings of a stock whose filings read deteriorating on the listing's session,
+            through the catalogue's own function and never under the mask the engines' search reads by; the form from
+            before is kept with the reading it lacks, and a run handing the walk no reading of the facts keeps the version
+            naming what it lacks. The Run page words the version's change by its source, and a pick's card's chip says no
+            business deteriorating in its SEC filings.
+Record:     each count and record length before anything restarts, read off the operator's store on 2026-10-30 through
+            the night of 2026-10-29. The nine S&P 500 pullback versions, each registered 2026-10-04 at b4425b7cbb05: the
+            live filter 1,968 nights from 2019-01-02, its picks the list's own; the plan at the nearest bands 16 nights
+            from 2026-10-08, 4 picks, 4 ended, 1 won; the pullback of 1 to 3 typical moves 16 nights, 6 picks, 3 ended, 2
+            won; the market gate off 16 nights, 6 picks, 3 ended, 2 won; strength in the top third 16 nights, 5 picks, 2
+            ended, 2 won; one-session arrival 16 nights, 3 picks, 2 ended, 2 won; the deteriorating business 16 nights, 6
+            picks, 3 ended, 2 won; estimates raised 16 nights, 4 picks, 2 ended, 1 won; the night's best three 16 nights,
+            6 picks, 3 ended, 2 won. The family replay reads the breakout's and the drift's stored trades and nights alone
+            and reads no swing version, so the replay cannot carry the eight: they are registered again anyway under the
+            names they carry, as the family was on 2026-10-04, each keeping its nights and picks under its name, and the
+            business version restarts under its new name with the old name's nights and picks kept and readable. The
+            register stands at 123 rules: the swing family's 9, registered again whole by the remedy's first command, and
+            110 the remedy's second command registers again, the S&P 500's breakout 8 and drift 9 replayed first, the 28
+            S&P 400 and 600 rules, the dip's 14, Quality at a fair price's 24 and the Fundamentals family's 27 restarting;
+            the S&P 500 heavyweights' 4 move not.
+Written:    the swing family's row in section 3, the family's paragraph in 13.6, 13.10's count and its hundredth
+            reading, 13.12's per-rule paragraph, section 14's filter item, the swing filter's catalogue row, section 17's
+            swing family row and section 18's row for a rule the per-rule test cannot walk; the schema's setup column and
+            the gate result's shadow note; the runbook's nine and its remedy; the plan's 21.4 text and done condition,
+            which this checkpoint amends and says so here; the decision above superseding the two it names, each moved
+            under Previously decided; the roster's fixture-expectations row; the remedy file, the family's registration
+            before the moved rules'; and the changelog.
+Tests:      2932, from 2931: one added, the version walked by the per-rule test over a constructed history with a fourth
+            strong member whose filings read deteriorating from the session after its last filing; the catalogue test
+            gains the state worked by hand over constructed filings on every side, the family's gates test the version
+            reading the filed state and the eight reading what they read before, and the stage test the state handed once
+            and named in the verdict with its source.
+Claims:     1460, as the entry above: no row added, section 14's filter item and section 17's swing family row amended in
+            place; 1475 placements.
+Pins:       every registered rule's evaluator but the S&P 500 heavyweights' moved again, since the reader of the gate
+            inputs and the family's shadow are sources every other evaluator pins, and every moved version is raised to
+            its pin and asserted: the swing filter 4ebfa325d33f, the S&P 500's breakout 546ebf447a29 and drift
+            735dd5072a4e, the S&P 400's and 600's pullback 3cd39341855c, breakout fc84d3a82714, drift ad650c765e99 and
+            heavyweights ec3f85c00741, the dip's 96ade2efcc10, Quality at a fair price's af9c53c70d87 and the Fundamentals
+            family's b1bb17189a77; the readings' pin d2ecd6139b90 and the swing filter's own code 87c0bd6de398.
+Remedy:     `tools/remedies/2026-10-30-21.4-the-one-move-of-the-pins.txt`, run from main after the merge while no other
+            writer runs: the migration, the swing family registered again whole, then every other moved rule registered
+            again; then each index's ledger history built again by hand with `tools/ledger-build.ps1 --again` and checked
+            with `ledger-check`, about two hours. Tonight's lists are unchanged by it, since no rule states a new hook.
+Mutation:   chosen before the run by this rule, the property the part adds whose wrong form would read as right: the
+            version reads the state off the SEC's facts and not the provider's. The rule's reader of the state made to
+            return the provider's state whatever the registration states: the family's gates test went red, the version
+            firing on a filed state of deteriorating where it is expected not to, and the stage test went red, ZZC's
+            failing candidates read as none where the version is expected; the walk test, which hands states by hand,
+            stayed green as expected; reverted, all three green. Not mutated: the catalogue's reading, the stage's one read
+            of the states and the per-rule walk's keep, each held by its own expectation.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2932 of 2932 tests ran
+            with none failed, migrations 0 to 115 with none pending, schema version 115, against `data-ci` and never
+            `data`; the phase report 64 tables, 1460 claims, 1460 passing, none out of scope and none unexamined, 1475
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the remedy after the merge, its two commands' counts read off its output; 21.5 on the standing go; the three
+            answers of 21.3 at 21.14; 21.2's question at 21.6; the sign-offs of phases 18, 20 and 22; and the engines
+            still reading the fundamentals-first family's history until 21.5 states which families the loop covers.

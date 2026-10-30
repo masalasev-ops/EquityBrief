@@ -40,6 +40,14 @@ public sealed class FamilyShadow : IMemberShadow
             && rule.Version == row.EvaluatorVersion
             && SwingFilterRule.AsksForEstimates(inputs, CandidateEvaluator.Read(row.Parameters)));
 
+    // From 21.4 whether a standing rule at the version it was registered under reads the business's state off the SEC's
+    // facts as first filed, which the night then reads once for every member through the ledger's catalogue.
+    // see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
+    public bool ReadsFiledState =>
+        standing.Any(row => CandidateEvaluators.Find(row.Evaluator) is SwingFilterRule rule
+            && rule.Version == row.EvaluatorVersion
+            && CandidateEvaluator.Read(row.Parameters).GetValueOrDefault(SwingFilterRule.FiledStateParameter) == 1);
+
     public string Evaluate(GateInputs inputs, bool stale, DateOnly? gap)
     {
         var withheld = stale

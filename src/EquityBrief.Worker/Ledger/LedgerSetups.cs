@@ -418,6 +418,20 @@ public sealed record LedgerContext(
         return business.GetOrAdd((ticker, filed), _ => FiledFacts.Read(facts, session));
     }
 
+    readonly System.Collections.Concurrent.ConcurrentDictionary<(string Ticker, int Filed), string?> filedStates = new();
+
+    // From 21.4 the business's state off its filer's facts as first filed before a session, as the swing filter's version
+    // leaving off a deteriorating business reads it, worked once for each count of the facts filed before a session; none
+    // for a member the store matches no filer for or whose facts hold too few quarters.
+    // see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
+    public string? BusinessStateFiled(string ticker, DateOnly session)
+    {
+        var facts = Facts?.GetValueOrDefault(ticker) ?? [];
+        var filed = facts.Count(fact => fact.Filed < session);
+
+        return filedStates.GetOrAdd((ticker, filed), _ => FiledFacts.StateOf(facts, session));
+    }
+
     public double? ValuePlace(SweepSeries one, DateOnly session)
     {
         var ticker = one.Name.Ticker;
@@ -1225,6 +1239,10 @@ public static class LedgerSetups
         Set("rating_actions_net", context.RatingActionsNet(ticker, calendar, at));
         Set("estimate_revision_month", context.EstimateRevision(ticker, day));
         Set("short_interest_share", context.ShortInterestShare(one, day));
+
+        // From 21.4 the business's state off the SEC's facts as first filed, stored as the night's place for a state, which
+        // the swing filter's version leaving off a deteriorating business reads; none where too few quarters are filed.
+        Set(LedgerReadings.BusinessStateFiled, context.BusinessStateFiled(ticker, day) is { } state ? Core.Quarters.FundamentalState.Place(state) : null);
 
         return readings;
     }

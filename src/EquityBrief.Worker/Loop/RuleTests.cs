@@ -81,7 +81,14 @@ public sealed record RuleTestInputs(
     QualityLay? Quality = null,
     IndexSweepRunner.DipRead? Dip = null,
     ImprovingLay? Improving = null,
-    OwnReads? Own = null);
+    OwnReads? Own = null,
+    Func<int, int, string?>? FiledStates = null)
+{
+    // From 21.4 the business's state off the SEC's facts as first filed for a stock on a session, which the S&P 500 pullback
+    // version leaving off a deteriorating business is walked at: the one handed in, or the catalogue's own through the
+    // readings; none where the run handed neither, which keeps that version with the reading it lacks.
+    public Func<int, int, string?>? FiledStateOf => FiledStates ?? (Readings is { } readings ? readings.BusinessStateFiled : null);
+}
 
 // From 20.8 the release readings the per-rule test walks the drift's tone variant over: for each reading version whose
 // history read is complete, each stock's results releases with their readings under it, read through the one reader of
@@ -130,8 +137,13 @@ public static class RuleTests
     public const string NoHead = "its live rule";
 
     // Why a rule cannot be walked over the history; from 21.1 a plan the version's trade gate reads is walked by the ideas'
-    // run's plan of that kind and no longer kept.
+    // run's plan of that kind and no longer kept, and from 21.4 a version reading the business's state off the SEC's facts
+    // as first filed is walked at it, the provider's reported quarters alone being what the history keeps no reading of.
     public const string BusinessState = "a business's reported quarters, which the history keeps no reading of";
+
+    // From 21.4 why a version reading the business's state off the SEC's facts was not walked: the run handed the walk no
+    // reading of the facts, which only a run reading the history without the ledger's readings does.
+    public const string FiledStateUnread = "the business's state off the SEC's facts as first filed, which the run handed no reading of";
 
     // From 21.1 why an S&P 400 or 600 rule stating a level the extended grid's walk does not read was not walked by its
     // sweep's own reading: the run laid out no such reading for its family, or its book reads twelve months' strength at
@@ -309,17 +321,25 @@ public static class RuleTests
     static IEnumerable<RegisterRow> LiveFirst(IEnumerable<RegisterRow> rows) => rows.OrderByDescending(row => FamilyRecords.IsLive(row.Candidate)).ThenBy(row => row.Id);
 
     // The S&P 500's pullback: each swing filter rule at its own settings, a rule reading no market check at the market
-    // floor off, one keeping the night's best few at that many a night, and from 21.1 one whose trade gate reads the plan
-    // at the nearest bands or the ladder's first tranche at that plan, which the ideas' run reads for every candidate. A
-    // version reading a business's reported quarters, the analysts' estimates or sector leadership is kept with the
-    // reading it lacks, which the history holds no reading of.
-    static IEnumerable<RuleUnderTest> LargePullbacks(RuleTestInputs inputs)
+    // floor off, one keeping the night's best few at that many a night, from 21.1 one whose trade gate reads the plan at
+    // the nearest bands or the ladder's first tranche at that plan, which the ideas' run reads for every candidate, and
+    // from 21.4 one leaving off a business the SEC's facts as first filed read deteriorating walked over the listings
+    // whose state on the night read anything else or none, the state read off the catalogue's own function over the facts
+    // filed before each session. A version reading a business's reported quarters, the analysts' estimates or sector
+    // leadership is kept with the reading it lacks, which the history holds no reading of.
+    // see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
+    public static IEnumerable<RuleUnderTest> LargePullbacks(RuleTestInputs inputs)
     {
+        var filedStates = inputs.FiledStateOf;
+
         foreach (var row in LiveFirst(inputs.Standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is SwingFilterRule)))
         {
             var p = CandidateEvaluator.Read(row.Parameters);
             var live = FamilyRecords.IsLive(row.Candidate);
-            var why = p.GetValueOrDefault(SwingFilterRule.SkipDeterioratingParameter) == 1 ? BusinessState
+            var leavesOff = p.GetValueOrDefault(SwingFilterRule.SkipDeterioratingParameter) == 1;
+            var readsFiled = p.GetValueOrDefault(SwingFilterRule.FiledStateParameter) == 1;
+            var why = leavesOff && !readsFiled ? BusinessState
+                : leavesOff && filedStates is null ? FiledStateUnread
                 : p.GetValueOrDefault(SwingFilterRule.RaisedEstimatesParameter) == 1 ? Estimates
                 : p.GetValueOrDefault(SwingFilterRule.LeaderSectorsParameter) > 0 ? Leadership
                 : inputs.Filter is null ? NoFilterVersion
@@ -343,7 +363,13 @@ public static class RuleTests
             var perNight = p.GetValueOrDefault(SwingFilterRule.BestOfParameter) is > 0 and var best ? (int)best : SetupFamilies.ListedANight;
             var walk = RuleWalk.LargeSwingFilter(inputs.Read, filter.History, filter.Version, settings, inputs.Progress, live ? inputs.Approved.GetValueOrDefault(SetupFamilies.Pullback) : null, inputs.Readings, inputs.Trees, perNight, PlanOf(p));
 
-            yield return new RuleUnderTest(SetupFamilies.Pullback, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, Units(walk.Own));
+            // The version leaving off a deteriorating business is walked over the listings its state keeps, each read on
+            // the listing's own session, so its trades are the live filter's less the stocks it leaves off that night.
+            var own = leavesOff
+                ? walk.Keeping(at => !string.Equals(filedStates!(walk.Listings[at].Name, walk.Listings[at].Session), Core.Quarters.FundamentalState.Deteriorating, StringComparison.Ordinal))
+                : walk.Own;
+
+            yield return new RuleUnderTest(SetupFamilies.Pullback, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, Units(own));
         }
     }
 

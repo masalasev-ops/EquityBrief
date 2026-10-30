@@ -1731,19 +1731,24 @@ public static class RunScreen
         static double RaisedEstimates(IReadOnlyDictionary<string, double> settings) => settings.TryGetValue("raisedEstimates", out var reads) ? reads : 0;
 
         var said = new List<string>();
-        var named = new HashSet<string>(StringComparer.Ordinal) { "marketGate", "strengthFloor", "depthLow", "depthHigh", "arrivalSessions", "trade", "rewardToRiskFloor", "skipDeteriorating", "leaderSectors", "leaderShareOf", "bestOf", "raisedEstimates" };
+        var named = new HashSet<string>(StringComparer.Ordinal) { "marketGate", "strengthFloor", "depthLow", "depthHigh", "arrivalSessions", "trade", "rewardToRiskFloor", "skipDeteriorating", "filedState", "leaderSectors", "leaderShareOf", "bestOf", "raisedEstimates" };
+
+        // A registration written before the state's source was a setting reads the provider's quarters, as one stating nought does.
+        static double FiledState(IReadOnlyDictionary<string, double> settings) => settings.TryGetValue("filedState", out var reads) ? reads : 0;
 
         if (Moved("marketGate"))
         {
             said.Add(Of(version, "marketGate") == 0 ? "lists on every night, the market gate off" : "reads the market gate, which the live list does not");
         }
 
-        // The seventh candidate, which leaves off a business whose reported quarters read deteriorating.
-        // see: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
-        if (Moved("skipDeteriorating"))
+        // The seventh candidate, which leaves off a deteriorating business, from 21.4 one its SEC filings read so.
+        // see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
+        if (Moved("skipDeteriorating") || !FiledState(version).Equals(FiledState(live)))
         {
             said.Add(Of(version, "skipDeteriorating") == 1
-                ? "leaves off a business whose reported quarters read deteriorating, which the live list keeps"
+                ? FiledState(version) == 1
+                    ? "leaves off a business whose SEC filings read deteriorating, which the live list keeps"
+                    : "leaves off a business whose reported quarters read deteriorating, which the live list keeps"
                 : "keeps a business whose reported quarters read deteriorating, which the live list leaves off");
         }
 

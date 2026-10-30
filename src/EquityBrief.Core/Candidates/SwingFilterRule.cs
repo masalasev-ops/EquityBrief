@@ -7,18 +7,20 @@ namespace EquityBrief.Core.Candidates;
 // The swing filter as a registered candidate: every threshold of the filter as a parameter, the trade
 // gate's input as 0 for the ladder's first tranche, 1 for the swing trade at the nearest bands and 2 for
 // the swing trade clear of the noise, whether the market gate is read, 1 or 0, whether a member whose
-// reported quarters read deteriorating is left off, 1 or 0, and whether a member's analysts' estimates have
-// to have been raised, 1 or 0. A member fires where every gate read passes and no exclusion applies, where
-// the registration leaves a deteriorating business off, where its state reads anything else or nothing, and
-// where the registration reads estimates, where the night read them raised; its verdict names the plan its
-// trade gate read, which is the plan its setup is scored on, the state it read and the estimate it read.
+// business reads deteriorating is left off, 1 or 0, whether that state is read off the SEC's facts as first
+// filed through the ledger's catalogue in the provider's reported quarters' place, 1 or 0, and whether a
+// member's analysts' estimates have to have been raised, 1 or 0. A member fires where every gate read passes
+// and no exclusion applies, where the registration leaves a deteriorating business off, where the state it
+// reads is anything else or nothing, and where the registration reads estimates, where the night read them
+// raised; its verdict names the plan its trade gate read, which is the plan its setup is scored on, the
+// state it read, where it read it from where that is the SEC's facts, and the estimate it read.
 //
 // One evaluator for the whole family. The live filter and each variant are registrations of it with
 // every threshold stated, so a variant is a whole rule and runs on unchanged when the live settings move.
 // see: A variant of the swing filter is registered as a whole rule and runs on unchanged when the live settings move
 // see: The swing filter's trade gate reads section 10's plan for the swing trade, and the plan at the nearest bands is the variant in the reward to risk variant's place
 // see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
-// see: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
+// see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
 public sealed class SwingFilterRule : GateEvaluator
 {
     public const string EvaluatorName = "swing-filter";
@@ -27,8 +29,14 @@ public sealed class SwingFilterRule : GateEvaluator
 
     public const string MarketGateParameter = "marketGate";
 
-    // Whether a member whose reported quarters read deteriorating is left off, 1 or 0.
+    // Whether a member whose business reads deteriorating is left off, 1 or 0.
     public const string SkipDeterioratingParameter = "skipDeteriorating";
+
+    // From 21.4 whether the state a member is left off for is read off the SEC's facts as first filed, through the
+    // ledger's catalogue as the night hands it in, in the provider's reported quarters' place, 1 or 0; a registration
+    // stating it reads the filed state alone, and one stating it off reads the provider's state the night stored.
+    // see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
+    public const string FiledStateParameter = "filedState";
 
     // The sector leaders' reading in place of the trend and strength gate: the top sectors a member's has to
     // be among and the share of its sector it has to be inside, one in so many rounded up, both nought where
@@ -60,17 +68,24 @@ public sealed class SwingFilterRule : GateEvaluator
     // The verdict's value naming the plan the trade gate read, as a version's settings name it.
     public const string PlanValue = "plan";
 
-    // The verdict's value naming the state the member's reported quarters gave it, as the night stored it.
+    // The verdict's value naming the state the rule read for the member's business: the provider's state as the night
+    // stored it, or from 21.4 the filed state as the night read it where the registration reads the SEC's facts.
     public const string StateValue = "business state";
 
     public const string StateNotRead = "not read";
 
+    // The verdict's value naming the source the state was read from, written where the rule reads the SEC's facts.
+    public const string StateSourceValue = "business state read from";
+
+    public const string FiledSource = "the SEC's facts as first filed, through the ledger's catalogue";
+
     public override string Name => EvaluatorName;
 
-    public override string Version => "b4425b7cbb05";
+    public override string Version => "4ebfa325d33f";
 
     // The settings' own names as a version stores them, then the trade gate's input, the market gate, the
-    // deteriorating business, sector leadership, the most a night the list keeps and the raised estimates.
+    // deteriorating business, sector leadership, the most a night the list keeps, the raised estimates and, from
+    // 21.4, the state read off the SEC's facts.
     public override IReadOnlyList<string> Parameters { get; } =
     [
         "breadthFloor",
@@ -90,12 +105,14 @@ public sealed class SwingFilterRule : GateEvaluator
         LeaderShareOfParameter,
         BestOfParameter,
         RaisedEstimatesParameter,
+        FiledStateParameter,
     ];
 
     // The parameters a registration states for settings, the market gate read or not, a deteriorating
     // business left off or not, sector leadership read in place of the trend and strength gate or not, the
-    // most a night its list keeps, nought for every member it fires on, and raised estimates read or not.
-    public static IReadOnlyDictionary<string, double> ParametersOf(FilterSettings settings, bool marketGate = true, bool skipDeteriorating = false, Families.LeaderSettings? leadership = null, int bestOf = 0, bool raisedEstimates = false) =>
+    // most a night its list keeps, nought for every member it fires on, raised estimates read or not, and the
+    // deteriorating business read off the SEC's facts as first filed or off the provider's quarters.
+    public static IReadOnlyDictionary<string, double> ParametersOf(FilterSettings settings, bool marketGate = true, bool skipDeteriorating = false, Families.LeaderSettings? leadership = null, int bestOf = 0, bool raisedEstimates = false, bool filedState = false) =>
         new Dictionary<string, double>(StringComparer.Ordinal)
         {
             ["breadthFloor"] = settings.BreadthFloor,
@@ -120,6 +137,7 @@ public sealed class SwingFilterRule : GateEvaluator
             [LeaderShareOfParameter] = leadership?.ShareOf ?? 0,
             [BestOfParameter] = bestOf,
             [RaisedEstimatesParameter] = raisedEstimates ? 1 : 0,
+            [FiledStateParameter] = filedState ? 1 : 0,
         };
 
     // The settings a registration's parameters state.
@@ -155,7 +173,9 @@ public sealed class SwingFilterRule : GateEvaluator
         var leaderShareOf = (int)parameters.GetValueOrDefault(LeaderShareOfParameter);
         var readsLeadership = leaderSectors > 0 && leaderShareOf > 0;
         var readsEstimates = parameters.GetValueOrDefault(RaisedEstimatesParameter) == 1;
-        var deteriorating = string.Equals(inputs.FundamentalState, FundamentalState.Deteriorating, StringComparison.Ordinal);
+        var readsFiled = parameters.GetValueOrDefault(FiledStateParameter) == 1;
+        var state = StateRead(inputs, parameters);
+        var deteriorating = string.Equals(state, FundamentalState.Deteriorating, StringComparison.Ordinal);
         var leads = !readsLeadership || Leads(inputs.Leadership, leaderSectors, leaderShareOf);
 
         // Every gate read passing and no exclusion, then the estimates where the rule reads them, a member whose
@@ -169,8 +189,13 @@ public sealed class SwingFilterRule : GateEvaluator
         values["market read"] = marketRead ? "yes" : "no";
         values["arrived"] = result.Gates.Single(gate => gate.Name == SwingGates.Trigger).Values.GetValueOrDefault(SwingGates.ArrivedValue, "none");
         values[PlanValue] = FilterSettings.Word(settings.Trade);
-        values[StateValue] = inputs.FundamentalState ?? StateNotRead;
+        values[StateValue] = state ?? StateNotRead;
         values["skips deteriorating"] = skipsDeteriorating ? "yes" : "no";
+
+        if (readsFiled)
+        {
+            values[StateSourceValue] = FiledSource;
+        }
 
         if (readsLeadership)
         {
@@ -216,9 +241,15 @@ public sealed class SwingFilterRule : GateEvaluator
             SwingGates.Evaluate(inputs, SettingsOf(parameters)),
             parameters[MarketGateParameter] == 1,
             readsLeadership,
-            parameters.GetValueOrDefault(SkipDeterioratingParameter) == 1 && string.Equals(inputs.FundamentalState, FundamentalState.Deteriorating, StringComparison.Ordinal),
+            parameters.GetValueOrDefault(SkipDeterioratingParameter) == 1 && string.Equals(StateRead(inputs, parameters), FundamentalState.Deteriorating, StringComparison.Ordinal),
             !readsLeadership || Leads(inputs.Leadership, leaderSectors, leaderShareOf));
     }
+
+    // The state a registration reads for a member's business: from 21.4 the one the night read off the SEC's facts as
+    // first filed where the registration says so, and otherwise the one the night stored from the provider's quarters,
+    // which every registration before read; none where the night read or stored none.
+    static string? StateRead(GateInputs inputs, IReadOnlyDictionary<string, double> parameters) =>
+        parameters.GetValueOrDefault(FiledStateParameter) == 1 ? inputs.FiledState : inputs.FundamentalState;
 
     // The estimate a verdict records: raised or not with both figures and the fiscal year, or why none was read.
     public static string Words(EstimateReading? estimates) => estimates switch

@@ -1,6 +1,7 @@
 using EquityBrief.Core.Insiders;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Prices;
+using EquityBrief.Core.Quarters;
 using EquityBrief.Core.Readings;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Tests.Harness;
@@ -10,8 +11,11 @@ using EquityBrief.Worker.Sweep;
 namespace EquityBrief.Tests.Checks;
 
 // fixture-expectations, 21.4: the five readings the operator chose at 21.2, worked by hand at a constructed session
-// through the ledger's one readings function, each at a figure and none where its source holds nothing for the session.
+// through the ledger's one readings function, each at a figure and none where its source holds nothing for the session;
+// and, on the operator's ruling of 2026-10-30, the business's state off the SEC's facts as first filed, worked by hand over
+// constructed filings for the swing filter's version leaving off a deteriorating business.
 // see: Phase 21 makes the existing families choose better and the monthly loop test every family on every index, built to completion before any new work with no model judging a stock and nothing retired without the operator's word
+// see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
 public partial class FixtureExpectations
 {
     // The row 21.4's catalogue part adds that this check reaches: section 17's row for the five readings.
@@ -149,12 +153,69 @@ public partial class FixtureExpectations
         Assert.Equal(141m, bars[291].Close);
         Assert.Equal(141.0 / 149.0, Of(Read(291, Market(40)), "relative_strength_high")!.Value, 12);
 
-        // Each none where its source holds nothing: no index series, no insiders, no answer, no fetch and no report.
+        // Each none where its source holds nothing: no index series, no insiders, no answer, no fetch, no report and no facts.
         var none = Read(At, LedgerMarket.None);
 
         Assert.All(
-            new[] { "relative_strength_high", "insider_cluster_buyers", "rating_actions_net", "estimate_revision_month", "short_interest_share" },
+            new[] { "relative_strength_high", "insider_cluster_buyers", "rating_actions_net", "estimate_revision_month", "short_interest_share", LedgerReadings.BusinessStateFiled },
             column => Assert.Null(Of(none, column)));
+
+        // The business's state off the SEC's facts, over the two newest filed quarters each against the same quarter a year
+        // earlier: sales of 110 and 120 over 100 and 100 with operating margins of 0.20 and 0.25 over 0.10 and 0.10 read
+        // improving, stored as the night's place 0; sales of 90 and 95 with margins of 0.056 and 0.084 under 0.10 read
+        // deteriorating, 3; sales up one quarter and down the other read steady, 1. None where the facts hold one quarter
+        // with its year before, where one of the two newest holds no operating income or no year before, and where the
+        // newest was filed on the session itself, which the session does not yet read.
+        static FiledFactRow Quarter(string concept, int year, int quarter, decimal value)
+        {
+            var start = new DateOnly(year, (3 * (quarter - 1)) + 1, 1);
+            var end = start.AddMonths(3).AddDays(-1);
+
+            return new FiledFactRow(concept, start, end, value, end.AddDays(31), "10-Q", $"{concept}-{year}-{quarter}");
+        }
+
+        FiledFactRow[] YearBefore() => [Quarter("Revenues", 2024, 1, 100m), Quarter("Revenues", 2024, 2, 100m), Quarter("OperatingIncomeLoss", 2024, 1, 10m), Quarter("OperatingIncomeLoss", 2024, 2, 10m)];
+
+        IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>> Filed(params FiledFactRow[] newest) =>
+            new Dictionary<string, IReadOnlyList<FiledFactRow>>(StringComparer.Ordinal) { ["AAA"] = [.. YearBefore(), .. newest] };
+
+        var improving = Filed(Quarter("Revenues", 2025, 1, 110m), Quarter("Revenues", 2025, 2, 120m), Quarter("OperatingIncomeLoss", 2025, 1, 22m), Quarter("OperatingIncomeLoss", 2025, 2, 30m));
+        var deteriorating = Filed(Quarter("Revenues", 2025, 1, 90m), Quarter("Revenues", 2025, 2, 95m), Quarter("OperatingIncomeLoss", 2025, 1, 5m), Quarter("OperatingIncomeLoss", 2025, 2, 8m));
+        var steady = Filed(Quarter("Revenues", 2025, 1, 110m), Quarter("Revenues", 2025, 2, 95m), Quarter("OperatingIncomeLoss", 2025, 1, 22m), Quarter("OperatingIncomeLoss", 2025, 2, 8m));
+
+        Assert.True(Quarter("Revenues", 2025, 2, 1m).Filed < session);
+        Assert.Equal(0.0, Of(Read(At, Market(0), facts: improving), LedgerReadings.BusinessStateFiled));
+        Assert.Equal(3.0, Of(Read(At, Market(0), facts: deteriorating), LedgerReadings.BusinessStateFiled));
+        Assert.Equal(1.0, Of(Read(At, Market(0), facts: steady), LedgerReadings.BusinessStateFiled));
+        Assert.Equal(
+            (FundamentalState.Improving, FundamentalState.Deteriorating, FundamentalState.Steady),
+            (FiledFacts.StateOf(improving["AAA"], session), FiledFacts.StateOf(deteriorating["AAA"], session), FiledFacts.StateOf(steady["AAA"], session)));
+        Assert.Null(Of(Read(At, Market(0), facts: Filed(Quarter("Revenues", 2025, 2, 120m), Quarter("OperatingIncomeLoss", 2025, 2, 30m))), LedgerReadings.BusinessStateFiled));
+        Assert.Null(Of(Read(At, Market(0), facts: Filed(Quarter("Revenues", 2025, 1, 110m), Quarter("Revenues", 2025, 2, 120m), Quarter("OperatingIncomeLoss", 2025, 2, 30m))), LedgerReadings.BusinessStateFiled));
+        Assert.Null(FiledFacts.StateOf([.. improving["AAA"].Where(fact => fact.End != new DateOnly(2024, 3, 31))], session));
+        Assert.Null(FiledFacts.StateOf([.. improving["AAA"].Select(fact => fact.End == new DateOnly(2025, 6, 30) ? fact with { Filed = session } : fact)], session));
+        Assert.Equal(FundamentalState.Improving, FiledFacts.StateOf(improving["AAA"], session.AddDays(1)));
+
+        // The state is the one the provider's quarters give the same figures, read by the night's own rule, and the
+        // place a stored reading holds stands for it both ways; a place no state holds, or none, reads as none.
+        static TrajectoryReading Trajectory(decimal growthNewest, decimal marginNewest, decimal growthBefore, decimal marginBefore) =>
+            new([new TrajectoryQuarter(new DateOnly(2025, 6, 30), growthNewest, null, marginNewest, 0.10m), new TrajectoryQuarter(new DateOnly(2025, 3, 31), growthBefore, null, marginBefore, 0.10m)], 2, null);
+
+        Assert.Equal(
+            (FundamentalState.Improving, FundamentalState.Deteriorating, FundamentalState.Steady),
+            (QuarterReadings.StateOf(Trajectory(0.20m, 0.25m, 0.10m, 0.20m)), QuarterReadings.StateOf(Trajectory(-0.05m, 8m / 95m, -0.10m, 5m / 90m)), QuarterReadings.StateOf(Trajectory(-0.05m, 8m / 95m, 0.10m, 0.20m))));
+        Assert.Equal(
+            (FundamentalState.Improving, FundamentalState.Steady, FundamentalState.Deteriorating, null, null, null),
+            (FundamentalState.OfPlace(0), FundamentalState.OfPlace(1), FundamentalState.OfPlace(3), FundamentalState.OfPlace(2), FundamentalState.OfPlace(null), FundamentalState.OfPlace(4)));
+        Assert.All(new[] { FundamentalState.Improving, FundamentalState.Steady, FundamentalState.Deteriorating }, state => Assert.Equal(state, FundamentalState.OfPlace(FundamentalState.Place(state))));
+
+        // The reader the swing filter's stage is handed: the state a member's stored place stands for, and none for a
+        // member the night read no readings of.
+        var filedStates = SetupLedger.FiledStatesOf(ticker => ticker == "AAA" ? Read(At, Market(0), facts: deteriorating) : null);
+
+        Assert.Equal((FundamentalState.Deteriorating, null), (filedStates("AAA"), filedStates("ZZZ")));
+        Assert.Equal(FundamentalState.Improving, SetupLedger.FiledStatesOf(_ => Read(At, Market(0), facts: improving))("AAA"));
+        Assert.Null(SetupLedger.FiledStatesOf(_ => Read(At, Market(0), facts: steady).Take(LedgerReadings.IndexOf(LedgerReadings.BusinessStateFiled)).ToArray())("AAA"));
 
         // And none where the source holds something but not for the session: an insider history not holding the window's
         // days, an answer asked before the session, a first fetch after it or one stating no earlier figure, and a report

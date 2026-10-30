@@ -250,10 +250,14 @@ public partial class ReadSurface
         Assert.Equal(1.0 / 3, nearest.Shared!.Value, 9);
         Assert.Null(Assert.Single(versions, version => version.Slug == RunScreen.Slug(Depth)).Shared);
 
-        // The seventh's change in plain words: it leaves off a deteriorating business, which the live list keeps.
+        // The seventh's change in plain words: it leaves off a business its SEC filings read deteriorating, which the live
+        // list keeps; a registration from before 21.4, reading the provider's quarters, keeps its own words.
+        Assert.Equal(
+            "Leaves off a business whose SEC filings read deteriorating, which the live list keeps",
+            Assert.Single(versions, version => version.Slug == RunScreen.Slug(TheSwingFamily.Variant(TheSwingFamily.DeterioratingName, "1"))).Changes);
         Assert.Equal(
             "Leaves off a business whose reported quarters read deteriorating, which the live list keeps",
-            Assert.Single(versions, version => version.Slug == RunScreen.Slug(TheSwingFamily.Variant(TheSwingFamily.DeterioratingName, "1"))).Changes);
+            RunScreen.Changes(SwingFilterRule.ParametersOf(FilterSettings.Proposed, skipDeteriorating: true), TheSwingFamily.For("1", FilterSettings.Proposed)[0].Parameters));
 
         // The eighth's: it lists only a stock whose analysts raised their estimate.
         Assert.Equal(

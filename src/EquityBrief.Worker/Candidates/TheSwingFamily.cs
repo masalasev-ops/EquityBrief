@@ -5,16 +5,17 @@ namespace EquityBrief.Worker.Candidates;
 
 // The swing family, written down rather than typed at the command line: the live filter at the open
 // version's settings and eight variants, each the same whole rule with one thing moved, the sixth leaving
-// off a member whose reported quarters read deteriorating, the seventh firing only where the member's
-// analysts raised their estimate for its current fiscal year over the thirty days before the night, in the
-// place the sector leaders' rule held until it was retired, and the eighth keeping the night's best three in
-// the list's own order, all run by the one evaluator and each named for the version it was defined against,
-// since a variant defined against another version's settings is another rule. Each rule's record keeps one
-// open trade a stock of its own. And the words each retirement of phase 10's three carries.
+// off a member whose business the SEC's facts as first filed read deteriorating, from 21.4 in the provider's
+// reported quarters' place, the seventh firing only where the member's analysts raised their estimate for
+// its current fiscal year over the thirty days before the night, in the place the sector leaders' rule held
+// until it was retired, and the eighth keeping the night's best three in the list's own order, all run by
+// the one evaluator and each named for the version it was defined against, since a variant defined against
+// another version's settings is another rule. Each rule's record keeps one open trade a stock of its own.
+// And the words each retirement of phase 10's three carries.
 // see: The swing filter's trade gate reads section 10's plan for the swing trade, and the plan at the nearest bands is the variant in the reward to risk variant's place
 // see: A variant of the swing filter is registered as a whole rule and runs on unchanged when the live settings move
 // see: The three phase 10 candidates are retired when the swing family registers, and each retirement says no result of theirs was read
-// see: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
+// see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
 // see: The sector leaders are a variant of the pullback's starting point and not a family of their own
 // see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends
 // see: The pullback's ninth rule keeps the night's best three in the list's own order, and the family is registered again whole to add it
@@ -33,9 +34,12 @@ public static class TheSwingFamily
         "a member firing where every gate read passes and no exclusion applies, and its record keeping one open trade " +
         "a stock of its own, free the night after the trade ends";
 
-    // The deteriorating business's rule: the same, with a member whose reported quarters read deteriorating left off.
+    // The deteriorating business's rule: the same, with a member whose business the SEC's facts as first filed read
+    // deteriorating left off, read through the ledger's catalogue in the provider's reported quarters' place.
     public const string RuleSkippingDeteriorating =
-        Rule + ", and a member whose reported quarters read deteriorating on the night left off, every other state and none firing as the gates say";
+        Rule + ", and a member whose business the SEC's facts as first filed before the night read deteriorating left off, both of its two " +
+        "newest filed quarters' sales under the same quarter's a year earlier and their operating margins narrower, read through the " +
+        "ledger's catalogue; every other state and none firing as the gates say";
 
     // The sector leaders' rule: the same, with sector leadership read in place of the trend and strength gate.
     public const string RuleReadingLeadership =
@@ -83,7 +87,12 @@ public static class TheSwingFamily
 
     public const string ArrivalName = "the swing filter with one-session arrival";
 
-    public const string DeterioratingName = "the swing filter leaving off a deteriorating business";
+    // The deteriorating business's name from 21.4, naming the source it reads; the name it carried while it read the
+    // provider's quarters is kept beside it for the record the register holds under it, which the family registered
+    // again retires.
+    public const string DeterioratingName = "the swing filter leaving off a business deteriorating in its SEC filings";
+
+    public const string ProviderDeterioratingName = "the swing filter leaving off a deteriorating business";
 
     // The sector leaders' name, in the operator's words, which the register keeps for the rule it retired.
     public const string LeadersName = "the pullback in the top 3 sectors, top quarter of each";
@@ -109,7 +118,7 @@ public static class TheSwingFamily
         new(Variant(MarketOffName, version), Rule, Test, SwingFilterRule.EvaluatorName, SwingFilterRule.ParametersOf(live, marketGate: false)),
         new(Variant(StrengthName, version), Rule, Test, SwingFilterRule.EvaluatorName, SwingFilterRule.ParametersOf(live with { StrengthFloor = VariantStrength })),
         new(Variant(ArrivalName, version), Rule, Test, SwingFilterRule.EvaluatorName, SwingFilterRule.ParametersOf(live with { ArrivalSessions = VariantArrival })),
-        new(Variant(DeterioratingName, version), RuleSkippingDeteriorating, Test, SwingFilterRule.EvaluatorName, SwingFilterRule.ParametersOf(live, skipDeteriorating: true)),
+        new(Variant(DeterioratingName, version), RuleSkippingDeteriorating, Test, SwingFilterRule.EvaluatorName, SwingFilterRule.ParametersOf(live, skipDeteriorating: true, filedState: true)),
         new(Variant(RevisionsName, version), RuleReadingEstimates, Test, SwingFilterRule.EvaluatorName, SwingFilterRule.ParametersOf(live, raisedEstimates: true)),
         new(Variant(BestThreeName, version), RuleKeepingTheBest, Test, SwingFilterRule.EvaluatorName, SwingFilterRule.ParametersOf(live, bestOf: VariantBestOf)),
     ];

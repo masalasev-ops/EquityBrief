@@ -397,6 +397,17 @@ public sealed partial class SetupLedger : IComponent
         return ticker => read.TryGetValue(ticker, out var held) ? held : read[ticker] = Of(ticker);
     }
 
+    // From 21.4 each member's business state off the SEC's facts as first filed, read off the catalogue's readings of the
+    // night as the swing filter's stage is handed it for the version leaving off a deteriorating business: the state the
+    // stored place stands for, and none for a member the night holds no bar for or whose facts hold too few quarters.
+    // see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
+    public static Func<string, string?> FiledStatesOf(Func<string, IReadOnlyList<double?>?> readings)
+    {
+        var at = LedgerReadings.IndexOf(LedgerReadings.BusinessStateFiled);
+
+        return ticker => readings(ticker) is { } read && at < read.Count ? Core.Quarters.FundamentalState.OfPlace(read[at]) : null;
+    }
+
     // From 21.4 the setups at the ledger's loose gates on the newest night, for a rule stating the ranking, whose
     // candidates they are: each family's rows laid from the same inputs the night's own setups are laid from, each with
     // its plan and its readings; none for a family holding none, and none at all where the store holds no bar or the

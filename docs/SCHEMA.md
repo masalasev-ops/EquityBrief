@@ -860,7 +860,7 @@ Grain: one row per index member per night.
 | `strength` | REAL | the mean of the two places the ranking reads |
 | `band_strength` | INTEGER | the setup band's strength, the ranking's third key |
 | `gates` | TEXT | JSON: the five gates' answers, each with its reason and values, and the notes on what could not be counted |
-| `shadow` | TEXT | JSON: from 12.5, each swing family candidate standing when the night started, whether it fired with each gate's answer, the market read or not, the exclusions and the session it arrived on, and the candidates the night could not evaluate with why; null on a row written before it or with no family standing |
+| `shadow` | TEXT | JSON: from 12.5, each swing family candidate standing when the night started, whether it fired with each gate's answer, the market read or not, the exclusions and the session it arrived on, from 21.4 the business state the candidate read and, where it read it off the SEC's facts, the source it read it from, and the candidates the night could not evaluate with why; null on a row written before it or with no family standing |
 | `clear_stop` | TEXT | from migration 47, section 10's plan for the swing trade, entered at `swing_entry`: its stop, the setup band's low edge, or the next support band's beneath it where that is less than a typical move below the close; null where no stop is placed and on a row written before the column (see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads) |
 | `clear_target` | TEXT | its target, the lowest low edge of a band two typical moves or more above the close, null where none sits there |
 | `clear_reward_to_risk` | REAL | null where either is |
@@ -1675,6 +1675,7 @@ Grain: one row per index, family, stock and session a family's loose gates passe
 | `rating_actions_net` | REAL | Yahoo's rating upgrades less downgrades dated over the 21 sessions before the session, from the stock's newest stored answer; null where the store holds no answer or the session is after the answer's ask |
 | `estimate_revision_month` | REAL | the current fiscal year's consensus earnings a share over its figure 30 days before, less 1, as the newest quarters fetch on or before the session states them; null before the first fetch or where either is missing |
 | `short_interest_share` | REAL | the shares short FINRA last reported before the session over the newest share count the filings' covers state; null while no store holds the reports |
+| `business_state_filed` | REAL | from 21.4 the business's state off the SEC's facts as first filed before the session, as the night's place for a state: 0 improving, where both of the two newest filed quarters grew their sales on the same quarter a year earlier and widened their operating margin, 3 deteriorating, where both shrank and narrowed, 1 steady otherwise; null where fewer than two quarters hold the four figures. The swing filter's version leaving off a deteriorating business reads it through the catalogue |
 
 Primary key: `index_code`, `family`, `ticker`, `session_date`. Indexed on `index_code`, `settled` and `session_date`, which the step closing the windows reads by.
 

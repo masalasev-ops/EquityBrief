@@ -44,7 +44,7 @@ public static class LedgerHeadings
             "profit", "coverage", "cash_over_income", "fundamentals_score", "return_on_assets", "return_on_assets_change", "leverage_fall",
             "current_ratio_change", "share_fall",
         ]),
-        new("Earnings quality", ["revenue_growth", "growth_change", "gross_margin_change", "operating_margin_change", "gross_profitability", "turnover_change", "gross_margin_year_change"]),
+        new("Earnings quality", ["revenue_growth", "growth_change", "gross_margin_change", "operating_margin_change", "gross_profitability", "turnover_change", "gross_margin_year_change", "business_state_filed"]),
     ];
 
     // The readings read off a market series, the same for every member of an index on a night.

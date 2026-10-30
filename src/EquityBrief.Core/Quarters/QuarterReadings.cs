@@ -37,6 +37,16 @@ public static class FundamentalState
         _ => 2,
     };
 
+    // The state a place stands for, for a reader handed the ledger's reading of a business's state off the SEC's
+    // facts: the three states a place tells apart, and none for the place the two unread states and no state share.
+    public static string? OfPlace(double? place) => place switch
+    {
+        0 => Improving,
+        1 => Steady,
+        3 => Deteriorating,
+        _ => null,
+    };
+
     // The same place over a column holding a state, for a reader that orders in its query, written from
     // the one rule above so the two cannot come to order differently.
     public static string PlaceIn(string column) =>

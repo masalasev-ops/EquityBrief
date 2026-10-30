@@ -69,7 +69,9 @@ public static class RuleChips
                     2 => "the plan clear of the noise",
                     _ => null,
                 });
-                Add(SwingFilterRule.SkipDeterioratingParameter, At(SwingFilterRule.SkipDeterioratingParameter) == 1 ? "no deteriorating business" : null);
+                Add(SwingFilterRule.SkipDeterioratingParameter, At(SwingFilterRule.SkipDeterioratingParameter) == 1
+                    ? At(SwingFilterRule.FiledStateParameter) == 1 ? "no business deteriorating in its SEC filings" : "no deteriorating business"
+                    : null);
                 Add("leaders", At(SwingFilterRule.LeaderSectorsParameter) is > 0 and var sectors && At(SwingFilterRule.LeaderShareOfParameter) is > 0 and var share
                     ? Invariant($"top {Number(sectors)} sectors, top 1 in {Number(share)}")
                     : null);

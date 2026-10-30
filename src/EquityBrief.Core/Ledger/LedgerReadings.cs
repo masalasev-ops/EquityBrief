@@ -17,7 +17,7 @@ public static class LedgerReadings
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "4b61113aaeb8";
+    public const string Version = "d2ecd6139b90";
 
     // The reference high the pullback's readings are taken at, the live design's twenty sessions.
     public const int ReferenceHighSessions = 20;
@@ -160,7 +160,14 @@ public static class LedgerReadings
         new("rating_actions_net", "Yahoo's rating upgrades less downgrades dated over the 21 sessions before the session, from the stock's newest stored answer; none where the store holds no answer or the session is after the answer's ask"),
         new("estimate_revision_month", "the current fiscal year's consensus earnings a share over its figure 30 days before, less 1, as the newest quarters fetch on or before the session states them; none before the first fetch or where either is missing"),
         new("short_interest_share", "the shares short FINRA last reported before the session over the newest share count the filings' covers state; none while no store holds the reports"),
+        // From 21.4 the business's state off the SEC's facts as first filed, which the swing filter's version leaving off a
+        // deteriorating business reads in the provider's quarters' place, as the place the night orders its list by.
+        // see: The seventh swing family candidate leaves off a member whose business the SEC's facts as first filed read deteriorating through the ledger's catalogue, and the nine are registered again at 21.4 with the eight unchanged versions keeping their records
+        new(BusinessStateFiled, "the business's state off the SEC's facts as first filed before the session, as the night's place for a state: 0 improving, where both of the two newest filed quarters grew their sales on the same quarter a year earlier and widened their operating margin, 3 deteriorating, where both shrank and narrowed, 1 steady otherwise; none where fewer than two quarters hold the four figures"),
     ];
+
+    // The column of the business's state off the SEC's facts, which the swing filter's stage is handed the night's read of.
+    public const string BusinessStateFiled = "business_state_filed";
 
     // The first of the scorecard's readings, and the run of the monthly loop after which it reads them: the run of
     // 2026-11-07 reads none of them, as the operator ruled.
