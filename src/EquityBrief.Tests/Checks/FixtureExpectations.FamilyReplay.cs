@@ -266,4 +266,36 @@ public partial class FixtureExpectations
 
         await ReplayFinds(store, "the record keeps NH on 2026-10-02 where the replay keeps none");
     }
+
+    // The 14.1 correction of 2026-10-30: a drift is replayed on the surprise its night stored, where the provider revised
+    // FLEX's after the night read it and eight of the S&P 500's nine drift records restarted on 2026-10-30.
+    [Fact]
+    public async Task ADriftIsReplayedOnTheSurpriseItsNightStoredWhereTheCalendarRevisedItSince()
+    {
+        using var store = DriftStore();
+        var nightAt = new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero);
+        var clock = FixedClock.At(nightAt, SessionZones.UnitedStates);
+        var live = TheSetupFamilies.Drifts[0].Candidate;
+
+        Assert.Equal(0, (await RegisterVerbAt(store, new DateTimeOffset(2026, 10, 2, 18, 0, 0, TimeSpan.Zero), RegisterVerb.Family, DriftRule.Name)).Code);
+
+        var rows = await new CandidateRegistrar(clock, store.DatabaseFile).RowsAsync();
+
+        await new FamilyEvaluator(clock, store.DatabaseFile).RunAsync("rules", FamilyRuleShadow.For(rows, nightAt));
+        await new FamilyRecorder(clock, store.DatabaseFile).RunAsync("GSPC", "records", CandidateFamily.Standing(rows, nightAt));
+
+        // Worked by hand off the drift store: the live rule keeps DA first on its surprise of 12.5 and DB second on 5.
+        Assert.Equal(["DA|1", "DB|2"], FamilyRows(store, $"SELECT ticker || '|' || place FROM family_trade WHERE candidate = '{live}' ORDER BY place;"));
+
+        // The provider revises DA's surprise to 4 after the night read it, which read as the calendar now stands puts DB
+        // first and DA second.
+        store.Execute("UPDATE earnings_reaction SET surprise_pct = 4.0 WHERE ticker = 'DA' AND surprise_pct = 12.5;");
+
+        var (code, said) = await RegisterVerbAt(store, new DateTimeOffset(2026, 10, 3, 12, 0, 0, TimeSpan.Zero), RegisterVerb.FamilyAgain, DriftRule.Name, "--evidence", "a change of code");
+
+        Assert.Equal(0, code);
+        Assert.Contains($"replay: '{live}' carries its record on: reproduced its 2 trade(s) over 1 night(s) from 2026-10-02", said, StringComparison.Ordinal);
+        Assert.NotEmpty(ReplayRows(store));
+        Assert.All(ReplayRows(store), row => Assert.Contains($"|{FamilyRecords.ReplayReproduced}|reproduced its ", row, StringComparison.Ordinal));
+    }
 }
