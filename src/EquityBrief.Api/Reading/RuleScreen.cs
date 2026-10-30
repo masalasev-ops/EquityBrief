@@ -512,7 +512,7 @@ public static class RuleScreen
 
     // A family's live rule among its standing rules, its newest registration carrying the live rule's name, and every
     // other in the order each first registered, the rule an approved change replaced among them.
-    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
     static (CandidateRow? Live, CandidateRow[] Variants) LiveAndVariants(IReadOnlyList<CandidateRow> standing)
     {
         var live = FamilyRecords.LiveOf(standing, row => row.Candidate, row => row.RegisteredAt, row => row.Id);

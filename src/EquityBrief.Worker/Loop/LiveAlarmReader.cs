@@ -135,7 +135,7 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
 
         // The S&P 500's breakout's and drift's live rules, each its family's newest registration carrying the live rule's
         // name, whose trades alone the alarm reads, the rule an approved change replaced being a variant.
-        // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+        // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
         var register = CandidateFamily.Standing(await new EquityBrief.Worker.Candidates.CandidateRegistrar(clock, databaseFile).RowsAsync(cancellation), started);
 
         var live = LoopDecisions.LargeFamilies.ToDictionary(family => family, family => FamilyRecords.LiveOf(CandidateFamily.In(register, family))?.Candidate, StringComparer.Ordinal);

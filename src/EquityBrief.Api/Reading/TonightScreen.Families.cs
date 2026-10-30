@@ -151,7 +151,7 @@ public static partial class TonightScreen
 
     // The change an approval registered the S&P 500 family's live rule at, as the index cards name theirs, none where the
     // live rule states no hook.
-    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
     static string Changed(RegisterRow? live) =>
         live is not null && EquityBrief.Core.Loop.RuleHooks.Of(CandidateEvaluator.Read(live.Parameters)).Words() is { } words
             ? $" It stands at a change approved on the Loop page: {words}."
@@ -438,7 +438,7 @@ public static partial class TonightScreen
 
         // The family's newest registration carrying the live rule's name, every other standing rule a variant, the one an
         // approved change replaced among them.
-        // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+        // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
         var live = name == SetupFamilies.Pullback ? standing.LastOrDefault(row => SwingFamily.IsLive(row.Candidate)) : FamilyRecords.LiveOf(standing);
 
         return (live, standing.Count(row => row != live && !FamilyRecords.IsBackground(row.Candidate)));
@@ -662,10 +662,24 @@ public static partial class TonightScreen
                     var rules = CandidateFamily.In(standing, family.Name);
                     var trials = CandidateFamily.Trials(CandidateFamily.In(rows, family.Name), rules.Select(rule => rule.Candidate));
 
-                    return FamilyRecords.Family(rules, trades, night, family.Cap, trials, replays).Select(view => (family.Name, view));
+                    return FamilyRecords.Family([.. rules.Where(rule => !MovedByAnApproval(rule.Candidate, rows))], trades, night, family.Cap, trials, replays).Select(view => (family.Name, view));
                 }),
         ];
     }
+
+    // From 21.5 whether a rule is one an approval moved to the background, its family holding nine rules: counted among
+    // the family's trials while it runs and drawn on no page. It is a background rule registered at the instant the
+    // register retired the live rule it is named for, where the rule a freeze kept in the background replaced no live rule
+    // at its own instant.
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
+    public static bool MovedByAnApproval(string rule, IReadOnlyList<RegisterRow> register) =>
+        FamilyRecords.IsBackground(rule)
+        && register.Where(row => row.Event == CandidateFamily.Registered && row.Candidate == rule).Select(row => (DateTimeOffset?)row.RegisteredAt).LastOrDefault() is { } registered
+        && register.Any(row =>
+            row.Event == CandidateFamily.Retired
+            && row.RegisteredAt == registered
+            && row.Retires is { } retired
+            && rule == FamilyRecords.BackgroundPrefix + (FamilyRecords.IsLive(retired) ? retired[FamilyRecords.LivePrefix.Length..] : retired));
 
     // The run page's rows of the new setups' registered rules, each family's live rule first.
     public static IReadOnlyList<FamilyRecordRow> FamilyRecordRows(

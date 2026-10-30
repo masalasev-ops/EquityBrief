@@ -281,7 +281,7 @@ public partial class ReadSurface
     // From 17.13 a change approved to the S&P 500's breakout and applied by the night is read on the S&P 500's breakout
     // card, named in its words with the rule it replaced among the selector's variants, and the S&P 400's and 600's pages
     // stand as they were, byte for byte.
-    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
     [Fact]
     public async Task AChangeApprovedOnTheSAndP500sBreakoutIsReadOnItsCardWithTheRuleItReplacedAVariantAndTheSAndP400sAndTheSAndP600sStandAsTheyWere()
     {
@@ -326,7 +326,7 @@ public partial class ReadSurface
 
     // From 17.13 a card whose S&P 500 breakout stands at a change an approval stored carries the change's words in the
     // record's place, as an S&P 400's or 600's does, while the pullback's card beside it is drawn as before.
-    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
     [Fact]
     public async Task AnSAndP500BreakoutCardAtAnApprovedChangeNamesTheChangeInTheRecordsPlace()
     {

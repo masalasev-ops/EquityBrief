@@ -384,7 +384,7 @@ public sealed class DecisionCards : IComponent
 
         // On the S&P 500, the change an approval stored for the breakout or the drift, which its card names in the record's
         // place as an S&P 400's or 600's does.
-        // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+        // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
         var largeSettings = large ? await IndexFamilies.StoredSettingsAsync(connection, index, cancellation, transaction) : null;
 
         string? Approved(string family) =>

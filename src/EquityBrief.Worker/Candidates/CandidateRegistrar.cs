@@ -650,7 +650,7 @@ public sealed class CandidateRegistrar : IComponent
     // own writes beside it in the same transaction, or none of it: the rule the change stands at registered, or, where a
     // rule of that name stands already, as a restore finds the rule it brings back, retired and registered again
     // unchanged at one instant so it is the family's newest.
-    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
     public async Task<RegistrationOutcome> RegisterTheChangeAsync(
         Registration registration,
         string evidence,

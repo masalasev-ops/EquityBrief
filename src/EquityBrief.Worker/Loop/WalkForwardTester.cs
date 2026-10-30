@@ -246,7 +246,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         // or its own setting otherwise. A family an approval set hooks on is not searched on its grid, whose walk reads no
         // hook.
         // see: An approved change is applied by the night's own build on the index it was approved on alone
-        // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+        // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
         var standing = await StandingAsync(databaseFile, index, cancellation);
 
         // From 21.5 the families standing registered on the index, a frozen family on the S&P 400 or 600 tested against its

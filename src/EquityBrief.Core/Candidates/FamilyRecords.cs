@@ -140,7 +140,7 @@ public static class FamilyRecords
     // A family's live rule among its standing rules: the newest registration carrying the live rule's name, the register's
     // order settling two at one instant. An older one carrying it is the rule a change approved on the Loop page
     // replaced, which runs beside the change as a variant until it retires.
-    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
     public static RegisterRow? LiveOf(IEnumerable<RegisterRow> family) =>
         LiveOf(family, row => row.Candidate, row => row.RegisteredAt, row => row.Id);
 

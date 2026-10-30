@@ -18,9 +18,11 @@ namespace EquityBrief.Tests.Checks;
 // 17.13: a change the operator approves to the S&P 500's breakout or drift written as its stored setting and registered
 // as the family's live rule by the night's apply step alone, on a night whose session the registration counts from; the
 // rule it replaced kept as a variant and retired on the night that reaches the block after the change and not the night
-// before, and kept where a restore came first; a family at nine refused; the page's list kept and ordered by the stored
-// hooks; and a pick walked under the stored exit. Each is worked by hand over constructed stores, results and closes.
-// see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+// before, and kept where a restore came first; from 21.5 a family at nine taking the change with the rule it replaces in
+// the background, counted outside the nine, by the family's luck correction and on no row of the Run page; the page's
+// list kept and ordered by the stored hooks; and a pick walked under the stored exit. Each is worked by hand over
+// constructed stores, results and closes.
+// see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
 public partial class FixtureExpectations
 {
     const string LargeRun = "loop-test-GSPC-20261009T120000Z";
@@ -167,6 +169,17 @@ public partial class FixtureExpectations
         var register = await new CandidateRegistrar(At(2026, 10, 13, 12, 0), store.DatabaseFile).RowsAsync();
 
         Assert.Equal(10, CandidateFamily.Divisor(CandidateFamily.In(register, BreakoutRule.Name), new DateTimeOffset(2026, 10, 13, 12, 0, 0, TimeSpan.Zero)));
+
+        // Drawn on no page: the Run page's records hold no row of it, while the nine drawn are each read at five per cent
+        // over the ten standing. It is told from the rule before a freeze by the live rule of its name the register retired
+        // at the instant it was registered.
+        var records = EquityBrief.Api.Reading.TonightScreen.FamilyRecordRows(await new EquityBrief.Api.Reading.ReadApi(store.DatabaseFile, At(2026, 10, 13, 12, 0)).RegisteredCandidatesAsync(), [], new DateOnly(2026, 10, 13));
+
+        Assert.True(EquityBrief.Api.Reading.TonightScreen.MovedByAnApproval(background, register));
+        Assert.False(EquityBrief.Api.Reading.TonightScreen.MovedByAnApproval(live.Candidate, register));
+        Assert.DoesNotContain(background, records.Select(row => row.Rule));
+        Assert.Equal(9, records.Count(row => row.Family == BreakoutRule.Name));
+        Assert.All(records.Where(row => row.Family == BreakoutRule.Name), row => Assert.Equal(ReasonVerdict.Significance / 10, row.Level, 12));
 
         // A third change at nine moves the second to the background beside the first, the drawn rules still nine: the
         // background is counted outside the nine.

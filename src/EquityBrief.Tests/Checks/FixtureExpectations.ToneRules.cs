@@ -108,5 +108,11 @@ public partial class FixtureExpectations
 
         // The version hands the walk the history's own stocks' releases: A's one, of the three stocks it holds.
         Assert.Contains($"{WalkForwardTester.RulesVerb}: reading version 1 hands the tone walk the releases of 1 of the history's 3 stock(s), 1 release(s)", said);
+
+        // From 21.5 the per-rule test walks no rule of the fundamentals-first family, which the night computes no longer,
+        // while the index's other families' rules each print a line of their own.
+        // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
+        Assert.Contains(said, line => line.StartsWith(Core.Families.BreakoutRule.Name + ", ", StringComparison.Ordinal));
+        Assert.DoesNotContain(said, line => line.StartsWith(Core.Families.FundamentalsRule.Name + ", ", StringComparison.Ordinal));
     }
 }

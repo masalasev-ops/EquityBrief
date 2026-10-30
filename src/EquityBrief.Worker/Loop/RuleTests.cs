@@ -233,7 +233,9 @@ public static class RuleTests
         [.. (units ?? []).Select(one => (one.At, one.Edge.HasValue ? 0.0 : one.Edge))];
 
     // Every family rule standing on the index, walked: the families in the page's order, each one's live or provisional
-    // rule first and then its variants, the pullback's candidates read once for every walk of them.
+    // rule first and then its variants, the pullback's candidates read once for every walk of them. From 21.5 the
+    // fundamentals-first family, which the night computes no longer, is walked no more.
+    // see: The monthly loop proposes for seven families on every index where their rule stands, and the fundamentals-first family leaves it with the night
     public static IReadOnlyList<RuleUnderTest> Walk(RuleTestInputs inputs)
     {
         var large = inputs.Read.Index == WalkForwardTester.LargeIndex;
@@ -248,7 +250,6 @@ public static class RuleTests
             .. large ? LargePullbacks(inputs) : IndexPullbacks(inputs, pullback!, Candidates),
             .. Swings(inputs, BreakoutRule.Name),
             .. Swings(inputs, DriftRule.Name),
-            Fundamentals(inputs, Candidates()),
             .. Heavyweights(inputs),
             .. (inputs.Quality is { } lay ? Quality(inputs.Standing, inputs.Read.Index, setting => lay.Book(setting).Months) : []),
             .. (inputs.Dip is { } dip ? Dip(inputs.Standing, inputs.Read.Index, parameters => DipTrades(dip, parameters)) : []),
@@ -924,28 +925,6 @@ public static class RuleTests
         }
 
         return ReleaseAvailability.ReleaseFor(held, release => release.Accepted, one.Name.Surprises[newest].EventDate, calendar[session], tones.Zone, tones.Calendar)?.Answer;
-    }
-
-    // The fundamentals-first family's provisional rule, by its search's own walk: the pullback's base listings kept where
-    // the family's parts pass at the setting an approval stored for it on the index or its provisional one, walked at the
-    // hooks that approval stored and at none of the pullback's.
-    // see: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place
-    static RuleUnderTest Fundamentals(RuleTestInputs inputs, IdeaReplay candidates)
-    {
-        var standing = inputs.Approved.GetValueOrDefault(FundamentalsRule.Name);
-        var (setting, words) = FundamentalsStanding(standing);
-        var walk = RuleWalk.Fundamentals(inputs.Read, candidates, inputs.Readings, setting, inputs.Progress, standing, inputs.Trees);
-
-        return new RuleUnderTest(FundamentalsRule.Name, RuleRows.ProvisionalRule, Provisional, words, LoopProcedures.Risks, walk.Cap, Units(walk.Own));
-    }
-
-    // The setting the family's provisional rule is walked at and its words: the one an approval stored, with the hooks it
-    // stored, or the provisional setting where none was stored.
-    public static (FundamentalsSetting Setting, string Words) FundamentalsStanding(LoopChange? standing)
-    {
-        var setting = FundamentalsRule.StoredOr(standing?.Places);
-
-        return (setting, RuleHooks.Of(standing?.Hooks ?? LoopChange.NoHooks).Words() is { } hooked ? setting.Key + "; " + hooked : setting.Key);
     }
 
     // The sector heavyweights: on the S&P 500 each registered book at its setting, on the S&P 400 or 600 its live book

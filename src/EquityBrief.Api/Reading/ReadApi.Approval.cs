@@ -316,7 +316,7 @@ public sealed partial class ReadApi
         await DecisionAsync(connection, transaction, run, index, family, proposal, LoopDecisions.Approved, null);
         await transaction.CommitAsync();
 
-        // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+        // see: An approved change registers the family's live rule again at the change on every index, and the rule it replaces runs beside it for 63 sessions or in the background where the family holds nine
         // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
         var large = index == EquityBrief.Core.Families.MarketCloses.Index;
 
