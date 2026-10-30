@@ -26,6 +26,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-30 - docs/ARCHITECTURE.html - the tester reads each breakout's and drift's graded exposure
+Authorised by: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
+Was:
+> (Walk-forward tester) ... and the variant walked unregistered beside each live rule whose family registers none (see: A family's ranking variant orders ...)
+Now:
+> (Walk-forward tester) ... (see: A family's ranking variant orders ...); and from 21.9 each breakout's and drift's graded exposure proposed against the rule's own walk at the floor its market check reads, its listings read with that check open, and in the per-rule test a rule registered at the exposure walked by it and the exposure walked unregistered beside each live rule whose family registers none (see: ...)
+Why: 21.9 offers the breakout and the drift a graded exposure; 11.2 gains its paragraph, section 17 its row and 15.21 the row of a trade sized at half, all new, and the line above is the one that stood and now names it.
+
+### 2026-10-30 - .claude/rules/checks.md - fixture-expectations and read-surface state 21.9's assertions
+Authorised by: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
+Was:
+> (fixture-expectations) ... the version's chip and its words as Tonight says them |
+> (read-surface) ... and the tester's matched among the setups that ended before its fold's year |
+Now:
+> (fixture-expectations) ...; and from 21.9 the floor each breakout's and drift's graded exposure grades at read off its market check by hand, the exposure at that floor ..., a paper account's half-sized trade worked by hand ..., and the remedy's lines registering it ... and refusing ... |
+> (read-surface) ...; and from 21.9 a trade sized at half marked in its account's paper log with its row's flag, and one sized whole with neither |
+Why: each check gains the assertions 21.9's tests add.
+
 ### 2026-10-30 - docs/ARCHITECTURE.html - the score audit and the tester read each family's ranking variant
 Authorised by: A family's ranking variant orders by the learned score where its audit's top fifth stands above the bottom and otherwise by the expected value, and is built nowhere neither orders
 Was:
