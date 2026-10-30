@@ -12804,3 +12804,39 @@ Written:    21.16's text and its done condition in the build plan, numbered afte
             21.11, and section 20's phase 21 row, each with its prior text in the changelog.
 Verified:   `tools/ci.ps1` green over the tree carrying 21.10's entry above, which states that run's figures; documents
             alone change after it.
+
+### 14.1 - correction: the family replay reads a drift's member on the surprise its night stored, where the provider revised FLEX's after the night read it and eight S&P 500 drift records restarted   2026-10-30
+
+Found:      at the 21.4 remedy of 2026-10-30, eight of the S&P 500's nine drift records restarted: the replay reads each
+            night's inputs with the earnings calendar as it stands, and the provider revised FLEX's surprise after the
+            night of 2026-10-28 read it, 21.65 per cent on the night and 12.37 since, which moved FLEX's place in the
+            replay. The night stores the surprise its drift order read on each member's row, and the replay did not read
+            it. The operator ruled the correction on 2026-10-30, word for word in
+            `prompts/2026-10-30-21.14-operator-answers.md`.
+Corrected:  the replay reads a drift's night with each member's newest print carrying the surprise the night stored on
+            that member's drift row; a member whose row stored none, its print outside the live rule's window, is read
+            as the calendar holds it, since a version with a wider window reads that print and the night stored nothing
+            for it. The family replay's catalogue row says so. No source a rule's version pins moves: the replay's file
+            is pinned by no evaluator.
+Measured:   read-only on 2026-10-30 at 20:24 UTC over the operator's store, the check the same ruling asks for. The
+            drift's rows storing a surprise run from the night of 2026-10-01, 21 nights, 580 rows over 252 stocks, each
+            read against the calendar's surprise today for the newest print reacted by its night: 32 rows over 19 stocks
+            differ, a median of 15.3 points and at most 127.3, TSLA's -9.09 on the night against 118.18 today; 6 rows over
+            4 stocks, AMT, PLD, PNC and TSLA, turn from a miss to a beat or back; 3 of the 32 rows passed the drift, MMM's,
+            TSCO's and FLEX's. The history the drift's sweeps and the walk-forward tester read takes its surprises from
+            the pulled surprises, 65,243 prints with a figure from 2018-01-01 to 2026-10-01, written by nine pulls between
+            2026-09-30 and 2026-10-08, so every past surprise they read is the provider's figure at the pull and not the
+            one first published; no first-published figure is kept for any print before the nights began storing them.
+Tests:      2976, from 2975: one added, a drift registered again over a constructed night whose stored surprise the
+            calendar has since revised, reproducing its trades and carrying its record on.
+Claims:     1482, unchanged: the family replay's catalogue row amended in place; 1497 placements.
+Mutation:   chosen before the run by this rule, the property the correction adds, the night's surprise read in the
+            calendar's place: the replay's drift test made never to hold, so the calendar's revised figure is read. The
+            test went red, the live rule restarting its record where it carries it on; reverted, green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, this pull request's
+            last, the figures below stated before that run: all six steps, 0 warnings, 0 errors, 2976 of 2976 tests ran
+            with none failed, migrations 0 to 116 with none pending, schema version 116, against `data-ci` and never
+            `data`; the phase report 64 tables, 1482 claims, 1482 passing, none out of scope and none unexamined, 1497
+            placements and verdicts reconciled against a floor of 34, 44 checks on the roster run and passed.
+Carried:    the drift's history reading revised surprises, put to the operator with 21.14's read-only checks; the S&P
+            500's drift replayed again at 21.16's remedy reads its nights' surprises.
