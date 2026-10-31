@@ -739,7 +739,17 @@ public static class SchemaMigrations
         new Migration(116, "create short_interest and estimate_trend_night", CreateShortInterestAndNightTrends),
         new Migration(117, "add dip_trade.exit, and rebuild quality_holding and improving_trade with the sale under the 200-day average", AddTheChangesTheNightsRead),
         new Migration(118, "add treasury_yield.three_month", AddTreasuryThreeMonth),
+        new Migration(119, "add trade_fill's sold_on and sale", AddTradeFillSale),
     ];
+
+    // From 21.14 the session a swing trade was sold on and the price it was sold at, at the trade's own scale: the open of
+    // the session after a close that signalled its stop, its target or its trail, and its own close for the cap or a time
+    // exit; null on every row the fill step has not priced again since, and while the trade is open or its sale waits.
+    // see: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and no rule's version moves because of it
+    const string AddTradeFillSale = @"
+        ALTER TABLE trade_fill ADD COLUMN sold_on TEXT;
+        ALTER TABLE trade_fill ADD COLUMN sale TEXT;
+    ";
 
     // From 21.13 the 3-month par yield beside the 10-year, read from the same answer for the market strip, null on every
     // session stored before it and where the Treasury left the cell empty.

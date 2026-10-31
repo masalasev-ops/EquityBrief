@@ -2606,6 +2606,9 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
     // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
     sources = PaperScreen.Halved(sources, register, await read.ExposureNightsAsync(reading.Code, PaperScreen.ExposedNights(sources, register)));
 
+    // From 21.14 the drift's tone variant carries the line saying its history before the local model's cutoff does not count.
+    sources = PaperScreen.Toned(sources, register);
+
     var fund = await read.FundClosesAsync(PaperScreen.Fund(reading.Code), from);
     var (tests, years) = await read.RuleTestsAsync(reading.Code);
     var sessions = await read.SessionsFromAsync(earliest);

@@ -335,19 +335,21 @@ public sealed partial class MarkRenderer
             : Formatted($"<p class=\"picks-exit\" data-family=\"{Escaped(card.Family)}\">This stock is a pick of the {Escaped(setup)}, and its trade is sold {Escaped(sold)}, whichever comes first. The plan beneath is worked from its support and resistance levels for a buyer without the pick.</p>");
     }
 
-    // A trade's own exits in words: at its target, at a close below its stop and after its limit, as many as it has.
+    // A trade's own exits in words: from 21.14 at the next open after a close at its target or below its stop, and after
+    // its limit, as many as it has.
+    // see: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and no rule's version moves because of it
     static string SoldBy(DecisionCardView card)
     {
         var exits = new List<string>();
 
         if (card.Target is { } target)
         {
-            exits.Add(Formatted($"at {Price(target)}"));
+            exits.Add(Formatted($"at the next open after a close at or above {Price(target)}"));
         }
 
         if (card.Stop is { } stop)
         {
-            exits.Add(Formatted($"at a close below {Price(stop)}"));
+            exits.Add(Formatted($"at the next open after a close below {Price(stop)}"));
         }
 
         if (card.Cap is { } cap)
@@ -398,8 +400,8 @@ public sealed partial class MarkRenderer
         Formatted($"<div class=\"plan-tile\" data-tile=\"{tile}\"{extra}><span class=\"tile-label\">{Escaped(label)}</span><b{(figureClass is null ? string.Empty : Formatted($" class=\"{figureClass}\""))}>{Escaped(figure)}</b>{(beneath is null ? string.Empty : Formatted($"<span class=\"tile-under\">{Escaped(beneath)}</span>"))}</div>");
 
     // The plan: the setup's own, the one its trade follows. The buy at the next trading day's open, the stop as a close
-    // below it, the target or the rising stop or the exit that ends a trade with none, and the time limit with the hold's
-    // last day; the reward against the risk where the pick's row states it; the plan in the operator's money where the
+    // below it and the target as a close at or above it, each sold at the next trading day's open from 21.14, or the
+    // rising stop or the exit that ends a trade with none, and the time limit with the hold's last day; the reward against the risk where the pick's row states it; the plan in the operator's money where the
     // account is set and the link to the settings page where it is not; the setup's management of the trade, each stop a
     // close below it; and the line saying the trade is sold by these exits alone and where the stock's entry and exit plan
     // stands.
@@ -413,10 +415,10 @@ public sealed partial class MarkRenderer
         body.Append(Invariant, $"<section class=\"card-plan\" data-entry=\"{StoredPrice(card.Entry)}\" data-stop=\"{StoredPrice(card.Stop)}\" data-target=\"{StoredPrice(card.Target)}\"><h5>The plan</h5><div class=\"plan-tiles\">");
         body.Append(PlanTile("buy", "Buy", "At the next day's open", card.Entry is { } entry ? Formatted($"at about {Price(entry)}") : "no buy price stored"));
         body.Append(card.Stop is { } stop
-            ? PlanTile("stop", "Sell if it closes below", Price(stop), card.Trail is not null ? "raised after each higher close, never lowered" : dip ? "sold at the next day's open" : null, "loss")
+            ? PlanTile("stop", "Sell if it closes below", Price(stop), card.Trail is not null ? "raised after each higher close, never lowered, and sold at the next day's open" : "sold at the next day's open", "loss")
             : PlanTile("stop", "Stop", "None", heavyweights ? "nothing sells it at a price set in advance" : "no stop stored"));
         body.Append(card.Target is { } target
-            ? PlanTile("target", "Sell if it reaches", Price(target), null, "gain")
+            ? PlanTile("target", "Sell if it reaches", Price(target), "on a close at or above it, sold at the next day's open", "gain")
             : card.Trail is not null || pick?.Trailing == true
                 ? PlanTile("target", "No target", "Rising stop", "the stop follows the price up")
                 : dip

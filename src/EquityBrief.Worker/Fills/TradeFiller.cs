@@ -14,7 +14,7 @@ namespace EquityBrief.Worker.Fills;
 // What the fill step did with one table's trades: how many it priced at the open, how many hold no next session or no
 // open on it, how many still wait on their next session, how many it left as an earlier night priced them, and how many
 // whose plan put up no risk at its close.
-public sealed record FillCount(string Source, int Filled, int NoNextSession, int NoOpen, int Waiting, int Standing, int NoRisk = 0);
+public sealed record FillCount(string Source, int Filled, int NoNextSession, int NoOpen, int Waiting, int Standing, int NoRisk = 0, int Selling = 0);
 
 public sealed record FillOutcome(IReadOnlyList<FillCount> Sources)
 {
@@ -29,6 +29,8 @@ public sealed record FillOutcome(IReadOnlyList<FillCount> Sources)
     public int Standing => Sources.Sum(one => one.Standing);
 
     public int NoRisk => Sources.Sum(one => one.NoRisk);
+
+    public int Selling => Sources.Sum(one => one.Selling);
 }
 
 // The fill step. A trade is bought at the open of the session after the night that listed it, and every stored trade's
@@ -41,10 +43,14 @@ public sealed record FillOutcome(IReadOnlyList<FillCount> Sources)
 // both sessions and a typical move stored, each by its own gap over its own risk, a book's over its size cut. A trade
 // whose next session is not stored yet waits and has no row; one whose stock holds no bar or no open on it is written
 // with why. A row is written again only while the trade's own figures it was priced from are still arriving, so a fill
-// once complete stands as written, as the trades do, since the bars and typical moves it read are kept a year. It reads
-// the store and writes its own table and its run log row, asks for nothing and calls no model, and moves no rule's
-// version, since no source a rule pins changes.
+// once complete stands as written, as the trades do, since the bars and typical moves it read are kept a year. From 21.14
+// a swing trade that ended on a close's signal, its stop, its target or its trail, is sold at the open of the session
+// after that close, its result and edge moved by that gap over the same risk and the session and the price it was sold
+// at written beside them; its cap's or a time exit's close stands, and one whose sale's open is not stored yet holds no
+// result until it is. The benchmark stays as the entry's fill priced it. It reads the store and writes its own table and
+// its run log row, asks for nothing and calls no model, and moves no rule's version, since no source a rule pins changes.
 // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+// see: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and no rule's version moves because of it
 public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
 {
     public static ComponentAccess Access => new(
@@ -99,7 +105,24 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
         bool Relative = false)
     {
         public bool Book => Cut is not null;
+
+        // From 21.14 the session a swing trade ended on, the sessions it was given, the distance its stop trails where its
+        // table keeps one, the exit of the menu it is walked under, nought for its rule's own, and a scored plan's outcome.
+        public DateOnly? EndedOn { get; init; }
+
+        public int? Cap { get; init; }
+
+        public double? Trail { get; init; }
+
+        public int Exit { get; init; }
+
+        public string? Outcome { get; init; }
     }
+
+    // From 21.14 where a swing trade was sold: the session and the price at the trade's own scale, at the next session's
+    // open after a close that signalled its stop, its target or its trail and at its own close for the cap or a time
+    // exit, and its result sold there; none while that open is not stored yet.
+    public sealed record TradeSale(DateOnly? On, double? Price, double? Result);
 
     const string NewestSession = "SELECT MAX(session_date) FROM bar;";
 
@@ -107,13 +130,13 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
 
     const string StandingFills = "SELECT source, index_code, owner, ticker, session_date, result, benchmark, reason FROM trade_fill;";
 
-    const string FamilyTrades = "SELECT candidate, ticker, session_date, entry, stop, target, risk_moves, result, benchmark FROM family_trade;";
+    const string FamilyTrades = "SELECT candidate, ticker, session_date, entry, stop, target, risk_moves, result, benchmark, ended_on, cap, exit FROM family_trade;";
 
-    const string IndexFamilyTrades = "SELECT index_code, family, ticker, session_date, entry, stop, target, risk_moves, result, benchmark FROM index_family_trade;";
+    const string IndexFamilyTrades = "SELECT index_code, family, ticker, session_date, entry, stop, target, risk_moves, result, benchmark, ended_on, cap, exit, trail FROM index_family_trade;";
 
-    const string IndexRuleTrades = "SELECT index_code, candidate, ticker, session_date, entry, stop, target, risk_moves, result, benchmark FROM index_rule_trade;";
+    const string IndexRuleTrades = "SELECT index_code, candidate, ticker, session_date, entry, stop, target, risk_moves, result, benchmark, ended_on, cap, exit, trail FROM index_rule_trade;";
 
-    const string RulePicks = "SELECT index_code, rule, ticker, session_date, entry, stop, target, result FROM rule_pick;";
+    const string RulePicks = "SELECT index_code, rule, ticker, session_date, entry, stop, target, result, ended_on, cap FROM rule_pick;";
 
     const string LargeBook = "SELECT ticker, entered_on, entry_close, result, cut_return, cut FROM heavyweight_holding;";
 
@@ -128,7 +151,7 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
     // once the plan resolves, so a plan the list traded that is still open is read with none; the market's two session
     // horizons and the twenty-session context carry no plan, and a reason's setup is read only where its risk is written.
     static readonly string ScoredPlans = $@"
-        SELECT horizon, ticker, session_date, return_pct, planned_risk, break_even
+        SELECT horizon, ticker, session_date, return_pct, planned_risk, break_even, outcome, resolved_on
         FROM forward_return
         WHERE planned_risk > 0
            OR horizon NOT IN ('{ForwardReturnSeries.FiveSessions}', '{ForwardReturnSeries.TwentyOneSessions}', '{ForwardReturnSeries.Setup}', '{ForwardReturnSeries.SwingTwenty}', '{ForwardReturnSeries.ClearTwenty}');";
@@ -136,12 +159,12 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
     const string Members = "SELECT index_code, ticker, joined, \"left\" FROM membership;";
 
     const string UpsertFill = @"
-        INSERT INTO trade_fill (source, index_code, owner, ticker, session_date, filled_on, fill, past, result, benchmark, members, edge, reason, filled_at)
-        VALUES ($source, $index, $owner, $ticker, $session, $filled_on, $fill, $past, $result, $benchmark, $members, $edge, $reason, $filled_at)
+        INSERT INTO trade_fill (source, index_code, owner, ticker, session_date, filled_on, fill, past, result, benchmark, members, edge, reason, sold_on, sale, filled_at)
+        VALUES ($source, $index, $owner, $ticker, $session, $filled_on, $fill, $past, $result, $benchmark, $members, $edge, $reason, $sold_on, $sale, $filled_at)
         ON CONFLICT (source, index_code, owner, ticker, session_date) DO UPDATE SET
             filled_on = excluded.filled_on, fill = excluded.fill, past = excluded.past, result = excluded.result,
             benchmark = excluded.benchmark, members = excluded.members, edge = excluded.edge, reason = excluded.reason,
-            filled_at = excluded.filled_at;";
+            sold_on = excluded.sold_on, sale = excluded.sale, filled_at = excluded.filled_at;";
 
     const string AppendRun = @"
         INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail)
@@ -175,7 +198,7 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
             .Distinct()
             .ToDictionary(session => session, session => NextOf(calendar, session));
         var read = await PricesAsync(connection, due, next, cancellation);
-        var counts = Sources.ToDictionary(source => source, _ => new int[6], StringComparer.Ordinal);
+        var counts = Sources.ToDictionary(source => source, _ => new int[7], StringComparer.Ordinal);
 
         foreach (var trade in trades)
         {
@@ -200,8 +223,16 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
             }
 
             var (fill, reason) = Price(trade, on, read);
+            TradeSale? sale = null;
+
+            if (fill is { Result: { } bought } && !trade.Book && trade.EndedOn is { } endedOn)
+            {
+                sale = Sold(trade, bought, await PathAsync(connection, transaction, trade.Ticker, trade.Session, NextOf(calendar, endedOn) ?? endedOn, cancellation));
+                fill = fill with { Result = sale.Result, Edge = sale.Result is { } sold && fill.Benchmark is { } against ? sold - against : null };
+            }
 
             counts[trade.Source][fill is not null ? 0 : reason == TradeFills.NoOpen ? 2 : reason == TradeFills.NoRisk ? 5 : 1]++;
+            counts[trade.Source][6] += sale is { Result: null, On: null } ? 1 : 0;
 
             await ExecuteAsync(connection, transaction, UpsertFill,
             [
@@ -214,13 +245,15 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
                 ("$members", fill is { Members: > 0 } ? fill.Members : DBNull.Value),
                 ("$edge", fill?.Edge is { } edge ? edge : DBNull.Value),
                 ("$reason", reason is null ? DBNull.Value : reason),
+                ("$sold_on", sale?.On is { } soldOn && sale.Result is not null ? Stamp(soldOn) : DBNull.Value),
+                ("$sale", sale?.Price is { } price && sale.Result is not null ? Money.ToStorage(Statistic.ToPrice(price)) : DBNull.Value),
                 ("$filled_at", filledAt),
             ], cancellation);
 
             written++;
         }
 
-        var outcome = new FillOutcome([.. Sources.Select(source => new FillCount(source, counts[source][0], counts[source][1], counts[source][2], counts[source][3], counts[source][4], counts[source][5]))]);
+        var outcome = new FillOutcome([.. Sources.Select(source => new FillCount(source, counts[source][0], counts[source][1], counts[source][2], counts[source][3], counts[source][4], counts[source][5], counts[source][6]))]);
 
         await ExecuteAsync(connection, transaction, AppendRun,
         [
@@ -234,9 +267,10 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
     }
 
     // The step's row in words: the trades priced at the open, those holding no next session or no open on it, those whose
-    // plan put up no risk, those waiting on their next session, and those an earlier night priced in full.
+    // plan put up no risk, those waiting on their next session, those an earlier night priced in full, and from 21.14 those
+    // ended on a close's signal whose sale waits on the open after it.
     public static string Detail(FillOutcome outcome) => FormattableString.Invariant(
-        $"{outcome.Filled} trade(s) priced at the next session's open, {outcome.NoNextSession} whose stock holds no bar on its next session, {outcome.NoOpen} with no open on it, {outcome.NoRisk} whose plan put up no risk at its close, {outcome.Waiting} buying at the next open, {outcome.Standing} standing as priced before");
+        $"{outcome.Filled} trade(s) priced at the next session's open, {outcome.NoNextSession} whose stock holds no bar on its next session, {outcome.NoOpen} with no open on it, {outcome.NoRisk} whose plan put up no risk at its close, {outcome.Waiting} buying at the next open, {outcome.Standing} standing as priced before, {outcome.Selling} selling at the next open");
 
     // A trade is priced again while it holds no row, or while its own figures have arrived since its row was written: a
     // result, or a benchmark, that its row holds none of.
@@ -361,14 +395,29 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
             }
         }
 
+        // A trailing plan the S&P 500's lists keep stores no trail, since the breakout trails the highest close by the
+        // distance its stop sits under the buy.
         await ReadAsync(FamilyTrades, reader => new StoredTrade("family_trade", LargeIndex, reader.GetString(0), reader.GetString(1), Date(reader.GetString(2)),
-            Price(reader, 3)!.Value, Price(reader, 4), Price(reader, 5), Real(reader, 6), Real(reader, 7), Real(reader, 8), null));
+            Price(reader, 3)!.Value, Price(reader, 4), Price(reader, 5), Real(reader, 6), Real(reader, 7), Real(reader, 8), null)
+        {
+            EndedOn = DateOf(reader, 9), Cap = Whole(reader, 10), Exit = Whole(reader, 11) ?? 0,
+            Trail = reader.IsDBNull(5) && Price(reader, 4) is { } stop ? Price(reader, 3)!.Value - stop : null,
+        });
         await ReadAsync(IndexFamilyTrades, reader => new StoredTrade("index_family_trade", reader.GetString(0), reader.GetString(1), reader.GetString(2), Date(reader.GetString(3)),
-            Price(reader, 4)!.Value, Price(reader, 5), Price(reader, 6), Real(reader, 7), Real(reader, 8), Real(reader, 9), null));
+            Price(reader, 4)!.Value, Price(reader, 5), Price(reader, 6), Real(reader, 7), Real(reader, 8), Real(reader, 9), null)
+        {
+            EndedOn = DateOf(reader, 10), Cap = Whole(reader, 11), Exit = Whole(reader, 12) ?? 0, Trail = Price(reader, 13),
+        });
         await ReadAsync(IndexRuleTrades, reader => new StoredTrade("index_rule_trade", reader.GetString(0), reader.GetString(1), reader.GetString(2), Date(reader.GetString(3)),
-            Price(reader, 4)!.Value, Price(reader, 5), Price(reader, 6), Real(reader, 7), Real(reader, 8), Real(reader, 9), null));
+            Price(reader, 4)!.Value, Price(reader, 5), Price(reader, 6), Real(reader, 7), Real(reader, 8), Real(reader, 9), null)
+        {
+            EndedOn = DateOf(reader, 10), Cap = Whole(reader, 11), Exit = Whole(reader, 12) ?? 0, Trail = Price(reader, 13),
+        });
         await ReadAsync(RulePicks, reader => new StoredTrade("rule_pick", reader.GetString(0), reader.GetString(1), reader.GetString(2), Date(reader.GetString(3)),
-            Price(reader, 4)!.Value, Price(reader, 5), Price(reader, 6), null, Real(reader, 7), null, null));
+            Price(reader, 4)!.Value, Price(reader, 5), Price(reader, 6), null, Real(reader, 7), null, null)
+        {
+            EndedOn = DateOf(reader, 8), Cap = Whole(reader, 9),
+        });
         await ReadAsync(LargeBook, reader => new StoredTrade("heavyweight_holding", LargeIndex, string.Empty, reader.GetString(0), Date(reader.GetString(1)),
             Price(reader, 2)!.Value, null, null, null, Real(reader, 3), Real(reader, 4), CutOf(reader, 5)));
         await ReadAsync(LargeRuleBooks, reader => new StoredTrade("heavyweight_rule_holding", LargeIndex, reader.GetString(0), reader.GetString(1), Date(reader.GetString(2)),
@@ -394,7 +443,10 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
 
             return new StoredTrade("forward_return", LargeIndex, reader.GetString(0), reader.GetString(1), Date(reader.GetString(2)),
                 1, 1 - risk, target, null,
-                Real(reader, 3) is { } returned ? returned / 100 / risk : null, null, null, Relative: true);
+                Real(reader, 3) is { } returned ? returned / 100 / risk : null, null, null, Relative: true)
+            {
+                EndedOn = DateOf(reader, 7), Outcome = reader.IsDBNull(6) ? null : reader.GetString(6),
+            };
         });
 
         return trades;
@@ -460,6 +512,67 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
     static double? Price(SqliteDataReader reader, int at) => reader.IsDBNull(at) ? null : Statistic.FromPrice(Money.FromStorage(reader.GetString(at)));
 
     static double? Real(SqliteDataReader reader, int at) => reader.IsDBNull(at) ? null : reader.GetDouble(at);
+
+    static int? Whole(SqliteDataReader reader, int at) => reader.IsDBNull(at) ? null : reader.GetInt32(at);
+
+    static DateOnly? DateOf(SqliteDataReader reader, int at) => reader.IsDBNull(at) ? null : Date(reader.GetString(at));
+
+    // A stock's sessions from a listing night to the session after the one its trade ended on, each session's open and
+    // close as the bars hold them now, the kept bars' first.
+    public static async Task<IReadOnlyList<(DateOnly Session, double Open, double Close)>> PathAsync(SqliteConnection connection, SqliteTransaction? transaction, string ticker, DateOnly from, DateOnly through, CancellationToken cancellation)
+    {
+        var path = new SortedDictionary<DateOnly, (double Open, double Close)>();
+
+        foreach (var table in new[] { "kept_bar", "bar" })
+        {
+            await using var command = Command(connection, transaction, $"SELECT session_date, open, close FROM {table} WHERE ticker = $ticker AND session_date BETWEEN $from AND $through;",
+                [("$ticker", ticker), ("$from", Stamp(from)), ("$through", Stamp(through))]);
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                path[Date(reader.GetString(0))] = (Price(reader, 1) ?? 0, Price(reader, 2) ?? 0);
+            }
+        }
+
+        return [.. path.Select(pair => (pair.Key, pair.Value.Open, pair.Value.Close))];
+    }
+
+    // From 21.14 a swing trade's sale, its result bought at the open moved by the gap from the close that signalled its end
+    // to the next session's open, over the risk its close set, at the trade's own scale, the bars as stored now over its
+    // listing night's close: a scored plan's end read off the outcome its filler stored, a trade walked under an exit of
+    // the menu replayed under it over the same closes, and any other read off its closes as the family's walk reads them.
+    // A trade whose sessions the path does not hold is left sold at its close.
+    // see: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and no rule's version moves because of it
+    public static TradeSale Sold(StoredTrade trade, double result, IReadOnlyList<(DateOnly Session, double Open, double Close)> path)
+    {
+        var ended = path.Select(one => one.Session).ToList().IndexOf(trade.EndedOn ?? DateOnly.MinValue);
+
+        if (path.Count == 0 || path[0].Session != trade.Session || !(path[0].Close > 0) || ended <= 0 || trade.Stop is not { } stopAt)
+        {
+            return new TradeSale(trade.EndedOn, null, result);
+        }
+
+        var night = path[0].Close;
+        var (entry, stop, target) = trade.Relative ? (night, stopAt * night, trade.Target * night) : (trade.Entry, stopAt, trade.Target);
+        var scale = entry / night;
+        double Close(int at) => path[at].Close * scale;
+        double? OpenAfter(int at) => at + 1 < path.Count && path[at + 1].Open > 0 ? path[at + 1].Open * scale : null;
+        var risk = entry - stop;
+        var anchor = new SetupAnchor(trade.Session, entry, stop, target, target is null ? trade.Trail : null, trade.Cap ?? ended, null);
+        var choice = EquityBrief.Core.Loop.ExitMenu.Of(trade.Exit);
+        var end = trade.Outcome is { } outcome
+            ? outcome == ForwardReturnSeries.Unresolved ? SetupEnds.Cap : SetupEnds.Stop
+            : choice is not null && trade.RiskMoves is > 0
+                ? EquityBrief.Core.Loop.ExitMenu.Replay([.. path.Take(ended + 1).Select(one => one.Close * scale)], 0, anchor, risk / trade.RiskMoves.Value, choice).End
+                : ExitFills.EndOf(Close, 0, entry, stop, target, anchor.Trail, ended, anchor.Cap);
+        var walked = new SetupOutcome(result, ended, end);
+        var sale = ExitFills.Sold(walked, Close, OpenAfter, 0, risk, ExitFills.HalfSoldOn(Close, 0, anchor, choice, walked));
+
+        return sale.AtOpen
+            ? new TradeSale(sale.Result is null ? null : path[ended + 1].Session, sale.Result is null ? null : OpenAfter(ended), sale.Result)
+            : new TradeSale(path[ended].Session, Close(ended), sale.Result);
+    }
 
     static SqliteCommand Command(SqliteConnection connection, SqliteTransaction? transaction, string sql, IReadOnlyList<(string Name, object Value)> parameters)
     {

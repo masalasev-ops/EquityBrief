@@ -21,8 +21,10 @@ namespace EquityBrief.Worker.Cards;
 // no gate, and the S&P 400's and 600's apply their own; no setting is searched, so a replay costs one walk a rule. From
 // 20.11 a family frozen on the S&P 400 or 600 is replayed at its live rule's own settings by its sweep's own reading of
 // the index's history, every trade bought at the open after its listing and after its round trip as that sweep priced
-// it, so the record is the frozen rule's own. It reads the store and writes nothing.
+// it, so the record is the frozen rule's own. From 21.14 every swing trade a close's signal ends is sold at the open after
+// that close, as the walks the record reads sell it. It reads the store and writes nothing.
 // see: A rule's record is replayed at its one setting by the sweep's own code over the pulled history, after costs on every index
+// see: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and no rule's version moves because of it
 // see: A frozen rule on the S&P 400 or 600 is replayed at its own settings by its sweep's own code, and its card draws that record alone
 public static class RuleReplay
 {
@@ -220,7 +222,8 @@ public static class RuleReplay
             var stop = entry - (listing.StopMoves * one.Atr[listing.Bar]);
             int held = listing.Plan.Ends[exit];
 
-            if (OpenAfter(one, listing.Bar) is not { } open || TradeFills.AtOpen(result, entry, entry - stop, open) is not { } atOpen)
+            if (OpenAfter(one, listing.Bar) is not { } open
+                || OpenFills.Pullback(one, TradeFills.AtOpen(result, entry, entry - stop, open), listing.Bar, listing.Plan, exit, entry - stop) is not { } atOpen)
             {
                 continue;
             }
@@ -304,7 +307,8 @@ public static class RuleReplay
             var risk = listing.Entry - listing.Stop;
             var sessionsHeld = held[(listing.Name, listing.Session)];
 
-            if (OpenAfter(read.Series[listing.Name], listing.Bar) is not { } open || TradeFills.AtOpen(result, listing.Entry, risk, open) is not { } atOpen)
+            if (OpenAfter(read.Series[listing.Name], listing.Bar) is not { } open
+                || OpenFills.Sold(read.Series[listing.Name], (TradeFills.AtOpen(result, listing.Entry, risk, open), sessionsHeld), listing).Result is not { } atOpen)
             {
                 continue;
             }

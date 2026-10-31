@@ -430,7 +430,7 @@ public sealed partial class IndexSweepRunner
                         held[(listing.Name, listing.Session)] = walked.Sale;
                     }
 
-                    return Fills.Exit((atTrigger ? walked.AtTrigger : walked.AtClose, walked.Held), listing);
+                    return Fills.Bought((atTrigger ? walked.AtTrigger : walked.AtClose, walked.Held), listing);
                 },
                 listing => Fills.Benchmark(BenchmarkAtClose(listing.Session, exit, limit, stop), listing));
         }
@@ -542,7 +542,7 @@ public sealed partial class IndexSweepRunner
                         held[(listing.Name, listing.Session)] = walked.Sale;
                     }
 
-                    return Fills.Exit((walked.AtClose, walked.Held), listing);
+                    return Fills.Bought((walked.AtClose, walked.Held), listing);
                 },
                 listing => Fills.Benchmark(MenuBenchmarkAtClose(listing.Session, exit, limit, stop), listing));
         }

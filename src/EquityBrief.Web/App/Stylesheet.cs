@@ -504,6 +504,7 @@ details.close-to-buy>summary{cursor:pointer;font-weight:600}
 .paper-bought td,.paper-variants td,.paper-only td,.score-table td{vertical-align:top}
 .pb-stock a{font-weight:600}
 .pb-co,.pb-day{display:block;font-size:12px;color:var(--soft);font-weight:400}
+.pv-note{display:block;font-size:12px;color:var(--warn);font-weight:400;max-width:42ch}
 .pb-also{display:block;font-size:12px;color:var(--ink-2)}
 .pb-day{white-space:nowrap}
 .pb-standing{font-weight:600}

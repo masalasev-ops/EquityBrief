@@ -12,8 +12,8 @@ namespace EquityBrief.Worker.Cards;
 
 // The taken trades' follower. After the night's cards, each trade the operator took and no night has ended is followed
 // over the stored closes from its fill's session to the night under its rule's own management: a provisional fill is
-// replaced by its session's stored open once that bar is stored; the trade ends at its stop, its target or its cap, at
-// the book's own sale for a sector heavyweight, where the dip's own trade on the pick was sold for a short-term dip pick,
+// replaced by its session's stored open once that bar is stored; the trade ends at the next session's open after a close
+// through its stop or at its target, from 21.14, or at its cap's close, at the book's own sale for a sector heavyweight, where the dip's own trade on the pick was sold for a short-term dip pick,
 // at an exit the operator recorded, or at its last close as a member where the stock has left every index, whichever
 // comes first. Every price is read at the series' scale as stored tonight, each
 // day's own price taken there by that day's adjustment, so a split inside a trade ends nothing. Then the operator's
@@ -22,6 +22,7 @@ namespace EquityBrief.Worker.Cards;
 // see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then
 // see: The operator's own record states its average result once twenty of its trades in a family and index have ended
 // see: The dip buys at the next session's open and sells at the next open after its exit's close or its stop's, and at its last session's close
+// see: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and no rule's version moves because of it
 // see: The nightly run is arithmetic only
 public sealed class TakenFollower : IComponent
 {
@@ -242,11 +243,20 @@ public sealed class TakenFollower : IComponent
 
         var ends = new List<(DateOnly On, string Reason, decimal Close, decimal Raw)>();
 
+        // From 21.14 a close through the stop or at the target is sold at the next session's open, and a trade whose next
+        // session is not stored yet stands until it is; the cap's close sells at that close.
         if (walked is { } rule)
         {
             var end = held[rule.Session - 1];
 
-            ends.Add((end.Day, rule.Reason, end.Close, end.Close / end.Factor));
+            if (rule.Reason != TakenWalk.Stopped && rule.Reason != TakenWalk.Targeted)
+            {
+                ends.Add((end.Day, rule.Reason, end.Close, end.Close / end.Factor));
+            }
+            else if (rule.Session < held.Length && held[rule.Session] is { Open: > 0m } next)
+            {
+                ends.Add((next.Day, rule.Reason, next.Open, next.Open / next.Factor));
+            }
         }
 
         if (trade.Family == HeavyweightRule.Name && await SoldAsync(connection, transaction, trade, cancellation) is { } sold && at.TryGetValue(sold, out var sale))

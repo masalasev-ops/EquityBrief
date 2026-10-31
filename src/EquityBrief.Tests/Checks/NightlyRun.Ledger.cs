@@ -159,18 +159,30 @@ public partial class NightlyRun
         }
 
         // The night after: AAA opens and closes at 100, through both stops; the others hold at 100, so the same plan on them
-        // is still open and neither benchmark is settled. Both windows are closed at the stop with their result, their
-        // sessions and the session they ended on, settled no. From 19.10 each is bought at that open of 100, under its
-        // stop, and sold at the same close, so each made nothing in the risk its close set, and each stores its fill and
-        // that it opened past its stop.
+        // is still open and neither benchmark is settled. From 21.14 a close through the stop is sold at the next session's
+        // open, so both windows stand open that night, and close the night after it once its open of 100 is stored, at the
+        // stop with their result, their sessions and the session the stop's close ended them on, settled no. From 19.10
+        // each is bought at that open of 100, under its stop, and sold at the next open of 100, so each made nothing in the
+        // risk its close set, and each stores its fill and that it opened past its stop.
         foreach (var ticker in new[] { "AAA", "BBB", "CCC" })
         {
             LedgerBar(store, ticker, 71, 100m, 1_000_000);
         }
 
-        var next = await ledger.NightAsync("night-ledger-next");
+        var waiting = await ledger.NightAsync("night-ledger-next");
 
-        Assert.Equal(LedgerSession(71), next.Session);
+        Assert.Equal(LedgerSession(71), waiting.Session);
+        Assert.Equal(0, waiting.Indices.Single(index => index.Index == "GSPC").Closed);
+        Assert.Equal(["open", "open"], Texts(store, $"SELECT end FROM setup WHERE session_date = '{LedgerStamp(70)}' ORDER BY family;"));
+
+        foreach (var ticker in new[] { "AAA", "BBB", "CCC" })
+        {
+            LedgerBar(store, ticker, 72, 100m, 1_000_000);
+        }
+
+        var next = await ledger.NightAsync("night-ledger-sold");
+
+        Assert.Equal(LedgerSession(72), next.Session);
         Assert.Equal(2, next.Indices.Single(index => index.Index == "GSPC").Closed);
 
         var closed = Texts(store, $"SELECT family || '|' || end || '|' || sessions || '|' || ended_on || '|' || settled || '|' || (CASE WHEN benchmark IS NULL THEN 1 ELSE 0 END) || '|' || result FROM setup WHERE session_date = '{LedgerStamp(70)}' ORDER BY family;");
@@ -186,13 +198,13 @@ public partial class NightlyRun
         Assert.Equal(["0", "0", "0", "0", "0", "0", "0"], Texts(store, $"SELECT setups FROM setup_night WHERE index_code = 'GSPC' AND session_date = '{LedgerStamp(71)}' ORDER BY family;"));
 
         // The night run again writes what it wrote: the same rows, once, the two setups and the seven families' night rows
-        // of each of the two nights, the two book families' among them from 21.4.
+        // of each of the three nights, the two book families' among them from 21.4.
         var again = await ledger.NightAsync("night-ledger-again");
 
-        Assert.Equal(LedgerSession(71), again.Session);
-        Assert.Equal(["2", "14"], Texts(store, "SELECT COUNT(*) FROM setup UNION ALL SELECT COUNT(*) FROM setup_night;"));
-        Assert.Equal([$"{LedgerStamp(70)}|3", $"{LedgerStamp(71)}|3"], Texts(store, "SELECT session_date || '|' || COUNT(*) FROM ledger_reading GROUP BY session_date ORDER BY session_date;"));
-        Assert.Equal([SetupLedger.Ok, SetupLedger.Ok, SetupLedger.Ok], Texts(store, $"SELECT outcome FROM run_log WHERE stage = '{SetupLedger.Stage}' ORDER BY rowid;"));
+        Assert.Equal(LedgerSession(72), again.Session);
+        Assert.Equal(["2", "21"], Texts(store, "SELECT COUNT(*) FROM setup UNION ALL SELECT COUNT(*) FROM setup_night;"));
+        Assert.Equal([$"{LedgerStamp(70)}|3", $"{LedgerStamp(71)}|3", $"{LedgerStamp(72)}|3"], Texts(store, "SELECT session_date || '|' || COUNT(*) FROM ledger_reading GROUP BY session_date ORDER BY session_date;"));
+        Assert.Equal([SetupLedger.Ok, SetupLedger.Ok, SetupLedger.Ok, SetupLedger.Ok], Texts(store, $"SELECT outcome FROM run_log WHERE stage = '{SetupLedger.Stage}' ORDER BY rowid;"));
     }
 
     static T LedgerScalar<T>(TemporaryStore store, string sql) where T : struct

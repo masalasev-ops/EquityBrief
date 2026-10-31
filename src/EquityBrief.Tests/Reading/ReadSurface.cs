@@ -104,6 +104,9 @@ public partial class ReadSurface
             // 21.13, the market strip on Tonight and on the copy.
             .. StripRows,
 
+            // 21.14, the tone variant's line on paper trading.
+            .. ToneLineClaims,
+
             // 12.7's correction, close to a buy point beneath tonight's list.
             .. CloseToABuyPointClaims,
 

@@ -570,7 +570,8 @@ public sealed class RuleWalk(
         var hooks = standing?.Hooks ?? LoopChange.NoHooks;
         var standingExit = RuleHooks.Of(hooks).ExitChoice;
 
-        // From 19.10 each trade and its benchmark are bought at the next session's open.
+        // From 19.10 each trade and its benchmark are bought at the next session's open, and from 21.14 each trade a
+        // close's signal ends is sold at the open after that close.
         var fills = new OpenFills(series, read.Members);
 
         // A listing as the family's walk states one.
@@ -597,9 +598,10 @@ public sealed class RuleWalk(
                 ? plan.Multiple[ownExit]
                 : null;
             var entry = closes[listing.Name][listing.Bar];
+            var risk = listing.StopMoves * series[listing.Name].Atr[listing.Bar];
 
             return (
-                fills.Result(result, listing.Name, listing.Bar, entry, listing.StopMoves * series[listing.Name].Atr[listing.Bar]),
+                fills.Pullback(fills.Result(result, listing.Name, listing.Bar, entry, risk), listing.Name, listing.Bar, plan, ownExit, risk),
                 plan.Ends[ownExit],
                 fills.Benchmark(plan.Benchmark[ownExit], listing.Session, listing.StopMoves));
         }
@@ -611,12 +613,14 @@ public sealed class RuleWalk(
             var move = series[name].Atr[bar];
             var entry = closes[name][bar];
             var risk = listing.StopMoves * move;
-            var outcome = ExitMenu.Replay(closes[name], bar, new SetupAnchor(DateOnly.MinValue, entry, entry - risk, entry + (listing.RewardToRisk * risk), null, SweepIdeas.Cap, listing.StopMoves), move, exit);
+            var anchor = new SetupAnchor(DateOnly.MinValue, entry, entry - risk, entry + (listing.RewardToRisk * risk), null, SweepIdeas.Cap, listing.StopMoves);
+            var outcome = ExitMenu.Replay(closes[name], bar, anchor, move, exit);
             var sessionAt = series[name].SessionAt;
             var sessions = bar + outcome.Sessions < sessionAt.Length ? sessionAt[bar + outcome.Sessions] - sessionAt[bar] : outcome.Sessions;
             var benchmark = ExitMenu.Benchmark(closes, read.Members.Names[listing.Session], read.Members.Bars[listing.Session], (member, at) => series[member].Atr[at], listing.StopMoves, listing.RewardToRisk, null, SweepIdeas.Cap, exit).Average;
+            var bought = outcome with { Result = fills.Result(outcome.Result, name, bar, entry, risk) };
 
-            return (fills.Result(outcome.Result, name, bar, entry, risk), sessions, outcome.End, fills.Benchmark(benchmark, listing.Session, listing.StopMoves));
+            return (fills.Sold(bought, name, bar, risk, ExitFills.HalfSoldOn(at => closes[name][at], bar, anchor, exit, outcome)), sessions, outcome.End, fills.Benchmark(benchmark, listing.Session, listing.StopMoves));
         }
 
         // A listing's trade under the exit the rule stands at, its own or the menu's an approval set.

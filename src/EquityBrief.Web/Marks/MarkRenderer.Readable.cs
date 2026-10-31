@@ -113,12 +113,12 @@ public sealed partial class MarkRenderer
 
             if (heldCard.Target is { } heldTarget)
             {
-                exits.Add(Formatted($"at {Price(heldTarget)}"));
+                exits.Add(Formatted($"at the next open after a close at or above {Price(heldTarget)}"));
             }
 
             if (heldCard.Stop is { } heldStop)
             {
-                exits.Add(Formatted($"at a close below {Price(heldStop)}"));
+                exits.Add(Formatted($"at the next open after a close below {Price(heldStop)}"));
             }
 
             if (heldCard.Cap is { } heldCap)
@@ -150,12 +150,12 @@ public sealed partial class MarkRenderer
 
             if (card.Stop is { } stop)
             {
-                parts.Add(Formatted($"sell at a close below {Price(stop)}"));
+                parts.Add(Formatted($"sell at the next open after a close below {Price(stop)}"));
             }
 
             if (card.Target is { } target)
             {
-                parts.Add(Formatted($"sell at {Price(target)}"));
+                parts.Add(Formatted($"sell at the next open after a close at or above {Price(target)}"));
             }
 
             if (card.Cap is { } cap)

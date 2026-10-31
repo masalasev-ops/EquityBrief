@@ -16,9 +16,12 @@ namespace EquityBrief.Worker.Ledger;
 // that triggered its exit as the ledger sells it, sold at the open of the session after that close, and with the target
 // as a resting order filled on the first session whose high reaches it, the stop still a close and sold at the next
 // open; the time limit at its own close either way. The short-term dip is shown as it already prices, sold at the next
-// open. It reads the store and writes nothing to it, its answer an HTML page with its figures beside it under the data
-// root's loop folder; a change it suggests waits for a fill step of its own on the operator's word.
+// open. From 21.14, when the ledger sells at the next open, the stored result is reproduced by that pricing, and the
+// benchmark is read beside the stored one with each member sold as the trade is, for the operator. It reads the store and
+// writes nothing to it, its answer an HTML page with its figures beside it under the data root's loop folder; a change it
+// suggests waits for a fill step of its own on the operator's word.
 // see: A read-only check changes no rule, and an exit's pricing changes only by a fill step on the operator's word
+// see: A swing trade sold on a close's signal is sold at the next session's open by the fill step, and no rule's version moves because of it
 public sealed partial class SetupLedger
 {
     public const string ExitsStage = "ledger-exits";
@@ -38,6 +41,12 @@ public sealed partial class SetupLedger
         public double? EdgeAtNextOpen => Edge(Priced.AtNextOpen.Result);
 
         public double? EdgeResting => Edge(Priced.Resting.Result);
+
+        // From 21.14 the benchmark were its members sold as the trade is, at each one's open after the close that ended
+        // it, and the edge at the next open read against it, which no rule, record or page reads.
+        public double? BenchmarkSold { get; init; }
+
+        public double? EdgeBothAtNextOpen => Priced.AtNextOpen.Result is { } made && BenchmarkSold is { } benchmark ? made - benchmark - (Cost ?? 0) : null;
 
         double? Edge(double? result) => result is { } made && Benchmark is { } benchmark ? made - benchmark - (Cost ?? 0) : null;
     }
@@ -59,7 +68,10 @@ public sealed partial class SetupLedger
         int TargetsAtClose,
         int TargetsResting,
         int StopsAtClose,
-        int StopsResting)
+        int StopsResting,
+        int BothPriced = 0,
+        double? EdgeAtNextOpenOverBoth = null,
+        double? EdgeBothAtNextOpen = null)
     {
         public double? ResultNextOpenLessClose => ResultAtNextOpen - ResultAtClose;
 
@@ -94,6 +106,7 @@ public sealed partial class SetupLedger
     {
         var priced = own.Where(setup => setup.Priced.AtClose.Result is not null && setup.Priced.AtNextOpen.Result is not null && setup.Priced.Resting.Result is not null).ToArray();
         var edged = priced.Where(setup => setup.EdgeAtClose is not null).ToArray();
+        var both = edged.Where(setup => setup.EdgeBothAtNextOpen is not null).ToArray();
 
         static double? Mean(IEnumerable<double?> values)
         {
@@ -116,7 +129,10 @@ public sealed partial class SetupLedger
             priced.Count(setup => setup.Priced.AtClose.End == SetupEnds.Target),
             priced.Count(setup => setup.Priced.Resting.End == SetupEnds.Target),
             priced.Count(setup => setup.Priced.AtClose.End is SetupEnds.Stop or SetupEnds.Trail),
-            priced.Count(setup => setup.Priced.Resting.End is SetupEnds.Stop or SetupEnds.Trail));
+            priced.Count(setup => setup.Priced.Resting.End is SetupEnds.Stop or SetupEnds.Trail),
+            both.Length,
+            Mean(both.Select(setup => setup.EdgeAtNextOpen)),
+            Mean(both.Select(setup => setup.EdgeBothAtNextOpen)));
     }
 
     public async Task<int> ExitsAsync(string index, TextWriter output, CancellationToken cancellation = default)
@@ -204,8 +220,18 @@ public sealed partial class SetupLedger
                 return;
             }
 
-            priced[place] = new ExitPricedSetup(setup.Family, setup.Session.Year, setup.Result, three, setup.Benchmark, setup.Cost);
-            near[place] = three.AtClose.Result is { } worked && setup.Result is { } stored && Math.Abs(worked - stored) <= NearWithin;
+            // From 21.14 the same plan on every member the history held that session, each sold as the trade is, its stop
+            // its risk in typical moves and its target or its trail in the same measure.
+            var move = prepared.Series[name].Atr[bar];
+            var plan = anchor.Trails
+                ? new SetupPlan(anchor.RiskMoves ?? anchor.Risk / move, null, move > 0 ? anchor.Trail!.Value / move : anchor.Trail!.Value, anchor.Cap)
+                : new SetupPlan(anchor.RiskMoves ?? anchor.Risk / move, anchor.Target is { } aim ? (aim - anchor.Entry) / anchor.Risk : null, null, anchor.Cap);
+            var members = prepared.Members.Names[at].Select((member, slot) => (prepared.Closes[member], opens[member], prepared.Members.Bars[at][slot], prepared.Series[member].Atr[prepared.Members.Bars[at][slot]], prepared.Stopped[member])).ToArray();
+
+            priced[place] = new ExitPricedSetup(setup.Family, setup.Session.Year, setup.Result, three, setup.Benchmark, setup.Cost) { BenchmarkSold = ExitFills.Benchmark(members, setup.Session, plan) };
+
+            // From 21.14 the ledger stores the result sold at the next open, so it is reproduced by that pricing.
+            near[place] = three.AtNextOpen.Result is { } worked && setup.Result is { } stored && Math.Abs(worked - stored) <= NearWithin;
         });
 
         var read = priced.OfType<ExitPricedSetup>().ToArray();
@@ -214,7 +240,8 @@ public sealed partial class SetupLedger
         var groups = ExitGroups(read, [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name]);
         var lines = new List<string>
         {
-            FormattableString.Invariant($"{read.Length} of {swings} settled swing setup(s) on the {DecisionCards.NameOf(index)} priced three ways over the history read through {newest}, {swings - read.Length} whose stock, session or next open the history does not hold left out; {near.Count(same => same)} of the {read.Length} reproduce the stored result at the close within {NearWithin}."),
+            FormattableString.Invariant($"{read.Length} of {swings} settled swing setup(s) on the {DecisionCards.NameOf(index)} priced three ways over the history read through {newest}, {swings - read.Length} whose stock, session or next open the history does not hold left out; {near.Count(same => same)} of the {read.Length} reproduce the stored result, sold at the next open from 21.14, within {NearWithin}."),
+            "From 21.14 the benchmark is also read with each member sold as the trade is, at its own open after the close that ended it, which no rule, record or page reads: the edge at the next open against it beside the edge against the stored benchmark, whose members are sold at their closes, over the same setups.",
             "Each result is in multiples of the risk the plan put up at the listing's close, bought at the open after it. The edge after costs under each pricing is its result less the stored benchmark and the stored cost, so only the sale moves between the three.",
             "Under the resting order a session whose high reaches the target sells at the target before its close is read, so a session reaching the target and closing under the stop sells at the target; a plan whose stop trails rests no order.",
         };
@@ -252,11 +279,14 @@ public sealed partial class SetupLedger
             CheckReports.Cell(group.TargetsResting),
             CheckReports.Cell(group.StopsAtClose),
             CheckReports.Cell(group.StopsResting),
+            CheckReports.Cell(group.BothPriced),
+            CheckReports.Cell(group.EdgeAtNextOpenOverBoth, signed: true),
+            CheckReports.Cell(group.EdgeBothAtNextOpen, signed: true),
         ]).ToArray();
 
         foreach (var group in groups)
         {
-            output.WriteLine(FormattableString.Invariant($"{ExitsStage}: {group.Family}, {(group.Year is { } year ? year.ToString(CultureInfo.InvariantCulture) : "all years")}: {group.Priced} priced; mean result {CheckReports.Cell(group.ResultAtClose, true)} at the close, {CheckReports.Cell(group.ResultAtNextOpen, true)} at the next open, {CheckReports.Cell(group.ResultResting, true)} with the target resting; mean edge after costs over {group.EdgesPriced}: {CheckReports.Cell(group.EdgeAtClose, true)}, {CheckReports.Cell(group.EdgeAtNextOpen, true)}, {CheckReports.Cell(group.EdgeResting, true)}; targets reached {group.TargetsAtClose} at the close against {group.TargetsResting} resting"));
+            output.WriteLine(FormattableString.Invariant($"{ExitsStage}: {group.Family}, {(group.Year is { } year ? year.ToString(CultureInfo.InvariantCulture) : "all years")}: {group.Priced} priced; mean result {CheckReports.Cell(group.ResultAtClose, true)} at the close, {CheckReports.Cell(group.ResultAtNextOpen, true)} at the next open, {CheckReports.Cell(group.ResultResting, true)} with the target resting; mean edge after costs over {group.EdgesPriced}: {CheckReports.Cell(group.EdgeAtClose, true)}, {CheckReports.Cell(group.EdgeAtNextOpen, true)}, {CheckReports.Cell(group.EdgeResting, true)}; targets reached {group.TargetsAtClose} at the close against {group.TargetsResting} resting; over {group.BothPriced} with the benchmark sold as the trade is, the edge at the next open {CheckReports.Cell(group.EdgeAtNextOpenOverBoth, true)} against the stored benchmark and {CheckReports.Cell(group.EdgeBothAtNextOpen, true)} against it"));
         }
 
         var (report, figures) = CheckReports.Write(
@@ -266,7 +296,7 @@ public sealed partial class SetupLedger
             lines,
             [new CheckReports.Table(
                 "By family and year: results and edges after costs under each pricing, in risks",
-                ["Family", "Year", "Priced", "Result at close", "Result at next open", "Result resting", "Next open less close", "Resting less close", "With a benchmark", "Edge at close", "Edge at next open", "Edge resting", "Edge next open less close", "Edge resting less close", "Targets at close", "Targets resting", "Stops at close", "Stops resting"],
+                ["Family", "Year", "Priced", "Result at close", "Result at next open", "Result resting", "Next open less close", "Resting less close", "With a benchmark", "Edge at close", "Edge at next open", "Edge resting", "Edge next open less close", "Edge resting less close", "Targets at close", "Targets resting", "Stops at close", "Stops resting", "With the benchmark sold so", "Edge at next open, stored benchmark", "Edge at next open, benchmark sold so"],
                 rows)],
             new { index, through = newest, settled = settled.Count, swings, priced = read.Length, reproduced = near.Count(same => same), groups, dip = new { settled = dips.Length } },
             clock.UtcNow);

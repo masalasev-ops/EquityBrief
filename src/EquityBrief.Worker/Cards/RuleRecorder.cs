@@ -98,8 +98,9 @@ public sealed class RuleRecorder(IClock clock, string databaseFile, string dataR
             $rows_written, 0, 0, '0', $detail);
     ";
 
-    // The indices named, each one the night reads, or every one where none is named.
-    public async Task<int> RunAsync(IReadOnlyList<string> named, CancellationToken cancellation = default)
+    // The indices named, each one the night reads, or every one where none is named; from 21.14 with `print` each record is
+    // replayed and printed and nothing is written, not even a run log row.
+    public async Task<int> RunAsync(IReadOnlyList<string> named, CancellationToken cancellation = default, bool print = false)
     {
         var indices = named.Count == 0 ? DecisionCards.Indices : named;
         var unknown = indices.Where(index => !DecisionCards.Indices.Contains(index, StringComparer.Ordinal)).ToArray();
@@ -156,14 +157,24 @@ public sealed class RuleRecorder(IClock clock, string databaseFile, string dataR
                 var median = Whole(figures.MedianSessions);
                 var frozen = index != IndexFamilies.LargeIndex && rules.Any(one => one.Live && one.Index == index && one.Family == rule.Family);
 
-                await WriteAsync(index, rule, figures, startedAt, cancellation);
-                written++;
+                if (!print)
+                {
+                    await WriteAsync(index, rule, figures, startedAt, cancellation);
+                    written++;
+                }
 
                 var line = FormattableString.Invariant($"{indexName} {rule.Family}{(frozen ? ", its live rule at " + rule.Settings : string.Empty)}: {figures.Trades} trade(s) from {rule.From:yyyy-MM-dd} to {rule.Through:yyyy-MM-dd}, {rule.Membership}, average {Number(figures.Average)} {rule.Unit}, won {Number(figures.Won)}, median {median} session(s) held");
 
                 lines.Add(line);
                 output.WriteLine(line);
             }
+        }
+
+        if (print)
+        {
+            output.WriteLine($"{Verb}: printed and nothing written");
+
+            return 0;
         }
 
         await AppendAsync(runId, startedAt, written, string.Join("; ", lines), cancellation);

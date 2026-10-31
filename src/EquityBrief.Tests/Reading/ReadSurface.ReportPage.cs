@@ -224,7 +224,7 @@ public partial class ReadSurface
         // The plan region opens on the pick's own exit, and the chart draws its stop and target.
         var marks = new MarkRenderer();
 
-        Assert.Contains("its trade is sold at 529.64, at a close below 406.46 or after 60 trading days, whichever comes first.", marks.PicksOwnExit(card), StringComparison.Ordinal);
+        Assert.Contains("its trade is sold at the next open after a close at or above 529.64, at the next open after a close below 406.46 or after 60 trading days, whichever comes first.", marks.PicksOwnExit(card), StringComparison.Ordinal);
 
         var bars = Enumerable.Range(0, 40).Select(day => new ChartBar(night.AddDays(day - 40), 420m, 450m, 400m, 430m + (day % 5), 1000)).ToArray();
         var chart = marks.LevelChart("ROP", bars, frame: new ChartFrame(Pick: new ChartPick("drift", 406.46m, 529.64m)));
@@ -653,7 +653,7 @@ public partial class ReadSurface
         var picked = MarkRenderer.ShortVersionLead(card, quarter);
 
         Assert.Equal(["pick", "quarter"], Parts(picked));
-        Assert.Contains("buy at the next open, at about 441.65; sell at a close below 420.10; sell at 478.74", WebUtility.HtmlDecode(picked), StringComparison.Ordinal);
+        Assert.Contains("buy at the next open, at about 441.65; sell at the next open after a close below 420.10; sell at the next open after a close at or above 478.74", WebUtility.HtmlDecode(picked), StringComparison.Ordinal);
         Assert.Contains("an operating margin of 28.7% against 28.4% a year earlier", picked, StringComparison.Ordinal);
         Assert.Equal(["quarter"], Parts(MarkRenderer.ShortVersionLead(null, quarter)));
         Assert.Equal(string.Empty, MarkRenderer.ShortVersionLead(null, null));

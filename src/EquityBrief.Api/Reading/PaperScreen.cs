@@ -30,7 +30,8 @@ public sealed record PaperAccountSource(
     IReadOnlyList<(PaperTrade Trade, double? Result, string Version)>? Earlier = null,
     string? Short = null,
     string? Changes = null,
-    IReadOnlyList<(string Ticker, DateOnly Listed, string Why)>? Unfilled = null)
+    IReadOnlyList<(string Ticker, DateOnly Listed, string Why)>? Unfilled = null,
+    bool ReadsReleases = false)
 {
     // Whether a stored trade is one of this account's: kept under its name, or under its name and the filter version it
     // was listed from.
@@ -132,6 +133,20 @@ public static class PaperScreen
                 ? account with { Trades = [.. account.Trades.Select(one => (one.Trade with { Halved = HalvedOn(hooks, nights, one.Trade.ListedOn) }, one.Result))] }
                 : account),
     ];
+
+    // From 21.14 an account whose rule reads a release reading, the drift's tone variant on each index, marked so its card
+    // says its history before the local model's cutoff does not count, in the operator's words of 2026-10-30.
+    // see: The drift's tone variant lists only where its print's release reads better than expected and its outlook was not lowered or withdrawn
+    public static IReadOnlyList<PaperAccountSource> Toned(IReadOnlyList<PaperAccountSource> accounts, IReadOnlyList<CandidateRow> register) =>
+    [
+        .. accounts.Select(account =>
+            register.LastOrDefault(row => row.Candidate == account.Words) is { } row
+            && Core.Candidates.CandidateEvaluator.Read(row.Parameters).GetValueOrDefault(Core.Releases.ReleaseTone.VersionParameter) > 0
+                ? account with { ReadsReleases = true }
+                : account),
+    ];
+
+    public const string ToneNote = "Its history before 2025 does not count: the model that read those releases was trained after them. Its record from today is what counts.";
 
     // Whether a graded exposure held one switch on a night: its picks there are the half count.
     public static bool HalvedOn(Core.Loop.RuleHooks hooks, IReadOnlyDictionary<DateOnly, (double? Breadth, double? VixOverMedian)> nights, DateOnly night)
@@ -605,7 +620,8 @@ public static class PaperScreen
                 test?.Adjusted is { } adjusted ? PaperAccount.Luck(adjusted) : null,
                 account.Standing == PaperAccountView.You ? null : PaperAccount.Progress(account.Book, own, account.Since, night),
                 open,
-                closed);
+                closed,
+                account.ReadsReleases ? ToneNote : null);
         });
 
         return

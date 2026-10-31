@@ -756,9 +756,11 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         // From 22.15 the Fundamentals family's history as its own test lays it out, each filer's releases with their
         // readings beside its filings, only where a rule of the family stands on the index.
         // see: Each index's Fundamentals rule is frozen on the operator's answers of 2026-10-28 with its one-step neighbours as versions
-        var improvingLay = ReadsImproving(standingRules, index)
-            ? await ImprovingLay.ReadAsync(read, history, (await ReleasesAsync(databaseFile, clock, cancellation)).ByFiler, through, output.WriteLine, cancellation)
+        var releases = ReadsImproving(standingRules, index) ? await ReleasesAsync(databaseFile, clock, cancellation) : null;
+        var improvingLay = releases is not null
+            ? await ImprovingLay.ReadAsync(read, history, releases.ByFiler, through, output.WriteLine, cancellation)
             : null;
+        var releaseCutoff = releases?.Cutoff;
 
         // From 22.3 the short-term dip's history as its sweep reads it, the S&P 500's members beside an S&P 400's or 600's
         // for the S&P 500's breadth and the index's own fund and the VIX for its market setting, only where a rule of the
@@ -838,7 +840,7 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
 
         output.WriteLine(FormattableString.Invariant($"{RulesVerb}: {like.Count} settled setup(s) of the swing families to match the setups like each listing among, and {ranked.Values.Sum(walk => walk.Count)} setup(s) in the test years to rank"));
 
-        var rules = RuleTests.Walk(new RuleTestInputs(
+        var ruleInputs = new RuleTestInputs(
             read,
             standingRules,
             await StandingAsync(databaseFile, index, cancellation),
@@ -855,7 +857,8 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
             improvingLay,
             own,
             Like: like,
-            Ranked: family => ranked.GetValueOrDefault(family)));
+            Ranked: family => ranked.GetValueOrDefault(family));
+        var rules = RuleTests.Walk(ruleInputs);
         var tested = RuleTests.Judge(read, rules);
         var runId = FormattableString.Invariant($"{RulesVerb}-{index}-{started:yyyyMMddTHHmmssZ}");
 
@@ -900,6 +903,23 @@ public sealed partial class WalkForwardTester(IClock clock, string databaseFile,
         foreach (var one in tested.Where(one => one.Rule.Exposure is not null))
         {
             output.WriteLine(RuleTests.ExposureLine(one.Rule, InTestYears));
+        }
+
+        // From 21.14, on the operator's ruling of 2026-10-30, each graded exposure, a rule's own or the one walked beside a
+        // live rule, walked again with the VIX's direction reversed, unregistered and written nowhere, for their word.
+        // see: A breakout's or a drift's graded exposure stands in its market check's place as a variant, and a night it holds one switch sizes its trades at half
+        var reversed = RuleTests.Reversed(ruleInputs, rules);
+
+        foreach (var one in tested.Where(one => reversed.ContainsKey((one.Rule.Family, one.Rule.Rule))))
+        {
+            output.WriteLine(RuleTests.ReverseLine(one.Rule, reversed[(one.Rule.Family, one.Rule.Rule)], InTestYears));
+        }
+
+        // From 21.14 each Fundamentals rule requiring a flag first, on each side of the local model's cutoff's year beside
+        // the same settings without it, for the operator's ruling on every rule reading a release reading.
+        foreach (var one in tested.Where(one => one.Rule.Unflagged is not null))
+        {
+            output.WriteLine(RuleTests.FlagLine(one.Rule, read.Calendar, releaseCutoff));
         }
 
         output.WriteLine(print

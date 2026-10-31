@@ -208,7 +208,8 @@ public static class ExitProcedures
         var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
         var ended = new Dictionary<(int Name, int Session), (int Sessions, string End)>();
 
-        // From 19.10 each trade and its benchmark are bought at the next session's open.
+        // From 19.10 each trade and its benchmark are bought at the next session's open, and from 21.14 each trade a
+        // close's signal ends is sold at the open after that close.
         var fills = new OpenFills(read.Series, read.Members);
 
         (double? Result, int Sessions) Exit(FamilyListing listing)
@@ -226,7 +227,7 @@ public static class ExitProcedures
 
             ended[(listing.Name, listing.Session)] = (outcome.Sessions, outcome.End);
 
-            return fills.Exit((outcome.Result, outcome.Sessions), listing);
+            return fills.Exit((outcome.Result, outcome.Sessions), listing, outcome.End, exit);
         }
 
         double Benchmark(FamilyListing listing) => fills.Benchmark(exit is null ? adapter.Benchmark(listing) : MenuBenchmark(read, closes, listing, exit), listing);
