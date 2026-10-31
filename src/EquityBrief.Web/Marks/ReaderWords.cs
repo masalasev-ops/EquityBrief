@@ -170,6 +170,7 @@ public static class ReaderWords
             (@"\bmoves the session 1 session after the night\b", "falls 1 trading day after the night"),
             (@"\bmoves the session (\d+) sessions after the night\b", "falls $1 trading days after the night"),
             (@"\bnot held\b", "not read"),
+            (@"\blearned scores?\b", "score fitted to past setups"),
             (@"\binside the (\d+)-session window\b", "within $1 trading days"),
             (@"\bthe reaction session's\b", "the report day's"),
             (@"\bthe reaction session\b", "the report day"),

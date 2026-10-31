@@ -261,7 +261,7 @@ public partial class FixtureExpectations
 
         Assert.Equal(new Core.Cards.RuleChip("hooks", words!), chips[^1]);
         Assert.Equal("V2 · " + words, Core.Cards.RuleChips.TabWords(2, Core.Cards.RuleChips.Differing(Core.Cards.RuleChips.Of(Core.Cards.RuleKind.IndexDrift, live), chips)));
-        Assert.Equal("ranked, among every stock its event found that night with its other steps loosened, by the index's newest learned score, the best 5", plain);
+        Assert.Equal("ranked, among every stock its event found that night with its other steps loosened, by the index's newest score fitted to past setups, the best 5", plain);
         Assert.All(PlainWords.Terms(), term => Assert.DoesNotMatch(PlainWords.Pattern(term), plain));
 
         // Refused, writing nothing: the S&P 500's drift at nine, by the registrar's maximum; the S&P 400's breakout by the
